@@ -194,8 +194,8 @@
                       <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="CDC_DataChooser_Iniziale" min="-2" pref="120" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="jLabel3" min="-2" pref="70" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
+                      <Component id="jLabel3" min="-2" pref="64" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="CDC_DataChooser_Finale" min="-2" pref="120" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
@@ -215,20 +215,21 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="103" alignment="0" groupAlignment="1" attributes="0">
                       <Group type="103" alignment="0" groupAlignment="3" attributes="0">
-                          <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel1" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
                           <Component id="Bottone_Titolo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Group type="103" alignment="1" groupAlignment="0" attributes="0">
-                          <Component id="jLabel3" min="-2" pref="32" max="-2" attributes="0"/>
+                      <Group type="102" alignment="1" attributes="0">
                           <Component id="CDC_DataChooser_Iniziale" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
                       </Group>
                       <Component id="CDC_DataChooser_Finale" alignment="1" min="-2" max="-2" attributes="0"/>
+                      <Component id="jLabel3" alignment="1" min="-2" pref="32" max="-2" attributes="0"/>
                   </Group>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="CDC_Text_Giorni" alignment="3" min="-2" pref="33" max="-2" attributes="0"/>
                       <Component id="CDC_Label_Giorni" alignment="3" min="-2" pref="22" max="-2" attributes="0"/>
                   </Group>
+                  <Component id="jLabel2" alignment="1" min="-2" pref="33" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="CDC" max="32767" attributes="0"/>
@@ -1360,12 +1361,12 @@
                                   <Editor/>
                                   <Renderer/>
                                 </Column>
-                                <Column maxWidth="400" minWidth="100" prefWidth="-1" resizable="true">
+                                <Column maxWidth="400" minWidth="140" prefWidth="-1" resizable="true">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>
                                 </Column>
-                                <Column maxWidth="200" minWidth="100" prefWidth="-1" resizable="true">
+                                <Column maxWidth="200" minWidth="140" prefWidth="-1" resizable="true">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>
@@ -3145,7 +3146,7 @@
                                   <Editor/>
                                   <Renderer/>
                                 </Column>
-                                <Column maxWidth="150" minWidth="50" prefWidth="50" resizable="true">
+                                <Column maxWidth="150" minWidth="60" prefWidth="60" resizable="true">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>
@@ -3170,7 +3171,7 @@
                                   <Editor/>
                                   <Renderer/>
                                 </Column>
-                                <Column maxWidth="150" minWidth="50" prefWidth="50" resizable="true">
+                                <Column maxWidth="150" minWidth="60" prefWidth="60" resizable="true">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>
@@ -4533,12 +4534,14 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="CDC_FiatWallet_Label_PrimaData" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="CDC_FiatWallet_Label_UltimaData" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="CDC_FiatWallet_Text_UltimaData" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="CDC_FiatWallet_Bottone_CaricaCSV" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="CDC_FiatWallet_Text_PrimaData" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="CDC_FiatWallet_Label_PrimaData" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="CDC_FiatWallet_Text_UltimaData" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="CDC_FiatWallet_Bottone_CaricaCSV" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="CDC_FiatWallet_Text_PrimaData" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore" min="-2" max="-2" attributes="0"/>

@@ -43,6 +43,7 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ItemEvent;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.text.DateFormat;
 import java.time.LocalDateTime;
@@ -60,16 +61,21 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JWindow;
 import javax.swing.RowFilter;
 import javax.swing.RowSorter;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.Timer;
@@ -1487,9 +1493,9 @@ private static final long serialVersionUID = 3L;
             DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setMinWidth(120);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setPreferredWidth(120);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setMaxWidth(120);
-            DepositiPrelievi_Tabella.getColumnModel().getColumn(2).setMinWidth(100);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(2).setMinWidth(140);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(2).setMaxWidth(400);
-            DepositiPrelievi_Tabella.getColumnModel().getColumn(3).setMinWidth(100);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(3).setMinWidth(140);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(3).setMaxWidth(200);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(4).setMinWidth(60);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(4).setPreferredWidth(60);
@@ -2582,8 +2588,8 @@ private static final long serialVersionUID = 3L;
             RW_Tabella_Dettagli.getColumnModel().getColumn(1).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(1).setPreferredWidth(65);
             RW_Tabella_Dettagli.getColumnModel().getColumn(1).setMaxWidth(150);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(2).setMinWidth(50);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(2).setPreferredWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(2).setMinWidth(60);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(2).setPreferredWidth(60);
             RW_Tabella_Dettagli.getColumnModel().getColumn(2).setMaxWidth(150);
             RW_Tabella_Dettagli.getColumnModel().getColumn(3).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(3).setPreferredWidth(100);
@@ -2597,8 +2603,8 @@ private static final long serialVersionUID = 3L;
             RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(6).setPreferredWidth(65);
             RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMaxWidth(150);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMinWidth(50);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setPreferredWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMinWidth(60);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setPreferredWidth(60);
             RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMaxWidth(150);
             RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(8).setPreferredWidth(100);
@@ -3698,12 +3704,13 @@ private static final long serialVersionUID = 3L;
             CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, CDC_FiatWallet_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(CDC_FiatWallet_Label_PrimaData)
+                .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(CDC_FiatWallet_Label_UltimaData)
-                    .addComponent(CDC_FiatWallet_Text_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(CDC_FiatWallet_Bottone_CaricaCSV)
-                    .addComponent(CDC_FiatWallet_Text_PrimaData, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(CDC_FiatWallet_Label_PrimaData)
+                        .addComponent(CDC_FiatWallet_Text_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(CDC_FiatWallet_Bottone_CaricaCSV)
+                        .addComponent(CDC_FiatWallet_Text_PrimaData, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -5149,8 +5156,8 @@ private static final long serialVersionUID = 3L;
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(CDC_DataChooser_Iniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(24, 24, 24)
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(CDC_DataChooser_Finale, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(32, 32, 32)
@@ -5166,16 +5173,17 @@ private static final long serialVersionUID = 3L;
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel2)
                             .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(Bottone_Titolo))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(CDC_DataChooser_Iniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(CDC_DataChooser_Finale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(CDC_DataChooser_Iniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(1, 1, 1))
+                        .addComponent(CDC_DataChooser_Finale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(CDC_Text_Giorni, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(CDC_Label_Giorni, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(CDC_Label_Giorni, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(CDC))
         );
@@ -5217,133 +5225,197 @@ private void SettaIcone(){
 }
 
 
+private void AvviaSplashScreen() {
+    SwingUtilities.invokeLater(() -> {
+        final JWindow splash = new JWindow();
 
+        final int arc = 24;
+        final Color splashBg = new Color(10, 10, 10, 225);
 
+        final BufferedImage img;
+        try {
+            img = ImageIO.read(new File(VarStatiche.getPathRisorse() + "logo.png"));
+        } catch (IOException e) {
+            LoggerGC.ScriviErrore(e);
+            return;
+        }
 
-    
-    private void AvviaSplashScreen(){
-     //PARTE SPLASH SCREEN
-        // Crea splash screen con immagine e barra di progresso
-        JWindow splash = new JWindow();
-        splash.setBackground(new Color(0,0,0,0));
-        splash.setSize(300, 330); 
-        splash.setLocationRelativeTo(null);
-        // Barra di progresso
-          
-        //splash.add(progressBar, BorderLayout.SOUTH);
+        JPanel root = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
 
-        JPanel imagePanel = new JPanel(new BorderLayout()) {
-                    
-            BufferedImage img;
-            
-            float alpha = 1.0f; // trasparenza immagine
-            boolean fadingOut = true;
+                Graphics2D g2 = (Graphics2D) g.create();
+                try {
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                    g2.setColor(splashBg);
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), arc, arc);
+
+                    g2.setColor(new Color(255, 255, 255, 55));
+                    g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, arc, arc);
+                } finally {
+                    g2.dispose();
+                }
+            }
+        };
+        root.setOpaque(false);
+        root.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+
+        JPanel imagePanel = new JPanel() {
+            private float alpha = 1.0f;
+            private boolean fadingOut = true;
 
             {
-                try {
-                    img = ImageIO.read(new File(VarStatiche.getPathRisorse()+"logo.png"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                setOpaque(false);
 
-                // Timer per animazione pulsante
-                new Timer(50, e -> {
+                Timer timerAnimazione = new Timer(80, e -> {
+                    if (!isShowing()) {
+                        ((Timer) e.getSource()).stop();
+                        return;
+                    }
+
                     if (fadingOut) {
-                        alpha -= 0.02f;
-                        if (alpha <= 0.7f) {
-                            alpha = 0.7f;
+                        alpha -= 0.025f;
+                        if (alpha <= 0.72f) {
+                            alpha = 0.72f;
                             fadingOut = false;
                         }
                     } else {
-                        alpha += 0.02f;
+                        alpha += 0.025f;
                         if (alpha >= 1.0f) {
                             alpha = 1.0f;
                             fadingOut = true;
                         }
                     }
+
                     repaint();
-                }).start();
+                });
+                timerAnimazione.setCoalesce(true);
+                timerAnimazione.start();
+            }
+
+            @Override
+            public Dimension getPreferredSize() {
+                return new Dimension(300, 280);
             }
 
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                if (img != null) {
-                    Graphics2D g2 = (Graphics2D) g.create();
+
+                Graphics2D g2 = (Graphics2D) g.create();
+                try {
+                    g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                    int panelW = getWidth();
+                    int panelH = getHeight();
+
+                    int imgW = img.getWidth();
+                    int imgH = img.getHeight();
+
+                    double scale = Math.min((double) panelW / imgW, (double) panelH / imgH);
+                    int drawW = (int) Math.round(imgW * scale);
+                    int drawH = (int) Math.round(imgH * scale);
+
+                    int x = (panelW - drawW) / 2;
+                    int y = (panelH - drawH) / 2;
+
                     g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
-                    g2.drawImage(img, 0, 0, getWidth(), getHeight(), this);
+                    g2.drawImage(img, x, y, drawW, drawH, this);
+                } finally {
                     g2.dispose();
                 }
             }
         };
-        imagePanel.setOpaque(false);
-        
-        // Pannello per la barra "Caricamento in corso..."
-JPanel loadingBar = new JPanel() {
-    @Override
-    protected void paintComponent(Graphics g) {
-        //super.paintComponent(g);
-        Graphics2D g2 = (Graphics2D) g.create();
-        // g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.2f)); // Trasparenza
-        g2.setColor(Color.WHITE);
-        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
-        g2.fillRect(0, 0, getWidth(), getHeight());
 
-        // Testo
-        g2.setComposite(AlphaComposite.SrcOver); 
-        g2.setColor(Color.BLACK);
-        //g2.setFont(new Font("SansSerif", Font.BOLD, 14));
-        g2.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 14));
-        String text = SplashScreenText;
-        FontMetrics fm = g2.getFontMetrics();
-        int textWidth = fm.stringWidth(text);
-        int textX = (getWidth() - textWidth) / 2;
-        int textY = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
-        g2.drawString(text, textX, textY);
+        JPanel loadingBar = new JPanel() {
+            @Override
+            public Dimension getPreferredSize() {
+                return new Dimension(220, 30);
+            }
 
-        // Angoli arrotondati (20 pixel di raggio)
-       // g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
-        
-        g2.dispose();
-    }
-};
-        
-        
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+
+                Graphics2D g2 = (Graphics2D) g.create();
+                try {
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                    int w = getWidth();
+                    int h = getHeight();
+
+                    g2.setColor(new Color(30, 30, 30, 210));
+                    g2.fillRoundRect(0, 0, w, h, 14, 14);
+
+                    g2.setColor(new Color(255, 255, 255, 45));
+                    g2.drawRoundRect(0, 0, w - 1, h - 1, 14, 14);
+
+                    g2.setColor(Color.WHITE);
+                    g2.setFont(getFont().deriveFont(Font.BOLD, 13f));
+
+                    String text = SplashScreenText;
+                    FontMetrics fm = g2.getFontMetrics();
+                    int textX = (w - fm.stringWidth(text)) / 2;
+                    int textY = (h - fm.getHeight()) / 2 + fm.getAscent();
+
+                    g2.drawString(text, textX, textY);
+                } finally {
+                    g2.dispose();
+                }
+            }
+        };
         loadingBar.setOpaque(false);
-        loadingBar.setPreferredSize(new Dimension(200, 20));
-        // Composizione pannello
-        JPanel barraWrapper = new JPanel();
-        barraWrapper.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 10));
+
+        JPanel barraWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
         barraWrapper.setOpaque(false);
         barraWrapper.add(loadingBar);
 
+        root.add(imagePanel, BorderLayout.CENTER);
+        root.add(barraWrapper, BorderLayout.SOUTH);
 
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setLayout(new BorderLayout());
-        
-        panel.setOpaque(false);
-        panel.add(imagePanel, BorderLayout.CENTER);
-        panel.add(barraWrapper, BorderLayout.SOUTH);
-       // panel.add(loadingBar, BorderLayout.SOUTH);
-        
-        
-        splash.setContentPane(panel);    
+        splash.setContentPane(root);
+        splash.pack();
+
+        splash.setShape(new java.awt.geom.RoundRectangle2D.Double(
+                0, 0, splash.getWidth(), splash.getHeight(), arc, arc));
+
+        try {
+            splash.setOpacity(0.97f);
+        } catch (Exception ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+
+        splash.setLocationRelativeTo(null);
         splash.setVisible(true);
-        new Thread(() -> {
-            
-           while (!FineCaricamentoDati) {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ex) {
-                            LoggerGC.ScriviErrore(ex);
-                        }
-                    }  
-        splash.setVisible(false);
-        splash.dispose();
 
-        }).start();
-    }
+        Thread waitThread = new Thread(() -> {
+            while (!FineCaricamentoDati) {
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException ex) {
+                    LoggerGC.ScriviErrore(ex);
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+
+            SwingUtilities.invokeLater(() -> {
+                if (splash.isDisplayable()) {
+                    splash.setVisible(false);
+                    splash.dispose();
+                }
+            });
+        }, "SplashScreen-Waiter");
+
+        waitThread.setDaemon(true);
+        waitThread.start();
+    });
+}
+
     
     public void CDC_AggiornaGui() {
         CDC_FiatWallet_AggiornaDatisuGUI();

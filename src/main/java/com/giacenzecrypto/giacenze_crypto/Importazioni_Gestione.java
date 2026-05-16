@@ -5,6 +5,7 @@ import java.awt.Cursor;
 import java.util.ArrayList;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -51,6 +52,8 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     static String NomeWallet="";
     
     public Importazioni_Gestione() {
+        ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
+        this.setIconImage(icon.getImage());
          this.setTitle("Import da File");
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();

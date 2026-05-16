@@ -189,17 +189,17 @@
                   <Group type="102" attributes="0">
                       <Component id="Bottone_Titolo" min="-2" pref="553" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
-                      <Component id="jLabel1" min="-2" pref="236" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="jLabel2" min="-2" pref="63" max="-2" attributes="0"/>
+                      <Component id="jLabel1" min="-2" pref="249" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="43" max="-2" attributes="0"/>
+                      <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="CDC_DataChooser_Iniziale" min="-2" pref="120" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                      <Component id="jLabel3" min="-2" pref="57" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="jLabel3" min="-2" pref="70" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="CDC_DataChooser_Finale" min="-2" pref="120" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="CDC_Label_Giorni" min="-2" pref="44" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
+                      <Component id="CDC_Label_Giorni" min="-2" pref="55" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="CDC_Text_Giorni" min="-2" pref="76" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -213,18 +213,17 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                  <Group type="103" alignment="0" groupAlignment="1" attributes="0">
                       <Group type="103" alignment="0" groupAlignment="3" attributes="0">
-                          <Component id="jLabel2" alignment="3" max="32767" attributes="0"/>
+                          <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel1" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
                           <Component id="Bottone_Titolo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="jLabel3" alignment="0" max="32767" attributes="0"/>
-                      <Component id="CDC_DataChooser_Iniziale" alignment="0" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
-                      <Component id="CDC_DataChooser_Finale" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" alignment="1" groupAlignment="0" attributes="0">
+                          <Component id="jLabel3" min="-2" pref="32" max="-2" attributes="0"/>
+                          <Component id="CDC_DataChooser_Iniziale" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Component id="CDC_DataChooser_Finale" alignment="1" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="CDC_Text_Giorni" alignment="3" min="-2" pref="33" max="-2" attributes="0"/>
@@ -376,7 +375,7 @@
                           <Component id="TransazioniCrypto_Bottone_InserisciWallet" alignment="0" max="32767" attributes="0"/>
                           <Component id="TransazioniCrypto_Bottone_Importa" alignment="0" max="32767" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="jSeparator10" min="-2" pref="10" max="-2" attributes="0"/>
                           <Component id="jLabel27" min="-2" max="-2" attributes="0"/>
@@ -405,7 +404,7 @@
                           <Component id="TransazioniCrypto_CheckBox_VediSenzaPrezzo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                      <Component id="TransazioniCrypto_ScrollPane" min="-2" pref="418" max="-2" attributes="0"/>
+                      <Component id="TransazioniCrypto_ScrollPane" pref="418" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="TransazioniCrypto_Label_Plusvalenza" min="-2" pref="31" max="-2" attributes="0"/>
@@ -435,7 +434,7 @@
                               </Group>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="Bottone_Errori" min="-2" pref="36" max="-2" attributes="0"/>
-                              <EmptySpace pref="38" max="32767" attributes="0"/>
+                              <EmptySpace pref="20" max="32767" attributes="0"/>
                               <Component id="TransazioniCrypto_Bottone_AggiorbaVersione" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="TransazioniCrypto_TabbedPane" pref="0" max="32767" attributes="0"/>
@@ -4080,16 +4079,16 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="CDC_CardWallet_Bottone_CaricaCSV" min="-2" pref="173" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="CDC_CardWallet_Label_PrimaData" min="-2" pref="196" max="-2" attributes="0"/>
+                                      <Component id="CDC_CardWallet_Label_PrimaData" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="CDC_CardWallet_Text_PrimaData" min="-2" pref="145" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
-                                      <Component id="CDC_CardWallet_Label_UltimaData" min="-2" pref="196" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="46" max="-2" attributes="0"/>
+                                      <Component id="CDC_CardWallet_Label_UltimaData" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="CDC_CardWallet_Text_UltimaData" min="-2" pref="139" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="577" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -4319,7 +4318,7 @@
                     <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="CDC_CardWallet_Tabella1MouseReleased"/>
                   </Events>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="Tabelle.ColoraTabellaSemplice(CDC_CardWallet_Tabella1);"/>
+                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="CDC_CardWallet_Tabella1.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 40));&#xa;Tabelle.ColoraTabellaSemplice(CDC_CardWallet_Tabella1);"/>
                   </AuxValues>
                 </Component>
               </SubComponents>
@@ -4374,7 +4373,7 @@
                     <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="CDC_CardWallet_Tabella2MouseReleased"/>
                   </Events>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="Tabelle.ColoraTabellaSemplice(CDC_CardWallet_Tabella2);"/>
+                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="CDC_CardWallet_Tabella2.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 40));&#xa;Tabelle.ColoraTabellaSemplice(CDC_CardWallet_Tabella2);"/>
                   </AuxValues>
                 </Component>
               </SubComponents>
@@ -4514,16 +4513,16 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="CDC_FiatWallet_Bottone_CaricaCSV" min="-2" pref="191" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Component id="CDC_FiatWallet_Label_PrimaData" min="-2" pref="196" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="CDC_FiatWallet_Label_PrimaData" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                                       <Component id="CDC_FiatWallet_Text_PrimaData" min="-2" pref="145" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="CDC_FiatWallet_Label_UltimaData" min="-2" pref="196" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="CDC_FiatWallet_Label_UltimaData" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="CDC_FiatWallet_Text_UltimaData" min="-2" pref="149" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace min="0" pref="569" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="567" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -4536,10 +4535,10 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="CDC_FiatWallet_Label_PrimaData" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="CDC_FiatWallet_Text_PrimaData" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="CDC_FiatWallet_Label_UltimaData" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_FiatWallet_Label_UltimaData" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="CDC_FiatWallet_Text_UltimaData" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="CDC_FiatWallet_Bottone_CaricaCSV" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_FiatWallet_Text_PrimaData" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore" min="-2" max="-2" attributes="0"/>
@@ -4584,7 +4583,7 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="CDC_FiatWallet_Tabella2Scroll" pref="514" max="32767" attributes="0"/>
+                          <Component id="CDC_FiatWallet_Tabella2Scroll" pref="523" max="32767" attributes="0"/>
                           <Component id="CDC_FiatWallet_Tabella3Scroll" pref="514" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -4729,7 +4728,7 @@
                     <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="CDC_FiatWallet_Tabella1MouseReleased"/>
                   </Events>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="Tabelle.ColoraTabellaSemplice(CDC_FiatWallet_Tabella1);"/>
+                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="CDC_FiatWallet_Tabella1.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 40));&#xa;Tabelle.ColoraTabellaSemplice(CDC_FiatWallet_Tabella1);"/>
                   </AuxValues>
                 </Component>
               </SubComponents>
@@ -4790,7 +4789,7 @@
                     <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="CDC_FiatWallet_Tabella2MouseReleased"/>
                   </Events>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="Tabelle.ColoraTabellaSemplice(CDC_FiatWallet_Tabella2);"/>
+                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="CDC_FiatWallet_Tabella2.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 40));&#xa;Tabelle.ColoraTabellaSemplice(CDC_FiatWallet_Tabella2);"/>
                   </AuxValues>
                 </Component>
               </SubComponents>
@@ -4891,7 +4890,7 @@
                     <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="CDC_FiatWallet_Tabella3MouseReleased"/>
                   </Events>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="Tabelle.ColoraTabellaSemplice(CDC_FiatWallet_Tabella3);"/>
+                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="CDC_FiatWallet_Tabella3.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 40));&#xa;Tabelle.ColoraTabellaSemplice(CDC_FiatWallet_Tabella3);"/>
                   </AuxValues>
                 </Component>
               </SubComponents>

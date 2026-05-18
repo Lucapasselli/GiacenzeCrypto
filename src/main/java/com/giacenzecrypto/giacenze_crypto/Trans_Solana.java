@@ -56,7 +56,7 @@ public class Trans_Solana {
     while (hasMore) {
         System.out.println("Scaricamento Transazioni da "+Ntrans+" a "+(Ntrans+limit-1));
         Ntrans=Ntrans+limit;
-        String url = HELIUS_RPC_URL + walletAddress + "/transactions?api-key=" + HELIUS_API_KEY + "&limit=" + limit;
+        String url = HELIUS_RPC_URL + walletAddress + "/transactions?api-key=" + HELIUS_API_KEY + "&limit=" + limit + "&token-accounts=balanceChanged";
 
         // Se abbiamo una signature precedente, la usiamo per continuare indietro nel tempo
         if (beforeSignature != null) {

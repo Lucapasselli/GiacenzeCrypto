@@ -151,7 +151,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         Label_Rete.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_Rete.setText("Rete :");
 
-        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Arbitrum (ARB)", "Avalanche (AVAX)", "Base (BASE)", "Berachain (BERA)", "Binance Smart Chain (BSC)", "Cronos Chain (CRO)", "Ethereum (ETH)", "Solana (SOL)", " " }));
+        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Arbitrum (ARB)", "Avalanche (AVAX)", "Base (BASE)", "Berachain (BERA)", "Binance Smart Chain (BSC)", "Cronos Chain (CRO)", "Ethereum (ETH)", "Monad (MONAD)", "Polygon (POL)", "Solana (SOL)", " " }));
 
         Bottone_Aggiorna.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Aggiorna.png"))); // NOI18N
         Bottone_Aggiorna.addActionListener(new java.awt.event.ActionListener() {

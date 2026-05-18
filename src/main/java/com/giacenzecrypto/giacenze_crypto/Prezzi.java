@@ -60,7 +60,7 @@ public class Prezzi {
     
     //di seguito le coppie prioritarie ovvero quelle che hanno precedneza all'atto della ricerca dei prezzi rispetto alle altre
     static String[] SimboliPrioritari=new String []{"EURI","USDT","USDC","BUSD","USDE","DAI","TUSD","BTC",
-        "ETH","BNB","SOL","LTC","ADA","XRP","XLM","PAX","TRX","ATOM","MATIC","CRO"};
+        "ETH","BNB","SOL","LTC","ADA","XRP","XLM","PAX","TRX","ATOM","POL","CRO","MON"};
 
     
     //Variabile che mi serve per capire se ho già interrorgato le api ad un certo timestamp

@@ -35,6 +35,8 @@ public class VarCondivise {
         String[] BERA = new String[]{"https://api.etherscan.io/v2/api?chainid=80094", "", "BERA", "berachain"};
         String[] AVAX = new String[]{"https://api.etherscan.io/v2/api?chainid=43114", "", "AVAX", "avalanche"};
         String[] SOL = new String[]{"https://solscan.io/", "", "SOL", "solana"};
+        String[] MONAD = new String[]{"https://api.etherscan.io/v2/api?chainid=143", "", "MON", "monad"};
+        String[] POL = new String[]{"https://api.etherscan.io/v2/api?chainid=137", "", "POL", "polygon-pos"};
         Principale.Mappa_ChainExplorer.put("CRO", CRO);
         Principale.Mappa_ChainExplorer.put("BSC", BSC);
         Principale.Mappa_ChainExplorer.put("ETH", ETH);
@@ -43,6 +45,8 @@ public class VarCondivise {
         Principale.Mappa_ChainExplorer.put("SOL", SOL);
         Principale.Mappa_ChainExplorer.put("BERA", BERA);
         Principale.Mappa_ChainExplorer.put("AVAX", AVAX);
+        Principale.Mappa_ChainExplorer.put("MONAD", MONAD);
+        Principale.Mappa_ChainExplorer.put("POL", POL);
         Principale.Mappa_AddressRete_Nome.put("0x66e428c3f67a68878562e79A0234c1F83c208770_CRO", "USDT");
         Principale.Mappa_AddressRete_Nome.put("0x55d398326f99059fF775485246999027B3197955_BSC", "USDT");
         Principale.Mappa_AddressRete_Nome.put("0xc21223249CA28397B4B6541dfFaEcC539BfF0c59_CRO", "USDC");
@@ -79,7 +83,8 @@ public class VarCondivise {
         Principale.MappaRetiSupportate.put("FTM", "");
         Principale.MappaRetiSupportate.put("LTC", "");
         Principale.MappaRetiSupportate.put("LUNA", "");
-        Principale.MappaRetiSupportate.put("MATIC", "");
+        Principale.MappaRetiSupportate.put("MONAD", "");
+        Principale.MappaRetiSupportate.put("POL", "");
         Principale.MappaRetiSupportate.put("TRX", "");
         Principale.MappaRetiSupportate.put("SOL", "");
         Principale.MappaRetiSupportate.put("XLM", "");

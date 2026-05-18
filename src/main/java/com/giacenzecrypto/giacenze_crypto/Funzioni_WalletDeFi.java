@@ -55,6 +55,10 @@ public class Funzioni_WalletDeFi {
                         Funzioni.ApriWeb("https://berascan.com/tx/" + IDTransazione);
                     }else if (Rete.equalsIgnoreCase("AVAX")){
                         Funzioni.ApriWeb("https://avascan.info/blockchain/c/tx/" + IDTransazione);
+                    }else if (Rete.equalsIgnoreCase("POL")){
+                        Funzioni.ApriWeb("https://polygonscan.com/tx/" + IDTransazione);
+                    }else if (Rete.equalsIgnoreCase("MONAD")){
+                        Funzioni.ApriWeb("https://monadscan.com/tx/" + IDTransazione);
                     }
                     
         }
@@ -87,6 +91,12 @@ public class Funzioni_WalletDeFi {
                         }
                         else if(Rete.equalsIgnoreCase("BERA")){
                            Desktop.getDesktop().browse(new URI("https://berascan.com/token/"+Address +"?a="+ Wallet)); 
+                        }
+                        else if(Rete.equalsIgnoreCase("POL")){
+                           Desktop.getDesktop().browse(new URI("https://polygonscan.com/token/"+Address +"?a="+ Wallet)); 
+                        }
+                        else if(Rete.equalsIgnoreCase("MONAD")){
+                           Desktop.getDesktop().browse(new URI("https://monadscan.com/token/"+Address +"?a="+ Wallet)); 
                         }
                         
                     } catch (URISyntaxException | IOException ex) {
@@ -121,6 +131,12 @@ public class Funzioni_WalletDeFi {
                         else if(Rete.equalsIgnoreCase("SOL")){
                            Funzioni.ApriWeb("https://solscan.io/account/"+ Wallet+"#portfolio"); 
                         }
+                        else if(Rete.equalsIgnoreCase("POL")){
+                           Funzioni.ApriWeb("https://polygonscan.com/tokenholdings?a="+ Wallet); 
+                        }
+                        else if(Rete.equalsIgnoreCase("MONAD")){
+                           Funzioni.ApriWeb("https://monadscan.com/tokenholdings?a="+ Wallet); 
+                        }
                     }
         
      }
@@ -129,7 +145,7 @@ public class Funzioni_WalletDeFi {
      public static boolean isValidDefiWallet(String wallet) {
         //Questa funzione serve per sapere se una stringa wallet presente nella colonna wallet es 0x3423432aff4545 (ETH)
         //può essere considerata un wallet valido, si controllerà quindi l'indirizzo e se la rete è supportata
-        String RetiSupportate="||BSC||CRO||BASE||ARB||ETH||SOL||BERA||AVAX||";
+        String RetiSupportate="||BSC||CRO||BASE||ARB||ETH||SOL||BERA||AVAX||POL||MONAD||";
         String sWallet[]=wallet.split("\\(");
         String address;
         String Rete;

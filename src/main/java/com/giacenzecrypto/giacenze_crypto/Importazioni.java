@@ -1077,9 +1077,10 @@ public static boolean Ex_CoinTracking_Importa(String fileCoinTracking,boolean So
                         }
                     else if (splittata.length==16){
                         String data = FunzioniDate.Formatta_Data_CoinTracking(splittata[10]);
-                       // System.out.println(data);
+                        
                         if (!data.equalsIgnoreCase("")/*&&Mappa_EliminaDoppioni.get(riga)==null*/) {
                             //Mappa_EliminaDoppioni.put(riga, "");
+                           // System.out.println(data);
                             lista.add(riga);
                             if (primaData==0){
                                 primaData=FunzioniDate.ConvertiDatainLongSecondo(data);
@@ -1105,7 +1106,7 @@ public static boolean Ex_CoinTracking_Importa(String fileCoinTracking,boolean So
         if (OrdineInverso){
             for (int i = lista.size(); i-- > 0; ) {
                 listaProv.add(lista.get(i));
-                //System.out.println(lista.get(i));
+               // System.out.println(lista.get(i));
                 }
             lista=listaProv;
         }
@@ -1156,6 +1157,7 @@ public static boolean Ex_CoinTracking_Importa(String fileCoinTracking,boolean So
             //metto la data nel keyset in modo da mettere in ordine cronologico qualora ancora non lo fossero, i movimenti
             //System.out.println(riga);
             Mappa_MovimentiTemporanea.put(data+" "+riga+k, riga);
+          //  System.out.println(data);
            // System.out.println(rigas);
         }
     
@@ -1179,14 +1181,16 @@ public static boolean Ex_CoinTracking_Importa(String fileCoinTracking,boolean So
          //   System.out.println("aa");
             riga=Mappa_MovimentiTemporanea.get(str);
            // System.out.println(riga);
-            String splittata[] = riga.split(",");
+            String splittata[] = riga.split(",",-1);
             String data;
             if (splittata.length==13){
                 data=splittata[12];
             }else{
                 data=splittata[10];
             }
-
+           // System.out.println(riga);
+          //  System.out.println(data+" - "+FunzioniDate.ConvertiDatainLongSecondo(data));
+            
             if (FunzioniDate.ConvertiDatainLongSecondo(data) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
             {
                 //se trovo movimento con stessa data e ora lo aggiungo alla lista che compone il movimento e vado avanti
@@ -3734,7 +3738,9 @@ private static String F_safe(String s) {
 
             String RT[];
             String movimento = listaMovimentidaConsolidare.get(k);
-            String movimentoSplittato[] = movimento.split(",");
+            String movimentoSplittato[] = movimento.split(",",-1);
+            
+            
             boolean CTcommissioniNew = false;
             boolean CTtradizionale = true;//è a true se è il file con 13 colonne altrimenti è a false
             if (movimentoSplittato.length != 13) {

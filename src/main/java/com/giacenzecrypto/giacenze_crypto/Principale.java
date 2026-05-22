@@ -14232,6 +14232,17 @@ try {
             ModelloTabellaCrypto.addRow(Val);
         } 
 
+        Valore=Transazione[36];
+        if (!Valore.isBlank()){
+            Val=new String[]{"Address di Provenienza",Valore};
+            ModelloTabellaCrypto.addRow(Val);
+        } 
+        
+        Valore=Transazione[37];
+        if (!Valore.isBlank()){
+            Val=new String[]{"Address di Destinazione",Valore};
+            ModelloTabellaCrypto.addRow(Val);
+        } 
 
         Valore=Transazione[21];
         if (!Valore.isBlank()){

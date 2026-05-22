@@ -1037,214 +1037,217 @@ public class Importazioni {
    }
         
         
-public static boolean Ex_CoinTracking_Importa(String fileCoinTracking,boolean SovrascriEsistenti,String Exchange,Component c,boolean PrezzoZero,Download progressb ) {
-        
+    public static boolean Ex_CoinTracking_ImportaOLD(String fileCoinTracking, boolean SovrascriEsistenti, String Exchange, Component c, boolean PrezzoZero, Download progressb) {
 
-    
-  
- AzzeraContatori();        
+        AzzeraContatori();
         String fileDaImportare = fileCoinTracking;
 
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
         //ad esempio questo succede per i dust conversion etc....
-        
-         String riga;
-         boolean OrdineInverso=false;
-         long primaData=0;
-         long UltimaData=0;
+        String riga;
+
         // 1- come prima cosa metto in una lista il file
-        // e creo una mappa che mi permetterà di analizzare il file ed eliminare le righe doppie
-        List<String> lista=new ArrayList<>();
+        List<String> lista = new ArrayList<>();
         List<String[]> listaCompleta = new ArrayList<>();
         //Map<String, String> Mappa_EliminaDoppioni = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
-                while ((riga = bure.readLine()) != null) {
-                    //System.out.println(riga);
-                    riga=riga.replaceAll("\"", "");//toglie le barre, dovrebbero esistere solo nelle date
-                    String splittata[] = riga.split(",",-1); 
-                    // System.out.println(splittata.length);
-                    if (splittata.length==13){
-                        String data = FunzioniDate.Formatta_Data_CoinTracking(splittata[12]);
-                        if (!data.equalsIgnoreCase("")/*&&Mappa_EliminaDoppioni.get(riga)==null*/) {
-                            //Mappa_EliminaDoppioni.put(riga, "");
-                            lista.add(riga);
-                            if (primaData==0){
-                                primaData=FunzioniDate.ConvertiDatainLongSecondo(data);
-                            }
-                            UltimaData=FunzioniDate.ConvertiDatainLongSecondo(data);
-                       } 
+        try (FileReader fire = new FileReader(fileDaImportare); BufferedReader bure = new BufferedReader(fire);) {
+            while ((riga = bure.readLine()) != null) {
+                //System.out.println(riga);
+                riga = riga.replaceAll("\"", "");//toglie le barre, dovrebbero esistere solo nelle date
+                String splittata[] = riga.split(",", -1);
+                int indiceData;
+                    if (splittata.length == 13) {
+                        indiceData = 12;
+                    } else if (splittata.length == 16) {
+                       indiceData = 10;
+                    } else {
+                      continue;
+                    }
+                        String data = FunzioniDate.Formatta_Data_CoinTracking(splittata[indiceData]);
+                        splittata[indiceData] = data;
+                        String nuovaRiga = String.join(",", splittata);
+                        if (FunzioniDate.ConvertiDatainLongSecondo(data)!=0){
+                            lista.add(nuovaRiga);
                         }
-                    else if (splittata.length==16){
-                        String data = FunzioniDate.Formatta_Data_CoinTracking(splittata[10]);
-                        
-                        if (!data.equalsIgnoreCase("")/*&&Mappa_EliminaDoppioni.get(riga)==null*/) {
-                            //Mappa_EliminaDoppioni.put(riga, "");
-                           // System.out.println(data);
-                            lista.add(riga);
-                            if (primaData==0){
-                                primaData=FunzioniDate.ConvertiDatainLongSecondo(data);
-                            }
-                            UltimaData=FunzioniDate.ConvertiDatainLongSecondo(data);
-                       } 
-                        }
-                }
-             //   bure.close();
-             //   fire.close();
-              } catch (FileNotFoundException ex) {  
+                    
+                
+            }
+        } catch (FileNotFoundException ex) {
             LoggerGC.ScriviErrore(ex);
         } catch (IOException ex) {
             LoggerGC.ScriviErrore(ex);
         }
-        
-        
-        //2 - adesso verifico se l'ordine della lista è decrescente o crescente, quindi se parte dalla data più prossima o da quella più lontana
-        //    e ordino la lista nel caso in cui abbia l'ordine inverso ovvero in cui la data più recente sia la prima
-        //voglio che come primo record ci sia sempre la dfata più vecchia
-        if (primaData>UltimaData) OrdineInverso=true;
-        List<String> listaProv=new ArrayList<>();
-        if (OrdineInverso){
-            for (int i = lista.size(); i-- > 0; ) {
-                listaProv.add(lista.get(i));
-               // System.out.println(lista.get(i));
-                }
-            lista=listaProv;
-        }
-        
-        //3 - Adesso scorro la lista e se trovo date identiche incremento di un secondo la data del movimento
-        Map<String, String> Mappa_MovimentiTemporanea = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        //long DataUltima=0;
-        //long DataUltimaRiferimento=0;
-        int k=0;
-        for (Object rigas : lista.toArray() ) {
-            k++;
-            riga=rigas.toString();
-            String splittata[] = riga.split(",",-1); 
-            //System.out.println(splittata.length);
-            String data;
-            //controllo se la data è uguiale a quella del movimento precedente, così fosse agiungo 1 secondo al movimento
-            if (splittata.length==13){
-                data = FunzioniDate.Formatta_Data_CoinTracking(splittata[12]);
-            }else data = FunzioniDate.Formatta_Data_CoinTracking(splittata[10]);
-            long DataAttuale=FunzioniDate.ConvertiDatainLongSecondo(data);
-            data=FunzioniDate.ConvertiDatadaLongAlSecondo(DataAttuale);
-            
 
-            
-            //adesso ricreo la riga che andrà sulla mappa
-            riga="";
-            if (splittata.length==13){
-                for(int i=0;i<13;i++){
-                    if(i==12){
-                        riga=riga+data;
-                    
-                    }
-                    else{
-                    riga=riga+splittata[i]+",";
-                            }
-                }
-            }else{
-            for(int i=0;i<16;i++){
-                    if(i==10){
-                        riga=riga+data;
-                    
-                    }
-                    else{
-                    riga=riga+splittata[i]+",";
-                            }
-                }
-            }
-            //metto la data nel keyset in modo da mettere in ordine cronologico qualora ancora non lo fossero, i movimenti
-            //System.out.println(riga);
-            Mappa_MovimentiTemporanea.put(data+" "+riga+k, riga);
-          //  System.out.println(data);
-           // System.out.println(rigas);
-        }
-    
-        
-        
-        
+        //3 - Riordino la lista
+        lista.sort((r1, r2) -> {
+            String[] s1 = r1.split(",", -1);
+            String[] s2 = r2.split(",", -1);
 
-        //devo prima formattare le date affinche risultino nel formato corretto
-        
-      //  String riga;
+            int i1 = (s1.length == 13) ? 12 : 10;
+            int i2 = (s2.length == 13) ? 12 : 10;
+
+            long d1 = FunzioniDate.ConvertiDatainLongSecondo(
+                    FunzioniDate.Formatta_Data_CoinTracking(s1[i1])
+            );
+            long d2 = FunzioniDate.ConvertiDatainLongSecondo(
+                    FunzioniDate.Formatta_Data_CoinTracking(s2[i2])
+            );
+
+            return Long.compare(d1, d2);
+        });
+
+       
+
         String ultimaData = "";
-        //Iterator<String> iteratore=Mappa_MovimentiTemporanea.keySet().iterator();
         List<String> listaMovimentidaConsolidare = new ArrayList<>();
-      progressb.SetMassimo(Mappa_MovimentiTemporanea.size());
-        int avanzamento=0;
-        for (String str : Mappa_MovimentiTemporanea.keySet()) {
-            if (progressb.FineThread()){
-            //se è stato interrotta la finestra di progresso interrompo il ciclo
+        progressb.SetMassimo(lista.size());
+        int avanzamento = 0;
+        for (String str : lista) {
+            if (progressb.FineThread()) {
+                //se è stato interrotta la finestra di progresso interrompo il ciclo
                 return false;
-                }
-         //   System.out.println("aa");
-            riga=Mappa_MovimentiTemporanea.get(str);
-           // System.out.println(riga);
-            String splittata[] = riga.split(",",-1);
-            String data;
-            if (splittata.length==13){
-                data=splittata[12];
-            }else{
-                data=splittata[10];
             }
-           // System.out.println(riga);
-          //  System.out.println(data+" - "+FunzioniDate.ConvertiDatainLongSecondo(data));
-            
-            if (FunzioniDate.ConvertiDatainLongSecondo(data) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
-            {
+
+             System.out.println(str);
+            String splittata[] = str.split(",", -1);
+            String data;
+            if (splittata.length == 13) {
+                data = splittata[12];
+            } else {
+                data = splittata[10];
+            }
                 //se trovo movimento con stessa data e ora lo aggiungo alla lista che compone il movimento e vado avanti
                 if (data.equalsIgnoreCase(ultimaData)) {
-                    listaMovimentidaConsolidare.add(riga);
+                    listaMovimentidaConsolidare.add(str);
                 } else //altrimenti consolido il movimento precedente
                 {
-                     //System.out.println(listaMovimentidaConsolidare.size());
-                    List<String[]> listaConsolidata = Ex_CoinTracking_ConsolidaMovimenti(listaMovimentidaConsolidare,Exchange,PrezzoZero);
+                    //System.out.println(listaMovimentidaConsolidare.size());
+                    List<String[]> listaConsolidata = Ex_CoinTracking_ConsolidaMovimenti(listaMovimentidaConsolidare, Exchange, PrezzoZero);
                     listaCompleta.addAll(listaConsolidata);
 
-                    
                     //una volta fatto tutto svuoto la lista movimenti e la preparo per il prossimo
                     listaMovimentidaConsolidare = new ArrayList<>();
-                    listaMovimentidaConsolidare.add(riga);
+                    listaMovimentidaConsolidare.add(str);
                 }
 
-                if (splittata.length==13){
-                    ultimaData=splittata[12];
-                }else{
-                    ultimaData=splittata[10];
-                }
-                
-            }
+
+            
             avanzamento++;
-             progressb.SetAvanzamento(avanzamento);
+            progressb.SetAvanzamento(avanzamento);
         }
-            
-            List<String[]> listaConsolidata = Ex_CoinTracking_ConsolidaMovimenti(listaMovimentidaConsolidare,Exchange,PrezzoZero);
-            listaCompleta.addAll(listaConsolidata);
 
+        List<String[]> listaConsolidata = Ex_CoinTracking_ConsolidaMovimenti(listaMovimentidaConsolidare, Exchange, PrezzoZero);
+        listaCompleta.addAll(listaConsolidata);
 
+        int InsScart[] = ScriviListaSuMappaCrypto(listaCompleta, SovrascriEsistenti);
+        TransazioniAggiunte = InsScart[0];
+        TrasazioniScartate = InsScart[1];
+        Transazioni = InsScart[0] + InsScart[1];
 
+        if (TransazioniAggiunte > 0) {
+            Principale.TabellaCryptodaAggiornare = true;
+        }
 
-        
-       int InsScart[]=ScriviListaSuMappaCrypto(listaCompleta,SovrascriEsistenti);
-        TransazioniAggiunte=InsScart[0];
-        TrasazioniScartate=InsScart[1];
-        Transazioni=InsScart[0]+InsScart[1];
-    
-        if (TransazioniAggiunte>0) 
-            Principale.TabellaCryptodaAggiornare=true;
-            
-        
         return true;
-       
-                   
-                 
-            
-        
-       
-        
+
+
     }
 
+    public static boolean Ex_CoinTracking_Importa(String fileCoinTracking, boolean SovrascriEsistenti,
+            String Exchange, Component c, boolean PrezzoZero, Download progressb) {
+
+        AzzeraContatori();
+
+        // 1 - Leggo il file CSV, formatto le date e filtro le righe valide
+        List<String> lista = new ArrayList<>();
+        try (BufferedReader bure = new BufferedReader(new FileReader(fileCoinTracking))) {
+            String riga;
+            while ((riga = bure.readLine()) != null) {
+                riga = riga.replace("\"", "");
+                String[] splittata = riga.split(",", -1);
+
+                int indiceData;
+                if (splittata.length == 13) {
+                    indiceData = 12;
+                } else if (splittata.length == 16) {
+                    indiceData = 10;
+                } else {
+                    continue;
+                }
+
+                String data = FunzioniDate.Formatta_Data_CoinTracking(splittata[indiceData]);
+                if (FunzioniDate.ConvertiDatainLongSecondo(data) == 0) {
+                    continue; // riga con data non valida, la scarto
+                }
+
+                splittata[indiceData] = data;
+                lista.add(String.join(",", splittata));
+            }
+        } catch (IOException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+
+        // 2 - Ordino la lista per data (dal più vecchio al più recente)
+        lista.sort((r1, r2) -> {
+            String[] s1 = r1.split(",", -1);
+            String[] s2 = r2.split(",", -1);
+            long d1 = FunzioniDate.ConvertiDatainLongSecondo(s1[s1.length == 13 ? 12 : 10]);
+            long d2 = FunzioniDate.ConvertiDatainLongSecondo(s2[s2.length == 13 ? 12 : 10]);
+            return Long.compare(d1, d2);
+        });
+
+        // 3 - Scorro la lista, raggruppo per data e consolido i movimenti
+        List<String[]> listaCompleta = new ArrayList<>();
+        List<String> listaMovimentidaConsolidare = new ArrayList<>();
+        String ultimaData = "";
+
+        progressb.SetMassimo(lista.size());
+        int avanzamento = 0;
+
+        for (String str : lista) {
+            if (progressb.FineThread()) {
+                return false;
+            }
+
+            String[] splittata = str.split(",", -1);
+            String data = splittata[splittata.length == 13 ? 12 : 10];
+
+            if (data.equalsIgnoreCase(ultimaData)) {
+                listaMovimentidaConsolidare.add(str);
+            } else {
+                if (!listaMovimentidaConsolidare.isEmpty()) {
+                    listaCompleta.addAll(
+                            Ex_CoinTracking_ConsolidaMovimenti(listaMovimentidaConsolidare, Exchange, PrezzoZero)
+                    );
+                }
+                listaMovimentidaConsolidare = new ArrayList<>();
+                listaMovimentidaConsolidare.add(str);
+                ultimaData = data;
+            }
+
+            progressb.SetAvanzamento(++avanzamento);
+        }
+
+        // Consolido l'ultimo gruppo rimasto
+        if (!listaMovimentidaConsolidare.isEmpty()) {
+            listaCompleta.addAll(
+                    Ex_CoinTracking_ConsolidaMovimenti(listaMovimentidaConsolidare, Exchange, PrezzoZero)
+            );
+        }
+
+        // 4 - Scrivo i risultati
+        int[] InsScart = ScriviListaSuMappaCrypto(listaCompleta, SovrascriEsistenti);
+        TransazioniAggiunte = InsScart[0];
+        TrasazioniScartate = InsScart[1];
+        Transazioni = InsScart[0] + InsScart[1];
+
+        if (TransazioniAggiunte > 0) {
+            Principale.TabellaCryptodaAggiornare = true;
+        }
+
+        return true;
+    }
 
 //Questa funzione si occupa di scorrere la lista e di controllare se ci sono movimenti con lo stesso ID e nel qual caso cambiare l'ID per renderlo univoco
 public static List<String[]> CreaListaConIDUnivoco(List<String[]> listaConsolidata){
@@ -3751,6 +3754,10 @@ private static String F_safe(String s) {
             Moneta MonU = new Moneta();
             Moneta MonE = new Moneta();
             Moneta MonC = new Moneta();//MonetaCommissioni
+            
+            String AddressProvenienza="";
+            String AddressDestinazione="";
+            String HashTansazione="";
             String Tipologia = movimentoSplittato[0].trim();
             if (CTtradizionale) {
                 QtaE = Funzioni_RitornaNumeroSenzaZeriFinali(movimentoSplittato[1]);
@@ -3795,6 +3802,13 @@ private static String F_safe(String s) {
                 MonU.AssegnaTipoAuto();
                 MonC.AssegnaTipoAuto();
 
+                                
+                AddressProvenienza=movimentoSplittato[11].trim();
+                AddressDestinazione=movimentoSplittato[12].trim();
+                HashTansazione=movimentoSplittato[13].trim();
+                
+                //System.out.println("s "+HashTansazione);
+                
                 if (ME.equals(MonC.GetNome()) && !ME.isBlank()) {
                     //Sommo le commissioni alla QtaEntrata se sono della stessa moneta
                     QtaE = new BigDecimal(QtaE).add(new BigDecimal(MonC.GetQta()).abs()).stripTrailingZeros().toPlainString();
@@ -3811,9 +3825,12 @@ private static String F_safe(String s) {
                 RT = MovimentiCrypto.creaMovimento(MonU, MonE,
                         Exchange, Exch,
                         Datalong, null, null, k + 1, 1, null, null, "A",
-                        null, "SCAMBIO CRYPTO", null);
+                        HashTansazione, "SCAMBIO CRYPTO", null);
 
                 if (RT != null) {
+                    
+                    RT[36] = AddressProvenienza;
+                    RT[37] = AddressDestinazione;
                     RT[7] = Tipologia;
                     lista.add(RT);
                 }
@@ -3824,7 +3841,7 @@ private static String F_safe(String s) {
                     RT = MovimentiCrypto.creaMovimento(MonC, null,
                             Exchange, Exch,
                             Datalong, null, null, k + 1, 1, null, null, "A",
-                            null, "COMMISSIONI", null);
+                            HashTansazione, "COMMISSIONI", null);
 
                     if (RT != null) {
                         RT[7] = Tipologia;
@@ -3841,9 +3858,11 @@ private static String F_safe(String s) {
                 RT = MovimentiCrypto.creaMovimento(MonU, MonE,
                         Exchange, Exch,
                         Datalong, null, null, k + 1, 1, null, null, "A",
-                        null, "ALTRE-REWARD", null);
+                        HashTansazione, "ALTRE-REWARD", null);
 
                 if (RT != null) {
+                    RT[36] = AddressProvenienza;
+                    RT[37] = AddressDestinazione;
                     RT[7] = Tipologia;
                     lista.add(RT);
                 }
@@ -3853,9 +3872,11 @@ private static String F_safe(String s) {
                 RT = MovimentiCrypto.creaMovimento(null, MonE,
                         Exchange, Exch,
                         Datalong, null, null, k + 1, 1, null, null, "A",
-                        null, "STAKING REWARD", null);
+                        HashTansazione, "STAKING REWARD", null);
 
                 if (RT != null) {
+                    RT[36] = AddressProvenienza;
+                    RT[37] = AddressDestinazione;
                     RT[7] = Tipologia;
                     lista.add(RT);
                 }
@@ -3866,7 +3887,7 @@ private static String F_safe(String s) {
                 RT = MovimentiCrypto.creaMovimento(MonU, null,
                         Exchange, Exch,
                         Datalong, null, null, k + 1, 1, null, null, "A",
-                        null, "COMMISSIONI", null);
+                        HashTansazione, "COMMISSIONI", null);
 
                 if (RT != null) {
                     RT[7] = Tipologia;
@@ -3877,9 +3898,11 @@ private static String F_safe(String s) {
                 RT = MovimentiCrypto.creaMovimento(MonU, MonE,
                         Exchange, Exch,
                         Datalong, null, null, k + 1, 1, null, null, "A",
-                        null, "SPESA", null);
+                        HashTansazione, "SPESA", null);
 
                 if (RT != null) {
+                    RT[36] = AddressProvenienza;
+                    RT[37] = AddressDestinazione;
                     RT[7] = Tipologia;
                     lista.add(RT);
                 }
@@ -3890,9 +3913,11 @@ private static String F_safe(String s) {
                 RT = MovimentiCrypto.creaMovimento(MonU, MonE,
                             Exchange, Exch,
                             Datalong, null, null, k + 1, 1, null, null, "A",
-                            null, "TRASFERIMENTO CRYPTO", null);
+                            HashTansazione, "TRASFERIMENTO CRYPTO", null);
 
                     if (RT != null) {
+                        RT[36] = AddressProvenienza;
+                        RT[37] = AddressDestinazione;
                         RT[7] = Tipologia;
                         lista.add(RT);
                     }

@@ -318,6 +318,18 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             Val=new String[]{"BC: Address Controparte",Valore};
             ModelloTabellaCrypto.addRow(Val);
         } 
+        
+        Valore=Transazione[36];
+        if (!Valore.isBlank()){
+            Val=new String[]{"Address di Provenienza",Valore};
+            ModelloTabellaCrypto.addRow(Val);
+        } 
+        
+        Valore=Transazione[37];
+        if (!Valore.isBlank()){
+            Val=new String[]{"Address di Destinazione",Valore};
+            ModelloTabellaCrypto.addRow(Val);
+        } 
 
 
         Valore=Transazione[21];

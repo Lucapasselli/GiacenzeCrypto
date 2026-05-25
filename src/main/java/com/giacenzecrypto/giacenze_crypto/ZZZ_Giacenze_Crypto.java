@@ -20,7 +20,7 @@ import javax.swing.UnsupportedLookAndFeelException;
  *
  * @author luca.passelli
  */
-public class Giacenze_Crypto_1 {
+public class ZZZ_Giacenze_Crypto {
     
 
     public static void main(String[] args) throws UnsupportedLookAndFeelException {

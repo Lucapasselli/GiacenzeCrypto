@@ -6035,10 +6035,14 @@ private void AvviaSplashScreen() {
 
            //String DataIniziale="2021-11-23";
            //BigDecimal SaldoIniziale= new BigDecimal(CDC_FiatWallet_SaldoIniziale);
-           String Saldi[]=Funzioni_Calcolo_SaldieMedie(CDC_FiatWallet_ListaSaldi, CDC_DataIniziale, CDC_DataFinale, CDC_FiatWallet_SaldoIniziale, CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
+           //String Saldi[]=Funzioni_Calcolo_SaldieMedie(CDC_FiatWallet_ListaSaldi, CDC_DataIniziale, CDC_DataFinale, CDC_FiatWallet_SaldoIniziale, CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
+           String Saldi[]=CDC_FiatECardWallet.calcolaSaldiEMedia(CDC_FiatWallet_ListaSaldi, 
+                   CDC_DataIniziale, CDC_DataFinale, 
+                   CDC_FiatWallet_SaldoIniziale, CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
            this.CDC_FiatWallet_Text_GiacenzaMedia.setText("€ "+Saldi[2]);
            this.CDC_FiatWallet_Text_SaldoIniziale.setText("€ "+Saldi[0]);
            this.CDC_FiatWallet_Text_SaldoFinale.setText("€ "+Saldi[1]);
+           this.CDC_Text_Giorni.setText(Saldi[3]);
            CDC_FiatWallet_Funzione_Totali_per_tipo_movimento();
 
    } 
@@ -6095,10 +6099,15 @@ private void AvviaSplashScreen() {
 
            //String DataIniziale="2021-11-23";
            //BigDecimal SaldoIniziale= new BigDecimal(CDC_FiatWallet_SaldoIniziale);
-           String Saldi[]=Funzioni_Calcolo_SaldieMedie(CDC_CardWallet_ListaSaldi, CDC_DataIniziale, CDC_DataFinale, CDC_CardWallet_SaldoIniziale, CDC_CardWallet_ConsideroValoreMassimoGiornaliero);
+           //String Saldi[]=Funzioni_Calcolo_SaldieMedie(CDC_CardWallet_ListaSaldi, CDC_DataIniziale, CDC_DataFinale, CDC_CardWallet_SaldoIniziale, CDC_CardWallet_ConsideroValoreMassimoGiornaliero);
+           String Saldi[]=CDC_FiatECardWallet.calcolaSaldiEMedia(CDC_CardWallet_ListaSaldi, 
+                   CDC_DataIniziale, CDC_DataFinale, 
+                   CDC_CardWallet_SaldoIniziale, 
+                   CDC_CardWallet_ConsideroValoreMassimoGiornaliero);
            this.CDC_CardWallet_Text_GiacenzaMedia.setText("€ "+Saldi[2]);
            this.CDC_CardWallet_Text_SaldoIniziale.setText("€ "+Saldi[0]);
            this.CDC_CardWallet_Text_SaldoFinale.setText("€ "+Saldi[1]);
+           this.CDC_Text_Giorni.setText(Saldi[3]);
            CDC_CardWallet_Funzione_Totali_per_tipo_movimento();
 
    } 
@@ -14836,7 +14845,7 @@ public static void ripristinaFiltri(JTable table) {
 
 }
     
-    public String[] Funzioni_Calcolo_SaldieMedie(Map<Integer, List<String>> listaSaldi, String DataInizialeS, String DataFinaleS, String SaldoInizioPeriodo, boolean MediaconPicchi) {
+    public String[] ZZZ_Funzioni_Calcolo_SaldieMedie(Map<Integer, List<String>> listaSaldi, String DataInizialeS, String DataFinaleS, String SaldoInizioPeriodo, boolean MediaconPicchi) {
 
         //  System.out.println(DataInizialeS+" "+DataFinaleS);
         //  System.out.println (listaSaldi.length);

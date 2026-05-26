@@ -90,4 +90,8 @@ public class VarStatiche {
     public static String getCartella_Backup() {
         return getWorkingDirectory() + "Backup/";
     }
+    
+    public static String getCartella_ImportConfig() {
+        return getWorkingDirectory() + "ImportConfig/";
+    }
 }

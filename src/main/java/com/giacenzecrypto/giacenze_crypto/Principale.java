@@ -199,6 +199,9 @@ private static final long serialVersionUID = 3L;
             File cartella=new File (VarStatiche.getCartella_Backup());
             if (!cartella.exists()) cartella.mkdir();
             
+            cartella=new File (VarStatiche.getCartella_ImportConfig());
+            if (!cartella.exists()) cartella.mkdir();
+            
             cartella=new File (VarStatiche.getCartella_Temporanei());
             if (!cartella.exists()) cartella.mkdir();
             

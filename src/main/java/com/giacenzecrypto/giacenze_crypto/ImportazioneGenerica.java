@@ -28,6 +28,7 @@ public class ImportazioneGenerica {
             Download progressb) {
         Importazioni.AzzeraContatori();
 
+        //Leggo il file di configurazione e ne salvo i parametri
         ConfigurazioneImport cfg;
         try {
             cfg = ConfigurazioneImport.carica(fileConfigurazione);
@@ -36,6 +37,7 @@ public class ImportazioneGenerica {
             return false;
         }
 
+        //Leggo il file csve creo la lista dei soli righi con dati validi
         List<String[]> righe;
         try {
             righe = leggiCSV(fileCSV, cfg);
@@ -62,6 +64,8 @@ public class ImportazioneGenerica {
                 }
             }
 
+            //La chiave del gruppo tiene conto della data e di eventuali idtransazione presenti nel file csv
+            //Stessa chiave significa avere movimenti correlati o associabili es. uno scambio gestito su due righi
             String[] riga = righe.get(i);
             String chiave = calcolaChiaveGruppo(riga, cfg);
             if (chiave == null || chiave.isBlank()) {
@@ -71,6 +75,7 @@ public class ImportazioneGenerica {
             if (chiave.equals(ultimaChiaveGruppo)) {
                 gruppoCorrente.add(riga);
             } else {
+                //Se passo ad altra chiave consolido i movimenti con la stessa chiave
                 if (!gruppoCorrente.isEmpty()) {
                     listaCompleta.addAll(consolidaGruppo(gruppoCorrente, cfg, movimentiDifferiti));
                 }
@@ -80,10 +85,12 @@ public class ImportazioneGenerica {
             }
         }
 
+        //Consolido il movimento che manca
         if (!gruppoCorrente.isEmpty()) {
             listaCompleta.addAll(consolidaGruppo(gruppoCorrente, cfg, movimentiDifferiti));
         }
 
+        //Controllo se ho dei movimenti differiti e li associo
         if (!movimentiDifferiti.isEmpty()) {
             Importazioni.ConsolidaMovimentiDifferiti(movimentiDifferiti, sovrascriEsistenti);
         }
@@ -106,6 +113,7 @@ public class ImportazioneGenerica {
         String sep = cfg.separatore;
         String encoding = cfg.encoding != null ? cfg.encoding : "UTF-8";
 
+        //---- FASE 1 ---- Estraggo dal CSV le sole righe con i dati che interessano
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fileCSV), encoding))) {
             String riga;
             int numRiga = 0;
@@ -127,10 +135,14 @@ public class ImportazioneGenerica {
                 if (riga.matches("^[\\-\\s;,:|]+$")) {
                     continue;
                 }
+                //Quello che metto in righe raw sono effettivamente le righe con i dati
                 righeRaw.add(riga);
             }
         }
 
+        //---- FASE 2 ---- 
+        //Creao un array con i campi per ogni riga e scarto le righe con dati non validi
+        //Aggiungo poi questi array ad una lista
         for (String r : righeRaw) {
             String[] campi = r.split(sep, -1);
             if (campi.length <= cfg.colonnaData) {
@@ -152,6 +164,7 @@ public class ImportazioneGenerica {
             risultato.add(campi);
         }
 
+        //---- FASE 3 ---- Ordino la lista in base alla data
         risultato.sort((a, b) -> {
             long da = FunzioniDate.ConvertiDatainLongSecondo(cfg.normalizzaData(safe(a, cfg.colonnaData)));
             long db = FunzioniDate.ConvertiDatainLongSecondo(cfg.normalizzaData(safe(b, cfg.colonnaData)));

@@ -2892,12 +2892,12 @@
                                   <Group type="102" attributes="0">
                                       <Component id="jLabel6" min="-2" pref="216" max="-2" attributes="0"/>
                                       <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="RW_Bottone_ModificaVIniziale" min="-2" pref="180" max="-2" attributes="0"/>
+                                      <Component id="RW_Bottone_ModificaVIniziale" min="-2" pref="198" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="RW_Bottone_ModificaVFinale" min="-2" pref="180" max="-2" attributes="0"/>
+                                      <Component id="RW_Bottone_ModificaVFinale" min="-2" pref="189" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="RW_Bottone_IdentificaScam" min="-2" pref="180" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="RW_Bottone_IdentificaScam" min="-2" pref="195" max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                       <Component id="RW_Bottone_CorreggiErrore" min="-2" pref="180" max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="jScrollPane8" alignment="0" max="32767" attributes="0"/>
@@ -2907,7 +2907,7 @@
                                       <Component id="RW_Text_IC" min="-2" pref="149" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
                                       <Component id="RW_Label_SegnalaRicalcolo" min="-2" pref="729" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
+                                      <EmptySpace pref="66" max="32767" attributes="0"/>
                                       <Component id="jLabel4" min="-2" pref="37" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="RW_Anno_ComboBox" min="-2" pref="76" max="-2" attributes="0"/>
@@ -2929,11 +2929,11 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jLabel7" min="-2" pref="140" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
-                              <Component id="RW_Bottone_Documentazione" min="-2" pref="186" max="-2" attributes="0"/>
+                              <Component id="RW_Bottone_Documentazione" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Bottone_Stampa" min="-2" pref="184" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jButton2" min="-2" pref="185" max="-2" attributes="0"/>
+                              <Component id="jButton2" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -2982,7 +2982,7 @@
                                   <Component id="jLabel6" alignment="1" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane9" pref="236" max="32767" attributes="0"/>
+                              <Component id="jScrollPane9" pref="252" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>

@@ -206,7 +206,11 @@ public class ImportazioneGenerica {
         String[] rigaUscita = null;
         String[] rigaEntrata = null;
         List<String[]> righeCommissione = new ArrayList<>();
-
+        
+        //Questa parte è da rifare, infatti qua devo gestire solo lo scambio crypto o gli acquisti in gruppo
+        //gli altri movimenti vanno gestiti singoli
+        TransazioneDefi Scambio=new TransazioneDefi();
+        
         for (String[] r : gruppo) {
             String segno = determinaSegno(r, cfg);
             if ("-".equals(segno)) {
@@ -214,7 +218,8 @@ public class ImportazioneGenerica {
             } else if ("+".equals(segno)) {
                 rigaEntrata = r;
             } else if ("FEE".equals(segno)) {
-                righeCommissione.add(r);
+               // System.out.println(safe(r, cfg.colonnaQuantita));
+                righeCommissione.add(r);              
             }
         }
 
@@ -284,6 +289,9 @@ public class ImportazioneGenerica {
             String valoreEuro = normalizzaNumero(safe(riga, cfg.colonnaValoreEuro));
             String prezzo = normalizzaNumero(safe(riga, cfg.colonnaPrezzo));
             String idTrans = safe(riga, cfg.colonnaIDTransazione);
+            
+          /*  System.out.println(qtaStr);
+            System.out.println(cfg.colonnaSegno);*/
 
             if (cfg.colonnaSegno >= 0) {
                 String segno = safe(riga, cfg.colonnaSegno);
@@ -298,7 +306,7 @@ public class ImportazioneGenerica {
                 BigDecimal qta = new BigDecimal(qtaStr);
                 if (qta.compareTo(BigDecimal.ZERO) < 0) {
                     mOUT = new Moneta();
-                    mOUT.InserisciValori(moneta, qta.abs().toPlainString(), "", "");
+                    mOUT.InserisciValori(moneta, qta.toPlainString(), "", "");
                     mOUT.AssegnaTipoAuto();
                 } else if (qta.compareTo(BigDecimal.ZERO) > 0) {
                     mIN = new Moneta();
@@ -307,7 +315,7 @@ public class ImportazioneGenerica {
                 }
             }
 
-            RegolaSegno regola = cfg.regolaSegno(causaleCSV, tipoMovimento);
+            RegolaSegno regola = cfg.regolaSegno(causaleCSV);
             if (regola == RegolaSegno.FORZATO_USCITA && mIN != null && mOUT == null) {
                 mOUT = new Moneta();
                 mOUT.InserisciValori(moneta, mIN.Qta, "", "");
@@ -315,12 +323,15 @@ public class ImportazioneGenerica {
                 mIN = null;
             } else if (regola == RegolaSegno.FORZATO_ENTRATA && mOUT != null && mIN == null) {
                 mIN = new Moneta();
+               // mOUT.Qta=
                 mIN.InserisciValori(moneta, mOUT.Qta, "", "");
                 mIN.AssegnaTipoAuto();
                 mOUT = null;
             }
 
             String prezzoMov = !valoreEuro.isBlank() ? valoreEuro : prezzo;
+            
+           // System.out.println(mOUT.Qta+" : "+mOUT.Moneta);
 
             String[] rt = MovimentiCrypto.creaMovimento(
                     mOUT,
@@ -388,9 +399,9 @@ public class ImportazioneGenerica {
             }
 
             String monetaOUT = cfg.normalizzaMoneta(safe(rigaOUT, cfg.colonnaMoneta));
-            String qtaOUT = normalizzaNumero(safe(rigaOUT, cfg.colonnaQuantita)).replace("-", "");
+            String qtaOUT = normalizzaNumero(safe(rigaOUT, cfg.colonnaQuantita));
             String monetaIN = cfg.normalizzaMoneta(safe(rigaIN, cfg.colonnaMoneta));
-            String qtaIN = normalizzaNumero(safe(rigaIN, cfg.colonnaQuantita)).replace("-", "");
+            String qtaIN = normalizzaNumero(safe(rigaIN, cfg.colonnaQuantita));
             String idTrans = safe(rigaOUT, cfg.colonnaIDTransazione);
             String valoreEuro = normalizzaNumero(safe(rigaOUT, cfg.colonnaValoreEuro));
 
@@ -434,6 +445,14 @@ public class ImportazioneGenerica {
     }
 
     private static String determinaSegno(String[] riga, ConfigurazioneImport cfg) {
+        String causale = safe(riga, cfg.colonnaCausale);
+       // System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA "+causale);
+        String tipo = cfg.convertiCausale(causale);
+        //System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB "+tipo);
+        if (tipo != null && tipo.toUpperCase().contains("COMMISSIONI")) {
+            return "FEE";
+        }
+        
         if (cfg.colonnaSegno >= 0 && cfg.colonnaSegno < riga.length) {
             String s = safe(riga, cfg.colonnaSegno);
             if ("-".equals(s)) {
@@ -454,11 +473,10 @@ public class ImportazioneGenerica {
             }
         }
 
-        String causale = safe(riga, cfg.colonnaCausale);
-        String tipo = cfg.convertiCausale(causale);
-        if (tipo != null && tipo.toUpperCase().contains("COMMISSIONI")) {
-            return "FEE";
-        }
+       // String causale = safe(riga, cfg.colonnaCausale);
+       // System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA "+causale);
+        //String tipo = cfg.convertiCausale(causale);
+        
         return "+";
     }
 
@@ -515,6 +533,7 @@ public class ImportazioneGenerica {
         public Map<String, String> mappaCausali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         public Set<String> causaliUscita = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         public Set<String> causaliEntrata = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        public Set<String> causaliAperte = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         public Map<String, Integer> mappaNomiColonne = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         public Map<String, String> rinominaMonete = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         public List<String> rimuoviDaNomeMoneta = new ArrayList<>();
@@ -573,6 +592,11 @@ public class ImportazioneGenerica {
             if (root.has("causaliEntrata")) {
                 JSONArray arr = root.getJSONArray("causaliEntrata");
                 for (int i = 0; i < arr.length(); i++) cfg.causaliEntrata.add(arr.getString(i));
+            }
+            
+            if (root.has("causaliAperte")) {
+                JSONArray arr = root.getJSONArray("causaliAperte");
+                for (int i = 0; i < arr.length(); i++) cfg.causaliAperte.add(arr.getString(i));
             }
 
             if (root.has("rinominaMonete")) {
@@ -662,29 +686,10 @@ public class ImportazioneGenerica {
             return rin != null ? rin : m;
         }
 
-        public RegolaSegno regolaSegno(String causale, String tipoMovimento) {
+        public RegolaSegno regolaSegno(String causale) {
             if (causale != null) {
                 if (causaliUscita.contains(causale)) return RegolaSegno.FORZATO_USCITA;
                 if (causaliEntrata.contains(causale)) return RegolaSegno.FORZATO_ENTRATA;
-            }
-            if (tipoMovimento != null) {
-                switch (tipoMovimento.toUpperCase()) {
-                    case "VENDITA CRYPTO":
-                    case "PRELIEVO FIAT":
-                    case "COMMISSIONI":
-                        return RegolaSegno.FORZATO_USCITA;
-                    case "ACQUISTO CRYPTO":
-                    case "DEPOSITO FIAT":
-                    case "REWARD":
-                    case "EARN":
-                    case "CASHBACK":
-                    case "AIRDROP":
-                    case "STAKING REWARD":
-                    case "STAKING REWARDS":
-                        return RegolaSegno.FORZATO_ENTRATA;
-                    default:
-                        return RegolaSegno.NESSUNA;
-                }
             }
             return RegolaSegno.NESSUNA;
         }

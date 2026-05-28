@@ -74,23 +74,25 @@ public static String[] calcolaSaldiEMedia(
     boolean    trovatoIniziale = false;
 
     for (String riga : listaSaldi.get(0)) {
-        String[]   parti         = riga.split(",");
-        long       longDataRiga  = FunzioniDate.ConvertiDatainLong(parti[0]);
-        BigDecimal valoreRiga    = new BigDecimal(parti[1]);
+        String[] parti = riga.split(",");
+        if (!parti[0].isBlank()) {
+            long longDataRiga = FunzioniDate.ConvertiDatainLong(parti[0]);
+            BigDecimal valoreRiga = new BigDecimal(parti[1]);
 
-        if (longDataIniziale > longDataRiga) {
-            // La riga è *prima* del periodo: aggiorna l'ultimo valore noto
-            ultimoValore   = valoreRiga;
-            saldoInizialeT = parti[1];
-        } else if (longDataIniziale <= longDataRiga && longDataRiga <= longDataFinale) {
-            // Prima voce *dentro* il periodo: cristallizza il saldo iniziale
-            if (!trovatoIniziale) {
-                saldoInizialeT  = ultimoValore.toString();
-                trovatoIniziale = true;
+            if (longDataIniziale > longDataRiga) {
+                // La riga è *prima* del periodo: aggiorna l'ultimo valore noto
+                ultimoValore = valoreRiga;
+                saldoInizialeT = parti[1];
+            } else if (longDataIniziale <= longDataRiga && longDataRiga <= longDataFinale) {
+                // Prima voce *dentro* il periodo: cristallizza il saldo iniziale
+                if (!trovatoIniziale) {
+                    saldoInizialeT = ultimoValore.toString();
+                    trovatoIniziale = true;
+                }
+                // ✅ Aggiorna ultimoValore anche DENTRO il periodo
+                //  così alla fine del loop conterrà l'ultimo saldo vigente
+                ultimoValore = valoreRiga;
             }
-            // ✅ Aggiorna ultimoValore anche DENTRO il periodo
-            //  così alla fine del loop conterrà l'ultimo saldo vigente
-            ultimoValore = valoreRiga;
         }
     }
 
@@ -108,6 +110,7 @@ public static String[] calcolaSaldiEMedia(
 
     for (String riga : listaCalcolo) {
         String[]   parti        = riga.split(",");
+        if (!parti[0].isBlank()) {
         long       longDataRiga = FunzioniDate.ConvertiDatainLong(parti[0]);
         BigDecimal valoreRiga   = new BigDecimal(parti[1]);
 
@@ -126,6 +129,7 @@ public static String[] calcolaSaldiEMedia(
             // Avanza il cursore alla data corrente
             dataInizialeCorrente = parti[0];
             ultimoValoreCalcolo  = valoreRiga;
+        }
         }
     }
 

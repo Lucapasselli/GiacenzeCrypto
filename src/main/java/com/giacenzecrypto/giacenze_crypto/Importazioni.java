@@ -1444,11 +1444,17 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                     }
                     Movimento[6] = splittata[4];//Qta
                     Movimento[7] = splittata[1];//Address Moneta
-                    if (Funzioni.isNumeric(splittata[5], false) && !splittata[5].equals("0")) {
-                        Movimento[8] = new BigDecimal(splittata[5]).toPlainString().replace("-", "");//Valore Originale Euro
-                    } else {
+                    if (Funzioni.isNumeric(splittata[5], false) && !splittata[5].equals("0") && splittata[6].trim().equals("EUR")) {
+                        Movimento[8] = new BigDecimal(splittata[5]).toPlainString().replace("-", "");//Valore Originale Euro                      
+                    } 
+                    else if (Funzioni.isNumeric(splittata[5], false) && !splittata[5].equals("0") && splittata[6].trim().equals("USD")) {
+                     //   Movimento[8] = new BigDecimal(splittata[5]).toPlainString().replace("-", "");//Valore Originale Euro 
+                        Movimento[8] = Prezzi.CambioUSDEUR(new BigDecimal(splittata[5]).toPlainString().replace("-", ""), Data.split(" ")[0]);
+                    }                  
+                    else {
                         Movimento[8] = "";
                     }
+                    if (Movimento[8]==null)Movimento[8]="";
 
                     Movimento[9] = "";//ID Originale
                     Movimento[10] = "";//Rete 

@@ -4914,7 +4914,7 @@ private static final long serialVersionUID = 3L;
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                         .addGap(47, 47, 47)
                         .addComponent(Opzioni_ApiKey_MoralisNB_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 1047, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(227, Short.MAX_VALUE))
+                .addContainerGap(267, Short.MAX_VALUE))
         );
         Opzioni_ApiKeyLayout.setVerticalGroup(
             Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4955,7 +4955,7 @@ private static final long serialVersionUID = 3L;
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(513, Short.MAX_VALUE))
+                .addContainerGap(514, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("ApiKey", Opzioni_ApiKey);
@@ -9871,6 +9871,7 @@ GiacenzeaData_CompilaTabellaToken(true);
                 } 
         }
         LoggerGC.close();
+        this.dispose();
   
     }//GEN-LAST:event_formWindowClosing
 

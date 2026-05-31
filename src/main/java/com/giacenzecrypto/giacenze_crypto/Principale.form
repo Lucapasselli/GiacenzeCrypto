@@ -6414,7 +6414,7 @@
                                       <Component id="Opzioni_ApiKey_MoralisNB_Label" min="-2" pref="1047" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="227" max="32767" attributes="0"/>
+                              <EmptySpace pref="267" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -6464,7 +6464,7 @@
                                   <Component id="Opzioni_ApiKey_Bottone_Salva" alignment="3" min="-2" pref="60" max="-2" attributes="0"/>
                                   <Component id="Opzioni_ApiKey_Bottone_Annulla" alignment="3" min="-2" pref="60" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="513" max="32767" attributes="0"/>
+                              <EmptySpace pref="514" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>

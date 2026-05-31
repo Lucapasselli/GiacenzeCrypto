@@ -87,7 +87,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
         Label_TipoFile.setText("Selezionare il tipo di file da importare");
 
-        ComboBox_TipoFile.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Crypto.com App CSV", "Crypto.com Exchange CSV", "Binance CSV", "Binance Financial Report", "CoinTracking.info CSV", "Tatax CSV", "OKX CSV (Alpha)" }));
+        ComboBox_TipoFile.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Crypto.com App CSV", "Crypto.com Exchange CSV", "Binance CSV", "Binance Financial Report", "CoinTracking.info CSV", "Tatax CSV", "OKX CSV (Alpha)", "Test" }));
         ComboBox_TipoFile.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 ComboBox_TipoFileItemStateChanged(evt);
@@ -649,6 +649,64 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         Importazioni.AzzeraContatori();
                         Importazioni.Ex_OKX_Importa(FileDaImportare, SovrascriEsistenti, c, progressb);
+                        Importazioni_Resoconto res = new Importazioni_Resoconto();
+                        c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                        res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
+                        res.setLocationRelativeTo(c);
+                        res.setVisible(true);
+                      //  if (selezioneok[0]) {
+                            dispose();
+                       // }
+
+                    }
+                    Bottone_SelezionaFile.setEnabled(true);
+                    Bottone_Annulla.setEnabled(true);
+                    progressb.dispose();
+
+                }
+
+            };
+            thread.start();
+            progressb.setDefaultCloseOperation(0);
+            progressb.setLocationRelativeTo(this);
+            progressb.setVisible(true);
+        }
+        
+        else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().contains("Test")) {
+            Component c = this;
+            Download progressb = new Download();
+            Bottone_SelezionaFile.setEnabled(false);
+            Bottone_Annulla.setEnabled(false);
+            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
+            JFileChooser fc = new JFileChooser(Directory);
+            int returnVal = fc.showOpenDialog(c);
+            boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
+            Thread thread;
+            thread = new Thread() {
+                public void run() { 
+
+                    // JFileChooser fc = new JFileChooser();
+                    // int returnVal = fc.showOpenDialog(this);
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                      //  selezioneok[0] = true;
+                        String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
+                        DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
+                        c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                        Importazioni.AzzeraContatori();
+                       // Importazioni.Ex_OKX_Importa(FileDaImportare, SovrascriEsistenti, c, progressb);
+                        // In un metodo di importazione nella GUI:
+                        boolean ok = ImportazioneGenerica.importa(
+                                FileDaImportare,// percorso del CSV scelto dall'utente
+                            VarStatiche.getCartella_ImportConfig()+"binance_spot.json",          // percorso del JSON di configurazione
+                            SovrascriEsistenti,    // checkbox dell'interfaccia
+                            progressb            // componente barra di avanzamento
+                        );
+                        if (ok) {
+                            if (Importazioni.TransazioniAggiunte > 0) {
+                                Principale.TabellaCryptodaAggiornare = true;
+                            }
+                        }
+                        
                         Importazioni_Resoconto res = new Importazioni_Resoconto();
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);

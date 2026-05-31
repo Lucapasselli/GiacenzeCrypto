@@ -32,6 +32,7 @@ Nuove Implementazioni :
 - Sostituito animazione iniziale con una più semplice per evitare problemi di flickering su Linux.
 Correzione Bug :
 - Corretto bug su una movimentazione di acquisto crypto su crypto.com app
+- Corretto bug importazioni da cointracking, nella versione precedente alcuni righi non venivano importati e non veniva data nessuna segnalazione
 
 ver. 1.0.54
 Nuove Implementazioni :

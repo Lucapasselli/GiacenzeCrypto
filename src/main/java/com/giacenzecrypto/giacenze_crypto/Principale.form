@@ -1235,9 +1235,9 @@
                                   <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Group type="102" alignment="1" attributes="0">
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="DepositiPrelievi_Bottone_Documentazione" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                                  <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" pref="219" max="32767" attributes="0"/>
+                                                  <Component id="DepositiPrelievi_Bottone_Documentazione" max="32767" attributes="0"/>
                                               </Group>
                                               <EmptySpace max="32767" attributes="0"/>
                                               <Group type="103" groupAlignment="0" attributes="0">
@@ -1253,7 +1253,7 @@
                                                   </Group>
                                               </Group>
                                               <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" min="-2" pref="185" max="-2" attributes="0"/>
+                                              <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" min="-2" pref="197" max="-2" attributes="0"/>
                                           </Group>
                                           <Group type="102" attributes="0">
                                               <Component id="jLabel21" min="-2" pref="167" max="-2" attributes="0"/>
@@ -1270,7 +1270,7 @@
                                               <EmptySpace type="separate" max="-2" attributes="0"/>
                                               <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" min="-2" pref="245" max="-2" attributes="0"/>
                                               <EmptySpace min="-2" pref="70" max="-2" attributes="0"/>
-                                              <Component id="DepositiPrelievi_CheckBox_mostraFIAT" pref="276" max="32767" attributes="0"/>
+                                              <Component id="DepositiPrelievi_CheckBox_mostraFIAT" pref="284" max="32767" attributes="0"/>
                                           </Group>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
@@ -1291,30 +1291,25 @@
                                   <Component id="DepositiPrelievi_CheckBox_mostraFIAT" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane2" pref="546" max="32767" attributes="0"/>
+                              <Component id="jScrollPane2" pref="559" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Group type="102" alignment="1" attributes="0">
+                                  <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="3" attributes="0">
                                           <Component id="DepositiPrelievi_Bottone_Documentazione" alignment="3" min="-2" max="-2" attributes="0"/>
                                           <Component id="DepositiPrelievi_Bottone_DettaglioDefi" alignment="3" min="-2" max="-2" attributes="0"/>
                                           <Component id="DepositiPrelievi_Bottone_Scam" alignment="3" min="-2" max="-2" attributes="0"/>
                                       </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" attributes="0">
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="3" attributes="0">
-                                                  <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" alignment="3" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="DepositiPrelievi_Bottone_Duplica" alignment="3" min="-2" max="-2" attributes="0"/>
-                                              </Group>
+                                          <Group type="103" groupAlignment="3" attributes="0">
+                                              <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" alignment="3" min="-2" max="-2" attributes="0"/>
+                                              <Component id="DepositiPrelievi_Bottone_Duplica" alignment="3" min="-2" max="-2" attributes="0"/>
                                           </Group>
-                                          <Group type="102" attributes="0">
-                                              <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
-                                              <Component id="DepositiPrelievi_Bottone_CreaMovOpposto" min="-2" pref="35" max="-2" attributes="0"/>
-                                          </Group>
+                                          <Component id="DepositiPrelievi_Bottone_CreaMovOpposto" alignment="1" min="-2" pref="35" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" alignment="1" min="-2" pref="76" max="-2" attributes="0"/>
+                                  <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" min="-2" pref="76" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="7" pref="7" max="-2" attributes="0"/>
                               <Component id="jLabel21" min="-2" max="-2" attributes="0"/>
@@ -2897,12 +2892,12 @@
                                   <Group type="102" attributes="0">
                                       <Component id="jLabel6" min="-2" pref="216" max="-2" attributes="0"/>
                                       <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="RW_Bottone_ModificaVIniziale" min="-2" pref="180" max="-2" attributes="0"/>
+                                      <Component id="RW_Bottone_ModificaVIniziale" min="-2" pref="198" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="RW_Bottone_ModificaVFinale" min="-2" pref="180" max="-2" attributes="0"/>
+                                      <Component id="RW_Bottone_ModificaVFinale" min="-2" pref="189" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="RW_Bottone_IdentificaScam" min="-2" pref="180" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="RW_Bottone_IdentificaScam" min="-2" pref="195" max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                       <Component id="RW_Bottone_CorreggiErrore" min="-2" pref="180" max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="jScrollPane8" alignment="0" max="32767" attributes="0"/>
@@ -2912,7 +2907,7 @@
                                       <Component id="RW_Text_IC" min="-2" pref="149" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
                                       <Component id="RW_Label_SegnalaRicalcolo" min="-2" pref="729" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
+                                      <EmptySpace pref="66" max="32767" attributes="0"/>
                                       <Component id="jLabel4" min="-2" pref="37" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="RW_Anno_ComboBox" min="-2" pref="76" max="-2" attributes="0"/>
@@ -2934,11 +2929,11 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jLabel7" min="-2" pref="140" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
-                              <Component id="RW_Bottone_Documentazione" min="-2" pref="186" max="-2" attributes="0"/>
+                              <Component id="RW_Bottone_Documentazione" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Bottone_Stampa" min="-2" pref="184" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jButton2" min="-2" pref="185" max="-2" attributes="0"/>
+                              <Component id="jButton2" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -2987,7 +2982,7 @@
                                   <Component id="jLabel6" alignment="1" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane9" pref="236" max="32767" attributes="0"/>
+                              <Component id="jScrollPane9" pref="252" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -6419,7 +6414,7 @@
                                       <Component id="Opzioni_ApiKey_MoralisNB_Label" min="-2" pref="1047" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="227" max="32767" attributes="0"/>
+                              <EmptySpace pref="267" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -6469,7 +6464,7 @@
                                   <Component id="Opzioni_ApiKey_Bottone_Salva" alignment="3" min="-2" pref="60" max="-2" attributes="0"/>
                                   <Component id="Opzioni_ApiKey_Bottone_Annulla" alignment="3" min="-2" pref="60" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="513" max="32767" attributes="0"/>
+                              <EmptySpace pref="514" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>

@@ -43,7 +43,11 @@ public class DatabaseH2 {
         try {
             connection = DriverManager.getConnection(jdbcUrl, usernameH2, passwordH2);
             connectionPersonale = DriverManager.getConnection(jdbcUrl2, usernameH2, passwordH2);
-            connectionPrezzi = DriverManager.getConnection(jdbcPrezzi, usernameH2, passwordH2);
+            
+            // Versione ottimizzata per bloccare i cicli in background e potenziare le prestazioni:
+            String opzioniH2 = ";AUTO_COMPACT_FILL_RATE=0;MAX_COMPACT_TIME=5000;RETENTION_TIME=0;CACHE_SIZE=131072";
+            connectionPrezzi = DriverManager.getConnection(jdbcPrezzi + opzioniH2, usernameH2, passwordH2);
+            //connectionPrezzi = DriverManager.getConnection(jdbcPrezzi, usernameH2, passwordH2);
             // Creazione delle tabelle se non esistono
         /*    String createTableSQL = "CREATE TABLE IF NOT EXISTS Address_Senza_Prezzo  (address_chain VARCHAR(255) PRIMARY KEY, data VARCHAR(255))";
             PreparedStatement preparedStatement = connection.prepareStatement(createTableSQL);

@@ -94,7 +94,7 @@
     <Component class="javax.swing.JComboBox" name="ComboBox_TipoFile">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="7">
+          <StringArray count="8">
             <StringItem index="0" value="Crypto.com App CSV"/>
             <StringItem index="1" value="Crypto.com Exchange CSV"/>
             <StringItem index="2" value="Binance CSV"/>
@@ -102,6 +102,7 @@
             <StringItem index="4" value="CoinTracking.info CSV"/>
             <StringItem index="5" value="Tatax CSV"/>
             <StringItem index="6" value="OKX CSV (Alpha)"/>
+            <StringItem index="7" value="Test"/>
           </StringArray>
         </Property>
       </Properties>

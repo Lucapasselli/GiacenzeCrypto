@@ -43,7 +43,6 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ItemEvent;
-import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.text.DateFormat;
 import java.time.LocalDateTime;
@@ -62,20 +61,16 @@ import java.util.List;
 import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JWindow;
 import javax.swing.RowFilter;
 import javax.swing.RowSorter;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.Timer;
@@ -202,6 +197,9 @@ private static final long serialVersionUID = 3L;
             if (!cryptowallet.exists()) cryptowallet.createNewFile();
             
             File cartella=new File (VarStatiche.getCartella_Backup());
+            if (!cartella.exists()) cartella.mkdir();
+            
+            cartella=new File (VarStatiche.getCartella_ImportConfig());
             if (!cartella.exists()) cartella.mkdir();
             
             cartella=new File (VarStatiche.getCartella_Temporanei());
@@ -1804,9 +1802,9 @@ private static final long serialVersionUID = 3L;
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createSequentialGroup()
-                                .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(DepositiPrelievi_Bottone_Documentazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
+                                    .addComponent(DepositiPrelievi_Bottone_Documentazione, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createSequentialGroup()
@@ -1818,7 +1816,7 @@ private static final long serialVersionUID = 3L;
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                                 .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, Short.MAX_VALUE))
@@ -1833,7 +1831,7 @@ private static final long serialVersionUID = 3L;
                                 .addGap(18, 18, 18)
                                 .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(70, 70, 70)
-                                .addComponent(DepositiPrelievi_CheckBox_mostraFIAT, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)))
+                                .addComponent(DepositiPrelievi_CheckBox_mostraFIAT, javax.swing.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)))
                         .addContainerGap())))
         );
         DepositiPrelieviLayout.setVerticalGroup(
@@ -1847,7 +1845,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)
                     .addComponent(DepositiPrelievi_CheckBox_mostraFIAT))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 559, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
@@ -1855,15 +1853,12 @@ private static final long serialVersionUID = 3L;
                             .addComponent(DepositiPrelievi_Bottone_Documentazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(DepositiPrelievi_Bottone_Duplica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                                .addGap(6, 6, 6)
-                                .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(DepositiPrelievi_Bottone_Duplica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(7, 7, 7)
                 .addComponent(jLabel21)
@@ -2780,12 +2775,12 @@ private static final long serialVersionUID = 3L;
                     .addGroup(RWLayout.createSequentialGroup()
                         .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(RW_Bottone_ModificaVIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(RW_Bottone_ModificaVIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(RW_Bottone_ModificaVFinale, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(RW_Bottone_ModificaVFinale, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(RW_Bottone_IdentificaScam, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(RW_Bottone_IdentificaScam, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(RW_Bottone_CorreggiErrore, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane8)
                     .addGroup(RWLayout.createSequentialGroup()
@@ -2794,7 +2789,7 @@ private static final long serialVersionUID = 3L;
                         .addComponent(RW_Text_IC, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(RW_Label_SegnalaRicalcolo, javax.swing.GroupLayout.PREFERRED_SIZE, 729, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2812,11 +2807,11 @@ private static final long serialVersionUID = 3L;
                 .addContainerGap()
                 .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(RW_Bottone_Documentazione, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(RW_Bottone_Documentazione)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Bottone_Stampa, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jButton2))
         );
         RWLayout.setVerticalGroup(
             RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2855,7 +2850,7 @@ private static final long serialVersionUID = 3L;
                         .addComponent(RW_Bottone_ModificaVIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
+                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -4919,7 +4914,7 @@ private static final long serialVersionUID = 3L;
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                         .addGap(47, 47, 47)
                         .addComponent(Opzioni_ApiKey_MoralisNB_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 1047, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(227, Short.MAX_VALUE))
+                .addContainerGap(267, Short.MAX_VALUE))
         );
         Opzioni_ApiKeyLayout.setVerticalGroup(
             Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4960,7 +4955,7 @@ private static final long serialVersionUID = 3L;
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(513, Short.MAX_VALUE))
+                .addContainerGap(514, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("ApiKey", Opzioni_ApiKey);
@@ -6038,10 +6033,14 @@ private void AvviaSplashScreen() {
 
            //String DataIniziale="2021-11-23";
            //BigDecimal SaldoIniziale= new BigDecimal(CDC_FiatWallet_SaldoIniziale);
-           String Saldi[]=Funzioni_Calcolo_SaldieMedie(CDC_FiatWallet_ListaSaldi, CDC_DataIniziale, CDC_DataFinale, CDC_FiatWallet_SaldoIniziale, CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
+           //String Saldi[]=Funzioni_Calcolo_SaldieMedie(CDC_FiatWallet_ListaSaldi, CDC_DataIniziale, CDC_DataFinale, CDC_FiatWallet_SaldoIniziale, CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
+           String Saldi[]=CDC_FiatECardWallet.calcolaSaldiEMedia(CDC_FiatWallet_ListaSaldi, 
+                   CDC_DataIniziale, CDC_DataFinale, 
+                   CDC_FiatWallet_SaldoIniziale, CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
            this.CDC_FiatWallet_Text_GiacenzaMedia.setText("€ "+Saldi[2]);
            this.CDC_FiatWallet_Text_SaldoIniziale.setText("€ "+Saldi[0]);
            this.CDC_FiatWallet_Text_SaldoFinale.setText("€ "+Saldi[1]);
+           this.CDC_Text_Giorni.setText(Saldi[3]);
            CDC_FiatWallet_Funzione_Totali_per_tipo_movimento();
 
    } 
@@ -6098,10 +6097,15 @@ private void AvviaSplashScreen() {
 
            //String DataIniziale="2021-11-23";
            //BigDecimal SaldoIniziale= new BigDecimal(CDC_FiatWallet_SaldoIniziale);
-           String Saldi[]=Funzioni_Calcolo_SaldieMedie(CDC_CardWallet_ListaSaldi, CDC_DataIniziale, CDC_DataFinale, CDC_CardWallet_SaldoIniziale, CDC_CardWallet_ConsideroValoreMassimoGiornaliero);
+           //String Saldi[]=Funzioni_Calcolo_SaldieMedie(CDC_CardWallet_ListaSaldi, CDC_DataIniziale, CDC_DataFinale, CDC_CardWallet_SaldoIniziale, CDC_CardWallet_ConsideroValoreMassimoGiornaliero);
+           String Saldi[]=CDC_FiatECardWallet.calcolaSaldiEMedia(CDC_CardWallet_ListaSaldi, 
+                   CDC_DataIniziale, CDC_DataFinale, 
+                   CDC_CardWallet_SaldoIniziale, 
+                   CDC_CardWallet_ConsideroValoreMassimoGiornaliero);
            this.CDC_CardWallet_Text_GiacenzaMedia.setText("€ "+Saldi[2]);
            this.CDC_CardWallet_Text_SaldoIniziale.setText("€ "+Saldi[0]);
            this.CDC_CardWallet_Text_SaldoFinale.setText("€ "+Saldi[1]);
+           this.CDC_Text_Giorni.setText(Saldi[3]);
            CDC_CardWallet_Funzione_Totali_per_tipo_movimento();
 
    } 
@@ -9867,6 +9871,7 @@ GiacenzeaData_CompilaTabellaToken(true);
                 } 
         }
         LoggerGC.close();
+        this.dispose();
   
     }//GEN-LAST:event_formWindowClosing
 
@@ -14232,6 +14237,17 @@ try {
             ModelloTabellaCrypto.addRow(Val);
         } 
 
+        Valore=Transazione[36];
+        if (!Valore.isBlank()){
+            Val=new String[]{"Address di Provenienza",Valore};
+            ModelloTabellaCrypto.addRow(Val);
+        } 
+        
+        Valore=Transazione[37];
+        if (!Valore.isBlank()){
+            Val=new String[]{"Address di Destinazione",Valore};
+            ModelloTabellaCrypto.addRow(Val);
+        } 
 
         Valore=Transazione[21];
         if (!Valore.isBlank()){
@@ -14828,7 +14844,7 @@ public static void ripristinaFiltri(JTable table) {
 
 }
     
-    public String[] Funzioni_Calcolo_SaldieMedie(Map<Integer, List<String>> listaSaldi, String DataInizialeS, String DataFinaleS, String SaldoInizioPeriodo, boolean MediaconPicchi) {
+    public String[] ZZZ_Funzioni_Calcolo_SaldieMedie(Map<Integer, List<String>> listaSaldi, String DataInizialeS, String DataFinaleS, String SaldoInizioPeriodo, boolean MediaconPicchi) {
 
         //  System.out.println(DataInizialeS+" "+DataFinaleS);
         //  System.out.println (listaSaldi.length);

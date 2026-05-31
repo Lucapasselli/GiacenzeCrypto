@@ -176,7 +176,7 @@ private static Map<String, String[]> creaMappaTipologie() {
         if (MOut.isBlank()&&MIn.isBlank())
         {
             //LoggerGC.logInfo("Nessuna moneta è valida nella riga, probabilmente per qta=0");
-            System.out.println("Nessuna moneta è valida nella riga, probabilmente per qta=0, Timestamp del movimento: "+Timestamp);
+            System.out.println("Nessuna moneta è valida nella riga, probabilmente per qta=0, Data del movimento : "+FunzioniDate.ConvertiDatadaLongAlSecondo(Timestamp));
             return null;
         }
         //========== GESTISCO IL CARATTERE CHE IDENTIFICA SE IL MOVIMENTO E' DERIVANTE DA CSV/DEFI O MANUALE ===========

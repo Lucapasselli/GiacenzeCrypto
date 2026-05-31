@@ -12,7 +12,7 @@ package com.giacenzecrypto.giacenze_crypto;
 public class VarStatiche {
     
     //NOME DEL PROGRAMMA
-    static String Versione = "1.0.54.02";
+    static String Versione = "1.0.55";
     static String Titolo = "Giacenze Crypto " + VarStatiche.Versione + " Beta";
     
     //=== IMPOSTAZIONI GLOBALI RELATIVE AI CALCOLI ===
@@ -89,5 +89,9 @@ public class VarStatiche {
     
     public static String getCartella_Backup() {
         return getWorkingDirectory() + "Backup/";
+    }
+    
+    public static String getCartella_ImportConfig() {
+        return getWorkingDirectory() + "ImportConfig/";
     }
 }

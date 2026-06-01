@@ -116,11 +116,14 @@ public class TransazioneDefi {
         return MappaToken.size();
     }
     
-     //FUNZIONE TUTTA DA VERIFICARE   
+   
     public void InserisciMoneteCEX(Moneta Moneta,String Wallet,String CausaleOriginale,String IDT){
         ValoriToken monete;
         //le monete in uscita avranno il meno davanti alla qta mentre quelle in ingresso no
         //conviene forse verificare la cosa già prima di cercare di buttare i token qua dentro
+
+        
+        
         
         if (MappaToken.get(Moneta.Moneta)==null)
             {
@@ -273,7 +276,7 @@ public class TransazioneDefi {
         BigDecimal ValoreTransazioneUscita = new BigDecimal("0");
         BigDecimal ValoreTransazione = new BigDecimal("0");
         for (ValoriToken a : MappaTokenEntrata.values()) {
-           // System.out.println(a.Moneta);
+           // System.out.println(a.Moneta);           
             if (new BigDecimal(a.Prezzo).compareTo(new BigDecimal("0"))==0) {
                 //Se trovo un prezzo a zero valorizzo il booleano a false
                 trovatoValoreTransazione = false;

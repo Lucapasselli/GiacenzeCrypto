@@ -1829,7 +1829,7 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
     }
         
     
-    private static List<String[]> RitornaScambi(TransazioneDefi Scambio,String data,String WalletPrincipale,String WalletID) {
+    public static List<String[]> RitornaScambi(TransazioneDefi Scambio,String data,String WalletPrincipale,String WalletID) {
         List<String[]> lista=new ArrayList<>();
         if (!Scambio.isEmpty()) {
             //System.out.println("scambioooooooo");

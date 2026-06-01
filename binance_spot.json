@@ -1,0 +1,79 @@
+{
+  "nomeExchange": "Binance",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 1,
+  "rigaIntestazione": 1,
+  "autoDetectColonne": false,
+  "formatoData": "yy-MM-dd HH:mm:ss",
+  "fuso": "Europe/Rome",
+  "colonne": {
+    "idTransazione": 0,
+    "data": 1,
+    "wallet": 2,
+    "causale": 3,
+    "moneta": 4,
+    "quantita": 5,
+    "prezzo": -1,
+    "valoreEuro": -1,
+    "segno": -1,
+    "monetaFee": -1,
+    "quantitaFee": -1
+  },
+  "consolidaRigheStessaData": true,
+  "mappaCausali": {
+    "Simple Earn Flexible Interest": "EARN",
+    "Simple Earn Flexible Subscription": "TRASFERIMENTO-CRYPTO-INTERNO",
+    "Simple Earn Flexible Redemption": "TRASFERIMENTO-CRYPTO-INTERNO",
+    "HODLer Airdrops Distribution": "AIRDROP",
+    "Small Assets Exchange BNB": "SCAMBIO CRYPTO-CRYPTO",
+    "Binance Convert": "SCAMBIO CRYPTO-CRYPTO",
+    "Transaction Buy": "ACQUISTO CRYPTO",
+    "Transaction Spend": "VENDITA CRYPTO",
+    "Transaction Fee": "COMMISSIONI",
+    "Transaction Revenue": "REWARD",
+	"Referral Commission": "REWARD",
+    "Transaction Sold": "VENDITA CRYPTO",
+    "Withdraw": "TRASFERIMENTO-CRYPTO",
+    "Deposit": "TRASFERIMENTO-CRYPTO",
+    "SOL Staking - Purchase": "TRASFERIMENTO-CRYPTO-INTERNO",
+    "WBETH2.0 - Staking": "SCAMBIO CRYPTO-CRYPTO",
+    "Tax Payment": "COMMISSIONI",
+	"Strategy Trading Fee Rebate": "COMMISIONI",
+	"Cashback Voucher": "CASHBACK",
+	"Buy Crypto With Fiat": "ACQUISTO CRYPTO"
+  },
+  "causaliUscita": [
+    "Tax Payment"
+  ],
+  "causaliEntrata": [
+  ],
+"causaliChiuse": [
+  "REWARD",
+  "AIRDROP",
+  "EARN",
+  "STAKING REWARDS",
+  "CASHBACK",
+  "COMMISSIONI",
+  "TRASFERIMENTO-CRYPTO",
+  "TRASFERIMENTO-CRYPTO-INTERNO",
+  "DEPOSITO FIAT",
+  "PRELIEVO FIAT",
+  "ACQUISTO CRYPTO",
+  "VENDITA CRYPTO"
+],
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {
+    "7": 3,
+    "29": 6
+  },
+  "walletPerCausale": {
+    "Simple Earn Flexible Interest": "Binance Earn",
+    "Simple Earn Flexible Subscription": "Binance Earn",
+    "Simple Earn Flexible Redemption": "Binance Earn",
+    "SOL Staking - Purchase": "Binance Staking",
+    "WBETH2.0 - Staking": "Binance Staking"
+  }
+}

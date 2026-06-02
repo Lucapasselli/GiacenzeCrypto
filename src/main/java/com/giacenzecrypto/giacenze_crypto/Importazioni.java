@@ -844,7 +844,8 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("finance.defi_staking.staking.crypto_wallet", "IGNORA");//da ignorare movimento di messa in staking non utile
         Mappa_Conversione_Causali.put("finance.defi_lending.staking.crypto_wallet", "IGNORA");
       //  Mappa_Conversione_Causali.put("dynamic_coin_swap_bonus_exchange_deposit", "IGNORA");//in teoria è un movimento doppio ma per ora lo commento perchè non sono sicuro,infatti questo movimento sembra sia anche legato ad un movimento dell'exchange ovvero questo EARLY_SWAP_BONUS_DEPOSIT,
-        
+        Mappa_Conversione_Causali.put("trading.limit_order.cash_account.sell_lock", "IGNORA");
+        Mappa_Conversione_Causali.put("trading.limit_order.cash_account.sell_unlock", "IGNORA");
 
         //finance.crypto_basket.purchase.crypto_wallet.received
         Mappa_Conversione_Causali.put("lockup_swap_credited", "DUST-CONVERSION"); //13/05/2026

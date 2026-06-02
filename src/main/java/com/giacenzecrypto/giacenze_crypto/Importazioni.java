@@ -655,10 +655,12 @@ public class Importazioni {
                 }
                 riga=righeFile.get(w);               
                 String splittata[] = riga.split(",");
-               // System.out.print(splittata[1]+" : ");
-               // System.out.println(FunzioniDate.ConvertiDatainLongSecondo(splittata[1]));
+               /*  System.out.println(riga);
+                System.out.print(splittata[1]+" : ");
+                System.out.println(FunzioniDate.ConvertiDatainLongSecondo(splittata[1]));*/
                 if (FunzioniDate.ConvertiDatainLongSecondo(splittata[1]) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
                 {
+                   // System.out.println(riga);
                    // System.out.println("sono qua");
                     //se trovo movimento con stessa data oppure la data differisce di un solo secondosolo se è un dust conversion allora lo aggiungo alla lista che compone il movimento e vado avanti
                     //ho dovuto aggiungere la parte del secondo perchè quando fa i dust conversion può capitare che ci metta 1 secondo a fare tutti i movimenti
@@ -2998,6 +3000,7 @@ private static String F_safe(String s) {
                             String movimentoSplittato[]=movimento.split(",");
                             data=movimentoSplittato[1];
                             data=FunzioniDate.Formatta_Data_UTC(data);
+                            
                             
                             //Le nuove esportazioni restituiscono direttamente le informazioni nel formato data corretto
                             //quindi se la funzione precedente restituisce null prendo direttamente la data dal file senza elaborazione

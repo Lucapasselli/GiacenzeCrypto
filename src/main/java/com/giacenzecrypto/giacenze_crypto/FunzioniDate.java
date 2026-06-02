@@ -144,28 +144,54 @@ public class FunzioniDate {
         return m1;
     } 
         
-        public static long ConvertiDatainLongSecondo(String Data1) {
-               long m1 = 0;
+    public static long ConvertiDatainLongSecondo_OLD(String Data1) {
+        long m1 = 0;
+        try {
+            String dataDaParsare = Data1;
+
+            // Controlla se l'anno è a 2 cifre: il primo "-" si trova alla posizione 2
+            // es. "25-12-01 10:30:00" → diventa "2025-12-01 10:30:00"
+            if (Data1 != null && Data1.length() > 2 && Data1.charAt(2) == '-') {
+                dataDaParsare = "20" + Data1;
+            }
+
+           // System.out.println(Data1+" - "+dataDaParsare);
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
+            f.setLenient(true);
+            Date d = f.parse(dataDaParsare);
+            m1 = d.getTime();
+           // System.out.println(Data1+" - "+dataDaParsare+" - "+m1);
+
+        } catch (ParseException ex) {
+            // Data non valida, viene restituito 0 come da comportamento originale
+          //  System.out.println(ex.toString());
+        }
+        return m1;
+    }
+    
+    public static long ConvertiDatainLongSecondo(String Data1) {
     try {
         String dataDaParsare = Data1;
-
-        // Controlla se l'anno è a 2 cifre: il primo "-" si trova alla posizione 2
-        // es. "25-12-01 10:30:00" → diventa "2025-12-01 10:30:00"
         if (Data1 != null && Data1.length() > 2 && Data1.charAt(2) == '-') {
             dataDaParsare = "20" + Data1;
         }
 
-        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
-        f.setLenient(false);
-        Date d = f.parse(dataDaParsare);
-        m1 = d.getTime();
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        ZoneId rome = ZoneId.of("Europe/Rome");
 
-    } catch (ParseException ex) {
-        // Data non valida, viene restituito 0 come da comportamento originale
+        LocalDateTime ldt = LocalDateTime.parse(dataDaParsare, fmt);
+
+        // In caso di ora "inesistente" (gap DST), sposta in avanti automaticamente
+        ZonedDateTime zdt = ldt.atZone(rome);
+
+        return zdt.toInstant().toEpochMilli();
+    } catch (Exception ex) {
+       //System.out.println(ex.toString());
+       //ritorna 0 in caso di data non valida
+        return 0;
     }
-    return m1;
-    } 
+}
         
     //l'offset indica il fuso orario rispetto a UTC es. offset 1 indica che sto utilizzando UTC+1 come fuso    
     public static long ConvertiDatainLongSecondoUTC2(String Data1,int offset) {

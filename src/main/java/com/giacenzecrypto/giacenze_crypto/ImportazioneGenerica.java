@@ -23,75 +23,90 @@ import org.json.JSONObject;
 
 public class ImportazioneGenerica {
 
-    public static boolean importa(String fileCSV, String fileConfigurazione,
-            boolean sovrascriEsistenti, Download progressb) {
+public static boolean importa(String fileCSV, String fileConfigurazione,
+        boolean sovrascriEsistenti, Download progressb) {
 
-        Importazioni.AzzeraContatori();
+    Importazioni.AzzeraContatori();
 
-        // Leggo il file di configurazione
-        ConfigurazioneImport cfg;
-        try {
-            cfg = ConfigurazioneImport.carica(fileConfigurazione);
-        } catch (Exception ex) {
-            LoggerGC.ScriviErrore(ex);
-            return false;
-        }
-
-        // Leggo il file csv e creo la lista dei soli righi con dati validi
-        List<String[]> righe;
-        try {
-            righe = leggiCSV(fileCSV, cfg);
-        } catch (Exception ex) {
-            LoggerGC.ScriviErrore(ex);
-            return false;
-        }
-
-        if (progressb != null) {
-            progressb.SetMassimo(righe.size());
-            progressb.SetAvanzamento(0);
-        }
-
-        List<String[]> listaCompleta = new ArrayList<>();
-        List<String[]> gruppoCorrente = new ArrayList<>();
-        String ultimaChiaveGruppo = null;
-        List<String[]> movimentiDifferiti = new ArrayList<>();
-
-        for (int i = 0; i < righe.size(); i++) {
-            if (progressb != null) progressb.SetAvanzamento(i + 1);
-            if (progressb != null && progressb.FineThread) return false;
-
-            String[] riga = righe.get(i);
-            String chiave = calcolaChiaveGruppo(riga, cfg);
-            if (chiave == null || chiave.isBlank()) continue;
-
-            if (chiave.equals(ultimaChiaveGruppo)) {
-                gruppoCorrente.add(riga);
-            } else {
-                if (!gruppoCorrente.isEmpty()) {
-                    listaCompleta.addAll(consolidaGruppo(gruppoCorrente, cfg, movimentiDifferiti));
-                }
-                gruppoCorrente = new ArrayList<>();
-                gruppoCorrente.add(riga);
-                ultimaChiaveGruppo = chiave;
-            }
-        }
-
-        if (!gruppoCorrente.isEmpty()) {
-            listaCompleta.addAll(consolidaGruppo(gruppoCorrente, cfg, movimentiDifferiti));
-        }
-
-        if (!movimentiDifferiti.isEmpty()) {
-            Importazioni.ConsolidaMovimentiDifferiti(movimentiDifferiti, sovrascriEsistenti);
-        }
-
-        int[] insScart = Importazioni.ScriviListaSuMappaCrypto(listaCompleta, sovrascriEsistenti);
-        Importazioni.TransazioniAggiunte = insScart[0];
-        Importazioni.TrasazioniScartate = insScart[1];
-        Importazioni.Transazioni = insScart[0] + insScart[1];
-
-        if (Importazioni.TransazioniAggiunte > 0) Principale.TabellaCryptodaAggiornare = true;
-        return true;
+    ConfigurazioneImport cfg;
+    try {
+        cfg = ConfigurazioneImport.carica(fileConfigurazione);
+    } catch (Exception ex) {
+        LoggerGC.ScriviErrore(ex);
+        return false;
     }
+
+    List<String[]> righe;
+    try {
+        righe = leggiCSV(fileCSV, cfg);
+    } catch (Exception ex) {
+        LoggerGC.ScriviErrore(ex);
+        return false;
+    }
+
+    if (progressb != null) {
+        progressb.SetMassimo(righe.size());
+        progressb.SetAvanzamento(0);
+    }
+
+    List<String[]> listaCompleta = new ArrayList<>();
+    List<String[]> gruppoCorrente = new ArrayList<>();
+    List<String[]> movimentiDifferiti = new ArrayList<>();
+
+    String idGruppoCorrente = null;
+    long tsUltimaRigaGruppo = -1;
+
+    for (int i = 0; i < righe.size(); i++) {
+        if (progressb != null) progressb.SetAvanzamento(i + 1);
+        if (progressb != null && progressb.FineThread) return false;
+
+        String[] riga = righe.get(i);
+
+        String idCorrente = safe(riga, cfg.colonnaIDTransazione);
+        String dataCorrente = cfg.normalizzaData(safe(riga, cfg.colonnaData));
+        long tsCorrente = FunzioniDate.ConvertiDatainLongSecondo(dataCorrente);
+
+        if (gruppoCorrente.isEmpty()) {
+            gruppoCorrente.add(riga);
+            idGruppoCorrente = idCorrente;
+            tsUltimaRigaGruppo = tsCorrente;
+            continue;
+        }
+
+        boolean stessoID = !idCorrente.isBlank() && idCorrente.equals(idGruppoCorrente);
+        long tolleranzaMs = cfg.tolleranzaSecondiConsolidamento * 1000L;
+        boolean entroTolleranza = Math.abs(tsCorrente - tsUltimaRigaGruppo) <= tolleranzaMs;
+
+        if (stessoID && entroTolleranza) {
+            gruppoCorrente.add(riga);
+            tsUltimaRigaGruppo = tsCorrente;
+        } else {
+            listaCompleta.addAll(consolidaGruppo(gruppoCorrente, cfg, movimentiDifferiti));
+
+            gruppoCorrente = new ArrayList<>();
+            gruppoCorrente.add(riga);
+            idGruppoCorrente = idCorrente;
+            tsUltimaRigaGruppo = tsCorrente;
+        }
+    }
+
+    if (!gruppoCorrente.isEmpty()) {
+        listaCompleta.addAll(consolidaGruppo(gruppoCorrente, cfg, movimentiDifferiti));
+    }
+
+    if (!movimentiDifferiti.isEmpty()) {
+        
+        Importazioni.ConsolidaMovimentiDifferiti(movimentiDifferiti, sovrascriEsistenti);
+    }
+
+    int[] insScart = Importazioni.ScriviListaSuMappaCrypto(listaCompleta, sovrascriEsistenti);
+    Importazioni.TransazioniAggiunte = insScart[0];
+    Importazioni.TrasazioniScartate = insScart[1];
+    Importazioni.Transazioni = insScart[0] + insScart[1];
+
+    if (Importazioni.TransazioniAggiunte > 0) Principale.TabellaCryptodaAggiornare = true;
+    return true;
+}
 
     // -------------------------------------------------------------------------
     // LETTURA CSV
@@ -147,7 +162,7 @@ public class ImportazioneGenerica {
     // RAGGRUPPAMENTO
     // -------------------------------------------------------------------------
 
-    private static String calcolaChiaveGruppo(String[] riga, ConfigurazioneImport cfg) {
+/*    private static String calcolaChiaveGruppo(String[] riga, ConfigurazioneImport cfg) {
         String data = cfg.normalizzaData(safe(riga, cfg.colonnaData));
         if (data == null || data.isBlank()) return null;
         if (cfg.colonnaIDTransazione >= 0 && cfg.colonnaIDTransazione < riga.length) {
@@ -155,7 +170,7 @@ public class ImportazioneGenerica {
             if (!id.isBlank()) return id + "|" + data;
         }
         return data;
-    }
+    }*/
 
     // -------------------------------------------------------------------------
     // PUNTO 2 – consolidaGruppo RISCRITTO
@@ -186,6 +201,15 @@ public class ImportazioneGenerica {
         for (String[] riga : gruppo) {
             String causaleCSV = safe(riga, cfg.colonnaCausale);
             String tipoMovimento = cfg.convertiCausale(causaleCSV);
+            if (tipoMovimento == null || tipoMovimento.isBlank()) {
+                scarta("CAUSALE SCONOSCIUTA: " + causaleCSV, Arrays.toString(riga));
+            continue;
+            }   
+
+            if (tipoMovimento.equalsIgnoreCase("IGNORA")
+                || tipoMovimento.equalsIgnoreCase("NON CONSIDERARE")) {
+            continue;
+        }
 
             if (dataDiGruppo == null) {
                 dataDiGruppo = cfg.normalizzaData(safe(riga, cfg.colonnaData));
@@ -193,12 +217,13 @@ public class ImportazioneGenerica {
                 String overrideWallet = cfg.walletPerCausale.get(causaleCSV);
                 if (overrideWallet != null && !overrideWallet.isBlank()) walletPrincipale = overrideWallet;
                 String exchange = cfg.nomeExchange != null ? cfg.nomeExchange : "Exchange Generico";
-                walletID = exchange + "|" + safe(riga, cfg.colonnaIDTransazione);
+                walletID = exchange + "." + safe(riga, cfg.colonnaIDTransazione);
             }
 
             // Se la causale è in movimentoChiuso => tratto come movimento singolo
-            if (cfg.causaliChiuse.contains(causaleCSV) ||
-                (tipoMovimento != null && cfg.causaliChiuse.contains(tipoMovimento))) {
+            /*if (cfg.causaliChiuse.contains(causaleCSV) ||
+                (tipoMovimento != null && cfg.causaliChiuse.contains(tipoMovimento))) {*/
+            if (cfg.causaliChiuse.contains(tipoMovimento)) {
                 String[] mov = costruisciMovimento(riga, null, cfg);
                 if (mov != null) risultato.add(mov);
                 continue;
@@ -259,7 +284,7 @@ public class ImportazioneGenerica {
         // Se ho accumulato movimenti nel TransazioneDefi, li elaboro con RitornaScambi
         if (haMovimentiDefi && !scambio.isEmpty()) {
             List<String[]> movScambio = Importazioni.RitornaScambi(
-                    scambio, dataDiGruppo, walletPrincipale, walletID);
+                    scambio, dataDiGruppo, cfg.nomeExchange, walletID);
             if (movScambio != null) risultato.addAll(movScambio);
         }
 
@@ -374,84 +399,6 @@ public class ImportazioneGenerica {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // costruisciMovimentoScambio (usato per scambi già splittati in OUT+IN)
-    // -------------------------------------------------------------------------
-
-    private static String[] costruisciMovimentoScambio(String[] rigaOUT, String[] rigaIN,
-            ConfigurazioneImport cfg) {
-        try {
-            String data = cfg.normalizzaData(safe(rigaOUT, cfg.colonnaData));
-            if (data == null || data.isBlank()) return null;
-            long dataLong = FunzioniDate.ConvertiDatainLongSecondo(data);
-            if (dataLong <= 0) return null;
-
-            String monetaOUT = cfg.normalizzaMoneta(safe(rigaOUT, cfg.colonnaMoneta));
-            String qtaOUT    = normalizzaNumero(safe(rigaOUT, cfg.colonnaQuantita));
-            String monetaIN  = cfg.normalizzaMoneta(safe(rigaIN,  cfg.colonnaMoneta));
-            String qtaIN     = normalizzaNumero(safe(rigaIN,  cfg.colonnaQuantita));
-            String idTrans   = safe(rigaOUT, cfg.colonnaIDTransazione);
-            String valoreEuro = normalizzaNumero(safe(rigaOUT, cfg.colonnaValoreEuro));
-
-            // Garantisco segni corretti: OUT negativo, IN positivo
-            if (!qtaOUT.startsWith("-")) qtaOUT = "-" + qtaOUT;
-            qtaIN = qtaIN.replace("-", "");
-
-            Moneta mOUT = new Moneta();
-            mOUT.InserisciValori(monetaOUT, qtaOUT, "", "");
-            mOUT.AssegnaTipoAuto();
-
-            Moneta mIN = new Moneta();
-            mIN.InserisciValori(monetaIN, qtaIN, "", "");
-            mIN.AssegnaTipoAuto();
-
-            String[] rt = MovimentiCrypto.creaMovimento(
-                    mOUT, mIN,
-                    nvl(cfg.nomeExchange, "Exchange Generico"),
-                    nvl(cfg.nomeWallet,   "Principale"),
-                    dataLong, valoreEuro, "CSV", 1, 1, null, null, "A",
-                    idTrans, "SCAMBIO CRYPTO-CRYPTO",
-                    nvl(cfg.nomeExchange, "Exchange Generico") + "." + idTrans);
-
-            if (rt == null) return null;
-            if (rt.length > 39) rt[39] = "D";
-            return rt;
-
-        } catch (Exception ex) {
-            LoggerGC.ScriviErrore(ex);
-            return null;
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    // determinaSegno (usato per identificare OUT/IN/FEE nei gruppi multi-riga)
-    // -------------------------------------------------------------------------
-
-    private static String determinaSegno(String[] riga, ConfigurazioneImport cfg) {
-        String causale = safe(riga, cfg.colonnaCausale);
-        String tipo    = cfg.convertiCausale(causale);
-
-        if (tipo != null && tipo.toUpperCase().contains("COMMISSIONI")) return "FEE";
-
-        if (cfg.colonnaSegno >= 0 && cfg.colonnaSegno < riga.length) {
-            String s = safe(riga, cfg.colonnaSegno);
-            if ("-".equals(s)) return "-";
-            if ("+".equals(s)) return "+";
-        }
-
-        if (cfg.colonnaQuantita >= 0 && cfg.colonnaQuantita < riga.length) {
-            String q = normalizzaNumero(safe(riga, cfg.colonnaQuantita));
-            if (q.startsWith("-")) return "-";
-            if (!q.isBlank() && Funzioni.isNumeric(q, false)) return "+";
-        }
-
-        // Fallback su causaliUscita/causaliEntrata
-        ConfigurazioneImport.RegolaSegno regola = cfg.regolaSegno(causale);
-        if (regola == ConfigurazioneImport.RegolaSegno.FORZATO_USCITA)  return "-";
-        if (regola == ConfigurazioneImport.RegolaSegno.FORZATO_ENTRATA) return "+";
-
-        return "";
-    }
 
     // -------------------------------------------------------------------------
     // UTILITY
@@ -520,6 +467,7 @@ private static void scarta(String motivo, String riga) {
         public int colonnaWallet        = -1;
 
         public boolean consolidaRigheStessaData = false;
+        public long tolleranzaSecondiConsolidamento = 2;
 
         public Map<String, String>  mappaCausali     = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         public Set<String>          causaliUscita    = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
@@ -561,6 +509,7 @@ private static void scarta(String motivo, String riga) {
             if (root.has("formatoData"))            cfg.formatoData     = root.getString("formatoData");
             if (root.has("fuso"))                   cfg.fuso            = root.getString("fuso");
             if (root.has("consolidaRigheStessaData")) cfg.consolidaRigheStessaData = root.getBoolean("consolidaRigheStessaData");
+            if (root.has("tolleranzaSecondiConsolidamento"))cfg.tolleranzaSecondiConsolidamento = root.getLong("tolleranzaSecondiConsolidamento");
 
             if (root.has("colonne")) {
                 JSONObject col = root.getJSONObject("colonne");
@@ -635,8 +584,10 @@ private static void scarta(String motivo, String riga) {
             if (causaleCSV == null) return null;
             String r = mappaCausali.get(causaleCSV.trim());
             if (r != null) return r;
-            for (Map.Entry<String, String> e : mappaCausali.entrySet())
-                if (causaleCSV.toLowerCase().contains(e.getKey().toLowerCase())) return e.getValue();
+            
+            /*for (Map.Entry<String, String> e : mappaCausali.entrySet())
+                if (causaleCSV.toLowerCase().contains(e.getKey().toLowerCase())) return e.getValue();*/
+            
             return null;
         }
 

@@ -57,8 +57,33 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
          this.setTitle("Import da File");
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
+        caricaVociJsonNelComboBox();
     }
 
+    
+    private void caricaVociJsonNelComboBox() {
+    try {
+        java.io.File cartella = new java.io.File(VarStatiche.getCartella_ImportConfig());
+        if (!cartella.exists() || !cartella.isDirectory()) return;
+
+        java.io.File[] jsonFiles = cartella.listFiles(
+            (dir, name) -> name.toLowerCase().endsWith(".json")
+        );
+        if (jsonFiles == null || jsonFiles.length == 0) return;
+
+        // Ordino alfabeticamente per coerenza
+        java.util.Arrays.sort(jsonFiles, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+
+        for (java.io.File f : jsonFiles) {
+            String nomeVoce = f.getName().replace(".json", "").replace(".JSON", "");
+            // Prefisso visivo per distinguere le voci JSON dalle importazioni native
+            ComboBox_TipoFile.addItem("📄[JSON] " + nomeVoce);
+        }
+    } catch (Exception ex) {
+        LoggerGC.ScriviErrore(ex);
+    }
+}
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -729,6 +754,65 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             progressb.setLocationRelativeTo(this);
             progressb.setVisible(true);
         }
+        else if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("📄[JSON] ")) {
+
+    // Ricavo il nome del file JSON dalla voce selezionata
+    String nomeJson = ComboBox_TipoFile.getSelectedItem().toString().trim()
+                        .substring("📄[JSON] ".length()) + ".json";
+    String percorsoJson = VarStatiche.getCartella_ImportConfig() + nomeJson;
+
+    Component c = this;
+    Download progressb = new Download();
+    Bottone_SelezionaFile.setEnabled(false);
+    Bottone_Annulla.setEnabled(false);
+
+    String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
+    JFileChooser fc = new JFileChooser(Directory);
+    int returnVal = fc.showOpenDialog(c);
+    boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
+
+    Thread thread;
+    thread = new Thread() {
+        public void run() {
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
+                DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione",
+                        fc.getSelectedFile().getParent());
+                c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                Importazioni.AzzeraContatori();
+
+                boolean ok = ImportazioneGenerica.importa(
+                        FileDaImportare,
+                        percorsoJson,
+                        SovrascriEsistenti,
+                        progressb
+                );
+
+                if (ok && Importazioni.TransazioniAggiunte > 0) {
+                    Principale.TabellaCryptodaAggiornare = true;
+                }
+
+                Importazioni_Resoconto res = new Importazioni_Resoconto();
+                c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte,
+                        Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute,
+                        Importazioni.movimentiSconosciuti);
+                res.setLocationRelativeTo(c);
+                res.setVisible(true);
+                dispose();
+            }
+
+            Bottone_SelezionaFile.setEnabled(true);
+            Bottone_Annulla.setEnabled(true);
+            progressb.dispose();
+        }
+    };
+    progressb.SetThread(thread);
+    thread.start();
+    progressb.setDefaultCloseOperation(0);
+    progressb.setLocationRelativeTo(this);
+    progressb.setVisible(true);
+}
     }//GEN-LAST:event_Bottone_SelezionaFileActionPerformed
 
     private void ComboBox_TipoImportItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_TipoImportItemStateChanged

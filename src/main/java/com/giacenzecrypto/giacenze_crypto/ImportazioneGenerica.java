@@ -54,6 +54,14 @@ import java.time.temporal.ChronoField;
  */
 public class ImportazioneGenerica {
 
+    
+    public static boolean importa(String fileCSV, String fileConfigurazione,
+        boolean sovrascriEsistenti, Download progressb) {
+    return importa(fileCSV, fileConfigurazione, sovrascriEsistenti, progressb, null);
+}
+    
+    
+    
     /**
      * Importa un file CSV utilizzando una configurazione JSON esterna.
      *
@@ -93,7 +101,7 @@ public class ImportazioneGenerica {
      * {@code false} in caso di errore
      */
     public static boolean importa(String fileCSV, String fileConfigurazione,
-            boolean sovrascriEsistenti, Download progressb) {
+            boolean sovrascriEsistenti, Download progressb,String nomeExchangeOverride) {
 
         Importazioni.AzzeraContatori();
 
@@ -105,6 +113,11 @@ public class ImportazioneGenerica {
             return false;
         }
 
+        // Applico l'override se fornito
+    if (nomeExchangeOverride != null && !nomeExchangeOverride.isBlank()) {
+        cfg.nomeExchange = nomeExchangeOverride;
+    }
+        
         List<String[]> righe;
         try {
             righe = leggiCSV(fileCSV, cfg);
@@ -292,19 +305,26 @@ public class ImportazioneGenerica {
         return risultato;
     }
 
-    // -------------------------------------------------------------------------
-    // RAGGRUPPAMENTO
-    // -------------------------------------------------------------------------
-
-    /*    private static String calcolaChiaveGruppo(String[] riga, ConfigurazioneImport cfg) {
-        String data = cfg.normalizzaData(safe(riga, cfg.colonnaData));
-        if (data == null || data.isBlank()) return null;
-        if (cfg.colonnaIDTransazione >= 0 && cfg.colonnaIDTransazione < riga.length) {
-            String id = safe(riga, cfg.colonnaIDTransazione);
-            if (!id.isBlank()) return id + "|" + data;
+    /**
+ * Legge solo il campo "nomeExchange" dal JSON di configurazione.
+ * Restituisce null se il campo è assente o vuoto.
+ */
+public static String leggiNomeExchangeDaJson(String percorsoJson) {
+    try (BufferedReader br = new BufferedReader(new FileReader(percorsoJson))) {
+        StringBuilder sb = new StringBuilder();
+        String riga;
+        while ((riga = br.readLine()) != null) sb.append(riga);
+        JSONObject root = new JSONObject(sb.toString());
+        if (root.has("nomeExchange")) {
+            String nome = root.getString("nomeExchange").trim();
+            if (!nome.isBlank()) return nome;
         }
-        return data;
-    }*/
+    } catch (Exception ex) {
+        LoggerGC.ScriviErrore(ex);
+    }
+    return null; // assente o vuoto → l'utente dovrà scegliere
+}
+
     // -------------------------------------------------------------------------
     // PUNTO 2 – consolidaGruppo RISCRITTO
     // -------------------------------------------------------------------------

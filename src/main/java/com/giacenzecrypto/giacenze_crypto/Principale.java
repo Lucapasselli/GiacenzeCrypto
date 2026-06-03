@@ -2226,9 +2226,9 @@ private static final long serialVersionUID = 3L;
         });
         GiacenzeaData_ScrollPaneDettaglioMovimenti.setViewportView(GiacenzeaData_TabellaDettaglioMovimenti);
         if (GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumnCount() > 0) {
-            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMinWidth(120);
-            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setPreferredWidth(120);
-            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMaxWidth(120);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMinWidth(130);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setPreferredWidth(130);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMaxWidth(130);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(2).setPreferredWidth(50);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(6).setMinWidth(100);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(6).setPreferredWidth(100);
@@ -13629,6 +13629,7 @@ try {
                                     Moneta M1 = new Moneta();
                                     M1.InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
                                     M1.Rete = Rete;
+                                  //  System.out.println("KEY=" + Monete[a].Moneta + ";" + Monete[a].Tipo + ";" + Monete[a].MonetaAddress + ";" + Rete);
                                     QtaCrypto.put(Monete[a].Moneta + ";" + Monete[a].Tipo + ";" + Monete[a].MonetaAddress + ";" + Rete, M1);
 
                                 }
@@ -13685,6 +13686,7 @@ try {
 
                     String Gruppo=Funzioni.getGruppoWalletXPrezzi(Wallet);
                     //System.out.println(Gruppo);
+                    
                     
                     TabellaToken.put(riga[0].toString(), riga);
                     if ((GiacenzeaData_CheckBox_MostraQtaZero.isSelected() || !M1.Qta.equals("0"))

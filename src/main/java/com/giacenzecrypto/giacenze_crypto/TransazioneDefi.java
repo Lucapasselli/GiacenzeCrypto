@@ -1041,12 +1041,12 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               righe.add(RT);*/
               
               Moneta M1=new Moneta();
-              M1.InserisciValori(tokenU.Moneta,QuantitaUscita,tokenU.MonetaAddress,tokenU.Tipo);
+              M1.InserisciValori(tokenU.RitornaIDToken(),QuantitaUscita,tokenU.MonetaAddress,tokenU.Tipo);
               M1.SetNomeEsteso(tokenU.MonetaName);
               M1.SetRete(Rete);
               
               Moneta M2=new Moneta();
-              M2.InserisciValori(tokenE.Moneta,QuantitaEntrata,tokenE.MonetaAddress,tokenE.Tipo);
+              M2.InserisciValori(tokenE.RitornaIDToken(),QuantitaEntrata,tokenE.MonetaAddress,tokenE.Tipo);
               M2.SetNomeEsteso(tokenE.MonetaName);
               M2.SetRete(Rete);
               
@@ -1250,7 +1250,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
       return Mon;
   }
   
-  public String RitornaNomeToken(){
+ /* public String RitornaNomeToken(){
       String nome;
      // System.out.println("aa-"+Moneta+"-aa");
       if (MonetaName==null || MonetaName.trim().equalsIgnoreCase("")){
@@ -1264,7 +1264,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
       //.out.println(Moneta.trim().substring(Moneta.trim().length()-3, Moneta.trim().length())+" ("+MonetaAddress+")");
       //System.out.println(nome);
       return nome;
-  }
+  }*/
   
     public String RitornaIDToken(){
       String nome;

@@ -5327,7 +5327,7 @@ private static String F_safe(String s) {
                 //contatore e cicli massimi mi servono per evitare di terminare la quota delle api moralis
                 //quindi al massimo per ogni wallet scarico 1000 transazioni
                 int contatore=0;
-                int ciclimassimi=1;
+                int ciclimassimi=4;//circa 500 movimenti
 
                 while (continueFetching && !progressb.FineThread()) {
                     contatore++;
@@ -5388,11 +5388,11 @@ private static String F_safe(String s) {
                     if (contatore>ciclimassimi)
                     {
                         cursor=null;
-                        String text="Sono stati scaricati circa 10000 movimenti per il wallet "+walletAddress+" su chain "+chain+".\n\n"
+                        String text="Sono stati scaricati molti movimenti per il wallet "+walletAddress+" su chain "+chain+".\n\n"
                                 + "Lo scaricamento viene interrotto per evitare di terminare le chiamate api a Moralis senza terminare l'import.\n\n"
                                 + "Per continuare con l'import degli altri movimenti scaricare nuovamente i dati dal wallet.\n";
                         JOptionPane.showConfirmDialog(ccc, text,
-                    "Scaricati 10000 movimenti",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                    "Scaricati molti movimenti",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                     }
                     //cursor=null;
                     if (cursor==null||cursor.isEmpty()||cursor.equalsIgnoreCase("null")){
@@ -5568,7 +5568,9 @@ private static String F_safe(String s) {
                                 String tokenSymbol = nt.optString("token_symbol");
                                 if (tokenSymbol.isBlank())tokenSymbol=tokenId;
                                 if (tokenSymbol.isBlank())tokenSymbol="NFT";
+                                if (!tokenId.isBlank())tokenSymbol=tokenSymbol+"-"+tokenId;
                                 String addressNFT = nt.optString("token_address");
+                               // tokenSymbol=tokenSymbol+"-"+addressNFT;
                                 String fromNFT = nt.optString("from_address");
                                 String toNFT = nt.optString("to_address");
                                 String amountNFT = nt.optString("amount", "1");

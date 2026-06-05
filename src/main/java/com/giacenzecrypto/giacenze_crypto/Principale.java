@@ -1312,7 +1312,7 @@ private static final long serialVersionUID = 3L;
                                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                                                    .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 112, Short.MAX_VALUE)
                                                     .addComponent(TransazioniCrypto_Text_CostiCarico))
                                                 .addGap(51, 51, 51)
                                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1351,7 +1351,7 @@ private static final long serialVersionUID = 3L;
                                 .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 82, Short.MAX_VALUE)
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
+                            .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 274, Short.MAX_VALUE)
                             .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                         .addComponent(jSeparator10, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2526,6 +2526,7 @@ private static final long serialVersionUID = 3L;
                 return canEdit [columnIndex];
             }
         });
+        RW_Tabella.setName("RW_Tabella"); // NOI18N
         RW_Tabella.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 RW_TabellaMouseReleased(evt);

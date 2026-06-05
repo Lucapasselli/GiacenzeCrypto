@@ -1009,22 +1009,28 @@ public static String getParolaTra2Simboli(String parola, String simboloIniziale,
                 
             } 
             else if (NomeTabella != null && NomeTabella.equalsIgnoreCase("RW_Tabella")) {
-                String riga[] = new String[NumColonne];
+                String riga[] = new String[NumColonne-1];
                 //Scrivo i titoli
+                int p=0;
                 for (int i = 0; i < NumColonne; i++) {
-                    String NomeColonna = model.getColumnName(i);
-                    NomeColonna = Jsoup.parse(NomeColonna).text();
-                    riga[i] = NomeColonna;
+                    if (i != 6) {
+                        String NomeColonna = model.getColumnName(i);
+                        NomeColonna = Jsoup.parse(NomeColonna).text();
+                        riga[p] = NomeColonna;
+                        p++;
+                    }
                 }
                 ScriviRigaExcel(riga, ws, 0);
                 //Scrivo le righe
                 for (int i = 0; i < tabella.getRowCount(); i++) {
                     int modelRow = tabella.convertRowIndexToModel(i);
-                    riga = new String[NumColonne];
+                    riga = new String[NumColonne-1];
+                    p=0;
                     for (int k = 0; k < NumColonne; k++) {
-                        if (k != 0) {
-                            riga[k] = model.getValueAt(modelRow, k).toString();
-                            riga[k] = Jsoup.parse(riga[k]).text();
+                        if (k != 6) {
+                            riga[p] = model.getValueAt(modelRow, k).toString();
+                            riga[p] = Jsoup.parse(riga[p]).text();
+                            p++;
                         }
                     }
                     ScriviRigaExcel(riga, ws, i + 1);

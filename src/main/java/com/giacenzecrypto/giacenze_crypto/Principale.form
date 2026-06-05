@@ -492,7 +492,7 @@
                         <Column editable="false" title="Data Fine Trasferimento" type="java.lang.Object"/>
                         <Column editable="false" title="Movimento Valorizzato" type="java.lang.Object"/>
                         <Column editable="false" title="Movimento con Plusvalenza" type="java.lang.Object"/>
-                        <Column editable="false" title="ND" type="java.lang.Object"/>
+                        <Column editable="false" title="Rete" type="java.lang.Object"/>
                         <Column editable="false" title="null" type="java.lang.Object"/>
                         <Column editable="false" title="null" type="java.lang.Object"/>
                         <Column editable="false" title="null" type="java.lang.Object"/>

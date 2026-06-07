@@ -20,7 +20,6 @@ import java.util.TreeSet;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 
 /**
@@ -97,6 +96,7 @@ public class ImportazioneGenerica {
      * movimenti già presenti
      * @param progressb oggetto opzionale per il reporting dell'avanzamento; può
      * essere {@code null}
+     * @param nomeExchangeOverride
      * @return {@code true} se l'importazione termina correttamente,
      * {@code false} in caso di errore
      */
@@ -121,6 +121,16 @@ public class ImportazioneGenerica {
         List<String[]> righe;
         try {
             righe = leggiCSV(fileCSV, cfg);
+  /*          if (righe.isEmpty()) {
+    Importazioni.movimentiSconosciuti +=
+        "=== NESSUNA RIGA VALIDA LETTA DAL CSV ===\n" +
+        "Verificare: separatore='" + cfg.separatore + "', " +
+        "encoding='" + cfg.encoding + "', " +
+        "righeIntestazione=" + cfg.righeIntestazione + "\n";
+    return true; // torna true per mostrare il resoconto
+}*/
+      /*      Importazioni.movimentiSconosciuti +=
+    "=== RIGHE LETTE: " + righe.size() + " ===\n";*/
         } catch (Exception ex) {
             LoggerGC.ScriviErrore(ex);
             return false;
@@ -169,19 +179,17 @@ public class ImportazioneGenerica {
             String causaleUltima = safe(ultimaRigaGruppo, cfg.colonnaCausale);
 
             boolean usaDifferitaGlobale = cfg.causaliDifferite.isEmpty();
-            boolean coinvolgeDifferita
-                    = usaDifferitaGlobale
+            boolean coinvolgeDifferita = usaDifferitaGlobale
                     || cfg.causaliDifferite.contains(causaleCorrente)
                     || cfg.causaliDifferite.contains(causaleUltima);
+            long tolleranzaMs = coinvolgeDifferita ? cfg.tolleranzaSecondiConsolidamento * 1000L : 0L;
 
-            long tolleranzaMs = coinvolgeDifferita
-                    ? cfg.tolleranzaSecondiConsolidamento * 1000L
-                    : 0L;
 
             boolean stessoID = !usaIDTransazione
                     || (!idCorrente.isBlank() && idCorrente.equals(idGruppoCorrente));
 
-            boolean entroTolleranza = Math.abs(tsCorrente - tsUltimaRigaGruppo) <= tolleranzaMs;
+            //vedo se è dentro la tolleranza solamente se consolidastessariga è true
+            boolean entroTolleranza = cfg.consolidaRigheStessaData && Math.abs(tsCorrente - tsUltimaRigaGruppo) <= tolleranzaMs;
 
             if (stessoID && entroTolleranza) {
                 gruppoCorrente.add(riga);
@@ -203,7 +211,10 @@ public class ImportazioneGenerica {
 
             Importazioni.ConsolidaMovimentiDifferiti(movimentiDifferiti, sovrascriEsistenti);
         }
-
+        
+       /* Importazioni.movimentiSconosciuti +=
+    "=== MOVIMENTI DA SCRIVERE: " + listaCompleta.size() + " ===\n";*/
+        
         int[] insScart = Importazioni.ScriviListaSuMappaCrypto(listaCompleta, sovrascriEsistenti);
         Importazioni.TransazioniAggiunte = insScart[0];
         Importazioni.TrasazioniScartate = insScart[1];
@@ -371,10 +382,8 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 
         // Caso 1: movimento singolo – consolido direttamente
         if (gruppo.size() == 1) {
-            String[] mov = costruisciMovimento(gruppo.get(0), null, cfg);
-            if (mov != null) {
-                risultato.add(mov);
-            }
+            List<String[]> movs = costruisciMovimenti(gruppo.get(0), null, cfg);
+            if (movs != null) risultato.addAll(movs);
             return risultato;
         }
 
@@ -421,10 +430,8 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             /*if (cfg.causaliChiuse.contains(causaleCSV) ||
                 (tipoMovimento != null && cfg.causaliChiuse.contains(tipoMovimento))) {*/
             if (cfg.causaliChiuse.contains(tipoMovimento)) {
-                String[] mov = costruisciMovimento(riga, null, cfg);
-                if (mov != null) {
-                    risultato.add(mov);
-                }
+                List<String[]> movs = costruisciMovimenti(riga, null, cfg);
+                if (movs != null) risultato.addAll(movs);
                 continue;
             }
 
@@ -538,8 +545,10 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
      * @return array di stringhe nel formato interno del movimento, oppure
      * {@code null} se la riga non produce un movimento valido
      */
-    private static String[] costruisciMovimento(String[] riga, String tipoForzato, ConfigurazioneImport cfg) {
+    private static List<String[]> costruisciMovimenti(String[] riga, String tipoForzato, ConfigurazioneImport cfg) {
         try {
+            List<String[]> risultato = new ArrayList<>();
+
             String dataRaw = safe(riga, cfg.colonnaData);
             String data = cfg.normalizzaData(dataRaw);
             if (data == null || data.isBlank()) {
@@ -613,51 +622,110 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 BigDecimal qta = new BigDecimal(qtaStr);
                 if (qta.compareTo(BigDecimal.ZERO) < 0) {
                     mOUT = new Moneta();
-                    mOUT.InserisciValori(moneta, qta.toPlainString(), "", "");
+                    mOUT.InserisciValori(moneta, qta.stripTrailingZeros().toPlainString(), "", "");
                     mOUT.AssegnaTipoAuto();
                 } else if (qta.compareTo(BigDecimal.ZERO) > 0) {
                     mIN = new Moneta();
-                    mIN.InserisciValori(moneta, qta.toPlainString(), "", "");
+                    mIN.InserisciValori(moneta, qta.stripTrailingZeros().toPlainString(), "", "");
                     mIN.AssegnaTipoAuto();
+                }
+            }
+
+            // Se la riga ha anche una parte uscita separata, costruisco mOUT da lì
+            if (cfg.colonnaQuantitaUscita >= 0 && cfg.colonnaMonetaUscita >= 0) {
+                String qtaOut = normalizzaNumero(safe(riga, cfg.colonnaQuantitaUscita));
+                String monOut = cfg.normalizzaMoneta(safe(riga, cfg.colonnaMonetaUscita));
+                if (!qtaOut.isBlank() && Funzioni.isNumeric(qtaOut, false)) {
+                    BigDecimal qOut = new BigDecimal(qtaOut);
+                    if (qOut.compareTo(BigDecimal.ZERO) > 0) {
+                        // è un'uscita: la rendiamo negativa
+                        mOUT = new Moneta();
+                        mOUT.InserisciValori(monOut, "-" + qOut.stripTrailingZeros().toPlainString(), "", "");
+                        mOUT.AssegnaTipoAuto();
+                    }
                 }
             }
 
             String prezzoMov = !valoreEuro.isBlank() ? valoreEuro : prezzo;
 
+// Movimento commissione separato
+            boolean haFee = !qtaFee.isBlank() && !monetaFee.isBlank()
+                    && Funzioni.isNumeric(qtaFee, false)
+                    && new BigDecimal(qtaFee).compareTo(BigDecimal.ZERO) > 0;
+            if (haFee) {
+                // Ricostruzione lordo se AUTO e fee coincide con una moneta del movimento
+                BigDecimal qtaFeeBD = new BigDecimal(qtaFee);
+                if (cfg.modalitaFee == ConfigurazioneImport.ModalitaFee.AUTO) {
+                    String monetaOut = mOUT != null ? mOUT.GetNome() : "";
+                    String monetaIn = mIN != null ? mIN.GetNome() : "";
+                    if (monetaFee.equalsIgnoreCase(monetaOut) && mOUT != null) {
+                        BigDecimal qtaLorda = new BigDecimal(mOUT.GetQta().replace("-", ""))
+                                .add(qtaFeeBD);
+                        mOUT.InserisciValori(monetaOut, "-" + qtaLorda.toPlainString(), "", "");
+                        mOUT.AssegnaTipoAuto();
+                    } else if (monetaFee.equalsIgnoreCase(monetaIn) && mIN != null) {
+                        BigDecimal qtaLorda = new BigDecimal(mIN.GetQta()).add(qtaFeeBD);
+                        mIN.InserisciValori(monetaIn, qtaLorda.toPlainString(), "", "");
+                        mIN.AssegnaTipoAuto();
+                    }
+                    // Se moneta diversa da entrambe: nessuna ricostruzione, solo rigo separato
+                }
+
+                // Creo il movimento commissione come uscita (quantità negativa)
+                Moneta mFee = new Moneta();
+                mFee.InserisciValori(monetaFee, "-" + qtaFeeBD.stripTrailingZeros().toPlainString(), "", "");
+                mFee.AssegnaTipoAuto();
+
+                String[] rtFee = MovimentiCrypto.creaMovimento(
+                        mFee, // mOUT = la commissione è un'uscita
+                        null, // mIN  = nessuna entrata
+                        exchange,
+                        wallet,
+                        dataLong,
+                        null, // prezzo: verrà recuperato automaticamente
+                        "CSV",
+                        1, 1,
+                        null, null,
+                        "A",
+                        idTrans,
+                        "COMMISSIONI", // causale interna fissa
+                        exchange
+                );
+                if (rtFee != null) {
+                    risultato.add(rtFee);
+                }
+            }
+
+//Movimento Principale
             String[] rt = MovimentiCrypto.creaMovimento(
                     mOUT, mIN, exchange, wallet, dataLong,
                     prezzoMov, "CSV", 1, 1, null, null, "A",
                     idTrans, tipoMovimento, exchange);
 
-            if (rt == null) {
-                return null;
-            }
-
-            if (!monetaFee.isBlank() && !qtaFee.isBlank() && rt.length > 12) {
-                rt[11] = monetaFee;
-                rt[12] = qtaFee;
-            }
-            if (rt.length > 7) {
-                rt[7] = causaleCSV;
-            }
-            if (rt.length > 39) {
-                rt[39] = "D";
-            }
-
-            // Campi extra dal JSON
-            for (Map.Entry<String, Integer> e : cfg.campiExtra.entrySet()) {
-                try {
-                    int campoMov = Integer.parseInt(e.getKey());
-                    int colCsv = e.getValue();
-                    if (campoMov >= 0 && campoMov < rt.length) {
-                        rt[campoMov] = safe(riga, colCsv);
-                    }
-                } catch (Exception ex) {
-                    LoggerGC.ScriviErrore(ex);
+            if (rt != null) {
+                if (rt.length > 7) {
+                    rt[7] = causaleCSV;
                 }
+                if (rt.length > 39) {
+                    rt[39] = "D";
+                }
+
+                // Campi extra dal JSON
+                for (Map.Entry<String, Integer> e : cfg.campiExtra.entrySet()) {
+                    try {
+                        int campoMov = Integer.parseInt(e.getKey());
+                        int colCsv = e.getValue();
+                        if (campoMov >= 0 && campoMov < rt.length) {
+                            rt[campoMov] = safe(riga, colCsv);
+                        }
+                    } catch (Exception ex) {
+                        LoggerGC.ScriviErrore(ex);
+                    }
+                }
+                risultato.add(rt); // movimento principale
             }
 
-            return rt;
+            return risultato;
 
         } catch (Exception ex) {
             LoggerGC.ScriviErrore(ex);
@@ -812,6 +880,16 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         public int colonnaQuantitaFee = -1;
         public int colonnaIDTransazione = -1;
         public int colonnaWallet = -1;
+        public int colonnaMonetaUscita  = -1;
+        public int colonnaQuantitaUscita = -1;
+        
+        //Questi 2 parametri servono per dire al programma come trattare le fee nei file che hanno tutto in una riga ovvero
+        /*
+        "AUTO" (default)	Se fee coincide con una moneta del movimento → ricostruisce il lordo; se è moneta diversa → aggiunge solo il rigo separato
+        "SEPARATA"	Forza sempre solo il rigo commissione, senza toccare le quantità, indipendentemente dalla moneta
+        */       
+        public enum ModalitaFee { SEPARATA, AUTO }
+        public ModalitaFee modalitaFee = ModalitaFee.AUTO;
 
         public boolean consolidaRigheStessaData = false;
         public long tolleranzaSecondiConsolidamento = 2;
@@ -828,7 +906,8 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         public Set<String> causaliChiuse = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
         public Map<String, String> rinominaMonete = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        public List<String> rimuoviDaNomeMoneta = new ArrayList<>();
+        public List<RimuoviRegola> rimuoviDaNomeMoneta = new ArrayList<>();
+        public boolean rimuoviCaseSensitive = false; // default: case insensitive
         public Map<String, Integer> campiExtra = new TreeMap<>();
         public Map<String, String> walletPerCausale = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         public Map<String, Integer> mappaNomiColonne = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -902,6 +981,15 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                     cfg.causaliDifferite.add(arr.getString(i));
                 }
             }
+            
+            if (root.has("modalitaFee")) {
+                try {
+                    cfg.modalitaFee = ConfigurazioneImport.ModalitaFee
+                            .valueOf(root.getString("modalitaFee").toUpperCase());
+                } catch (IllegalArgumentException ex) {
+                    cfg.modalitaFee = ConfigurazioneImport.ModalitaFee.AUTO;
+                }
+            }
 
             if (root.has("colonne")) {
                 JSONObject col = root.getJSONObject("colonne");
@@ -914,6 +1002,8 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 if (col.has("quantita")) {
                     cfg.colonnaQuantita = col.getInt("quantita");
                 }
+                if (col.has("monetaUscita"))   cfg.colonnaMonetaUscita   = col.getInt("monetaUscita");
+                if (col.has("quantitaUscita")) cfg.colonnaQuantitaUscita = col.getInt("quantitaUscita");
                 if (col.has("segno")) {
                     cfg.colonnaSegno = col.getInt("segno");
                 }
@@ -975,10 +1065,16 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                     cfg.rinominaMonete.put(k, rm.getString(k));
                 }
             }
+            if (root.has("rimuoviCaseSensitive")) {
+                cfg.rimuoviCaseSensitive = root.getBoolean("rimuoviCaseSensitive");
+            }
             if (root.has("rimuoviDaNomeMoneta")) {
                 JSONArray arr = root.getJSONArray("rimuoviDaNomeMoneta");
                 for (int i = 0; i < arr.length(); i++) {
-                    cfg.rimuoviDaNomeMoneta.add(arr.getString(i));
+                    RimuoviRegola r = RimuoviRegola.parse(arr.getString(i));
+                    if (r != null) {
+                        cfg.rimuoviDaNomeMoneta.add(r);
+                    }
                 }
             }
             if (root.has("campiExtra")) {
@@ -1089,7 +1185,7 @@ public String normalizzaData(String dataCSV) {
         
 
         
-  
+
         
         
 
@@ -1193,20 +1289,44 @@ public String normalizzaData(String dataCSV) {
          * @return simbolo normalizzato
          */
         public String normalizzaMoneta(String moneta) {
-            if (moneta == null) {
-                return "";
-            }
-            String m = moneta.trim();
-            if (m.isBlank()) {
-                return m;
-            }
-            for (String daRimuovere : rimuoviDaNomeMoneta) {
-                m = m.replace(daRimuovere, "");
-            }
-            m = m.trim();
-            String rin = rinominaMonete.get(m);
-            return rin != null ? rin : m;
+    if (moneta == null) return "";
+    String m = moneta.trim();
+    if (m.isBlank()) return m;
+
+    for (RimuoviRegola regola : rimuoviDaNomeMoneta) {
+        if (regola == null || regola.parola == null || regola.parola.isBlank()) continue;
+
+        // Trova la posizione della parola (con o senza case sensitive)
+        int idx = rimuoviCaseSensitive
+                ? m.indexOf(regola.parola)
+                : m.toLowerCase().indexOf(regola.parola.toLowerCase());
+
+        if (idx < 0) continue; // parola non trovata, salto
+
+        switch (regola.modo) {
+            case TRONCA_DOPO:
+                // Tronca dalla parola in poi (la parola inclusa viene rimossa)
+                m = m.substring(0, idx);
+                break;
+            case TRONCA_PRIMA:
+                // Tronca tutto ciò che precede la parola (la parola inclusa viene rimossa)
+                m = m.substring(idx + regola.parola.length());
+                break;
+            case NESSUNO:
+            default:
+                // Rimuove solo la parola, preserva il resto
+                // Usa replace con la porzione esatta di m per rispettare il case originale
+                String trovata = m.substring(idx, idx + regola.parola.length());
+                m = m.replace(trovata, "");
+                break;
         }
+        m = m.trim();
+    }
+
+    // Rinomina finale
+    String rin = rinominaMonete.get(m);
+    return rin != null ? rin : m;
+}
 
         // -----------------------------------------------------------------
         // Regola segno
@@ -1250,4 +1370,34 @@ public String normalizzaData(String dataCSV) {
             FORZATO_ENTRATA
         }
     }
+    
+    
+      /**
+ * Descrive una singola regola di pulizia del nome moneta.
+ * - parola: il testo da cercare (senza il ?)
+ * - modoTronca: NESSUNO = rimuovi solo la parola
+ *               TRONCA_DOPO = rimuovi la parola e tutto ciò che viene dopo  (.STAKING?)
+ *               TRONCA_PRIMA = rimuovi la parola e tutto ciò che viene prima  (?.STAKING)
+ */
+public static class RimuoviRegola {
+    public enum Modo { NESSUNO, TRONCA_DOPO, TRONCA_PRIMA }
+    public final String parola;
+    public final Modo   modo;
+
+    public RimuoviRegola(String parola, Modo modo) {
+        this.parola = parola;
+        this.modo   = modo;
+    }
+
+    /** Parsa una stringa dal JSON: "abc?", "?abc", "abc" */
+    public static RimuoviRegola parse(String s) {
+        if (s == null || s.isBlank()) return null;
+        if (s.endsWith("?"))
+            return new RimuoviRegola(s.substring(0, s.length() - 1), Modo.TRONCA_DOPO);
+        if (s.startsWith("?"))
+            return new RimuoviRegola(s.substring(1), Modo.TRONCA_PRIMA);
+        return new RimuoviRegola(s, Modo.NESSUNO);
+    }
+}
+    
 }

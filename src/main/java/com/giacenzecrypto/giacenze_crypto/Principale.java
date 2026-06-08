@@ -184,6 +184,8 @@ private static final long serialVersionUID = 3L;
             this.setTitle(VarStatiche.Titolo);
             ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
             this.setIconImage(icon.getImage());
+            
+            
             File fiatwallet=new File (VarStatiche.getFile_CDCFiatWallet());
             if (!fiatwallet.exists()) fiatwallet.createNewFile();
 
@@ -248,29 +250,7 @@ private static final long serialVersionUID = 3L;
         }
         if (VersioneCambiata) {
             DatabaseH2.Opzioni_Scrivi("Data_Lista_Coingecko", "1000000000000");
-           /* Download progress = new Download();
-            progress.setLocationRelativeTo(this);
-            progress.Titolo("Sistemazione dati per cambio versione... ATTENDERE...");
-            progress.SetLabel("Caricamento e sistemazione Dati per cambio versione...");
-            progress.NascondiInterrompi();
-            progress.NascondiBarra();
-            progress.NoModale();
-            Thread thread;
-            thread = new Thread() {
-                public void run() {
 
-                    while (!FineCaricamentoDati) {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ex) {
-                            LoggerGC.ScriviErrore(ex);
-                        }
-                    }
-                    progress.ChiudiFinestra();
-                }
-            };
-            thread.start();
-            progress.setVisible(true);*/
             
             
             
@@ -328,7 +308,38 @@ private static final long serialVersionUID = 3L;
         TransazioniCrypto_Funzioni_NascondiColonneTabellaCrypto();
         CDC_FiatWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCFiatWallet()); 
         CDC_CardWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCCardWallet());
+        
         DatabaseH2.Pers_Emoney_PopolaMappaEmoney();//Popolo la mappa delle emoneytoken prima di proseguire
+        //Se è vuota faccio uscire un avviso che mi ricorda di popolarla
+        if (Mappa_EMoney.isEmpty()) {
+
+            SwingUtilities.invokeLater(() -> {
+                
+                AppDialog.DialogResult result = AppDialog.builder(this)
+                        .title("Configurazione richiesta")
+                        .type(AppDialog.DialogType.WARNING)
+                        .theme()
+                        .message("La tabella degli EMoney Token non risulta compilata.")
+                        .details("""
+                Questo può compromettere la correttezza dei calcoli sulle plusvalenze
+                (valori mancanti o non coerenti).
+
+                Per proseguire con risultati affidabili è necessario completare la configurazione.
+                """)
+                        .primaryAction("open-config", "Apri configurazione")
+                        .secondaryAction("close", "Chiudi")
+                        .showDialog();
+
+                if (result.isAction("open-config")) {
+                    CDC.setSelectedComponent(Opzioni);
+                    Opzioni_TabbedPane.setSelectedComponent(Opzioni_Emoney_Pannello);
+                    AnalisiCrypto.setSelectedComponent(DepositiPrelievi);
+                }
+            });    
+            
+            
+            
+        }
         
         
         //boolean successo=DatabaseH2.CreaoCollegaDatabase();
@@ -1312,7 +1323,7 @@ private static final long serialVersionUID = 3L;
                                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                    .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 112, Short.MAX_VALUE)
+                                                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
                                                     .addComponent(TransazioniCrypto_Text_CostiCarico))
                                                 .addGap(51, 51, 51)
                                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1351,7 +1362,7 @@ private static final long serialVersionUID = 3L;
                                 .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 82, Short.MAX_VALUE)
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 274, Short.MAX_VALUE)
+                            .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
                             .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                         .addComponent(jSeparator10, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -4465,7 +4476,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_Varie_Bottone_ProblemiNoti, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                     .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(1109, Short.MAX_VALUE))
+                .addContainerGap(1149, Short.MAX_VALUE))
         );
         Opzioni_VarieLayout.setVerticalGroup(
             Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4476,7 +4487,7 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Opzioni_Varie_Bottone_ProblemiNoti)
                 .addGap(86, 86, 86)
                 .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(612, Short.MAX_VALUE))
+                .addContainerGap(628, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Varie", Opzioni_Varie);
@@ -9859,7 +9870,8 @@ GiacenzeaData_CompilaTabellaToken(true);
         System.out.println("Chiusura");
         
         if(TransazioniCrypto_Bottone_Salva.isEnabled()){
-                     String Messaggio="Attenzione, ci sono movimenti non salvati.\n"
+            
+             /*        String Messaggio="Attenzione, ci sono movimenti non salvati.\n"
                      + "Si vuole salvare prima di chiudere?";
              int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Movimenti non salvati", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
                 //Si=0
@@ -9869,7 +9881,29 @@ GiacenzeaData_CompilaTabellaToken(true);
                         Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet,false);
                     }
 
-                } 
+                } */
+                
+                AppDialog.DialogResult result = AppDialog.builder(this)
+                        .windowTitle("Movimenti non salvati")
+                        .bodyTitle("Movimenti non salvati")
+                        .type(AppDialog.DialogType.WARNING)
+                        .theme()
+                        //.details("Salvare i movimenti?")
+                        //.message("Salvare i movimenti?")
+                        .details("""                               
+                Ci sono movimenti non salvati.
+                
+                Si vuole salvare prima di chiudere?
+
+                """)
+                        .primaryAction("OK", "SI")
+                        .secondaryAction("close", "NO")
+                        .showDialog();
+
+                if (result.isAction("OK")) {
+                    Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet,false);
+                }
+                
         }
         LoggerGC.close();
         this.dispose();

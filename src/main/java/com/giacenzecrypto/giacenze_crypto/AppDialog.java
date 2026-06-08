@@ -5,6 +5,7 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
@@ -15,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import javax.swing.border.Border;
 
 public class AppDialog extends JDialog {
 
@@ -146,6 +146,7 @@ public class AppDialog extends JDialog {
         public final Color neutralButton;
         public final Color neutralButtonText;
         public final Color primaryButtonText;
+        public final Color focusRing;
         public final Font titleFont;
         public final Font messageFont;
         public final Font detailsFont;
@@ -163,6 +164,7 @@ public class AppDialog extends JDialog {
                         Color neutralButton,
                         Color neutralButtonText,
                         Color primaryButtonText,
+                        Color focusRing,
                         Font titleFont,
                         Font messageFont,
                         Font detailsFont,
@@ -179,6 +181,7 @@ public class AppDialog extends JDialog {
             this.neutralButton = neutralButton;
             this.neutralButtonText = neutralButtonText;
             this.primaryButtonText = primaryButtonText;
+            this.focusRing = focusRing;
             this.titleFont = titleFont;
             this.messageFont = messageFont;
             this.detailsFont = detailsFont;
@@ -205,6 +208,7 @@ public class AppDialog extends JDialog {
                         new Color(50, 50, 50),
                         new Color(235, 235, 235),
                         Color.WHITE,
+                        new Color(140, 190, 255),
                         title, message, details, button
                 );
             }
@@ -222,6 +226,7 @@ public class AppDialog extends JDialog {
                     new Color(245, 245, 245),
                     new Color(34, 34, 34),
                     Color.WHITE,
+                    new Color(102, 163, 255),
                     title, message, details, button
             );
         }
@@ -297,10 +302,10 @@ public class AppDialog extends JDialog {
             return this;
         }
 
-          public Builder theme() {
+        public Builder theme() {
             this.theme = AppDialog.UiTheme.of(Principale.tema.equalsIgnoreCase("scuro")
-                        ? AppDialog.ThemeMode.DARK
-                        : AppDialog.ThemeMode.LIGHT);
+                    ? AppDialog.ThemeMode.DARK
+                    : AppDialog.ThemeMode.LIGHT);
             return this;
         }
 
@@ -379,9 +384,6 @@ public class AppDialog extends JDialog {
     private final List<JButton> actionButtons = new ArrayList<>();
     private int focusedButtonIndex = -1;
 
-private Color focusRingColor;
-private Color focusInnerBorderColor;
-
     private AppDialog(Builder builder) {
         super(builder.owner,
                 builder.windowTitle,
@@ -398,40 +400,9 @@ private Color focusInnerBorderColor;
         setVisible(true);
         return result;
     }
-    
-    
-    private Color brighter(Color color, float factor) {
-    factor = Math.max(0f, Math.min(1f, factor));
-    int r = color.getRed() + Math.round((255 - color.getRed()) * factor);
-    int g = color.getGreen() + Math.round((255 - color.getGreen()) * factor);
-    int b = color.getBlue() + Math.round((255 - color.getBlue()) * factor);
-    return new Color(Math.min(255, r), Math.min(255, g), Math.min(255, b));
-}
-
-private Border createNormalButtonBorder(UiTheme theme) {
-    return BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(theme.border),
-            new EmptyBorder(9, 16, 9, 16)
-    );
-}
-
-private Border createFocusedButtonBorder(UiTheme theme) {
-    return BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(focusRingColor, 2),
-            BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(focusInnerBorderColor, 1),
-                    new EmptyBorder(8, 15, 8, 15)
-            )
-    );
-}
-    
-    
 
     private void initUI() {
         UiTheme theme = config.theme;
-        
-        focusRingColor = config.theme.accent;
-focusInnerBorderColor = brighter(config.theme.accent, 0.20f);
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setResizable(config.resizable);
@@ -467,12 +438,12 @@ focusInnerBorderColor = brighter(config.theme.accent, 0.20f);
         setLocationRelativeTo(getOwner());
 
         SwingUtilities.invokeLater(() -> {
-    if (!actionButtons.isEmpty()) {
-        int index = focusedButtonIndex >= 0 ? focusedButtonIndex : 0;
-        focusButtonAt(index);
-        refreshButtonStyles();
-    }
-});
+            if (!actionButtons.isEmpty()) {
+                int index = focusedButtonIndex >= 0 ? focusedButtonIndex : 0;
+                focusButtonAt(index);
+                refreshButtonStyles();
+            }
+        });
     }
 
     private JPanel buildTextPanel(UiTheme theme) {
@@ -508,55 +479,6 @@ focusInnerBorderColor = brighter(config.theme.accent, 0.20f);
 
         return panel;
     }
-    
-    
-    private void refreshButtonStyles() {
-    UiTheme theme = config.theme;
-    JButton focusedButton = getFocusedActionButton();
-
-    for (JButton button : actionButtons) {
-        boolean focused = button == focusedButton;
-
-        if (button.getForeground().equals(theme.primaryButtonText)
-                && button.getBackground().equals(theme.accent)) {
-            if (focused) {
-                button.setBorder(createFocusedButtonBorder(theme));
-                button.setBackground(brighter(theme.accent, 0.10f));
-            } else {
-                button.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(theme.accent),
-                        new EmptyBorder(9, 16, 9, 16)
-                ));
-                button.setBackground(theme.accent);
-            }
-            continue;
-        }
-
-        if (button.getForeground().equals(theme.primaryButtonText)
-                && button.getBackground().equals(theme.error)) {
-            if (focused) {
-                button.setBorder(createFocusedButtonBorder(theme));
-                button.setBackground(brighter(theme.error, 0.08f));
-            } else {
-                button.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(theme.error),
-                        new EmptyBorder(9, 16, 9, 16)
-                ));
-                button.setBackground(theme.error);
-            }
-            continue;
-        }
-
-        if (focused) {
-            button.setBorder(createFocusedButtonBorder(theme));
-            button.setBackground(brighter(theme.neutralButton, 0.08f));
-        } else {
-            button.setBorder(createNormalButtonBorder(theme));
-            button.setBackground(theme.neutralButton);
-        }
-    }
-}
-    
 
     private JPanel buildButtonsPanel(UiTheme theme) {
         JPanel wrapper = new JPanel(new BorderLayout());
@@ -593,65 +515,135 @@ focusInnerBorderColor = brighter(config.theme.accent, 0.20f);
         return wrapper;
     }
 
-   private JButton createButton(DialogAction action, UiTheme theme) {
-    JButton button = new JButton(action.getText());
-    button.setFont(theme.buttonFont);
-    button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    button.setFocusPainted(false);
-    button.setOpaque(true);
+    private JButton createButton(DialogAction action, UiTheme theme) {
+        JButton button = new JButton(action.getText());
+        button.putClientProperty("dialog.role", action.getRole());
+        button.setFont(theme.buttonFont);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        button.setFocusPainted(false);
+        button.setOpaque(true);
+        button.setContentAreaFilled(true);
 
-    switch (action.getRole()) {
-        case PRIMARY -> {
-            button.setBackground(theme.accent);
-            button.setForeground(theme.primaryButtonText);
-            button.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(theme.accent),
-                    new EmptyBorder(9, 16, 9, 16)
-            ));
-        }
-        case SECONDARY, NEUTRAL -> {
-            button.setBackground(theme.neutralButton);
-            button.setForeground(theme.neutralButtonText);
-            button.setBorder(createNormalButtonBorder(theme));
-        }
-        case DANGER -> {
-            button.setBackground(theme.error);
-            button.setForeground(theme.primaryButtonText);
-            button.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(theme.error),
-                    new EmptyBorder(9, 16, 9, 16)
-            ));
-        }
+        applyNormalStyle(button, action.getRole(), theme);
+
+        button.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                focusedButtonIndex = actionButtons.indexOf(button);
+                getRootPane().setDefaultButton(button);
+                refreshButtonStyles();
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                SwingUtilities.invokeLater(AppDialog.this::refreshButtonStyles);
+            }
+        });
+
+        button.addActionListener(e -> {
+            result = new DialogResult(action.getId(), CloseReason.ACTION);
+
+            if (action.getHandler() != null) {
+                action.getHandler().accept(AppDialog.this);
+            }
+
+            if (action.isCloseOnClick()) {
+                dispose();
+            }
+        });
+
+        return button;
     }
 
-    button.addFocusListener(new FocusAdapter() {
-        @Override
-        public void focusGained(FocusEvent e) {
-            focusedButtonIndex = actionButtons.indexOf(button);
-            getRootPane().setDefaultButton(button);
-            refreshButtonStyles();
+    private void applyNormalStyle(JButton button, ActionRole role, UiTheme theme) {
+        button.setFont(theme.buttonFont);
+
+        switch (role) {
+            case PRIMARY -> {
+                button.setBackground(theme.accent);
+                button.setForeground(theme.primaryButtonText);
+            }
+            case DANGER -> {
+                button.setBackground(theme.error);
+                button.setForeground(theme.primaryButtonText);
+            }
+            case SECONDARY, NEUTRAL -> {
+                button.setBackground(theme.neutralButton);
+                button.setForeground(theme.neutralButtonText);
+            }
         }
 
-        @Override
-        public void focusLost(FocusEvent e) {
-            SwingUtilities.invokeLater(AppDialog.this::refreshButtonStyles);
+        button.setBorder(createNormalBorder(theme, role));
+    }
+
+    private void applyFocusedStyle(JButton button, ActionRole role, UiTheme theme) {
+        button.setFont(theme.buttonFont);
+
+        switch (role) {
+            case PRIMARY -> {
+                button.setBackground(theme.accent);
+                button.setForeground(theme.primaryButtonText);
+            }
+            case DANGER -> {
+                button.setBackground(theme.error);
+                button.setForeground(theme.primaryButtonText);
+            }
+            case SECONDARY, NEUTRAL -> {
+                button.setBackground(theme.neutralButton);
+                button.setForeground(theme.neutralButtonText);
+            }
         }
-    });
 
-    button.addActionListener(e -> {
-        result = new DialogResult(action.getId(), CloseReason.ACTION);
+        button.setBorder(createFocusedBorder(theme, role));
+    }
 
-        if (action.getHandler() != null) {
-            action.getHandler().accept(AppDialog.this);
+    private Border createButtonBorder(Color outerColor, Color innerColor, int outerThickness, Insets padding) {
+        return BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(outerColor, outerThickness),
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(innerColor, 1),
+                        new EmptyBorder(padding)
+                )
+        );
+    }
+
+    private Border createNormalBorder(UiTheme theme, ActionRole role) {
+        Color inner = switch (role) {
+            case PRIMARY -> theme.accent;
+            case DANGER -> theme.error;
+            case SECONDARY, NEUTRAL -> theme.border;
+        };
+
+        return createButtonBorder(inner, inner, 1, new Insets(9, 16, 9, 16));
+    }
+
+    private Border createFocusedBorder(UiTheme theme, ActionRole role) {
+        Color roleColor = switch (role) {
+            case PRIMARY -> theme.accent;
+            case DANGER -> theme.error;
+            case SECONDARY, NEUTRAL -> theme.border;
+        };
+
+        return createButtonBorder(theme.focusRing, roleColor, 2, new Insets(8, 15, 8, 15));
+    }
+
+    private void refreshButtonStyles() {
+        UiTheme theme = config.theme;
+        JButton focusedButton = getFocusedActionButton();
+
+        for (JButton button : actionButtons) {
+            ActionRole role = (ActionRole) button.getClientProperty("dialog.role");
+            boolean focused = button == focusedButton;
+
+            if (focused) {
+                applyFocusedStyle(button, role, theme);
+            } else {
+                applyNormalStyle(button, role, theme);
+            }
         }
 
-        if (action.isCloseOnClick()) {
-            dispose();
-        }
-    });
-
-    return button;
-}
+        repaint();
+    }
 
     private JPanel buildIconPanel(DialogType type, UiTheme theme) {
         JPanel panel = new JPanel(new GridBagLayout());
@@ -778,16 +770,16 @@ focusInnerBorderColor = brighter(config.theme.accent, 0.20f);
     }
 
     private void focusButtonAt(int index) {
-    if (index < 0 || index >= actionButtons.size()) {
-        return;
-    }
+        if (index < 0 || index >= actionButtons.size()) {
+            return;
+        }
 
-    JButton button = actionButtons.get(index);
-    focusedButtonIndex = index;
-    button.requestFocusInWindow();
-    getRootPane().setDefaultButton(button);
-    refreshButtonStyles();
-}
+        JButton button = actionButtons.get(index);
+        focusedButtonIndex = index;
+        button.requestFocusInWindow();
+        getRootPane().setDefaultButton(button);
+        refreshButtonStyles();
+    }
 
     private void pressFocusedButton() {
         JButton button = getFocusedActionButton();

@@ -546,193 +546,216 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
      * {@code null} se la riga non produce un movimento valido
      */
     private static List<String[]> costruisciMovimenti(String[] riga, String tipoForzato, ConfigurazioneImport cfg) {
-        try {
-            List<String[]> risultato = new ArrayList<>();
+    try {
+        List<String[]> risultato = new ArrayList<>();
 
-            String dataRaw = safe(riga, cfg.colonnaData);
-            String data = cfg.normalizzaData(dataRaw);
-            if (data == null || data.isBlank()) {
-                return null;
-            }
-            long dataLong = cfg.convertiDataInMillis(dataRaw);
-            if (dataLong <= 0) {
-                return null;
-            }
-
-            String exchange = nvl(cfg.nomeExchange, "Exchange Generico");
-            String wallet = nvl(cfg.nomeWallet, "Principale");
-
-            if (cfg.colonnaWallet >= 0 && cfg.colonnaWallet < riga.length && !safe(riga, cfg.colonnaWallet).isBlank()) {
-                wallet = safe(riga, cfg.colonnaWallet);
-            }
-
-            String causaleCSV = safe(riga, cfg.colonnaCausale);
-
-            String walletOverride = cfg.walletPerCausale.get(causaleCSV);
-            if (walletOverride != null && !walletOverride.isBlank()) {
-                wallet = walletOverride;
-            }
-
-            String tipoMovimento = tipoForzato != null ? tipoForzato : cfg.convertiCausale(causaleCSV);
-            if (tipoMovimento == null || tipoMovimento.isBlank()) {
-                scarta("CAUSALE SCONOSCIUTA: " + causaleCSV, Arrays.toString(riga));
-                return null;
-            }
-            if (tipoMovimento.equalsIgnoreCase("IGNORA") || tipoMovimento.equalsIgnoreCase("NON CONSIDERARE")) {
-                return null;
-            }
-
-            String moneta = cfg.normalizzaMoneta(safe(riga, cfg.colonnaMoneta));
-            String qtaStr = normalizzaNumero(safe(riga, cfg.colonnaQuantita));
-            String monetaFee = cfg.normalizzaMoneta(safe(riga, cfg.colonnaMonetaFee));
-            String qtaFee = normalizzaNumero(safe(riga, cfg.colonnaQuantitaFee));
-            String valoreEuro = normalizzaNumero(safe(riga, cfg.colonnaValoreEuro));
-            String prezzo = normalizzaNumero(safe(riga, cfg.colonnaPrezzo));
-            String idTrans = safe(riga, cfg.colonnaIDTransazione);
-
-            // Gestione segno da colonna dedicata (se presente)
-            if (cfg.colonnaSegno >= 0 && cfg.colonnaSegno < riga.length) {
-                String segno = safe(riga, cfg.colonnaSegno);
-                if ("-".equals(segno) && !qtaStr.startsWith("-")) {
-                    qtaStr = "-" + qtaStr;
-                } else if ("+".equals(segno)) {
-                    qtaStr = qtaStr.replace("-", "");
-                }
-            }
-
-            // ----------------------------------------------------------------
-            // PUNTO 1: il segno della qta NON viene mai azzerato con abs().
-            // La qta arriva già con il suo segno dal CSV (o dalla colonna segno).
-            // In più, se la causale è in causaliUscita/causaliEntrata, FORZO il segno.
-            // ----------------------------------------------------------------
-            ConfigurazioneImport.RegolaSegno regola = cfg.regolaSegno(causaleCSV);
-            if (regola == ConfigurazioneImport.RegolaSegno.FORZATO_USCITA) {
-                if (!qtaStr.startsWith("-")) {
-                    qtaStr = "-" + qtaStr;
-                }
-            } else if (regola == ConfigurazioneImport.RegolaSegno.FORZATO_ENTRATA) {
-                qtaStr = qtaStr.replace("-", "");
-            }
-
-            // Costruisco mOUT / mIN in base al segno della qta (come fa MovimentiCrypto)
-            Moneta mOUT = null;
-            Moneta mIN = null;
-
-            if (!qtaStr.isBlank() && Funzioni.isNumeric(qtaStr, false)) {
-                BigDecimal qta = new BigDecimal(qtaStr);
-                if (qta.compareTo(BigDecimal.ZERO) < 0) {
-                    mOUT = new Moneta();
-                    mOUT.InserisciValori(moneta, qta.stripTrailingZeros().toPlainString(), "", "");
-                    mOUT.AssegnaTipoAuto();
-                } else if (qta.compareTo(BigDecimal.ZERO) > 0) {
-                    mIN = new Moneta();
-                    mIN.InserisciValori(moneta, qta.stripTrailingZeros().toPlainString(), "", "");
-                    mIN.AssegnaTipoAuto();
-                }
-            }
-
-            // Se la riga ha anche una parte uscita separata, costruisco mOUT da lì
-            if (cfg.colonnaQuantitaUscita >= 0 && cfg.colonnaMonetaUscita >= 0) {
-                String qtaOut = normalizzaNumero(safe(riga, cfg.colonnaQuantitaUscita));
-                String monOut = cfg.normalizzaMoneta(safe(riga, cfg.colonnaMonetaUscita));
-                if (!qtaOut.isBlank() && Funzioni.isNumeric(qtaOut, false)) {
-                    BigDecimal qOut = new BigDecimal(qtaOut);
-                    if (qOut.compareTo(BigDecimal.ZERO) > 0) {
-                        // è un'uscita: la rendiamo negativa
-                        mOUT = new Moneta();
-                        mOUT.InserisciValori(monOut, "-" + qOut.stripTrailingZeros().toPlainString(), "", "");
-                        mOUT.AssegnaTipoAuto();
-                    }
-                }
-            }
-
-            String prezzoMov = !valoreEuro.isBlank() ? valoreEuro : prezzo;
-
-// Movimento commissione separato
-            boolean haFee = !qtaFee.isBlank() && !monetaFee.isBlank()
-                    && Funzioni.isNumeric(qtaFee, false)
-                    && new BigDecimal(qtaFee).compareTo(BigDecimal.ZERO) > 0;
-            if (haFee) {
-                // Ricostruzione lordo se AUTO e fee coincide con una moneta del movimento
-                BigDecimal qtaFeeBD = new BigDecimal(qtaFee);
-                if (cfg.modalitaFee == ConfigurazioneImport.ModalitaFee.AUTO) {
-                    String monetaOut = mOUT != null ? mOUT.GetNome() : "";
-                    String monetaIn = mIN != null ? mIN.GetNome() : "";
-                    if (monetaFee.equalsIgnoreCase(monetaOut) && mOUT != null) {
-                        BigDecimal qtaLorda = new BigDecimal(mOUT.GetQta().replace("-", ""))
-                                .add(qtaFeeBD);
-                        mOUT.InserisciValori(monetaOut, "-" + qtaLorda.toPlainString(), "", "");
-                        mOUT.AssegnaTipoAuto();
-                    } else if (monetaFee.equalsIgnoreCase(monetaIn) && mIN != null) {
-                        BigDecimal qtaLorda = new BigDecimal(mIN.GetQta()).add(qtaFeeBD);
-                        mIN.InserisciValori(monetaIn, qtaLorda.toPlainString(), "", "");
-                        mIN.AssegnaTipoAuto();
-                    }
-                    // Se moneta diversa da entrambe: nessuna ricostruzione, solo rigo separato
-                }
-
-                // Creo il movimento commissione come uscita (quantità negativa)
-                Moneta mFee = new Moneta();
-                mFee.InserisciValori(monetaFee, "-" + qtaFeeBD.stripTrailingZeros().toPlainString(), "", "");
-                mFee.AssegnaTipoAuto();
-
-                String[] rtFee = MovimentiCrypto.creaMovimento(
-                        mFee, // mOUT = la commissione è un'uscita
-                        null, // mIN  = nessuna entrata
-                        exchange,
-                        wallet,
-                        dataLong,
-                        null, // prezzo: verrà recuperato automaticamente
-                        "CSV",
-                        1, 1,
-                        null, null,
-                        "A",
-                        idTrans,
-                        "COMMISSIONI", // causale interna fissa
-                        exchange
-                );
-                if (rtFee != null) {
-                    risultato.add(rtFee);
-                }
-            }
-
-//Movimento Principale
-            String[] rt = MovimentiCrypto.creaMovimento(
-                    mOUT, mIN, exchange, wallet, dataLong,
-                    prezzoMov, "CSV", 1, 1, null, null, "A",
-                    idTrans, tipoMovimento, exchange);
-
-            if (rt != null) {
-                if (rt.length > 7) {
-                    rt[7] = causaleCSV;
-                }
-                if (rt.length > 39) {
-                    rt[39] = "D";
-                }
-
-                // Campi extra dal JSON
-                for (Map.Entry<String, Integer> e : cfg.campiExtra.entrySet()) {
-                    try {
-                        int campoMov = Integer.parseInt(e.getKey());
-                        int colCsv = e.getValue();
-                        if (campoMov >= 0 && campoMov < rt.length) {
-                            rt[campoMov] = safe(riga, colCsv);
-                        }
-                    } catch (Exception ex) {
-                        LoggerGC.ScriviErrore(ex);
-                    }
-                }
-                risultato.add(rt); // movimento principale
-            }
-
-            return risultato;
-
-        } catch (Exception ex) {
-            LoggerGC.ScriviErrore(ex);
+        String dataRaw = safe(riga, cfg.colonnaData);
+        String data = cfg.normalizzaData(dataRaw);
+        if (data == null || data.isBlank()) {
             return null;
         }
-    }
 
+        long dataLong = cfg.convertiDataInMillis(dataRaw);
+        if (dataLong <= 0) {
+            return null;
+        }
+
+        String exchange = nvl(cfg.nomeExchange, "Exchange Generico");
+        String wallet = nvl(cfg.nomeWallet, "Principale");
+
+        if (cfg.colonnaWallet >= 0 && cfg.colonnaWallet < riga.length && !safe(riga, cfg.colonnaWallet).isBlank()) {
+            wallet = safe(riga, cfg.colonnaWallet);
+        }
+
+        String causaleCSV = safe(riga, cfg.colonnaCausale);
+
+        String walletOverride = cfg.walletPerCausale.get(causaleCSV);
+        if (walletOverride != null && !walletOverride.isBlank()) {
+            wallet = walletOverride;
+        }
+
+        String tipoMovimento = tipoForzato != null ? tipoForzato : cfg.convertiCausale(causaleCSV);
+        if (tipoMovimento == null || tipoMovimento.isBlank()) {
+            scarta("CAUSALE SCONOSCIUTA: " + causaleCSV, Arrays.toString(riga));
+            return null;
+        }
+        if (tipoMovimento.equalsIgnoreCase("IGNORA") || tipoMovimento.equalsIgnoreCase("NON CONSIDERARE")) {
+            return null;
+        }
+
+        String moneta = cfg.normalizzaMoneta(safe(riga, cfg.colonnaMoneta));
+        String qtaStr = normalizzaNumero(safe(riga, cfg.colonnaQuantita));
+        String monetaFee = cfg.normalizzaMoneta(safe(riga, cfg.colonnaMonetaFee));
+        String qtaFee = normalizzaNumero(safe(riga, cfg.colonnaQuantitaFee));
+        String valoreEuro = normalizzaNumero(safe(riga, cfg.colonnaValoreEuro));
+        String prezzo = normalizzaNumero(safe(riga, cfg.colonnaPrezzo));
+        String idTrans = safe(riga, cfg.colonnaIDTransazione);
+
+        // Gestione segno da colonna dedicata
+        if (cfg.colonnaSegno >= 0 && cfg.colonnaSegno < riga.length) {
+            String segno = safe(riga, cfg.colonnaSegno);
+            if ("-".equals(segno) && !qtaStr.startsWith("-")) {
+                qtaStr = "-" + qtaStr;
+            } else if ("+".equals(segno)) {
+                qtaStr = qtaStr.replace("-", "");
+            }
+        }
+
+        // Forzatura segno in base alla causale CSV
+        ConfigurazioneImport.RegolaSegno regola = cfg.regolaSegno(causaleCSV);
+        if (regola == ConfigurazioneImport.RegolaSegno.FORZATO_USCITA) {
+            if (!qtaStr.startsWith("-")) {
+                qtaStr = "-" + qtaStr;
+            }
+        } else if (regola == ConfigurazioneImport.RegolaSegno.FORZATO_ENTRATA) {
+            qtaStr = qtaStr.replace("-", "");
+        }
+
+        Moneta mOUT = null;
+        Moneta mIN = null;
+
+        // Lato principale letto da moneta/quantita
+        if (!qtaStr.isBlank() && Funzioni.isNumeric(qtaStr, false)) {
+            BigDecimal qta = new BigDecimal(qtaStr);
+            if (qta.compareTo(BigDecimal.ZERO) < 0) {
+                mOUT = new Moneta();
+                mOUT.InserisciValori(moneta, qta.stripTrailingZeros().toPlainString(), "", "");
+                mOUT.AssegnaTipoAuto();
+            } else if (qta.compareTo(BigDecimal.ZERO) > 0) {
+                mIN = new Moneta();
+                mIN.InserisciValori(moneta, qta.stripTrailingZeros().toPlainString(), "", "");
+                mIN.AssegnaTipoAuto();
+            }
+        }
+
+        // Eventuale lato uscita separato sulla stessa riga
+        if (cfg.colonnaQuantitaUscita >= 0 && cfg.colonnaMonetaUscita >= 0) {
+            String qtaOut = normalizzaNumero(safe(riga, cfg.colonnaQuantitaUscita));
+            String monOut = cfg.normalizzaMoneta(safe(riga, cfg.colonnaMonetaUscita));
+
+            if (!qtaOut.isBlank() && Funzioni.isNumeric(qtaOut, false)) {
+                BigDecimal qOut = new BigDecimal(qtaOut);
+                if (qOut.compareTo(BigDecimal.ZERO) > 0) {
+                    mOUT = new Moneta();
+                    mOUT.InserisciValori(monOut, "-" + qOut.stripTrailingZeros().toPlainString(), "", "");
+                    mOUT.AssegnaTipoAuto();
+                } else if (qOut.compareTo(BigDecimal.ZERO) < 0) {
+                    mOUT = new Moneta();
+                    mOUT.InserisciValori(monOut, qOut.stripTrailingZeros().toPlainString(), "", "");
+                    mOUT.AssegnaTipoAuto();
+                }
+            }
+        }
+
+        String prezzoMov = !valoreEuro.isBlank() ? valoreEuro : prezzo;
+
+        // Fee: sempre trattata come valore assoluto positivo di lavoro
+        boolean haFee = !qtaFee.isBlank()
+                && !monetaFee.isBlank()
+                && Funzioni.isNumeric(qtaFee, false)
+                && new BigDecimal(qtaFee).compareTo(BigDecimal.ZERO) != 0;
+
+        BigDecimal qtaFeeBD = BigDecimal.ZERO;
+        if (haFee) {
+            qtaFeeBD = new BigDecimal(qtaFee).abs();
+
+            String nomeMonetaOut = mOUT != null ? mOUT.GetNome() : "";
+            String nomeMonetaIn = mIN != null ? mIN.GetNome() : "";
+
+            boolean feeSuMonetaUscita = mOUT != null && monetaFee.equalsIgnoreCase(nomeMonetaOut);
+            boolean feeSuMonetaEntrata = mIN != null && monetaFee.equalsIgnoreCase(nomeMonetaIn);
+
+            if (feeSuMonetaUscita && cfg.ricostruisciLordoSeFeeSuMonetaUscita) {
+                // mOUT è già negativo: es. -485.86
+                // Lordo corretto: -485.86 - 1.18 = -487.04
+                BigDecimal qtaNettaOut = new BigDecimal(mOUT.GetQta());
+                BigDecimal qtaLordaOut = qtaNettaOut.add(qtaFeeBD);
+                mOUT.InserisciValori(nomeMonetaOut, qtaLordaOut.stripTrailingZeros().toPlainString(), "", "");
+                mOUT.AssegnaTipoAuto();
+            }
+
+            if (feeSuMonetaEntrata && cfg.ricostruisciLordoSeFeeSuMonetaEntrata) {
+                // mIN è positivo: es. 2130
+                // Lordo corretto: 2130 + 1.18 = 2131.18
+                BigDecimal qtaNettaIn = new BigDecimal(mIN.GetQta());
+                BigDecimal qtaLordaIn = qtaNettaIn.add(qtaFeeBD);
+                mIN.InserisciValori(nomeMonetaIn, qtaLordaIn.stripTrailingZeros().toPlainString(), "", "");
+                mIN.AssegnaTipoAuto();
+            }
+        }
+
+        // Movimento principale
+        String[] rt = MovimentiCrypto.creaMovimento(
+                mOUT, mIN, exchange, wallet, dataLong,
+                prezzoMov, "CSV", 1, 1, null, null, "A",
+                idTrans, tipoMovimento, exchange
+        );
+
+        if (rt != null) {
+            if (rt.length > 7) {
+                rt[7] = causaleCSV;
+            }
+            if (rt.length > 39) {
+                rt[39] = "D";
+            }
+
+            for (Map.Entry<String, Integer> e : cfg.campiExtra.entrySet()) {
+                try {
+                    int campoMov = Integer.parseInt(e.getKey());
+                    int colCsv = e.getValue();
+                    if (campoMov >= 0 && campoMov < rt.length) {
+                        rt[campoMov] = safe(riga, colCsv);
+                    }
+                } catch (Exception ex) {
+                    LoggerGC.ScriviErrore(ex);
+                }
+            }
+
+            risultato.add(rt);
+        }
+
+        // Movimento commissione separato
+        if (haFee) {
+            Moneta mFee = new Moneta();
+            mFee.InserisciValori(monetaFee, "-" + qtaFeeBD.stripTrailingZeros().toPlainString(), "", "");
+            mFee.AssegnaTipoAuto();
+
+            String[] rtFee = MovimentiCrypto.creaMovimento(
+                    mFee,
+                    null,
+                    exchange,
+                    wallet,
+                    dataLong,
+                    null,
+                    "CSV",
+                    1, 1,
+                    null, null,
+                    "A",
+                    idTrans,
+                    "COMMISSIONI",
+                    exchange
+            );
+
+            if (rtFee != null) {
+                if (rtFee.length > 7) {
+                    rtFee[7] = causaleCSV;
+                }
+                if (rtFee.length > 39) {
+                    rtFee[39] = "D";
+                }
+                risultato.add(rtFee);
+            }
+        }
+
+        return risultato.isEmpty() ? null : risultato;
+
+    } catch (Exception ex) {
+        LoggerGC.ScriviErrore(ex);
+        return null;
+    }
+}
+    
+ 
     // -------------------------------------------------------------------------
     // UTILITY
     // -------------------------------------------------------------------------
@@ -883,13 +906,11 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         public int colonnaMonetaUscita  = -1;
         public int colonnaQuantitaUscita = -1;
         
-        //Questi 2 parametri servono per dire al programma come trattare le fee nei file che hanno tutto in una riga ovvero
-        /*
-        "AUTO" (default)	Se fee coincide con una moneta del movimento → ricostruisce il lordo; se è moneta diversa → aggiunge solo il rigo separato
-        "SEPARATA"	Forza sempre solo il rigo commissione, senza toccare le quantità, indipendentemente dalla moneta
-        */       
-        public enum ModalitaFee { SEPARATA, AUTO }
-        public ModalitaFee modalitaFee = ModalitaFee.AUTO;
+        //Questi 2 parametri servono per dire al programma come trattare le fee nei file che hanno tutto in una riga ovvero   
+        // true  = ricostruisce il lordo + genera rigo commissione separato
+        // false = genera solo il rigo commissione, non tocca la quantità principale
+        public boolean ricostruisciLordoSeFeeSuMonetaUscita  = false;  // default: non ricostruisce il lordo su mOUT
+        public boolean ricostruisciLordoSeFeeSuMonetaEntrata = false;  // default: non ricostruisce il lordo su mIN
 
         public boolean consolidaRigheStessaData = false;
         public long tolleranzaSecondiConsolidamento = 2;
@@ -981,15 +1002,12 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                     cfg.causaliDifferite.add(arr.getString(i));
                 }
             }
-            
-            if (root.has("modalitaFee")) {
-                try {
-                    cfg.modalitaFee = ConfigurazioneImport.ModalitaFee
-                            .valueOf(root.getString("modalitaFee").toUpperCase());
-                } catch (IllegalArgumentException ex) {
-                    cfg.modalitaFee = ConfigurazioneImport.ModalitaFee.AUTO;
-                }
+
+            if (root.has("ricostruisciLordoSeFeeSuMonetaUscita")) {
+                cfg.ricostruisciLordoSeFeeSuMonetaUscita = root.getBoolean("ricostruisciLordoSeFeeSuMonetaUscita");
             }
+            if (root.has("ricostruisciLordoSeFeeSuMonetaEntrata"))
+                cfg.ricostruisciLordoSeFeeSuMonetaEntrata = root.getBoolean("ricostruisciLordoSeFeeSuMonetaEntrata");
 
             if (root.has("colonne")) {
                 JSONObject col = root.getJSONObject("colonne");

@@ -9891,10 +9891,8 @@ GiacenzeaData_CompilaTabellaToken(true);
                         //.details("Salvare i movimenti?")
                         //.message("Salvare i movimenti?")
                         .details("""                               
-                Ci sono movimenti non salvati.
-                
+                Ci sono movimenti non salvati.               
                 Si vuole salvare prima di chiudere?
-
                 """)
                         .primaryAction("OK", "SI")
                         .secondaryAction("close", "NO")

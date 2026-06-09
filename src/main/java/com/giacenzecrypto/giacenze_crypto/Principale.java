@@ -222,14 +222,9 @@ private static final long serialVersionUID = 3L;
         //Se nuova versione disponibile fa vedere il pulsante con il quale è possibile scaricarla.
         TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(false);
         Funzioni_NuovaVersioneDisponibile();
-        //TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(false);
         Prezzi.CompilaMoneteStessoPrezzo();
         Bottone_Titolo.setText(VarStatiche.Titolo);
-       // SwingUtilities.updateComponentTreeUI(this);
-      /*  if (!DatabaseH2.CreaoCollegaDatabase()){
-            JOptionPane.showConfirmDialog(null, "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-            System.exit(0);
-        }*/
+
               if (tema!=null&&tema.equalsIgnoreCase("Scuro"))
         {
             ((JTextFieldDateEditor)CDC_DataChooser_Iniziale.getDateEditor()).setBackground(Color.lightGray);
@@ -5433,10 +5428,7 @@ private void AvviaSplashScreen() {
     private void Funzione_CaricaTabelleSecondarieInBackgroud(){
         //Verranno caricate tutte le tabelle secondarie che dovranno essere aggiornate  ad ogni cambio della tabella principale
         SwingUtilities.invokeLater(() -> {
-             //   JOptionPane.showConfirmDialog(c, "Transazione con ID"+ID+" eliminata correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
-             //       "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-               
-        
+                   
       //  new Thread(() -> {
             long tempoOperazione=System.currentTimeMillis();
             SaldiNegativi_CompilaTabellaPrincipale();
@@ -6526,8 +6518,6 @@ private void AvviaSplashScreen() {
 
         DefaultTableModel CDC_CardWallet_ModelloTabella1 = (DefaultTableModel) CDC_CardWallet_Tabella1.getModel();
         DefaultTableModel CDC_CardWallet_ModelloTabella2 = (DefaultTableModel) CDC_CardWallet_Tabella2.getModel();
-      //  DefaultTableModel CDC_CardWallet_ModelloTabella2 = (DefaultTableModel) model;
-      //  CDC_CardWallet_Tabella2.setModel(model);
         
         Tabelle.Funzioni_PulisciTabella(CDC_CardWallet_ModelloTabella2);
         Tabelle.Funzioni_PulisciTabella(CDC_CardWallet_ModelloTabella1);
@@ -6593,14 +6583,10 @@ private void AvviaSplashScreen() {
                 Object CDC_CardWallet_RigaTabella1[]=new Object[2];
                 CDC_CardWallet_RigaTabella1[0]=key;
                 CDC_CardWallet_RigaTabella1[1]=Double.parseDouble(CDC_CardWallet_MappaCausali.get(key));
-                //CDC_CardWallet_RigaTabella1[1]=Double.parseDouble(CDC_CardWallet_MappaCausali.get(key));
                 CDC_CardWallet_ModelloTabella1.addRow(CDC_CardWallet_RigaTabella1);
             }
             this.CDC_CardWallet_Text_Spese.setText("€ "+TotaleSpese.multiply(new BigDecimal ("-1")).toString());
             this.CDC_CardWallet_Text_Entrate.setText("€ "+TotaleTopUpCarta.toString());
-            //CDC_CardWallet_Tabella1.getRowSorter().toggleSortOrder(1);
-            //CDC_CardWallet_Tabella1.getRowSorter().toggleSortOrder(1);
-           // ColoraRigaTabellaShadow(CDC_CardWallet_Tabella2);
                                   
    }
       
@@ -6641,8 +6627,6 @@ private void AvviaSplashScreen() {
     
     private void CDC_DataChooser_InizialePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_CDC_DataChooser_InizialePropertyChange
         // TODO add your handling code here:
-       // System.out.println(CDC_DataChooser_Iniziale.getDate());
-       //System.out.println(CDC_DataChooser_Iniziale.getDate());
 
         if (CDC_DataChooser_Iniziale.getDate()!=null){
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
@@ -6657,8 +6641,14 @@ private void AvviaSplashScreen() {
                 try {
                     //f.parse(CDC_DataIniziale)
                     CDC_DataChooser_Iniziale.setDate(f.parse(CDC_DataIniziale));
-                    JOptionPane.showConfirmDialog(this, "Attenzione, la data iniziale non può essere maggiore della data finale!",
-                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                    AppDialog.builder(this)
+                            .title("Attenzione")
+                            .showTitleInBody(false)
+                            .theme()
+                            .type(AppDialog.DialogType.WARNING)
+                            .message("Attenzione, la data iniziale non può essere maggiore della data finale!")
+                            .primaryAction("ok", "OK")
+                            .showDialog();
                 } catch (ParseException ex) {
                     LoggerGC.ScriviErrore(ex);
                 }
@@ -6666,7 +6656,6 @@ private void AvviaSplashScreen() {
         }
                     
 
-       // CDC_DataChooser_Iniziale.getDate()
     }//GEN-LAST:event_CDC_DataChooser_InizialePropertyChange
 
     private void CDC_DataChooser_FinalePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_CDC_DataChooser_FinalePropertyChange
@@ -6682,12 +6671,18 @@ private void AvviaSplashScreen() {
                 
               
             }
-            else if(Funzioni_Date_ConvertiDatainLong(Data)<Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale)) {
+            else if (Funzioni_Date_ConvertiDatainLong(Data) < Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale)) {
                 try {
-                    //f.parse(CDC_DataIniziale)
+
                     CDC_DataChooser_Finale.setDate(f.parse(CDC_DataFinale));
-                    JOptionPane.showConfirmDialog(this, "Attenzione, la data finale non può essere minore della data iniziale!",
-                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                    AppDialog.builder(this)
+                            .title("Attenzione")
+                            .showTitleInBody(false)
+                            .theme()
+                            .type(AppDialog.DialogType.WARNING)
+                            .message("Attenzione, la data finale non può essere minore della data iniziale!")
+                            .primaryAction("ok", "OK")
+                            .showDialog();
                 } catch (ParseException ex) {
                     LoggerGC.ScriviErrore(ex);
                 }
@@ -7456,8 +7451,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     
     private void DepositiPrelieviComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_DepositiPrelieviComponentShown
         // TODO add your handling code here:
-      //  DepositiPrelievi_Caricatabella();
-      //System.out.println("mi vedi");
+
     }//GEN-LAST:event_DepositiPrelieviComponentShown
 
     private void DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
@@ -7677,14 +7671,29 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         
        // this.CDC.setSelectedIndex(0);
         if (numeromodifiche>0){
-        JOptionPane.showConfirmDialog(this, "Sono stati individuati e aggiornati "+numeromodifiche+" coppie di transazioni, ricordarsi di salvare le modifiche!!",
-        "Resoconto",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+
+       AppDialog.builder(this)
+        .title("Resoconto")
+        .showTitleInBody(false)
+        .theme()
+        .type(AppDialog.DialogType.INFO)
+        .message("Sono stati individuati e aggiornati " + numeromodifiche
+                + " coppie di transazioni, ricordarsi di salvare le modifiche!!")
+        .primaryAction("ok", "OK")
+        .showDialog();
             Funzioni_AggiornaTutto();
           //  DepositiPrelievi_Caricatabella();
         }
         else{
-        JOptionPane.showConfirmDialog(this, "Non sono state trovare nuove coppie di transazioni da abbinare automaticamente",
-        "Resoconto",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);   
+
+        AppDialog.builder(this)
+        .title("Resoconto")
+        .showTitleInBody(false)
+        .theme()
+        .type(AppDialog.DialogType.INFO)
+        .message("Non sono state trovare nuove coppie di transazioni da abbinare automaticamente")
+        .primaryAction("ok", "OK")
+        .showDialog();
         }
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
@@ -7949,8 +7958,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     InfoRitorno = new Prezzi.InfoPrezzo(Ritorno[1]);
                 }
 
-                // String Prezz = Funzioni.GUIDammiPrezzo(this, mon, FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo), Qta.toString(), Prezzo);
-                //String Prezz = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " in data "+DataPrezzo+" : ", Prezzo);
                 if (Prezz != null) {
                     //Adesso devo cercare tutte le movimentazioni di questa moneta e visto che non ho l'id della transazione
                     //recuperare tutti gli address, poi dovrò modificare il prezzo su tutti questi.(per la defi sono obbligato ad usare gli address)
@@ -8007,10 +8014,22 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 }
 
             } else {
-                JOptionPane.showConfirmDialog(this, "<html>Attenzione<br>"
-                        + "Siccome il valore è legato ad un movimento specifico verra' proposto la modifica dello stesso.<br>"
-                        + "Questo potrebbe inficiare anche sul valore di altri righi che fanno riferimento allo stesso movimento.</html>",
-                        "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                AppDialog.builder(this)
+                        .windowTitle("Attenzione!")
+                        .bodyTitle("Attenzione")
+                        .showTitleInBody(false)
+                        .theme()
+                        .type(AppDialog.DialogType.INFO)
+                        .message("""
+                Siccome il valore è legato a un movimento specifico, verrà proposta
+                la modifica dello stesso.
+                """)
+                        .details("""
+                Questo potrebbe influire anche sul valore di altri righi che fanno
+                riferimento allo stesso movimento.
+                """)
+                        .primaryAction("ok", "OK")
+                        .showDialog();
                 GUI_ModificaMovimento a = new GUI_ModificaMovimento();
                 a.CompilaCampidaID(ID);
                 a.setLocationRelativeTo(this);
@@ -8083,16 +8102,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 
                 //Questa parte mi serve per recuperare il timestamp del prezzo memorizzato e cancellarlo dai personalizzati prima
                 //di scrivere il nuovo
-              /*  Prezzi.InfoPrezzo IPr=Prezzi.DammiPrezzoInfoTransazione(MU, null, DataCalcoli,"","" );
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                long timestampDaCancellare=0;
-                String InfoPrz="";
-                if (IPr!=null)
-                {
-                    timestampDaCancellare=IPr.timestamp;
-                    InfoPrz=IPr.Ritorna40();
-                }*/
-                //String Prezz = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " in data "+DataPrezzo+" : ", Prezzo);
+
                 long timestampDaCancellare=Prezzi.GUI_ModificaPrezzoConAttesa(MU,Ritorno,this,FunzioniDate.ConvertiDatainLongSecondo(DataPrezzo),Prezzo);
                 String Prezz=Ritorno[0];
                 Prezzi.InfoPrezzo InfoRitorno=new Prezzi.InfoPrezzo();
@@ -8243,12 +8253,35 @@ GiacenzeaData_CompilaTabellaToken(true);
             else
               {
                   if (Address != null && Rete != null && Address.equalsIgnoreCase(Rete)){
-                      JOptionPane.showConfirmDialog(this, "Non si possono visualizzare i movimenti del token Nativo \nselezionare un'altro token",
-                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                      AppDialog.builder(this)
+                              .windowTitle("Attenzione!")
+                              .bodyTitle("Attenzione")
+                              .showTitleInBody(false)
+                              .theme()
+                              .type(AppDialog.DialogType.WARNING)
+                              .message("""
+                Non si possono visualizzare i movimenti del token Nativo.
+                """)
+                              .details("""
+                Selezionare un'altro token.
+                """)
+                              .primaryAction("ok", "OK")
+                              .showDialog();
                   }
                   else{
                     JOptionPane.showConfirmDialog(this, "Per vedere i dettagli dei movimenti in explorer \nselezionare un singolo Wallet",
                             "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                    AppDialog.builder(this)
+                              .windowTitle("Attenzione!")
+                              .bodyTitle("Attenzione")
+                              .showTitleInBody(false)
+                              .theme()
+                              .type(AppDialog.DialogType.WARNING)
+                              .message("""
+                Per vedere i dettagli dei movimenti in explorer selezionare un singolo Wallet
+                """)
+                              .primaryAction("ok", "OK")
+                              .showDialog();
                   }
               }  
         }
@@ -8283,8 +8316,20 @@ GiacenzeaData_CompilaTabellaToken(true);
             
             else
               {
-                JOptionPane.showConfirmDialog(this, "Il Wallet selezionato non è valido \nselezionare un altro Wallet",
-                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                AppDialog.builder(this)
+                              .windowTitle("Attenzione!")
+                              .bodyTitle("Attenzione")
+                              .showTitleInBody(false)
+                              .theme()
+                              .type(AppDialog.DialogType.WARNING)
+                              .message("""
+                Il Wallet selezionato non è valido.
+                """)
+                              .details("""
+                Selezionare un altro Wallet.
+                """)
+                              .primaryAction("ok", "OK")
+                              .showDialog();
               }  
         
     }//GEN-LAST:event_GiacenzeaData_Bottone_GiacenzeExplorerMouseClicked
@@ -8341,42 +8386,159 @@ GiacenzeaData_CompilaTabellaToken(true);
                     
             //========= SE SONO PRESENTI GIACENZE NEGATIVE PRECEDENTI AVVISO E CHIEDO SE SI VUOLE CONTINUARE =========
             
-                    if (GiacNegativaPrecedente.equals("S")){
-                //Se arrivo qua vuol dire che sto cercando di modificare la giacenza di un token che ha saldi negativi precedenti
+                    if (GiacNegativaPrecedente.equals("S")) {
+                        //Se arrivo qua vuol dire che sto cercando di modificare la giacenza di un token che ha saldi negativi precedenti
                 //In questo caso emetto un messaggio di alert che avvisa che sarebbe meglio correggere queste giacenze in ordine.
-                String testo = """
-                <html>
-                <b>Attenzione:</b><br><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;
-                               Stai tentando di <b>cambiare la giacenza</b> di un token che ha avuto <b>saldi negativi <u>in passato</u></b>.<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;
-                               Sarebbe consigliabile <u>correggere i movimenti in ordine cronologico</u> per evitare discrepanze nei calcoli.<br><br>
-                    <b>Vuoi comunque proseguire con la modifica?</b>
-                    </html>
-                """;
-                JLabel labelTesto = new JLabel(testo);
-                labelTesto.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 14));
-               int risposta=JOptionPane.showOptionDialog(this,labelTesto, "Avviso", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[]{"Si", "No"}, "No");
-            if (risposta!=0){
-                return;
-            } 
+                        AppDialog.DialogResult result = AppDialog.builder(this)
+                                .windowTitle("Avviso")
+                                .bodyTitle("Attenzione")
+                                .showTitleInBody(true)
+                                .theme()
+                                .type(AppDialog.DialogType.WARNING)
+                                .message("""
+                    Stai tentando di cambiare la giacenza di un token che ha avuto
+                    saldi negativi in passato.
+                    """)
+                                .details("""
+                    Sarebbe consigliabile correggere i movimenti in ordine cronologico
+                    per evitare discrepanze nei calcoli.
 
-            }
+                    Vuoi comunque proseguire con la modifica?
+                    """)
+                                .secondaryAction("si", "Si")
+                                .primaryAction("no", "No")
+                                .showDialog();
+
+                        if (result.isAction("no")) {
+                            return;
+                        }
+                    }
                     
                     QtaNuovoMovimento = GiacenzaVoluta.subtract(GiacenzaAttuale);
                     String SQta = QtaNuovoMovimento.toPlainString();
                    // BigDecimal ValoreMovOrigine=new BigDecimal(TabMovimenti.getModel().getValueAt(rigaselezionata, 6).toString());
-                    BigDecimal QtaMovOrigine=new BigDecimal(TabMovimenti.getModel().getValueAt(rigaselezionata, 5).toString());
-                    if (QtaMovOrigine.compareTo(BigDecimal.ZERO)==0)
-                    {
+                    BigDecimal QtaMovOrigine = new BigDecimal(TabMovimenti.getModel().getValueAt(rigaselezionata, 5).toString());
+                    if (QtaMovOrigine.compareTo(BigDecimal.ZERO) == 0) {
                         LoggerGC.ScriviErrore("QtaMovOrigine=0, esco dalla funzione");
                         return;
                     }
-                     //   BigDecimal ValoreUnitarioToken=ValoreMovOrigine.divide(QtaMovOrigine,DecimaliCalcoli+10, RoundingMode.HALF_UP).abs();
-                        
-            // ========== SE DEVO INSERIRE UN MOVIMENTO NEGATIVO CHIEDO COME CLASSIFICARLO ==========
-            
+                    //   BigDecimal ValoreUnitarioToken=ValoreMovOrigine.divide(QtaMovOrigine,DecimaliCalcoli+10, RoundingMode.HALF_UP).abs();
+
+                    // ========== SE DEVO INSERIRE UN MOVIMENTO NEGATIVO CHIEDO COME CLASSIFICARLO ==========
                     if (SQta.contains("-")) {
+                        scelta=0;
+                        AppDialog.DialogResult result = AppDialog.builder(this)
+                                .windowTitle("Classificazione del movimento")
+                                .bodyTitle("Nuovo movimento di prelievo")
+                                .showTitleInBody(true)
+                                .theme()
+                                .type(AppDialog.DialogType.WARNING)
+                                .message("""
+                    Per raggiungere la giacenza desiderata è necessario generare
+                    un movimento di prelievo di %s unità.
+                    """.formatted(SQta.replace("-", "")))
+                                .details("""
+                    Scegli come classificare il movimento da creare.
+                    """)
+                                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                                        .role(AppDialog.ActionRole.SECONDARY)
+                                        .build())
+                                .action(AppDialog.DialogAction.builder("later", "Nessuna Classificazione")
+                                        .role(AppDialog.ActionRole.NEUTRAL)
+                                        .build())
+                                .action(AppDialog.DialogAction.builder("cashout", "Cash out")
+                                        .role(AppDialog.ActionRole.PRIMARY)
+                                        .build())
+                                .action(AppDialog.DialogAction.builder("commissione", "Commissione")
+                                        .role(AppDialog.ActionRole.NEUTRAL)
+                                        .build())
+                                .action(AppDialog.DialogAction.builder("rettifica", "<html>Rettifica giacenza<br>(Nessuna Plus calcolata)</html>")
+                                        .role(AppDialog.ActionRole.NEUTRAL)
+                                        .build())
+                                .showDialog();
+
+                        String sceltaAzione = result.getActionId();
+
+                        if (sceltaAzione == null || sceltaAzione.equals("cancel")) {
+                            return;
+                        }
+
+                        String nota = JOptionPane.showInputDialog(
+                                this,
+                                "<html>Inserire un'eventuale nota sul movimento:</html>",
+                                "Rettifica di giacenza"
+                        );
+
+                        if (nota != null) {
+                            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+                            String[] RTOri = MappaCryptoWallet.get(IDTrans);
+
+                            Moneta M1 = new Moneta();
+                            M1.Moneta = Moneta;
+                            M1.MonetaAddress = AddressMoneta;
+                            M1.Qta = SQta;
+                            M1.Tipo = TipoMoneta;
+                            M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
+
+                            if (!nota.contains("Rettifica")) {
+                                nota = "Rettifica<br>" + nota;
+                            }
+
+                            String[] IDOriSplittato = RTOri[0].split("_");
+                            IDOriSplittato[4] = "PC";
+                            String NuovoID = String.join("_", IDOriSplittato);
+                            NuovoID = MovimentiCrypto.IncDecID(NuovoID, 1, true);
+
+                            String tipoDaPassare = null;
+
+                            switch (sceltaAzione) {
+                                case "later" -> {
+                                    // Non classifico ora il movimento
+                                    scelta=1;
+                                }
+                                case "cashout" ->
+                                {
+                                    tipoDaPassare = "CASHOUT O SIMILARE";
+                                    scelta=1;}
+                                case "commissione" ->
+                                {
+                                    tipoDaPassare = "COMMISSIONE";
+                                    scelta=1;}
+                                case "rettifica" ->
+                                {
+                                    tipoDaPassare = "RETTIFICA GIACENZA";
+                                    scelta=1;
+                                }
+                                default -> {
+                                    return;
+                                }
+                            }
+
+                            String[] RT2 = MovimentiCrypto.creaMovimento(
+                                    M1,
+                                    null,
+                                    RTOri[3],
+                                    RTOri[4],
+                                    0,
+                                    null,
+                                    null,
+                                    1,
+                                    1,
+                                    NuovoID,
+                                    nota,
+                                    "M",
+                                    null,
+                                    tipoDaPassare,
+                                    null
+                            );
+
+                            MappaCryptoWallet.put(RT2[0], RT2);
+                        }
+                    }
+            
+            
+                   /* if (SQta.contains("-")) {
                         //Gestisco i movimenti di scarico (Prelievi)
                         String Testo = "<html>Per raggiungere la giacenza desiderata devo generare un movimento<br>"
                                 + "di prelievo di <b>" + SQta.replace("-", "") + "</b> unità<br><br>"
@@ -8461,7 +8623,7 @@ GiacenzeaData_CompilaTabellaToken(true);
 
                             }
                         }
-                    } else {
+                    }*/ else {
                         
                 // ========== SE DEVO INSERIRE UN MOVIMENTO POSITIVO CHIEDO COME CLASSIFICARLO ==========
                         
@@ -9870,18 +10032,7 @@ GiacenzeaData_CompilaTabellaToken(true);
         System.out.println("Chiusura");
         
         if(TransazioniCrypto_Bottone_Salva.isEnabled()){
-            
-             /*        String Messaggio="Attenzione, ci sono movimenti non salvati.\n"
-                     + "Si vuole salvare prima di chiudere?";
-             int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Movimenti non salvati", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-                //Si=0
-                //No=1
-                switch (risposta) {
-                    case 0 -> {
-                        Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet,false);
-                    }
 
-                } */
                 
                 AppDialog.DialogResult result = AppDialog.builder(this)
                         .windowTitle("Movimenti non salvati")
@@ -13195,8 +13346,14 @@ GiacenzeaData_CompilaTabellaToken(true);
                     TabellaCryptodaAggiornare = true;
                     return m;
                 } else {
-                    JOptionPane.showConfirmDialog(this, "Attenzione, " + m + " non è un nome valido!",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    AppDialog.builder(this)
+                            .title("Attenzione")
+                            .showTitleInBody(false)
+                            .theme()
+                            .type(AppDialog.DialogType.WARNING)
+                            .message("Attenzione, " + m + " non è un nome valido!")
+                            .primaryAction("ok", "OK")
+                            .showDialog();
                     return NomeMoneta;
                 }
             }
@@ -13235,8 +13392,16 @@ GiacenzeaData_CompilaTabellaToken(true);
                     TabellaCryptodaAggiornare = true;
                     return NuovoNome;
                 } else {
-                    JOptionPane.showConfirmDialog(this, "Attenzione, " + NuovoNome + " non è un nome valido!",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+
+                    AppDialog.builder(this)
+                            .title("Attenzione")
+                            .showTitleInBody(false)
+                            .theme()
+                            .type(AppDialog.DialogType.WARNING)
+                            .message("Attenzione, " + NuovoNome + " non è un nome valido!")
+                            .primaryAction("ok", "OK")
+                            .showDialog();
+                    
                     return NomeMoneta;
                 }
             }
@@ -13481,12 +13646,18 @@ try {
             wDEFI.close();
             b.close();
             w.close();
-            //File a=fc.getSelectedFile();
-            JOptionPane.showConfirmDialog(null, "<html><b>Elaborazione Terminata</b><br>"
-                    + "File Salvato in "+fc.getSelectedFile().getAbsolutePath(),
-                            "Fine Esportazione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-          //  Desktop desktop = Desktop.getDesktop();  
-         //   desktop.open(export);
+
+            AppDialog.builder(null)
+                    .windowTitle("Fine Esportazione")
+                    .bodyTitle("Elaborazione Terminata")
+                    .showTitleInBody(true)
+                    .theme()
+                    .type(AppDialog.DialogType.INFO)
+                    .message("File salvato correttamente.")
+                    .details("Percorso: " + fc.getSelectedFile().getAbsolutePath())
+                    .primaryAction("ok", "OK")
+                    .showDialog();
+
 } 
         } catch (IOException ex) {
             LoggerGC.ScriviErrore(ex);
@@ -13693,8 +13864,14 @@ try {
                         }
                         GiacenzeaData_Totali_TextField.setText("");
 
-                        JOptionPane.showConfirmDialog(progress, "Elaborazione Interrotta!",
-                                "Attenzione", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                        AppDialog.builder(progress)
+                            .title("Attenzione")
+                            .showTitleInBody(false)
+                            .theme()
+                            .type(AppDialog.DialogType.WARNING)
+                            .message("Elaborazione Interrotta!")
+                            .primaryAction("ok", "OK")
+                            .showDialog();
                         progress.ChiudiFinestra();
                         try {
                             this.join();
@@ -13946,78 +14123,8 @@ try {
             GiacenzeaData_Wallet2_ComboBox.setSelectedItem(VecchioValore);
            }
      }
-/*    public void TransazioniCrypto_Funzioni_AggiornaDefi(List<String> Portafogli,String apiKey) {
-        Component c=this;
-        Download progress=new Download();
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        progress.setLocationRelativeTo(this);
-        
-        Thread thread;
-            thread = new Thread() {
-            public void run() {
-        Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.DeFi_RitornaTransazioni(Portafogli,c,progress);
-        if (MappaTransazioniDefi != null) {
 
-            int i=0;
-            for (TransazioneDefi v : MappaTransazioniDefi.values()) {
-                for (String[] st : v.RitornaRigheTabella()) {
-                    MappaCryptoWallet.put(st[0], st);
-                    i++;
-                }
-            }
-            Calcoli.ScriviFileConversioneXXXEUR();
-           
-            Plusvalenze.AggiornaPlusvalenze();
-            Importazioni.TransazioniAggiunte=i;
-            progress.dispose();
-                       
-        }       
-        }
-            };
-        thread.start();  
-        progress.setVisible(true);
-        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-        JOptionPane.showConfirmDialog(this, "Importazione Terminata \nSono stati inseriti "+Importazioni.TransazioniAggiunte+" nuovi movimenti",
-                "Importazione Terminata",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-        this.setCursor(Cursor.getDefaultCursor());
-    }*/
-            
-    
-    
-    
-/*    public void TransazioniCrypto_Funzioni_PulisciMovimentiAssociatinonEsistenti(){
-        //questa funziona va lanciata ad ogni fine importazione per verificare non vi siano modifiche
-        //su movimenti già associati
-        for (String[] v : MappaCryptoWallet.values()) {
-          if (v[18]!=null&&(v[18].contains("DTW")||v[18].contains("PTW")))
-          {
-              String ID=v[0];
-              String riferimento=v[20];   
-              //FUNZIONE COMPLETAMENTE DA RIVEDERE, SERVE PER TROVARE MOVIMENTI ASSOCIATI NON PIU TALI E CANCELLARE LE ANOMALIE
-              //QUESTO PUò SUCCEDERE SE SI UTILIZZA LA FUNZIONE SOVRASCRIVI IN FASE DI IMPORTAZIONE DATI
-              //IN SOSTANZA SE NON TROVO TUTTI I RIFERIMENTI SU TUTTI I MOVIMENTI ASSOCIATI DEVO RIPORTARE IL TUTTO
-              //ALLA CONDIZIONE INIZIALE
-   /*           String movimentiOpposti[]=MappaCryptoWallet.get(riferimento)[20].split(",");
-              for (String IDmovimentoOpposto:movimentiOpposti){
-              //String movimentoOpposto
-              String movimentoOpposto[]=MappaCryptoWallet.get(IDmovimentoOpposto);
-              
-              
-              if (movimentoOpposto==null || !movimentoOpposto[20].equalsIgnoreCase(ID)){
-                //se il movimento opposto non esiste oppure se sul movimento opposto non trovo l'id di questo movimento allora pulisco le righe
-                if (v[18].contains("DTW"))v[5]="DEPOSITO CRYPTO"; else v[5]="PRELIEVO CRYPTO";
-                v[18]="";
-                }
-                  
-              }
-            
-            }
-          }
-    }*/
-    
-
-  
-    
+ 
 
     
     

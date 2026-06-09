@@ -18,6 +18,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 public class AppDialog extends JDialog {
+    
+    private JTextField inputField;
 
     public enum ThemeMode {
         LIGHT, DARK
@@ -34,32 +36,55 @@ public class AppDialog extends JDialog {
     public enum CloseReason {
         ACTION, WINDOW_CLOSE
     }
+    
+    
+    
+    
 
     public static final class DialogResult {
-        private final String actionId;
-        private final CloseReason closeReason;
+    private final String actionId;
+    private final CloseReason closeReason;
+    private final String inputValue;
 
-        public DialogResult(String actionId, CloseReason closeReason) {
-            this.actionId = actionId;
-            this.closeReason = closeReason;
-        }
-
-        public String getActionId() {
-            return actionId;
-        }
-
-        public CloseReason getCloseReason() {
-            return closeReason;
-        }
-
-        public boolean isAction(String id) {
-            return Objects.equals(this.actionId, id);
-        }
-
-        public boolean isClosedByWindow() {
-            return closeReason == CloseReason.WINDOW_CLOSE;
-        }
+    public DialogResult(String actionId, CloseReason closeReason) {
+        this(actionId, closeReason, null);
     }
+
+    public DialogResult(String actionId, CloseReason closeReason, String inputValue) {
+        this.actionId = actionId;
+        this.closeReason = closeReason;
+        this.inputValue = inputValue;
+    }
+
+    public String getActionId() {
+        return actionId;
+    }
+
+    public CloseReason getCloseReason() {
+        return closeReason;
+    }
+
+    public String getInputValue() {
+        return inputValue;
+    }
+
+    public boolean isAction(String id) {
+        return Objects.equals(this.actionId, id);
+    }
+
+    public boolean isClosedByWindow() {
+        return closeReason == CloseReason.WINDOW_CLOSE;
+    }
+
+    public boolean hasInputValue() {
+        return inputValue != null;
+    }
+    
+    
+    
+    
+    
+}
 
     public static final class DialogAction {
         private final String id;
@@ -99,6 +124,9 @@ public class AppDialog extends JDialog {
         public static Builder builder(String id, String text) {
             return new Builder(id, text);
         }
+        
+        
+        
 
         public static final class Builder {
             private final String id;
@@ -111,6 +139,8 @@ public class AppDialog extends JDialog {
                 this.id = Objects.requireNonNull(id, "id");
                 this.text = Objects.requireNonNull(text, "text");
             }
+            
+            
 
             public Builder role(ActionRole role) {
                 this.role = Objects.requireNonNull(role);
@@ -132,6 +162,38 @@ public class AppDialog extends JDialog {
             }
         }
     }
+    
+    public static String showTextInputDialog(
+        Window owner,
+        String windowTitle,
+        String bodyTitle,
+        String message,
+        String inputLabel,
+        String initialValue) {
+
+    DialogResult result = AppDialog.builder(owner)
+            .windowTitle(windowTitle)
+            .bodyTitle(bodyTitle)
+            .showTitleInBody(bodyTitle != null && !bodyTitle.isBlank())
+            .theme()
+            .type(DialogType.INFO)
+            .message(message)
+            .inputField(inputLabel, initialValue)
+            .action(DialogAction.builder("cancel", "Annulla")
+                    .role(ActionRole.SECONDARY)
+                    .build())
+            .action(DialogAction.builder("ok", "Conferma")
+                    .role(ActionRole.PRIMARY)
+                    .build())
+            .showDialog();
+
+    if (!result.isAction("ok")) {
+        return null;
+    }
+
+    return result.getInputValue();
+}
+
 
     public static final class UiTheme {
         public final Color background;
@@ -249,8 +311,33 @@ public class AppDialog extends JDialog {
         private boolean resizable = false;
         private int maxButtons = 8;
         private int minWidth = 540;
+        
+        private boolean inputEnabled = false;
+        private String inputLabel;
+        private String inputInitialValue = "";
+        private int inputColumns = 28;
+        
+        
 
         private final List<DialogAction> actions = new ArrayList<>();
+        
+        public Builder inputField(String label) {
+            this.inputEnabled = true;
+            this.inputLabel = label;
+            return this;
+        }
+
+        public Builder inputField(String label, String initialValue) {
+            this.inputEnabled = true;
+            this.inputLabel = label;
+            this.inputInitialValue = initialValue != null ? initialValue : "";
+            return this;
+        }
+
+        public Builder inputColumns(int inputColumns) {
+            this.inputColumns = Math.max(10, inputColumns);
+            return this;
+        }
 
         private Builder(Window owner) {
             this.owner = owner;
@@ -438,7 +525,10 @@ public class AppDialog extends JDialog {
         setLocationRelativeTo(getOwner());
 
         SwingUtilities.invokeLater(() -> {
-            if (!actionButtons.isEmpty()) {
+            if (config.inputEnabled && inputField != null) {
+                inputField.requestFocusInWindow();
+                inputField.selectAll();
+            } else if (!actionButtons.isEmpty()) {
                 int index = focusedButtonIndex >= 0 ? focusedButtonIndex : 0;
                 focusButtonAt(index);
                 refreshButtonStyles();
@@ -476,6 +566,33 @@ public class AppDialog extends JDialog {
             panel.add(Box.createVerticalStrut(10));
             panel.add(detailsLabel);
         }
+        
+        if (config.inputEnabled) {
+    panel.add(Box.createVerticalStrut(12));
+
+    if (config.inputLabel != null && !config.inputLabel.isBlank()) {
+        JLabel inputLabel = new JLabel(config.inputLabel);
+        inputLabel.setFont(theme.messageFont);
+        inputLabel.setForeground(theme.textPrimary);
+        inputLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(inputLabel);
+        panel.add(Box.createVerticalStrut(6));
+    }
+
+    inputField = new JTextField(config.inputInitialValue, config.inputColumns);
+    inputField.setFont(theme.messageFont.deriveFont(16f));
+    inputField.setForeground(theme.textPrimary);
+    inputField.setBackground(theme.surface);
+    inputField.setCaretColor(theme.textPrimary);
+    inputField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(theme.border),
+            new EmptyBorder(8, 10, 8, 10)
+    ));
+    inputField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+    inputField.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+    panel.add(inputField);
+}
 
         return panel;
     }
@@ -541,7 +658,8 @@ public class AppDialog extends JDialog {
         });
 
         button.addActionListener(e -> {
-            result = new DialogResult(action.getId(), CloseReason.ACTION);
+            String value = inputField != null ? inputField.getText() : null;
+            result = new DialogResult(action.getId(), CloseReason.ACTION, value);
 
             if (action.getHandler() != null) {
                 action.getHandler().accept(AppDialog.this);
@@ -782,18 +900,26 @@ public class AppDialog extends JDialog {
     }
 
     private void pressFocusedButton() {
-        JButton button = getFocusedActionButton();
-
-        if (button != null) {
-            button.doClick();
-            return;
-        }
-
+    if (config.inputEnabled) {
         JButton defaultButton = getRootPane().getDefaultButton();
         if (defaultButton != null) {
             defaultButton.doClick();
         }
+        return;
     }
+
+    JButton button = getFocusedActionButton();
+
+    if (button != null) {
+        button.doClick();
+        return;
+    }
+
+    JButton defaultButton = getRootPane().getDefaultButton();
+    if (defaultButton != null) {
+        defaultButton.doClick();
+    }
+}
 
     private JButton getFocusedActionButton() {
         Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();

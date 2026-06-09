@@ -112,7 +112,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
         Label_TipoFile.setText("Selezionare il tipo di file da importare");
 
-        ComboBox_TipoFile.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Crypto.com App CSV", "Crypto.com Exchange CSV", "Binance CSV", "Binance Financial Report", "CoinTracking.info CSV", "Tatax CSV", "OKX CSV (Alpha)", "Test" }));
+        ComboBox_TipoFile.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Crypto.com App CSV", "Crypto.com Exchange CSV", "Binance CSV", "Binance Financial Report", "CoinTracking.info CSV", "Tatax CSV (vecchia versione)", "OKX CSV (Alpha)", "Test" }));
         ComboBox_TipoFile.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 ComboBox_TipoFileItemStateChanged(evt);
@@ -240,7 +240,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             ComboBox_TipoFile.getSelectedIndex()).trim();
 
     if (voceSelezionata.equalsIgnoreCase("CoinTracking.info CSV") ||
-        voceSelezionata.equalsIgnoreCase("Tatax CSV")) {
+        voceSelezionata.contains("Tatax CSV")) {
 
         // --- Comportamento originale CoinTracking / Tatax ---
         Label_TipoImport.setEnabled(true);

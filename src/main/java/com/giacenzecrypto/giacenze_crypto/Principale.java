@@ -1318,7 +1318,7 @@ private static final long serialVersionUID = 3L;
                                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                                                    .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 112, Short.MAX_VALUE)
                                                     .addComponent(TransazioniCrypto_Text_CostiCarico))
                                                 .addGap(51, 51, 51)
                                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1357,7 +1357,7 @@ private static final long serialVersionUID = 3L;
                                 .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 82, Short.MAX_VALUE)
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
+                            .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 274, Short.MAX_VALUE)
                             .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                         .addComponent(jSeparator10, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1414,7 +1414,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo))
                 .addGap(5, 5, 5)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1440,7 +1440,7 @@ private static final long serialVersionUID = 3L;
                             .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
                         .addComponent(Bottone_Errori, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
                         .addComponent(TransazioniCrypto_Bottone_AggiorbaVersione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(TransazioniCrypto_TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addGap(13, 13, 13))
@@ -3948,7 +3948,7 @@ private static final long serialVersionUID = 3L;
         jLabel9.setText("Scegli il wallet da esportare : ");
 
         Opzioni_Export_Tatax_Bottone.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
-        Opzioni_Export_Tatax_Bottone.setText("Genera File per Tatax");
+        Opzioni_Export_Tatax_Bottone.setText("Genera File per Tatax (Versione pre 2026)");
         Opzioni_Export_Tatax_Bottone.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_Export_Tatax_BottoneActionPerformed(evt);
@@ -8337,427 +8337,10 @@ GiacenzeaData_CompilaTabellaToken(true);
     private void GiacenzeaData_Bottone_RettificaQtaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_RettificaQtaMouseReleased
         // TODO add your handling code here:
         //  boolean completato;
-        GiacenzeaData_Funzione_SistemaQta(GiacenzeaData_TabellaDettaglioMovimenti,Giacenzeadata_Walleta_Label.getText().trim());
+        if(F_GiacenzeaData.GiacenzeaData_Funzione_SistemaQta(GiacenzeaData_TabellaDettaglioMovimenti,Giacenzeadata_Walleta_Label.getText().trim(),this))
         GiacenzeaData_CompilaTabellaToken(true);
     }//GEN-LAST:event_GiacenzeaData_Bottone_RettificaQtaMouseReleased
-
-    private void GiacenzeaData_Funzione_SistemaQta(JTable TabMovimenti,String Wallet) {
-        int rigaselezionata=Tabelle.Funzioni_getRigaSelezionata(TabMovimenti);
-        if (rigaselezionata >= 0) {
-            int scelta;
-            String Moneta = TabMovimenti.getModel().getValueAt(rigaselezionata, 2).toString();
-            String IDTrans = TabMovimenti.getModel().getValueAt(rigaselezionata, 8).toString();
-            //Adesso recupero tipo moneta e address dalla transazione
-            String mov[]=Principale.MappaCryptoWallet.get(IDTrans);
-            String TipoMoneta;
-            String AddressMoneta;
-            if(Moneta.equals(mov[8]))
-            {
-                TipoMoneta=mov[9];
-                AddressMoneta=mov[26];
-            }
-            else
-            {
-                //se non è il token in uscita allora è quello in ingresso
-                TipoMoneta=mov[12];
-                AddressMoneta=mov[28];
-            }
-                        
-            String GiacenzaAttualeS = TabMovimenti.getModel().getValueAt(rigaselezionata, 7).toString();
-            String GiacNegativaPrecedente = TabMovimenti.getModel().getValueAt(rigaselezionata, 9).toString();
-
-          //  long DataRiferimento;
-            BigDecimal GiacenzaAttuale = new BigDecimal(GiacenzaAttualeS);
-            BigDecimal GiacenzaVoluta = new BigDecimal(0);
-            BigDecimal QtaNuovoMovimento;
-            
-            if (Wallet==null || !Wallet.equalsIgnoreCase("tutti")){
-            if (TipoMoneta.equalsIgnoreCase("Crypto")){
-            
-            //========== MESSAGGIO INIZIALE, CHIEDO DI INSERIRE LA NUOVA GIACENZA =========
-            
-            String m = JOptionPane.showInputDialog(this, "<html>Il saldo alla data selezionata è : <b>" + GiacenzaAttuale.toPlainString() + "</b> <br>"
-                    + "Indicare nel riquadro sottostante la giacenza che il token <b>" + Moneta + "</b> dovrà avere al termine dell'operazione: </html>", GiacenzaVoluta);
-            //  completato = m!=null; //se premo annulla nel messaggio non devo poi chiudere la finestra, quindi metto completato=false
-            if (m != null) {
-                m = m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
-                if (Principale.Funzioni_isNumeric(m, false)) {
-                    GiacenzaVoluta = new BigDecimal(m);
-                    
-            //========= SE SONO PRESENTI GIACENZE NEGATIVE PRECEDENTI AVVISO E CHIEDO SE SI VUOLE CONTINUARE =========
-            
-                    if (GiacNegativaPrecedente.equals("S")) {
-                        //Se arrivo qua vuol dire che sto cercando di modificare la giacenza di un token che ha saldi negativi precedenti
-                //In questo caso emetto un messaggio di alert che avvisa che sarebbe meglio correggere queste giacenze in ordine.
-                        AppDialog.DialogResult result = AppDialog.builder(this)
-                                .windowTitle("Avviso")
-                                .bodyTitle("Attenzione")
-                                .showTitleInBody(true)
-                                .theme()
-                                .type(AppDialog.DialogType.WARNING)
-                                .message("""
-                    Stai tentando di cambiare la giacenza di un token che ha avuto
-                    saldi negativi in passato.
-                    """)
-                                .details("""
-                    Sarebbe consigliabile correggere i movimenti in ordine cronologico
-                    per evitare discrepanze nei calcoli.
-
-                    Vuoi comunque proseguire con la modifica?
-                    """)
-                                .secondaryAction("si", "Si")
-                                .primaryAction("no", "No")
-                                .showDialog();
-
-                        if (result.isAction("no")) {
-                            return;
-                        }
-                    }
-                    
-                    QtaNuovoMovimento = GiacenzaVoluta.subtract(GiacenzaAttuale);
-                    String SQta = QtaNuovoMovimento.toPlainString();
-                   // BigDecimal ValoreMovOrigine=new BigDecimal(TabMovimenti.getModel().getValueAt(rigaselezionata, 6).toString());
-                    BigDecimal QtaMovOrigine = new BigDecimal(TabMovimenti.getModel().getValueAt(rigaselezionata, 5).toString());
-                    if (QtaMovOrigine.compareTo(BigDecimal.ZERO) == 0) {
-                        LoggerGC.ScriviErrore("QtaMovOrigine=0, esco dalla funzione");
-                        return;
-                    }
-                    //   BigDecimal ValoreUnitarioToken=ValoreMovOrigine.divide(QtaMovOrigine,DecimaliCalcoli+10, RoundingMode.HALF_UP).abs();
-
-                    // ========== SE DEVO INSERIRE UN MOVIMENTO NEGATIVO CHIEDO COME CLASSIFICARLO ==========
-                    if (SQta.contains("-")) {
-                        scelta=0;
-                        AppDialog.DialogResult result = AppDialog.builder(this)
-                                .windowTitle("Classificazione del movimento")
-                                .bodyTitle("Nuovo movimento di prelievo")
-                                .showTitleInBody(true)
-                                .theme()
-                                .type(AppDialog.DialogType.WARNING)
-                                .message("""
-                    Per raggiungere la giacenza desiderata è necessario generare
-                    un movimento di prelievo di %s unità.
-                    """.formatted(SQta.replace("-", "")))
-                                .details("""
-                    Scegli come classificare il movimento da creare.
-                    """)
-                                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
-                                        .role(AppDialog.ActionRole.SECONDARY)
-                                        .build())
-                                .action(AppDialog.DialogAction.builder("later", "Nessuna Classificazione")
-                                        .role(AppDialog.ActionRole.NEUTRAL)
-                                        .build())
-                                .action(AppDialog.DialogAction.builder("cashout", "Cash out")
-                                        .role(AppDialog.ActionRole.PRIMARY)
-                                        .build())
-                                .action(AppDialog.DialogAction.builder("commissione", "Commissione")
-                                        .role(AppDialog.ActionRole.NEUTRAL)
-                                        .build())
-                                .action(AppDialog.DialogAction.builder("rettifica", "<html>Rettifica giacenza<br>(Nessuna Plus calcolata)</html>")
-                                        .role(AppDialog.ActionRole.NEUTRAL)
-                                        .build())
-                                .showDialog();
-
-                        String sceltaAzione = result.getActionId();
-
-                        if (sceltaAzione == null || sceltaAzione.equals("cancel")) {
-                            return;
-                        }
-
-                        String nota = JOptionPane.showInputDialog(
-                                this,
-                                "<html>Inserire un'eventuale nota sul movimento:</html>",
-                                "Rettifica di giacenza"
-                        );
-
-                        if (nota != null) {
-                            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-                            String[] RTOri = MappaCryptoWallet.get(IDTrans);
-
-                            Moneta M1 = new Moneta();
-                            M1.Moneta = Moneta;
-                            M1.MonetaAddress = AddressMoneta;
-                            M1.Qta = SQta;
-                            M1.Tipo = TipoMoneta;
-                            M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
-
-                            if (!nota.contains("Rettifica")) {
-                                nota = "Rettifica<br>" + nota;
-                            }
-
-                            String[] IDOriSplittato = RTOri[0].split("_");
-                            IDOriSplittato[4] = "PC";
-                            String NuovoID = String.join("_", IDOriSplittato);
-                            NuovoID = MovimentiCrypto.IncDecID(NuovoID, 1, true);
-
-                            String tipoDaPassare = null;
-
-                            switch (sceltaAzione) {
-                                case "later" -> {
-                                    // Non classifico ora il movimento
-                                    scelta=1;
-                                }
-                                case "cashout" ->
-                                {
-                                    tipoDaPassare = "CASHOUT O SIMILARE";
-                                    scelta=1;}
-                                case "commissione" ->
-                                {
-                                    tipoDaPassare = "COMMISSIONE";
-                                    scelta=1;}
-                                case "rettifica" ->
-                                {
-                                    tipoDaPassare = "RETTIFICA GIACENZA";
-                                    scelta=1;
-                                }
-                                default -> {
-                                    return;
-                                }
-                            }
-
-                            String[] RT2 = MovimentiCrypto.creaMovimento(
-                                    M1,
-                                    null,
-                                    RTOri[3],
-                                    RTOri[4],
-                                    0,
-                                    null,
-                                    null,
-                                    1,
-                                    1,
-                                    NuovoID,
-                                    nota,
-                                    "M",
-                                    null,
-                                    tipoDaPassare,
-                                    null
-                            );
-
-                            MappaCryptoWallet.put(RT2[0], RT2);
-                        }
-                    }
-            
-            
-                   /* if (SQta.contains("-")) {
-                        //Gestisco i movimenti di scarico (Prelievi)
-                        String Testo = "<html>Per raggiungere la giacenza desiderata devo generare un movimento<br>"
-                                + "di prelievo di <b>" + SQta.replace("-", "") + "</b> unità<br><br>"
-                                + "Come classifichiamo il movimento?<br><br>"
-                                + "<b>1</b> - <b>Non classifico il movimento</b>, dovrò gestirlo successivamente<br>"
-                                + "    nella sezione 'Classificazione Trasferimenti Crypto'<br><br>"
-                                + "<b>2</b> - Lo considero alla stregua di un <b>CashOut</b> <br>"
-                                + "    (Verrà generata l'eventuale plusvalenza sul movimento)<br><br>"
-                                + "<b>3</b> - Lo considero alla stregua di una <b>Commissione</b><br><br>"
-                                + "<b>4</b> - Lo inserisco con descrizione <b>Rettifica Giacenza</b><br>"
-                                + "    (Non verranno calcolate le eventuali plusvalenze)<br><br></html>";
-                        Object[] Bottoni = {"Annulla", "1", "2", "3", "4"};
-                        scelta = JOptionPane.showOptionDialog(this, Testo,
-                                "Classificazione del movimento",
-                                JOptionPane.YES_NO_CANCEL_OPTION,
-                                JOptionPane.PLAIN_MESSAGE,
-                                null,
-                                Bottoni,
-                                null);
-                        //Adesso genero il movimento a seconda della scelta
-                        //0 o 1 significa che non bisogna fare nulla
-                        if (scelta != 0 && scelta != -1) {
-                            
-            // ========== INSERISCO IL MOVIMENTO DI USCITA PER SISTEMARE LA GIACENZA SCONDO LE INDICAZIONI ==========
-
-                            //ora chiedo di inserire una nota
-                            String Nota = JOptionPane.showInputDialog(this,
-                                    "<html>Inserire un eventuale nota sul movimento :</html>", "Rettifica di Giacenza");
-                            if (Nota != null) {
-                                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                                //adesso compilo la parte comune del movimento
-                                String RTOri[] = MappaCryptoWallet.get(IDTrans);
-                                //il movimento in questo caso deve finire successivamente a quello selezionato
-                                //quindi aggiungo 1 secondo al tempo del movimento originale per trovare quello da mettere
-                                Moneta M1 = new Moneta();
-                                M1.Moneta = Moneta;
-                                M1.MonetaAddress = AddressMoneta;
-                                M1.Qta = SQta;
-                                M1.Tipo = TipoMoneta;
-                                M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
-                                
-                                if (!Nota.contains("Rettifica")){
-                                    Nota = "Rettifica<br>"+Nota;
-                                }
-
-
-                                String IDOriSplittato[] = RTOri[0].split("_");
-                                //Il movimento che voglio deve essere un movimento di prelievo quindi lo specifico
-                                IDOriSplittato[4]="PC";                           
-                                String NuovoID=String.join("_", IDOriSplittato);
-                                NuovoID=MovimentiCrypto.IncDecID(NuovoID, 1, true);
-                                        
-                                String TipoDaPassare=null;
-                                switch (scelta) {
-                                    case 1 -> {
-                                        //Non Classifico Movimento   (Non devo fare nulla)                                      
-                                    }
-                                    case 2 -> {
-                                        //CashOut
-                                        TipoDaPassare="CASHOUT O SIMILARE";
-                                      //  RT2[5] = "CASHOUT O SIMILARE";
-                                      //  RT2[18] = "PCO - CASHOUT O SIMILARE";
-                                    }
-                                    case 3 -> {
-                                        //Commissione 
-                                        TipoDaPassare="COMMISSIONE";
-                                      //  RT2[5] = "COMMISSIONE";
-                                      //  RT2[18] = "";
-                                    }
-                                    case 4 -> {
-                                        //Rettifica Giacenza 
-                                        TipoDaPassare="RETTIFICA GIACENZA";
-                                       // RT2[5] = "RETTIFICA GIACENZA";
-                                       // RT2[18] = "PWN - RETTIFICA GIACENZA";
-                                    }
-                                    default -> {
-                                    }
-                                }
-                                String RT2[]=MovimentiCrypto.creaMovimento(M1, null,RTOri[3], RTOri[4],0,null,null,1,1,NuovoID,Nota,"M",null,TipoDaPassare,null);
-                                //Adesso scrivo il movimento
-                                MappaCryptoWallet.put(RT2[0], RT2);
-
-                            }
-                        }
-                    }*/ else {
-                        
-                // ========== SE DEVO INSERIRE UN MOVIMENTO POSITIVO CHIEDO COME CLASSIFICARLO ==========
-                        
-                        //Gestisco i movimenti di Carico (Depositi)
-                        //Gestisco i movimenti di scarico (Prelievi)
-                        String Testo = "<html>Per raggiungere la giacenza desiderata devo generare un movimento<br>"
-                                + "di deposito di <b>" + SQta.replace("-", "") + "</b> unità<br><br>"
-                                + "Come classifichiamo il movimento?<br><br>"
-                                + "<b>1</b> - <b>Non classifico il movimento</b>, dovrò gestirlo successivamente<br>"
-                                + "    nella sezione 'Classificazione Trasferimenti Crypto'<br><br>"
-                                + "<b>2</b> - Lo considero alla stregua di un <b>Provento da detenzione</b> <br>"
-                                + "    (Verrà generata una plusvalenza sul movimento pari al suo valore)<br><br>"
-                                + "<b>3</b> - Carico il movimento con <b>Costo di carico = 0</b><br><br>"
-                                + "</html>";
-                        Object[] Bottoni = {"Annulla", "1", "2", "3"};
-                        scelta = JOptionPane.showOptionDialog(this, Testo,
-                                "Classificazione del movimento",
-                                JOptionPane.YES_NO_CANCEL_OPTION,
-                                JOptionPane.PLAIN_MESSAGE,
-                                null,
-                                Bottoni,
-                                null);
-                        //Adesso genero il movimento a seconda della scelta
-                        //0 o 1 significa che non bisogna fare nulla
-                        if (scelta != 0 && scelta != -1) {
-
-                    // ========== INSERISCO IL MOVIMENTO SECONDO INDICAZIONI ==========
-                            
-                            //ora chiedo di inserire una nota
-                            String Nota = JOptionPane.showInputDialog(this,
-                                    "<html>Inserire un eventuale nota sul movimento :</html>", "Rettifica di Giacenza");
-                            if (Nota != null) {
-                                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                                //adesso compilo la parte comune del movimento
-                                String RTOri[] = MappaCryptoWallet.get(IDTrans);
-                                String IDOriSplittato[] = RTOri[0].split("_");
-                      //         DataRiferimento = FunzioniDate.ConvertiDatainLongMinuto(RTOri[1]);
-                                IDOriSplittato[4]="DC";                           
-                                String NuovoID=String.join("_", IDOriSplittato);
-                                NuovoID=MovimentiCrypto.IncDecID(NuovoID, 1, false);
-                                
-                                if (!Nota.contains("Rettifica")){
-                                    Nota = "Rettifica<br>"+Nota;
-                                }
-
-                                Moneta M1 = new Moneta();
-                                M1.Moneta = Moneta;
-                                M1.MonetaAddress = AddressMoneta;
-                                M1.Qta = SQta;
-                                M1.Tipo = TipoMoneta;
-                                M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
-                                
-                                String TipoDaPassare=null;
-
-                                switch (scelta) {
-                                    case 1 -> {
-                                        //Non Classifico Movimento                                
-                                    }
-                                    case 2 -> {
-                                        //Rendita da Capitale
-                                        TipoDaPassare="EARN";
-                                       // RT1[5] = "EARN";
-                                      //  RT1[18] = "DAI - Provento da Detenzione";
-                                    }
-                                    case 3 -> {
-                                        //Costo di carico 0
-                                        TipoDaPassare="DEPOSITO A COSTO 0";
-                                       // RT1[5] = "DEPOSITO A COSTO 0";
-                                       // RT1[18] = "DCZ - DEPOSITO A COSTO 0";
-                                    }
-                                    default -> {
-                                    }
-                                }
-                                //Adesso scrivo il movimento
-                                String RT1[]=MovimentiCrypto.creaMovimento(null, M1,RTOri[3], RTOri[4],0,null,null,1,1,NuovoID,Nota,"M",null,TipoDaPassare,null);
-                                MappaCryptoWallet.put(RT1[0], RT1);
-
-                            }
-                        }
-
-
-                    }
-                    
-                    //Avviso il programma che devo anche aggiornare la tabella crypto e ricalcolare le plusvalenze
-                        
-                    //Aggiorno tutto in un thread separato così viene fatto tutto in backgroud intanto che 
-                    //Viene premuto sul messaggio di conferma
-                 //   new Thread(() -> {
-                        Funzioni_AggiornaTutto();
-                  //  }).start();
-                    //Adesso avviso che il movimento è inserito e ricarico l'intera pagina
-                    this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                    if (scelta != 0 && scelta != -1) {
-                        JOptionPane.showConfirmDialog(this, """
-                                                            Movimento di rettifica generato con successo!
-                                                            Ricordarsi di salvare i movimenti nella sezione 'Transazioni Crypto'.""",
-                                "Movimento Creato", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                        
-
-                        
-                        //DA FARE!!!!!!
-                        //Ora sistemo i valori sulla tabella principale
-                        //Devo ricalcolare la tabella principale
-                        //Ricaricare i dettagli e riposizionare il tutto
-                        //E ricarico la tabella secondaria
-
-                        // GiacenzeaData_CompilaTabellaToken();
-                        
-                        //Tra le altre cose devo anche ricalcolare l'RW qualora sia stato già calcolato
-                    }
-                } else {
-                    //  completato=false;
-                    JOptionPane.showConfirmDialog(this, "Attenzione, " + m + " non è un numero valido!",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                }
-            }
-        }else{
-                    //  completato=false;
-                    JOptionPane.showConfirmDialog(this, """
-                                                        Questo tipo di operazione \u00e8 consentita solo per le Crypto.
-                                                        Per NFT e FIAT utilizzare l'inserimento manuale.""",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                }
-            }else{
-                    //  completato=false;
-                    JOptionPane.showConfirmDialog(this, """
-                                                        Questo tipo di operazione \u00e8 consentita solo sui singoli Wallet.
-                                                        Selezionare un sigolo Wallet dal men\u00f9 a tendina in alto.""",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                }
-        }
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-    }
-    
+   
     
     private void GiacenzeaData_Bottone_RettificaQtaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_RettificaQtaActionPerformed
         // TODO add your handling code here:
@@ -12195,7 +11778,7 @@ GiacenzeaData_CompilaTabellaToken(true);
 
     private void SaldiNegativi_Bottone_RettificaQtaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_SaldiNegativi_Bottone_RettificaQtaMouseReleased
         // TODO add your handling code here:
-        GiacenzeaData_Funzione_SistemaQta(SaldiNegativi_TabellaDettaglioMovimenti,null);
+        F_GiacenzeaData.GiacenzeaData_Funzione_SistemaQta(SaldiNegativi_TabellaDettaglioMovimenti,null,this);
     }//GEN-LAST:event_SaldiNegativi_Bottone_RettificaQtaMouseReleased
 
     private void SaldiNegativi_Bottone_RettificaQtaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaldiNegativi_Bottone_RettificaQtaActionPerformed

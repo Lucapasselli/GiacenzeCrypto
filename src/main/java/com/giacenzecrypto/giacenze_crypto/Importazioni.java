@@ -3797,15 +3797,15 @@ private static String F_safe(String s) {
                 MonE.SetQta(QtaE);
                 ME = movimentoSplittato[2].trim();
                 MonE.SetNome(ME);
-                QtaU = Funzioni_RitornaNumeroSenzaZeriFinali(movimentoSplittato[3]);
-                MonU.SetQta("-" + QtaU);
+                QtaU = "-" + Funzioni_RitornaNumeroSenzaZeriFinali(movimentoSplittato[3]);
+                MonU.SetQta(QtaU);
                 MU = movimentoSplittato[4].trim();
                 MonU.SetNome(MU);
                 Exch = movimentoSplittato[7].trim();
                 data = movimentoSplittato[10].trim();
 
-                String QtaC=Funzioni_RitornaNumeroSenzaZeriFinali(movimentoSplittato[5]);
-                MonC.SetQta("-" + QtaC);
+                String QtaC="-" +Funzioni_RitornaNumeroSenzaZeriFinali(movimentoSplittato[5]);
+                MonC.SetQta(QtaC);
                 MonC.SetNome(movimentoSplittato[6].trim());
 
                 MonE.AssegnaTipoAuto();
@@ -3825,6 +3825,13 @@ private static String F_safe(String s) {
                     MonE.SetQta(QtaE);
                     CTcommissioniNew = true;
                 }
+                if (MU.equals(MonC.GetNome()) && !MU.isBlank()) {
+                    //In questo caso sommo lo stesso la qta delle commissionianche se in realtà è una sottrazione perche la qtu è negativa
+                    QtaU = new BigDecimal(QtaU).add(new BigDecimal(MonC.GetQta()).abs()).stripTrailingZeros().toPlainString();
+                    MonU.SetQta(QtaU);
+                    CTcommissioniNew = true;
+                }
+
             }
             // System.out.println(movimentoSplittato[9]);
             Long Datalong = FunzioniDate.ConvertiDatainLongSecondo(data);

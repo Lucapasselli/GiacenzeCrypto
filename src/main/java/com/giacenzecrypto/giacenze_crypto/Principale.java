@@ -9651,17 +9651,16 @@ if (result.isAction("delete-all")) {
         
         if(TransazioniCrypto_Bottone_Salva.isEnabled()){
 
-                
                 AppDialog.DialogResult result = AppDialog.builder(this)
                         .windowTitle("Movimenti non salvati")
-                        .bodyTitle("Movimenti non salvati")
+                        .bodyTitle("Salvare i movimenti?")
                         .type(AppDialog.DialogType.WARNING)
                         .theme()
                         //.details("Salvare i movimenti?")
                         //.message("Salvare i movimenti?")
                         .details("""                               
-                Ci sono movimenti non salvati.               
-                Si vuole salvare prima di chiudere?
+                Ci sono movimenti non salvati. 
+                Salvare prima di chiudere?
                 """)
                         .primaryAction("OK", "SI")
                         .secondaryAction("close", "NO")

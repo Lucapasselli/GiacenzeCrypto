@@ -716,7 +716,7 @@
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new com.giacenzecrypto.giacenze_crypto.JTableConTooltipIcone()"/>
                     <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="CDC_Grafica_TransazioniCryptoTabella"/>
-                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 72));&#xd;&#xa;Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);&#xd;&#xa;Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);"/>
+                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 82));&#xd;&#xa;Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);&#xd;&#xa;Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);"/>
                   </AuxValues>
                 </Component>
               </SubComponents>

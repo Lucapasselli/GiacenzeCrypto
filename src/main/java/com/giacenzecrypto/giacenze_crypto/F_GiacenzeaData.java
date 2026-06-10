@@ -8,6 +8,8 @@ import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.awt.Cursor;
 import java.awt.Window;
 import java.math.BigDecimal;
+import java.util.Map;
+import java.util.TreeMap;
 import javax.swing.JTable;
 
 /**
@@ -443,5 +445,40 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
         }
         owner.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         return tuttook;
+    }
+    
+    
+    
+    //Queste 3 classi serviranno per sistemare la parte relativa al calcolo delle giacenzeadata
+    //per ora non utilizzata
+    
+    public static class StatoTabelle {
+
+        int rigaSelTabPrincipale = -1;
+        String walletToken = "";
+        int scrollValuePrincipale = 0;
+
+        int rigaSelTabMov = -1;
+        String movSelezionato = "";
+        int scrollValueMovimenti = 0;
+    }
+
+    public static class ParametriCalcoloGiacenze {
+
+        long dataRiferimento = 0;
+        String wallet = "";
+        String sottoWallet = "";
+        boolean mostraQtaZero = false;
+        boolean nascondiScam = false;
+    }
+
+    public static class RisultatoCalcoloGiacenze {
+
+        Map<String, Object[]> tabellaToken = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        java.util.List<Object[]> righeTabella = new java.util.ArrayList<>();
+        BigDecimal totaleEuro = BigDecimal.ZERO;
+        String wallet = "";
+        String sottoWallet = "";
+        boolean interrotto = false;
     }
 }

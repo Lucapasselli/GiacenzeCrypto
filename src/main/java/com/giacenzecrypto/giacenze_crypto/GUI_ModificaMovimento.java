@@ -1365,27 +1365,12 @@ worker.execute();*/
            // String Prezzo = Prezzi.DammiPrezzoTransazione(MU, ME, dataLong, null, true, 15, Rete,"");
             String Prezzo=ValoreTransazione_TextField.getText();
             if (Prezzo.equals("0.00")) {
-                String Messaggio = "Attenzione, il prezzo del movimento è valorizzato a '0.00'.\n"
-                        + "E' corretto e si vuole Proseguire?";
-                int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Conferma Prezzo", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-                //Si=0
-                //No=1
-                switch (risposta) {
-                    case 0 -> {
-                        MovimentoValorizzato = true;
-                    }
-                    case 1 -> {
+                if (Messaggi.ConfermaMovimentoSenzaPrezzo(this)) MovimentoValorizzato = true;
+                else {
                         JOptionPane.showConfirmDialog(this, "Operazione Annullata",
                                 "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
                         return false;
                     }
-                    case -1 -> {
-                        JOptionPane.showConfirmDialog(this, "Operazione Annullata",
-                                "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                        return false;
-                    }
-
-                }
             } else {
                 MovimentoValorizzato = true;
             }

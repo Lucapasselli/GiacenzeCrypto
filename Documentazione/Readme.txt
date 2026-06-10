@@ -25,6 +25,15 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.56
+Nuove Implementazioni :
+- Aggiunto possibilità di parametrizzare le importazioni dei csv tramite file di configurazione JSON per permettere di importare dati da quasi tutti i csv
+  Leggere la documentazione per capire come operare.
+- Aggiunto nuove causali per le importazioni da crypto.com
+- Modificato buona parte dei messaggi pop-up informativi per renderli più visibili e chiari.
+Correzione Bug :
+- Corretto bug sull'export della tabella del quadro RW in xlxs tramite tasto destro del mouse
+
 ver. 1.0.55
 Nuove Implementazioni :
 - Aggiornato programma per funzionare con le nuove limitazioni di etherscan che partono dal 01/06/2026

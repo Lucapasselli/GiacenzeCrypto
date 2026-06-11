@@ -8419,42 +8419,30 @@ GiacenzeaData_CompilaTabellaToken(true);
         }
     }
     
-    public void Funzione_ModificaMovimento(String ID,Component c){
-            GUI_ModificaMovimento a = new GUI_ModificaMovimento();
-            String riga[]=Principale.MappaCryptoWallet.get(ID);
+    public void Funzione_ModificaMovimento(String ID, Component c) {
+        GUI_ModificaMovimento a = new GUI_ModificaMovimento();
+        String[] riga = Principale.MappaCryptoWallet.get(ID);
 
-            String PartiCoinvolte[] = (riga[0] + "," + riga[20]).split(",");
-            if (PartiCoinvolte.length > 1 && !riga[22].equalsIgnoreCase("AU")) {//devo permettere di modificare i movimenti automatici generati dagli scambi per poter cambiare eventualmente il prezzo
-                String Messaggio = "Attenzione, il movimento è associato ad un altro movimento.\n"
-                        + "se si prosegue l'associazione verrà rimossa, si vuole continuare?";
-                int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Conferma modifica", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-                //Si=0
-                //No=1
-                switch (risposta) {
-                    case 0 -> {
-                        ID=GUI_ClassificazioneMovimento.RiportaTransazioniASituazioneIniziale(PartiCoinvolte,ID); 
+        String[] partiCoinvolte = (riga[0] + "," + riga[20]).split(",");
 
-                            a.CompilaCampidaID(ID);
-                            a.setLocationRelativeTo(c);
-                            a.setVisible(true);
-                            Principale.TabellaCryptodaAggiornare=true;
-                        
-                    }
-                    case 1 -> {
-                        Messaggi.InfoMessage("Operazione Annullata", "", this);
-                        
-                    }
-                    case -1 -> {
-                        Messaggi.InfoMessage("Operazione Annullata", "", this);
-                        
-                    }
+        if (partiCoinvolte.length > 1 && !riga[22].equalsIgnoreCase("AU")) {
+            //se rispondo si al messaggio di modifica del movimento vado avanti
+            if (Messaggi.Personalizzati_SINO_ModificaMovimento(this)) {
+                ID = GUI_ClassificazioneMovimento.RiportaTransazioniASituazioneIniziale(partiCoinvolte, ID);
 
-                }
-            }else{ 
                 a.CompilaCampidaID(ID);
                 a.setLocationRelativeTo(c);
                 a.setVisible(true);
+                Principale.TabellaCryptodaAggiornare = true;
+            } else {
+                Messaggi.InfoMessage("Operazione annullata", "", this);
             }
+
+        } else {
+            a.CompilaCampidaID(ID);
+            a.setLocationRelativeTo(c);
+            a.setVisible(true);
+        }
     }
     
    
@@ -8558,55 +8546,49 @@ GiacenzeaData_CompilaTabellaToken(true);
     private void Opzioni_Emoney_Bottone_RimuoviActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_Bottone_RimuoviActionPerformed
         // TODO add your handling code here:
         if (Opzioni_Emoney_Tabella.getSelectedRow() >= 0) {
-            int rigaselezionata = Opzioni_Emoney_Tabella.getSelectedRow();
-            String Moneta = Opzioni_Emoney_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            String Testo = "<html>Vuoi calncellare il Token <b>" + Moneta + "</b> dalla lista degli EMoney Token?<br><br>"
-            + "</html>";
-            Object[] Bottoni = {"Si", "No"};
-            int scelta = JOptionPane.showOptionDialog(this, Testo,
-                "Classificazione del Token",
-                JOptionPane.YES_NO_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                Bottoni,
-                null);
-            if (scelta == 0) {
-                DatabaseH2.Pers_Emoney_Cancella(Moneta);
+            int rigaSelezionata = Opzioni_Emoney_Tabella.getSelectedRow();
+            String moneta = Opzioni_Emoney_Tabella.getModel().getValueAt(rigaSelezionata, 0).toString();
+            if (Messaggi.Personalizzati_SINO_RimuoviEmoneyToken(moneta, this)) {
+                DatabaseH2.Pers_Emoney_Cancella(moneta);
                 Opzioni_Emoney_CaricaTabellaEmoney();
+
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
-                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
+                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(
+                        TransazioniCrypto_CheckBox_EscludiTI.isSelected(),
+                        TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected()
+                );
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                //TabellaCryptodaAggiornare=true;
-            } else {
-
             }
-
         }
     }//GEN-LAST:event_Opzioni_Emoney_Bottone_RimuoviActionPerformed
 
     private void Opzioni_Emoney_Bottone_AggiungiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_Bottone_AggiungiActionPerformed
-        // TODO add your handling code here:
-        String Testo="<html>Digita il nome della moneta da aggiungere alla lista delle E-Money Token (es. USDC)<br>";
-        Testo = Testo + "<b>Attenzione :</b> I nomi dei token sono CaseSensitive quindi, ad esempio, BTC è diverso da Btc o btc<br><br></html>";
-        String m = JOptionPane.showInputDialog(this, Testo, "");
-        if (m!=null){
-            m=m.trim();
-            if (DatabaseH2.Pers_Emoney_Leggi(m)==null){
-                //System.out.println("Aggiunto "+m+" al databse");
-                DatabaseH2.Pers_Emoney_Scrivi(m, "2000-01-01");
-                Opzioni_Emoney_CaricaTabellaEmoney();
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
-                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                // TabellaCryptodaAggiornare=true;
-            }else{
-                Messaggi.WarningMessage("Token esistente", "Il token è già presente in tabella.", this);
+        // TODO add your handling code here:       
+        String m=Messaggi.Personalizzati_Input_NuovoEmoneyToken(this);
+            if (m != null) {
+                m = m.trim();
+
+                if (!m.isBlank()) {
+                    if (DatabaseH2.Pers_Emoney_Leggi(m) == null) {
+                        DatabaseH2.Pers_Emoney_Scrivi(m, "2000-01-01");
+                        Opzioni_Emoney_CaricaTabellaEmoney();
+
+                        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+                        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(
+                                TransazioniCrypto_CheckBox_EscludiTI.isSelected(),
+                                TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected()
+                        );
+                        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+
+                    } else {
+                        Messaggi.WarningMessage("Token esistente", "Il token è già presente in tabella.", this);
+                    }
+                }
             }
-            // System.out.println("Trovato moneta: "+m);
-            // System.out.println(DatabaseH2.Pers_Emoney_Leggi(m));
-        }
+
+        
     }//GEN-LAST:event_Opzioni_Emoney_Bottone_AggiungiActionPerformed
 
     private void Opzioni_GruppoWallet_TabellaFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_TabellaFocusGained
@@ -8801,10 +8783,6 @@ if (result.isAction("delete-all")) {
 
     private void CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed
         // TODO add your handling code here:
-        
-        
-        
-
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
         String dataIniziale = f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
         String dataFinale = f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
@@ -8817,119 +8795,22 @@ if (result.isAction("delete-all")) {
 
             Messaggi.SuccessMessage("Dati eliminati", "I dati del Fiat Wallet nel periodo selezionato sono stati eliminati correttamente.", this);
         }
-
-    /*    long timeStampIniziale = FunzioniDate.ConvertiDatainLong(dataIniziale);
-        long timeStampFinale = FunzioniDate.ConvertiDatainLong(dataFinale) + 86400000;
-
-        String messaggio = "Vuoi eliminare tutti i dati del Fiat Wallet nel periodo selezionato?";
-
-        AppDialog.DialogResult result = AppDialog.builder(this)
-                .windowTitle("Cancellazione Fiat Wallet")
-                .bodyTitle("Eliminare i dati selezionati?")
-                .showTitleInBody(true)
-                .theme()
-                .type(AppDialog.DialogType.WARNING)
-                .message(messaggio)
-                .details("""
-                Intervallo incluso: dal %s al %s.
-
-                Verranno rimossi tutti i movimenti del Fiat Wallet compresi nel periodo selezionato.
-                """.formatted(dataIniziale, dataFinale))
-                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
-                        .role(AppDialog.ActionRole.SECONDARY)
-                        .build())
-                .action(AppDialog.DialogAction.builder("delete-fiat-range", "Elimina dati")
-                        .role(AppDialog.ActionRole.DANGER)
-                        .build())
-                .showDialog();
-
-        if (result != null && result.isAction("delete-fiat-range")) {
-            try {
-                FileReader fire = new FileReader(VarStatiche.getFile_CDCFiatWallet());
-                BufferedReader bure = new BufferedReader(fire);
-                String rigas;
-
-                List<String> daMantenere = new ArrayList<>();
-
-                while ((rigas = bure.readLine()) != null) {
-                    long timeStampMovimento = FunzioniDate.ConvertiDatainLong(rigas.split(" ")[0]);
-
-                    if (timeStampMovimento < timeStampIniziale || timeStampMovimento >= timeStampFinale) {
-                        daMantenere.add(rigas);
-                    }
-                }
-
-                bure.close();
-                fire.close();
-
-                FileWriter w = new FileWriter(VarStatiche.getFile_CDCFiatWallet());
-                BufferedWriter b = new BufferedWriter(w);
-
-                Iterator<String> it = daMantenere.iterator();
-                while (it.hasNext()) {
-                    b.write(it.next() + "\n");
-                }
-
-                b.close();
-                w.close();
-
-            } catch (IOException ex) {
-
-            }
-
-            CDC_FiatWallet_Mappa.clear();
-            CDC_FiatWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCFiatWallet());
-            CDC_FiatWallet_AggiornaDatisuGUI();
-
-            Messaggi.SuccessMessage("Dati eliminati", "I dati del Fiat Wallet nel periodo selezionato sono stati eliminati correttamente.", this);
-        }*/
     }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed
 
     private void CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed
-        // TODO add your handling code here:
+        // TODO add your handling code here:      
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-        String DataIniziale=f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
-        String DataFinale=f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
-        long timeStampIniziale=FunzioniDate.ConvertiDatainLong(DataIniziale);
-        long timeStampFinale=FunzioniDate.ConvertiDatainLong(DataFinale)+86400000;
-        String Messaggio="Sicuro di voler cancellare tutti i dati del Card Wallet dal "+DataIniziale+" al "+DataFinale+" compreso?";
-        int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione CardWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-        if (risposta==0){
-            try
-            {
-                
-               //Leggo il file e metto in un array tutto quello da mantenere
-               FileReader fire = new FileReader(VarStatiche.getFile_CDCCardWallet()); 
-               BufferedReader bure = new BufferedReader(fire);
-                        String rigas;
-                        
-                        List<String> DaMantenere = new ArrayList<>();
-                        while ((rigas = bure.readLine()) != null) {
-                            long timeStampMovimento=FunzioniDate.ConvertiDatainLong(rigas.split(" ")[0]);
-                            if (timeStampMovimento<timeStampIniziale ||
-                                  timeStampMovimento>=timeStampFinale  ){
-                                    DaMantenere.add(rigas);
-                            }
-                        }
-                        bure.close();
-                        fire.close();
-                
-                //Tutto quello da mantenere lo riscrivo in un nuovo file
-                FileWriter w=new FileWriter(VarStatiche.getFile_CDCCardWallet());
-                BufferedWriter b=new BufferedWriter (w);
-                Iterator<String> It=DaMantenere.iterator();
-                while(It.hasNext()){
-                    b.write(It.next()+"\n");
-                }
-                b.close();
-                w.close();
-            }catch (IOException ex)
-            {
-
-            }    }
+        String dataIniziale = f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
+        String dataFinale = f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
+        
+        if (F_Opzioni_Pulizie.confermaECancellaWalletFIATeCARDPerIntervallo(dataIniziale, dataFinale, "Card Wallet",VarStatiche.getFile_CDCCardWallet(), this))
+        {
             CDC_CardWallet_Mappa.clear();
             CDC_CardWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCCardWallet());
             CDC_CardWallet_AggiornaDatisuGUI();
+
+            Messaggi.SuccessMessage("Dati eliminati", "I dati del Card Wallet nel periodo selezionato sono stati eliminati correttamente.", this);
+        }
     }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed
 
     private void Opzioni_GruppoWallet_CheckBox_PlusXWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_CheckBox_PlusXWalletActionPerformed
@@ -9711,33 +9592,43 @@ if (result.isAction("delete-all")) {
     private void Opzioni_GruppoWallet_Bottone_RinominaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_Bottone_RinominaActionPerformed
         // TODO add your handling code here:
         if (Opzioni_GruppoWallet_Tabella.getSelectedRow() >= 0) {
-            int rigaselezionata = Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(Opzioni_GruppoWallet_Tabella.getSelectedRow());
-            String Gruppo=Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
-            Gruppo=Gruppo.split("\\(")[0].trim();        
-            String Testo = "<html>Indica il nuovo Alias per il Gruppo<b>" + Gruppo + "</b><br>";
-            String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
-            String m = JOptionPane.showInputDialog(this, Testo, Valori[1]).trim();
+            int rigaSelezionataView = Opzioni_GruppoWallet_Tabella.getSelectedRow();
+            int rigaSelezionataModel = Opzioni_GruppoWallet_Tabella.getRowSorter()
+                    .convertRowIndexToModel(rigaSelezionataView);
+
+            String gruppo = Opzioni_GruppoWallet_Tabella.getModel()
+                    .getValueAt(rigaSelezionataModel, 1).toString();
+            gruppo = gruppo.split("\\(")[0].trim();
+
+            String[] valori = DatabaseH2.Pers_GruppoAlias_Leggi(gruppo);
+            String m = Messaggi.Personalizzati_Input_AliasGruppoWallet(gruppo, valori[1], this);
+
             if (m != null) {
-                m = Funzioni.NormalizzaNomeStringente(m);
-                //Se il nome dell'Alias è di almeno 21 caratteri proseguo
+                m = Funzioni.NormalizzaNomeStringente(m.trim());
+
                 if (m.length() > 0) {
-                    boolean PagaBollo=false;
-                    if(Valori[2].equals("S"))PagaBollo=true;
-                    DatabaseH2.Pers_GruppoAlias_Scrivi(Valori[0], m, PagaBollo);
+                    boolean pagaBollo = valori[2].equals("S");
+                    DatabaseH2.Pers_GruppoAlias_Scrivi(valori[0], m, pagaBollo);
+
                     Opzioni_GruppoWallet_CaricaGruppiWallet();
                     Funzione_AggiornaComboBox();
-                    //Aggiorno gli eventuali label per avvisare che è necessario il ricalcolo
-                    AccendiLabelRicalcolo(); 
-                    
-                    rigaselezionata = Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(rigaselezionata);
-                    Opzioni_GruppoWallet_Tabella.setRowSelectionInterval(rigaselezionata, rigaselezionata);
+                    AccendiLabelRicalcolo();
+
+                    int nuovaRigaView = Math.min(rigaSelezionataView, Opzioni_GruppoWallet_Tabella.getRowCount() - 1);
+                    if (nuovaRigaView >= 0) {
+                        Opzioni_GruppoWallet_Tabella.setRowSelectionInterval(nuovaRigaView, nuovaRigaView);
+                    }
+
                 } else {
-                    Messaggi.WarningMessage("Campo nullo", "Attenzione, Il campo è nullo", this);
+                    Messaggi.WarningMessage("Campo non valido", "Attenzione, il campo alias è vuoto.", this);
                 }
             }
-       } 
+
+        }
     }//GEN-LAST:event_Opzioni_GruppoWallet_Bottone_RinominaActionPerformed
 
+    
+    
     private void AccendiLabelRicalcolo(){
         //Aggiorno gli eventuali label sull'RW e RT per avvisare che è necessario il ricalcolo
         if(RT_Tabella_Principale.getRowCount()>0)RT_Label_Avviso.setVisible(true);
@@ -10416,35 +10307,45 @@ if (result.isAction("delete-all")) {
     
     
     private void RW_Bottone_StampaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_StampaActionPerformed
-            // TODO add your handling code here:
-            //Come prima cosa rielaboro il quadro per essee sicuro che sia tutto aggiornato
-           // RW_CalcolaRW();
+        // TODO add your handling code here:
+        //Come prima cosa rielaboro il quadro per essee sicuro che sia tutto aggiornato
+
         if (RW_Tabella.getRowCount() == 0) {
             // Se non trovo dati come prima cosa provo ad elaborare il quadro
-             RW_CalcolaRW();
+            RW_CalcolaRW();
+
             if (RW_Tabella.getRowCount() == 0) {
-                String Testo = "<html>Attenzione! Non ci sono movimenti da stampare.<br>"
-                        + "Si vuole proseguire comunque con la stampa?<br>"
-                        + "Verrà stampato un report vuoto assiseme alle istruzioni di compilazione<br></html>";
-                Object[] Bottoni = {"Si", "No"};
-                int scelta = JOptionPane.showOptionDialog(this, Testo,
-                        "Quadro RW vuoto",
-                        JOptionPane.YES_NO_CANCEL_OPTION,
-                        JOptionPane.INFORMATION_MESSAGE,
-                        null,
-                        Bottoni,
-                        null);
-                if (scelta == 0) {
+                AppDialog.DialogResult result = AppDialog.builder(this)
+                        .windowTitle("Quadro RW vuoto")
+                        .bodyTitle("Stampare un report vuoto?")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.INFO)
+                        .message("Non ci sono movimenti da stampare.")
+                        .details("""
+                        Puoi proseguire comunque con la stampa.
+
+                        Verrà generato un report vuoto insieme alle istruzioni di compilazione.
+                        """)
+                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("print-empty-rw", "Stampa comunque")
+                                .role(AppDialog.ActionRole.PRIMARY)
+                                .build())
+                        .showDialog();
+
+                if (result != null && result.isAction("print-empty-rw")) {
                     RW_StampaRapporto();
                 }
+
             } else {
                 RW_StampaRapporto();
             }
         } else {
             RW_StampaRapporto();
         }
- 
-            
+
     }//GEN-LAST:event_RW_Bottone_StampaActionPerformed
 
     private void GiacenzeaData_Bottone_GiacenzeExplorerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_GiacenzeExplorerActionPerformed

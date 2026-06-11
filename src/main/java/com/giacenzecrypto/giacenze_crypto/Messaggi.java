@@ -88,5 +88,108 @@ public class Messaggi {
                             .primaryAction("ok", "OK")
                             .showDialog();
         }
+        
+        
+        
+        
+        
+    public static boolean Personalizzati_SINO_ModificaMovimento(Window win) {
+        AppDialog.DialogResult result = AppDialog.builder(win)
+                    .windowTitle("Conferma modifica")
+                    .bodyTitle("Modificare il movimento?")
+                    .showTitleInBody(false)
+                    .theme()
+                    .type(AppDialog.DialogType.WARNING)
+                    .message("Attenzione!<br><br>Il movimento è associato a un altro movimento.")
+                    .details("""
+                    Se prosegui, l'associazione verrà rimossa prima della modifica.
+
+                    Vuoi continuare?
+                    """)
+                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("continue-edit", "Continua modifica")
+                            .role(AppDialog.ActionRole.DANGER)
+                            .build())
+                    .showDialog();
+        return (result != null && result.isAction("continue-edit"));
+    }
     
+    
+     public static boolean Personalizzati_SINO_RimuoviEmoneyToken(String moneta,Window win) {
+        AppDialog.DialogResult result = AppDialog.builder(win)
+                    .windowTitle("Gestione EMoney Token")
+                    .bodyTitle("Rimuovere il token?")
+                    .showTitleInBody(false)
+                    .theme()
+                    .type(AppDialog.DialogType.WARNING)
+                    .message("Vuoi rimuovere il token " + moneta + " dalla lista degli EMoney Token?")
+                    .details("L'operazione aggiornerà anche i dati collegati.")
+                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("delete-emoney-token", "Rimuovi token")
+                            .role(AppDialog.ActionRole.DANGER)
+                            .build())
+                    .showDialog();
+        return (result != null && result.isAction("delete-emoney-token"));
+    }
+     
+     public static String Personalizzati_Input_NuovoEmoneyToken(Window win) {
+        String testo = "Digita il nome della moneta da aggiungere alla lista degli E-Money Token.";
+        String dettagli = """
+        Il nome del token è case-sensitive.
+
+        Ad esempio: BTC è diverso da Btc o btc.
+        """;
+
+        AppDialog.DialogResult result = AppDialog.builder(win)
+                .windowTitle("Aggiunta E-Money Token")
+                .bodyTitle("Nuovo E-Money Token")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message(testo)
+                .details(dettagli)
+                .inputField("")
+                .inputColumns(18)
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("add-token", "Aggiungi")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .showDialog();
+        if (result != null && result.isAction("add-token")) {
+            String m = result.getInputValue();
+            return m;           
+        }
+        return null;
+    }
+     
+     public static String Personalizzati_Input_AliasGruppoWallet(String gruppo,String val,Window win) {
+        AppDialog.DialogResult result = AppDialog.builder(win)
+            .windowTitle("Alias gruppo wallet")
+            .bodyTitle("Modifica alias")
+            .showTitleInBody(true)
+            .theme()
+            .type(AppDialog.DialogType.INFO)
+            .message("Indica il nuovo alias per il gruppo " + gruppo + ".")
+            .details("Il nome verrà normalizzato prima del salvataggio.")
+            .inputField("Valore Originale : "+val,val)
+            .inputColumns(24)
+            .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                    .role(AppDialog.ActionRole.SECONDARY)
+                    .build())
+            .action(AppDialog.DialogAction.builder("save-alias", "Salva")
+                    .role(AppDialog.ActionRole.PRIMARY)
+                    .build())
+            .showDialog();
+        if (result != null && result.isAction("save-alias")) {
+            String m = result.getInputValue();
+            return m;           
+        }
+        return null;
+    }
 }

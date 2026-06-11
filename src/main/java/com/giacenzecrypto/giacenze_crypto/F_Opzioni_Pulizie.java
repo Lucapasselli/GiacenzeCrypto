@@ -30,7 +30,7 @@ public class F_Opzioni_Pulizie {
         long timeStampIniziale = FunzioniDate.ConvertiDatainLong(dataIniziale);
         long timeStampFinale = FunzioniDate.ConvertiDatainLong(dataFinale) + 86400000;
 
-        String messaggio = "Vuoi eliminare tutti i dati del Fiat Wallet nel periodo selezionato?";
+        String messaggio = "Vuoi eliminare tutti i dati del "+TIPOWALLET+" nel periodo selezionato?";
 
         AppDialog.DialogResult result = AppDialog.builder(win)
                 .windowTitle("Cancellazione "+TIPOWALLET)
@@ -47,12 +47,12 @@ public class F_Opzioni_Pulizie {
                 .action(AppDialog.DialogAction.builder("cancel", "Annulla")
                         .role(AppDialog.ActionRole.SECONDARY)
                         .build())
-                .action(AppDialog.DialogAction.builder("delete-fiat-range", "Elimina dati")
+                .action(AppDialog.DialogAction.builder("delete-range", "Elimina dati")
                         .role(AppDialog.ActionRole.DANGER)
                         .build())
                 .showDialog();
 
-        if (result != null && result.isAction("delete-fiat-range")) {
+        if (result != null && result.isAction("delete-range")) {
             try {
                 FileReader fire = new FileReader(FileDaPulire);
                 BufferedReader bure = new BufferedReader(fire);

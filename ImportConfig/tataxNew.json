@@ -1,0 +1,77 @@
+{
+  "versione": "1.000",
+  "nomeExchange": "",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 1,
+  "rigaIntestazione": 1,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
+  "fuso": "UTC",
+  "colonne": {
+    "idTransazione": -1,
+    "data": 2,
+    "wallet": -1,
+    "causale": 3,
+    "moneta": 0,
+    "quantita": 4,
+    "monetaUscita":-1,
+    "quantitaUscita":-1,
+    "prezzo": -1,
+    "valoreEuro": -1,
+    "segno": -1,
+    "monetaFee": -1,
+    "quantitaFee": -1
+  },
+  "consolidaRigheStessaData": true,
+  "tolleranzaSecondiConsolidamento": 1,
+  "causaliDifferite": [
+  ],
+  "mappaCausali": {
+    "CASHBACK": "CASHBACK",
+    "STAKING": "STAKING REWARDS",
+    "EARN":"EARN",
+    "AIRDROP": "AIRDROP",
+    "CREDIT":"SCAMBIO CRYPTO-CRYPTO",
+    "DEBIT": "SCAMBIO CRYPTO-CRYPTO",
+    "SEXCHANGE_FEE": "COMMISSIONI",
+    "BLOCKCHAIN_FEE": "COMMISSIONI",
+    "FEE": "COMMISSIONI",
+    "DEPOSIT": "TRASFERIMENTO-CRYPTO",
+    "WITHDRAWAL": "TRASFERIMENTO-CRYPTO",
+    "CREDIT_FIX": "TRASFERIMENTO-CRYPTO",
+    "DEBIT_FIX": "TRASFERIMENTO-CRYPTO"
+    },
+  "causaliUscita": [
+  ],
+  "causaliEntrata": [
+  ],
+"causaliChiuse": [
+  "REWARD",
+  "AIRDROP",
+  "EARN",
+  "STAKING REWARDS",
+  "STAKING REWARD",
+  "CASHBACK",
+  "COMMISSIONI",
+  "TRASFERIMENTO-CRYPTO",
+  "TRASFERIMENTO-CRYPTO-INTERNO",
+  "DEPOSITO FIAT",
+  "PRELIEVO FIAT",
+  "ACQUISTO CRYPTO",
+  "VENDITA CRYPTO"
+],
+
+"rimuoviCaseSensitive": false,
+"rimuoviDaNomeMoneta": [
+    ".STAKING?",
+    ".LENDING?"
+],
+
+  "rinominaMonete": {},
+  "campiExtra": {
+  },
+  "walletPerCausale": {
+  }
+}

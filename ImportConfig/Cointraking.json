@@ -1,0 +1,34 @@
+{
+  "nomeExchange": "Abra",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 0,
+  "formatoData": "dd.MM.yyyy HH:mm:ss",
+  "fuso": "Europe/Rome",
+  "consolidaRigheStessaData": false,
+
+  "colonne": {
+    "data":          10,
+    "causale":        0,
+    "moneta":         2,
+    "quantita":       1,
+    "monetaUscita":   4,
+    "quantitaUscita": 3,
+    "quantitaFee":    5,
+    "monetaFee":      6
+  },
+"ricostruisciLordoSeFeeSuMonetaUscita":  true,
+"ricostruisciLordoSeFeeSuMonetaEntrata": true,
+
+  "mappaCausali": {
+    "Deposito":   "DEPOSITO-CRYPTO",
+    "Prelievo":   "PRELIEVO-CRYPTO",
+    "Operazione": "SCAMBIO CRYPTO-CRYPTO"
+  },
+
+  "causaliChiuse": [
+    "DEPOSITO-CRYPTO",
+    "PRELIEVO-CRYPTO"
+  ]
+}

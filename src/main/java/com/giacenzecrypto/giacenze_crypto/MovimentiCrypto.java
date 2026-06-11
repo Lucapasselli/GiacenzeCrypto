@@ -452,7 +452,8 @@ static boolean PrezzoPrezzato(String Prezzo) {
             if (map.get(currentId)==null){
                 return currentId; 
             }
-            System.out.println("Movimento con Stesso ID : "+currentId+" Ne cerco uno nuovo");
+            //System.out.println("Movimento con Stesso ID : "+currentId+" Ne cerco uno nuovo");
+            LoggerGC.logInfo("Movimento con Stesso ID : "+currentId+" Ne cerco uno nuovo");
             currentId = incrementaQuartoCampoID(currentId);
             if (currentId==null)return null;
         }

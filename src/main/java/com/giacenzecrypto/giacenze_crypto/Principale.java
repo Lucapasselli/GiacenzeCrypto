@@ -184,6 +184,8 @@ private static final long serialVersionUID = 3L;
             this.setTitle(VarStatiche.Titolo);
             ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
             this.setIconImage(icon.getImage());
+            
+            
             File fiatwallet=new File (VarStatiche.getFile_CDCFiatWallet());
             if (!fiatwallet.exists()) fiatwallet.createNewFile();
 
@@ -220,14 +222,9 @@ private static final long serialVersionUID = 3L;
         //Se nuova versione disponibile fa vedere il pulsante con il quale è possibile scaricarla.
         TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(false);
         Funzioni_NuovaVersioneDisponibile();
-        //TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(false);
         Prezzi.CompilaMoneteStessoPrezzo();
         Bottone_Titolo.setText(VarStatiche.Titolo);
-       // SwingUtilities.updateComponentTreeUI(this);
-      /*  if (!DatabaseH2.CreaoCollegaDatabase()){
-            JOptionPane.showConfirmDialog(null, "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-            System.exit(0);
-        }*/
+
               if (tema!=null&&tema.equalsIgnoreCase("Scuro"))
         {
             ((JTextFieldDateEditor)CDC_DataChooser_Iniziale.getDateEditor()).setBackground(Color.lightGray);
@@ -248,29 +245,7 @@ private static final long serialVersionUID = 3L;
         }
         if (VersioneCambiata) {
             DatabaseH2.Opzioni_Scrivi("Data_Lista_Coingecko", "1000000000000");
-           /* Download progress = new Download();
-            progress.setLocationRelativeTo(this);
-            progress.Titolo("Sistemazione dati per cambio versione... ATTENDERE...");
-            progress.SetLabel("Caricamento e sistemazione Dati per cambio versione...");
-            progress.NascondiInterrompi();
-            progress.NascondiBarra();
-            progress.NoModale();
-            Thread thread;
-            thread = new Thread() {
-                public void run() {
 
-                    while (!FineCaricamentoDati) {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ex) {
-                            LoggerGC.ScriviErrore(ex);
-                        }
-                    }
-                    progress.ChiudiFinestra();
-                }
-            };
-            thread.start();
-            progress.setVisible(true);*/
             
             
             
@@ -328,7 +303,38 @@ private static final long serialVersionUID = 3L;
         TransazioniCrypto_Funzioni_NascondiColonneTabellaCrypto();
         CDC_FiatWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCFiatWallet()); 
         CDC_CardWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCCardWallet());
+        
         DatabaseH2.Pers_Emoney_PopolaMappaEmoney();//Popolo la mappa delle emoneytoken prima di proseguire
+        //Se è vuota faccio uscire un avviso che mi ricorda di popolarla
+        if (Mappa_EMoney.isEmpty()) {
+
+            SwingUtilities.invokeLater(() -> {
+                
+                AppDialog.DialogResult result = AppDialog.builder(this)
+                        .title("Configurazione richiesta")
+                        .type(AppDialog.DialogType.WARNING)
+                        .theme()
+                        .message("La tabella degli EMoney Token non risulta compilata.")
+                        .details("""
+                Questo può compromettere la correttezza dei calcoli sulle plusvalenze
+                (valori mancanti o non coerenti).
+
+                Per proseguire con risultati affidabili è necessario completare la configurazione.
+                """)
+                        .primaryAction("open-config", "Apri configurazione")
+                        .secondaryAction("close", "Chiudi")
+                        .showDialog();
+
+                if (result.isAction("open-config")) {
+                    CDC.setSelectedComponent(Opzioni);
+                    Opzioni_TabbedPane.setSelectedComponent(Opzioni_Emoney_Pannello);
+                    AnalisiCrypto.setSelectedComponent(DepositiPrelievi);
+                }
+            });    
+            
+            
+            
+        }
         
         
         //boolean successo=DatabaseH2.CreaoCollegaDatabase();
@@ -864,7 +870,7 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "<html><center>ID<br>Transazione</html>", "Data e Ora", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico C.A. Uscente</html>", "<html><center>Nuovo<br>Costo di Carico<br>in EURO</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "DeFi - Blocco Transazione", "DeFi - Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "DeFi - Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento con Plusvalenza", "ND", "null", "null", "null", "Errori", "null"
+                "<html><center>ID<br>Transazione</html>", "Data e Ora", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico C.A. Uscente</html>", "<html><center>Nuovo<br>Costo di Carico<br>in EURO</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "DeFi - Blocco Transazione", "DeFi - Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "DeFi - Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento con Plusvalenza", "Rete", "null", "null", "null", "Errori", "null"
             }
         ) {
             Class[] types = new Class [] {
@@ -983,7 +989,7 @@ private static final long serialVersionUID = 3L;
             TransazioniCryptoTabella.getColumnModel().getColumn(39).setPreferredWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(39).setMaxWidth(0);
         }
-        TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 72));
+        TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 82));
         Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);
         Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
 
@@ -1312,7 +1318,7 @@ private static final long serialVersionUID = 3L;
                                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                    .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 112, Short.MAX_VALUE)
+                                                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
                                                     .addComponent(TransazioniCrypto_Text_CostiCarico))
                                                 .addGap(51, 51, 51)
                                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1351,7 +1357,7 @@ private static final long serialVersionUID = 3L;
                                 .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 82, Short.MAX_VALUE)
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 274, Short.MAX_VALUE)
+                            .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
                             .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                         .addComponent(jSeparator10, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1408,7 +1414,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo))
                 .addGap(5, 5, 5)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1434,7 +1440,7 @@ private static final long serialVersionUID = 3L;
                             .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
                         .addComponent(Bottone_Errori, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
                         .addComponent(TransazioniCrypto_Bottone_AggiorbaVersione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(TransazioniCrypto_TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addGap(13, 13, 13))
@@ -2226,9 +2232,9 @@ private static final long serialVersionUID = 3L;
         });
         GiacenzeaData_ScrollPaneDettaglioMovimenti.setViewportView(GiacenzeaData_TabellaDettaglioMovimenti);
         if (GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumnCount() > 0) {
-            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMinWidth(120);
-            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setPreferredWidth(120);
-            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMaxWidth(120);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMinWidth(130);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setPreferredWidth(130);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMaxWidth(130);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(2).setPreferredWidth(50);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(6).setMinWidth(100);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(6).setPreferredWidth(100);
@@ -2526,6 +2532,7 @@ private static final long serialVersionUID = 3L;
                 return canEdit [columnIndex];
             }
         });
+        RW_Tabella.setName("RW_Tabella"); // NOI18N
         RW_Tabella.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 RW_TabellaMouseReleased(evt);
@@ -3941,7 +3948,7 @@ private static final long serialVersionUID = 3L;
         jLabel9.setText("Scegli il wallet da esportare : ");
 
         Opzioni_Export_Tatax_Bottone.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
-        Opzioni_Export_Tatax_Bottone.setText("Genera File per Tatax");
+        Opzioni_Export_Tatax_Bottone.setText("Genera File per Tatax (Versione pre 2026)");
         Opzioni_Export_Tatax_Bottone.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_Export_Tatax_BottoneActionPerformed(evt);
@@ -4464,7 +4471,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_Varie_Bottone_ProblemiNoti, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                     .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(1109, Short.MAX_VALUE))
+                .addContainerGap(1149, Short.MAX_VALUE))
         );
         Opzioni_VarieLayout.setVerticalGroup(
             Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4475,7 +4482,7 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Opzioni_Varie_Bottone_ProblemiNoti)
                 .addGap(86, 86, 86)
                 .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(612, Short.MAX_VALUE))
+                .addContainerGap(628, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Varie", Opzioni_Varie);
@@ -5421,10 +5428,7 @@ private void AvviaSplashScreen() {
     private void Funzione_CaricaTabelleSecondarieInBackgroud(){
         //Verranno caricate tutte le tabelle secondarie che dovranno essere aggiornate  ad ogni cambio della tabella principale
         SwingUtilities.invokeLater(() -> {
-             //   JOptionPane.showConfirmDialog(c, "Transazione con ID"+ID+" eliminata correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
-             //       "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-               
-        
+                   
       //  new Thread(() -> {
             long tempoOperazione=System.currentTimeMillis();
             SaldiNegativi_CompilaTabellaPrincipale();
@@ -6514,8 +6518,6 @@ private void AvviaSplashScreen() {
 
         DefaultTableModel CDC_CardWallet_ModelloTabella1 = (DefaultTableModel) CDC_CardWallet_Tabella1.getModel();
         DefaultTableModel CDC_CardWallet_ModelloTabella2 = (DefaultTableModel) CDC_CardWallet_Tabella2.getModel();
-      //  DefaultTableModel CDC_CardWallet_ModelloTabella2 = (DefaultTableModel) model;
-      //  CDC_CardWallet_Tabella2.setModel(model);
         
         Tabelle.Funzioni_PulisciTabella(CDC_CardWallet_ModelloTabella2);
         Tabelle.Funzioni_PulisciTabella(CDC_CardWallet_ModelloTabella1);
@@ -6581,14 +6583,10 @@ private void AvviaSplashScreen() {
                 Object CDC_CardWallet_RigaTabella1[]=new Object[2];
                 CDC_CardWallet_RigaTabella1[0]=key;
                 CDC_CardWallet_RigaTabella1[1]=Double.parseDouble(CDC_CardWallet_MappaCausali.get(key));
-                //CDC_CardWallet_RigaTabella1[1]=Double.parseDouble(CDC_CardWallet_MappaCausali.get(key));
                 CDC_CardWallet_ModelloTabella1.addRow(CDC_CardWallet_RigaTabella1);
             }
             this.CDC_CardWallet_Text_Spese.setText("€ "+TotaleSpese.multiply(new BigDecimal ("-1")).toString());
             this.CDC_CardWallet_Text_Entrate.setText("€ "+TotaleTopUpCarta.toString());
-            //CDC_CardWallet_Tabella1.getRowSorter().toggleSortOrder(1);
-            //CDC_CardWallet_Tabella1.getRowSorter().toggleSortOrder(1);
-           // ColoraRigaTabellaShadow(CDC_CardWallet_Tabella2);
                                   
    }
       
@@ -6629,8 +6627,6 @@ private void AvviaSplashScreen() {
     
     private void CDC_DataChooser_InizialePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_CDC_DataChooser_InizialePropertyChange
         // TODO add your handling code here:
-       // System.out.println(CDC_DataChooser_Iniziale.getDate());
-       //System.out.println(CDC_DataChooser_Iniziale.getDate());
 
         if (CDC_DataChooser_Iniziale.getDate()!=null){
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
@@ -6645,8 +6641,7 @@ private void AvviaSplashScreen() {
                 try {
                     //f.parse(CDC_DataIniziale)
                     CDC_DataChooser_Iniziale.setDate(f.parse(CDC_DataIniziale));
-                    JOptionPane.showConfirmDialog(this, "Attenzione, la data iniziale non può essere maggiore della data finale!",
-                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                    Messaggi.WarningMessage("Errore sulle date", "Attenzione, la data iniziale non può essere maggiore della data finale.", this);
                 } catch (ParseException ex) {
                     LoggerGC.ScriviErrore(ex);
                 }
@@ -6654,7 +6649,6 @@ private void AvviaSplashScreen() {
         }
                     
 
-       // CDC_DataChooser_Iniziale.getDate()
     }//GEN-LAST:event_CDC_DataChooser_InizialePropertyChange
 
     private void CDC_DataChooser_FinalePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_CDC_DataChooser_FinalePropertyChange
@@ -6670,12 +6664,11 @@ private void AvviaSplashScreen() {
                 
               
             }
-            else if(Funzioni_Date_ConvertiDatainLong(Data)<Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale)) {
+            else if (Funzioni_Date_ConvertiDatainLong(Data) < Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale)) {
                 try {
-                    //f.parse(CDC_DataIniziale)
+
                     CDC_DataChooser_Finale.setDate(f.parse(CDC_DataFinale));
-                    JOptionPane.showConfirmDialog(this, "Attenzione, la data finale non può essere minore della data iniziale!",
-                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                    Messaggi.WarningMessage("Errore sulle date", "Attenzione, la data finale non può essere minore della data iniziale!", this);
                 } catch (ParseException ex) {
                     LoggerGC.ScriviErrore(ex);
                 }
@@ -7444,8 +7437,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     
     private void DepositiPrelieviComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_DepositiPrelieviComponentShown
         // TODO add your handling code here:
-      //  DepositiPrelievi_Caricatabella();
-      //System.out.println("mi vedi");
+
     }//GEN-LAST:event_DepositiPrelieviComponentShown
 
     private void DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
@@ -7663,55 +7655,37 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //NON DEVO FAR NULLA MA SEMPLICEMENTE GESTIRE LA CRONOS POS CHAIN CON IL WALLET CORRETTO NELLE IMPORTAZIONI
         
         
-       // this.CDC.setSelectedIndex(0);
         if (numeromodifiche>0){
-        JOptionPane.showConfirmDialog(this, "Sono stati individuati e aggiornati "+numeromodifiche+" coppie di transazioni, ricordarsi di salvare le modifiche!!",
-        "Resoconto",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+
+         Messaggi.SuccessMessage("Movimenti accoppiati", 
+                 "Sono stati individuati e aggiornati " + numeromodifiche
+                + " coppie di transazioni, ricordarsi di salvare le modifiche!!", this);
             Funzioni_AggiornaTutto();
-          //  DepositiPrelievi_Caricatabella();
         }
         else{
-        JOptionPane.showConfirmDialog(this, "Non sono state trovare nuove coppie di transazioni da abbinare automaticamente",
-        "Resoconto",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);   
+            Messaggi.InfoMessage("Nessuna coppia trovata", "Non sono state trovare nuove coppie di transazioni da abbinare automaticamente", this);
         }
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
     
     private void SituazioneImportComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_SituazioneImportComponentShown
-        // TODO add your handling code here:
-      
-      
+        // TODO add your handling code here:    
     }//GEN-LAST:event_SituazioneImportComponentShown
 
     private void DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased
         // TODO add your handling code here:
-       // System.out.println("cambio");
-
        DepositiPrelievi_Caricatabella();
     }//GEN-LAST:event_DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased
-
-    
-
-    
-    
-    
 
     
     private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
         // TODO add your handling code here:
         System.out.println("Focus");
-       // this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-       // SwingUtilities.invokeLater(() -> {
-       // new Thread(() -> {
-      // this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             if (TabellaCryptodaAggiornare) {
                 //TransazioniCrypto_Funzione_VerificaeAggiornaTabellaCrypto();
                 TabellaCryptodaAggiornare = false;
                 Funzioni_AggiornaTutto();
             }
-       // this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-       // });
-      //  }).start();
       
       //Ogni volta che ho il focus conto le righe tabella e le scrivo nel campo informazioni nella pagina principale
       ScriviNumeroRigheTabellaPrincipaleinLabel();
@@ -7937,8 +7911,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     InfoRitorno = new Prezzi.InfoPrezzo(Ritorno[1]);
                 }
 
-                // String Prezz = Funzioni.GUIDammiPrezzo(this, mon, FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo), Qta.toString(), Prezzo);
-                //String Prezz = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " in data "+DataPrezzo+" : ", Prezzo);
                 if (Prezz != null) {
                     //Adesso devo cercare tutte le movimentazioni di questa moneta e visto che non ho l'id della transazione
                     //recuperare tutti gli address, poi dovrò modificare il prezzo su tutti questi.(per la defi sono obbligato ad usare gli address)
@@ -7995,10 +7967,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 }
 
             } else {
-                JOptionPane.showConfirmDialog(this, "<html>Attenzione<br>"
-                        + "Siccome il valore è legato ad un movimento specifico verra' proposto la modifica dello stesso.<br>"
-                        + "Questo potrebbe inficiare anche sul valore di altri righi che fanno riferimento allo stesso movimento.</html>",
-                        "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                String ms="""
+                Siccome il valore è legato a un movimento specifico, verrà proposta
+                la modifica dello stesso.
+                """;
+                String dt="""
+                Questo potrebbe influire anche sul valore di altri righi che fanno
+                riferimento allo stesso movimento.
+                """;
+                Messaggi.WarningMessage("Attenzione", ms, dt, this);
                 GUI_ModificaMovimento a = new GUI_ModificaMovimento();
                 a.CompilaCampidaID(ID);
                 a.setLocationRelativeTo(this);
@@ -8071,16 +8048,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 
                 //Questa parte mi serve per recuperare il timestamp del prezzo memorizzato e cancellarlo dai personalizzati prima
                 //di scrivere il nuovo
-              /*  Prezzi.InfoPrezzo IPr=Prezzi.DammiPrezzoInfoTransazione(MU, null, DataCalcoli,"","" );
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                long timestampDaCancellare=0;
-                String InfoPrz="";
-                if (IPr!=null)
-                {
-                    timestampDaCancellare=IPr.timestamp;
-                    InfoPrz=IPr.Ritorna40();
-                }*/
-                //String Prezz = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " in data "+DataPrezzo+" : ", Prezzo);
+
                 long timestampDaCancellare=Prezzi.GUI_ModificaPrezzoConAttesa(MU,Ritorno,this,FunzioniDate.ConvertiDatainLongSecondo(DataPrezzo),Prezzo);
                 String Prezz=Ritorno[0];
                 Prezzi.InfoPrezzo InfoRitorno=new Prezzi.InfoPrezzo();
@@ -8231,12 +8199,11 @@ GiacenzeaData_CompilaTabellaToken(true);
             else
               {
                   if (Address != null && Rete != null && Address.equalsIgnoreCase(Rete)){
-                      JOptionPane.showConfirmDialog(this, "Non si possono visualizzare i movimenti del token Nativo \nselezionare un'altro token",
-                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                      
+                      Messaggi.WarningMessage("Attenzione", "Non si possono visualizzare i movimenti del token Nativo.", "Selezionare un'altro token.", this);                     
                   }
                   else{
-                    JOptionPane.showConfirmDialog(this, "Per vedere i dettagli dei movimenti in explorer \nselezionare un singolo Wallet",
-                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                      Messaggi.WarningMessage("Selezionare un Singolo Wallet","Attenzione! Per vedere i dettagli dei movimenti in explorer selezionare un singolo Wallet", this);
                   }
               }  
         }
@@ -8271,8 +8238,10 @@ GiacenzeaData_CompilaTabellaToken(true);
             
             else
               {
-                JOptionPane.showConfirmDialog(this, "Il Wallet selezionato non è valido \nselezionare un altro Wallet",
-                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                Messaggi.WarningMessage("Wallet non valido", """
+                Il Wallet selezionato non è valido.
+                Selezionare un altro Wallet.                                             
+                """, this);
               }  
         
     }//GEN-LAST:event_GiacenzeaData_Bottone_GiacenzeExplorerMouseClicked
@@ -8280,310 +8249,10 @@ GiacenzeaData_CompilaTabellaToken(true);
     private void GiacenzeaData_Bottone_RettificaQtaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_RettificaQtaMouseReleased
         // TODO add your handling code here:
         //  boolean completato;
-        GiacenzeaData_Funzione_SistemaQta(GiacenzeaData_TabellaDettaglioMovimenti,Giacenzeadata_Walleta_Label.getText().trim());
+        if(F_GiacenzeaData.GiacenzeaData_Funzione_SistemaQta(GiacenzeaData_TabellaDettaglioMovimenti,Giacenzeadata_Walleta_Label.getText().trim(),this))
         GiacenzeaData_CompilaTabellaToken(true);
     }//GEN-LAST:event_GiacenzeaData_Bottone_RettificaQtaMouseReleased
-
-    private void GiacenzeaData_Funzione_SistemaQta(JTable TabMovimenti,String Wallet) {
-        int rigaselezionata=Tabelle.Funzioni_getRigaSelezionata(TabMovimenti);
-        if (rigaselezionata >= 0) {
-            int scelta;
-            String Moneta = TabMovimenti.getModel().getValueAt(rigaselezionata, 2).toString();
-            String IDTrans = TabMovimenti.getModel().getValueAt(rigaselezionata, 8).toString();
-            //Adesso recupero tipo moneta e address dalla transazione
-            String mov[]=Principale.MappaCryptoWallet.get(IDTrans);
-            String TipoMoneta;
-            String AddressMoneta;
-            if(Moneta.equals(mov[8]))
-            {
-                TipoMoneta=mov[9];
-                AddressMoneta=mov[26];
-            }
-            else
-            {
-                //se non è il token in uscita allora è quello in ingresso
-                TipoMoneta=mov[12];
-                AddressMoneta=mov[28];
-            }
-                        
-            String GiacenzaAttualeS = TabMovimenti.getModel().getValueAt(rigaselezionata, 7).toString();
-            String GiacNegativaPrecedente = TabMovimenti.getModel().getValueAt(rigaselezionata, 9).toString();
-
-          //  long DataRiferimento;
-            BigDecimal GiacenzaAttuale = new BigDecimal(GiacenzaAttualeS);
-            BigDecimal GiacenzaVoluta = new BigDecimal(0);
-            BigDecimal QtaNuovoMovimento;
-            
-            if (Wallet==null || !Wallet.equalsIgnoreCase("tutti")){
-            if (TipoMoneta.equalsIgnoreCase("Crypto")){
-            
-            //========== MESSAGGIO INIZIALE, CHIEDO DI INSERIRE LA NUOVA GIACENZA =========
-            
-            String m = JOptionPane.showInputDialog(this, "<html>Il saldo alla data selezionata è : <b>" + GiacenzaAttuale.toPlainString() + "</b> <br>"
-                    + "Indicare nel riquadro sottostante la giacenza che il token <b>" + Moneta + "</b> dovrà avere al termine dell'operazione: </html>", GiacenzaVoluta);
-            //  completato = m!=null; //se premo annulla nel messaggio non devo poi chiudere la finestra, quindi metto completato=false
-            if (m != null) {
-                m = m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
-                if (Principale.Funzioni_isNumeric(m, false)) {
-                    GiacenzaVoluta = new BigDecimal(m);
-                    
-            //========= SE SONO PRESENTI GIACENZE NEGATIVE PRECEDENTI AVVISO E CHIEDO SE SI VUOLE CONTINUARE =========
-            
-                    if (GiacNegativaPrecedente.equals("S")){
-                //Se arrivo qua vuol dire che sto cercando di modificare la giacenza di un token che ha saldi negativi precedenti
-                //In questo caso emetto un messaggio di alert che avvisa che sarebbe meglio correggere queste giacenze in ordine.
-                String testo = """
-                <html>
-                <b>Attenzione:</b><br><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;
-                               Stai tentando di <b>cambiare la giacenza</b> di un token che ha avuto <b>saldi negativi <u>in passato</u></b>.<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;
-                               Sarebbe consigliabile <u>correggere i movimenti in ordine cronologico</u> per evitare discrepanze nei calcoli.<br><br>
-                    <b>Vuoi comunque proseguire con la modifica?</b>
-                    </html>
-                """;
-                JLabel labelTesto = new JLabel(testo);
-                labelTesto.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 14));
-               int risposta=JOptionPane.showOptionDialog(this,labelTesto, "Avviso", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[]{"Si", "No"}, "No");
-            if (risposta!=0){
-                return;
-            } 
-
-            }
-                    
-                    QtaNuovoMovimento = GiacenzaVoluta.subtract(GiacenzaAttuale);
-                    String SQta = QtaNuovoMovimento.toPlainString();
-                   // BigDecimal ValoreMovOrigine=new BigDecimal(TabMovimenti.getModel().getValueAt(rigaselezionata, 6).toString());
-                    BigDecimal QtaMovOrigine=new BigDecimal(TabMovimenti.getModel().getValueAt(rigaselezionata, 5).toString());
-                    if (QtaMovOrigine.compareTo(BigDecimal.ZERO)==0)
-                    {
-                        LoggerGC.ScriviErrore("QtaMovOrigine=0, esco dalla funzione");
-                        return;
-                    }
-                     //   BigDecimal ValoreUnitarioToken=ValoreMovOrigine.divide(QtaMovOrigine,DecimaliCalcoli+10, RoundingMode.HALF_UP).abs();
-                        
-            // ========== SE DEVO INSERIRE UN MOVIMENTO NEGATIVO CHIEDO COME CLASSIFICARLO ==========
-            
-                    if (SQta.contains("-")) {
-                        //Gestisco i movimenti di scarico (Prelievi)
-                        String Testo = "<html>Per raggiungere la giacenza desiderata devo generare un movimento<br>"
-                                + "di prelievo di <b>" + SQta.replace("-", "") + "</b> unità<br><br>"
-                                + "Come classifichiamo il movimento?<br><br>"
-                                + "<b>1</b> - <b>Non classifico il movimento</b>, dovrò gestirlo successivamente<br>"
-                                + "    nella sezione 'Classificazione Trasferimenti Crypto'<br><br>"
-                                + "<b>2</b> - Lo considero alla stregua di un <b>CashOut</b> <br>"
-                                + "    (Verrà generata l'eventuale plusvalenza sul movimento)<br><br>"
-                                + "<b>3</b> - Lo considero alla stregua di una <b>Commissione</b><br><br>"
-                                + "<b>4</b> - Lo inserisco con descrizione <b>Rettifica Giacenza</b><br>"
-                                + "    (Non verranno calcolate le eventuali plusvalenze)<br><br></html>";
-                        Object[] Bottoni = {"Annulla", "1", "2", "3", "4"};
-                        scelta = JOptionPane.showOptionDialog(this, Testo,
-                                "Classificazione del movimento",
-                                JOptionPane.YES_NO_CANCEL_OPTION,
-                                JOptionPane.PLAIN_MESSAGE,
-                                null,
-                                Bottoni,
-                                null);
-                        //Adesso genero il movimento a seconda della scelta
-                        //0 o 1 significa che non bisogna fare nulla
-                        if (scelta != 0 && scelta != -1) {
-                            
-            // ========== INSERISCO IL MOVIMENTO DI USCITA PER SISTEMARE LA GIACENZA SCONDO LE INDICAZIONI ==========
-
-                            //ora chiedo di inserire una nota
-                            String Nota = JOptionPane.showInputDialog(this,
-                                    "<html>Inserire un eventuale nota sul movimento :</html>", "Rettifica di Giacenza");
-                            if (Nota != null) {
-                                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                                //adesso compilo la parte comune del movimento
-                                String RTOri[] = MappaCryptoWallet.get(IDTrans);
-                                //il movimento in questo caso deve finire successivamente a quello selezionato
-                                //quindi aggiungo 1 secondo al tempo del movimento originale per trovare quello da mettere
-                                Moneta M1 = new Moneta();
-                                M1.Moneta = Moneta;
-                                M1.MonetaAddress = AddressMoneta;
-                                M1.Qta = SQta;
-                                M1.Tipo = TipoMoneta;
-                                M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
-                                
-                                if (!Nota.contains("Rettifica")){
-                                    Nota = "Rettifica<br>"+Nota;
-                                }
-
-
-                                String IDOriSplittato[] = RTOri[0].split("_");
-                                //Il movimento che voglio deve essere un movimento di prelievo quindi lo specifico
-                                IDOriSplittato[4]="PC";                           
-                                String NuovoID=String.join("_", IDOriSplittato);
-                                NuovoID=MovimentiCrypto.IncDecID(NuovoID, 1, true);
-                                        
-                                String TipoDaPassare=null;
-                                switch (scelta) {
-                                    case 1 -> {
-                                        //Non Classifico Movimento   (Non devo fare nulla)                                      
-                                    }
-                                    case 2 -> {
-                                        //CashOut
-                                        TipoDaPassare="CASHOUT O SIMILARE";
-                                      //  RT2[5] = "CASHOUT O SIMILARE";
-                                      //  RT2[18] = "PCO - CASHOUT O SIMILARE";
-                                    }
-                                    case 3 -> {
-                                        //Commissione 
-                                        TipoDaPassare="COMMISSIONE";
-                                      //  RT2[5] = "COMMISSIONE";
-                                      //  RT2[18] = "";
-                                    }
-                                    case 4 -> {
-                                        //Rettifica Giacenza 
-                                        TipoDaPassare="RETTIFICA GIACENZA";
-                                       // RT2[5] = "RETTIFICA GIACENZA";
-                                       // RT2[18] = "PWN - RETTIFICA GIACENZA";
-                                    }
-                                    default -> {
-                                    }
-                                }
-                                String RT2[]=MovimentiCrypto.creaMovimento(M1, null,RTOri[3], RTOri[4],0,null,null,1,1,NuovoID,Nota,"M",null,TipoDaPassare,null);
-                                //Adesso scrivo il movimento
-                                MappaCryptoWallet.put(RT2[0], RT2);
-
-                            }
-                        }
-                    } else {
-                        
-                // ========== SE DEVO INSERIRE UN MOVIMENTO POSITIVO CHIEDO COME CLASSIFICARLO ==========
-                        
-                        //Gestisco i movimenti di Carico (Depositi)
-                        //Gestisco i movimenti di scarico (Prelievi)
-                        String Testo = "<html>Per raggiungere la giacenza desiderata devo generare un movimento<br>"
-                                + "di deposito di <b>" + SQta.replace("-", "") + "</b> unità<br><br>"
-                                + "Come classifichiamo il movimento?<br><br>"
-                                + "<b>1</b> - <b>Non classifico il movimento</b>, dovrò gestirlo successivamente<br>"
-                                + "    nella sezione 'Classificazione Trasferimenti Crypto'<br><br>"
-                                + "<b>2</b> - Lo considero alla stregua di un <b>Provento da detenzione</b> <br>"
-                                + "    (Verrà generata una plusvalenza sul movimento pari al suo valore)<br><br>"
-                                + "<b>3</b> - Carico il movimento con <b>Costo di carico = 0</b><br><br>"
-                                + "</html>";
-                        Object[] Bottoni = {"Annulla", "1", "2", "3"};
-                        scelta = JOptionPane.showOptionDialog(this, Testo,
-                                "Classificazione del movimento",
-                                JOptionPane.YES_NO_CANCEL_OPTION,
-                                JOptionPane.PLAIN_MESSAGE,
-                                null,
-                                Bottoni,
-                                null);
-                        //Adesso genero il movimento a seconda della scelta
-                        //0 o 1 significa che non bisogna fare nulla
-                        if (scelta != 0 && scelta != -1) {
-
-                    // ========== INSERISCO IL MOVIMENTO SECONDO INDICAZIONI ==========
-                            
-                            //ora chiedo di inserire una nota
-                            String Nota = JOptionPane.showInputDialog(this,
-                                    "<html>Inserire un eventuale nota sul movimento :</html>", "Rettifica di Giacenza");
-                            if (Nota != null) {
-                                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                                //adesso compilo la parte comune del movimento
-                                String RTOri[] = MappaCryptoWallet.get(IDTrans);
-                                String IDOriSplittato[] = RTOri[0].split("_");
-                      //         DataRiferimento = FunzioniDate.ConvertiDatainLongMinuto(RTOri[1]);
-                                IDOriSplittato[4]="DC";                           
-                                String NuovoID=String.join("_", IDOriSplittato);
-                                NuovoID=MovimentiCrypto.IncDecID(NuovoID, 1, false);
-                                
-                                if (!Nota.contains("Rettifica")){
-                                    Nota = "Rettifica<br>"+Nota;
-                                }
-
-                                Moneta M1 = new Moneta();
-                                M1.Moneta = Moneta;
-                                M1.MonetaAddress = AddressMoneta;
-                                M1.Qta = SQta;
-                                M1.Tipo = TipoMoneta;
-                                M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
-                                
-                                String TipoDaPassare=null;
-
-                                switch (scelta) {
-                                    case 1 -> {
-                                        //Non Classifico Movimento                                
-                                    }
-                                    case 2 -> {
-                                        //Rendita da Capitale
-                                        TipoDaPassare="EARN";
-                                       // RT1[5] = "EARN";
-                                      //  RT1[18] = "DAI - Provento da Detenzione";
-                                    }
-                                    case 3 -> {
-                                        //Costo di carico 0
-                                        TipoDaPassare="DEPOSITO A COSTO 0";
-                                       // RT1[5] = "DEPOSITO A COSTO 0";
-                                       // RT1[18] = "DCZ - DEPOSITO A COSTO 0";
-                                    }
-                                    default -> {
-                                    }
-                                }
-                                //Adesso scrivo il movimento
-                                String RT1[]=MovimentiCrypto.creaMovimento(null, M1,RTOri[3], RTOri[4],0,null,null,1,1,NuovoID,Nota,"M",null,TipoDaPassare,null);
-                                MappaCryptoWallet.put(RT1[0], RT1);
-
-                            }
-                        }
-
-
-                    }
-                    
-                    //Avviso il programma che devo anche aggiornare la tabella crypto e ricalcolare le plusvalenze
-                        
-                    //Aggiorno tutto in un thread separato così viene fatto tutto in backgroud intanto che 
-                    //Viene premuto sul messaggio di conferma
-                 //   new Thread(() -> {
-                        Funzioni_AggiornaTutto();
-                  //  }).start();
-                    //Adesso avviso che il movimento è inserito e ricarico l'intera pagina
-                    this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                    if (scelta != 0 && scelta != -1) {
-                        JOptionPane.showConfirmDialog(this, """
-                                                            Movimento di rettifica generato con successo!
-                                                            Ricordarsi di salvare i movimenti nella sezione 'Transazioni Crypto'.""",
-                                "Movimento Creato", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                        
-
-                        
-                        //DA FARE!!!!!!
-                        //Ora sistemo i valori sulla tabella principale
-                        //Devo ricalcolare la tabella principale
-                        //Ricaricare i dettagli e riposizionare il tutto
-                        //E ricarico la tabella secondaria
-
-                        // GiacenzeaData_CompilaTabellaToken();
-                        
-                        //Tra le altre cose devo anche ricalcolare l'RW qualora sia stato già calcolato
-                    }
-                } else {
-                    //  completato=false;
-                    JOptionPane.showConfirmDialog(this, "Attenzione, " + m + " non è un numero valido!",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                }
-            }
-        }else{
-                    //  completato=false;
-                    JOptionPane.showConfirmDialog(this, """
-                                                        Questo tipo di operazione \u00e8 consentita solo per le Crypto.
-                                                        Per NFT e FIAT utilizzare l'inserimento manuale.""",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                }
-            }else{
-                    //  completato=false;
-                    JOptionPane.showConfirmDialog(this, """
-                                                        Questo tipo di operazione \u00e8 consentita solo sui singoli Wallet.
-                                                        Selezionare un sigolo Wallet dal men\u00f9 a tendina in alto.""",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                }
-        }
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-    }
-    
+   
     
     private void GiacenzeaData_Bottone_RettificaQtaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_RettificaQtaActionPerformed
         // TODO add your handling code here:
@@ -8711,68 +8380,69 @@ GiacenzeaData_CompilaTabellaToken(true);
 
     private void DepositiPrelievi_Bottone_DettaglioDefiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_DettaglioDefiActionPerformed
         // TODO add your handling code here:
-        if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
-        int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);        
-        String ID = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-        if (!Funzioni_WalletDeFi.ApriExplorer(ID)){
-            JOptionPane.showConfirmDialog(this, "Non è possibile aprire l'explorer per questa transazione.",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+        if (DepositiPrelievi_Tabella.getSelectedRow() >= 0) {
+            int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);
+            String ID = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            if (!Funzioni_WalletDeFi.ApriExplorer(ID)) {
+                Messaggi.WarningMessage("Explorer non consultabile", "Non è possibile aprire l'explorer per questa transazione.",this);
+            }
         }
-        }
-        
+
     }//GEN-LAST:event_DepositiPrelievi_Bottone_DettaglioDefiActionPerformed
 
-    public void Funzione_EliminaMovimento(String ID,Component c){
-    int risposta=JOptionPane.showOptionDialog(c,"Sicuro di voler cancellare la transazione con ID "+ID+" ?", "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-            if (risposta==0){
-                //controllo se quel movimento è associato ad altri e nel qual caso lo sbianco e sbianco i movimenti associati a lui
-                Funzioni.RimuoviMovimentazioneXID(ID);
-                TabellaCryptodaAggiornare=true;
-                SwingUtilities.invokeLater(() -> {
-                JOptionPane.showConfirmDialog(c, "Transazione con ID"+ID+" eliminata correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
-                    "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                });
-            }
+    public void Funzione_EliminaMovimento(String ID, Component c) {
+        AppDialog.DialogResult result = AppDialog.builder(SwingUtilities.getWindowAncestor(c))
+                .windowTitle("Cancellazione transazione")
+                .bodyTitle("Eliminare la transazione?")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message("Stai per eliminare la transazione con ID " + ID + ".")
+                .details("L'operazione rimuoverà anche gli eventuali collegamenti associati.")
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("delete", "Elimina")
+                        .role(AppDialog.ActionRole.DANGER)
+                        .build())
+                .showDialog();
+
+        if (result.isAction("delete")) {
+            Funzioni.RimuoviMovimentazioneXID(ID);
+            TabellaCryptodaAggiornare = true;
+
+            SwingUtilities.invokeLater(() -> {
+                Messaggi.SuccessMessage("Transazione eliminata", 
+                        "La transazione con ID " + ID + " è stata eliminata correttamente.<br>"
+                                + "Premi Salva nella sezione 'Transazioni Crypto' per rendere permanente la cancellazione.",this);
+            });
+        }
     }
     
-    public void Funzione_ModificaMovimento(String ID,Component c){
-            GUI_ModificaMovimento a = new GUI_ModificaMovimento();
-            String riga[]=Principale.MappaCryptoWallet.get(ID);
+    public void Funzione_ModificaMovimento(String ID, Component c) {
+        GUI_ModificaMovimento a = new GUI_ModificaMovimento();
+        String[] riga = Principale.MappaCryptoWallet.get(ID);
 
-            String PartiCoinvolte[] = (riga[0] + "," + riga[20]).split(",");
-            if (PartiCoinvolte.length > 1 && !riga[22].equalsIgnoreCase("AU")) {//devo permettere di modificare i movimenti automatici generati dagli scambi per poter cambiare eventualmente il prezzo
-                String Messaggio = "Attenzione, il movimento è associato ad un altro movimento.\n"
-                        + "se si prosegue l'associazione verrà rimossa, si vuole continuare?";
-                int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Conferma modifica", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-                //Si=0
-                //No=1
-                switch (risposta) {
-                    case 0 -> {
-                        ID=GUI_ClassificazioneMovimento.RiportaTransazioniASituazioneIniziale(PartiCoinvolte,ID); 
+        String[] partiCoinvolte = (riga[0] + "," + riga[20]).split(",");
 
-                            a.CompilaCampidaID(ID);
-                            a.setLocationRelativeTo(c);
-                            a.setVisible(true);
-                            Principale.TabellaCryptodaAggiornare=true;
-                        
-                    }
-                    case 1 -> {
-                        JOptionPane.showConfirmDialog(this, "Operazione Annullata",
-                                "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                        
-                    }
-                    case -1 -> {
-                        JOptionPane.showConfirmDialog(this, "Operazione Annullata",
-                                "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                        
-                    }
+        if (partiCoinvolte.length > 1 && !riga[22].equalsIgnoreCase("AU")) {
+            //se rispondo si al messaggio di modifica del movimento vado avanti
+            if (Messaggi.Personalizzati_SINO_ModificaMovimento(this)) {
+                ID = GUI_ClassificazioneMovimento.RiportaTransazioniASituazioneIniziale(partiCoinvolte, ID);
 
-                }
-            }else{ 
                 a.CompilaCampidaID(ID);
                 a.setLocationRelativeTo(c);
                 a.setVisible(true);
+                Principale.TabellaCryptodaAggiornare = true;
+            } else {
+                Messaggi.InfoMessage("Operazione annullata", "", this);
             }
+
+        } else {
+            a.CompilaCampidaID(ID);
+            a.setLocationRelativeTo(c);
+            a.setVisible(true);
+        }
     }
     
    
@@ -8876,56 +8546,49 @@ GiacenzeaData_CompilaTabellaToken(true);
     private void Opzioni_Emoney_Bottone_RimuoviActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_Bottone_RimuoviActionPerformed
         // TODO add your handling code here:
         if (Opzioni_Emoney_Tabella.getSelectedRow() >= 0) {
-            int rigaselezionata = Opzioni_Emoney_Tabella.getSelectedRow();
-            String Moneta = Opzioni_Emoney_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            String Testo = "<html>Vuoi calncellare il Token <b>" + Moneta + "</b> dalla lista degli EMoney Token?<br><br>"
-            + "</html>";
-            Object[] Bottoni = {"Si", "No"};
-            int scelta = JOptionPane.showOptionDialog(this, Testo,
-                "Classificazione del Token",
-                JOptionPane.YES_NO_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                Bottoni,
-                null);
-            if (scelta == 0) {
-                DatabaseH2.Pers_Emoney_Cancella(Moneta);
+            int rigaSelezionata = Opzioni_Emoney_Tabella.getSelectedRow();
+            String moneta = Opzioni_Emoney_Tabella.getModel().getValueAt(rigaSelezionata, 0).toString();
+            if (Messaggi.Personalizzati_SINO_RimuoviEmoneyToken(moneta, this)) {
+                DatabaseH2.Pers_Emoney_Cancella(moneta);
                 Opzioni_Emoney_CaricaTabellaEmoney();
+
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
-                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
+                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(
+                        TransazioniCrypto_CheckBox_EscludiTI.isSelected(),
+                        TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected()
+                );
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                //TabellaCryptodaAggiornare=true;
-            } else {
-
             }
-
         }
     }//GEN-LAST:event_Opzioni_Emoney_Bottone_RimuoviActionPerformed
 
     private void Opzioni_Emoney_Bottone_AggiungiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_Bottone_AggiungiActionPerformed
-        // TODO add your handling code here:
-        String Testo="<html>Digita il nome della moneta da aggiungere alla lista delle E-Money Token (es. USDC)<br>";
-        Testo = Testo + "<b>Attenzione :</b> I nomi dei token sono CaseSensitive quindi, ad esempio, BTC è diverso da Btc o btc<br><br></html>";
-        String m = JOptionPane.showInputDialog(this, Testo, "");
-        if (m!=null){
-            m=m.trim();
-            if (DatabaseH2.Pers_Emoney_Leggi(m)==null){
-                //System.out.println("Aggiunto "+m+" al databse");
-                DatabaseH2.Pers_Emoney_Scrivi(m, "2000-01-01");
-                Opzioni_Emoney_CaricaTabellaEmoney();
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
-                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                // TabellaCryptodaAggiornare=true;
-            }else{
-                JOptionPane.showConfirmDialog(this, "Il token è già presente in tabella.",
-                    "Token già esistente",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+        // TODO add your handling code here:       
+        String m=Messaggi.Personalizzati_Input_NuovoEmoneyToken(this);
+            if (m != null) {
+                m = m.trim();
+
+                if (!m.isBlank()) {
+                    if (DatabaseH2.Pers_Emoney_Leggi(m) == null) {
+                        DatabaseH2.Pers_Emoney_Scrivi(m, "2000-01-01");
+                        Opzioni_Emoney_CaricaTabellaEmoney();
+
+                        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+                        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(
+                                TransazioniCrypto_CheckBox_EscludiTI.isSelected(),
+                                TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected()
+                        );
+                        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+
+                    } else {
+                        Messaggi.WarningMessage("Token esistente", "Il token è già presente in tabella.", this);
+                    }
+                }
             }
-            // System.out.println("Trovato moneta: "+m);
-            // System.out.println(DatabaseH2.Pers_Emoney_Leggi(m));
-        }
+
+        
     }//GEN-LAST:event_Opzioni_Emoney_Bottone_AggiungiActionPerformed
 
     private void Opzioni_GruppoWallet_TabellaFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_TabellaFocusGained
@@ -8974,29 +8637,52 @@ GiacenzeaData_CompilaTabellaToken(true);
     
     private void Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed
         // TODO add your handling code here:
-        if(Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedIndex()!=0) {
-        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-        String DataIniziale=f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
-        String DataFinale=f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
-        long timeStampIniziale=FunzioniDate.ConvertiDatainLong(DataIniziale);
-        long timeStampFinale=FunzioniDate.ConvertiDatainLong(DataFinale)+86400000;
-            String Messaggio="Sicuro di voler cancellare tutti i dati delle Transazioni Crypto del Wallet "+Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString()+"dal "+DataIniziale+" al "+DataFinale+" compreso?";
-            int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-            if (risposta==0)
-            {
+        if (Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedIndex() != 0) {
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+            String dataIniziale = f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
+            String dataFinale = f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
+
+            long timeStampIniziale = FunzioniDate.ConvertiDatainLong(dataIniziale);
+            long timeStampFinale = FunzioniDate.ConvertiDatainLong(dataFinale) + 86400000;
+
+            String wallet = Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString();
+
+            AppDialog.DialogResult result = AppDialog.builder(this)
+                    .windowTitle("Cancellazione transazioni crypto")
+                    .bodyTitle("Eliminare i movimenti selezionati?")
+                    .showTitleInBody(true)
+                    .theme()
+                    .type(AppDialog.DialogType.WARNING)
+                    .message("Stai per cancellare tutte le transazioni crypto del wallet " + wallet + ".")
+                    .details("""
+                    Intervallo incluso: dal %s al %s.
+
+                    L'operazione agirà su tutti i movimenti compresi nel periodo selezionato.
+                    """.formatted(dataIniziale, dataFinale))
+                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("delete", "Elimina")
+                            .role(AppDialog.ActionRole.DANGER)
+                            .build())
+                    .showDialog();
+
+            if (result.isAction("delete")) {
                 Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
-                int movimentiCancellati=Funzioni.CancellaMovimentazioniXWallet(Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString(),timeStampIniziale,timeStampFinale);
-                //rilancio la funzione perchè mentre si cancellavano i dati potrebbe essere variato qualche id in particolare 
-                //quelli relativi agli scambi differiti, in questo modo sono sicuro di eliminarli completamente
-                movimentiCancellati=movimentiCancellati+Funzioni.CancellaMovimentazioniXWallet(Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString(),timeStampIniziale,timeStampFinale);
-                if (movimentiCancellati>0){
+
+                int movimentiCancellati = Funzioni.CancellaMovimentazioniXWallet(wallet, timeStampIniziale, timeStampFinale);
+
+                movimentiCancellati += Funzioni.CancellaMovimentazioniXWallet(wallet, timeStampIniziale, timeStampFinale);
+
+                if (movimentiCancellati > 0) {
                     Opzioni_RicreaListaWalletDisponibili();
                     Funzioni_AggiornaTutto();
                 }
-                Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
-                Messaggio="Numero movimenti cancellati : "+movimentiCancellati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte.";
-                JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
 
+                Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
+Messaggi.SuccessMessage("Cancellazione completata", 
+                        "Numero movimenti cancellati: " + movimentiCancellati + ".<br>"
+                                + "Ricordarsi di salvare per non perdere le modifiche effettuate.",this);
             }
         }
     }//GEN-LAST:event_Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed
@@ -9004,146 +8690,127 @@ GiacenzeaData_CompilaTabellaToken(true);
     private void Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed
         // TODO add your handling code here:
         // TODO add your handling code here:
-        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-        String DataIniziale=f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
-        String DataFinale=f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
-        long timeStampIniziale=FunzioniDate.ConvertiDatainLong(DataIniziale);
-        long timeStampFinale=FunzioniDate.ConvertiDatainLong(DataFinale)+86400000;
-        String Messaggio = "Sicuro di voler cancellare tutti i dati delle Transazioni Crypto dal "+DataIniziale+" al "+DataFinale+" compreso?";
-        int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-        if (risposta == 0) {
-         //   Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
-                int movimentiCancellati=Funzioni.CancellaMovimentazioniXWallet(null,timeStampIniziale,timeStampFinale);
-                //Rilancio la funzione per eliminare anche i movimenti di cui è stato cambiato l'id in fase di cancellazione globale
-                movimentiCancellati=movimentiCancellati+Funzioni.CancellaMovimentazioniXWallet(null,timeStampIniziale,timeStampFinale);
-                if (movimentiCancellati>0){
-                    Opzioni_RicreaListaWalletDisponibili();
-                    Funzioni_AggiornaTutto();
-                }
-           //     Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
-                Messaggio="Numero movimenti cancellati : "+movimentiCancellati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte.";
-                JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
-        }
+       SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+String dataIniziale = f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
+String dataFinale = f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
+
+long timeStampIniziale = FunzioniDate.ConvertiDatainLong(dataIniziale);
+long timeStampFinale = FunzioniDate.ConvertiDatainLong(dataFinale) + 86400000;
+
+AppDialog.DialogResult result = AppDialog.builder(this)
+        .windowTitle("Cancellazione transazioni crypto")
+        .bodyTitle("Eliminare tutte le transazioni?")
+        .showTitleInBody(true)
+        .theme()
+        .type(AppDialog.DialogType.WARNING)
+        .message("Stai per cancellare tutte le transazioni crypto comprese nel periodo selezionato.")
+        .details("""
+                Intervallo incluso: dal %s al %s.
+
+                L'operazione interesserà tutti i wallet e tutti i movimenti presenti nell'intervallo.
+                """.formatted(dataIniziale, dataFinale))
+        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                .role(AppDialog.ActionRole.SECONDARY)
+                .build())
+        .action(AppDialog.DialogAction.builder("delete-all", "Elimina tutto")
+                .role(AppDialog.ActionRole.DANGER)
+                .build())
+        .showDialog();
+
+if (result.isAction("delete-all")) {
+    int movimentiCancellati = Funzioni.CancellaMovimentazioniXWallet(null, timeStampIniziale, timeStampFinale);
+
+    movimentiCancellati += Funzioni.CancellaMovimentazioniXWallet(null, timeStampIniziale, timeStampFinale);
+
+    if (movimentiCancellati > 0) {
+        Opzioni_RicreaListaWalletDisponibili();
+        Funzioni_AggiornaTutto();
+    }
+
+    Messaggi.SuccessMessage("Cancellazione completata", "Numero movimenti cancellati: " + movimentiCancellati + 
+            ".<br>Ricordarsi di salvare per non perdere le modifiche effettuate.", this);
+}
     }//GEN-LAST:event_Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed
 
     private void CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed
         // TODO add your handling code here:
-        String Messaggio="Sicuro di voler cancellare le personalizzazione sui movimenti del Fiat Wallet?";
-        int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione personalizzazioni FiatWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-        if (risposta==0){
-            try
-            {
-                FileWriter w=new FileWriter(VarStatiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
-                BufferedWriter b=new BufferedWriter (w);
-                for (String value : VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.values())
-                {
-                    if (!value.toUpperCase().contains(";Personalizzato;".toUpperCase()))
-                    {
-                        b.write(value+"\n");
+
+        String messaggio = "Vuoi rimuovere le personalizzazioni dei movimenti del Fiat Wallet?";
+
+        AppDialog.DialogResult result = AppDialog.builder(this)
+                .windowTitle("Cancellazione personalizzazioni Fiat Wallet")
+                .showTitleInBody(false)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message(messaggio)
+                .details("Verranno mantenuti solo i tipi di movimento non personalizzati.")
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("reset-customizations", "Rimuovi personalizzazioni")
+                        .role(AppDialog.ActionRole.DANGER)
+                        .build())
+                .showDialog();
+
+        if (result != null && result.isAction("reset-customizations")) {
+            try {
+                FileWriter w = new FileWriter(VarStatiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
+                BufferedWriter b = new BufferedWriter(w);
+
+                for (String value : VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.values()) {
+                    if (!value.toUpperCase().contains(";Personalizzato;".toUpperCase())) {
+                        b.write(value + "\n");
                     }
                 }
+
                 b.close();
                 w.close();
-            }catch (IOException ex)
-            {
 
-            }    }
+            } catch (IOException ex) {
+
+            }
+
             CDC_FiatWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCFiatWallet());
             CDC_FiatWallet_AggiornaDatisuGUI();
+
+            Messaggi.SuccessMessage("Personalizzazioni rimosse", "Le personalizzazioni dei movimenti del Fiat Wallet sono state rimosse.", this);
+
+        }
+            
+            
+            
     }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed
 
     private void CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed
         // TODO add your handling code here:
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-        String DataIniziale=f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
-        String DataFinale=f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
-        long timeStampIniziale=FunzioniDate.ConvertiDatainLong(DataIniziale);
-        long timeStampFinale=FunzioniDate.ConvertiDatainLong(DataFinale)+86400000;
-        String Messaggio="Sicuro di voler cancellare tutti i dati del Fiat Wallet dal "+DataIniziale+" al "+DataFinale+" compreso?";
-        int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione FiatWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-        if (risposta==0){
-            try
-            {
-                //Leggo il file e metto in un array tutto quello da mantenere
-               FileReader fire = new FileReader(VarStatiche.getFile_CDCFiatWallet()); 
-               BufferedReader bure = new BufferedReader(fire);
-                        String rigas;
-                        
-                        
-                        List<String> DaMantenere = new ArrayList<>();
-                        while ((rigas = bure.readLine()) != null) {
-                            long timeStampMovimento=FunzioniDate.ConvertiDatainLong(rigas.split(" ")[0]);
-                            if (timeStampMovimento<timeStampIniziale ||
-                                  timeStampMovimento>=timeStampFinale  ){
-                                    DaMantenere.add(rigas);
-                            }
-                        }
-                        bure.close();
-                        fire.close();
-                
-                //Tutto quello da mantenere lo riscrivo in un nuovo file
-                FileWriter w=new FileWriter(VarStatiche.getFile_CDCFiatWallet());
-                BufferedWriter b=new BufferedWriter (w);
-                Iterator<String> It=DaMantenere.iterator();
-                while(It.hasNext()){
-                    b.write(It.next()+"\n");
-                }
-                b.close();
-                w.close();
-            }catch (IOException ex)
-            {
-
-            }    }
+        String dataIniziale = f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
+        String dataFinale = f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
+        
+        if (F_Opzioni_Pulizie.confermaECancellaWalletFIATeCARDPerIntervallo(dataIniziale, dataFinale, "FIAT Wallet",VarStatiche.getFile_CDCFiatWallet(), this))
+        {
             CDC_FiatWallet_Mappa.clear();
             CDC_FiatWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCFiatWallet());
             CDC_FiatWallet_AggiornaDatisuGUI();
+
+            Messaggi.SuccessMessage("Dati eliminati", "I dati del Fiat Wallet nel periodo selezionato sono stati eliminati correttamente.", this);
+        }
     }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed
 
     private void CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed
-        // TODO add your handling code here:
+        // TODO add your handling code here:      
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-        String DataIniziale=f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
-        String DataFinale=f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
-        long timeStampIniziale=FunzioniDate.ConvertiDatainLong(DataIniziale);
-        long timeStampFinale=FunzioniDate.ConvertiDatainLong(DataFinale)+86400000;
-        String Messaggio="Sicuro di voler cancellare tutti i dati del Card Wallet dal "+DataIniziale+" al "+DataFinale+" compreso?";
-        int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione CardWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-        if (risposta==0){
-            try
-            {
-                
-               //Leggo il file e metto in un array tutto quello da mantenere
-               FileReader fire = new FileReader(VarStatiche.getFile_CDCCardWallet()); 
-               BufferedReader bure = new BufferedReader(fire);
-                        String rigas;
-                        
-                        List<String> DaMantenere = new ArrayList<>();
-                        while ((rigas = bure.readLine()) != null) {
-                            long timeStampMovimento=FunzioniDate.ConvertiDatainLong(rigas.split(" ")[0]);
-                            if (timeStampMovimento<timeStampIniziale ||
-                                  timeStampMovimento>=timeStampFinale  ){
-                                    DaMantenere.add(rigas);
-                            }
-                        }
-                        bure.close();
-                        fire.close();
-                
-                //Tutto quello da mantenere lo riscrivo in un nuovo file
-                FileWriter w=new FileWriter(VarStatiche.getFile_CDCCardWallet());
-                BufferedWriter b=new BufferedWriter (w);
-                Iterator<String> It=DaMantenere.iterator();
-                while(It.hasNext()){
-                    b.write(It.next()+"\n");
-                }
-                b.close();
-                w.close();
-            }catch (IOException ex)
-            {
-
-            }    }
+        String dataIniziale = f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
+        String dataFinale = f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
+        
+        if (F_Opzioni_Pulizie.confermaECancellaWalletFIATeCARDPerIntervallo(dataIniziale, dataFinale, "Card Wallet",VarStatiche.getFile_CDCCardWallet(), this))
+        {
             CDC_CardWallet_Mappa.clear();
             CDC_CardWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCCardWallet());
             CDC_CardWallet_AggiornaDatisuGUI();
+
+            Messaggi.SuccessMessage("Dati eliminati", "I dati del Card Wallet nel periodo selezionato sono stati eliminati correttamente.", this);
+        }
     }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed
 
     private void Opzioni_GruppoWallet_CheckBox_PlusXWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_CheckBox_PlusXWalletActionPerformed
@@ -9636,8 +9303,8 @@ GiacenzeaData_CompilaTabellaToken(true);
             //Punto 2
             if (Errore.toLowerCase().contains("giacenza negativa")) {
                 try {
-                    JOptionPane.showConfirmDialog(this, "Si verrà ora reindirizzati alla funzione GiacenzeaData\nSistemare le giacenze negative per correggere l'RW!",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    Messaggi.InfoMessage("Passaggio ad altra funzione", 
+                            "Si verrà ora reindirizzati alla funzione GiacenzeaData<br>Sistemare le giacenze negative per correggere l'RW", this);
                     //Punto 2a
                     AnalisiCrypto.setSelectedComponent(GiacenzeaData);
                     //Punto 2b
@@ -9740,9 +9407,8 @@ GiacenzeaData_CompilaTabellaToken(true);
         try {
             // TODO add your handling code here:
             int rigaselezionata=Tabelle.Funzioni_getRigaSelezionata(RW_Tabella_Dettagli);
-            //   String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 12).toString();
-            JOptionPane.showConfirmDialog(this, "Si verrà ora reindirizzati alla funzione GiacenzeaData\nIdentificare i token SCAM per correggere l'RW!",
-                    "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+            Messaggi.InfoMessage("Passaggio ad altra funzione", 
+                            "Si verrà ora reindirizzati alla funzione GiacenzeaData<br>Identificare i token SCAM per correggere l'RW.", this);
             //Punto 2a
             AnalisiCrypto.setSelectedComponent(GiacenzeaData);
             //Punto 2b
@@ -9858,17 +9524,26 @@ GiacenzeaData_CompilaTabellaToken(true);
         System.out.println("Chiusura");
         
         if(TransazioniCrypto_Bottone_Salva.isEnabled()){
-                     String Messaggio="Attenzione, ci sono movimenti non salvati.\n"
-                     + "Si vuole salvare prima di chiudere?";
-             int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Movimenti non salvati", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-                //Si=0
-                //No=1
-                switch (risposta) {
-                    case 0 -> {
-                        Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet,false);
-                    }
 
-                } 
+                AppDialog.DialogResult result = AppDialog.builder(this)
+                        .windowTitle("Movimenti non salvati")
+                        .bodyTitle("Salvare i movimenti?")
+                        .type(AppDialog.DialogType.WARNING)
+                        .theme()
+                        //.details("Salvare i movimenti?")
+                        //.message("Salvare i movimenti?")
+                        .details("""                               
+                Ci sono movimenti non salvati. 
+                Salvare prima di chiudere?
+                """)
+                        .primaryAction("OK", "SI")
+                        .secondaryAction("close", "NO")
+                        .showDialog();
+
+                if (result.isAction("OK")) {
+                    Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet,false);
+                }
+                
         }
         LoggerGC.close();
         this.dispose();
@@ -9917,34 +9592,43 @@ GiacenzeaData_CompilaTabellaToken(true);
     private void Opzioni_GruppoWallet_Bottone_RinominaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_Bottone_RinominaActionPerformed
         // TODO add your handling code here:
         if (Opzioni_GruppoWallet_Tabella.getSelectedRow() >= 0) {
-            int rigaselezionata = Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(Opzioni_GruppoWallet_Tabella.getSelectedRow());
-            String Gruppo=Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
-            Gruppo=Gruppo.split("\\(")[0].trim();        
-            String Testo = "<html>Indica il nuovo Alias per il Gruppo<b>" + Gruppo + "</b><br>";
-            String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
-            String m = JOptionPane.showInputDialog(this, Testo, Valori[1]).trim();
+            int rigaSelezionataView = Opzioni_GruppoWallet_Tabella.getSelectedRow();
+            int rigaSelezionataModel = Opzioni_GruppoWallet_Tabella.getRowSorter()
+                    .convertRowIndexToModel(rigaSelezionataView);
+
+            String gruppo = Opzioni_GruppoWallet_Tabella.getModel()
+                    .getValueAt(rigaSelezionataModel, 1).toString();
+            gruppo = gruppo.split("\\(")[0].trim();
+
+            String[] valori = DatabaseH2.Pers_GruppoAlias_Leggi(gruppo);
+            String m = Messaggi.Personalizzati_Input_AliasGruppoWallet(gruppo, valori[1], this);
+
             if (m != null) {
-                m = Funzioni.NormalizzaNomeStringente(m);
-                //Se il nome dell'Alias è di almeno 21 caratteri proseguo
+                m = Funzioni.NormalizzaNomeStringente(m.trim());
+
                 if (m.length() > 0) {
-                    boolean PagaBollo=false;
-                    if(Valori[2].equals("S"))PagaBollo=true;
-                    DatabaseH2.Pers_GruppoAlias_Scrivi(Valori[0], m, PagaBollo);
+                    boolean pagaBollo = valori[2].equals("S");
+                    DatabaseH2.Pers_GruppoAlias_Scrivi(valori[0], m, pagaBollo);
+
                     Opzioni_GruppoWallet_CaricaGruppiWallet();
                     Funzione_AggiornaComboBox();
-                    //Aggiorno gli eventuali label per avvisare che è necessario il ricalcolo
-                    AccendiLabelRicalcolo(); 
-                    
-                    rigaselezionata = Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(rigaselezionata);
-                    Opzioni_GruppoWallet_Tabella.setRowSelectionInterval(rigaselezionata, rigaselezionata);
+                    AccendiLabelRicalcolo();
+
+                    int nuovaRigaView = Math.min(rigaSelezionataView, Opzioni_GruppoWallet_Tabella.getRowCount() - 1);
+                    if (nuovaRigaView >= 0) {
+                        Opzioni_GruppoWallet_Tabella.setRowSelectionInterval(nuovaRigaView, nuovaRigaView);
+                    }
+
                 } else {
-                    JOptionPane.showConfirmDialog(this, "Attenzione,il campo è nullo",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    Messaggi.WarningMessage("Campo non valido", "Attenzione, il campo alias è vuoto.", this);
                 }
             }
-       } 
+
+        }
     }//GEN-LAST:event_Opzioni_GruppoWallet_Bottone_RinominaActionPerformed
 
+    
+    
     private void AccendiLabelRicalcolo(){
         //Aggiorno gli eventuali label sull'RW e RT per avvisare che è necessario il ricalcolo
         if(RT_Tabella_Principale.getRowCount()>0)RT_Label_Avviso.setVisible(true);
@@ -10107,11 +9791,8 @@ GiacenzeaData_CompilaTabellaToken(true);
                         DatabaseH2.Pers_Opzioni_Scrivi("GiacenzeAData_Data", CDC_DataFinale);
                     }
                     else if(Funzioni_Date_ConvertiDatainLong(Data)>Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
-                        
-                        JOptionPane.showConfirmDialog(this, "Attenzione, la data inserita non può essere superiore alla data di ieri!",
-                                "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
-                        GiacenzeaData_Data_DataChooser.setDate(DataIeri);
-                        
+                        Messaggi.WarningMessage("Data errata", "Attenzione, la data inserita non può essere superiore alla data di ieri", this);
+                        GiacenzeaData_Data_DataChooser.setDate(DataIeri);                       
                     }   } catch (ParseException ex) {
                     LoggerGC.ScriviErrore(ex);
                 }
@@ -10626,35 +10307,45 @@ GiacenzeaData_CompilaTabellaToken(true);
     
     
     private void RW_Bottone_StampaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_StampaActionPerformed
-            // TODO add your handling code here:
-            //Come prima cosa rielaboro il quadro per essee sicuro che sia tutto aggiornato
-           // RW_CalcolaRW();
+        // TODO add your handling code here:
+        //Come prima cosa rielaboro il quadro per essee sicuro che sia tutto aggiornato
+
         if (RW_Tabella.getRowCount() == 0) {
             // Se non trovo dati come prima cosa provo ad elaborare il quadro
-             RW_CalcolaRW();
+            RW_CalcolaRW();
+
             if (RW_Tabella.getRowCount() == 0) {
-                String Testo = "<html>Attenzione! Non ci sono movimenti da stampare.<br>"
-                        + "Si vuole proseguire comunque con la stampa?<br>"
-                        + "Verrà stampato un report vuoto assiseme alle istruzioni di compilazione<br></html>";
-                Object[] Bottoni = {"Si", "No"};
-                int scelta = JOptionPane.showOptionDialog(this, Testo,
-                        "Quadro RW vuoto",
-                        JOptionPane.YES_NO_CANCEL_OPTION,
-                        JOptionPane.INFORMATION_MESSAGE,
-                        null,
-                        Bottoni,
-                        null);
-                if (scelta == 0) {
+                AppDialog.DialogResult result = AppDialog.builder(this)
+                        .windowTitle("Quadro RW vuoto")
+                        .bodyTitle("Stampare un report vuoto?")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.INFO)
+                        .message("Non ci sono movimenti da stampare.")
+                        .details("""
+                        Puoi proseguire comunque con la stampa.
+
+                        Verrà generato un report vuoto insieme alle istruzioni di compilazione.
+                        """)
+                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("print-empty-rw", "Stampa comunque")
+                                .role(AppDialog.ActionRole.PRIMARY)
+                                .build())
+                        .showDialog();
+
+                if (result != null && result.isAction("print-empty-rw")) {
                     RW_StampaRapporto();
                 }
+
             } else {
                 RW_StampaRapporto();
             }
         } else {
             RW_StampaRapporto();
         }
- 
-            
+
     }//GEN-LAST:event_RW_Bottone_StampaActionPerformed
 
     private void GiacenzeaData_Bottone_GiacenzeExplorerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_GiacenzeExplorerActionPerformed
@@ -10670,10 +10361,9 @@ GiacenzeaData_CompilaTabellaToken(true);
            int riferimentoAnno=Integer.parseInt(RW_Anno_ComboBox.getSelectedItem().toString());
            if (riferimentoAnno<2023)
            {
-               String Testo="<html><b>Attenzione!</b>, è stato selezionato un anno inferiore al 2023<br>"+
-                       "Gli anni precedenti al 2023 seguivano regole diverse, potrebbe essere che i dati prodotti non siano corretti<br></html>";
-               JOptionPane.showConfirmDialog(this,Testo,
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+               String Testo="<b>Attenzione!</b>, è stato selezionato un anno inferiore al 2023<br>"+
+                       "Gli anni precedenti al 2023 seguivano regole diverse<br>Potrebbe essere che i dati prodotti non siano corretti.<br>";
+               Messaggi.WarningMessage("Anno pre 2023", Testo, this);
            }
            RW_CalcolaRW();
            
@@ -10798,9 +10488,7 @@ GiacenzeaData_CompilaTabellaToken(true);
         thread.start();
         progress.setVisible(true);
         if (APlus==null){
-        //Inserire messaggio di ciclo fermato dall'utente
-        JOptionPane.showConfirmDialog(null, "<html>Elaborazione terminata dall'utente!      <br>",
-                            "Elaborazione terminata dall'utente",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+            Messaggi.WarningMessage("Elaborazione terminata dall'utente", "", this);
         }
         else{
         Map<String, BigDecimal[]> PlusvalenzeXAnno = APlus.Get_TabellaPlusXAnno();
@@ -10966,8 +10654,7 @@ GiacenzeaData_CompilaTabellaToken(true);
             }
         }
         SwingUtilities.updateComponentTreeUI(this);
-        JOptionPane.showConfirmDialog(this, "<html>Riavviare l'applicativo per la corretta applicazione del nuovo Tema.<br></html>",
-                            "Nuovo Tema Impostato", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+        Messaggi.SuccessMessage("Nuovo tema impostato", "Riavviare l'applicativo per la corretta applicazione del nuovo Tema.", this);
     }//GEN-LAST:event_Opzioni_Varie_Checkbox_TemaScuroActionPerformed
     private void Funzioni_NuovaVersioneDisponibile(){
         //Questa funzione la faccio partire in un thread separato
@@ -11023,31 +10710,30 @@ GiacenzeaData_CompilaTabellaToken(true);
 
                         switch (scelta) {
                             case 1 -> {
-                                JOptionPane.showConfirmDialog(this, "<html>Si verrà ora reindirizzati alla maschera per la correzione dei movimenti non classificati.<br><br>"
+                                String t="Si verrà ora reindirizzati alla maschera per la correzione dei movimenti non classificati.<br><br>"
                                         + "<b>NB: E' molto importante classificare tutti i movimenti di deposito e prelievo affinchè il calcolo delle plusvalenze sia esatto!</b><br><br>"
                                         + "Dalla versione 1.29, ai fini del calcolo della plusvalenza, tutti i movimenti di deposito non classificati verranno considerati <br>"
-                                        + "come un deposito a costo Zero mentre tutti i prelievi non classificati verranno considerati alla stregua di un cashout.</html>",
-                            "Movimenti non classificati", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                                        + "come un deposito a costo Zero mentre tutti i prelievi non classificati verranno considerati alla stregua di un cashout.";
+                                Messaggi.InfoMessage("Movimenti non classificati", t, this);
                              CDC.setSelectedIndex(1);
                              AnalisiCrypto.setSelectedComponent(DepositiPrelievi);
                              DepositiPrelievi.requestFocus();
                                 
                             }
                             case 2 -> {
-                                JOptionPane.showConfirmDialog(this, "<html>Verranno ora mostrati tutti i prodotti senza prezzo dei token non SCAM del periodo selezionato.<br><br>"
+                                String t="Verranno ora mostrati tutti i prodotti senza prezzo dei token non SCAM del periodo selezionato.<br><br>"
                                         + "<b>ATTENZIONE! Per vedere tutt i movimenti senza prezzo agire sulle date di inizio e fine posizionati in alto a destra</b><br><br>"
-                                        + "Per tornare alla visualizzazione precedente togliere la biffatura dall'opzione \"<b>Vedi solo movimenti non valorizzati</b>\"<br></html>",
-                            "Movimenti senza prezzo", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                                        + "Per tornare alla visualizzazione precedente togliere la biffatura dall'opzione \"<b>Vedi solo movimenti non valorizzati</b>\"<br>";
+                                Messaggi.InfoMessage("Movimenti senza prezzo", t, this);
                                 TransazioniCrypto_CheckBox_VediSenzaPrezzo.setSelected(true);
                                 this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
                                 CDC.setSelectedIndex(0);
                              
                             }
                             case 3 -> {
-                                JOptionPane.showConfirmDialog(this, "<html>Se manca parte della pila del LiFo significa che ci sono delle giacenze negative, generalmente mancano degli acquisti/earn.<br><br>"
-                                        + "Si verrà ora reindirizzati alla funzione <b>'Verifica Saldi Negativi'</b> per risolvere le problematiche.<br><br>"
-                                        + "</html>",
-                            "Parte del LiFo Mancante", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                                String t="Se manca parte della pila del LiFo significa che ci sono delle giacenze negative, generalmente mancano degli acquisti/earn.<br><br>"
+                                        + "Si verrà ora reindirizzati alla funzione <b>'Verifica Saldi Negativi'</b> per risolvere le problematiche.<br><br>";
+                                Messaggi.InfoMessage("Parte del LiFo Mancante", t, this);
                                 CDC.setSelectedIndex(1);
                                 AnalisiCrypto.setSelectedComponent(SaldiNegativi);
                                 SaldiNegativi.requestFocus();
@@ -11067,8 +10753,7 @@ GiacenzeaData_CompilaTabellaToken(true);
     private void RT_Bottone_ModificaGiacenzaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_ModificaGiacenzaActionPerformed
         // TODO add your handling code here:
         try {
-                    JOptionPane.showConfirmDialog(this, "Si verrà ora reindirizzati alla funzione GiacenzeaData\nSistemare le giacenze negative per correggere l'RT!",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    Messaggi.InfoMessage("Giacenze negative","Si verrà ora reindirizzati alla funzione GiacenzeaData<br>Sistemare le giacenze negative per correggere l'RT", this);
                     //Punto 2a
                     AnalisiCrypto.setSelectedComponent(GiacenzeaData);
                     //Punto 2b
@@ -11139,22 +10824,16 @@ GiacenzeaData_CompilaTabellaToken(true);
             //scrivo nelle Opzioni del DB che nel calcolo delle plus non considero la suddivisione per wallet
             DatabaseH2.Pers_Opzioni_Scrivi("PL_CosiderareMovimentiNC", "SI");
         }
-        //TabellaCryptodaAggiornare=true;
         //Adesso dovrei ricalcolare le plusvalenze ed aggiornare la tabella crypto
         Funzioni_AggiornaTutto();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-       // Calcoli_Plusvalenze.AggiornaPlusvalenze();
     }//GEN-LAST:event_Plusvalenze_Opzioni_NonConsiderareMovimentiNCActionPerformed
 
     private void DepositiPrelievi_Bottone_ScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_ScamActionPerformed
         // TODO add your handling code here:
         int righeSelezionate[] = Tabelle.Funzioni_getRigheSelezionate(DepositiPrelievi_Tabella);
         if (righeSelezionate.length >= 0) {
-            /*String ID[]=new String[righeSelezionate.length];
-            //Primo ciclo recupero tutti gli id dalla tabella
-            for (int i = 0; i < righeSelezionate.length; i++) {
-                ID[i] = DepositiPrelievi_Tabella.getModel().getValueAt(righeSelezionate[i], 0).toString();
-            }*/
+
             //Secondo ciclo faccio le modifiche
             Set<String> setUnivoco = new LinkedHashSet<>(); 
             for (int i = 0; i < righeSelezionate.length; i++) {
@@ -11186,20 +10865,13 @@ GiacenzeaData_CompilaTabellaToken(true);
                         setUnivoco.add(NuovoNome);
                     }
 
-
                 } else {
-                    //movimenticlassificati=true;
-                    JOptionPane.showConfirmDialog(this, "<html>Attenzione! Sonostati trovati uno o più movimenti già classificati<br>"
-                            + "Questi movimenti non possono essere classificati come scam e sono stati ignorati.<br>"
-                            + "</html>",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                    
-
-            }
-           
+                    Messaggi.WarningMessage("Movimenti già classificati",
+                            "Attenzione! Sonostati trovati uno o più movimenti già classificati<br>"
+                            + "Questi movimenti non possono essere classificati come scam e sono stati ignorati.", this);
+                }        
             }
             Funzioni_AggiornaTutto();
-           // DepositiPrelievi_Caricatabella();
         }
     }//GEN-LAST:event_DepositiPrelievi_Bottone_ScamActionPerformed
 
@@ -11275,9 +10947,10 @@ GiacenzeaData_CompilaTabellaToken(true);
                 Opzioni_ApiKey_Helius_TextField.getText().isBlank()){
             DatabaseH2.Opzioni_Scrivi("ApiKey_Helius", Opzioni_ApiKey_Helius_TextField.getText().trim());
         }else if (HeliusDiversa){
-            JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey di Helius inserita non è valida o manca la connessione internet<br>"
-                                        + "L'operazione verrà annullata!<br></html>",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+            Messaggi.WarningMessage("Errore in validazione chiave",
+                            "Attenzione! la ApiKey di Helius inserita non è valida o manca la connessione internet<br>"
+                                        + "L'operazione verrà annullata!<br>",this);
+            
         }
         
         //Controllo ed eventualmente salvo le api Etherscan
@@ -11286,9 +10959,9 @@ GiacenzeaData_CompilaTabellaToken(true);
             //anche se non metto nulla scrivo la chiave ovvero svuoto il campo
             DatabaseH2.Opzioni_Scrivi("ApiKey_Etherscan", Opzioni_ApiKey_Etherscan_TextField.getText().trim());
         }else if (EtherscanDiversa){
-            JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey di Etherscan inserita non è valida o manca la connessione internet<br>"
-                                        + "L'operazione verrà annullata!<br></html>",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                        Messaggi.WarningMessage("Errore in validazione chiave",
+                            "Attenzione! la ApiKey di Etherscan inserita non è valida o manca la connessione internet<br>"
+                                        + "L'operazione verrà annullata!<br>",this);
         }
         
         //Controllo ed eventualmente salvo le api Coincap
@@ -11297,9 +10970,9 @@ GiacenzeaData_CompilaTabellaToken(true);
             //anche se non metto nulla scrivo la chiave ovvero svuoto il campo
             DatabaseH2.Opzioni_Scrivi("ApiKey_Coincap", Opzioni_ApiKey_Coincap_TextField.getText().trim());
         }else if (CoincapDiversa){
-            JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey di Coincap inserita non è valida o manca la connessione internet<br>"
-                                        + "L'operazione verrà annullata!<br></html>",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                        Messaggi.WarningMessage("Errore in validazione chiave",
+                            "Attenzione! la ApiKey di Coincap inserita non è valida o manca la connessione internet<br>"
+                                        + "L'operazione verrà annullata!<br>",this);
         }
         
         //Controllo ed eventualmente salvo le api Coingecko
@@ -11308,9 +10981,9 @@ GiacenzeaData_CompilaTabellaToken(true);
             //anche se non metto nulla scrivo la chiave ovvero svuoto il campo
             DatabaseH2.Opzioni_Scrivi("ApiKey_Coingecko", Opzioni_ApiKey_Coingecko_TextField.getText().trim());
         }else if (CoingeckoDiversa){
-            JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey di Coingecko inserita non è valida o manca la connessione internet<br>"
-                                        + "L'operazione verrà annullata!<br></html>",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                        Messaggi.WarningMessage("Errore in validazione chiave",
+                            "Attenzione! la ApiKey di Coingecko inserita non è valida o manca la connessione internet<br>"
+                                        + "L'operazione verrà annullata!<br>",this);
         }
         
         //Controllo ed eventualmente salvo le api Moralis
@@ -11319,9 +10992,9 @@ GiacenzeaData_CompilaTabellaToken(true);
             //anche se non metto nulla scrivo la chiave ovvero svuoto il campo
             DatabaseH2.Opzioni_Scrivi("ApiKey_Moralis", Opzioni_ApiKey_Moralis_TextField.getText().trim());
         }else if (MoralisDiversa){
-            JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey di Moralis inserita non è valida o manca la connessione internet<br>"
-                                        + "L'operazione verrà annullata!<br></html>",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                        Messaggi.WarningMessage("Errore in validazione chiave",
+                            "Attenzione! la ApiKey di Moralis inserita non è valida o manca la connessione internet<br>"
+                                        + "L'operazione verrà annullata!<br>",this);
         }
         
         //Controllo ed eventualmente salvo le api Moralis
@@ -11330,9 +11003,9 @@ GiacenzeaData_CompilaTabellaToken(true);
             //anche se non metto nulla scrivo la chiave ovvero svuoto il campo
             DatabaseH2.Opzioni_Scrivi("ApiKey_Cronos", Opzioni_ApiKey_Cronos_TextField.getText().trim());
         }else if (CronosDiversa){
-            JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey di Cronos explorer inserita non è valida o manca la connessione internet<br>"
-                                        + "L'operazione verrà annullata!<br></html>",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                        Messaggi.WarningMessage("Errore in validazione chiave",
+                            "Attenzione! la ApiKey di Cronos Explorer inserita non è valida o manca la connessione internet<br>"
+                                        + "L'operazione verrà annullata!<br>",this);
         }
         
         Opzioni_ApiKey_ControllaPulsanti();
@@ -11395,28 +11068,15 @@ GiacenzeaData_CompilaTabellaToken(true);
         int rigoSelezionato=RT_Tabella_Principale.getSelectedRow();
         if (RT_Tabella_Principale.getRowCount() == 0) {
             // Se non trovo dati come prima cosa provo ad elaborare il quadro
-                String Testo = "<html>Attenzione! Bisogna prima premere 'Calcola' per generare i rghi con i dati.<br>"
-                        +" Selezionare quindi il rigo corrispondente all'anno desiderato e premere su 'Stampa Report'.<br>";
-                Object[] Bottoni = {"OK"};
-                JOptionPane.showOptionDialog(this, Testo,
-                        "Calcoli ancora da effettuare",
-                        JOptionPane.YES_NO_CANCEL_OPTION,
-                        JOptionPane.INFORMATION_MESSAGE,
-                        null,
-                        Bottoni,
-                        null);
+                String Testo = "<b>Attenzione</b><br><br>Per proseguire premere '<b>Calcola</b>' per generare i righi con i dati.<br>"
+                        +"Selezionare quindi il rigo corrispondente all'anno desiderato e premere su '<b>Stampa Report</b>'.<br>";
+                Messaggi.WarningMessage("Calcoli ancora da effettuare",Testo,this);
         } 
         else if (rigoSelezionato==-1){
-                String Testo = "<html>Attenzione!<br>"
-                        +" Selezionare prima il rigo corrispondente all'anno desiderato, quindi premere su 'Stampa Report'.<br>";
-                Object[] Bottoni = {"OK"};
-                JOptionPane.showOptionDialog(this, Testo,
-                        "Nessun rigo selezionato",
-                        JOptionPane.YES_NO_CANCEL_OPTION,
-                        JOptionPane.INFORMATION_MESSAGE,
-                        null,
-                        Bottoni,
-                        null);        
+                String Testo = "<b>Attenzione</b><br><br>"
+                        +" Selezionare prima il rigo corrispondente all'anno desiderato, quindi premere su '<b>Stampa Report</b>'.<br>";
+                Messaggi.WarningMessage("Nessun rigo selezionato",Testo,this);
+     
         }
         else {
             int Anno=Integer.parseInt(RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 0).toString());
@@ -11427,35 +11087,20 @@ GiacenzeaData_CompilaTabellaToken(true);
             if (!Errori.isBlank())
             {
                 err=true;
-                String Testo = "<html>Attenzione!<br>"
+                String Testo = "<b>Attenzione</b><br><br>"
                         +"Ci sono dei movimenti rilevanti senza prezzo e/o movimenti non classificati.<br>"
                         +"E' opportuno correggerli (Pulsante 'Correggi Errori') affinchè i valori risultino corretti.<br>"
                         +"La stampa proseguirà ugualmente.<br>";
-                Object[] Bottoni = {"OK"};
-                JOptionPane.showOptionDialog(this, Testo,
-                        "Errori da correggere",
-                        JOptionPane.YES_NO_CANCEL_OPTION,
-                        JOptionPane.INFORMATION_MESSAGE,
-                        null,
-                        Bottoni,
-                        null);
+                Messaggi.WarningMessage("Errori da correggere",Testo,this);
             }
             if (Anno<2023){
-            String Testo = "<html>Attenzione!<br>"
+            String Testo = "<b>Attenzione</b><br><br>"
                         +"E' stato scelto un anno inferiore al 2023.<br>"
                         +"In quegli anni <b>vigevano regole diverse</b> il report potrebbe non essere corretto.<br>"
                         +"La stampa proseguirà ugualmente.<br>";
-            Object[] Bottoni = {"OK"};
-                JOptionPane.showOptionDialog(this, Testo,
-                        "Attenzione!",
-                        JOptionPane.YES_NO_CANCEL_OPTION,
-                        JOptionPane.INFORMATION_MESSAGE,
-                        null,
-                        Bottoni,
-                        null);
+            Messaggi.WarningMessage("Anno scelto pre 2023",Testo,this);
             }
                 RT_StampaRapporto(Anno,Vendite,Costi,err);
-            //System.out.println(Anno);
         }
     }//GEN-LAST:event_RT_Bottone_StampaActionPerformed
 
@@ -11510,19 +11155,14 @@ GiacenzeaData_CompilaTabellaToken(true);
             int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);        
             String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
            if(Funzioni.DuplicaMovimento(IDTransazione)){
-               JOptionPane.showConfirmDialog(this, "<html>Movimento Duplicato<br>"
-                                        + "</html>",
-                            "Operazione Conclusa", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-               //Aggiorno la tabella
+            Messaggi.SuccessMessage("Operazione conclusa","Movimento duplicato correttamente",this);
+            //Aggiorno la tabella
             Funzioni_AggiornaTutto();
-           // DepositiPrelievi_Caricatabella();
             //Mi riposiziono sulla riga
             Tabelle.Funzioni_PosizionaTabellasuRiga(DepositiPrelievi_Tabella, rigaselezionata,false);
            }
            else{
-           JOptionPane.showConfirmDialog(this, "<html>Questo movimento non può essere duplicato<br>"
-                                        + "</html>",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+           Messaggi.WarningMessage("Attenzione","Questo movimento non può essere duplicato",this);
            }
             
         }
@@ -11750,12 +11390,13 @@ GiacenzeaData_CompilaTabellaToken(true);
                     }
                 }
                 }
-                JOptionPane.showConfirmDialog(progress, 
-                        "<html>Sono stati modificati <b>"+righiModificati+"</b> prezzi, per una differenza totale di <b>€ "+diffPrezzi+"</b><br>"+
+                String tex="<html>Sono stati modificati <b>"+righiModificati+"</b> prezzi, per una differenza totale di <b>€ "+diffPrezzi+"</b><br>"+
                                 "di cui :<br>"+
                                " - <b>"+nuoviPrezzi+ "</b> sono relativi all'attribuzione di un prezzo a prodotti che prima non lo avevano per un totale di <b>€ "+nuoviPrezziTrovati+"</b><br>"+
                                " - <b>"+righiRilevantiModificati+ "</b> sono relativi a movimenti fiscalmente rilevanti per un totale di <b>€ "+diffPrezziRilevanti+"</b><br>"+
-                                       "</html>",
+                                       "</html>";
+                JOptionPane.showConfirmDialog(progress, 
+                        tex,
                             "Riepilogo modifiche"
                         , JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
                 progress.ChiudiFinestra();
@@ -11913,43 +11554,59 @@ GiacenzeaData_CompilaTabellaToken(true);
 
     private void MenuItem_ModificaRewardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaRewardActionPerformed
         // TODO add your handling code here:
-        String Testo = "<html>Decidere il tipo di provento a cui appartiene il movimento di deposito.<br><br>"
-                            + "<b>Come classifichiamo il movimento?<br><br><b>"
-                            + "</html>";
-                    Object[] Bottoni = {"Annulla", "REWARD", "STAKING REWARD", "EARN", "CASHBACK", "AIRDROP"};
-                    int scelta = JOptionPane.showOptionDialog(this, Testo,
-                            "Classificazione del movimento",
-                            JOptionPane.YES_NO_CANCEL_OPTION,
-                            JOptionPane.PLAIN_MESSAGE,
-                            null,
-                            Bottoni,
-                            null);
-                    //Adesso genero il movimento a seconda della scelta
-                    //0 o 1 significa che non bisogna fare nulla
-                    if (scelta != 0 && scelta != -1) {
+        AppDialog.DialogResult result = AppDialog.builder(this)
+                .windowTitle("Classificazione del movimento")
+                .bodyTitle("Classificare il deposito")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .details("Decidere il tipo di provento a cui appartiene il movimento di deposito.")
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("reward", "REWARD")
+                        .role(AppDialog.ActionRole.NEUTRAL)
+                        .build())
+                .action(AppDialog.DialogAction.builder("staking-reward", "STAKING REWARD")
+                        .role(AppDialog.ActionRole.NEUTRAL)
+                        .build())
+                .action(AppDialog.DialogAction.builder("earn", "EARN")
+                        .role(AppDialog.ActionRole.NEUTRAL)
+                        .build())
+                .action(AppDialog.DialogAction.builder("cashback", "CASHBACK")
+                        .role(AppDialog.ActionRole.NEUTRAL)
+                        .build())
+                .action(AppDialog.DialogAction.builder("airdrop", "AIRDROP")
+                        .role(AppDialog.ActionRole.NEUTRAL)
+                        .build())
+                .showDialog();
 
-                        switch (scelta) {
-                            case 1 -> {
-                                MappaCryptoWallet.get(PopUp_IDTrans)[5]= "REWARD";
-                            }
-                            case 2 -> {
-                                MappaCryptoWallet.get(PopUp_IDTrans)[5]= "STAKING REWARD";
-                            }
-                            case 3 -> {
-                                MappaCryptoWallet.get(PopUp_IDTrans)[5]= "EARN";
-                            }
-                            case 4 -> {
-                                MappaCryptoWallet.get(PopUp_IDTrans)[5]= "CASHBACK";
-                            }
-                            case 5 -> {
-                                MappaCryptoWallet.get(PopUp_IDTrans)[5]= "AIRDROP";
-                            }
-                            default -> {
-                            }
-                        }
-                        Funzioni_AggiornaTutto();
-                        if (PopUp_Tabella.getName()!=null&&PopUp_Tabella.getName().equalsIgnoreCase("DepositiPrelievi"))DepositiPrelievi_Caricatabella();
-                    }
+        if (result == null || result.getActionId() == null || result.getActionId().equals("cancel")) {
+            return;
+        }
+
+        switch (result.getActionId()) {
+            case "reward" ->
+                MappaCryptoWallet.get(PopUp_IDTrans)[5] = "REWARD";
+            case "staking-reward" ->
+                MappaCryptoWallet.get(PopUp_IDTrans)[5] = "STAKING REWARD";
+            case "earn" ->
+                MappaCryptoWallet.get(PopUp_IDTrans)[5] = "EARN";
+            case "cashback" ->
+                MappaCryptoWallet.get(PopUp_IDTrans)[5] = "CASHBACK";
+            case "airdrop" ->
+                MappaCryptoWallet.get(PopUp_IDTrans)[5] = "AIRDROP";
+            default -> {
+                return;
+            }
+        }
+
+        Funzioni_AggiornaTutto();
+
+        if (PopUp_Tabella.getName() != null
+                && PopUp_Tabella.getName().equalsIgnoreCase("DepositiPrelievi")) {
+            DepositiPrelievi_Caricatabella();
+        }
     }//GEN-LAST:event_MenuItem_ModificaRewardActionPerformed
 
     private void Donazioni_Bottone1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Donazioni_Bottone1ActionPerformed
@@ -11957,9 +11614,7 @@ GiacenzeaData_CompilaTabellaToken(true);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         StringSelection stringSelection = new StringSelection("0x71455FFf799e529b770c3C8A8F2F6691dc4FAadb");
         clipboard.setContents(stringSelection, null);
-        JOptionPane.showConfirmDialog(this, "<html>Indirizzo copiato negli appunti.<br>"
-                                        + "</html>",
-                            "Copia", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+        Messaggi.SuccessMessage("", "Indirizzo x donazioni copiato negli appunti", this);
     }//GEN-LAST:event_Donazioni_Bottone1ActionPerformed
 
     private void Donazioni_Bottone2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Donazioni_Bottone2ActionPerformed
@@ -11967,9 +11622,7 @@ GiacenzeaData_CompilaTabellaToken(true);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         StringSelection stringSelection = new StringSelection("D8sSnGNSZTkEMGba4yRLR4oZ8zTjdR9JdC9DGF3SkqLd");
         clipboard.setContents(stringSelection, null);
-        JOptionPane.showConfirmDialog(this, "<html>Indirizzo copiato negli appunti.<br>"
-                                        + "</html>",
-                            "Copia", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+        Messaggi.SuccessMessage("", "Indirizzo x donazioni copiato negli appunti", this);
     }//GEN-LAST:event_Donazioni_Bottone2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -12011,7 +11664,7 @@ GiacenzeaData_CompilaTabellaToken(true);
 
     private void SaldiNegativi_Bottone_RettificaQtaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_SaldiNegativi_Bottone_RettificaQtaMouseReleased
         // TODO add your handling code here:
-        GiacenzeaData_Funzione_SistemaQta(SaldiNegativi_TabellaDettaglioMovimenti,null);
+        F_GiacenzeaData.GiacenzeaData_Funzione_SistemaQta(SaldiNegativi_TabellaDettaglioMovimenti,null,this);
     }//GEN-LAST:event_SaldiNegativi_Bottone_RettificaQtaMouseReleased
 
     private void SaldiNegativi_Bottone_RettificaQtaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaldiNegativi_Bottone_RettificaQtaActionPerformed
@@ -12206,40 +11859,90 @@ GiacenzeaData_CompilaTabellaToken(true);
 
     private void TransazioniCrypto_Bottone_MovimentoEliminaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_MovimentoEliminaActionPerformed
         // TODO add your handling code here:
-        int righeSelezionate[] = Tabelle.Funzioni_getRigheSelezionate(TransazioniCryptoTabella);
-        //    if (righeSelezionate.length >= 0) {
-            //    for (int i = 0; i < righeSelezionate.length; i++) {
-                if (righeSelezionate.length>=0){
-                    if (righeSelezionate.length>1){
-                        int risposta=JOptionPane.showOptionDialog(this,"Sono stati selezionati "+righeSelezionate.length+" movimenti, li vuoi cancellare tutti?", "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-                        if (risposta==0){
-                            for (int i = 0; i < righeSelezionate.length; i++) {
-                                String ID = TransazioniCryptoTabella.getModel().getValueAt(righeSelezionate[i], 0).toString();
-                                Funzioni.RimuoviMovimentazioneXID(ID);
-                            }
-                            TabellaCryptodaAggiornare=true;
-                            SwingUtilities.invokeLater(() -> {
-                                JOptionPane.showConfirmDialog(this, "Movimenti eliminati correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
-                                    "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                            });
+        int[] righeSelezionate = Tabelle.Funzioni_getRigheSelezionate(TransazioniCryptoTabella);
 
-                        }
+        if (righeSelezionate.length > 0) {
+
+            if (righeSelezionate.length > 1) {
+                AppDialog.DialogResult result = AppDialog.builder(this)
+                        .windowTitle("Cancellazione transazioni crypto")
+                        .bodyTitle("Eliminare i movimenti selezionati?")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.WARNING)
+                        .message("Sono stati selezionati " + righeSelezionate.length + " movimenti.")
+                        .details("L'operazione eliminerà tutti i movimenti attualmente selezionati.")
+                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("delete-selected", "Elimina selezionati")
+                                .role(AppDialog.ActionRole.DANGER)
+                                .build())
+                        .showDialog();
+
+                if (result.isAction("delete-selected")) {
+                    for (int i = 0; i < righeSelezionate.length; i++) {
+                        String ID = TransazioniCryptoTabella.getModel().getValueAt(righeSelezionate[i], 0).toString();
+                        Funzioni.RimuoviMovimentazioneXID(ID);
                     }
-                    else{
-                        int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
-                        String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
-                        int risposta=JOptionPane.showOptionDialog(this,"Sicuro di voler cancellare la transazione con ID "+IDTransazione+" ?", "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-                        if (risposta==0){
-                            //controllo se quel movimento è associato ad altri e nel qual caso lo sbianco e sbianco i movimenti associati a lui
-                            Funzioni.RimuoviMovimentazioneXID(IDTransazione);
-                            TabellaCryptodaAggiornare=true;
-                            SwingUtilities.invokeLater(() -> {
-                                JOptionPane.showConfirmDialog(this, "Transazione con ID"+IDTransazione+" eliminata correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
-                                    "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                            });
-                        }
-                    }
+
+                    TabellaCryptodaAggiornare = true;
+
+                    SwingUtilities.invokeLater(() -> {
+                        AppDialog.builder(this)
+                                .windowTitle("Eliminazione completata")
+                                .bodyTitle("Movimenti eliminati")
+                                .showTitleInBody(true)
+                                .theme()
+                                .type(AppDialog.DialogType.SUCCESS)
+                                .message("I movimenti selezionati sono stati eliminati correttamente.")
+                                .details("Premi <b>Salva</b> per rendere permanente la cancellazione effettuata.")
+                                .primaryAction("ok", "OK")
+                                .showDialog();
+                    });
                 }
+
+            } else {
+                int rigaSelezionata = TransazioniCryptoTabella.getRowSorter()
+                        .convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
+
+                String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaSelezionata, 0).toString();
+
+                AppDialog.DialogResult result = AppDialog.builder(this)
+                        .windowTitle("Cancellazione transazione")
+                        .bodyTitle("Eliminare la transazione?")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.WARNING)
+                        .message("Stai per eliminare la transazione con ID " + IDTransazione + ".")
+                        .details("L'operazione rimuoverà anche gli eventuali collegamenti associati.")
+                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("delete", "Elimina")
+                                .role(AppDialog.ActionRole.DANGER)
+                                .build())
+                        .showDialog();
+
+                if (result.isAction("delete")) {
+                    Funzioni.RimuoviMovimentazioneXID(IDTransazione);
+                    TabellaCryptodaAggiornare = true;
+
+                    SwingUtilities.invokeLater(() -> {
+                        AppDialog.builder(this)
+                                .windowTitle("Eliminazione completata")
+                                .bodyTitle("Transazione eliminata")
+                                .showTitleInBody(true)
+                                .theme()
+                                .type(AppDialog.DialogType.SUCCESS)
+                                .message("La transazione con ID " + IDTransazione + " è stata eliminata correttamente.")
+                                .details("Premi <b>Salva</b> per rendere permanente la cancellazione effettuata.")
+                                .primaryAction("ok", "OK")
+                                .showDialog();
+                    });
+                }
+            }
+        }
     }//GEN-LAST:event_TransazioniCrypto_Bottone_MovimentoEliminaActionPerformed
 
     private void TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed
@@ -12512,8 +12215,6 @@ GiacenzeaData_CompilaTabellaToken(true);
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
             long DataRiferimento;// = 0;
             if (GiacenzeaData_Data_DataChooser.getDate() != null) {
-                
-                
 
                 //Recupero il Wallet di riferimento
                 //Mi servirà poi per trovare il gruppo Wallet
@@ -12529,29 +12230,17 @@ GiacenzeaData_CompilaTabellaToken(true);
                 }
                 SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
                 sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
-                // String DataconOra = sdf.format(DataRiferimento);
 
-              //  int rigaXRipristino = GiacenzeaData_Tabella.getSelectedRow();
                 int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(GiacenzeaData_Tabella);
 
                 String mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
                 String Qta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 4).toString();
                 String Rete = null;
-                
+
                 //Prima di andare ulteriormente avanti avviso sulle conseguenze
-                 String Testo = "<html><b>ATTENZIONE!!! :</b> Il Token <b>"+mon+"</b> attualmente non ha prezzo.<br><br>"
-                                + "Vuoi assegnare Zero come prezzo dei <b>"+Qta+" "+mon+"</b> ?<br><br>"
-                        + "</html>";
+                //e interrompo l'operazione se non vengono accettate
+                if (!Messaggi.ConfermaTokenSenzaPrezzo(mon, Qta, this)) return;
                 
-                 Object[] Bottoni = {"Si", "No"};
-                        int scelta = JOptionPane.showOptionDialog(this, Testo,
-                                "Verifica i movimenti",
-                                JOptionPane.YES_NO_CANCEL_OPTION,
-                                JOptionPane.PLAIN_MESSAGE,
-                                null,
-                                Bottoni,
-                                null);
-                    if (scelta!=0)return;
                     
                 
                 if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1) != null) {
@@ -12563,17 +12252,11 @@ GiacenzeaData_CompilaTabellaToken(true);
                 if (!Funzioni_WalletDeFi.isValidAddress(Address, Rete)) {
                     Address = null;
                 }
-
-              //  GiacenzeaData_Tabella.getModel().setValueAt("", rigaselezionata, 5);
                 //Devo ovviamente cancellarlo per inserirne uno nuovo altrimenti questo prende il sopravvento
                DatabaseH2.InserisciPrezzoPresonalizzato(DataRiferimento, "Personalizzato", mon, "0.00", Rete, Address, Gruppo, DataRiferimento);
 
                 GiacenzeaData_Tabella.getModel().setValueAt("", rigaselezionata, 6);
                 //Una volta cambiato il prezzo aggiorno la tabella
-            /*    int PosizioneScrol = GiacenzeaData_ScrollPane.getVerticalScrollBar().getValue();
-                GiacenzeaData_CompilaTabellaToken(true);
-                Tabelle.Funzioni_PosizionaTabellasuRiga(GiacenzeaData_Tabella, rigaXRipristino, true);
-                GiacenzeaData_ScrollPane.getVerticalScrollBar().setValue(PosizioneScrol);*/
             }
         }
     }//GEN-LAST:event_GiacenzeaData_Bottone_ConfermaPrezzoZeroActionPerformed
@@ -13162,8 +12845,8 @@ GiacenzeaData_CompilaTabellaToken(true);
                     TabellaCryptodaAggiornare = true;
                     return m;
                 } else {
-                    JOptionPane.showConfirmDialog(this, "Attenzione, " + m + " non è un nome valido!",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    
+                    Messaggi.WarningMessage("Nome non valido", "Attenzione, \"<b>" + m + "</b>\" non è un nome valido!", this);
                     return NomeMoneta;
                 }
             }
@@ -13202,8 +12885,8 @@ GiacenzeaData_CompilaTabellaToken(true);
                     TabellaCryptodaAggiornare = true;
                     return NuovoNome;
                 } else {
-                    JOptionPane.showConfirmDialog(this, "Attenzione, " + NuovoNome + " non è un nome valido!",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+
+                    Messaggi.WarningMessage("Nome non valido", "Attenzione, \"<b>" + NuovoNome + "</b>\" non è un nome valido!", this);                   
                     return NomeMoneta;
                 }
             }
@@ -13448,12 +13131,8 @@ try {
             wDEFI.close();
             b.close();
             w.close();
-            //File a=fc.getSelectedFile();
-            JOptionPane.showConfirmDialog(null, "<html><b>Elaborazione Terminata</b><br>"
-                    + "File Salvato in "+fc.getSelectedFile().getAbsolutePath(),
-                            "Fine Esportazione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-          //  Desktop desktop = Desktop.getDesktop();  
-         //   desktop.open(export);
+
+            Messaggi.SuccessMessage("Elaborazione Terminata", "File salvato correttamente.","Percorso: " + fc.getSelectedFile().getAbsolutePath(), this);
 } 
         } catch (IOException ex) {
             LoggerGC.ScriviErrore(ex);
@@ -13629,6 +13308,7 @@ try {
                                     Moneta M1 = new Moneta();
                                     M1.InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
                                     M1.Rete = Rete;
+                                  //  System.out.println("KEY=" + Monete[a].Moneta + ";" + Monete[a].Tipo + ";" + Monete[a].MonetaAddress + ";" + Rete);
                                     QtaCrypto.put(Monete[a].Moneta + ";" + Monete[a].Tipo + ";" + Monete[a].MonetaAddress + ";" + Rete, M1);
 
                                 }
@@ -13658,9 +13338,7 @@ try {
                             GiacenzeaData_Tabella.setRowSorter(sorter);
                         }
                         GiacenzeaData_Totali_TextField.setText("");
-
-                        JOptionPane.showConfirmDialog(progress, "Elaborazione Interrotta!",
-                                "Attenzione", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                        Messaggi.WarningMessage("Attenzione", "Elaborazione Interrotta!", SwingUtilities.getWindowAncestor(progress));
                         progress.ChiudiFinestra();
                         try {
                             this.join();
@@ -13685,6 +13363,7 @@ try {
 
                     String Gruppo=Funzioni.getGruppoWalletXPrezzi(Wallet);
                     //System.out.println(Gruppo);
+                    
                     
                     TabellaToken.put(riga[0].toString(), riga);
                     if ((GiacenzeaData_CheckBox_MostraQtaZero.isSelected() || !M1.Qta.equals("0"))
@@ -13911,78 +13590,8 @@ try {
             GiacenzeaData_Wallet2_ComboBox.setSelectedItem(VecchioValore);
            }
      }
-/*    public void TransazioniCrypto_Funzioni_AggiornaDefi(List<String> Portafogli,String apiKey) {
-        Component c=this;
-        Download progress=new Download();
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        progress.setLocationRelativeTo(this);
-        
-        Thread thread;
-            thread = new Thread() {
-            public void run() {
-        Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.DeFi_RitornaTransazioni(Portafogli,c,progress);
-        if (MappaTransazioniDefi != null) {
 
-            int i=0;
-            for (TransazioneDefi v : MappaTransazioniDefi.values()) {
-                for (String[] st : v.RitornaRigheTabella()) {
-                    MappaCryptoWallet.put(st[0], st);
-                    i++;
-                }
-            }
-            Calcoli.ScriviFileConversioneXXXEUR();
-           
-            Plusvalenze.AggiornaPlusvalenze();
-            Importazioni.TransazioniAggiunte=i;
-            progress.dispose();
-                       
-        }       
-        }
-            };
-        thread.start();  
-        progress.setVisible(true);
-        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-        JOptionPane.showConfirmDialog(this, "Importazione Terminata \nSono stati inseriti "+Importazioni.TransazioniAggiunte+" nuovi movimenti",
-                "Importazione Terminata",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-        this.setCursor(Cursor.getDefaultCursor());
-    }*/
-            
-    
-    
-    
-/*    public void TransazioniCrypto_Funzioni_PulisciMovimentiAssociatinonEsistenti(){
-        //questa funziona va lanciata ad ogni fine importazione per verificare non vi siano modifiche
-        //su movimenti già associati
-        for (String[] v : MappaCryptoWallet.values()) {
-          if (v[18]!=null&&(v[18].contains("DTW")||v[18].contains("PTW")))
-          {
-              String ID=v[0];
-              String riferimento=v[20];   
-              //FUNZIONE COMPLETAMENTE DA RIVEDERE, SERVE PER TROVARE MOVIMENTI ASSOCIATI NON PIU TALI E CANCELLARE LE ANOMALIE
-              //QUESTO PUò SUCCEDERE SE SI UTILIZZA LA FUNZIONE SOVRASCRIVI IN FASE DI IMPORTAZIONE DATI
-              //IN SOSTANZA SE NON TROVO TUTTI I RIFERIMENTI SU TUTTI I MOVIMENTI ASSOCIATI DEVO RIPORTARE IL TUTTO
-              //ALLA CONDIZIONE INIZIALE
-   /*           String movimentiOpposti[]=MappaCryptoWallet.get(riferimento)[20].split(",");
-              for (String IDmovimentoOpposto:movimentiOpposti){
-              //String movimentoOpposto
-              String movimentoOpposto[]=MappaCryptoWallet.get(IDmovimentoOpposto);
-              
-              
-              if (movimentoOpposto==null || !movimentoOpposto[20].equalsIgnoreCase(ID)){
-                //se il movimento opposto non esiste oppure se sul movimento opposto non trovo l'id di questo movimento allora pulisco le righe
-                if (v[18].contains("DTW"))v[5]="DEPOSITO CRYPTO"; else v[5]="PRELIEVO CRYPTO";
-                v[18]="";
-                }
-                  
-              }
-            
-            }
-          }
-    }*/
-    
-
-  
-    
+ 
 
     
     
@@ -14577,54 +14186,6 @@ try {
             if (!isAutomatico && causaleVuota && (isDepositoValido || isPrelievoValido)) {
                 NumErroriMovSconosciuti++;
             }
-
-            //2 - 
-            
-            //Vecchio metodo per il caricamento della tabella filtrato, sostituito da quello più sotto
-            //questo scrive i dati sulla mappa ed esclude i trasferimenti esterni se specificato
-            //Filtro per i trasferimenti interni
-     /*       if (EscludiTI == true && !v[5].trim().equalsIgnoreCase("Trasferimento Interno") || EscludiTI == false) {
-                //Filtro Date
-                if (Funzioni_Date_ConvertiDatainLong(v[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale)
-                        && Funzioni_Date_ConvertiDatainLong(v[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
-                    // dopo il filtro date inseriso il dato sulla plusvalenza, non voglio che cambi cambiando il filtro
-                    if (Funzioni_isNumeric(v[19], false)) {
-                            Plusvalenza = Plusvalenza.add(new BigDecimal(v[19]));
-                        }
-                        if (v[33].equals("S")) {
-                            if (!v[15].isEmpty()) {
-                                Vendite = Vendite.add(new BigDecimal(v[15]));
-                            }
-                            if (!v[16].isEmpty()) {
-                                CostiCarico = CostiCarico.add(new BigDecimal(v[16]));
-                            }
-                        }
-                    
-                    //Filtro Wallet
-                    String gwallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);                   
-                    if(
-                       WalletVoluto.equalsIgnoreCase("Tutti") || v[3].equalsIgnoreCase(WalletVoluto) || gwallet.equalsIgnoreCase(GruppoWalletVoluto)){
-                    
-                    //Filtro Token                   
-                    if ((TokenVoluto.equalsIgnoreCase("Tutti") || v[8].equals(TokenVoluto) || v[11].equals(TokenVoluto))&&
-                       ( !EscludiTokenScamIsSelected||
-                            !((Funzioni.isSCAM(v[8])&&v[11].isBlank())
-                            ||(Funzioni.isSCAM(v[11])&&v[8].isBlank())))
-                    )
-                        {
-                    
-                    //Filtro Movimenti senza prezzo
-                    if (VediSoloSenzaPrezzo && v[32].trim().equalsIgnoreCase("NO")||!VediSoloSenzaPrezzo) {
-                        Object z[]=Funzioni.Converti_String_Object(v);
-                        ModelloTabellaCrypto.addRow(z);
-                       // ModelloTabellaCrypto.addRow(v);
-                        
-                    }}
-                    
-                    }  
-                }
-
-            }*/
      
      
             //Nuovo metodo per il caricamento della tabella

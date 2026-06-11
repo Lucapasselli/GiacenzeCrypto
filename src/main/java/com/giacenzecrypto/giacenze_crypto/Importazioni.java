@@ -655,10 +655,12 @@ public class Importazioni {
                 }
                 riga=righeFile.get(w);               
                 String splittata[] = riga.split(",");
-               // System.out.print(splittata[1]+" : ");
-               // System.out.println(FunzioniDate.ConvertiDatainLongSecondo(splittata[1]));
+               /*  System.out.println(riga);
+                System.out.print(splittata[1]+" : ");
+                System.out.println(FunzioniDate.ConvertiDatainLongSecondo(splittata[1]));*/
                 if (FunzioniDate.ConvertiDatainLongSecondo(splittata[1]) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
                 {
+                   // System.out.println(riga);
                    // System.out.println("sono qua");
                     //se trovo movimento con stessa data oppure la data differisce di un solo secondosolo se è un dust conversion allora lo aggiungo alla lista che compone il movimento e vado avanti
                     //ho dovuto aggiungere la parte del secondo perchè quando fa i dust conversion può capitare che ci metta 1 secondo a fare tutti i movimenti
@@ -842,7 +844,8 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("finance.defi_staking.staking.crypto_wallet", "IGNORA");//da ignorare movimento di messa in staking non utile
         Mappa_Conversione_Causali.put("finance.defi_lending.staking.crypto_wallet", "IGNORA");
       //  Mappa_Conversione_Causali.put("dynamic_coin_swap_bonus_exchange_deposit", "IGNORA");//in teoria è un movimento doppio ma per ora lo commento perchè non sono sicuro,infatti questo movimento sembra sia anche legato ad un movimento dell'exchange ovvero questo EARLY_SWAP_BONUS_DEPOSIT,
-        
+        Mappa_Conversione_Causali.put("trading.limit_order.cash_account.sell_lock", "IGNORA");
+        Mappa_Conversione_Causali.put("trading.limit_order.cash_account.sell_unlock", "IGNORA");
 
         //finance.crypto_basket.purchase.crypto_wallet.received
         Mappa_Conversione_Causali.put("lockup_swap_credited", "DUST-CONVERSION"); //13/05/2026
@@ -1829,7 +1832,7 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
     }
         
     
-    private static List<String[]> RitornaScambi(TransazioneDefi Scambio,String data,String WalletPrincipale,String WalletID) {
+    public static List<String[]> RitornaScambi(TransazioneDefi Scambio,String data,String WalletPrincipale,String WalletID) {
         List<String[]> lista=new ArrayList<>();
         if (!Scambio.isEmpty()) {
             //System.out.println("scambioooooooo");
@@ -2999,6 +3002,7 @@ private static String F_safe(String s) {
                             data=movimentoSplittato[1];
                             data=FunzioniDate.Formatta_Data_UTC(data);
                             
+                            
                             //Le nuove esportazioni restituiscono direttamente le informazioni nel formato data corretto
                             //quindi se la funzione precedente restituisce null prendo direttamente la data dal file senza elaborazione
                             //l'offset verrà utilizzato solo per il nuovo tipo di import
@@ -3793,15 +3797,15 @@ private static String F_safe(String s) {
                 MonE.SetQta(QtaE);
                 ME = movimentoSplittato[2].trim();
                 MonE.SetNome(ME);
-                QtaU = Funzioni_RitornaNumeroSenzaZeriFinali(movimentoSplittato[3]);
-                MonU.SetQta("-" + QtaU);
+                QtaU = "-" + Funzioni_RitornaNumeroSenzaZeriFinali(movimentoSplittato[3]);
+                MonU.SetQta(QtaU);
                 MU = movimentoSplittato[4].trim();
                 MonU.SetNome(MU);
                 Exch = movimentoSplittato[7].trim();
                 data = movimentoSplittato[10].trim();
 
-                String QtaC=Funzioni_RitornaNumeroSenzaZeriFinali(movimentoSplittato[5]);
-                MonC.SetQta("-" + QtaC);
+                String QtaC="-" +Funzioni_RitornaNumeroSenzaZeriFinali(movimentoSplittato[5]);
+                MonC.SetQta(QtaC);
                 MonC.SetNome(movimentoSplittato[6].trim());
 
                 MonE.AssegnaTipoAuto();
@@ -3821,6 +3825,13 @@ private static String F_safe(String s) {
                     MonE.SetQta(QtaE);
                     CTcommissioniNew = true;
                 }
+                if (MU.equals(MonC.GetNome()) && !MU.isBlank()) {
+                    //In questo caso sommo lo stesso la qta delle commissionianche se in realtà è una sottrazione perche la qtu è negativa
+                    QtaU = new BigDecimal(QtaU).add(new BigDecimal(MonC.GetQta()).abs()).stripTrailingZeros().toPlainString();
+                    MonU.SetQta(QtaU);
+                    CTcommissioniNew = true;
+                }
+
             }
             // System.out.println(movimentoSplittato[9]);
             Long Datalong = FunzioniDate.ConvertiDatainLongSecondo(data);
@@ -5323,7 +5334,7 @@ private static String F_safe(String s) {
                 //contatore e cicli massimi mi servono per evitare di terminare la quota delle api moralis
                 //quindi al massimo per ogni wallet scarico 1000 transazioni
                 int contatore=0;
-                int ciclimassimi=1;
+                int ciclimassimi=4;//circa 500 movimenti
 
                 while (continueFetching && !progressb.FineThread()) {
                     contatore++;
@@ -5384,11 +5395,11 @@ private static String F_safe(String s) {
                     if (contatore>ciclimassimi)
                     {
                         cursor=null;
-                        String text="Sono stati scaricati circa 10000 movimenti per il wallet "+walletAddress+" su chain "+chain+".\n\n"
+                        String text="Sono stati scaricati molti movimenti per il wallet "+walletAddress+" su chain "+chain+".\n\n"
                                 + "Lo scaricamento viene interrotto per evitare di terminare le chiamate api a Moralis senza terminare l'import.\n\n"
                                 + "Per continuare con l'import degli altri movimenti scaricare nuovamente i dati dal wallet.\n";
                         JOptionPane.showConfirmDialog(ccc, text,
-                    "Scaricati 10000 movimenti",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                    "Scaricati molti movimenti",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                     }
                     //cursor=null;
                     if (cursor==null||cursor.isEmpty()||cursor.equalsIgnoreCase("null")){
@@ -5564,7 +5575,9 @@ private static String F_safe(String s) {
                                 String tokenSymbol = nt.optString("token_symbol");
                                 if (tokenSymbol.isBlank())tokenSymbol=tokenId;
                                 if (tokenSymbol.isBlank())tokenSymbol="NFT";
+                                if (!tokenId.isBlank())tokenSymbol=tokenSymbol+"-"+tokenId;
                                 String addressNFT = nt.optString("token_address");
+                               // tokenSymbol=tokenSymbol+"-"+addressNFT;
                                 String fromNFT = nt.optString("from_address");
                                 String toNFT = nt.optString("to_address");
                                 String amountNFT = nt.optString("amount", "1");

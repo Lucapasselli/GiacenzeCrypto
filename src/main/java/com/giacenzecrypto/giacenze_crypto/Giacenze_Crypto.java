@@ -6,6 +6,7 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.Color;
 import java.awt.Font;
@@ -94,6 +95,7 @@ public class Giacenze_Crypto {
         impostaFontGlobale(fontFamily, fontSize);
 
         if (Principale.tema.equalsIgnoreCase("Scuro")) {
+            //FlatLaf.registerCustomDefaultsSource("Temi");
             UIManager.setLookAndFeel(new FlatDarkLaf());
             Tabelle.verdeScuro = new Color(145, 255, 143);
             Tabelle.rosso = new Color(255, 133, 133);

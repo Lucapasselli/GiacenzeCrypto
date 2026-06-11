@@ -964,27 +964,81 @@ public static String getParolaTra2Simboli(String parola, String simboloIniziale,
     }
  
         
-        public static void Export_CreaExcelDaTabella(JTable tabella){
+    public static void Export_CreaExcelDaTabella(JTable tabella) {
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
             LocalDateTime now = LocalDateTime.now();
-            String DataOra=now.format(formatter);
-        
-            File f=new File (VarStatiche.getCartella_Temporanei()+"Tabella_"+DataOra+".xlsx");
+            String DataOra = now.format(formatter);
+
+            File f = new File(VarStatiche.getCartella_Temporanei() + "Tabella_" + DataOra + ".xlsx");
             FileOutputStream fos = new FileOutputStream(f);
-            Workbook wb = new Workbook(fos,"excel1","1.0");
-            Worksheet ws=wb.newWorksheet("Riepilogo Tabella ");
+            Workbook wb = new Workbook(fos, "excel1", "1.0");
+            Worksheet ws = wb.newWorksheet("Riepilogo Tabella ");
 
             TableModel model = tabella.getModel();
             //Scrivo l'intestazione della tabella riepilogo
-            int NumColonne=tabella.getColumnCount();
+            int NumColonne = tabella.getColumnCount();
             //System.out.println(model.getColumnCount());
-            String NomeTabella=tabella.getName();
-            if (NomeTabella!=null&&NomeTabella.equalsIgnoreCase("TabellaMovimentiCrypto")){
-               NumColonne=35;
-            }
+            String NomeTabella = tabella.getName();
+            if (NomeTabella != null && NomeTabella.equalsIgnoreCase("TabellaMovimentiCrypto")) {
+                NumColonne = 35;
+                String riga[] = new String[NumColonne];
+                //Scrivo i titoli
+                for (int i = 0; i < NumColonne; i++) {
+                    String NomeColonna = model.getColumnName(i);
+                    NomeColonna = Jsoup.parse(NomeColonna).text();
+                    riga[i] = NomeColonna;
+                }
+                ScriviRigaExcel(riga, ws, 0);
+                //Scrivo le righe
+                for (int i = 0; i < tabella.getRowCount(); i++) {
+                    int modelRow = tabella.convertRowIndexToModel(i);
+                    riga = new String[NumColonne];
+                    for (int k = 0; k < NumColonne; k++) {
+                        if (k == 1) {
+                            riga[k] = Funzioni.getOradaID(model.getValueAt(modelRow, 0).toString());
+                            riga[k] = Jsoup.parse(riga[k]).text();
+                        } else {
+                            riga[k] = model.getValueAt(modelRow, k).toString();
+                            riga[k] = Jsoup.parse(riga[k]).text();
+                        }
+                    }
+                    ScriviRigaExcel(riga, ws, i + 1);
+
+                }
                 
-                String riga[]=new String[NumColonne];
+            } 
+            else if (NomeTabella != null && NomeTabella.equalsIgnoreCase("RW_Tabella")) {
+                String riga[] = new String[NumColonne-1];
+                //Scrivo i titoli
+                int p=0;
+                for (int i = 0; i < NumColonne; i++) {
+                    if (i != 6) {
+                        String NomeColonna = model.getColumnName(i);
+                        NomeColonna = Jsoup.parse(NomeColonna).text();
+                        riga[p] = NomeColonna;
+                        p++;
+                    }
+                }
+                ScriviRigaExcel(riga, ws, 0);
+                //Scrivo le righe
+                for (int i = 0; i < tabella.getRowCount(); i++) {
+                    int modelRow = tabella.convertRowIndexToModel(i);
+                    riga = new String[NumColonne-1];
+                    p=0;
+                    for (int k = 0; k < NumColonne; k++) {
+                        if (k != 6) {
+                            riga[p] = model.getValueAt(modelRow, k).toString();
+                            riga[p] = Jsoup.parse(riga[p]).text();
+                            p++;
+                        }
+                    }
+                    ScriviRigaExcel(riga, ws, i + 1);
+
+                }
+            }
+            else {
+                String riga[] = new String[NumColonne];
                 //Scrivo i titoli
                 for (int i = 0; i < NumColonne; i++) {
                     String NomeColonna = model.getColumnName(i);
@@ -1003,6 +1057,7 @@ public static String getParolaTra2Simboli(String parola, String simboloIniziale,
                     ScriviRigaExcel(riga, ws, i + 1);
 
                 }
+            }
             ws.finish();
             ws.close();
             wb.finish();
@@ -1010,13 +1065,13 @@ public static String getParolaTra2Simboli(String parola, String simboloIniziale,
             fos.close();
             Desktop desktop = Desktop.getDesktop();
             desktop.open(f);
-            
+
         } catch (FileNotFoundException ex) {
             LoggerGC.ScriviErrore(ex);
         } catch (IOException ex) {
             LoggerGC.ScriviErrore(ex);
         }
-    }    
+    }
         
     
         public static boolean isAggiornamentoDisponibile(String versione) {

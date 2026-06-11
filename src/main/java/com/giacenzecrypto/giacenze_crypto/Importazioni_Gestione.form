@@ -100,7 +100,7 @@
             <StringItem index="2" value="Binance CSV"/>
             <StringItem index="3" value="Binance Financial Report"/>
             <StringItem index="4" value="CoinTracking.info CSV"/>
-            <StringItem index="5" value="Tatax CSV"/>
+            <StringItem index="5" value="Tatax CSV (vecchia versione)"/>
             <StringItem index="6" value="OKX CSV (Alpha)"/>
             <StringItem index="7" value="Test"/>
           </StringArray>

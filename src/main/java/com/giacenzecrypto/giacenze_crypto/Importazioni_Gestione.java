@@ -57,8 +57,33 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
          this.setTitle("Import da File");
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
+        caricaVociJsonNelComboBox();
     }
 
+    
+    private void caricaVociJsonNelComboBox() {
+    try {
+        java.io.File cartella = new java.io.File(VarStatiche.getCartella_ImportConfig());
+        if (!cartella.exists() || !cartella.isDirectory()) return;
+
+        java.io.File[] jsonFiles = cartella.listFiles(
+            (dir, name) -> name.toLowerCase().endsWith(".json")
+        );
+        if (jsonFiles == null || jsonFiles.length == 0) return;
+
+        // Ordino alfabeticamente per coerenza
+        java.util.Arrays.sort(jsonFiles, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+
+        for (java.io.File f : jsonFiles) {
+            String nomeVoce = f.getName().replace(".json", "").replace(".JSON", "");
+            // Prefisso visivo per distinguere le voci JSON dalle importazioni native
+            ComboBox_TipoFile.addItem("[JSON] " + nomeVoce);
+        }
+    } catch (Exception ex) {
+        LoggerGC.ScriviErrore(ex);
+    }
+}
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -87,7 +112,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
         Label_TipoFile.setText("Selezionare il tipo di file da importare");
 
-        ComboBox_TipoFile.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Crypto.com App CSV", "Crypto.com Exchange CSV", "Binance CSV", "Binance Financial Report", "CoinTracking.info CSV", "Tatax CSV", "OKX CSV (Alpha)", "Test" }));
+        ComboBox_TipoFile.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Crypto.com App CSV", "Crypto.com Exchange CSV", "Binance CSV", "Binance Financial Report", "CoinTracking.info CSV", "Tatax CSV (vecchia versione)", "OKX CSV (Alpha)", "Test" }));
         ComboBox_TipoFile.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 ComboBox_TipoFileItemStateChanged(evt);
@@ -211,36 +236,69 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
     private void ComboBox_TipoFileItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_TipoFileItemStateChanged
         // TODO add your handling code here:
-        if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("CoinTracking.info CSV")||
-            ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Tatax CSV"))
-        {
+           String voceSelezionata = ComboBox_TipoFile.getItemAt(
+            ComboBox_TipoFile.getSelectedIndex()).trim();
+
+    if (voceSelezionata.equalsIgnoreCase("CoinTracking.info CSV") ||
+        voceSelezionata.contains("Tatax CSV")) {
+
+        // --- Comportamento originale CoinTracking / Tatax ---
+        Label_TipoImport.setEnabled(true);
+        ComboBox_TipoImport.setEnabled(true);
+        TextPane_Attenzione.setEnabled(true);
+        ComboBox_TipoImport.setSelectedIndex(0);
+        Bottone_SelezionaFile.setEnabled(false);
+
+    } else if (voceSelezionata.startsWith("[JSON]")) {
+
+        // --- Voce JSON dinamica ---
+        // Ricostruisco il percorso del file JSON
+        String nomeJson = voceSelezionata.substring("[JSON] ".length()) + ".json";
+        String sep = java.io.File.separator;
+        String cartella = VarStatiche.getCartella_ImportConfig();
+        if (!cartella.endsWith(sep) && !cartella.endsWith("/")) cartella += sep;
+        String percorsoJson = cartella + nomeJson;
+
+        String nomeExchange = ImportazioneGenerica.leggiNomeExchangeDaJson(percorsoJson);
+
+        if (nomeExchange == null || nomeExchange.isBlank()) {
+            // Exchange non configurato nel JSON → abilito la selezione come CoinTracking
+            // Popolo il combobox con la lista Exchange (tipo più comune)
+            ArrayList<String> elements = new ArrayList<>();
+            elements.addAll(java.util.Arrays.asList(Exchanges));
+            ComboBox_Exchanges.setModel(
+                new DefaultComboBoxModel<>(elements.toArray(String[]::new)));
+
             Label_TipoImport.setEnabled(true);
             ComboBox_TipoImport.setEnabled(true);
             TextPane_Attenzione.setEnabled(true);
             ComboBox_TipoImport.setSelectedIndex(0);
+            Label_NomeExchange.setEnabled(true);
+            ComboBox_Exchanges.setEnabled(true);
             Bottone_SelezionaFile.setEnabled(false);
-     
-            
-           /* ArrayList<String> elements = new ArrayList<String>();
-            elements.addAll(java.util.Arrays.asList(Exchanges));
-            ComboBoxModel model = new DefaultComboBoxModel(elements.toArray());
-            ComboBox_TipoImport.setModel(model);*/
 
-        }
-        else
-          {
-              
-            Label_NomeExchange.setEnabled(false);
+        } else {
+            // Exchange già valorizzato nel JSON → comportamento normale, pulsante subito pronto
             Label_TipoImport.setEnabled(false);
+            ComboBox_TipoImport.setEnabled(false);
             Label_NomeExchange.setEnabled(false);
             ComboBox_Exchanges.setEnabled(false);
-            ComboBox_TipoImport.setEnabled(false);
-            this.Text_NomeWallet.setEnabled(false);
+            Text_NomeWallet.setEnabled(false);
             TextPane_Attenzione.setEnabled(false);
             Bottone_SelezionaFile.setEnabled(true);
+        }
 
+    } else {
 
-          }  
+        // --- Tutte le altre voci native ---
+        Label_NomeExchange.setEnabled(false);
+        Label_TipoImport.setEnabled(false);
+        ComboBox_Exchanges.setEnabled(false);
+        ComboBox_TipoImport.setEnabled(false);
+        Text_NomeWallet.setEnabled(false);
+        TextPane_Attenzione.setEnabled(false);
+        Bottone_SelezionaFile.setEnabled(true);
+    }
     }//GEN-LAST:event_ComboBox_TipoFileItemStateChanged
 
     private void Bottone_AnnullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AnnullaActionPerformed
@@ -252,15 +310,106 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     
     private void Bottone_SelezionaFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_SelezionaFileActionPerformed
 
-       // boolean selezioneok[]=new boolean[]{false};
-       //this.setCursor(Cursor.WAIT_CURSOR);
-        if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Crypto.com APP Csv")) {
+        // boolean selezioneok[]=new boolean[]{false};
+        //this.setCursor(Cursor.WAIT_CURSOR);
+        if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) {
+
+            // 1. Ricavo il percorso del JSON selezionato
+            String nomeJson = ComboBox_TipoFile.getSelectedItem().toString().trim()
+                    .substring("[JSON] ".length()) + ".json";
+            String sep = java.io.File.separator;
+            String cartellaConfig = VarStatiche.getCartella_ImportConfig();
+            if (!cartellaConfig.endsWith(sep) && !cartellaConfig.endsWith("/")) {
+                cartellaConfig += sep;
+            }
+            final String percorsoJson = cartellaConfig + nomeJson;
+
+            // 2. Controllo se nomeExchange è valorizzato nel JSON
+            String nomeExchangeFinale[] = new String[1];
+            String nomeExchangeDaJson = ImportazioneGenerica.leggiNomeExchangeDaJson(percorsoJson);
+
+            if (nomeExchangeDaJson != null && !nomeExchangeDaJson.isBlank()) {
+                // Già nel JSON
+                nomeExchangeFinale[0] = nomeExchangeDaJson;
+            } else {
+                // Scelto dall'utente tramite ComboBox_Exchanges
+                nomeExchangeFinale[0] = ComboBox_Exchanges.getSelectedItem().toString().trim();
+                if (nomeExchangeFinale[0].equalsIgnoreCase("----------") || nomeExchangeFinale[0].isBlank()) {
+                    JOptionPane.showMessageDialog(this,
+                            "Selezionare un Exchange/Wallet prima di procedere.",
+                            "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                // Gestione *Nome Personalizzato*
+                if (nomeExchangeFinale[0].equalsIgnoreCase("*Nome Personalizzato*")) {
+                    nomeExchangeFinale[0] = JOptionPane.showInputDialog(this,
+                            "Inserisci il nome personalizzato:", "Nome Exchange", JOptionPane.PLAIN_MESSAGE);
+                    if (nomeExchangeFinale[0] == null || nomeExchangeFinale[0].isBlank()) {
+                        return;
+                    }
+                }
+            }
+
+            // 3. Selezione file CSV e avvio importazione
+            Component c = this;
+            Download progressb = new Download();
+            Bottone_SelezionaFile.setEnabled(false);
+            Bottone_Annulla.setEnabled(false);
+
+            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
+            JFileChooser fc = new JFileChooser(Directory);
+            int returnVal = fc.showOpenDialog(c);
+            boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
+
+            Thread thread = new Thread() {
+                public void run() {
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
+                        DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione",
+                                fc.getSelectedFile().getParent());
+                        c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                        Importazioni.AzzeraContatori();
+
+                        // Usa l'overload con il nome exchange (dal JSON o scelto dall'utente)
+                        boolean ok = ImportazioneGenerica.importa(
+                                FileDaImportare,
+                                percorsoJson,
+                                SovrascriEsistenti,
+                                progressb,
+                                nomeExchangeFinale[0] // <-- override nome exchange
+                        );
+
+                        if (ok && Importazioni.TransazioniAggiunte > 0) {
+                            Principale.TabellaCryptodaAggiornare = true;
+                        }
+
+                        Importazioni_Resoconto res = new Importazioni_Resoconto();
+                        c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                        res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte,
+                                Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute,
+                                Importazioni.movimentiSconosciuti);
+                        res.setLocationRelativeTo(c);
+                        res.setVisible(true);
+                        dispose();
+                    }
+
+                    Bottone_SelezionaFile.setEnabled(true);
+                    Bottone_Annulla.setEnabled(true);
+                    progressb.dispose();
+                }
+            };
+            progressb.SetThread(thread);
+            thread.start();
+            progressb.setDefaultCloseOperation(0);
+            progressb.setLocationRelativeTo(this);
+            progressb.setVisible(true);
+        } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Crypto.com APP Csv")) {
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
             JFileChooser fc = new JFileChooser(Directory);
             int returnVal = fc.showOpenDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
-             //   selezioneok[0]=true;
+                //   selezioneok[0]=true;
                 String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
                 DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
                 //System.out.println(Directory);
@@ -274,9 +423,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                 dispose();
             }
             this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        } 
-        
-        else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Crypto.com Exchange Csv")) {
+        } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Crypto.com Exchange Csv")) {
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
             JFileChooser fc = new JFileChooser(Directory);
@@ -326,9 +473,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                 progressb.setVisible(true);
             }
             this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        }
-        
-        else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().toUpperCase().contains("COINTRACKING")) {
+        } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().toUpperCase().contains("COINTRACKING")) {
 
             if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain")) {
                 NomeWallet = Text_NomeWallet.getText().trim() + " " + ComboBox_Exchanges.getSelectedItem().toString().trim().substring(ComboBox_Exchanges.getSelectedItem().toString().indexOf("("), ComboBox_Exchanges.getSelectedItem().toString().indexOf(")") + 1);
@@ -337,7 +482,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                 NomeWallet = ComboBox_Exchanges.getSelectedItem().toString().trim();
             }
             if (NomeWallet.equalsIgnoreCase("*Nome Personalizzato*")) {
-                NomeWallet="";
+                NomeWallet = "";
                 Object[] options = Principale.Mappa_Wallet.keySet().toArray();
                 JLabel label = new JLabel("<html>Indica o scegli il Nome che vuoi dare al Wallet<br>"
                         + "</html>");
@@ -358,18 +503,18 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                         JOptionPane.OK_CANCEL_OPTION
                 );
                 if (result == JOptionPane.OK_OPTION) {
-                    if (comboBox.getSelectedItem()!=null){
+                    if (comboBox.getSelectedItem() != null) {
                         NomeWallet = comboBox.getSelectedItem().toString();
                     }
 
                 }
             }
-            
+
             //Se alla fine non ho un nome valido torno alla schermata principale
             if (NomeWallet == null || NomeWallet.isBlank()) {
                 return;
-            }   
-            
+            }
+
             Component c = this;
             Download progressb = new Download();
             Bottone_SelezionaFile.setEnabled(false);
@@ -381,34 +526,34 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             Thread thread;
             thread = new Thread() {
                 public void run() {
-                  //  try {
+                    //  try {
 
-                        if (returnVal == JFileChooser.APPROVE_OPTION) {
-                       //     selezioneok[0] = true;
-                            String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
-                            DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
-                            boolean SovrascriEsistenti = CheckBox_Sovrascrivi.isSelected();
-                            Importazioni.AzzeraContatori();
-                            boolean PrezzoZero = false;
-                            if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain")) {
-                               // nomewallet = Text_NomeWallet.getText().trim() + " " + ComboBox_Exchanges.getSelectedItem().toString().trim().substring(ComboBox_Exchanges.getSelectedItem().toString().indexOf("("), ComboBox_Exchanges.getSelectedItem().toString().indexOf(")") + 1);
-                                //in questo caso siccome cointracking sbaglia molto spesso i prezzi delle shitcoin imposto il prezzo a zero
-                                //su tutti gli scambi nel caso in cui binance non abbia i prezi corretti
-                                PrezzoZero = true;
-
-                            }
-                            Importazioni.Ex_CoinTracking_Importa(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZero, progressb);
-
-                            Importazioni_Resoconto res = new Importazioni_Resoconto();
-                            res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
-                            res.setLocationRelativeTo(c);
-                            res.setVisible(true);
-                                dispose();
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        //     selezioneok[0] = true;
+                        String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
+                        DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
+                        boolean SovrascriEsistenti = CheckBox_Sovrascrivi.isSelected();
+                        Importazioni.AzzeraContatori();
+                        boolean PrezzoZero = false;
+                        if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain")) {
+                            // nomewallet = Text_NomeWallet.getText().trim() + " " + ComboBox_Exchanges.getSelectedItem().toString().trim().substring(ComboBox_Exchanges.getSelectedItem().toString().indexOf("("), ComboBox_Exchanges.getSelectedItem().toString().indexOf(")") + 1);
+                            //in questo caso siccome cointracking sbaglia molto spesso i prezzi delle shitcoin imposto il prezzo a zero
+                            //su tutti gli scambi nel caso in cui binance non abbia i prezi corretti
+                            PrezzoZero = true;
 
                         }
-                        Bottone_SelezionaFile.setEnabled(true);
-                        Bottone_Annulla.setEnabled(true);
-                        progressb.dispose();
+                        Importazioni.Ex_CoinTracking_Importa(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZero, progressb);
+
+                        Importazioni_Resoconto res = new Importazioni_Resoconto();
+                        res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
+                        res.setLocationRelativeTo(c);
+                        res.setVisible(true);
+                        dispose();
+
+                    }
+                    Bottone_SelezionaFile.setEnabled(true);
+                    Bottone_Annulla.setEnabled(true);
+                    progressb.dispose();
 
                 }
 
@@ -429,9 +574,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
             }*/
 
-
-        }
-                else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().toUpperCase().contains("TATAX")) {
+        } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().toUpperCase().contains("TATAX")) {
 
             if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain")) {
                 NomeWallet = Text_NomeWallet.getText().trim() + " " + ComboBox_Exchanges.getSelectedItem().toString().trim().substring(ComboBox_Exchanges.getSelectedItem().toString().indexOf("("), ComboBox_Exchanges.getSelectedItem().toString().indexOf(")") + 1);
@@ -440,7 +583,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                 NomeWallet = ComboBox_Exchanges.getSelectedItem().toString().trim();
             }
             if (NomeWallet.equalsIgnoreCase("*Nome Personalizzato*")) {
-                NomeWallet="";
+                NomeWallet = "";
                 Object[] options = Principale.Mappa_Wallet.keySet().toArray();
                 JLabel label = new JLabel("<html>Indica o scegli il Nome che vuoi dare al Wallet<br>"
                         + "</html>");
@@ -461,20 +604,18 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                         JOptionPane.OK_CANCEL_OPTION
                 );
                 if (result == JOptionPane.OK_OPTION) {
-                    if (comboBox.getSelectedItem()!=null){
+                    if (comboBox.getSelectedItem() != null) {
                         NomeWallet = comboBox.getSelectedItem().toString();
                     }
 
                 }
             }
-            
+
             //Se alla fine non ho un nome valido torno alla schermata principale
             if (NomeWallet == null || NomeWallet.isBlank()) {
                 return;
-            }   
-                    
-                    
-                    
+            }
+
             Component c = this;
             Download progressb = new Download();
             Bottone_SelezionaFile.setEnabled(false);
@@ -486,35 +627,35 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             Thread thread;
             thread = new Thread() {
                 public void run() {
-                        if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
 
-                            String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
-                            DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
-                            boolean SovrascriEsistenti = CheckBox_Sovrascrivi.isSelected();
-                            Importazioni.AzzeraContatori();
+                        String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
+                        DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
+                        boolean SovrascriEsistenti = CheckBox_Sovrascrivi.isSelected();
+                        Importazioni.AzzeraContatori();
 
-                            boolean PrezzoZero = false;
-                            if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain")) {
-                                //in questo caso siccome cointracking sbaglia molto spesso i prezzi delle shitcoin imposto il prezzo a zero
-                                //su tutti gli scambi nel caso in cui binance non abbia i prezi corretti
-                                PrezzoZero = true;
-
-                            }
-
-                            Importazioni.Ex_Tatax_Importa(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZero, progressb);
-
-                            Importazioni_Resoconto res = new Importazioni_Resoconto();
-                            res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
-                            res.setLocationRelativeTo(c);
-                            res.setVisible(true);
-
-                            progressb.RipristinaStdout();
-                            dispose();
+                        boolean PrezzoZero = false;
+                        if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain")) {
+                            //in questo caso siccome cointracking sbaglia molto spesso i prezzi delle shitcoin imposto il prezzo a zero
+                            //su tutti gli scambi nel caso in cui binance non abbia i prezi corretti
+                            PrezzoZero = true;
 
                         }
-                        Bottone_SelezionaFile.setEnabled(true);
-                        Bottone_Annulla.setEnabled(true);
-                        progressb.dispose();
+
+                        Importazioni.Ex_Tatax_Importa(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZero, progressb);
+
+                        Importazioni_Resoconto res = new Importazioni_Resoconto();
+                        res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
+                        res.setLocationRelativeTo(c);
+                        res.setVisible(true);
+
+                        progressb.RipristinaStdout();
+                        dispose();
+
+                    }
+                    Bottone_SelezionaFile.setEnabled(true);
+                    Bottone_Annulla.setEnabled(true);
+                    progressb.dispose();
 
                 }
 
@@ -535,9 +676,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
             }*/
 
-
-        }
-        else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Binance CSV")) {
+        } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Binance CSV")) {
             Component c = this;
             Download progressb = new Download();
             Bottone_SelezionaFile.setEnabled(false);
@@ -553,7 +692,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                     // JFileChooser fc = new JFileChooser();
                     // int returnVal = fc.showOpenDialog(this);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
-                      //  selezioneok[0] = true;
+                        //  selezioneok[0] = true;
                         String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
                         DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -564,9 +703,9 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                         res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
                         res.setLocationRelativeTo(c);
                         res.setVisible(true);
-                      //  if (selezioneok[0]) {
-                            dispose();
-                       // }
+                        //  if (selezioneok[0]) {
+                        dispose();
+                        // }
 
                     }
                     Bottone_SelezionaFile.setEnabled(true);
@@ -580,9 +719,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             progressb.setDefaultCloseOperation(0);
             progressb.setLocationRelativeTo(this);
             progressb.setVisible(true);
-        } 
-        
-        else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Binance Financial Report")) {
+        } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Binance Financial Report")) {
             Component c = this;
             Download progressb = new Download();
             Bottone_SelezionaFile.setEnabled(false);
@@ -598,7 +735,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                     // JFileChooser fc = new JFileChooser();
                     // int returnVal = fc.showOpenDialog(this);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
-                      //  selezioneok[0] = true;
+                        //  selezioneok[0] = true;
                         String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
                         DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -609,9 +746,9 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                         res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
                         res.setLocationRelativeTo(c);
                         res.setVisible(true);
-                      //  if (selezioneok[0]) {
-                            dispose();
-                       // }
+                        //  if (selezioneok[0]) {
+                        dispose();
+                        // }
 
                     }
                     Bottone_SelezionaFile.setEnabled(true);
@@ -625,9 +762,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             progressb.setDefaultCloseOperation(0);
             progressb.setLocationRelativeTo(this);
             progressb.setVisible(true);
-        } 
-        
-        else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().contains("OKX CSV")) {
+        } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().contains("OKX CSV")) {
             Component c = this;
             Download progressb = new Download();
             Bottone_SelezionaFile.setEnabled(false);
@@ -643,7 +778,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                     // JFileChooser fc = new JFileChooser();
                     // int returnVal = fc.showOpenDialog(this);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
-                      //  selezioneok[0] = true;
+                        //  selezioneok[0] = true;
                         String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
                         DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -654,9 +789,9 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                         res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
                         res.setLocationRelativeTo(c);
                         res.setVisible(true);
-                      //  if (selezioneok[0]) {
-                            dispose();
-                       // }
+                        //  if (selezioneok[0]) {
+                        dispose();
+                        // }
 
                     }
                     Bottone_SelezionaFile.setEnabled(true);
@@ -671,64 +806,8 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             progressb.setLocationRelativeTo(this);
             progressb.setVisible(true);
         }
-        
-        else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().contains("Test")) {
-            Component c = this;
-            Download progressb = new Download();
-            Bottone_SelezionaFile.setEnabled(false);
-            Bottone_Annulla.setEnabled(false);
-            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
-            JFileChooser fc = new JFileChooser(Directory);
-            int returnVal = fc.showOpenDialog(c);
-            boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
-            Thread thread;
-            thread = new Thread() {
-                public void run() { 
 
-                    // JFileChooser fc = new JFileChooser();
-                    // int returnVal = fc.showOpenDialog(this);
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
-                      //  selezioneok[0] = true;
-                        String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
-                        DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
-                        c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                        Importazioni.AzzeraContatori();
-                       // Importazioni.Ex_OKX_Importa(FileDaImportare, SovrascriEsistenti, c, progressb);
-                        // In un metodo di importazione nella GUI:
-                        boolean ok = ImportazioneGenerica.importa(
-                                FileDaImportare,// percorso del CSV scelto dall'utente
-                            VarStatiche.getCartella_ImportConfig()+"binance_spot.json",          // percorso del JSON di configurazione
-                            SovrascriEsistenti,    // checkbox dell'interfaccia
-                            progressb            // componente barra di avanzamento
-                        );
-                        if (ok) {
-                            if (Importazioni.TransazioniAggiunte > 0) {
-                                Principale.TabellaCryptodaAggiornare = true;
-                            }
-                        }
-                        
-                        Importazioni_Resoconto res = new Importazioni_Resoconto();
-                        c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                        res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
-                        res.setLocationRelativeTo(c);
-                        res.setVisible(true);
-                      //  if (selezioneok[0]) {
-                            dispose();
-                       // }
 
-                    }
-                    Bottone_SelezionaFile.setEnabled(true);
-                    Bottone_Annulla.setEnabled(true);
-                    progressb.dispose();
-
-                }
-
-            };
-            thread.start();
-            progressb.setDefaultCloseOperation(0);
-            progressb.setLocationRelativeTo(this);
-            progressb.setVisible(true);
-        }
     }//GEN-LAST:event_Bottone_SelezionaFileActionPerformed
 
     private void ComboBox_TipoImportItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_TipoImportItemStateChanged

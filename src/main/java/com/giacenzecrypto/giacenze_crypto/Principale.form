@@ -405,7 +405,7 @@
                           <Component id="TransazioniCrypto_CheckBox_VediSenzaPrezzo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                      <Component id="TransazioniCrypto_ScrollPane" pref="418" max="32767" attributes="0"/>
+                      <Component id="TransazioniCrypto_ScrollPane" pref="419" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="TransazioniCrypto_Label_Plusvalenza" min="-2" pref="31" max="-2" attributes="0"/>
@@ -435,7 +435,7 @@
                               </Group>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="Bottone_Errori" min="-2" pref="36" max="-2" attributes="0"/>
-                              <EmptySpace pref="20" max="32767" attributes="0"/>
+                              <EmptySpace pref="22" max="32767" attributes="0"/>
                               <Component id="TransazioniCrypto_Bottone_AggiorbaVersione" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="TransazioniCrypto_TabbedPane" pref="0" max="32767" attributes="0"/>
@@ -492,7 +492,7 @@
                         <Column editable="false" title="Data Fine Trasferimento" type="java.lang.Object"/>
                         <Column editable="false" title="Movimento Valorizzato" type="java.lang.Object"/>
                         <Column editable="false" title="Movimento con Plusvalenza" type="java.lang.Object"/>
-                        <Column editable="false" title="ND" type="java.lang.Object"/>
+                        <Column editable="false" title="Rete" type="java.lang.Object"/>
                         <Column editable="false" title="null" type="java.lang.Object"/>
                         <Column editable="false" title="null" type="java.lang.Object"/>
                         <Column editable="false" title="null" type="java.lang.Object"/>
@@ -716,7 +716,7 @@
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new com.giacenzecrypto.giacenze_crypto.JTableConTooltipIcone()"/>
                     <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="CDC_Grafica_TransazioniCryptoTabella"/>
-                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 72));&#xd;&#xa;Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);&#xd;&#xa;Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);"/>
+                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 82));&#xd;&#xa;Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);&#xd;&#xa;Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);"/>
                   </AuxValues>
                 </Component>
               </SubComponents>
@@ -2590,7 +2590,7 @@
                             </Property>
                             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                               <TableColumnModel selectionModel="0">
-                                <Column maxWidth="120" minWidth="120" prefWidth="120" resizable="true">
+                                <Column maxWidth="130" minWidth="130" prefWidth="130" resizable="true">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>
@@ -3088,6 +3088,7 @@
                                 </Column>
                               </TableColumnModel>
                             </Property>
+                            <Property name="name" type="java.lang.String" value="RW_Tabella" noResource="true"/>
                             <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
                               <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                             </Property>
@@ -5292,7 +5293,7 @@
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/Images/24_Tabella.png"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="Genera File per Tatax"/>
+                        <Property name="text" type="java.lang.String" value="Genera File per Tatax (Versione pre 2026)"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Export_Tatax_BottoneActionPerformed"/>
@@ -5978,7 +5979,7 @@
                                   <Component id="Opzioni_Varie_Bottone_Disclaimer" max="32767" attributes="0"/>
                                   <Component id="Opzioni_Varie_RicalcolaPrezzi" max="32767" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="1109" max="32767" attributes="0"/>
+                              <EmptySpace pref="1149" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -5991,7 +5992,7 @@
                               <Component id="Opzioni_Varie_Bottone_ProblemiNoti" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="86" max="-2" attributes="0"/>
                               <Component id="Opzioni_Varie_RicalcolaPrezzi" min="-2" pref="95" max="-2" attributes="0"/>
-                              <EmptySpace pref="612" max="32767" attributes="0"/>
+                              <EmptySpace pref="628" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>

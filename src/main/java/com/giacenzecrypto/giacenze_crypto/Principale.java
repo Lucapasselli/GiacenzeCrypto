@@ -7967,22 +7967,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 }
 
             } else {
-                AppDialog.builder(this)
-                        .windowTitle("Attenzione!")
-                        .bodyTitle("Attenzione")
-                        .showTitleInBody(false)
-                        .theme()
-                        .type(AppDialog.DialogType.INFO)
-                        .message("""
+                String ms="""
                 Siccome il valore è legato a un movimento specifico, verrà proposta
                 la modifica dello stesso.
-                """)
-                        .details("""
+                """;
+                String dt="""
                 Questo potrebbe influire anche sul valore di altri righi che fanno
                 riferimento allo stesso movimento.
-                """)
-                        .primaryAction("ok", "OK")
-                        .showDialog();
+                """;
+                Messaggi.WarningMessage("Attenzione", ms, dt, this);
                 GUI_ModificaMovimento a = new GUI_ModificaMovimento();
                 a.CompilaCampidaID(ID);
                 a.setLocationRelativeTo(this);
@@ -8206,33 +8199,11 @@ GiacenzeaData_CompilaTabellaToken(true);
             else
               {
                   if (Address != null && Rete != null && Address.equalsIgnoreCase(Rete)){
-                      AppDialog.builder(this)
-                              .windowTitle("Attenzione!")
-                              .bodyTitle("Attenzione")
-                              .showTitleInBody(false)
-                              .theme()
-                              .type(AppDialog.DialogType.WARNING)
-                              .message("""
-                Non si possono visualizzare i movimenti del token Nativo.
-                """)
-                              .details("""
-                Selezionare un'altro token.
-                """)
-                              .primaryAction("ok", "OK")
-                              .showDialog();
+                      
+                      Messaggi.WarningMessage("Attenzione", "Non si possono visualizzare i movimenti del token Nativo.", "Selezionare un'altro token.", this);                     
                   }
                   else{
-                    AppDialog.builder(this)
-                              .windowTitle("Attenzione!")
-                              .bodyTitle("Attenzione")
-                              .showTitleInBody(false)
-                              .theme()
-                              .type(AppDialog.DialogType.WARNING)
-                              .message("""
-                Per vedere i dettagli dei movimenti in explorer selezionare un singolo Wallet
-                """)
-                              .primaryAction("ok", "OK")
-                              .showDialog();
+                      Messaggi.WarningMessage("Selezionare un Singolo Wallet","Attenzione! Per vedere i dettagli dei movimenti in explorer selezionare un singolo Wallet", this);
                   }
               }  
         }
@@ -8267,20 +8238,10 @@ GiacenzeaData_CompilaTabellaToken(true);
             
             else
               {
-                AppDialog.builder(this)
-                              .windowTitle("Attenzione!")
-                              .bodyTitle("Attenzione")
-                              .showTitleInBody(false)
-                              .theme()
-                              .type(AppDialog.DialogType.WARNING)
-                              .message("""
+                Messaggi.WarningMessage("Wallet non valido", """
                 Il Wallet selezionato non è valido.
-                """)
-                              .details("""
-                Selezionare un altro Wallet.
-                """)
-                              .primaryAction("ok", "OK")
-                              .showDialog();
+                Selezionare un altro Wallet.                                             
+                """, this);
               }  
         
     }//GEN-LAST:event_GiacenzeaData_Bottone_GiacenzeExplorerMouseClicked
@@ -8423,14 +8384,7 @@ GiacenzeaData_CompilaTabellaToken(true);
             int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);
             String ID = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
             if (!Funzioni_WalletDeFi.ApriExplorer(ID)) {
-                AppDialog.builder(this)
-                        .windowTitle("Attenzione!")
-                        .showTitleInBody(false)
-                        .theme()
-                        .type(AppDialog.DialogType.WARNING)
-                        .message("Non è possibile aprire l'explorer per questa transazione.")
-                        .primaryAction("ok", "OK")
-                        .showDialog();
+                Messaggi.WarningMessage("Explorer non consultabile", "Non è possibile aprire l'explorer per questa transazione.",this);
             }
         }
 
@@ -8458,16 +8412,9 @@ GiacenzeaData_CompilaTabellaToken(true);
             TabellaCryptodaAggiornare = true;
 
             SwingUtilities.invokeLater(() -> {
-                AppDialog.builder(SwingUtilities.getWindowAncestor(c))
-                        .windowTitle("Eliminazione completata")
-                        .bodyTitle("Transazione eliminata")
-                        .showTitleInBody(true)
-                        .theme()
-                        .type(AppDialog.DialogType.SUCCESS)
-                        .message("La transazione con ID " + ID + " è stata eliminata correttamente.")
-                        .details("Premi Salva nella sezione 'Transazioni Crypto' per rendere permanente la cancellazione.")
-                        .primaryAction("ok", "OK")
-                        .showDialog();
+                Messaggi.SuccessMessage("Transazione eliminata", 
+                        "La transazione con ID " + ID + " è stata eliminata correttamente.<br>"
+                                + "Premi Salva nella sezione 'Transazioni Crypto' per rendere permanente la cancellazione.",this);
             });
         }
     }
@@ -8751,17 +8698,9 @@ GiacenzeaData_CompilaTabellaToken(true);
                 }
 
                 Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
-
-                AppDialog.builder(this)
-                        .windowTitle("Cancellazione completata")
-                        .bodyTitle("Operazione completata")
-                        .showTitleInBody(true)
-                        .theme()
-                        .type(AppDialog.DialogType.SUCCESS)
-                        .message("Numero movimenti cancellati: " + movimentiCancellati + ".")
-                        .details("Ricordarsi di salvare per non perdere le modifiche effettuate.")
-                        .primaryAction("ok", "OK")
-                        .showDialog();
+Messaggi.SuccessMessage("Cancellazione completata", 
+                        "Numero movimenti cancellati: " + movimentiCancellati + ".<br>"
+                                + "Ricordarsi di salvare per non perdere le modifiche effettuate.",this);
             }
         }
     }//GEN-LAST:event_Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed
@@ -8806,90 +8745,144 @@ if (result.isAction("delete-all")) {
         Funzioni_AggiornaTutto();
     }
 
-    AppDialog.builder(this)
-            .windowTitle("Cancellazione completata")
-            .bodyTitle("Operazione completata")
-            .showTitleInBody(true)
-            .theme()
-            .type(AppDialog.DialogType.SUCCESS)
-            .message("Numero movimenti cancellati: " + movimentiCancellati + ".")
-            .details("Ricordarsi di salvare per non perdere le modifiche effettuate.")
-            .primaryAction("ok", "OK")
-            .showDialog();
+    Messaggi.SuccessMessage("Cancellazione completata", "Numero movimenti cancellati: " + movimentiCancellati + 
+            ".<br>Ricordarsi di salvare per non perdere le modifiche effettuate.", this);
 }
     }//GEN-LAST:event_Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed
 
     private void CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed
         // TODO add your handling code here:
-        String Messaggio="Sicuro di voler cancellare le personalizzazione sui movimenti del Fiat Wallet?";
-        int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione personalizzazioni FiatWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-        if (risposta==0){
-            try
-            {
-                FileWriter w=new FileWriter(VarStatiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
-                BufferedWriter b=new BufferedWriter (w);
-                for (String value : VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.values())
-                {
-                    if (!value.toUpperCase().contains(";Personalizzato;".toUpperCase()))
-                    {
-                        b.write(value+"\n");
+
+        String messaggio = "Vuoi rimuovere le personalizzazioni dei movimenti del Fiat Wallet?";
+
+        AppDialog.DialogResult result = AppDialog.builder(this)
+                .windowTitle("Cancellazione personalizzazioni Fiat Wallet")
+                .showTitleInBody(false)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message(messaggio)
+                .details("Verranno mantenuti solo i tipi di movimento non personalizzati.")
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("reset-customizations", "Rimuovi personalizzazioni")
+                        .role(AppDialog.ActionRole.DANGER)
+                        .build())
+                .showDialog();
+
+        if (result != null && result.isAction("reset-customizations")) {
+            try {
+                FileWriter w = new FileWriter(VarStatiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
+                BufferedWriter b = new BufferedWriter(w);
+
+                for (String value : VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.values()) {
+                    if (!value.toUpperCase().contains(";Personalizzato;".toUpperCase())) {
+                        b.write(value + "\n");
                     }
                 }
+
                 b.close();
                 w.close();
-            }catch (IOException ex)
-            {
 
-            }    }
+            } catch (IOException ex) {
+
+            }
+
             CDC_FiatWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCFiatWallet());
             CDC_FiatWallet_AggiornaDatisuGUI();
+
+            Messaggi.SuccessMessage("Personalizzazioni rimosse", "Le personalizzazioni dei movimenti del Fiat Wallet sono state rimosse.", this);
+
+        }
+            
+            
+            
     }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed
 
     private void CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed
         // TODO add your handling code here:
-        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-        String DataIniziale=f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
-        String DataFinale=f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
-        long timeStampIniziale=FunzioniDate.ConvertiDatainLong(DataIniziale);
-        long timeStampFinale=FunzioniDate.ConvertiDatainLong(DataFinale)+86400000;
-        String Messaggio="Sicuro di voler cancellare tutti i dati del Fiat Wallet dal "+DataIniziale+" al "+DataFinale+" compreso?";
-        int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione FiatWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-        if (risposta==0){
-            try
-            {
-                //Leggo il file e metto in un array tutto quello da mantenere
-               FileReader fire = new FileReader(VarStatiche.getFile_CDCFiatWallet()); 
-               BufferedReader bure = new BufferedReader(fire);
-                        String rigas;
-                        
-                        
-                        List<String> DaMantenere = new ArrayList<>();
-                        while ((rigas = bure.readLine()) != null) {
-                            long timeStampMovimento=FunzioniDate.ConvertiDatainLong(rigas.split(" ")[0]);
-                            if (timeStampMovimento<timeStampIniziale ||
-                                  timeStampMovimento>=timeStampFinale  ){
-                                    DaMantenere.add(rigas);
-                            }
-                        }
-                        bure.close();
-                        fire.close();
-                
-                //Tutto quello da mantenere lo riscrivo in un nuovo file
-                FileWriter w=new FileWriter(VarStatiche.getFile_CDCFiatWallet());
-                BufferedWriter b=new BufferedWriter (w);
-                Iterator<String> It=DaMantenere.iterator();
-                while(It.hasNext()){
-                    b.write(It.next()+"\n");
-                }
-                b.close();
-                w.close();
-            }catch (IOException ex)
-            {
+        
+        
+        
 
-            }    }
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+        String dataIniziale = f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
+        String dataFinale = f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
+        
+        if (F_Opzioni_Pulizie.confermaECancellaWalletFIATeCARDPerIntervallo(dataIniziale, dataFinale, "FIAT Wallet",VarStatiche.getFile_CDCFiatWallet(), this))
+        {
             CDC_FiatWallet_Mappa.clear();
             CDC_FiatWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCFiatWallet());
             CDC_FiatWallet_AggiornaDatisuGUI();
+
+            Messaggi.SuccessMessage("Dati eliminati", "I dati del Fiat Wallet nel periodo selezionato sono stati eliminati correttamente.", this);
+        }
+
+    /*    long timeStampIniziale = FunzioniDate.ConvertiDatainLong(dataIniziale);
+        long timeStampFinale = FunzioniDate.ConvertiDatainLong(dataFinale) + 86400000;
+
+        String messaggio = "Vuoi eliminare tutti i dati del Fiat Wallet nel periodo selezionato?";
+
+        AppDialog.DialogResult result = AppDialog.builder(this)
+                .windowTitle("Cancellazione Fiat Wallet")
+                .bodyTitle("Eliminare i dati selezionati?")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message(messaggio)
+                .details("""
+                Intervallo incluso: dal %s al %s.
+
+                Verranno rimossi tutti i movimenti del Fiat Wallet compresi nel periodo selezionato.
+                """.formatted(dataIniziale, dataFinale))
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("delete-fiat-range", "Elimina dati")
+                        .role(AppDialog.ActionRole.DANGER)
+                        .build())
+                .showDialog();
+
+        if (result != null && result.isAction("delete-fiat-range")) {
+            try {
+                FileReader fire = new FileReader(VarStatiche.getFile_CDCFiatWallet());
+                BufferedReader bure = new BufferedReader(fire);
+                String rigas;
+
+                List<String> daMantenere = new ArrayList<>();
+
+                while ((rigas = bure.readLine()) != null) {
+                    long timeStampMovimento = FunzioniDate.ConvertiDatainLong(rigas.split(" ")[0]);
+
+                    if (timeStampMovimento < timeStampIniziale || timeStampMovimento >= timeStampFinale) {
+                        daMantenere.add(rigas);
+                    }
+                }
+
+                bure.close();
+                fire.close();
+
+                FileWriter w = new FileWriter(VarStatiche.getFile_CDCFiatWallet());
+                BufferedWriter b = new BufferedWriter(w);
+
+                Iterator<String> it = daMantenere.iterator();
+                while (it.hasNext()) {
+                    b.write(it.next() + "\n");
+                }
+
+                b.close();
+                w.close();
+
+            } catch (IOException ex) {
+
+            }
+
+            CDC_FiatWallet_Mappa.clear();
+            CDC_FiatWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCFiatWallet());
+            CDC_FiatWallet_AggiornaDatisuGUI();
+
+            Messaggi.SuccessMessage("Dati eliminati", "I dati del Fiat Wallet nel periodo selezionato sono stati eliminati correttamente.", this);
+        }*/
     }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed
 
     private void CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed

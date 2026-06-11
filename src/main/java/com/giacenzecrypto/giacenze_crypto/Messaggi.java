@@ -54,65 +54,35 @@ public class Messaggi {
                 return result.isAction("assign-zero");
         
     }
+    
+        
+        
+        //Messaggi di conferma semplificati
         
         public static void WarningMessage(String Titolo,String Dettaglio,Window w){
-        AppDialog.builder(w)
-                            .title(Titolo)
-                            .showTitleInBody(true)
-                            .theme()
-                            .type(AppDialog.DialogType.WARNING)
-                            .details(Dettaglio)
-                            .primaryAction("ok", "OK")
-                            .showDialog();
+            Message(Titolo,"",Dettaglio,AppDialog.DialogType.WARNING,w);
         }
         public static void WarningMessage(String Titolo,String Messaggio,String Dettaglio,Window w){
-        AppDialog.builder(w)
-                            .title(Titolo)
-                            .showTitleInBody(true)
-                            .theme()
-                            .type(AppDialog.DialogType.WARNING)
-                            .message(Messaggio)
-                            .details(Dettaglio)
-                            .primaryAction("ok", "OK")
-                            .showDialog();
+            Message(Titolo,Messaggio,Dettaglio,AppDialog.DialogType.WARNING,w);
         }
         public static void InfoMessage(String Titolo,String Dettaglio,Window w){
-        AppDialog.builder(w)
-                            .title(Titolo)
-                            .showTitleInBody(true)
-                            .theme()
-                            .type(AppDialog.DialogType.INFO)
-                            .details(Dettaglio)
-                            .primaryAction("ok", "OK")
-                            .showDialog();
+            Message(Titolo,"",Dettaglio,AppDialog.DialogType.INFO,w);
         }
         public static void InfoMessage(String Titolo,String Messaggio,String Dettaglio,Window w){
-        AppDialog.builder(w)
-                            .title(Titolo)
-                            .showTitleInBody(true)
-                            .theme()
-                            .type(AppDialog.DialogType.INFO)
-                            .message(Messaggio)
-                            .details(Dettaglio)
-                            .primaryAction("ok", "OK")
-                            .showDialog();
+            Message(Titolo,Messaggio,Dettaglio,AppDialog.DialogType.INFO,w); 
         }
         public static void SuccessMessage(String Titolo,String Dettaglio,Window w){
-        AppDialog.builder(w)
-                            .title(Titolo)
-                            .showTitleInBody(true)
-                            .theme()
-                            .type(AppDialog.DialogType.SUCCESS)
-                            .details(Dettaglio)
-                            .primaryAction("ok", "OK")
-                            .showDialog();
+            Message(Titolo,"",Dettaglio,AppDialog.DialogType.SUCCESS,w);
         }
         public static void SuccessMessage(String Titolo,String Messaggio,String Dettaglio,Window w){
+            Message(Titolo,Messaggio,Dettaglio,AppDialog.DialogType.SUCCESS,w); 
+        }
+        public static void Message(String Titolo,String Messaggio,String Dettaglio,AppDialog.DialogType TipoM,Window w){
         AppDialog.builder(w)
                             .title(Titolo)
                             .showTitleInBody(true)
                             .theme()
-                            .type(AppDialog.DialogType.SUCCESS)
+                            .type(TipoM)
                             .message(Messaggio)
                             .details(Dettaglio)
                             .primaryAction("ok", "OK")

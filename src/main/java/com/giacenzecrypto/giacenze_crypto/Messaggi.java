@@ -192,4 +192,107 @@ public class Messaggi {
         }
         return null;
     }
+     
+     
+     public static AppDialog.DialogResult Personalizzati_Multi_ScegliErrori(int NumErroriMovSconosciuti,int NumErroriMovNoPrezzo,int NumErroriStackLiFoMancante,Window win) {
+         String testo = "Scegli quale tipologia di errore correggere.";
+         AppDialog.DialogResult result = AppDialog.builder(win)
+                 .windowTitle("Correzione errori")
+                 .bodyTitle("Selezione errore")
+                 .showTitleInBody(true)
+                 .theme()
+                 .type(AppDialog.DialogType.INFO)
+                 .message(testo)
+                 .details("")
+                 .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                         .role(AppDialog.ActionRole.SECONDARY)
+                         .build())
+                 .action(AppDialog.DialogAction.builder("nonClassificati", "Movimento non classificato (" + NumErroriMovSconosciuti + ")")
+                         .role(AppDialog.ActionRole.PRIMARY)
+                         .build())
+                 .action(AppDialog.DialogAction.builder("PrezzoMancante", "Transazione senza prezzo (" + NumErroriMovNoPrezzo + ")")
+                         .role(AppDialog.ActionRole.PRIMARY)
+                         .build())
+                 .action(AppDialog.DialogAction.builder("LifoMancante", "Parte del LIFO mancante (" + NumErroriStackLiFoMancante + ")")
+                         .role(AppDialog.ActionRole.PRIMARY)
+                         .build())
+                 .showDialog();
+         
+         return result;
+     }
+     
+          public static AppDialog.DialogResult Personalizzati_SINO_SCAMMovimentiNonCongrui(String NomeMoneta,Window win) {
+         AppDialog.DialogResult result = AppDialog.builder(win)
+                        .windowTitle("Verifica movimenti")
+                        .bodyTitle("Movimenti non coerenti con token scam")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.WARNING)
+                        .message("Il token " + NomeMoneta + " presenta movimenti diversi dal semplice deposito o prelievo.")
+                        .details("""
+                        Solitamente i token scam presentano solo movimenti di deposito o prelievo.
+
+                        Se prosegui senza verificare, i calcoli potrebbero risultare errati.
+                        """)
+                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("continue-anyway", "Continua comunque")
+                                .role(AppDialog.ActionRole.DANGER)
+                                .build())
+                        .showDialog();
+         
+         return result;
+     }
+     
+                public static AppDialog.DialogResult Personalizzati_SINO_SCAMRimuovereContrassegnare(boolean scamAttuale,String NomeMoneta,String Address,Window win) {
+         String bodyTitle = scamAttuale
+                        ? "Rimuovere classificazione SCAM?"
+                        : "Contrassegnare come SCAM?";
+
+                String message = scamAttuale
+                        ? "Vuoi fare in modo che il token " + NomeMoneta + " non venga più considerato SCAM?"
+                        : "Vuoi identificare il token " + NomeMoneta + " con address " + Address + " come SCAM?";
+
+                String details = scamAttuale
+                        ? ""
+                        : """
+          Nelle varie funzioni del programma sarà possibile nascondere questo asset.
+
+          Quando mostrato, verrà identificato con un doppio asterisco (**) alla fine del nome.
+
+          Per riportare il token allo stato normale, usa l'apposita funzione in "Giacenze a data".
+          """;
+
+                AppDialog.DialogType type = scamAttuale
+                        ? AppDialog.DialogType.INFO
+                        : AppDialog.DialogType.WARNING;
+
+                String actionId = scamAttuale ? "unmark-scam" : "mark-scam";
+                String actionLabel = scamAttuale ? "Rimuovi classificazione" : "Segna come SCAM";
+                AppDialog.ActionRole actionRole = scamAttuale
+                        ? AppDialog.ActionRole.PRIMARY
+                        : AppDialog.ActionRole.DANGER;
+
+                AppDialog.DialogResult result = AppDialog.builder(win)
+                        .windowTitle("Classificazione token")
+                        .bodyTitle(bodyTitle)
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(type)
+                        .message(message)
+                        .details(details)
+                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder(actionId, actionLabel)
+                                .role(actionRole)
+                                .build())
+                        .showDialog();
+         
+         return result;
+     }
+     
+     
+
 }

@@ -10674,42 +10674,12 @@ if (result.isAction("delete-all")) {
         
     }
     private void Funzioni_CorrezioneErroriPrincipali(){
-    // TODO add your handling code here:
-        // TODO add your handling code here:
-        //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo)
-        //PCO -> Cashout o similare (prelievo)
-        //PTW -> Trasferimento tra Wallet (prelievo)
-        //DTW -> Trasferimento tra Wallet (deposito)
-        //DAI -> Airdrop o similare (deposito)
-        //DCZ -> Costo di carico 0 (deposito)
 
+AppDialog.DialogResult result = Messaggi.Personalizzati_Multi_ScegliErrori(NumErroriMovSconosciuti, NumErroriMovNoPrezzo, NumErroriStackLiFoMancante, this);
 
-            //in questo caso sono in presenza di un movimento di deposito
-           
-                
-                    //Se scelgo il caso 1 faccio scegliere che tipo di reward voglio
-                //    boolean completato=true;
-                    String Testo = "<html>"
-                            + "<b>SCEGLIRE QUALE TIPOLOGIA DI ERRORE CORREGGERE.<br><br><b>"
-                            + "</html>";
-                   // A
-                    Object[] Bottoni = {"Annulla", 
-                        "MOVIMENTO NON CLASSIFICATO ("+(String.valueOf(NumErroriMovSconosciuti))+")", 
-                    "TRANSAZIONE SENZA PREZZO ("+NumErroriMovNoPrezzo+")",
-                    "PARTE DEL LIFO MANCANTE ("+NumErroriStackLiFoMancante+")"};
-                    int scelta = JOptionPane.showOptionDialog(this, Testo,
-                            "Correzione errori",
-                            JOptionPane.YES_NO_CANCEL_OPTION,
-                            JOptionPane.PLAIN_MESSAGE,
-                            null,
-                            Bottoni,
-                            null);
-                    //Adesso genero il movimento a seconda della scelta
-                    //0 o 1 significa che non bisogna fare nulla
-                    if (scelta != 0 && scelta != -1) {
+if (result != null && !result.isAction("cancel")) {
 
-                        switch (scelta) {
-                            case 1 -> {
+                        if (result.isAction("nonClassificati")) {
                                 String t="Si verrà ora reindirizzati alla maschera per la correzione dei movimenti non classificati.<br><br>"
                                         + "<b>NB: E' molto importante classificare tutti i movimenti di deposito e prelievo affinchè il calcolo delle plusvalenze sia esatto!</b><br><br>"
                                         + "Dalla versione 1.29, ai fini del calcolo della plusvalenza, tutti i movimenti di deposito non classificati verranno considerati <br>"
@@ -10720,7 +10690,7 @@ if (result.isAction("delete-all")) {
                              DepositiPrelievi.requestFocus();
                                 
                             }
-                            case 2 -> {
+                            else if (result.isAction("PrezzoMancante")) {
                                 String t="Verranno ora mostrati tutti i prodotti senza prezzo dei token non SCAM del periodo selezionato.<br><br>"
                                         + "<b>ATTENZIONE! Per vedere tutt i movimenti senza prezzo agire sulle date di inizio e fine posizionati in alto a destra</b><br><br>"
                                         + "Per tornare alla visualizzazione precedente togliere la biffatura dall'opzione \"<b>Vedi solo movimenti non valorizzati</b>\"<br>";
@@ -10730,7 +10700,7 @@ if (result.isAction("delete-all")) {
                                 CDC.setSelectedIndex(0);
                              
                             }
-                            case 3 -> {
+                            else if (result.isAction("LifoMancante")) {
                                 String t="Se manca parte della pila del LiFo significa che ci sono delle giacenze negative, generalmente mancano degli acquisti/earn.<br><br>"
                                         + "Si verrà ora reindirizzati alla funzione <b>'Verifica Saldi Negativi'</b> per risolvere le problematiche.<br><br>";
                                 Messaggi.InfoMessage("Parte del LiFo Mancante", t, this);
@@ -10738,14 +10708,9 @@ if (result.isAction("delete-all")) {
                                 AnalisiCrypto.setSelectedComponent(SaldiNegativi);
                                 SaldiNegativi.requestFocus();
                              
-                            }
-                            default -> {
-                            }
-                        }
+                            }                       
                     }
-                 /*   else{
-                        completato=false;
-                    }*/
+
     }
     
     
@@ -11390,15 +11355,11 @@ if (result.isAction("delete-all")) {
                     }
                 }
                 }
-                String tex="<html>Sono stati modificati <b>"+righiModificati+"</b> prezzi, per una differenza totale di <b>€ "+diffPrezzi+"</b><br>"+
+                String tex="Sono stati modificati <b>"+righiModificati+"</b> prezzi, per una differenza totale di <b>€ "+diffPrezzi+"</b><br>"+
                                 "di cui :<br>"+
                                " - <b>"+nuoviPrezzi+ "</b> sono relativi all'attribuzione di un prezzo a prodotti che prima non lo avevano per un totale di <b>€ "+nuoviPrezziTrovati+"</b><br>"+
-                               " - <b>"+righiRilevantiModificati+ "</b> sono relativi a movimenti fiscalmente rilevanti per un totale di <b>€ "+diffPrezziRilevanti+"</b><br>"+
-                                       "</html>";
-                JOptionPane.showConfirmDialog(progress, 
-                        tex,
-                            "Riepilogo modifiche"
-                        , JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                               " - <b>"+righiRilevantiModificati+ "</b> sono relativi a movimenti fiscalmente rilevanti per un totale di <b>€ "+diffPrezziRilevanti+"</b><br>";
+                Messaggi.SuccessMessage("Riepilogo", tex, progress);
                 progress.ChiudiFinestra();
 
             }
@@ -12566,198 +12527,172 @@ if (result.isAction("delete-all")) {
     }
     
     
-    private String GiacenzeaData_Funzione_IdentificaComeScam(String NomeMoneta,String Address,String Rete,String Wallet) {
-        
-        //Recupero tutti i movimenti del token
-        if (Wallet==null)Wallet="Tutti";
-        if (Rete==null)Rete="";
-        //Il globale serve nel caso in cui abbia address e rete e possa operare tranquillamente su tutti i wallet indiscriminatamente
-        Set<String> IDMovimentiTokenGlobale=Funzione_ElencoIDMovimentiTokeneWalletSelezionato("Tutti","Tutti",NomeMoneta,Rete,Address);
-        //Quello per wallet serve quando invece non ho i dati sopra e voglio operare solo sul wallet selezionato
-        Set<String> IDMovimentiTokenWallet=Funzione_ElencoIDMovimentiTokeneWalletSelezionato(Wallet,"Tutti",NomeMoneta,Rete,Address);
-        
-                //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
-                String NuovoNome=NomeMoneta;
+    private String GiacenzeaData_Funzione_IdentificaComeScam(String NomeMoneta, String Address, String Rete, String Wallet) {
 
-            String Testo;
-            
+        //Recupero tutti i movimenti del token
+        if (Wallet == null) {
+            Wallet = "Tutti";
+        }
+        if (Rete == null) {
+            Rete = "";
+        }
+        //Il globale serve nel caso in cui abbia address e rete e possa operare tranquillamente su tutti i wallet indiscriminatamente
+        Set<String> IDMovimentiTokenGlobale = Funzione_ElencoIDMovimentiTokeneWalletSelezionato("Tutti", "Tutti", NomeMoneta, Rete, Address);
+        //Quello per wallet serve quando invece non ho i dati sopra e voglio operare solo sul wallet selezionato
+        Set<String> IDMovimentiTokenWallet = Funzione_ElencoIDMovimentiTokeneWalletSelezionato(Wallet, "Tutti", NomeMoneta, Rete, Address);
+
+        //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
+        String NuovoNome = NomeMoneta;
+
+        String Testo;
+
 //1 - Verifico se il token ha mai avuto Prezzo      
-            //Controllo nella tabella del dettaglio se il token ha mai avuto prezzo
-            //se non ha avuto mai prezzo permetto di identificare il token come scam
-            for (String ID : IDMovimentiTokenGlobale) {
+        //Controllo nella tabella del dettaglio se il token ha mai avuto prezzo
+        //se non ha avuto mai prezzo permetto di identificare il token come scam
+        for (String ID : IDMovimentiTokenGlobale) {
             String movimento[] = MappaCryptoWallet.get(ID);
             //Controllo se il movimento è prezzato
             //Qualora lo sia e la moneta deve essere classificata con SCAM (non il contratio)
             //emetto un avviso ed esco dalla funzione
             if (Prezzi.isMovimentoPrezzato(movimento) && Double.parseDouble(movimento[15]) != 0 && !Funzioni.isSCAM(NomeMoneta)) {
-                Testo = "<html><b>ATTENZIONE!!! :</b> Il Token <b>" + NomeMoneta + "</b> ha dei movimenti Valorizzati.<br><br>"
-                       // + "<b>Sicuro di voler continuare?</b><br><br>"
+                Testo = "<b>ATTENZIONE!!! :</b> Il Token <b>" + NomeMoneta + "</b> ha dei movimenti Valorizzati.<br><br>"
                         + "I token scam non dovrebbero mai essere valorizzati!<br><br>"
-                        + "Se si vuole forzare l'assegnazione di questo token come scam bisogna prima portare a zero il valore dei movimenti che lo riguardano<br>"
-                       // + "<b>NB : Se non si è certi di quello che si sta facendo proseguire potrebbe portare a CALCOLI ERRATI!!!</b><br><br>"
-                        + "</html>";
-                Object[] Bottoni = {"OK"};
-               // int scelta = 
-                        JOptionPane.showOptionDialog(this, Testo,
-                        "Verifica i movimenti",
-                        JOptionPane.YES_NO_CANCEL_OPTION,
-                        JOptionPane.PLAIN_MESSAGE,
-                        null,
-                        Bottoni,
-                        null);
-              //  if (scelta != 0) {
-                    return NuovoNome;
-              //  } else {
-              //      break;
-              //  }
+                        + "Se si vuole forzare l'assegnazione di questo token come scam bisogna prima portare a zero il valore dei movimenti che lo riguardano<br>";
+                Messaggi.WarningMessage("Verifica i movimenti", Testo, this);
+                return NuovoNome;
+
             }
         }
-            
-//2 - Verifico che il token abbia subito solo movimentazioni di deposito e prelievo              
-            for (String ID : IDMovimentiTokenGlobale) {
-                String movimento[] = MappaCryptoWallet.get(ID);
-                String TipoMov=movimento[0].split("_")[4];
-                if (!TipoMov.equals("PC")&&!TipoMov.equals("DC")&& !Funzioni.isSCAM(NomeMoneta)){
-                Testo = "<html><b>ATTENZIONE!!! :</b> Il Token <b>"+NomeMoneta+"</b> ha dei movimenti diversi dal semplice Deposito/Prelievo.<br><br>"
-                                + "<b>Sicuro di voler continuare?</b><br><br>"
-                                + "Solitamente i token scam presentano solamente movimenti di Deposito o Prelievo!<br><br>"
-                        +"<b>NB : Se non si è certi di quello che si sta facendo proseguire potrebbe portare a CALCOLI ERRATI!!!</b><br><br>"
-                        + "</html>";
-                
-                 Object[] Bottoni = {"Si", "No"};
-                        int scelta = JOptionPane.showOptionDialog(this, Testo,
-                                "Verifica i movimenti",
-                                JOptionPane.YES_NO_CANCEL_OPTION,
-                                JOptionPane.PLAIN_MESSAGE,
-                                null,
-                                Bottoni,
-                                null);
-                    if (scelta!=0)return NuovoNome;
-                    else break;
-                    }
+
+//2 - Verifico che il token abbia subito solo movimentazioni di deposito e prelievo 
+//se non dovesse essere così lo segnalo e chiedo se si vuole proseguire ugualmente
+        for (String id : IDMovimentiTokenGlobale) {
+            String[] movimento = MappaCryptoWallet.get(id);
+            String tipoMov = movimento[0].split("_")[4];
+
+            if (!tipoMov.equals("PC") && !tipoMov.equals("DC") && !Funzioni.isSCAM(NomeMoneta)) {
+                AppDialog.DialogResult result = Messaggi.Personalizzati_SINO_SCAMMovimentiNonCongrui(NomeMoneta, this);
+                if (result == null || !result.isAction("continue-anyway")) {
+                    return NuovoNome;
+                } else {
+                    break;
+                }
             }
+        }
             
             
             
      
-//Se passo i primi 2 controlli proseguo con l'assegnazione dello stutus di Token SCAM            
-            if (!Address.isBlank()&&!Rete.isBlank())
-            {
-            if (!Funzioni.isSCAM(NomeMoneta)){
-                Testo = "<html>Vuoi identificare il Token <b>"+NomeMoneta+"</b> con Address <b>"+Address+"</b> come SCAM?<br><br>"
-                                + "(Nelle varie funzioni del programma verrà data la possibilità di nascondere tali asset<br>"
-                                + "e quando mostrati verranno identificati con un doppio asterisco (**) alla fine del nome)<br><br>"
-                        +"NB : Per far tornare 'normale' un token identificato come Scam utilizzare l'apposito tasto nelle funzione 'Giacenze a data'</html>";
+//Se passo i primi 2 controlli proseguo con l'assegnazione dello stutus di Token SCAM o la sua rimozione            
+           if (!Address.isBlank() && !Rete.isBlank()) {
+
+            boolean scamAttuale = Funzioni.isSCAM(NomeMoneta);
+
+            AppDialog.DialogResult result = Messaggi.Personalizzati_SINO_SCAMRimuovereContrassegnare(scamAttuale, NomeMoneta, Address, this);
+            
+            if (result != null && result.isAction("mark-scam") && !scamAttuale) {
+                String nomi[] = DatabaseH2.RinominaToken_Leggi(Address + "_" + Rete);
+                //Se nomi[0] è null vuol dire che questo token non ha mai neanche subito una rinomina
+                //altrimenti vuol dire che è stato rinominato quindi prima di considerarlo come scam
+                //e aggiungergli gli asterisci recupero il suo nome originale
+                //gli asterischi gli aggiungo al nome orioginale del token e non al nome rinominato
+                if (nomi == null || nomi[0] == null) {
+                    NuovoNome = NomeMoneta + " **";
+                    DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NuovoNome);
+                    //il comando sotto indica al database che quel token essendo scam non avrà mai prezzo
+                    //ed eviterà verifiche sul prezzo e perdite di tempo in fase di calcolo
+                } else {
+                    NuovoNome = nomi[0] + " **";
+                    DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], NuovoNome);
+                    //il comando sotto indica al database che quel token essendo scam non avrà mai prezzo
+                    //ed eviterà verifiche sul prezzo e perdite di tempo in fase di calcolo
                 }
-            else {
-                Testo = "<html>Vuoi che il Token <b>"+NomeMoneta+"</b> non venga più considerato SCAM?<br><br>"
-                + "</html>";
-            }
-                        Object[] Bottoni = {"Si", "No"};
-                        int scelta = JOptionPane.showOptionDialog(this, Testo,
-                                "Classificazione del movimento",
-                                JOptionPane.YES_NO_CANCEL_OPTION,
-                                JOptionPane.PLAIN_MESSAGE,
-                                null,
-                                Bottoni,
-                                null);
-                        if (scelta == 0 && !Funzioni.isSCAM(NomeMoneta)) {
-                            String nomi[]=DatabaseH2.RinominaToken_Leggi(Address+"_"+Rete);
-                            //Se nomi[0] è null vuol dire che questo token non ha mai neanche subito una rinomina
-                            //altrimenti vuol dire che è stato rinominato quindi prima di considerarlo come scam
-                            //e aggiungergli gli asterisci recupero il suo nome originale
-                            //gli asterischi gli aggiungo al nome orioginale del token e non al nome rinominato
-                            if (nomi==null || nomi[0] == null)
-                                {
-                                NuovoNome=NomeMoneta + " **";
-                                DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NuovoNome);
-                                //il comando sotto indica al database che quel token essendo scam non avrà mai prezzo
-                                //ed eviterà verifiche sul prezzo e perdite di tempo in fase di calcolo
-                                }
-                            else
-                                {
-                                NuovoNome=nomi[0] + " **";
-                                DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], NuovoNome);
-                                //il comando sotto indica al database che quel token essendo scam non avrà mai prezzo
-                                //ed eviterà verifiche sul prezzo e perdite di tempo in fase di calcolo
-                                }
-                            //A questo punto devo cambiare il nome a tutti i token dello stesso tipo che trovo nelle transazioni
-                            //Lancio la funzione rinomina token e cancello eventuali commissioni su prelievi di token scam che non sarebbero dovute
-                            //Questa funzione forse non servirà perchè verrà gestito tutto in maniera corretta in fase di importazione dati
-                            //Funzioni.ConvertiInvioSuStessoWallet();
-                            
-                            //Aggiorno le tabelle
-                            TabellaCryptodaAggiornare = true;
-                           
-                        }
-                        else if (scelta == 0 && Funzioni.isSCAM(NomeMoneta)) {
-                            //Metto a zero il time nella tabella addressSenzaPrezzo in modo che la volta successiva il programma
-                            //vada nuovamente a cercare il prezzo del token
-                            //RinominaToken_LeggiTabellaDatabaseH2.AddressSenzaPrezzo_Scrivi(Address + "_" + Rete, "9999999999");
-                            //leggo la riga per individuare il nome originale del token
-                            String nomi[]=DatabaseH2.RinominaToken_Leggi(Address+"_"+Rete);
-                            //lo scrivo nel database
-                            if (nomi!=null&&nomi[0]!=null){
-                            NuovoNome=nomi[0];
-                            DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], NuovoNome);
-                            }else{
-                                NomeMoneta=NomeMoneta.replace(" **", "");
-                                NuovoNome=NomeMoneta;
-                                DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NuovoNome);
-                            }
-                            
-                            
-                            
-                        /*   Vecchia Parte sostituita da quella sotto 
-                            //Prima di aggiornare la tabella devo verificare se il token ha prezzo ed eventualmente rimetterlo
-                            //la cosa più semplice è svuotare la colonna [32] dei movimenti che coinvolgono il token
-                            for (int i=0;i<GiacenzeaData_TabellaDettaglioMovimenti.getRowCount();i++){
-                                String ID = GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(i, 8).toString();
-                                MappaCryptoWallet.get(ID)[32]="";
-                                //dati[32]="";
-                                //il flag verrà rimesso in automatico dal programma non appena si caricherà la tabella crypto
-                                //andrà a controllare se il prodotto ha prezzo o meno e inserirà si o no
-                            }*/
-                        
-                        
-                            //Prima di aggiornare la tabella devo verificare se il token ha prezzo ed eventualmente rimetterlo
-                            //la cosa più semplice è svuotare la colonna [32] dei movimenti che coinvolgono il token
-                            for (String ID:IDMovimentiTokenGlobale){
-                                MappaCryptoWallet.get(ID)[32]="";
-                                //il flag verrà rimesso in automatico dal programma non appena si caricherà la tabella crypto
-                                //andrà a controllare se il prodotto ha prezzo o meno e inserirà si o no
-                            }
-                            
-                            
-                            
-                            
-                            //aggiorno l'intera tabella crypto
-                            TabellaCryptodaAggiornare = true;
-                         //   DatabaseH2.RinominaToken_Scrivi(Address+"_"+Rete, NomeMoneta,NomeMoneta+" **"); 
-                        }
-            }else{
-                if (!Funzioni.isSCAM(NomeMoneta)){
-                Testo = "<html>Vuoi identificare il Token <b>"+NomeMoneta+"</b> come SCAM?<br><br>"
-                        + "<b>ATTENZIONE : Il token in oggetto non ha Address o Rete valorizzati, verranno contrassegnati come SCAM tutti i token "
-                        + "appartenenti al wallet "+Wallet+" attualmente in archivio.<br>"
-                        + "Quelli futuri saranno da riclassificare come SCAM da questa stessa funzione.</b><br><br>"
-                                + "(Nelle varie funzioni del programma verrà data la possibilità di nascondere tali asset<br>"
-                                + "e quando mostrati verranno identificati con un doppio asterisco (**) alla fine del nome)<br><br>"
-                        +"NB : Per far tornare 'normale' un token identificato come Scam utilizzare l'apposito tasto nelle funzione 'Giacenze a data'</html>";
+                //A questo punto devo cambiare il nome a tutti i token dello stesso tipo che trovo nelle transazioni
+                //Lancio la funzione rinomina token e cancello eventuali commissioni su prelievi di token scam che non sarebbero dovute
+                //Questa funzione forse non servirà perchè verrà gestito tutto in maniera corretta in fase di importazione dati
+                //Funzioni.ConvertiInvioSuStessoWallet();
+
+                //Aggiorno le tabelle
+                TabellaCryptodaAggiornare = true;
+
+            } else if (result != null && result.isAction("unmark-scam") && scamAttuale) {
+                //Metto a zero il time nella tabella addressSenzaPrezzo in modo che la volta successiva il programma
+                //vada nuovamente a cercare il prezzo del token
+                //RinominaToken_LeggiTabellaDatabaseH2.AddressSenzaPrezzo_Scrivi(Address + "_" + Rete, "9999999999");
+                //leggo la riga per individuare il nome originale del token
+                String nomi[] = DatabaseH2.RinominaToken_Leggi(Address + "_" + Rete);
+                //lo scrivo nel database
+                if (nomi != null && nomi[0] != null) {
+                    NuovoNome = nomi[0];
+                    DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], NuovoNome);
+                } else {
+                    NomeMoneta = NomeMoneta.replace(" **", "");
+                    NuovoNome = NomeMoneta;
+                    DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NuovoNome);
                 }
-            else {
-                Testo = "<html>Vuoi che il Token <b>"+NomeMoneta+"</b> non venga più considerato SCAM?<br><br>"
-                + "</html>";
+
+                //Prima di aggiornare la tabella devo verificare se il token ha prezzo ed eventualmente rimetterlo
+                //la cosa più semplice è svuotare la colonna [32] dei movimenti che coinvolgono il token
+                for (String ID : IDMovimentiTokenGlobale) {
+                    MappaCryptoWallet.get(ID)[32] = "";
+                    //il flag verrà rimesso in automatico dal programma non appena si caricherà la tabella crypto
+                    //andrà a controllare se il prodotto ha prezzo o meno e inserirà si o no
+                }
+
+                //aggiorno l'intera tabella crypto
+                TabellaCryptodaAggiornare = true;
+                //   DatabaseH2.RinominaToken_Scrivi(Address+"_"+Rete, NomeMoneta,NomeMoneta+" **"); 
             }
-                Object[] Bottoni = {"Si", "No"};
-                        int scelta = JOptionPane.showOptionDialog(this, Testo,
-                                "Classificazione del movimento",
-                                JOptionPane.YES_NO_CANCEL_OPTION,
-                                JOptionPane.PLAIN_MESSAGE,
-                                null,
-                                Bottoni,
-                                null);
-                if (scelta == 0) {
+        }else{
+                AppDialog.DialogResult result;
+
+if (!Funzioni.isSCAM(NomeMoneta)) {
+    result = AppDialog.builder(this)
+            .windowTitle("Classificazione token")
+            .bodyTitle("Contrassegnare come SCAM?")
+            .showTitleInBody(true)
+            .theme()
+            .type(AppDialog.DialogType.WARNING)
+            .message("Vuoi identificare il token " + NomeMoneta + " come SCAM?")
+            .details("""
+                    Il token non ha address o rete valorizzati.
+
+                    Verranno contrassegnati come SCAM tutti i token appartenenti al wallet %s attualmente presenti in archivio.
+
+                    I token futuri dovranno essere riclassificati da questa stessa funzione.
+
+                    Nelle varie funzioni del programma sarà possibile nascondere questi asset e, quando mostrati, verranno identificati con un doppio asterisco (**) alla fine del nome.
+
+                    Per riportare un token allo stato normale, usa l'apposita funzione in "Giacenze a data".
+                    """.formatted(Wallet))
+            .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                    .role(AppDialog.ActionRole.SECONDARY)
+                    .build())
+            .action(AppDialog.DialogAction.builder("mark-wallet-scam", "Segna token come SCAM")
+                    .role(AppDialog.ActionRole.DANGER)
+                    .build())
+            .showDialog();
+
+} else {
+    result = AppDialog.builder(this)
+            .windowTitle("Classificazione token")
+            .bodyTitle("Rimuovere classificazione SCAM?")
+            .showTitleInBody(true)
+            .theme()
+            .type(AppDialog.DialogType.INFO)
+            .message("Vuoi fare in modo che il token " + NomeMoneta + " non venga più considerato SCAM?")
+            .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                    .role(AppDialog.ActionRole.SECONDARY)
+                    .build())
+            .action(AppDialog.DialogAction.builder("unmark-scam", "Rimuovi da lista token SCAM")
+                    .role(AppDialog.ActionRole.PRIMARY)
+                    .build())
+            .showDialog();
+}
+
+if (result != null && (result.isAction("mark-wallet-scam")||result.isAction("unmark-scam"))) {
+    // logica attuale di marcatura scam
+
                     //Adesso cambio il nome di tutti i token del Wallet Selezionato
                     boolean isSCAM = Funzioni.isSCAM(NomeMoneta);
                     NuovoNome = isSCAM ? NomeMoneta.replace(" **", "") : NomeMoneta + " **";

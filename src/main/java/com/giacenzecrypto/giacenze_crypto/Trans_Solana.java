@@ -45,8 +45,7 @@ public class Trans_Solana {
     }
 
     
-  private static JSONArray getAllTransactions(String walletAddress, int afterBlock) throws IOException {
-    HELIUS_API_KEY = DatabaseH2.Opzioni_Leggi("ApiKey_Helius");
+  private static JSONArray fetchTransactions(String walletAddress, int afterBlock, boolean useTokenFilter) throws IOException {
     JSONArray allTransactions = new JSONArray();
     String beforeSignature = null; // Per iterare le pagine delle transazioni
     boolean hasMore = true;
@@ -54,9 +53,13 @@ public class Trans_Solana {
     int Ntrans = 1;
 
     while (hasMore) {
-        System.out.println("Scaricamento Transazioni da "+Ntrans+" a "+(Ntrans+limit-1));
+        if(useTokenFilter) System.out.println("Scaricamento Transazioni TOKEN da "+Ntrans+" a "+(Ntrans+limit-1));
+        else System.out.println("Scaricamento Transazioni SOL da "+Ntrans+" a "+(Ntrans+limit-1));
         Ntrans=Ntrans+limit;
         String url = HELIUS_RPC_URL + walletAddress + "/transactions?api-key=" + HELIUS_API_KEY + "&limit=" + limit;
+        if (useTokenFilter) {
+            url += "&token-accounts=balanceChanged";
+        }
 
         // Se abbiamo una signature precedente, la usiamo per continuare indietro nel tempo
         if (beforeSignature != null) {
@@ -110,13 +113,42 @@ public class Trans_Solana {
 
         // Aggiunge un ritardo tra le richieste per evitare di sovraccaricare l'API
         try {
-            Thread.sleep(1000); // 500 ms di pausa tra una richiesta e l'altra
+            Thread.sleep(1000); // 1000 ms di pausa tra una richiesta e l'altra
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
 
-    return sortTransactionsByTimestamp(allTransactions);
+    return allTransactions;
+  }
+
+  private static JSONArray getAllTransactions(String walletAddress, int afterBlock) throws IOException {
+    HELIUS_API_KEY = DatabaseH2.Opzioni_Leggi("ApiKey_Helius");
+    
+    // Pass 1: Fetch transazioni generali (SOL, Swap native, ecc)
+    JSONArray txs1 = fetchTransactions(walletAddress, afterBlock, false);
+    
+    // Pass 2: Fetch transazioni SPL Token (che altrimenti rischierebbero di essere ignorate)
+    JSONArray txs2 = fetchTransactions(walletAddress, afterBlock, true);
+
+    // Merge evitando i duplicati (basandosi sulla signature)
+    Map<String, JSONObject> mergedMap = new HashMap<>();
+    
+    for (int i = 0; i < txs1.length(); i++) {
+        JSONObject tx = txs1.getJSONObject(i);
+        mergedMap.put(tx.getString("signature"), tx);
+    }
+    for (int i = 0; i < txs2.length(); i++) {
+        JSONObject tx = txs2.getJSONObject(i);
+        mergedMap.put(tx.getString("signature"), tx);
+    }
+
+    JSONArray mergedArray = new JSONArray();
+    for (JSONObject tx : mergedMap.values()) {
+        mergedArray.put(tx);
+    }
+
+    return sortTransactionsByTimestamp(mergedArray);
 }
 
 

@@ -12756,15 +12756,44 @@ if (result != null && (result.isAction("mark-wallet-scam")||result.isAction("unm
         
 //Se è un token che ha rete e Address lo salvo anche nel database affinchè anche nelle successive importazioni si ricordi della modifica        
         if (!Address.isBlank() && !Rete.isBlank()) {
-            String Testo;
-            String nomi[] = DatabaseH2.RinominaToken_Leggi(Address + "_" + Rete);
-            Testo = "<html>Indica il nuovo nome della Moneta<b>" + NomeMoneta + "</b> con Address <b>" + Address + "</b><br>";
-            if (nomi[0] != null && !nomi[0].equalsIgnoreCase(NomeMoneta)) {
-                Testo = Testo
-                        + "Il nome Originale da prima importazione era : <b>" + nomi[0] + "</b><br>";
-            }
-            Testo = Testo + "<b>NB :</b> I nomi dei token sono CaseSensitive quindi ad esempio BTC è diverso da Btc o btc<br><br></html>";
-            String m = JOptionPane.showInputDialog(this, Testo, NomeMoneta);
+            String[] nomi = DatabaseH2.RinominaToken_Leggi(Address + "_" + Rete);
+
+String message = "Indica il nuovo nome della moneta " + NomeMoneta + " con address " + Address + ".";
+String details;
+
+if (nomi[0] != null && !nomi[0].equalsIgnoreCase(NomeMoneta)) {
+    details = """
+            Nome originale alla prima importazione: %s
+
+            I nomi dei token sono case-sensitive, quindi ad esempio BTC è diverso da Btc o btc.
+            """.formatted(nomi[0]);
+} else {
+    details = """
+            I nomi dei token sono case-sensitive, quindi ad esempio BTC è diverso da Btc o btc.
+            """;
+}
+
+AppDialog.DialogResult result = AppDialog.builder(this)
+        .windowTitle("Rinomina token")
+        .bodyTitle("Modifica nome token")
+        .showTitleInBody(true)
+        .theme()
+        .type(AppDialog.DialogType.INFO)
+        .message(message)
+        .details(details)
+        .inputField("Nome attuale : "+NomeMoneta,NomeMoneta)
+        //.inputInitialValue(NomeMoneta)
+        .inputColumns(24)
+        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                .role(AppDialog.ActionRole.SECONDARY)
+                .build())
+        .action(AppDialog.DialogAction.builder("rename-token", "Salva nome")
+                .role(AppDialog.ActionRole.PRIMARY)
+                .build())
+        .showDialog();
+
+if (result != null && result.isAction("rename-token")) {
+    String m = result.getInputValue();
             if (m != null) {
                 m = m.trim();
                 m = Funzioni.NormalizzaNome(m);//Tolgo virgole e punti e virgola dal nome perchè possono creare problemi con il csv dei movimenti
@@ -12785,20 +12814,44 @@ if (result != null && (result.isAction("mark-wallet-scam")||result.isAction("unm
                     return NomeMoneta;
                 }
             }
+        }
         } 
 //Se è un token che non ha rete o address lo modifico solo nello storico perchè non posso fare altro        
         else {
             //Quello per wallet serve quando invece non ho i dati sopra e voglio operare solo sul wallet selezionato
             Set<String> IDMovimentiTokenWallet=Funzione_ElencoIDMovimentiTokeneWalletSelezionato(Wallet,"Tutti",NomeMoneta,Rete,Address);
-            String Testo;
+            String message = "Come vuoi rinominare il token " + NomeMoneta + " relativo al wallet " + Wallet + "?";
 
-                Testo = "<html>Come vuoi rinominare il Token <b>"+NomeMoneta+"</b> relativo al Wallet <b>"+Wallet+"</b>?<br><br>"
-                        + "<b>ATTENZIONE : Il token in oggetto non ha Address o Rete valorizzati, verranno quindi rinominati tutti i token "
-                        + "appartenenti al wallet "+Wallet+" attualmente in archivio.<br>"
-                        + "I movimenti futuri del token saranno da rinominare da questa stessa funzione.</b><br><br>"
-                        + "<b>NB :</b> I nomi dei token sono CaseSensitive quindi ad esempio BTC è diverso da Btc o btc<br><br>"
-                        + "</html>";
-                String NuovoNome = JOptionPane.showInputDialog(this, Testo, NomeMoneta);
+String details = """
+        Il token non ha address o rete valorizzati.
+
+        Verranno quindi rinominati tutti i token appartenenti al wallet %s attualmente presenti in archivio.
+
+        I movimenti futuri del token dovranno essere rinominati da questa stessa funzione.
+
+        I nomi dei token sono case-sensitive, quindi ad esempio BTC è diverso da Btc o btc.
+        """.formatted(Wallet);
+
+AppDialog.DialogResult result = AppDialog.builder(this)
+        .windowTitle("Rinomina token")
+        .bodyTitle("Rinomina multipla")
+        .showTitleInBody(true)
+        .theme()
+        .type(AppDialog.DialogType.WARNING)
+        .message(message)
+        .details(details)
+        .inputField("Nome attuale : "+NomeMoneta,NomeMoneta)
+        .inputColumns(24)
+        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                .role(AppDialog.ActionRole.SECONDARY)
+                .build())
+        .action(AppDialog.DialogAction.builder("rename-wallet-token", "Rinomina token")
+                .role(AppDialog.ActionRole.DANGER)
+                .build())
+        .showDialog();
+
+if (result != null && result.isAction("rename-wallet-token")) {
+    String NuovoNome = result.getInputValue();
                 if (NuovoNome != null) {
                 NuovoNome = NuovoNome.trim();
                 NuovoNome = Funzioni.NormalizzaNome(NuovoNome);//Tolgo virgole e punti e virgola dal nome perchè possono creare problemi con il csv dei movimenti
@@ -12825,7 +12878,7 @@ if (result != null && (result.isAction("mark-wallet-scam")||result.isAction("unm
                     return NomeMoneta;
                 }
             }
-                      
+}            
         }
         return NomeMoneta;
     }

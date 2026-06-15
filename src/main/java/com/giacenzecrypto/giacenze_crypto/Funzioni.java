@@ -454,6 +454,12 @@ public class Funzioni {
         }
     }
    
+
+
+
+
+
+
         
         
 public static String getParolaTra2Simboli(String parola, String simboloIniziale, String simboloFinale) {
@@ -468,7 +474,232 @@ public static String getParolaTra2Simboli(String parola, String simboloIniziale,
     return parola.substring(start, posFin).trim();
 }
         
-        public static boolean GUIModificaPrezzo (Component c,String ID){
+
+
+/**
+ * Permette di modificare il prezzo di una transazione usando AppDialog al posto di JOptionPane.
+ *
+ * <p>Il flusso è composto da queste fasi:</p>
+ * <ol>
+ *   <li>Se la data del movimento è disponibile, chiede se il prezzo verrà inserito in euro o in dollari.</li>
+ *   <li>Recupera e mostra un prezzo automatico di supporto calcolato dal programma.</li>
+ *   <li>Chiede il nuovo prezzo, valida che sia numerico e lo converte eventualmente in euro.</li>
+ *   <li>Se il valore finale è 0.00, richiede una conferma esplicita prima di salvare.</li>
+ * </ol>
+ *
+ * <p>In caso di annullamento o chiusura di uno dei dialog, il metodo restituisce {@code false}.</p>
+ *
+ * @param c componente parent del dialog
+ * @param ID identificativo del movimento da modificare
+ * @return {@code true} se il prezzo viene modificato, {@code false} se l'operazione viene annullata
+ *         o se non si arriva a un valore valido
+ */
+public static boolean GUIModificaPrezzo(Component c, String ID) {
+
+    // Recupero la transazione da modificare.
+    String[] trans = Principale.MappaCryptoWallet.get(ID);
+
+    // Prezzo attualmente memorizzato sul movimento.
+    String prezzo = trans[15];
+
+    // Data del movimento, usata sia per la UI sia per eventuali conversioni USD -> EUR.
+    long dataPrezzo = FunzioniDate.ConvertiDatainLongMinuto(trans[1]);
+
+    // =========================
+    // PARTE 1: valuta di input
+    // =========================
+    String monRiferimento = "EURO";
+
+    if (dataPrezzo != 0) {
+        AppDialog.DialogResult valutaResult = AppDialog.builder(SwingUtilities.getWindowAncestor(c))
+                .windowTitle("Moneta di riferimento")
+                .bodyTitle("Valuta del prezzo")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message("Indica se vuoi inserire il prezzo in EURO o in DOLLARI.")
+                .details("""
+                        Se scegli dollari, il prezzo verrà poi convertito in euro
+                        usando il tasso di cambio della giornata di Banca d'Italia.
+                        """)
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("euro", "EURO")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("dollari", "DOLLARI")
+                        .role(AppDialog.ActionRole.NEUTRAL)
+                        .build())
+                .showDialog();
+
+        if (valutaResult == null) {
+            return false;
+        }
+
+        String actionId = valutaResult.getActionId();
+        if (actionId == null || "cancel".equals(actionId)) {
+            return false;
+        }
+
+        if ("dollari".equals(actionId)) {
+            monRiferimento = "DOLLARI";
+
+            // Se il prezzo è già valorizzato, lo converto in dollari solo per
+            // mostrarlo in modo coerente nel campo di input.
+            if (prezzo != null) {
+                String giorno = FunzioniDate.ConvertiDatadaLong(dataPrezzo);
+                String val1Dollaro = Prezzi.CambioUSDEUR("1", giorno);
+
+                prezzo = new BigDecimal(prezzo)
+                        .divide(new BigDecimal(val1Dollaro), 2, RoundingMode.HALF_UP)
+                        .toPlainString();
+            }
+        }
+    }
+
+    // ==============================================
+    // PARTE 2: recupero del prezzo automatico
+    // ==============================================
+    c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    String prezzoAuto = Prezzi.DammiPrezzoDaTransazione(trans, 2);
+    if (prezzoAuto == null) {
+        prezzoAuto = "0.00";
+    }
+    c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+
+    String messaggioInput = "Indica il prezzo in " + monRiferimento + " relativo alla transazione del " + trans[1] + ".";
+    String dettagliInput = """
+            Movimentazione: %s
+
+            Il prezzo recuperato in automatico dal programma è pari a €%s.
+
+            NB: il prezzo recuperato automaticamente potrebbe non coincidere con quello del CSV memorizzato nel programma.
+            """.formatted(trans[6], prezzoAuto);
+
+    // ======================================================
+    // PARTE 3: input, validazione e conferma valore zero
+    // ======================================================
+    while (true) {
+        AppDialog.DialogResult inputResult = AppDialog.builder(SwingUtilities.getWindowAncestor(c))
+                .windowTitle("Modifica prezzo")
+                .bodyTitle("Prezzo della transazione")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message(messaggioInput)
+                .details(dettagliInput)
+                .inputField("Prezzo attuale in Euro : "+prezzo,prezzo)
+                .inputColumns(18)
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("confirm", "Conferma")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .showDialog();
+
+        if (inputResult == null) {
+            return false;
+        }
+
+        String actionId = inputResult.getActionId();
+        if (actionId == null || "cancel".equals(actionId)) {
+            return false;
+        }
+
+        String prezz = inputResult.getInputValue();
+        if (prezz == null) {
+            return false;
+        }
+
+        // Uniformo il formato decimale.
+        prezz = prezz.replace(",", ".").trim();
+
+        // Se il valore non è numerico, mostro l'errore e ripropongo il dialog.
+        if (!Principale.Funzioni_isNumeric(prezz, false)) {
+            AppDialog.builder(SwingUtilities.getWindowAncestor(c))
+                    .windowTitle("Valore non valido")
+                    .showTitleInBody(false)
+                    .theme()
+                    .type(AppDialog.DialogType.WARNING)
+                    .message("Attenzione, " + prezz + " non è un numero valido.")
+                    .primaryAction("ok", "OK")
+                    .showDialog();
+            continue;
+        }
+
+        // Se l'utente ha inserito il valore in dollari, lo converto in euro.
+        if (!"EURO".equals(monRiferimento)) {
+            String giorno = FunzioniDate.ConvertiDatadaLong(dataPrezzo);
+            prezz = Prezzi.CambioUSDEUR(prezz, giorno);
+        }
+
+        // Normalizzo il prezzo finale a due decimali.
+        prezz = new BigDecimal(prezz)
+                .setScale(2, RoundingMode.HALF_UP).abs()
+                .toPlainString();
+
+        // Se il prezzo finale è zero, richiedo conferma esplicita.
+        if ("0.00".equals(prezz)) {
+            AppDialog.DialogResult zeroResult = AppDialog.builder(SwingUtilities.getWindowAncestor(c))
+                    .windowTitle("Conferma prezzo")
+                    .bodyTitle("Prezzo a zero")
+                    .showTitleInBody(true)
+                    .theme()
+                    .type(AppDialog.DialogType.WARNING)
+                    .message("Attenzione: il prezzo del movimento è valorizzato a 0.00.")
+                    .details("Confermi questo valore? Il movimento verrà considerato come valorizzato a zero.")
+                    .action(AppDialog.DialogAction.builder("no", "No")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("yes", "Sì")
+                            .role(AppDialog.ActionRole.DANGER)
+                            .build())
+                    .showDialog();
+
+            if (zeroResult == null) {
+                AppDialog.builder(SwingUtilities.getWindowAncestor(c))
+                        .windowTitle("Operazione annullata")
+                        .showTitleInBody(false)
+                        .theme()
+                        .type(AppDialog.DialogType.INFO)
+                        .message("Operazione annullata.")
+                        .primaryAction("ok", "OK")
+                        .showDialog();
+                return false;
+            }
+
+            String zeroActionId = zeroResult.getActionId();
+            if (zeroActionId == null || "no".equals(zeroActionId)) {
+                AppDialog.builder(SwingUtilities.getWindowAncestor(c))
+                        .windowTitle("Operazione annullata")
+                        .showTitleInBody(false)
+                        .theme()
+                        .type(AppDialog.DialogType.INFO)
+                        .message("Operazione annullata.")
+                        .primaryAction("ok", "OK")
+                        .showDialog();
+                return false;
+            }
+
+            if ("yes".equals(zeroActionId)) {
+                trans[15] = prezz;
+                trans[32] = "SI";
+                return true;
+            }
+
+            return false;
+        }
+
+        // Caso normale: salvo il prezzo e marco il movimento come modificato.
+        trans[15] = prezz;
+        trans[32] = "SI";
+        return true;
+    }
+}
+
+        public static boolean ZZZ_GUIModificaPrezzo (Component c,String ID){
             
             //PARTE 1 -> Se conosco la data del movimento chiedo se voglio inserire il prezzo in dollari o in Euro
             //PARTE 2 -> Se specificato moneta e qta chiedo se voglio inserire il prezzo unitario o quello riferito al numero di token
@@ -585,7 +816,197 @@ public static String getParolaTra2Simboli(String parola, String simboloIniziale,
         }
         
         
-                public static String GUIModificaPrezzo (Component c,Moneta MU,Moneta ME,String Prezzo,long DataPrezzo,String Rete){
+        
+        
+        /**
+ * Mostra una sequenza di dialog per modificare o inserire un prezzo associato
+ * a una coppia di monete, utilizzando AppDialog al posto di JOptionPane.
+ *
+ * <p>Il flusso è composto da queste fasi:</p>
+ * <ol>
+ *   <li>Se la data del prezzo è disponibile, chiede se l'importo verrà inserito in euro o in dollari.</li>
+ *   <li>Recupera un prezzo automatico di supporto sulla base delle monete e della data.</li>
+ *   <li>Chiede il prezzo, valida che sia numerico e restituisce il valore finale in euro.</li>
+ * </ol>
+ *
+ * <p>Se l'utente annulla o chiude uno dei dialog, il metodo restituisce {@code null}.</p>
+ *
+ * @param c componente parent del dialog
+ * @param MU moneta di uscita o principale, può essere null
+ * @param ME moneta di entrata o secondaria, può essere null
+ * @param Prezzo prezzo iniziale da proporre nel campo input
+ * @param DataPrezzo data del prezzo in formato long
+ * @param Rete rete di riferimento usata per il recupero automatico del prezzo
+ * @return il prezzo finale in euro come stringa, oppure {@code null} se l'operazione viene annullata
+ */
+public static String GUIModificaPrezzo(Component c, Moneta MU, Moneta ME, String Prezzo, long DataPrezzo, String Rete) {
+
+    // Converto la data in formato testuale per mostrarla nel dialog.
+    String dataString = FunzioniDate.ConvertiDatadaLongAlSecondo(DataPrezzo);
+
+    // =========================
+    // PARTE 1: valuta di input
+    // =========================
+    String monRiferimento = "EURO";
+
+    if (DataPrezzo != 0) {
+        AppDialog.DialogResult valutaResult = AppDialog.builder(SwingUtilities.getWindowAncestor(c))
+                .windowTitle("Moneta di riferimento")
+                .bodyTitle("Valuta del prezzo")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message("Indica se vuoi inserire il prezzo in EURO o in DOLLARI.")
+                .details("""
+                        Se scegli dollari, il prezzo verrà poi convertito in euro
+                        usando il tasso di cambio della giornata di Banca d'Italia.
+                        """)
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("euro", "EURO")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("dollari", "DOLLARI")
+                        .role(AppDialog.ActionRole.NEUTRAL)
+                        .build())
+                .showDialog();
+
+        if (valutaResult == null) {
+            return null;
+        }
+
+        String actionId = valutaResult.getActionId();
+        if (actionId == null || "cancel".equals(actionId)) {
+            return null;
+        }
+
+        if ("dollari".equals(actionId)) {
+            monRiferimento = "DOLLARI";
+
+            // Se ho già un prezzo iniziale, lo converto in dollari solo per
+            // mostrarlo correttamente nel campo input successivo.
+            if (Prezzo != null) {
+                String giorno = FunzioniDate.ConvertiDatadaLong(DataPrezzo);
+                String val1Dollaro = Prezzi.CambioUSDEUR("1", giorno);
+
+                Prezzo = new BigDecimal(Prezzo)
+                        .divide(new BigDecimal(val1Dollaro), 2, RoundingMode.HALF_UP)
+                        .toPlainString();
+            }
+        }
+    }
+
+    // ==============================================
+    // PARTE 2: recupero del prezzo automatico
+    // ==============================================
+    c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+    Prezzi.InfoPrezzo IPT = Prezzi.DammiPrezzoInfoTransazione(ME, MU, DataPrezzo, Rete, "");
+
+    if (ME == null) {
+        ME = new Moneta();
+        ME.Moneta = "";
+    }
+
+    if (MU == null) {
+        MU = new Moneta();
+        MU.Moneta = "";
+    }
+
+    BigDecimal bgPrezzoTot = new BigDecimal("0.00");
+    if (IPT != null) {
+        bgPrezzoTot = IPT.prezzoQta;
+    }
+
+    String prezzoAuto = "0.00";
+    if (bgPrezzoTot != null) {
+        prezzoAuto = bgPrezzoTot.toPlainString();
+    }
+    if (prezzoAuto == null) {
+        prezzoAuto = "0.00";
+    }
+
+    c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+
+    // ==========================
+    // PARTE 3: inserimento input
+    // ==========================
+    String messaggioInput = "Indica il prezzo in " + monRiferimento + " relativo alla transazione del " + dataString + ".";
+    String dettagliInput = """
+            Movimentazioni coinvolte: %s %s
+
+            Il prezzo recuperato in automatico dal programma è pari a €%s.
+
+            NB: il prezzo recuperato automaticamente potrebbe non coincidere con quello del CSV memorizzato nel programma.
+            """.formatted(MU.Moneta, ME.Moneta, prezzoAuto);
+
+    // Ripeto il dialog finché l'utente inserisce un numero valido oppure annulla.
+    while (true) {
+        AppDialog.DialogResult inputResult = AppDialog.builder(SwingUtilities.getWindowAncestor(c))
+                .windowTitle("Modifica prezzo")
+                .bodyTitle("Prezzo della transazione")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message(messaggioInput)
+                .details(dettagliInput)
+                .inputField("Prezzo attuale in Euro : "+Prezzo,Prezzo)
+                .inputColumns(18)
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("confirm", "Conferma")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .showDialog();
+
+        if (inputResult == null) {
+            return null;
+        }
+
+        String actionId = inputResult.getActionId();
+        if (actionId == null || "cancel".equals(actionId)) {
+            return null;
+        }
+
+        String prezz = inputResult.getInputValue();
+        if (prezz == null) {
+            return null;
+        }
+
+        // Uniformo il separatore decimale.
+        prezz = prezz.replace(",", ".").trim();
+
+        // Se il valore non è numerico, mostro l'errore e ripropongo l'input.
+        if (!Principale.Funzioni_isNumeric(prezz, false)) {
+            AppDialog.builder(SwingUtilities.getWindowAncestor(c))
+                    .windowTitle("Valore non valido")
+                    .showTitleInBody(false)
+                    .theme()
+                    .type(AppDialog.DialogType.WARNING)
+                    .message("Attenzione, " + prezz + " non è un numero valido.")
+                    .primaryAction("ok", "OK")
+                    .showDialog();
+            continue;
+        }
+
+        // Se il prezzo è stato inserito in dollari, lo converto in euro.
+        if (!"EURO".equals(monRiferimento)) {
+            String giorno = FunzioniDate.ConvertiDatadaLong(DataPrezzo);
+            prezz = Prezzi.CambioUSDEUR(prezz, giorno);
+        }
+
+        // Normalizzo il valore finale a due decimali.
+        prezz = new BigDecimal(prezz)
+                .setScale(2, RoundingMode.HALF_UP).abs()
+                .toPlainString();
+
+        return prezz;
+    }
+}
+        
+                public static String ZZZ_GUIModificaPrezzo (Component c,Moneta MU,Moneta ME,String Prezzo,long DataPrezzo,String Rete){
             
             //PARTE 1 -> Se conosco la data del movimento chiedo se voglio inserire il prezzo in dollari o in Euro
             //PARTE 2 -> Se specificato moneta e qta chiedo se voglio inserire il prezzo unitario o quello riferito al numero di token
@@ -730,9 +1151,211 @@ public static String getParolaTra2Simboli(String parola, String simboloIniziale,
         return false;
     }
         
+    /**
+ * Mostra una sequenza di dialog per ottenere un prezzo da associare a un movimento,
+ * utilizzando AppDialog al posto di JOptionPane.
+ *
+ * <p>Il flusso è composto da tre fasi:</p>
+ * <ol>
+ *   <li>Se la data del prezzo è disponibile, chiede se l'importo verrà inserito in euro o in dollari.</li>
+ *   <li>Se sono disponibili nome moneta e quantità diversa da 1, chiede se il prezzo inserito
+ *       sarà totale oppure unitario.</li>
+ *   <li>Chiede l'importo, valida che sia numerico e restituisce sempre il prezzo finale in euro.
+ *       Se il prezzo è unitario, calcola il totale moltiplicando per la quantità.</li>
+ * </ol>
+ *
+ * <p>Se l'utente annulla in uno qualsiasi dei passaggi, il metodo restituisce {@code null}.</p>
+ *
+ * @param c componente parent del dialog
+ * @param NomeMon nome della moneta/token, può essere null
+ * @param DataPrezzo data del prezzo in formato long; se vale 0 non viene chiesta la valuta di riferimento
+ * @param Qta quantità del token, può essere null
+ * @param Prezzo prezzo iniziale da proporre nel campo input; se null viene usato "0"
+ * @return il prezzo finale in euro come stringa, oppure {@code null} se l'operazione viene annullata
+ */
+public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo, String Qta, String Prezzo) {
+
+    // Se il prezzo iniziale non è valorizzato, propongo 0 come default.
+    if (Prezzo == null) {
+        Prezzo = "0";
+    }
+
+    // =========================
+    // PARTE 1: valuta di input
+    // =========================
+    String monRiferimento = "EURO";
+
+    if (DataPrezzo != 0) {
+        AppDialog.DialogResult valutaResult = AppDialog.builder(SwingUtilities.getWindowAncestor(c))
+                .windowTitle("Moneta di riferimento")
+                .bodyTitle("Valuta del prezzo")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message("Indica se vuoi inserire il prezzo in EURO o in DOLLARI.")
+                .details("""
+                        Se scegli dollari, il prezzo verrà poi convertito in euro
+                        usando il tasso di cambio della giornata di Banca d'Italia.
+                        """)
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("euro", "EURO")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("dollari", "DOLLARI")
+                        .role(AppDialog.ActionRole.NEUTRAL)
+                        .build())
+                .showDialog();
+
+        if (valutaResult == null) {
+            return null;
+        }
+
+        String actionId = valutaResult.getActionId();
+        if (actionId == null || "cancel".equals(actionId)) {
+            return null;
+        }
+
+        if ("dollari".equals(actionId)) {
+            monRiferimento = "DOLLARI";
+
+            // Converto il prezzo iniziale da euro a dollari solo per mostrarlo
+            // in modo coerente nel campo di input successivo.
+            String giorno = FunzioniDate.ConvertiDatadaLong(DataPrezzo);
+            String val1Dollaro = Prezzi.CambioUSDEUR("1", giorno);
+
+            Prezzo = new BigDecimal(Prezzo)
+                    .divide(new BigDecimal(val1Dollaro), 2, RoundingMode.HALF_UP)
+                    .toPlainString();
+        }
+    }
+
+    // ====================================
+    // PARTE 2: prezzo totale o unitario
+    // ====================================
+    boolean prezzoUnitario = false;
+
+    if (NomeMon != null && Qta != null && !Qta.equals("1")) {
+        AppDialog.DialogResult tipoPrezzoResult = AppDialog.builder(SwingUtilities.getWindowAncestor(c))
+                .windowTitle("Prezzo unitario o totale")
+                .bodyTitle("Modalità di inserimento")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message("Per il token " + NomeMon + " vuoi indicare il prezzo totale o quello unitario?")
+                .details("Se scegli il prezzo unitario, il totale verrà poi calcolato automaticamente dal programma.")
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("totale", "TOTALE")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("unitario", "UNITARIO")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .showDialog();
+
+        if (tipoPrezzoResult == null) {
+            return null;
+        }
+
+        String actionId = tipoPrezzoResult.getActionId();
+        if (actionId == null || "cancel".equals(actionId)) {
+            return null;
+        }
+
+        if ("unitario".equals(actionId)) {
+            prezzoUnitario = true;
+        }
+    }
+
+    // ==========================
+    // PARTE 3: inserimento input
+    // ==========================
+    String messaggioInput;
+    String dettagliInput = null;
+
+    if (NomeMon != null && Qta != null) {
+        if (prezzoUnitario) {
+            messaggioInput = "Indica il prezzo unitario in " + monRiferimento + " relativo al token " + NomeMon + ".";
+            dettagliInput = "Il prezzo totale verrà poi calcolato automaticamente dal programma.";
+        } else {
+            messaggioInput = "Indica il prezzo in " + monRiferimento + " relativo a " + Qta + " " + NomeMon + ".";
+        }
+    } else {
+        messaggioInput = "Indica il prezzo in " + monRiferimento + ".";
+    }
+
+    // Ripeto il dialog finché l'utente inserisce un numero valido oppure annulla.
+    while (true) {
+        AppDialog.DialogResult inputResult = AppDialog.builder(SwingUtilities.getWindowAncestor(c))
+                .windowTitle("Inserimento prezzo")
+                .bodyTitle("Valore del movimento")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message(messaggioInput)
+                .details(dettagliInput)
+                .inputField("Prezzo totale attuale in Euro : "+Prezzo,"")
+                .inputColumns(18)
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("confirm", "Conferma")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .showDialog();
+
+        if (inputResult == null) {
+            return null;
+        }
+
+        String actionId = inputResult.getActionId();
+        if (actionId == null || "cancel".equals(actionId)) {
+            return null;
+        }
+
+        String prezz = inputResult.getInputValue();
+        if (prezz == null) {
+            return null;
+        }
+
+        // Uniformo i decimali sostituendo la virgola con il punto.
+        prezz = prezz.replace(",", ".").trim();
+
+        // Se non è un numero valido, mostro un messaggio e ripeto il dialog.
+        if (!Principale.Funzioni_isNumeric(prezz, false)) {
+            AppDialog.builder(SwingUtilities.getWindowAncestor(c))
+                    .windowTitle("Valore non valido")
+                    .showTitleInBody(false)
+                    .theme()
+                    .type(AppDialog.DialogType.WARNING)
+                    .message("Attenzione, " + prezz + " non è un numero valido.")
+                    .primaryAction("ok", "OK")
+                    .showDialog();
+            continue;
+        }
+
+        // Se l'importo è stato inserito in dollari, lo converto in euro.
+        if (!"EURO".equals(monRiferimento)) {
+            String giorno = FunzioniDate.ConvertiDatadaLong(DataPrezzo);
+            prezz = Prezzi.CambioUSDEUR(prezz, giorno);
+        }
+
+        // Se il prezzo era unitario, lo trasformo in totale moltiplicando per la quantità.
+        if (prezzoUnitario) {
+            prezz = new BigDecimal(prezz)
+                    .multiply(new BigDecimal(Qta))
+                    .setScale(2, RoundingMode.HALF_UP).abs()
+                    .toPlainString();
+        }
+
+        return prezz;
+    }
+}    
         
-        
-        public static String GUIDammiPrezzo (Component c,String NomeMon,long DataPrezzo,String Qta,String Prezzo){
+        public static String ZZZGUIDammiPrezzo (Component c,String NomeMon,long DataPrezzo,String Qta,String Prezzo){
             
             //PARTE 1 -> Se conosco la data del movimento chiedo se voglio inserire il prezzo in dollari o in Euro
             //PARTE 2 -> Se specificato moneta e qta chiedo se voglio inserire il prezzo unitario o quello riferito al numero di token

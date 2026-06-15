@@ -333,7 +333,7 @@
                                       <Component id="TransazioniCrypto_Bottone_AzzeraFiltri" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="82" max="32767" attributes="0"/>
+                              <EmptySpace pref="92" max="32767" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="TransazioniCrypto_RicalcolaPlusvalenze_Label" pref="274" max="32767" attributes="0"/>
                                   <Component id="TransazioniCrypto_RicalcolaPlusvalenze_Bottone" max="32767" attributes="0"/>
@@ -352,7 +352,7 @@
                               <Component id="TransazioniCrypto_Bottone_InserisciWallet" min="-2" pref="150" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="TransazioniCrypto_Bottone_ExchangeAPI" min="-2" pref="150" max="-2" attributes="0"/>
-                              <EmptySpace pref="195" max="32767" attributes="0"/>
+                              <EmptySpace pref="245" max="32767" attributes="0"/>
                               <Component id="TransazioniCrypto_Label_MovimentiNonSalvati" min="-2" pref="558" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="TransazioniCrypto_Bottone_Salva" min="-2" pref="119" max="-2" attributes="0"/>
@@ -1912,7 +1912,7 @@
                           <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="SaldiNegativi_LabelSpiegazioni" pref="1283" max="32767" attributes="0"/>
+                                  <Component id="SaldiNegativi_LabelSpiegazioni" pref="1313" max="32767" attributes="0"/>
                                   <Component id="jScrollPane15" alignment="0" max="32767" attributes="0"/>
                                   <Component id="SaldiNegativi_ScrollPaneDettaglioMovimenti" alignment="0" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
@@ -2195,7 +2195,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane3" pref="1283" max="32767" attributes="0"/>
+                              <Component id="jScrollPane3" pref="1313" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -2304,7 +2304,7 @@
                                       <Component id="GiacenzeaData_Wallet_Label" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_Wallet_ComboBox" min="-2" pref="428" max="-2" attributes="0"/>
-                                      <EmptySpace pref="278" max="32767" attributes="0"/>
+                                      <EmptySpace pref="304" max="32767" attributes="0"/>
                                       <Component id="GiacenzeaData_Wallet2_Label" min="-2" pref="69" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_Wallet2_ComboBox" min="-2" pref="454" max="-2" attributes="0"/>
@@ -2922,7 +2922,7 @@
                               <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="RW_Label_SegnalaErrori" min="-2" pref="750" max="-2" attributes="0"/>
-                              <EmptySpace pref="251" max="32767" attributes="0"/>
+                              <EmptySpace pref="258" max="32767" attributes="0"/>
                               <Component id="RW_CheckBox_VediSoloErrori" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
@@ -3518,7 +3518,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jScrollPane11" max="32767" attributes="0"/>
-                                  <Component id="jTabbedPane1" alignment="0" pref="1284" max="32767" attributes="0"/>
+                                  <Component id="jTabbedPane1" alignment="0" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                           <Component id="RT_Bottone_Documentazione" max="32767" attributes="0"/>
@@ -3666,7 +3666,7 @@
                                               <EmptySpace max="32767" attributes="0"/>
                                           </Group>
                                           <Group type="102" attributes="0">
-                                              <Component id="jScrollPane13" pref="1015" max="32767" attributes="0"/>
+                                              <Component id="jScrollPane13" pref="1045" max="32767" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
@@ -4022,12 +4022,12 @@
                           </Group>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="CDC_CardWallet_Label_Tabella1" pref="625" max="32767" attributes="0"/>
+                                  <Component id="CDC_CardWallet_Label_Tabella1" pref="651" max="32767" attributes="0"/>
                                   <Component id="CDC_CardWallet_Tabella1Scroll" pref="0" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="CDC_CardWallet_Tabella2Scroll" pref="857" max="32767" attributes="0"/>
+                                  <Component id="CDC_CardWallet_Tabella2Scroll" pref="882" max="32767" attributes="0"/>
                                   <Component id="CDC_CardWallet_Label_Tabella2" max="32767" attributes="0"/>
                               </Group>
                           </Group>
@@ -4937,7 +4937,10 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="Opzioni_TabbedPane" alignment="0" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="Opzioni_TabbedPane" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
@@ -4973,7 +4976,7 @@
                           <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="Opzioni_GruppoWallet_ScrollTabella" pref="1338" max="32767" attributes="0"/>
+                                  <Component id="Opzioni_GruppoWallet_ScrollTabella" pref="1372" max="32767" attributes="0"/>
                                   <Component id="jScrollPane1" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="Opzioni_GruppoWallet_Bottone_Rinomina" min="-2" pref="168" max="-2" attributes="0"/>
@@ -5107,28 +5110,37 @@
                           <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jScrollPane5" alignment="0" pref="1338" max="32767" attributes="0"/>
-                                  <Component id="Opzioni_Emoney_ScrollPane" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane5" pref="0" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="Opzioni_Emoney_Bottone_Aggiungi" min="-2" pref="150" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="Opzioni_Emoney_Bottone_Rimuovi" min="-2" pref="150" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="Opzioni_Emoney_Bottone_Precompila" min="-2" pref="248" max="-2" attributes="0"/>
+                                      <EmptySpace min="0" pref="622" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <Component id="Opzioni_Emoney_Bottone_Aggiungi" min="-2" pref="201" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="Opzioni_Emoney_Bottone_Rimuovi" min="-2" pref="201" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="Opzioni_Emoney_ScrollPane" min="-2" pref="490" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="jScrollPane5" min="-2" pref="123" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_Emoney_ScrollPane" pref="679" max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="jScrollPane5" pref="805" max="32767" attributes="0"/>
+                                  <Component id="Opzioni_Emoney_ScrollPane" max="32767" attributes="0"/>
+                              </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="Opzioni_Emoney_Bottone_Aggiungi" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="Opzioni_Emoney_Bottone_Rimuovi" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_Emoney_Bottone_Aggiungi" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_Emoney_Bottone_Rimuovi" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_Emoney_Bottone_Precompila" alignment="1" min="-2" pref="50" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
@@ -5191,10 +5203,11 @@
                         <Component class="javax.swing.JTextPane" name="jTextPane1">
                           <Properties>
                             <Property name="editable" type="boolean" value="false"/>
+                            <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
                             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                               <Font name="Segoe UI" size="14" style="0"/>
                             </Property>
-                            <Property name="text" type="java.lang.String" value="Nella Tabella sottostante aggiungere il nome di tutti i token che si vogliono classificare come E-Money Token (es. USDC).&#xa;Lo scambio tra Crypto ed E-Money Token verr&#xe0; considerato fiscalmente rilevante e generer&#xe0; quindi un eventuale plusvalenza o minusvalenza.&#xa;&#xa;Per casistiche particolari, ad esempio un  token che diventa E-Money solo da un certa data, &#xe8; possibile indicare quest&apos;ultima direttamente nella tabella.&#xa;In questi casi gli scambi tra Crypto e queste E-Money saranno fiscalmente rilevanti solo alla data indicata in poi."/>
+                            <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;&lt;head&gt;&#xa;&lt;style&gt;&#xa;  body {&#xa;    font-family: &apos;Segoe UI&apos;, Arial, sans-serif;&#xa;    font-size: 13px;&#xa;    margin: 12px 16px;&#xa;    line-height: 1.6;&#xa;  }&#xa;  h2 {&#xa;    font-size: 15px;&#xa;    font-weight: bold;&#xa;    margin-bottom: 6px;&#xa;    margin-top: 0;&#xa;    padding-bottom: 4px;&#xa;  }&#xa;  p {&#xa;    margin: 6px 0 10px 0;&#xa;  }&#xa;  ul {&#xa;    margin: 6px 0 10px 18px;&#xa;    padding: 0;&#xa;  }&#xa;  li {&#xa;    margin-bottom: 5px;&#xa;  }&#xa;  b {&#xa;    font-weight: bold;&#xa;  }&#xa;  .mono {&#xa;    font-family: monospace;&#xa;    font-size: 12px;&#xa;    font-weight: bold;&#xa;  }&#xa;&lt;/style&gt;&#xa;&lt;/head&gt;&#xa;&lt;body&gt;&#xa;&#xa;&lt;h2&gt;&amp;#127968; Classificazione E-Money Token&lt;/h2&gt;&#xa;&#xa;&lt;p&gt;&#xa;  Nella tabella sottostante aggiungere il nome di tutti i token che si desidera&#xa;  classificare come &lt;b&gt;E-Money Token&lt;/b&gt; (es. &lt;span class=&quot;mono&quot;&gt;USDC&lt;/span&gt;).&#xa;&lt;/p&gt;&#xa;&lt;p&gt;&#xa;  Lo scambio tra &lt;b&gt;Crypto&lt;/b&gt; ed &lt;b&gt;E-Money Token&lt;/b&gt; verr&amp;agrave; considerato&#xa;  &lt;b&gt;fiscalmente rilevante&lt;/b&gt; e potr&amp;agrave; generare una eventuale&#xa;  &lt;b&gt;plusvalenza&lt;/b&gt; o &lt;b&gt;minusvalenza&lt;/b&gt;.&#xa;&lt;/p&gt;&#xa;&#xa;&lt;p&gt;&#xa;  Per &lt;b&gt;casistiche particolari&lt;/b&gt; &amp;mdash; ad esempio un token che diventa E-Money&#xa;  solo da una certa data &amp;mdash; &amp;egrave; possibile indicare quest&amp;#39;ultima&#xa;  direttamente nella tabella.&lt;br&gt;&#xa;  In questi casi, gli scambi saranno fiscalmente rilevanti &lt;b&gt;solo dalla data indicata in poi&lt;/b&gt;.&#xa;&lt;/p&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&#xa;&lt;hr/&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&#xa;&lt;h2&gt;&amp;#9881; Precompilazione rapida&lt;/h2&gt;&#xa;&#xa;&lt;p&gt;Puoi precompilare la tabella, attraverso l&apos;apposito pulsante, scegliendo una delle seguenti opzioni:&lt;/p&gt;&#xa;&#xa;&lt;ul&gt;&#xa;  &lt;li&gt;&amp;#9989; &lt;b&gt;Tutte le stablecoin MiCA Compliant&lt;/b&gt; &amp;mdash; es. &lt;span class=&quot;mono&quot;&gt;USDC&lt;/span&gt;&lt;/li&gt;&#xa;  &lt;li&gt;&amp;#9888; &lt;b&gt;MiCA Compliant + quelle dubbie&lt;/b&gt; &amp;mdash; incluse es. &lt;span class=&quot;mono&quot;&gt;USDT&lt;/span&gt;&lt;/li&gt;&#xa;  &lt;li&gt;&amp;#128308; &lt;b&gt;Tutte le stablecoin&lt;/b&gt; &amp;mdash; comprese algoritmiche o Crypto-Collateralizzate come &lt;span class=&quot;mono&quot;&gt;DAI&lt;/span&gt;&lt;/li&gt;&#xa;&lt;/ul&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&lt;hr/&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&lt;p&gt;&#xa;  &lt;b&gt;&amp;#9888; Attenzione:&lt;/b&gt;&#xa;  La lista precompilata delle stablecoin &lt;b&gt;potrebbe non essere esaustiva&lt;/b&gt;&#xa;  o presentare &lt;b&gt;errori nella classificazione&lt;/b&gt;. Verificare sempre la correttezza&#xa;  delle informazioni prima dell&amp;#39;utilizzo.&#xa;&lt;/p&gt;&#xa;&#xa;&lt;/body&gt;&#xa;&lt;/html&gt;&#xa;"/>
                           </Properties>
                         </Component>
                       </SubComponents>
@@ -5204,7 +5217,7 @@
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/Images/24_Cestino.png"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="Rimuovi Token"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;h2&gt;Rimuovi Token&lt;/h2&gt;&lt;/html&gt;"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Emoney_Bottone_RimuoviActionPerformed"/>
@@ -5215,10 +5228,18 @@
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/Images/24_Nuovo.png"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="Aggiungi Token"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;h2&gt;Aggiungi Token&lt;/h2&gt;&lt;/html&gt;"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Emoney_Bottone_AggiungiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="Opzioni_Emoney_Bottone_Precompila">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;h2&gt;&amp;#9881; Precompilazione rapida&lt;/h2&gt;&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Emoney_Bottone_PrecompilaActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>
@@ -5328,7 +5349,7 @@
                           <Group type="102" attributes="0">
                               <EmptySpace min="18" pref="18" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jScrollPane10" pref="1321" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane10" pref="1354" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Component id="OpzioniRewards_JCB_PDD_CashBack" alignment="0" min="-2" pref="600" max="-2" attributes="0"/>
@@ -5979,7 +6000,7 @@
                                   <Component id="Opzioni_Varie_Bottone_Disclaimer" max="32767" attributes="0"/>
                                   <Component id="Opzioni_Varie_RicalcolaPrezzi" max="32767" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="1149" max="32767" attributes="0"/>
+                              <EmptySpace pref="1143" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -6098,7 +6119,7 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="CDC_Opzioni_Bottone_CancellaCardWallet" pref="1320" max="32767" attributes="0"/>
+                                      <Component id="CDC_Opzioni_Bottone_CancellaCardWallet" pref="1354" max="32767" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                   </Group>
                               </Group>
@@ -6142,8 +6163,8 @@
                                   <Group type="102" attributes="0">
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="CDC_Opzioni_Bottone_CancellaFiatWallet" pref="1320" max="32767" attributes="0"/>
-                                          <Component id="CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet" alignment="0" pref="1320" max="32767" attributes="0"/>
+                                          <Component id="CDC_Opzioni_Bottone_CancellaFiatWallet" pref="1354" max="32767" attributes="0"/>
+                                          <Component id="CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet" alignment="0" pref="1354" max="32767" attributes="0"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                   </Group>
@@ -6207,7 +6228,7 @@
                                               <EmptySpace max="-2" attributes="0"/>
                                               <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="Opzioni_Combobox_CancellaTransazioniCryptoXwallet" pref="994" max="32767" attributes="0"/>
+                                              <Component id="Opzioni_Combobox_CancellaTransazioniCryptoXwallet" pref="1030" max="32767" attributes="0"/>
                                           </Group>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
@@ -6415,7 +6436,7 @@
                                       <Component id="Opzioni_ApiKey_MoralisNB_Label" min="-2" pref="1047" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="267" max="32767" attributes="0"/>
+                              <EmptySpace pref="261" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -6642,7 +6663,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel24" min="-2" pref="1276" max="-2" attributes="0"/>
-                              <EmptySpace min="0" pref="68" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="102" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" pref="43" max="-2" attributes="0"/>

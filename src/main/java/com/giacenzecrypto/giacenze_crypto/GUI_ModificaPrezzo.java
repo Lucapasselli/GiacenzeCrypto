@@ -967,9 +967,11 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
     private void Bottone_PersonalizzatoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_PersonalizzatoActionPerformed
         // TODO add your handling code here:
        // System.out.println(ID);
+     // System.out.println("quauqa");
        if (ID!=null){
         if(Funzioni.GUIModificaPrezzo(this,ID))
         {
+            System.out.println("id");
             Principale.MappaCryptoWallet.get(ID)[40]="|||Personalizzato";
            // Principale.MappaCryptoWallet.get(ID)[32]="SI";
             Principale.TabellaCryptodaAggiornare=true;
@@ -977,12 +979,15 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
         }
         } else {
            String ritPrz;
-           if(MU==null){
+           if(MU==null||MU.Moneta==null||MU.Moneta.isBlank()){
                ritPrz = Funzioni.GUIDammiPrezzo(this, ME.Moneta, TimeStamp, ME.Qta, PrezzoT);
-           }else if(ME==null){
+              // System.out.println("me");
+           }else if(ME==null||ME.Moneta==null||ME.Moneta.isBlank()){
                ritPrz = Funzioni.GUIDammiPrezzo(this, MU.Moneta, TimeStamp, MU.Qta, PrezzoT);
+              // System.out.println("mu");
            }
            else{//String m = Funzioni.GUIDammiPrezzo(this, mon, data, Qta.toString(), Prezzo);
+              // System.out.println("doppio");
                 ritPrz = Funzioni.GUIModificaPrezzo(this, MU, ME, PrezzoT, TimeStamp, Rete);
            }
             if (ritPrz != null) {

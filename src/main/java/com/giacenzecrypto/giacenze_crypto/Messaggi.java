@@ -5,7 +5,6 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 import java.awt.Window;
-import javax.swing.JTable;
 
 /**
  *
@@ -88,7 +87,7 @@ public class Messaggi {
                             .primaryAction("ok", "OK")
                             .showDialog();
         }
-        
+
         
         
         

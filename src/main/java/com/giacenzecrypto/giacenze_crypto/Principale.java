@@ -1415,7 +1415,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo))
                 .addGap(5, 5, 5)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1441,7 +1441,7 @@ private static final long serialVersionUID = 3L;
                             .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
                         .addComponent(Bottone_Errori, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
                         .addComponent(TransazioniCrypto_Bottone_AggiorbaVersione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(TransazioniCrypto_TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addGap(13, 13, 13))
@@ -3862,12 +3862,13 @@ private static final long serialVersionUID = 3L;
 
         Opzioni_TabbedPane.addTab("Gruppi Wallet Crypto", Opzioni_GruppoWallet_Pannello);
 
+        Opzioni_Emoney_Tabella.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         Opzioni_Emoney_Tabella.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "Token", "Data Inizio classificazione e-money token"
+                "<html><center><h2>Token</h2></html>", "<html><center><h2>Data Inizio classificazione<br>come E-Money Token</h2></html>"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -3890,13 +3891,14 @@ private static final long serialVersionUID = 3L;
         });
         Opzioni_Emoney_ScrollPane.setViewportView(Opzioni_Emoney_Tabella);
         Opzioni_Emoney_Tabella.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        Opzioni_Emoney_Tabella.getTableHeader().setPreferredSize(new Dimension(Opzioni_Emoney_Tabella.getColumnModel().getTotalColumnWidth(), 90));
 
         jScrollPane5.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         jTextPane1.setEditable(false);
         jTextPane1.setContentType("text/html"); // NOI18N
         jTextPane1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jTextPane1.setText("<html>\n<head>\n<style>\n  body {\n    font-family: 'Segoe UI', Arial, sans-serif;\n    font-size: 13px;\n    margin: 12px 16px;\n    line-height: 1.6;\n  }\n  h2 {\n    font-size: 15px;\n    font-weight: bold;\n    margin-bottom: 6px;\n    margin-top: 0;\n    padding-bottom: 4px;\n  }\n  p {\n    margin: 6px 0 10px 0;\n  }\n  ul {\n    margin: 6px 0 10px 18px;\n    padding: 0;\n  }\n  li {\n    margin-bottom: 5px;\n  }\n  b {\n    font-weight: bold;\n  }\n  .mono {\n    font-family: monospace;\n    font-size: 12px;\n    font-weight: bold;\n  }\n</style>\n</head>\n<body>\n\n<h2>&#127968; Classificazione E-Money Token</h2>\n\n<p>\n  Nella tabella sottostante aggiungere il nome di tutti i token che si desidera\n  classificare come <b>E-Money Token</b> (es. <span class=\"mono\">USDC</span>).\n</p>\n<p>\n  Lo scambio tra <b>Crypto</b> ed <b>E-Money Token</b> verr&agrave; considerato\n  <b>fiscalmente rilevante</b> e potr&agrave; generare una eventuale\n  <b>plusvalenza</b> o <b>minusvalenza</b>.\n</p>\n\n<p>\n  Per <b>casistiche particolari</b> &mdash; ad esempio un token che diventa E-Money\n  solo da una certa data &mdash; &egrave; possibile indicare quest&#39;ultima\n  direttamente nella tabella.<br>\n  In questi casi, gli scambi saranno fiscalmente rilevanti <b>solo dalla data indicata in poi</b>.\n</p>\n<br>\n<br>\n\n<hr/>\n<br>\n<br>\n\n<h2>&#9881; Precompilazione rapida</h2>\n\n<p>Puoi precompilare la tabella, attraverso l'apposito pulsante, scegliendo una delle seguenti opzioni:</p>\n\n<ul>\n  <li>&#9989; <b>Tutte le stablecoin MiCA Compliant</b> &mdash; es. <span class=\"mono\">USDC</span></li>\n  <li>&#9888; <b>MiCA Compliant + quelle dubbie</b> &mdash; incluse es. <span class=\"mono\">USDT</span></li>\n  <li>&#128308; <b>Tutte le stablecoin</b> &mdash; comprese algoritmiche o Crypto-Collateralizzate come <span class=\"mono\">DAI</span></li>\n</ul>\n<br>\n<br>\n<hr/>\n<br>\n<br>\n<p>\n  <b>&#9888; Attenzione:</b>\n  La lista precompilata delle stablecoin <b>potrebbe non essere esaustiva</b>\n  o presentare <b>errori nella classificazione</b>. Verificare sempre la correttezza\n  delle informazioni prima dell&#39;utilizzo.\n</p>\n\n</body>\n</html>\n");
+        jTextPane1.setText("<html>\n<head>\n<style>\n  body {\n    font-family: 'Segoe UI', Arial, sans-serif;\n    font-size: 13px;\n    margin: 12px 16px;\n    line-height: 1.6;\n  }\n  h2 {\n    font-size: 15px;\n    font-weight: bold;\n    margin-bottom: 6px;\n    margin-top: 0;\n    padding-bottom: 4px;\n  }\n  p {\n    margin: 6px 0 10px 0;\n  }\n  ul {\n    margin: 6px 0 10px 18px;\n    padding: 0;\n  }\n  li {\n    margin-bottom: 5px;\n  }\n  b {\n    font-weight: bold;\n  }\n  .mono {\n    font-family: monospace;\n    font-size: 12px;\n    font-weight: bold;\n  }\n</style>\n</head>\n<body>\n\n<h2>&#127968; Classificazione E-Money Token</h2>\n\n<p>\n  Nella tabella sulla destra aggiungere il nome di tutti i token che si desidera\n  classificare come <b>E-Money Token</b> (es. <span class=\"mono\">USDC</span>).\n</p>\n<p>\n  Lo scambio tra <b>Crypto</b> ed <b>E-Money Token</b> verr&agrave; considerato\n  <b>fiscalmente rilevante</b> e potr&agrave; generare una eventuale\n  <b>plusvalenza</b> o <b>minusvalenza</b>.\n</p>\n\n<p>\n  Per <b>casistiche particolari</b> &mdash; ad esempio un token che diventa E-Money\n  solo da una certa data &mdash; &egrave; possibile indicare quest&#39;ultima\n  direttamente nella tabella.<br>\n  In questi casi, gli scambi saranno fiscalmente rilevanti <b>solo dalla data indicata in poi</b>.\n</p>\n<br>\n<br>\n\n<hr/>\n<br>\n<br>\n\n<h2>&#9881; Precompilazione rapida</h2>\n\n<p>Puoi precompilare la tabella, attraverso l'apposito pulsante, scegliendo una delle seguenti opzioni:</p>\n\n<ul>\n  <li>&#9989; <b>Tutte le stablecoin MiCA Compliant</b> &mdash; es. <span class=\"mono\">USDC</span></li>\n  <li>&#9888; <b>MiCA Compliant + quelle dubbie</b> &mdash; incluse es. <span class=\"mono\">USDT</span></li>\n  <li>&#128308; <b>Tutte le stablecoin</b> &mdash; comprese algoritmiche o Crypto-Collateralizzate come <span class=\"mono\">DAI</span></li>\n</ul>\n<br>\n<br>\n<hr/>\n<br>\n<br>\n<p>\n  <b>&#9888; Attenzione:</b>\n  La lista precompilata delle stablecoin <b>potrebbe non essere esaustiva</b>\n  o presentare <b>errori nella classificazione</b>. Verificare sempre la correttezza\n  delle informazioni prima dell&#39;utilizzo.\n</p>\n\n</body>\n</html>\n");
         jScrollPane5.setViewportView(jTextPane1);
 
         Opzioni_Emoney_Bottone_Rimuovi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Cestino.png"))); // NOI18N
@@ -7179,6 +7181,7 @@ private void AvviaSplashScreen() {
         DefaultTableModel Emoney_ModelloTabella = (DefaultTableModel) this.Opzioni_Emoney_Tabella.getModel();
         Tabelle.Funzioni_PulisciTabella(Emoney_ModelloTabella);
         TableColumn column1 = Opzioni_Emoney_Tabella.getColumnModel().getColumn(1);
+        Tabelle.ColoraTabellaSemplice(Opzioni_Emoney_Tabella);
         //JDateChooser DataChooser = new com.toedter.calendar.JDateChooser();
         
         //DataChooser.get

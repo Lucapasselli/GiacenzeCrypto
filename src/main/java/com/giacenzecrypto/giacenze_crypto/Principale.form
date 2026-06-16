@@ -405,7 +405,7 @@
                           <Component id="TransazioniCrypto_CheckBox_VediSenzaPrezzo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                      <Component id="TransazioniCrypto_ScrollPane" pref="428" max="32767" attributes="0"/>
+                      <Component id="TransazioniCrypto_ScrollPane" pref="419" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="TransazioniCrypto_Label_Plusvalenza" min="-2" pref="31" max="-2" attributes="0"/>
@@ -435,7 +435,7 @@
                               </Group>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="Bottone_Errori" min="-2" pref="36" max="-2" attributes="0"/>
-                              <EmptySpace pref="31" max="32767" attributes="0"/>
+                              <EmptySpace pref="22" max="32767" attributes="0"/>
                               <Component id="TransazioniCrypto_Bottone_AggiorbaVersione" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="TransazioniCrypto_TabbedPane" pref="0" max="32767" attributes="0"/>
@@ -5159,10 +5159,13 @@
                       <SubComponents>
                         <Component class="javax.swing.JTable" name="Opzioni_Emoney_Tabella">
                           <Properties>
+                            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                              <Font name="Noto Sans" size="14" style="1"/>
+                            </Property>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                               <Table columnCount="2" rowCount="0">
-                                <Column editable="false" title="Token" type="java.lang.Object"/>
-                                <Column editable="false" title="Data Inizio classificazione e-money token" type="java.lang.Object"/>
+                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;&lt;h2&gt;Token&lt;/h2&gt;&lt;/html&gt;" type="java.lang.Object"/>
+                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;&lt;h2&gt;Data Inizio classificazione&lt;br&gt;come E-Money Token&lt;/h2&gt;&lt;/html&gt;" type="java.lang.Object"/>
                               </Table>
                             </Property>
                             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -5189,6 +5192,9 @@
                             <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_Emoney_TabellaMouseClicked"/>
                             <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_Emoney_TabellaMouseReleased"/>
                           </Events>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="Opzioni_Emoney_Tabella.getTableHeader().setPreferredSize(new Dimension(Opzioni_Emoney_Tabella.getColumnModel().getTotalColumnWidth(), 90));"/>
+                          </AuxValues>
                         </Component>
                       </SubComponents>
                     </Container>
@@ -5209,7 +5215,7 @@
                             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                               <Font name="Segoe UI" size="14" style="0"/>
                             </Property>
-                            <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;&lt;head&gt;&#xa;&lt;style&gt;&#xa;  body {&#xa;    font-family: &apos;Segoe UI&apos;, Arial, sans-serif;&#xa;    font-size: 13px;&#xa;    margin: 12px 16px;&#xa;    line-height: 1.6;&#xa;  }&#xa;  h2 {&#xa;    font-size: 15px;&#xa;    font-weight: bold;&#xa;    margin-bottom: 6px;&#xa;    margin-top: 0;&#xa;    padding-bottom: 4px;&#xa;  }&#xa;  p {&#xa;    margin: 6px 0 10px 0;&#xa;  }&#xa;  ul {&#xa;    margin: 6px 0 10px 18px;&#xa;    padding: 0;&#xa;  }&#xa;  li {&#xa;    margin-bottom: 5px;&#xa;  }&#xa;  b {&#xa;    font-weight: bold;&#xa;  }&#xa;  .mono {&#xa;    font-family: monospace;&#xa;    font-size: 12px;&#xa;    font-weight: bold;&#xa;  }&#xa;&lt;/style&gt;&#xa;&lt;/head&gt;&#xa;&lt;body&gt;&#xa;&#xa;&lt;h2&gt;&amp;#127968; Classificazione E-Money Token&lt;/h2&gt;&#xa;&#xa;&lt;p&gt;&#xa;  Nella tabella sottostante aggiungere il nome di tutti i token che si desidera&#xa;  classificare come &lt;b&gt;E-Money Token&lt;/b&gt; (es. &lt;span class=&quot;mono&quot;&gt;USDC&lt;/span&gt;).&#xa;&lt;/p&gt;&#xa;&lt;p&gt;&#xa;  Lo scambio tra &lt;b&gt;Crypto&lt;/b&gt; ed &lt;b&gt;E-Money Token&lt;/b&gt; verr&amp;agrave; considerato&#xa;  &lt;b&gt;fiscalmente rilevante&lt;/b&gt; e potr&amp;agrave; generare una eventuale&#xa;  &lt;b&gt;plusvalenza&lt;/b&gt; o &lt;b&gt;minusvalenza&lt;/b&gt;.&#xa;&lt;/p&gt;&#xa;&#xa;&lt;p&gt;&#xa;  Per &lt;b&gt;casistiche particolari&lt;/b&gt; &amp;mdash; ad esempio un token che diventa E-Money&#xa;  solo da una certa data &amp;mdash; &amp;egrave; possibile indicare quest&amp;#39;ultima&#xa;  direttamente nella tabella.&lt;br&gt;&#xa;  In questi casi, gli scambi saranno fiscalmente rilevanti &lt;b&gt;solo dalla data indicata in poi&lt;/b&gt;.&#xa;&lt;/p&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&#xa;&lt;hr/&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&#xa;&lt;h2&gt;&amp;#9881; Precompilazione rapida&lt;/h2&gt;&#xa;&#xa;&lt;p&gt;Puoi precompilare la tabella, attraverso l&apos;apposito pulsante, scegliendo una delle seguenti opzioni:&lt;/p&gt;&#xa;&#xa;&lt;ul&gt;&#xa;  &lt;li&gt;&amp;#9989; &lt;b&gt;Tutte le stablecoin MiCA Compliant&lt;/b&gt; &amp;mdash; es. &lt;span class=&quot;mono&quot;&gt;USDC&lt;/span&gt;&lt;/li&gt;&#xa;  &lt;li&gt;&amp;#9888; &lt;b&gt;MiCA Compliant + quelle dubbie&lt;/b&gt; &amp;mdash; incluse es. &lt;span class=&quot;mono&quot;&gt;USDT&lt;/span&gt;&lt;/li&gt;&#xa;  &lt;li&gt;&amp;#128308; &lt;b&gt;Tutte le stablecoin&lt;/b&gt; &amp;mdash; comprese algoritmiche o Crypto-Collateralizzate come &lt;span class=&quot;mono&quot;&gt;DAI&lt;/span&gt;&lt;/li&gt;&#xa;&lt;/ul&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&lt;hr/&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&lt;p&gt;&#xa;  &lt;b&gt;&amp;#9888; Attenzione:&lt;/b&gt;&#xa;  La lista precompilata delle stablecoin &lt;b&gt;potrebbe non essere esaustiva&lt;/b&gt;&#xa;  o presentare &lt;b&gt;errori nella classificazione&lt;/b&gt;. Verificare sempre la correttezza&#xa;  delle informazioni prima dell&amp;#39;utilizzo.&#xa;&lt;/p&gt;&#xa;&#xa;&lt;/body&gt;&#xa;&lt;/html&gt;&#xa;"/>
+                            <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;&lt;head&gt;&#xa;&lt;style&gt;&#xa;  body {&#xa;    font-family: &apos;Segoe UI&apos;, Arial, sans-serif;&#xa;    font-size: 13px;&#xa;    margin: 12px 16px;&#xa;    line-height: 1.6;&#xa;  }&#xa;  h2 {&#xa;    font-size: 15px;&#xa;    font-weight: bold;&#xa;    margin-bottom: 6px;&#xa;    margin-top: 0;&#xa;    padding-bottom: 4px;&#xa;  }&#xa;  p {&#xa;    margin: 6px 0 10px 0;&#xa;  }&#xa;  ul {&#xa;    margin: 6px 0 10px 18px;&#xa;    padding: 0;&#xa;  }&#xa;  li {&#xa;    margin-bottom: 5px;&#xa;  }&#xa;  b {&#xa;    font-weight: bold;&#xa;  }&#xa;  .mono {&#xa;    font-family: monospace;&#xa;    font-size: 12px;&#xa;    font-weight: bold;&#xa;  }&#xa;&lt;/style&gt;&#xa;&lt;/head&gt;&#xa;&lt;body&gt;&#xa;&#xa;&lt;h2&gt;&amp;#127968; Classificazione E-Money Token&lt;/h2&gt;&#xa;&#xa;&lt;p&gt;&#xa;  Nella tabella sulla destra aggiungere il nome di tutti i token che si desidera&#xa;  classificare come &lt;b&gt;E-Money Token&lt;/b&gt; (es. &lt;span class=&quot;mono&quot;&gt;USDC&lt;/span&gt;).&#xa;&lt;/p&gt;&#xa;&lt;p&gt;&#xa;  Lo scambio tra &lt;b&gt;Crypto&lt;/b&gt; ed &lt;b&gt;E-Money Token&lt;/b&gt; verr&amp;agrave; considerato&#xa;  &lt;b&gt;fiscalmente rilevante&lt;/b&gt; e potr&amp;agrave; generare una eventuale&#xa;  &lt;b&gt;plusvalenza&lt;/b&gt; o &lt;b&gt;minusvalenza&lt;/b&gt;.&#xa;&lt;/p&gt;&#xa;&#xa;&lt;p&gt;&#xa;  Per &lt;b&gt;casistiche particolari&lt;/b&gt; &amp;mdash; ad esempio un token che diventa E-Money&#xa;  solo da una certa data &amp;mdash; &amp;egrave; possibile indicare quest&amp;#39;ultima&#xa;  direttamente nella tabella.&lt;br&gt;&#xa;  In questi casi, gli scambi saranno fiscalmente rilevanti &lt;b&gt;solo dalla data indicata in poi&lt;/b&gt;.&#xa;&lt;/p&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&#xa;&lt;hr/&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&#xa;&lt;h2&gt;&amp;#9881; Precompilazione rapida&lt;/h2&gt;&#xa;&#xa;&lt;p&gt;Puoi precompilare la tabella, attraverso l&apos;apposito pulsante, scegliendo una delle seguenti opzioni:&lt;/p&gt;&#xa;&#xa;&lt;ul&gt;&#xa;  &lt;li&gt;&amp;#9989; &lt;b&gt;Tutte le stablecoin MiCA Compliant&lt;/b&gt; &amp;mdash; es. &lt;span class=&quot;mono&quot;&gt;USDC&lt;/span&gt;&lt;/li&gt;&#xa;  &lt;li&gt;&amp;#9888; &lt;b&gt;MiCA Compliant + quelle dubbie&lt;/b&gt; &amp;mdash; incluse es. &lt;span class=&quot;mono&quot;&gt;USDT&lt;/span&gt;&lt;/li&gt;&#xa;  &lt;li&gt;&amp;#128308; &lt;b&gt;Tutte le stablecoin&lt;/b&gt; &amp;mdash; comprese algoritmiche o Crypto-Collateralizzate come &lt;span class=&quot;mono&quot;&gt;DAI&lt;/span&gt;&lt;/li&gt;&#xa;&lt;/ul&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&lt;hr/&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&lt;p&gt;&#xa;  &lt;b&gt;&amp;#9888; Attenzione:&lt;/b&gt;&#xa;  La lista precompilata delle stablecoin &lt;b&gt;potrebbe non essere esaustiva&lt;/b&gt;&#xa;  o presentare &lt;b&gt;errori nella classificazione&lt;/b&gt;. Verificare sempre la correttezza&#xa;  delle informazioni prima dell&amp;#39;utilizzo.&#xa;&lt;/p&gt;&#xa;&#xa;&lt;/body&gt;&#xa;&lt;/html&gt;&#xa;"/>
                           </Properties>
                         </Component>
                       </SubComponents>

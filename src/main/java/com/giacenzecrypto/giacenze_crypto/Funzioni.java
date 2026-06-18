@@ -3042,6 +3042,24 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
         }
     }
 
+    public static boolean isApiKeyValidaCoinMarketCap(String ApiKey) {
+        if (ApiKey == null || ApiKey.isBlank()) return false;
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("https://pro-api.coinmarketcap.com/v1/cryptocurrency/map?listing_status=active&limit=1")
+                .header("X-CMC_PRO_API_KEY", ApiKey)
+                .header("Accept", "application/json")
+                .build();
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) return false;
+            com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(response.body().string()).getAsJsonObject();
+            if (!json.has("status")) return false;
+            return "0".equals(json.getAsJsonObject("status").get("error_code").getAsString());
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public static boolean isApiKeyValidaCoingecko(String ApiKey) {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url("https://api.coingecko.com/api/v3/ping").get().addHeader("accept", "application/json").addHeader("x-cg-demo-api-key", ApiKey).build();

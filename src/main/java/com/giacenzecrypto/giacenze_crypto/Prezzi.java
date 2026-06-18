@@ -33,6 +33,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1062,8 +1063,8 @@ public class Prezzi {
             return risultato;
           }
           
-          //Se non trovo i prezzi scaricandoli dagli exchange allora tiro in balo cryptocompare, lo tiro in ballo per ultimo prchè i prezzi hanno una precisione oraria          
-          RecuperaPrezziDaCryptoCompare(Crypto, Datalong);
+          //Se non trovo i prezzi dagli exchange uso CoinMarketCap come ultimo fallback (precisione oraria)
+          RecuperaPrezziDaCoinMarketCap(Crypto, Datalong);
           //Cerco il risultato nei 60 minuti in questo caso
           risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Fonte, Rete, Address,60,qta);
           if (risultato==null){
@@ -1483,6 +1484,154 @@ public class Prezzi {
             LoggerGC.ScriviErrore(ex);
         }
     }  
+
+    /**
+     * Scarica e memorizza la mappa symbol→id di CoinMarketCap nel database (cache 24h).
+     */
+    public static void RecuperaCoinsCoinMarketCap() {
+        long adesso = System.currentTimeMillis();
+        String dataUltimoScaricoString = DatabaseH2.Opzioni_Leggi("Data_Lista_CoinMarketCap");
+        long dataUltimoScarico = 0;
+        if (dataUltimoScaricoString != null) {
+            try { dataUltimoScarico = Long.parseLong(dataUltimoScaricoString); } catch (NumberFormatException ignored) {}
+        }
+        if (adesso <= dataUltimoScarico + 86400000) return; // cache valida per 24h
+
+        String apiUrl = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/map?listing_status=active&sort=cmc_rank&limit=5000";
+        OkHttpClient client = new OkHttpClient();
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(apiUrl)
+                .header("Accept", "application/json");
+        String apiKey = Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_CoinMarketCap"));
+        if (!apiKey.isBlank()) requestBuilder.header("X-CMC_PRO_API_KEY", apiKey);
+        Request request = requestBuilder.build();
+
+        System.out.println("RecuperaCoinsCoinMarketCap: scarico mappa token da CoinMarketCap");
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                System.out.println("RecuperaCoinsCoinMarketCap: risposta API non valida, codice " + response.code());
+                return;
+            }
+            JsonObject root = JsonParser.parseString(response.body().string()).getAsJsonObject();
+            JsonArray data = root.getAsJsonArray("data");
+            if (data == null) return;
+
+            List<String[]> gestiti = new ArrayList<>();
+            for (JsonElement el : data) {
+                JsonObject coin = el.getAsJsonObject();
+                if (coin.get("is_active").getAsInt() != 1) continue;
+                String symbol = coin.get("symbol").getAsString().toUpperCase().trim();
+                String id = String.valueOf(coin.get("id").getAsInt());
+                gestiti.add(new String[]{symbol, id});
+            }
+            DatabaseH2.GestitiCoinMarketCap_ScriviNuovaTabella(gestiti);
+            DatabaseH2.Opzioni_Scrivi("Data_Lista_CoinMarketCap", String.valueOf(adesso));
+            System.out.println("RecuperaCoinsCoinMarketCap: salvati " + gestiti.size() + " token");
+        } catch (Exception e) {
+            System.out.println("RecuperaCoinsCoinMarketCap: errore - " + e.getMessage());
+            LoggerGC.ScriviErrore(e);
+        }
+    }
+
+    /**
+     * Scarica i prezzi storici da CoinMarketCap per il simbolo richiesto, li converte in EUR
+     * e li salva nel database prezzi (precisione oraria, finestra di ±15 giorni).
+     * Usato come fallback quando CCXT non trova il prezzo.
+     */
+    public static void RecuperaPrezziDaCoinMarketCap(String Crypto, long timestamp) {
+        try {
+            Crypto = Crypto.toUpperCase().replaceAll("\\*", "").trim();
+
+            long Until = timestamp + 1296000000L; // +15 giorni
+            long adesso = System.currentTimeMillis();
+            if (Until > adesso) Until = adesso;
+            long Since = Until - 2592000000L; // -30 giorni da Until
+
+            long SinceVerifica = timestamp - 3600000L;
+            long UntilVerifica = timestamp + 3600000L;
+            if (UntilVerifica > adesso) UntilVerifica = adesso;
+            if (SinceVerifica > adesso) SinceVerifica = adesso - 3600000L;
+
+            if (managerRichieste.isAlreadyRequested("CoinMarketCap_" + Crypto, SinceVerifica, UntilVerifica)) return;
+
+            RecuperaCoinsCoinMarketCap();
+            Integer cmcId = DatabaseH2.GestitiCoinMarketCap_Leggi(Crypto);
+            if (cmcId == null) {
+                System.out.println("RecuperaPrezziDaCoinMarketCap: " + Crypto + " non trovato nella mappa CMC");
+                return;
+            }
+
+            managerRichieste.addRange("CoinMarketCap_" + Crypto, Since, Until);
+            TimeUnit.SECONDS.sleep(1);
+
+            long timeStart = Since / 1000;
+            long timeEnd = Until / 1000;
+            String apiUrl = "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical"
+                    + "?id=" + cmcId
+                    + "&timeStart=" + timeStart
+                    + "&timeEnd=" + timeEnd
+                    + "&interval=1h";
+
+            System.out.println("RecuperaPrezziDaCoinMarketCap: scarico prezzi " + Crypto + " (id=" + cmcId + ") per " + FunzioniDate.ConvertiDatadaLong(timestamp));
+
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder().url(apiUrl).header("Accept", "application/json").build();
+
+            try (Response response = client.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    System.out.println("RecuperaPrezziDaCoinMarketCap: risposta non valida codice " + response.code());
+                    return;
+                }
+                JsonObject root = JsonParser.parseString(response.body().string()).getAsJsonObject();
+                JsonObject dataObj = root.getAsJsonObject("data");
+                if (dataObj == null) return;
+                JsonArray quotes = dataObj.getAsJsonArray("quotes");
+                if (quotes == null || quotes.size() == 0) return;
+
+                String mergeSql = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo, rete, address) "
+                        + "KEY (timestamp, exchange, symbol, rete, address) VALUES (?, ?, ?, ?, ?, ?)";
+
+                try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(mergeSql)) {
+                    for (JsonElement el : quotes) {
+                        JsonObject candle = el.getAsJsonObject();
+                        String timeOpen = candle.get("timeOpen").getAsString();
+                        JsonObject quote = candle.getAsJsonObject("quote");
+                        if (quote == null) continue;
+
+                        double openUsd;
+                        try {
+                            openUsd = quote.get("open").getAsDouble();
+                            if (openUsd == 0) continue;
+                        } catch (Exception ex) {
+                            continue;
+                        }
+
+                        // timeOpen formato: "2026-06-15T20:00:00.000Z"
+                        long unixMs = Instant.parse(timeOpen).toEpochMilli();
+                        String datePart = timeOpen.substring(0, 10); // "yyyy-MM-dd"
+
+                        String prezzoEurStr = CambioUSDEUR(String.valueOf(openUsd), datePart);
+                        if (prezzoEurStr == null) continue;
+                        double prezzoEur = Double.parseDouble(prezzoEurStr);
+                        if (prezzoEur == 0) continue;
+
+                        ps.setLong(1, unixMs);
+                        ps.setString(2, "CoinMarketCap");
+                        ps.setString(3, Crypto);
+                        ps.setDouble(4, prezzoEur);
+                        ps.setString(5, "");
+                        ps.setString(6, "");
+                        ps.addBatch();
+                    }
+                    ps.executeBatch();
+                } catch (SQLException ex) {
+                    LoggerGC.ScriviErrore(ex);
+                }
+            }
+        } catch (InterruptedException | IOException e) {
+            LoggerGC.ScriviErrore(e);
+        }
+    }
 
         public static String ZZZ_RecuperaTassidiCambiodaSimbolo_CoinCap(String Crypto, String DataIniziale) {
         String ApiKey = Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"));

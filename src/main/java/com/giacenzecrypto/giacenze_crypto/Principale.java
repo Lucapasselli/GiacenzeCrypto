@@ -222,6 +222,7 @@ private static final long serialVersionUID = 3L;
         //Se nuova versione disponibile fa vedere il pulsante con il quale è possibile scaricarla.
         TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(false);
         Funzioni_NuovaVersioneDisponibile();
+        Funzioni_AggiornamentoImportConfig();
         Prezzi.CompilaMoneteStessoPrezzo();
         Bottone_Titolo.setText(VarStatiche.Titolo);
 
@@ -10706,7 +10707,7 @@ if (result.isAction("delete-all")) {
         //Questa funzione la faccio partire in un thread separato
         Thread thread;
         thread = new Thread() {
-            public void run() {    
+            public void run() {
                 if(Funzioni.isAggiornamentoDisponibile(VarStatiche.Versione)){
                     TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(true);
                     System.out.println("Nuova versione disponibile");
@@ -10717,7 +10718,22 @@ if (result.isAction("delete-all")) {
             }
         };
         thread.start();
-        
+
+    }
+
+    private void Funzioni_AggiornamentoImportConfig() {
+        Thread thread = new Thread() {
+            public void run() {
+                java.util.List<String> aggiornati = Funzioni.AggiornamentoImportConfig(VarStatiche.getCartella_ImportConfig());
+                if (!aggiornati.isEmpty()) {
+                    System.out.println("AggiornamentoImportConfig: aggiornati " + aggiornati.size() + " file: " + aggiornati);
+                } else {
+                    System.out.println("AggiornamentoImportConfig: configurazioni ImportConfig già aggiornate");
+                }
+            }
+        };
+        thread.setDaemon(true);
+        thread.start();
     }
     private void Funzioni_CorrezioneErroriPrincipali(){
 

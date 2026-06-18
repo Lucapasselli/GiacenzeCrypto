@@ -320,87 +320,86 @@ private String trovaPercorsoJsonDaVoceCombo(String voceCombo) {
 
     private void ComboBox_TipoFileItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_TipoFileItemStateChanged
         // TODO add your handling code here:
-           String voceSelezionata = ComboBox_TipoFile.getItemAt(
-            ComboBox_TipoFile.getSelectedIndex()).trim();
+        String voceSelezionata = ComboBox_TipoFile.getItemAt(
+                ComboBox_TipoFile.getSelectedIndex()).trim();
 
-    if (voceSelezionata.startsWith("[JSON]")) {
+        if (voceSelezionata.startsWith("[JSON]")) {
 
-    String percorsoJson = trovaPercorsoJsonDaVoceCombo(voceSelezionata);
-    if (percorsoJson == null || percorsoJson.isBlank()) {
-        Label_NomeExchange.setEnabled(false);
-        Label_TipoImport.setEnabled(false);
-        ComboBox_Exchanges.setEnabled(false);
-        ComboBox_TipoImport.setEnabled(false);
-        Text_NomeWallet.setEnabled(false);
-        TextPane_Attenzione.setEnabled(false);
-        Bottone_SelezionaFile.setEnabled(false);
-        return;
-    }
-    else if (voceSelezionata.equalsIgnoreCase("CoinTracking.info CSV") ||
-        voceSelezionata.contains("Tatax CSV")) {
+            String percorsoJson = trovaPercorsoJsonDaVoceCombo(voceSelezionata);
+            if (percorsoJson == null || percorsoJson.isBlank()) {
+                Label_NomeExchange.setEnabled(false);
+                Label_TipoImport.setEnabled(false);
+                ComboBox_Exchanges.setEnabled(false);
+                ComboBox_TipoImport.setEnabled(false);
+                Text_NomeWallet.setEnabled(false);
+                TextPane_Attenzione.setEnabled(false);
+                Bottone_SelezionaFile.setEnabled(false);
+                return;
+            }
 
-        // --- Comportamento originale CoinTracking / Tatax ---
-        Label_TipoImport.setEnabled(true);
-        ComboBox_TipoImport.setEnabled(true);
-        TextPane_Attenzione.setEnabled(true);
-        ComboBox_TipoImport.setSelectedIndex(0);
-        Bottone_SelezionaFile.setEnabled(false);
+            try {
+                ImportazioneGenerica.ConfigurazioneImport cfg
+                        = ImportazioneGenerica.ConfigurazioneImport.carica(percorsoJson);
 
-    }
+                String nomeExchange = cfg.nomeExchange != null ? cfg.nomeExchange.trim() : "";
 
-    try {
-        ImportazioneGenerica.ConfigurazioneImport cfg =
-                ImportazioneGenerica.ConfigurazioneImport.carica(percorsoJson);
+                if (nomeExchange.isBlank()) {
+                    ArrayList<String> elements = new ArrayList<>();
+                    elements.addAll(java.util.Arrays.asList(Exchanges));
+                    ComboBox_Exchanges.setModel(
+                            new DefaultComboBoxModel<>(elements.toArray(String[]::new))
+                    );
 
-        String nomeExchange = cfg.nomeExchange != null ? cfg.nomeExchange.trim() : "";
+                    Label_TipoImport.setEnabled(true);
+                    ComboBox_TipoImport.setEnabled(true);
+                    TextPane_Attenzione.setEnabled(true);
+                    ComboBox_TipoImport.setSelectedIndex(0);
 
-        if (nomeExchange.isBlank()) {
-            ArrayList<String> elements = new ArrayList<>();
-            elements.addAll(java.util.Arrays.asList(Exchanges));
-            ComboBox_Exchanges.setModel(
-                    new DefaultComboBoxModel<>(elements.toArray(String[]::new))
-            );
+                    Label_NomeExchange.setEnabled(true);
+                    ComboBox_Exchanges.setEnabled(true);
+                    Bottone_SelezionaFile.setEnabled(false);
 
+                } else {
+                    Label_TipoImport.setEnabled(false);
+                    ComboBox_TipoImport.setEnabled(false);
+                    Label_NomeExchange.setEnabled(false);
+                    ComboBox_Exchanges.setEnabled(false);
+                    Text_NomeWallet.setEnabled(false);
+                    TextPane_Attenzione.setEnabled(false);
+                    Bottone_SelezionaFile.setEnabled(true);
+                }
+
+            } catch (Exception ex) {
+                LoggerGC.ScriviErrore(ex);
+                Label_NomeExchange.setEnabled(false);
+                Label_TipoImport.setEnabled(false);
+                ComboBox_Exchanges.setEnabled(false);
+                ComboBox_TipoImport.setEnabled(false);
+                Text_NomeWallet.setEnabled(false);
+                TextPane_Attenzione.setEnabled(false);
+                Bottone_SelezionaFile.setEnabled(false);
+            }
+        } else if (voceSelezionata.equalsIgnoreCase("CoinTracking.info CSV")
+                || voceSelezionata.contains("Tatax CSV")) {
+
+            // --- Comportamento originale CoinTracking / Tatax ---
             Label_TipoImport.setEnabled(true);
             ComboBox_TipoImport.setEnabled(true);
             TextPane_Attenzione.setEnabled(true);
             ComboBox_TipoImport.setSelectedIndex(0);
-
-            Label_NomeExchange.setEnabled(true);
-            ComboBox_Exchanges.setEnabled(true);
             Bottone_SelezionaFile.setEnabled(false);
 
         } else {
-            Label_TipoImport.setEnabled(false);
-            ComboBox_TipoImport.setEnabled(false);
+
+            // --- Tutte le altre voci native ---
             Label_NomeExchange.setEnabled(false);
+            Label_TipoImport.setEnabled(false);
             ComboBox_Exchanges.setEnabled(false);
+            ComboBox_TipoImport.setEnabled(false);
             Text_NomeWallet.setEnabled(false);
             TextPane_Attenzione.setEnabled(false);
             Bottone_SelezionaFile.setEnabled(true);
         }
-
-    } catch (Exception ex) {
-        LoggerGC.ScriviErrore(ex);
-        Label_NomeExchange.setEnabled(false);
-        Label_TipoImport.setEnabled(false);
-        ComboBox_Exchanges.setEnabled(false);
-        ComboBox_TipoImport.setEnabled(false);
-        Text_NomeWallet.setEnabled(false);
-        TextPane_Attenzione.setEnabled(false);
-        Bottone_SelezionaFile.setEnabled(false);
-    }
-} else {
-
-        // --- Tutte le altre voci native ---
-        Label_NomeExchange.setEnabled(false);
-        Label_TipoImport.setEnabled(false);
-        ComboBox_Exchanges.setEnabled(false);
-        ComboBox_TipoImport.setEnabled(false);
-        Text_NomeWallet.setEnabled(false);
-        TextPane_Attenzione.setEnabled(false);
-        Bottone_SelezionaFile.setEnabled(true);
-    }
     }//GEN-LAST:event_ComboBox_TipoFileItemStateChanged
 
     private void Bottone_AnnullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AnnullaActionPerformed

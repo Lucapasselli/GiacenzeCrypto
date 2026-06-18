@@ -6,6 +6,8 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import static com.giacenzecrypto.giacenze_crypto.Principale.MappaRetiSupportate;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.awt.AWTException;
@@ -3055,6 +3057,95 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
         } catch (Exception e) {
             System.out.println("Trans_Solana.isApiKeyValidaCoingecko " + e.getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Controlla i file JSON nella cartella ImportConfig locale rispetto al
+     * repository GitHub e aggiorna quelli obsoleti o mancanti.
+     *
+     * @param cartellaImportConfig path assoluta della cartella ImportConfig locale
+     * @return lista dei nomi dei file effettivamente aggiornati/scaricati
+     */
+    public static List<String> AggiornamentoImportConfig(String cartellaImportConfig) {
+        List<String> fileAggiornati = new ArrayList<>();
+        String apiUrl = "https://api.github.com/repos/Lucapasselli/GiacenzeCrypto/contents/ImportConfig?ref=master";
+
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url(apiUrl)
+                .header("User-Agent", "GiacenzeCrypto")
+                .header("Accept", "application/vnd.github.v3+json")
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                System.out.println("AggiornamentoImportConfig: risposta API GitHub non valida, codice " + response.code());
+                return fileAggiornati;
+            }
+
+            JsonArray files = JsonParser.parseString(response.body().string()).getAsJsonArray();
+
+            for (JsonElement el : files) {
+                JsonObject file = el.getAsJsonObject();
+                if (!"file".equals(file.get("type").getAsString())) continue;
+
+                String name = file.get("name").getAsString();
+                String remoteSha = file.get("sha").getAsString();
+                String downloadUrl = file.get("download_url").getAsString();
+
+                Path localPath = Paths.get(cartellaImportConfig, name);
+
+                boolean daAggiornare;
+                if (!Files.exists(localPath)) {
+                    daAggiornare = true;
+                    System.out.println("AggiornamentoImportConfig: file non presente localmente: " + name);
+                } else {
+                    String localSha = calcolaBlobShaGit(localPath);
+                    daAggiornare = !remoteSha.equalsIgnoreCase(localSha);
+                    if (daAggiornare) {
+                        System.out.println("AggiornamentoImportConfig: file da aggiornare (sha diverso): " + name);
+                    }
+                }
+
+                if (daAggiornare) {
+                    scaricaFileDaUrl(client, downloadUrl, localPath);
+                    fileAggiornati.add(name);
+                    System.out.println("AggiornamentoImportConfig: aggiornato " + name);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("AggiornamentoImportConfig: errore durante il controllo - " + e.getMessage());
+            LoggerGC.ScriviErrore(e);
+        }
+
+        return fileAggiornati;
+    }
+
+    private static String calcolaBlobShaGit(Path filePath) throws Exception {
+        byte[] content = Files.readAllBytes(filePath);
+        java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-1");
+        byte[] header = ("blob " + content.length + "\0").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        digest.update(header);
+        digest.update(content);
+        byte[] hash = digest.digest();
+        StringBuilder sb = new StringBuilder();
+        for (byte b : hash) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
+
+    private static void scaricaFileDaUrl(OkHttpClient client, String url, Path destination) throws IOException {
+        Request req = new Request.Builder()
+                .url(url)
+                .header("User-Agent", "GiacenzeCrypto")
+                .build();
+        try (Response resp = client.newCall(req).execute()) {
+            if (!resp.isSuccessful()) {
+                throw new IOException("Download fallito per " + url + ", codice: " + resp.code());
+            }
+            Files.write(destination, resp.body().bytes());
         }
     }
 }

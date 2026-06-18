@@ -881,10 +881,11 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
      */
     public static class ConfigurazioneImport {
 
-        public String nomeExchange = "Exchange Generico";
+        public String nomeExchange = "";
         public String nomeWallet = "Principale";
         public String separatore = ",";
         public String encoding = "UTF-8";
+        public boolean testing = false;
         public int righeIntestazione = 1;
         public int rigaIntestazione = 1;
         public boolean autoDetectColonne = false;
@@ -968,6 +969,9 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             }
             if (root.has("nomeWallet")) {
                 cfg.nomeWallet = root.getString("nomeWallet");
+            }
+            if (root.has("testing")) {
+                cfg.testing = root.optBoolean("testing", false);
             }
             if (root.has("separatore")) {
                 cfg.separatore = root.getString("separatore");

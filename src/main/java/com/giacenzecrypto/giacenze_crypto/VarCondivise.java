@@ -35,12 +35,14 @@ public class VarCondivise {
         String[] BERA = new String[]{"https://api.etherscan.io/v2/api?chainid=80094", "", "BERA", "berachain"};
         String[] AVAX = new String[]{"https://api.etherscan.io/v2/api?chainid=43114", "", "AVAX", "avalanche"};
         String[] SOL = new String[]{"https://solscan.io/", "", "SOL", "solana"};
+        String[] BTC = new String[]{"https://mempool.space/api", "", "BTC", "bitcoin"};
         Principale.Mappa_ChainExplorer.put("CRO", CRO);
         Principale.Mappa_ChainExplorer.put("BSC", BSC);
         Principale.Mappa_ChainExplorer.put("ETH", ETH);
         Principale.Mappa_ChainExplorer.put("BASE", BASE);
         Principale.Mappa_ChainExplorer.put("ARB", ARB);
         Principale.Mappa_ChainExplorer.put("SOL", SOL);
+        Principale.Mappa_ChainExplorer.put("BTC", BTC);
         Principale.Mappa_ChainExplorer.put("BERA", BERA);
         Principale.Mappa_ChainExplorer.put("AVAX", AVAX);
         Principale.Mappa_AddressRete_Nome.put("0x66e428c3f67a68878562e79A0234c1F83c208770_CRO", "USDT");

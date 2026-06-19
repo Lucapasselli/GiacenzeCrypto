@@ -9,6 +9,15 @@ function logError(message) { console.error(`[ERROR] ${message}`); }
 function logInfo(message) { console.error(`[INFO] ${message}`); }
 function logDebug(message) { console.error(`[DEBUG] ${message}`); }
 
+// In Node.js v15+ unhandled rejections terminate the process by default.
+// CCXT 4.x creates Coinbase FUTURE/PERPETUAL promises before awaiting them; if the
+// endpoint is unreachable, Node.js sees a brief "unhandled" rejection and crashes
+// before CCXT's own try-catch can intercept it. Registering this handler keeps
+// the process alive so CCXT can handle the rejection itself.
+process.on('unhandledRejection', (reason) => {
+    logError(`Unhandled rejection (ignorato, gestito da CCXT): ${reason}`);
+});
+
 // Trova il miglior simbolo disponibile per XXX/EUR
 async function findBestPair(ex, baseSymbol) {
    // const markets = await ex.loadMarkets();

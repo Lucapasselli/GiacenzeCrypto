@@ -55,6 +55,8 @@ public class Funzioni_WalletDeFi {
                         Funzioni.ApriWeb("https://berascan.com/tx/" + IDTransazione);
                     }else if (Rete.equalsIgnoreCase("AVAX")){
                         Funzioni.ApriWeb("https://avascan.info/blockchain/c/tx/" + IDTransazione);
+                    }else if (Rete.equalsIgnoreCase("BTC")){
+                        Funzioni.ApriWeb("https://mempool.space/tx/" + IDTransazione);
                     }
                     
         }
@@ -83,12 +85,15 @@ public class Funzioni_WalletDeFi {
                            Desktop.getDesktop().browse(new URI("https://arbiscan.io/token/"+Address +"?a="+ Wallet)); 
                         }
                         else if(Rete.equalsIgnoreCase("SOL")){
-                           Desktop.getDesktop().browse(new URI("https://solscan.io/token/"+Address +"?a="+ Wallet)); 
+                           Desktop.getDesktop().browse(new URI("https://solscan.io/token/"+Address +"?a="+ Wallet));
                         }
                         else if(Rete.equalsIgnoreCase("BERA")){
-                           Desktop.getDesktop().browse(new URI("https://berascan.com/token/"+Address +"?a="+ Wallet)); 
+                           Desktop.getDesktop().browse(new URI("https://berascan.com/token/"+Address +"?a="+ Wallet));
                         }
-                        
+                        else if(Rete.equalsIgnoreCase("BTC")){
+                           Desktop.getDesktop().browse(new URI("https://mempool.space/address/"+ Wallet));
+                        }
+
                     } catch (URISyntaxException | IOException ex) {
                         Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -119,7 +124,10 @@ public class Funzioni_WalletDeFi {
                            Funzioni.ApriWeb("https://berascan.com/tokenholdings?a="+ Wallet); 
                         }
                         else if(Rete.equalsIgnoreCase("SOL")){
-                           Funzioni.ApriWeb("https://solscan.io/account/"+ Wallet+"#portfolio"); 
+                           Funzioni.ApriWeb("https://solscan.io/account/"+ Wallet+"#portfolio");
+                        }
+                        else if(Rete.equalsIgnoreCase("BTC")){
+                           Funzioni.ApriWeb("https://mempool.space/address/"+ Wallet);
                         }
                     }
         
@@ -129,7 +137,7 @@ public class Funzioni_WalletDeFi {
      public static boolean isValidDefiWallet(String wallet) {
         //Questa funzione serve per sapere se una stringa wallet presente nella colonna wallet es 0x3423432aff4545 (ETH)
         //può essere considerata un wallet valido, si controllerà quindi l'indirizzo e se la rete è supportata
-        String RetiSupportate="||BSC||CRO||BASE||ARB||ETH||SOL||BERA||AVAX||";
+        String RetiSupportate="||BSC||CRO||BASE||ARB||ETH||SOL||BERA||AVAX||BTC||";
         String sWallet[]=wallet.split("\\(");
         String address;
         String Rete;
@@ -147,6 +155,9 @@ public class Funzioni_WalletDeFi {
            // String BASE58_REGEX = "^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$";
            // return address != null && address.length() == 44 && Pattern.matches(BASE58_REGEX, address);
             return isValidSolanaAddress(address);
+        }
+        else if (Rete.equalsIgnoreCase("BTC")){
+            return Trans_Bitcoin.isValidBitcoinAddress(address);
         }
         else{
             Pattern ETH_ADDRESS_PATTERN = Pattern.compile("^0x[a-fA-F0-9]{40}$");

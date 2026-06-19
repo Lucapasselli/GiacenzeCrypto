@@ -5687,7 +5687,19 @@ private static String F_safe(String s) {
         
 
             }
-            
+
+            else if (Rete.equalsIgnoreCase("BTC")) {
+                try {
+                    Map<String, TransazioneDefi> btcResult = Trans_Bitcoin.fetchAndParseTransactions(
+                            walletAddress, Integer.parseInt(Blocco), ccc, progressb);
+                    if (btcResult != null) {
+                        MappaTransazioniDefi.putAll(btcResult);
+                    }
+                } catch (InterruptedException ex) {
+                    LoggerGC.ScriviErrore(ex);
+                }
+            }
+
             else if (!Rete.equalsIgnoreCase("CRO")&&!Funzioni.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))){
                 System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " per mancaza di ApiKey");
                         System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa ad Etherscan");

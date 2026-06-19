@@ -151,7 +151,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         Label_Rete.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_Rete.setText("Rete :");
 
-        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Arbitrum (ARB)", "Avalanche (AVAX)", "Base (BASE)", "Berachain (BERA)", "Binance Smart Chain (BSC)", "Cronos Chain (CRO)", "Ethereum (ETH)", "Solana (SOL)", " " }));
+        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Arbitrum (ARB)", "Avalanche (AVAX)", "Base (BASE)", "Berachain (BERA)", "Binance Smart Chain (BSC)", "Bitcoin (BTC)", "Cronos Chain (CRO)", "Ethereum (ETH)", "Solana (SOL)", " " }));
 
         Bottone_Aggiorna.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Aggiorna.png"))); // NOI18N
         Bottone_Aggiorna.addActionListener(new java.awt.event.ActionListener() {
@@ -510,17 +510,42 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         if (TabellaWallets.getSelectedRow() >= 0) {
             int rigaselezionata = TabellaWallets.getRowSorter().convertRowIndexToModel(TabellaWallets.getSelectedRow());
 
-            String IDWallet = TabellaWallets.getModel().getValueAt(rigaselezionata, 1).toString();
-            if (IDWallet != null) {
-                AppDialog.DialogResult result = AppDialog.builder(this)
-                        .windowTitle("Eliminazione del Wallet selezionato")
-                        .bodyTitle("Eliminazione del Wallet selezionato")
+            String walletAddress = TabellaWallets.getModel().getValueAt(rigaselezionata, 1).toString();
+            String walletRete    = TabellaWallets.getModel().getValueAt(rigaselezionata, 2).toString();
+            // chiave primaria del DB (es. "0x1234..._ETH" oppure "xpub6..._BTC")
+            String walletReteKey = walletAddress + "_" + walletRete;
+            // formato usato nella colonna wallet dei movimenti (es. "0x1234... (ETH)")
+            String walletStringa = walletAddress + " (" + walletRete + ")";
+
+            AppDialog.DialogResult result = AppDialog.builder(this)
+                    .windowTitle("Eliminazione del Wallet selezionato")
+                    .bodyTitle("Eliminazione del Wallet selezionato")
+                    .showTitleInBody(false)
+                    .theme()
+                    .type(AppDialog.DialogType.INFO)
+                    .message("")
+                    .details("Attenzione! <br>Sei sicuro di voler eliminare il wallet?")
+                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("si", "ELIMINA")
+                            .role(AppDialog.ActionRole.DANGER)
+                            .build())
+                    .showDialog();
+
+            if (result != null && result.isAction("si")) {
+                DatabaseH2.Pers_Wallets_Cancella(walletReteKey);
+                PopolaTabella();
+
+                result = AppDialog.builder(this)
+                        .windowTitle("Eliminazione delle transazioni")
+                        .bodyTitle("Eliminazione delle transazioni")
                         .showTitleInBody(false)
                         .theme()
                         .type(AppDialog.DialogType.INFO)
                         .message("")
-                        .details("Attenzione! <br>Sei sicuro di voler eliminare il wallet?")
-                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .details("Il Wallet è stato cancellato.<br>Vuoi cancellare anche tutte le movimentazioni importate finora?")
+                        .action(AppDialog.DialogAction.builder("cancel", "NO")
                                 .role(AppDialog.ActionRole.SECONDARY)
                                 .build())
                         .action(AppDialog.DialogAction.builder("si", "ELIMINA")
@@ -528,41 +553,13 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                                 .build())
                         .showDialog();
 
-                //  System.out.println(r);
                 if (result != null && result.isAction("si")) {
-                    DatabaseH2.Pers_Wallets_Cancella(IDWallet);
-                    //ScriviFileWallets();
-                    PopolaTabella();
-
-                    result = AppDialog.builder(this)
-                            .windowTitle("Eliminazione delle transazioni")
-                            .bodyTitle("Eliminazione delle transazioni")
-                            .showTitleInBody(false)
-                            .theme()
-                            .type(AppDialog.DialogType.INFO)
-                            .message("")
-                            .details("Il Wallet è stato cancellato <br>Vuoi cancellare anche tutte le movimentazioni importate finora?")
-                            .action(AppDialog.DialogAction.builder("cancel", "Annulla")
-                                    .role(AppDialog.ActionRole.SECONDARY)
-                                    .build())
-                            .action(AppDialog.DialogAction.builder("si", "ELIMINA")
-                                    .role(AppDialog.ActionRole.DANGER)
-                                    .build())
-                            .showDialog();
-
-                    //  System.out.println(r);
-                    if (result != null && result.isAction("si")) {
-
-                        //Sicome devo mettere dei limiti di data metto l'anno 2100 come limite superiore e zero (1970) come limite inferiore
-                        //  long Data2100=Long.parseLong("4105615230000");
-                        int movEliminati = Funzioni.CancellaMovimentazioniXWallet(IDWallet.split("_")[0].trim() + " (" + IDWallet.split("_")[1].trim() + ")", 0, 0);
-                        if (movEliminati > 0) {
-                            Principale.TabellaCryptodaAggiornare = true;
-                            Messaggi.SuccessMessage("Cancellazione transazioni Crypto terminata",
-                                    "Numero movimenti cancellati : " + movEliminati + "<br>Ricordarsi di Salvare per non perdere le modifiche fatte sui movimenti.", this);
-                        }
+                    int movEliminati = Funzioni.CancellaMovimentazioniXWallet(walletStringa, 0, 0);
+                    if (movEliminati > 0) {
+                        Principale.TabellaCryptodaAggiornare = true;
+                        Messaggi.SuccessMessage("Cancellazione transazioni Crypto terminata",
+                                "Numero movimenti cancellati : " + movEliminati + "<br>Ricordarsi di Salvare per non perdere le modifiche fatte sui movimenti.", this);
                     }
-           
                 }
             }
         }else

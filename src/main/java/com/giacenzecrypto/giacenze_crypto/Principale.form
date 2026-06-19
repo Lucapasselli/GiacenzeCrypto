@@ -6567,67 +6567,76 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="Opzioni_ApiKey_MoralisNB_Label" alignment="1" min="-2" pref="1151" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                              <Component id="Opzioni_ApiKey_Coingecko_Label" pref="153" max="32767" attributes="0"/>
-                                              <Component id="Opzioni_ApiKey_Moralis_Label" alignment="0" max="32767" attributes="0"/>
-                                              <Component id="Opzioni_ApiKey_Cronos_Label" alignment="0" min="-2" pref="151" max="-2" attributes="0"/>
-                                          </Group>
-                                          <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
-                                          <Group type="103" groupAlignment="0" attributes="0">
-                                              <Group type="102" attributes="0">
-                                                  <EmptySpace min="-2" pref="676" max="-2" attributes="0"/>
-                                                  <Component id="Opzioni_ApiKey_Coingecko_LabelSito" min="-2" pref="381" max="-2" attributes="0"/>
-                                              </Group>
-                                              <Group type="102" alignment="0" attributes="0">
-                                                  <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
-                                                  <Component id="Opzioni_ApiKey_Moralis_TextField" min="-2" pref="656" max="-2" attributes="0"/>
-                                                  <EmptySpace type="separate" max="-2" attributes="0"/>
-                                                  <Component id="Opzioni_ApiKey_Moralis_LabelSito" min="-2" pref="381" max="-2" attributes="0"/>
-                                              </Group>
-                                              <Group type="102" alignment="0" attributes="0">
-                                                  <Component id="Opzioni_ApiKey_Bottone_Salva" min="-2" pref="120" max="-2" attributes="0"/>
-                                                  <EmptySpace max="-2" attributes="0"/>
-                                                  <Component id="Opzioni_ApiKey_Bottone_Annulla" min="-2" pref="120" max="-2" attributes="0"/>
-                                              </Group>
-                                              <Group type="102" alignment="0" attributes="0">
-                                                  <Component id="Opzioni_ApiKey_Cronos_TextField" min="-2" pref="658" max="-2" attributes="0"/>
-                                                  <EmptySpace type="separate" max="-2" attributes="0"/>
-                                                  <Component id="Opzioni_ApiKey_Cronos_LabelSito" min="-2" pref="381" max="-2" attributes="0"/>
-                                              </Group>
-                                          </Group>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                          <Component id="Opzioni_ApiKey_Coingecko_Label" max="32767" attributes="0"/>
+                                          <Component id="Opzioni_ApiKey_Moralis_Label" alignment="0" max="32767" attributes="0"/>
+                                          <Component id="Opzioni_ApiKey_Cronos_Label" alignment="0" min="-2" pref="151" max="-2" attributes="0"/>
+                                          <Component id="Opzioni_ApiKey_UniSat_Label" alignment="0" max="32767" attributes="0"/>
                                       </Group>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                              <Component id="Opzioni_ApiKey_Helius_Label" alignment="0" pref="153" max="32767" attributes="0"/>
-                                              <Component id="Opzioni_ApiKey_Etherscan_Label" alignment="0" max="32767" attributes="0"/>
-                                              <Component id="Opzioni_ApiKey_Coincap_Label" alignment="0" max="32767" attributes="0"/>
+                                      <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="Opzioni_ApiKey_Bottone_Salva" min="-2" pref="120" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="Opzioni_ApiKey_Bottone_Annulla" min="-2" pref="120" max="-2" attributes="0"/>
                                           </Group>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="Opzioni_ApiKey_Coingecko_TextField" alignment="0" min="-2" pref="656" max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                                  <Group type="102" alignment="0" attributes="0">
-                                                      <Component id="Opzioni_ApiKey_Etherscan_TextField" min="-2" pref="658" max="-2" attributes="0"/>
-                                                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                                                      <Component id="Opzioni_ApiKey_Etherscan_LabelSito" max="32767" attributes="0"/>
-                                                  </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="Opzioni_ApiKey_Cronos_TextField" min="-2" pref="658" max="-2" attributes="0"/>
+                                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                                              <Component id="Opzioni_ApiKey_Cronos_LabelSito" min="-2" pref="381" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="Opzioni_ApiKey_UniSat_TextField" min="-2" pref="658" max="-2" attributes="0"/>
+                                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                                              <Component id="Opzioni_ApiKey_UniSat_LabelSito" min="-2" pref="381" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" attributes="0">
+                                              <EmptySpace min="2" pref="2" max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
                                                   <Group type="102" attributes="0">
-                                                      <Component id="Opzioni_ApiKey_Helius_TextField" min="-2" pref="658" max="-2" attributes="0"/>
+                                                      <Component id="Opzioni_ApiKey_Coingecko_TextField" min="-2" pref="656" max="-2" attributes="0"/>
                                                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                                                      <Component id="Opzioni_ApiKey_Helius_LabelSito" max="32767" attributes="0"/>
+                                                      <Component id="Opzioni_ApiKey_Coingecko_LabelSito" min="-2" pref="381" max="-2" attributes="0"/>
                                                   </Group>
                                                   <Group type="102" alignment="0" attributes="0">
-                                                      <Component id="Opzioni_ApiKey_Coincap_TextField" min="-2" pref="658" max="-2" attributes="0"/>
+                                                      <Component id="Opzioni_ApiKey_Moralis_TextField" min="-2" pref="656" max="-2" attributes="0"/>
                                                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                                                      <Component id="Opzioni_ApiKey_Coincap_LabelSito" min="-2" pref="381" max="-2" attributes="0"/>
+                                                      <Component id="Opzioni_ApiKey_Moralis_LabelSito" min="-2" pref="381" max="-2" attributes="0"/>
                                                   </Group>
                                               </Group>
                                           </Group>
                                       </Group>
+                                  </Group>
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                          <Component id="Opzioni_ApiKey_Helius_Label" alignment="0" pref="153" max="32767" attributes="0"/>
+                                          <Component id="Opzioni_ApiKey_Etherscan_Label" alignment="0" max="32767" attributes="0"/>
+                                          <Component id="Opzioni_ApiKey_Coincap_Label" alignment="0" max="32767" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" alignment="1" attributes="0">
+                                              <Component id="Opzioni_ApiKey_Helius_TextField" min="-2" pref="658" max="-2" attributes="0"/>
+                                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                                              <Component id="Opzioni_ApiKey_Helius_LabelSito" min="-2" pref="381" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="1" attributes="0">
+                                              <Component id="Opzioni_ApiKey_Coincap_TextField" min="-2" pref="658" max="-2" attributes="0"/>
+                                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                                              <Component id="Opzioni_ApiKey_Coincap_LabelSito" min="-2" pref="381" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="1" attributes="0">
+                                              <Component id="Opzioni_ApiKey_Etherscan_TextField" min="-2" pref="658" max="-2" attributes="0"/>
+                                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                                              <Component id="Opzioni_ApiKey_Etherscan_LabelSito" min="-2" pref="381" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                  </Group>
+                                  <Group type="102" attributes="0">
+                                      <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
+                                      <Component id="Opzioni_ApiKey_MoralisNB_Label" min="-2" pref="1151" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace pref="156" max="32767" attributes="0"/>
@@ -6667,20 +6676,26 @@
                                   <Component id="Opzioni_ApiKey_Moralis_LabelSito" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="Opzioni_ApiKey_Moralis_Label" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_ApiKey_MoralisNB_Label" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
+                              <Component id="Opzioni_ApiKey_MoralisNB_Label" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="Opzioni_ApiKey_Cronos_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="Opzioni_ApiKey_Cronos_Label" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="Opzioni_ApiKey_Cronos_LabelSito" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" pref="62" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="Opzioni_ApiKey_UniSat_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_ApiKey_UniSat_Label" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_ApiKey_UniSat_LabelSito" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="Opzioni_ApiKey_Bottone_Salva" alignment="3" min="-2" pref="60" max="-2" attributes="0"/>
                                   <Component id="Opzioni_ApiKey_Bottone_Annulla" alignment="3" min="-2" pref="60" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="32767" attributes="0"/>
+                              <EmptySpace pref="525" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -6836,9 +6851,30 @@
                         <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Cronos_LabelSitoMouseExited"/>
                       </Events>
                     </Component>
+                    <Component class="javax.swing.JLabel" name="Opzioni_ApiKey_UniSat_Label">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="ApiKey UniSat (BTC Runes/BRC-20) :"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="Opzioni_ApiKey_UniSat_TextField">
+                      <Events>
+                        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_UniSat_TextFieldMouseReleased"/>
+                        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ApiKey_UniSat_TextFieldKeyReleased"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="Opzioni_ApiKey_UniSat_LabelSito">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="https://unisat.io/developer"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_UniSat_LabelSitoMouseClicked"/>
+                        <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_UniSat_LabelSitoMouseEntered"/>
+                        <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_UniSat_LabelSitoMouseExited"/>
+                      </Events>
+                    </Component>
                     <Component class="javax.swing.JLabel" name="Opzioni_ApiKey_MoralisNB_Label">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="NB : Per evitare sforamenti dei limiti giornalieri sulle api di Moralis ogni volta che si scaricano i movimenti da un wallet questi sono limitati a circa 10.000, per scaricarne altri rifare la chiamata"/>
+                        <Property name="text" type="java.lang.String" value="NB : Per evitare sforamenti dei limiti giornalieri sulle api di Moralis ogni volta che si scaricano i movimenti da un wallet questi sono limitati a circa 1.000, per scaricarne altri rifare la chiamata"/>
                       </Properties>
                     </Component>
                   </SubComponents>

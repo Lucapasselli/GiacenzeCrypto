@@ -725,6 +725,9 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKey_Cronos_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_Cronos_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Cronos_LabelSito = new javax.swing.JLabel();
+        Opzioni_ApiKey_UniSat_Label = new javax.swing.JLabel();
+        Opzioni_ApiKey_UniSat_TextField = new javax.swing.JTextField();
+        Opzioni_ApiKey_UniSat_LabelSito = new javax.swing.JLabel();
         Opzioni_ApiKey_MoralisNB_Label = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -4998,7 +5001,33 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        Opzioni_ApiKey_MoralisNB_Label.setText("NB : Per evitare sforamenti dei limiti giornalieri sulle api di Moralis ogni volta che si scaricano i movimenti da un wallet questi sono limitati a circa 10.000, per scaricarne altri rifare la chiamata");
+        Opzioni_ApiKey_UniSat_Label.setText("ApiKey UniSat (BTC Runes/BRC-20) :");
+
+        Opzioni_ApiKey_UniSat_TextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_UniSat_TextFieldMouseReleased(evt);
+            }
+        });
+        Opzioni_ApiKey_UniSat_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                Opzioni_ApiKey_UniSat_TextFieldKeyReleased(evt);
+            }
+        });
+
+        Opzioni_ApiKey_UniSat_LabelSito.setText("https://unisat.io/developer");
+        Opzioni_ApiKey_UniSat_LabelSito.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_UniSat_LabelSitoMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_UniSat_LabelSitoMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_UniSat_LabelSitoMouseExited(evt);
+            }
+        });
+
+        Opzioni_ApiKey_MoralisNB_Label.setText("NB : Per evitare sforamenti dei limiti giornalieri sulle api di Moralis ogni volta che si scaricano i movimenti da un wallet questi sono limitati a circa 1.000, per scaricarne altri rifare la chiamata");
 
         javax.swing.GroupLayout Opzioni_ApiKeyLayout = new javax.swing.GroupLayout(Opzioni_ApiKey);
         Opzioni_ApiKey.setLayout(Opzioni_ApiKeyLayout);
@@ -5006,53 +5035,60 @@ private static final long serialVersionUID = 3L;
             Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(Opzioni_ApiKey_MoralisNB_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 1151, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                            .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(Opzioni_ApiKey_Coingecko_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
-                                .addComponent(Opzioni_ApiKey_Moralis_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(Opzioni_ApiKey_Cronos_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGap(4, 4, 4)
-                            .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                                    .addGap(676, 676, 676)
-                                    .addComponent(Opzioni_ApiKey_Coingecko_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                                    .addGap(2, 2, 2)
-                                    .addComponent(Opzioni_ApiKey_Moralis_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 656, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(Opzioni_ApiKey_Moralis_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                                    .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                                    .addComponent(Opzioni_ApiKey_Cronos_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(Opzioni_ApiKey_Cronos_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                        .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                            .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(Opzioni_ApiKey_Helius_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
-                                .addComponent(Opzioni_ApiKey_Etherscan_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(Opzioni_ApiKey_Coincap_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(Opzioni_ApiKey_Coingecko_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 656, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                        .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(Opzioni_ApiKey_Coingecko_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Opzioni_ApiKey_Moralis_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Opzioni_ApiKey_Cronos_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Opzioni_ApiKey_UniSat_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(4, 4, 4)
+                        .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_Cronos_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ApiKey_Cronos_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_UniSat_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ApiKey_UniSat_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addGap(2, 2, 2)
+                                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                                        .addComponent(Opzioni_ApiKey_Etherscan_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(Opzioni_ApiKey_Coingecko_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 656, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGap(18, 18, 18)
-                                        .addComponent(Opzioni_ApiKey_Etherscan_LabelSito, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addComponent(Opzioni_ApiKey_Coingecko_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                                        .addComponent(Opzioni_ApiKey_Helius_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(Opzioni_ApiKey_Moralis_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 656, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGap(18, 18, 18)
-                                        .addComponent(Opzioni_ApiKey_Helius_LabelSito, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                                        .addComponent(Opzioni_ApiKey_Coincap_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(Opzioni_ApiKey_Coincap_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE)))))))
+                                        .addComponent(Opzioni_ApiKey_Moralis_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                        .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(Opzioni_ApiKey_Helius_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+                            .addComponent(Opzioni_ApiKey_Etherscan_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Opzioni_ApiKey_Coincap_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_Helius_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ApiKey_Helius_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_Coincap_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ApiKey_Coincap_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_Etherscan_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ApiKey_Etherscan_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(Opzioni_ApiKey_MoralisNB_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 1151, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(156, Short.MAX_VALUE))
         );
         Opzioni_ApiKeyLayout.setVerticalGroup(
@@ -5083,18 +5119,23 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_ApiKey_Moralis_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_ApiKey_Moralis_LabelSito)
                     .addComponent(Opzioni_ApiKey_Moralis_Label))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_ApiKey_MoralisNB_Label)
                 .addGap(8, 8, 8)
+                .addComponent(Opzioni_ApiKey_MoralisNB_Label)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ApiKey_Cronos_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_ApiKey_Cronos_Label)
                     .addComponent(Opzioni_ApiKey_Cronos_LabelSito))
-                .addGap(62, 62, 62)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Opzioni_ApiKey_UniSat_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_ApiKey_UniSat_Label)
+                    .addComponent(Opzioni_ApiKey_UniSat_LabelSito))
+                .addGap(18, 18, 18)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(525, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("ApiKey", Opzioni_ApiKey);
@@ -5712,6 +5753,7 @@ private void AvviaSplashScreen() {
         Opzioni_ApiKey_Coingecko_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"));
         Opzioni_ApiKey_Moralis_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"));
         Opzioni_ApiKey_Cronos_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"));
+        Opzioni_ApiKey_UniSat_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat")));
 
         
       //  System.out.println(RW_Opzioni_RilenvanteScambiFIAT.isSelected());
@@ -10958,7 +11000,8 @@ if (result != null && !result.isAction("cancel")) {
         boolean CoingeckoDiversa=true;
         boolean MoralisDiversa=true;
         boolean CronosDiversa=true;
-        
+        boolean UniSatDiversa=true;
+
         if (Opzioni_ApiKey_Helius_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))))HeliusDiversa=false;
         if (Opzioni_ApiKey_Etherscan_TextField.getText().trim()
@@ -10971,6 +11014,8 @@ if (result != null && !result.isAction("cancel")) {
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"))))MoralisDiversa=false;
         if (Opzioni_ApiKey_Cronos_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"))))CronosDiversa=false;
+        if (Opzioni_ApiKey_UniSat_TextField.getText().trim()
+                .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat"))))UniSatDiversa=false;
 
         
         //Controllo ed eventualmente salvo le api Helius
@@ -11039,6 +11084,15 @@ if (result != null && !result.isAction("cancel")) {
                                         + "L'operazione verrà annullata!<br>",this);
         }
 
+        //Controllo ed eventualmente salvo le api UniSat
+        if (UniSatDiversa&&Trans_Bitcoin.isApiKeyValida(Opzioni_ApiKey_UniSat_TextField.getText().trim())||
+                Opzioni_ApiKey_UniSat_TextField.getText().isBlank()){
+            DatabaseH2.Opzioni_Scrivi("ApiKey_UniSat", Opzioni_ApiKey_UniSat_TextField.getText().trim());
+        }else if (UniSatDiversa){
+                        Messaggi.WarningMessage("Errore in validazione chiave",
+                            "Attenzione! la ApiKey di UniSat inserita non è valida o manca la connessione internet<br>"
+                                        + "L'operazione verrà annullata!<br>",this);
+        }
 
         Opzioni_ApiKey_ControllaPulsanti();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -11052,6 +11106,7 @@ if (result != null && !result.isAction("cancel")) {
         Opzioni_ApiKey_Coingecko_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko")));
         Opzioni_ApiKey_Moralis_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis")));
         Opzioni_ApiKey_Cronos_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos")));
+        Opzioni_ApiKey_UniSat_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat")));
         Opzioni_ApiKey_ControllaPulsanti();
     }//GEN-LAST:event_Opzioni_ApiKey_Bottone_AnnullaActionPerformed
 
@@ -12168,6 +12223,30 @@ if (result != null && !result.isAction("cancel")) {
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_ApiKey_Cronos_LabelSitoMouseExited
 
+    private void Opzioni_ApiKey_UniSat_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_UniSat_TextFieldMouseReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_ApiKey_UniSat_TextFieldMouseReleased
+
+    private void Opzioni_ApiKey_UniSat_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_UniSat_TextFieldKeyReleased
+        // TODO add your handling code here:
+        Opzioni_ApiKey_ControllaPulsanti();
+    }//GEN-LAST:event_Opzioni_ApiKey_UniSat_TextFieldKeyReleased
+
+    private void Opzioni_ApiKey_UniSat_LabelSitoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_UniSat_LabelSitoMouseClicked
+        // TODO add your handling code here:
+        Funzioni.ApriWeb("https://unisat.io/developer");
+    }//GEN-LAST:event_Opzioni_ApiKey_UniSat_LabelSitoMouseClicked
+
+    private void Opzioni_ApiKey_UniSat_LabelSitoMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_UniSat_LabelSitoMouseEntered
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_Opzioni_ApiKey_UniSat_LabelSitoMouseEntered
+
+    private void Opzioni_ApiKey_UniSat_LabelSitoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_UniSat_LabelSitoMouseExited
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_Opzioni_ApiKey_UniSat_LabelSitoMouseExited
+
 
     private void Opzioni_GruppoWallet_CheckBox_PlusManualiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_CheckBox_PlusManualiActionPerformed
         // TODO add your handling code here:
@@ -12613,7 +12692,8 @@ if (result != null && !result.isAction("cancel")) {
                 Opzioni_ApiKey_Coincap_TextField.getText()+
                 Opzioni_ApiKey_Coingecko_TextField.getText()+
                 Opzioni_ApiKey_Moralis_TextField.getText()+
-                Opzioni_ApiKey_Cronos_TextField.getText();
+                Opzioni_ApiKey_Cronos_TextField.getText()+
+                Opzioni_ApiKey_UniSat_TextField.getText();
         //String NuovoValore=Opzioni_ApiKey_Helius_TextField.getText();
         String ValoreSalvato=
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))+
@@ -12621,7 +12701,8 @@ if (result != null && !result.isAction("cancel")) {
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"))+
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"))+
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"))+
-                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"));
+                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"))+
+                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat"));
        // System.out.println(ValoreSalvato);
         //String ValoreSalvato=DatabaseH2.Opzioni_Leggi("ApiKey_Helius");
         if (!NuovoValore.equals(ValoreSalvato)){
@@ -14906,6 +14987,9 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel Opzioni_ApiKey_Moralis_Label;
     private javax.swing.JLabel Opzioni_ApiKey_Moralis_LabelSito;
     private javax.swing.JTextField Opzioni_ApiKey_Moralis_TextField;
+    private javax.swing.JLabel Opzioni_ApiKey_UniSat_Label;
+    private javax.swing.JLabel Opzioni_ApiKey_UniSat_LabelSito;
+    private javax.swing.JTextField Opzioni_ApiKey_UniSat_TextField;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
     private javax.swing.JPanel Opzioni_Calcolo_Pannello;

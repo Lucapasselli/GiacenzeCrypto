@@ -30,6 +30,9 @@ import org.bitcoinj.script.ScriptBuilder;
 public class Trans_Bitcoin {
 
     private static final String MEMPOOL_API = "https://mempool.space/api";
+    private static final String UNISAT_API  = "https://open-api.unisat.io";
+    private static final int    UNISAT_PAGE = 100;
+
     private static final OkHttpClient httpClient = new OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
@@ -319,7 +322,7 @@ public class Trans_Bitcoin {
         if (isCoinbase) {
             // Ricompensa di mining: deposito BTC
             BigDecimal btcAmount = satsToDecimal(receivedSats);
-            trans.InserisciMonete("BTC", "Bitcoin", "BTC", counterparty, btcAmount.toPlainString(), "Crypto");
+            trans.InserisciMonete("BTC", "BTC", "BTC", counterparty, btcAmount.toPlainString(), "Crypto");
 
         } else if (sentSats > 0) {
             // Abbiamo speso degli input
@@ -330,7 +333,7 @@ public class Trans_Bitcoin {
             if (actualSent > 0) {
                 // Pagamento a indirizzo esterno + commissione separata
                 BigDecimal btcSent = satsToDecimal(actualSent);
-                trans.InserisciMonete("BTC", "Bitcoin", "BTC", counterparty, "-" + btcSent.toPlainString(), "Crypto");
+                trans.InserisciMonete("BTC", "BTC", "BTC", counterparty, "-" + btcSent.toPlainString(), "Crypto");
                 trans.QtaCommissioni = "-" + btcFee.toPlainString();
             } else {
                 // Auto-consolidazione (solo fee, nessuna uscita netta all'esterno)
@@ -339,7 +342,7 @@ public class Trans_Bitcoin {
         } else {
             // Ricezione pura (sentSats == 0): deposito
             BigDecimal btcAmount = satsToDecimal(receivedSats);
-            trans.InserisciMonete("BTC", "Bitcoin", "BTC", counterparty, btcAmount.toPlainString(), "Crypto");
+            trans.InserisciMonete("BTC", "BTC", "BTC", counterparty, btcAmount.toPlainString(), "Crypto");
         }
 
         if (verbose) {
@@ -426,6 +429,362 @@ public class Trans_Bitcoin {
 
         return result;
     }
+
+    // =========================================================================
+    //  UNISAT API — BRC-20 e Runes
+    // =========================================================================
+
+    /**
+     * Valida l'API key di UniSat con una chiamata di prova.
+     */
+    public static boolean isApiKeyValida(String apiKey) {
+        if (apiKey == null || apiKey.isBlank()) return false;
+        try {
+            Request req = new Request.Builder()
+                    .url(UNISAT_API + "/v1/indexer/blockchain/info")
+                    .addHeader("Authorization", "Bearer " + apiKey)
+                    .build();
+            try (Response r = httpClient.newCall(req).execute()) {
+                if (!r.isSuccessful()) return false;
+                String body = r.body() != null ? r.body().string() : "";
+                return new JSONObject(body).optInt("code", -1) == 0;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Ottiene i ticker BRC-20 per cui un indirizzo ha avuto attività (saldo attuale).
+     */
+    private static List<String> getBRC20Tickers(String address, String apiKey)
+            throws IOException, InterruptedException {
+        List<String> tickers = new ArrayList<>();
+        int cursor = 0;
+        while (true) {
+            String url = UNISAT_API + "/v1/indexer/address/" + address
+                    + "/brc20/summary?cursor=" + cursor + "&size=100";
+            Request req = new Request.Builder()
+                    .url(url).addHeader("Authorization", "Bearer " + apiKey).build();
+            try (Response r = httpClient.newCall(req).execute()) {
+                if (!r.isSuccessful()) break;
+                String body = r.body() != null ? r.body().string() : "";
+                if (!body.startsWith("{")) break;
+                JSONObject json = new JSONObject(body);
+                if (json.optInt("code", -1) != 0) break;
+                JSONObject data = json.optJSONObject("data");
+                if (data == null) break;
+                JSONArray detail = data.optJSONArray("detail");
+                if (detail == null || detail.length() == 0) break;
+                for (int i = 0; i < detail.length(); i++) {
+                    String t = detail.getJSONObject(i).optString("ticker", "");
+                    if (!t.isBlank()) tickers.add(t);
+                }
+                cursor += detail.length();
+                if (cursor >= data.optInt("total", 0)) break;
+            }
+            Thread.sleep(200);
+        }
+        return tickers;
+    }
+
+    /**
+     * Scarica la cronologia BRC-20 per un ticker su un indirizzo.
+     * Tipi UniSat: 1=inscribe-mint, 2=inscribe-transfer (preparazione, skip),
+     *              3=transfer (invio), 5=transfer-from (ricezione).
+     */
+    private static Map<String, TransazioneDefi> fetchBRC20HistoryForTicker(
+            String address, String ticker, String apiKey, int fromBlock, String walletEntry)
+            throws IOException, InterruptedException {
+
+        Map<String, TransazioneDefi> result = new LinkedHashMap<>();
+        int cursor = 0;
+        boolean done = false;
+        String encodedTicker;
+        try { encodedTicker = java.net.URLEncoder.encode(ticker, "UTF-8"); }
+        catch (Exception e) { encodedTicker = ticker; }
+
+        while (!done) {
+            String url = UNISAT_API + "/v1/indexer/address/" + address
+                    + "/brc20/" + encodedTicker + "/history?cursor=" + cursor + "&size=" + UNISAT_PAGE;
+            Request req = new Request.Builder()
+                    .url(url).addHeader("Authorization", "Bearer " + apiKey).build();
+            try (Response r = httpClient.newCall(req).execute()) {
+                if (!r.isSuccessful()) break;
+                String body = r.body() != null ? r.body().string() : "";
+                if (!body.startsWith("{")) break;
+                JSONObject json = new JSONObject(body);
+                if (json.optInt("code", -1) != 0) break;
+                JSONObject data = json.optJSONObject("data");
+                if (data == null) break;
+                JSONArray detail = data.optJSONArray("detail");
+                if (detail == null || detail.length() == 0) break;
+
+                for (int i = 0; i < detail.length(); i++) {
+                    JSONObject item = detail.getJSONObject(i);
+                    int blockHeight = item.optInt("height", item.optInt("blockHeight", 0));
+                    if (blockHeight > 0 && blockHeight <= fromBlock) { done = true; break; }
+                    if (!item.optBoolean("valid", true)) continue;
+
+                    int type = item.optInt("type", -1);
+                    if (type == 2 || type == 0 || type == -1) continue; // skip deploy e preparazione
+
+                    String txid = item.optString("txid", "");
+                    if (txid.isBlank()) continue;
+                    String amountStr = item.optString("amount", "0");
+                    if (amountStr.isBlank() || amountStr.equals("0")) continue;
+
+                    long timestamp = item.optLong("timestamp", item.optLong("time", 0));
+                    String from = item.optString("from", "");
+                    String to   = item.optString("to", "");
+
+                    boolean isMint    = (type == 1);
+                    boolean isReceive = isMint || (type == 5) || address.equalsIgnoreCase(to);
+                    boolean isSend    = (type == 3) || (!isReceive && address.equalsIgnoreCase(from));
+                    if (!isReceive && !isSend) continue;
+
+                    String counterparty = isReceive ? from : to;
+                    String qty = isSend ? "-" + amountStr : amountStr;
+                    String tickerUp = ticker.toUpperCase();
+
+                    TransazioneDefi trans = new TransazioneDefi();
+                    trans.Wallet          = walletEntry;
+                    trans.HashTransazione = txid;
+                    trans.Rete            = "BTC";
+                    trans.TransazioneOK   = true;
+                    trans.TipoTransazione = isMint ? "Mint" : "Transfer";
+                    trans.Blocco          = String.valueOf(blockHeight);
+                    trans.DataOra         = timestamp > 0
+                            ? FunzioniDate.ConvertiDatadaLongAlSecondo(timestamp * 1000L) : "";
+                    trans.TimeStamp       = String.valueOf(timestamp);
+                    trans.InserisciMonete(tickerUp, tickerUp, ticker.toLowerCase(), counterparty, qty, "Crypto");
+
+                    result.put(walletEntry + "." + txid + "_brc20_" + ticker.toLowerCase(), trans);
+                }
+
+                cursor += detail.length();
+                if (cursor >= data.optInt("total", 0) || detail.length() == 0) done = true;
+            }
+            Thread.sleep(200);
+        }
+        return result;
+    }
+
+    /**
+     * Ottiene la lista dei Rune ID con saldo corrente per un indirizzo.
+     */
+    private static List<JSONObject> getRunesBalances(String address, String apiKey)
+            throws IOException, InterruptedException {
+        List<JSONObject> runes = new ArrayList<>();
+        int cursor = 0;
+        while (true) {
+            String url = UNISAT_API + "/v1/indexer/address/" + address
+                    + "/runes/balance-list?cursor=" + cursor + "&size=100";
+            Request req = new Request.Builder()
+                    .url(url).addHeader("Authorization", "Bearer " + apiKey).build();
+            try (Response r = httpClient.newCall(req).execute()) {
+                if (!r.isSuccessful()) break;
+                String body = r.body() != null ? r.body().string() : "";
+                if (!body.startsWith("{")) break;
+                JSONObject json = new JSONObject(body);
+                if (json.optInt("code", -1) != 0) break;
+                JSONObject data = json.optJSONObject("data");
+                if (data == null) break;
+                JSONArray detail = data.optJSONArray("detail");
+                if (detail == null || detail.length() == 0) break;
+                for (int i = 0; i < detail.length(); i++) runes.add(detail.getJSONObject(i));
+                cursor += detail.length();
+                if (cursor >= data.optInt("total", 0)) break;
+            }
+            Thread.sleep(200);
+        }
+        return runes;
+    }
+
+    /**
+     * Scarica la cronologia di uno specifico Rune su un indirizzo.
+     * Tipi UniSat: "mint"=entrata da mint, "send"=uscita, "receive"=entrata, "etch"=skip.
+     */
+    private static Map<String, TransazioneDefi> fetchRunesHistoryForRune(
+            String address, String runeid, String runeName, int divisibility,
+            String apiKey, int fromBlock, String walletEntry)
+            throws IOException, InterruptedException {
+
+        Map<String, TransazioneDefi> result = new LinkedHashMap<>();
+        int cursor = 0;
+        boolean done = false;
+        String encodedRuneid;
+        try { encodedRuneid = java.net.URLEncoder.encode(runeid, "UTF-8"); }
+        catch (Exception e) { encodedRuneid = runeid.replace(":", "%3A"); }
+
+        // Simbolo senza spazi/bullet per il campo Moneta
+        String runeSymbol = runeName.replace("•", "").replace(" ", "");
+
+        while (!done) {
+            String url = UNISAT_API + "/v1/indexer/address/" + address
+                    + "/runes/" + encodedRuneid + "/history?cursor=" + cursor + "&size=" + UNISAT_PAGE;
+            Request req = new Request.Builder()
+                    .url(url).addHeader("Authorization", "Bearer " + apiKey).build();
+            try (Response r = httpClient.newCall(req).execute()) {
+                if (!r.isSuccessful()) break;
+                String body = r.body() != null ? r.body().string() : "";
+                if (!body.startsWith("{")) break;
+                JSONObject json = new JSONObject(body);
+                if (json.optInt("code", -1) != 0) break;
+                JSONObject data = json.optJSONObject("data");
+                if (data == null) break;
+                JSONArray detail = data.optJSONArray("detail");
+                if (detail == null || detail.length() == 0) break;
+
+                for (int i = 0; i < detail.length(); i++) {
+                    JSONObject item = detail.getJSONObject(i);
+                    int blockHeight = item.optInt("height", item.optInt("blockHeight", 0));
+                    if (blockHeight > 0 && blockHeight <= fromBlock) { done = true; break; }
+
+                    String txid = item.optString("txid", "");
+                    if (txid.isBlank()) continue;
+                    String type = item.optString("type", "").toLowerCase();
+                    if (type.equals("etch") || type.isBlank()) continue;
+
+                    String amountStr = item.optString("amount", "0");
+                    if (amountStr.isBlank() || amountStr.equals("0")) continue;
+
+                    BigDecimal amount;
+                    try {
+                        amount = new BigDecimal(amountStr);
+                        if (divisibility > 0)
+                            amount = amount.scaleByPowerOfTen(-divisibility).stripTrailingZeros();
+                    } catch (Exception e) { continue; }
+
+                    long timestamp = item.optLong("timestamp", item.optLong("time", 0));
+                    String from = item.optString("from", "");
+                    String to   = item.optString("to", "");
+
+                    boolean isMint    = type.equals("mint");
+                    boolean isReceive = isMint || type.equals("receive") || address.equalsIgnoreCase(to);
+                    boolean isSend    = type.equals("send") || (!isReceive && address.equalsIgnoreCase(from));
+                    if (!isReceive && !isSend) continue;
+
+                    String counterparty = isReceive ? from : to;
+                    String qty = isSend ? "-" + amount.toPlainString() : amount.toPlainString();
+
+                    TransazioneDefi trans = new TransazioneDefi();
+                    trans.Wallet          = walletEntry;
+                    trans.HashTransazione = txid;
+                    trans.Rete            = "BTC";
+                    trans.TransazioneOK   = true;
+                    trans.TipoTransazione = isMint ? "Mint" : "Transfer";
+                    trans.Blocco          = String.valueOf(blockHeight);
+                    trans.DataOra         = timestamp > 0
+                            ? FunzioniDate.ConvertiDatadaLongAlSecondo(timestamp * 1000L) : "";
+                    trans.TimeStamp       = String.valueOf(timestamp);
+                    trans.InserisciMonete(runeSymbol, runeName, runeid, counterparty, qty, "Crypto");
+
+                    String safeRuneid = runeid.replace(":", "_");
+                    result.put(walletEntry + "." + txid + "_rune_" + safeRuneid, trans);
+                }
+
+                cursor += detail.length();
+                if (cursor >= data.optInt("total", 0) || detail.length() == 0) done = true;
+            }
+            Thread.sleep(200);
+        }
+        return result;
+    }
+
+    /**
+     * Punto di ingresso con UniSat: BTC da mempool.space (gratuito) + BRC-20 e Runes da UniSat.
+     */
+    public static Map<String, TransazioneDefi> fetchAndParseTransactionsWithUniSat(
+            String walletEntry, int fromBlock, String uniSatApiKey,
+            Component ccc, Download progressb) throws InterruptedException {
+
+        Map<String, TransazioneDefi> result = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+        try {
+            Set<String> addresses;
+            if (isExtendedKey(walletEntry)) {
+                progressb.SetLabel("[BTC+UniSat] Derivazione indirizzi da chiave estesa...");
+                addresses = deriveUsedAddresses(walletEntry, progressb);
+            } else {
+                addresses = new LinkedHashSet<>();
+                addresses.add(walletEntry);
+            }
+            if (addresses.isEmpty()) {
+                System.out.println("[BTC+UniSat] Nessun indirizzo trovato per " + walletEntry);
+                return result;
+            }
+
+            // 1 – Transazioni BTC standard via mempool.space (nessun costo API UniSat)
+            progressb.SetLabel("[BTC+UniSat] Scaricamento transazioni BTC da mempool.space...");
+            Map<String, JSONObject> txById = new LinkedHashMap<>();
+            int addrDone = 0;
+            for (String addr : addresses) {
+                if (progressb.FineThread()) return result;
+                progressb.SetLabel("[BTC+UniSat] BTC " + (++addrDone) + "/" + addresses.size()
+                        + ": " + abbreviate(addr));
+                for (JSONObject tx : fetchAddressTxs(addr, fromBlock)) {
+                    txById.putIfAbsent(tx.optString("txid"), tx);
+                }
+                Thread.sleep(120);
+            }
+            List<JSONObject> sorted = new ArrayList<>(txById.values());
+            sorted.sort(Comparator.comparingInt(tx -> {
+                JSONObject s = ((JSONObject) tx).optJSONObject("status");
+                return s != null ? s.optInt("block_height", 0) : 0;
+            }));
+            System.out.println("[BTC+UniSat] " + sorted.size() + " transazioni BTC per " + walletEntry);
+            for (JSONObject tx : sorted) {
+                if (progressb.FineThread()) return result;
+                TransazioneDefi trans = parseTransaction(tx, walletEntry, addresses);
+                if (trans != null && !trans.isEmpty())
+                    result.put(walletEntry + "." + trans.HashTransazione, trans);
+            }
+
+            // 2 – BRC-20 e Runes via UniSat per ogni indirizzo derivato
+            int addrIdx = 0;
+            for (String addr : addresses) {
+                if (progressb.FineThread()) return result;
+                addrIdx++;
+
+                // BRC-20
+                progressb.SetLabel("[UniSat] BRC-20 " + addrIdx + "/" + addresses.size()
+                        + ": " + abbreviate(addr));
+                for (String ticker : getBRC20Tickers(addr, uniSatApiKey)) {
+                    if (progressb.FineThread()) return result;
+                    progressb.SetLabel("[UniSat] BRC-20 " + ticker + " su " + abbreviate(addr));
+                    result.putAll(fetchBRC20HistoryForTicker(addr, ticker, uniSatApiKey, fromBlock, walletEntry));
+                    Thread.sleep(200);
+                }
+
+                // Runes
+                progressb.SetLabel("[UniSat] Runes " + addrIdx + "/" + addresses.size()
+                        + ": " + abbreviate(addr));
+                for (JSONObject runeInfo : getRunesBalances(addr, uniSatApiKey)) {
+                    if (progressb.FineThread()) return result;
+                    String runeid    = runeInfo.optString("runeid", "");
+                    String runeName  = runeInfo.optString("rune", runeInfo.optString("spacedRune", runeid));
+                    int    divisi    = runeInfo.optInt("divisibility", 0);
+                    if (runeid.isBlank()) continue;
+                    progressb.SetLabel("[UniSat] Rune " + runeName + " su " + abbreviate(addr));
+                    result.putAll(fetchRunesHistoryForRune(
+                            addr, runeid, runeName, divisi, uniSatApiKey, fromBlock, walletEntry));
+                    Thread.sleep(200);
+                }
+            }
+
+            System.out.println("[BTC+UniSat] Totale movimenti: " + result.size() + " per " + walletEntry);
+
+        } catch (InterruptedException ex) {
+            throw ex;
+        } catch (Exception e) {
+            System.err.println("[BTC+UniSat] Errore: " + e.getMessage());
+            LoggerGC.ScriviErrore(e);
+        }
+        return result;
+    }
+
+    // =========================================================================
 
     /**
      * Valida un indirizzo Bitcoin singolo o una chiave pubblica estesa (xpub/ypub/zpub/tpub).

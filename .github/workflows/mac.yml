@@ -2,7 +2,7 @@ name: MacOS
 
 env:
   PROJECT_NAME: Giacenze_Crypto
-  JAVA_VERSION: 24
+  JAVA_VERSION: 21
   BUILD_DIR: build
 
 on:

@@ -67,37 +67,32 @@ public class Funzioni_WalletDeFi {
      public static void ApriMovimentiWallet(String Wallet,String Address,String Rete){
            
             
-                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                    try {
+                
                         if (Rete.equalsIgnoreCase("BSC")){
-                            Desktop.getDesktop().browse(new URI("https://bscscan.com/token/"+Address +"?a="+ Wallet));
+                            Funzioni.ApriWeb("https://bscscan.com/token/"+Address +"?a="+ Wallet);
                            }
                         else if(Rete.equalsIgnoreCase("CRO")){
-                           Desktop.getDesktop().browse(new URI("https://cronoscan.com/token/"+Address +"?a="+ Wallet)); 
+                           Funzioni.ApriWeb("https://cronoscan.com/token/"+Address +"?a="+ Wallet); 
                         }
                         else if(Rete.equalsIgnoreCase("ETH")){
-                           Desktop.getDesktop().browse(new URI("https://etherscan.io/token/"+Address +"?a="+ Wallet)); 
+                           Funzioni.ApriWeb("https://etherscan.io/token/"+Address +"?a="+ Wallet); 
                         }
                         else if(Rete.equalsIgnoreCase("BASE")){
-                           Desktop.getDesktop().browse(new URI("https://basescan.org/token/"+Address +"?a="+ Wallet)); 
+                           Funzioni.ApriWeb("https://basescan.org/token/"+Address +"?a="+ Wallet); 
                         }
                         else if(Rete.equalsIgnoreCase("ARB")){
-                           Desktop.getDesktop().browse(new URI("https://arbiscan.io/token/"+Address +"?a="+ Wallet)); 
+                           Funzioni.ApriWeb("https://arbiscan.io/token/"+Address +"?a="+ Wallet); 
                         }
                         else if(Rete.equalsIgnoreCase("SOL")){
-                           Desktop.getDesktop().browse(new URI("https://solscan.io/token/"+Address +"?a="+ Wallet));
+                           Funzioni.ApriWeb("https://solscan.io/token/"+Address +"?a="+ Wallet);
                         }
                         else if(Rete.equalsIgnoreCase("BERA")){
-                           Desktop.getDesktop().browse(new URI("https://berascan.com/token/"+Address +"?a="+ Wallet));
+                           Funzioni.ApriWeb("https://berascan.com/token/"+Address +"?a="+ Wallet);
                         }
                         else if(Rete.equalsIgnoreCase("BTC")){
-                           Desktop.getDesktop().browse(new URI("https://mempool.space/address/"+ Wallet));
+                           Funzioni.ApriWeb("https://mempool.space/address/"+ Wallet);
                         }
-
-                    } catch (URISyntaxException | IOException ex) {
-                        Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
+                
         
      }
      

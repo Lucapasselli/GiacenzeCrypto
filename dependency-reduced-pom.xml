@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.giacenzecrypto</groupId>
   <artifactId>Giacenze_Crypto</artifactId>
-  <version>1.0.55</version>
+  <version>1.0.56</version>
   <build>
     <plugins>
       <plugin>
@@ -25,6 +25,9 @@
                     <exclude>META-INF/*.SF</exclude>
                     <exclude>META-INF/*.DSA</exclude>
                     <exclude>META-INF/*.RSA</exclude>
+                    <exclude>META-INF/MANIFEST.MF</exclude>
+                    <exclude>module-info.class</exclude>
+                    <exclude>META-INF/versions/*/module-info.class</exclude>
                   </excludes>
                 </filter>
               </filters>
@@ -32,6 +35,7 @@
                 <transformer>
                   <mainClass>com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto</mainClass>
                 </transformer>
+                <transformer />
               </transformers>
             </configuration>
           </execution>

@@ -53,7 +53,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());
         initComponents();
-
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(TabellaWallets);
     }
 
 

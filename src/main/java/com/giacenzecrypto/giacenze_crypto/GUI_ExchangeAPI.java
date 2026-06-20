@@ -54,7 +54,8 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());
         initComponents();
-
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(TabellaWallets);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Binance_Tabella);
     }
 
 

@@ -110,6 +110,8 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         this.setIconImage(icon.getImage());
         this.setTitle("Classificazione Movimento");
         initComponents();
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(jTable1);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_MovimentiAbbinati);
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.jTable1.getModel();
         Tabelle.Funzioni_PulisciTabella(ModelloTabellaDepositiPrelievi);
         Tabelle.ColoraRigheTabellaCrypto(jTable1);
@@ -196,6 +198,8 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         this.setIconImage(icon.getImage());
         this.setTitle("Classificazione Movimento");
         initComponents();
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(jTable1);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_MovimentiAbbinati);
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.jTable1.getModel();
         Tabelle.Funzioni_PulisciTabella(ModelloTabellaDepositiPrelievi);
         Tabelle.ColoraRigheTabellaCrypto(jTable1);

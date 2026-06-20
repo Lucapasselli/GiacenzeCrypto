@@ -40,12 +40,16 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
      */
     public GUI_ModificaPrezzo() {
         initComponents();
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_PrezzoAttuale);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_Prezzi);
         ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());
-        
+
     }
     public GUI_ModificaPrezzo(String ID,Download dow) {
         initComponents();
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_PrezzoAttuale);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_Prezzi);
         PrezzoT=null;
         MU=null;
         ME=null;
@@ -70,6 +74,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
     
         public GUI_ModificaPrezzo(String ID) {
         initComponents();
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_PrezzoAttuale);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_Prezzi);
         PrezzoT=null;
         MU=null;
         ME=null;
@@ -101,6 +107,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         
         
         initComponents();
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_PrezzoAttuale);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_Prezzi);
         ModalitaRitorno=true;
         ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());  

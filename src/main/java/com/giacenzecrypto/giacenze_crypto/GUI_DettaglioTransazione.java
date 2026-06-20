@@ -372,7 +372,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
     public GUI_DettaglioTransazione() {
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
-
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella);
     }
 
     /**

@@ -23,6 +23,7 @@ private static final long serialVersionUID = 5L;
     public Gestione_Errori() {
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(TabellaErrori);
     }
 
     /**

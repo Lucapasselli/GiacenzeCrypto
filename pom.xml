@@ -107,13 +107,14 @@
                             <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
                             <filters>
                                 <filter>
-                                    <!-- Applica il filtro a tutte le dipendenze -->
                                     <artifact>*:*</artifact>
-                                    <!-- Escludi i file di firma -->
                                     <excludes>
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
+                                        <exclude>module-info.class</exclude>
+                                        <exclude>META-INF/versions/*/module-info.class</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
@@ -121,6 +122,7 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto</mainClass>
                                 </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
                             </transformers>
                         </configuration>
                     </execution>

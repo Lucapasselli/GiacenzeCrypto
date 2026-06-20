@@ -30,6 +30,9 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
     public GUI_LiFoTransazione(String IDtr) {
       //  ID=IDtr;              
         initComponents();
+        Tabelle.Tabelle_InizializzaHeader(Tabella_Lifo_Entrata);
+        Tabelle.Tabelle_InizializzaHeader(Tabella_Lifo_Uscita);
+        Tabelle.Tabelle_InizializzaHeader(jTable1);
         ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
         this.Bottone_ME_FrecciaDestra.setIcon(Icone.FrecciaDestra);
         this.Bottone_MU_FrecciaDestra.setIcon(Icone.FrecciaDestra);

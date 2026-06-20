@@ -217,6 +217,30 @@ private static final long serialVersionUID = 3L;
 
             
         initComponents();
+        // Tabelle con filtri: header completo applicato subito, Tabelle_FiltroColonne non lo rieseguirà
+        Tabelle.Tabelle_InizializzaHeader(TransazioniCryptoTabella);
+        Tabelle.Tabelle_InizializzaHeader(DepositiPrelievi_Tabella);
+        Tabelle.Tabelle_InizializzaHeader(SaldiNegativi_TabellaDettaglioMovimenti);
+        Tabelle.Tabelle_InizializzaHeader(RW_Tabella_Dettagli);
+        Tabelle.Tabelle_InizializzaHeader(RT_Tabella_DettaglioMonete);
+        Tabelle.Tabelle_InizializzaHeader(RT_Tabella_LiFo);
+        Tabelle.Tabelle_InizializzaHeader(CDC_CardWallet_Tabella1);
+        Tabelle.Tabelle_InizializzaHeader(CDC_CardWallet_Tabella2);
+        Tabelle.Tabelle_InizializzaHeader(CDC_FiatWallet_Tabella1);
+        Tabelle.Tabelle_InizializzaHeader(CDC_FiatWallet_Tabella2);
+        Tabelle.Tabelle_InizializzaHeader(CDC_FiatWallet_Tabella3);
+        Tabelle.Tabelle_InizializzaHeader(GiacenzeaData_Tabella);
+        Tabelle.Tabelle_InizializzaHeader(GiacenzeaData_TabellaDettaglioMovimenti);
+        // Tabelle senza filtri: header semplice bold+centrato
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(TransazioniCrypto_Tabella_Dettagli);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(DepositiPrelievi_TabellaCorrelati);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(SaldiNegativi_TabPrincipale);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(SituazioneImport_Tabella1);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(RW_Tabella);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(RW_Tabella_DettaglioMovimenti);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(RT_Tabella_Principale);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Opzioni_GruppoWallet_Tabella);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Opzioni_Emoney_Tabella);
       //  OverrideTabellaCrypto();
         SettaIcone();
         //Se nuova versione disponibile fa vedere il pulsante con il quale è possibile scaricarla.
@@ -875,7 +899,7 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "<html><center><b>ID<br>Transazione</b></html>", "<html><center><b>Data e Ora</b></html>", "<html><b><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><b><center>Exchange<br>/<br>Wallet</html>", "<html><b><center>Dettaglio<br>Wallet</html>", "<html><b><center>Tipo<br>Transazione<br></html>", "<html><b><center>Dettaglio<br>Movimento<br></html>", "<html><b><center>Causale<br>originale<br></html>", "<html><b><center>Moneta<br>Ven./Trasf.</html>", "<html><b><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><b><center>Qta<br>Ven./Trasf.</html>", "<html><b><center>Moneta<br>Acq./Ric.</html>", "<html><b><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><b><center>Qta<br>Acq./Ric.</html>", "<html><b><center>Valore <br>transazione<br>come da CSV</html>", "<html><b><center>Valore<br>transazione<br>in EURO</html>", "<html><b><center>Costo di Carico C.A. Uscente</html>", "<html><b><center>Nuovo<br>Costo di Carico<br>in EURO</html>", "<html><b><center><html><center>Tipo Trasferimento</html></html>", "<html><b><center>Plusvalenza<br>in EURO</html>", "<html><b><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "DeFi - Blocco Transazione", "DeFi - Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "DeFi - Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento con Plusvalenza", "Rete", "null", "null", "null", "Errori", "null"
+                "<html><center>ID<br>Transazione</html>", "<html><center>Data e Ora</html>", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico C.A. Uscente</html>", "<html><center>Nuovo<br>Costo di Carico<br>in EURO</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "DeFi - Blocco Transazione", "DeFi - Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "DeFi - Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento con Plusvalenza", "Rete", "null", "null", "null", "Errori", "null"
             }
         ) {
             Class[] types = new Class [] {
@@ -921,12 +945,12 @@ private static final long serialVersionUID = 3L;
             TransazioniCryptoTabella.getColumnModel().getColumn(7).setMinWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(7).setPreferredWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(7).setMaxWidth(0);
-            TransazioniCryptoTabella.getColumnModel().getColumn(8).setMinWidth(60);
-            TransazioniCryptoTabella.getColumnModel().getColumn(8).setPreferredWidth(60);
-            TransazioniCryptoTabella.getColumnModel().getColumn(8).setMaxWidth(100);
-            TransazioniCryptoTabella.getColumnModel().getColumn(11).setMinWidth(60);
-            TransazioniCryptoTabella.getColumnModel().getColumn(11).setPreferredWidth(60);
-            TransazioniCryptoTabella.getColumnModel().getColumn(11).setMaxWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(8).setMinWidth(70);
+            TransazioniCryptoTabella.getColumnModel().getColumn(8).setPreferredWidth(70);
+            TransazioniCryptoTabella.getColumnModel().getColumn(8).setMaxWidth(120);
+            TransazioniCryptoTabella.getColumnModel().getColumn(11).setMinWidth(65);
+            TransazioniCryptoTabella.getColumnModel().getColumn(11).setPreferredWidth(65);
+            TransazioniCryptoTabella.getColumnModel().getColumn(11).setMaxWidth(120);
             TransazioniCryptoTabella.getColumnModel().getColumn(12).setMinWidth(60);
             TransazioniCryptoTabella.getColumnModel().getColumn(12).setPreferredWidth(60);
             TransazioniCryptoTabella.getColumnModel().getColumn(12).setMaxWidth(60);
@@ -997,7 +1021,7 @@ private static final long serialVersionUID = 3L;
             TransazioniCryptoTabella.getColumnModel().getColumn(39).setPreferredWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(39).setMaxWidth(0);
         }
-        TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 82));
+        TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 100));
         Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);
         Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
 
@@ -1443,7 +1467,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo))
                 .addGap(5, 5, 5)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1496,7 +1520,7 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "<html><center><b>ID_Transazione</b></html>", "<html><center><b>Data e Ora</b></html>", "<html><center><b>Exchange / Wallet</b></html>", "<html><center><b>Tipo Transazione</b></html>", "<html><center><b>Moneta</b></html>", "<html><center><b>Qta</b></html>", "<html><center><b>Dettaglio Trasferimento</b></html>", "<html><center><b>Prezzo</b></html>", "<html><center><b>Dett. Defi/CSV</b></html>", "<html><center><b>Controparte</b></html>"
+                "ID_Transazione", "Data e Ora", "Exchange / Wallet", "Tipo Transazione", "Moneta", "<html><center>Qta</html>", "Dettaglio Trasferimento", "<html><center>Prezzo</html>", "Dett. Defi/CSV", "Controparte"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -1835,12 +1859,10 @@ private static final long serialVersionUID = 3L;
                 .addContainerGap()
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2)
-                    .addComponent(jScrollPane14)
+                    .addComponent(jScrollPane14, javax.swing.GroupLayout.DEFAULT_SIZE, 1389, Short.MAX_VALUE)
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                                .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                                 .addComponent(DepositiPrelievi_Label_FiltroWallet)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1852,7 +1874,7 @@ private static final long serialVersionUID = 3L;
                                 .addGap(18, 18, 18)
                                 .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(70, 70, 70)
-                                .addComponent(DepositiPrelievi_CheckBox_mostraFIAT, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)))
+                                .addComponent(DepositiPrelievi_CheckBox_mostraFIAT, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addContainerGap())
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                         .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1880,7 +1902,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)
                     .addComponent(DepositiPrelievi_CheckBox_mostraFIAT))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
@@ -1894,10 +1916,10 @@ private static final long serialVersionUID = 3L;
                         .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
                         .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(DepositiPrelievi_Bottone_Duplica, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 30, Short.MAX_VALUE)
+                .addGap(9, 9, 9)
                 .addComponent(jLabel21)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane14, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane14, javax.swing.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -2109,10 +2131,10 @@ private static final long serialVersionUID = 3L;
         });
         jScrollPane3.setViewportView(SituazioneImport_Tabella1);
         if (SituazioneImport_Tabella1.getColumnModel().getColumnCount() > 0) {
-            SituazioneImport_Tabella1.getColumnModel().getColumn(1).setPreferredWidth(150);
-            SituazioneImport_Tabella1.getColumnModel().getColumn(1).setMaxWidth(150);
-            SituazioneImport_Tabella1.getColumnModel().getColumn(2).setPreferredWidth(150);
-            SituazioneImport_Tabella1.getColumnModel().getColumn(2).setMaxWidth(150);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(1).setPreferredWidth(180);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(1).setMaxWidth(180);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(2).setPreferredWidth(180);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(2).setMaxWidth(180);
             SituazioneImport_Tabella1.getColumnModel().getColumn(3).setPreferredWidth(150);
             SituazioneImport_Tabella1.getColumnModel().getColumn(3).setMaxWidth(150);
         }
@@ -2155,9 +2177,12 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        GiacenzeaData_Data_Label.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
+        GiacenzeaData_Data_Label.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         GiacenzeaData_Data_Label.setText("Data : ");
 
         GiacenzeaData_Data_DataChooser.setDateFormatString("yyyy-MM-dd");
+        GiacenzeaData_Data_DataChooser.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         GiacenzeaData_Data_DataChooser.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 GiacenzeaData_Data_DataChooserPropertyChange(evt);
@@ -2424,28 +2449,6 @@ private static final long serialVersionUID = 3L;
                 .addContainerGap()
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jSeparator5)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, GiacenzeaDataLayout.createSequentialGroup()
-                        .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE)
-                            .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(GiacenzeaData_Data_Label)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(15, 15, 15)
-                        .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(GiacenzeaDataLayout.createSequentialGroup()
-                        .addComponent(GiacenzeaData_Wallet_Label)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(GiacenzeaData_Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 428, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 380, Short.MAX_VALUE)
-                        .addComponent(GiacenzeaData_Wallet2_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(GiacenzeaData_Wallet2_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 454, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(GiacenzeaData_ScrollPane)
                     .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti)
                     .addGroup(GiacenzeaDataLayout.createSequentialGroup()
@@ -2474,7 +2477,32 @@ private static final long serialVersionUID = 3L;
                         .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
                         .addGap(44, 44, 44)
                         .addComponent(GiacenzeaData_CheckBox_NascondiScam, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, GiacenzeaDataLayout.createSequentialGroup()
+                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(GiacenzeaDataLayout.createSequentialGroup()
+                                .addComponent(GiacenzeaData_Wallet_Label)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(GiacenzeaData_Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 428, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(GiacenzeaDataLayout.createSequentialGroup()
+                                .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
+                                    .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(GiacenzeaData_Data_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(GiacenzeaData_Wallet2_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(GiacenzeaDataLayout.createSequentialGroup()
+                                .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(15, 15, 15)
+                                .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(GiacenzeaData_Wallet2_ComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
         );
         GiacenzeaDataLayout.setVerticalGroup(
             GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2486,21 +2514,18 @@ private static final long serialVersionUID = 3L;
                     .addComponent(GiacenzeaData_Wallet2_Label)
                     .addComponent(GiacenzeaData_Wallet2_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(GiacenzeaDataLayout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(GiacenzeaData_Data_Label)
-                            .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.DEFAULT_SIZE, 48, Short.MAX_VALUE)
-                    .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addGroup(GiacenzeaDataLayout.createSequentialGroup()
-                        .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
+                        .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(GiacenzeaData_Data_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(8, 8, 8)
+                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
                 .addGap(9, 9, 9)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
@@ -2521,7 +2546,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Giacenzeadata_Dettaglio_Label)
                     .addComponent(GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_Totali_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2589,7 +2614,7 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Anno", "Gr. Inizio", "Mon. Inizio", "Qta Inizio", "Data Inizio", "Val. Inizio", "Gr. Fine", "Mon. Fine", "Qta Fine", "Data Fine", "Val. Finale", "Giorni", "Causale", "IDApertura", "IDChiusura", "Errore / Avvisi", "IDMovimentati"
+                "Anno", "Gr. Inizio", "<html>Mon. <br>Inizio</html>", "Qta Inizio", "Data Inizio", "Val. Inizio", "Gr. Fine", "<html>Mon. <br>Fine</html>", "Qta Fine", "Data Fine", "Val. Finale", "Giorni", "Causale", "IDApertura", "IDChiusura", "Errore / Avvisi", "IDMovimentati"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -4553,8 +4578,8 @@ private static final long serialVersionUID = 3L;
             Opzioni_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_CardWallet_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(733, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Pulizia CDC Card Wallet", Opzioni_CardWallet_Pannello);
@@ -4590,10 +4615,10 @@ private static final long serialVersionUID = 3L;
             Opzioni_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_FiatWallet_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet)
+                .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(678, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Pulizia CDC Fiat Wallet", Opzioni_FiatWallet_Pannello);
@@ -4616,6 +4641,7 @@ private static final long serialVersionUID = 3L;
 
         jLabel8.setText("->");
 
+        Opzioni_Combobox_CancellaTransazioniCryptoXwallet.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "----------" }));
 
         javax.swing.GroupLayout Opzioni_Crypto_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Crypto_Pannello);
@@ -4638,13 +4664,13 @@ private static final long serialVersionUID = 3L;
             Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_Crypto_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(Opzioni_Bottone_CancellaTransazioniCrypto)
+                .addComponent(Opzioni_Bottone_CancellaTransazioniCrypto, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Opzioni_Bottone_CancellaTransazioniCryptoXwallet)
+                    .addComponent(Opzioni_Bottone_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel8)
-                    .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(677, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Pulizia Crypto", Opzioni_Crypto_Pannello);
@@ -4730,7 +4756,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_Pulizie_DataChooser_Finale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel20))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 789, Short.MAX_VALUE)
+                .addComponent(jTabbedPane2)
                 .addContainerGap())
         );
 
@@ -9829,7 +9855,7 @@ if (result.isAction("delete-all")) {
                     
                     if (dataInserita<=dataIeri){
                         //Gestisco il fatto che la data indicata va bene e la salvo anche nel database
-                        DatabaseH2.Pers_Opzioni_Scrivi("GiacenzeAData_Data", CDC_DataFinale);
+                        DatabaseH2.Pers_Opzioni_Scrivi("GiacenzeAData_Data", Data);
                     }
                     else if(Funzioni_Date_ConvertiDatainLong(Data)>Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
                         Messaggi.WarningMessage("Data errata", "Attenzione, la data inserita non può essere superiore alla data di ieri", this);

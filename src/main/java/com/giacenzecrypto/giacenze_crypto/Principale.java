@@ -710,6 +710,8 @@ private static final long serialVersionUID = 3L;
         Opzioni_Crypto_Pannello = new javax.swing.JPanel();
         Opzioni_Bottone_CancellaTransazioniCrypto = new javax.swing.JButton();
         Opzioni_Bottone_CancellaTransazioniCryptoXwallet = new javax.swing.JButton();
+        Opzioni_PrezziKO_Pannello = new javax.swing.JPanel();
+        Opzioni_Bottone_PuliziaPrezziKO = new javax.swing.JButton();
         jLabel8 = new javax.swing.JLabel();
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet = new javax.swing.JComboBox<>();
         Opzioni_Pulizie_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -4674,6 +4676,33 @@ private static final long serialVersionUID = 3L;
         );
 
         jTabbedPane2.addTab("Pulizia Crypto", Opzioni_Crypto_Pannello);
+
+        Opzioni_Bottone_PuliziaPrezziKO.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Cestino.png"))); // NOI18N
+        Opzioni_Bottone_PuliziaPrezziKO.setText("Elimina record PrezziKO nel periodo selezionato");
+        Opzioni_Bottone_PuliziaPrezziKO.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Bottone_PuliziaPrezziKOActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout Opzioni_PrezziKO_PannelloLayout = new javax.swing.GroupLayout(Opzioni_PrezziKO_Pannello);
+        Opzioni_PrezziKO_Pannello.setLayout(Opzioni_PrezziKO_PannelloLayout);
+        Opzioni_PrezziKO_PannelloLayout.setHorizontalGroup(
+            Opzioni_PrezziKO_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_PrezziKO_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Opzioni_Bottone_PuliziaPrezziKO, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        Opzioni_PrezziKO_PannelloLayout.setVerticalGroup(
+            Opzioni_PrezziKO_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_PrezziKO_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Opzioni_Bottone_PuliziaPrezziKO, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(733, Short.MAX_VALUE))
+        );
+
+        jTabbedPane2.addTab("Pulizia PrezziKO", Opzioni_PrezziKO_Pannello);
 
         Opzioni_Pulizie_DataChooser_Iniziale.setDateFormatString("yyyy-MM-dd");
         Opzioni_Pulizie_DataChooser_Iniziale.setFont(Opzioni_Pulizie_DataChooser_Iniziale.getFont().deriveFont(Opzioni_Pulizie_DataChooser_Iniziale.getFont().getStyle() | java.awt.Font.BOLD));
@@ -8817,6 +8846,40 @@ if (result.isAction("delete-all")) {
             ".<br>Ricordarsi di salvare per non perdere le modifiche effettuate.", this);
 }
     }//GEN-LAST:event_Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed
+
+    private void Opzioni_Bottone_PuliziaPrezziKOActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_PuliziaPrezziKOActionPerformed
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+        String dataIniziale = f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
+        String dataFinale = f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
+
+        long timeStampIniziale = FunzioniDate.ConvertiDatainLong(dataIniziale);
+        long timeStampFinale = FunzioniDate.ConvertiDatainLong(dataFinale) + 86400000;
+
+        AppDialog.DialogResult result = AppDialog.builder(this)
+                .windowTitle("Pulizia cache prezzi irrecuperabili")
+                .bodyTitle("Eliminare i record PrezziKO?")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message("Stai per cancellare i record della cache dei prezzi irrecuperabili nel periodo selezionato.")
+                .details("""
+                        Intervallo incluso: dal %s al %s.
+
+                        I prezzi cancellati verranno ricalcolati al prossimo caricamento.
+                        """.formatted(dataIniziale, dataFinale))
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("delete-range", "Elimina")
+                        .role(AppDialog.ActionRole.DANGER)
+                        .build())
+                .showDialog();
+
+        if (result != null && result.isAction("delete-range")) {
+            int rimossi = Prezzi.PrezziKO_CancellaPeriodo(timeStampIniziale, timeStampFinale);
+            Messaggi.SuccessMessage("Record eliminati", "Sono stati eliminati " + rimossi + " record dalla cache PrezziKO.", this);
+        }
+    }//GEN-LAST:event_Opzioni_Bottone_PuliziaPrezziKOActionPerformed
 
     private void CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed
         // TODO add your handling code here:
@@ -15031,10 +15094,12 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JTextField Opzioni_ApiKey_UniSat_TextField;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
+    private javax.swing.JButton Opzioni_Bottone_PuliziaPrezziKO;
     private javax.swing.JPanel Opzioni_Calcolo_Pannello;
     private javax.swing.JPanel Opzioni_CardWallet_Pannello;
     private javax.swing.JComboBox<String> Opzioni_Combobox_CancellaTransazioniCryptoXwallet;
     private javax.swing.JPanel Opzioni_Crypto_Pannello;
+    private javax.swing.JPanel Opzioni_PrezziKO_Pannello;
     private javax.swing.JButton Opzioni_Emoney_Bottone_Aggiungi;
     private javax.swing.JButton Opzioni_Emoney_Bottone_Precompila;
     private javax.swing.JButton Opzioni_Emoney_Bottone_Rimuovi;

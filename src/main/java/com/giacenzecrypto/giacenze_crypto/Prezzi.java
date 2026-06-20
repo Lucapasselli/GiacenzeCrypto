@@ -2624,6 +2624,18 @@ public static boolean PrezzoIrrecuperabileDaDB_Leggi(
         }
 }
 
+public static int PrezziKO_CancellaPeriodo(long timestampIniziale, long timestampFinale) {
+    String sql = "DELETE FROM PrezziKO WHERE timestamp >= ? AND timestamp < ?";
+    try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(sql)) {
+        ps.setLong(1, timestampIniziale);
+        ps.setLong(2, timestampFinale);
+        return ps.executeUpdate();
+    } catch (SQLException ex) {
+        LoggerGC.ScriviErrore(ex);
+        return 0;
+    }
+}
+
 /**
  * Recupera dal database il prezzo più vicino a un determinato timestamp per un dato token.
  * <p>

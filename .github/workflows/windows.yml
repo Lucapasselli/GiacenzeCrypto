@@ -1,7 +1,7 @@
 name: Windows
 env:
   PROJECT_NAME: Giacenze_Crypto
-  JAVA_VERSION: 24
+  JAVA_VERSION: 26
   BUILD_DIR: build
 on:
   workflow_dispatch:

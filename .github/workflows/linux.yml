@@ -2,7 +2,7 @@ name: Linux
 
 env:
   PROJECT_NAME: Giacenze_Crypto
-  JAVA_VERSION: 24
+  JAVA_VERSION: 26
   BUILD_DIR: build
   WORKDIR: $HOME/Giacenze Crypto/
 

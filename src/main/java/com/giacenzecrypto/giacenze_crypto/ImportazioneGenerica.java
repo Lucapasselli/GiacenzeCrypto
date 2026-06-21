@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.time.ZonedDateTime;
@@ -56,8 +58,28 @@ public class ImportazioneGenerica {
     
     public static boolean importa(String fileCSV, String fileConfigurazione,
         boolean sovrascriEsistenti, Download progressb) {
-    return importa(fileCSV, fileConfigurazione, sovrascriEsistenti, progressb, null);
+    return importa(fileCSV, fileConfigurazione, sovrascriEsistenti, progressb, null, null);
 }
+
+    public static boolean importa(String fileCSV, String fileConfigurazione,
+        boolean sovrascriEsistenti, Download progressb, String nomeExchangeOverride) {
+    return importa(fileCSV, fileConfigurazione, sovrascriEsistenti, progressb, nomeExchangeOverride, null);
+}
+
+    /**
+     * Cerca nel nome del file pattern di fuso orario come UTC, UTC+1, UTC+2, CET.
+     * Restituisce il pattern trovato (es. "UTC+1", "CET") oppure null.
+     */
+    public static String estraiTZdaNomeFile(String nomeFile) {
+        if (nomeFile == null || nomeFile.isBlank()) return null;
+        Pattern p = Pattern.compile("(?i)\\b(UTC[+-]\\d{1,2}(?::\\d{2})?|UTC|CET)\\b");
+        //Pattern p = Pattern.compile("\\(UTC([+-]?\\d*)\\)");
+        Matcher m = p.matcher(nomeFile);
+        if (m.find()) {
+            return m.group(1).toUpperCase();
+        }
+        return null;
+    }
     
     
     
@@ -101,7 +123,7 @@ public class ImportazioneGenerica {
      * {@code false} in caso di errore
      */
     public static boolean importa(String fileCSV, String fileConfigurazione,
-            boolean sovrascriEsistenti, Download progressb,String nomeExchangeOverride) {
+            boolean sovrascriEsistenti, Download progressb, String nomeExchangeOverride, String fusoOverride) {
 
         Importazioni.AzzeraContatori();
 
@@ -113,10 +135,12 @@ public class ImportazioneGenerica {
             return false;
         }
 
-        // Applico l'override se fornito
-    if (nomeExchangeOverride != null && !nomeExchangeOverride.isBlank()) {
-        cfg.nomeExchange = nomeExchangeOverride;
-    }
+        if (nomeExchangeOverride != null && !nomeExchangeOverride.isBlank()) {
+            cfg.nomeExchange = nomeExchangeOverride;
+        }
+        if (fusoOverride != null && !fusoOverride.isBlank()) {
+            cfg.fuso = fusoOverride;
+        }
         
         List<String[]> righe;
         try {
@@ -1140,11 +1164,13 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         if (f.equalsIgnoreCase("UTC")) return ZoneOffset.UTC;
 
         String up = f.toUpperCase();
-        if (up.startsWith("UTC+") || up.startsWith("UTC-")) {
-            return ZoneOffset.of(f.substring(3).trim());
-        }
-        if (up.startsWith("GMT+") || up.startsWith("GMT-")) {
-            return ZoneOffset.of(f.substring(3).trim());
+        if (up.startsWith("UTC+") || up.startsWith("UTC-") || up.startsWith("GMT+") || up.startsWith("GMT-")) {
+            String offset = f.substring(3).trim();
+            // ZoneOffset.of richiede "+HH" (2 cifre), normalizzo "+1" → "+01"
+            if (offset.matches("[+-]\\d")) {
+                offset = offset.charAt(0) + "0" + offset.charAt(1);
+            }
+            return ZoneOffset.of(offset);
         }
 
         return ZoneId.of(f);

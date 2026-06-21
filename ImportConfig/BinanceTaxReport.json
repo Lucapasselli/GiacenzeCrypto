@@ -10,6 +10,7 @@
   "fuso": "Europe/Rome",
   "separatoreCausale": ".",
   "causaliUppercase": true,
+  "testing":true,
   "colonne": {
     "idTransazione": 0,
     "data": 1,

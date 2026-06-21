@@ -9,6 +9,7 @@
   "autoDetectColonne": false,
   "formatoData": "yyyy-MM-dd HH:mm:ss",
   "fuso": "",
+  "testing":true,
   "colonne": {
     "idTransazione": 0,
     "data": 1,

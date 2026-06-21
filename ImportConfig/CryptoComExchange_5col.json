@@ -7,6 +7,7 @@
   "righeIntestazione": 1,
   "formatoData": "yyyy-MM-dd HH:mm:ss",
   "fuso": "Europe/Rome",
+  "testing":true,
   "colonne": {
     "data": 0,
     "moneta": 1,

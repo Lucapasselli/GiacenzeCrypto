@@ -7,7 +7,7 @@
   "righeIntestazione": 1,
   "autoDetectColonne": false,
   "formatoData": "yyyy-MM-dd HH:mm:ss",
-  "fuso": "UTC",
+  "fuso": "UTC?",
   "colonne": {
     "data": 1,
     "causale": 3,
@@ -16,7 +16,10 @@
   },
   "consolidaRigheStessaData": true,
   "tolleranzaSecondiConsolidamento": 1,
-  "causaliDifferite": [],
+  "causaliDifferite": [
+  "Small Assets Exchange BNB (Spot)",
+  "Small Assets Exchange BNB"
+  ],
   "mappaCausali": {
     "Binance Card Cashback":                          "CASHBACK",
     "Card Cashback":                                  "CASHBACK",

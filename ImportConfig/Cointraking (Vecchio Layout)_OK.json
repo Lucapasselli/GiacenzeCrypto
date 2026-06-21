@@ -7,7 +7,7 @@
   "formatoData": "yyyy-MM-dd HH:mm:ss",
   "fuso": "Europe/Rome",
   "consolidaRigheStessaData": false,
-
+"testing":true,
   "colonne": {
     "causale":        0,
     "quantita":       1,

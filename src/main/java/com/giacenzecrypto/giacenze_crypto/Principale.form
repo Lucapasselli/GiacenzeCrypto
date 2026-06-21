@@ -416,7 +416,7 @@
                           <Component id="TransazioniCrypto_CheckBox_VediSenzaPrezzo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                      <Component id="TransazioniCrypto_ScrollPane" pref="479" max="32767" attributes="0"/>
+                      <Component id="TransazioniCrypto_ScrollPane" pref="475" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="TransazioniCrypto_Label_Plusvalenza" min="-2" pref="31" max="-2" attributes="0"/>
@@ -5029,7 +5029,7 @@
                                   <Component id="Opzioni_GruppoWallet_ScrollTabella" pref="1448" max="32767" attributes="0"/>
                                   <Component id="jScrollPane1" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="Opzioni_GruppoWallet_Bottone_Rinomina" min="-2" pref="168" max="-2" attributes="0"/>
+                                      <Component id="Opzioni_GruppoWallet_Bottone_Rinomina" min="-2" pref="210" max="-2" attributes="0"/>
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
@@ -5041,10 +5041,10 @@
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="jScrollPane1" min="-2" pref="52" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_GruppoWallet_ScrollTabella" pref="697" max="32767" attributes="0"/>
+                              <Component id="Opzioni_GruppoWallet_ScrollTabella" pref="733" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_GruppoWallet_Bottone_Rinomina" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="84" max="-2" attributes="0"/>
+                              <Component id="Opzioni_GruppoWallet_Bottone_Rinomina" min="-2" pref="50" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="64" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -5137,7 +5137,7 @@
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/Images/24_Modifica.png"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="Rinomina Alias"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;h2&gt;Rinomina Alias&lt;/h2&gt;&lt;/html&gt;"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_GruppoWallet_Bottone_RinominaActionPerformed"/>

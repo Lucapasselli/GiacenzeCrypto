@@ -1469,7 +1469,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo))
                 .addGap(5, 5, 5)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 475, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -3883,7 +3883,7 @@ private static final long serialVersionUID = 3L;
         jScrollPane1.setViewportView(jTextArea1);
 
         Opzioni_GruppoWallet_Bottone_Rinomina.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
-        Opzioni_GruppoWallet_Bottone_Rinomina.setText("Rinomina Alias");
+        Opzioni_GruppoWallet_Bottone_Rinomina.setText("<html><h2>Rinomina Alias</h2></html>");
         Opzioni_GruppoWallet_Bottone_Rinomina.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_GruppoWallet_Bottone_RinominaActionPerformed(evt);
@@ -3900,7 +3900,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 1448, Short.MAX_VALUE)
                     .addComponent(jScrollPane1)
                     .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
-                        .addComponent(Opzioni_GruppoWallet_Bottone_Rinomina, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(Opzioni_GruppoWallet_Bottone_Rinomina, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
         Opzioni_GruppoWallet_PannelloLayout.setVerticalGroup(
@@ -3908,10 +3908,10 @@ private static final long serialVersionUID = 3L;
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 697, Short.MAX_VALUE)
+                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 733, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_GruppoWallet_Bottone_Rinomina)
-                .addGap(84, 84, 84))
+                .addComponent(Opzioni_GruppoWallet_Bottone_Rinomina, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(64, 64, 64))
         );
 
         Opzioni_TabbedPane.addTab("Gruppi Wallet Crypto", Opzioni_GruppoWallet_Pannello);
@@ -7334,9 +7334,15 @@ private void AvviaSplashScreen() {
         Map<String, String[]> Mappa_GruppiAlias=DatabaseH2.Pers_GruppoAlias_LeggiTabella();
         JComboBox<String> comboBox = new JComboBox<>();
         JCheckBox CheckBox=new JCheckBox();
-        for(String Item[]: Mappa_GruppiAlias.values()){
-            
-            comboBox.addItem(Item[0]+" ( "+Item[1]+" )");
+        // Wallet 99 sempre primo nella lista
+        String[] w99 = Mappa_GruppiAlias.get("Wallet 99");
+        if (w99 != null) {
+            comboBox.addItem(w99[0] + " ( " + w99[1] + " )");
+        }
+        for (String[] Item : Mappa_GruppiAlias.values()) {
+            if (!Item[0].equalsIgnoreCase("Wallet 99")) {
+                comboBox.addItem(Item[0] + " ( " + Item[1] + " )");
+            }
         }
  
 TableColumn testColumn = Opzioni_GruppoWallet_Tabella.getColumnModel().getColumn(1);
@@ -9729,6 +9735,12 @@ if (result.isAction("delete-all")) {
             String gruppo = Opzioni_GruppoWallet_Tabella.getModel()
                     .getValueAt(rigaSelezionataModel, 1).toString();
             gruppo = gruppo.split("\\(")[0].trim();
+
+            if (gruppo.equalsIgnoreCase("Wallet 99")) {
+                Messaggi.WarningMessage("Operazione non consentita",
+                        "L'alias del gruppo 'Wallet 99 – Wallet da Classificare' è fisso e non può essere modificato.", this);
+                return;
+            }
 
             String[] valori = DatabaseH2.Pers_GruppoAlias_Leggi(gruppo);
             String m = Messaggi.Personalizzati_Input_AliasGruppoWallet(gruppo, valori[1], this);

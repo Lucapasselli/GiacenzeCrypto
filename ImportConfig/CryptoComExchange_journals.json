@@ -7,6 +7,7 @@
   "righeIntestazione": 1,
   "formatoData": "yyyy-MM-dd HH:mm:ss",
   "fuso": "UTC",
+  "testing":true,
   "colonne": {
     "idTransazione": 11,
     "data": 2,

@@ -22,7 +22,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
-import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
@@ -53,7 +53,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());
         initComponents();
-
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(TabellaWallets);
     }
 
 
@@ -151,7 +151,11 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         Label_Rete.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_Rete.setText("Rete :");
 
-        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Arbitrum (ARB)", "Avalanche (AVAX)", "Base (BASE)", "Berachain (BERA)", "Binance Smart Chain (BSC)", "Cronos Chain (CRO)", "Ethereum (ETH)", "Solana (SOL)", "Polygon (POL)", "Monad (MONAD)", " " }));
+        TextField_IndirizzoWallet.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
+        ComboBox_Rete.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Arbitrum (ARB)", "Avalanche (AVAX)", "Base (BASE)", "Berachain (BERA)", "Binance Smart Chain (BSC)", "Bitcoin (BTC)", "Cronos Chain (CRO)", "Ethereum (ETH)", "Solana (SOL)", "Polygon (POL)", "Monad (MONAD)", " " }));
+
 
         Bottone_Aggiorna.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Aggiorna.png"))); // NOI18N
         Bottone_Aggiorna.addActionListener(new java.awt.event.ActionListener() {
@@ -174,48 +178,44 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ScrollPaneTabellaWallets)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(Label_Rete, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(ComboBox_Rete, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(96, 96, 96)
-                                .addComponent(Bottone_InserisciWallet))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(Label_IndirizzoWallet)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(TextField_IndirizzoWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 433, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(Label_IndirizzoWallet)
+                    .addComponent(Label_Rete, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(ComboBox_Rete, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(Bottone_RimuoviWallet, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                        .addComponent(Bottone_InserisciWallet))
+                    .addComponent(TextField_IndirizzoWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 433, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(Bottone_RimuoviWallet, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
+                .addContainerGap())
+            .addComponent(ScrollPaneTabellaWallets, javax.swing.GroupLayout.Alignment.TRAILING)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(ScrollPaneTabellaWallets, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
+                .addComponent(ScrollPaneTabellaWallets, javax.swing.GroupLayout.PREFERRED_SIZE, 362, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(TextField_IndirizzoWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
                             .addComponent(Label_IndirizzoWallet)
-                            .addComponent(TextField_IndirizzoWallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(Bottone_RimuoviWallet))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(Label_Rete)
-                                .addComponent(ComboBox_Rete, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(Bottone_InserisciWallet))
-                            .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                            .addComponent(Bottone_RimuoviWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(7, 7, 7)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(ComboBox_Rete, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Label_Rete)
+                            .addComponent(Bottone_InserisciWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -257,20 +257,17 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         }
         if(ComboBox_Rete.getSelectedIndex()==0){
             //non è valido la selezione della combobox
-            JOptionPane.showConfirmDialog(this, "Attenzione! \nDevi selezionare una rete valida",
-                            "Rete non valida",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);            
+            Messaggi.WarningMessage("Rete non valida", "Attenzione! <br>Devi selezionare una rete valida", this);
         }
         else if (!Funzioni_WalletDeFi.isValidAddress(Wallet,Rete)){
                 //non è un indirizzo di wallet valido
-            JOptionPane.showConfirmDialog(this, "Attenzione! \nIl Wallet specificato non è valido",
-                            "Wallet non Valido",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+            Messaggi.WarningMessage("Wallet non Valido", "Attenzione! <br>Il Wallet specificato non è valido", this);
         }
         else{
             //Se arrivo qui i dati sono corretti adesso devo
             //1 - Controllare se non esiste già un wallet della stessa rete con lo stesso indirizzo
             if (MappaWallets.get(Wallet+"_"+Rete)!=null){
-                JOptionPane.showConfirmDialog(this, "Attenzione! \nWallet gia' prensente nella lista",
-                            "Wallet gia' presente",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);  
+                Messaggi.WarningMessage("Wallet gia' presente", "Attenzione! <br>Wallet gia' prensente nella lista", this);
             }
             //2 - Inserisco il wallet nella lista
             else{
@@ -423,13 +420,28 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                     
                     //Adesso per ogni wallet coinvolto controllo le giacenze di fine importazione e sistemo in caso di discrepanze
                     //Salto la cronoschain perchè quella viene gestita a parte
-                    int r= JOptionPane.showConfirmDialog(c, "Vuoi che venga controllata la giacenza del token di riferimento delle chain \n"
-                         + "e in caso di differenze creato un movimento di rettifica ?\n"
-                            + "Valida solo per reti gestite da etherscan (No BSC,AVA,BASE,CRO,SOL)",
-                            "Rettifiche movimenti",JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                    String mess="Vuoi che venga controllata la giacenza del token di riferimento delle chain "
+                         + "e in caso di differenze creato un movimento di rettifica?<br><br>"
+                            + "Valida solo per reti gestite da etherscan (No BSC,AVA,BASE,CRO,SOL)";
+                    AppDialog.DialogResult result = AppDialog.builder(SwingUtilities.getWindowAncestor(c))
+                    .windowTitle("Rettifiche movimenti")
+                    .bodyTitle("Rettifiche movimenti")
+                    .showTitleInBody(false)
+                    .theme()
+                    .type(AppDialog.DialogType.INFO)
+                    .message("")
+                    .details(mess)
+                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("si", "SI")
+                            .role(AppDialog.ActionRole.PRIMARY)
+                            .build())
+                    .showDialog();
+
                  
               //  System.out.println(r);
-                if(r==0){
+                if(result != null && result.isAction("si")){
                     //System.out.println("Sistemo le giacenze");
                     for (String Dati[]:Mappa_Wallet_Dati.values()){
                         // System.out.println(Dati[0]);
@@ -454,8 +466,8 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         //progress parte in modalità esclusiva quindi le istruzioni qua sotto non vengono eseguite fino a che la finestra non viene chiusa
         Importazioni.ConvertiScambiLPinDepositiPrelievi();
         CorreggiGiacenzeCronos();
-        JOptionPane.showConfirmDialog(c, "Importazione Terminata \nSono stati inseriti " + Importazioni.TransazioniAggiunte + " nuovi movimenti",
-                "Importazione Terminata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+         Messaggi.SuccessMessage("Importazione Terminata",
+                 "Importazione Terminata <br>Sono stati inseriti " + Importazioni.TransazioniAggiunte + " nuovi movimenti", this);
         PopolaTabella();
         c.setCursor(Cursor.getDefaultCursor());
 
@@ -495,41 +507,65 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
 
     private void Bottone_RimuoviWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_RimuoviWalletActionPerformed
         // TODO add your handling code here:
-                if (TabellaWallets.getSelectedRow() >= 0) {
+        if (TabellaWallets.getSelectedRow() >= 0) {
             int rigaselezionata = TabellaWallets.getRowSorter().convertRowIndexToModel(TabellaWallets.getSelectedRow());
 
-            String IDWallet = TabellaWallets.getModel().getValueAt(rigaselezionata, 1).toString();
-            if (IDWallet != null) {
-                
-                 int r= JOptionPane.showConfirmDialog(this, "Attenzione! \nSei sicuro di voler eliminare il wallet \n"
-                         + IDWallet+" ?",
-                            "Wallet non Valido",JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                 IDWallet=IDWallet+"_"+TabellaWallets.getModel().getValueAt(rigaselezionata, 2).toString();
-              //  System.out.println(r);
-                if(r==0){
-                DatabaseH2.Pers_Wallets_Cancella(IDWallet);
-                //ScriviFileWallets();
+            String walletAddress = TabellaWallets.getModel().getValueAt(rigaselezionata, 1).toString();
+            String walletRete    = TabellaWallets.getModel().getValueAt(rigaselezionata, 2).toString();
+            // chiave primaria del DB (es. "0x1234..._ETH" oppure "xpub6..._BTC")
+            String walletReteKey = walletAddress + "_" + walletRete;
+            // formato usato nella colonna wallet dei movimenti (es. "0x1234... (ETH)")
+            String walletStringa = walletAddress + " (" + walletRete + ")";
+
+            AppDialog.DialogResult result = AppDialog.builder(this)
+                    .windowTitle("Eliminazione del Wallet selezionato")
+                    .bodyTitle("Eliminazione del Wallet selezionato")
+                    .showTitleInBody(false)
+                    .theme()
+                    .type(AppDialog.DialogType.INFO)
+                    .message("")
+                    .details("Attenzione! <br>Sei sicuro di voler eliminare il wallet?")
+                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("si", "ELIMINA")
+                            .role(AppDialog.ActionRole.DANGER)
+                            .build())
+                    .showDialog();
+
+            if (result != null && result.isAction("si")) {
+                DatabaseH2.Pers_Wallets_Cancella(walletReteKey);
                 PopolaTabella();
-                String Messaggio = "Il Wallet è stato cancellato \nVuoi cancellare anche tutte le movimentazioni importate finora?";
-            r=JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"SI","NO"}, "OK");
-           if(r==0){
-               //Sicome devo mettere dei limiti di data metto l'anno 2100 come limite superiore e zero (1970) come limite inferiore
-             //  long Data2100=Long.parseLong("4105615230000");
-             int movEliminati=Funzioni.CancellaMovimentazioniXWallet(IDWallet.split("_")[0].trim()+" ("+IDWallet.split("_")[1].trim()+")",0,0);
-             if (movEliminati>0){
-                 Principale.TabellaCryptodaAggiornare=true;
-                 Messaggio="Numero movimenti cancellati : "+movEliminati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte sui movimenti.";
-                JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
-                //Calcoli_Plusvalenze.AggiornaPlusvalenze();
-                }
-           }
-           
+
+                result = AppDialog.builder(this)
+                        .windowTitle("Eliminazione delle transazioni")
+                        .bodyTitle("Eliminazione delle transazioni")
+                        .showTitleInBody(false)
+                        .theme()
+                        .type(AppDialog.DialogType.INFO)
+                        .message("")
+                        .details("Il Wallet è stato cancellato.<br>Vuoi cancellare anche tutte le movimentazioni importate finora?")
+                        .action(AppDialog.DialogAction.builder("cancel", "NO")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("si", "ELIMINA")
+                                .role(AppDialog.ActionRole.DANGER)
+                                .build())
+                        .showDialog();
+
+                if (result != null && result.isAction("si")) {
+                    int movEliminati = Funzioni.CancellaMovimentazioniXWallet(walletStringa, 0, 0);
+                    if (movEliminati > 0) {
+                        Principale.TabellaCryptodaAggiornare = true;
+                        Messaggi.SuccessMessage("Cancellazione transazioni Crypto terminata",
+                                "Numero movimenti cancellati : " + movEliminati + "<br>Ricordarsi di Salvare per non perdere le modifiche fatte sui movimenti.", this);
+                    }
                 }
             }
         }else
            {
-            JOptionPane.showConfirmDialog(this, "Attenzione! \nDevi selezionare un Wallet per poterlo eliminare",
-                            "Nessun Wallet selezionato",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);    
+            Messaggi.WarningMessage("Nessun Wallet selezionato",
+                 "Attenzione! <br>Devi selezionare un Wallet per poterlo eliminare", this);
            }          
     }//GEN-LAST:event_Bottone_RimuoviWalletActionPerformed
 

@@ -217,11 +217,36 @@ private static final long serialVersionUID = 3L;
 
             
         initComponents();
+        // Tabelle con filtri: header completo applicato subito, Tabelle_FiltroColonne non lo rieseguirà
+        Tabelle.Tabelle_InizializzaHeader(TransazioniCryptoTabella);
+        Tabelle.Tabelle_InizializzaHeader(DepositiPrelievi_Tabella);
+        Tabelle.Tabelle_InizializzaHeader(SaldiNegativi_TabellaDettaglioMovimenti);
+        Tabelle.Tabelle_InizializzaHeader(RW_Tabella_Dettagli);
+        Tabelle.Tabelle_InizializzaHeader(RT_Tabella_DettaglioMonete);
+        Tabelle.Tabelle_InizializzaHeader(RT_Tabella_LiFo);
+        Tabelle.Tabelle_InizializzaHeader(CDC_CardWallet_Tabella1);
+        Tabelle.Tabelle_InizializzaHeader(CDC_CardWallet_Tabella2);
+        Tabelle.Tabelle_InizializzaHeader(CDC_FiatWallet_Tabella1);
+        Tabelle.Tabelle_InizializzaHeader(CDC_FiatWallet_Tabella2);
+        Tabelle.Tabelle_InizializzaHeader(CDC_FiatWallet_Tabella3);
+        Tabelle.Tabelle_InizializzaHeader(GiacenzeaData_Tabella);
+        Tabelle.Tabelle_InizializzaHeader(GiacenzeaData_TabellaDettaglioMovimenti);
+        // Tabelle senza filtri: header semplice bold+centrato
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(TransazioniCrypto_Tabella_Dettagli);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(DepositiPrelievi_TabellaCorrelati);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(SaldiNegativi_TabPrincipale);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(SituazioneImport_Tabella1);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(RW_Tabella);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(RW_Tabella_DettaglioMovimenti);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(RT_Tabella_Principale);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Opzioni_GruppoWallet_Tabella);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Opzioni_Emoney_Tabella);
       //  OverrideTabellaCrypto();
         SettaIcone();
         //Se nuova versione disponibile fa vedere il pulsante con il quale è possibile scaricarla.
         TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(false);
         Funzioni_NuovaVersioneDisponibile();
+        Funzioni_AggiornamentoImportConfig();
         Prezzi.CompilaMoneteStessoPrezzo();
         Bottone_Titolo.setText(VarStatiche.Titolo);
 
@@ -621,6 +646,7 @@ private static final long serialVersionUID = 3L;
         jTextPane1 = new javax.swing.JTextPane();
         Opzioni_Emoney_Bottone_Rimuovi = new javax.swing.JButton();
         Opzioni_Emoney_Bottone_Aggiungi = new javax.swing.JButton();
+        Opzioni_Emoney_Bottone_Precompila = new javax.swing.JButton();
         Opzioni_Export_Pannello = new javax.swing.JPanel();
         Opzioni_Export_Wallets_Combobox = new javax.swing.JComboBox<>();
         jLabel9 = new javax.swing.JLabel();
@@ -684,6 +710,8 @@ private static final long serialVersionUID = 3L;
         Opzioni_Crypto_Pannello = new javax.swing.JPanel();
         Opzioni_Bottone_CancellaTransazioniCrypto = new javax.swing.JButton();
         Opzioni_Bottone_CancellaTransazioniCryptoXwallet = new javax.swing.JButton();
+        Opzioni_PrezziKO_Pannello = new javax.swing.JPanel();
+        Opzioni_Bottone_PuliziaPrezziKO = new javax.swing.JButton();
         jLabel8 = new javax.swing.JLabel();
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet = new javax.swing.JComboBox<>();
         Opzioni_Pulizie_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -691,6 +719,17 @@ private static final long serialVersionUID = 3L;
         jLabel18 = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
         jLabel20 = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel22 = new javax.swing.JLabel();
+        jLabel23 = new javax.swing.JLabel();
+        jLabel24 = new javax.swing.JLabel();
+        jLabel25 = new javax.swing.JLabel();
+        jLabel26 = new javax.swing.JLabel();
+        Donazioni_Bottone1 = new javax.swing.JButton();
+        Donazioni_Bottone2 = new javax.swing.JButton();
+        jLabel29 = new javax.swing.JLabel();
+        jLabel30 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
         Opzioni_ApiKey = new javax.swing.JPanel();
         Opzioni_ApiKey_Helius_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Helius_TextField = new javax.swing.JTextField();
@@ -712,18 +751,10 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKey_Cronos_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_Cronos_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Cronos_LabelSito = new javax.swing.JLabel();
+        Opzioni_ApiKey_UniSat_Label = new javax.swing.JLabel();
+        Opzioni_ApiKey_UniSat_TextField = new javax.swing.JTextField();
+        Opzioni_ApiKey_UniSat_LabelSito = new javax.swing.JLabel();
         Opzioni_ApiKey_MoralisNB_Label = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
-        jLabel22 = new javax.swing.JLabel();
-        jLabel23 = new javax.swing.JLabel();
-        jLabel24 = new javax.swing.JLabel();
-        jLabel25 = new javax.swing.JLabel();
-        jLabel26 = new javax.swing.JLabel();
-        Donazioni_Bottone1 = new javax.swing.JButton();
-        Donazioni_Bottone2 = new javax.swing.JButton();
-        jLabel29 = new javax.swing.JLabel();
-        jLabel30 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -870,7 +901,7 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "<html><center>ID<br>Transazione</html>", "Data e Ora", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico C.A. Uscente</html>", "<html><center>Nuovo<br>Costo di Carico<br>in EURO</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "DeFi - Blocco Transazione", "DeFi - Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "DeFi - Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento con Plusvalenza", "Rete", "null", "null", "null", "Errori", "null"
+                "<html><center>ID<br>Transazione</html>", "<html><center>Data e Ora</html>", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico C.A. Uscente</html>", "<html><center>Nuovo<br>Costo di Carico<br>in EURO</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "DeFi - Blocco Transazione", "DeFi - Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "DeFi - Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento con Plusvalenza", "Rete", "null", "null", "null", "Errori", "null"
             }
         ) {
             Class[] types = new Class [] {
@@ -910,15 +941,18 @@ private static final long serialVersionUID = 3L;
             TransazioniCryptoTabella.getColumnModel().getColumn(2).setMinWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(2).setPreferredWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(2).setMaxWidth(0);
+            TransazioniCryptoTabella.getColumnModel().getColumn(4).setMinWidth(70);
+            TransazioniCryptoTabella.getColumnModel().getColumn(4).setPreferredWidth(70);
+            TransazioniCryptoTabella.getColumnModel().getColumn(4).setMaxWidth(350);
             TransazioniCryptoTabella.getColumnModel().getColumn(7).setMinWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(7).setPreferredWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(7).setMaxWidth(0);
-            TransazioniCryptoTabella.getColumnModel().getColumn(8).setMinWidth(60);
-            TransazioniCryptoTabella.getColumnModel().getColumn(8).setPreferredWidth(60);
-            TransazioniCryptoTabella.getColumnModel().getColumn(8).setMaxWidth(100);
-            TransazioniCryptoTabella.getColumnModel().getColumn(11).setMinWidth(60);
-            TransazioniCryptoTabella.getColumnModel().getColumn(11).setPreferredWidth(60);
-            TransazioniCryptoTabella.getColumnModel().getColumn(11).setMaxWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(8).setMinWidth(70);
+            TransazioniCryptoTabella.getColumnModel().getColumn(8).setPreferredWidth(70);
+            TransazioniCryptoTabella.getColumnModel().getColumn(8).setMaxWidth(120);
+            TransazioniCryptoTabella.getColumnModel().getColumn(11).setMinWidth(65);
+            TransazioniCryptoTabella.getColumnModel().getColumn(11).setPreferredWidth(65);
+            TransazioniCryptoTabella.getColumnModel().getColumn(11).setMaxWidth(120);
             TransazioniCryptoTabella.getColumnModel().getColumn(12).setMinWidth(60);
             TransazioniCryptoTabella.getColumnModel().getColumn(12).setPreferredWidth(60);
             TransazioniCryptoTabella.getColumnModel().getColumn(12).setMaxWidth(60);
@@ -989,12 +1023,15 @@ private static final long serialVersionUID = 3L;
             TransazioniCryptoTabella.getColumnModel().getColumn(39).setPreferredWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(39).setMaxWidth(0);
         }
-        TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 82));
+        TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 100));
         Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);
         Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
 
         TransazioniCrypto_Bottone_Importa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Upload.png"))); // NOI18N
-        TransazioniCrypto_Bottone_Importa.setText("Carica CSV");
+        TransazioniCrypto_Bottone_Importa.setText("<html><center><b>Carica CSV</b></html>");
+        TransazioniCrypto_Bottone_Importa.setMaximumSize(new java.awt.Dimension(139, 41));
+        TransazioniCrypto_Bottone_Importa.setMinimumSize(new java.awt.Dimension(139, 41));
+        TransazioniCrypto_Bottone_Importa.setPreferredSize(new java.awt.Dimension(139, 41));
         TransazioniCrypto_Bottone_Importa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 TransazioniCrypto_Bottone_ImportaActionPerformed(evt);
@@ -1008,6 +1045,9 @@ private static final long serialVersionUID = 3L;
         TransazioniCrypto_Bottone_Salva.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Salva.png"))); // NOI18N
         TransazioniCrypto_Bottone_Salva.setText("Salva");
         TransazioniCrypto_Bottone_Salva.setEnabled(false);
+        TransazioniCrypto_Bottone_Salva.setMaximumSize(new java.awt.Dimension(139, 41));
+        TransazioniCrypto_Bottone_Salva.setMinimumSize(new java.awt.Dimension(139, 41));
+        TransazioniCrypto_Bottone_Salva.setPreferredSize(new java.awt.Dimension(139, 41));
         TransazioniCrypto_Bottone_Salva.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 TransazioniCrypto_Bottone_SalvaActionPerformed(evt);
@@ -1037,6 +1077,9 @@ private static final long serialVersionUID = 3L;
         TransazioniCrypto_Bottone_Annulla.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Annulla.png"))); // NOI18N
         TransazioniCrypto_Bottone_Annulla.setText("Annulla");
         TransazioniCrypto_Bottone_Annulla.setEnabled(false);
+        TransazioniCrypto_Bottone_Annulla.setMaximumSize(new java.awt.Dimension(139, 41));
+        TransazioniCrypto_Bottone_Annulla.setMinimumSize(new java.awt.Dimension(139, 41));
+        TransazioniCrypto_Bottone_Annulla.setPreferredSize(new java.awt.Dimension(139, 41));
         TransazioniCrypto_Bottone_Annulla.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 TransazioniCrypto_Bottone_AnnullaActionPerformed(evt);
@@ -1058,7 +1101,10 @@ private static final long serialVersionUID = 3L;
         });
 
         TransazioniCrypto_Bottone_InserisciWallet.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Wallet.png"))); // NOI18N
-        TransazioniCrypto_Bottone_InserisciWallet.setText("Inserisci Wallet");
+        TransazioniCrypto_Bottone_InserisciWallet.setText("<html><center><b>Inserisci Wallet</b></html>");
+        TransazioniCrypto_Bottone_InserisciWallet.setMaximumSize(new java.awt.Dimension(139, 41));
+        TransazioniCrypto_Bottone_InserisciWallet.setMinimumSize(new java.awt.Dimension(139, 41));
+        TransazioniCrypto_Bottone_InserisciWallet.setPreferredSize(new java.awt.Dimension(139, 41));
         TransazioniCrypto_Bottone_InserisciWallet.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 TransazioniCrypto_Bottone_InserisciWalletActionPerformed(evt);
@@ -1080,7 +1126,7 @@ private static final long serialVersionUID = 3L;
         TransazioniCrypto_Bottone_MovimentoNuovo.setBackground(new java.awt.Color(190, 255, 185));
         TransazioniCrypto_Bottone_MovimentoNuovo.setForeground(new java.awt.Color(51, 51, 51));
         TransazioniCrypto_Bottone_MovimentoNuovo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Nuovo.png"))); // NOI18N
-        TransazioniCrypto_Bottone_MovimentoNuovo.setText("Nuovo Movimento");
+        TransazioniCrypto_Bottone_MovimentoNuovo.setText("<html><center><b>Nuovo Movimento</b></html>");
         TransazioniCrypto_Bottone_MovimentoNuovo.setMaximumSize(new java.awt.Dimension(210, 27));
         TransazioniCrypto_Bottone_MovimentoNuovo.setMinimumSize(new java.awt.Dimension(210, 27));
         TransazioniCrypto_Bottone_MovimentoNuovo.setPreferredSize(new java.awt.Dimension(210, 27));
@@ -1093,7 +1139,7 @@ private static final long serialVersionUID = 3L;
         TransazioniCrypto_Bottone_MovimentoElimina.setBackground(Tabelle.rosso);
         TransazioniCrypto_Bottone_MovimentoElimina.setForeground(new java.awt.Color(51, 51, 51));
         TransazioniCrypto_Bottone_MovimentoElimina.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Cestino.png"))); // NOI18N
-        TransazioniCrypto_Bottone_MovimentoElimina.setText("Elimina Movimento");
+        TransazioniCrypto_Bottone_MovimentoElimina.setText("<html><center><b>Elimina Movimento</b></html>");
         TransazioniCrypto_Bottone_MovimentoElimina.setEnabled(false);
         TransazioniCrypto_Bottone_MovimentoElimina.setMaximumSize(new java.awt.Dimension(210, 27));
         TransazioniCrypto_Bottone_MovimentoElimina.setMinimumSize(new java.awt.Dimension(210, 27));
@@ -1105,7 +1151,7 @@ private static final long serialVersionUID = 3L;
         });
 
         TransazioniCrypto_Bottone_MovimentoModifica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
-        TransazioniCrypto_Bottone_MovimentoModifica.setText("Modifica Movimento");
+        TransazioniCrypto_Bottone_MovimentoModifica.setText("<html><center><b>Modifica Movimento</b></html>");
         TransazioniCrypto_Bottone_MovimentoModifica.setEnabled(false);
         TransazioniCrypto_Bottone_MovimentoModifica.setMaximumSize(new java.awt.Dimension(210, 27));
         TransazioniCrypto_Bottone_MovimentoModifica.setMinimumSize(new java.awt.Dimension(210, 27));
@@ -1265,10 +1311,10 @@ private static final long serialVersionUID = 3L;
         });
 
         TransazioniCrypto_Bottone_ExchangeAPI.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Chiave.png"))); // NOI18N
-        TransazioniCrypto_Bottone_ExchangeAPI.setText("Exchange API");
-        TransazioniCrypto_Bottone_ExchangeAPI.setMaximumSize(new java.awt.Dimension(139, 35));
-        TransazioniCrypto_Bottone_ExchangeAPI.setMinimumSize(new java.awt.Dimension(139, 35));
-        TransazioniCrypto_Bottone_ExchangeAPI.setPreferredSize(new java.awt.Dimension(139, 35));
+        TransazioniCrypto_Bottone_ExchangeAPI.setText("<html><center><b>Exchange API</b></html>");
+        TransazioniCrypto_Bottone_ExchangeAPI.setMaximumSize(new java.awt.Dimension(139, 41));
+        TransazioniCrypto_Bottone_ExchangeAPI.setMinimumSize(new java.awt.Dimension(139, 41));
+        TransazioniCrypto_Bottone_ExchangeAPI.setPreferredSize(new java.awt.Dimension(139, 41));
         TransazioniCrypto_Bottone_ExchangeAPI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 TransazioniCrypto_Bottone_ExchangeAPIActionPerformed(evt);
@@ -1294,107 +1340,116 @@ private static final long serialVersionUID = 3L;
         TransazioniCryptoLayout.setHorizontalGroup(
             TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(TransazioniCrypto_ScrollPane)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                        .addContainerGap()
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(TransazioniCrypto_ScrollPane)
                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                                        .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(TransazioniCrypto_Bottone_MovimentoModifica, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(TransazioniCrypto_Bottone_MovimentoElimina, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(TransazioniCrypto_RigheTabella_Label)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(TransazioniCrypto_TabbedPane))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(TransazioniCrypto_Bottone_MovimentoModifica, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(TransazioniCrypto_Bottone_MovimentoElimina, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(TransazioniCrypto_RigheTabella_Label)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(TransazioniCrypto_TabbedPane))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                            .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
-                                                    .addComponent(TransazioniCrypto_Text_CostiCarico))
-                                                .addGap(51, 51, 51)
-                                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                    .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                            .addComponent(TransazioniCrypto_Bottone_AggiorbaVersione, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE))
-                                        .addComponent(TransazioniCrypto_Text_Plusvalenza, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addComponent(jLabel10, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(Bottone_Errori, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, TransazioniCryptoLayout.createSequentialGroup()
-                                .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo)
-                                .addGap(18, 18, 18)
-                                .addComponent(TransazioniCrypto_CheckBox_EscludiTI))
+                                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                                                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                            .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 112, Short.MAX_VALUE)
+                                                            .addComponent(TransazioniCrypto_Text_CostiCarico))
+                                                        .addGap(51, 51, 51)
+                                                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                            .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                            .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                    .addComponent(TransazioniCrypto_Bottone_AggiorbaVersione, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE))
+                                                .addComponent(TransazioniCrypto_Text_Plusvalenza, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(jLabel10, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(Bottone_Errori, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                .addComponent(TransazioniCrypto_Label_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(TransazioniCrypto_ComboBox_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(18, 18, 18)
-                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                .addComponent(TransazioniCrypto_Label_FiltroToken)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(TransazioniCrypto_ComboBox_FiltroToken, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, TransazioniCryptoLayout.createSequentialGroup()
+                                        .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(TransazioniCrypto_CheckBox_EscludiTI))
+                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                                        .addComponent(TransazioniCrypto_Label_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(TransazioniCrypto_ComboBox_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addGap(18, 18, 18)
-                                .addComponent(TransazioniCrypto_Label_Filtro)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(TransazioniCryptoFiltro_Text, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                                        .addComponent(TransazioniCrypto_Label_FiltroToken)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(TransazioniCrypto_ComboBox_FiltroToken, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(TransazioniCrypto_Label_Filtro)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(TransazioniCryptoFiltro_Text, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                                        .addComponent(TransazioniCrypto_CheckBox_EscludiTokenScam, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(TransazioniCrypto_CheckBox_VediLiFoMancante, javax.swing.GroupLayout.PREFERRED_SIZE, 263, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 152, Short.MAX_VALUE)
+                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
+                                    .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                .addComponent(TransazioniCrypto_CheckBox_EscludiTokenScam, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(TransazioniCrypto_CheckBox_VediLiFoMancante, javax.swing.GroupLayout.PREFERRED_SIZE, 263, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 82, Short.MAX_VALUE)
-                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
-                            .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                        .addComponent(jSeparator10, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel27)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator9))
+                                .addComponent(jSeparator10, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel27)
+                                .addGap(9, 9, 9)
+                                .addComponent(jSeparator9))))
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                         .addComponent(TransazioniCrypto_Bottone_Importa, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(TransazioniCrypto_Bottone_InserisciWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(TransazioniCrypto_Bottone_ExchangeAPI, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 195, Short.MAX_VALUE)
-                        .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati, javax.swing.GroupLayout.PREFERRED_SIZE, 558, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati, javax.swing.GroupLayout.PREFERRED_SIZE, 564, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
                         .addComponent(TransazioniCrypto_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(TransazioniCrypto_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(9, 9, 9))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(TransazioniCrypto_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(3, 3, 3)))
+                .addContainerGap())
         );
+
+        TransazioniCryptoLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {TransazioniCrypto_Bottone_ExchangeAPI, TransazioniCrypto_Bottone_Importa, TransazioniCrypto_Bottone_InserisciWallet});
+
         TransazioniCryptoLayout.setVerticalGroup(
             TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, TransazioniCryptoLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(TransazioniCrypto_Bottone_Salva, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(TransazioniCrypto_Bottone_Annulla, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(TransazioniCrypto_Bottone_ExchangeAPI, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(TransazioniCrypto_Bottone_InserisciWallet, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(TransazioniCrypto_Bottone_Importa, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(TransazioniCrypto_Bottone_Importa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(TransazioniCrypto_Bottone_ExchangeAPI, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(TransazioniCrypto_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(TransazioniCrypto_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(TransazioniCrypto_Bottone_InserisciWallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jSeparator10, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel27)
-                    .addComponent(jSeparator9, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jSeparator9, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jSeparator10, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel27))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(TransazioniCrypto_Label_FiltroWallet)
@@ -1414,7 +1469,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo))
                 .addGap(5, 5, 5)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1440,7 +1495,7 @@ private static final long serialVersionUID = 3L;
                             .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
                         .addComponent(Bottone_Errori, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(TransazioniCrypto_Bottone_AggiorbaVersione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(TransazioniCrypto_TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addGap(13, 13, 13))
@@ -1467,7 +1522,7 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "ID_Transazione", "Data e Ora", "Exchange / Wallet", "Tipo Transazione", "Moneta", "Qta", "Dettaglio Trasferimento", "Prezzo", "Dett. Defi/CSV", "Controparte"
+                "ID_Transazione", "Data e Ora", "Exchange / Wallet", "Tipo Transazione", "Moneta", "<html><center>Qta</html>", "Dettaglio Trasferimento", "<html><center>Prezzo</html>", "Dett. Defi/CSV", "Controparte"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -1496,14 +1551,15 @@ private static final long serialVersionUID = 3L;
             DepositiPrelievi_Tabella.getColumnModel().getColumn(0).setMaxWidth(1);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setMinWidth(120);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setPreferredWidth(120);
-            DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setMaxWidth(120);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setMaxWidth(140);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(2).setMinWidth(140);
-            DepositiPrelievi_Tabella.getColumnModel().getColumn(2).setMaxWidth(400);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(2).setPreferredWidth(370);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(2).setMaxWidth(500);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(3).setMinWidth(140);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(3).setMaxWidth(200);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(4).setMinWidth(60);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(4).setPreferredWidth(60);
-            DepositiPrelievi_Tabella.getColumnModel().getColumn(4).setMaxWidth(240);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(4).setMaxWidth(500);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(5).setMinWidth(100);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(5).setPreferredWidth(100);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(5).setMaxWidth(150);
@@ -1511,14 +1567,14 @@ private static final long serialVersionUID = 3L;
             DepositiPrelievi_Tabella.getColumnModel().getColumn(7).setMinWidth(70);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(7).setMaxWidth(70);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(8).setMinWidth(100);
-            DepositiPrelievi_Tabella.getColumnModel().getColumn(8).setMaxWidth(200);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(8).setMaxWidth(500);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(9).setMinWidth(50);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(9).setMaxWidth(400);
         }
         DepositiPrelievi_Tabella.getTableHeader().setPreferredSize(new Dimension(DepositiPrelievi_Tabella.getColumnModel().getTotalColumnWidth(), 64));
 
         DepositiPrelievi_Bottone_AssegnazioneAutomatica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Auto.png"))); // NOI18N
-        DepositiPrelievi_Bottone_AssegnazioneAutomatica.setText("Assegnazione Automatica");
+        DepositiPrelievi_Bottone_AssegnazioneAutomatica.setText("<html><h2>Assegnazione Automatica</h2></html>");
         DepositiPrelievi_Bottone_AssegnazioneAutomatica.setMaximumSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_AssegnazioneAutomatica.setMinimumSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_AssegnazioneAutomatica.setPreferredSize(new java.awt.Dimension(200, 35));
@@ -1528,9 +1584,10 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        DepositiPrelievi_Bottone_AssegnazioneManuale.setBackground(new java.awt.Color(204, 255, 204));
         DepositiPrelievi_Bottone_AssegnazioneManuale.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         DepositiPrelievi_Bottone_AssegnazioneManuale.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Classifica.png"))); // NOI18N
-        DepositiPrelievi_Bottone_AssegnazioneManuale.setText("Classifica Movimento");
+        DepositiPrelievi_Bottone_AssegnazioneManuale.setText("<html><h2>Classifica Movimento</h2></html>");
         DepositiPrelievi_Bottone_AssegnazioneManuale.setMaximumSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_AssegnazioneManuale.setMinimumSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_AssegnazioneManuale.setPreferredSize(new java.awt.Dimension(200, 35));
@@ -1548,7 +1605,7 @@ private static final long serialVersionUID = 3L;
         });
 
         DepositiPrelievi_Bottone_DettaglioDefi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Catena.png"))); // NOI18N
-        DepositiPrelievi_Bottone_DettaglioDefi.setText("Dettaglio Defi");
+        DepositiPrelievi_Bottone_DettaglioDefi.setText("<html>Dettaglio Defi</html>");
         DepositiPrelievi_Bottone_DettaglioDefi.setMaximumSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_DettaglioDefi.setMinimumSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_DettaglioDefi.setPreferredSize(new java.awt.Dimension(200, 35));
@@ -1570,7 +1627,7 @@ private static final long serialVersionUID = 3L;
         });
 
         DepositiPrelievi_Bottone_Documentazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
-        DepositiPrelievi_Bottone_Documentazione.setText("Vedi Documentazione");
+        DepositiPrelievi_Bottone_Documentazione.setText("<html><h2>Vedi Documentazione</h2></html>");
         DepositiPrelievi_Bottone_Documentazione.setMaximumSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_Documentazione.setMinimumSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_Documentazione.setPreferredSize(new java.awt.Dimension(200, 35));
@@ -1581,7 +1638,7 @@ private static final long serialVersionUID = 3L;
         });
 
         DepositiPrelievi_Bottone_Scam.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Banana.png"))); // NOI18N
-        DepositiPrelievi_Bottone_Scam.setText("Identifica come SCAM");
+        DepositiPrelievi_Bottone_Scam.setText("<html>Identifica come SCAM</html>");
         DepositiPrelievi_Bottone_Scam.setMaximumSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_Scam.setMinimumSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_Scam.setPreferredSize(new java.awt.Dimension(200, 35));
@@ -1592,7 +1649,7 @@ private static final long serialVersionUID = 3L;
         });
 
         DepositiPrelievi_Bottone_Duplica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/32_Copia.png"))); // NOI18N
-        DepositiPrelievi_Bottone_Duplica.setText("Duplica movimento");
+        DepositiPrelievi_Bottone_Duplica.setText("<html>Duplica movimento</html>");
         DepositiPrelievi_Bottone_Duplica.setMaximumSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_Duplica.setMinimumSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_Duplica.setPreferredSize(new java.awt.Dimension(200, 35));
@@ -1804,28 +1861,10 @@ private static final long serialVersionUID = 3L;
                 .addContainerGap()
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2)
-                    .addComponent(jScrollPane14)
+                    .addComponent(jScrollPane14, javax.swing.GroupLayout.DEFAULT_SIZE, 1389, Short.MAX_VALUE)
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createSequentialGroup()
-                                .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
-                                    .addComponent(DepositiPrelievi_Bottone_Documentazione, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createSequentialGroup()
-                                        .addComponent(DepositiPrelievi_Bottone_Duplica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createSequentialGroup()
-                                        .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                                .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                                 .addComponent(DepositiPrelievi_Label_FiltroWallet)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1837,8 +1876,22 @@ private static final long serialVersionUID = 3L;
                                 .addGap(18, 18, 18)
                                 .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(70, 70, 70)
-                                .addComponent(DepositiPrelievi_CheckBox_mostraFIAT, javax.swing.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)))
-                        .addContainerGap())))
+                                .addComponent(DepositiPrelievi_CheckBox_mostraFIAT, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addContainerGap())
+                    .addGroup(DepositiPrelieviLayout.createSequentialGroup()
+                        .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(DepositiPrelievi_Bottone_Duplica, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(DepositiPrelieviLayout.createSequentialGroup()
+                        .addComponent(DepositiPrelievi_Bottone_Documentazione, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE))))
         );
         DepositiPrelieviLayout.setVerticalGroup(
             DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1851,25 +1904,24 @@ private static final long serialVersionUID = 3L;
                     .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)
                     .addComponent(DepositiPrelievi_CheckBox_mostraFIAT))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 559, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                        .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(DepositiPrelievi_Bottone_Documentazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(DepositiPrelievi_Bottone_Duplica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(7, 7, 7)
+                            .addComponent(DepositiPrelievi_Bottone_Documentazione, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
+                        .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(DepositiPrelievi_Bottone_Duplica, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGap(9, 9, 9)
                 .addComponent(jLabel21)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane14, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane14, javax.swing.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -2010,7 +2062,7 @@ private static final long serialVersionUID = 3L;
             .addGroup(SaldiNegativiLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(SaldiNegativiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(SaldiNegativi_LabelSpiegazioni, javax.swing.GroupLayout.DEFAULT_SIZE, 1283, Short.MAX_VALUE)
+                    .addComponent(SaldiNegativi_LabelSpiegazioni, javax.swing.GroupLayout.DEFAULT_SIZE, 1389, Short.MAX_VALUE)
                     .addComponent(jScrollPane15)
                     .addComponent(SaldiNegativi_ScrollPaneDettaglioMovimenti)
                     .addGroup(SaldiNegativiLayout.createSequentialGroup()
@@ -2041,7 +2093,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(SaldiNegativi_Dettaglio_Label)
                     .addComponent(SaldiNegativi_CheckBox_DettaglioFiltraQtaNegative))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(SaldiNegativi_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 493, Short.MAX_VALUE)
+                .addComponent(SaldiNegativi_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(SaldiNegativi_Bottone_RettificaQta, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -2081,10 +2133,10 @@ private static final long serialVersionUID = 3L;
         });
         jScrollPane3.setViewportView(SituazioneImport_Tabella1);
         if (SituazioneImport_Tabella1.getColumnModel().getColumnCount() > 0) {
-            SituazioneImport_Tabella1.getColumnModel().getColumn(1).setPreferredWidth(150);
-            SituazioneImport_Tabella1.getColumnModel().getColumn(1).setMaxWidth(150);
-            SituazioneImport_Tabella1.getColumnModel().getColumn(2).setPreferredWidth(150);
-            SituazioneImport_Tabella1.getColumnModel().getColumn(2).setMaxWidth(150);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(1).setPreferredWidth(180);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(1).setMaxWidth(180);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(2).setPreferredWidth(180);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(2).setMaxWidth(180);
             SituazioneImport_Tabella1.getColumnModel().getColumn(3).setPreferredWidth(150);
             SituazioneImport_Tabella1.getColumnModel().getColumn(3).setMaxWidth(150);
         }
@@ -2096,12 +2148,12 @@ private static final long serialVersionUID = 3L;
             SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(SituazioneImportLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 1283, Short.MAX_VALUE))
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 1389, Short.MAX_VALUE))
         );
         SituazioneImportLayout.setVerticalGroup(
             SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, SituazioneImportLayout.createSequentialGroup()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 851, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 911, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -2127,9 +2179,12 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        GiacenzeaData_Data_Label.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
+        GiacenzeaData_Data_Label.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         GiacenzeaData_Data_Label.setText("Data : ");
 
         GiacenzeaData_Data_DataChooser.setDateFormatString("yyyy-MM-dd");
+        GiacenzeaData_Data_DataChooser.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         GiacenzeaData_Data_DataChooser.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 GiacenzeaData_Data_DataChooserPropertyChange(evt);
@@ -2396,28 +2451,6 @@ private static final long serialVersionUID = 3L;
                 .addContainerGap()
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jSeparator5)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, GiacenzeaDataLayout.createSequentialGroup()
-                        .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE)
-                            .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(GiacenzeaData_Data_Label)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(15, 15, 15)
-                        .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(GiacenzeaDataLayout.createSequentialGroup()
-                        .addComponent(GiacenzeaData_Wallet_Label)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(GiacenzeaData_Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 428, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 278, Short.MAX_VALUE)
-                        .addComponent(GiacenzeaData_Wallet2_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(GiacenzeaData_Wallet2_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 454, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(GiacenzeaData_ScrollPane)
                     .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti)
                     .addGroup(GiacenzeaDataLayout.createSequentialGroup()
@@ -2426,7 +2459,7 @@ private static final long serialVersionUID = 3L;
                         .addComponent(GiacenzeaData_Totali_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(83, 83, 83)
                         .addComponent(GiacenzeaData_Label_Aggiornare)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 175, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 251, Short.MAX_VALUE)
                         .addComponent(GiacenzeaData_Bottone_RettificaQta, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(GiacenzeaDataLayout.createSequentialGroup()
                         .addComponent(Giacenzeadata_Dettaglio_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2446,7 +2479,32 @@ private static final long serialVersionUID = 3L;
                         .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
                         .addGap(44, 44, 44)
                         .addComponent(GiacenzeaData_CheckBox_NascondiScam, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, GiacenzeaDataLayout.createSequentialGroup()
+                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(GiacenzeaDataLayout.createSequentialGroup()
+                                .addComponent(GiacenzeaData_Wallet_Label)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(GiacenzeaData_Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 428, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(GiacenzeaDataLayout.createSequentialGroup()
+                                .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
+                                    .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(GiacenzeaData_Data_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(GiacenzeaData_Wallet2_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(GiacenzeaDataLayout.createSequentialGroup()
+                                .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(15, 15, 15)
+                                .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(GiacenzeaData_Wallet2_ComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
         );
         GiacenzeaDataLayout.setVerticalGroup(
             GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2458,21 +2516,18 @@ private static final long serialVersionUID = 3L;
                     .addComponent(GiacenzeaData_Wallet2_Label)
                     .addComponent(GiacenzeaData_Wallet2_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(GiacenzeaDataLayout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(GiacenzeaData_Data_Label)
-                            .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.DEFAULT_SIZE, 48, Short.MAX_VALUE)
-                    .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addGroup(GiacenzeaDataLayout.createSequentialGroup()
-                        .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
+                        .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(GiacenzeaData_Data_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(8, 8, 8)
+                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
                 .addGap(9, 9, 9)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
@@ -2493,7 +2548,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Giacenzeadata_Dettaglio_Label)
                     .addComponent(GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_Totali_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2561,7 +2616,7 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Anno", "Gr. Inizio", "Mon. Inizio", "Qta Inizio", "Data Inizio", "Val. Inizio", "Gr. Fine", "Mon. Fine", "Qta Fine", "Data Fine", "Val. Finale", "Giorni", "Causale", "IDApertura", "IDChiusura", "Errore / Avvisi", "IDMovimentati"
+                "Anno", "Gr. Inizio", "<html>Mon. <br>Inizio</html>", "Qta Inizio", "Data Inizio", "Val. Inizio", "Gr. Fine", "<html>Mon. <br>Fine</html>", "Qta Fine", "Data Fine", "Val. Finale", "Giorni", "Causale", "IDApertura", "IDChiusura", "Errore / Avvisi", "IDMovimentati"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -2796,7 +2851,7 @@ private static final long serialVersionUID = 3L;
                         .addComponent(RW_Text_IC, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(RW_Label_SegnalaRicalcolo, javax.swing.GroupLayout.PREFERRED_SIZE, 729, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 142, Short.MAX_VALUE)
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2808,7 +2863,7 @@ private static final long serialVersionUID = 3L;
                 .addComponent(jLabel5)
                 .addGap(18, 18, 18)
                 .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.PREFERRED_SIZE, 750, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 251, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 334, Short.MAX_VALUE)
                 .addComponent(RW_CheckBox_VediSoloErrori))
             .addGroup(RWLayout.createSequentialGroup()
                 .addContainerGap()
@@ -2857,7 +2912,7 @@ private static final long serialVersionUID = 3L;
                         .addComponent(RW_Bottone_ModificaVIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -3018,7 +3073,7 @@ private static final long serialVersionUID = 3L;
                         .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 1015, Short.MAX_VALUE)
+                        .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 1121, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(RT_Bottone_ModificaPrezzo, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -3028,13 +3083,13 @@ private static final long serialVersionUID = 3L;
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
+                .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE))
+                        .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(RT_Bottone_ModificaPrezzo, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -3081,7 +3136,7 @@ private static final long serialVersionUID = 3L;
                 .addContainerGap()
                 .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane11)
-                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1284, Short.MAX_VALUE)
+                    .addComponent(jTabbedPane1)
                     .addGroup(RTLayout.createSequentialGroup()
                         .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(RT_Bottone_Documentazione, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -3312,11 +3367,11 @@ private static final long serialVersionUID = 3L;
                         .addComponent(CDC_CardWallet_Text_FiltroTabelle))
                     .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
                         .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(CDC_CardWallet_Label_Tabella1, javax.swing.GroupLayout.DEFAULT_SIZE, 625, Short.MAX_VALUE)
+                            .addComponent(CDC_CardWallet_Label_Tabella1, javax.swing.GroupLayout.DEFAULT_SIZE, 689, Short.MAX_VALUE)
                             .addComponent(CDC_CardWallet_Tabella1Scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(CDC_CardWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 857, Short.MAX_VALUE)
+                            .addComponent(CDC_CardWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 920, Short.MAX_VALUE)
                             .addComponent(CDC_CardWallet_Label_Tabella2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, CDC_CardWallet_PannelloLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
@@ -3361,7 +3416,7 @@ private static final long serialVersionUID = 3L;
                                 .addComponent(CDC_CardWallet_Label_UltimaData)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(CDC_CardWallet_Text_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 577, Short.MAX_VALUE)))
+                        .addGap(0, 653, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         CDC_CardWallet_PannelloLayout.setVerticalGroup(
@@ -3699,7 +3754,7 @@ private static final long serialVersionUID = 3L;
                                 .addComponent(CDC_FiatWallet_Label_UltimaData)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(CDC_FiatWallet_Text_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 567, Short.MAX_VALUE)))
+                        .addGap(0, 643, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         CDC_FiatWallet_PannelloLayout.setVerticalGroup(
@@ -3749,8 +3804,8 @@ private static final long serialVersionUID = 3L;
                     .addComponent(CDC_FiatWallet_Label_Tabella3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(CDC_FiatWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 523, Short.MAX_VALUE)
-                    .addComponent(CDC_FiatWallet_Tabella3Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 514, Short.MAX_VALUE))
+                    .addComponent(CDC_FiatWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                    .addComponent(CDC_FiatWallet_Tabella3Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(CDC_FiatWallet_Text_FiltroTabella, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -3842,7 +3897,7 @@ private static final long serialVersionUID = 3L;
             .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 1338, Short.MAX_VALUE)
+                    .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 1448, Short.MAX_VALUE)
                     .addComponent(jScrollPane1)
                     .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
                         .addComponent(Opzioni_GruppoWallet_Bottone_Rinomina, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -3853,7 +3908,7 @@ private static final long serialVersionUID = 3L;
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 672, Short.MAX_VALUE)
+                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 697, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_GruppoWallet_Bottone_Rinomina)
                 .addGap(84, 84, 84))
@@ -3861,12 +3916,13 @@ private static final long serialVersionUID = 3L;
 
         Opzioni_TabbedPane.addTab("Gruppi Wallet Crypto", Opzioni_GruppoWallet_Pannello);
 
+        Opzioni_Emoney_Tabella.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         Opzioni_Emoney_Tabella.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "Token", "Data Inizio classificazione e-money token"
+                "<html><center><h2>Token</h2></html>", "<html><center><h2>Data Inizio classificazione<br>come E-Money Token</h2></html>"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -3889,16 +3945,18 @@ private static final long serialVersionUID = 3L;
         });
         Opzioni_Emoney_ScrollPane.setViewportView(Opzioni_Emoney_Tabella);
         Opzioni_Emoney_Tabella.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        Opzioni_Emoney_Tabella.getTableHeader().setPreferredSize(new Dimension(Opzioni_Emoney_Tabella.getColumnModel().getTotalColumnWidth(), 90));
 
         jScrollPane5.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         jTextPane1.setEditable(false);
+        jTextPane1.setContentType("text/html"); // NOI18N
         jTextPane1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jTextPane1.setText("Nella Tabella sottostante aggiungere il nome di tutti i token che si vogliono classificare come E-Money Token (es. USDC).\nLo scambio tra Crypto ed E-Money Token verrà considerato fiscalmente rilevante e genererà quindi un eventuale plusvalenza o minusvalenza.\n\nPer casistiche particolari, ad esempio un  token che diventa E-Money solo da un certa data, è possibile indicare quest'ultima direttamente nella tabella.\nIn questi casi gli scambi tra Crypto e queste E-Money saranno fiscalmente rilevanti solo alla data indicata in poi.");
+        jTextPane1.setText("<html>\n<head>\n<style>\n  body {\n    font-family: 'Segoe UI', Arial, sans-serif;\n    font-size: 13px;\n    margin: 12px 16px;\n    line-height: 1.6;\n  }\n  h2 {\n    font-size: 15px;\n    font-weight: bold;\n    margin-bottom: 6px;\n    margin-top: 0;\n    padding-bottom: 4px;\n  }\n  p {\n    margin: 6px 0 10px 0;\n  }\n  ul {\n    margin: 6px 0 10px 18px;\n    padding: 0;\n  }\n  li {\n    margin-bottom: 5px;\n  }\n  b {\n    font-weight: bold;\n  }\n  .mono {\n    font-family: monospace;\n    font-size: 12px;\n    font-weight: bold;\n  }\n</style>\n</head>\n<body>\n\n<h2>&#127968; Classificazione E-Money Token</h2>\n\n<p>\n  Nella tabella sulla destra aggiungere il nome di tutti i token che si desidera\n  classificare come <b>E-Money Token</b> (es. <span class=\"mono\">USDC</span>).\n</p>\n<p>\n  Lo scambio tra <b>Crypto</b> ed <b>E-Money Token</b> verr&agrave; considerato\n  <b>fiscalmente rilevante</b> e potr&agrave; generare una eventuale\n  <b>plusvalenza</b> o <b>minusvalenza</b>.\n</p>\n\n<p>\n  Per <b>casistiche particolari</b> &mdash; ad esempio un token che diventa E-Money\n  solo da una certa data &mdash; &egrave; possibile indicare quest&#39;ultima\n  direttamente nella tabella.<br>\n  In questi casi, gli scambi saranno fiscalmente rilevanti <b>solo dalla data indicata in poi</b>.\n</p>\n<br>\n<br>\n\n<hr/>\n<br>\n<br>\n\n<h2>&#9881; Precompilazione rapida</h2>\n\n<p>Puoi precompilare la tabella, attraverso l'apposito pulsante, scegliendo una delle seguenti opzioni:</p>\n\n<ul>\n  <li>&#9989; <b>Tutte le stablecoin MiCA Compliant</b> &mdash; es. <span class=\"mono\">USDC</span></li>\n  <li>&#9888; <b>MiCA Compliant + quelle dubbie</b> &mdash; incluse es. <span class=\"mono\">USDT</span></li>\n  <li>&#128308; <b>Tutte le stablecoin</b> &mdash; comprese algoritmiche o Crypto-Collateralizzate come <span class=\"mono\">DAI</span></li>\n</ul>\n<br>\n<br>\n<hr/>\n<br>\n<br>\n<p>\n  <b>&#9888; Attenzione:</b>\n  La lista precompilata delle stablecoin <b>potrebbe non essere esaustiva</b>\n  o presentare <b>errori nella classificazione</b>. Verificare sempre la correttezza\n  delle informazioni prima dell&#39;utilizzo.\n</p>\n\n</body>\n</html>\n");
         jScrollPane5.setViewportView(jTextPane1);
 
         Opzioni_Emoney_Bottone_Rimuovi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Cestino.png"))); // NOI18N
-        Opzioni_Emoney_Bottone_Rimuovi.setText("Rimuovi Token");
+        Opzioni_Emoney_Bottone_Rimuovi.setText("<html><h2>Rimuovi Token</h2></html>");
         Opzioni_Emoney_Bottone_Rimuovi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_Emoney_Bottone_RimuoviActionPerformed(evt);
@@ -3906,10 +3964,17 @@ private static final long serialVersionUID = 3L;
         });
 
         Opzioni_Emoney_Bottone_Aggiungi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Nuovo.png"))); // NOI18N
-        Opzioni_Emoney_Bottone_Aggiungi.setText("Aggiungi Token");
+        Opzioni_Emoney_Bottone_Aggiungi.setText("<html><h2>Aggiungi Token</h2></html>");
         Opzioni_Emoney_Bottone_Aggiungi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_Emoney_Bottone_AggiungiActionPerformed(evt);
+            }
+        });
+
+        Opzioni_Emoney_Bottone_Precompila.setText("<html><h2>&#9881; Precompilazione rapida</h2></html>");
+        Opzioni_Emoney_Bottone_Precompila.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Emoney_Bottone_PrecompilaActionPerformed(evt);
             }
         });
 
@@ -3920,24 +3985,31 @@ private static final long serialVersionUID = 3L;
             .addGroup(Opzioni_Emoney_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 1338, Short.MAX_VALUE)
-                    .addComponent(Opzioni_Emoney_ScrollPane)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(Opzioni_Emoney_PannelloLayout.createSequentialGroup()
-                        .addComponent(Opzioni_Emoney_Bottone_Aggiungi, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(Opzioni_Emoney_Bottone_Precompila, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 698, Short.MAX_VALUE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(Opzioni_Emoney_PannelloLayout.createSequentialGroup()
+                        .addComponent(Opzioni_Emoney_Bottone_Aggiungi, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(Opzioni_Emoney_Bottone_Rimuovi, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                        .addComponent(Opzioni_Emoney_Bottone_Rimuovi, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(Opzioni_Emoney_ScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 490, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
         Opzioni_Emoney_PannelloLayout.setVerticalGroup(
             Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_Emoney_PannelloLayout.createSequentialGroup()
-                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 814, Short.MAX_VALUE)
+                    .addComponent(Opzioni_Emoney_ScrollPane))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_Emoney_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 679, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Opzioni_Emoney_Bottone_Aggiungi)
-                    .addComponent(Opzioni_Emoney_Bottone_Rimuovi))
+                .addGroup(Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Opzioni_Emoney_Bottone_Precompila, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(Opzioni_Emoney_Bottone_Aggiungi, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(Opzioni_Emoney_Bottone_Rimuovi, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
@@ -4066,7 +4138,7 @@ private static final long serialVersionUID = 3L;
             .addGroup(Opzioni_Rewards_PannelloLayout.createSequentialGroup()
                 .addGap(18, 18, 18)
                 .addGroup(Opzioni_Rewards_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 1321, Short.MAX_VALUE)
+                    .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 1430, Short.MAX_VALUE)
                     .addGroup(Opzioni_Rewards_PannelloLayout.createSequentialGroup()
                         .addGroup(Opzioni_Rewards_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(OpzioniRewards_JCB_PDD_CashBack, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -4113,7 +4185,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(OpzioniRewards_CashBackComeFIAT_ComboBox))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator13, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(267, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Opzioni Rewards", Opzioni_Rewards_Pannello);
@@ -4230,7 +4302,7 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni)
                 .addGap(65, 65, 65)
                 .addComponent(RT_Bottone_Documentazione1)
-                .addContainerGap(468, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Opzioni di Calcolo", Opzioni_Calcolo_Pannello);
@@ -4471,7 +4543,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_Varie_Bottone_ProblemiNoti, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                     .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(1149, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         Opzioni_VarieLayout.setVerticalGroup(
             Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4482,7 +4554,7 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Opzioni_Varie_Bottone_ProblemiNoti)
                 .addGap(86, 86, 86)
                 .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(628, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Varie", Opzioni_Varie);
@@ -4501,15 +4573,15 @@ private static final long serialVersionUID = 3L;
             Opzioni_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_CardWallet_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 1320, Short.MAX_VALUE)
+                .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 1430, Short.MAX_VALUE)
                 .addContainerGap())
         );
         Opzioni_CardWallet_PannelloLayout.setVerticalGroup(
             Opzioni_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_CardWallet_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(733, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Pulizia CDC Card Wallet", Opzioni_CardWallet_Pannello);
@@ -4537,18 +4609,18 @@ private static final long serialVersionUID = 3L;
             .addGroup(Opzioni_FiatWallet_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(Opzioni_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 1320, Short.MAX_VALUE)
-                    .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 1320, Short.MAX_VALUE))
+                    .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 1430, Short.MAX_VALUE)
+                    .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 1430, Short.MAX_VALUE))
                 .addContainerGap())
         );
         Opzioni_FiatWallet_PannelloLayout.setVerticalGroup(
             Opzioni_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_FiatWallet_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet)
+                .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(678, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Pulizia CDC Fiat Wallet", Opzioni_FiatWallet_Pannello);
@@ -4571,6 +4643,7 @@ private static final long serialVersionUID = 3L;
 
         jLabel8.setText("->");
 
+        Opzioni_Combobox_CancellaTransazioniCryptoXwallet.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "----------" }));
 
         javax.swing.GroupLayout Opzioni_Crypto_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Crypto_Pannello);
@@ -4586,23 +4659,50 @@ private static final long serialVersionUID = 3L;
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel8)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, 0, 994, Short.MAX_VALUE)))
+                        .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, 0, 1106, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         Opzioni_Crypto_PannelloLayout.setVerticalGroup(
             Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_Crypto_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(Opzioni_Bottone_CancellaTransazioniCrypto)
+                .addComponent(Opzioni_Bottone_CancellaTransazioniCrypto, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Opzioni_Bottone_CancellaTransazioniCryptoXwallet)
+                    .addComponent(Opzioni_Bottone_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel8)
-                    .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(677, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Pulizia Crypto", Opzioni_Crypto_Pannello);
+
+        Opzioni_Bottone_PuliziaPrezziKO.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Cestino.png"))); // NOI18N
+        Opzioni_Bottone_PuliziaPrezziKO.setText("Elimina record PrezziKO nel periodo selezionato");
+        Opzioni_Bottone_PuliziaPrezziKO.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Bottone_PuliziaPrezziKOActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout Opzioni_PrezziKO_PannelloLayout = new javax.swing.GroupLayout(Opzioni_PrezziKO_Pannello);
+        Opzioni_PrezziKO_Pannello.setLayout(Opzioni_PrezziKO_PannelloLayout);
+        Opzioni_PrezziKO_PannelloLayout.setHorizontalGroup(
+            Opzioni_PrezziKO_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_PrezziKO_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Opzioni_Bottone_PuliziaPrezziKO, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        Opzioni_PrezziKO_PannelloLayout.setVerticalGroup(
+            Opzioni_PrezziKO_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_PrezziKO_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Opzioni_Bottone_PuliziaPrezziKO, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(733, Short.MAX_VALUE))
+        );
+
+        jTabbedPane2.addTab("Pulizia PrezziKO", Opzioni_PrezziKO_Pannello);
 
         Opzioni_Pulizie_DataChooser_Iniziale.setDateFormatString("yyyy-MM-dd");
         Opzioni_Pulizie_DataChooser_Iniziale.setFont(Opzioni_Pulizie_DataChooser_Iniziale.getFont().deriveFont(Opzioni_Pulizie_DataChooser_Iniziale.getFont().getStyle() | java.awt.Font.BOLD));
@@ -4685,11 +4785,125 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_Pulizie_DataChooser_Finale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel20))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 764, Short.MAX_VALUE)
+                .addComponent(jTabbedPane2)
                 .addContainerGap())
         );
 
         Opzioni_TabbedPane.addTab("Pulizie", Opzioni_Pulizie);
+
+        jLabel22.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/qrcode_ethereum.png"))); // NOI18N
+        jLabel22.setToolTipText("");
+        jLabel22.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
+
+        jLabel23.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/qrcode_solana.png"))); // NOI18N
+
+        jLabel24.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        jLabel24.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel24.setText("<html><center>Ti piace questo software? <br>\nConsidera una piccola crypto donazione.<br>\nAiuti a mantenerlo libero, utile e migliorabile.</html>");
+
+        jLabel25.setFont(new java.awt.Font("Segoe UI Symbol", 1, 20)); // NOI18N
+        jLabel25.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel25.setText("<html>\n  <body style='font-family:sans-serif; font-size:18px;'>\n    <b>Indirizzo per Reti:</b><br><br>\n    • BSC<br>\n    • CRONOS<br>\n    • ETHEREUM<br>\n    • BASE<br>\n    • ARBITRUM\n  </body>\n</html>");
+
+        jLabel26.setFont(new java.awt.Font("Segoe UI Symbol", 1, 20)); // NOI18N
+        jLabel26.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel26.setText("<html>\n  <body style='font-family:sans-serif; font-size:18px;'>\n    <b>Indirizzo per Reti:</b><br><br>\n    • SOLANA<br>\n  </body>\n</html>");
+
+        Donazioni_Bottone1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Copia.png"))); // NOI18N
+        Donazioni_Bottone1.setText("Copia Indirizzo");
+        Donazioni_Bottone1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Donazioni_Bottone1ActionPerformed(evt);
+            }
+        });
+
+        Donazioni_Bottone2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Copia.png"))); // NOI18N
+        Donazioni_Bottone2.setText("Copia Indirizzo");
+        Donazioni_Bottone2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Donazioni_Bottone2ActionPerformed(evt);
+            }
+        });
+
+        jLabel29.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/qrcode_paypal.png"))); // NOI18N
+
+        jLabel30.setFont(new java.awt.Font("Segoe UI", 1, 64)); // NOI18N
+        jLabel30.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel30.setText("PayPal");
+
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Reward.png"))); // NOI18N
+        jButton1.setText("Apri Browser");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addComponent(jLabel24, javax.swing.GroupLayout.PREFERRED_SIZE, 1276, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 178, Short.MAX_VALUE))
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(43, 43, 43)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Donazioni_Bottone2, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel23)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel26, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel22)
+                            .addComponent(Donazioni_Bottone1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel25, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(121, 121, 121)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabel29, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel30, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel24, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGap(33, 33, 33)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(jLabel22, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jLabel29, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGap(61, 61, 61)
+                                .addComponent(jLabel30, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jButton1)
+                            .addComponent(Donazioni_Bottone1)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel25, javax.swing.GroupLayout.PREFERRED_SIZE, 236, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(44, 44, 44)
+                        .addComponent(jLabel23, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(95, 95, 95)
+                        .addComponent(jLabel26, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Donazioni_Bottone2)
+                .addContainerGap(199, Short.MAX_VALUE))
+        );
+
+        Opzioni_TabbedPane.addTab("Donazioni", jPanel2);
 
         Opzioni_ApiKey_Helius_Label.setText("ApiKey Helius x Solana :");
 
@@ -4865,63 +5079,95 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        Opzioni_ApiKey_MoralisNB_Label.setText("NB : Per evitare sforamenti dei limiti giornalieri sulle api di Moralis ogni volta che si scaricano i movimenti da un wallet questi sono limitati a circa 10.000, per scaricarne altri rifare la chiamata");
+        Opzioni_ApiKey_UniSat_Label.setText("ApiKey UniSat (BTC Runes/BRC-20) :");
+
+        Opzioni_ApiKey_UniSat_TextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_UniSat_TextFieldMouseReleased(evt);
+            }
+        });
+        Opzioni_ApiKey_UniSat_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                Opzioni_ApiKey_UniSat_TextFieldKeyReleased(evt);
+            }
+        });
+
+        Opzioni_ApiKey_UniSat_LabelSito.setText("https://developer.unisat.io/dashboard/bitcoin/mainnet");
+        Opzioni_ApiKey_UniSat_LabelSito.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_UniSat_LabelSitoMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_UniSat_LabelSitoMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_UniSat_LabelSitoMouseExited(evt);
+            }
+        });
+
+        Opzioni_ApiKey_MoralisNB_Label.setText("NB : Per evitare sforamenti dei limiti giornalieri sulle api di Moralis ogni volta che si scaricano i movimenti da un wallet questi sono limitati a circa 1.000, per scaricarne altri rifare la chiamata");
 
         javax.swing.GroupLayout Opzioni_ApiKeyLayout = new javax.swing.GroupLayout(Opzioni_ApiKey);
         Opzioni_ApiKey.setLayout(Opzioni_ApiKeyLayout);
         Opzioni_ApiKeyLayout.setHorizontalGroup(
             Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addContainerGap()
+                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                        .addContainerGap()
+                        .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(Opzioni_ApiKey_Coingecko_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Opzioni_ApiKey_Moralis_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Opzioni_ApiKey_Cronos_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Opzioni_ApiKey_UniSat_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(4, 4, 4)
                         .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(Opzioni_ApiKey_Helius_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(Opzioni_ApiKey_Etherscan_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(Opzioni_ApiKey_Coincap_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                                        .addComponent(Opzioni_ApiKey_Etherscan_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(Opzioni_ApiKey_Etherscan_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                                        .addComponent(Opzioni_ApiKey_Helius_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(Opzioni_ApiKey_Helius_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                                        .addComponent(Opzioni_ApiKey_Coincap_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(Opzioni_ApiKey_Coincap_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_Cronos_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ApiKey_Cronos_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_UniSat_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ApiKey_UniSat_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addGap(2, 2, 2)
                                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(Opzioni_ApiKey_Coingecko_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(Opzioni_ApiKey_Moralis_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(Opzioni_ApiKey_Cronos_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                                        .addComponent(Opzioni_ApiKey_Coingecko_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(Opzioni_ApiKey_Coingecko_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 656, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGap(18, 18, 18)
-                                        .addComponent(Opzioni_ApiKey_Coingecko_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(Opzioni_ApiKey_Coingecko_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                                        .addComponent(Opzioni_ApiKey_Moralis_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(Opzioni_ApiKey_Moralis_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 656, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGap(18, 18, 18)
-                                        .addComponent(Opzioni_ApiKey_Moralis_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                                        .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                                        .addComponent(Opzioni_ApiKey_Cronos_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(Opzioni_ApiKey_Cronos_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                                        .addComponent(Opzioni_ApiKey_Moralis_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))))))
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                        .addGap(47, 47, 47)
-                        .addComponent(Opzioni_ApiKey_MoralisNB_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 1047, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(267, Short.MAX_VALUE))
+                        .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(Opzioni_ApiKey_Helius_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+                            .addComponent(Opzioni_ApiKey_Etherscan_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Opzioni_ApiKey_Coincap_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_Helius_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ApiKey_Helius_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_Coincap_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ApiKey_Coincap_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_Etherscan_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ApiKey_Etherscan_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(Opzioni_ApiKey_MoralisNB_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 1151, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(176, Short.MAX_VALUE))
         );
         Opzioni_ApiKeyLayout.setVerticalGroup(
             Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4951,138 +5197,34 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_ApiKey_Moralis_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_ApiKey_Moralis_LabelSito)
                     .addComponent(Opzioni_ApiKey_Moralis_Label))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_ApiKey_MoralisNB_Label)
                 .addGap(8, 8, 8)
+                .addComponent(Opzioni_ApiKey_MoralisNB_Label)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ApiKey_Cronos_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_ApiKey_Cronos_Label)
                     .addComponent(Opzioni_ApiKey_Cronos_LabelSito))
-                .addGap(62, 62, 62)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Opzioni_ApiKey_UniSat_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_ApiKey_UniSat_Label)
+                    .addComponent(Opzioni_ApiKey_UniSat_LabelSito))
+                .addGap(18, 18, 18)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(514, Short.MAX_VALUE))
+                .addContainerGap(548, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("ApiKey", Opzioni_ApiKey);
-
-        jLabel22.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/qrcode_ethereum.png"))); // NOI18N
-        jLabel22.setToolTipText("");
-        jLabel22.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
-
-        jLabel23.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/qrcode_solana.png"))); // NOI18N
-
-        jLabel24.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
-        jLabel24.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel24.setText("<html><center>Ti piace questo software? <br>\nConsidera una piccola crypto donazione.<br>\nAiuti a mantenerlo libero, utile e migliorabile.</html>");
-
-        jLabel25.setFont(new java.awt.Font("Segoe UI Symbol", 1, 20)); // NOI18N
-        jLabel25.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel25.setText("<html>\n  <body style='font-family:sans-serif; font-size:18px;'>\n    <b>Indirizzo per Reti:</b><br><br>\n    • BSC<br>\n    • CRONOS<br>\n    • ETHEREUM<br>\n    • BASE<br>\n    • ARBITRUM\n  </body>\n</html>");
-
-        jLabel26.setFont(new java.awt.Font("Segoe UI Symbol", 1, 20)); // NOI18N
-        jLabel26.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel26.setText("<html>\n  <body style='font-family:sans-serif; font-size:18px;'>\n    <b>Indirizzo per Reti:</b><br><br>\n    • SOLANA<br>\n  </body>\n</html>");
-
-        Donazioni_Bottone1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Copia.png"))); // NOI18N
-        Donazioni_Bottone1.setText("Copia Indirizzo");
-        Donazioni_Bottone1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Donazioni_Bottone1ActionPerformed(evt);
-            }
-        });
-
-        Donazioni_Bottone2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Copia.png"))); // NOI18N
-        Donazioni_Bottone2.setText("Copia Indirizzo");
-        Donazioni_Bottone2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Donazioni_Bottone2ActionPerformed(evt);
-            }
-        });
-
-        jLabel29.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/qrcode_paypal.png"))); // NOI18N
-
-        jLabel30.setFont(new java.awt.Font("Segoe UI", 1, 64)); // NOI18N
-        jLabel30.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel30.setText("PayPal");
-
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Reward.png"))); // NOI18N
-        jButton1.setText("Apri Browser");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jLabel24, javax.swing.GroupLayout.PREFERRED_SIZE, 1276, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 68, Short.MAX_VALUE))
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(43, 43, 43)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Donazioni_Bottone2, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel23)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel26, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(jLabel22)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel25, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(Donazioni_Bottone1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(121, 121, 121)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabel29, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel30, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel24, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(33, 33, 33)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jLabel25, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel22, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel29, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(61, 61, 61)
-                        .addComponent(jLabel30, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton1)
-                    .addComponent(Donazioni_Bottone1))
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(44, 44, 44)
-                        .addComponent(jLabel23, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(95, 95, 95)
-                        .addComponent(jLabel26, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Donazioni_Bottone2)
-                .addContainerGap(174, Short.MAX_VALUE))
-        );
-
-        Opzioni_TabbedPane.addTab("Donazioni", jPanel2);
 
         javax.swing.GroupLayout OpzioniLayout = new javax.swing.GroupLayout(Opzioni);
         Opzioni.setLayout(OpzioniLayout);
         OpzioniLayout.setHorizontalGroup(
             OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(Opzioni_TabbedPane)
+            .addGroup(OpzioniLayout.createSequentialGroup()
+                .addComponent(Opzioni_TabbedPane)
+                .addContainerGap())
         );
         OpzioniLayout.setVerticalGroup(
             OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -5689,6 +5831,8 @@ private void AvviaSplashScreen() {
         Opzioni_ApiKey_Coingecko_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"));
         Opzioni_ApiKey_Moralis_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"));
         Opzioni_ApiKey_Cronos_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"));
+        Opzioni_ApiKey_UniSat_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat")));
+
         
       //  System.out.println(RW_Opzioni_RilenvanteScambiFIAT.isSelected());
     }
@@ -7161,6 +7305,7 @@ private void AvviaSplashScreen() {
         DefaultTableModel Emoney_ModelloTabella = (DefaultTableModel) this.Opzioni_Emoney_Tabella.getModel();
         Tabelle.Funzioni_PulisciTabella(Emoney_ModelloTabella);
         TableColumn column1 = Opzioni_Emoney_Tabella.getColumnModel().getColumn(1);
+        Tabelle.ColoraTabellaSemplice(Opzioni_Emoney_Tabella);
         //JDateChooser DataChooser = new com.toedter.calendar.JDateChooser();
         
         //DataChooser.get
@@ -7256,35 +7401,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }
     
     
-    private void DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed
-        // TODO add your handling code here:
-
-        if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
-        //int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);
-        
-        int righeselezionate[] = Tabelle.Funzioni_getRigheSelezionate(DepositiPrelievi_Tabella);
-        Set<String> setIDs = new HashSet<>();
-        for (int riga:righeselezionate){
-            setIDs.add(DepositiPrelievi_Tabella.getModel().getValueAt(riga, 0).toString());
-        }
-        
-        GUI_ClassificazioneMovimento mod=new GUI_ClassificazioneMovimento(setIDs);
-        mod.setLocationRelativeTo(this);
-        mod.setVisible(true);
-
-        if (mod.getModificaEffettuata()){
-            Funzioni_AggiornaTutto();
-          //  DepositiPrelievi_Caricatabella();
-        }
-            
-        
-        
-        }
-
-        
-        // adesso devo caricarci i dettagli del movimento selezionato etc...
-    }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed
-
     public void Funzioni_AggiornaTutto() {
         //Se selezionato Situazione Import Crypto lo aggiorno
        System.out.println("Aggiorna Tutto");
@@ -7435,15 +7551,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         
     }
     
-    private void DepositiPrelieviComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_DepositiPrelieviComponentShown
-        // TODO add your handling code here:
-
-    }//GEN-LAST:event_DepositiPrelieviComponentShown
-
-    private void DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
-        DepositiPrelievi_AssegnazioneAutomatica();
-    }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
-
     
 
     
@@ -7671,11 +7778,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void SituazioneImportComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_SituazioneImportComponentShown
         // TODO add your handling code here:    
     }//GEN-LAST:event_SituazioneImportComponentShown
-
-    private void DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased
-        // TODO add your handling code here:
-       DepositiPrelievi_Caricatabella();
-    }//GEN-LAST:event_DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased
 
     
     private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
@@ -8378,18 +8480,6 @@ GiacenzeaData_CompilaTabellaToken(true);
 
     }//GEN-LAST:event_GiacenzeaData_Bottone_CambiaNomeTokenActionPerformed
 
-    private void DepositiPrelievi_Bottone_DettaglioDefiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_DettaglioDefiActionPerformed
-        // TODO add your handling code here:
-        if (DepositiPrelievi_Tabella.getSelectedRow() >= 0) {
-            int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);
-            String ID = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            if (!Funzioni_WalletDeFi.ApriExplorer(ID)) {
-                Messaggi.WarningMessage("Explorer non consultabile", "Non è possibile aprire l'explorer per questa transazione.",this);
-            }
-        }
-
-    }//GEN-LAST:event_DepositiPrelievi_Bottone_DettaglioDefiActionPerformed
-
     public void Funzione_EliminaMovimento(String ID, Component c) {
         AppDialog.DialogResult result = AppDialog.builder(SwingUtilities.getWindowAncestor(c))
                 .windowTitle("Cancellazione transazione")
@@ -8547,19 +8637,22 @@ GiacenzeaData_CompilaTabellaToken(true);
         // TODO add your handling code here:
         if (Opzioni_Emoney_Tabella.getSelectedRow() >= 0) {
             int rigaSelezionata = Opzioni_Emoney_Tabella.getSelectedRow();
-            String moneta = Opzioni_Emoney_Tabella.getModel().getValueAt(rigaSelezionata, 0).toString();
+            int righe[]=Opzioni_Emoney_Tabella.getSelectedRows();
+            for(int riga:righe){
+                String moneta = Opzioni_Emoney_Tabella.getModel().getValueAt(riga, 0).toString();
+                if (Messaggi.Personalizzati_SINO_RimuoviEmoneyToken(moneta, this)) {
+                    DatabaseH2.Pers_Emoney_Cancella(moneta);
+                }
+            }
+            Opzioni_Emoney_CaricaTabellaEmoney();
+            Funzioni_AggiornaTutto();
+         /*   String moneta = Opzioni_Emoney_Tabella.getModel().getValueAt(rigaSelezionata, 0).toString();
             if (Messaggi.Personalizzati_SINO_RimuoviEmoneyToken(moneta, this)) {
                 DatabaseH2.Pers_Emoney_Cancella(moneta);
                 Opzioni_Emoney_CaricaTabellaEmoney();
 
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
-                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(
-                        TransazioniCrypto_CheckBox_EscludiTI.isSelected(),
-                        TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected()
-                );
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
+                Funzioni_AggiornaTutto();
+            }*/
         }
     }//GEN-LAST:event_Opzioni_Emoney_Bottone_RimuoviActionPerformed
 
@@ -8574,23 +8667,45 @@ GiacenzeaData_CompilaTabellaToken(true);
                         DatabaseH2.Pers_Emoney_Scrivi(m, "2000-01-01");
                         Opzioni_Emoney_CaricaTabellaEmoney();
 
-                        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
-                        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(
-                                TransazioniCrypto_CheckBox_EscludiTI.isSelected(),
-                                TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected()
-                        );
-                        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                        Funzioni_AggiornaTutto();
 
                     } else {
                         Messaggi.WarningMessage("Token esistente", "Il token è già presente in tabella.", this);
                     }
                 }
-            }
-
-        
+            }       
     }//GEN-LAST:event_Opzioni_Emoney_Bottone_AggiungiActionPerformed
 
+    private void Opzioni_Emoney_ImpostaEmoneyTokenStandardInTabella(int Metodo) {
+        String EmoneyMica[] = new String[]{"EURC", "EUROe", "EURQ", "USDQ", "EURCV", "EURI", "EURR", "EURe", "USDC", "USDR"};
+        String StableCoinDubbie[] = new String[]{"BUSD", "USDT", "PYUSD"};
+        String StableCoin[] = new String[]{"DAI", "USDE", "FRAX", "EURT", "AEUR", "VEUR", "JEUR", "LUSD", "USD0", "USDS", "USDY"};
+        String Anno = "2023-01-01";
+        //Metodo=0 -> Solo mica compliant
+        //Metodo=1 -> Anche Stable dubbie
+        //Metodo=2 -> Tutte le stable
+        if (Metodo >= 0) {
+            for (String mon : EmoneyMica) {
+                DatabaseH2.Pers_Emoney_Scrivi(mon, Anno);
+            }
+        }
+        if (Metodo >= 1) {
+            for (String mon : StableCoinDubbie) {
+                DatabaseH2.Pers_Emoney_Scrivi(mon, Anno);
+            }
+        }
+        if (Metodo == 2) {
+            for (String mon : StableCoin) {
+                DatabaseH2.Pers_Emoney_Scrivi(mon, Anno);
+            }
+        }
+        Opzioni_Emoney_CaricaTabellaEmoney();
+
+        Funzioni_AggiornaTutto();
+    }
+    
+    
+    
     private void Opzioni_GruppoWallet_TabellaFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_TabellaFocusGained
         // TODO add your handling code here:
         //System.out.println("Componente cambiato");
@@ -8731,6 +8846,40 @@ if (result.isAction("delete-all")) {
             ".<br>Ricordarsi di salvare per non perdere le modifiche effettuate.", this);
 }
     }//GEN-LAST:event_Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed
+
+    private void Opzioni_Bottone_PuliziaPrezziKOActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_PuliziaPrezziKOActionPerformed
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+        String dataIniziale = f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
+        String dataFinale = f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
+
+        long timeStampIniziale = FunzioniDate.ConvertiDatainLong(dataIniziale);
+        long timeStampFinale = FunzioniDate.ConvertiDatainLong(dataFinale) + 86400000;
+
+        AppDialog.DialogResult result = AppDialog.builder(this)
+                .windowTitle("Pulizia cache prezzi irrecuperabili")
+                .bodyTitle("Eliminare i record PrezziKO?")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message("Stai per cancellare i record della cache dei prezzi irrecuperabili nel periodo selezionato.")
+                .details("""
+                        Intervallo incluso: dal %s al %s.
+
+                        I prezzi cancellati verranno ricalcolati al prossimo caricamento.
+                        """.formatted(dataIniziale, dataFinale))
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("delete-range", "Elimina")
+                        .role(AppDialog.ActionRole.DANGER)
+                        .build())
+                .showDialog();
+
+        if (result != null && result.isAction("delete-range")) {
+            int rimossi = Prezzi.PrezziKO_CancellaPeriodo(timeStampIniziale, timeStampFinale);
+            Messaggi.SuccessMessage("Record eliminati", "Sono stati eliminati " + rimossi + " record dalla cache PrezziKO.", this);
+        }
+    }//GEN-LAST:event_Opzioni_Bottone_PuliziaPrezziKOActionPerformed
 
     private void CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed
         // TODO add your handling code here:
@@ -9500,25 +9649,6 @@ if (result.isAction("delete-all")) {
         //Adesso dovrei ricalcolare le plusvalenze ed aggiornare la tabella crypto
     }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZeroActionPerformed
 
-    private void DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed
-        // TODO add your handling code here:
-        if (DepositiPrelievi_Tabella.getSelectedRow() >= 0) {
-            GUI_ModificaMovimento a = new GUI_ModificaMovimento();
-        int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);        
-        String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            a.CompilaMovimentoOppostoID(IDTransazione);
-            a.setLocationRelativeTo(this);
-            a.setVisible(true);
-        }else
-        {
-        GUI_ModificaMovimento a= new GUI_ModificaMovimento();
-        a.setLocationRelativeTo(this);
-        a.setVisible(true);
-        }
-                  //  Funzioni_AggiornaTutto();
-            //DepositiPrelievi_Caricatabella();
-    }//GEN-LAST:event_DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed
-
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         // TODO add your handling code here:
         System.out.println("Chiusura");
@@ -9788,7 +9918,7 @@ if (result.isAction("delete-all")) {
                     
                     if (dataInserita<=dataIeri){
                         //Gestisco il fatto che la data indicata va bene e la salvo anche nel database
-                        DatabaseH2.Pers_Opzioni_Scrivi("GiacenzeAData_Data", CDC_DataFinale);
+                        DatabaseH2.Pers_Opzioni_Scrivi("GiacenzeAData_Data", Data);
                     }
                     else if(Funzioni_Date_ConvertiDatainLong(Data)>Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
                         Messaggi.WarningMessage("Data errata", "Attenzione, la data inserita non può essere superiore alla data di ieri", this);
@@ -10660,7 +10790,7 @@ if (result.isAction("delete-all")) {
         //Questa funzione la faccio partire in un thread separato
         Thread thread;
         thread = new Thread() {
-            public void run() {    
+            public void run() {
                 if(Funzioni.isAggiornamentoDisponibile(VarStatiche.Versione)){
                     TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(true);
                     System.out.println("Nuova versione disponibile");
@@ -10671,45 +10801,30 @@ if (result.isAction("delete-all")) {
             }
         };
         thread.start();
-        
+
+    }
+
+    private void Funzioni_AggiornamentoImportConfig() {
+        Thread thread = new Thread() {
+            public void run() {
+                java.util.List<String> aggiornati = Funzioni.AggiornamentoImportConfig(VarStatiche.getCartella_ImportConfig());
+                if (!aggiornati.isEmpty()) {
+                    System.out.println("AggiornamentoImportConfig: aggiornati " + aggiornati.size() + " file: " + aggiornati);
+                } else {
+                    System.out.println("AggiornamentoImportConfig: configurazioni ImportConfig già aggiornate");
+                }
+            }
+        };
+        thread.setDaemon(true);
+        thread.start();
     }
     private void Funzioni_CorrezioneErroriPrincipali(){
-    // TODO add your handling code here:
-        // TODO add your handling code here:
-        //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo)
-        //PCO -> Cashout o similare (prelievo)
-        //PTW -> Trasferimento tra Wallet (prelievo)
-        //DTW -> Trasferimento tra Wallet (deposito)
-        //DAI -> Airdrop o similare (deposito)
-        //DCZ -> Costo di carico 0 (deposito)
 
+AppDialog.DialogResult result = Messaggi.Personalizzati_Multi_ScegliErrori(NumErroriMovSconosciuti, NumErroriMovNoPrezzo, NumErroriStackLiFoMancante, this);
 
-            //in questo caso sono in presenza di un movimento di deposito
-           
-                
-                    //Se scelgo il caso 1 faccio scegliere che tipo di reward voglio
-                //    boolean completato=true;
-                    String Testo = "<html>"
-                            + "<b>SCEGLIRE QUALE TIPOLOGIA DI ERRORE CORREGGERE.<br><br><b>"
-                            + "</html>";
-                   // A
-                    Object[] Bottoni = {"Annulla", 
-                        "MOVIMENTO NON CLASSIFICATO ("+(String.valueOf(NumErroriMovSconosciuti))+")", 
-                    "TRANSAZIONE SENZA PREZZO ("+NumErroriMovNoPrezzo+")",
-                    "PARTE DEL LIFO MANCANTE ("+NumErroriStackLiFoMancante+")"};
-                    int scelta = JOptionPane.showOptionDialog(this, Testo,
-                            "Correzione errori",
-                            JOptionPane.YES_NO_CANCEL_OPTION,
-                            JOptionPane.PLAIN_MESSAGE,
-                            null,
-                            Bottoni,
-                            null);
-                    //Adesso genero il movimento a seconda della scelta
-                    //0 o 1 significa che non bisogna fare nulla
-                    if (scelta != 0 && scelta != -1) {
+if (result != null && !result.isAction("cancel")) {
 
-                        switch (scelta) {
-                            case 1 -> {
+                        if (result.isAction("nonClassificati")) {
                                 String t="Si verrà ora reindirizzati alla maschera per la correzione dei movimenti non classificati.<br><br>"
                                         + "<b>NB: E' molto importante classificare tutti i movimenti di deposito e prelievo affinchè il calcolo delle plusvalenze sia esatto!</b><br><br>"
                                         + "Dalla versione 1.29, ai fini del calcolo della plusvalenza, tutti i movimenti di deposito non classificati verranno considerati <br>"
@@ -10720,7 +10835,7 @@ if (result.isAction("delete-all")) {
                              DepositiPrelievi.requestFocus();
                                 
                             }
-                            case 2 -> {
+                            else if (result.isAction("PrezzoMancante")) {
                                 String t="Verranno ora mostrati tutti i prodotti senza prezzo dei token non SCAM del periodo selezionato.<br><br>"
                                         + "<b>ATTENZIONE! Per vedere tutt i movimenti senza prezzo agire sulle date di inizio e fine posizionati in alto a destra</b><br><br>"
                                         + "Per tornare alla visualizzazione precedente togliere la biffatura dall'opzione \"<b>Vedi solo movimenti non valorizzati</b>\"<br>";
@@ -10730,7 +10845,7 @@ if (result.isAction("delete-all")) {
                                 CDC.setSelectedIndex(0);
                              
                             }
-                            case 3 -> {
+                            else if (result.isAction("LifoMancante")) {
                                 String t="Se manca parte della pila del LiFo significa che ci sono delle giacenze negative, generalmente mancano degli acquisti/earn.<br><br>"
                                         + "Si verrà ora reindirizzati alla funzione <b>'Verifica Saldi Negativi'</b> per risolvere le problematiche.<br><br>";
                                 Messaggi.InfoMessage("Parte del LiFo Mancante", t, this);
@@ -10738,14 +10853,9 @@ if (result.isAction("delete-all")) {
                                 AnalisiCrypto.setSelectedComponent(SaldiNegativi);
                                 SaldiNegativi.requestFocus();
                              
-                            }
-                            default -> {
-                            }
-                        }
+                            }                       
                     }
-                 /*   else{
-                        completato=false;
-                    }*/
+
     }
     
     
@@ -10809,11 +10919,6 @@ if (result.isAction("delete-all")) {
                 }
     }//GEN-LAST:event_RT_Bottone_ModificaGiacenzaActionPerformed
 
-    private void DepositiPrelievi_Bottone_DocumentazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_DocumentazioneActionPerformed
-        // TODO add your handling code here:
-        Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Classificazioni%20Movimenti.pdf/download");
-    }//GEN-LAST:event_DepositiPrelievi_Bottone_DocumentazioneActionPerformed
-
     private void Plusvalenze_Opzioni_NonConsiderareMovimentiNCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_NonConsiderareMovimentiNCActionPerformed
                 // TODO add your handling code here:
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -10828,52 +10933,6 @@ if (result.isAction("delete-all")) {
         Funzioni_AggiornaTutto();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Plusvalenze_Opzioni_NonConsiderareMovimentiNCActionPerformed
-
-    private void DepositiPrelievi_Bottone_ScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_ScamActionPerformed
-        // TODO add your handling code here:
-        int righeSelezionate[] = Tabelle.Funzioni_getRigheSelezionate(DepositiPrelievi_Tabella);
-        if (righeSelezionate.length >= 0) {
-
-            //Secondo ciclo faccio le modifiche
-            Set<String> setUnivoco = new LinkedHashSet<>(); 
-            for (int i = 0; i < righeSelezionate.length; i++) {
-                
-                String ID = DepositiPrelievi_Tabella.getModel().getValueAt(righeSelezionate[i], 0).toString();
-                //System.out.println(ID);
-                
-                //adesso controllo che sia un movimento non classificato e solo in quel caso vado avanti
-                String Movimento[] = MappaCryptoWallet.get(ID);
-                String Rete = Funzioni.TrovaReteDaIMovimento(Movimento);
-                if (Movimento[18] == null || Movimento[18].isBlank()) {
-                    //Controllo se è un movimento di prelievo o deposito
-                    String Tipo = ID.split("_")[4];
-                    String NomeMoneta = "";
-                    String Address = "";
-                    if (Tipo.equalsIgnoreCase("PC")) {
-                        NomeMoneta = Movimento[8];
-                        Address = Movimento[26];
-                    }
-                    if (Tipo.equalsIgnoreCase("DC")) {
-                        NomeMoneta = Movimento[11];
-                        Address = Movimento[28];
-                    }
-                    String Wallet=Movimento[3];
-                    
-                    //Se non l'ho già fatto classifico il movimento
-                    if (!setUnivoco.contains(NomeMoneta)){
-                        String NuovoNome=GiacenzeaData_Funzione_IdentificaComeScam(NomeMoneta, Address, Rete,Wallet);
-                        setUnivoco.add(NuovoNome);
-                    }
-
-                } else {
-                    Messaggi.WarningMessage("Movimenti già classificati",
-                            "Attenzione! Sonostati trovati uno o più movimenti già classificati<br>"
-                            + "Questi movimenti non possono essere classificati come scam e sono stati ignorati.", this);
-                }        
-            }
-            Funzioni_AggiornaTutto();
-        }
-    }//GEN-LAST:event_DepositiPrelievi_Bottone_ScamActionPerformed
 
     private void Opzioni_Varie_Bottone_DisclaimerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Bottone_DisclaimerActionPerformed
         // TODO add your handling code here:
@@ -10928,7 +10987,8 @@ if (result.isAction("delete-all")) {
         boolean CoingeckoDiversa=true;
         boolean MoralisDiversa=true;
         boolean CronosDiversa=true;
-        
+        boolean UniSatDiversa=true;
+
         if (Opzioni_ApiKey_Helius_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))))HeliusDiversa=false;
         if (Opzioni_ApiKey_Etherscan_TextField.getText().trim()
@@ -10941,6 +11001,9 @@ if (result.isAction("delete-all")) {
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"))))MoralisDiversa=false;
         if (Opzioni_ApiKey_Cronos_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"))))CronosDiversa=false;
+        if (Opzioni_ApiKey_UniSat_TextField.getText().trim()
+                .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat"))))UniSatDiversa=false;
+
         
         //Controllo ed eventualmente salvo le api Helius
         if (HeliusDiversa&&Trans_Solana.isApiKeyValida(Opzioni_ApiKey_Helius_TextField.getText().trim())||
@@ -10997,7 +11060,7 @@ if (result.isAction("delete-all")) {
                                         + "L'operazione verrà annullata!<br>",this);
         }
         
-        //Controllo ed eventualmente salvo le api Moralis
+        //Controllo ed eventualmente salvo le api Cronos
         if (CronosDiversa&&Funzioni.isApiKeyValidaCronos(Opzioni_ApiKey_Cronos_TextField.getText().trim())||
                 Opzioni_ApiKey_Cronos_TextField.getText().isBlank()){
             //anche se non metto nulla scrivo la chiave ovvero svuoto il campo
@@ -11007,7 +11070,17 @@ if (result.isAction("delete-all")) {
                             "Attenzione! la ApiKey di Cronos Explorer inserita non è valida o manca la connessione internet<br>"
                                         + "L'operazione verrà annullata!<br>",this);
         }
-        
+
+        //Controllo ed eventualmente salvo le api UniSat
+        if (UniSatDiversa&&Trans_Bitcoin.isApiKeyValida(Opzioni_ApiKey_UniSat_TextField.getText().trim())||
+                Opzioni_ApiKey_UniSat_TextField.getText().isBlank()){
+            DatabaseH2.Opzioni_Scrivi("ApiKey_UniSat", Opzioni_ApiKey_UniSat_TextField.getText().trim());
+        }else if (UniSatDiversa){
+                        Messaggi.WarningMessage("Errore in validazione chiave",
+                            "Attenzione! la ApiKey di UniSat inserita non è valida o manca la connessione internet<br>"
+                                        + "L'operazione verrà annullata!<br>",this);
+        }
+
         Opzioni_ApiKey_ControllaPulsanti();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_ApiKey_Bottone_SalvaActionPerformed
@@ -11020,6 +11093,7 @@ if (result.isAction("delete-all")) {
         Opzioni_ApiKey_Coingecko_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko")));
         Opzioni_ApiKey_Moralis_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis")));
         Opzioni_ApiKey_Cronos_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos")));
+        Opzioni_ApiKey_UniSat_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat")));
         Opzioni_ApiKey_ControllaPulsanti();
     }//GEN-LAST:event_Opzioni_ApiKey_Bottone_AnnullaActionPerformed
 
@@ -11149,37 +11223,10 @@ if (result.isAction("delete-all")) {
         Funzioni_CorrezioneErroriPrincipali();
     }//GEN-LAST:event_RT_Bottone_CorreggiErroriActionPerformed
 
-    private void DepositiPrelievi_Bottone_DuplicaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_DuplicaActionPerformed
-        // TODO add your handling code here:
-        if (DepositiPrelievi_Tabella.getSelectedRow() >= 0) {
-            int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);        
-            String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-           if(Funzioni.DuplicaMovimento(IDTransazione)){
-            Messaggi.SuccessMessage("Operazione conclusa","Movimento duplicato correttamente",this);
-            //Aggiorno la tabella
-            Funzioni_AggiornaTutto();
-            //Mi riposiziono sulla riga
-            Tabelle.Funzioni_PosizionaTabellasuRiga(DepositiPrelievi_Tabella, rigaselezionata,false);
-           }
-           else{
-           Messaggi.WarningMessage("Attenzione","Questo movimento non può essere duplicato",this);
-           }
-            
-        }
-    }//GEN-LAST:event_DepositiPrelievi_Bottone_DuplicaActionPerformed
-
     private void MenuItem_CopiaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_CopiaActionPerformed
         // TODO add your handling code here:
         Funzioni.simulaCtrlC();
     }//GEN-LAST:event_MenuItem_CopiaActionPerformed
-
-    private void DepositiPrelievi_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaMouseReleased
-        // TODO add your handling code here:
-   //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni_RichiamaPopUpdaTabella(DepositiPrelievi_Tabella,evt,0);
-        DepositiPrelievi_CompilaTabellaCorrelati();
-        //Funzioni.PopUpMenu(this, evt, PopupMenu,null);
-    }//GEN-LAST:event_DepositiPrelievi_TabellaMouseReleased
 
     private void SituazioneImport_Tabella1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_SituazioneImport_Tabella1MouseReleased
         // TODO add your handling code here:
@@ -11390,15 +11437,11 @@ if (result.isAction("delete-all")) {
                     }
                 }
                 }
-                String tex="<html>Sono stati modificati <b>"+righiModificati+"</b> prezzi, per una differenza totale di <b>€ "+diffPrezzi+"</b><br>"+
+                String tex="Sono stati modificati <b>"+righiModificati+"</b> prezzi, per una differenza totale di <b>€ "+diffPrezzi+"</b><br>"+
                                 "di cui :<br>"+
                                " - <b>"+nuoviPrezzi+ "</b> sono relativi all'attribuzione di un prezzo a prodotti che prima non lo avevano per un totale di <b>€ "+nuoviPrezziTrovati+"</b><br>"+
-                               " - <b>"+righiRilevantiModificati+ "</b> sono relativi a movimenti fiscalmente rilevanti per un totale di <b>€ "+diffPrezziRilevanti+"</b><br>"+
-                                       "</html>";
-                JOptionPane.showConfirmDialog(progress, 
-                        tex,
-                            "Riepilogo modifiche"
-                        , JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                               " - <b>"+righiRilevantiModificati+ "</b> sono relativi a movimenti fiscalmente rilevanti per un totale di <b>€ "+diffPrezziRilevanti+"</b><br>";
+                Messaggi.SuccessMessage("Riepilogo", tex, progress);
                 progress.ChiudiFinestra();
 
             }
@@ -11426,32 +11469,6 @@ if (result.isAction("delete-all")) {
         }
     }//GEN-LAST:event_MenuItem_EliminaMovimentoActionPerformed
 
-    private void DepositiPrelievi_ComboBox_FiltroWalletItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletItemStateChanged
-        // TODO add your handling code here:
-      /*  if(evt.getStateChange() == ItemEvent.SELECTED && DepositiPrelievi_ComboBox_FiltroWallet.isShowing()) {
-            DepositiPrelievi_Caricatabella();
-        }*/
-    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletItemStateChanged
-
-    private void DepositiPrelievi_ComboBox_FiltroWalletMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletMouseClicked
-        // TODO add your handling code here:
-    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletMouseClicked
-
-    private void DepositiPrelievi_ComboBox_FiltroWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletActionPerformed
-        // TODO add your handling code here:
-            if(evt.getModifiers()!=0&&DepositiPrelievi_ComboBox_FiltroWallet.hasFocus()){
-            DepositiPrelievi_Caricatabella();
-        }
-    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletActionPerformed
-
-    private void DepositiPrelievi_ComboBox_FiltroWalletPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletPropertyChange
-        // TODO add your handling code here:
-    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletPropertyChange
-
-    private void DepositiPrelievi_ComboBox_FiltroWalletVetoableChange(java.beans.PropertyChangeEvent evt)throws java.beans.PropertyVetoException {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletVetoableChange
-        // TODO add your handling code here:
-    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletVetoableChange
-
     private void MenuItem_ClassificaMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ClassificaMovimentoActionPerformed
         // TODO add your handling code here:
         if (PopUp_IDTrans != null) {
@@ -11467,31 +11484,6 @@ if (result.isAction("delete-all")) {
         }
     }//GEN-LAST:event_MenuItem_ClassificaMovimentoActionPerformed
 
-    private void DepositiPrelievi_ComboBox_FiltroWalletKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletKeyPressed
-        // TODO add your handling code here:
-                if(evt.getExtendedKeyCode()==10){
-             DepositiPrelievi_Caricatabella();
-        }
-    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletKeyPressed
-
-    private void DepositiPrelievi_ComboBox_FiltroTokenItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroTokenItemStateChanged
-        // TODO add your handling code here:
-    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroTokenItemStateChanged
-
-    private void DepositiPrelievi_ComboBox_FiltroTokenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroTokenActionPerformed
-        // TODO add your handling code here:
-            if(evt.getModifiers()!=0&&DepositiPrelievi_ComboBox_FiltroToken.hasFocus()){
-            DepositiPrelievi_Caricatabella();
-        }
-    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroTokenActionPerformed
-
-    private void DepositiPrelievi_ComboBox_FiltroTokenKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroTokenKeyPressed
-        // TODO add your handling code here:
-                if(evt.getExtendedKeyCode()==10){
-             DepositiPrelievi_Caricatabella();
-        }
-    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroTokenKeyPressed
-
 
     
     
@@ -11501,16 +11493,6 @@ if (result.isAction("delete-all")) {
         StringSelection stringSelection = new StringSelection(PopUp_IDTrans);
         clipboard.setContents(stringSelection, null);
     }//GEN-LAST:event_MenuItem_CopiaIDActionPerformed
-
-    private void DepositiPrelievi_TabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaKeyReleased
-        // TODO add your handling code here:
-        DepositiPrelievi_CompilaTabellaCorrelati();
-    }//GEN-LAST:event_DepositiPrelievi_TabellaKeyReleased
-
-    private void DepositiPrelievi_TabellaCorrelatiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaCorrelatiMouseReleased
-        // TODO add your handling code here:
-        Funzioni_RichiamaPopUpdaTabella(DepositiPrelievi_TabellaCorrelati,evt,0);
-    }//GEN-LAST:event_DepositiPrelievi_TabellaCorrelatiMouseReleased
 
     private void MenuItem_ModificaPrezzoMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MenuItem_ModificaPrezzoMouseReleased
         // TODO add your handling code here:
@@ -11544,13 +11526,6 @@ if (result.isAction("delete-all")) {
         if (Funzioni.GUIModificaNote(PopUp_Component, PopUp_IDTrans))TabellaCryptodaAggiornare=true;
         
     }//GEN-LAST:event_MenuItem_ModificaNoteActionPerformed
-
-    private void DepositiPrelievi_TabellaCorrelatiFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaCorrelatiFocusGained
-        // TODO add your handling code here:
-        if (evt.getOppositeComponent()==null){
-                DepositiPrelievi_CompilaTabellaCorrelati();
-        }
-    }//GEN-LAST:event_DepositiPrelievi_TabellaCorrelatiFocusGained
 
     private void MenuItem_ModificaRewardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaRewardActionPerformed
         // TODO add your handling code here:
@@ -11692,6 +11667,472 @@ if (result.isAction("delete-all")) {
         SaldiNegativi_CompilaTabellaMovimenti();
     }//GEN-LAST:event_SaldiNegativi_CheckBox_DettaglioFiltraQtaNegativeActionPerformed
 
+    private void Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed
+        // TODO add your handling code here:
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        if (Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni.isSelected()) {
+            //scrivo nelle Opzioni del DB che voglio il calcolo delle plus X Gruppo Wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_NoPlusvalenzeCommissioni", "SI");
+        } else {
+            //scrivo nelle Opzioni del DB che nel calcolo delle plus non considero la suddivisione per wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_NoPlusvalenzeCommissioni", "NO");
+        }
+        //TabellaCryptodaAggiornare=true;
+       // Calcoli_Plusvalenze.AggiornaPlusvalenze();
+       Funzioni_AggiornaTutto();
+       this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        //Adesso dovrei ricalcolare le plusvalenze ed aggiornare la tabella crypto
+    }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed
+
+    private void Opzioni_ApiKey_Moralis_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Moralis_TextFieldMouseReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_ApiKey_Moralis_TextFieldMouseReleased
+
+    private void Opzioni_ApiKey_Moralis_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Moralis_TextFieldKeyReleased
+        // TODO add your handling code here:
+        Opzioni_ApiKey_ControllaPulsanti();
+    }//GEN-LAST:event_Opzioni_ApiKey_Moralis_TextFieldKeyReleased
+
+    private void Opzioni_ApiKey_Moralis_LabelSitoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseClicked
+        // TODO add your handling code here:
+        Funzioni.ApriWeb("https://admin.moralis.com/login");
+    }//GEN-LAST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseClicked
+
+    private void Opzioni_ApiKey_Moralis_LabelSitoMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseEntered
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseEntered
+
+    private void Opzioni_ApiKey_Moralis_LabelSitoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseExited
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseExited
+
+    private void Opzioni_ApiKey_Cronos_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Cronos_TextFieldMouseReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_ApiKey_Cronos_TextFieldMouseReleased
+
+    private void Opzioni_ApiKey_Cronos_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Cronos_TextFieldKeyReleased
+        // TODO add your handling code here:
+        Opzioni_ApiKey_ControllaPulsanti();
+    }//GEN-LAST:event_Opzioni_ApiKey_Cronos_TextFieldKeyReleased
+
+    private void Opzioni_ApiKey_Cronos_LabelSitoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Cronos_LabelSitoMouseClicked
+        // TODO add your handling code here:
+        Funzioni.ApriWeb("https://explorer.cronos.org/login");
+    }//GEN-LAST:event_Opzioni_ApiKey_Cronos_LabelSitoMouseClicked
+
+    private void Opzioni_ApiKey_Cronos_LabelSitoMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Cronos_LabelSitoMouseEntered
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_Opzioni_ApiKey_Cronos_LabelSitoMouseEntered
+
+    private void Opzioni_ApiKey_Cronos_LabelSitoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Cronos_LabelSitoMouseExited
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_Opzioni_ApiKey_Cronos_LabelSitoMouseExited
+
+    private void Opzioni_ApiKey_UniSat_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_UniSat_TextFieldMouseReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_ApiKey_UniSat_TextFieldMouseReleased
+
+    private void Opzioni_ApiKey_UniSat_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_UniSat_TextFieldKeyReleased
+        // TODO add your handling code here:
+        Opzioni_ApiKey_ControllaPulsanti();
+    }//GEN-LAST:event_Opzioni_ApiKey_UniSat_TextFieldKeyReleased
+
+    private void Opzioni_ApiKey_UniSat_LabelSitoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_UniSat_LabelSitoMouseClicked
+        // TODO add your handling code here:
+        Funzioni.ApriWeb("https://developer.unisat.io/dashboard/bitcoin/mainnet");
+    }//GEN-LAST:event_Opzioni_ApiKey_UniSat_LabelSitoMouseClicked
+
+    private void Opzioni_ApiKey_UniSat_LabelSitoMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_UniSat_LabelSitoMouseEntered
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_Opzioni_ApiKey_UniSat_LabelSitoMouseEntered
+
+    private void Opzioni_ApiKey_UniSat_LabelSitoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_UniSat_LabelSitoMouseExited
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_Opzioni_ApiKey_UniSat_LabelSitoMouseExited
+
+
+    private void Opzioni_GruppoWallet_CheckBox_PlusManualiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_CheckBox_PlusManualiActionPerformed
+        // TODO add your handling code here:
+        if (Opzioni_GruppoWallet_CheckBox_PlusManuali.isSelected()) {
+            //scrivo nelle Opzioni del DB che voglio il calcolo delle plus X Gruppo Wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("PlusManuali", "SI");
+        } else {
+            //scrivo nelle Opzioni del DB che nel calcolo delle plus non considero la suddivisione per wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("PlusManuali", "NO");
+            
+            //Aggiorno le plus perchè potrebbero non essere state aggiornate
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+            this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
+            TransazioniCrypto_RicalcolaPlusvalenze_Label.setVisible(false);
+            TransazioniCrypto_RicalcolaPlusvalenze_Bottone.setVisible(false);
+            TransazioniCrypto_RicalcolaPlusvalenze_Bottone.setEnabled(false);
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+      //  this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+      //  Calcoli_Plusvalenze.AggiornaPlusvalenze();
+        //Funzioni_AggiornaTutto();
+        //TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
+      //  this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_Opzioni_GruppoWallet_CheckBox_PlusManualiActionPerformed
+
+    private void OpzioniRewards_CashBackComeFIATActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpzioniRewards_CashBackComeFIATActionPerformed
+        // TODO add your handling code here:
+        if (OpzioniRewards_CashBackComeFIAT.isSelected())
+        {
+            DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIAT","SI");
+            DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIATAnno",OpzioniRewards_CashBackComeFIAT_ComboBox.getSelectedItem().toString());
+            OpzioniRewards_CashBackComeFIAT_Label.setEnabled(true);
+            OpzioniRewards_CashBackComeFIAT_ComboBox.setEnabled(true);
+        }
+        else
+        {
+            DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIAT","NO");
+            OpzioniRewards_CashBackComeFIAT_Label.setEnabled(false);
+            OpzioniRewards_CashBackComeFIAT_ComboBox.setEnabled(false);
+        }
+        
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        Funzioni_AggiornaTutto();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_OpzioniRewards_CashBackComeFIATActionPerformed
+
+    private void OpzioniRewards_CashBackComeFIAT_ComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpzioniRewards_CashBackComeFIAT_ComboBoxActionPerformed
+        // TODO add your handling code here:
+        if(evt.getModifiers()!=0&&OpzioniRewards_CashBackComeFIAT_ComboBox.hasFocus()){
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            //Scrivo nel database l'anno da cui partire con questo nuovo calcolo
+            DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIATAnno",OpzioniRewards_CashBackComeFIAT_ComboBox.getSelectedItem().toString());
+            Funzioni_AggiornaTutto();
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+    }//GEN-LAST:event_OpzioniRewards_CashBackComeFIAT_ComboBoxActionPerformed
+
+    private void GiacenzeaData_Bottone_ConfermaPrezzoZeroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_ConfermaPrezzoZeroActionPerformed
+        // TODO add your handling code here:
+        if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
+            long DataRiferimento;// = 0;
+            if (GiacenzeaData_Data_DataChooser.getDate() != null) {
+
+                //Recupero il Wallet di riferimento
+                //Mi servirà poi per trovare il gruppo Wallet
+                String Wallet = Giacenzeadata_Walleta_Label.getText();
+                String Gruppo = Funzioni.getGruppoWalletXPrezzi(Wallet);
+                //System.out.println("Gruppo:"+Gruppo);
+                SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+                String Data = f.format(GiacenzeaData_Data_DataChooser.getDate());
+                DataRiferimento = FunzioniDate.ConvertiDatainLong(Data) + 86400000;
+                long DatadiOggi = System.currentTimeMillis();
+                if (DatadiOggi < DataRiferimento) {
+                    DataRiferimento = DatadiOggi;
+                }
+                SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
+                sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+
+                int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(GiacenzeaData_Tabella);
+
+                String mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+                String Qta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 4).toString();
+                String Rete = null;
+
+                //Prima di andare ulteriormente avanti avviso sulle conseguenze
+                //e interrompo l'operazione se non vengono accettate
+                if (!Messaggi.ConfermaTokenSenzaPrezzo(mon, Qta, this)) return;
+                
+                    
+                
+                if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1) != null) {
+                    Rete = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+                }
+
+                String Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
+
+                if (!Funzioni_WalletDeFi.isValidAddress(Address, Rete)) {
+                    Address = null;
+                }
+                //Devo ovviamente cancellarlo per inserirne uno nuovo altrimenti questo prende il sopravvento
+               DatabaseH2.InserisciPrezzoPresonalizzato(DataRiferimento, "Personalizzato", mon, "0.00", Rete, Address, Gruppo, DataRiferimento);
+
+                GiacenzeaData_Tabella.getModel().setValueAt("", rigaselezionata, 6);
+                //Una volta cambiato il prezzo aggiorno la tabella
+            }
+        }
+    }//GEN-LAST:event_GiacenzeaData_Bottone_ConfermaPrezzoZeroActionPerformed
+
+    private void Opzioni_Emoney_Bottone_PrecompilaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_Bottone_PrecompilaActionPerformed
+        // TODO add your handling code here:
+                String testo="Scegli quali tipi di stable coin inserire nella tabella.<br>"
+                + "I movimenti tra crypto e queste stable coin sarà considerato fiscalmente rilevante.<br><br>"
+                + "Si potrà scegliere tra queste 3 tipologie : <br>"
+                + "- Tutte le stablecoin Mica Compliant es. USDC<br>" +
+                "- Tutte le stablecoin Mica Compliant + quelle un pò dubbie come ad es. USDT<br>" +
+                "- Tutte le stablecoin (comprese quelle algoritmiche o Crypto-Collateralizzate tipo DAI)<br>" +
+                "<br><br>" +
+                "<b>Attenzione<b> : La lista precompilata delle stablecoin potrebbe non essere esaustiva o presentare errori nella classificazione";
+        
+        AppDialog.DialogResult result = AppDialog.builder(this)
+                .windowTitle("Compilazione automatica tabella E-Money Token")
+                .bodyTitle("Compilazione automatica tabella E-Money Token")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message("")
+                .details(testo)
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.NEUTRAL)
+                        .build())
+                .action(AppDialog.DialogAction.builder("mica", "SOLO MICA COMPLIANT")
+                        .role(AppDialog.ActionRole.NEUTRAL)
+                        .build())
+                .action(AppDialog.DialogAction.builder("safe", "MICA COMPLIANT + DUBBIE")
+                        .role(AppDialog.ActionRole.NEUTRAL)
+                        .build())
+                .action(AppDialog.DialogAction.builder("tutte", "TUTTE")
+                        .role(AppDialog.ActionRole.NEUTRAL)
+                        .build())
+                .showDialog();
+
+        if (result == null || result.isAction("cancel") || result.getActionId() == null) {
+        }else if(result.isAction("mica")){Opzioni_Emoney_ImpostaEmoneyTokenStandardInTabella(0);}
+        else if(result.isAction("safe")){Opzioni_Emoney_ImpostaEmoneyTokenStandardInTabella(1);}
+        else if(result.isAction("tutte")){Opzioni_Emoney_ImpostaEmoneyTokenStandardInTabella(2);}
+
+    }//GEN-LAST:event_Opzioni_Emoney_Bottone_PrecompilaActionPerformed
+
+    private void DepositiPrelieviComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_DepositiPrelieviComponentShown
+        // TODO add your handling code here:
+    }//GEN-LAST:event_DepositiPrelieviComponentShown
+
+    private void DepositiPrelievi_CheckBox_mostraFIATMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_CheckBox_mostraFIATMouseReleased
+        // TODO add your handling code here:
+        DepositiPrelievi_Caricatabella();
+    }//GEN-LAST:event_DepositiPrelievi_CheckBox_mostraFIATMouseReleased
+
+    private void DepositiPrelievi_TabellaCorrelatiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaCorrelatiMouseReleased
+        // TODO add your handling code here:
+        Funzioni_RichiamaPopUpdaTabella(DepositiPrelievi_TabellaCorrelati,evt,0);
+    }//GEN-LAST:event_DepositiPrelievi_TabellaCorrelatiMouseReleased
+
+    private void DepositiPrelievi_TabellaCorrelatiFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaCorrelatiFocusGained
+        // TODO add your handling code here:
+        if (evt.getOppositeComponent()==null){
+            DepositiPrelievi_CompilaTabellaCorrelati();
+        }
+    }//GEN-LAST:event_DepositiPrelievi_TabellaCorrelatiFocusGained
+
+    private void DepositiPrelievi_ComboBox_FiltroTokenKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroTokenKeyPressed
+        // TODO add your handling code here:
+        if(evt.getExtendedKeyCode()==10){
+            DepositiPrelievi_Caricatabella();
+        }
+    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroTokenKeyPressed
+
+    private void DepositiPrelievi_ComboBox_FiltroTokenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroTokenActionPerformed
+        // TODO add your handling code here:
+        if(evt.getModifiers()!=0&&DepositiPrelievi_ComboBox_FiltroToken.hasFocus()){
+            DepositiPrelievi_Caricatabella();
+        }
+    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroTokenActionPerformed
+
+    private void DepositiPrelievi_ComboBox_FiltroTokenItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroTokenItemStateChanged
+        // TODO add your handling code here:
+    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroTokenItemStateChanged
+
+    private void DepositiPrelievi_ComboBox_FiltroWalletVetoableChange(java.beans.PropertyChangeEvent evt)throws java.beans.PropertyVetoException {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletVetoableChange
+        // TODO add your handling code here:
+    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletVetoableChange
+
+    private void DepositiPrelievi_ComboBox_FiltroWalletKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletKeyPressed
+        // TODO add your handling code here:
+        if(evt.getExtendedKeyCode()==10){
+            DepositiPrelievi_Caricatabella();
+        }
+    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletKeyPressed
+
+    private void DepositiPrelievi_ComboBox_FiltroWalletPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletPropertyChange
+        // TODO add your handling code here:
+    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletPropertyChange
+
+    private void DepositiPrelievi_ComboBox_FiltroWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletActionPerformed
+        // TODO add your handling code here:
+        if(evt.getModifiers()!=0&&DepositiPrelievi_ComboBox_FiltroWallet.hasFocus()){
+            DepositiPrelievi_Caricatabella();
+        }
+    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletActionPerformed
+
+    private void DepositiPrelievi_ComboBox_FiltroWalletMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletMouseClicked
+
+    private void DepositiPrelievi_ComboBox_FiltroWalletItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletItemStateChanged
+        // TODO add your handling code here:
+        /*  if(evt.getStateChange() == ItemEvent.SELECTED && DepositiPrelievi_ComboBox_FiltroWallet.isShowing()) {
+            DepositiPrelievi_Caricatabella();
+        }*/
+    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletItemStateChanged
+
+    private void DepositiPrelievi_Bottone_DuplicaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_DuplicaActionPerformed
+        // TODO add your handling code here:
+        if (DepositiPrelievi_Tabella.getSelectedRow() >= 0) {
+            int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);
+            String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            if(Funzioni.DuplicaMovimento(IDTransazione)){
+                Messaggi.SuccessMessage("Operazione conclusa","Movimento duplicato correttamente",this);
+                //Aggiorno la tabella
+                Funzioni_AggiornaTutto();
+                //Mi riposiziono sulla riga
+                Tabelle.Funzioni_PosizionaTabellasuRiga(DepositiPrelievi_Tabella, rigaselezionata,false);
+            }
+            else{
+                Messaggi.WarningMessage("Attenzione","Questo movimento non può essere duplicato",this);
+            }
+
+        }
+    }//GEN-LAST:event_DepositiPrelievi_Bottone_DuplicaActionPerformed
+
+    private void DepositiPrelievi_Bottone_ScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_ScamActionPerformed
+        // TODO add your handling code here:
+        int righeSelezionate[] = Tabelle.Funzioni_getRigheSelezionate(DepositiPrelievi_Tabella);
+        if (righeSelezionate.length >= 0) {
+
+            //Secondo ciclo faccio le modifiche
+            Set<String> setUnivoco = new LinkedHashSet<>();
+            for (int i = 0; i < righeSelezionate.length; i++) {
+
+                String ID = DepositiPrelievi_Tabella.getModel().getValueAt(righeSelezionate[i], 0).toString();
+                //System.out.println(ID);
+
+                //adesso controllo che sia un movimento non classificato e solo in quel caso vado avanti
+                String Movimento[] = MappaCryptoWallet.get(ID);
+                String Rete = Funzioni.TrovaReteDaIMovimento(Movimento);
+                if (Movimento[18] == null || Movimento[18].isBlank()) {
+                    //Controllo se è un movimento di prelievo o deposito
+                    String Tipo = ID.split("_")[4];
+                    String NomeMoneta = "";
+                    String Address = "";
+                    if (Tipo.equalsIgnoreCase("PC")) {
+                        NomeMoneta = Movimento[8];
+                        Address = Movimento[26];
+                    }
+                    if (Tipo.equalsIgnoreCase("DC")) {
+                        NomeMoneta = Movimento[11];
+                        Address = Movimento[28];
+                    }
+                    String Wallet=Movimento[3];
+
+                    //Se non l'ho già fatto classifico il movimento
+                    if (!setUnivoco.contains(NomeMoneta)){
+                        String NuovoNome=GiacenzeaData_Funzione_IdentificaComeScam(NomeMoneta, Address, Rete,Wallet);
+                        setUnivoco.add(NuovoNome);
+                    }
+
+                } else {
+                    Messaggi.WarningMessage("Movimenti già classificati",
+                        "Attenzione! Sonostati trovati uno o più movimenti già classificati<br>"
+                        + "Questi movimenti non possono essere classificati come scam e sono stati ignorati.", this);
+                }
+            }
+            Funzioni_AggiornaTutto();
+        }
+    }//GEN-LAST:event_DepositiPrelievi_Bottone_ScamActionPerformed
+
+    private void DepositiPrelievi_Bottone_DocumentazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_DocumentazioneActionPerformed
+        // TODO add your handling code here:
+        Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Classificazioni%20Movimenti.pdf/download");
+    }//GEN-LAST:event_DepositiPrelievi_Bottone_DocumentazioneActionPerformed
+
+    private void DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed
+        // TODO add your handling code here:
+        if (DepositiPrelievi_Tabella.getSelectedRow() >= 0) {
+            GUI_ModificaMovimento a = new GUI_ModificaMovimento();
+            int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);
+            String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            a.CompilaMovimentoOppostoID(IDTransazione);
+            a.setLocationRelativeTo(this);
+            a.setVisible(true);
+        }else
+        {
+            GUI_ModificaMovimento a= new GUI_ModificaMovimento();
+            a.setLocationRelativeTo(this);
+            a.setVisible(true);
+        }
+        //  Funzioni_AggiornaTutto();
+        //DepositiPrelievi_Caricatabella();
+    }//GEN-LAST:event_DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed
+
+    private void DepositiPrelievi_Bottone_DettaglioDefiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_DettaglioDefiActionPerformed
+        // TODO add your handling code here:
+        if (DepositiPrelievi_Tabella.getSelectedRow() >= 0) {
+            int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);
+            String ID = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            if (!Funzioni_WalletDeFi.ApriExplorer(ID)) {
+                Messaggi.WarningMessage("Explorer non consultabile", "Non è possibile aprire l'explorer per questa transazione.",this);
+            }
+        }
+    }//GEN-LAST:event_DepositiPrelievi_Bottone_DettaglioDefiActionPerformed
+
+    private void DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased
+        // TODO add your handling code here:
+        DepositiPrelievi_Caricatabella();
+    }//GEN-LAST:event_DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased
+
+    private void DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed
+        // TODO add your handling code here:
+
+        if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
+            //int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);
+
+            int righeselezionate[] = Tabelle.Funzioni_getRigheSelezionate(DepositiPrelievi_Tabella);
+            Set<String> setIDs = new HashSet<>();
+            for (int riga:righeselezionate){
+                setIDs.add(DepositiPrelievi_Tabella.getModel().getValueAt(riga, 0).toString());
+            }
+
+            GUI_ClassificazioneMovimento mod=new GUI_ClassificazioneMovimento(setIDs);
+            mod.setLocationRelativeTo(this);
+            mod.setVisible(true);
+
+            if (mod.getModificaEffettuata()){
+                Funzioni_AggiornaTutto();
+                //  DepositiPrelievi_Caricatabella();
+            }
+
+        }
+
+        // adesso devo caricarci i dettagli del movimento selezionato etc...
+    }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed
+
+    private void DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
+        DepositiPrelievi_AssegnazioneAutomatica();
+    }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
+
+    private void DepositiPrelievi_TabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaKeyReleased
+        // TODO add your handling code here:
+        DepositiPrelievi_CompilaTabellaCorrelati();
+    }//GEN-LAST:event_DepositiPrelievi_TabellaKeyReleased
+
+    private void DepositiPrelievi_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaMouseReleased
+        // TODO add your handling code here:
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni_RichiamaPopUpdaTabella(DepositiPrelievi_Tabella,evt,0);
+        DepositiPrelievi_CompilaTabellaCorrelati();
+        //Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+    }//GEN-LAST:event_DepositiPrelievi_TabellaMouseReleased
+
+    private void TransazioniCrypto_RicalcolaPlusvalenze_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_RicalcolaPlusvalenze_BottoneActionPerformed
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        Funzioni_AggiornaPluvalenzeSeManuale();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+
+    }//GEN-LAST:event_TransazioniCrypto_RicalcolaPlusvalenze_BottoneActionPerformed
+
     private void TransazioniCrypto_Bottone_ExchangeAPIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_ExchangeAPIActionPerformed
 
         GUI_ExchangeAPI gui =new GUI_ExchangeAPI();
@@ -11738,13 +12179,11 @@ if (result.isAction("delete-all")) {
         worker.execute();
         progress.setVisible(true);// Questo blocca finché done() non chiama dispose()
         */
-
     }//GEN-LAST:event_TransazioniCrypto_Bottone_ExchangeAPIActionPerformed
 
     private void TransazioniCrypto_CheckBox_VediLiFoMancanteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_CheckBox_VediLiFoMancanteActionPerformed
         // TODO add your handling code here:
         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
-
     }//GEN-LAST:event_TransazioniCrypto_CheckBox_VediLiFoMancanteActionPerformed
 
     private void TransazioniCrypto_CheckBox_EscludiTokenScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_CheckBox_EscludiTokenScamActionPerformed
@@ -11793,9 +12232,8 @@ if (result.isAction("delete-all")) {
         TransazioniCrypto_ComboBox_FiltroWallet.getModel().setSelectedItem("Tutti");
         TransazioniCrypto_ComboBox_FiltroToken.getModel().setSelectedItem("Tutti");
         TransazioniCryptoFiltro_Text.setText("");
-        Tabelle.Tabella_RimuoviFiltri(TransazioniCryptoTabella);       
+        Tabelle.Tabella_RimuoviFiltri(TransazioniCryptoTabella);
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
-
     }//GEN-LAST:event_TransazioniCrypto_Bottone_AzzeraFiltriActionPerformed
 
     private void TransazioniCrypto_ComboBox_FiltroWalletKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TransazioniCrypto_ComboBox_FiltroWalletKeyPressed
@@ -11843,7 +12281,6 @@ if (result.isAction("delete-all")) {
         //Funzioni.PopUpMenu(this, evt, PopupMenu,null);
         Funzioni_RichiamaPopUpdaTabella(TransazioniCrypto_Tabella_Dettagli,evt,-1);
         // Funzioni_RichiamaPopUpdaTabella(TransazioniCrypto_Tabella_Dettagli,evt,-1);
-
     }//GEN-LAST:event_TransazioniCrypto_Tabella_DettagliMouseReleased
 
     private void TransazioniCrypto_Bottone_MovimentoModificaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_MovimentoModificaActionPerformed
@@ -11865,20 +12302,20 @@ if (result.isAction("delete-all")) {
 
             if (righeSelezionate.length > 1) {
                 AppDialog.DialogResult result = AppDialog.builder(this)
-                        .windowTitle("Cancellazione transazioni crypto")
-                        .bodyTitle("Eliminare i movimenti selezionati?")
-                        .showTitleInBody(true)
-                        .theme()
-                        .type(AppDialog.DialogType.WARNING)
-                        .message("Sono stati selezionati " + righeSelezionate.length + " movimenti.")
-                        .details("L'operazione eliminerà tutti i movimenti attualmente selezionati.")
-                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
-                                .role(AppDialog.ActionRole.SECONDARY)
-                                .build())
-                        .action(AppDialog.DialogAction.builder("delete-selected", "Elimina selezionati")
-                                .role(AppDialog.ActionRole.DANGER)
-                                .build())
-                        .showDialog();
+                .windowTitle("Cancellazione transazioni crypto")
+                .bodyTitle("Eliminare i movimenti selezionati?")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message("Sono stati selezionati " + righeSelezionate.length + " movimenti.")
+                .details("L'operazione eliminerà tutti i movimenti attualmente selezionati.")
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                    .role(AppDialog.ActionRole.SECONDARY)
+                    .build())
+                .action(AppDialog.DialogAction.builder("delete-selected", "Elimina selezionati")
+                    .role(AppDialog.ActionRole.DANGER)
+                    .build())
+                .showDialog();
 
                 if (result.isAction("delete-selected")) {
                     for (int i = 0; i < righeSelezionate.length; i++) {
@@ -11890,39 +12327,39 @@ if (result.isAction("delete-all")) {
 
                     SwingUtilities.invokeLater(() -> {
                         AppDialog.builder(this)
-                                .windowTitle("Eliminazione completata")
-                                .bodyTitle("Movimenti eliminati")
-                                .showTitleInBody(true)
-                                .theme()
-                                .type(AppDialog.DialogType.SUCCESS)
-                                .message("I movimenti selezionati sono stati eliminati correttamente.")
-                                .details("Premi <b>Salva</b> per rendere permanente la cancellazione effettuata.")
-                                .primaryAction("ok", "OK")
-                                .showDialog();
+                        .windowTitle("Eliminazione completata")
+                        .bodyTitle("Movimenti eliminati")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.SUCCESS)
+                        .message("I movimenti selezionati sono stati eliminati correttamente.")
+                        .details("Premi <b>Salva</b> per rendere permanente la cancellazione effettuata.")
+                        .primaryAction("ok", "OK")
+                        .showDialog();
                     });
                 }
 
             } else {
                 int rigaSelezionata = TransazioniCryptoTabella.getRowSorter()
-                        .convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
+                .convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
 
                 String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaSelezionata, 0).toString();
 
                 AppDialog.DialogResult result = AppDialog.builder(this)
-                        .windowTitle("Cancellazione transazione")
-                        .bodyTitle("Eliminare la transazione?")
-                        .showTitleInBody(true)
-                        .theme()
-                        .type(AppDialog.DialogType.WARNING)
-                        .message("Stai per eliminare la transazione con ID " + IDTransazione + ".")
-                        .details("L'operazione rimuoverà anche gli eventuali collegamenti associati.")
-                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
-                                .role(AppDialog.ActionRole.SECONDARY)
-                                .build())
-                        .action(AppDialog.DialogAction.builder("delete", "Elimina")
-                                .role(AppDialog.ActionRole.DANGER)
-                                .build())
-                        .showDialog();
+                .windowTitle("Cancellazione transazione")
+                .bodyTitle("Eliminare la transazione?")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message("Stai per eliminare la transazione con ID " + IDTransazione + ".")
+                .details("L'operazione rimuoverà anche gli eventuali collegamenti associati.")
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                    .role(AppDialog.ActionRole.SECONDARY)
+                    .build())
+                .action(AppDialog.DialogAction.builder("delete", "Elimina")
+                    .role(AppDialog.ActionRole.DANGER)
+                    .build())
+                .showDialog();
 
                 if (result.isAction("delete")) {
                     Funzioni.RimuoviMovimentazioneXID(IDTransazione);
@@ -11930,15 +12367,15 @@ if (result.isAction("delete-all")) {
 
                     SwingUtilities.invokeLater(() -> {
                         AppDialog.builder(this)
-                                .windowTitle("Eliminazione completata")
-                                .bodyTitle("Transazione eliminata")
-                                .showTitleInBody(true)
-                                .theme()
-                                .type(AppDialog.DialogType.SUCCESS)
-                                .message("La transazione con ID " + IDTransazione + " è stata eliminata correttamente.")
-                                .details("Premi <b>Salva</b> per rendere permanente la cancellazione effettuata.")
-                                .primaryAction("ok", "OK")
-                                .showDialog();
+                        .windowTitle("Eliminazione completata")
+                        .bodyTitle("Transazione eliminata")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.SUCCESS)
+                        .message("La transazione con ID " + IDTransazione + " è stata eliminata correttamente.")
+                        .details("Premi <b>Salva</b> per rendere permanente la cancellazione effettuata.")
+                        .primaryAction("ok", "OK")
+                        .showDialog();
                     });
                 }
             }
@@ -12067,199 +12504,12 @@ if (result.isAction("delete-all")) {
         // Funzioni.simulaTastoSinistro();
         //System.out.println("Mouse Rilasciato su tabella principale");
         // int righeSelezionate[]=TransazioniCryptoTabella.getSelectedRows();
-        
+
         Funzioni_RichiamaPopUpdaTabella(TransazioniCryptoTabella,evt,0);
         TransazioniCrypto_CompilaTextPaneDatiMovimento();
 
         //Funzione che apre il popupmenu se premuto il tasto destro
-
     }//GEN-LAST:event_TransazioniCryptoTabellaMouseReleased
-
-    private void Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed
-        // TODO add your handling code here:
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        if (Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni.isSelected()) {
-            //scrivo nelle Opzioni del DB che voglio il calcolo delle plus X Gruppo Wallet
-            DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_NoPlusvalenzeCommissioni", "SI");
-        } else {
-            //scrivo nelle Opzioni del DB che nel calcolo delle plus non considero la suddivisione per wallet
-            DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_NoPlusvalenzeCommissioni", "NO");
-        }
-        //TabellaCryptodaAggiornare=true;
-       // Calcoli_Plusvalenze.AggiornaPlusvalenze();
-       Funzioni_AggiornaTutto();
-       this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        //Adesso dovrei ricalcolare le plusvalenze ed aggiornare la tabella crypto
-    }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed
-
-    private void Opzioni_ApiKey_Moralis_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Moralis_TextFieldMouseReleased
-        // TODO add your handling code here:
-    }//GEN-LAST:event_Opzioni_ApiKey_Moralis_TextFieldMouseReleased
-
-    private void Opzioni_ApiKey_Moralis_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Moralis_TextFieldKeyReleased
-        // TODO add your handling code here:
-        Opzioni_ApiKey_ControllaPulsanti();
-    }//GEN-LAST:event_Opzioni_ApiKey_Moralis_TextFieldKeyReleased
-
-    private void Opzioni_ApiKey_Moralis_LabelSitoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseClicked
-        // TODO add your handling code here:
-        Funzioni.ApriWeb("https://admin.moralis.com/login");
-    }//GEN-LAST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseClicked
-
-    private void Opzioni_ApiKey_Moralis_LabelSitoMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseEntered
-        // TODO add your handling code here:
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    }//GEN-LAST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseEntered
-
-    private void Opzioni_ApiKey_Moralis_LabelSitoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseExited
-        // TODO add your handling code here:
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-    }//GEN-LAST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseExited
-
-    private void Opzioni_ApiKey_Cronos_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Cronos_TextFieldMouseReleased
-        // TODO add your handling code here:
-    }//GEN-LAST:event_Opzioni_ApiKey_Cronos_TextFieldMouseReleased
-
-    private void Opzioni_ApiKey_Cronos_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Cronos_TextFieldKeyReleased
-        // TODO add your handling code here:
-        Opzioni_ApiKey_ControllaPulsanti();
-    }//GEN-LAST:event_Opzioni_ApiKey_Cronos_TextFieldKeyReleased
-
-    private void Opzioni_ApiKey_Cronos_LabelSitoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Cronos_LabelSitoMouseClicked
-        // TODO add your handling code here:
-        Funzioni.ApriWeb("https://explorer.cronos.org/login");
-    }//GEN-LAST:event_Opzioni_ApiKey_Cronos_LabelSitoMouseClicked
-
-    private void Opzioni_ApiKey_Cronos_LabelSitoMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Cronos_LabelSitoMouseEntered
-        // TODO add your handling code here:
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    }//GEN-LAST:event_Opzioni_ApiKey_Cronos_LabelSitoMouseEntered
-
-    private void Opzioni_ApiKey_Cronos_LabelSitoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Cronos_LabelSitoMouseExited
-        // TODO add your handling code here:
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-    }//GEN-LAST:event_Opzioni_ApiKey_Cronos_LabelSitoMouseExited
-
-    private void Opzioni_GruppoWallet_CheckBox_PlusManualiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_CheckBox_PlusManualiActionPerformed
-        // TODO add your handling code here:
-        if (Opzioni_GruppoWallet_CheckBox_PlusManuali.isSelected()) {
-            //scrivo nelle Opzioni del DB che voglio il calcolo delle plus X Gruppo Wallet
-            DatabaseH2.Pers_Opzioni_Scrivi("PlusManuali", "SI");
-        } else {
-            //scrivo nelle Opzioni del DB che nel calcolo delle plus non considero la suddivisione per wallet
-            DatabaseH2.Pers_Opzioni_Scrivi("PlusManuali", "NO");
-            
-            //Aggiorno le plus perchè potrebbero non essere state aggiornate
-            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
-            this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
-            TransazioniCrypto_RicalcolaPlusvalenze_Label.setVisible(false);
-            TransazioniCrypto_RicalcolaPlusvalenze_Bottone.setVisible(false);
-            TransazioniCrypto_RicalcolaPlusvalenze_Bottone.setEnabled(false);
-            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        }
-      //  this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-      //  Calcoli_Plusvalenze.AggiornaPlusvalenze();
-        //Funzioni_AggiornaTutto();
-        //TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
-      //  this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-    }//GEN-LAST:event_Opzioni_GruppoWallet_CheckBox_PlusManualiActionPerformed
-
-    private void TransazioniCrypto_RicalcolaPlusvalenze_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_RicalcolaPlusvalenze_BottoneActionPerformed
-        // TODO add your handling code here:
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        Funzioni_AggiornaPluvalenzeSeManuale();
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        
-    }//GEN-LAST:event_TransazioniCrypto_RicalcolaPlusvalenze_BottoneActionPerformed
-
-    private void OpzioniRewards_CashBackComeFIATActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpzioniRewards_CashBackComeFIATActionPerformed
-        // TODO add your handling code here:
-        if (OpzioniRewards_CashBackComeFIAT.isSelected())
-        {
-            DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIAT","SI");
-            DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIATAnno",OpzioniRewards_CashBackComeFIAT_ComboBox.getSelectedItem().toString());
-            OpzioniRewards_CashBackComeFIAT_Label.setEnabled(true);
-            OpzioniRewards_CashBackComeFIAT_ComboBox.setEnabled(true);
-        }
-        else
-        {
-            DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIAT","NO");
-            OpzioniRewards_CashBackComeFIAT_Label.setEnabled(false);
-            OpzioniRewards_CashBackComeFIAT_ComboBox.setEnabled(false);
-        }
-        
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        Funzioni_AggiornaTutto();
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-    }//GEN-LAST:event_OpzioniRewards_CashBackComeFIATActionPerformed
-
-    private void OpzioniRewards_CashBackComeFIAT_ComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpzioniRewards_CashBackComeFIAT_ComboBoxActionPerformed
-        // TODO add your handling code here:
-        if(evt.getModifiers()!=0&&OpzioniRewards_CashBackComeFIAT_ComboBox.hasFocus()){
-            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            //Scrivo nel database l'anno da cui partire con questo nuovo calcolo
-            DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIATAnno",OpzioniRewards_CashBackComeFIAT_ComboBox.getSelectedItem().toString());
-            Funzioni_AggiornaTutto();
-            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        }
-    }//GEN-LAST:event_OpzioniRewards_CashBackComeFIAT_ComboBoxActionPerformed
-
-    private void DepositiPrelievi_CheckBox_mostraFIATMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_CheckBox_mostraFIATMouseReleased
-        // TODO add your handling code here:
-        DepositiPrelievi_Caricatabella();
-    }//GEN-LAST:event_DepositiPrelievi_CheckBox_mostraFIATMouseReleased
-
-    private void GiacenzeaData_Bottone_ConfermaPrezzoZeroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_ConfermaPrezzoZeroActionPerformed
-        // TODO add your handling code here:
-        if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
-            long DataRiferimento;// = 0;
-            if (GiacenzeaData_Data_DataChooser.getDate() != null) {
-
-                //Recupero il Wallet di riferimento
-                //Mi servirà poi per trovare il gruppo Wallet
-                String Wallet = Giacenzeadata_Walleta_Label.getText();
-                String Gruppo = Funzioni.getGruppoWalletXPrezzi(Wallet);
-                //System.out.println("Gruppo:"+Gruppo);
-                SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-                String Data = f.format(GiacenzeaData_Data_DataChooser.getDate());
-                DataRiferimento = FunzioniDate.ConvertiDatainLong(Data) + 86400000;
-                long DatadiOggi = System.currentTimeMillis();
-                if (DatadiOggi < DataRiferimento) {
-                    DataRiferimento = DatadiOggi;
-                }
-                SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
-                sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
-
-                int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(GiacenzeaData_Tabella);
-
-                String mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-                String Qta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 4).toString();
-                String Rete = null;
-
-                //Prima di andare ulteriormente avanti avviso sulle conseguenze
-                //e interrompo l'operazione se non vengono accettate
-                if (!Messaggi.ConfermaTokenSenzaPrezzo(mon, Qta, this)) return;
-                
-                    
-                
-                if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1) != null) {
-                    Rete = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
-                }
-
-                String Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
-
-                if (!Funzioni_WalletDeFi.isValidAddress(Address, Rete)) {
-                    Address = null;
-                }
-                //Devo ovviamente cancellarlo per inserirne uno nuovo altrimenti questo prende il sopravvento
-               DatabaseH2.InserisciPrezzoPresonalizzato(DataRiferimento, "Personalizzato", mon, "0.00", Rete, Address, Gruppo, DataRiferimento);
-
-                GiacenzeaData_Tabella.getModel().setValueAt("", rigaselezionata, 6);
-                //Una volta cambiato il prezzo aggiorno la tabella
-            }
-        }
-    }//GEN-LAST:event_GiacenzeaData_Bottone_ConfermaPrezzoZeroActionPerformed
 
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
@@ -12544,7 +12794,8 @@ if (result.isAction("delete-all")) {
                 Opzioni_ApiKey_Coincap_TextField.getText()+
                 Opzioni_ApiKey_Coingecko_TextField.getText()+
                 Opzioni_ApiKey_Moralis_TextField.getText()+
-                Opzioni_ApiKey_Cronos_TextField.getText();
+                Opzioni_ApiKey_Cronos_TextField.getText()+
+                Opzioni_ApiKey_UniSat_TextField.getText();
         //String NuovoValore=Opzioni_ApiKey_Helius_TextField.getText();
         String ValoreSalvato=
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))+
@@ -12552,7 +12803,8 @@ if (result.isAction("delete-all")) {
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"))+
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"))+
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"))+
-                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"));
+                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"))+
+                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat"));
        // System.out.println(ValoreSalvato);
         //String ValoreSalvato=DatabaseH2.Opzioni_Leggi("ApiKey_Helius");
         if (!NuovoValore.equals(ValoreSalvato)){
@@ -12566,198 +12818,172 @@ if (result.isAction("delete-all")) {
     }
     
     
-    private String GiacenzeaData_Funzione_IdentificaComeScam(String NomeMoneta,String Address,String Rete,String Wallet) {
-        
-        //Recupero tutti i movimenti del token
-        if (Wallet==null)Wallet="Tutti";
-        if (Rete==null)Rete="";
-        //Il globale serve nel caso in cui abbia address e rete e possa operare tranquillamente su tutti i wallet indiscriminatamente
-        Set<String> IDMovimentiTokenGlobale=Funzione_ElencoIDMovimentiTokeneWalletSelezionato("Tutti","Tutti",NomeMoneta,Rete,Address);
-        //Quello per wallet serve quando invece non ho i dati sopra e voglio operare solo sul wallet selezionato
-        Set<String> IDMovimentiTokenWallet=Funzione_ElencoIDMovimentiTokeneWalletSelezionato(Wallet,"Tutti",NomeMoneta,Rete,Address);
-        
-                //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
-                String NuovoNome=NomeMoneta;
+    private String GiacenzeaData_Funzione_IdentificaComeScam(String NomeMoneta, String Address, String Rete, String Wallet) {
 
-            String Testo;
-            
+        //Recupero tutti i movimenti del token
+        if (Wallet == null) {
+            Wallet = "Tutti";
+        }
+        if (Rete == null) {
+            Rete = "";
+        }
+        //Il globale serve nel caso in cui abbia address e rete e possa operare tranquillamente su tutti i wallet indiscriminatamente
+        Set<String> IDMovimentiTokenGlobale = Funzione_ElencoIDMovimentiTokeneWalletSelezionato("Tutti", "Tutti", NomeMoneta, Rete, Address);
+        //Quello per wallet serve quando invece non ho i dati sopra e voglio operare solo sul wallet selezionato
+        Set<String> IDMovimentiTokenWallet = Funzione_ElencoIDMovimentiTokeneWalletSelezionato(Wallet, "Tutti", NomeMoneta, Rete, Address);
+
+        //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
+        String NuovoNome = NomeMoneta;
+
+        String Testo;
+
 //1 - Verifico se il token ha mai avuto Prezzo      
-            //Controllo nella tabella del dettaglio se il token ha mai avuto prezzo
-            //se non ha avuto mai prezzo permetto di identificare il token come scam
-            for (String ID : IDMovimentiTokenGlobale) {
+        //Controllo nella tabella del dettaglio se il token ha mai avuto prezzo
+        //se non ha avuto mai prezzo permetto di identificare il token come scam
+        for (String ID : IDMovimentiTokenGlobale) {
             String movimento[] = MappaCryptoWallet.get(ID);
             //Controllo se il movimento è prezzato
             //Qualora lo sia e la moneta deve essere classificata con SCAM (non il contratio)
             //emetto un avviso ed esco dalla funzione
             if (Prezzi.isMovimentoPrezzato(movimento) && Double.parseDouble(movimento[15]) != 0 && !Funzioni.isSCAM(NomeMoneta)) {
-                Testo = "<html><b>ATTENZIONE!!! :</b> Il Token <b>" + NomeMoneta + "</b> ha dei movimenti Valorizzati.<br><br>"
-                       // + "<b>Sicuro di voler continuare?</b><br><br>"
+                Testo = "<b>ATTENZIONE!!! :</b> Il Token <b>" + NomeMoneta + "</b> ha dei movimenti Valorizzati.<br><br>"
                         + "I token scam non dovrebbero mai essere valorizzati!<br><br>"
-                        + "Se si vuole forzare l'assegnazione di questo token come scam bisogna prima portare a zero il valore dei movimenti che lo riguardano<br>"
-                       // + "<b>NB : Se non si è certi di quello che si sta facendo proseguire potrebbe portare a CALCOLI ERRATI!!!</b><br><br>"
-                        + "</html>";
-                Object[] Bottoni = {"OK"};
-               // int scelta = 
-                        JOptionPane.showOptionDialog(this, Testo,
-                        "Verifica i movimenti",
-                        JOptionPane.YES_NO_CANCEL_OPTION,
-                        JOptionPane.PLAIN_MESSAGE,
-                        null,
-                        Bottoni,
-                        null);
-              //  if (scelta != 0) {
-                    return NuovoNome;
-              //  } else {
-              //      break;
-              //  }
+                        + "Se si vuole forzare l'assegnazione di questo token come scam bisogna prima portare a zero il valore dei movimenti che lo riguardano<br>";
+                Messaggi.WarningMessage("Verifica i movimenti", Testo, this);
+                return NuovoNome;
+
             }
         }
-            
-//2 - Verifico che il token abbia subito solo movimentazioni di deposito e prelievo              
-            for (String ID : IDMovimentiTokenGlobale) {
-                String movimento[] = MappaCryptoWallet.get(ID);
-                String TipoMov=movimento[0].split("_")[4];
-                if (!TipoMov.equals("PC")&&!TipoMov.equals("DC")&& !Funzioni.isSCAM(NomeMoneta)){
-                Testo = "<html><b>ATTENZIONE!!! :</b> Il Token <b>"+NomeMoneta+"</b> ha dei movimenti diversi dal semplice Deposito/Prelievo.<br><br>"
-                                + "<b>Sicuro di voler continuare?</b><br><br>"
-                                + "Solitamente i token scam presentano solamente movimenti di Deposito o Prelievo!<br><br>"
-                        +"<b>NB : Se non si è certi di quello che si sta facendo proseguire potrebbe portare a CALCOLI ERRATI!!!</b><br><br>"
-                        + "</html>";
-                
-                 Object[] Bottoni = {"Si", "No"};
-                        int scelta = JOptionPane.showOptionDialog(this, Testo,
-                                "Verifica i movimenti",
-                                JOptionPane.YES_NO_CANCEL_OPTION,
-                                JOptionPane.PLAIN_MESSAGE,
-                                null,
-                                Bottoni,
-                                null);
-                    if (scelta!=0)return NuovoNome;
-                    else break;
-                    }
+
+//2 - Verifico che il token abbia subito solo movimentazioni di deposito e prelievo 
+//se non dovesse essere così lo segnalo e chiedo se si vuole proseguire ugualmente
+        for (String id : IDMovimentiTokenGlobale) {
+            String[] movimento = MappaCryptoWallet.get(id);
+            String tipoMov = movimento[0].split("_")[4];
+
+            if (!tipoMov.equals("PC") && !tipoMov.equals("DC") && !Funzioni.isSCAM(NomeMoneta)) {
+                AppDialog.DialogResult result = Messaggi.Personalizzati_SINO_SCAMMovimentiNonCongrui(NomeMoneta, this);
+                if (result == null || !result.isAction("continue-anyway")) {
+                    return NuovoNome;
+                } else {
+                    break;
+                }
             }
+        }
             
             
             
      
-//Se passo i primi 2 controlli proseguo con l'assegnazione dello stutus di Token SCAM            
-            if (!Address.isBlank()&&!Rete.isBlank())
-            {
-            if (!Funzioni.isSCAM(NomeMoneta)){
-                Testo = "<html>Vuoi identificare il Token <b>"+NomeMoneta+"</b> con Address <b>"+Address+"</b> come SCAM?<br><br>"
-                                + "(Nelle varie funzioni del programma verrà data la possibilità di nascondere tali asset<br>"
-                                + "e quando mostrati verranno identificati con un doppio asterisco (**) alla fine del nome)<br><br>"
-                        +"NB : Per far tornare 'normale' un token identificato come Scam utilizzare l'apposito tasto nelle funzione 'Giacenze a data'</html>";
+//Se passo i primi 2 controlli proseguo con l'assegnazione dello stutus di Token SCAM o la sua rimozione            
+           if (!Address.isBlank() && !Rete.isBlank()) {
+
+            boolean scamAttuale = Funzioni.isSCAM(NomeMoneta);
+
+            AppDialog.DialogResult result = Messaggi.Personalizzati_SINO_SCAMRimuovereContrassegnare(scamAttuale, NomeMoneta, Address, this);
+            
+            if (result != null && result.isAction("mark-scam") && !scamAttuale) {
+                String nomi[] = DatabaseH2.RinominaToken_Leggi(Address + "_" + Rete);
+                //Se nomi[0] è null vuol dire che questo token non ha mai neanche subito una rinomina
+                //altrimenti vuol dire che è stato rinominato quindi prima di considerarlo come scam
+                //e aggiungergli gli asterisci recupero il suo nome originale
+                //gli asterischi gli aggiungo al nome orioginale del token e non al nome rinominato
+                if (nomi == null || nomi[0] == null) {
+                    NuovoNome = NomeMoneta + " **";
+                    DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NuovoNome);
+                    //il comando sotto indica al database che quel token essendo scam non avrà mai prezzo
+                    //ed eviterà verifiche sul prezzo e perdite di tempo in fase di calcolo
+                } else {
+                    NuovoNome = nomi[0] + " **";
+                    DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], NuovoNome);
+                    //il comando sotto indica al database che quel token essendo scam non avrà mai prezzo
+                    //ed eviterà verifiche sul prezzo e perdite di tempo in fase di calcolo
                 }
-            else {
-                Testo = "<html>Vuoi che il Token <b>"+NomeMoneta+"</b> non venga più considerato SCAM?<br><br>"
-                + "</html>";
-            }
-                        Object[] Bottoni = {"Si", "No"};
-                        int scelta = JOptionPane.showOptionDialog(this, Testo,
-                                "Classificazione del movimento",
-                                JOptionPane.YES_NO_CANCEL_OPTION,
-                                JOptionPane.PLAIN_MESSAGE,
-                                null,
-                                Bottoni,
-                                null);
-                        if (scelta == 0 && !Funzioni.isSCAM(NomeMoneta)) {
-                            String nomi[]=DatabaseH2.RinominaToken_Leggi(Address+"_"+Rete);
-                            //Se nomi[0] è null vuol dire che questo token non ha mai neanche subito una rinomina
-                            //altrimenti vuol dire che è stato rinominato quindi prima di considerarlo come scam
-                            //e aggiungergli gli asterisci recupero il suo nome originale
-                            //gli asterischi gli aggiungo al nome orioginale del token e non al nome rinominato
-                            if (nomi==null || nomi[0] == null)
-                                {
-                                NuovoNome=NomeMoneta + " **";
-                                DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NuovoNome);
-                                //il comando sotto indica al database che quel token essendo scam non avrà mai prezzo
-                                //ed eviterà verifiche sul prezzo e perdite di tempo in fase di calcolo
-                                }
-                            else
-                                {
-                                NuovoNome=nomi[0] + " **";
-                                DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], NuovoNome);
-                                //il comando sotto indica al database che quel token essendo scam non avrà mai prezzo
-                                //ed eviterà verifiche sul prezzo e perdite di tempo in fase di calcolo
-                                }
-                            //A questo punto devo cambiare il nome a tutti i token dello stesso tipo che trovo nelle transazioni
-                            //Lancio la funzione rinomina token e cancello eventuali commissioni su prelievi di token scam che non sarebbero dovute
-                            //Questa funzione forse non servirà perchè verrà gestito tutto in maniera corretta in fase di importazione dati
-                            //Funzioni.ConvertiInvioSuStessoWallet();
-                            
-                            //Aggiorno le tabelle
-                            TabellaCryptodaAggiornare = true;
-                           
-                        }
-                        else if (scelta == 0 && Funzioni.isSCAM(NomeMoneta)) {
-                            //Metto a zero il time nella tabella addressSenzaPrezzo in modo che la volta successiva il programma
-                            //vada nuovamente a cercare il prezzo del token
-                            //RinominaToken_LeggiTabellaDatabaseH2.AddressSenzaPrezzo_Scrivi(Address + "_" + Rete, "9999999999");
-                            //leggo la riga per individuare il nome originale del token
-                            String nomi[]=DatabaseH2.RinominaToken_Leggi(Address+"_"+Rete);
-                            //lo scrivo nel database
-                            if (nomi!=null&&nomi[0]!=null){
-                            NuovoNome=nomi[0];
-                            DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], NuovoNome);
-                            }else{
-                                NomeMoneta=NomeMoneta.replace(" **", "");
-                                NuovoNome=NomeMoneta;
-                                DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NuovoNome);
-                            }
-                            
-                            
-                            
-                        /*   Vecchia Parte sostituita da quella sotto 
-                            //Prima di aggiornare la tabella devo verificare se il token ha prezzo ed eventualmente rimetterlo
-                            //la cosa più semplice è svuotare la colonna [32] dei movimenti che coinvolgono il token
-                            for (int i=0;i<GiacenzeaData_TabellaDettaglioMovimenti.getRowCount();i++){
-                                String ID = GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(i, 8).toString();
-                                MappaCryptoWallet.get(ID)[32]="";
-                                //dati[32]="";
-                                //il flag verrà rimesso in automatico dal programma non appena si caricherà la tabella crypto
-                                //andrà a controllare se il prodotto ha prezzo o meno e inserirà si o no
-                            }*/
-                        
-                        
-                            //Prima di aggiornare la tabella devo verificare se il token ha prezzo ed eventualmente rimetterlo
-                            //la cosa più semplice è svuotare la colonna [32] dei movimenti che coinvolgono il token
-                            for (String ID:IDMovimentiTokenGlobale){
-                                MappaCryptoWallet.get(ID)[32]="";
-                                //il flag verrà rimesso in automatico dal programma non appena si caricherà la tabella crypto
-                                //andrà a controllare se il prodotto ha prezzo o meno e inserirà si o no
-                            }
-                            
-                            
-                            
-                            
-                            //aggiorno l'intera tabella crypto
-                            TabellaCryptodaAggiornare = true;
-                         //   DatabaseH2.RinominaToken_Scrivi(Address+"_"+Rete, NomeMoneta,NomeMoneta+" **"); 
-                        }
-            }else{
-                if (!Funzioni.isSCAM(NomeMoneta)){
-                Testo = "<html>Vuoi identificare il Token <b>"+NomeMoneta+"</b> come SCAM?<br><br>"
-                        + "<b>ATTENZIONE : Il token in oggetto non ha Address o Rete valorizzati, verranno contrassegnati come SCAM tutti i token "
-                        + "appartenenti al wallet "+Wallet+" attualmente in archivio.<br>"
-                        + "Quelli futuri saranno da riclassificare come SCAM da questa stessa funzione.</b><br><br>"
-                                + "(Nelle varie funzioni del programma verrà data la possibilità di nascondere tali asset<br>"
-                                + "e quando mostrati verranno identificati con un doppio asterisco (**) alla fine del nome)<br><br>"
-                        +"NB : Per far tornare 'normale' un token identificato come Scam utilizzare l'apposito tasto nelle funzione 'Giacenze a data'</html>";
+                //A questo punto devo cambiare il nome a tutti i token dello stesso tipo che trovo nelle transazioni
+                //Lancio la funzione rinomina token e cancello eventuali commissioni su prelievi di token scam che non sarebbero dovute
+                //Questa funzione forse non servirà perchè verrà gestito tutto in maniera corretta in fase di importazione dati
+                //Funzioni.ConvertiInvioSuStessoWallet();
+
+                //Aggiorno le tabelle
+                TabellaCryptodaAggiornare = true;
+
+            } else if (result != null && result.isAction("unmark-scam") && scamAttuale) {
+                //Metto a zero il time nella tabella addressSenzaPrezzo in modo che la volta successiva il programma
+                //vada nuovamente a cercare il prezzo del token
+                //RinominaToken_LeggiTabellaDatabaseH2.AddressSenzaPrezzo_Scrivi(Address + "_" + Rete, "9999999999");
+                //leggo la riga per individuare il nome originale del token
+                String nomi[] = DatabaseH2.RinominaToken_Leggi(Address + "_" + Rete);
+                //lo scrivo nel database
+                if (nomi != null && nomi[0] != null) {
+                    NuovoNome = nomi[0];
+                    DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], NuovoNome);
+                } else {
+                    NomeMoneta = NomeMoneta.replace(" **", "");
+                    NuovoNome = NomeMoneta;
+                    DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NuovoNome);
                 }
-            else {
-                Testo = "<html>Vuoi che il Token <b>"+NomeMoneta+"</b> non venga più considerato SCAM?<br><br>"
-                + "</html>";
+
+                //Prima di aggiornare la tabella devo verificare se il token ha prezzo ed eventualmente rimetterlo
+                //la cosa più semplice è svuotare la colonna [32] dei movimenti che coinvolgono il token
+                for (String ID : IDMovimentiTokenGlobale) {
+                    MappaCryptoWallet.get(ID)[32] = "";
+                    //il flag verrà rimesso in automatico dal programma non appena si caricherà la tabella crypto
+                    //andrà a controllare se il prodotto ha prezzo o meno e inserirà si o no
+                }
+
+                //aggiorno l'intera tabella crypto
+                TabellaCryptodaAggiornare = true;
+                //   DatabaseH2.RinominaToken_Scrivi(Address+"_"+Rete, NomeMoneta,NomeMoneta+" **"); 
             }
-                Object[] Bottoni = {"Si", "No"};
-                        int scelta = JOptionPane.showOptionDialog(this, Testo,
-                                "Classificazione del movimento",
-                                JOptionPane.YES_NO_CANCEL_OPTION,
-                                JOptionPane.PLAIN_MESSAGE,
-                                null,
-                                Bottoni,
-                                null);
-                if (scelta == 0) {
+        }else{
+                AppDialog.DialogResult result;
+
+if (!Funzioni.isSCAM(NomeMoneta)) {
+    result = AppDialog.builder(this)
+            .windowTitle("Classificazione token")
+            .bodyTitle("Contrassegnare come SCAM?")
+            .showTitleInBody(true)
+            .theme()
+            .type(AppDialog.DialogType.WARNING)
+            .message("Vuoi identificare il token " + NomeMoneta + " come SCAM?")
+            .details("""
+                    Il token non ha address o rete valorizzati.
+
+                    Verranno contrassegnati come SCAM tutti i token appartenenti al wallet %s attualmente presenti in archivio.
+
+                    I token futuri dovranno essere riclassificati da questa stessa funzione.
+
+                    Nelle varie funzioni del programma sarà possibile nascondere questi asset e, quando mostrati, verranno identificati con un doppio asterisco (**) alla fine del nome.
+
+                    Per riportare un token allo stato normale, usa l'apposita funzione in "Giacenze a data".
+                    """.formatted(Wallet))
+            .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                    .role(AppDialog.ActionRole.SECONDARY)
+                    .build())
+            .action(AppDialog.DialogAction.builder("mark-wallet-scam", "Segna token come SCAM")
+                    .role(AppDialog.ActionRole.DANGER)
+                    .build())
+            .showDialog();
+
+} else {
+    result = AppDialog.builder(this)
+            .windowTitle("Classificazione token")
+            .bodyTitle("Rimuovere classificazione SCAM?")
+            .showTitleInBody(true)
+            .theme()
+            .type(AppDialog.DialogType.INFO)
+            .message("Vuoi fare in modo che il token " + NomeMoneta + " non venga più considerato SCAM?")
+            .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                    .role(AppDialog.ActionRole.SECONDARY)
+                    .build())
+            .action(AppDialog.DialogAction.builder("unmark-scam", "Rimuovi da lista token SCAM")
+                    .role(AppDialog.ActionRole.PRIMARY)
+                    .build())
+            .showDialog();
+}
+
+if (result != null && (result.isAction("mark-wallet-scam")||result.isAction("unmark-scam"))) {
+    // logica attuale di marcatura scam
+
                     //Adesso cambio il nome di tutti i token del Wallet Selezionato
                     boolean isSCAM = Funzioni.isSCAM(NomeMoneta);
                     NuovoNome = isSCAM ? NomeMoneta.replace(" **", "") : NomeMoneta + " **";
@@ -12821,15 +13047,44 @@ if (result.isAction("delete-all")) {
         
 //Se è un token che ha rete e Address lo salvo anche nel database affinchè anche nelle successive importazioni si ricordi della modifica        
         if (!Address.isBlank() && !Rete.isBlank()) {
-            String Testo;
-            String nomi[] = DatabaseH2.RinominaToken_Leggi(Address + "_" + Rete);
-            Testo = "<html>Indica il nuovo nome della Moneta<b>" + NomeMoneta + "</b> con Address <b>" + Address + "</b><br>";
-            if (nomi[0] != null && !nomi[0].equalsIgnoreCase(NomeMoneta)) {
-                Testo = Testo
-                        + "Il nome Originale da prima importazione era : <b>" + nomi[0] + "</b><br>";
-            }
-            Testo = Testo + "<b>NB :</b> I nomi dei token sono CaseSensitive quindi ad esempio BTC è diverso da Btc o btc<br><br></html>";
-            String m = JOptionPane.showInputDialog(this, Testo, NomeMoneta);
+            String[] nomi = DatabaseH2.RinominaToken_Leggi(Address + "_" + Rete);
+
+String message = "Indica il nuovo nome della moneta " + NomeMoneta + " con address " + Address + ".";
+String details;
+
+if (nomi[0] != null && !nomi[0].equalsIgnoreCase(NomeMoneta)) {
+    details = """
+            Nome originale alla prima importazione: %s
+
+            I nomi dei token sono case-sensitive, quindi ad esempio BTC è diverso da Btc o btc.
+            """.formatted(nomi[0]);
+} else {
+    details = """
+            I nomi dei token sono case-sensitive, quindi ad esempio BTC è diverso da Btc o btc.
+            """;
+}
+
+AppDialog.DialogResult result = AppDialog.builder(this)
+        .windowTitle("Rinomina token")
+        .bodyTitle("Modifica nome token")
+        .showTitleInBody(true)
+        .theme()
+        .type(AppDialog.DialogType.INFO)
+        .message(message)
+        .details(details)
+        .inputField("Nome attuale : "+NomeMoneta,NomeMoneta)
+        //.inputInitialValue(NomeMoneta)
+        .inputColumns(24)
+        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                .role(AppDialog.ActionRole.SECONDARY)
+                .build())
+        .action(AppDialog.DialogAction.builder("rename-token", "Salva nome")
+                .role(AppDialog.ActionRole.PRIMARY)
+                .build())
+        .showDialog();
+
+if (result != null && result.isAction("rename-token")) {
+    String m = result.getInputValue();
             if (m != null) {
                 m = m.trim();
                 m = Funzioni.NormalizzaNome(m);//Tolgo virgole e punti e virgola dal nome perchè possono creare problemi con il csv dei movimenti
@@ -12850,20 +13105,44 @@ if (result.isAction("delete-all")) {
                     return NomeMoneta;
                 }
             }
+        }
         } 
 //Se è un token che non ha rete o address lo modifico solo nello storico perchè non posso fare altro        
         else {
             //Quello per wallet serve quando invece non ho i dati sopra e voglio operare solo sul wallet selezionato
             Set<String> IDMovimentiTokenWallet=Funzione_ElencoIDMovimentiTokeneWalletSelezionato(Wallet,"Tutti",NomeMoneta,Rete,Address);
-            String Testo;
+            String message = "Come vuoi rinominare il token " + NomeMoneta + " relativo al wallet " + Wallet + "?";
 
-                Testo = "<html>Come vuoi rinominare il Token <b>"+NomeMoneta+"</b> relativo al Wallet <b>"+Wallet+"</b>?<br><br>"
-                        + "<b>ATTENZIONE : Il token in oggetto non ha Address o Rete valorizzati, verranno quindi rinominati tutti i token "
-                        + "appartenenti al wallet "+Wallet+" attualmente in archivio.<br>"
-                        + "I movimenti futuri del token saranno da rinominare da questa stessa funzione.</b><br><br>"
-                        + "<b>NB :</b> I nomi dei token sono CaseSensitive quindi ad esempio BTC è diverso da Btc o btc<br><br>"
-                        + "</html>";
-                String NuovoNome = JOptionPane.showInputDialog(this, Testo, NomeMoneta);
+String details = """
+        Il token non ha address o rete valorizzati.
+
+        Verranno quindi rinominati tutti i token appartenenti al wallet %s attualmente presenti in archivio.
+
+        I movimenti futuri del token dovranno essere rinominati da questa stessa funzione.
+
+        I nomi dei token sono case-sensitive, quindi ad esempio BTC è diverso da Btc o btc.
+        """.formatted(Wallet);
+
+AppDialog.DialogResult result = AppDialog.builder(this)
+        .windowTitle("Rinomina token")
+        .bodyTitle("Rinomina multipla")
+        .showTitleInBody(true)
+        .theme()
+        .type(AppDialog.DialogType.WARNING)
+        .message(message)
+        .details(details)
+        .inputField("Nome attuale : "+NomeMoneta,NomeMoneta)
+        .inputColumns(24)
+        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                .role(AppDialog.ActionRole.SECONDARY)
+                .build())
+        .action(AppDialog.DialogAction.builder("rename-wallet-token", "Rinomina token")
+                .role(AppDialog.ActionRole.DANGER)
+                .build())
+        .showDialog();
+
+if (result != null && result.isAction("rename-wallet-token")) {
+    String NuovoNome = result.getInputValue();
                 if (NuovoNome != null) {
                 NuovoNome = NuovoNome.trim();
                 NuovoNome = Funzioni.NormalizzaNome(NuovoNome);//Tolgo virgole e punti e virgola dal nome perchè possono creare problemi con il csv dei movimenti
@@ -12890,7 +13169,7 @@ if (result.isAction("delete-all")) {
                     return NomeMoneta;
                 }
             }
-                      
+}            
         }
         return NomeMoneta;
     }
@@ -14810,13 +15089,19 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel Opzioni_ApiKey_Moralis_Label;
     private javax.swing.JLabel Opzioni_ApiKey_Moralis_LabelSito;
     private javax.swing.JTextField Opzioni_ApiKey_Moralis_TextField;
+    private javax.swing.JLabel Opzioni_ApiKey_UniSat_Label;
+    private javax.swing.JLabel Opzioni_ApiKey_UniSat_LabelSito;
+    private javax.swing.JTextField Opzioni_ApiKey_UniSat_TextField;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
+    private javax.swing.JButton Opzioni_Bottone_PuliziaPrezziKO;
     private javax.swing.JPanel Opzioni_Calcolo_Pannello;
     private javax.swing.JPanel Opzioni_CardWallet_Pannello;
     private javax.swing.JComboBox<String> Opzioni_Combobox_CancellaTransazioniCryptoXwallet;
     private javax.swing.JPanel Opzioni_Crypto_Pannello;
+    private javax.swing.JPanel Opzioni_PrezziKO_Pannello;
     private javax.swing.JButton Opzioni_Emoney_Bottone_Aggiungi;
+    private javax.swing.JButton Opzioni_Emoney_Bottone_Precompila;
     private javax.swing.JButton Opzioni_Emoney_Bottone_Rimuovi;
     private javax.swing.JPanel Opzioni_Emoney_Pannello;
     private javax.swing.JScrollPane Opzioni_Emoney_ScrollPane;

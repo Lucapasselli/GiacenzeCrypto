@@ -27,28 +27,35 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="Label_TipoFile" max="32767" attributes="0"/>
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="ComboBox_TipoFile" max="32767" attributes="0"/>
-                          <Component id="Label_NomeExchange" max="32767" attributes="0"/>
-                          <Component id="ScrollPane_Attenzione" max="32767" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="Bottone_SelezionaFile" min="-2" pref="198" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
-                              <Component id="Bottone_Annulla" min="-2" pref="105" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="CheckBox_Sovrascrivi" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="ComboBox_Exchanges" alignment="0" max="32767" attributes="0"/>
-                          <Component id="Text_NomeWallet" max="32767" attributes="0"/>
-                          <Component id="Label_NomeWallet" alignment="0" min="-2" pref="227" max="-2" attributes="0"/>
-                          <Component id="ComboBox_TipoImport" alignment="0" max="32767" attributes="0"/>
-                          <Component id="Label_TipoImport" max="32767" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                      <Component id="Label_NomeExchange" alignment="0" pref="500" max="32767" attributes="0"/>
+                      <Component id="ComboBox_TipoFile" alignment="0" max="32767" attributes="0"/>
+                      <Component id="CheckBox_Sovrascrivi" alignment="0" max="32767" attributes="0"/>
+                      <Component id="Label_TipoImport" alignment="0" max="32767" attributes="0"/>
+                      <Component id="ComboBox_TipoImport" alignment="0" max="32767" attributes="0"/>
+                      <Component id="ComboBox_Exchanges" alignment="0" max="32767" attributes="0"/>
+                      <Component id="Text_NomeWallet" alignment="0" max="32767" attributes="0"/>
+                  </Group>
+                  <Component id="Label_TipoFile" pref="500" max="32767" attributes="0"/>
+                  <Component id="Label_NomeWallet" alignment="0" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="Bottone_SelezionaFile" min="-2" pref="240" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="Bottone_Annulla" min="-2" pref="240" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="ScrollPane_Attenzione" min="-2" pref="403" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="Bottone_Manuale" min="-2" pref="240" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
           </Group>
       </Group>
     </DimensionLayout>
@@ -56,31 +63,35 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="Label_TipoFile" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="ComboBox_TipoFile" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="CheckBox_Sovrascrivi" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="39" max="-2" attributes="0"/>
-              <Component id="ScrollPane_Attenzione" min="-2" pref="127" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="Label_TipoImport" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
-              <Component id="ComboBox_TipoImport" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="Label_NomeExchange" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="ComboBox_Exchanges" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="Label_NomeWallet" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="Text_NomeWallet" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="Bottone_SelezionaFile" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="Bottone_Annulla" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Component id="Label_TipoFile" min="-2" pref="30" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="ComboBox_TipoFile" min="-2" pref="40" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="CheckBox_Sovrascrivi" min="-2" pref="40" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Label_TipoImport" min="-2" pref="30" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="ComboBox_TipoImport" min="-2" pref="40" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="Label_NomeExchange" min="-2" pref="30" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="ComboBox_Exchanges" min="-2" pref="40" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="Label_NomeWallet" min="-2" pref="30" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="Text_NomeWallet" min="-2" pref="40" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="ScrollPane_Attenzione" min="-2" pref="391" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="Bottone_Annulla" min="-2" pref="60" max="-2" attributes="0"/>
+                  <Component id="Bottone_SelezionaFile" alignment="0" min="-2" pref="60" max="-2" attributes="0"/>
+                  <Component id="Bottone_Manuale" alignment="0" min="-2" pref="60" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -88,13 +99,19 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="Label_TipoFile">
       <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Noto Sans" size="14" style="0"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Selezionare il tipo di file da importare"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="ComboBox_TipoFile">
       <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Noto Sans" size="14" style="1"/>
+        </Property>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="8">
+          <StringArray count="7">
             <StringItem index="0" value="Crypto.com App CSV"/>
             <StringItem index="1" value="Crypto.com Exchange CSV"/>
             <StringItem index="2" value="Binance CSV"/>
@@ -102,7 +119,6 @@
             <StringItem index="4" value="CoinTracking.info CSV"/>
             <StringItem index="5" value="Tatax CSV (vecchia versione)"/>
             <StringItem index="6" value="OKX CSV (Alpha)"/>
-            <StringItem index="7" value="Test"/>
           </StringArray>
         </Property>
       </Properties>
@@ -118,7 +134,7 @@
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/Images/24_Upload.png"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Seleziona file da importare"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;center&gt;&lt;h2&gt;Seleziona file da importare&lt;/h2&gt;&lt;/html&gt;"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_SelezionaFileActionPerformed"/>
@@ -126,6 +142,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="Label_NomeExchange">
       <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Noto Sans" size="14" style="0"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Scegli il nome dell&apos;Exchange/Wallet/Blockchain da Importare"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
@@ -141,7 +160,10 @@
           <Properties>
             <Property name="editable" type="boolean" value="false"/>
             <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
-            <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xd;&#xa;  &lt;head&gt;&#xd;&#xa;&#xa;  &lt;/head&gt;&#xd;&#xa;  &lt;body&gt;&#xd;&#xa;    &lt;p style=&quot;margin-top: 0&quot;&gt;&#xd;&#xa;ATTENZIONE : &lt;br&gt;&lt;br&gt;&#xa;Per quanto riguarda le importazioni da cointracking.info&lt;br&gt;&#xa;&#xe8; importante importarle un solo exchange/wallet per volta&lt;br&gt;&#xa;e impostare il nome dell&apos;exchange/wallet nel campo sottostante&lt;br&gt;&lt;br&gt;&#xa;es. Binance&#xa;    &lt;/p&gt;&#xd;&#xa;  &lt;/body&gt;&#xd;&#xa;&lt;/html&gt;&#xd;&#xa;"/>
+            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+              <Font name="Noto Sans" size="14" style="0"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;&lt;head&gt;&#xa;&lt;style&gt;&#xa;  body {&#xa;    font-family: &apos;Segoe UI&apos;, Arial, sans-serif;&#xa;    font-size: 13px;&#xa;    margin: 10px 14px;&#xa;    line-height: 1.6;&#xa;  }&#xa;  p { margin: 5px 0; }&#xa;  b { font-weight: bold; }&#xa;  .mono {&#xa;    font-family: monospace;&#xa;    font-size: 12px;&#xa;    font-weight: bold;&#xa;  }&#xa;  ul {&#xa;    margin: 6px 0 4px 18px;&#xa;    padding: 0;&#xa;  }&#xa;  li { margin-bottom: 3px; }&#xa;&lt;/style&gt;&#xa;&lt;/head&gt;&#xa;&lt;body&gt;&#xa;&#xa;&lt;p&gt;&lt;b&gt;&amp;#9888; Attenzione &lt;br&gt;&#xa;Importazione da cointracking.info o Tatax&lt;/b&gt;&lt;/p&gt;&#xa;&#xa;&lt;p&gt;Per una corretta importazione &amp;egrave; necessario:&lt;/p&gt;&#xa;&#xa;&lt;ul&gt;&#xa;  &lt;li&gt;Importare i dati &lt;b&gt;un solo exchange / wallet per volta&lt;/b&gt;&lt;/li&gt;&#xa;  &lt;li&gt;Impostare il &lt;b&gt;nome dell&amp;#39;exchange o wallet&lt;/b&gt; nel campo sottostante&lt;/li&gt;&#xa;&lt;/ul&gt;&#xa;&#xa;&lt;p&gt;&lt;i&gt;Esempio:&lt;/i&gt; &amp;nbsp;&lt;span class=&quot;mono&quot;&gt;Binance&lt;/span&gt;&lt;/p&gt;&#xa;&#xa;&lt;/body&gt;&#xa;&lt;/html&gt;&#xa;"/>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
         </Component>
@@ -152,7 +174,7 @@
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/Images/24_Annulla.png"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Annulla"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;h2&gt;Annulla&lt;/h2&gt;&lt;/html&gt;"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_AnnullaActionPerformed"/>
@@ -160,11 +182,17 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="CheckBox_Sovrascrivi">
       <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Noto Sans" size="14" style="0"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Sovrascrivere movimenti gi&#xe0; presenti"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="ComboBox_Exchanges">
       <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Noto Sans" size="14" style="0"/>
+        </Property>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
           <StringArray count="71">
             <StringItem index="0" value=" - nessuno -"/>
@@ -259,12 +287,18 @@
     </Component>
     <Component class="javax.swing.JLabel" name="Label_NomeWallet">
       <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Noto Sans" size="14" style="0"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Indicare nome o indirizzo del Wallet"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="ComboBox_TipoImport">
       <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Noto Sans" size="14" style="0"/>
+        </Property>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
           <StringArray count="4">
             <StringItem index="0" value="------------"/>
@@ -284,9 +318,23 @@
     </Component>
     <Component class="javax.swing.JLabel" name="Label_TipoImport">
       <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Noto Sans" size="14" style="0"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Scegliere che cosa si vuole importare"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Manuale">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Libro.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;h2&gt;Istruzioni&lt;/h2&gt;&lt;/html&gt;"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_ManualeActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

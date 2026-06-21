@@ -13,7 +13,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Map;
 import java.util.TreeMap;
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.SimpleAttributeSet;
@@ -39,9 +38,6 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
      private static final Map<Integer,String> mappa_ID=new TreeMap<>(); 
      private static int Riferimento=0;
      
-    /* private String PopUp_IDTrans=null;
-     private Component PopUp_Component=null;
-     private JTable PopUp_Tabella=null;*/
      private String IDdt=null;//ID del contesto attuale
 
 
@@ -60,15 +56,9 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         
         //come prima cosa mi occupo del pulsante defi, deve essere attivo se abbiamo movimenti in defi e disattivo in caso contrario 
         //per controllare verifico di avere il transaction hash e il nome della rete quindi
-      //  System.out.println(IDTransazione);
-      //  System.out.println(CDC_Grafica.MappaCryptoWallet.size());
+
         String Transazione[]=Principale.MappaCryptoWallet.get(IDTransazione);
-        
-        //System.out.println(IDTransazione);
-        //System.out.println(CDC_Grafica.MappaCryptoWallet.get(IDTransazione));
-        //String Titolo="<html><p align=\"center\">"+"Pippo<br>"+"Pluto</html>";
-       // String secondi=Transazione[0].split("_")[0].substring(12);
-       // Funzioni.getOradaID(Transazione[0]);
+
         String Titolo="<html>"+Funzioni.getOradaID(Transazione[0])+"<br>"+Transazione[5]+"</html>";
         TextPane_Titolo.setText(Titolo);
         //Accenstro il testo
@@ -76,11 +66,11 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
         StyledDocument doc = TextPane_Titolo.getStyledDocument();
         doc.setParagraphAttributes(0, doc.getLength(), center, false);
-       // TextArea_Titolo.setText(Transazione[1]+"\n"+Transazione[5]);
+
         String ReteDefi=Funzioni.TrovaReteDaID(IDTransazione);
-        //System.out.println("retedefi:"+ReteDefi);
+
         String THash=Transazione[24];
-        //System.out.println("hash:"+THash);
+
             if(!THash.isEmpty()&&ReteDefi!=null){
                 Bottone_DeFi.setEnabled(true);
             }else{
@@ -382,7 +372,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
     public GUI_DettaglioTransazione() {
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
-
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella);
     }
 
     /**
@@ -732,22 +722,8 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         }
         int rigaSelezionata = tabella.getSelectedRow();
         if (rigaSelezionata != -1) {
-         /*   int rigaselezionata;
-            if (tabella.getRowSorter() != null) {
-                rigaselezionata = tabella.getRowSorter().convertRowIndexToModel(tabella.getSelectedRow());
-            } else {
-                rigaselezionata = tabella.convertRowIndexToModel(tabella.getSelectedRow());
-            }
-            String IDTransazione = null;
-            if (posizioneID != -1) {
 
-                IDTransazione = tabella.getModel().getValueAt(rigaselezionata, posizioneID).toString();
-                if (Principale.MappaCryptoWallet.get(IDTransazione) == null) {
-                    IDTransazione = null;
-                }
-            }*/
             Funzioni.PopUpMenu(this, evt, PopupMenu, IDdt);
-            // TransazioniCrypto_CompilaTextPaneDatiMovimento();
 
         }
     }
@@ -758,48 +734,35 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             GUI_ModificaMovimento a = new GUI_ModificaMovimento();
             String riga[]=Principale.MappaCryptoWallet.get(ID);
 
-            String PartiCoinvolte[] = (riga[0] + "," + riga[20]).split(",");
-            if (PartiCoinvolte.length > 1 && !riga[22].equalsIgnoreCase("AU")) {//devo permettere di modificare i movimenti automatici generati dagli scambi per poter cambiare eventualmente il prezzo
-                String Messaggio = "Attenzione, il movimento è associato ad un altro movimento.\n"
-                        + "se si prosegue l'associazione verrà rimossa, si vuole continuare?";
-                int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Conferma modifica", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-                //Si=0
-                //No=1
-                switch (risposta) {
-                    case 0 -> {
-                        ID=GUI_ClassificazioneMovimento.RiportaTransazioniASituazioneIniziale(PartiCoinvolte,ID); 
+          String PartiCoinvolte[] = (riga[0] + "," + riga[20]).split(",");
+          if (PartiCoinvolte.length > 1 && !riga[22].equalsIgnoreCase("AU")) 
+          {//devo permettere di modificare i movimenti automatici generati dagli scambi per poter cambiare eventualmente il prezzo
+              if (Messaggi.Personalizzati_SINO_ModificaMovimento(SwingUtilities.getWindowAncestor(c))) {
 
-                        //String id=mappa_ID.get(Riferimento);
-                Point p = this.getLocation();
-                this.dispose();
-                a.CompilaCampidaID(ID);
-                a.setLocation(p);               
-                a.setVisible(true);
-                if (!a.IDNuovo.isEmpty())ID=a.IDNuovo;
-                
-                //Quando finisco la modifica apro di nuovo la maschera con il movimento
-                
-               // CDC_Grafica.
-                GUI_DettaglioTransazione t =new GUI_DettaglioTransazione();
-                t.AzzeraMap();
-                t.TransazioniCrypto_CompilaTextPaneDatiMovimento(ID);
-                t.setLocation(p);
-                t.setVisible(true);
-                        
-                    }
-                    case 1 -> {
-                        JOptionPane.showConfirmDialog(this, "Operazione Annullata",
-                                "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                        
-                    }
-                    case -1 -> {
-                        JOptionPane.showConfirmDialog(this, "Operazione Annullata",
-                                "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                        
-                    }
+                  ID = GUI_ClassificazioneMovimento.RiportaTransazioniASituazioneIniziale(PartiCoinvolte, ID);
 
-                }
-            }else{ 
+                  //String id=mappa_ID.get(Riferimento);
+                  Point p = this.getLocation();
+                  this.dispose();
+                  a.CompilaCampidaID(ID);
+                  a.setLocation(p);
+                  a.setVisible(true);
+                  if (!a.IDNuovo.isEmpty()) {
+                      ID = a.IDNuovo;
+                  }
+
+                  //Quando finisco la modifica apro di nuovo la maschera con il movimento
+                  // CDC_Grafica.
+                  GUI_DettaglioTransazione t = new GUI_DettaglioTransazione();
+                  t.AzzeraMap();
+                  t.TransazioniCrypto_CompilaTextPaneDatiMovimento(ID);
+                  t.setLocation(p);
+                  t.setVisible(true);
+              } else {
+                  Messaggi.WarningMessage("Operazione Annullata", "", SwingUtilities.getWindowAncestor(c));
+              }
+
+          } else {
                 //String id=mappa_ID.get(Riferimento);
                 Point p = this.getLocation();
                 this.dispose();
@@ -819,15 +782,6 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                 t.setLocation(p);
                 t.setVisible(true);
         });
-               /* GUI_DettaglioTransazione t =new GUI_DettaglioTransazione();
-                t.AzzeraMap();
-                t.TransazioniCrypto_CompilaTextPaneDatiMovimento(ID);
-                t.setLocation(p);
-                t.setVisible(true);*/
-                
-                
-                
-               // this.dispose();
 
             }
     }

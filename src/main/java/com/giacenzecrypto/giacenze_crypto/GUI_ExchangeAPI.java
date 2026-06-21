@@ -24,7 +24,6 @@ import java.util.logging.Logger;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.swing.ImageIcon;
-import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
@@ -55,7 +54,8 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());
         initComponents();
-
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(TabellaWallets);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Binance_Tabella);
     }
 
 
@@ -376,25 +376,20 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
 
         if(ComboBox_Exchange.getSelectedIndex()==0){
             //non è valido la selezione della combobox
-            JOptionPane.showConfirmDialog(this, "Attenzione! \nDevi selezionare un exchange",
-                            "Exchange non selezionato",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);            
+            Messaggi.WarningMessage("Exchange non selezionato", "Attenzione! <br>Devi selezionare un exchange", this);
         }
         else if (MappaWallets.get(Exchange)!=null){
-                JOptionPane.showConfirmDialog(this, "Attenzione! \nExchange gia' prensente nella lista",
-                            "Exchange gia' presente",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);  
+                Messaggi.WarningMessage("Exchange gia' presente", "Attenzione! <br>Exchange gia' prensente nella lista", this);
             }
         else if (!isValidApi(Exchange,Key,Segreto)){
                 //non è un indirizzo di wallet valido
-            JOptionPane.showConfirmDialog(this, "Attenzione! \nLe API specificate non sono valide",
-                            "API non valide",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                Messaggi.WarningMessage("API non valide", "Attenzione! <br>Le API specificate non sono valide", this);
         }
         else{
                // MappaWallets.put(Wallet+"_"+Rete, Wallet+";"+Rete);
                 DatabaseH2.Pers_ExchangeApi_Scrivi(Exchange, Key,Segreto);
                 System.out.println("Scrivo le Api Exchange nel Database : "+Exchange+" "+Key);
-                JOptionPane.showConfirmDialog(this, "Le chiavi API fornite sono valide e sono state correttamente inserite.",
-                            "Chiavi API valide",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-               // ScriviFileWallets();
+                 Messaggi.SuccessMessage("Chiavi API valide", "Le chiavi API fornite sono valide e sono state correttamente inserite.", this);
                 PopolaTabella();
             
         }
@@ -559,20 +554,30 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
 
             String Exchange = TabellaWallets.getModel().getValueAt(rigaselezionata, 1).toString();
             if (Exchange != null) {
-                
-                 int r= JOptionPane.showConfirmDialog(this, "Attenzione! \nSei sicuro di voler eliminare le API dell'Exchange \n"
-                         + Exchange+" ?",
-                            "Vuo Cancellare?",JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                if(r==0){
-                DatabaseH2.Pers_ExchangeApi_Cancella(Exchange);
-                PopolaTabella(); 
+                AppDialog.DialogResult result = AppDialog.builder(this)
+                        .windowTitle("Conferma cancellazione")
+                        .bodyTitle("Conferma di cancellazione chiave API")
+                        .showTitleInBody(false)
+                        .theme()
+                        .type(AppDialog.DialogType.WARNING)
+                        .message("")
+                        .details("Se prosegui, la chiave API salvata verrà eliminata.")
+                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("continua", "Elimina chiave API")
+                                .role(AppDialog.ActionRole.DANGER)
+                                .build())
+                        .showDialog();
+
+                if (result != null && result.isAction("continua")) {
+                    DatabaseH2.Pers_ExchangeApi_Cancella(Exchange);
+                    PopolaTabella();
                 }
             }
-        }else
-           {
-            JOptionPane.showConfirmDialog(this, "Attenzione! \nDevi selezionare un rigo per poterlo eliminare",
-                            "Nessuna API selezionata",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);    
-           } 
+        } else {
+            Messaggi.WarningMessage("Nessuna API selezionata", "Attenzione! <br>Devi selezionare un rigo per poterlo eliminare", this);
+        }
                 
                 
                 
@@ -633,12 +638,37 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     }//GEN-LAST:event_Bottone_AggiornaSelezionatiActionPerformed
 
     private void Binance_BottoneAggiungiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Binance_BottoneAggiungiActionPerformed
-        String token = JOptionPane.showInputDialog(
+         String testo = "Inserisci il nome del token:";
+         String token=null;
+        AppDialog.DialogResult result = AppDialog.builder(this)
+                .windowTitle("Nuovo Token")
+                .bodyTitle("Nuovo Token")
+                .showTitleInBody(false)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message("")
+                .details(testo)
+                .inputField("")
+                .inputColumns(18)
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("Conferma", "Conferma")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .showDialog();
+        if (result != null && result.isAction("Conferma")) {
+            token = result.getInputValue();        
+        }
+        
+        
+        
+     /*   String token = JOptionPane.showInputDialog(
                 this,
                 "Inserisci il nome del token:",
                 "Nuovo Token",
                 JOptionPane.PLAIN_MESSAGE
-        );
+        );*/
 
         if (token != null && !token.trim().isEmpty()) {
             //Questo è l'elenco dei token gestiti di Binance di cui devo cercare le coppie

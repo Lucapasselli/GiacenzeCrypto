@@ -119,6 +119,10 @@ public class DatabaseH2 {
             createTableSQL = "CREATE TABLE IF NOT EXISTS GESTITICRYPTOHISTORY  (Symbol VARCHAR(255) PRIMARY KEY, Nome VARCHAR(255))";
             preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute();
+
+            createTableSQL = "CREATE TABLE IF NOT EXISTS GESTITICOINMARKETCAP (Symbol VARCHAR(255) PRIMARY KEY, CmcId INT)";
+            preparedStatement = connection.prepareStatement(createTableSQL);
+            preparedStatement.execute();
                        
             createTableSQL = "CREATE TABLE IF NOT EXISTS OPZIONI (Opzione VARCHAR(255) PRIMARY KEY, Valore VARCHAR(1000))";
             preparedStatement = connection.prepareStatement(createTableSQL);
@@ -1814,7 +1818,7 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
             checkStatement.execute();
             checkIfExistsSQL = "CREATE TABLE IF NOT EXISTS GESTITICOINCAP  (Symbol VARCHAR(255) PRIMARY KEY, Nome VARCHAR(255))";
             checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            checkStatement.execute(); 
+            checkStatement.execute();
             for (String gestito[]:Gestiti){
                 // La riga non esiste, esegui l'inserimento
                 gestito[1]=gestito[1].replace("'", "").replace("*", "");
@@ -1826,6 +1830,40 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
                     insertStatement.executeUpdate();
                 }
             }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+    public static Integer GestitiCoinMarketCap_Leggi(String Symbol) {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT CmcId FROM GESTITICOINMARKETCAP WHERE Symbol = ?")) {
+            ps.setString(1, Symbol.toUpperCase());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt("CmcId");
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return null;
+    }
+
+    public static void GestitiCoinMarketCap_ScriviNuovaTabella(List<String[]> gestiti) {
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute("DROP TABLE IF EXISTS GESTITICOINMARKETCAP");
+            stmt.execute("CREATE TABLE GESTITICOINMARKETCAP (Symbol VARCHAR(255) PRIMARY KEY, CmcId INT)");
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+            return;
+        }
+        String insertSQL = "INSERT INTO GESTITICOINMARKETCAP (Symbol, CmcId) VALUES (?, ?)";
+        try (PreparedStatement ps = connection.prepareStatement(insertSQL)) {
+            for (String[] entry : gestiti) {
+                ps.setString(1, entry[0].toUpperCase());
+                ps.setInt(2, Integer.parseInt(entry[1]));
+                ps.addBatch();
+            }
+            ps.executeBatch();
         } catch (SQLException ex) {
             LoggerGC.ScriviErrore(ex);
         }

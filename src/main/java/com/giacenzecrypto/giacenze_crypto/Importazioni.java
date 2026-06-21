@@ -130,7 +130,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import java.util.List;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -5687,7 +5686,27 @@ private static String F_safe(String s) {
         
 
             }
-            
+
+            else if (Rete.equalsIgnoreCase("BTC")) {
+                try {
+                    String uniSatApiKey = Funzioni.TrasformaNullinBlanc(
+                            DatabaseH2.Opzioni_Leggi("ApiKey_UniSat"));
+                    Map<String, TransazioneDefi> btcResult;
+                    if (!uniSatApiKey.isBlank()) {
+                        btcResult = Trans_Bitcoin.fetchAndParseTransactionsWithUniSat(
+                                walletAddress, Integer.parseInt(Blocco), uniSatApiKey, ccc, progressb);
+                    } else {
+                        btcResult = Trans_Bitcoin.fetchAndParseTransactions(
+                                walletAddress, Integer.parseInt(Blocco), ccc, progressb);
+                    }
+                    if (btcResult != null) {
+                        MappaTransazioniDefi.putAll(btcResult);
+                    }
+                } catch (InterruptedException ex) {
+                    LoggerGC.ScriviErrore(ex);
+                }
+            }
+
             else if (!Rete.equalsIgnoreCase("CRO")&&!Funzioni.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))){
                 System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " per mancaza di ApiKey");
                         System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa ad Etherscan");

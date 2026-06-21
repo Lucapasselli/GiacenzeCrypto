@@ -37,12 +37,14 @@ public class VarCondivise {
         String[] SOL = new String[]{"https://solscan.io/", "", "SOL", "solana"};
         String[] POL = new String[]{"https://api.etherscan.io/v2/api?chainid=137", "", "POL", "polygon-pos"};
         String[] MONAD = new String[]{"https://api.etherscan.io/v2/api?chainid=143", "", "MON", "monad"};
+        String[] BTC = new String[]{"https://mempool.space/api", "", "BTC", "bitcoin"};
         Principale.Mappa_ChainExplorer.put("CRO", CRO);
         Principale.Mappa_ChainExplorer.put("BSC", BSC);
         Principale.Mappa_ChainExplorer.put("ETH", ETH);
         Principale.Mappa_ChainExplorer.put("BASE", BASE);
         Principale.Mappa_ChainExplorer.put("ARB", ARB);
         Principale.Mappa_ChainExplorer.put("SOL", SOL);
+        Principale.Mappa_ChainExplorer.put("BTC", BTC);
         Principale.Mappa_ChainExplorer.put("BERA", BERA);
         Principale.Mappa_ChainExplorer.put("AVAX", AVAX);
         Principale.Mappa_ChainExplorer.put("POL", POL);

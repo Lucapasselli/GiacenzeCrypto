@@ -1407,19 +1407,19 @@ public static TableCellRenderer Tabelle_creaNuovoHeaderRenderer(
 
         // ICONE
         Icon sortIcon = null;
-      //  if(tbl.getRowSorter()!=null){
-        List<? extends RowSorter.SortKey> sortKeys = tbl.getRowSorter().getSortKeys();
-        if (!sortKeys.isEmpty()) {
-            RowSorter.SortKey primarySortKey = sortKeys.get(0);
-            if (primarySortKey.getColumn() == modelCol) {
-                sortIcon = UIManager.getIcon(primarySortKey.getSortOrder() == SortOrder.ASCENDING
-                        ? "Table.ascendingSortIcon"
-                        : "Table.descendingSortIcon");
+        if (tbl.getRowSorter() != null) {
+            List<? extends RowSorter.SortKey> sortKeys = tbl.getRowSorter().getSortKeys();
+            if (!sortKeys.isEmpty()) {
+                RowSorter.SortKey primarySortKey = sortKeys.get(0);
+                if (primarySortKey.getColumn() == modelCol) {
+                    sortIcon = UIManager.getIcon(primarySortKey.getSortOrder() == SortOrder.ASCENDING
+                            ? "Table.ascendingSortIcon"
+                            : "Table.descendingSortIcon");
+                }
             }
         }
-      //  }
 
-        if (activeFilters.containsKey(modelCol)) {
+        if (activeFilters != null && activeFilters.containsKey(modelCol)) {
             label.setIcon(new MultiSelectPopUp_CombinedIcon(sortIcon, filterIcon));
         } else {
             label.setIcon(sortIcon);
@@ -1447,6 +1447,9 @@ public static TableCellRenderer Tabelle_creaNuovoHeaderRenderer(
         }
 
         label.setText(titolo);
+        label.setHorizontalAlignment(JLabel.CENTER);
+        //label.setFont(label.getFont().deriveFont(java.awt.Font.BOLD));
+        label.setFont(label.getFont().deriveFont(java.awt.Font.PLAIN));
         //label.setToolTipText("Tasto destro x filtrare " + Jsoup.parse(tbl.getColumnName(col)).text());
         label.setToolTipText("Tasto destro x filtrare \n\n" + htmlToTextWithLineBreaks(label.getText().replace("Somma:", "<br>Somma:")));
 
@@ -1477,7 +1480,7 @@ private static void processNode(Node node, StringBuilder sb) {
 }
 
  
- public static void Tabelle_InizializzaHeader(JTable table) { 
+ public static void Tabelle_InizializzaHeader(JTable table) {
     ImageIcon originalIco = new javax.swing.ImageIcon(Principale.class.getResource("/Images/24_Imbuto.png"));
     //Image image = Icone.svgImbuto.getImage();  // Ottiene l'immagine interna
    // ImageIcon originalIco = new ImageIcon(image);  // Converte in ImageIcon
@@ -1485,8 +1488,19 @@ private static void processNode(Node node, StringBuilder sb) {
     //ImageIcon originalIco = new javax.swing.ImageIcon(getClass().getResource("/Images/24_Imbuto.png"));
     Image scaledImag = originalIco.getImage().getScaledInstance(12, 12, Image.SCALE_SMOOTH);
     Icon filterIco = new ImageIcon(scaledImag);
-    Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = tableFilters.get(table);
-   table.getTableHeader().setDefaultRenderer(Tabelle.Tabelle_creaNuovoHeaderRenderer(table, activeFilters, filterIco));
+    Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = tableFilters.computeIfAbsent(table, k -> new HashMap<>());
+    table.getTableHeader().setDefaultRenderer(Tabelle.Tabelle_creaNuovoHeaderRenderer(table, activeFilters, filterIco));
+}
+
+public static void Tabelle_ApplicaHeaderBoldCentrato(JTable table) {
+    TableCellRenderer defaultRenderer = table.getTableHeader().getDefaultRenderer();
+    table.getTableHeader().setDefaultRenderer((tbl, value, isSelected, hasFocus, row, col) -> {
+        JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(tbl, value, isSelected, hasFocus, row, col);
+        label.setHorizontalAlignment(JLabel.CENTER);
+        //label.setFont(label.getFont().deriveFont(java.awt.Font.BOLD));
+        label.setFont(label.getFont().deriveFont(java.awt.Font.PLAIN));
+        return label;
+    });
 }
 
      public static void Tabelle_applyCombinedFilter(JTable table, TableRowSorter<DefaultTableModel> sorter, String globalFilterText) {
@@ -1524,12 +1538,11 @@ private static void processNode(Node node, StringBuilder sb) {
      
      
     public static void Tabelle_FiltroColonne_OLD(JTable table,JTextField filtro,Tabelle_PopupSelezioneMultipla popup) {
-    
+
     //Inizializza tableFilters se non esiste
     tableFilters.putIfAbsent(table, new HashMap<>());
     Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = tableFilters.get(table);
-    
-    Tabelle.Tabelle_InizializzaHeader(table);
+
     JTableHeader header = table.getTableHeader();
 
     DefaultTableModel model = (DefaultTableModel) table.getModel();
@@ -1620,7 +1633,6 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
     tableFilters.putIfAbsent(table, new HashMap<>());
     Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = tableFilters.get(table);
 
-    Tabelle.Tabelle_InizializzaHeader(table);
     JTableHeader header = table.getTableHeader();
 
     DefaultTableModel model = (DefaultTableModel) table.getModel();

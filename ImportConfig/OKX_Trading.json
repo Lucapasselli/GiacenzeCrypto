@@ -1,0 +1,32 @@
+{
+  "versione": "1.000",
+  "nomeExchange": "OKX",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 2,
+  "rigaIntestazione": 2,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
+  "fuso": "",
+  "colonne": {
+    "idTransazione": 1,
+    "data": 2,
+    "causale": 5,
+    "moneta": 18,
+    "quantita": 16
+  },
+  "consolidaRigheStessaData": true,
+  "tolleranzaSecondiConsolidamento": 0,
+  "mappaCausali": {
+    "Buy":   "SCAMBIO CRYPTO-CRYPTO",
+    "Sell":  "SCAMBIO CRYPTO-CRYPTO"
+  },
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": [],
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

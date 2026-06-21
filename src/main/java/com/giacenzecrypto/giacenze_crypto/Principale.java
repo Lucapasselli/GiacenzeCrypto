@@ -710,10 +710,10 @@ private static final long serialVersionUID = 3L;
         Opzioni_Crypto_Pannello = new javax.swing.JPanel();
         Opzioni_Bottone_CancellaTransazioniCrypto = new javax.swing.JButton();
         Opzioni_Bottone_CancellaTransazioniCryptoXwallet = new javax.swing.JButton();
-        Opzioni_PrezziKO_Pannello = new javax.swing.JPanel();
-        Opzioni_Bottone_PuliziaPrezziKO = new javax.swing.JButton();
         jLabel8 = new javax.swing.JLabel();
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet = new javax.swing.JComboBox<>();
+        Opzioni_PrezziKO_Pannello = new javax.swing.JPanel();
+        Opzioni_Bottone_PuliziaPrezziKO = new javax.swing.JButton();
         Opzioni_Pulizie_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
         Opzioni_Pulizie_DataChooser_Finale = new com.toedter.calendar.JDateChooser();
         jLabel18 = new javax.swing.JLabel();
@@ -1344,7 +1344,6 @@ private static final long serialVersionUID = 3L;
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(TransazioniCrypto_ScrollPane)
                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
@@ -1403,7 +1402,7 @@ private static final long serialVersionUID = 3L;
                                         .addComponent(TransazioniCrypto_CheckBox_VediLiFoMancante, javax.swing.GroupLayout.PREFERRED_SIZE, 263, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 152, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 146, Short.MAX_VALUE)
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
                                     .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
@@ -1425,8 +1424,9 @@ private static final long serialVersionUID = 3L;
                         .addComponent(TransazioniCrypto_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(TransazioniCrypto_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(3, 3, 3)))
-                .addContainerGap())
+                        .addGap(3, 3, 3))
+                    .addComponent(TransazioniCrypto_ScrollPane))
+                .addGap(12, 12, 12))
         );
 
         TransazioniCryptoLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {TransazioniCrypto_Bottone_ExchangeAPI, TransazioniCrypto_Bottone_Importa, TransazioniCrypto_Bottone_InserisciWallet});
@@ -1469,7 +1469,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo))
                 .addGap(5, 5, 5)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -15099,7 +15099,6 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JPanel Opzioni_CardWallet_Pannello;
     private javax.swing.JComboBox<String> Opzioni_Combobox_CancellaTransazioniCryptoXwallet;
     private javax.swing.JPanel Opzioni_Crypto_Pannello;
-    private javax.swing.JPanel Opzioni_PrezziKO_Pannello;
     private javax.swing.JButton Opzioni_Emoney_Bottone_Aggiungi;
     private javax.swing.JButton Opzioni_Emoney_Bottone_Precompila;
     private javax.swing.JButton Opzioni_Emoney_Bottone_Rimuovi;
@@ -15117,6 +15116,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JPanel Opzioni_GruppoWallet_Pannello;
     private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollTabella;
     private javax.swing.JTable Opzioni_GruppoWallet_Tabella;
+    private javax.swing.JPanel Opzioni_PrezziKO_Pannello;
     private javax.swing.JPanel Opzioni_Pulizie;
     private com.toedter.calendar.JDateChooser Opzioni_Pulizie_DataChooser_Finale;
     private com.toedter.calendar.JDateChooser Opzioni_Pulizie_DataChooser_Iniziale;

@@ -69,6 +69,7 @@ import org.dhatim.fastexcel.Workbook;
 import org.dhatim.fastexcel.Worksheet;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 
 /**
@@ -3165,5 +3166,19 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
             }
             Files.write(destination, resp.body().bytes());
         }
+    }
+
+    public static boolean isValidJSON(String test) {
+        try {
+            new JSONObject(test);
+        } catch (JSONException ex) {
+            try {
+                new JSONArray(test);
+            } catch (JSONException ex1) {
+                LoggerGC.ScriviErrore("JSON non valido : " + test);
+                return false;
+            }
+        }
+        return true;
     }
 }

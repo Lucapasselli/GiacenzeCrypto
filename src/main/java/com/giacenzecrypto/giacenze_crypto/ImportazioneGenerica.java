@@ -174,9 +174,9 @@ public class ImportazioneGenerica {
                 continue;
             }
 
-            String causaleCorrente = safe(riga, cfg.colonnaCausale);
+            String causaleCorrente = cfg.getCausaleCSV(riga);
             String[] ultimaRigaGruppo = gruppoCorrente.get(gruppoCorrente.size() - 1);
-            String causaleUltima = safe(ultimaRigaGruppo, cfg.colonnaCausale);
+            String causaleUltima = cfg.getCausaleCSV(ultimaRigaGruppo);
 
             boolean usaDifferitaGlobale = cfg.causaliDifferite.isEmpty();
             boolean coinvolgeDifferita = usaDifferitaGlobale
@@ -399,7 +399,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         boolean haMovimentiDefi = false;
 
         for (String[] riga : gruppo) {
-            String causaleCSV = safe(riga, cfg.colonnaCausale);
+            String causaleCSV = cfg.getCausaleCSV(riga);
             String tipoMovimento = cfg.convertiCausale(causaleCSV);
 
             if (tipoMovimento == null || tipoMovimento.isBlank()) {
@@ -567,7 +567,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             wallet = safe(riga, cfg.colonnaWallet);
         }
 
-        String causaleCSV = safe(riga, cfg.colonnaCausale);
+        String causaleCSV = cfg.getCausaleCSV(riga);
 
         String walletOverride = cfg.walletPerCausale.get(causaleCSV);
         if (walletOverride != null && !walletOverride.isBlank()) {
@@ -935,6 +935,15 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         public Map<String, Integer> mappaNomiColonne = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         public Set<String> causaliDifferite = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
+        // Causale composita (max 3 colonne concatenate con separatoreCausale)
+        public int colonnaCausale2 = -1;
+        public int colonnaCausale3 = -1;
+        public String separatoreCausale = ".";
+        public boolean causaliUppercase = false;
+
+        // Mappa nome-header → nome-campo per auto-detect colonne da intestazione
+        public Map<String, String> mappaAutoDetect = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
         // -----------------------------------------------------------------
         // Caricamento da JSON
         // -----------------------------------------------------------------
@@ -1050,6 +1059,8 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 if (col.has("wallet")) {
                     cfg.colonnaWallet = col.getInt("wallet");
                 }
+                if (col.has("causale2")) cfg.colonnaCausale2 = col.getInt("causale2");
+                if (col.has("causale3")) cfg.colonnaCausale3 = col.getInt("causale3");
             }
 
             if (root.has("mappaCausali")) {
@@ -1111,6 +1122,12 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                     cfg.walletPerCausale.put(k, wc.getString(k));
                 }
             }
+            if (root.has("separatoreCausale")) cfg.separatoreCausale = root.getString("separatoreCausale");
+            if (root.has("causaliUppercase"))  cfg.causaliUppercase  = root.getBoolean("causaliUppercase");
+            if (root.has("mappaAutoDetect")) {
+                JSONObject mad = root.getJSONObject("mappaAutoDetect");
+                for (String k : mad.keySet()) cfg.mappaAutoDetect.put(k, mad.getString(k));
+            }
 
             return cfg;
         }
@@ -1141,6 +1158,9 @@ private LocalDateTime parseDataRaw(String dataCSV) {
 
     String s = dataCSV.trim();
     if (s.isBlank() || s.matches("-+")) return null;
+
+    // Rimuove suffisso timezone tipo " +00:00" o " -05:30" se presente
+    s = s.replaceAll("\\s[+-]\\d{2}:\\d{2}$", "");
 
     try {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern(formatoData);
@@ -1229,6 +1249,44 @@ public String normalizzaData(String dataCSV) {
             for (int i = 0; i < intestazione.length; i++) {
                 mappaNomiColonne.put(intestazione[i].trim(), i);
             }
+            // Applica la mappa auto-detect: nome header → nome campo
+            for (Map.Entry<String, String> e : mappaAutoDetect.entrySet()) {
+                Integer idx = mappaNomiColonne.get(e.getKey().trim());
+                if (idx == null) continue;
+                switch (e.getValue().toLowerCase().trim()) {
+                    case "data"          -> colonnaData          = idx;
+                    case "causale"       -> colonnaCausale       = idx;
+                    case "moneta"        -> colonnaMoneta        = idx;
+                    case "quantita"      -> colonnaQuantita      = idx;
+                    case "monetafee"     -> colonnaMonetaFee     = idx;
+                    case "quantitafee"   -> colonnaQuantitaFee   = idx;
+                    case "idtransazione" -> colonnaIDTransazione = idx;
+                    case "valoreeuro"    -> colonnaValoreEuro    = idx;
+                    case "segno"         -> colonnaSegno         = idx;
+                    case "wallet"        -> colonnaWallet        = idx;
+                }
+            }
+        }
+
+        /**
+         * Restituisce la causale CSV dalla riga, componendola da una o più
+         * colonne (colonnaCausale, colonnaCausale2, colonnaCausale3) separate
+         * da {@code separatoreCausale}. Se {@code causaliUppercase} è true,
+         * ogni parte viene convertita in maiuscolo prima della concatenazione.
+         */
+        public String getCausaleCSV(String[] riga) {
+            String c1 = safe(riga, colonnaCausale);
+            if (causaliUppercase) c1 = c1.toUpperCase();
+            if (colonnaCausale2 < 0) return c1;
+            String c2 = safe(riga, colonnaCausale2);
+            if (causaliUppercase) c2 = c2.toUpperCase();
+            StringBuilder sb = new StringBuilder(c1).append(separatoreCausale).append(c2);
+            if (colonnaCausale3 >= 0) {
+                String c3 = safe(riga, colonnaCausale3);
+                if (causaliUppercase) c3 = c3.toUpperCase();
+                sb.append(separatoreCausale).append(c3);
+            }
+            return sb.toString();
         }
 
         // -----------------------------------------------------------------

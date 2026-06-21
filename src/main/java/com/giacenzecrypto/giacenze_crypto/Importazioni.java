@@ -138,6 +138,7 @@ import java.util.stream.Collectors;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import org.json.JSONException;
 
 
 /**
@@ -4841,6 +4842,8 @@ private static String F_safe(String s) {
         return Valore;
     }
     
+    
+    
     public static String DeFi_GiacenzeL1_Rimanze(String walletAddress,String Rete) {
         //In questa funzione dovrò recuperare le rimanenze CRO del wallet ad un determinato Blocco
         //Questo ci permetterà di sistemare le giacenze dei CRO in maniera esatta anche se porterà via molto tempo.
@@ -4866,6 +4869,7 @@ private static String F_safe(String s) {
                 responseTxlist.append(inputLine);
             }
             in.close();
+            if (!Funzioni.isValidJSON(responseTxlist.toString()))return null;
             JSONObject jsonObjectTxlist = new JSONObject(responseTxlist.toString());
             Valore = jsonObjectTxlist.getString("result");
             if (!Funzioni.isNumeric(Valore, false))
@@ -5146,8 +5150,7 @@ private static String F_safe(String s) {
         
     public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Component ccc, Download progressb) {
         //sistemo le giacenze sulle rete ethereum compatibili
-        
-        if (!Rete.equals("SOL")&&!Rete.equals("BSC")&&!Rete.equals("BASE")&&!Rete.equals("AVA")&&!Rete.equals("CRO")){
+        if (!Rete.equals("SOL")&&!Rete.equals("BSC")&&!Rete.equals("BASE")&&!Rete.equals("AVA")&&!Rete.equals("CRO")&&!Rete.equals("BTC")){
         progressb.setDefaultCloseOperation(0);
         progressb.Titolo("Sistemazione Giacenze moneta di Scambio su Wallet " + Wallet);
         progressb.SetLabel("Sistemazione Giacenze");

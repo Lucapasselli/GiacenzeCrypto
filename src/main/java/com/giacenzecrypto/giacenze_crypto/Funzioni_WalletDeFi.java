@@ -5,11 +5,6 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 import java.awt.Desktop;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.bitcoinj.core.Base58;
 

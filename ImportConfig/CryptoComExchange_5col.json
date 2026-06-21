@@ -1,0 +1,48 @@
+{
+  "versione": "1.000",
+  "nomeExchange": "Crypto.com Exchange",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 1,
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
+  "fuso": "Europe/Rome",
+  "colonne": {
+    "data": 0,
+    "moneta": 1,
+    "causale": 2,
+    "quantita": 4
+  },
+  "consolidaRigheStessaData": true,
+  "tolleranzaSecondiConsolidamento": 0,
+  "mappaCausali": {
+    "TRADING":              "SCAMBIO CRYPTO-CRYPTO",
+    "CRYPTO_DUSTING":       "DUST-CONVERSION",
+    "TRADE_FEE":            "COMMISSIONI",
+    "OFFCHAIN_WITHDRAWAL":  "TRASFERIMENTO-CRYPTO",
+    "ONCHAIN_WITHDRAWAL":   "TRASFERIMENTO-CRYPTO",
+    "OFFCHAIN_DEPOSIT":     "TRASFERIMENTO-CRYPTO",
+    "ONCHAIN_DEPOSIT":      "TRASFERIMENTO-CRYPTO",
+    "ADMIN_ADJUSTMENT":     "TRASFERIMENTO-CRYPTO",
+    "FIAT_OPENPAYD_DEPOSIT":"TRASFERIMENTO-CRYPTO",
+    "STAKING_REWARDS":      "STAKING REWARDS",
+    "STAKING":              "NON CONSIDERARE"
+  },
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": [
+    "COMMISSIONI",
+    "STAKING REWARDS",
+    "TRASFERIMENTO-CRYPTO",
+    "NON CONSIDERARE"
+  ],
+  "rinominaMonete": {
+    "USD_Stable_Coin": "USDC",
+    "USD": "USDC"
+  },
+  "rimuoviDaNomeMoneta": [
+    ".staked?"
+  ],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

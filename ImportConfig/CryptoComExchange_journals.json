@@ -1,0 +1,39 @@
+{
+  "versione": "1.000",
+  "nomeExchange": "Crypto.com Exchange",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 1,
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
+  "fuso": "UTC",
+  "colonne": {
+    "idTransazione": 11,
+    "data": 2,
+    "moneta": 3,
+    "causale": 5,
+    "quantita": 9
+  },
+  "consolidaRigheStessaData": true,
+  "tolleranzaSecondiConsolidamento": 0,
+  "mappaCausali": {
+    "TRADING":              "SCAMBIO CRYPTO-CRYPTO",
+    "OFFCHAIN_DEPOSIT":     "TRASFERIMENTO-CRYPTO",
+    "ONCHAIN_DEPOSIT":      "TRASFERIMENTO-CRYPTO",
+    "OFFCHAIN_WITHDRAWAL":  "TRASFERIMENTO-CRYPTO",
+    "ONCHAIN_WITHDRAWAL":   "TRASFERIMENTO-CRYPTO",
+    "STAKING_REWARDS":      "STAKING REWARDS",
+    "STAKING":              "NON CONSIDERARE"
+  },
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": [
+    "TRASFERIMENTO-CRYPTO",
+    "STAKING REWARDS",
+    "NON CONSIDERARE"
+  ],
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

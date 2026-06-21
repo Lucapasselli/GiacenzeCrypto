@@ -1,0 +1,53 @@
+{
+  "versione": "1.000",
+  "nomeExchange": "OKX",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 2,
+  "rigaIntestazione": 2,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
+  "fuso": "",
+  "colonne": {
+    "idTransazione": 0,
+    "data": 1,
+    "causale": 2,
+    "quantita": 3,
+    "quantitaFee": 6,
+    "monetaFee": 7,
+    "moneta": 7
+  },
+  "consolidaRigheStessaData": true,
+  "tolleranzaSecondiConsolidamento": 1,
+  "causaliDifferite": ["SCAMBIO CRYPTO-CRYPTO"],
+  "mappaCausali": {
+    "Savings subscription":           "IGNORA",
+    "Savings redemption":             "IGNORA",
+    "Stake":                          "IGNORA",
+    "Redeem staking":                 "IGNORA",
+    "From unified trading account":   "IGNORA",
+    "To unified trading account":     "IGNORA",
+    "Simple Earn subscription":       "IGNORA",
+    "Simple Earn redemption":         "IGNORA",
+    "Transfer in":                    "IGNORA",
+    "Transfer out":                   "IGNORA",
+    "Withdrawal":                     "TRASFERIMENTO-CRYPTO",
+    "Deposit":                        "TRASFERIMENTO-CRYPTO",
+    "Convert":                        "SCAMBIO CRYPTO-CRYPTO",
+    "Buy":                            "SCAMBIO CRYPTO-CRYPTO",
+    "Sell":                           "SCAMBIO CRYPTO-CRYPTO",
+    "Deposit yield":                  "REWARD",
+    "Crypto dust auto-transfer in":   "REWARD"
+  },
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": [
+    "TRASFERIMENTO-CRYPTO",
+    "REWARD"
+  ],
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

@@ -4,7 +4,7 @@
   "separatore": ",",
   "encoding": "UTF-8",
   "righeIntestazione": 1,
-  "formatoData": "dd.MM.yyyy HH:mm",
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
   "fuso": "Europe/Rome",
   "consolidaRigheStessaData": false,
 

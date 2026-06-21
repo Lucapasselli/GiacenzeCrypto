@@ -97,16 +97,13 @@ public class Funzioni_WalletDeFi {
                            Funzioni.ApriWeb("https://mempool.space/address/"+ Wallet);
                         }
                         else if(Rete.equalsIgnoreCase("POL")){
-                           Desktop.getDesktop().browse(new URI("https://polygonscan.com/token/"+Address +"?a="+ Wallet)); 
+                           Funzioni.ApriWeb("https://polygonscan.com/token/"+Address +"?a="+ Wallet);
                         }
                         else if(Rete.equalsIgnoreCase("MONAD")){
-                           Desktop.getDesktop().browse(new URI("https://monadscan.com/token/"+Address +"?a="+ Wallet)); 
+                           Funzioni.ApriWeb("https://monadscan.com/token/"+Address +"?a="+ Wallet);
                         }
                         
-                    } catch (URISyntaxException | IOException ex) {
-                        Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
+                        
         
      }
      

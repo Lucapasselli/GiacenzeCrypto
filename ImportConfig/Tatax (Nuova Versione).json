@@ -1,5 +1,6 @@
 {
   "versione": "1.000",
+  "centralizzato":true,
   "nomeExchange": "",
   "nomeWallet": "Principale",
   "separatore": ",",
@@ -7,7 +8,6 @@
   "righeIntestazione": 1,
   "rigaIntestazione": 1,
   "autoDetectColonne": false,
-  "testing":true,
   "formatoData": "yyyy-MM-dd HH:mm:ss",
   "fuso": "UTC",
   "colonne": {

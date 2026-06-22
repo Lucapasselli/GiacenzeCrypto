@@ -1,5 +1,6 @@
 {
   "versione": "1.001",
+  "centralizzato":true,
   "nomeExchange": "Binance",
   "nomeWallet": "Principale",
   "separatore": ",",

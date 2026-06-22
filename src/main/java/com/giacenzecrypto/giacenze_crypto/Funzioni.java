@@ -3105,6 +3105,7 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
 
             JsonArray files = JsonParser.parseString(response.body().string()).getAsJsonArray();
 
+            Set<String> nomiRemoti = new HashSet<>();
             for (JsonElement el : files) {
                 JsonObject file = el.getAsJsonObject();
                 if (!"file".equals(file.get("type").getAsString())) continue;
@@ -3113,6 +3114,7 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
                 String remoteSha = file.get("sha").getAsString();
                 String downloadUrl = file.get("download_url").getAsString();
 
+                nomiRemoti.add(name);
                 Path localPath = Paths.get(cartellaImportConfig, name);
 
                 boolean daAggiornare;
@@ -3131,6 +3133,27 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
                     scaricaFileDaUrl(client, downloadUrl, localPath);
                     fileAggiornati.add(name);
                     System.out.println("AggiornamentoImportConfig: aggiornato " + name);
+                }
+            }
+
+            // Cancella file locali centralizzati non più presenti nel repository
+            File[] locali = new File(cartellaImportConfig).listFiles((dir, n) -> n.toLowerCase().endsWith(".json"));
+            if (locali != null) {
+                for (File f : locali) {
+                    if (nomiRemoti.contains(f.getName())) continue;
+                    try {
+                        StringBuilder sb = new StringBuilder();
+                        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(f))) {
+                            String riga;
+                            while ((riga = br.readLine()) != null) sb.append(riga);
+                        }
+                        if (new JSONObject(sb.toString()).optBoolean("centralizzato", false)) {
+                            Files.delete(f.toPath());
+                            System.out.println("AggiornamentoImportConfig: rimosso file centralizzato non più nel repository: " + f.getName());
+                        }
+                    } catch (Exception ex) {
+                        System.out.println("AggiornamentoImportConfig: errore nella verifica di " + f.getName() + " - " + ex.getMessage());
+                    }
                 }
             }
         } catch (Exception e) {

@@ -965,6 +965,8 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         public String separatoreCausale = ".";
         public boolean causaliUppercase = false;
 
+        public boolean centralizzato = false;
+
         // Mappa nome-header → nome-campo per auto-detect colonne da intestazione
         public Map<String, String> mappaAutoDetect = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
@@ -1148,6 +1150,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             }
             if (root.has("separatoreCausale")) cfg.separatoreCausale = root.getString("separatoreCausale");
             if (root.has("causaliUppercase"))  cfg.causaliUppercase  = root.getBoolean("causaliUppercase");
+            if (root.has("centralizzato"))     cfg.centralizzato     = root.getBoolean("centralizzato");
             if (root.has("mappaAutoDetect")) {
                 JSONObject mad = root.getJSONObject("mappaAutoDetect");
                 for (String k : mad.keySet()) cfg.mappaAutoDetect.put(k, mad.getString(k));

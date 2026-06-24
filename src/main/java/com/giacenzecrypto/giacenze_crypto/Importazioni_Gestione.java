@@ -432,16 +432,17 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
     }
 
     final String[] nomeExchangeFinale = new String[1];
+    final String[] fusoFinale = new String[]{""};
 
     try {
         ImportazioneGenerica.ConfigurazioneImport cfg =
                 ImportazioneGenerica.ConfigurazioneImport.carica(percorsoJson);
-        
-      //  System.out.println(cfg.nomeExchange);
 
         String nomeExchangeDaJson = (cfg.nomeExchange != null)
                 ? cfg.nomeExchange.trim()
                 : "";
+
+        fusoFinale[0] = cfg.fuso != null ? cfg.fuso.trim() : "";
 
         // Se il nome exchange è già nel JSON uso quello
         if (!nomeExchangeDaJson.isBlank()) {
@@ -499,6 +500,41 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
     JFileChooser fc = new JFileChooser(Directory);
     int returnVal = fc.showOpenDialog(c);
 
+    // Risolvo il fuso orario se non specificato nel JSON
+    boolean PrioritaNomeFile=false;
+    //Se c'e il ? affianco al fuso allora do priorità al fuso sul file invece che quello scritto
+    if (fusoFinale[0].contains("?")){
+        PrioritaNomeFile=true;
+        fusoFinale[0]=fusoFinale[0].replace("?", "");
+    }
+    String nomeFile = fc.getSelectedFile().getName();
+    String fusoFile = ImportazioneGenerica.estraiTZdaNomeFile(nomeFile);
+    if (PrioritaNomeFile&&fusoFile != null && !fusoFile.isBlank()){
+        fusoFinale[0] = fusoFile;
+    }
+    if (returnVal == JFileChooser.APPROVE_OPTION && fusoFinale[0].isBlank()) {
+        
+        if (fusoFile != null && !fusoFile.isBlank()) {
+            fusoFinale[0] = fusoFile;
+        } else {
+            String fusoScelto = AppDialog.showComboBoxDialog(
+                    this,
+                    "Fuso orario non specificato",
+                    "Seleziona il fuso orario",
+                    "Il fuso orario non è specificato nella configurazione né nel nome del file.\n\n"
+                    + "Selezionare il fuso orario corretto per i dati da importare:",
+                    "Fuso orario:",
+                    "UTC", "UTC+1", "UTC+2", "CET", "Europe/Rome"
+            );
+            if (fusoScelto == null) {
+                Bottone_SelezionaFile.setEnabled(true);
+                Bottone_Annulla.setEnabled(true);
+                return;
+            }
+            fusoFinale[0] = fusoScelto;
+        }
+    }
+
     final boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
 
     Thread thread = new Thread() {
@@ -521,7 +557,8 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
                             percorsoJson,
                             SovrascriEsistenti,
                             progressb,
-                            nomeExchangeFinale[0]
+                            nomeExchangeFinale[0],
+                            fusoFinale[0]
                     );
 
                     if (ok && Importazioni.TransazioniAggiunte > 0) {

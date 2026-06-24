@@ -5,21 +5,19 @@
   "separatore": ",",
   "encoding": "UTF-8",
   "righeIntestazione": 1,
-  "formatoData": "dd.MM.yyyy HH:mm:ss",
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
   "fuso": "Europe/Rome",
   "consolidaRigheStessaData": false,
+"testing":true,
   "colonne": {
     "causale":        0,
     "quantita":       1,
     "moneta":         2,
-    "quantitaUscita": 3,
-    "monetaUscita":   4,
-    "monetaFee":      6,
-    "quantitaFee":    5,
-    "data":          10
+    "valoreEuro":     4,
+    "quantitaUscita": 5,
+    "monetaUscita":   6,
+    "data":          12
   },
-  "ricostruisciLordoSeFeeSuMonetaUscita":  true,
-"ricostruisciLordoSeFeeSuMonetaEntrata": true,
 
   "mappaCausali": {
     "Trade":                      "SCAMBIO CRYPTO-CRYPTO",

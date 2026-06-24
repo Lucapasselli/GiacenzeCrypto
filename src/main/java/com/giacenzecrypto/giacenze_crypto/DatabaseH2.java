@@ -162,16 +162,27 @@ public class DatabaseH2 {
             preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
             preparedStatement.execute();
             if (Pers_GruppoAlias_Leggi("Wallet 01")[0] == null) {
-                for (int i = 1; i < 21; i++) {
+                for (int i = 1; i < 41; i++) {
                     String gruppo;
                     if (i < 10) {
-                        gruppo = "Wallet 0" + String.valueOf(i);
+                        gruppo = "Wallet 0" + i;
                     } else {
-                        gruppo = "Wallet " + String.valueOf(i);
+                        gruppo = "Wallet " + i;
                     }
-                    //Questa cosa sotto la devo fare solo se non esiste
                     Pers_GruppoAlias_Scrivi(gruppo, gruppo, false);
                 }
+            } else if (Pers_GruppoAlias_Leggi("Wallet 21")[0] == null){
+                // Migrazione per installazioni esistenti: aggiunge i gruppi 21-40 se mancanti
+                for (int i = 21; i < 41; i++) {
+                    String gruppo = "Wallet " + i;
+                    if (Pers_GruppoAlias_Leggi(gruppo)[0] == null) {
+                        Pers_GruppoAlias_Scrivi(gruppo, gruppo, false);
+                    }
+                }
+            }
+            // Wallet 99 – alias fisso "Wallet da Classificare", sempre garantito
+            if (Pers_GruppoAlias_Leggi("Wallet 99")[0] == null) {
+                Pers_GruppoAlias_Scrivi("Wallet 99", "Wallet da Classificare", false);
             }
             
             createTableSQL = "CREATE TABLE IF NOT EXISTS EMONEY  (Moneta VARCHAR(255) PRIMARY KEY, Data VARCHAR(255))";
@@ -706,8 +717,8 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
         }
         
         if (Risultato == null&&ritornaWallet1seNull) {
-            Pers_GruppoWallet_Scrivi(Wallet, "Wallet 01");
-            Risultato = "Wallet 01";
+            Pers_GruppoWallet_Scrivi(Wallet, "Wallet 99");
+            Risultato = "Wallet 99";
         }
         return Risultato;
     }
@@ -780,20 +791,6 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
     values.put("Pagabollo", Pagabollo);
     U_ScriviRecord("GRUPPO_ALIAS", values, "Gruppo",connectionPersonale);
        
-   /* String sql = """
-        MERGE INTO GRUPPO_ALIAS (Gruppo, Alias, Pagabollo)
-        KEY (Gruppo)
-        VALUES (?, ?, ?)
-    """;
-
-    try (PreparedStatement ps = connectionPersonale.prepareStatement(sql)) {
-        ps.setString(1, Gruppo);
-        ps.setString(2, Alias);
-        ps.setString(3, Pagabollo);
-        ps.executeUpdate();
-    } catch (SQLException ex) {
-        LoggerGC.ScriviErrore(ex);
-    }*/
 }
 
     

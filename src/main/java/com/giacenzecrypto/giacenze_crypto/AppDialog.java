@@ -18,8 +18,9 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 public class AppDialog extends JDialog {
-    
+
     private JTextField inputField;
+    private JComboBox<String> comboBox;
 
     public enum ThemeMode {
         LIGHT, DARK
@@ -194,6 +195,37 @@ public class AppDialog extends JDialog {
     return result.getInputValue();
 }
 
+    public static String showComboBoxDialog(
+        Window owner,
+        String windowTitle,
+        String bodyTitle,
+        String message,
+        String comboLabel,
+        String... options) {
+
+    DialogResult result = AppDialog.builder(owner)
+            .windowTitle(windowTitle)
+            .bodyTitle(bodyTitle)
+            .showTitleInBody(bodyTitle != null && !bodyTitle.isBlank())
+            .theme()
+            .type(DialogType.WARNING)
+            .message(message)
+            .comboField(comboLabel, options)
+            .action(DialogAction.builder("cancel", "Annulla")
+                    .role(ActionRole.SECONDARY)
+                    .build())
+            .action(DialogAction.builder("ok", "Conferma")
+                    .role(ActionRole.PRIMARY)
+                    .build())
+            .showDialog();
+
+    if (!result.isAction("ok")) {
+        return null;
+    }
+
+    return result.getInputValue();
+}
+
 
     public static final class UiTheme {
         public final Color background;
@@ -316,11 +348,20 @@ public class AppDialog extends JDialog {
         private String inputLabel;
         private String inputInitialValue = "";
         private int inputColumns = 28;
-        
-        
+
+        private boolean comboEnabled = false;
+        private String comboLabel;
+        private String[] comboOptions = new String[0];
 
         private final List<DialogAction> actions = new ArrayList<>();
-        
+
+        public Builder comboField(String label, String... options) {
+            this.comboEnabled = true;
+            this.comboLabel = label;
+            this.comboOptions = options != null ? options : new String[0];
+            return this;
+        }
+
         public Builder inputField(String label) {
             this.inputEnabled = true;
             this.inputLabel = label;
@@ -528,6 +569,8 @@ public class AppDialog extends JDialog {
             if (config.inputEnabled && inputField != null) {
                 inputField.requestFocusInWindow();
                 inputField.selectAll();
+            } else if (config.comboEnabled && comboBox != null) {
+                comboBox.requestFocusInWindow();
             } else if (!actionButtons.isEmpty()) {
                 int index = focusedButtonIndex >= 0 ? focusedButtonIndex : 0;
                 focusButtonAt(index);
@@ -594,6 +637,25 @@ public class AppDialog extends JDialog {
     panel.add(inputField);
 }
 
+        if (config.comboEnabled) {
+            panel.add(Box.createVerticalStrut(12));
+
+            if (config.comboLabel != null && !config.comboLabel.isBlank()) {
+                JLabel comboLabelComp = new JLabel(config.comboLabel);
+                comboLabelComp.setFont(theme.messageFont);
+                comboLabelComp.setForeground(theme.textPrimary);
+                comboLabelComp.setAlignmentX(Component.LEFT_ALIGNMENT);
+                panel.add(comboLabelComp);
+                panel.add(Box.createVerticalStrut(6));
+            }
+
+            comboBox = new JComboBox<>(config.comboOptions);
+            comboBox.setFont(theme.messageFont);
+            comboBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+            comboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+            panel.add(comboBox);
+        }
+
         return panel;
     }
 
@@ -658,7 +720,15 @@ public class AppDialog extends JDialog {
         });
 
         button.addActionListener(e -> {
-            String value = inputField != null ? inputField.getText() : null;
+            String value;
+            if (inputField != null) {
+                value = inputField.getText();
+            } else if (comboBox != null) {
+                Object sel = comboBox.getSelectedItem();
+                value = sel != null ? sel.toString() : null;
+            } else {
+                value = null;
+            }
             result = new DialogResult(action.getId(), CloseReason.ACTION, value);
 
             if (action.getHandler() != null) {
@@ -900,7 +970,7 @@ public class AppDialog extends JDialog {
     }
 
     private void pressFocusedButton() {
-    if (config.inputEnabled) {
+    if (config.inputEnabled || config.comboEnabled) {
         JButton defaultButton = getRootPane().getDefaultButton();
         if (defaultButton != null) {
             defaultButton.doClick();

@@ -1,5 +1,6 @@
 {
   "versione": "1.000",
+  "centralizzato":true,
   "nomeExchange": "",
   "nomeWallet": "Principale",
   "separatore": ",",
@@ -35,7 +36,7 @@
     "AIRDROP": "AIRDROP",
     "CREDIT":"SCAMBIO CRYPTO-CRYPTO",
     "DEBIT": "SCAMBIO CRYPTO-CRYPTO",
-    "SEXCHANGE_FEE": "COMMISSIONI",
+    "EXCHANGE_FEE": "COMMISSIONI",
     "BLOCKCHAIN_FEE": "COMMISSIONI",
     "FEE": "COMMISSIONI",
     "DEPOSIT": "TRASFERIMENTO-CRYPTO",

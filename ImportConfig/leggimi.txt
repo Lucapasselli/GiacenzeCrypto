@@ -1,0 +1,3 @@
+Posizionare i file nella cartella \ImportConfig all'interno del programma.
+
+Documentazione https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/CreazioneJSONperImportazioniPersonalizzate.pdf/download

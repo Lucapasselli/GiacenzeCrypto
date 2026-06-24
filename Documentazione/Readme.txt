@@ -25,6 +25,21 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.57
+Nuove Implementazioni :
+- Aggiunto supporto alla Blockchain Bitcoin con importazione delle transazioni BTC.
+  Per la gestione dei token BRC-20 e Runes è necessaria l'ApiKey gratuita di UniSat da inserire in "Opzioni" - "ApiKey".
+- Aggiunta ricerca dei prezzi da coinmarketcap e rimosso cryptocompare perchè diventato a pagamento.
+- Aggiunto sotto "Opzioni" - "Pulizie" una nuova tab "Pulizia PrezziKO" per eliminare i record dei prezzi non recuperabili in un periodo selezionato.
+  (Serve per pulire l'elenco dei token con prezzi non recuperabili per poter poi ritentare lo scaricamento dei prezzi adesso che ho aggiunto alle fonti anche coinmarketcap)
+- Migliorato il motore di importazioni CSV generiche: aggiunto supporto a mappaAutoDetect nei file JSON di configurazione per il rilevamento
+  automatico delle colonne dalle intestazioni del CSV; migliorata la gestione del fuso orario con rilevamento dal nome del file e richiesta
+  interattiva se non specificato.
+- Aggiornati i file di configurazione JSON delle importazioni: aggiunto supporto al vecchio layout di Cointracking, aggiunto supporto alla nuova
+  versione di Tatax, aggiornato il file di configurazione per Binance CSV.
+- Impostato all'avvio del programma lo scaricamento automatico dei file di configurazione per i CSV degli exchange in modo tale da riuscire a gestire le modifiche sui files (che regolarmente fanno gli exchange) senza constringervi a scaricare una nuova versione del programma.
+- In "Opzioni" - "E-MoneyToken" inserito la possibilità di precompilare la tabella secondo certe regole
+
 ver. 1.0.56
 Nuove Implementazioni :
 - Aggiunto possibilità di parametrizzare le importazioni dei csv tramite file di configurazione JSON per permettere di importare dati da quasi tutti i csv

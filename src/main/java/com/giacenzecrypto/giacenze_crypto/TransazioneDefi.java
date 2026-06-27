@@ -444,6 +444,10 @@ public class TransazioneDefi {
       List<String[]> righe=new ArrayList<>();
       //String dataAlMinuto=DataOra.trim().substring(0, DataOra.length()-3);
       long DataSecondo=FunzioniDate.ConvertiDatainLongSecondo(DataOra);
+      try {
+          if (TimeStamp == null || TimeStamp.trim().isEmpty()) TimeStamp = String.valueOf(DataSecondo);
+          if (Long.parseLong(TimeStamp) < 100000000000L) TimeStamp = String.valueOf(Long.parseLong(TimeStamp) * 1000);
+      } catch (Exception e) {}
       //String PrimaParteID=DataOra.replaceAll(" |-|:", "")+"_BC."+Rete+"."+Wallet+"."+HashTransazione;
       if (TipoTransazione!=null) TipoTransazione=TipoTransazione.split("\\(")[0].trim();
 

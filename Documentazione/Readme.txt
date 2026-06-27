@@ -38,6 +38,7 @@ Nuove Implementazioni :
 - Aggiornati i file di configurazione JSON delle importazioni: aggiunto supporto al vecchio layout di Cointracking, aggiunto supporto alla nuova
   versione di Tatax, aggiornato il file di configurazione per Binance CSV.
 - Impostato all'avvio del programma lo scaricamento automatico dei file di configurazione per i CSV degli exchange in modo tale da riuscire a gestire le modifiche sui files (che regolarmente fanno gli exchange) senza constringervi a scaricare una nuova versione del programma.
+- In "Opzioni" - "E-MoneyToken" inserito la possibilità di precompilare la tabella secondo certe regole
 
 ver. 1.0.56
 Nuove Implementazioni :

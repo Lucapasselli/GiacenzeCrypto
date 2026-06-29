@@ -117,10 +117,7 @@
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                       <Component id="P_LabelMoneta" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <EmptySpace min="6" max="32767" attributes="0"/>
-                                      <Component id="P_LabelFonte" min="-2" max="-2" attributes="0"/>
-                                  </Group>
+                                  <Component id="P_LabelFonte" alignment="1" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" max="-2" attributes="0">

@@ -1131,33 +1131,7 @@ worker.execute();*/
             //System.out.println(Ritorno[0]);
             
         }
-   /*     String Rete=null;
-        if (ModificaMovimento) Rete=Funzioni.TrovaReteDaID(MovimentoRiportato[0]);
 
-       setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-       Moneta MonetaUscita=null;
-       Moneta MonetaEntrata=null;
-       if(!MonetaU.equalsIgnoreCase("")&&!MonetaUQta.equalsIgnoreCase("")&&MonetaUTipo!=null){
-       MonetaUscita=new Moneta();
-       MonetaUscita.Moneta=MonetaU;
-       MonetaUscita.Qta=MonetaUQta;
-       MonetaUscita.Tipo=MonetaUTipo;
-       MonetaUscita.MonetaAddress=this.MonetaUAddress;
-
-        }
-       if(!MonetaE.equalsIgnoreCase("")&&!MonetaEQta.equalsIgnoreCase("")&&MonetaETipo!=null){
-       MonetaEntrata=new Moneta();
-       MonetaEntrata.Moneta=MonetaE;
-       MonetaEntrata.Qta=MonetaEQta;
-       MonetaEntrata.Tipo=MonetaETipo;
-       MonetaEntrata.MonetaAddress=this.MonetaEAddress;
-
-        }
-
-       String Prezzo=Prezzi.DammiPrezzoTransazione(MonetaEntrata, MonetaUscita, DataLong, "0", true, 2, Rete,"binance");
-        ValoreTransazione_TextField.setText(Prezzo);
-       EvidenziaProblemi();
-       setCursor(Cursor.getDefaultCursor());*/
  
     }//GEN-LAST:event_Bottone_ModificaPrezzoActionPerformed
 
@@ -1234,13 +1208,13 @@ worker.execute();*/
             //System.out.println(Ritorno[0]);
             if (IPp[0]!=null){
                 //Ho il prezzo di ritorno
-                System.out.println(IPp[0].Fonte);
+             /*   System.out.println(IPp[0].Fonte);
                 System.out.println(IPp[0].Moneta);
                 System.out.println(IPp[0].OggettoMoneta);
                 System.out.println(IPp[0].Qta);
                 System.out.println(IPp[0].prezzoQta);
                 System.out.println(IPp[0].prezzoUnitario);
-                System.out.println(IPp[0].timestamp);
+                System.out.println(IPp[0].timestamp);*/
                 if (IPp[0].Fonte!=null) P_TextFonte.setText(IPp[0].Fonte);else P_TextFonte.setText("");
                 if (IPp[0].Moneta!=null)P_TextMoneta.setText(IPp[0].Moneta);else P_TextMoneta.setText("");
                 if (IPp[0].prezzoUnitario!=null)P_TextPU.setText(IPp[0].prezzoUnitario.toPlainString());else P_TextPU.setText("");
@@ -1315,41 +1289,108 @@ worker.execute();*/
         if (!(P_TextMoneta.getText()+TimeFonte+P_TextPU.getText()+P_TextFonte.getText()).isBlank())
         {
             Riga40=(P_TextMoneta.getText()+"|"+TimeFonte+"|"+P_TextPU.getText()+"|"+P_TextFonte.getText());
-            System.out.println("pippone");
         }
         return Riga40;
         
     }
 
+    /**
+     * Persiste il movimento crypto nella mappa in memoria ({@link Principale#MappaCryptoWallet}).
+     *
+     * <p>Il metodo è il punto di scrittura finale: viene chiamato da {@link #ScritturaDati(String)}
+     * dopo che {@link #EvidenziaProblemi()} ha già validato i campi GUI e
+     * {@link #CalcolaID()} ha prodotto l'ID da usare.</p>
+     *
+     * <p>Gestisce tre scenari distinti in base al flag {@link #ModificaMovimento} e al confronto
+     * tra l'ID del vecchio movimento ({@code MovimentoRiportato[0]}) e l'ID ricalcolato ({@code ID}):</p>
+     *
+     * <ol>
+     *   <li><b>Modifica in-place (ID invariato)</b> — wallet, monete e tipi non sono cambiati:
+     *       solo prezzo, note e quantità vengono aggiornati direttamente sull'array già presente
+     *       in {@code MappaCryptoWallet}, senza rimuovere né reinserire la entry.
+     *       Il nome esteso (RT[6]) viene preservato dal vecchio movimento se i simboli non sono cambiati.</li>
+     *
+     *   <li><b>Modifica con nuovo ID</b> — wallet, monete o tipi sono cambiati e quindi l'ID ricalcolato
+     *       differisce da quello originale. Il metodo:
+     *       <ul>
+     *         <li>Blocca i movimenti di tipo AU (automatici): per questi è consentito variare solo prezzo e note.</li>
+     *         <li>Chiede conferma all'utente tramite dialog prima di procedere.</li>
+     *         <li>Rimuove il vecchio movimento tramite {@link Funzioni#RimuoviMovimentazioneXID(String)}.</li>
+     *         <li>Per i tipi RW/CM/AC/VC conserva la descrizione verbosa del vecchio movimento (RT[5]);
+     *             per i TI forza la stringa "TRASFERIMENTO INTERNO".</li>
+     *         <li>Garantisce l'univocità dell'ID con {@link MovimentiCrypto#getIDUnivoco}: se l'ID calcolato
+     *             è ancora occupato (raro, possibile se coincide con un terzo movimento), incrementa
+     *             il quarto campo finché trova uno libero, senza bloccare né avvisare l'utente.</li>
+     *         <li>Costruisce il nuovo array tramite {@link MovimentiCrypto#creaMovimento}, passando le
+     *             Monete con NomeEsteso preservato dal vecchio movimento quando il simbolo non è cambiato.</li>
+     *         <li>Reintegra manualmente i campi che {@code creaMovimento} non popola: RT[2] (progressivo),
+     *             RT[14], RT[23], RT[30], RT[31], copiandoli dal vecchio movimento.</li>
+     *       </ul>
+     *   </li>
+     *
+     *   <li><b>Nuovo movimento</b> ({@code ModificaMovimento == false}) — nessun vecchio movimento da
+     *       gestire. Il movimento viene costruito ex-novo tramite {@link MovimentiCrypto#creaMovimento}
+     *       e inserito in mappa con RT[2] fissato a "1 di 1".</li>
+     * </ol>
+     *
+     * <p><b>Gestione del prezzo zero:</b> se {@code ValoreTransazione} vale "0.00" l'utente viene
+     * interrogato per confermare esplicitamente l'assenza di prezzo. Solo dopo conferma
+     * {@code MovimentoValorizzato} è {@code true} e RT[32] risulterà "SI"; in caso di rifiuto il
+     * metodo restituisce {@code false} senza scrivere nulla.</p>
+     *
+     * <p><b>Override post-creaMovimento:</b> RT[40] (info prezzo/fonte composita calcolata dalla GUI
+     * tramite {@link #CompilaRiga40()}) e RT[32] (flag valorizzazione) vengono sempre sovrascritti
+     * dopo la chiamata a {@code creaMovimento}, poiché quest'ultimo imposta solo una fonte semplice
+     * mentre la GUI può avere un'info strutturata con moneta, timestamp, prezzo unitario e fonte.</p>
+     *
+     * <p>Al termine, il campo {@link #IDNuovo} contiene l'ID effettivamente scritto in mappa,
+     * che può differire dal parametro {@code ID} se è stato necessario generare un ID univoco.</p>
+     *
+     * @param ID  ID del movimento calcolato da {@link #CalcolaID()}, nel formato
+     *            {@code yyyyMMddHHmmss_Wallet_nnn_nnn_TIPO}. Può essere ri-assegnato internamente
+     *            se è necessario generare un ID univoco tramite {@link MovimentiCrypto#getIDUnivoco}.
+     * @return {@code true} se il movimento è stato scritto correttamente in {@code MappaCryptoWallet};
+     *         {@code false} se l'utente ha annullato, se il movimento è di tipo AU (automatico) in
+     *         modalità modifica con ID diverso, o se si è verificato un errore di generazione ID.
+     */
     private boolean ScriviMovimento(String ID) {
 
-        //questa è la funzione che si occuperà nello specifico di scrivere il movimento in ogni sua parte nella tabella
+        // ── Lettura info prezzo dalla GUI (moneta fonte, timestamp, prezzo unitario, fonte) ──────
+        String Riga40 = CompilaRiga40();
         
-        String Riga40=CompilaRiga40();
-        
+        // ── Normalizzazione Note (rimozione separatori CSV e conversione newline per HTML) ───────
         String Note = this.Note_TextArea.getText().replace(";", " ").replace("\n", "<br>");
+
+        // ── Normalizzazione valore transazione a 2 decimali fissi ───────────────────────────────
         ValoreTransazione = new BigDecimal(ValoreTransazione).setScale(2, RoundingMode.HALF_UP).toString();
+
+        // ── Forzo il segno delle quantità: MonetaUQta (uscita) deve essere negativa,
+        //    MonetaEQta (entrata) deve essere positiva ──────────────────────────────────────────
         MonetaUQta = MonetaUQta.replace("-", "");
         if (Funzioni.isNumeric(MonetaUQta, false) && !MonetaUQta.equalsIgnoreCase("0")) {
             MonetaUQta = "-" + MonetaUQta;
         }
         MonetaEQta = MonetaEQta.replace("-", "");
+
         boolean MovimentoValorizzato = false;
 
+        // ── Calcolo stringa data nel formato atteso da creaMovimento ("yyyy-MM-dd HH:mm") ────────
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd ");
         String Data = f.format(Data_Datachooser.getDate())
                 + Ora_ComboBox.getSelectedItem().toString() + ":"
                 + Minuto_ComboBox.getSelectedItem().toString();
 
+        // ── Tipo transazione calcolato dalle tipologie di MonetaU/E (es. "ACQUISTO CRIPTO") ─────
         String TipoTransazione = Importazioni.RitornaTipologiaTransazione(MonetaUTipo, MonetaETipo, 1);
 
       /*  String Rete = Funzioni.TrovaReteDaID(ID);
         if (ModificaMovimento&&Rete==null) Rete=Funzioni.TrovaReteDaIMovimento(MovimentoRiportato);*/
 
-        //Se il prezzo scritto è zero controllo se i token hanno un valore, così non fosse chiedo all'utente se vuole confermare che il prezzo sia zero
+        // ── Gestione prezzo zero: se il valore è 0.00 chiedo conferma esplicita all'utente ──────
+        // Se il prezzo è diverso da zero, il movimento è automaticamente considerato valorizzato.
         if (ValoreTransazione.equals("0.00")) {
-            //Adesso prima di scrivere il movimento devo verificare se il movimento è valorizzato, se non lo è e non trovo prezzo per il token
-            //chiedo all'utente se vuole confermare che il prezzo è zero e se conferma metto a SI la colonnina che dice se il prezzo è valorizzato
+            // Costruisco temporaneamente gli oggetti Moneta per futuri controlli prezzo
+            // (la logica di ricerca automatica del prezzo è attualmente commentata qui sotto)
             Moneta MU ;
             Moneta ME ;
             if (!MonetaU.isEmpty()) {
@@ -1368,57 +1409,73 @@ worker.execute();*/
             }
            // long dataLong = FunzioniDate.ConvertiDatainLongMinuto(Data);
            // String Prezzo = Prezzi.DammiPrezzoTransazione(MU, ME, dataLong, null, true, 15, Rete,"");
-            String Prezzo=ValoreTransazione_TextField.getText();
+
+            // Leggo il valore dal campo testo (già validato da EvidenziaProblemi)
+            String Prezzo = ValoreTransazione_TextField.getText();
             if (Prezzo.equals("0.00")) {
+                // Il prezzo è effettivamente zero: chiedo conferma all'utente
                 if (Messaggi.ConfermaMovimentoSenzaPrezzo(this)) MovimentoValorizzato = true;
                 else {
-                        Messaggi.WarningMessage("Operazione Annullata", "", this);
-                        return false;
-                    }
+                    Messaggi.WarningMessage("Operazione Annullata", "", this);
+                    return false;
+                }
             } else {
+                // Il campo testo ha un valore diverso da zero: valorizzo comunque
                 MovimentoValorizzato = true;
             }
         } else {
+            // Prezzo diverso da zero: movimento valorizzato senza necessità di conferma
             MovimentoValorizzato = true;
         }
 
-        if (MonetaETipo==null)MonetaETipo="";
-        if (MonetaUTipo==null)MonetaUTipo="";
+        // ── Normalizzo a stringa vuota i tipi null (creaMovimento li gestisce come blank) ───────
+        if (MonetaETipo == null) MonetaETipo = "";
+        if (MonetaUTipo == null) MonetaUTipo = "";
         
+        // ════════════════════════════════════════════════════════════════════════════════════════
+        // CASO A — MODIFICA DI UN MOVIMENTO ESISTENTE (ModificaMovimento == true)
+        // ════════════════════════════════════════════════════════════════════════════════════════
         if (ModificaMovimento) {
-            String IDtsOri[] = MovimentoRiportato[0].split("_");
-            String IDts[] = ID.split("_");
-        //Se il tipo movinto del nuovo id è DC (Deposito Crypto)
-        //Vedo se il tipo movimento vecchio era RW o TI e in quel caso cerco di usare lo stesso id che c'era prima
-        //lo stesso vale se trovo altre movimentazioni analoghe
-        //Cambierò eventialmente solo data e ora se queste sono cambiate
-        
-           // String IDTemp="";
-           
-           //Se stessa moneta u/e, stesso tipou/e,stesso wallet allora lo considero lo stesso movimento
+            String IDtsOri[] = MovimentoRiportato[0].split("_"); // campi dell'ID originale
+            String IDts[]    = ID.split("_");                    // campi dell'ID ricalcolato dalla GUI
+
+            // ── Tentativo di conservare l'ID originale ────────────────────────────────────────
+            // Se wallet, monete e tipi non sono cambiati, ricostruisco l'ID tenendo i campi
+            // identificativi (wallet, progressivi, tipo) dell'originale e aggiornando solo il
+            // timestamp (primo campo) con quello nuovo da GUI. Questo evita di considerare
+            // "diverso" un movimento in cui è cambiata solo la data/ora.
+            // String IDTemp="";
             if (MovimentoRiportato[3].equals(Wallet) && MovimentoRiportato[4].equals(WalletDettaglio)
                     && MonetaU.trim().equals(MovimentoRiportato[8]) && MonetaE.trim().equals(MovimentoRiportato[11])
                     && MonetaUTipo.trim().equals(MovimentoRiportato[9]) && MonetaETipo.trim().equals(MovimentoRiportato[12])) {
+                // Ricostruisco: timestamp nuovo + campi wallet/progressivo/tipo dall'originale
                 ID = IDts[0] + "_" + IDtsOri[1] + "_" + IDtsOri[2] + "_" + IDtsOri[3] + "_" + IDtsOri[4];
-                //in alternativa tengo buono l'id automaticamente generato;
-            } 
-            //Se l'id è uguale a quello vecchio significa che tipo e dataora del movimento sono uguali a quello precedente quindi
-            //mi occupo solo di modificare i dati all'interno del movimento (l'id resta uguale)
-            if (MovimentoRiportato[0].equals(ID)) {//Qui finiscono solo i movimenti che hanno anche la stessa data
+            }
+
+            // ── CASO A1: ID invariato → aggiornamento in-place sull'array già in mappa ─────────
+            // L'ID coincide con quello originale: nessuna rimozione né reinserzione.
+            // Aggiorno direttamente i campi dell'array MovimentoRiportato che è già referenziato
+            // da MappaCryptoWallet, quindi la mappa riflette immediatamente le modifiche.
+            if (MovimentoRiportato[0].equals(ID)) {
+                            // Prezzo e note: sempre aggiornati
                             MovimentoRiportato[15] = ValoreTransazione;
                             MovimentoRiportato[21] = Note;
+
+                            // Nome visualizzato (RT[6]): preservo il NomeEsteso se il simbolo non è cambiato,
+                            // altrimenti uso il simbolo grezzo (es. "BTC -> EUR")
                             String VecchioMov[]=MovimentoRiportato[6].split("->",-1);
                             if (VecchioMov.length==2){
-                                //Verifico che non siano cambiati i nomi delle monete, nel qual caso sistemo anche gli altri campi con i nuovi nomi
                                 String mu=MonetaU;
-                                if (MovimentoRiportato[8].equals(MonetaU))mu=VecchioMov[0].trim();
+                                if (MovimentoRiportato[8].equals(MonetaU))mu=VecchioMov[0].trim(); // NomeEsteso uscita
                                 //else MovimentoRiportato[25]="";
                                 String me=MonetaE;
-                                if (MovimentoRiportato[11].equals(MonetaE))me=VecchioMov[1].trim(); 
+                                if (MovimentoRiportato[11].equals(MonetaE))me=VecchioMov[1].trim(); // NomeEsteso entrata
                                 //else MovimentoRiportato[27]="";
                                 MovimentoRiportato[6] = (mu + " -> " + me).trim();
                             }
                             //MovimentoRiportato[6] = (MonetaU + " -> " + MonetaE).trim();
+
+                            // Aggiorno simboli, tipi, quantità e indirizzi
                             MovimentoRiportato[8] = MonetaU;
                             MovimentoRiportato[9] = MonetaUTipo;
                             MovimentoRiportato[10] = MonetaUQta;
@@ -1427,28 +1484,36 @@ worker.execute();*/
                             MovimentoRiportato[13] = MonetaEQta;
                             MovimentoRiportato[26] = MonetaUAddress;
                             MovimentoRiportato[28] = MonetaEAddress;
+
+                            // Flag valorizzazione e info prezzo strutturata dalla GUI
                             if (MovimentoValorizzato) {
                                 MovimentoRiportato[32] = "SI";
                             }
                             MovimentoRiportato[40] = Riga40;
              }              
              
+            // ── CASO A2: ID diverso → rimozione del vecchio + creazione di uno nuovo ───────────────
+            // Wallet, monete o tipi sono cambiati: l'ID ricalcolato differisce dall'originale.
             else{
-                //1 - Controllo che non vi sia già un movimento con lo stesso ID di quello che voglio generare
-                if (MappaCryptoWallet.get(ID) != null) {
-                    Messaggi.WarningMessage("Movimento con Stesso ID", "Attenzione!<br>"
-                            + "Esiste un movimento con lo stesso ID Transsazione<br>"
-                            + "Provare a modificare l'ora della transazione anche di un solo secondo per risolvere il problema", this);
-                    return false;
-                }//altrimenti chiedo se voglio ricreare il movimento con un nuovo ID
-                
-                 if (MovimentoRiportato[22].equalsIgnoreCase("AU")) {
-                    //System.out.println(ID);
+                // [VECCHIO] Controllo bloccante su ID duplicato - rimosso: ora si genera
+                // automaticamente un ID univoco tramite getIDUnivoco (vedi più sotto nel blocco "si")
+//                if (MappaCryptoWallet.get(ID) != null) {
+//                    Messaggi.WarningMessage("Movimento con Stesso ID", "Attenzione!<br>"
+//                            + "Esiste un movimento con lo stesso ID Transsazione<br>"
+//                            + "Provare a modificare l'ora della transazione anche di un solo secondo per risolvere il problema", this);
+//                    return false;
+//                }//altrimenti chiedo se voglio ricreare il movimento con un nuovo ID
+
+                // Blocco: i movimenti automatici (AU) non possono essere strutturalmente modificati;
+                // per questi è consentito variare solo prezzo e note (gestito nel Caso A1 in-place)
+                if (MovimentoRiportato[22].equalsIgnoreCase("AU")) {
                     Messaggi.WarningMessage("Modifica su movimento automatico", "Attenzione!<br>"
                             + "Su questo tipo di movimento è consentito variare solamente Prezzo e Note<br>"
                             + "La modifica non può essere fatta", this);
                     return false;
-                }//altrimenti chiedo se voglio ricreare il movimento con un nuovo ID               
+                }
+
+                // Chiedo conferma: la modifica strutturale ricalcola l'ID ed elimina le associazioni
                 String Messaggio = "Attenzione!<br> "
                         + "Il movimento ha subito variazioni di stato per cui verrà ricalcolato l'id ed eliminate le eventuali associazioni già fatte.<br>"
                         + "Si vuole Proseguire?";
@@ -1469,8 +1534,14 @@ worker.execute();*/
                     .showDialog();
 
                 if(result != null && result.isAction("si")){
-                            //Cancello il vecchio movimento
+
+                            // Rimozione del vecchio movimento dalla mappa (e dai DB collegati se presenti)
                             Funzioni.RimuoviMovimentazioneXID(MovimentoRiportato[0]);
+
+                            // ── Correzione del TipoTransazione in base al tipo codificato nell'ID ───────
+                            // Per alcuni tipi (RW, CM, AC, VC) il tipo descrittivo deve essere preservato
+                            // dal vecchio movimento perché potrebbe essere più specifico di quello ricalcolato.
+                            // Per TI (Trasferimento Interno) forzo la stringa canonica.
                             String splitID[] = ID.split("_");
                             if (splitID[4].equalsIgnoreCase("RW")
                                     ||
@@ -1486,98 +1557,229 @@ worker.execute();*/
                          /*   if (splitID[4].equalsIgnoreCase("CM")) {
                                 TipoTransazione = MovimentoRiportato[5];
                             }*/
-                            
+
                             if (splitID[4].equalsIgnoreCase("TI")) {
                                 TipoTransazione = "TRASFERIMENTO INTERNO";
                             }
-                            //Creo il nuovo
-                            String RT[];
-                            RT = new String[Importazioni.ColonneTabella];
-                            RT[0] = ID;
-                            RT[1] = Data;
-                            RT[2] = MovimentoRiportato[2];
-                            RT[3] = Wallet;
-                            RT[4] = WalletDettaglio;
-                            RT[5] = TipoTransazione;
-                            String NomeUscita;
-                            String NomeEntrata;
-                            
-                            //Questa parte serve per mettere il nome della moneta al posto del symbol qualora vi fosse
-                            if (MovimentoRiportato[25]!=null&&!MovimentoRiportato[25].isBlank()&&!MonetaU.isBlank()&&MonetaU.trim().equals(MovimentoRiportato[8].trim()))
-                                NomeUscita=MovimentoRiportato[25];
-                            else NomeUscita=MonetaU;
-                            if (MovimentoRiportato[27]!=null&&!MovimentoRiportato[27].isBlank()&&!MonetaE.isBlank()&&MonetaE.trim().equals(MovimentoRiportato[11].trim()))
-                                NomeEntrata=MovimentoRiportato[27];
-                            else NomeEntrata=MonetaE;
-                            
-                            
-                            RT[6] = (NomeUscita + " -> " + NomeEntrata).trim();
-                            RT[8] = MonetaU;
-                            RT[9] = MonetaUTipo;
-                            RT[10] = MonetaUQta;
-                            RT[11] = MonetaE;
-                            RT[12] = MonetaETipo;
-                            RT[13] = MonetaEQta;
-                            RT[14] = MovimentoRiportato[14];
-                            RT[15] = ValoreTransazione;
-                            RT[21] = Note;
-                            RT[22] = "M";
-                            RT[23] = MovimentoRiportato[23];
-                            RT[24] = MovimentoRiportato[24];
-                            RT[25] = MovimentoRiportato[25];
-                            RT[26] = MonetaUAddress;
-                            RT[27] = MovimentoRiportato[27];
-                            RT[28] = MonetaEAddress;
-                            RT[29] = MovimentoRiportato[29];
-                            RT[30] = MovimentoRiportato[30];
-                            RT[31] = MovimentoRiportato[31];
-                            if (MovimentoValorizzato) {
-                                RT[32] = "SI";
+                            // [VECCHIO] Creo il nuovo - sostituito con MovimentiCrypto.creaMovimento
+//                            String RT[];
+//                            RT = new String[Importazioni.ColonneTabella];
+//                            RT[0] = ID;
+//                            RT[1] = Data;
+//                            RT[2] = MovimentoRiportato[2];
+//                            RT[3] = Wallet;
+//                            RT[4] = WalletDettaglio;
+//                            RT[5] = TipoTransazione;
+//                            String NomeUscita;
+//                            String NomeEntrata;
+//
+//                            //Questa parte serve per mettere il nome della moneta al posto del symbol qualora vi fosse
+//                            if (MovimentoRiportato[25]!=null&&!MovimentoRiportato[25].isBlank()&&!MonetaU.isBlank()&&MonetaU.trim().equals(MovimentoRiportato[8].trim()))
+//                                NomeUscita=MovimentoRiportato[25];
+//                            else NomeUscita=MonetaU;
+//                            if (MovimentoRiportato[27]!=null&&!MovimentoRiportato[27].isBlank()&&!MonetaE.isBlank()&&MonetaE.trim().equals(MovimentoRiportato[11].trim()))
+//                                NomeEntrata=MovimentoRiportato[27];
+//                            else NomeEntrata=MonetaE;
+//
+//                            RT[6] = (NomeUscita + " -> " + NomeEntrata).trim();
+//                            RT[8] = MonetaU;
+//                            RT[9] = MonetaUTipo;
+//                            RT[10] = MonetaUQta;
+//                            RT[11] = MonetaE;
+//                            RT[12] = MonetaETipo;
+//                            RT[13] = MonetaEQta;
+//                            RT[14] = MovimentoRiportato[14];
+//                            RT[15] = ValoreTransazione;
+//                            RT[21] = Note;
+//                            RT[22] = "M";
+//                            RT[23] = MovimentoRiportato[23];
+//                            RT[24] = MovimentoRiportato[24];
+//                            RT[25] = MovimentoRiportato[25];
+//                            RT[26] = MonetaUAddress;
+//                            RT[27] = MovimentoRiportato[27];
+//                            RT[28] = MonetaEAddress;
+//                            RT[29] = MovimentoRiportato[29];
+//                            RT[30] = MovimentoRiportato[30];
+//                            RT[31] = MovimentoRiportato[31];
+//                            if (MovimentoValorizzato) {
+//                                RT[32] = "SI";
+//                            }
+//                            RT[40] = Riga40;
+//                            Importazioni.RiempiVuotiArray(RT);
+//                            MappaCryptoWallet.put(RT[0], RT);
+//                            IDNuovo=RT[0];
+//                            return true;
+
+                            // ── Garanzia univocità ID ─────────────────────────────────────────────────
+                            // Dopo la rimozione del vecchio, l'ID calcolato potrebbe essere ancora occupato
+                            // da un terzo movimento (raro ma possibile). In tal caso incrementa il quarto
+                            // campo dell'ID finché trova uno libero, senza bloccare né avvisare l'utente.
+                           // System.out.println(ID);
+                            ID = MovimentiCrypto.getIDUnivoco(MappaCryptoWallet, ID);
+                            if (ID == null) {
+                                Messaggi.WarningMessage("Errore generazione ID", "Impossibile generare un ID univoco per il nuovo movimento", this);
+                                return false;
                             }
+
+                            // ── Costruzione oggetti Moneta per creaMovimento ──────────────────────────
+                            // MonetaUQta è già negativa (uscita) e MonetaEQta è già positiva (entrata):
+                            // creaMovimento determina quale sia OUT e quale IN dal segno della quantità.
+                            // NomeEsteso viene preservato dal vecchio movimento se il simbolo non è cambiato
+                            // (es. se BTC era "Bitcoin" rimane "Bitcoin" nel nuovo movimento).
+                            Moneta MOU = null;
+                            if (!MonetaU.isBlank()) {
+                                MOU = new Moneta();
+                                MOU.Moneta = MonetaU;
+                                MOU.Qta    = MonetaUQta;
+                                MOU.Tipo   = MonetaUTipo;
+                                MOU.MonetaAddress = MonetaUAddress;
+                                if (MovimentoRiportato[25] != null && !MovimentoRiportato[25].isBlank() && MonetaU.trim().equals(MovimentoRiportato[8].trim()))
+                                    MOU.NomeEsteso = MovimentoRiportato[25];
+                            }
+                            Moneta MIN = null;
+                            if (!MonetaE.isBlank()) {
+                                MIN = new Moneta();
+                                MIN.Moneta = MonetaE;
+                                MIN.Qta    = MonetaEQta;
+                                MIN.Tipo   = MonetaETipo;
+                                MIN.MonetaAddress = MonetaEAddress;
+                                if (MovimentoRiportato[27] != null && !MovimentoRiportato[27].isBlank() && MonetaE.trim().equals(MovimentoRiportato[11].trim()))
+                                    MIN.NomeEsteso = MovimentoRiportato[27];
+                            }
+
+                            // Timestamp al secondo: estratto dall'ID (primo campo yyyyMMddHHmmss).
+                            // Passare IDMovimento a creaMovimento causa l'override interno del Timestamp
+                            // con quello estratto dall'ID stesso; lo passiamo esplicitamente per coerenza.
+                            long TimestampMod = FunzioniDate.ConvertiDataIDinLong(ID.split("_")[0]);
+
+                            // ── Creazione del nuovo array movimento tramite la funzione centralizzata ──
+                            // creaMovimento gestisce: normalizzazione nomi, calcolo tipo, gestione prezzi,
+                            // costruzione ID, riempimento campi vuoti. Passiamo IDMovimento=ID affinché
+                            // l'ID prodotto mantenga i quattro campi già calcolati e aggiorni solo il codice
+                            // tipo finale (quinto campo) in base alle monete reali.
+                            String RT[] = MovimentiCrypto.creaMovimento(
+                                MOU, MIN,
+                                Wallet, WalletDettaglio,
+                                TimestampMod,
+                                ValoreTransazione, null,    // null = nessuna fonte passata (verrà sovrascritta sotto)
+                                1, 1,                       // progressivi di default (ignorati quando IDMovimento != null)
+                                ID,                         // IDMovimento: forza i primi 4 campi dell'ID
+                                Note,
+                                "M",                        // movimento Manuale
+                                MovimentoRiportato[24],     // hash transazione originale (RT[24])
+                                TipoTransazione,
+                                null                        // IdentificazioneID: null → usa il nome del wallet
+                            );
+
+                            // ── Reintegro campi non popolati da creaMovimento ─────────────────────────
+                            // creaMovimento non imposta RT[2], RT[14], RT[23], RT[30], RT[31]:
+                            // li copio dal vecchio movimento per non perdere informazioni già presenti.
+                            RT[2]  = MovimentoRiportato[2];  // progressivo "N di M" del gruppo
+                            RT[14] = MovimentoRiportato[14]; // campo aggiuntivo ereditato
+                            RT[23] = MovimentoRiportato[23]; // campo aggiuntivo ereditato
+                            RT[30] = MovimentoRiportato[30]; // campo aggiuntivo ereditato
+                            RT[31] = MovimentoRiportato[31]; // campo aggiuntivo ereditato
+
+                            // ── Override info prezzo/fonte con i valori della GUI ─────────────────────
+                            // creaMovimento imposta RT[40] con una fonte semplice ("|||NomeFonte"), mentre
+                            // la GUI può avere un'info strutturata "Moneta|Timestamp|PrezzoUnitario|Fonte".
+                            // Sovrascriviamo sempre con Riga40 per garantire coerenza con quanto mostrato
+                            // all'utente. Stessa cosa per RT[32] se il movimento non è valorizzato.
                             RT[40] = Riga40;
-                            Importazioni.RiempiVuotiArray(RT);
+                            if (!MovimentoValorizzato) RT[32] = "NO";
+
                             MappaCryptoWallet.put(RT[0], RT);
-                            IDNuovo=RT[0];
+                            IDNuovo = RT[0];
                             return true;
-                            
-                        }
-                        else {
+
+                        } else {
                             Messaggi.WarningMessage("Operazione Annullata", "", this);
                             return false;
                         }
-
-                     
         }
-        
-        }else{
-            //se non sto modificando un movimento allora ne creo uno nuovo
-                            String RT[];
-                            RT = new String[Importazioni.ColonneTabella];
-                            RT[0] = ID;
-                            RT[1] = Data;
-                            RT[2] = "1 di 1";
-                            RT[3] = Wallet;
-                            RT[4] = WalletDettaglio;
-                            RT[5] = TipoTransazione;
-                            RT[6] = (MonetaU + " -> " + MonetaE).trim();
-                            RT[8] = MonetaU;
-                            RT[9] = MonetaUTipo;
-                            RT[10] = MonetaUQta;
-                            RT[11] = MonetaE;
-                            RT[12] = MonetaETipo;
-                            RT[13] = MonetaEQta;
-                            RT[15] = ValoreTransazione;
-                            RT[21] = Note;
-                            RT[22] = "M";
-                            RT[26] = MonetaUAddress;
-                            RT[28] = MonetaEAddress;
-                            if (MovimentoValorizzato) {
-                                RT[32] = "SI";
+
+        // ════════════════════════════════════════════════════════════════════════════════════════
+        // CASO B — NUOVO MOVIMENTO (ModificaMovimento == false)
+        // ════════════════════════════════════════════════════════════════════════════════════════
+        } else {
+            // Nessun vecchio movimento da gestire: costruisco il nuovo ex-novo
+
+                            // [VECCHIO] Creazione manuale del movimento - sostituita con MovimentiCrypto.creaMovimento
+//                            String RT[];
+//                            RT = new String[Importazioni.ColonneTabella];
+//                            RT[0] = ID;
+//                            RT[1] = Data;
+//                            RT[2] = "1 di 1";
+//                            RT[3] = Wallet;
+//                            RT[4] = WalletDettaglio;
+//                            RT[5] = TipoTransazione;
+//                            RT[6] = (MonetaU + " -> " + MonetaE).trim();
+//                            RT[8] = MonetaU;
+//                            RT[9] = MonetaUTipo;
+//                            RT[10] = MonetaUQta;
+//                            RT[11] = MonetaE;
+//                            RT[12] = MonetaETipo;
+//                            RT[13] = MonetaEQta;
+//                            RT[15] = ValoreTransazione;
+//                            RT[21] = Note;
+//                            RT[22] = "M";
+//                            RT[26] = MonetaUAddress;
+//                            RT[28] = MonetaEAddress;
+//                            if (MovimentoValorizzato) {
+//                                RT[32] = "SI";
+//                            }
+//                            RT[40] = Riga40;
+//                            Importazioni.RiempiVuotiArray(RT);
+//                            MappaCryptoWallet.put(RT[0], RT);
+//                            IDNuovo=RT[0];
+
+                            // ── Costruzione oggetti Moneta per creaMovimento ──────────────────────────────────
+                            // Non c'è un vecchio movimento da cui ereditare NomeEsteso: i nuovi movimenti manuali
+                            // usano solo il simbolo grezzo inserito dall'utente nella GUI.
+                            Moneta MOU_N = null;
+                            if (!MonetaU.isBlank()) {
+                                MOU_N = new Moneta();
+                                MOU_N.Moneta = MonetaU;
+                                MOU_N.Qta    = MonetaUQta;
+                                MOU_N.Tipo   = MonetaUTipo;
+                                MOU_N.MonetaAddress = MonetaUAddress;
                             }
+                            Moneta MIN_N = null;
+                            if (!MonetaE.isBlank()) {
+                                MIN_N = new Moneta();
+                                MIN_N.Moneta = MonetaE;
+                                MIN_N.Qta    = MonetaEQta;
+                                MIN_N.Tipo   = MonetaETipo;
+                                MIN_N.MonetaAddress = MonetaEAddress;
+                            }
+
+                            // Timestamp al secondo estratto dall'ID calcolato da CalcolaID() (primo campo yyyyMMddHHmmss)
+                            long TimestampNew = FunzioniDate.ConvertiDataIDinLong(ID.split("_")[0]);
+
+                            // ── Creazione del nuovo array movimento ───────────────────────────────────────────
+                            // IDMovimento=ID forza creaMovimento a usare i primi 4 campi calcolati da CalcolaID()
+                            // e ad aggiornare solo il codice tipo in base alle monete effettive.
+                            String RT[] = MovimentiCrypto.creaMovimento(
+                                MOU_N, MIN_N,
+                                Wallet, WalletDettaglio,
+                                TimestampNew,
+                                ValoreTransazione, null,    // null = nessuna fonte passata (verrà sovrascritta sotto)
+                                1, 1,                       // progressivi di default (ignorati quando IDMovimento != null)
+                                ID,                         // IDMovimento: forza i primi 4 campi dell'ID
+                                Note,
+                                "M",                        // movimento Manuale
+                                "",                         // nessun hash di transazione per movimenti manuali
+                                TipoTransazione,
+                                null                        // IdentificazioneID: null → usa il nome del wallet
+                            );
+
+
+                            // Override info prezzo/fonte con i valori della GUI (vedi spiegazione nel Caso A2)
                             RT[40] = Riga40;
-                            Importazioni.RiempiVuotiArray(RT);
-                            MappaCryptoWallet.put(RT[0], RT); 
-                            IDNuovo=RT[0];
+                            if (!MovimentoValorizzato) RT[32] = "NO";
+
+                            MappaCryptoWallet.put(RT[0], RT);
+                            IDNuovo = RT[0];
         }
 
         return true;

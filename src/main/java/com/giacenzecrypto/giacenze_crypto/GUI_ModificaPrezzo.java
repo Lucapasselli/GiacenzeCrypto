@@ -744,6 +744,49 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
             }
      }*/
     
+    private void scaricaPrezziDaID(String id) {
+        String[] Movimento = Principale.MappaCryptoWallet.get(id);
+        if (Movimento == null) return;
+        String ora = Movimento[0].split("_")[0].substring(12);
+        ora = Movimento[1] + ":" + ora;
+        long data = FunzioniDate.ConvertiDatainLongSecondo(ora);
+        String rete = Funzioni.TrovaReteDaIMovimento(Movimento);
+        if (rete == null || Principale.MappaRetiSupportate.get(rete) == null) rete = "";
+
+        for (int i = 0; i < 2; i++) {
+            String moneta = (i == 0) ? Movimento[8] : Movimento[11];
+            String tipo = (i == 0) ? Movimento[9] : Movimento[12];
+            String address = rete.isBlank() ? "" : ((i == 0) ? Movimento[26] : Movimento[28]);
+            if (moneta == null || moneta.isBlank() || tipo.equalsIgnoreCase("FIAT")) continue;
+            String monAlias = Principale.Mappa_AddressRete_Nome.get(address + "_" + rete);
+            if (monAlias != null) moneta = monAlias;
+            if (Funzioni_WalletDeFi.isValidAddress(address, rete)) {
+                Prezzi.RecuperaTassidiCambiodaAddress_Coingecko(FunzioniDate.ConvertiDatadaLong(data), address, rete, moneta);
+            }
+            Prezzi.RecuperaPrezziDaCCXT(moneta, data);
+            Prezzi.RecuperaPrezziDaCoinMarketCap(moneta, data);
+        }
+    }
+
+    private void scaricaPrezziDaMonete() {
+        String ora = FunzioniDate.ConvertiDatadaLongAlSecondo(TimeStamp);
+        long data = FunzioniDate.ConvertiDatainLongSecondo(ora);
+        Moneta[] M = new Moneta[]{MU != null ? MU : new Moneta(), ME != null ? ME : new Moneta()};
+        String rete = (Rete != null && Principale.MappaRetiSupportate.get(Rete) != null) ? Rete : "";
+        for (Moneta m : M) {
+            if (m.Moneta == null || m.Moneta.isBlank() || m.Tipo == null || m.Tipo.equalsIgnoreCase("FIAT")) continue;
+            String address = rete.isBlank() ? "" : m.MonetaAddress;
+            String nomeMoneta = m.Moneta;
+            String monAlias = Principale.Mappa_AddressRete_Nome.get(address + "_" + rete);
+            if (monAlias != null) nomeMoneta = monAlias;
+            if (Funzioni_WalletDeFi.isValidAddress(address, rete)) {
+                Prezzi.RecuperaTassidiCambiodaAddress_Coingecko(FunzioniDate.ConvertiDatadaLong(data), address, rete, nomeMoneta);
+            }
+            Prezzi.RecuperaPrezziDaCCXT(nomeMoneta, data);
+            Prezzi.RecuperaPrezziDaCoinMarketCap(nomeMoneta, data);
+        }
+    }
+
     public void GUI_SetID(String ID){
         this.ID=ID;
         jLabel1.setText(ID);
@@ -769,6 +812,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         Bottone_Personalizzato = new javax.swing.JButton();
+        Bottone_RiscaricaPrezzi = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Gestione Prezzo");
@@ -855,6 +899,13 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
             }
         });
 
+        Bottone_RiscaricaPrezzi.setText("Riscarica tutti i prezzi dalle fonti");
+        Bottone_RiscaricaPrezzi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_RiscaricaPrezziActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -863,19 +914,21 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 988, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(Bottone_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(Bottone_Personalizzato, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(219, 219, 219)
+                                .addComponent(Bottone_RiscaricaPrezzi, javax.swing.GroupLayout.PREFERRED_SIZE, 223, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel3)
                             .addComponent(jLabel1)
                             .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel4)
-                            .addComponent(Bottone_Personalizzato, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel4))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(Bottone_Annulla, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Bottone_OK, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -895,11 +948,15 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel4)
+                        .addGap(18, 18, 18)
+                        .addComponent(Bottone_RiscaricaPrezzi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(Bottone_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(Bottone_Annulla)
-                            .addComponent(Bottone_Personalizzato)))
-                    .addComponent(Bottone_OK))
+                            .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Bottone_Personalizzato, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -972,6 +1029,22 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
         this.dispose();
     }//GEN-LAST:event_Bottone_AnnullaActionPerformed
 
+    private void Bottone_RiscaricaPrezziActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_RiscaricaPrezziActionPerformed
+        Download dow = new Download();
+        dow.NascondiInterrompi();
+        dow.SetLabel("Scaricamento prezzi in corso...");
+        dow.setLocationRelativeTo(this);
+        Thread t = new Thread(() -> {
+            if (ID != null) scaricaPrezziDaID(ID);
+            else scaricaPrezziDaMonete();
+            dow.ChiudiFinestra();
+        });
+        t.start();
+        dow.setVisible(true); // bloccante finché il thread chiama ChiudiFinestra
+        if (ID != null) CaricaTabellaPrezzi(ID);
+        else CaricaTabellaPrezzi();
+    }//GEN-LAST:event_Bottone_RiscaricaPrezziActionPerformed
+
     private void Bottone_PersonalizzatoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_PersonalizzatoActionPerformed
         // TODO add your handling code here:
        // System.out.println(ID);
@@ -1035,6 +1108,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
     private javax.swing.JButton Bottone_Annulla;
     private javax.swing.JButton Bottone_OK;
     private javax.swing.JButton Bottone_Personalizzato;
+    private javax.swing.JButton Bottone_RiscaricaPrezzi;
     private javax.swing.JTable Tabella_Prezzi;
     private javax.swing.JTable Tabella_PrezzoAttuale;
     private javax.swing.JLabel jLabel1;

@@ -112,7 +112,7 @@ C-RW-AD -> AIRDROP
 C-RW-SR -> STAKING REWARDS
 C-DC-DN -> DEPOSITO DI DONAZIONE
 C-DC-TW -> TRASFERIMENTO TRA WALLET (ex.DTW)
-C-DC-RW -> 
+C-DC-RW -> da finire di compilare, ma verrà fatto in un secondo momento e poi è tutto da implementare
 
 
 

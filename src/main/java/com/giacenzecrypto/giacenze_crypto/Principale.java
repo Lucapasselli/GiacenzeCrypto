@@ -1365,7 +1365,7 @@ private static final long serialVersionUID = 3L;
                                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                            .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                                                            .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 112, Short.MAX_VALUE)
                                                             .addComponent(TransazioniCrypto_Text_CostiCarico))
                                                         .addGap(51, 51, 51)
                                                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1469,7 +1469,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo))
                 .addGap(5, 5, 5)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1573,8 +1573,9 @@ private static final long serialVersionUID = 3L;
         }
         DepositiPrelievi_Tabella.getTableHeader().setPreferredSize(new Dimension(DepositiPrelievi_Tabella.getColumnModel().getTotalColumnWidth(), 64));
 
+        DepositiPrelievi_Bottone_AssegnazioneAutomatica.setFont(new java.awt.Font("Noto Sans", 0, 12)); // NOI18N
         DepositiPrelievi_Bottone_AssegnazioneAutomatica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Auto.png"))); // NOI18N
-        DepositiPrelievi_Bottone_AssegnazioneAutomatica.setText("<html><h2>Assegnazione Automatica</h2></html>");
+        DepositiPrelievi_Bottone_AssegnazioneAutomatica.setText("<html><h2><center>Assegnazione Automatica</h2></html>");
         DepositiPrelievi_Bottone_AssegnazioneAutomatica.setMaximumSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_AssegnazioneAutomatica.setMinimumSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_AssegnazioneAutomatica.setPreferredSize(new java.awt.Dimension(200, 35));

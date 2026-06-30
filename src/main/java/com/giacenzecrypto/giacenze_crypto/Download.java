@@ -7,8 +7,8 @@ package com.giacenzecrypto.giacenze_crypto;
 
 
 
-import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
@@ -18,33 +18,43 @@ import javax.swing.Timer;
 
 
 /**
+ * Finestra di dialogo modale per il monitoraggio delle operazioni asincrone
+ * (importazioni, download, elaborazioni batch).
+ * <p>
+ * Mostra una barra di avanzamento, un contatore testuale, un pannello di log
+ * dei dettagli e un pannello dedicato agli errori bloccanti. Supporta sia la
+ * modalità deterministica (con massimo e avanzamento espliciti) sia quella
+ * indeterministica (spinner) tramite {@link #setIndeterminate(boolean)}.
+ * </p>
  *
  * @author luca.passelli
  */
 public class Download extends javax.swing.JDialog {
      private static final long serialVersionUID = 4L;
 
-    /**
-     * Creates new form Attesa
-     */
+/** Valore massimo della barra di avanzamento, impostato da {@link #SetMassimo(int)}. */
 public int Massimo;
-public int avanzamento;
-public transient Thread thread;
-public static boolean FineThread=false;
-public boolean nascondiLog=false;
 
-//    static boolean DownloadTerminato=false;
-   // static boolean finito=false;
+/** Valore corrente della barra di avanzamento, aggiornato da {@link #SetAvanzamento(int)}. */
+public int avanzamento;
+
+/** Thread associato all'operazione monitorata; usato per rilevare la fine automatica. */
+public transient Thread thread;
+
+/**
+ * Flag statico che segnala la terminazione (normale o forzata) del thread.
+ * Impostato a {@code true} dalla chiusura della finestra o dal pulsante "Interrompi".
+ */
+public static boolean FineThread = false;
+
+/** Se {@code true}, i pannelli di log non vengono collegati allo stdout/stderr. */
+public boolean nascondiLog = false;
 
 private Timer timer = new Timer(1000, new ActionListener() {
-
         private int counter = 1;
-
         @Override
         public void actionPerformed(ActionEvent ae) {
-           // SetAvanzamento(counter);
-           // bar.setValue(++counter);
-           counter++;
+            counter++;
             if (counter > 1000) {
                 timer.stop();
             }
@@ -52,29 +62,39 @@ private Timer timer = new Timer(1000, new ActionListener() {
     });
 
 
-
-
-
+    /**
+     * Costruisce il dialogo, inizializza i componenti grafici e applica le
+     * personalizzazioni post-designer (font monospaziato per i log, dimensione minima).
+     */
     public Download() {
+        ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse() + "logo.png");
+        this.setIconImage(icon.getImage());
+        initComponents();
+        Download.FineThread = false;
+        Principale.InterrompiCiclo = false;
 
-     //   finestra=c;
-      //  finestra.setEnabled(false);
-         ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
-         this.setIconImage(icon.getImage());
-         initComponents();
-         Download.FineThread=false;
-         Principale.InterrompiCiclo=false;
-     
-        
-//RipristinaStdout();
+        // Font derivati dal tema corrente: bold per i label di sezione, +2pt per il titolo
+        LabelScaricamento.setFont(LabelScaricamento.getFont().deriveFont(
+                LabelScaricamento.getFont().getStyle() | Font.BOLD,
+                LabelScaricamento.getFont().getSize() + 2f));
+        jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getStyle() | Font.BOLD));
+        jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getStyle() | Font.BOLD));
 
-     
-
+        // Font monospaziato per i pannelli di log: leggibile e indipendente dal tema
+        Font monoFont = new Font(Font.MONOSPACED, Font.PLAIN, 12);
+        textPane.setFont(monoFont);
+        textPaneErrori.setFont(monoFont);
     }
-    
-       public void MostraProgressAttesa(String Titolo,String Messaggio){
-       // ProgressBarDownload.setVisible(false);
-       // LabelAvanzamento.setVisible(false);
+
+    /**
+     * Configura il dialogo per la modalità di attesa indeterministica, nascondendo
+     * tutti i controlli non rilevanti e impostando la progress bar come spinner.
+     * Utile per operazioni di durata sconosciuta (es. connessioni di rete).
+     *
+     * @param Titolo    testo visualizzato nella barra del titolo del dialogo
+     * @param Messaggio testo mostrato all'interno della progress bar
+     */
+    public void MostraProgressAttesa(String Titolo, String Messaggio) {
         Bottone_Interrompi.setEnabled(false);
         Bottone_Interrompi.setVisible(false);
         LabelScaricamento.setEnabled(false);
@@ -89,103 +109,181 @@ private Timer timer = new Timer(1000, new ActionListener() {
         jLabel1.setVisible(false);
         jLabel2.setEnabled(false);
         jLabel2.setVisible(false);
+        jSeparator1.setEnabled(false);
+        jSeparator1.setVisible(false);
         LabelAvanzamento.setEnabled(false);
         LabelAvanzamento.setVisible(false);
-        this.setSize(new Dimension(300,80));
         ProgressBarDownload.setIndeterminate(true);
         ProgressBarDownload.setString(Messaggio);
         ProgressBarDownload.setStringPainted(true);
-        //ProgressBarDownload.setSize(300, 70);
         this.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         this.setTitle(Titolo);
-    } 
-    
-    
-    public void setIndeterminate(boolean b){
+        this.setSize(new Dimension(300,80));
+       /* pack();
+        if (getWidth() < 300) setSize(300, getHeight());*/
+    }
+
+    /**
+     * Attiva o disattiva la modalità indeterministica della progress bar.
+     * Quando indeterministica, la barra mostra uno spinner animato invece di un valore.
+     *
+     * @param b {@code true} per attivare lo spinner, {@code false} per tornare alla
+     *          modalità deterministica
+     */
+    public void setIndeterminate(boolean b) {
         ProgressBarDownload.setIndeterminate(b);
         ProgressBarDownload.setString("");
     }
-    
-    public void SetThread(Thread T){
-        thread=T;
+
+    /**
+     * Associa il thread dell'operazione monitorata a questo dialogo.
+     * Il thread viene controllato da {@link #FineThread()} per rilevare
+     * la terminazione automatica.
+     *
+     * @param T thread da monitorare
+     */
+    public void SetThread(Thread T) {
+        thread = T;
     }
-    
-    public void NascondiBarra(){
+
+    /**
+     * Nasconde la progress bar e l'etichetta di avanzamento.
+     * Utile quando si vuole mostrare solo i pannelli di log.
+     */
+    public void NascondiBarra() {
         ProgressBarDownload.setVisible(false);
         LabelAvanzamento.setVisible(false);
     }
-    
-    public void NascondiInterrompi(){
+
+    /**
+     * Disabilita e nasconde il pulsante "Interrompi".
+     * Chiamare questo metodo per operazioni che non devono essere interrotte dall'utente.
+     */
+    public void NascondiInterrompi() {
         Bottone_Interrompi.setEnabled(false);
         Bottone_Interrompi.setVisible(false);
     }
-    
-    public Boolean FineThread(){
-        
-        if (thread!=null&&!thread.isAlive()){
+
+    /**
+     * Verifica se l'operazione è terminata e, in caso affermativo, chiude il dialogo.
+     * Reimposta anche {@link Principale#InterrompiCiclo} a {@code false}.
+     *
+     * @return {@code true} se il flag {@link #FineThread} è attivo (operazione terminata
+     *         o interrotta), {@code false} altrimenti
+     */
+    public Boolean FineThread() {
+        if (thread != null && !thread.isAlive()) {
             this.dispose();
         }
-        Principale.InterrompiCiclo=false;
+        Principale.InterrompiCiclo = false;
         return Download.FineThread;
     }
-    
-    public void NoModale(){
-    this.setModalityType(ModalityType.MODELESS);
-}
-     public void Pausa(){
-         timer.start();
-     }
-     
-     public void SetLabel(String testo){
-         this.LabelScaricamento.setText(testo);
-     }
-     
-     public void Titolo(String testo){
-         this.setTitle(testo);
-     }
-    
-     public void SetMassimo(int Max){
 
-                     Massimo=Max;
-         ProgressBarDownload.setMaximum(Massimo);
+    /**
+     * Imposta il dialogo come non modale, permettendo all'utente di interagire
+     * con le altre finestre dell'applicazione durante l'operazione.
+     */
+    public void NoModale() {
+        this.setModalityType(ModalityType.MODELESS);
+    }
 
+    /**
+     * Avvia il timer interno (usato internamente per operazioni di pausa).
+     */
+    public void Pausa() {
+        timer.start();
+    }
 
-     }
-    
-     public void SetAvanzamento (int Avanzamento) {
- //Thread thread = new Thread() {
- //           public void run() {
-         avanzamento=Avanzamento;
-         ProgressBarDownload.setValue(Avanzamento);
-        // ProgressBarDownload.setStringPainted(true);
-         LabelAvanzamento.setText("Elaborazione "+Avanzamento+" di "+Massimo);
- //}      };
-// thread.start();
+    /**
+     * Aggiorna il testo dell'etichetta di stato principale.
+     *
+     * @param testo nuovo testo da mostrare (es. "Importazione in corso…")
+     */
+    public void SetLabel(String testo) {
+        this.LabelScaricamento.setText(testo);
+    }
 
-     }
-     
-     public void RipristinaStdout()
-             {
-                 nascondiLog=true;
+    /**
+     * Imposta il testo nella barra del titolo del dialogo.
+     *
+     * @param testo titolo da visualizzare
+     */
+    public void Titolo(String testo) {
+        this.setTitle(testo);
+    }
+
+    /**
+     * Imposta il valore massimo della progress bar.
+     * Deve essere chiamato prima di {@link #SetAvanzamento(int)}.
+     *
+     * @param Max numero totale di step dell'operazione
+     */
+    public void SetMassimo(int Max) {
+        Massimo = Max;
+        ProgressBarDownload.setMaximum(Massimo);
+    }
+
+    /**
+     * Aggiorna la progress bar e l'etichetta di avanzamento con il valore corrente.
+     *
+     * @param Avanzamento step corrente (deve essere compreso tra 0 e {@link #Massimo})
+     */
+    public void SetAvanzamento(int Avanzamento) {
+        avanzamento = Avanzamento;
+        ProgressBarDownload.setValue(Avanzamento);
+        LabelAvanzamento.setText("Elaborazione " + Avanzamento + " di " + Massimo);
+    }
+
+    /**
+     * Scollega i pannelli di log dallo stdout e dallo stderr, ripristinando
+     * l'output standard della JVM. Imposta anche {@link #nascondiLog} a {@code true}
+     * per evitare di ricollegare i pannelli alla riapertura.
+     */
+    public void RipristinaStdout() {
+        nascondiLog = true;
         LoggerGC.disableTextPaneOut();
         LoggerGC.disableTextPaneErr();
-     }
-             
-    public void SetMessaggioAvanzamento (String Messaggio) {
+    }
 
-         LabelAvanzamento.setText(Messaggio);
-     }
-     
-     public void ChiudiFinestra (){
+    /**
+     * Imposta un messaggio testuale personalizzato nell'etichetta di avanzamento,
+     * in alternativa al formato "Elaborazione N di M" usato da {@link #SetAvanzamento(int)}.
+     *
+     * @param Messaggio testo libero da mostrare
+     */
+    public void SetMessaggioAvanzamento(String Messaggio) {
+        LabelAvanzamento.setText(Messaggio);
+    }
+
+    /**
+     * Scollega i log, chiude e distrugge il dialogo.
+     * Equivalente a chiamare {@link #RipristinaStdout()} seguito da {@code dispose()}.
+     */
+    public void ChiudiFinestra() {
         RipristinaStdout();
         this.dispose();
-     }
-     
-     
-        public void updateProgress(int value) {
+    }
+
+    /**
+     * Aggiorna direttamente il valore della progress bar senza aggiornare l'etichetta.
+     * Preferire {@link #SetAvanzamento(int)} per aggiornamenti completi.
+     *
+     * @param value valore da impostare sulla progress bar
+     */
+    public void updateProgress(int value) {
         ProgressBarDownload.setValue(value);
     }
- 
+
+    /**
+     * Verifica se il pannello degli errori contiene messaggi relativi a una
+     * terminazione anomala di Node.js (codice di uscita 1).
+     *
+     * @return {@code true} se il testo degli errori contiene la stringa
+     *         "Node.js terminato con codice 1", {@code false} altrimenti
+     */
+    public boolean ErroriNodeJS() {
+        return textPaneErrori.getText().toLowerCase().contains("Node.js terminato con codice 1".toLowerCase());
+    }
 
 
     /**
@@ -201,6 +299,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
         ProgressBarDownload = new javax.swing.JProgressBar();
         LabelAvanzamento = new javax.swing.JLabel();
         Bottone_Interrompi = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JSeparator();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -234,9 +333,9 @@ private Timer timer = new Timer(1000, new ActionListener() {
             }
         });
 
-        jLabel1.setText("Dettaglio :");
+        jLabel1.setText("Dettaglio:");
 
-        jLabel2.setText("Errori Bloccanti :");
+        jLabel2.setText("Errori :");
 
         jScrollPane3.setViewportView(textPane);
 
@@ -249,42 +348,44 @@ private Timer timer = new Timer(1000, new ActionListener() {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(LabelScaricamento, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(ProgressBarDownload, javax.swing.GroupLayout.DEFAULT_SIZE, 975, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel1)
-                                .addGap(244, 244, 244)
-                                .addComponent(Bottone_Interrompi, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(ProgressBarDownload, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 812, Short.MAX_VALUE)
-                            .addComponent(LabelAvanzamento, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(LabelScaricamento, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap())))
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(LabelAvanzamento, javax.swing.GroupLayout.PREFERRED_SIZE, 765, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(Bottone_Interrompi))
+                    .addComponent(jSeparator1)
+                    .addComponent(jScrollPane3)
+                    .addComponent(jScrollPane4)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(LabelScaricamento, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(LabelScaricamento, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ProgressBarDownload, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(ProgressBarDownload, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(LabelAvanzamento)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(LabelAvanzamento)
+                    .addComponent(Bottone_Interrompi, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Bottone_Interrompi)
-                    .addComponent(jLabel1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -294,51 +395,32 @@ private Timer timer = new Timer(1000, new ActionListener() {
     }// </editor-fold>//GEN-END:initComponents
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        Principale.InterrompiCiclo=true;       
-        Download.FineThread=true;
-
-               
-       // CDC_Grafica.InterrompiCiclo=false;
+        Principale.InterrompiCiclo = true;
+        Download.FineThread = true;
         LoggerGC.disableTextPaneOut();
         LoggerGC.disableTextPaneErr();
-
     }//GEN-LAST:event_formWindowClosed
 
-    
     private void Bottone_InterrompiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_InterrompiActionPerformed
-        // TODO add your handling code here:
-        //this.dispose();
-        Principale.InterrompiCiclo=true;       
-        Download.FineThread=true;
-        Bottone_Interrompi.setBackground(Color.red);
-        Bottone_Interrompi.setText("Interruzione in corso ...");
-        if (!textPaneErrori.getText().isBlank())
-            {
+        Principale.InterrompiCiclo = true;
+        Download.FineThread = true;
+        Bottone_Interrompi.setEnabled(false);
+        Bottone_Interrompi.setText("Interruzione in corso...");
+        if (!textPaneErrori.getText().isBlank()) {
             this.dispose();
-            }
+        }
     }//GEN-LAST:event_Bottone_InterrompiActionPerformed
 
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
-        // TODO add your handling code here:
-     //   System.out.println("Finestra Attesa Aperta");
-     Principale.InterrompiCiclo=false;
-     Download.FineThread=false;
-     if (!nascondiLog) {
-       /* PrintStream printStream = new PrintStream(new CustomOutputStream(textPane));
-        System.setOut(printStream);
-        PrintStream printStreamErr = new PrintStream(new CustomOutputStream(textPaneErrori));
-        System.setErr(printStreamErr);*/
-        LoggerGC.enableTextPaneOut(textPane);
-        LoggerGC.enableTextPaneErr(textPaneErrori);
+        Principale.InterrompiCiclo = false;
+        Download.FineThread = false;
+        if (!nascondiLog) {
+            LoggerGC.enableTextPaneOut(textPane);
+            LoggerGC.enableTextPaneErr(textPaneErrori);
         }
-        //System.out.println("Finestra Attesa Aperta");
     }//GEN-LAST:event_formWindowOpened
 
-    
-    public boolean ErroriNodeJS(){
-         return textPaneErrori.getText().toLowerCase().contains("Node.js terminato con codice 1".toLowerCase());
-    }
-    
+
     /**
      * @param args the command line arguments
      */
@@ -346,7 +428,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -358,22 +440,9 @@ private Timer timer = new Timer(1000, new ActionListener() {
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(Download.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-         //</editor-fold>
-         //</editor-fold>
-         //</editor-fold>
-         //</editor-fold>
-         /* Create and display the form */
         //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-
-        /* Create and display the form */
-
     }
-    
 
-    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Interrompi;
@@ -384,47 +453,9 @@ private Timer timer = new Timer(1000, new ActionListener() {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextPane textPane;
     private javax.swing.JTextPane textPaneErrori;
     // End of variables declaration//GEN-END:variables
-
-
-
-
- /*  public class CustomOutputStream extends OutputStream {
-  
-       
-
-    private final JTextPane textPane;
-
-    public CustomOutputStream(JTextPane textPane) {
-        this.textPane = textPane;
-    }
-
-    @Override
-    public void write(int b) throws IOException {
-        // redirects data to the text area
-        //textPane.setText(textPane.getText() + String.valueOf((char)b));
-        
-        StyledDocument document = (StyledDocument) textPane.getDocument();
-        try {
-            document.insertString(document.getLength(), String.valueOf((char)b), null);
-        } catch (BadLocationException ex) {
-            Logger.getLogger(Download.class.getName()).log(Level.SEVERE, null, ex);
-        }
-     //   textArea.append(String.valueOf((char)b));
-        // scrolls the text area to the end of data
-        textPane.setCaretPosition(textPane.getDocument().getLength());
-        // keeps the textArea up to date
-    //    textArea.update(textArea.getGraphics());
-    }
-    
-    
-} */
-    
-    
-    
-    
-
 
 }

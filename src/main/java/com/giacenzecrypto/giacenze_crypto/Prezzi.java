@@ -764,13 +764,24 @@ public class Prezzi {
         }
         //Se non c'è connessione internet mi fermo qua e ritorno null
         if (!Funzioni.CeConnessioneInternet()) return null;
-        
+
+        //Provo prima su DefiLlama (nessun vincolo di lista o limite di 365gg)
+        if (IPrezzo == null) {
+            RecuperaTassidiCambiodaAddress_DefiLlama(DataGiorno, Address, Rete, Simbolo);
+            IPrezzo = DammiPrezzoDaDatabase("", Datalong, "", Rete, Address, 60, qta);
+            if (IPrezzo != null) {
+                IPrezzo.Moneta = Simbolo;
+                return IPrezzo;
+            }
+        }
+
         //Se ancora non trovo i prezzi vado a richiedere a coingecko i dati
         if (IPrezzo == null) {
             //se il token non è gestito da coingecko e non è già nel database ritorno null
             RecuperaCoinsCoingecko();
             String AddressNoPrezzo = DatabaseH2.GestitiCoingecko_Leggi(Address + "_" + Rete);
             if (AddressNoPrezzo == null) {
+                PrezzoIrrecuperabileDaDB_Scrivi("",Datalong,Rete,Address);
                 return null;
             } else {
                 //Se la moneta è codificata da coingecko (Quindi so che non è scam) e corrisponde ad una delle monete principali
@@ -787,7 +798,8 @@ public class Prezzi {
                     //se cerco di recuperare prezzi più vecchi di 365gg li vado a cercare dagli exchange visto che coingecko non li fornisce
                     IPrezzo=CambioXXXEUR(Simbolo, Qta, Datalong,"","","",true);
                     if (IPrezzo!=null)return IPrezzo;
-                    //Se il prezzo non lo trovo neanche dall'exchange ritorno null
+                    //Se il prezzo non lo trovo neanche dall'exchange ritorno nulle lo salvo tra i prezzi irrecuperabili
+                    PrezzoIrrecuperabileDaDB_Scrivi("",Datalong,Rete,Address);
                     return null;
                 }
                 //Se arrivo qua vuol dire che non è tra le coppie prioritarie e quindi vado a prendere il prezzo da coingecko
@@ -977,8 +989,8 @@ public class Prezzi {
       public static InfoPrezzo CambioXXXEUR(String Crypto, String Qta, long Datalong,String Address,String Rete,String Fonte,boolean includiVecchi) {
          
             
-          long tempoOperazioneIni=System.currentTimeMillis();
-          long TO;
+         /* long tempoOperazioneIni=System.currentTimeMillis();
+          long TO;*/
           
           
         //in questo metodo manca solo la parte che salva le richieste già effettuate sul token per evitare di farne tante analoghe
@@ -1928,9 +1940,117 @@ public class Prezzi {
 
     public static void RitornaPrezzoDaInfoPrezzo()
     {
-    
+
     }
- 
+
+    public static String RecuperaTassidiCambiodaAddress_DefiLlama(String DataIniziale, String Address, String Rete, String Simbolo) {
+        long SinceVerifica = FunzioniDate.ConvertiDatainLong(DataIniziale) - 3600000;
+        long UntilVerifica = FunzioniDate.ConvertiDatainLong(DataIniziale) + 3600000;
+        long dataAdesso1 = System.currentTimeMillis();
+        if (dataAdesso1 < UntilVerifica) UntilVerifica = dataAdesso1;
+        if (managerRichieste.isAlreadyRequested("DL_" + Address + "_" + Rete, SinceVerifica, UntilVerifica)) return null;
+        if (dataAdesso1 < SinceVerifica) return null;
+
+        if (Principale.Mappa_ChainExplorer.get(Rete) == null) return null;
+        String[] chainInfo = Principale.Mappa_ChainExplorer.get(Rete);
+        if (chainInfo.length < 5 || chainInfo[4] == null || chainInfo[4].isBlank()) return null;
+        String nomeReteDefiLlama = chainInfo[4];
+
+        RecuperaTassiCambioEURUSD();
+        if (MappaConversioneUSDEUR.isEmpty()) return null;
+
+        long dataAdesso = System.currentTimeMillis() / 1000;
+        long dataIni = (FunzioniDate.ConvertiDatainLong(DataIniziale) / 1000) - 86400;
+        // 500 ore = 1800000 secondi; se la data richiesta è nel futuro prossimo, estendo la finestra a ritroso
+        if ((dataAdesso - dataIni) < 1800000) {
+            dataIni = dataAdesso - 1800000;
+        }
+        long dataFin = dataIni + 1800000;
+
+        try {
+            TimeUnit.SECONDS.sleep(2);
+
+            String coin = nomeReteDefiLlama + ":" + Address;
+            String apiUrl = "https://coins.llama.fi/chart/" + coin + "?start=" + dataIni + "&span=500&period=1h";
+
+            System.out.println("Recupero prezzi token " + Simbolo + " con Address " + Address + " da DefiLlama su rete " + nomeReteDefiLlama
+                    + " da data " + FunzioniDate.ConvertiDatadaLongAlSecondo(dataIni * 1000));
+
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder().url(apiUrl).build();
+
+            try (Response response = client.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    System.out.println("Errore nel recupero dei prezzi del token " + Simbolo + " con Address " + Address + " da DefiLlama");
+                    managerRichieste.addRange("DL_" + Address + "_" + Rete, dataIni * 1000, dataFin * 1000);
+                    return null;
+                }
+
+                String responseBody = response.body().string();
+                JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
+                JsonObject coins = json.getAsJsonObject("coins");
+
+                if (coins == null || coins.entrySet().isEmpty()) {
+                    managerRichieste.addRange("DL_" + Address + "_" + Rete, dataIni * 1000, dataFin * 1000);
+                    return null;
+                }
+
+                JsonObject coinData = coins.entrySet().iterator().next().getValue().getAsJsonObject();
+                JsonArray pricesArray = coinData.getAsJsonArray("prices");
+
+                if (pricesArray == null || pricesArray.size() == 0) {
+                    managerRichieste.addRange("DL_" + Address + "_" + Rete, dataIni * 1000, dataFin * 1000);
+                    return null;
+                }
+
+                String mergeSql = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo, rete, address) "
+                        + "KEY (timestamp, exchange, symbol, rete, address) VALUES (?, ?, ?, ?, ?, ?)";
+
+                try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(mergeSql)) {
+                    for (JsonElement element : pricesArray) {
+                        JsonObject priceObj = element.getAsJsonObject();
+                        long tsSeconds = priceObj.get("timestamp").getAsLong();
+                        long tsMillis = tsSeconds * 1000;
+                        double priceUSD = priceObj.get("price").getAsDouble();
+
+                        // Converto USD in EUR usando il tasso giornaliero
+                        String dataGiornoPrezzo = FunzioniDate.ConvertiDatadaLong(tsMillis);
+                        String rateStr = MappaConversioneUSDEUR.get(dataGiornoPrezzo);
+                        if (rateStr == null) {
+                            String dataTmp = dataGiornoPrezzo;
+                            for (int i = 0; i < 5 && rateStr == null; i++) {
+                                dataTmp = FunzioniDate.GiornoMenoUno(dataTmp);
+                                rateStr = MappaConversioneUSDEUR.get(dataTmp);
+                            }
+                        }
+                        if (rateStr == null) continue;
+
+                        double prezzoEUR = priceUSD * Double.parseDouble(rateStr);
+
+                        ps.setLong(1, tsMillis);
+                        ps.setString(2, "defillama");
+                        ps.setString(3, "");
+                        ps.setDouble(4, prezzoEUR);
+                        ps.setString(5, Rete);
+                        ps.setString(6, Address);
+                        ps.addBatch();
+                    }
+                    ps.executeBatch();
+                } catch (SQLException ex) {
+                    LoggerGC.ScriviErrore(ex);
+                }
+            }
+        } catch (IOException | InterruptedException ex) {
+            LoggerGC.ScriviErrore(ex);
+            return null;
+        }
+
+        System.out.println("Inserisco DL_" + Address + "_" + Rete + " nel manager richieste");
+        System.out.println("Since " + FunzioniDate.ConvertiDatadaLongAlSecondo(dataIni * 1000) + " - Until " + FunzioniDate.ConvertiDatadaLongAlSecondo(dataFin * 1000));
+        managerRichieste.addRange("DL_" + Address + "_" + Rete, dataIni * 1000, dataFin * 1000);
+        return "ok";
+    }
+
 
 
     public static String DammiPrezzoTransazioneSalvaInfoPrezzo(Moneta Moneta1a, Moneta Moneta2a, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Rete,String fonte,Map<String,InfoPrezzo> Mappa,String ChiaveMappa) {

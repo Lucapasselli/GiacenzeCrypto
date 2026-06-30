@@ -33,10 +33,73 @@
                   <Component id="jSeparator2" alignment="1" max="32767" attributes="0"/>
                   <Component id="jSeparator1" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
+                      <Component id="ID_Label" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="ID_TextField" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="Wallet_Label" min="-2" max="-2" attributes="0"/>
+                          <Component id="WalletDettaglio_Label" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="MonetaUscitaTipo_Label" min="-2" max="-2" attributes="0"/>
+                          <Component id="Wallet_ComboBox" max="32767" attributes="0"/>
+                          <Component id="WalletDettaglio_ComboBox" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="Note_Label" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Note_ScrollPane" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Ok" min="-2" pref="130" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Annulla" min="-2" pref="130" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="49" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="29" max="-2" attributes="0"/>
+                              <Component id="ValoreTransazione_TextField" min="-2" pref="200" max="-2" attributes="0"/>
+                              <EmptySpace min="73" max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="P_LabelMoneta" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="P_LabelFonte" alignment="1" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                  <Component id="P_TextFonte" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="P_TextMoneta" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="P_LabelTimeFonte" min="-2" max="-2" attributes="0"/>
+                                  <Component id="P_LabelPU" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="P_TextPU" max="32767" attributes="0"/>
+                                  <Component id="P_TextTimeFonte" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="-2" pref="42" max="-2" attributes="0"/>
+                              <Component id="ValoreTransazione_Label" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="Bottone_PrezzoManuale" min="-2" pref="170" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="Bottone_PrezzoAutomatico" min="-2" pref="170" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="Bottone_ModificaPrezzo" min="-2" pref="170" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
                               <Component id="Data_Label" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="Data_Datachooser" min="-2" pref="110" max="-2" attributes="0"/>
@@ -49,6 +112,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Minuto_ComboBox" min="-2" pref="55" max="-2" attributes="0"/>
                           </Group>
+                          <Component id="MonetaUscitaTipo_Label" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
@@ -81,94 +145,25 @@
                           </Group>
                       </Group>
                   </Group>
+                  <Component id="MonetaUscitaAddress_Label" alignment="0" min="-2" pref="85" max="-2" attributes="0"/>
+                  <Component id="MonetaUscita_Label" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="ID_Label" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="ID_TextField" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="Wallet_Label" min="-2" max="-2" attributes="0"/>
-                          <Component id="WalletDettaglio_Label" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                          <Component id="MonetaUscitaTipo_ComboBox" alignment="0" max="32767" attributes="0"/>
+                          <Component id="MonetaUscita_ComboBox" alignment="0" max="32767" attributes="0"/>
+                          <Component id="MonetaUscitaQuantita_Label" alignment="0" pref="376" max="32767" attributes="0"/>
+                          <Component id="MonetaUscitaQuantita_TextField" alignment="0" max="32767" attributes="0"/>
+                          <Component id="MonetaUscitaAddress_TextField" alignment="0" max="32767" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="Wallet_ComboBox" max="32767" attributes="0"/>
-                          <Component id="WalletDettaglio_ComboBox" max="32767" attributes="0"/>
+                          <Component id="Freccia3_Label" min="-2" max="-2" attributes="0"/>
+                          <Component id="Freccia2_Label" min="-2" max="-2" attributes="0"/>
+                          <Component id="Freccia1_Label" min="-2" max="-2" attributes="0"/>
+                          <Component id="Freccia3_Label1" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="Note_Label" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="Note_ScrollPane" min="-2" pref="552" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="Bottone_Ok" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="Bottone_Annulla" min="-2" pref="130" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="29" max="-2" attributes="0"/>
-                              <Component id="ValoreTransazione_TextField" min="-2" pref="200" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="73" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                                      <Component id="P_LabelMoneta" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Component id="P_LabelFonte" alignment="1" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                  <Component id="P_TextFonte" alignment="0" max="32767" attributes="0"/>
-                                  <Component id="P_TextMoneta" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="P_LabelTimeFonte" min="-2" max="-2" attributes="0"/>
-                                  <Component id="P_LabelPU" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Component id="P_TextPU" max="32767" attributes="0"/>
-                                  <Component id="P_TextTimeFonte" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="42" max="-2" attributes="0"/>
-                              <Component id="ValoreTransazione_Label" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
-                              <Component id="Bottone_PrezzoManuale" min="-2" pref="170" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="Bottone_PrezzoAutomatico" min="-2" pref="170" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="Bottone_ModificaPrezzo" min="-2" pref="170" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="103" alignment="1" groupAlignment="0" attributes="0">
-                      <Component id="MonetaUscitaAddress_Label" alignment="0" min="-2" pref="85" max="-2" attributes="0"/>
-                      <Component id="MonetaUscita_Label" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                              <Component id="MonetaUscitaTipo_ComboBox" alignment="0" max="32767" attributes="0"/>
-                              <Component id="MonetaUscita_ComboBox" alignment="0" max="32767" attributes="0"/>
-                              <Component id="MonetaUscitaQuantita_Label" alignment="0" pref="376" max="32767" attributes="0"/>
-                              <Component id="MonetaUscitaQuantita_TextField" alignment="0" max="32767" attributes="0"/>
-                              <Component id="MonetaUscitaAddress_TextField" alignment="0" max="32767" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="Freccia3_Label" min="-2" max="-2" attributes="0"/>
-                              <Component id="Freccia2_Label" min="-2" max="-2" attributes="0"/>
-                              <Component id="Freccia1_Label" min="-2" max="-2" attributes="0"/>
-                              <Component id="Freccia3_Label1" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <Component id="jSeparator4" alignment="0" min="-2" pref="865" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="jSeparator4" alignment="0" min="-2" pref="865" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -211,9 +206,9 @@
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="jSeparator1" min="-2" pref="10" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="MonetaEntrataTipo_Label" min="-2" max="-2" attributes="0"/>
-                  <Component id="MonetaUscitaTipo_Label" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="MonetaEntrataTipo_Label" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="MonetaUscitaTipo_Label" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -286,24 +281,19 @@
               <Component id="jSeparator4" min="-2" pref="8" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="Note_Label" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="103" alignment="1" groupAlignment="3" attributes="0">
-                              <Component id="Bottone_Annulla" alignment="3" min="-2" pref="86" max="-2" attributes="0"/>
-                              <Component id="Bottone_Ok" alignment="3" min="-2" pref="86" max="-2" attributes="0"/>
-                          </Group>
+                      <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
+                      <Component id="Note_Label" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="Bottone_Ok" alignment="1" min="-2" pref="96" max="-2" attributes="0"/>
+                          <Component id="Note_ScrollPane" min="-2" pref="97" max="-2" attributes="0"/>
+                          <Component id="Bottone_Annulla" alignment="0" min="-2" pref="96" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                      <Component id="Note_ScrollPane" min="-2" max="-2" attributes="0"/>
-                  </Group>
               </Group>
-              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

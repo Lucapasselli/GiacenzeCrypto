@@ -120,10 +120,15 @@ public class Trans_Bitcoin {
         DeterministicKey masterKey = DeterministicKey.deserializeB58(xpubStr, params);
 
         Set<String> usedAddresses = new LinkedHashSet<>();
+        String keyPrefix = extKey.substring(0, Math.min(12, extKey.length()));
+
+        System.out.println("[BTC] Inizio derivazione indirizzi da chiave " + keyPrefix + "... (tipo: " + keyType + ", gap limit: " + GAP_LIMIT + ")");
 
         for (int chain = 0; chain <= 1; chain++) {
             DeterministicKey chainKey = HDKeyDerivation.deriveChildKey(masterKey, chain);
             int consecutiveUnused = 0;
+            String chainLabel = (chain == 0) ? "esterna" : "cambio";
+            System.out.println("[BTC] Scansione catena " + chainLabel + " (m/" + chain + "/n)...");
 
             for (int idx = 0; consecutiveUnused < GAP_LIMIT; idx++) {
                 if (progressb != null && progressb.FineThread()) break;
@@ -131,26 +136,30 @@ public class Trans_Bitcoin {
                 DeterministicKey childKey = HDKeyDerivation.deriveChildKey(chainKey, idx);
                 String address = addressFromKey(childKey, keyType);
 
-                String chainLabel = (chain == 0) ? "ext" : "chg";
+                String chainLabelShort = (chain == 0) ? "ext" : "chg";
                 if (progressb != null) {
-                    progressb.SetLabel("[BTC] Scansione " + chainLabel + " #" + idx + ": " + abbreviate(address));
+                    progressb.SetLabel("[BTC] Scansione " + chainLabelShort + " #" + idx + ": " + abbreviate(address));
                 }
                 if (verbose) {
-                    System.out.println("[BTC] " + chainLabel + "/" + idx + " -> " + address);
+                    System.out.println("[BTC]   m/" + chain + "/" + idx + " -> " + address);
                 }
 
                 int txCount = getAddressTxCount(address);
                 if (txCount > 0) {
                     usedAddresses.add(address);
                     consecutiveUnused = 0;
+                    System.out.println("[BTC]   Trovato m/" + chain + "/" + idx + ": " + address + " (" + txCount + " tx)");
                 } else {
                     consecutiveUnused++;
+                    if (verbose) {
+                        System.out.println("[BTC]   Vuoto  m/" + chain + "/" + idx + " (gap " + consecutiveUnused + "/" + GAP_LIMIT + ")");
+                    }
                 }
                 Thread.sleep(120); // rispetta il rate limit di mempool.space
             }
+            System.out.println("[BTC] Catena " + chainLabel + " completata — " + usedAddresses.size() + " indirizzi usati finora.");
         }
-        System.out.println("[BTC] Chiave " + extKey.substring(0, Math.min(12, extKey.length()))
-                + "... -> " + usedAddresses.size() + " indirizzi usati");
+        System.out.println("[BTC] Derivazione completata: " + usedAddresses.size() + " indirizzi usati per " + keyPrefix + "...");
         return usedAddresses;
     }
 
@@ -369,6 +378,8 @@ public class Trans_Bitcoin {
         Map<String, TransazioneDefi> result = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         try {
+            System.out.println("[BTC] === Importazione wallet: " + walletEntry + " (dal blocco " + fromBlock + ") ===");
+
             Set<String> addresses;
             if (isExtendedKey(walletEntry)) {
                 progressb.SetLabel("[BTC] Derivazione indirizzi da chiave estesa...");
@@ -376,12 +387,15 @@ public class Trans_Bitcoin {
             } else {
                 addresses = new LinkedHashSet<>();
                 addresses.add(walletEntry);
+                System.out.println("[BTC] Indirizzo singolo: " + walletEntry);
             }
 
             if (addresses.isEmpty()) {
                 System.out.println("[BTC] Nessun indirizzo trovato per " + walletEntry);
                 return result;
             }
+
+            System.out.println("[BTC] Totale indirizzi da scansionare: " + addresses.size());
 
             // Scarica tutte le transazioni (deduplicate per txid)
             Map<String, JSONObject> txById = new LinkedHashMap<>();
@@ -391,8 +405,10 @@ public class Trans_Bitcoin {
                 addrDone++;
                 progressb.SetLabel("[BTC] Scaricamento " + addrDone + "/" + addresses.size()
                         + ": " + abbreviate(addr));
+                System.out.println("[BTC] Scaricamento tx indirizzo " + addrDone + "/" + addresses.size() + ": " + addr);
 
                 List<JSONObject> addrTxs = fetchAddressTxs(addr, fromBlock);
+                System.out.println("[BTC]   -> " + addrTxs.size() + " transazioni trovate");
                 for (JSONObject tx : addrTxs) {
                     String txid = tx.optString("txid");
                     txById.putIfAbsent(txid, tx);
@@ -407,18 +423,26 @@ public class Trans_Bitcoin {
                 return (s != null) ? s.optInt("block_height", 0) : 0;
             }));
 
-            System.out.println("[BTC] " + sorted.size() + " transazioni nuove da elaborare per " + walletEntry);
+            System.out.println("[BTC] " + sorted.size() + " transazioni uniche da elaborare (deduplicate)");
+            progressb.SetLabel("[BTC] Elaborazione " + sorted.size() + " transazioni...");
             progressb.SetMassimo(sorted.size());
             int done = 0;
+            int movimentiValidi = 0;
 
             for (JSONObject tx : sorted) {
                 if (progressb.FineThread()) return result;
                 TransazioneDefi trans = parseTransaction(tx, walletEntry, addresses);
                 if (trans != null && !trans.isEmpty()) {
                     result.put(walletEntry + "." + trans.HashTransazione, trans);
+                    movimentiValidi++;
+                    if (verbose) {
+                        System.out.println("[BTC]   + " + trans.DataOra + " " + trans.TipoTransazione);
+                    }
                 }
                 progressb.SetAvanzamento(++done);
             }
+
+            System.out.println("[BTC] === Completato: " + movimentiValidi + " movimenti importati su " + sorted.size() + " transazioni ===");
 
         } catch (InterruptedException ex) {
             throw ex;
@@ -702,6 +726,8 @@ public class Trans_Bitcoin {
         Map<String, TransazioneDefi> result = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         try {
+            System.out.println("[BTC+UniSat] === Importazione wallet: " + walletEntry + " (dal blocco " + fromBlock + ") ===");
+
             Set<String> addresses;
             if (isExtendedKey(walletEntry)) {
                 progressb.SetLabel("[BTC+UniSat] Derivazione indirizzi da chiave estesa...");
@@ -709,21 +735,28 @@ public class Trans_Bitcoin {
             } else {
                 addresses = new LinkedHashSet<>();
                 addresses.add(walletEntry);
+                System.out.println("[BTC+UniSat] Indirizzo singolo: " + walletEntry);
             }
             if (addresses.isEmpty()) {
                 System.out.println("[BTC+UniSat] Nessun indirizzo trovato per " + walletEntry);
                 return result;
             }
+            System.out.println("[BTC+UniSat] Totale indirizzi da scansionare: " + addresses.size());
 
             // 1 – Transazioni BTC standard via mempool.space (nessun costo API UniSat)
+            System.out.println("[BTC+UniSat] --- FASE 1: transazioni BTC via mempool.space ---");
             progressb.SetLabel("[BTC+UniSat] Scaricamento transazioni BTC da mempool.space...");
             Map<String, JSONObject> txById = new LinkedHashMap<>();
             int addrDone = 0;
             for (String addr : addresses) {
                 if (progressb.FineThread()) return result;
-                progressb.SetLabel("[BTC+UniSat] BTC " + (++addrDone) + "/" + addresses.size()
+                addrDone++;
+                progressb.SetLabel("[BTC+UniSat] BTC " + addrDone + "/" + addresses.size()
                         + ": " + abbreviate(addr));
-                for (JSONObject tx : fetchAddressTxs(addr, fromBlock)) {
+                System.out.println("[BTC+UniSat] Scaricamento BTC " + addrDone + "/" + addresses.size() + ": " + addr);
+                List<JSONObject> addrTxs = fetchAddressTxs(addr, fromBlock);
+                System.out.println("[BTC+UniSat]   -> " + addrTxs.size() + " transazioni trovate");
+                for (JSONObject tx : addrTxs) {
                     txById.putIfAbsent(tx.optString("txid"), tx);
                 }
                 Thread.sleep(120);
@@ -733,15 +766,20 @@ public class Trans_Bitcoin {
                 JSONObject s = ((JSONObject) tx).optJSONObject("status");
                 return s != null ? s.optInt("block_height", 0) : 0;
             }));
-            System.out.println("[BTC+UniSat] " + sorted.size() + " transazioni BTC per " + walletEntry);
+            System.out.println("[BTC+UniSat] " + sorted.size() + " transazioni BTC uniche da elaborare (deduplicate)");
+            int btcMovimentiValidi = 0;
             for (JSONObject tx : sorted) {
                 if (progressb.FineThread()) return result;
                 TransazioneDefi trans = parseTransaction(tx, walletEntry, addresses);
-                if (trans != null && !trans.isEmpty())
+                if (trans != null && !trans.isEmpty()) {
                     result.put(walletEntry + "." + trans.HashTransazione, trans);
+                    btcMovimentiValidi++;
+                }
             }
+            System.out.println("[BTC+UniSat] FASE 1 completata: " + btcMovimentiValidi + " movimenti BTC importati");
 
             // 2 – BRC-20 e Runes via UniSat per ogni indirizzo derivato
+            System.out.println("[BTC+UniSat] --- FASE 2: BRC-20 e Runes via UniSat ---");
             int addrIdx = 0;
             for (String addr : addresses) {
                 if (progressb.FineThread()) return result;
@@ -750,30 +788,50 @@ public class Trans_Bitcoin {
                 // BRC-20
                 progressb.SetLabel("[UniSat] BRC-20 " + addrIdx + "/" + addresses.size()
                         + ": " + abbreviate(addr));
-                for (String ticker : getBRC20Tickers(addr, uniSatApiKey)) {
-                    if (progressb.FineThread()) return result;
-                    progressb.SetLabel("[UniSat] BRC-20 " + ticker + " su " + abbreviate(addr));
-                    result.putAll(fetchBRC20HistoryForTicker(addr, ticker, uniSatApiKey, fromBlock, walletEntry));
-                    Thread.sleep(200);
+                System.out.println("[UniSat] BRC-20 — ricerca ticker per indirizzo " + addrIdx + "/" + addresses.size() + ": " + addr);
+                List<String> tickers = getBRC20Tickers(addr, uniSatApiKey);
+                if (tickers.isEmpty()) {
+                    System.out.println("[UniSat]   -> Nessun ticker BRC-20 trovato");
+                } else {
+                    System.out.println("[UniSat]   -> " + tickers.size() + " ticker trovati: " + String.join(", ", tickers));
+                    for (String ticker : tickers) {
+                        if (progressb.FineThread()) return result;
+                        progressb.SetLabel("[UniSat] BRC-20 " + ticker + " su " + abbreviate(addr));
+                        System.out.println("[UniSat]   Scaricamento cronologia BRC-20 " + ticker + "...");
+                        Map<String, TransazioneDefi> brc20Txs = fetchBRC20HistoryForTicker(addr, ticker, uniSatApiKey, fromBlock, walletEntry);
+                        System.out.println("[UniSat]   -> " + brc20Txs.size() + " movimenti BRC-20 " + ticker);
+                        result.putAll(brc20Txs);
+                        Thread.sleep(200);
+                    }
                 }
 
                 // Runes
                 progressb.SetLabel("[UniSat] Runes " + addrIdx + "/" + addresses.size()
                         + ": " + abbreviate(addr));
-                for (JSONObject runeInfo : getRunesBalances(addr, uniSatApiKey)) {
-                    if (progressb.FineThread()) return result;
-                    String runeid    = runeInfo.optString("runeid", "");
-                    String runeName  = runeInfo.optString("rune", runeInfo.optString("spacedRune", runeid));
-                    int    divisi    = runeInfo.optInt("divisibility", 0);
-                    if (runeid.isBlank()) continue;
-                    progressb.SetLabel("[UniSat] Rune " + runeName + " su " + abbreviate(addr));
-                    result.putAll(fetchRunesHistoryForRune(
-                            addr, runeid, runeName, divisi, uniSatApiKey, fromBlock, walletEntry));
-                    Thread.sleep(200);
+                System.out.println("[UniSat] Runes — ricerca per indirizzo " + addrIdx + "/" + addresses.size() + ": " + addr);
+                List<JSONObject> runesList = getRunesBalances(addr, uniSatApiKey);
+                if (runesList.isEmpty()) {
+                    System.out.println("[UniSat]   -> Nessuna Rune trovata");
+                } else {
+                    System.out.println("[UniSat]   -> " + runesList.size() + " Rune trovate");
+                    for (JSONObject runeInfo : runesList) {
+                        if (progressb.FineThread()) return result;
+                        String runeid   = runeInfo.optString("runeid", "");
+                        String runeName = runeInfo.optString("rune", runeInfo.optString("spacedRune", runeid));
+                        int    divisi   = runeInfo.optInt("divisibility", 0);
+                        if (runeid.isBlank()) continue;
+                        progressb.SetLabel("[UniSat] Rune " + runeName + " su " + abbreviate(addr));
+                        System.out.println("[UniSat]   Scaricamento cronologia Rune " + runeName + " (" + runeid + ")...");
+                        Map<String, TransazioneDefi> runeTxs = fetchRunesHistoryForRune(
+                                addr, runeid, runeName, divisi, uniSatApiKey, fromBlock, walletEntry);
+                        System.out.println("[UniSat]   -> " + runeTxs.size() + " movimenti Rune " + runeName);
+                        result.putAll(runeTxs);
+                        Thread.sleep(200);
+                    }
                 }
             }
 
-            System.out.println("[BTC+UniSat] Totale movimenti: " + result.size() + " per " + walletEntry);
+            System.out.println("[BTC+UniSat] === Completato: " + result.size() + " movimenti totali per " + walletEntry + " ===");
 
         } catch (InterruptedException ex) {
             throw ex;

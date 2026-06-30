@@ -25,19 +25,19 @@ public class VarCondivise {
     
 
     public static void CompilaMappaChain() {
-        //indirizzoExplorer,api,coin commissioni,nomeEndpointCoingecko
+        //indirizzoExplorer,api,coin commissioni,nomeEndpointCoingecko,nomeEndpointDefiLlama
         //System.out.println("Compilo Mappe integrate nel codice");
-        String[] BSC = new String[]{"https://api.etherscan.io/v2/api?chainid=56", "", "BNB", "binance-smart-chain"};
-        String[] CRO = new String[]{"https://explorer-api.cronos.org/mainnet/api/v2", "", "CRO", "cronos"};
-        String[] ETH = new String[]{"https://api.etherscan.io/v2/api?chainid=1", "", "ETH", "ethereum"};
-        String[] BASE = new String[]{"https://api.etherscan.io/v2/api?chainid=8453", "", "ETH", "base"};
-        String[] ARB = new String[]{"https://api.etherscan.io/v2/api?chainid=42161", "", "ETH", "arbitrum-one"};
-        String[] BERA = new String[]{"https://api.etherscan.io/v2/api?chainid=80094", "", "BERA", "berachain"};
-        String[] AVAX = new String[]{"https://api.etherscan.io/v2/api?chainid=43114", "", "AVAX", "avalanche"};
-        String[] SOL = new String[]{"https://solscan.io/", "", "SOL", "solana"};
-        String[] POL = new String[]{"https://api.etherscan.io/v2/api?chainid=137", "", "POL", "polygon-pos"};
-        String[] MONAD = new String[]{"https://api.etherscan.io/v2/api?chainid=143", "", "MON", "monad"};
-        String[] BTC = new String[]{"https://mempool.space/api", "", "BTC", "bitcoin"};
+        String[] BSC = new String[]{"https://api.etherscan.io/v2/api?chainid=56", "", "BNB", "binance-smart-chain", "bsc"};
+        String[] CRO = new String[]{"https://explorer-api.cronos.org/mainnet/api/v2", "", "CRO", "cronos", "cronos"};
+        String[] ETH = new String[]{"https://api.etherscan.io/v2/api?chainid=1", "", "ETH", "ethereum", "ethereum"};
+        String[] BASE = new String[]{"https://api.etherscan.io/v2/api?chainid=8453", "", "ETH", "base", "base"};
+        String[] ARB = new String[]{"https://api.etherscan.io/v2/api?chainid=42161", "", "ETH", "arbitrum-one", "arbitrum"};
+        String[] BERA = new String[]{"https://api.etherscan.io/v2/api?chainid=80094", "", "BERA", "berachain", ""};
+        String[] AVAX = new String[]{"https://api.etherscan.io/v2/api?chainid=43114", "", "AVAX", "avalanche", "avax"};
+        String[] SOL = new String[]{"https://solscan.io/", "", "SOL", "solana", "solana"};
+        String[] POL = new String[]{"https://api.etherscan.io/v2/api?chainid=137", "", "POL", "polygon-pos", "polygon"};
+        String[] MONAD = new String[]{"https://api.etherscan.io/v2/api?chainid=143", "", "MON", "monad", ""};
+        String[] BTC = new String[]{"https://mempool.space/api", "", "BTC", "bitcoin", "bitcoin"};
         Principale.Mappa_ChainExplorer.put("CRO", CRO);
         Principale.Mappa_ChainExplorer.put("BSC", BSC);
         Principale.Mappa_ChainExplorer.put("ETH", ETH);

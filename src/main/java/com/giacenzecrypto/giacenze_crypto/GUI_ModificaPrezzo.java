@@ -762,6 +762,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
             if (monAlias != null) moneta = monAlias;
             if (Funzioni_WalletDeFi.isValidAddress(address, rete)) {
                 Prezzi.RecuperaTassidiCambiodaAddress_Coingecko(FunzioniDate.ConvertiDatadaLong(data), address, rete, moneta);
+                Prezzi.RecuperaTassidiCambiodaAddress_DefiLlama(FunzioniDate.ConvertiDatadaLong(data), address, rete, moneta);
             }
             Prezzi.RecuperaPrezziDaCCXT(moneta, data);
             Prezzi.RecuperaPrezziDaCoinMarketCap(moneta, data);
@@ -781,6 +782,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
             if (monAlias != null) nomeMoneta = monAlias;
             if (Funzioni_WalletDeFi.isValidAddress(address, rete)) {
                 Prezzi.RecuperaTassidiCambiodaAddress_Coingecko(FunzioniDate.ConvertiDatadaLong(data), address, rete, nomeMoneta);
+                Prezzi.RecuperaTassidiCambiodaAddress_DefiLlama(FunzioniDate.ConvertiDatadaLong(data), address, rete, nomeMoneta);
             }
             Prezzi.RecuperaPrezziDaCCXT(nomeMoneta, data);
             Prezzi.RecuperaPrezziDaCoinMarketCap(nomeMoneta, data);
@@ -899,6 +901,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
             }
         });
 
+        Bottone_RiscaricaPrezzi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Aggiorna.png"))); // NOI18N
         Bottone_RiscaricaPrezzi.setText("Riscarica tutti i prezzi dalle fonti");
         Bottone_RiscaricaPrezzi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -916,19 +919,19 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
                     .addComponent(jScrollPane1)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(Bottone_Personalizzato, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(219, 219, 219)
-                                .addComponent(Bottone_RiscaricaPrezzi, javax.swing.GroupLayout.PREFERRED_SIZE, 223, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jLabel3)
                             .addComponent(jLabel1)
                             .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel4))
+                            .addComponent(jLabel4)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(Bottone_RiscaricaPrezzi, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(Bottone_Annulla, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(Bottone_OK, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(Bottone_OK, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)
+                            .addComponent(Bottone_Personalizzato, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -941,23 +944,21 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Bottone_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel4)
-                        .addGap(18, 18, 18)
-                        .addComponent(Bottone_RiscaricaPrezzi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(Bottone_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(Bottone_Personalizzato, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addComponent(jLabel4)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Bottone_RiscaricaPrezzi, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(Bottone_Personalizzato, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(9, 9, 9))
         );
 
         pack();
@@ -1032,6 +1033,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
     private void Bottone_RiscaricaPrezziActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_RiscaricaPrezziActionPerformed
         Download dow = new Download();
         dow.NascondiInterrompi();
+        dow.MostraProgressAttesa("Scaricamento Prezzi", "Prezzi in fase di riscaricamento");
         dow.SetLabel("Scaricamento prezzi in corso...");
         dow.setLocationRelativeTo(this);
         Thread t = new Thread(() -> {

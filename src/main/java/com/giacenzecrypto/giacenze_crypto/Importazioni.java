@@ -138,7 +138,6 @@ import java.util.stream.Collectors;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import org.json.JSONException;
 
 
 /**
@@ -4197,13 +4196,24 @@ private static String F_safe(String s) {
             if (status == 0) {
                 //in questo caso la richiesta è anda in errore
                 //scrivo il messaggio, e chiudo la progress bar
-                if (!jsonObjectTxlist.getString("message").trim().equalsIgnoreCase("No transactions found")) {
+                String messaggioTxlist = jsonObjectTxlist.getString("message").trim().toLowerCase();
+                //Le API Etherscan-family (incluso Blockscout) rispondono con "No transactions found",
+                //"No token transfers found", "No internal transactions found" ecc. quando il wallet
+                //semplicemente non ha movimenti di quella tipologia: non è un vero errore.
+                if (!(messaggioTxlist.startsWith("no ") && messaggioTxlist.endsWith("found"))) {
                     if (progressb!=null)progressb.ChiudiFinestra();
+                    LoggerGC.ScriviErrore("Errore durante l'importazione dei dati\n" + jsonObjectTxlist.getString("message"));
                     JOptionPane.showConfirmDialog(ccc, "Errore durante l'importazione dei dati\n" + jsonObjectTxlist.getString("message")+
                             "\n"+Risposta+"\n"+"Riprovare in un secondo momento, le API dell'Explorer non rispondono correttamente.",
                             "Errore", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null);
                     return null;
                 }
+            }
+            //Blockscout usa anche status="2" per segnalare dati parziali/non ancora indicizzati
+            //(es. transazioni interne recenti non ancora elaborate): non è un errore bloccante,
+            //ma il "result" ricevuto in questo giro potrebbe essere incompleto.
+            else if (status != 1) {
+                LoggerGC.logInfo("Attenzione: Explorer segnala dati parziali/non ancora indicizzati per '"+Tipo+"' ("+walletAddress+"): " + jsonObjectTxlist.getString("message"));
             }
             //conto le transazioni
             int numeroTransTemp=0;
@@ -4349,13 +4359,24 @@ private static String F_safe(String s) {
             if (status == 0) {
                 //in questo caso la richiesta è anda in errore
                 //scrivo il messaggio, e chiudo la progress bar
-                if (!jsonObjectTxlist.getString("message").trim().equalsIgnoreCase("No transactions found")) {
+                String messaggioTxlist = jsonObjectTxlist.getString("message").trim().toLowerCase();
+                //Le API Etherscan-family (incluso Blockscout) rispondono con "No transactions found",
+                //"No token transfers found", "No internal transactions found" ecc. quando il wallet
+                //semplicemente non ha movimenti di quella tipologia: non è un vero errore.
+                if (!(messaggioTxlist.startsWith("no ") && messaggioTxlist.endsWith("found"))) {
                     if (progressb!=null)progressb.ChiudiFinestra();
+                    LoggerGC.ScriviErrore("Errore durante l'importazione dei dati\n" + jsonObjectTxlist.getString("message"));
                     JOptionPane.showConfirmDialog(ccc, "Errore durante l'importazione dei dati\n" + jsonObjectTxlist.getString("message")+
                             "\n"+Risposta+"\n"+"Riprovare in un secondo momento, le API dell'Explorer non rispondono correttamente.",
                             "Errore", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null);
                     return null;
                 }
+            }
+            //Blockscout usa anche status="2" per segnalare dati parziali/non ancora indicizzati
+            //(es. transazioni interne recenti non ancora elaborate): non è un errore bloccante,
+            //ma il "result" ricevuto in questo giro potrebbe essere incompleto.
+            else if (status != 1) {
+                LoggerGC.logInfo("Attenzione: Explorer segnala dati parziali/non ancora indicizzati per '"+Tipo+"' ("+walletAddress+"): " + jsonObjectTxlist.getString("message"));
             }
             //conto le transazioni
             int numeroTransTemp=0;
@@ -4659,6 +4680,7 @@ private static String F_safe(String s) {
                                                        Errore nello scaricamento delle rimanenze dei singoli blocchi di CRO
                                                        Verra' interrotta l'analisi, riprovare pi\u00f9 tardi""";
                                     JOptionPane.showConfirmDialog(ccc,testoMessaggio,"Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
+                                    LoggerGC.ScriviErrore(testoMessaggio);
                                     return null;
                                     
                                 }
@@ -5501,7 +5523,8 @@ private static String F_safe(String s) {
                     String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
                     trans.QtaCommissioni = null;
                     //trans.QtaCommissioni = "-" + qtaCommissione;
-                    trans.TipoTransazione = transaction.getString("functionName");
+                    //Blockscout, a differenza di Etherscan, non sempre include "functionName" nella risposta
+                    trans.TipoTransazione = transaction.optString("functionName", "");
                     if (!value.equalsIgnoreCase("0")) {
                         if (from.equalsIgnoreCase(walletAddress)) {
                             AddressNoWallet = to;
@@ -5539,7 +5562,11 @@ private static String F_safe(String s) {
                     String tokenName = transaction.getString("tokenName");
                     String Data = FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
                     String tokenAddress = transaction.getString("contractAddress");
+                    //Blockscout lascia tokenDecimal vuoto quando il contratto non implementa decimals()
+                    //(verificato: tipico di token-scam/dust senza decimals() on-chain, dove
+                    //totalSupply ha senso solo a 0 decimali); uso 0 come fallback
                     String tokenDecimal = transaction.getString("tokenDecimal");
+                    if (tokenDecimal.isBlank()) tokenDecimal = "0";
                     String hash = transaction.getString("hash");
                     String from = transaction.getString("from");
                     //System.out.println(from + " - "+hash+" B2");
@@ -5664,8 +5691,11 @@ private static String F_safe(String s) {
                             String tokenDecimal;
                             String value = "0";
                             String Tipo = "Crypto";
-                            if (transaction.has("tokenDecimal")) {
+                            //Blockscout non sempre valorizza entrambi i campi "tokenDecimal" e "value" insieme
+                            if (transaction.has("tokenDecimal") && transaction.has("value")) {
                                 tokenDecimal = transaction.getString("tokenDecimal");
+                                //vedi commento analogo nel blocco tokentx: tokenDecimal vuoto -> 0
+                                if (tokenDecimal.isBlank()) tokenDecimal = "0";
                                 value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-" + tokenDecimal)).stripTrailingZeros().toPlainString();
 
                             }

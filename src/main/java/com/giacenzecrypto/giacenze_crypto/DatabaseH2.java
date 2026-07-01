@@ -2011,6 +2011,20 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
         }
     }
 
+    /**
+     * Cancella tutte le preferenze provider DeFi salvate dall'utente, in modo che
+     * DeFi_ProviderEffettivo/DeFi_ProviderBlockscoutUrl tornino a usare i default
+     * hardcoded nel codice per ogni chain.
+     */
+    public static void ProviderDefi_CancellaTutti() {
+        String sql = "DELETE FROM PROVIDERDEFI";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
                 
                 
     public static void Pers_Opzioni_CancellaOpzione(String Opzione) {

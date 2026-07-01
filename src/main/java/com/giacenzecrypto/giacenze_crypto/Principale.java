@@ -755,15 +755,16 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKey_UniSat_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_UniSat_LabelSito = new javax.swing.JLabel();
         Opzioni_ApiKey_MoralisNB_Label = new javax.swing.JLabel();
+        Opzioni_ProviderDefi_ApiKeyBlockscout_Label = new javax.swing.JLabel();
+        Opzioni_ProviderDefi_ApiKeyBlockscout_TextField = new javax.swing.JTextField();
         Opzioni_ProviderDefi_Pannello = new javax.swing.JPanel();
         Opzioni_ProviderDefi_ScrollTabella = new javax.swing.JScrollPane();
         Opzioni_ProviderDefi_Tabella = new javax.swing.JTable();
         Opzioni_ProviderDefi_ScrollIstruzioni = new javax.swing.JScrollPane();
         Opzioni_ProviderDefi_TextAreaIstruzioni = new javax.swing.JTextArea();
-        Opzioni_ProviderDefi_ApiKeyBlockscout_Label = new javax.swing.JLabel();
-        Opzioni_ProviderDefi_ApiKeyBlockscout_TextField = new javax.swing.JTextField();
         Opzioni_ProviderDefi_Bottone_Salva = new javax.swing.JButton();
         Opzioni_ProviderDefi_Bottone_Annulla = new javax.swing.JButton();
+        Opzioni_ProviderDefi_Bottone_Ripristina = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -1478,7 +1479,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo))
                 .addGap(5, 5, 5)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -5117,6 +5118,19 @@ private static final long serialVersionUID = 3L;
 
         Opzioni_ApiKey_MoralisNB_Label.setText("NB : Per evitare sforamenti dei limiti giornalieri sulle api di Moralis ogni volta che si scaricano i movimenti da un wallet questi sono limitati a circa 1.000, per scaricarne altri rifare la chiamata");
 
+        Opzioni_ProviderDefi_ApiKeyBlockscout_Label.setText("ApiKey Blockscout (opzionale) :");
+
+        Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                Opzioni_ProviderDefi_ApiKeyBlockscout_TextFieldMouseReleased(evt);
+            }
+        });
+        Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                Opzioni_ProviderDefi_ApiKeyBlockscout_TextFieldKeyReleased(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_ApiKeyLayout = new javax.swing.GroupLayout(Opzioni_ApiKey);
         Opzioni_ApiKey.setLayout(Opzioni_ApiKeyLayout);
         Opzioni_ApiKeyLayout.setHorizontalGroup(
@@ -5126,12 +5140,36 @@ private static final long serialVersionUID = 3L;
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                         .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(Opzioni_ApiKey_Coingecko_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(Opzioni_ApiKey_Moralis_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(Opzioni_ApiKey_Cronos_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(Opzioni_ApiKey_UniSat_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(Opzioni_ApiKey_Helius_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+                            .addComponent(Opzioni_ApiKey_Etherscan_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Opzioni_ApiKey_Coincap_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_Helius_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ApiKey_Helius_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_Coincap_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ApiKey_Coincap_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_Etherscan_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ApiKey_Etherscan_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(Opzioni_ApiKey_MoralisNB_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 1151, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                        .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Opzioni_ApiKey_Coingecko_Label, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Opzioni_ApiKey_Moralis_Label, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Opzioni_ApiKey_Cronos_Label, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Opzioni_ApiKey_UniSat_Label, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(4, 4, 4)
                         .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                                 .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -5154,30 +5192,8 @@ private static final long serialVersionUID = 3L;
                                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                                         .addComponent(Opzioni_ApiKey_Moralis_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 656, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGap(18, 18, 18)
-                                        .addComponent(Opzioni_ApiKey_Moralis_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))))))
-                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                        .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(Opzioni_ApiKey_Helius_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
-                            .addComponent(Opzioni_ApiKey_Etherscan_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(Opzioni_ApiKey_Coincap_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ApiKeyLayout.createSequentialGroup()
-                                .addComponent(Opzioni_ApiKey_Helius_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(Opzioni_ApiKey_Helius_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ApiKeyLayout.createSequentialGroup()
-                                .addComponent(Opzioni_ApiKey_Coincap_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(Opzioni_ApiKey_Coincap_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ApiKeyLayout.createSequentialGroup()
-                                .addComponent(Opzioni_ApiKey_Etherscan_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(Opzioni_ApiKey_Etherscan_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(Opzioni_ApiKey_MoralisNB_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 1151, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(176, Short.MAX_VALUE))
+                                        .addComponent(Opzioni_ApiKey_Moralis_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE)))))))
+                .addContainerGap(201, Short.MAX_VALUE))
         );
         Opzioni_ApiKeyLayout.setVerticalGroup(
             Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -5219,6 +5235,10 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_ApiKey_UniSat_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_ApiKey_UniSat_Label)
                     .addComponent(Opzioni_ApiKey_UniSat_LabelSito))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_Label)
+                    .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -5237,16 +5257,9 @@ private static final long serialVersionUID = 3L;
                 "Chain", "Provider Attuale", "Provider Scelto", "URL Blockscout personalizzato"
             }
         ) {
-            Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
-            };
             boolean[] canEdit = new boolean [] {
                 false, false, true, true
             };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
@@ -5260,11 +5273,9 @@ private static final long serialVersionUID = 3L;
         Opzioni_ProviderDefi_TextAreaIstruzioni.setColumns(20);
         Opzioni_ProviderDefi_TextAreaIstruzioni.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         Opzioni_ProviderDefi_TextAreaIstruzioni.setRows(3);
-        Opzioni_ProviderDefi_TextAreaIstruzioni.setText("Scegli, per ogni chain, quale provider usare per lo scaricamento dei movimenti DeFi. Per Cronos il default è Blockscout perché permette di impostare un blocco di partenza per lo scaricamento (a differenza del vecchio provider); Cronos usa sempre la ApiKey Cronos inserita nel tab \"ApiKey\", non quella Blockscout qui sotto.");
+        Opzioni_ProviderDefi_TextAreaIstruzioni.setText("Scegli, per ogni chain, quale provider usare per lo scaricamento dei movimenti DeFi. Per Cronos il default è Blockscout perché permette di impostare un blocco di partenza per lo scaricamento (a differenza del vecchio provider); Cronos usa sempre la ApiKey Cronos inserita nel tab \"ApiKey\", non quella Blockscout (anch'essa nel tab \"ApiKey\").");
         Opzioni_ProviderDefi_TextAreaIstruzioni.setPreferredSize(new java.awt.Dimension(774, 44));
         Opzioni_ProviderDefi_ScrollIstruzioni.setViewportView(Opzioni_ProviderDefi_TextAreaIstruzioni);
-
-        Opzioni_ProviderDefi_ApiKeyBlockscout_Label.setText("ApiKey Blockscout altre chain, non Cronos (opzionale) :");
 
         Opzioni_ProviderDefi_Bottone_Salva.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Salva.png"))); // NOI18N
         Opzioni_ProviderDefi_Bottone_Salva.setText("Salva");
@@ -5282,6 +5293,14 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Opzioni_ProviderDefi_Bottone_Ripristina.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Aggiorna.png"))); // NOI18N
+        Opzioni_ProviderDefi_Bottone_Ripristina.setText("Ripristina impostazioni predefinite");
+        Opzioni_ProviderDefi_Bottone_Ripristina.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_ProviderDefi_Bottone_RipristinaActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_ProviderDefi_PannelloLayout = new javax.swing.GroupLayout(Opzioni_ProviderDefi_Pannello);
         Opzioni_ProviderDefi_Pannello.setLayout(Opzioni_ProviderDefi_PannelloLayout);
         Opzioni_ProviderDefi_PannelloLayout.setHorizontalGroup(
@@ -5292,13 +5311,11 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_ProviderDefi_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 1448, Short.MAX_VALUE)
                     .addComponent(Opzioni_ProviderDefi_ScrollIstruzioni)
                     .addGroup(Opzioni_ProviderDefi_PannelloLayout.createSequentialGroup()
-                        .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(4, 4, 4)
-                        .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(Opzioni_ProviderDefi_PannelloLayout.createSequentialGroup()
                         .addComponent(Opzioni_ProviderDefi_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Opzioni_ProviderDefi_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(Opzioni_ProviderDefi_Bottone_Ripristina, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
         Opzioni_ProviderDefi_PannelloLayout.setVerticalGroup(
@@ -5309,12 +5326,9 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Opzioni_ProviderDefi_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Opzioni_ProviderDefi_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_Label)
-                    .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(Opzioni_ProviderDefi_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ProviderDefi_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Opzioni_ProviderDefi_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(Opzioni_ProviderDefi_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_ProviderDefi_Bottone_Ripristina, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(64, 64, 64))
         );
 
@@ -5934,8 +5948,9 @@ private void AvviaSplashScreen() {
         Opzioni_ApiKey_Moralis_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"));
         Opzioni_ApiKey_Cronos_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"));
         Opzioni_ApiKey_UniSat_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat")));
+        Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Blockscout")));
 
-        
+
       //  System.out.println(RW_Opzioni_RilenvanteScambiFIAT.isSelected());
     }
     
@@ -11103,6 +11118,7 @@ if (result != null && !result.isAction("cancel")) {
         boolean MoralisDiversa=true;
         boolean CronosDiversa=true;
         boolean UniSatDiversa=true;
+        boolean BlockscoutDiversa=true;
 
         if (Opzioni_ApiKey_Helius_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))))HeliusDiversa=false;
@@ -11118,8 +11134,10 @@ if (result != null && !result.isAction("cancel")) {
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"))))CronosDiversa=false;
         if (Opzioni_ApiKey_UniSat_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat"))))UniSatDiversa=false;
+        if (Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.getText().trim()
+                .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Blockscout"))))BlockscoutDiversa=false;
 
-        
+
         //Controllo ed eventualmente salvo le api Helius
         if (HeliusDiversa&&Trans_Solana.isApiKeyValida(Opzioni_ApiKey_Helius_TextField.getText().trim())||
                 Opzioni_ApiKey_Helius_TextField.getText().isBlank()){
@@ -11196,6 +11214,11 @@ if (result != null && !result.isAction("cancel")) {
                                         + "L'operazione verrà annullata!<br>",this);
         }
 
+        //Controllo ed eventualmente salvo la api Blockscout (opzionale, nessuna validazione di formato)
+        if (BlockscoutDiversa){
+            DatabaseH2.Opzioni_Scrivi("ApiKey_Blockscout", Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.getText().trim());
+        }
+
         Opzioni_ApiKey_ControllaPulsanti();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_ApiKey_Bottone_SalvaActionPerformed
@@ -11209,6 +11232,7 @@ if (result != null && !result.isAction("cancel")) {
         Opzioni_ApiKey_Moralis_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis")));
         Opzioni_ApiKey_Cronos_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos")));
         Opzioni_ApiKey_UniSat_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat")));
+        Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Blockscout")));
         Opzioni_ApiKey_ControllaPulsanti();
     }//GEN-LAST:event_Opzioni_ApiKey_Bottone_AnnullaActionPerformed
 
@@ -11227,7 +11251,6 @@ if (result != null && !result.isAction("cancel")) {
             String urlCustom = (urlObj != null) ? urlObj.toString().trim() : "";
             DatabaseH2.ProviderDefi_Scrivi(rete, providerScelto, urlCustom);
         }
-        DatabaseH2.Opzioni_Scrivi("ApiKey_Blockscout", Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.getText().trim());
         Opzioni_ProviderDefi_CaricaTabella();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_ProviderDefi_Bottone_SalvaActionPerformed
@@ -11237,12 +11260,42 @@ if (result != null && !result.isAction("cancel")) {
         Opzioni_ProviderDefi_CaricaTabella();
     }//GEN-LAST:event_Opzioni_ProviderDefi_Bottone_AnnullaActionPerformed
 
+    private void Opzioni_ProviderDefi_Bottone_RipristinaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_ProviderDefi_Bottone_RipristinaActionPerformed
+        // TODO add your handling code here:
+        AppDialog.DialogResult result = AppDialog.builder(this)
+                .windowTitle("Ripristina impostazioni predefinite")
+                .bodyTitle("Ripristinare provider ed endpoint predefiniti?")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message("Stai per cancellare tutte le personalizzazioni di provider e URL Blockscout salvate per ogni chain.")
+                .details("""
+                        Ogni chain tornerà al provider e all'endpoint predefiniti previsti dal programma.
+                        L'ApiKey Blockscout inserita nel tab "ApiKey" non viene toccata.
+                        """)
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("ripristina", "Ripristina")
+                        .role(AppDialog.ActionRole.DANGER)
+                        .build())
+                .showDialog();
+
+        if (result.isAction("ripristina")) {
+            DatabaseH2.ProviderDefi_CancellaTutti();
+            Opzioni_ProviderDefi_CaricaTabella();
+            Messaggi.SuccessMessage("Ripristino completato",
+                    "Provider ed endpoint riportati ai valori predefiniti.", this);
+        }
+    }//GEN-LAST:event_Opzioni_ProviderDefi_Bottone_RipristinaActionPerformed
+
     /**
      * Ricarica la tabella "Preferenze Provider DeFi" con i provider effettivi (salvati o default)
      * e ricollega l'editor a combobox della colonna "Provider Scelto" in base alla chain di ogni riga.
      */
     private void Opzioni_ProviderDefi_CaricaTabella() {
         javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) Opzioni_ProviderDefi_Tabella.getModel();
+        Tabelle.ColoraTabellaSemplice(Opzioni_ProviderDefi_Tabella);
         model.setRowCount(0);
         for (String rete : Mappa_ChainExplorer.keySet()) {
             String providerEffettivo = Importazioni.DeFi_ProviderEffettivo(rete);
@@ -11250,7 +11303,6 @@ if (result != null && !result.isAction("cancel")) {
             String urlDaMostrare = (urlCustom != null && !urlCustom.isBlank()) ? urlCustom : Importazioni.DeFi_ProviderBlockscoutUrl(rete);
             model.addRow(new Object[]{rete, providerEffettivo, providerEffettivo, Funzioni.TrasformaNullinBlanc(urlDaMostrare)});
         }
-        Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Blockscout")));
 
         javax.swing.JComboBox<String> providerCombo = new javax.swing.JComboBox<>();
         javax.swing.DefaultCellEditor providerEditor = new javax.swing.DefaultCellEditor(providerCombo) {
@@ -11935,6 +11987,15 @@ if (result != null && !result.isAction("cancel")) {
         // TODO add your handling code here:
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_ApiKey_UniSat_LabelSitoMouseExited
+
+    private void Opzioni_ProviderDefi_ApiKeyBlockscout_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ProviderDefi_ApiKeyBlockscout_TextFieldMouseReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_ProviderDefi_ApiKeyBlockscout_TextFieldMouseReleased
+
+    private void Opzioni_ProviderDefi_ApiKeyBlockscout_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ProviderDefi_ApiKeyBlockscout_TextFieldKeyReleased
+        // TODO add your handling code here:
+        Opzioni_ApiKey_ControllaPulsanti();
+    }//GEN-LAST:event_Opzioni_ProviderDefi_ApiKeyBlockscout_TextFieldKeyReleased
 
 
     private void Opzioni_GruppoWallet_CheckBox_PlusManualiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_CheckBox_PlusManualiActionPerformed
@@ -12975,7 +13036,8 @@ if (result != null && !result.isAction("cancel")) {
                 Opzioni_ApiKey_Coingecko_TextField.getText()+
                 Opzioni_ApiKey_Moralis_TextField.getText()+
                 Opzioni_ApiKey_Cronos_TextField.getText()+
-                Opzioni_ApiKey_UniSat_TextField.getText();
+                Opzioni_ApiKey_UniSat_TextField.getText()+
+                Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.getText();
         //String NuovoValore=Opzioni_ApiKey_Helius_TextField.getText();
         String ValoreSalvato=
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))+
@@ -12984,7 +13046,8 @@ if (result != null && !result.isAction("cancel")) {
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"))+
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"))+
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"))+
-                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat"));
+                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat"))+
+                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Blockscout"));
        // System.out.println(ValoreSalvato);
         //String ValoreSalvato=DatabaseH2.Opzioni_Leggi("ApiKey_Helius");
         if (!NuovoValore.equals(ValoreSalvato)){
@@ -15300,6 +15363,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel Opzioni_ProviderDefi_ApiKeyBlockscout_Label;
     private javax.swing.JTextField Opzioni_ProviderDefi_ApiKeyBlockscout_TextField;
     private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Annulla;
+    private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Ripristina;
     private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Salva;
     private javax.swing.JPanel Opzioni_ProviderDefi_Pannello;
     private javax.swing.JScrollPane Opzioni_ProviderDefi_ScrollIstruzioni;

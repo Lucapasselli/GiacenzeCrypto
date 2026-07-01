@@ -4307,12 +4307,18 @@ private static String F_safe(String s) {
             }
             //String urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
             String urls;
-            if (Dominio.contains("cronos.org"))
-            {
-                vespa="ztmdcxF6XnS7LGRkxPOoLGD9W7gWJfDT";
-                urls=Dominio+"?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
+            if (Dominio.contains("chainid=")) {
+                //Etherscan v2 multichain: il dominio contiene già una query string (?chainid=...)
+                urls=Dominio+"&module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
             }
-            else urls=Dominio+"&module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
+            else {
+                //Dominio Blockscout-family (Cronos oggi, altre chain se configurate dall'utente):
+                //il dominio non ha già una query string, quindi si parte da "?"; per Cronos l'apikey
+                //deve essere quella inserita dall'utente in Opzioni - ApiKey (non va mai hardcodata),
+                //per le altre chain Blockscout è opzionale
+                urls=Dominio+"?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc";
+                if (vespa != null && !vespa.isBlank()) urls += "&apikey=" + vespa;
+            }
 
             //if (Dominio.contains("cronos.org"))urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc";
             System.out.println(urls);
@@ -5186,6 +5192,57 @@ private static String F_safe(String s) {
 
     
       
+    /**
+     * Provider di default per una chain, usato quando l'utente non ha salvato
+     * una preferenza esplicita nella tabella PROVIDERDEFI.
+     * Cronos usa Blockscout di default perché il vecchio provider Cronoscan
+     * non permette di impostare un blocco di partenza per lo scaricamento.
+     */
+    public static String DeFi_ProviderDefault(String Rete) {
+        if (Rete.equalsIgnoreCase("CRO")) return "BLOCKSCOUT";
+        if (Rete.equalsIgnoreCase("BSC") || Rete.equalsIgnoreCase("BASE") || Rete.equalsIgnoreCase("AVAX")) return "MORALIS";
+        if (Rete.equalsIgnoreCase("SOL")) return "HELIUS";
+        if (Rete.equalsIgnoreCase("BTC")) return "BITCOIN";
+        return "ETHERSCAN";
+    }
+
+    /**
+     * Provider effettivamente da usare per una chain: quello salvato
+     * dall'utente in PROVIDERDEFI, o il default se non configurato.
+     */
+    public static String DeFi_ProviderEffettivo(String Rete) {
+        Map<String, String[]> prefs = DatabaseH2.ProviderDefi_LeggiTutti();
+        String[] pref = prefs.get(Rete);
+        return (pref != null && pref[0] != null && !pref[0].isBlank()) ? pref[0] : DeFi_ProviderDefault(Rete);
+    }
+
+    /**
+     * URL Blockscout personalizzato salvato dall'utente per una chain, se presente.
+     */
+    public static String DeFi_ProviderUrlCustom(String Rete) {
+        Map<String, String[]> prefs = DatabaseH2.ProviderDefi_LeggiTutti();
+        String[] pref = prefs.get(Rete);
+        return (pref != null) ? pref[1] : null;
+    }
+
+    /**
+     * URL base dell'istanza Blockscout da usare per una chain: quello personalizzato
+     * salvato dall'utente se presente, altrimenti un'istanza pubblica verificata
+     * (solo ETH/ARB/BASE/POL/CRO). Per le altre chain (es. BSC/AVAX/BERA/MONAD)
+     * ritorna null: l'utente deve compilare l'URL personalizzato nella tabella
+     * "Preferenze Provider DeFi" prima di poter usare Blockscout su quella chain.
+     */
+    public static String DeFi_ProviderBlockscoutUrl(String Rete) {
+        String custom = DeFi_ProviderUrlCustom(Rete);
+        if (custom != null && !custom.isBlank()) return custom;
+        if (Rete.equalsIgnoreCase("ETH")) return "https://eth.blockscout.com/api";
+        if (Rete.equalsIgnoreCase("ARB")) return "https://arbitrum.blockscout.com/api";
+        if (Rete.equalsIgnoreCase("BASE")) return "https://base.blockscout.com/api";
+        if (Rete.equalsIgnoreCase("POL")) return "https://polygon.blockscout.com/api";
+        if (Rete.equalsIgnoreCase("CRO")) return "https://explorer-api.cronos.org/mainnet/api/v2";
+        return null;
+    }
+
     public static Map<String, TransazioneDefi> DeFi_RitornaTransazioni(List<String> Portafogli, Component ccc, Download progressb) {
         //Portafigli contiene la lista dei portafogli da analizzare e comprende indirizzo,ultimoblocco e rete
         //la mappa seguente va popolata per ogni chain explorer che viene implementato a programma 
@@ -5201,9 +5258,10 @@ private static String F_safe(String s) {
             avaTot++;
             int ava = 0;
             
-            String walletAddress = wallets.split(";")[0];           
+            String walletAddress = wallets.split(";")[0];
             String Blocco = wallets.split(";")[1];
             String Rete = wallets.split(";")[2];
+            String Provider = DeFi_ProviderEffettivo(Rete);
             //System.out.println(Rete);
             //Se trovo delle reti non supportate da etherscan le aggiungo ad un'altra lista e le passo alla funzione successiva
             progressb.Titolo(avaTot+" di "+Portafogli.size()+" Importazione di " + walletAddress + "da explorer");
@@ -5232,7 +5290,7 @@ private static String F_safe(String s) {
                 }
 
             } 
-            else if (Rete.equalsIgnoreCase("BSC")||Rete.equalsIgnoreCase("BASE")||Rete.equalsIgnoreCase("AVAX")) {
+            else if ((Rete.equalsIgnoreCase("BSC")||Rete.equalsIgnoreCase("BASE")||Rete.equalsIgnoreCase("AVAX")) && !Provider.equals("BLOCKSCOUT")) {
 
                     //Se ho dei portafogli non gestiti da etherscan li passo alla funzione che si occupa di cercare i dati su Moralis
 //System.out.println("Leggo da Moralissssssss");
@@ -5282,19 +5340,9 @@ private static String F_safe(String s) {
                 }
             }
 
-            else if (!Rete.equalsIgnoreCase("CRO")&&!Funzioni.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))){
-                System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " per mancaza di ApiKey");
-                        System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa ad Etherscan");
-                    try {
-                        TimeUnit.SECONDS.sleep(5);
-                    } catch (InterruptedException ex) {
-                        //LoggerGC.ScriviErrore(ex);
-                        LoggerGC.ScriviErrore(ex);
-                    }
-            
-            }
             //Qui da sostituire con cronoscan
             else if (Rete.equalsIgnoreCase("CRO")&&!Funzioni.isApiKeyValidaCronos(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"))){
+                //Vale sia con Blockscout che con Cronoscan legacy: entrambi usano lo stesso dominio/ApiKey di explorer-api.cronos.org
                 System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " per mancaza di ApiKey");
                         System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa a Cronos.org");
                     try {
@@ -5303,15 +5351,45 @@ private static String F_safe(String s) {
 
                         LoggerGC.ScriviErrore(ex);
                     }
-            
+
+            }
+            else if (Provider.equals("BLOCKSCOUT") && !Rete.equalsIgnoreCase("CRO") && (DeFi_ProviderBlockscoutUrl(Rete)==null || DeFi_ProviderBlockscoutUrl(Rete).isBlank())){
+                System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " perché non è configurato un URL Blockscout per la rete " + Rete);
+                        System.out.println("Andare nella sezione 'Opzioni' - 'Preferenze Provider DeFi' per inserire l'URL dell'istanza Blockscout");
+                    try {
+                        TimeUnit.SECONDS.sleep(5);
+                    } catch (InterruptedException ex) {
+                        LoggerGC.ScriviErrore(ex);
+                    }
+
+            }
+            else if (!Provider.equals("BLOCKSCOUT") && !Rete.equalsIgnoreCase("CRO")&&!Funzioni.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))){
+                System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " per mancaza di ApiKey");
+                        System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa ad Etherscan");
+                    try {
+                        TimeUnit.SECONDS.sleep(5);
+                    } catch (InterruptedException ex) {
+                        //LoggerGC.ScriviErrore(ex);
+                        LoggerGC.ScriviErrore(ex);
+                    }
+
             }
             else{
-                
-                //Se arrivo qua leggo i risultati nella modalità etherscan
+
+                //CRO usa sempre l'ApiKey Cronos (stesso dominio explorer-api.cronos.org, sia con Blockscout che con Cronoscan legacy);
+                //per le altre chain, se Provider è Blockscout uso l'URL Blockscout (verificato o personalizzato) con l'eventuale ApiKey Blockscout opzionale;
+                //altrimenti Etherscan v2 come prima
+                boolean usaCronoscanLegacy = Rete.equalsIgnoreCase("CRO") && !Provider.equals("BLOCKSCOUT");
                 String apiKey;
-                if (Rete.equalsIgnoreCase("CRO"))apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Cronos");
-                else apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan");
                 String Indirizzo = Principale.Mappa_ChainExplorer.get(Rete)[0];
+                if (Rete.equalsIgnoreCase("CRO")) {
+                    apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Cronos");
+                } else if (Provider.equals("BLOCKSCOUT")) {
+                    apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Blockscout");
+                    Indirizzo = DeFi_ProviderBlockscoutUrl(Rete);
+                } else {
+                    apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan");
+                }
                 String MonetaRete = Principale.Mappa_ChainExplorer.get(Rete)[2];
                 //String vespa = vespa(apiKey, "paperino");
                 progressb.SetLabel("Scaricamento da " + walletAddress + " ("+Rete+") in corso...");
@@ -5325,7 +5403,7 @@ private static String F_safe(String s) {
                 //PARTE 1 : Recupero la lista delle transazioni
                 progressb.SetMessaggioAvanzamento("Preparazione fase 1 di 5");
                 Object Risposta[];
-                if (Rete.equalsIgnoreCase("CRO"))Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "txlist", Blocco, apiKey, ccc, progressb);
+                if (usaCronoscanLegacy)Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "txlist", Blocco, apiKey, ccc, progressb);
                 else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "txlist", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
@@ -5335,7 +5413,7 @@ private static String F_safe(String s) {
 
                 //PARTE 2  : Recupero la lista delle transazioni dei token bsc20 
                 progressb.SetMessaggioAvanzamento("Preparazione fase 2 di 5");
-                if (Rete.equalsIgnoreCase("CRO"))Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "tokentx", Blocco, apiKey, ccc, progressb);
+                if (usaCronoscanLegacy)Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "tokentx", Blocco, apiKey, ccc, progressb);
                 else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "tokentx", Blocco, apiKey, ccc, progressb);
                  if (Risposta == null) {
                     return null;//se in errore termino il ciclo
@@ -5345,7 +5423,7 @@ private static String F_safe(String s) {
 
                 //PARTE 3: Recupero la lista delle transazioni dei token erc721 (NFT) 
                 progressb.SetMessaggioAvanzamento("Preparazione fase 3 di 5");
-                if (Rete.equalsIgnoreCase("CRO"))Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "tokennfttx", Blocco, apiKey, ccc, progressb);
+                if (usaCronoscanLegacy)Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "tokennfttx", Blocco, apiKey, ccc, progressb);
                 else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "tokennfttx", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
@@ -5355,7 +5433,7 @@ private static String F_safe(String s) {
                 
                 //PARTE 4: Recupero la lista delle transazioni dei token erc1155 
                 progressb.SetMessaggioAvanzamento("Preparazione fase 4 di 5");
-                if (Rete.equalsIgnoreCase("CRO"))Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "token1155tx", Blocco, apiKey, ccc, progressb);
+                if (usaCronoscanLegacy)Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "token1155tx", Blocco, apiKey, ccc, progressb);
                 else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "token1155tx", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
@@ -5365,13 +5443,24 @@ private static String F_safe(String s) {
 
                 //PARTE 5: Recupero delle transazioni interne
                 progressb.SetMessaggioAvanzamento("Preparazione fase 5 di 5");
-                if (Rete.equalsIgnoreCase("CRO"))Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "txlistinternal", Blocco, apiKey, ccc, progressb);
+                if (usaCronoscanLegacy)Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "txlistinternal", Blocco, apiKey, ccc, progressb);
                 else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "txlistinternal", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
                 }
                 JSONArray transactionsTxlistinternal = (JSONArray) Risposta[1];
                 numeroTrans = numeroTrans + (int) Risposta[0];
+
+                //Cronos (via Blockscout) manda doppioni indipendentemente dallo stile di paginazione usato:
+                //applico la stessa pulizia usata da DeFi_RitornaTransazioniCronoscan anche su questo percorso
+                if (Rete.equalsIgnoreCase("CRO") && Provider.equals("BLOCKSCOUT") && Funzioni.isNumeric(Blocco, false)) {
+                    long bloccoSoglia = Long.parseLong(Blocco);
+                    transactionsTxlist = DeFi_PulisciJSONCronos(transactionsTxlist, bloccoSoglia);
+                    transactionsTokentx = DeFi_PulisciJSONCronos(transactionsTokentx, bloccoSoglia);
+                    transactionsTokenntfttx = DeFi_PulisciJSONCronos(transactionsTokenntfttx, bloccoSoglia);
+                    transactionsTokenERC1155 = DeFi_PulisciJSONCronos(transactionsTokenERC1155, bloccoSoglia);
+                    transactionsTxlistinternal = DeFi_PulisciJSONCronos(transactionsTxlistinternal, bloccoSoglia);
+                }
 
                 //   System.out.println(numeroTransTemp);
                 progressb.SetMassimo(numeroTrans);

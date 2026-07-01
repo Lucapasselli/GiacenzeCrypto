@@ -126,8 +126,12 @@ public class DatabaseH2 {
                        
             createTableSQL = "CREATE TABLE IF NOT EXISTS OPZIONI (Opzione VARCHAR(255) PRIMARY KEY, Valore VARCHAR(1000))";
             preparedStatement = connection.prepareStatement(createTableSQL);
-            preparedStatement.execute();  
+            preparedStatement.execute();
             aggiornaDimensioneColonnaValoreH2Opzioni(connection);
+
+            createTableSQL = "CREATE TABLE IF NOT EXISTS PROVIDERDEFI (Rete VARCHAR(20) PRIMARY KEY, Provider VARCHAR(50), UrlCustom VARCHAR(500))";
+            preparedStatement = connection.prepareStatement(createTableSQL);
+            preparedStatement.execute();
             
             createTableSQL = "CREATE TABLE IF NOT EXISTS GIACENZEBLOCKCHAIN (Wallet_Blocco VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
             preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
@@ -1951,6 +1955,56 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
         try (PreparedStatement ps = connectionPersonale.prepareStatement(sql)) {
             ps.setString(1, Opzione);
             ps.setString(2, Valore);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+    /**
+     * Legge tutte le preferenze provider DeFi salvate.
+     *
+     * @return Mappa Rete -&gt; {Provider, UrlCustom}
+     */
+    public static Map<String, String[]> ProviderDefi_LeggiTutti() {
+        Map<String, String[]> Risultato = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        try {
+            String sql = "SELECT Rete, Provider, UrlCustom FROM PROVIDERDEFI";
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                var resultSet = ps.executeQuery();
+                while (resultSet.next()) {
+                    Risultato.put(resultSet.getString("Rete"),
+                            new String[]{resultSet.getString("Provider"), resultSet.getString("UrlCustom")});
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return Risultato;
+    }
+
+    /**
+     * Inserisce o aggiorna la preferenza di provider DeFi per una chain.
+     *
+     * @param Rete Codice chain (es. ETH, CRO, BSC).
+     * @param Provider Codice provider scelto (es. ETHERSCAN, BLOCKSCOUT, MORALIS, CRONOSCAN).
+     * @param UrlCustom URL Blockscout personalizzato (può essere null/vuoto se non necessario).
+     */
+    public static void ProviderDefi_Scrivi(String Rete, String Provider, String UrlCustom) {
+        if (Rete == null || Rete.isEmpty()) {
+            throw new IllegalArgumentException("Rete non può essere nulla o vuota.");
+        }
+
+        String sql = """
+        MERGE INTO PROVIDERDEFI (Rete, Provider, UrlCustom)
+        KEY (Rete)
+        VALUES (?, ?, ?)
+    """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, Rete);
+            ps.setString(2, Provider);
+            ps.setString(3, UrlCustom);
             ps.executeUpdate();
         } catch (SQLException ex) {
             LoggerGC.ScriviErrore(ex);

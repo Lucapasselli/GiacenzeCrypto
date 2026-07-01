@@ -755,6 +755,15 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKey_UniSat_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_UniSat_LabelSito = new javax.swing.JLabel();
         Opzioni_ApiKey_MoralisNB_Label = new javax.swing.JLabel();
+        Opzioni_ProviderDefi_Pannello = new javax.swing.JPanel();
+        Opzioni_ProviderDefi_ScrollTabella = new javax.swing.JScrollPane();
+        Opzioni_ProviderDefi_Tabella = new javax.swing.JTable();
+        Opzioni_ProviderDefi_ScrollIstruzioni = new javax.swing.JScrollPane();
+        Opzioni_ProviderDefi_TextAreaIstruzioni = new javax.swing.JTextArea();
+        Opzioni_ProviderDefi_ApiKeyBlockscout_Label = new javax.swing.JLabel();
+        Opzioni_ProviderDefi_ApiKeyBlockscout_TextField = new javax.swing.JTextField();
+        Opzioni_ProviderDefi_Bottone_Salva = new javax.swing.JButton();
+        Opzioni_ProviderDefi_Bottone_Annulla = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -5219,6 +5228,98 @@ private static final long serialVersionUID = 3L;
 
         Opzioni_TabbedPane.addTab("ApiKey", Opzioni_ApiKey);
 
+        Opzioni_ProviderDefi_Tabella.setAutoCreateRowSorter(true);
+        Opzioni_ProviderDefi_Tabella.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Chain", "Provider Attuale", "Provider Scelto", "URL Blockscout personalizzato"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, true, true
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        Opzioni_ProviderDefi_ScrollTabella.setViewportView(Opzioni_ProviderDefi_Tabella);
+
+        Opzioni_ProviderDefi_ScrollIstruzioni.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
+        Opzioni_ProviderDefi_TextAreaIstruzioni.setEditable(false);
+        Opzioni_ProviderDefi_TextAreaIstruzioni.setColumns(20);
+        Opzioni_ProviderDefi_TextAreaIstruzioni.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        Opzioni_ProviderDefi_TextAreaIstruzioni.setRows(3);
+        Opzioni_ProviderDefi_TextAreaIstruzioni.setText("Scegli, per ogni chain, quale provider usare per lo scaricamento dei movimenti DeFi. Per Cronos il default è Blockscout perché permette di impostare un blocco di partenza per lo scaricamento (a differenza del vecchio provider); Cronos usa sempre la ApiKey Cronos inserita nel tab \"ApiKey\", non quella Blockscout qui sotto.");
+        Opzioni_ProviderDefi_TextAreaIstruzioni.setPreferredSize(new java.awt.Dimension(774, 44));
+        Opzioni_ProviderDefi_ScrollIstruzioni.setViewportView(Opzioni_ProviderDefi_TextAreaIstruzioni);
+
+        Opzioni_ProviderDefi_ApiKeyBlockscout_Label.setText("ApiKey Blockscout altre chain, non Cronos (opzionale) :");
+
+        Opzioni_ProviderDefi_Bottone_Salva.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Salva.png"))); // NOI18N
+        Opzioni_ProviderDefi_Bottone_Salva.setText("Salva");
+        Opzioni_ProviderDefi_Bottone_Salva.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_ProviderDefi_Bottone_SalvaActionPerformed(evt);
+            }
+        });
+
+        Opzioni_ProviderDefi_Bottone_Annulla.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Annulla.png"))); // NOI18N
+        Opzioni_ProviderDefi_Bottone_Annulla.setText("Annulla");
+        Opzioni_ProviderDefi_Bottone_Annulla.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_ProviderDefi_Bottone_AnnullaActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout Opzioni_ProviderDefi_PannelloLayout = new javax.swing.GroupLayout(Opzioni_ProviderDefi_Pannello);
+        Opzioni_ProviderDefi_Pannello.setLayout(Opzioni_ProviderDefi_PannelloLayout);
+        Opzioni_ProviderDefi_PannelloLayout.setHorizontalGroup(
+            Opzioni_ProviderDefi_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_ProviderDefi_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(Opzioni_ProviderDefi_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Opzioni_ProviderDefi_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 1448, Short.MAX_VALUE)
+                    .addComponent(Opzioni_ProviderDefi_ScrollIstruzioni)
+                    .addGroup(Opzioni_ProviderDefi_PannelloLayout.createSequentialGroup()
+                        .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(4, 4, 4)
+                        .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(Opzioni_ProviderDefi_PannelloLayout.createSequentialGroup()
+                        .addComponent(Opzioni_ProviderDefi_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Opzioni_ProviderDefi_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))))
+        );
+        Opzioni_ProviderDefi_PannelloLayout.setVerticalGroup(
+            Opzioni_ProviderDefi_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ProviderDefi_PannelloLayout.createSequentialGroup()
+                .addComponent(Opzioni_ProviderDefi_ScrollIstruzioni, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_ProviderDefi_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(Opzioni_ProviderDefi_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_Label)
+                    .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(Opzioni_ProviderDefi_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Opzioni_ProviderDefi_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_ProviderDefi_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(64, 64, 64))
+        );
+
+        Opzioni_TabbedPane.addTab("Preferenze Provider DeFi", Opzioni_ProviderDefi_Pannello);
+
         javax.swing.GroupLayout OpzioniLayout = new javax.swing.GroupLayout(Opzioni);
         Opzioni.setLayout(OpzioniLayout);
         OpzioniLayout.setHorizontalGroup(
@@ -8606,6 +8707,7 @@ GiacenzeaData_CompilaTabellaToken(true);
         Opzioni_RicreaListaWalletDisponibili();
         Opzioni_GruppoWallet_CaricaGruppiWallet();
         Opzioni_Emoney_CaricaTabellaEmoney();
+        Opzioni_ProviderDefi_CaricaTabella();
     }//GEN-LAST:event_OpzioniComponentShown
 
     private void Opzioni_Emoney_TabellaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_TabellaMouseClicked
@@ -11109,6 +11211,71 @@ if (result != null && !result.isAction("cancel")) {
         Opzioni_ApiKey_UniSat_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat")));
         Opzioni_ApiKey_ControllaPulsanti();
     }//GEN-LAST:event_Opzioni_ApiKey_Bottone_AnnullaActionPerformed
+
+    private void Opzioni_ProviderDefi_Bottone_SalvaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_ProviderDefi_Bottone_SalvaActionPerformed
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        if (Opzioni_ProviderDefi_Tabella.isEditing()) {
+            Opzioni_ProviderDefi_Tabella.getCellEditor().stopCellEditing();
+        }
+        javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) Opzioni_ProviderDefi_Tabella.getModel();
+        for (int riga = 0; riga < model.getRowCount(); riga++) {
+            String rete = (String) model.getValueAt(riga, 0);
+            if (rete.equalsIgnoreCase("SOL") || rete.equalsIgnoreCase("BTC")) continue;
+            String providerScelto = (String) model.getValueAt(riga, 2);
+            Object urlObj = model.getValueAt(riga, 3);
+            String urlCustom = (urlObj != null) ? urlObj.toString().trim() : "";
+            DatabaseH2.ProviderDefi_Scrivi(rete, providerScelto, urlCustom);
+        }
+        DatabaseH2.Opzioni_Scrivi("ApiKey_Blockscout", Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.getText().trim());
+        Opzioni_ProviderDefi_CaricaTabella();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_Opzioni_ProviderDefi_Bottone_SalvaActionPerformed
+
+    private void Opzioni_ProviderDefi_Bottone_AnnullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_ProviderDefi_Bottone_AnnullaActionPerformed
+        // TODO add your handling code here:
+        Opzioni_ProviderDefi_CaricaTabella();
+    }//GEN-LAST:event_Opzioni_ProviderDefi_Bottone_AnnullaActionPerformed
+
+    /**
+     * Ricarica la tabella "Preferenze Provider DeFi" con i provider effettivi (salvati o default)
+     * e ricollega l'editor a combobox della colonna "Provider Scelto" in base alla chain di ogni riga.
+     */
+    private void Opzioni_ProviderDefi_CaricaTabella() {
+        javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) Opzioni_ProviderDefi_Tabella.getModel();
+        model.setRowCount(0);
+        for (String rete : Mappa_ChainExplorer.keySet()) {
+            String providerEffettivo = Importazioni.DeFi_ProviderEffettivo(rete);
+            String urlCustom = Importazioni.DeFi_ProviderUrlCustom(rete);
+            String urlDaMostrare = (urlCustom != null && !urlCustom.isBlank()) ? urlCustom : Importazioni.DeFi_ProviderBlockscoutUrl(rete);
+            model.addRow(new Object[]{rete, providerEffettivo, providerEffettivo, Funzioni.TrasformaNullinBlanc(urlDaMostrare)});
+        }
+        Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Blockscout")));
+
+        javax.swing.JComboBox<String> providerCombo = new javax.swing.JComboBox<>();
+        javax.swing.DefaultCellEditor providerEditor = new javax.swing.DefaultCellEditor(providerCombo) {
+            @Override
+            public java.awt.Component getTableCellEditorComponent(javax.swing.JTable table, Object value, boolean isSelected, int row, int column) {
+                String rete = (String) table.getValueAt(row, 0);
+                providerCombo.setModel(new javax.swing.DefaultComboBoxModel<>(Opzioni_ProviderDefi_OpzioniPerChain(rete)));
+                providerCombo.setSelectedItem(value);
+                return super.getTableCellEditorComponent(table, value, isSelected, row, column);
+            }
+        };
+        Opzioni_ProviderDefi_Tabella.getColumnModel().getColumn(2).setCellEditor(providerEditor);
+    }
+
+    /**
+     * Provider disponibili per una chain nella colonna "Provider Scelto".
+     * SOL e BTC hanno un unico provider fisso (informativo, non c'entra Blockscout).
+     */
+    private String[] Opzioni_ProviderDefi_OpzioniPerChain(String rete) {
+        if (rete.equalsIgnoreCase("SOL")) return new String[]{"HELIUS"};
+        if (rete.equalsIgnoreCase("BTC")) return new String[]{"BITCOIN"};
+        if (rete.equalsIgnoreCase("BSC") || rete.equalsIgnoreCase("BASE") || rete.equalsIgnoreCase("AVAX")) return new String[]{"MORALIS", "BLOCKSCOUT"};
+        if (rete.equalsIgnoreCase("CRO")) return new String[]{"BLOCKSCOUT", "CRONOSCAN"};
+        return new String[]{"ETHERSCAN", "BLOCKSCOUT"};
+    }
 
     private void Opzioni_ApiKey_Helius_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Helius_TextFieldKeyReleased
         // TODO add your handling code here:
@@ -15130,6 +15297,15 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollTabella;
     private javax.swing.JTable Opzioni_GruppoWallet_Tabella;
     private javax.swing.JPanel Opzioni_PrezziKO_Pannello;
+    private javax.swing.JLabel Opzioni_ProviderDefi_ApiKeyBlockscout_Label;
+    private javax.swing.JTextField Opzioni_ProviderDefi_ApiKeyBlockscout_TextField;
+    private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Annulla;
+    private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Salva;
+    private javax.swing.JPanel Opzioni_ProviderDefi_Pannello;
+    private javax.swing.JScrollPane Opzioni_ProviderDefi_ScrollIstruzioni;
+    private javax.swing.JScrollPane Opzioni_ProviderDefi_ScrollTabella;
+    private javax.swing.JTable Opzioni_ProviderDefi_Tabella;
+    private javax.swing.JTextArea Opzioni_ProviderDefi_TextAreaIstruzioni;
     private javax.swing.JPanel Opzioni_Pulizie;
     private com.toedter.calendar.JDateChooser Opzioni_Pulizie_DataChooser_Finale;
     private com.toedter.calendar.JDateChooser Opzioni_Pulizie_DataChooser_Iniziale;

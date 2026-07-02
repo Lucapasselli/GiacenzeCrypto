@@ -639,64 +639,7 @@ public class Prezzi {
         return risultato;
     }
     
-    
-    /*    public static String ConvertiUSDEUR(String Valore, String Data) {
-        if (!fileConversioneUSDEURcaricato)
-            {
-                GeneraMappaCambioUSDEUR();
-            }
-        
-        
-        String risultato;// = null;
 
-        risultato = MappaConversioneUSDEUR.get(Data);
-      // SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH");
-       // String DatadiOggi = f.format(System.currentTimeMillis());
-        if (risultato == null) {
-            //fare parte del range date
-                String DataFinale = ConvertiDatadaLong(ConvertiDatainLong(Data) + Long.parseLong("15552000000"));
-                String DataIniziale = ConvertiDatadaLong(ConvertiDatainLong(Data) - Long.parseLong("15552000000"));
-                RecuperaTassidiCambio(DataIniziale,DataFinale);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
-                risultato = MappaConversioneUSDEUR.get(Data);
-            
-                    } //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
-
-        if (risultato != null) {
-            risultato = (new BigDecimal(Valore).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
-        }
-        return risultato;
-    }*/
-    
-    
- /*   public static String ConvertiUSDTEUR(String Qta, long Datalong) {
-        String risultato;// = null;
-        //come prima cosa devo decidere il formato data
-        long adesso = System.currentTimeMillis();
-        if (Datalong > adesso) {
-            return null;//se la data è maggiore di quella attuale non recupero nessun prezzo
-        }
-        if (Datalong < 1483225200) {
-            return null;//se la data è inferioe al 2017 non recupero nessun prezzo
-        }
-        String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
-        String DataGiorno = OperazioniSuDate.ConvertiDatadaLong(Datalong);
-
-        //cerco il valore di USDT dal vecchio database
-        risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
-        if (risultato!=null){
-            risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).stripTrailingZeros().toString();
-            return risultato;
-        }
-        else {
-            //Se non trovo il risultato nel vecchio database cerco nel nuovo
-            InfoPrezzo IP=CambioXXXEUR("USDT",Qta,Datalong,"","","");
-            if (IP!=null) return IP.RitornaPrezzoQta().toPlainString();
-            //Se arrivo qua vuol dire che non ho ancora trovato il prezzo in quel caso prendo il prezzo dei dollari reali
-            risultato = ConvertiUSDEUR(Qta, DataGiorno);
-            return risultato;
-        }
-
-    }*/
     
     
     
@@ -765,6 +708,15 @@ public class Prezzi {
         //Se non c'è connessione internet mi fermo qua e ritorno null
         if (!Funzioni.CeConnessioneInternet()) return null;
 
+        
+        //se il token non è gestito da coingecko e non è già nel database ritorno null
+        RecuperaCoinsCoingecko();
+            String AddressNoPrezzo = DatabaseH2.GestitiCoingecko_Leggi(Address + "_" + Rete);
+            if (AddressNoPrezzo == null) {
+                PrezzoIrrecuperabileDaDB_Scrivi("",Datalong,Rete,Address);
+                return null;
+            }
+        
         //Provo prima su DefiLlama (nessun vincolo di lista o limite di 365gg)
         if (IPrezzo == null) {
             RecuperaTassidiCambiodaAddress_DefiLlama(DataGiorno, Address, Rete, Simbolo);
@@ -777,13 +729,7 @@ public class Prezzi {
 
         //Se ancora non trovo i prezzi vado a richiedere a coingecko i dati
         if (IPrezzo == null) {
-            //se il token non è gestito da coingecko e non è già nel database ritorno null
-            RecuperaCoinsCoingecko();
-            String AddressNoPrezzo = DatabaseH2.GestitiCoingecko_Leggi(Address + "_" + Rete);
-            if (AddressNoPrezzo == null) {
-                PrezzoIrrecuperabileDaDB_Scrivi("",Datalong,Rete,Address);
-                return null;
-            } else {
+            
                 //Se la moneta è codificata da coingecko (Quindi so che non è scam) e corrisponde ad una delle monete principali
                 //Prendo il suo prezzo dagli exchange per risparmiare tempo e richieste.
                 for (String SimboloP : SimboliPrioritari) {
@@ -826,7 +772,7 @@ public class Prezzi {
                 //QUESTO MOMENTANEAMENTE LO DISABILITO, DA CAPIRE SE RIABILITARLO O MENO
                /* IPrezzo=CambioXXXEUR(Simbolo, Qta, Datalong,"","","");
                 if (IPrezzo!=null)return IPrezzo;*/
-            }
+            
         }
         
         //Se arrivo qua vuol dire che le ho provate tutte ma non riesco a trovare il prezzo del token

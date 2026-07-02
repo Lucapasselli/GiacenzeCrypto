@@ -98,6 +98,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -4309,6 +4310,19 @@ private static String F_safe(String s) {
         int numeroTrans=0;
         String BloccoTemp=BloccoIniziale;
         boolean finito=false;
+        //L'API "Etherscan-compatible" di Cronos (explorer-api.cronos.org) ignora di fatto startblock/endblock
+        //e sort per TUTTE le azioni: con startblock=<qualsiasi valore> torna sempre e solo le ~20 transazioni
+        //più recenti (a volte nemmeno in ordine asc), causando una perdita silenziosa di dati storici (verificato:
+        //con startblock la stessa richiesta che con page/offset restituisce migliaia di record ne restituiva ~20).
+        //In più, per le azioni tokennfttx/token1155tx/txlistinternal con startblock=1 e nessun endblock la
+        //richiesta sfora anche il limite di 10000 blocchi tra startblock ed endblock e torna HTTP 400
+        //"Block range excess 10000 blocks". Per Cronos quindi pagino sempre con page/offset (stesso approccio
+        //già usato e verificato in DeFi_RitornaTransazioniCronoscan) invece di filtrare per blocco lato
+        //server, e poi ripulisco doppioni/transazioni già importate lato client con DeFi_PulisciJSONCronos.
+        //Le altre chain Blockscout-family (non Cronos) restano invece sul filtro server-side per startblock.
+        boolean paginazioneBlockscout = !Dominio.contains("chainid=") && Dominio.contains("cronos.org");
+        int pagina=1;
+        int offsetPagina=1000;
 
          try {
              while (!finito){//Siccome il limite è di 10000 movimenti se supero quel limite continuo le richieste dall'ultima arrivata
@@ -4320,6 +4334,10 @@ private static String F_safe(String s) {
             if (Dominio.contains("chainid=")) {
                 //Etherscan v2 multichain: il dominio contiene già una query string (?chainid=...)
                 urls=Dominio+"&module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
+            }
+            else if (paginazioneBlockscout) {
+                urls=Dominio+"?module=account&action="+Tipo+"&address=" + walletAddress + "&page="+pagina+"&offset="+offsetPagina+"&sort=asc";
+                if (vespa != null && !vespa.isBlank()) urls += "&apikey=" + vespa;
             }
             else {
                 //Dominio Blockscout-family (Cronos oggi, altre chain se configurate dall'utente):
@@ -4333,18 +4351,44 @@ private static String F_safe(String s) {
             //if (Dominio.contains("cronos.org"))urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc";
             System.out.println(urls);
             System.out.println("Recupero informazioni da Explorer "+Dominio+" relativamente a wallet "+ walletAddress);
-            System.out.println("da Blocco : "+BloccoTemp+" relativi a tipologia : "+Tipo);
+            if (paginazioneBlockscout) System.out.println("pagina : "+pagina+" relativi a tipologia : "+Tipo);
+            else System.out.println("da Blocco : "+BloccoTemp+" relativi a tipologia : "+Tipo);
             URL url = new URI(urls).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            StringBuilder responseTxlist = new StringBuilder();
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                responseTxlist.append(inputLine);
+            int codiceRisposta = con.getResponseCode();
+            //Sopra i 400 HttpURLConnection.getInputStream() lancia IOException senza mai far leggere
+            //il body della risposta: leggo invece l'error stream così il messaggio reale del server
+            //(es. "Block range excess 10000 blocks") non va perso e può essere mostrato all'utente.
+            InputStream streamRisposta = (codiceRisposta >= 400) ? con.getErrorStream() : con.getInputStream();
+            String Risposta;
+            if (streamRisposta == null) {
+                Risposta = "";
+            } else {
+                BufferedReader in = new BufferedReader(new InputStreamReader(streamRisposta));
+                StringBuilder responseTxlist = new StringBuilder();
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    responseTxlist.append(inputLine);
+                }
+                in.close();
+                Risposta = responseTxlist.toString();
             }
-            in.close();
-            String Risposta=responseTxlist.toString();
+            if (codiceRisposta >= 400) {
+                String messaggioErrore = Risposta.isBlank() ? "(nessun dettaglio nella risposta)" : Risposta;
+                try {
+                    JSONObject jsonErrore = new JSONObject(Risposta);
+                    messaggioErrore = jsonErrore.optString("message","") + ": " + jsonErrore.optString("result","");
+                } catch (Exception ignore) {
+                    //body non in formato JSON: uso il testo grezzo già assegnato sopra
+                }
+                if (progressb!=null)progressb.ChiudiFinestra();
+                LoggerGC.ScriviErrore("Errore HTTP "+codiceRisposta+" durante l'importazione dei dati da "+urls+"\n"+messaggioErrore);
+                JOptionPane.showConfirmDialog(ccc, "Errore HTTP "+codiceRisposta+" durante l'importazione dei dati\n"+messaggioErrore+
+                        "\n"+"Riprovare in un secondo momento, le API dell'Explorer non rispondono correttamente.",
+                        "Errore", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null);
+                return null;
+            }
             //System.out.println(Risposta);
             //Se Risposta contiene "Query Timeout occurred." e la richiesta è per un erc1155
             //significa che l'explorer non lo supporta quindi ritorno il campo vuoto
@@ -4384,26 +4428,50 @@ private static String F_safe(String s) {
             for (int i = 0; i < transactionsArrayTemp.length(); i++) {
                 JSONObject transaction = transactionsArrayTemp.getJSONObject(i);
                    BloccoTemp=transaction.getString("blockNumber");
-                   numeroTrans++;
                    numeroTransTemp++;
+                   if (!paginazioneBlockscout) numeroTrans++;
             }
-            transactionsArray.putAll(transactionsArrayTemp);           
+            transactionsArray.putAll(transactionsArrayTemp);
             TimeUnit.SECONDS.sleep(2);
             if (progressb!=null&&progressb.FineThread()) {
                 return null;
             }
-            if (numeroTransTemp<1000)finito=true;//abbasso il imite da 10000 a 1000 perchè etherscan ha cambia le policy dal 01/06/2026
-          }   
+            if (paginazioneBlockscout) {
+                pagina++;
+                if (numeroTransTemp<offsetPagina)finito=true;
+            }
+            else if (numeroTransTemp<1000)finito=true;//abbasso il imite da 10000 a 1000 perchè etherscan ha cambia le policy dal 01/06/2026
+          }
         } catch (InterruptedException | URISyntaxException | IOException ex) {
             LoggerGC.ScriviErrore(ex);
+            if (progressb!=null)progressb.ChiudiFinestra();
+            JOptionPane.showConfirmDialog(ccc, "Errore di rete durante l'importazione dei dati per la tipologia "+Tipo+"\n"+ex+
+                    "\n"+"Riprovare in un secondo momento, le API dell'Explorer non rispondono correttamente.",
+                    "Errore", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null);
+            return null;
         }
+           if (paginazioneBlockscout) {
+               //la paginazione page/offset non filtra per blocco lato server (a differenza di startblock):
+               //ripulisco doppioni e transazioni già importate (blocco <= BloccoIniziale) lato client,
+               //riusando la stessa funzione già usata dal percorso Cronoscan legacy.
+               long blocco = Funzioni.isNumeric(BloccoIniziale, false) ? Long.parseLong(BloccoIniziale) : 0;
+               transactionsArray = DeFi_PulisciJSONCronos(transactionsArray, blocco);
+               numeroTrans = transactionsArray.length();
+           }
            ritorno[0]=numeroTrans;
            System.out.println(numeroTrans);
            ritorno[1]=transactionsArray;
-           return ritorno; 
+           return ritorno;
      }
 
      
+    //Sentinella ritornata da GiacenzeCRO_RimanzeBlocco quando il nodo RPC non ha (più) lo stato storico
+    //per quel blocco (HTTP 404 "Balance not found"): non è un errore di rete, è un limite di profondità
+    //dell'archivio del nodo, molto comune sui blocchi vecchi. Va distinta da un null (errore vero, che
+    //deve interrompere l'importazione) perché qui il chiamante deve invece saltare la verifica su quel
+    //blocco e continuare, segnalando poi in un riepilogo quali blocchi non è stato possibile verificare.
+    public static final String GIACENZE_CRO_BLOCCO_NON_DISPONIBILE = "N/D";
+
     public static String GiacenzeCRO_RimanzeBlocco(String Blocco, String walletAddress) {
         //In questa funzione dovrò recuperare le rimanenze CRO del wallet ad un determinato Blocco
         //Questo ci permetterà di sistemare le giacenze dei CRO in maniera esatta anche se porterà via molto tempo.
@@ -4417,14 +4485,33 @@ private static String F_safe(String s) {
             URL url = new URI(urls).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            StringBuilder responseTxlist = new StringBuilder();
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                responseTxlist.append(inputLine);
+            int codiceRisposta = con.getResponseCode();
+            InputStream streamRisposta = (codiceRisposta >= 400) ? con.getErrorStream() : con.getInputStream();
+            String Risposta;
+            if (streamRisposta == null) {
+                Risposta = "";
+            } else {
+                BufferedReader in = new BufferedReader(new InputStreamReader(streamRisposta));
+                StringBuilder responseTxlist = new StringBuilder();
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    responseTxlist.append(inputLine);
+                }
+                in.close();
+                Risposta = responseTxlist.toString();
             }
-            in.close();
-            JSONObject jsonObjectTxlist = new JSONObject(responseTxlist.toString());
+            if (codiceRisposta == 404) {
+                //Il nodo RPC non ha più (o non ha mai avuto) lo stato per questo blocco storico: non è
+                //un errore da bloccare l'importazione, il chiamante deve saltare la verifica su questo blocco.
+                LoggerGC.logInfo("Giacenza CRO non verificabile per il blocco "+Blocco+" (wallet "+walletAddress+"): "+Risposta);
+                TimeUnit.SECONDS.sleep(2);
+                return GIACENZE_CRO_BLOCCO_NON_DISPONIBILE;
+            }
+            if (codiceRisposta >= 400) {
+                LoggerGC.ScriviErrore("Errore HTTP "+codiceRisposta+" durante il controllo giacenze CRO su blocco "+Blocco+" (wallet "+walletAddress+")\n"+Risposta);
+                return null;
+            }
+            JSONObject jsonObjectTxlist = new JSONObject(Risposta);
             Valore = jsonObjectTxlist.getString("result");
             Valore = (Funzioni.hexToDecimal(Valore)).toString();
             Valore = new BigDecimal(Valore).divide(new BigDecimal("1000000000000000000")).stripTrailingZeros().toPlainString();
@@ -4580,6 +4667,7 @@ private static String F_safe(String s) {
             List<String[]> RigheTabella=new ArrayList<>();
             List<String[]> MovDaAggiungere=new ArrayList<>();
             List<String> MovDaEliminare=new ArrayList<>();
+            List<String> BlocchiNonVerificati=new ArrayList<>();
             for (String[] movimento : MappaCryptoWallet.values()) {
                 progressb.SetAvanzamento(avanzamento);
                 avanzamento++;
@@ -4682,15 +4770,23 @@ private static String F_safe(String s) {
                                     JOptionPane.showConfirmDialog(ccc,testoMessaggio,"Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
                                     LoggerGC.ScriviErrore(testoMessaggio);
                                     return null;
-                                    
-                                }
 
+                                }
+                                //Blocco troppo vecchio per lo stato storico del nodo RPC: non è un errore bloccante,
+                                //ma la verifica per questo blocco non è possibile. Salto la riconciliazione per questo
+                                //singolo blocco (mantengo il totale calcolato dai movimenti importati, senza crearne
+                                //uno correttivo) e lo segnalo nel riepilogo finale.
+                                else if (rima.equals(GIACENZE_CRO_BLOCCO_NON_DISPONIBILE)){
+                                    BlocchiNonVerificati.add(UltimoBlocco);
+                                }
+                                else {
                                 BigDecimal TotaleVoluto=new BigDecimal(rima);
-                                if (TotaleVoluto.compareTo(TotaleQta)!=0){//se i 2 totali non corrispondono creo il movimento che sistema le cose                                
+                                if (TotaleVoluto.compareTo(TotaleQta)!=0){//se i 2 totali non corrispondono creo il movimento che sistema le cose
                                     String RT[]=GiacenzeCRO_CreaMovCorretivo(PrimaTransBlocco,TotaleQta,TotaleVoluto);
                                     if(RT!=null)RigheTabella.add(RT);
                                     TotaleQta=TotaleVoluto;//A Questo punto il nuovo totale dovrà essere quello voluto
                                     //break;
+                                }
                                 }
      
                                 
@@ -4742,8 +4838,23 @@ private static String F_safe(String s) {
             if (!RigheTabella.isEmpty())Principale.TabellaCryptodaAggiornare=true;
             if (!MovDaAggiungere.isEmpty())Principale.TabellaCryptodaAggiornare=true;
             if (!MovDaEliminare.isEmpty())Principale.TabellaCryptodaAggiornare=true;
+            //Il nodo RPC usato per la verifica (cronos.org/explorer/api) non conserva lo stato storico
+            //per blocchi troppo vecchi: per quei blocchi la riconciliazione è stata saltata (vedi
+            //GiacenzeCRO_RimanzeBlocco). Lo segnalo qui perché non è un errore ma un limite reale:
+            //il totale delle giacenze CRO su quei tratti storici resta quello calcolato dai soli
+            //movimenti importati, senza la verifica di riscontro contro la blockchain.
+            if (!BlocchiNonVerificati.isEmpty()){
+                String elenco = BlocchiNonVerificati.size()<=20
+                        ? String.join(", ", BlocchiNonVerificati)
+                        : String.join(", ", BlocchiNonVerificati.subList(0,20))+", ... (+"+(BlocchiNonVerificati.size()-20)+" altri)";
+                String testoAvviso="Attenzione: per "+BlocchiNonVerificati.size()+" blocchi la giacenza CRO storica non era più disponibile sul nodo RPC "+
+                        "(limite di profondità dell'archivio) e la riconciliazione è stata saltata per quei blocchi:\n"+elenco+
+                        "\nIl totale calcolato dai movimenti importati non è stato verificato contro la blockchain per questi tratti storici.";
+                LoggerGC.logInfo(testoAvviso);
+                JOptionPane.showConfirmDialog(ccc,testoAvviso,"Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+            }
     return "Ok";
-        
+
     }
         
     public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Component ccc, Download progressb) {

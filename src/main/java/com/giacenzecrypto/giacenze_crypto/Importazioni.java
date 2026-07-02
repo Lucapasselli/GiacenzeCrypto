@@ -4689,14 +4689,14 @@ private static String F_safe(String s) {
                     //Devo avere il numero di blocco
                     //poi penso cambierò il nome del wallet per la defi, credo li chiamerò Wallet o qualcosa del tipo DEFI Principale
                     if (Wallet.equalsIgnoreCase(WalletRiga) && movimento[4].trim().equalsIgnoreCase("Wallet")) {
-                       // System.out.println("Sono qui");
+                      // System.out.println("Sono qui");
                         if (AddressU.equalsIgnoreCase("CRO")||AddressE.equalsIgnoreCase("CRO")) {
-                            
+                           // System.out.println("Sono qui2");
                             //Prima di iniziare il controllo delle giacenze e sistemara la qta di CRO verifico se trovo dei trasferimenti di CRO da un certo Address
                             //e li trasformo in uno scambio WCRO - CRO
                            
 
-                               
+                               //System.out.println(movimento[30]);
 
                                 //Se non è un movimento in defi non gestisco nulla perchè non ho le bsi per farlo e devo gestirlo a mano
                                 if (movimento[18].equalsIgnoreCase("")
@@ -4709,6 +4709,7 @@ private static String F_safe(String s) {
                                         &&//Arriva da contratto WCRO
                                         Funzioni.TrovaReteDaIMovimento(movimento).equalsIgnoreCase("CRO")) //Rete Cronos
                                 {
+                                    System.out.println("Movimento Cronos WCRO -> CRO trovato");
                                     //Creo un movimento di uscita di WCRO che poi verrà trasformato in scambio differito dal sistema
                                     String MT[] = new String[Importazioni.ColonneTabella];
                                     String IDSpezzato[] = movimento[0].split("_");

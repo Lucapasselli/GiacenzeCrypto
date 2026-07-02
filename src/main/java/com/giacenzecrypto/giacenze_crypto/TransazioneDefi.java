@@ -711,14 +711,15 @@ public class TransazioneDefi {
                   // RT[6]="-> "+token.RitornaNomeToken();
                    RT[7] = TipoTransazione;
                    RT[23]=Blocco;
+                   RT[30]=token.IndirizzoNoWallet;
                    Importazioni.RiempiVuotiArray(RT);
                    righe.add(RT);
                }
-              
-              
+
+
               i++;
               }
-             
+
       }else if(IdentificaTipoTransazione()!=null && IdentificaTipoTransazione().equalsIgnoreCase("prelievo")){
          //Prelievo (considero le commissioni) 
          if (QtaCommissioni != null&&!QtaCommissioni.equalsIgnoreCase("-0")) {     

@@ -5362,7 +5362,7 @@ private static String F_safe(String s) {
     /**
      * URL base dell'istanza Blockscout da usare per una chain: quello personalizzato
      * salvato dall'utente se presente, altrimenti un'istanza pubblica verificata
-     * (solo ETH/ARB/BASE/POL/CRO). Per le altre chain (es. BSC/AVAX/BERA/MONAD)
+     * (solo ETH/ARB/BASE/POL/CRO/GNOSIS). Per le altre chain (es. BSC/AVAX/BERA/MONAD)
      * ritorna null: l'utente deve compilare l'URL personalizzato nella tabella
      * "Preferenze Provider DeFi" prima di poter usare Blockscout su quella chain.
      */
@@ -5374,6 +5374,7 @@ private static String F_safe(String s) {
         if (Rete.equalsIgnoreCase("BASE")) return "https://base.blockscout.com/api";
         if (Rete.equalsIgnoreCase("POL")) return "https://polygon.blockscout.com/api";
         if (Rete.equalsIgnoreCase("CRO")) return "https://explorer-api.cronos.org/mainnet/api/v2";
+        if (Rete.equalsIgnoreCase("GNOSIS")) return "https://gnosis.blockscout.com/api";
         return null;
     }
 

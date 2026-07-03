@@ -406,6 +406,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
         Download.FineThread = true;
         Bottone_Interrompi.setEnabled(false);
         Bottone_Interrompi.setText("Interruzione in corso...");
+        System.out.println("Premuto tasto interrompi sull'operazione in corso");
         if (!textPaneErrori.getText().isBlank()) {
             this.dispose();
         }

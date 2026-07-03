@@ -56,8 +56,10 @@ public class Funzioni_WalletDeFi {
                         Funzioni.ApriWeb("https://polygonscan.com/tx/" + IDTransazione);
                     }else if (Rete.equalsIgnoreCase("MONAD")){
                         Funzioni.ApriWeb("https://monadscan.com/tx/" + IDTransazione);
+                    }else if (Rete.equalsIgnoreCase("GNOSIS")){
+                        Funzioni.ApriWeb("https://gnosisscan.io/tx/" + IDTransazione);
                     }
-                    
+
         }
         return true;
 
@@ -97,9 +99,11 @@ public class Funzioni_WalletDeFi {
                         else if(Rete.equalsIgnoreCase("MONAD")){
                            Funzioni.ApriWeb("https://monadscan.com/token/"+Address +"?a="+ Wallet);
                         }
-                        
-                        
-        
+                        else if(Rete.equalsIgnoreCase("GNOSIS")){
+                           Funzioni.ApriWeb("https://gnosisscan.io/token/"+Address +"?a="+ Wallet);
+                        }
+
+
      }
      
           public static void ApriSituazioneWallet(String Wallet,String Rete){
@@ -134,17 +138,20 @@ public class Funzioni_WalletDeFi {
                            Funzioni.ApriWeb("https://polygonscan.com/tokenholdings?a="+ Wallet); 
                         }
                         else if(Rete.equalsIgnoreCase("MONAD")){
-                           Funzioni.ApriWeb("https://monadscan.com/tokenholdings?a="+ Wallet); 
+                           Funzioni.ApriWeb("https://monadscan.com/tokenholdings?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("GNOSIS")){
+                           Funzioni.ApriWeb("https://gnosisscan.io/tokenholdings?a="+ Wallet);
                         }
                     }
-        
+
      }
      
      
      public static boolean isValidDefiWallet(String wallet) {
         //Questa funzione serve per sapere se una stringa wallet presente nella colonna wallet es 0x3423432aff4545 (ETH)
         //può essere considerata un wallet valido, si controllerà quindi l'indirizzo e se la rete è supportata
-        String RetiSupportate="||BSC||CRO||BASE||ARB||ETH||SOL||BERA||AVAX||POL||MONAD||BTC||";
+        String RetiSupportate="||BSC||CRO||BASE||ARB||ETH||SOL||BERA||AVAX||POL||MONAD||BTC||GNOSIS||";
         String sWallet[]=wallet.split("\\(");
         String address;
         String Rete;

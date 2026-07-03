@@ -46,7 +46,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     static String BlockChain[]=new String[]{"----------",
     "Arbitrum (ARB)","Avalanche (AVAX)","Base (BASE)","Bitcoin (BTC)","Cardano (ADA)","Binance Chain (BNB)","Binance Smart Chain (BSC)",
     "Cronos Chain (CRO)","Dash (DASH)","Dogecoin (DOGE)","Polkadot (DOT)","Eos (EOS)","Ethereum (ETH)",
-    "Fantom (FTM)","Litecoin (LTC)","Terra Classic (LUNA)","Polygon (POL)","Tron (TRX)","Solana (SOL)","Monad (MONAD)",
+    "Fantom (FTM)","Gnosis Chain (GNOSIS)","Litecoin (LTC)","Terra Classic (LUNA)","Polygon (POL)","Tron (TRX)","Solana (SOL)","Monad (MONAD)",
     "Stellar (XLM)","Ripple (XRP)","Zcash (ZEC)"};
     
     static String NomeWallet="";

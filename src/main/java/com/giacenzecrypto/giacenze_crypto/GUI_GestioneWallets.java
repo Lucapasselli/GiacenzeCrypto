@@ -154,7 +154,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         TextField_IndirizzoWallet.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         ComboBox_Rete.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Arbitrum (ARB)", "Avalanche (AVAX)", "Base (BASE)", "Berachain (BERA)", "Binance Smart Chain (BSC)", "Bitcoin (BTC)", "Cronos Chain (CRO)", "Ethereum (ETH)", "Solana (SOL)", "Polygon (POL)", "Monad (MONAD)" }));
+        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Arbitrum (ARB)", "Avalanche (AVAX)", "Base (BASE)", "Berachain (BERA)", "Binance Smart Chain (BSC)", "Bitcoin (BTC)", "Cronos Chain (CRO)", "Ethereum (ETH)", "Gnosis Chain (GNOSIS)", "Solana (SOL)", "Polygon (POL)", "Monad (MONAD)" }));
 
         Bottone_Aggiorna.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Aggiorna.png"))); // NOI18N
         Bottone_Aggiorna.addActionListener(new java.awt.event.ActionListener() {

@@ -38,6 +38,7 @@ public class VarCondivise {
         String[] POL = new String[]{"https://api.etherscan.io/v2/api?chainid=137", "", "POL", "polygon-pos", "polygon"};
         String[] MONAD = new String[]{"https://api.etherscan.io/v2/api?chainid=143", "", "MON", "monad", ""};
         String[] BTC = new String[]{"https://mempool.space/api", "", "BTC", "bitcoin", "bitcoin"};
+        String[] GNOSIS = new String[]{"https://api.etherscan.io/v2/api?chainid=100", "", "XDAI", "xdai", "xdai"};
         Principale.Mappa_ChainExplorer.put("CRO", CRO);
         Principale.Mappa_ChainExplorer.put("BSC", BSC);
         Principale.Mappa_ChainExplorer.put("ETH", ETH);
@@ -49,6 +50,7 @@ public class VarCondivise {
         Principale.Mappa_ChainExplorer.put("AVAX", AVAX);
         Principale.Mappa_ChainExplorer.put("POL", POL);
         Principale.Mappa_ChainExplorer.put("MONAD", MONAD);
+        Principale.Mappa_ChainExplorer.put("GNOSIS", GNOSIS);
         Principale.Mappa_AddressRete_Nome.put("0x66e428c3f67a68878562e79A0234c1F83c208770_CRO", "USDT");
         Principale.Mappa_AddressRete_Nome.put("0x55d398326f99059fF775485246999027B3197955_BSC", "USDT");
         Principale.Mappa_AddressRete_Nome.put("0xc21223249CA28397B4B6541dfFaEcC539BfF0c59_CRO", "USDC");
@@ -83,6 +85,7 @@ public class VarCondivise {
         Principale.MappaRetiSupportate.put("EOS", "");
         Principale.MappaRetiSupportate.put("ETH", "");
         Principale.MappaRetiSupportate.put("FTM", "");
+        Principale.MappaRetiSupportate.put("GNOSIS", "");
         Principale.MappaRetiSupportate.put("LTC", "");
         Principale.MappaRetiSupportate.put("LUNA", "");
         Principale.MappaRetiSupportate.put("POL", "");

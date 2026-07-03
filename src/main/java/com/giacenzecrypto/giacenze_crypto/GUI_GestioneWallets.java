@@ -389,36 +389,60 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                 Map<String,String[]> Mappa_Wallet_Dati = new TreeMap<>();
                 Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.DeFi_RitornaTransazioni(Portafogli, c, progress);
                // System.out.println("DIM:"+MappaTransazioniDefi.size());
+                boolean interrotto = false;
                 if (MappaTransazioniDefi != null) {
-                    //Scrivo tutte le nuove transazioni nella mappa principale
+                    //La classificazione fatta da RitornaRigheTabella() include una seconda fase di
+                    //recupero prezzi: va quindi controllato anche qui il pulsante "Interrompi".
+                    //Le righe vengono prima solo raccolte in un buffer e scritte nelle mappe
+                    //principali (MappaCryptoWallet, Mappa_Wallet) solo se l'operazione arriva in
+                    //fondo senza essere interrotta, così un'interruzione non lascia nessuna
+                    //traccia parziale della sessione, esattamente come già avviene per la prima fase.
+                    List<String[]> RigheDaScrivere = new ArrayList<>();
+                    outer:
                     for (TransazioneDefi v : MappaTransazioniDefi.values()) {
+                        if (progress.FineThread()) {
+                            interrotto = true;
+                            break;
+                        }
                         for (String[] st : v.RitornaRigheTabella()) {
-                            Principale.Funzione_AggiornaMappaWallets(st);//questo aggiorna la tabella wallet
-                            //deve essere aggiornata perchè serve per sistemare poi le giacenze dei cronos
-                            
-                            //Questo serve a fare in modo che se per qualche motivo trovo qualche movimento con lo stesso id lo aggiorno affinchè diventi univoco
-                            //prima di inserire il tutto enlla mappa
-                            st[0]=MovimentiCrypto.getIDUnivoco(MappaCryptoWallet, st[0]);
-                            
-                            Importazioni.InserisciMovimentosuMappaCryptoWallet(st[0], st);
-                         //   MappaCryptoWallet.put(st[0], st);
-                            i++;
-                            
-                            //Questa parte serve per memorizzare in una mappa tutti i wallet che hanno avuto aggiornamenti con questa funzione
-                            //in questo modo posso poi andare a cercare le giacenze di fine importazione per quanbto riguarda il token di riferimento
-                            //ad es. eth per base, o bnb per la binance smart chain
-                            //Salto la cronoschain perchè quella viene gestita a parte
-                            String WalletRete=st[3];
-                            String Wallet=st[3].split("\\(")[0].trim();
-                            String ReteW=st[34];
-                            //String ReteW=Funzioni.TrovaReteDaID(st[0]);
-                            String Dati[]=new String[]{Wallet,ReteW};
-                            if (!ReteW.equals("CRO"))Mappa_Wallet_Dati.put(WalletRete,Dati);
-
-                            
+                            if (progress.FineThread()) {
+                                interrotto = true;
+                                break outer;
+                            }
+                            RigheDaScrivere.add(st);
                         }
                     }
-                    
+
+                    if (interrotto) {
+                        //L'utente ha premuto "Interrompi" durante la seconda fase di recupero prezzi:
+                        //scarto tutti i movimenti scaricati in questa sessione, come già avviene se
+                        //l'interruzione avviene durante la prima fase (Importazioni.DeFi_RitornaTransazioni)
+                        Importazioni.TransazioniAggiunte = 0;
+                    } else {
+                    for (String[] st : RigheDaScrivere) {
+                        Principale.Funzione_AggiornaMappaWallets(st);//questo aggiorna la tabella wallet
+                        //deve essere aggiornata perchè serve per sistemare poi le giacenze dei cronos
+
+                        //Questo serve a fare in modo che se per qualche motivo trovo qualche movimento con lo stesso id lo aggiorno affinchè diventi univoco
+                        //prima di inserire il tutto enlla mappa
+                        st[0]=MovimentiCrypto.getIDUnivoco(MappaCryptoWallet, st[0]);
+
+                        Importazioni.InserisciMovimentosuMappaCryptoWallet(st[0], st);
+                     //   MappaCryptoWallet.put(st[0], st);
+                        i++;
+
+                        //Questa parte serve per memorizzare in una mappa tutti i wallet che hanno avuto aggiornamenti con questa funzione
+                        //in questo modo posso poi andare a cercare le giacenze di fine importazione per quanbto riguarda il token di riferimento
+                        //ad es. eth per base, o bnb per la binance smart chain
+                        //Salto la cronoschain perchè quella viene gestita a parte
+                        String WalletRete=st[3];
+                        String Wallet=st[3].split("\\(")[0].trim();
+                        String ReteW=st[34];
+                        //String ReteW=Funzioni.TrovaReteDaID(st[0]);
+                        String Dati[]=new String[]{Wallet,ReteW};
+                        if (!ReteW.equals("CRO"))Mappa_Wallet_Dati.put(WalletRete,Dati);
+                    }
+
                     //Adesso per ogni wallet coinvolto controllo le giacenze di fine importazione e sistemo in caso di discrepanze
                     //Salto la cronoschain perchè quella viene gestita a parte
                     String mess="Vuoi che venga controllata la giacenza del token di riferimento delle chain "
@@ -454,9 +478,10 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                     if (Importazioni.TransazioniAggiunte != 0) {
                         Principale.TabellaCryptodaAggiornare = true;
                     }
-                    
+
                 }
-                
+                }
+
                 progress.dispose();
 
             }

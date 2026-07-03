@@ -783,6 +783,7 @@ public class Prezzi {
     public static void CompilaMoneteStessoPrezzo(){
      Principale.Mappa_MoneteStessoPrezzo.put("WCRO", "CRO");
      Principale.Mappa_MoneteStessoPrezzo.put("WETH", "ETH");
+     Principale.Mappa_MoneteStessoPrezzo.put("XDAI", "DAI");
     }
     
     

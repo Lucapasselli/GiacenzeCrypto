@@ -443,10 +443,11 @@ public class TransazioneDefi {
       String RT[];
       List<String[]> righe=new ArrayList<>();
       //String dataAlMinuto=DataOra.trim().substring(0, DataOra.length()-3);
-      long DataSecondo=FunzioniDate.ConvertiDatainLongSecondo(DataOra);
+      long TimeStampL=FunzioniDate.ConvertiDatainLongSecondo(DataOra);
       try {
-          if (TimeStamp == null || TimeStamp.trim().isEmpty()) TimeStamp = String.valueOf(DataSecondo);
+          if (TimeStamp == null || TimeStamp.trim().isEmpty()) TimeStamp = String.valueOf(TimeStampL);
           if (Long.parseLong(TimeStamp) < 100000000000L) TimeStamp = String.valueOf(Long.parseLong(TimeStamp) * 1000);
+          TimeStampL=Long.parseLong(TimeStamp);
       } catch (Exception e) {}
       //String PrimaParteID=DataOra.replaceAll(" |-|:", "")+"_BC."+Rete+"."+Wallet+"."+HashTransazione;
       if (TipoTransazione!=null) TipoTransazione=TipoTransazione.split("\\(")[0].trim();
@@ -510,7 +511,7 @@ public class TransazioneDefi {
               
               RT = MovimentiCrypto.creaMovimento(MC, null,
                                         Wallet+" ("+Rete+")", "Wallet",
-                                        DataSecondo, null, null, 1, 1, null, null, "A",
+                                        TimeStampL, null, null, 1, 1, null, null, "A",
                                         HashTransazione, "COMMISSIONE", null);
 
                if (RT != null) {
@@ -572,7 +573,7 @@ public class TransazioneDefi {
               
               RT = MovimentiCrypto.creaMovimento(MC, null,
                                         Wallet+" ("+Rete+")", "Wallet",
-                                        DataSecondo, null, null, 1, 1, null, null, "A",
+                                        TimeStampL, null, null, 1, 1, null, null, "A",
                                         HashTransazione, "COMMISSIONE", null);
 
                if (RT != null) {
@@ -638,7 +639,7 @@ public class TransazioneDefi {
               
               RT = MovimentiCrypto.creaMovimento(MC, null,
                                         Wallet+" ("+Rete+")", "Wallet",
-                                        DataSecondo, null, null, 1, 1, null, null, "A",
+                                        TimeStampL, null, null, 1, 1, null, null, "A",
                                         HashTransazione, "COMMISSIONE", null);
 
                if (RT != null) {
@@ -704,7 +705,7 @@ public class TransazioneDefi {
               
               RT = MovimentiCrypto.creaMovimento(M2, null,
                                         Wallet+" ("+Rete+")", "Wallet",
-                                        DataSecondo, null, null, i, 1, null, null, "A",
+                                        TimeStampL, null, null, i, 1, null, null, "A",
                                         HashTransazione, null, null);
 
                if (RT != null) {
@@ -767,7 +768,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               
               RT = MovimentiCrypto.creaMovimento(MC, null,
                                         Wallet+" ("+Rete+")", "Wallet",
-                                        DataSecondo, null, null, 1, 1, null, null, "A",
+                                        TimeStampL, null, null, 1, 1, null, null, "A",
                                         HashTransazione, "COMMISSIONE", null);
 
                if (RT != null) {
@@ -838,7 +839,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               
               RT = MovimentiCrypto.creaMovimento(M2, null,
                                         Wallet+" ("+Rete+")", "Wallet",
-                                        DataSecondo, null, null, i, 1, null, null, "A",
+                                        TimeStampL, null, null, i, 1, null, null, "A",
                                         HashTransazione, null, null);
 
                if (RT != null) {
@@ -909,7 +910,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               
               RT = MovimentiCrypto.creaMovimento(M2, M1,
                                         Wallet+" ("+Rete+")", "Wallet",
-                                        DataSecondo, null, null, i, 1, null, null, "A",
+                                        TimeStampL, null, null, i, 1, null, null, "A",
                                         HashTransazione, null, null);
 
                if (RT != null) {
@@ -974,7 +975,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               
               RT = MovimentiCrypto.creaMovimento(MC, null,
                                         Wallet+" ("+Rete+")", "Wallet",
-                                        DataSecondo, null, null, 1, 1, null, null, "A",
+                                        TimeStampL, null, null, 1, 1, null, null, "A",
                                         HashTransazione, "COMMISSIONE", null);
 
                if (RT != null) {
@@ -1057,7 +1058,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               
               RT = MovimentiCrypto.creaMovimento(M2, M1,
                                         Wallet+" ("+Rete+")", "Wallet",
-                                        DataSecondo, null, null, i, 1, null, null, "A",
+                                        TimeStampL, null, null, i, 1, null, null, "A",
                                         HashTransazione, null, null);
 
                if (RT != null) {
@@ -1139,7 +1140,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               
               RT = MovimentiCrypto.creaMovimento(M2, null,
                                         Wallet+" ("+Rete+")", "Wallet",
-                                        DataSecondo, null, null, i, 1, null, null, "A",
+                                        TimeStampL, null, null, i, 1, null, null, "A",
                                         HashTransazione,"TRANSAZIONE TECNICA INTERNA", null);
 
                if (RT != null) {
@@ -1206,7 +1207,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               
               RT = MovimentiCrypto.creaMovimento(M2, null,
                                         Wallet+" ("+Rete+")", "Wallet",
-                                        DataSecondo, null, null, i, 1, null, null, "A",
+                                        TimeStampL, null, null, i, 1, null, null, "A",
                                         HashTransazione,"TRANSAZIONE TECNICA INTERNA", null);
 
                if (RT != null) {

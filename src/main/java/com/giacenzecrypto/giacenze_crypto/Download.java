@@ -324,9 +324,11 @@ private Timer timer = new Timer(1000, new ActionListener() {
         ProgressBarDownload.setStringPainted(true);
 
         LabelAvanzamento.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        LabelAvanzamento.setText("Avanzamento");
+        LabelAvanzamento.setText("      ");
 
-        Bottone_Interrompi.setText("Interrompi");
+        Bottone_Interrompi.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        Bottone_Interrompi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_ImbutoX.png"))); // NOI18N
+        Bottone_Interrompi.setText("<html><h2>Interrompi Elaborazione</h2></html>");
         Bottone_Interrompi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Bottone_InterrompiActionPerformed(evt);
@@ -350,11 +352,6 @@ private Timer timer = new Timer(1000, new ActionListener() {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(LabelScaricamento, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(ProgressBarDownload, javax.swing.GroupLayout.DEFAULT_SIZE, 975, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(LabelAvanzamento, javax.swing.GroupLayout.PREFERRED_SIZE, 765, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(Bottone_Interrompi))
                     .addComponent(jSeparator1)
                     .addComponent(jScrollPane3)
                     .addComponent(jScrollPane4)
@@ -362,7 +359,9 @@ private Timer timer = new Timer(1000, new ActionListener() {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addComponent(jLabel2))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(Bottone_Interrompi)
+                    .addComponent(LabelAvanzamento, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -373,19 +372,19 @@ private Timer timer = new Timer(1000, new ActionListener() {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ProgressBarDownload, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(LabelAvanzamento)
-                    .addComponent(Bottone_Interrompi, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(LabelAvanzamento)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 85, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Bottone_Interrompi, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -405,7 +404,9 @@ private Timer timer = new Timer(1000, new ActionListener() {
         Principale.InterrompiCiclo = true;
         Download.FineThread = true;
         Bottone_Interrompi.setEnabled(false);
-        Bottone_Interrompi.setText("Interruzione in corso...");
+        LabelAvanzamento.setText("Interruzione in corso...");
+        //Bottone_Interrompi.setText("Interruzione in corso...");
+        
         System.out.println("Premuto tasto interrompi sull'operazione in corso");
         if (!textPaneErrori.getText().isBlank()) {
             this.dispose();

@@ -38,12 +38,6 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="LabelScaricamento" max="32767" attributes="0"/>
                   <Component id="ProgressBarDownload" pref="975" max="32767" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="LabelAvanzamento" min="-2" pref="765" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="Bottone_Interrompi" min="-2" max="-2" attributes="0"/>
-                  </Group>
                   <Component id="jSeparator1" max="32767" attributes="0"/>
                   <Component id="jScrollPane3" max="32767" attributes="0"/>
                   <Component id="jScrollPane4" max="32767" attributes="0"/>
@@ -54,6 +48,8 @@
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
+                  <Component id="Bottone_Interrompi" alignment="0" max="32767" attributes="0"/>
+                  <Component id="LabelAvanzamento" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -67,21 +63,20 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="ProgressBarDownload" min="-2" pref="32" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="2" attributes="0">
-                  <Component id="LabelAvanzamento" alignment="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="Bottone_Interrompi" alignment="2" min="-2" pref="32" max="-2" attributes="0"/>
-              </Group>
+              <Component id="LabelAvanzamento" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="jSeparator1" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jScrollPane3" pref="149" max="32767" attributes="0"/>
+              <Component id="jScrollPane3" pref="191" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jScrollPane4" min="-2" pref="130" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jScrollPane4" pref="85" max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="Bottone_Interrompi" min="-2" pref="51" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -101,12 +96,18 @@
     <Component class="javax.swing.JLabel" name="LabelAvanzamento">
       <Properties>
         <Property name="horizontalAlignment" type="int" value="0"/>
-        <Property name="text" type="java.lang.String" value="Avanzamento"/>
+        <Property name="text" type="java.lang.String" value="      "/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="Bottone_Interrompi">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Interrompi"/>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Segoe UI" size="12" style="1"/>
+        </Property>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_ImbutoX.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;h2&gt;Interrompi Elaborazione&lt;/h2&gt;&lt;/html&gt;"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_InterrompiActionPerformed"/>

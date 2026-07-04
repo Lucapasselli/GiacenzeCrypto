@@ -4709,9 +4709,37 @@ private static String F_safe(String s) {
                                         &&//Arriva da contratto WCRO
                                         Funzioni.TrovaReteDaIMovimento(movimento).equalsIgnoreCase("CRO")) //Rete Cronos
                                 {
+                                    Moneta MO=new Moneta();
+                                    MO.SetNome("WCRO");
+                                    MO.Tipo="Crypto";
+                                    MO.Qta=new BigDecimal(movimento[13]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
+                                    MO.MonetaAddress="0x5c7f8a570d578ed84e63fdfa7b1ee72deae1ae23";
+                                    MO.SetNomeEsteso("WCRO");
+                                    MO.SetRete("CRO");
+                                    Moneta MI=new Moneta();
+                                    MI.SetNome("CRO");
+                                    MI.Tipo="Crypto";
+                                    MI.Qta=movimento[13];
+                                    MI.MonetaAddress=movimento[28];
+                                    MI.SetNomeEsteso("CRO");
+                                    MI.SetRete("CRO");
+                                    //Trovo l'ora esatta del movimento
+                                    long timestamp;
+                                    
+                                    if (Funzioni.isNumeric(movimento[29], false))timestamp=Long.parseLong(movimento[29]);
+                                    else{
+                                        String Datasec=Funzioni.getOradaID(movimento[0]);
+                                        timestamp=FunzioniDate.ConvertiDatainLongSecondo(Datasec);
+                                    }
                                     System.out.println("Movimento Cronos WCRO -> CRO trovato");
+                                    String MT[];
+                                    MT = MovimentiCrypto.creaMovimento(MO, MI,
+                                        movimento[3], movimento[4],
+                                        timestamp, null, null, 1, 1, null, null, "A",
+                                        movimento[24], null, null);
+                                    MT[30] = movimento[30];
                                     //Creo un movimento di uscita di WCRO che poi verrà trasformato in scambio differito dal sistema
-                                    String MT[] = new String[Importazioni.ColonneTabella];
+                                 /*   String MT[] = new String[Importazioni.ColonneTabella];
                                     String IDSpezzato[] = movimento[0].split("_");
                                     String IDNuovoMov = IDSpezzato[0] + "_" + IDSpezzato[1] + "_" + IDSpezzato[2] + "_" + IDSpezzato[3] + "_SC";
                                     MT[0] = IDNuovoMov;
@@ -4737,7 +4765,7 @@ private static String F_safe(String s) {
                                     MT[28] = movimento[28];
                                     MT[29] = movimento[29];
                                     MT[30] = movimento[30];
-                                    Importazioni.RiempiVuotiArray(MT);
+                                    Importazioni.RiempiVuotiArray(MT);*/
                                     MovDaAggiungere.add(MT);
                                     MovDaEliminare.add(movimento[0]);
                                    // MappaCryptoWallet.put(IDNuovoMov, MT);

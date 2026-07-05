@@ -55,6 +55,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
     static final String CB_DC_ACQUISTO="ACQUISTO CRYPTO (Tramite contanti,servizi esterni etc...) o DONAZIONE";
     static final String CB_DC_SCAMBIODIFF="SCAMBIO CRYPTO DIFFERITO";
     static final String CB_DC_ARENDITA="TRASFERIMENTO DA VAULT/PIATTAFORMA A RENDITA";
+    static final String CB_DC_PRESTITO="PRESTITO - RICEZIONE FONDI";
     //ComboBox completo per singolo movimento
     static String[] CB_DC_SINGOLO = new String[]{
         CB_NESSUNASELEZIONE,
@@ -63,7 +64,8 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         CB_DC_TRASFERIMENTO,
         CB_DC_ACQUISTO,
         CB_DC_SCAMBIODIFF,
-        CB_DC_ARENDITA
+        CB_DC_ARENDITA,
+        CB_DC_PRESTITO
     };
     //ComboBox completo per movimento multiplo
     static String[] CB_DC_MULTIPLO = new String[]{
@@ -144,6 +146,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
             TransferNO();
         } else if (tipomov.equalsIgnoreCase("DAC")||tipomov.equalsIgnoreCase("DDO")) {
             ntipo = 4;
+            if (riga[6].contains("Prestito"))ntipo=7;
             TransferNO();
         }
         else {
@@ -622,7 +625,14 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                 }
                 case CB_DC_ACQUISTO -> {
                     //movimento solo singolo, fatta comunque predisposizione per poterlo cambiare in multiplo successivamente
-                    ModificaEffettuata=Crea_Acquisto(IDsTrans,Note);
+                    ModificaEffettuata=Crea_Acquisto(IDsTrans,Note,CB_DC_ACQUISTO);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    this.dispose();
+                    return;
+                }
+                case CB_DC_PRESTITO -> {
+                    //movimento solo singolo, fatta comunque predisposizione per poterlo cambiare in multiplo successivamente
+                    ModificaEffettuata=Crea_Acquisto(IDsTrans,Note,CB_DC_PRESTITO);
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     this.dispose();
                     return;
@@ -999,7 +1009,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
     
     
-    private boolean Crea_Acquisto(Set<String> IDsTr, String Note) {
+    private boolean Crea_Acquisto(Set<String> IDsTr, String Note, String Tipologia) {
         boolean ritorno = false;
         for (String id : IDsTr) {
             Set<String> IDSetSingolo = new HashSet<>();
@@ -1010,86 +1020,93 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             String descrizione;
             String dettaglio;
             String promptValore;
+            String m = attuale[15];
 
-            AppDialog.DialogResult sceltaTipo = AppDialog.builder(this)
-                    .windowTitle("Classificazione del movimento")
-                    .bodyTitle("Tipo di movimento")
-                    .showTitleInBody(true)
-                    .theme()
-                    .type(AppDialog.DialogType.INFO)
-                    .message("Scegli come classificare il movimento di deposito.")
-                    .details("Opzioni disponibili: acquisto crypto oppure donazione.")
-                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
-                            .role(AppDialog.ActionRole.SECONDARY)
-                            .build())
-                    .action(AppDialog.DialogAction.builder("acquisto-crypto", "ACQUISTO CRYPTO")
-                            .role(AppDialog.ActionRole.NEUTRAL)
-                            .build())
-                    .action(AppDialog.DialogAction.builder("donazione", "DONAZIONE")
-                            .role(AppDialog.ActionRole.NEUTRAL)
-                            .build())
-                    .showDialog();
+            if (Tipologia.equals(CB_DC_PRESTITO)) {
+                descrizione = "PRESTITO";
+                dettaglio = "DAC - Prestito";
+            } else {
+                AppDialog.DialogResult sceltaTipo = AppDialog.builder(this)
+                        .windowTitle("Classificazione del movimento")
+                        .bodyTitle("Tipo di movimento")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.INFO)
+                        .message("Scegli come classificare il movimento di deposito.")
+                        .details("Opzioni disponibili: acquisto crypto oppure donazione.")
+                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("acquisto-crypto", "ACQUISTO CRYPTO")
+                                .role(AppDialog.ActionRole.NEUTRAL)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("donazione", "DONAZIONE")
+                                .role(AppDialog.ActionRole.NEUTRAL)
+                                .build())
+                        .showDialog();
 
-            if (sceltaTipo == null) {
-                return false;
-            }
-
-            String actionId = sceltaTipo.getActionId();
-            if (actionId == null || "cancel".equals(actionId)) {
-                return false;
-            }
-
-            switch (actionId) {
-                case "acquisto-crypto" -> {
-                    descrizione = "ACQUISTO CRYPTO";
-                    dettaglio = "DAC - Acquisto Crypto";
-                    promptValore = "Indica il valore di acquisto corretto in Euro:";
-                }
-                case "donazione" -> {
-                    descrizione = "DONAZIONE";
-                    dettaglio = "DDO - Donazione";
-                    promptValore = "Indica il costo di carico della donazione ricevuta:";
-                }
-                default -> {
+                if (sceltaTipo == null) {
                     return false;
                 }
-            }
 
-            AppDialog.DialogResult inputResult = AppDialog.builder(this)
-                    .windowTitle("Valore del movimento")
-                    .bodyTitle("Inserimento importo")
-                    .showTitleInBody(true)
-                    .theme()
-                    .type(AppDialog.DialogType.INFO)
-                    .message(promptValore)
-                    .inputField(attuale[15], attuale[15])
-                    .inputColumns(18)
-                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
-                            .role(AppDialog.ActionRole.SECONDARY)
-                            .build())
-                    .action(AppDialog.DialogAction.builder("confirm", "Conferma")
-                            .role(AppDialog.ActionRole.PRIMARY)
-                            .build())
-                    .showDialog();
+                String actionId = sceltaTipo.getActionId();
+                if (actionId == null || "cancel".equals(actionId)) {
+                    return false;
+                }
 
-            if (inputResult == null) {
-                return false;
-            }
+                switch (actionId) {
+                    case "acquisto-crypto" -> {
+                        descrizione = "ACQUISTO CRYPTO";
+                        dettaglio = "DAC - Acquisto Crypto";
+                        promptValore = "Indica il valore di acquisto corretto in Euro:";
+                    }
+                    case "donazione" -> {
+                        descrizione = "DONAZIONE";
+                        dettaglio = "DDO - Donazione";
+                        promptValore = "Indica il costo di carico della donazione ricevuta:";
+                    }
+                    default -> {
+                        return false;
+                    }
+                }
 
-            String inputActionId = inputResult.getActionId();
-            if (inputActionId == null || "cancel".equals(inputActionId)) {
-                return false;
-            }
+                AppDialog.DialogResult inputResult = AppDialog.builder(this)
+                        .windowTitle("Valore del movimento")
+                        .bodyTitle("Inserimento importo")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.INFO)
+                        .message(promptValore)
+                        .inputField(attuale[15], attuale[15])
+                        .inputColumns(18)
+                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("confirm", "Conferma")
+                                .role(AppDialog.ActionRole.PRIMARY)
+                                .build())
+                        .showDialog();
 
-            String m = inputResult.getInputValue();
-            if (m == null || m.trim().isBlank()) {
-                return false;
-            }
+                if (inputResult == null) {
+                    return false;
+                }
 
-            m = m.trim();
+                String inputActionId = inputResult.getActionId();
+                if (inputActionId == null || "cancel".equals(inputActionId)) {
+                    return false;
+                }
+
+                m = inputResult.getInputValue();
+                if (m == null || m.trim().isBlank()) {
+                    return false;
+                }
+
+                m = m.trim();
 
 // qui prosegue la tua logica attuale
-            m = m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
+                m = m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
+            }
+        
             if (Principale.Funzioni_isNumeric(m, false)) {
                 //Se trovo un prezzo vecchio in 35 significa che sto ricodificando lo stesso movimento
                 //A questo punto prima di andare avanti ripristino la situazione orginale

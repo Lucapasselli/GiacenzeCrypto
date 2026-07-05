@@ -4655,6 +4655,7 @@ private static String F_safe(String s) {
      }
         public static String GiacenzeCRO_Sistema(String Wallet,Component ccc,Download progressb) {
         
+            System.out.println("Sistemazione giacenze CRO");
             progressb.setDefaultCloseOperation(0);
             progressb.Titolo("Sistemazione Giacenze CRO");
             progressb.SetLabel("La funzione potrebbe durare parecchi minuti");
@@ -4681,6 +4682,7 @@ private static String F_safe(String s) {
                         String AddressU = movimento[26];
                         String AddressE = movimento[28];
                         String WalletRiga=movimento[3];
+                       // System.out.println("Address entrata:"+AddressE);
                       //  System.out.println(movimento[3].trim());
                     // adesso verifico il wallet
                     //Deve essere lo stesso wallet
@@ -4694,9 +4696,6 @@ private static String F_safe(String s) {
                            // System.out.println("Sono qui2");
                             //Prima di iniziare il controllo delle giacenze e sistemara la qta di CRO verifico se trovo dei trasferimenti di CRO da un certo Address
                             //e li trasformo in uno scambio WCRO - CRO
-                           
-
-                               //System.out.println(movimento[30]);
 
                                 //Se non è un movimento in defi non gestisco nulla perchè non ho le bsi per farlo e devo gestirlo a mano
                                 if (movimento[18].equalsIgnoreCase("")
@@ -4768,6 +4767,7 @@ private static String F_safe(String s) {
                                     Importazioni.RiempiVuotiArray(MT);*/
                                     MovDaAggiungere.add(MT);
                                     MovDaEliminare.add(movimento[0]);
+                                    System.out.println("Sistemato movimento WCRO");
                                    // MappaCryptoWallet.put(IDNuovoMov, MT);
                                    // ClassificazioneTrasf_Modifica.CreaMovimentiScambioCryptoDifferito(IDNuovoMov, movimento[0]);
                                     // System.out.println("Trovato scambio con WCRO");

@@ -42,10 +42,19 @@ public int avanzamento;
 public transient Thread thread;
 
 /**
- * Flag statico che segnala la terminazione (normale o forzata) del thread.
- * Impostato a {@code true} dalla chiusura della finestra o dal pulsante "Interrompi".
+ * Flag che segnala la terminazione (normale o forzata) del thread associato a
+ * questa istanza del dialogo. Impostato a {@code true} dalla chiusura della
+ * finestra o dal pulsante "Interrompi".
+ * <p>
+ * Deve essere un campo di istanza e non statico: essendoci più dialoghi
+ * {@code Download} aperti in sequenza (o annidati) nello stesso flusso, un
+ * campo statico farebbe sì che la chiusura di un dialogo precedente (il cui
+ * evento {@code windowClosed} può arrivare in coda sull'EDT con un certo
+ * ritardo) interrompesse erroneamente il ciclo di un dialogo successivo,
+ * completamente indipendente.
+ * </p>
  */
-public static boolean FineThread = false;
+public boolean FineThread = false;
 
 /** Se {@code true}, i pannelli di log non vengono collegati allo stdout/stderr. */
 public boolean nascondiLog = false;
@@ -70,7 +79,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
         ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse() + "logo.png");
         this.setIconImage(icon.getImage());
         initComponents();
-        Download.FineThread = false;
+        this.FineThread = false;
         Principale.InterrompiCiclo = false;
 
         // Font derivati dal tema corrente: bold per i label di sezione, +2pt per il titolo
@@ -176,7 +185,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
             this.dispose();
         }
         Principale.InterrompiCiclo = false;
-        return Download.FineThread;
+        return this.FineThread;
     }
 
     /**
@@ -395,14 +404,14 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
         Principale.InterrompiCiclo = true;
-        Download.FineThread = true;
+        this.FineThread = true;
         LoggerGC.disableTextPaneOut();
         LoggerGC.disableTextPaneErr();
     }//GEN-LAST:event_formWindowClosed
 
     private void Bottone_InterrompiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_InterrompiActionPerformed
         Principale.InterrompiCiclo = true;
-        Download.FineThread = true;
+        this.FineThread = true;
         Bottone_Interrompi.setEnabled(false);
         LabelAvanzamento.setText("Interruzione in corso...");
         //Bottone_Interrompi.setText("Interruzione in corso...");
@@ -415,7 +424,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         Principale.InterrompiCiclo = false;
-        Download.FineThread = false;
+        this.FineThread = false;
         if (!nascondiLog) {
             LoggerGC.enableTextPaneOut(textPane);
             LoggerGC.enableTextPaneErr(textPaneErrori);

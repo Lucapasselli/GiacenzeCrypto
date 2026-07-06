@@ -56,6 +56,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
     static final String CB_DC_SCAMBIODIFF="SCAMBIO CRYPTO DIFFERITO";
     static final String CB_DC_ARENDITA="TRASFERIMENTO DA VAULT/PIATTAFORMA A RENDITA";
     static final String CB_DC_PRESTITO="PRESTITO - RICEZIONE FONDI";
+    static final String CB_DC_COLLATERALE="PRESTITO - SBLOCCO COLLATERALE (Chiusura del prestito)";
     //ComboBox completo per singolo movimento
     static String[] CB_DC_SINGOLO = new String[]{
         CB_NESSUNASELEZIONE,
@@ -65,7 +66,8 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         CB_DC_ACQUISTO,
         CB_DC_SCAMBIODIFF,
         CB_DC_ARENDITA,
-        CB_DC_PRESTITO
+        CB_DC_PRESTITO,
+        CB_DC_COLLATERALE
     };
     //ComboBox completo per movimento multiplo
     static String[] CB_DC_MULTIPLO = new String[]{
@@ -80,6 +82,8 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
     static final String CB_PC_TRASFERIMENTO="TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di deposito nella tabella sotto)";
     static final String CB_PC_SCAMBIODIFF="SCAMBIO CRYPTO DIFFERITO";
     static final String CB_PC_DARENDITA="TRASFERIMENTO A VAULT/PIATTAFORMA A RENDITA";
+    static final String CB_PC_LIQUIDAZIONEPRESTITO="PRESTITO - LIQUIDAZIONE FORZATA";
+    static final String CB_PC_COLLATERALE="PRESTITO - MESSA A COLLATERALE";
     //ComboBox completo per singolo movimento
     static String[] CB_PC_SINGOLO = new String[]{
         CB_NESSUNASELEZIONE,
@@ -87,13 +91,16 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         CB_PC_DONAZIONEFURTO,
         CB_PC_TRASFERIMENTO,
         CB_PC_SCAMBIODIFF,
-        CB_PC_DARENDITA
+        CB_PC_DARENDITA,
+        CB_PC_LIQUIDAZIONEPRESTITO,
+        CB_PC_COLLATERALE
     };
     //ComboBox completo per movimento multiplo
     static String[] CB_PC_MULTIPLO = new String[]{
         CB_NESSUNASELEZIONE,
         CB_PC_CASHOUTCOMMISSIONE,
-        CB_PC_DONAZIONEFURTO
+        CB_PC_DONAZIONEFURTO,
+        CB_PC_LIQUIDAZIONEPRESTITO
     };
     
     
@@ -127,16 +134,19 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
             TransferNO();
         } else if (tipomov.equalsIgnoreCase("PCO")) {
             ntipo = 1;
+            if (riga[6].contains("Liquidazione"))ntipo=6;
             TransferNO();
         } else if (tipomov.equalsIgnoreCase("PTW")) {
             ntipo = 3;
             if (riga[6].contains("Scambio"))ntipo=4;
             if (riga[6].contains("Rendita"))ntipo=5;//Prelievo per Piattoforma a rendita
+            if (riga[6].contains("Collaterale"))ntipo=7;//Prelievo per messa a collaterale prestito
             TransferSI();
         } else if (tipomov.equalsIgnoreCase("DTW")) {
             ntipo = 3;
             if (riga[6].contains("Scambio"))ntipo=5;//Deposito per Scambio Differito
             if (riga[6].contains("Rendita"))ntipo=6;//Deposito da Piattoforma a rendita
+            if (riga[6].contains("Collaterale"))ntipo=8;//Deposito da sblocco collaterale prestito
             TransferSI();
         } else if (tipomov.equalsIgnoreCase("DAI")) {
             ntipo = 1;
@@ -226,6 +236,9 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                 TransferNO();
             } else if (tipomov.equalsIgnoreCase("PCO")) {
                 ntipo = 1;
+                if (riga[6].contains("Liquidazione")) {
+                    ntipo = 6;
+                }
                 TransferNO();
             } else if (tipomov.equalsIgnoreCase("PTW")) {
                 ntipo = 3;
@@ -235,6 +248,9 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                 if (riga[6].contains("Rendita")) {
                     ntipo = 5;//Prelievo per Piattoforma a rendita
                 }
+                if (riga[6].contains("Collaterale")) {
+                    ntipo = 7;//Prelievo per messa a collaterale prestito
+                }
                 TransferSI();
             } else if (tipomov.equalsIgnoreCase("DTW")) {
                 ntipo = 3;
@@ -243,6 +259,9 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                 }
                 if (riga[6].contains("Rendita")) {
                     ntipo = 6;//Deposito da Piattoforma a rendita
+                }
+                if (riga[6].contains("Collaterale")) {
+                    ntipo = 8;//Deposito da sblocco collaterale prestito
                 }
                 TransferSI();
             } else if (tipomov.equalsIgnoreCase("DAI")) {
@@ -652,6 +671,14 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                     this.dispose();
                     return;
                 }
+                case CB_DC_COLLATERALE -> {
+                    descrizione = "TRASFERIMENTO DA COLLATERALE";
+                    dettaglio = "DTW - Trasferimento da Collaterale";
+                    CreaMovimentiTrasferimentoDaCollaterale(IDTrans, descrizione, dettaglio);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    this.dispose();
+                    return;
+                }
             }
 
         } else {
@@ -692,7 +719,25 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                     this.dispose();
                     return;
                 }
-                 
+                case CB_PC_LIQUIDAZIONEPRESTITO -> {
+                    //Può essere un movimento multiplo
+                    descrizione = "LIQUIDAZIONE PRESTITO";
+                    dettaglio = "PCO - Liquidazione";
+                    ClassificaMovimenti(IDsTrans,descrizione,dettaglio,Note,"",true);
+                    ModificaEffettuata=true;
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    this.dispose();
+                    return;
+                }
+                case CB_PC_COLLATERALE -> {
+                    descrizione = "TRASFERIMENTO A COLLATERALE";
+                    dettaglio = "PTW - Trasferimento a Collaterale";
+                    CreaMovimentiTrasferimentoACollaterale(IDTrans, descrizione, dettaglio);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    this.dispose();
+                    return;
+                }
+
             }
                     }
 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -1855,9 +1900,458 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         Movimento[5]=Descrizione;
         Movimento[18]=Dettaglio;
         Movimento[20]=IDNuovoMov+","+IDMovCorrettivo;
-        
+
     }
-    
+
+    private void CreaMovimentiTrasferimentoACollaterale(String ID,String Descrizione,String Dettaglio){
+            //controllo se ho movimenti simili e chiedo se voglio classificarli nella stessa maniera
+            //poi creo movimento di messa a collaterale e modifico il movimento originale
+
+
+            //FASE 1: recupero tutti i movimenti con la stessa moneta e stesso contratto
+            String Movimento[]=MappaCryptoWallet.get(ID);
+            String Moneta=Movimento[8];
+            String AddressContratto=null;
+            if (Movimento.length>30)AddressContratto=Movimento[30];
+            ArrayList<String> ListaIDMovimentiUguali = new ArrayList<>();
+            //for (String[] v : MappaCryptoWallet.values()) {
+            for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
+                String v[]=MappaCryptoWallet.get(IDnc);
+                //considero solo i movimenti che hanno l'address del contratto in memoria
+                //perchè a me interessa trovare i movimenti dello stesso tipo e l'unica è basarsi sul contratto
+                if (v.length>30){
+                    String AddContratto=v[30];
+                    if (AddressContratto!=null&&AddContratto!=null&&
+                        !AddressContratto.isBlank()&&!AddContratto.isBlank()&&
+                        AddressContratto.equalsIgnoreCase(AddContratto)&&
+                        !v[0].equals(ID)&&
+                        v[0].split("_")[4].equalsIgnoreCase("PC")&&
+                            v[8].equals(Moneta)&&
+                            v[18].isBlank()){//questo serve per trovare solo i movimenti non ancora classificati
+
+                        //Sotto questa if ci sono tutti i movimenti di deposito
+                        //che riguardano la stessa moneta e lo stesso contratto
+                        ListaIDMovimentiUguali.add(v[0]);
+                    }
+
+                }
+            }
+            boolean TuttiiMovimenti=false;
+            //FASE 2: Se trovo movimenti identici chiedo se voglio che anche questi siano classificati come Collaterale
+            if (!ListaIDMovimentiUguali.isEmpty()){
+                String message = "Sono stati trovati altri " + ListaIDMovimentiUguali.size()
+                        + " movimenti analoghi non ancora classificati.";
+                String details = "Vuoi considerarli allo stesso modo?";
+
+                AppDialog.DialogResult result = AppDialog.builder(this)
+                        .windowTitle("Classificazione movimenti multipli")
+                        .bodyTitle("Applicare la stessa classificazione")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.INFO)
+                        .message(message)
+                        .details(details)
+                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("no", "No")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("yes", "Sì")
+                                .role(AppDialog.ActionRole.PRIMARY)
+                                .build())
+                        .showDialog();
+
+                if (result == null) {
+                    Messaggi.WarningMessage("Operazione Annullata", "", this);
+                    return;
+                } else {
+                    String actionId = result.getActionId();
+
+                    if (null == actionId) {
+                        Messaggi.WarningMessage("Operazione Annullata", "", this);
+                        return;
+                    } else switch (actionId) {
+                        case "cancel" -> {
+                            Messaggi.WarningMessage("Operazione Annullata", "", this);
+                            return;
+                        }
+                        case "yes" -> {
+                            //classifico il movimento in questione e tutti quelli successivi trovati
+                            CreaMovimentoTrasferimentoACollaterale(ID, Descrizione, Dettaglio);
+                            for (String IDMov : ListaIDMovimentiUguali) {
+                                CreaMovimentoTrasferimentoACollaterale(IDMov, Descrizione, Dettaglio);
+                            }   ModificaEffettuata = true;
+                            TuttiiMovimenti = true;
+                        }
+                        case "no" -> {
+                            CreaMovimentoTrasferimentoACollaterale(ID, Descrizione, Dettaglio);
+                            ModificaEffettuata = true;
+                        }
+                        default -> {
+                            return;
+                        }
+                    }
+                }
+            }else{
+                //FASE 3:modifico il solo movimento interessato
+                CreaMovimentoTrasferimentoACollaterale(ID,Descrizione,Dettaglio);
+                ModificaEffettuata=true;
+                TuttiiMovimenti=true;
+            }
+
+
+            //Adesso verifico se ci sono movimenti di sblocco del collaterale e chiedo se voglio sistemare anche quelli
+            //Questo lo faccio controllando contratto, moneta e tipo movimento, se contratto e moneta coincidono e tipo movimento è inverso allora ho
+            //trovato movimenti papabili per la richiesta
+            //la richiesta la devo fare solo se alla domanda se volevo categorizzare tutti i movimenti è stato risposto si.
+            ListaIDMovimentiUguali = new ArrayList<>();
+        if (TuttiiMovimenti) {
+            //Verifico se trovo movimenti di sblocco e eventualmente avviso se si vuole classificarli in automatico
+            for (String IDnc : Principale.DepositiPrelieviDaCategorizzare) {
+                String v[] = MappaCryptoWallet.get(IDnc);
+
+                String AddContratto = v[30];
+                if (AddressContratto != null && AddContratto != null
+                        && !AddressContratto.isBlank() && !AddContratto.isBlank()
+                        && AddressContratto.equalsIgnoreCase(AddContratto)
+                        && !v[0].equals(ID)
+                        && v[0].split("_")[4].equalsIgnoreCase("DC")
+                        && v[11].equals(Moneta)
+                        && v[18].isBlank()) {//questo serve per trovare solo i movimenti non ancora classificati
+                    ListaIDMovimentiUguali.add(v[0]);
+                }
+
+            }
+
+            if (!ListaIDMovimentiUguali.isEmpty()) {
+                Descrizione = "TRASFERIMENTO DA COLLATERALE";
+                Dettaglio = "DTW - Trasferimento da Collaterale";
+
+                String message = "Sono stati trovati " + ListaIDMovimentiUguali.size()
+                        + " movimenti di sblocco collaterale da questo contratto non ancora classificati.";
+                String details = "Vuoi che vengano classificati automaticamente?";
+
+                AppDialog.DialogResult result = AppDialog.builder(this)
+                        .windowTitle("Classificazione movimenti multipli")
+                        .bodyTitle("Classificazione automatica")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.INFO)
+                        .message(message)
+                        .details(details)
+                        .action(AppDialog.DialogAction.builder("no", "No")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("yes", "Sì")
+                                .role(AppDialog.ActionRole.PRIMARY)
+                                .build())
+                        .showDialog();
+
+                if (result != null && "yes".equals(result.getActionId())) {
+                    for (String IDMov : ListaIDMovimentiUguali) {
+                        CreaMovimentoTrasferimentoDaCollaterale(IDMov, Descrizione, Dettaglio);
+                    }
+                    ModificaEffettuata = true;
+                }
+            }
+        }
+        if (ModificaEffettuata) {
+            Messaggi.SuccessMessage("Modifiche effettuate con successo.", "Modifiche effettuate, ricordarsi di Salvare! <br>(sezione Transazioni Crypto)", this);
+        }
+    }
+
+    public static void CreaMovimentoTrasferimentoACollaterale(String ID,String Descrizione,String Dettaglio){
+        //Devo modificare il movimento originale + crearne uno nuovo
+        String Movimento[]=MappaCryptoWallet.get(ID);
+        //fase 1: creo il nuovo movimento
+        String IDSpezzato[]=Movimento[0].split("_");
+        String MonetaDettaglio=Movimento[8];
+        if (!Movimento[25].isBlank()){
+            MonetaDettaglio=Movimento[25];
+        }
+        String MT[]=new String[Importazioni.ColonneTabella];
+        String IDNuovoMov=IDSpezzato[0]+"_"+IDSpezzato[1]+"_"+IDSpezzato[2]+"A_"+IDSpezzato[3]+"_DC";
+        MT[0]=IDNuovoMov;
+        MT[1]=Movimento[1];
+        MT[2]="1 di 1";
+        MT[3]=Movimento[3];
+        MT[4]="COLLATERALE BLOCCATO";
+        MT[5]="TRASFERIMENTO A COLLATERALE";
+        MT[6]="-> "+MonetaDettaglio;
+        MT[11]=Movimento[8];
+        MT[12]=Movimento[9];
+        MT[13]=new BigDecimal(Movimento[10]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
+        MT[15]=Movimento[15];
+        MT[18]="DTW - Trasferimento Interno";
+        MT[20]=ID;
+        MT[22]="AU";
+        if (Movimento.length>29){
+            MT[23]=Movimento[23];
+            MT[24]=Movimento[24];
+            MT[27]=Movimento[25];
+            MT[28]=Movimento[26];
+            MT[29]=Movimento[29];
+        }
+        Importazioni.RiempiVuotiArray(MT);
+        MappaCryptoWallet.put(IDNuovoMov, MT);
+        //fase 2: modifico il movimento originale aggiungendogli qualcosina
+        Movimento[5]=Descrizione;
+        Movimento[18]=Dettaglio;
+        Movimento[20]=IDNuovoMov;
+
+
+    }
+
+    private void CreaMovimentiTrasferimentoDaCollaterale(String ID,String Descrizione,String Dettaglio){
+                   //controllo se ho movimenti simili e chiedo se voglio classificarli nella stessa maniera
+            //poi creo movimento di sblocco collaterale e modifico il movimento originale
+
+
+            //FASE 1: recupero tutti i movimenti con la stessa moneta e stesso contratto
+            String Movimento[]=MappaCryptoWallet.get(ID);
+            long DataOraMovimento=FunzioniDate.ConvertiDatainLongMinuto(Movimento[1]);
+            String Moneta=Movimento[11];
+            String AddressContratto=null;
+            long DataOra;
+            if (Movimento.length>30)AddressContratto=Movimento[30];
+            ArrayList<String> ListaIDMovimentiUguali = new ArrayList<>();
+            boolean MovimentoOppostoNonClassificato=false;
+            for (String[] v : MappaCryptoWallet.values()) {
+                DataOra=FunzioniDate.ConvertiDatainLongMinuto(v[1]);
+                if (v[0].split("_")[4].equalsIgnoreCase("PC")&&
+                            v[8].equals(Moneta)&&
+                            v[18].isBlank()&&
+                            !v[10].equals("-0")&&
+                        DataOraMovimento>=DataOra
+                        ){
+                    System.out.println(v[0]);
+                        //se trovo movimenti di prelievo non classificati con data inferiore al movimento di deposito
+                        //avviso e interrompo il ciclo, devo essere sicuro che tutti i movimenti precedenti siano stati inseriti
+                        MovimentoOppostoNonClassificato=true; //Questo boolean serve appunto per interrompere il ciclo
+                       // System.out.println("Arrivato Qua");
+                        }
+                if (v.length>30){
+                    String AddContratto=v[30];
+
+                    if (AddressContratto!=null&&AddContratto!=null&&
+                        !AddressContratto.isBlank()&&!AddContratto.isBlank()&&
+                        AddressContratto.equalsIgnoreCase(AddContratto)&&
+                        !v[0].equals(ID)&&
+                        v[0].split("_")[4].equalsIgnoreCase("DC")&&
+                            v[11].equals(Moneta)&&
+                        DataOraMovimento>=DataOra&&
+                            v[18].length()<1){//questo serve per trovare solo i movimenti non ancora classificati
+                        //Sotto questa if ci sono tutti i movimenti di deposito
+                        //che riguardano la stessa moneta e lo stesso contratto
+                        ListaIDMovimentiUguali.add(v[0]);
+                    }
+
+
+
+
+                }
+            }
+
+        if (MovimentoOppostoNonClassificato) {
+            String Messaggio = "Esistono movimenti di prelievo " + Moneta + " precedenti al movimento attuale non ancora classificati<br>"
+                    + "Procedere prima alla loro classificazione";
+            Messaggi.WarningMessage("Impossibile proseguire", Messaggio, this);
+        } //FASE 2: Se trovo movimenti identici chiedo se voglio che anche questi siano classificati come Collaterale
+        else if (!ListaIDMovimentiUguali.isEmpty()) {
+            String message = "Sono stati trovati altri " + ListaIDMovimentiUguali.size()
+                    + " movimenti analoghi non ancora classificati.";
+
+            String details = """
+        Vuoi applicare la stessa classificazione anche agli altri movimenti simili?
+
+        In caso di giacenza negativa sul collaterale verrà creato un movimento correttivo per portare la giacenza a zero.
+
+        Questo movimento positivo verrà considerato come una reward.
+        """;
+
+            AppDialog.DialogResult result = AppDialog.builder(this)
+                    .windowTitle("Movimenti analoghi")
+                    .bodyTitle("Applicare la stessa classificazione")
+                    .showTitleInBody(true)
+                    .theme()
+                    .type(AppDialog.DialogType.WARNING)
+                    .message(message)
+                    .details(details)
+                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("current-only", "NO")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("apply-all", "SI")
+                            .role(AppDialog.ActionRole.PRIMARY)
+                            .build())
+                    .showDialog();
+
+            if (result == null) {
+                Messaggi.WarningMessage("Operazione Annullata", "", this);
+                return;
+            }
+
+            String actionId = result.getActionId();
+            if (actionId == null || "cancel".equals(actionId)) {
+                Messaggi.WarningMessage("Operazione Annullata", "", this);
+                return;
+            }
+
+            CreaMovimentoTrasferimentoDaCollaterale(ID, Descrizione, Dettaglio);
+            ModificaEffettuata = true;
+
+            if ("apply-all".equals(actionId)) {
+                for (String IDMov : ListaIDMovimentiUguali) {
+                    CreaMovimentoTrasferimentoDaCollaterale(IDMov, Descrizione, Dettaglio);
+                }
+            }
+               // System.out.println(risposta);
+            }else{
+                //FASE 3:modifico il solo movimento interessato
+                CreaMovimentoTrasferimentoDaCollaterale(ID,Descrizione,Dettaglio);
+                ModificaEffettuata=true;
+            }
+        if (ModificaEffettuata){
+                Messaggi.SuccessMessage("Modifiche effettuate con successo.",
+                        "Modifiche effettuate, ricordarsi di Salvare! <br>(sezione Transazioni Crypto)", this);
+        }
+
+    }
+
+        public static void CreaMovimentoTrasferimentoDaCollaterale(String ID,String Descrizione,String Dettaglio){
+
+
+        //In questa funzione devo gestire le eventuali rewards aggiuntive ad esempio in altra moneta che rientrano assieme ai token di sblocco collaterale
+         //Per trovale e classificarle devo seguire le seguenti regole
+         //1 - Cerco nella MappaCryptoWallet o meglio nella tabella depositiprelievi se ho movimenti con lo stesso hashtransazione del movimento analizzato
+         //2 - Controllo se questo movimento è un movimento di deposito (DC)
+         //3 - Controllo che questo movimento non sia già stato categorizzato
+         //4 - Verifico che non si tratti lo stesso id del movimento che sto analizzando
+         //Se soddisfa questi requisiti allora dovrò gestire il movimento come reward
+
+         String Movimento[]=MappaCryptoWallet.get(ID);
+         String Moneta=Movimento[11];
+         String HashT="";
+         if (Movimento.length>29)HashT=Movimento[24];
+
+       for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
+           String Mov[]=MappaCryptoWallet.get(IDnc);
+           if (Mov.length>29){//Verifico che il movimento sia in defi
+               String HashTnc=Mov[24];
+               if (HashT.equalsIgnoreCase(HashTnc)&&!HashT.isBlank()&&//Verifico che abbiano lo stesso hash
+                       Mov[0].split("_")[4].equals("DC")&&//Verifico che sia un movimento di deposito
+                       !Mov[0].equals(Movimento[0])&&//Verifico che si tratti di un movimento diverso
+                       Mov[18].isBlank())//Verifico che il movimento non sia già categorizzato
+               {
+                   //Se soddisfo tutti questi requisiti categorizzo il movimento come reward
+                   Mov[5]="REWARD";
+                   Mov[18]="DAI - Reward da Piattaforma Defi";
+                   //Non lo lego ai movimenti originali ma lo lascio separato (Non compilo il campo [20])
+               }
+           }
+
+       }// Fine prima funzione per la categorizzazione delle reward, ora passo alla successiva
+
+
+        //Devo modificare il movimento originale + crearne uno nuovo
+
+        //fase 1: creo il nuovo movimento
+        String IDSpezzato[]=Movimento[0].split("_");
+        String MonetaDettaglio=Movimento[11];
+        if (!Movimento[27].isBlank()){
+            MonetaDettaglio=Movimento[27];
+        }
+        String MT[]=new String[Importazioni.ColonneTabella];
+        String IDNuovoMov=IDSpezzato[0]+"_"+IDSpezzato[1]+"_0"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_PC";
+        MT[0]=IDNuovoMov;
+        MT[1]=Movimento[1];
+        MT[2]="1 di 1";
+        MT[3]=Movimento[3];
+        MT[4]="COLLATERALE BLOCCATO";
+        MT[5]="TRASFERIMENTO DA COLLATERALE";
+        MT[6]=MonetaDettaglio+" ->";
+        MT[8]=Movimento[11];
+        MT[9]=Movimento[12];
+        MT[10]=new BigDecimal(Movimento[13]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
+        MT[15]=Movimento[15];
+        MT[18]="PTW - Trasferimento Interno";
+        MT[22]="AU";
+        if (Movimento.length>29){
+            MT[23]=Movimento[23];
+            MT[24]=Movimento[24];
+            MT[25]=Movimento[27];
+            MT[26]=Movimento[28];
+            MT[29]=Movimento[29];
+        }
+        Importazioni.RiempiVuotiArray(MT);
+
+
+
+         long DataOraMovimento=FunzioniDate.ConvertiDatainLongMinuto(Movimento[1]);
+         long DataOra;
+         BigDecimal QtaMovimentata=new BigDecimal(Movimento[13]);
+         BigDecimal Somma=new BigDecimal(0);
+        //faccio la somma dei movimenti del collaterale di questa moneta/wallet
+        //Mi serve sapere la giacenza residua e vedere se sottraendo il movimento in uscita va o meno sotto zero
+        //qualora vada sotto zero devo creare un movimento che compensi la cosa
+        String CoppiaWalletCollaterale=Movimento[3]+"COLLATERALE BLOCCATO";
+        for (String[] v : MappaCryptoWallet.values()) {
+            DataOra=FunzioniDate.ConvertiDatainLongMinuto(v[1]);
+            String MonetaUscita=v[8];
+            String QtaUscita=v[10];
+            String MonetaEntrata=v[11];
+            String QtaEntrata=v[13];
+            //nella if devo mettere il limite sulla data
+            if ((v[3]+v[4]).equals(CoppiaWalletCollaterale)&&
+                    DataOraMovimento>DataOra){
+               if (MonetaUscita.equals(Moneta)){
+                  Somma=Somma.add(new BigDecimal(QtaUscita));
+               }
+               if (MonetaEntrata.equals(Moneta)){
+                  Somma=Somma.add(new BigDecimal(QtaEntrata));
+               }
+            }
+        }
+        BigDecimal QtaResiduaCollaterale=Somma.subtract(QtaMovimentata);
+        String IDMovCorrettivo="";
+        if (QtaResiduaCollaterale.compareTo(new BigDecimal(0))==-1){
+            //!!!!Se la qta residua sul collaterale è minore di zero allora creo il nuovo movimento per sistemare la giacenza negativa
+        String MT2[]=new String[Importazioni.ColonneTabella];
+        IDMovCorrettivo=IDSpezzato[0]+"_"+IDSpezzato[1]+"_00"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_DC";
+        MT2[0]=IDMovCorrettivo;
+        MT2[1]=Movimento[1];
+        MT2[2]="1 di 1";
+        MT2[3]=Movimento[3];
+        MT2[4]="COLLATERALE BLOCCATO";
+        MT2[5]="REWARD";
+        MT2[6]="-> "+MonetaDettaglio;
+        MT2[11]=Movimento[11];
+        MT2[12]=Movimento[12];
+        MT2[13]=QtaResiduaCollaterale.multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
+        MT2[15]=new BigDecimal(MT2[13]).divide(new BigDecimal(Movimento[13]), VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(Movimento[15])).setScale(2, RoundingMode.HALF_UP).toPlainString();
+        MT2[18]="DAI - Reward";
+        MT2[20]=ID+","+IDNuovoMov;
+        MT2[22]="AU";
+        if (Movimento.length>29){
+            MT2[27]=Movimento[27];
+            MT2[28]=Movimento[28];
+            MT2[29]=Movimento[29];
+        }
+        Importazioni.RiempiVuotiArray(MT2);
+        MappaCryptoWallet.put(IDMovCorrettivo, MT2);
+        }
+        MT[20]=ID+","+IDMovCorrettivo;
+        MappaCryptoWallet.put(IDNuovoMov, MT);
+        //fase 2: modifico il movimento originale aggiungendogli qualcosina
+        Movimento[5]=Descrizione;
+        Movimento[18]=Dettaglio;
+        Movimento[20]=IDNuovoMov+","+IDMovCorrettivo;
+
+    }
+
     public static void CreaMovimentiScambioCryptoDifferito(String IDPrelievo,String IDDeposito){
         //come prima cosa devo generare un nuovo id per il prelievo
         //System.out.println("Creo 3 movimenti");

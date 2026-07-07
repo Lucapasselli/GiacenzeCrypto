@@ -666,15 +666,15 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                 case CB_DC_ARENDITA -> {
                     descrizione = "TRASFERIMENTO DA PIATTAFORMA";
                     dettaglio = "DTW - Trasferimento da Vault/Piattaforma a Rendita";
-                    CreaMovimentiTrasferimentoDaVault(IDTrans, descrizione, dettaglio);
+                    CreaMovimentiTrasferimentoDa(IDTrans, descrizione, dettaglio, false);
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     this.dispose();
                     return;
                 }
                 case CB_DC_COLLATERALE -> {
-                    descrizione = "TRASFERIMENTO DA COLLATERALE";
+                    descrizione = "SBLOCCO COLLATERALE";
                     dettaglio = "DTW - Trasferimento da Collaterale";
-                    CreaMovimentiTrasferimentoDaCollaterale(IDTrans, descrizione, dettaglio);
+                    CreaMovimentiTrasferimentoDa(IDTrans, descrizione, dettaglio, true);
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     this.dispose();
                     return;
@@ -714,7 +714,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                 case CB_PC_DARENDITA -> {
                     descrizione = "TRASFERIMENTO A PIATTAFORMA";
                     dettaglio = "PTW - Trasferimento a Vault/Piattaforma a Rendita";
-                    CreaMovimentiTrasferimentoAVault(IDTrans, descrizione, dettaglio);
+                    CreaMovimentiTrasferimentoA(IDTrans, descrizione, dettaglio, false);
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     this.dispose();
                     return;
@@ -730,9 +730,9 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                     return;
                 }
                 case CB_PC_COLLATERALE -> {
-                    descrizione = "TRASFERIMENTO A COLLATERALE";
+                    descrizione = "BLOCCO COLLATERALE";
                     dettaglio = "PTW - Trasferimento a Collaterale";
-                    CreaMovimentiTrasferimentoACollaterale(IDTrans, descrizione, dettaglio);
+                    CreaMovimentiTrasferimentoA(IDTrans, descrizione, dettaglio, true);
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     this.dispose();
                     return;
@@ -1253,30 +1253,66 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             switch (QtaPrelievoValoreAssoluto.compareTo(QtaDepositoValoreAssoluto)) {
                 case 1 -> {
                     int numTransazione=Integer.parseInt(IDPrelivoSpezzato[2])+1;
-                    String MovimentoCommissione[]=new String[Importazioni.ColonneTabella];
                     String IDCommissione = IDPrelivoSpezzato[0] + "_" + IDPrelivoSpezzato[1] + "_" + numTransazione + "_1_CM";
                     String QtaCommissione = new BigDecimal(MovimentoPrelievo[10]).abs().subtract(new BigDecimal(MovimentoDeposito[13]).abs()).toPlainString();
                     String ValoreCommissione = new BigDecimal(MovimentoPrelievo[15]).abs().divide(new BigDecimal(MovimentoPrelievo[10]).abs(), VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(QtaCommissione)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+
+                    // [VECCHIO] Creazione manuale del movimento commissione - sostituita con MovimentiCrypto.creaMovimento
+//                    String MovimentoCommissione[]=new String[Importazioni.ColonneTabella];
+//                    MovimentoCommissione[0] = IDCommissione;
+//                    MovimentoCommissione[1] = MovimentoPrelievo[1];
+//                    MovimentoCommissione[2] = "1 di 1";
+//                    MovimentoCommissione[3] = MovimentoPrelievo[3];
+//                    MovimentoCommissione[4] = MovimentoPrelievo[4];
+//                    MovimentoCommissione[5] = "COMMISSIONE";
+//                    MovimentoCommissione[6] = MovimentoPrelievo[6];
+//                    MovimentoCommissione[8] = MovimentoPrelievo[8];
+//                    MovimentoCommissione[9] = MovimentoPrelievo[9];
+//                    MovimentoCommissione[10] = "-" + QtaCommissione;
+//                    MovimentoCommissione[15] = ValoreCommissione;
+//                    MovimentoCommissione[20] = IDPrelievo + "," + IDDeposito;
+//                    MovimentoCommissione[22] = "AU"; //AU -> Significa che è un movimento di commissione automaticamente generato da una condizione successiva
+//                    //quindi se decadono le condizioni che lo hanno generato va eliminato
+//                    //ad esempio se uno dei movimenti padri cambiano tipo o vengono eliminati va eliminato anche il suddetto movimento
+//                    MovimentoCommissione[25] = MovimentoPrelievo[25];
+//                    MovimentoCommissione[26] = MovimentoPrelievo[26];
+//                    MovimentoCommissione[32] = MovimentoPrelievo[32];
+//
+//                    Importazioni.RiempiVuotiArray(MovimentoCommissione);
+
+                    // ── Moneta in uscita (commissione trattenuta; qta negativa) ──
+                    Moneta MonetaCommissioneOUT = new Moneta();
+                    MonetaCommissioneOUT.Moneta = MovimentoPrelievo[8];
+                    MonetaCommissioneOUT.Tipo = MovimentoPrelievo[9];
+                    MonetaCommissioneOUT.Qta = "-" + QtaCommissione;
+                    MonetaCommissioneOUT.NomeEsteso = MovimentoPrelievo[25];
+                    MonetaCommissioneOUT.MonetaAddress = MovimentoPrelievo[26];
+
+                    String MovimentoCommissione[] = MovimentiCrypto.creaMovimento(
+                            MonetaCommissioneOUT, null,
+                            MovimentoPrelievo[3], MovimentoPrelievo[4],
+                            FunzioniDate.ConvertiDataIDinLong(IDPrelivoSpezzato[0]),
+                            ValoreCommissione, null,   // Prezzo esplicito = valore commissione calcolato
+                            1, 1,
+                            null,
+                            null,
+                            "AU",
+                            null,
+                            null,
+                            null
+                    );
+
+                    // ── Forzatura dei campi che la vecchia logica valorizzava in modo specifico ──
                     MovimentoCommissione[0] = IDCommissione;
                     MovimentoCommissione[1] = MovimentoPrelievo[1];
                     MovimentoCommissione[2] = "1 di 1";
-                    MovimentoCommissione[3] = MovimentoPrelievo[3];
-                    MovimentoCommissione[4] = MovimentoPrelievo[4];
                     MovimentoCommissione[5] = "COMMISSIONE";
-                    MovimentoCommissione[6] = MovimentoPrelievo[6];
-                    MovimentoCommissione[8] = MovimentoPrelievo[8];
-                    MovimentoCommissione[9] = MovimentoPrelievo[9];
-                    MovimentoCommissione[10] = "-" + QtaCommissione;
-                    MovimentoCommissione[15] = ValoreCommissione;
+                    MovimentoCommissione[6] = MovimentoPrelievo[6];   // [6] copiato verbatim dal prelievo
+                    MovimentoCommissione[15] = ValoreCommissione;     // verbatim: evito .abs().setScale(2)
                     MovimentoCommissione[20] = IDPrelievo + "," + IDDeposito;
-                    MovimentoCommissione[22] = "AU"; //AU -> Significa che è un movimento di commissione automaticamente generato da una condizione successiva
-                    //quindi se decadono le condizioni che lo hanno generato va eliminato
-                    //ad esempio se uno dei movimenti padri cambiano tipo o vengono eliminati va eliminato anche il suddetto movimento
-                    MovimentoCommissione[25] = MovimentoPrelievo[25];
-                    MovimentoCommissione[26] = MovimentoPrelievo[26];
-                    MovimentoCommissione[32] = MovimentoPrelievo[32];
-
-                    Importazioni.RiempiVuotiArray(MovimentoCommissione);
+                    MovimentoCommissione[29] = "";                    // in origine [29] restava vuoto
+                    MovimentoCommissione[32] = MovimentoPrelievo[32]; // [32] copiato dal prelievo
+                    MovimentoCommissione[40] = "";
                     //Se Qta prelievo maggiore di Qta Depositata
                     MappaCryptoWallet.put(IDCommissione, MovimentoCommissione);
                     MovimentoPrelievo[10]=new BigDecimal(MovimentoPrelievo[10]).subtract(new BigDecimal(MovimentoCommissione[10])).toPlainString();
@@ -1294,30 +1330,66 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     String numTransazione="0"+IDPrelivoSpezzato[2];
                     String IDReward=IDPrelivoSpezzato[0]+"_"+IDPrelivoSpezzato[1]+"_"+numTransazione+"_1_RW";
                     String QtaReward=new BigDecimal(MovimentoDeposito[13]).abs().subtract(new BigDecimal(MovimentoPrelievo[10]).abs()).toPlainString();
-                    String MovimentoReward[] = new String[Importazioni.ColonneTabella];
                     String ValoreReward=new BigDecimal(MovimentoPrelievo[15]).abs().divide(new BigDecimal(MovimentoPrelievo[10]).abs(), VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(QtaReward)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+
+                    // [VECCHIO] Creazione manuale del movimento reward - sostituita con MovimentiCrypto.creaMovimento
+//                    String MovimentoReward[] = new String[Importazioni.ColonneTabella];
+//                    MovimentoReward[0] = IDReward;
+//                    MovimentoReward[1] = MovimentoPrelievo[1];
+//                    MovimentoReward[2] = "1 di 1";
+//                    MovimentoReward[3] = MovimentoPrelievo[3];
+//                    MovimentoReward[4] = MovimentoPrelievo[4];
+//                    MovimentoReward[5] = "REWARD";
+//                    MovimentoReward[6] = MovimentoDeposito[6];
+//                    MovimentoReward[11] = MovimentoPrelievo[8];
+//                    MovimentoReward[12] = MovimentoPrelievo[9];
+//                    MovimentoReward[13] = QtaReward;
+//                    MovimentoReward[15] = ValoreReward;
+//                    MovimentoReward[20] = IDPrelievo + "," + IDDeposito;
+//                    MovimentoReward[22] = "Rettifica su Trasferimento";
+//                    MovimentoReward[22] = "AU"; //AU -> Significa che è un movimento di commissione automaticamente generato da una condizione successiva
+//                    //quindi se decadono le condizioni che lo hanno generato va eliminato
+//                    //ad esempio se uno dei movimenti padri cambiano tipo o vengono eliminati va eliminato anche il suddetto movimento
+//                    MovimentoReward[27] = MovimentoPrelievo[25];
+//                    MovimentoReward[28] = MovimentoPrelievo[26];
+//                    MovimentoReward[32] = MovimentoPrelievo[32];
+//
+//                    Importazioni.RiempiVuotiArray(MovimentoReward);
+
+                    // ── Moneta in ingresso (reward ricevuto; qta positiva) ──
+                    Moneta MonetaRewardIN = new Moneta();
+                    MonetaRewardIN.Moneta = MovimentoPrelievo[8];
+                    MonetaRewardIN.Tipo = MovimentoPrelievo[9];
+                    MonetaRewardIN.Qta = QtaReward;
+                    MonetaRewardIN.NomeEsteso = MovimentoPrelievo[25];
+                    MonetaRewardIN.MonetaAddress = MovimentoPrelievo[26];
+
+                    String MovimentoReward[] = MovimentiCrypto.creaMovimento(
+                            null, MonetaRewardIN,
+                            MovimentoPrelievo[3], MovimentoPrelievo[4],
+                            FunzioniDate.ConvertiDataIDinLong(IDPrelivoSpezzato[0]),
+                            ValoreReward, null,        // Prezzo esplicito = valore reward calcolato
+                            1, 1,
+                            null,
+                            null,
+                            "AU",
+                            null,
+                            null,
+                            null
+                    );
+
+                    // ── Forzatura dei campi che la vecchia logica valorizzava in modo specifico ──
                     MovimentoReward[0] = IDReward;
                     MovimentoReward[1] = MovimentoPrelievo[1];
                     MovimentoReward[2] = "1 di 1";
-                    MovimentoReward[3] = MovimentoPrelievo[3];
-                    MovimentoReward[4] = MovimentoPrelievo[4];
                     MovimentoReward[5] = "REWARD";
-                    MovimentoReward[6] = MovimentoDeposito[6];
-                    MovimentoReward[11] = MovimentoPrelievo[8];
-                    MovimentoReward[12] = MovimentoPrelievo[9];
-                    MovimentoReward[13] = QtaReward;
-                    MovimentoReward[15] = ValoreReward;
+                    MovimentoReward[6] = MovimentoDeposito[6];   // [6] copiato verbatim dal deposito
+                    MovimentoReward[15] = ValoreReward;          // verbatim: evito .abs().setScale(2)
                     MovimentoReward[20] = IDPrelievo + "," + IDDeposito;
-                    MovimentoReward[22] = "Rettifica su Trasferimento";
-                    MovimentoReward[22] = "AU"; //AU -> Significa che è un movimento di commissione automaticamente generato da una condizione successiva
-                    //quindi se decadono le condizioni che lo hanno generato va eliminato
-                    //ad esempio se uno dei movimenti padri cambiano tipo o vengono eliminati va eliminato anche il suddetto movimento
-                    MovimentoReward[27] = MovimentoPrelievo[25];
-                    MovimentoReward[28] = MovimentoPrelievo[26];
-                    MovimentoReward[32] = MovimentoPrelievo[32];
+                    MovimentoReward[29] = "";                    // in origine [29] restava vuoto
+                    MovimentoReward[32] = MovimentoPrelievo[32]; // [32] copiato dal prelievo
+                    MovimentoReward[40] = "";
 
-                    Importazioni.RiempiVuotiArray(MovimentoReward);
-                    
                     MappaCryptoWallet.put(IDReward, MovimentoReward);
                     MovimentoPrelievo[10]=new BigDecimal(MovimentoPrelievo[10]).subtract(new BigDecimal(MovimentoReward[13])).toPlainString();
                     MovimentoPrelievo[15]=new BigDecimal(MovimentoPrelievo[15]).add(new BigDecimal(MovimentoReward[15])).toPlainString();
@@ -1334,11 +1406,19 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 
     }
     
-    private void CreaMovimentiTrasferimentoAVault(String ID,String Descrizione,String Dettaglio){
+    // Funzione accorpata: gestisce sia il trasferimento A Piattaforma/DeFi sia A Collaterale (Collaterale=true).
+    // Prima erano CreaMovimentiTrasferimentoAVault e CreaMovimentiTrasferimentoACollaterale.
+    private void CreaMovimentiTrasferimentoA(String ID,String Descrizione,String Dettaglio,boolean Collaterale){
             //controllo se ho movimenti simili e chiedo se voglio classificarli nella stessa maniera
-            //poi creo movimento di deposito su Vault e movifico il movimento originale
+            //poi creo movimento di deposito su Vault/Collaterale e movifico il movimento originale
 
-            
+            // Stringhe che distinguono il caso Vault/Piattaforma dal caso Collaterale
+            String WalletControparte     = Collaterale ? "Collaterale Bloccato" : "Piattaforma/DeFi";
+            String DescrizioneMovimentoA = Collaterale ? "BLOCCO COLLATERALE" : "TRASFERIMENTO A PIATTAFORMA";
+            String DescrizioneReclassDa  = Collaterale ? "SBLOCCO COLLATERALE" : "TRASFERIMENTO DA PIATTAFORMA";
+            String DettaglioReclassDa    = Collaterale ? "DTW - Trasferimento da Collaterale" : "DTW - Trasferimento da Vault/Piattaforma a Rendita";
+            String FraseTipoRientro      = Collaterale ? "sblocco collaterale" : "rientro";
+
             //FASE 1: recupero tutti i movimenti con la stessa moneta e stesso contratto
             String Movimento[]=MappaCryptoWallet.get(ID);
             String Moneta=Movimento[8];
@@ -1409,14 +1489,14 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         }
                         case "yes" -> {
                             //classifico il movimento in questione e tutti quelli successivi trovati
-                            CreaMovimentoTrasferimentoAVault(ID, Descrizione, Dettaglio);
+                            CreaMovimentoTrasferimentoA(ID, Descrizione, Dettaglio, WalletControparte, DescrizioneMovimentoA);
                             for (String IDMov : ListaIDMovimentiUguali) {
-                                CreaMovimentoTrasferimentoAVault(IDMov, Descrizione, Dettaglio);
+                                CreaMovimentoTrasferimentoA(IDMov, Descrizione, Dettaglio, WalletControparte, DescrizioneMovimentoA);
                             }   ModificaEffettuata = true;
                             TuttiiMovimenti = true;
                         }
                         case "no" -> {
-                            CreaMovimentoTrasferimentoAVault(ID, Descrizione, Dettaglio);
+                            CreaMovimentoTrasferimentoA(ID, Descrizione, Dettaglio, WalletControparte, DescrizioneMovimentoA);
                             ModificaEffettuata = true;
                         }
                         default -> {
@@ -1426,8 +1506,8 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 }
             }else{
                 //FASE 3:modifico il solo movimento interessato
-                CreaMovimentoTrasferimentoAVault(ID,Descrizione,Dettaglio);
-                ModificaEffettuata=true;  
+                CreaMovimentoTrasferimentoA(ID,Descrizione,Dettaglio, WalletControparte, DescrizioneMovimentoA);
+                ModificaEffettuata=true;
                 TuttiiMovimenti=true;
             }
             
@@ -1458,11 +1538,11 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
 
             if (!ListaIDMovimentiUguali.isEmpty()) {
-                Descrizione = "TRASFERIMENTO DA PIATTAFORMA";
-                Dettaglio = "DTW - Trasferimento da Vault/Piattaforma a Rendita";
+                Descrizione = DescrizioneReclassDa;
+                Dettaglio = DettaglioReclassDa;
 
                 String message = "Sono stati trovati " + ListaIDMovimentiUguali.size()
-                        + " movimenti di rientro da questo contratto non ancora classificati.";
+                        + " movimenti di " + FraseTipoRientro + " da questo contratto non ancora classificati.";
                 String details = "Vuoi che vengano classificati automaticamente?";
 
                 AppDialog.DialogResult result = AppDialog.builder(this)
@@ -1483,7 +1563,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
                 if (result != null && "yes".equals(result.getActionId())) {
                     for (String IDMov : ListaIDMovimentiUguali) {
-                        CreaMovimentoTrasferimentoDaVault(IDMov, Descrizione, Dettaglio);
+                        CreaMovimentoTrasferimentoDa(IDMov, Descrizione, Dettaglio, WalletControparte, DescrizioneReclassDa);
                     }
                     ModificaEffettuata = true;
                 }
@@ -1538,11 +1618,11 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
 
             //FASE 2: Se trovo movimenti identici chiedo se voglio che anche questi siano classificati come Vault
-            CreaMovimentoTrasferimentoAVault(ID,Descrizione,Dettaglio);
+            CreaMovimentoTrasferimentoA(ID,Descrizione,Dettaglio, "Piattaforma/DeFi", "TRASFERIMENTO A PIATTAFORMA");
             if (!ListaIDMovimentiUguali.isEmpty()){
                         //FASE 3:modifico tutti i movimenti
                         for (String IDMov:ListaIDMovimentiUguali){
-                            CreaMovimentoTrasferimentoAVault(IDMov,Descrizione,Dettaglio);
+                            CreaMovimentoTrasferimentoA(IDMov,Descrizione,Dettaglio, "Piattaforma/DeFi", "TRASFERIMENTO A PIATTAFORMA");
                         }
             }
             
@@ -1585,7 +1665,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
                         //Classifico tutti i movimenti di rientro
                         for (String IDMov:ListaIDMovimentiUguali){
-                            CreaMovimentoTrasferimentoDaVault(IDMov,Descrizione,Dettaglio);
+                            CreaMovimentoTrasferimentoDa(IDMov,Descrizione,Dettaglio, "Piattaforma/DeFi", "TRASFERIMENTO DA PIATTAFORMA");
                         }
 
 
@@ -1593,7 +1673,10 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 return movimentimodificati;
     }
     
-    public static void CreaMovimentoTrasferimentoAVault(String ID,String Descrizione,String Dettaglio){
+    // Funzione accorpata: gestisce sia il trasferimento A Piattaforma/DeFi sia A Collaterale.
+    // WalletControparte e DescrizioneMovimento distinguono i due casi (prima erano
+    // CreaMovimentoTrasferimentoAVault e CreaMovimentoTrasferimentoACollaterale).
+    public static void CreaMovimentoTrasferimentoA(String ID,String Descrizione,String Dettaglio,String WalletControparte,String DescrizioneMovimento){
         //Devo modificare il movimento originale + crearne uno nuovo
         String Movimento[]=MappaCryptoWallet.get(ID);
         //fase 1: creo il nuovo movimento
@@ -1602,47 +1685,97 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         if (!Movimento[25].isBlank()){
             MonetaDettaglio=Movimento[25];
         }
-        String MT[]=new String[Importazioni.ColonneTabella];
+        // [VECCHIO] Creazione manuale del movimento - sostituita con MovimentiCrypto.creaMovimento
+//        String MT[]=new String[Importazioni.ColonneTabella];
+//        String IDNuovoMov=IDSpezzato[0]+"_"+IDSpezzato[1]+"_"+IDSpezzato[2]+"A_"+IDSpezzato[3]+"_DC";
+//        MT[0]=IDNuovoMov;
+//        MT[1]=Movimento[1];
+//        MT[2]="1 di 1";
+//        MT[3]=Movimento[3];
+//        MT[4]="Piattaforma/DeFi";
+//        MT[5]="TRASFERIMENTO A PIATTAFORMA";
+//        MT[6]="-> "+MonetaDettaglio;
+//        MT[11]=Movimento[8];
+//        MT[12]=Movimento[9];
+//        MT[13]=new BigDecimal(Movimento[10]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
+//        MT[15]=Movimento[15];
+//        MT[18]="DTW - Trasferimento Interno";
+//        MT[20]=ID;
+//        MT[22]="AU";
+//        if (Movimento.length>29){
+//            MT[23]=Movimento[23];
+//            MT[24]=Movimento[24];
+//            MT[27]=Movimento[25];
+//            MT[28]=Movimento[26];
+//            MT[29]=Movimento[29];
+//        }
+//        Importazioni.RiempiVuotiArray(MT);
+
         String IDNuovoMov=IDSpezzato[0]+"_"+IDSpezzato[1]+"_"+IDSpezzato[2]+"A_"+IDSpezzato[3]+"_DC";
+
+        // ── Costruzione della moneta in ingresso (stesso token che esce dal movimento originale) ──
+        Moneta MonetaIN = new Moneta();
+        MonetaIN.Moneta = Movimento[8];
+        MonetaIN.Tipo = Movimento[9];
+        MonetaIN.Qta = new BigDecimal(Movimento[10]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
+        if (Movimento.length>29){
+            MonetaIN.NomeEsteso = Movimento[25];
+            MonetaIN.MonetaAddress = Movimento[26];
+        }
+
+        String MT[] = MovimentiCrypto.creaMovimento(
+                null, MonetaIN,
+                Movimento[3], WalletControparte,
+                FunzioniDate.ConvertiDataIDinLong(IDSpezzato[0]),
+                Movimento[15], null,       // Prezzo esplicito = quello del movimento originale
+                1, 1,
+                null,                      // IDMovimento: forzato manualmente sotto per garantire identità
+                null,
+                "AU",
+                Movimento.length>29 ? Movimento[24] : null,
+                null,
+                null
+        );
+
+        // ── Forzatura dei campi che la vecchia logica valorizzava in modo specifico ──
+        // (creaMovimento non conosce descrizione/dettaglio/ID custom di questo tipo di trasferimento,
+        // e valorizza [32]/[40] con l'esito della ricerca prezzo, che qui va invece lasciato vuoto)
         MT[0]=IDNuovoMov;
         MT[1]=Movimento[1];
         MT[2]="1 di 1";
-        MT[3]=Movimento[3];
-        MT[4]="Piattaforma/DeFi";
-        MT[5]="TRASFERIMENTO A PIATTAFORMA";
-        MT[6]="-> "+MonetaDettaglio;
-        MT[11]=Movimento[8];
-        MT[12]=Movimento[9];
-        MT[13]=new BigDecimal(Movimento[10]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
-        MT[15]=Movimento[15];
+        MT[5]=DescrizioneMovimento;
+        MT[15]=Movimento[15];   // verbatim: evito il .abs().setScale(2) applicato da creaMovimento
         MT[18]="DTW - Trasferimento Interno";
         MT[20]=ID;
-        MT[22]="AU";
+        MT[32]="";
+        MT[40]="";
         if (Movimento.length>29){
             MT[23]=Movimento[23];
-            MT[24]=Movimento[24];
-            MT[27]=Movimento[25];
-            MT[28]=Movimento[26];
             MT[29]=Movimento[29];
         }
-        Importazioni.RiempiVuotiArray(MT);
         MappaCryptoWallet.put(IDNuovoMov, MT);
         //fase 2: modifico il movimento originale aggiungendogli qualcosina
         Movimento[5]=Descrizione;
         Movimento[18]=Dettaglio;
         Movimento[20]=IDNuovoMov;
 
-        
+
     }
     
     
     
     
-    private void CreaMovimentiTrasferimentoDaVault(String ID,String Descrizione,String Dettaglio){
+    // Funzione accorpata: gestisce sia il trasferimento DA Piattaforma/DeFi (Vault) sia DA Collaterale (Collaterale=true).
+    // Prima erano CreaMovimentiTrasferimentoDaVault e CreaMovimentiTrasferimentoDaCollaterale.
+    private void CreaMovimentiTrasferimentoDa(String ID,String Descrizione,String Dettaglio,boolean Collaterale){
                    //controllo se ho movimenti simili e chiedo se voglio classificarli nella stessa maniera
-            //poi creo movimento di deposito su Vault e movifico il movimento originale
+            //poi creo movimento di sblocco da Vault/Collaterale e movifico il movimento originale
 
-            
+            // Stringhe che distinguono il caso Vault/Piattaforma dal caso Collaterale
+            String WalletControparte      = Collaterale ? "Collaterale Bloccato" : "Piattaforma/DeFi";
+            String DescrizioneMovimentoDa = Collaterale ? "SBLOCCO COLLATERALE" : "TRASFERIMENTO DA PIATTAFORMA";
+            String FraseGiacenza          = Collaterale ? "collaterale" : "Vault";
+
             //FASE 1: recupero tutti i movimenti con la stessa moneta e stesso contratto
             String Movimento[]=MappaCryptoWallet.get(ID);
             long DataOraMovimento=FunzioniDate.ConvertiDatainLongMinuto(Movimento[1]);
@@ -1707,10 +1840,10 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             String details = """
         Vuoi applicare la stessa classificazione anche agli altri movimenti simili?
 
-        In caso di giacenza negativa sul Vault verrà creato un movimento correttivo per portare la giacenza a zero.
+        In caso di giacenza negativa sul %s verrà creato un movimento correttivo per portare la giacenza a zero.
 
         Questo movimento positivo verrà considerato come una reward.
-        """;
+        """.formatted(FraseGiacenza);
 
             AppDialog.DialogResult result = AppDialog.builder(this)
                     .windowTitle("Movimenti analoghi")
@@ -1742,29 +1875,35 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 return;
             }
 
-            CreaMovimentoTrasferimentoDaVault(ID, Descrizione, Dettaglio);
+            CreaMovimentoTrasferimentoDa(ID, Descrizione, Dettaglio, WalletControparte, DescrizioneMovimentoDa);
             ModificaEffettuata = true;
 
             if ("apply-all".equals(actionId)) {
                 for (String IDMov : ListaIDMovimentiUguali) {
-                    CreaMovimentoTrasferimentoDaVault(IDMov, Descrizione, Dettaglio);
+                    CreaMovimentoTrasferimentoDa(IDMov, Descrizione, Dettaglio, WalletControparte, DescrizioneMovimentoDa);
                 }
             }
                // System.out.println(risposta);
             }else{
                 //FASE 3:modifico il solo movimento interessato
-                CreaMovimentoTrasferimentoDaVault(ID,Descrizione,Dettaglio);
-                ModificaEffettuata=true;  
+                CreaMovimentoTrasferimentoDa(ID,Descrizione,Dettaglio, WalletControparte, DescrizioneMovimentoDa);
+                ModificaEffettuata=true;
             }
         if (ModificaEffettuata){
-                Messaggi.SuccessMessage("Modifiche effettuate con successo.", 
+                Messaggi.SuccessMessage("Modifiche effettuate con successo.",
                         "Modifiche effettuate, ricordarsi di Salvare! <br>(sezione Transazioni Crypto)", this);
-        }            
+        }
                
     }
     
-        public static void CreaMovimentoTrasferimentoDaVault(String ID,String Descrizione,String Dettaglio){
-            
+        // Funzione accorpata: gestisce sia il trasferimento DA Piattaforma/DeFi sia DA Collaterale.
+        // WalletControparte e DescrizioneMovimento distinguono i due casi (prima erano
+        // CreaMovimentoTrasferimentoDaVault e CreaMovimentoTrasferimentoDaCollaterale).
+        public static void CreaMovimentoTrasferimentoDa(String ID,String Descrizione,String Dettaglio,String WalletControparte,String DescrizioneMovimento){
+
+        // Quando si sblocca il collaterale (WalletControparte = "Collaterale Bloccato") NON si deve
+        // creare il movimento correttivo di reward: la gestione della reward vale solo per Vault/Piattaforma.
+        boolean Collaterale = "Collaterale Bloccato".equals(WalletControparte);
 
         //In questa funzione devo gestire le eventuali rewards aggiuntive ad esempio in altra moneta che rientrano assieme ai token di rientro
          //Per trovale e classificarle devo seguire le seguenti regole
@@ -1815,32 +1954,73 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         if (!Movimento[27].isBlank()){
             MonetaDettaglio=Movimento[27];
         }
-        String MT[]=new String[Importazioni.ColonneTabella];
+        // [VECCHIO] Creazione manuale del movimento - sostituita con MovimentiCrypto.creaMovimento
+//        String MT[]=new String[Importazioni.ColonneTabella];
+//        String IDNuovoMov=IDSpezzato[0]+"_"+IDSpezzato[1]+"_0"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_PC";
+//        MT[0]=IDNuovoMov;
+//        MT[1]=Movimento[1];
+//        MT[2]="1 di 1";
+//        MT[3]=Movimento[3];
+//        MT[4]="Piattaforma/DeFi";
+//        MT[5]="TRASFERIMENTO DA PIATTAFORMA";
+//        MT[6]=MonetaDettaglio+" ->";
+//        MT[8]=Movimento[11];
+//        MT[9]=Movimento[12];
+//        MT[10]=new BigDecimal(Movimento[13]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
+//        MT[15]=Movimento[15];
+//        MT[18]="PTW - Trasferimento Interno";
+//        MT[22]="AU";
+//        if (Movimento.length>29){
+//            MT[23]=Movimento[23];
+//            MT[24]=Movimento[24];
+//            MT[25]=Movimento[27];
+//            MT[26]=Movimento[28];
+//            MT[29]=Movimento[29];
+//        }
+//        Importazioni.RiempiVuotiArray(MT);
+
         String IDNuovoMov=IDSpezzato[0]+"_"+IDSpezzato[1]+"_0"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_PC";
+
+        // ── Costruzione della moneta in uscita (token che esce dalla piattaforma; qta negativa) ──
+        Moneta MonetaOUT = new Moneta();
+        MonetaOUT.Moneta = Movimento[11];
+        MonetaOUT.Tipo = Movimento[12];
+        MonetaOUT.Qta = new BigDecimal(Movimento[13]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
+        if (Movimento.length>29){
+            MonetaOUT.NomeEsteso = Movimento[27];
+            MonetaOUT.MonetaAddress = Movimento[28];
+        }
+
+        String MT[] = MovimentiCrypto.creaMovimento(
+                MonetaOUT, null,
+                Movimento[3], WalletControparte,
+                FunzioniDate.ConvertiDataIDinLong(IDSpezzato[0]),
+                Movimento[15], null,       // Prezzo esplicito = quello del movimento originale
+                1, 1,
+                null,                      // IDMovimento: forzato manualmente sotto per garantire identità
+                null,
+                "AU",
+                Movimento.length>29 ? Movimento[24] : null,
+                null,
+                null
+        );
+
+        // ── Forzatura dei campi che la vecchia logica valorizzava in modo specifico ──
+        // [20] volutamente non impostato qui: viene valorizzato più sotto (MT[20]=ID+","+IDMovCorrettivo)
         MT[0]=IDNuovoMov;
         MT[1]=Movimento[1];
         MT[2]="1 di 1";
-        MT[3]=Movimento[3];
-        MT[4]="Piattaforma/DeFi";
-        MT[5]="TRASFERIMENTO DA PIATTAFORMA";
-        MT[6]=MonetaDettaglio+" ->";
-        MT[8]=Movimento[11];
-        MT[9]=Movimento[12];
-        MT[10]=new BigDecimal(Movimento[13]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
-        MT[15]=Movimento[15];
+        MT[5]=DescrizioneMovimento;
+        MT[15]=Movimento[15];   // verbatim: evito il .abs().setScale(2) applicato da creaMovimento
         MT[18]="PTW - Trasferimento Interno";
-        MT[22]="AU";
+        MT[32]="";
+        MT[40]="";
         if (Movimento.length>29){
             MT[23]=Movimento[23];
-            MT[24]=Movimento[24];
-            MT[25]=Movimento[27];
-            MT[26]=Movimento[28];
             MT[29]=Movimento[29];
         }
-        Importazioni.RiempiVuotiArray(MT);
 
-        
-        
+
          long DataOraMovimento=FunzioniDate.ConvertiDatainLongMinuto(Movimento[1]);
          long DataOra;
          BigDecimal QtaMovimentata=new BigDecimal(Movimento[13]);
@@ -1848,7 +2028,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         //faccio la somma dei movimenti del vault di questa moneta/wallet
         //Mi serve sapere la giacenza residua e vedere se sottraendo il movimento in uscita va o meno sotto zero
         //qualora vada sotto zero devo creare un movimento che compensi la cosa
-        String CoppiaWalletVault=Movimento[3]+"Piattaforma/DeFi";   
+        String CoppiaWalletVault=Movimento[3]+WalletControparte;
         for (String[] v : MappaCryptoWallet.values()) {
             DataOra=FunzioniDate.ConvertiDatainLongMinuto(v[1]);
             String MonetaUscita=v[8];
@@ -1868,30 +2048,74 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
         BigDecimal QtaResiduaVault=Somma.subtract(QtaMovimentata);
         String IDMovCorrettivo="";
-        if (QtaResiduaVault.compareTo(new BigDecimal(0))==-1){
+        if (!Collaterale && QtaResiduaVault.compareTo(new BigDecimal(0))==-1){
             //!!!!Se la qta residua sul vault è minore di zero allora creo il nuovo movimento per sistemare la giacenza negativa del vault
-        String MT2[]=new String[Importazioni.ColonneTabella];
+            //(escluso il caso di sblocco collaterale, dove il movimento di reward non va creato)
         IDMovCorrettivo=IDSpezzato[0]+"_"+IDSpezzato[1]+"_00"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_DC";
+
+        // Qta e valore del reward: precalcolati per poterli fornire a creaMovimento e reimporli identici
+        String QtaResiduaVaultStr=QtaResiduaVault.multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
+        String ValoreReward=new BigDecimal(QtaResiduaVaultStr).divide(new BigDecimal(Movimento[13]), VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(Movimento[15])).setScale(2, RoundingMode.HALF_UP).toPlainString();
+
+        // [VECCHIO] Creazione manuale del movimento reward - sostituita con MovimentiCrypto.creaMovimento
+//        String MT2[]=new String[Importazioni.ColonneTabella];
+//        MT2[0]=IDMovCorrettivo;
+//        MT2[1]=Movimento[1];
+//        MT2[2]="1 di 1";
+//        MT2[3]=Movimento[3];
+//        MT2[4]="Piattaforma/DeFi";
+//        MT2[5]="REWARD";
+//        MT2[6]="-> "+MonetaDettaglio;
+//        MT2[11]=Movimento[11];
+//        MT2[12]=Movimento[12];
+//        MT2[13]=QtaResiduaVault.multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
+//        MT2[15]=new BigDecimal(MT2[13]).divide(new BigDecimal(Movimento[13]), VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(Movimento[15])).setScale(2, RoundingMode.HALF_UP).toPlainString();
+//        MT2[18]="DAI - Reward";
+//        MT2[20]=ID+","+IDNuovoMov;
+//        MT2[22]="AU";
+//        if (Movimento.length>29){
+//            MT2[27]=Movimento[27];
+//            MT2[28]=Movimento[28];
+//            MT2[29]=Movimento[29];
+//        }
+//        Importazioni.RiempiVuotiArray(MT2);
+
+        // ── Moneta in ingresso (reward, qta positiva) ──
+        Moneta MonetaINReward = new Moneta();
+        MonetaINReward.Moneta = Movimento[11];
+        MonetaINReward.Tipo = Movimento[12];
+        MonetaINReward.Qta = QtaResiduaVaultStr;
+        if (Movimento.length>29){
+            MonetaINReward.NomeEsteso = Movimento[27];
+            MonetaINReward.MonetaAddress = Movimento[28];
+        }
+
+        String MT2[] = MovimentiCrypto.creaMovimento(
+                null, MonetaINReward,
+                Movimento[3], WalletControparte,
+                FunzioniDate.ConvertiDataIDinLong(IDSpezzato[0]),
+                ValoreReward, null,        // Prezzo esplicito = valore reward calcolato
+                1, 1,
+                null,
+                null,
+                "AU",
+                null,
+                null,
+                null
+        );
+
         MT2[0]=IDMovCorrettivo;
         MT2[1]=Movimento[1];
         MT2[2]="1 di 1";
-        MT2[3]=Movimento[3];
-        MT2[4]="Piattaforma/DeFi";
         MT2[5]="REWARD";
-        MT2[6]="-> "+MonetaDettaglio;
-        MT2[11]=Movimento[11];
-        MT2[12]=Movimento[12];
-        MT2[13]=QtaResiduaVault.multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
-        MT2[15]=new BigDecimal(MT2[13]).divide(new BigDecimal(Movimento[13]), VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(Movimento[15])).setScale(2, RoundingMode.HALF_UP).toPlainString();
+        MT2[15]=ValoreReward;   // verbatim: identico al valore calcolato in origine
         MT2[18]="DAI - Reward";
         MT2[20]=ID+","+IDNuovoMov;
-        MT2[22]="AU";
+        MT2[32]="";
+        MT2[40]="";
         if (Movimento.length>29){
-            MT2[27]=Movimento[27];
-            MT2[28]=Movimento[28];
             MT2[29]=Movimento[29];
         }
-        Importazioni.RiempiVuotiArray(MT2);
         MappaCryptoWallet.put(IDMovCorrettivo, MT2);
         }
         MT[20]=ID+","+IDMovCorrettivo;
@@ -1903,454 +2127,13 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
     }
 
-    private void CreaMovimentiTrasferimentoACollaterale(String ID,String Descrizione,String Dettaglio){
-            //controllo se ho movimenti simili e chiedo se voglio classificarli nella stessa maniera
-            //poi creo movimento di messa a collaterale e modifico il movimento originale
+    // NOTA: CreaMovimentiTrasferimentoACollaterale è stata accorpata in CreaMovimentiTrasferimentoA
+    // (chiamare con Collaterale=true). Il dispatcher unico deriva internamente tutte le stringhe
+    // che distinguono il caso Collaterale da quello Piattaforma/DeFi (Vault).
 
-
-            //FASE 1: recupero tutti i movimenti con la stessa moneta e stesso contratto
-            String Movimento[]=MappaCryptoWallet.get(ID);
-            String Moneta=Movimento[8];
-            String AddressContratto=null;
-            if (Movimento.length>30)AddressContratto=Movimento[30];
-            ArrayList<String> ListaIDMovimentiUguali = new ArrayList<>();
-            //for (String[] v : MappaCryptoWallet.values()) {
-            for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
-                String v[]=MappaCryptoWallet.get(IDnc);
-                //considero solo i movimenti che hanno l'address del contratto in memoria
-                //perchè a me interessa trovare i movimenti dello stesso tipo e l'unica è basarsi sul contratto
-                if (v.length>30){
-                    String AddContratto=v[30];
-                    if (AddressContratto!=null&&AddContratto!=null&&
-                        !AddressContratto.isBlank()&&!AddContratto.isBlank()&&
-                        AddressContratto.equalsIgnoreCase(AddContratto)&&
-                        !v[0].equals(ID)&&
-                        v[0].split("_")[4].equalsIgnoreCase("PC")&&
-                            v[8].equals(Moneta)&&
-                            v[18].isBlank()){//questo serve per trovare solo i movimenti non ancora classificati
-
-                        //Sotto questa if ci sono tutti i movimenti di deposito
-                        //che riguardano la stessa moneta e lo stesso contratto
-                        ListaIDMovimentiUguali.add(v[0]);
-                    }
-
-                }
-            }
-            boolean TuttiiMovimenti=false;
-            //FASE 2: Se trovo movimenti identici chiedo se voglio che anche questi siano classificati come Collaterale
-            if (!ListaIDMovimentiUguali.isEmpty()){
-                String message = "Sono stati trovati altri " + ListaIDMovimentiUguali.size()
-                        + " movimenti analoghi non ancora classificati.";
-                String details = "Vuoi considerarli allo stesso modo?";
-
-                AppDialog.DialogResult result = AppDialog.builder(this)
-                        .windowTitle("Classificazione movimenti multipli")
-                        .bodyTitle("Applicare la stessa classificazione")
-                        .showTitleInBody(true)
-                        .theme()
-                        .type(AppDialog.DialogType.INFO)
-                        .message(message)
-                        .details(details)
-                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
-                                .role(AppDialog.ActionRole.SECONDARY)
-                                .build())
-                        .action(AppDialog.DialogAction.builder("no", "No")
-                                .role(AppDialog.ActionRole.SECONDARY)
-                                .build())
-                        .action(AppDialog.DialogAction.builder("yes", "Sì")
-                                .role(AppDialog.ActionRole.PRIMARY)
-                                .build())
-                        .showDialog();
-
-                if (result == null) {
-                    Messaggi.WarningMessage("Operazione Annullata", "", this);
-                    return;
-                } else {
-                    String actionId = result.getActionId();
-
-                    if (null == actionId) {
-                        Messaggi.WarningMessage("Operazione Annullata", "", this);
-                        return;
-                    } else switch (actionId) {
-                        case "cancel" -> {
-                            Messaggi.WarningMessage("Operazione Annullata", "", this);
-                            return;
-                        }
-                        case "yes" -> {
-                            //classifico il movimento in questione e tutti quelli successivi trovati
-                            CreaMovimentoTrasferimentoACollaterale(ID, Descrizione, Dettaglio);
-                            for (String IDMov : ListaIDMovimentiUguali) {
-                                CreaMovimentoTrasferimentoACollaterale(IDMov, Descrizione, Dettaglio);
-                            }   ModificaEffettuata = true;
-                            TuttiiMovimenti = true;
-                        }
-                        case "no" -> {
-                            CreaMovimentoTrasferimentoACollaterale(ID, Descrizione, Dettaglio);
-                            ModificaEffettuata = true;
-                        }
-                        default -> {
-                            return;
-                        }
-                    }
-                }
-            }else{
-                //FASE 3:modifico il solo movimento interessato
-                CreaMovimentoTrasferimentoACollaterale(ID,Descrizione,Dettaglio);
-                ModificaEffettuata=true;
-                TuttiiMovimenti=true;
-            }
-
-
-            //Adesso verifico se ci sono movimenti di sblocco del collaterale e chiedo se voglio sistemare anche quelli
-            //Questo lo faccio controllando contratto, moneta e tipo movimento, se contratto e moneta coincidono e tipo movimento è inverso allora ho
-            //trovato movimenti papabili per la richiesta
-            //la richiesta la devo fare solo se alla domanda se volevo categorizzare tutti i movimenti è stato risposto si.
-            ListaIDMovimentiUguali = new ArrayList<>();
-        if (TuttiiMovimenti) {
-            //Verifico se trovo movimenti di sblocco e eventualmente avviso se si vuole classificarli in automatico
-            for (String IDnc : Principale.DepositiPrelieviDaCategorizzare) {
-                String v[] = MappaCryptoWallet.get(IDnc);
-
-                String AddContratto = v[30];
-                if (AddressContratto != null && AddContratto != null
-                        && !AddressContratto.isBlank() && !AddContratto.isBlank()
-                        && AddressContratto.equalsIgnoreCase(AddContratto)
-                        && !v[0].equals(ID)
-                        && v[0].split("_")[4].equalsIgnoreCase("DC")
-                        && v[11].equals(Moneta)
-                        && v[18].isBlank()) {//questo serve per trovare solo i movimenti non ancora classificati
-                    ListaIDMovimentiUguali.add(v[0]);
-                }
-
-            }
-
-            if (!ListaIDMovimentiUguali.isEmpty()) {
-                Descrizione = "TRASFERIMENTO DA COLLATERALE";
-                Dettaglio = "DTW - Trasferimento da Collaterale";
-
-                String message = "Sono stati trovati " + ListaIDMovimentiUguali.size()
-                        + " movimenti di sblocco collaterale da questo contratto non ancora classificati.";
-                String details = "Vuoi che vengano classificati automaticamente?";
-
-                AppDialog.DialogResult result = AppDialog.builder(this)
-                        .windowTitle("Classificazione movimenti multipli")
-                        .bodyTitle("Classificazione automatica")
-                        .showTitleInBody(true)
-                        .theme()
-                        .type(AppDialog.DialogType.INFO)
-                        .message(message)
-                        .details(details)
-                        .action(AppDialog.DialogAction.builder("no", "No")
-                                .role(AppDialog.ActionRole.SECONDARY)
-                                .build())
-                        .action(AppDialog.DialogAction.builder("yes", "Sì")
-                                .role(AppDialog.ActionRole.PRIMARY)
-                                .build())
-                        .showDialog();
-
-                if (result != null && "yes".equals(result.getActionId())) {
-                    for (String IDMov : ListaIDMovimentiUguali) {
-                        CreaMovimentoTrasferimentoDaCollaterale(IDMov, Descrizione, Dettaglio);
-                    }
-                    ModificaEffettuata = true;
-                }
-            }
-        }
-        if (ModificaEffettuata) {
-            Messaggi.SuccessMessage("Modifiche effettuate con successo.", "Modifiche effettuate, ricordarsi di Salvare! <br>(sezione Transazioni Crypto)", this);
-        }
-    }
-
-    public static void CreaMovimentoTrasferimentoACollaterale(String ID,String Descrizione,String Dettaglio){
-        //Devo modificare il movimento originale + crearne uno nuovo
-        String Movimento[]=MappaCryptoWallet.get(ID);
-        //fase 1: creo il nuovo movimento
-        String IDSpezzato[]=Movimento[0].split("_");
-        String MonetaDettaglio=Movimento[8];
-        if (!Movimento[25].isBlank()){
-            MonetaDettaglio=Movimento[25];
-        }
-        String MT[]=new String[Importazioni.ColonneTabella];
-        String IDNuovoMov=IDSpezzato[0]+"_"+IDSpezzato[1]+"_"+IDSpezzato[2]+"A_"+IDSpezzato[3]+"_DC";
-        MT[0]=IDNuovoMov;
-        MT[1]=Movimento[1];
-        MT[2]="1 di 1";
-        MT[3]=Movimento[3];
-        MT[4]="COLLATERALE BLOCCATO";
-        MT[5]="TRASFERIMENTO A COLLATERALE";
-        MT[6]="-> "+MonetaDettaglio;
-        MT[11]=Movimento[8];
-        MT[12]=Movimento[9];
-        MT[13]=new BigDecimal(Movimento[10]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
-        MT[15]=Movimento[15];
-        MT[18]="DTW - Trasferimento Interno";
-        MT[20]=ID;
-        MT[22]="AU";
-        if (Movimento.length>29){
-            MT[23]=Movimento[23];
-            MT[24]=Movimento[24];
-            MT[27]=Movimento[25];
-            MT[28]=Movimento[26];
-            MT[29]=Movimento[29];
-        }
-        Importazioni.RiempiVuotiArray(MT);
-        MappaCryptoWallet.put(IDNuovoMov, MT);
-        //fase 2: modifico il movimento originale aggiungendogli qualcosina
-        Movimento[5]=Descrizione;
-        Movimento[18]=Dettaglio;
-        Movimento[20]=IDNuovoMov;
-
-
-    }
-
-    private void CreaMovimentiTrasferimentoDaCollaterale(String ID,String Descrizione,String Dettaglio){
-                   //controllo se ho movimenti simili e chiedo se voglio classificarli nella stessa maniera
-            //poi creo movimento di sblocco collaterale e modifico il movimento originale
-
-
-            //FASE 1: recupero tutti i movimenti con la stessa moneta e stesso contratto
-            String Movimento[]=MappaCryptoWallet.get(ID);
-            long DataOraMovimento=FunzioniDate.ConvertiDatainLongMinuto(Movimento[1]);
-            String Moneta=Movimento[11];
-            String AddressContratto=null;
-            long DataOra;
-            if (Movimento.length>30)AddressContratto=Movimento[30];
-            ArrayList<String> ListaIDMovimentiUguali = new ArrayList<>();
-            boolean MovimentoOppostoNonClassificato=false;
-            for (String[] v : MappaCryptoWallet.values()) {
-                DataOra=FunzioniDate.ConvertiDatainLongMinuto(v[1]);
-                if (v[0].split("_")[4].equalsIgnoreCase("PC")&&
-                            v[8].equals(Moneta)&&
-                            v[18].isBlank()&&
-                            !v[10].equals("-0")&&
-                        DataOraMovimento>=DataOra
-                        ){
-                    System.out.println(v[0]);
-                        //se trovo movimenti di prelievo non classificati con data inferiore al movimento di deposito
-                        //avviso e interrompo il ciclo, devo essere sicuro che tutti i movimenti precedenti siano stati inseriti
-                        MovimentoOppostoNonClassificato=true; //Questo boolean serve appunto per interrompere il ciclo
-                       // System.out.println("Arrivato Qua");
-                        }
-                if (v.length>30){
-                    String AddContratto=v[30];
-
-                    if (AddressContratto!=null&&AddContratto!=null&&
-                        !AddressContratto.isBlank()&&!AddContratto.isBlank()&&
-                        AddressContratto.equalsIgnoreCase(AddContratto)&&
-                        !v[0].equals(ID)&&
-                        v[0].split("_")[4].equalsIgnoreCase("DC")&&
-                            v[11].equals(Moneta)&&
-                        DataOraMovimento>=DataOra&&
-                            v[18].length()<1){//questo serve per trovare solo i movimenti non ancora classificati
-                        //Sotto questa if ci sono tutti i movimenti di deposito
-                        //che riguardano la stessa moneta e lo stesso contratto
-                        ListaIDMovimentiUguali.add(v[0]);
-                    }
-
-
-
-
-                }
-            }
-
-        if (MovimentoOppostoNonClassificato) {
-            String Messaggio = "Esistono movimenti di prelievo " + Moneta + " precedenti al movimento attuale non ancora classificati<br>"
-                    + "Procedere prima alla loro classificazione";
-            Messaggi.WarningMessage("Impossibile proseguire", Messaggio, this);
-        } //FASE 2: Se trovo movimenti identici chiedo se voglio che anche questi siano classificati come Collaterale
-        else if (!ListaIDMovimentiUguali.isEmpty()) {
-            String message = "Sono stati trovati altri " + ListaIDMovimentiUguali.size()
-                    + " movimenti analoghi non ancora classificati.";
-
-            String details = """
-        Vuoi applicare la stessa classificazione anche agli altri movimenti simili?
-
-        In caso di giacenza negativa sul collaterale verrà creato un movimento correttivo per portare la giacenza a zero.
-
-        Questo movimento positivo verrà considerato come una reward.
-        """;
-
-            AppDialog.DialogResult result = AppDialog.builder(this)
-                    .windowTitle("Movimenti analoghi")
-                    .bodyTitle("Applicare la stessa classificazione")
-                    .showTitleInBody(true)
-                    .theme()
-                    .type(AppDialog.DialogType.WARNING)
-                    .message(message)
-                    .details(details)
-                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
-                            .role(AppDialog.ActionRole.SECONDARY)
-                            .build())
-                    .action(AppDialog.DialogAction.builder("current-only", "NO")
-                            .role(AppDialog.ActionRole.SECONDARY)
-                            .build())
-                    .action(AppDialog.DialogAction.builder("apply-all", "SI")
-                            .role(AppDialog.ActionRole.PRIMARY)
-                            .build())
-                    .showDialog();
-
-            if (result == null) {
-                Messaggi.WarningMessage("Operazione Annullata", "", this);
-                return;
-            }
-
-            String actionId = result.getActionId();
-            if (actionId == null || "cancel".equals(actionId)) {
-                Messaggi.WarningMessage("Operazione Annullata", "", this);
-                return;
-            }
-
-            CreaMovimentoTrasferimentoDaCollaterale(ID, Descrizione, Dettaglio);
-            ModificaEffettuata = true;
-
-            if ("apply-all".equals(actionId)) {
-                for (String IDMov : ListaIDMovimentiUguali) {
-                    CreaMovimentoTrasferimentoDaCollaterale(IDMov, Descrizione, Dettaglio);
-                }
-            }
-               // System.out.println(risposta);
-            }else{
-                //FASE 3:modifico il solo movimento interessato
-                CreaMovimentoTrasferimentoDaCollaterale(ID,Descrizione,Dettaglio);
-                ModificaEffettuata=true;
-            }
-        if (ModificaEffettuata){
-                Messaggi.SuccessMessage("Modifiche effettuate con successo.",
-                        "Modifiche effettuate, ricordarsi di Salvare! <br>(sezione Transazioni Crypto)", this);
-        }
-
-    }
-
-        public static void CreaMovimentoTrasferimentoDaCollaterale(String ID,String Descrizione,String Dettaglio){
-
-
-        //In questa funzione devo gestire le eventuali rewards aggiuntive ad esempio in altra moneta che rientrano assieme ai token di sblocco collaterale
-         //Per trovale e classificarle devo seguire le seguenti regole
-         //1 - Cerco nella MappaCryptoWallet o meglio nella tabella depositiprelievi se ho movimenti con lo stesso hashtransazione del movimento analizzato
-         //2 - Controllo se questo movimento è un movimento di deposito (DC)
-         //3 - Controllo che questo movimento non sia già stato categorizzato
-         //4 - Verifico che non si tratti lo stesso id del movimento che sto analizzando
-         //Se soddisfa questi requisiti allora dovrò gestire il movimento come reward
-
-         String Movimento[]=MappaCryptoWallet.get(ID);
-         String Moneta=Movimento[11];
-         String HashT="";
-         if (Movimento.length>29)HashT=Movimento[24];
-
-       for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
-           String Mov[]=MappaCryptoWallet.get(IDnc);
-           if (Mov.length>29){//Verifico che il movimento sia in defi
-               String HashTnc=Mov[24];
-               if (HashT.equalsIgnoreCase(HashTnc)&&!HashT.isBlank()&&//Verifico che abbiano lo stesso hash
-                       Mov[0].split("_")[4].equals("DC")&&//Verifico che sia un movimento di deposito
-                       !Mov[0].equals(Movimento[0])&&//Verifico che si tratti di un movimento diverso
-                       Mov[18].isBlank())//Verifico che il movimento non sia già categorizzato
-               {
-                   //Se soddisfo tutti questi requisiti categorizzo il movimento come reward
-                   Mov[5]="REWARD";
-                   Mov[18]="DAI - Reward da Piattaforma Defi";
-                   //Non lo lego ai movimenti originali ma lo lascio separato (Non compilo il campo [20])
-               }
-           }
-
-       }// Fine prima funzione per la categorizzazione delle reward, ora passo alla successiva
-
-
-        //Devo modificare il movimento originale + crearne uno nuovo
-
-        //fase 1: creo il nuovo movimento
-        String IDSpezzato[]=Movimento[0].split("_");
-        String MonetaDettaglio=Movimento[11];
-        if (!Movimento[27].isBlank()){
-            MonetaDettaglio=Movimento[27];
-        }
-        String MT[]=new String[Importazioni.ColonneTabella];
-        String IDNuovoMov=IDSpezzato[0]+"_"+IDSpezzato[1]+"_0"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_PC";
-        MT[0]=IDNuovoMov;
-        MT[1]=Movimento[1];
-        MT[2]="1 di 1";
-        MT[3]=Movimento[3];
-        MT[4]="COLLATERALE BLOCCATO";
-        MT[5]="TRASFERIMENTO DA COLLATERALE";
-        MT[6]=MonetaDettaglio+" ->";
-        MT[8]=Movimento[11];
-        MT[9]=Movimento[12];
-        MT[10]=new BigDecimal(Movimento[13]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
-        MT[15]=Movimento[15];
-        MT[18]="PTW - Trasferimento Interno";
-        MT[22]="AU";
-        if (Movimento.length>29){
-            MT[23]=Movimento[23];
-            MT[24]=Movimento[24];
-            MT[25]=Movimento[27];
-            MT[26]=Movimento[28];
-            MT[29]=Movimento[29];
-        }
-        Importazioni.RiempiVuotiArray(MT);
-
-
-
-         long DataOraMovimento=FunzioniDate.ConvertiDatainLongMinuto(Movimento[1]);
-         long DataOra;
-         BigDecimal QtaMovimentata=new BigDecimal(Movimento[13]);
-         BigDecimal Somma=new BigDecimal(0);
-        //faccio la somma dei movimenti del collaterale di questa moneta/wallet
-        //Mi serve sapere la giacenza residua e vedere se sottraendo il movimento in uscita va o meno sotto zero
-        //qualora vada sotto zero devo creare un movimento che compensi la cosa
-        String CoppiaWalletCollaterale=Movimento[3]+"COLLATERALE BLOCCATO";
-        for (String[] v : MappaCryptoWallet.values()) {
-            DataOra=FunzioniDate.ConvertiDatainLongMinuto(v[1]);
-            String MonetaUscita=v[8];
-            String QtaUscita=v[10];
-            String MonetaEntrata=v[11];
-            String QtaEntrata=v[13];
-            //nella if devo mettere il limite sulla data
-            if ((v[3]+v[4]).equals(CoppiaWalletCollaterale)&&
-                    DataOraMovimento>DataOra){
-               if (MonetaUscita.equals(Moneta)){
-                  Somma=Somma.add(new BigDecimal(QtaUscita));
-               }
-               if (MonetaEntrata.equals(Moneta)){
-                  Somma=Somma.add(new BigDecimal(QtaEntrata));
-               }
-            }
-        }
-        BigDecimal QtaResiduaCollaterale=Somma.subtract(QtaMovimentata);
-        String IDMovCorrettivo="";
-        if (QtaResiduaCollaterale.compareTo(new BigDecimal(0))==-1){
-            //!!!!Se la qta residua sul collaterale è minore di zero allora creo il nuovo movimento per sistemare la giacenza negativa
-        String MT2[]=new String[Importazioni.ColonneTabella];
-        IDMovCorrettivo=IDSpezzato[0]+"_"+IDSpezzato[1]+"_00"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_DC";
-        MT2[0]=IDMovCorrettivo;
-        MT2[1]=Movimento[1];
-        MT2[2]="1 di 1";
-        MT2[3]=Movimento[3];
-        MT2[4]="COLLATERALE BLOCCATO";
-        MT2[5]="REWARD";
-        MT2[6]="-> "+MonetaDettaglio;
-        MT2[11]=Movimento[11];
-        MT2[12]=Movimento[12];
-        MT2[13]=QtaResiduaCollaterale.multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
-        MT2[15]=new BigDecimal(MT2[13]).divide(new BigDecimal(Movimento[13]), VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(Movimento[15])).setScale(2, RoundingMode.HALF_UP).toPlainString();
-        MT2[18]="DAI - Reward";
-        MT2[20]=ID+","+IDNuovoMov;
-        MT2[22]="AU";
-        if (Movimento.length>29){
-            MT2[27]=Movimento[27];
-            MT2[28]=Movimento[28];
-            MT2[29]=Movimento[29];
-        }
-        Importazioni.RiempiVuotiArray(MT2);
-        MappaCryptoWallet.put(IDMovCorrettivo, MT2);
-        }
-        MT[20]=ID+","+IDMovCorrettivo;
-        MappaCryptoWallet.put(IDNuovoMov, MT);
-        //fase 2: modifico il movimento originale aggiungendogli qualcosina
-        Movimento[5]=Descrizione;
-        Movimento[18]=Dettaglio;
-        Movimento[20]=IDNuovoMov+","+IDMovCorrettivo;
-
-    }
+    // NOTA: CreaMovimentiTrasferimentoDaCollaterale è stata accorpata in CreaMovimentiTrasferimentoDa
+    // (chiamare con Collaterale=true). Il dispatcher unico deriva internamente tutte le stringhe
+    // che distinguono il caso Collaterale da quello Piattaforma/DeFi (Vault).
 
     public static void CreaMovimentiScambioCryptoDifferito(String IDPrelievo,String IDDeposito){
         //come prima cosa devo generare un nuovo id per il prelievo

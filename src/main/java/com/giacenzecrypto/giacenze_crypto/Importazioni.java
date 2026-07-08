@@ -3781,12 +3781,19 @@ private static String F_safe(String s) {
                 MU = movimentoSplittato[6].trim();
                 MonU.SetNome(MU);
                 //PrzE = movimentoSplittato[4].trim();
-                MonE.SetPrezzo(movimentoSplittato[4].trim());
-                MonE.setFontePrezzo("Cointraking");
+                if (Funzioni.isNumeric(movimentoSplittato[4].trim(), false)&&
+                        new BigDecimal(movimentoSplittato[4]).compareTo(BigDecimal.ZERO)!=0
+                        ){
+                    MonE.SetPrezzo(movimentoSplittato[4].trim());
+                    MonE.setFontePrezzo("Cointraking");
+                }
                 //PrzU = movimentoSplittato[8].trim();
+                if (Funzioni.isNumeric(movimentoSplittato[8].trim(), false)&&
+                        new BigDecimal(movimentoSplittato[8]).compareTo(BigDecimal.ZERO)!=0
+                        ){
                 MonU.SetPrezzo(movimentoSplittato[8].trim());
                 MonU.setFontePrezzo("Cointraking");
-                
+                }
                 MonE.AssegnaTipoAuto();
                 MonU.AssegnaTipoAuto();
                 Exch = movimentoSplittato[10].trim();

@@ -130,6 +130,7 @@ private static final long serialVersionUID = 3L;
     static List<String> DepositiPrelieviDaCategorizzare;//viene salvata la lista degli id dei depositi e prelievi ancora da categorizzare
     static public Map<Integer, List<String>> CDC_FiatWallet_ListaSaldi;
     static public boolean TabellaCryptodaAggiornare=false;
+    static public boolean GestioneTokenScamDaAggiornare=true;
     static public boolean TransazioniCrypto_DaSalvare=false;//implementata per uso futuro attualmente non ancora utilizzata
     
     
@@ -235,6 +236,8 @@ private static final long serialVersionUID = 3L;
         Tabelle.Tabelle_InizializzaHeader(CDC_FiatWallet_Tabella3);
         Tabelle.Tabelle_InizializzaHeader(GiacenzeaData_Tabella);
         Tabelle.Tabelle_InizializzaHeader(GiacenzeaData_TabellaDettaglioMovimenti);
+        Tabelle.Tabelle_InizializzaHeader(GestioneTokenScam_Tabella);
+        Tabelle.Tabelle_InizializzaHeader(GestioneTokenScam_TabellaMovimenti);
         // Tabelle senza filtri: header semplice bold+centrato
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(TransazioniCrypto_Tabella_Dettagli);
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(DepositiPrelievi_TabellaCorrelati);
@@ -578,6 +581,13 @@ private static final long serialVersionUID = 3L;
         RT_Bottone_Stampa = new javax.swing.JButton();
         RT_Bottone_CorreggiErrori = new javax.swing.JButton();
         GestioneTokenScam = new javax.swing.JPanel();
+        GestioneTokenScam_ScrollPane = new javax.swing.JScrollPane();
+        GestioneTokenScam_Tabella = new javax.swing.JTable();
+        GestioneTokenScam_Bottone_RimuoviScam = new javax.swing.JButton();
+        GestioneTokenScam_Bottone_EliminaMovimenti = new javax.swing.JButton();
+        GestioneTokenScam_Label_Movimenti = new javax.swing.JLabel();
+        GestioneTokenScam_ScrollPaneMovimenti = new javax.swing.JScrollPane();
+        GestioneTokenScam_TabellaMovimenti = new javax.swing.JTable();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -1381,7 +1391,7 @@ private static final long serialVersionUID = 3L;
                                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                            .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                                                            .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 112, Short.MAX_VALUE)
                                                             .addComponent(TransazioniCrypto_Text_CostiCarico))
                                                         .addGap(51, 51, 51)
                                                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3203,15 +3213,141 @@ private static final long serialVersionUID = 3L;
 
         AnalisiCrypto.addTab("RT & Analisi P&L", RT);
 
+        GestioneTokenScam.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                GestioneTokenScamComponentShown(evt);
+            }
+        });
+
+        GestioneTokenScam_Tabella.setAutoCreateRowSorter(true);
+        GestioneTokenScam_Tabella.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Nome Token", "Address", "Rete", "Numero Movimenti"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Integer.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        GestioneTokenScam_Tabella.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                GestioneTokenScam_TabellaMouseReleased(evt);
+            }
+        });
+        GestioneTokenScam_Tabella.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                GestioneTokenScam_TabellaKeyReleased(evt);
+            }
+        });
+        GestioneTokenScam_ScrollPane.setViewportView(GestioneTokenScam_Tabella);
+        GestioneTokenScam_Tabella.getTableHeader().setPreferredSize(new Dimension(GestioneTokenScam_Tabella.getColumnModel().getTotalColumnWidth(), 42));
+
+        GestioneTokenScam_Bottone_RimuoviScam.setText("Rimuovi da SCAM");
+        GestioneTokenScam_Bottone_RimuoviScam.setEnabled(false);
+        GestioneTokenScam_Bottone_RimuoviScam.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GestioneTokenScam_Bottone_RimuoviScamActionPerformed(evt);
+            }
+        });
+
+        GestioneTokenScam_Bottone_EliminaMovimenti.setText("Elimina Movimenti del Token");
+        GestioneTokenScam_Bottone_EliminaMovimenti.setEnabled(false);
+        GestioneTokenScam_Bottone_EliminaMovimenti.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GestioneTokenScam_Bottone_EliminaMovimentiActionPerformed(evt);
+            }
+        });
+
+        GestioneTokenScam_Label_Movimenti.setText("Movimenti in memoria del token selezionato :");
+
+        GestioneTokenScam_TabellaMovimenti.setFont(new java.awt.Font("sansserif", 0, 12)); // NOI18N
+        GestioneTokenScam_TabellaMovimenti.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Data", "Wallet", "Moneta", "Address Moneta", "Tipo Movimento", "Quantita'", "Valore in Euro", "Qta Residua", "ID", "SaldiNegativiPrecedenti", "null", "null", "null"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        GestioneTokenScam_ScrollPaneMovimenti.setViewportView(GestioneTokenScam_TabellaMovimenti);
+        if (GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumnCount() > 0) {
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(0).setMinWidth(130);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(0).setPreferredWidth(130);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(0).setMaxWidth(130);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(2).setPreferredWidth(50);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(6).setMinWidth(100);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(6).setPreferredWidth(100);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(6).setMaxWidth(100);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(8).setMinWidth(0);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(8).setPreferredWidth(0);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(8).setMaxWidth(0);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(9).setMinWidth(0);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(9).setPreferredWidth(0);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(9).setMaxWidth(0);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(10).setMinWidth(0);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(10).setPreferredWidth(0);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(10).setMaxWidth(0);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(11).setMinWidth(0);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(11).setPreferredWidth(0);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(11).setMaxWidth(0);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(12).setMinWidth(0);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(12).setPreferredWidth(0);
+            GestioneTokenScam_TabellaMovimenti.getColumnModel().getColumn(12).setMaxWidth(0);
+        }
+        GestioneTokenScam_TabellaMovimenti.getTableHeader().setPreferredSize(new Dimension(GestioneTokenScam_TabellaMovimenti.getColumnModel().getTotalColumnWidth(), 42));
+
         javax.swing.GroupLayout GestioneTokenScamLayout = new javax.swing.GroupLayout(GestioneTokenScam);
         GestioneTokenScam.setLayout(GestioneTokenScamLayout);
         GestioneTokenScamLayout.setHorizontalGroup(
             GestioneTokenScamLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1416, Short.MAX_VALUE)
+            .addGroup(GestioneTokenScamLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(GestioneTokenScamLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(GestioneTokenScam_ScrollPane)
+                    .addComponent(GestioneTokenScam_ScrollPaneMovimenti)
+                    .addComponent(GestioneTokenScam_Label_Movimenti, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(GestioneTokenScamLayout.createSequentialGroup()
+                        .addComponent(GestioneTokenScam_Bottone_RimuoviScam, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(GestioneTokenScam_Bottone_EliminaMovimenti, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         GestioneTokenScamLayout.setVerticalGroup(
             GestioneTokenScamLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 920, Short.MAX_VALUE)
+            .addGroup(GestioneTokenScamLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(GestioneTokenScam_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(GestioneTokenScamLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(GestioneTokenScam_Bottone_RimuoviScam)
+                    .addComponent(GestioneTokenScam_Bottone_EliminaMovimenti))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(GestioneTokenScam_Label_Movimenti)
+                .addGap(4, 4, 4)
+                .addComponent(GestioneTokenScam_ScrollPaneMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         AnalisiCrypto.addTab("Gestione Token Scam", GestioneTokenScam);
@@ -7564,6 +7700,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         //Se selezionato Situazione Import Crypto lo aggiorno
        System.out.println("Aggiorna Tutto");
        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+       //Segnalo che la tabella Gestione Token Scam va ricaricata alla prossima apertura del tab
+       GestioneTokenScamDaAggiornare = true;
            
         //Emetto messaggio di ricalcolo sulla tabella RT se già compilata
         AccendiLabelRicalcolo();
@@ -7972,6 +8110,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
       //  Funzione_AggiornaComboBox();
     }//GEN-LAST:event_GiacenzeaDataComponentShown
+
+    private void GestioneTokenScamComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_GestioneTokenScamComponentShown
+        //Ricarico la tabella principale solo se ci sono state modifiche ai movimenti dall'ultimo caricamento
+        if (GestioneTokenScamDaAggiornare) {
+            GestioneTokenScam_CaricaTabellaPrincipale();
+        }
+    }//GEN-LAST:event_GestioneTokenScamComponentShown
 
     private void GiacenzeaData_Bottone_ModificaValoreMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_ModificaValoreMouseClicked
         // TODO add your handling code here:
@@ -8578,6 +8723,75 @@ GiacenzeaData_CompilaTabellaToken(true);
         
        
     }//GEN-LAST:event_GiacenzeaData_Bottone_ScamActionPerformed
+
+    private void GestioneTokenScam_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GestioneTokenScam_TabellaMouseReleased
+        GestioneTokenScam_CaricaTabellaMovimenti();
+    }//GEN-LAST:event_GestioneTokenScam_TabellaMouseReleased
+
+    private void GestioneTokenScam_TabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_GestioneTokenScam_TabellaKeyReleased
+        GestioneTokenScam_CaricaTabellaMovimenti();
+    }//GEN-LAST:event_GestioneTokenScam_TabellaKeyReleased
+
+    private void GestioneTokenScam_Bottone_RimuoviScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GestioneTokenScam_Bottone_RimuoviScamActionPerformed
+        if (GestioneTokenScam_Tabella.getSelectedRow() >= 0) {
+            int rigaselezionata = GestioneTokenScam_Tabella.getRowSorter().convertRowIndexToModel(GestioneTokenScam_Tabella.getSelectedRow());
+            String NomeToken = GestioneTokenScam_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            String Address = GestioneTokenScam_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+            String Rete = GestioneTokenScam_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
+
+            //Stessa logica condivisa usata da GiacenzeaData_Bottone_ScamActionPerformed e DepositiPrelievi_Bottone_ScamActionPerformed
+            //Il token qui è sempre già SCAM, quindi la funzione esegue il ramo di rimozione (con conferma dell'utente e ripristino del nome originale)
+            GiacenzeaData_Funzione_IdentificaComeScam(NomeToken, Address, Rete, "Tutti");
+
+            Funzioni_AggiornaTutto();
+            GestioneTokenScam_CaricaTabellaPrincipale();
+            Tabelle.Funzioni_PulisciTabella((DefaultTableModel) GestioneTokenScam_TabellaMovimenti.getModel());
+            GestioneTokenScam_Bottone_RimuoviScam.setEnabled(false);
+            GestioneTokenScam_Bottone_EliminaMovimenti.setEnabled(false);
+        }
+    }//GEN-LAST:event_GestioneTokenScam_Bottone_RimuoviScamActionPerformed
+
+    private void GestioneTokenScam_Bottone_EliminaMovimentiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GestioneTokenScam_Bottone_EliminaMovimentiActionPerformed
+        if (GestioneTokenScam_Tabella.getSelectedRow() >= 0) {
+            int rigaselezionata = GestioneTokenScam_Tabella.getRowSorter().convertRowIndexToModel(GestioneTokenScam_Tabella.getSelectedRow());
+            String NomeToken = GestioneTokenScam_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+
+            //Raccolgo gli ID di tutti i movimenti attualmente mostrati nella tabella di dettaglio (colonna 8, nascosta)
+            Set<String> idDaEliminare = new LinkedHashSet<>();
+            int righeDettaglio = GestioneTokenScam_TabellaMovimenti.getModel().getRowCount();
+            for (int i = 0; i < righeDettaglio; i++) {
+                idDaEliminare.add(GestioneTokenScam_TabellaMovimenti.getModel().getValueAt(i, 8).toString());
+            }
+            if (idDaEliminare.isEmpty()) return;
+
+            AppDialog.DialogResult result = AppDialog.builder(this)
+                    .windowTitle("Eliminazione movimenti token SCAM")
+                    .bodyTitle("Eliminare tutti i movimenti del token?")
+                    .showTitleInBody(true)
+                    .theme()
+                    .type(AppDialog.DialogType.WARNING)
+                    .message("Stai per eliminare tutti i " + idDaEliminare.size() + " movimenti del token " + NomeToken + ".")
+                    .details("L'operazione rimuoverà definitivamente questi movimenti dall'archivio.<br>Premi <b>Salva</b> per rendere permanente la cancellazione.")
+                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("delete", "Elimina Movimenti")
+                            .role(AppDialog.ActionRole.DANGER)
+                            .build())
+                    .showDialog();
+
+            if (result != null && result.isAction("delete")) {
+                for (String ID : idDaEliminare) {
+                    Funzioni.RimuoviMovimentazioneXID(ID);
+                }
+                Funzioni_AggiornaTutto();
+                GestioneTokenScam_CaricaTabellaPrincipale();
+                Tabelle.Funzioni_PulisciTabella((DefaultTableModel) GestioneTokenScam_TabellaMovimenti.getModel());
+                GestioneTokenScam_Bottone_RimuoviScam.setEnabled(false);
+                GestioneTokenScam_Bottone_EliminaMovimenti.setEnabled(false);
+            }
+        }
+    }//GEN-LAST:event_GestioneTokenScam_Bottone_EliminaMovimentiActionPerformed
 
  /*   private void BinanceApi()
          {   
@@ -12276,17 +12490,30 @@ if (result != null && !result.isAction("cancel")) {
     private void DepositiPrelievi_Bottone_ScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_ScamActionPerformed
         // TODO add your handling code here:
         int righeSelezionate[] = Tabelle.Funzioni_getRigheSelezionate(DepositiPrelievi_Tabella);
-        if (righeSelezionate.length >= 0) {
+
+        //Leggo subito gli ID di TUTTE le righe selezionate, prima di iniziare il ciclo di classificazione.
+        //Il ciclo sottostante mostra dialog di conferma la cui chiusura fa riguadagnare il focus alla finestra
+        //principale: se nel frattempo TabellaCryptodaAggiornare è stato messo a true (es. dopo aver marcato un
+        //token come SCAM), formWindowGainedFocus ricarica la tabella crypto e con essa anche DepositiPrelievi_Tabella.
+        //Se leggessimo il modello ad ogni iterazione con gli indici di riga originari, dopo un ricaricamento quegli
+        //indici punterebbero a righe/movimenti diversi da quelli effettivamente selezionati dall'utente.
+        String idSelezionati[] = new String[righeSelezionate.length];
+        for (int i = 0; i < righeSelezionate.length; i++) {
+            idSelezionati[i] = DepositiPrelievi_Tabella.getModel().getValueAt(righeSelezionate[i], 0).toString();
+        }
+
+        if (idSelezionati.length >= 0) {
 
             //Secondo ciclo faccio le modifiche
             Set<String> setUnivoco = new LinkedHashSet<>();
-            for (int i = 0; i < righeSelezionate.length; i++) {
+            for (int i = 0; i < idSelezionati.length; i++) {
 
-                String ID = DepositiPrelievi_Tabella.getModel().getValueAt(righeSelezionate[i], 0).toString();
+                String ID = idSelezionati[i];
                 //System.out.println(ID);
 
                 //adesso controllo che sia un movimento non classificato e solo in quel caso vado avanti
                 String Movimento[] = MappaCryptoWallet.get(ID);
+                if (Movimento == null) continue; //il movimento potrebbe non esistere più nel frattempo
                 String Rete = Funzioni.TrovaReteDaIMovimento(Movimento);
                 if (Movimento[18] == null || Movimento[18].isBlank()) {
                     //Controllo se è un movimento di prelievo o deposito
@@ -12305,8 +12532,20 @@ if (result != null && !result.isAction("cancel")) {
 
                     //Se non l'ho già fatto classifico il movimento
                     if (!setUnivoco.contains(NomeMoneta)){
-                        String NuovoNome=GiacenzeaData_Funzione_IdentificaComeScam(NomeMoneta, Address, Rete,Wallet);
-                        setUnivoco.add(NuovoNome);
+                        //Senza Address o Rete la funzione condivisa non può identificare il singolo token e passa
+                        //al ramo pensato per "Giacenze a Data" (classificazione manuale su tutto il wallet):
+                        //in selezione multipla lo salto per evitare di proporre SCAM su token diversi da quelli selezionati.
+                        if (Address == null || Address.isBlank() || Rete == null || Rete.isBlank()) {
+                            Messaggi.WarningMessage("Token senza Address/Rete",
+                                "Il token <b>" + NomeMoneta + "</b> non ha un Address o una Rete associati "
+                                + "(tipico delle monete native o dei movimenti non on-chain).<br>"
+                                + "Non può essere classificato come SCAM dalla selezione multipla ed è stato ignorato.<br>"
+                                + "Usa l'apposita funzione in \"Giacenze a Data\" se vuoi procedere comunque.", this);
+                            setUnivoco.add(NomeMoneta);
+                        } else {
+                            String NuovoNome=GiacenzeaData_Funzione_IdentificaComeScam(NomeMoneta, Address, Rete,Wallet);
+                            setUnivoco.add(NuovoNome);
+                        }
                     }
 
                 } else {
@@ -12980,6 +13219,7 @@ if (result != null && !result.isAction("cancel")) {
         AccendiLabelRicalcolo();
         if(GiacenzeaData_Tabella.getRowCount()>0)GiacenzeaData_Label_Aggiornare.setVisible(true);
         this.setCursor(Cursor.getDefaultCursor());
+        GestioneTokenScamDaAggiornare=true;
     }//GEN-LAST:event_TransazioniCrypto_Bottone_AnnullaActionPerformed
 
     private void TransazioniCrypto_CheckBox_EscludiTIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_CheckBox_EscludiTIActionPerformed
@@ -13360,6 +13600,121 @@ if (result != null && !result.isAction("cancel")) {
     }
     
     
+    /**
+     * Carica la tabella principale del tab "Gestione Token Scam" con i token marcati come SCAM
+     * nel database (tabella RINOMINATOKEN) che hanno ancora almeno un movimento presente in memoria.
+     * Svuota anche la tabella di dettaglio movimenti e riporta a false il flag di aggiornamento.
+     */
+    private void GestioneTokenScam_CaricaTabellaPrincipale() {
+        DefaultTableModel modello = (DefaultTableModel) GestioneTokenScam_Tabella.getModel();
+        Tabelle.Funzioni_PulisciTabella(modello);
+        Tabelle.ColoraTabellaSemplice(GestioneTokenScam_Tabella);
+
+        Map<String, String> mappaRinomina = DatabaseH2.RinominaToken_LeggiTabella();
+        for (Map.Entry<String, String> entry : mappaRinomina.entrySet()) {
+            String NuovoNome = entry.getValue();
+            if (!Funzioni.isSCAM(NuovoNome)) continue;
+
+            String addressChain = entry.getKey();
+            int idxSep = addressChain.lastIndexOf('_');
+            if (idxSep < 0) continue;
+            String Address = addressChain.substring(0, idxSep);
+            String Rete = addressChain.substring(idxSep + 1);
+
+            int numeroMovimenti = 0;
+            for (String[] movimento : MappaCryptoWallet.values()) {
+                String ReteMov = Funzioni.TrovaReteDaIMovimento(movimento);
+                if (ReteMov == null) ReteMov = "";
+                if (!Rete.equals(ReteMov)) continue;
+                if (Address.equalsIgnoreCase(movimento[26])) numeroMovimenti++;
+                if (Address.equalsIgnoreCase(movimento[28])) numeroMovimenti++;
+            }
+            //Se il token non ha più movimenti in memoria non lo mostro
+            if (numeroMovimenti == 0) continue;
+
+            modello.addRow(new Object[]{NuovoNome, Address, Rete, numeroMovimenti});
+        }
+
+        Tabelle.Tabelle_FiltroColonne(GestioneTokenScam_Tabella, null, popup);
+        GestioneTokenScam_Bottone_RimuoviScam.setEnabled(false);
+        GestioneTokenScam_Bottone_EliminaMovimenti.setEnabled(false);
+        Tabelle.Funzioni_PulisciTabella((DefaultTableModel) GestioneTokenScam_TabellaMovimenti.getModel());
+
+        GestioneTokenScamDaAggiornare = false;
+    }
+
+    /**
+     * Carica la tabella di dettaglio con tutti i movimenti in memoria del token selezionato nella
+     * tabella principale del tab "Gestione Token Scam". Struttura e logica identiche a
+     * {@link #GiacenzeaData_CompilaTabellaMovimenti()} (stesse colonne, stesso calcolo della Qta Residua
+     * e del flag SaldiNegativiPrecedenti), ma senza i filtri di Wallet/Data che non si applicano qui:
+     * questa tabella mostra sempre tutti i movimenti in memoria del token selezionato.
+     */
+    private void GestioneTokenScam_CaricaTabellaMovimenti() {
+        DefaultTableModel modello = (DefaultTableModel) GestioneTokenScam_TabellaMovimenti.getModel();
+        Tabelle.Funzioni_PulisciTabella(modello);
+
+        boolean rigaSelezionata = GestioneTokenScam_Tabella.getSelectedRow() >= 0;
+        if (rigaSelezionata) {
+            int riga = GestioneTokenScam_Tabella.getRowSorter().convertRowIndexToModel(GestioneTokenScam_Tabella.getSelectedRow());
+            String mon = GestioneTokenScam_Tabella.getModel().getValueAt(riga, 0).toString();
+            String Address = GestioneTokenScam_Tabella.getModel().getValueAt(riga, 1).toString();
+            String Rete = GestioneTokenScam_Tabella.getModel().getValueAt(riga, 2).toString();
+
+            BigDecimal TotaleQta = new BigDecimal(0);
+            int NumNegativi = 0;
+            for (String[] movimento : MappaCryptoWallet.values()) {
+                String ReteMov = Funzioni.TrovaReteDaIMovimento(movimento);
+                if (ReteMov == null) ReteMov = "";
+                if (!Rete.equals(ReteMov)) continue;
+
+                String AddressU = movimento[26];
+                String AddressE = movimento[28];
+
+                if (movimento[8].equals(mon) && Address.equalsIgnoreCase(AddressU)) {
+                    TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
+                    String riga2[] = new String[13];
+                    riga2[0] = Funzioni.getOradaID(movimento[0]);
+                    riga2[1] = movimento[3];
+                    riga2[2] = movimento[8];
+                    riga2[3] = AddressU;
+                    riga2[4] = movimento[5];
+                    riga2[5] = movimento[10];
+                    riga2[6] = movimento[15];
+                    riga2[7] = TotaleQta.toPlainString();
+                    riga2[8] = movimento[0];
+                    riga2[9] = "";
+                    if (NumNegativi > 0) riga2[9] = "S";
+                    if (riga2[7].contains("-")) NumNegativi++;
+                    modello.addRow(riga2);
+                }
+                if (movimento[11].equals(mon) && Address.equalsIgnoreCase(AddressE)) {
+                    TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
+                    String riga2[] = new String[13];
+                    riga2[0] = Funzioni.getOradaID(movimento[0]);
+                    riga2[1] = movimento[3];
+                    riga2[2] = movimento[11];
+                    riga2[3] = AddressE;
+                    riga2[4] = movimento[5];
+                    riga2[5] = movimento[13];
+                    riga2[6] = movimento[15];
+                    riga2[7] = TotaleQta.toPlainString();
+                    riga2[8] = movimento[0];
+                    riga2[9] = "";
+                    if (NumNegativi > 0) riga2[9] = "S";
+                    if (riga2[7].contains("-")) NumNegativi++;
+                    modello.addRow(riga2);
+                }
+            }
+            //coloro la tabella con lo stesso stile usato in Giacenze a Data
+            Tabelle.ColoraRigheTabella1GiacenzeaData(GestioneTokenScam_TabellaMovimenti);
+        }
+
+        Tabelle.Tabelle_FiltroColonne(GestioneTokenScam_TabellaMovimenti, null, popup);
+        GestioneTokenScam_Bottone_RimuoviScam.setEnabled(rigaSelezionata);
+        GestioneTokenScam_Bottone_EliminaMovimenti.setEnabled(rigaSelezionata);
+    }
+
     private String GiacenzeaData_Funzione_IdentificaComeScam(String NomeMoneta, String Address, String Rete, String Wallet) {
 
         //Recupero tutti i movimenti del token
@@ -15536,6 +15891,13 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JButton Donazioni_Bottone1;
     private javax.swing.JButton Donazioni_Bottone2;
     private javax.swing.JPanel GestioneTokenScam;
+    private javax.swing.JButton GestioneTokenScam_Bottone_EliminaMovimenti;
+    private javax.swing.JButton GestioneTokenScam_Bottone_RimuoviScam;
+    private javax.swing.JLabel GestioneTokenScam_Label_Movimenti;
+    private javax.swing.JScrollPane GestioneTokenScam_ScrollPane;
+    private javax.swing.JScrollPane GestioneTokenScam_ScrollPaneMovimenti;
+    private javax.swing.JTable GestioneTokenScam_Tabella;
+    private javax.swing.JTable GestioneTokenScam_TabellaMovimenti;
     private javax.swing.JPanel GiacenzeaData;
     private javax.swing.JButton GiacenzeaData_Bottone_Calcola;
     private javax.swing.JButton GiacenzeaData_Bottone_CambiaNomeToken;

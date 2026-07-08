@@ -622,6 +622,7 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
     // Configura il renderer per i tipi più comuni
     table.setDefaultRenderer(Object.class, renderer);
     table.setDefaultRenderer(Double.class, renderer);
+    table.setDefaultRenderer(Integer.class, renderer);
     
 
     // Restituisci la tabella

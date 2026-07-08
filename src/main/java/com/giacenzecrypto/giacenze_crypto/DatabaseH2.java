@@ -149,8 +149,17 @@ public class DatabaseH2 {
             
             createTableSQL = "CREATE TABLE IF NOT EXISTS RINOMINATOKEN (address_chain VARCHAR(255) PRIMARY KEY, VecchioNome VARCHAR(255), NuovoNome VARCHAR(255))";
             preparedStatement = connection.prepareStatement(createTableSQL);
-            preparedStatement.execute(); 
-            
+            preparedStatement.execute();
+
+            //Cache delle risposte dell'API token_security di GoPlusLabs, per non dover reinterrogare le API per un token già verificato
+            createTableSQL = "CREATE TABLE IF NOT EXISTS GOPLUSSECURITY (address_chain VARCHAR(255) PRIMARY KEY, Rete VARCHAR(50), Address VARCHAR(255), "
+                    + "is_honeypot VARCHAR(5), is_blacklisted VARCHAR(5), cannot_sell_all VARCHAR(5), is_true_token VARCHAR(5), "
+                    + "is_airdrop_scam VARCHAR(5), trust_list VARCHAR(5), sell_tax VARCHAR(20), mintable VARCHAR(5), "
+                    + "freezable VARCHAR(5), closable VARCHAR(5), balance_mutable_authority VARCHAR(5), trusted_token VARCHAR(5), "
+                    + "TimestampVerifica BIGINT)";
+            preparedStatement = connection.prepareStatement(createTableSQL);
+            preparedStatement.execute();
+
             createTableSQL = "CREATE TABLE IF NOT EXISTS EXCHANGEAPI (Nome VARCHAR(255) PRIMARY KEY, Exchange VARCHAR(255), Chiave VARCHAR(255), Segreto VARCHAR(255),Opzionale VARCHAR(255))";
             preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
             preparedStatement.execute(); 
@@ -1238,7 +1247,74 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
         return Risultato;
         //Con questa query ritorno sia il vecchio che il nuovo nome
     }
-        
+
+    private static final String[] GOPLUSSECURITY_CAMPI = {
+        "is_honeypot", "is_blacklisted", "cannot_sell_all", "is_true_token", "is_airdrop_scam",
+        "trust_list", "sell_tax", "mintable", "freezable", "closable", "balance_mutable_authority", "trusted_token"
+    };
+
+    /**
+     * Legge dalla cache i dati di sicurezza GoPlusLabs già verificati per un token (address_chain = Address + "_" + Rete).
+     * Ritorna null se il token non è mai stato verificato in precedenza.
+     */
+    public static Map<String, String> GoPlusSecurity_Leggi(String address_chain) {
+        Map<String, String> risultato = null;
+        try {
+            String sql = "SELECT " + String.join(",", GOPLUSSECURITY_CAMPI) + " FROM GOPLUSSECURITY WHERE address_chain = ?";
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setString(1, address_chain);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        risultato = new HashMap<>();
+                        for (String campo : GOPLUSSECURITY_CAMPI) {
+                            risultato.put(campo, rs.getString(campo));
+                        }
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return risultato;
+    }
+
+    /**
+     * Salva nella cache i dati essenziali di sicurezza/affidabilità restituiti da GoPlusLabs per un token,
+     * in modo da non dover reinterrogare le API la prossima volta che lo stesso token viene verificato.
+     */
+    public static void GoPlusSecurity_Scrivi(String address_chain, String rete, String address, Map<String, String> valori) {
+        try {
+            String checkSQL = "SELECT COUNT(*) FROM GOPLUSSECURITY WHERE address_chain = ?";
+            int rowCount = 0;
+            try (PreparedStatement check = connection.prepareStatement(checkSQL)) {
+                check.setString(1, address_chain);
+                try (ResultSet rs = check.executeQuery()) {
+                    if (rs.next()) rowCount = rs.getInt(1);
+                }
+            }
+            String sql;
+            if (rowCount > 0) {
+                sql = "UPDATE GOPLUSSECURITY SET Rete=?, Address=?, " + String.join("=?,", GOPLUSSECURITY_CAMPI) + "=?, TimestampVerifica=? WHERE address_chain=?";
+            } else {
+                sql = "INSERT INTO GOPLUSSECURITY (Rete, Address, " + String.join(",", GOPLUSSECURITY_CAMPI) + ", TimestampVerifica, address_chain) "
+                        + "VALUES (?,?," + "?,".repeat(GOPLUSSECURITY_CAMPI.length) + "?,?)";
+            }
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                int idx = 1;
+                ps.setString(idx++, rete);
+                ps.setString(idx++, address);
+                for (String campo : GOPLUSSECURITY_CAMPI) {
+                    ps.setString(idx++, valori.get(campo));
+                }
+                ps.setLong(idx++, System.currentTimeMillis());
+                ps.setString(idx, address_chain);
+                ps.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
         public static String GiacenzeWalletMonetaBlockchain_Leggi(String wallet_blocco) {
                 String Valore = null;
         try {

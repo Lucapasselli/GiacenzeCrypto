@@ -78,6 +78,10 @@ import javax.swing.ToolTipManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import org.json.JSONObject;
 
 
 /**
@@ -573,6 +577,7 @@ private static final long serialVersionUID = 3L;
         RT_Bottone_Documentazione = new javax.swing.JButton();
         RT_Bottone_Stampa = new javax.swing.JButton();
         RT_Bottone_CorreggiErrori = new javax.swing.JButton();
+        GestioneTokenScam = new javax.swing.JPanel();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -1867,6 +1872,11 @@ private static final long serialVersionUID = 3L;
 
         DepositiPrelievi_Bottone_ScamAuto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Banana.png"))); // NOI18N
         DepositiPrelievi_Bottone_ScamAuto.setText("<html>Identificazione SCAM automatica</html>");
+        DepositiPrelievi_Bottone_ScamAuto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                DepositiPrelievi_Bottone_ScamAutoActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout DepositiPrelieviLayout = new javax.swing.GroupLayout(DepositiPrelievi);
         DepositiPrelievi.setLayout(DepositiPrelieviLayout);
@@ -3192,6 +3202,19 @@ private static final long serialVersionUID = 3L;
         );
 
         AnalisiCrypto.addTab("RT & Analisi P&L", RT);
+
+        javax.swing.GroupLayout GestioneTokenScamLayout = new javax.swing.GroupLayout(GestioneTokenScam);
+        GestioneTokenScam.setLayout(GestioneTokenScamLayout);
+        GestioneTokenScamLayout.setHorizontalGroup(
+            GestioneTokenScamLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 1416, Short.MAX_VALUE)
+        );
+        GestioneTokenScamLayout.setVerticalGroup(
+            GestioneTokenScamLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 920, Short.MAX_VALUE)
+        );
+
+        AnalisiCrypto.addTab("Gestione Token Scam", GestioneTokenScam);
 
         javax.swing.GroupLayout Analisi_CryptoLayout = new javax.swing.GroupLayout(Analisi_Crypto);
         Analisi_Crypto.setLayout(Analisi_CryptoLayout);
@@ -12296,6 +12319,269 @@ if (result != null && !result.isAction("cancel")) {
         }
     }//GEN-LAST:event_DepositiPrelievi_Bottone_ScamActionPerformed
 
+    private void DepositiPrelievi_Bottone_ScamAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_ScamAutoActionPerformed
+        List<String[]> candidati = DepositiPrelievi_TrovaTokenCandidatiScamAuto();
+        if (candidati.isEmpty()) {
+            Messaggi.WarningMessage("Identificazione SCAM automatica",
+                    "Non sono stati trovati token che soddisfano i requisiti per la verifica automatica<br>"
+                    + "(solo movimenti di deposito/prelievo non classificati, non già valorizzati, non già marcati come SCAM, con address e rete noti).", this);
+            return;
+        }
+
+        Download progress = new Download();
+        progress.setLocationRelativeTo(this);
+        progress.Titolo("Identificazione SCAM automatica");
+        progress.SetLabel("Verifica dei token in corso tramite GoPlusLabs. Attendere...");
+        progress.SetMassimo(candidati.size());
+
+        Thread thread = new Thread() {
+            public void run() {
+                int i = 0;
+                for (String[] token : candidati) {
+                    if (Principale.InterrompiCiclo) break;
+                    i++;
+                    String nomeMoneta = token[0];
+                    String address = token[1];
+                    String rete = token[2];
+                    progress.SetAvanzamento(i);
+                    progress.SetMessaggioAvanzamento("Verifica " + nomeMoneta + " (" + rete + ") - " + i + " di " + candidati.size());
+                    try {
+                        String motivoScam = DepositiPrelievi_GoPlus_VerificaScam(address, rete);
+                        if (motivoScam != null) {
+                            System.out.println("Token " + nomeMoneta + " (" + address + " - " + rete + ") identificato come SCAM da GoPlusLabs: " + motivoScam);
+                            MarcaTokenComeScam(nomeMoneta, address, rete);
+                        } else {
+                            System.out.println("Token " + nomeMoneta + " (" + address + " - " + rete + ") non marcato come SCAM (nessun rischio rilevato, o non verificabile su GoPlusLabs).");
+                        }
+                    } catch (IOException ex) {
+                        LoggerGC.ScriviErrore(ex);
+                    }
+                    if (Principale.InterrompiCiclo) break;
+                }
+                Funzioni_AggiornaTutto();
+                progress.ChiudiFinestra();
+            }
+        };
+        progress.SetThread(thread);
+        thread.start();
+        progress.setVisible(true);
+    }//GEN-LAST:event_DepositiPrelievi_Bottone_ScamAutoActionPerformed
+
+    /**
+     * Restituisce l'elenco dei token (NomeMoneta, Address, Rete) candidati alla verifica SCAM automatica.
+     * Un token è candidato solo se tutti i suoi movimenti in archivio sono depositi/prelievi (DC/PC)
+     * non ancora classificati (campo [18] vuoto), non è già marcato come SCAM e non ha mai avuto un valore.
+     */
+    private List<String[]> DepositiPrelievi_TrovaTokenCandidatiScamAuto() {
+        List<String[]> candidati = new ArrayList<>();
+        Set<String> tokenGiaValutati = new LinkedHashSet<>();
+        int rowCount = DepositiPrelievi_Tabella.getModel().getRowCount();
+
+        for (int riga = 0; riga < rowCount; riga++) {
+            String ID = DepositiPrelievi_Tabella.getModel().getValueAt(riga, 0).toString();
+            String[] Movimento = MappaCryptoWallet.get(ID);
+            if (Movimento == null) continue;
+            if (!(Movimento[18] == null || Movimento[18].isBlank())) continue;
+
+            String Tipo = ID.split("_")[4];
+            String NomeMoneta;
+            String Address;
+            if (Tipo.equalsIgnoreCase("PC")) {
+                NomeMoneta = Movimento[8];
+                Address = Movimento[26];
+            } else if (Tipo.equalsIgnoreCase("DC")) {
+                NomeMoneta = Movimento[11];
+                Address = Movimento[28];
+            } else {
+                continue;
+            }
+            if (Address == null || Address.isBlank()) continue;
+            if (Funzioni.isSCAM(NomeMoneta)) continue;
+
+            String Rete = Funzioni.TrovaReteDaIMovimento(Movimento);
+            if (Rete == null || Rete.isBlank()) continue;
+
+            String chiave = (NomeMoneta + "|" + Address + "|" + Rete).toLowerCase();
+            if (!tokenGiaValutati.add(chiave)) continue;
+
+            Set<String> idMovimentiToken = Funzione_ElencoIDMovimentiTokeneWalletSelezionato("Tutti", "Tutti", NomeMoneta, Rete, Address);
+            boolean soloDepositiPrelievi = true;
+            for (String idMov : idMovimentiToken) {
+                String[] mov = MappaCryptoWallet.get(idMov);
+                String tipoMov = idMov.split("_")[4];
+                boolean movClassificato = !(mov[18] == null || mov[18].isBlank());
+                boolean movValorizzato = Prezzi.isMovimentoPrezzato(mov) && Double.parseDouble(mov[15]) != 0;
+                if (!(tipoMov.equalsIgnoreCase("PC") || tipoMov.equalsIgnoreCase("DC")) || movClassificato || movValorizzato) {
+                    soloDepositiPrelievi = false;
+                    break;
+                }
+            }
+            if (!soloDepositiPrelievi) continue;
+
+            candidati.add(new String[]{NomeMoneta, Address, Rete});
+        }
+        return candidati;
+    }
+
+    private static final Map<String, String> GOPLUS_CHAIN_ID = Map.ofEntries(
+            Map.entry("ETH", "1"),
+            Map.entry("BSC", "56"),
+            Map.entry("CRO", "25"),
+            Map.entry("ARB", "42161"),
+            Map.entry("BASE", "8453"),
+            Map.entry("AVAX", "43114"),
+            Map.entry("POL", "137"),
+            Map.entry("BERA", "80094"),
+            Map.entry("GNOSIS", "100"),
+            Map.entry("MONAD", "143")
+    );
+
+    /**
+     * Verifica se un token è considerato scam da GoPlusLabs. Se il token è già stato verificato in passato
+     * (cache in tabella GOPLUSSECURITY sul database) i dati vengono letti da lì senza richiamare le API.
+     * Restituisce il motivo (stringa) se il token risulta a rischio, oppure null se non risulta scam,
+     * se la rete non è supportata da GoPlusLabs o se non è stato possibile verificarlo.
+     */
+    private String DepositiPrelievi_GoPlus_VerificaScam(String address, String rete) throws IOException {
+        boolean isSolana = rete.equalsIgnoreCase("SOL");
+        String addressChain = address + "_" + rete;
+
+        Map<String, String> dati = DatabaseH2.GoPlusSecurity_Leggi(addressChain);
+        if (dati != null) {
+            System.out.println("GoPlusLabs: dati già presenti in cache per " + address + " (" + rete + "), API non richiamata.");
+        } else {
+            dati = DepositiPrelievi_GoPlus_InterrogaAPI(address, rete, isSolana);
+            if (dati == null) return null; //rete non supportata, errore http o token non trovato: non verificabile
+            DatabaseH2.GoPlusSecurity_Scrivi(addressChain, rete, address, dati);
+        }
+
+        return isSolana ? DepositiPrelievi_GoPlus_MotivoScamSolana(dati) : DepositiPrelievi_GoPlus_MotivoScamEVM(dati);
+    }
+
+    /**
+     * Interroga le API di GoPlusLabs (token_security) ed estrae i soli campi essenziali relativi
+     * a sicurezza/affidabilità del token, così da poterli poi salvare in cache.
+     */
+    private Map<String, String> DepositiPrelievi_GoPlus_InterrogaAPI(String address, String rete, boolean isSolana) throws IOException {
+        String url;
+        String chiaveRisultato = address.toLowerCase();
+        if (isSolana) {
+            url = "https://api.gopluslabs.io/api/v1/solana/token_security?contract_addresses=" + address;
+            chiaveRisultato = address;
+        } else {
+            String chainId = GOPLUS_CHAIN_ID.get(rete.toUpperCase());
+            if (chainId == null) return null; //rete non supportata da GoPlusLabs, non verificabile
+            url = "https://api.gopluslabs.io/api/v1/token_security/" + chainId + "?contract_addresses=" + address;
+        }
+
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url(url).header("Accept", "application/json").build();
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful() || response.body() == null) {
+                System.out.println("GoPlusLabs: risposta HTTP " + response.code() + " per address " + address + ", token NON verificato (non escluso automaticamente).");
+                return null;
+            }
+            JSONObject root = new JSONObject(response.body().string());
+            JSONObject result = root.optJSONObject("result");
+            if (result == null) {
+                System.out.println("GoPlusLabs: risposta senza campo 'result' per address " + address + ", token NON verificato.");
+                return null;
+            }
+            JSONObject datiJson = result.optJSONObject(chiaveRisultato);
+            if (datiJson == null) {
+                System.out.println("GoPlusLabs: token " + address + " non trovato/indicizzato, NON verificato.");
+                return null;
+            }
+
+            return isSolana ? DepositiPrelievi_GoPlus_EstraiCampiSolana(datiJson) : DepositiPrelievi_GoPlus_EstraiCampiEVM(datiJson);
+        } finally {
+            //Rispetto il limite dell'API gratuita solo quando è stata effettuata una vera chiamata di rete
+            try {
+                Thread.sleep(4000);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    private Map<String, String> DepositiPrelievi_GoPlus_EstraiCampiEVM(JSONObject dati) {
+        Map<String, String> valori = new HashMap<>();
+        valori.put("is_honeypot", dati.optString("is_honeypot", ""));
+        valori.put("is_blacklisted", dati.optString("is_blacklisted", ""));
+        valori.put("cannot_sell_all", dati.optString("cannot_sell_all", ""));
+        valori.put("is_true_token", dati.has("is_true_token") ? dati.optString("is_true_token") : "");
+        valori.put("is_airdrop_scam", dati.optString("is_airdrop_scam", ""));
+        valori.put("trust_list", dati.optString("trust_list", ""));
+        valori.put("sell_tax", dati.optString("sell_tax", ""));
+        return valori;
+    }
+
+    private Map<String, String> DepositiPrelievi_GoPlus_EstraiCampiSolana(JSONObject dati) {
+        Map<String, String> valori = new HashMap<>();
+        valori.put("mintable", DepositiPrelievi_GoPlus_FlagSolana(dati, "mintable") ? "1" : "0");
+        valori.put("freezable", DepositiPrelievi_GoPlus_FlagSolana(dati, "freezable") ? "1" : "0");
+        valori.put("closable", DepositiPrelievi_GoPlus_FlagSolana(dati, "closable") ? "1" : "0");
+        valori.put("balance_mutable_authority", DepositiPrelievi_GoPlus_FlagSolana(dati, "balance_mutable_authority") ? "1" : "0");
+        valori.put("trusted_token", "1".equals(String.valueOf(dati.opt("trusted_token"))) ? "1" : "0");
+        return valori;
+    }
+
+    private boolean DepositiPrelievi_GoPlus_FlagSolana(JSONObject dati, String campo) {
+        Object valore = dati.opt(campo);
+        if (valore instanceof JSONObject jsonValore) {
+            return "1".equals(jsonValore.optString("status", ""));
+        }
+        return false;
+    }
+
+    private String DepositiPrelievi_GoPlus_MotivoScamEVM(Map<String, String> dati) {
+        if ("1".equals(dati.getOrDefault("trust_list", ""))) return null; //token esplicitamente fidato
+        if ("1".equals(dati.getOrDefault("is_honeypot", ""))) return "is_honeypot";
+        if ("1".equals(dati.getOrDefault("cannot_sell_all", ""))) return "cannot_sell_all";
+        String isTrueToken = dati.get("is_true_token");
+        if (isTrueToken != null && "0".equals(isTrueToken)) return "is_true_token=0 (token contraffatto)";
+        if ("1".equals(dati.getOrDefault("is_airdrop_scam", ""))) return "is_airdrop_scam";
+        if ("1".equals(dati.getOrDefault("is_blacklisted", ""))) return "is_blacklisted";
+        try {
+            String sellTax = dati.get("sell_tax");
+            if (sellTax != null && !sellTax.isBlank() && Double.parseDouble(sellTax) >= 0.99) return "sell_tax>=99%";
+        } catch (NumberFormatException ignored) {
+        }
+        return null;
+    }
+
+    private String DepositiPrelievi_GoPlus_MotivoScamSolana(Map<String, String> dati) {
+        if ("1".equals(dati.getOrDefault("trusted_token", ""))) return null; //token esplicitamente fidato
+        if ("1".equals(dati.getOrDefault("mintable", ""))) return "mintable";
+        if ("1".equals(dati.getOrDefault("freezable", ""))) return "freezable";
+        if ("1".equals(dati.getOrDefault("closable", ""))) return "closable";
+        if ("1".equals(dati.getOrDefault("balance_mutable_authority", ""))) return "balance_mutable_authority";
+        return null;
+    }
+
+    /**
+     * Marca un token (individuato da address+rete) come SCAM aggiungendo il suffisso " **" al nome
+     * e registrando la rinomina nel database, senza alcuna interazione con l'utente.
+     * Logica condivisa con {@link #GiacenzeaData_Funzione_IdentificaComeScam}.
+     */
+    private String MarcaTokenComeScam(String NomeMoneta, String Address, String Rete) {
+        String nomi[] = DatabaseH2.RinominaToken_Leggi(Address + "_" + Rete);
+        String NuovoNome;
+        //Se nomi[0] è null vuol dire che questo token non ha mai neanche subito una rinomina
+        //altrimenti vuol dire che è stato rinominato quindi prima di considerarlo come scam
+        //e aggiungergli gli asterisci recupero il suo nome originale
+        //gli asterischi gli aggiungo al nome originale del token e non al nome rinominato
+        if (nomi == null || nomi[0] == null) {
+            NuovoNome = NomeMoneta + " **";
+            DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NuovoNome);
+        } else {
+            NuovoNome = nomi[0] + " **";
+            DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], NuovoNome);
+        }
+        TabellaCryptodaAggiornare = true;
+        return NuovoNome;
+    }
+
     private void DepositiPrelievi_Bottone_DocumentazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_DocumentazioneActionPerformed
         // TODO add your handling code here:
         Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Classificazioni%20Movimenti.pdf/download");
@@ -13126,41 +13412,16 @@ if (result != null && !result.isAction("cancel")) {
                 }
             }
         }
-            
-            
-            
-     
+
 //Se passo i primi 2 controlli proseguo con l'assegnazione dello stutus di Token SCAM o la sua rimozione            
-           if (!Address.isBlank() && !Rete.isBlank()) {
+        if (!Address.isBlank() && !Rete.isBlank()) {
 
             boolean scamAttuale = Funzioni.isSCAM(NomeMoneta);
 
             AppDialog.DialogResult result = Messaggi.Personalizzati_SINO_SCAMRimuovereContrassegnare(scamAttuale, NomeMoneta, Address, this);
-            
-            if (result != null && result.isAction("mark-scam") && !scamAttuale) {
-                String nomi[] = DatabaseH2.RinominaToken_Leggi(Address + "_" + Rete);
-                //Se nomi[0] è null vuol dire che questo token non ha mai neanche subito una rinomina
-                //altrimenti vuol dire che è stato rinominato quindi prima di considerarlo come scam
-                //e aggiungergli gli asterisci recupero il suo nome originale
-                //gli asterischi gli aggiungo al nome orioginale del token e non al nome rinominato
-                if (nomi == null || nomi[0] == null) {
-                    NuovoNome = NomeMoneta + " **";
-                    DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NuovoNome);
-                    //il comando sotto indica al database che quel token essendo scam non avrà mai prezzo
-                    //ed eviterà verifiche sul prezzo e perdite di tempo in fase di calcolo
-                } else {
-                    NuovoNome = nomi[0] + " **";
-                    DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], NuovoNome);
-                    //il comando sotto indica al database che quel token essendo scam non avrà mai prezzo
-                    //ed eviterà verifiche sul prezzo e perdite di tempo in fase di calcolo
-                }
-                //A questo punto devo cambiare il nome a tutti i token dello stesso tipo che trovo nelle transazioni
-                //Lancio la funzione rinomina token e cancello eventuali commissioni su prelievi di token scam che non sarebbero dovute
-                //Questa funzione forse non servirà perchè verrà gestito tutto in maniera corretta in fase di importazione dati
-                //Funzioni.ConvertiInvioSuStessoWallet();
 
-                //Aggiorno le tabelle
-                TabellaCryptodaAggiornare = true;
+            if (result != null && result.isAction("mark-scam") && !scamAttuale) {
+                NuovoNome = MarcaTokenComeScam(NomeMoneta, Address, Rete);
 
             } else if (result != null && result.isAction("unmark-scam") && scamAttuale) {
                 //Metto a zero il time nella tabella addressSenzaPrezzo in modo che la volta successiva il programma
@@ -13190,18 +13451,18 @@ if (result != null && !result.isAction("cancel")) {
                 TabellaCryptodaAggiornare = true;
                 //   DatabaseH2.RinominaToken_Scrivi(Address+"_"+Rete, NomeMoneta,NomeMoneta+" **"); 
             }
-        }else{
-                AppDialog.DialogResult result;
+        } else {
+            AppDialog.DialogResult result;
 
-if (!Funzioni.isSCAM(NomeMoneta)) {
-    result = AppDialog.builder(this)
-            .windowTitle("Classificazione token")
-            .bodyTitle("Contrassegnare come SCAM?")
-            .showTitleInBody(true)
-            .theme()
-            .type(AppDialog.DialogType.WARNING)
-            .message("Vuoi identificare il token " + NomeMoneta + " come SCAM?")
-            .details("""
+            if (!Funzioni.isSCAM(NomeMoneta)) {
+                result = AppDialog.builder(this)
+                        .windowTitle("Classificazione token")
+                        .bodyTitle("Contrassegnare come SCAM?")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.WARNING)
+                        .message("Vuoi identificare il token " + NomeMoneta + " come SCAM?")
+                        .details("""
                     Il token non ha address o rete valorizzati.
 
                     Verranno contrassegnati come SCAM tutti i token appartenenti al wallet %s attualmente presenti in archivio.
@@ -13212,61 +13473,61 @@ if (!Funzioni.isSCAM(NomeMoneta)) {
 
                     Per riportare un token allo stato normale, usa l'apposita funzione in "Giacenze a data".
                     """.formatted(Wallet))
-            .action(AppDialog.DialogAction.builder("cancel", "Annulla")
-                    .role(AppDialog.ActionRole.SECONDARY)
-                    .build())
-            .action(AppDialog.DialogAction.builder("mark-wallet-scam", "Segna token come SCAM")
-                    .role(AppDialog.ActionRole.DANGER)
-                    .build())
-            .showDialog();
+                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("mark-wallet-scam", "Segna token come SCAM")
+                                .role(AppDialog.ActionRole.DANGER)
+                                .build())
+                        .showDialog();
 
-} else {
-    result = AppDialog.builder(this)
-            .windowTitle("Classificazione token")
-            .bodyTitle("Rimuovere classificazione SCAM?")
-            .showTitleInBody(true)
-            .theme()
-            .type(AppDialog.DialogType.INFO)
-            .message("Vuoi fare in modo che il token " + NomeMoneta + " non venga più considerato SCAM?")
-            .action(AppDialog.DialogAction.builder("cancel", "Annulla")
-                    .role(AppDialog.ActionRole.SECONDARY)
-                    .build())
-            .action(AppDialog.DialogAction.builder("unmark-scam", "Rimuovi da lista token SCAM")
-                    .role(AppDialog.ActionRole.PRIMARY)
-                    .build())
-            .showDialog();
-}
-
-if (result != null && (result.isAction("mark-wallet-scam")||result.isAction("unmark-scam"))) {
-    // logica attuale di marcatura scam
-
-                    //Adesso cambio il nome di tutti i token del Wallet Selezionato
-                    boolean isSCAM = Funzioni.isSCAM(NomeMoneta);
-                    NuovoNome = isSCAM ? NomeMoneta.replace(" **", "") : NomeMoneta + " **";
-
-                    for (String ID : IDMovimentiTokenWallet) {
-                        String[] Mov = MappaCryptoWallet.get(ID);
-                        if (Mov[8].equals(NomeMoneta)) {
-                            Mov[8] = NuovoNome;
-                        }
-                        if (Mov[11].equals(NomeMoneta)) {
-                            Mov[11] = NuovoNome;
-                        }
-                    }
-                    
-                    //Se il movimento è scam e lo riporto a situazionenormale devo anche dirgli di ricontrollare se il token ha prezzo o meno.
-                    if (isSCAM) {
-                        for (String ID : IDMovimentiTokenGlobale) {
-                            MappaCryptoWallet.get(ID)[32] = "";
-                            //il flag verrà rimesso in automatico dal programma non appena si caricherà la tabella crypto
-                            //andrà a controllare se il prodotto ha prezzo o meno e inserirà si o no
-                        }
-                    }
-                    TabellaCryptodaAggiornare = true;
-                }
+            } else {
+                result = AppDialog.builder(this)
+                        .windowTitle("Classificazione token")
+                        .bodyTitle("Rimuovere classificazione SCAM?")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.INFO)
+                        .message("Vuoi fare in modo che il token " + NomeMoneta + " non venga più considerato SCAM?")
+                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("unmark-scam", "Rimuovi da lista token SCAM")
+                                .role(AppDialog.ActionRole.PRIMARY)
+                                .build())
+                        .showDialog();
             }
 
-        return NuovoNome;    
+            if (result != null && (result.isAction("mark-wallet-scam") || result.isAction("unmark-scam"))) {
+                // logica attuale di marcatura scam
+
+                //Adesso cambio il nome di tutti i token del Wallet Selezionato
+                boolean isSCAM = Funzioni.isSCAM(NomeMoneta);
+                NuovoNome = isSCAM ? NomeMoneta.replace(" **", "") : NomeMoneta + " **";
+
+                for (String ID : IDMovimentiTokenWallet) {
+                    String[] Mov = MappaCryptoWallet.get(ID);
+                    if (Mov[8].equals(NomeMoneta)) {
+                        Mov[8] = NuovoNome;
+                    }
+                    if (Mov[11].equals(NomeMoneta)) {
+                        Mov[11] = NuovoNome;
+                    }
+                }
+
+                //Se il movimento è scam e lo riporto a situazionenormale devo anche dirgli di ricontrollare se il token ha prezzo o meno.
+                if (isSCAM) {
+                    for (String ID : IDMovimentiTokenGlobale) {
+                        MappaCryptoWallet.get(ID)[32] = "";
+                        //il flag verrà rimesso in automatico dal programma non appena si caricherà la tabella crypto
+                        //andrà a controllare se il prodotto ha prezzo o meno e inserirà si o no
+                    }
+                }
+                TabellaCryptodaAggiornare = true;
+            }
+        }
+
+        return NuovoNome;
     }
     
     private Set<String> Funzione_ElencoIDMovimentiTokeneWalletSelezionato(String Wallet,String SottoWallet,String Moneta,String Rete,String Address){
@@ -15274,6 +15535,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JTable DepositiPrelievi_TabellaCorrelati;
     private javax.swing.JButton Donazioni_Bottone1;
     private javax.swing.JButton Donazioni_Bottone2;
+    private javax.swing.JPanel GestioneTokenScam;
     private javax.swing.JPanel GiacenzeaData;
     private javax.swing.JButton GiacenzeaData_Bottone_Calcola;
     private javax.swing.JButton GiacenzeaData_Bottone_CambiaNomeToken;

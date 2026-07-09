@@ -416,7 +416,7 @@
                           <Component id="TransazioniCrypto_CheckBox_VediSenzaPrezzo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                      <Component id="TransazioniCrypto_ScrollPane" pref="494" max="32767" attributes="0"/>
+                      <Component id="TransazioniCrypto_ScrollPane" pref="483" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="TransazioniCrypto_Label_Plusvalenza" min="-2" pref="31" max="-2" attributes="0"/>
@@ -2985,8 +2985,8 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="RW_Text_IC" min="-2" pref="149" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Component id="RW_Label_SegnalaRicalcolo" min="-2" pref="729" max="-2" attributes="0"/>
-                                      <EmptySpace pref="142" max="32767" attributes="0"/>
+                                      <Component id="RW_Label_SegnalaRicalcolo" min="-2" pref="765" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
                                       <Component id="jLabel4" min="-2" pref="37" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="RW_Anno_ComboBox" min="-2" pref="76" max="-2" attributes="0"/>
@@ -3001,7 +3001,7 @@
                               <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="RW_Label_SegnalaErrori" min="-2" pref="750" max="-2" attributes="0"/>
-                              <EmptySpace pref="334" max="32767" attributes="0"/>
+                              <EmptySpace pref="374" max="32767" attributes="0"/>
                               <Component id="RW_CheckBox_VediSoloErrori" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
@@ -3061,7 +3061,7 @@
                                   <Component id="jLabel6" alignment="1" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane9" pref="265" max="32767" attributes="0"/>
+                              <Component id="jScrollPane9" pref="318" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -4090,16 +4090,17 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="GestioneTokenScam_ScrollPane" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="GestioneTokenScam_ScrollPane" alignment="0" pref="1423" max="32767" attributes="0"/>
                                   <Component id="GestioneTokenScam_ScrollPaneMovimenti" alignment="0" max="32767" attributes="0"/>
                                   <Component id="GestioneTokenScam_Label_Movimenti" alignment="0" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="GestioneTokenScam_Bottone_RimuoviScam" min="-2" pref="220" max="-2" attributes="0"/>
+                                      <Component id="GestioneTokenScam_Bottone_RimuoviScam" min="-2" pref="250" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="GestioneTokenScam_Bottone_EliminaMovimenti" min="-2" pref="220" max="-2" attributes="0"/>
+                                      <Component id="GestioneTokenScam_Bottone_EliminaMovimenti" min="-2" pref="250" max="-2" attributes="0"/>
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -4110,16 +4111,16 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="GestioneTokenScam_ScrollPane" pref="380" max="32767" attributes="0"/>
+                              <Component id="GestioneTokenScam_ScrollPane" pref="479" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="GestioneTokenScam_Bottone_RimuoviScam" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="GestioneTokenScam_Bottone_EliminaMovimenti" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="GestioneTokenScam_Bottone_RimuoviScam" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                                  <Component id="GestioneTokenScam_Bottone_EliminaMovimenti" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="GestioneTokenScam_Label_Movimenti" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
-                              <Component id="GestioneTokenScam_ScrollPaneMovimenti" pref="380" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="GestioneTokenScam_ScrollPaneMovimenti" min="-2" pref="361" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -4160,6 +4161,9 @@
                     </Container>
                     <Component class="javax.swing.JButton" name="GestioneTokenScam_Bottone_RimuoviScam">
                       <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/Images/24_Banana.png"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Rimuovi da SCAM"/>
                         <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
@@ -4169,6 +4173,9 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="GestioneTokenScam_Bottone_EliminaMovimenti">
                       <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/Images/24_Cestino.png"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Elimina Movimenti del Token"/>
                         <Property name="enabled" type="boolean" value="false"/>
                       </Properties>

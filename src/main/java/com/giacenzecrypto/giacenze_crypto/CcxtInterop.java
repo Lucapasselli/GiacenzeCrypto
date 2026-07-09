@@ -928,64 +928,21 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             Mon.Moneta=coin;
             Mon.Tipo=tipoMoneta;
             Mon.Qta=amount;
-            // Calcolo prezzo transazione - qui lo lasciamo vuoto oppure 0
-            Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null,"");
-            String[] RT = new String[Importazioni.ColonneTabella];
-            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, time, null, "");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
 
-            
-            RT[1] = dataa;                                               // Data e ora
-            RT[2] = i + " di " + totMov;                                 // Numero movimenti
-            RT[3] = Exchange;                                            // Exchange
-            RT[4] = "Principale";                                        // Wallet
-            RT[7] = "";                                                  // Causale originale (vuoto)
-            if (tipoMoneta.equals("FIAT"))
-            {
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_DF"; // TrasID
-                RT[5]="DEPOSITO FIAT";
-            }else 
-                {
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_DC"; // TrasID
-                RT[5]="DEPOSITO CRYPTO";
-                }
-            // Deposito → moneta entrante
-            RT[6]  = "-> " + Mon.Moneta;                                 // Dettaglio Movimento
-            RT[8]  = "";
-            RT[9]  = "";
-            RT[10] = "";
-            RT[11] = Mon.Moneta;                                         // Moneta Acq/Ricevuta
-            RT[12] = Mon.Tipo;                                           // Tipo Moneta Acq.
-            RT[13] = Mon.Qta;                                            // Quantità Acq.
-        
-            RT[14] = "";                                                 // Valore Mercato originale
-            RT[15] = Mon.Prezzo;                                         // Valore in EURO (qui 0)
-            RT[16] = ""; RT[17] = ""; RT[18] = ""; RT[19] = ""; RT[20] = ""; RT[21] = "";
-            RT[22] = "A";                                               // Auto
-            RT[23] = "";                                                 // [DEFI] Blocco Transazione
-            RT[24] = txId;                                               // [DEFI] Hash Transazione
-            RT[25] = "";                                                 // Nome Token Uscita
-            RT[26] = "";                                                 // Address Token Uscita
-            RT[27] = "";                                                 // Nome Token Entrata
-            RT[28] = "";                                                 // Address Token Entrata
-            RT[29] = insertTime;                                         // Timestamp
-            RT[30] = "";                                                 // Address controparte
-            RT[31] = "";                                                 // Data fine trasferimento
-            RT[32] = "";                                                 // Movimento ha prezzo
-            RT[33] = "";                                                 // Movimento genera plusvalenza
-            RT[21] = "Rete di provenienza : "+ network;                  // Rete
-            RT[35] = ""; RT[36] = ""; 
-            RT[37] = address; 
-            RT[38] = "";
-            RT[39] = "A"; //Fonte dati A = API Exchange  
-
-            Importazioni.RiempiVuotiArray(RT);
-            //System.out.println(RT[0]);
-            lista.add(RT);
+            String[] RT = MovimentiCrypto.creaMovimento(null, Mon, Exchange, "Principale",
+                    time, null, null, totMov, i, null,
+                    "Rete di provenienza : "+ network, "A", txId, null, null);
+            if (RT != null) {
+                RT[2] = i + " di " + totMov;                             // Numero movimenti
+                RT[37] = address;
+                RT[39] = "A"; //Fonte dati A = API Exchange
+                Importazioni.RiempiVuotiArray(RT);
+                lista.add(RT);
+            }
         }
 
         return lista;
-    }    
+    }
     
 
 public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,String Exchange) {
@@ -1067,74 +1024,41 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 Moneta Mon = new Moneta();
                 Mon.Moneta = coin;
                 Mon.Tipo = "FIAT";
-                Mon.Qta = amount;
-                // Calcolo prezzo transazione - qui lo lasciamo vuoto oppure 0
-                Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null,"binance");
-
-                String[] RT = new String[Importazioni.ColonneTabella];
-                RT[1] = dataa;                                               // Data e ora
-                RT[2] = "1 di 2";                                 // Numero movimenti
-                RT[3] = Exchange;                                            // Exchange
-                RT[4] = "Principale";                                        // Wallet
-                RT[7] = "Metodo di pagamento : " + metodo;                     // Causale originale (vuoto)
+                String[] RT;
                 if (direzione.equalsIgnoreCase("deposito")) {
                     Mon.Qta = amount;
-                    Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null,"binance");
-                    Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, time, null, "binance");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-                    RT[0] = dataForId + "_" + Exchange + "_" + totMov + "_1_DF"; // TrasID
-                    RT[5] = "DEPOSITO FIAT";
-                    RT[6] = "-> " + Mon.Moneta;
-                    RT[11] = Mon.Moneta;                                         // Moneta Acq/Ricevuta
-                    RT[12] = Mon.Tipo;                                           // Tipo Moneta Acq.
-                    RT[13] = Mon.Qta;                                            // Quantità Acq.
+                    RT = MovimentiCrypto.creaMovimento(null, Mon, Exchange, "Principale",
+                            time, null, null, totMov, 1, null,
+                            null, "A", null, null, null);
                 } else //Il fatto che sia prelievo è sottointeso visto che ci sono solo 2 opzioni
                 {
-                    Mon.Qta = amountp;
-                    Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null,"binance");
-                    Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, time, null, "binance");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-                    RT[0] = dataForId + "_" + Exchange + "_" + totMov + "_1_PF"; // TrasID
-                    RT[5] = "PRELIEVO FIAT";
-                    RT[6] = Mon.Moneta + " ->";
-                    RT[8] = Mon.Moneta;                                         // Moneta Acq/Ricevuta
-                    RT[9] = Mon.Tipo;                                           // Tipo Moneta Acq.
-                    RT[10] = ValoreNegativo(Mon.Qta);                                            // Quantità Acq.
+                    Mon.Qta = ValoreNegativo(amountp);
+                    RT = MovimentiCrypto.creaMovimento(Mon, null, Exchange, "Principale",
+                            time, null, null, totMov, 1, null,
+                            null, "A", null, null, null);
+                }
+                if (RT != null) {
+                    RT[2] = "1 di 2";                                        // Numero movimenti
+                    RT[7] = "Metodo di pagamento : " + metodo;                // Causale originale
+                    RT[39] = "A"; //Fonte dati A = API Exchange
+                    Importazioni.RiempiVuotiArray(RT);
+                    lista.add(RT);
                 }
 
-                RT[15] = Mon.Prezzo;                                         // Valore in EURO (qui 0)
-                RT[22] = "A";                                               // Auto
-                RT[29] = insertTime;                                         // Timestamp
-                RT[39] = "A"; //Fonte dati A = API Exchange  
-
-                Importazioni.RiempiVuotiArray(RT);
-                lista.add(RT);
-
                 //Adesso è il turno delle commissioni
-                Mon.Qta = feeamount;
-                Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null,"binance");
-                RT = new String[Importazioni.ColonneTabella];
-                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, time, null, "binance");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-                RT[1] = dataa;                                               // Data e ora
-                RT[2] = "2 di 2";                                   // Numero movimenti
-                RT[3] = Exchange;                                            // Exchange
-                RT[4] = "Principale";                                        // Wallet
-                RT[7] = "";                                                  // Causale originale (vuoto)                
-                RT[0] = dataForId + "_" + Exchange + "_" + totMov + "_2_CM"; // TrasID
-                RT[5] = "COMMISSIONI";
-                RT[6] = Mon.Moneta + " ->";
-                RT[8] = Mon.Moneta;                                         // Moneta Acq/Ricevuta
-                RT[9] = Mon.Tipo;                                           // Tipo Moneta Acq.
-                RT[10] = ValoreNegativo(Mon.Qta);                                            // Quantità Acq.                
-                RT[14] = "";                                                 // Valore Mercato originale
-                RT[15] = Mon.Prezzo;                                         // Valore in EURO (qui 0)
-                RT[22] = "A";                                               // Auto
-                RT[29] = insertTime;                                         // Timestamp
-                RT[39] = "A"; //Fonte dati A = API Exchange  
-
-                Importazioni.RiempiVuotiArray(RT);
-                lista.add(RT);
+                Moneta Fee = new Moneta();
+                Fee.Moneta = coin;
+                Fee.Tipo = "FIAT";
+                Fee.Qta = ValoreNegativo(feeamount);
+                RT = MovimentiCrypto.creaMovimento(Fee, null, Exchange, "Principale",
+                        time, null, null, totMov, 2, null,
+                        null, "A", null, "COMMISSIONE", null);
+                if (RT != null) {
+                    RT[2] = "2 di 2";                                        // Numero movimenti
+                    RT[39] = "A"; //Fonte dati A = API Exchange
+                    Importazioni.RiempiVuotiArray(RT);
+                    lista.add(RT);
+                }
             }
         }
 
@@ -1213,102 +1137,53 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             String dataa = data.trim().substring(0, data.length()-3);
 
             if (status.trim().equalsIgnoreCase("Completed")) {
-                String[] RT;// = new String[Importazioni.ColonneTabella];
+                String[] RT;
                 if (inserisciArrivoFIAT) {
                     //Inserisco l'arrivo nel wallet delle FIAT
-                    //String[] RT = new String[Importazioni.ColonneTabella];
-                    //FIAT.Qta = feeamount;
-                    FIAT.Prezzo = Prezzi.DammiPrezzoTransazione(FIAT, null, time, null, true, 2, null,"binance");
-                    RT = new String[Importazioni.ColonneTabella];
-                    Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(FIAT, null, time, null, "binance");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-                    RT[1] = dataa;                                               // Data e ora
-                    RT[2] = "1 di "+numMovimenti;                                   // Numero movimenti
-                    RT[3] = Exchange;                                            // Exchange
-                    RT[4] = "Principale";                                        // Wallet
-                    RT[7] = "Metodo di pagamento : "+metodo;                     // Causale originale (vuoto)                
-                    RT[0] = dataForId + "_" + Exchange + "_" + totMov + "_1_DF"; // TrasID
-                    RT[5] = "DEPOSITO FIAT";
-                    RT[6] =  "-> "+FIAT.Moneta;
-                    RT[11] = FIAT.Moneta;                                         // Moneta Acq/Ricevuta
-                    RT[12] = FIAT.Tipo;                                           // Tipo Moneta Acq.
-                    RT[13] = FIAT.Qta;                                            // Quantità Acq.                
-                    RT[14] = "";                                                 // Valore Mercato originale
-                    RT[15] = FIAT.Prezzo;                                         // Valore in EURO (qui 0)
-                    RT[22] = "A";                                               // Auto
-                    RT[29] = insertTime;                                         // Timestamp
-                    RT[39] = "A"; //Fonte dati A = API Exchange  
-                    Importazioni.RiempiVuotiArray(RT);
-                    lista.add(RT);
-
+                    RT = MovimentiCrypto.creaMovimento(null, FIAT, Exchange, "Principale",
+                            time, null, null, totMov, 1, null,
+                            null, "A", null, null, null);
+                    if (RT != null) {
+                        RT[2] = "1 di "+numMovimenti;                          // Numero movimenti
+                        RT[7] = "Metodo di pagamento : "+metodo;               // Causale originale
+                        RT[39] = "A"; //Fonte dati A = API Exchange
+                        Importazioni.RiempiVuotiArray(RT);
+                        lista.add(RT);
+                    }
                 }
 
-
-                RT = new String[Importazioni.ColonneTabella];
-                RT[1] = dataa;                                                  // Data e ora
-                RT[2] = movScambio+" di "+numMovimenti;                         // Numero movimenti
-                RT[3] = Exchange;                                               // Exchange
-                RT[4] = "Principale";                                           // Wallet
-                RT[7] = "Metodo di pagamento : " + metodo;                      // Causale originale (vuoto)
                 if (direzione.equalsIgnoreCase("acquisto")){
-                    FIAT.Qta=new BigDecimal(FIAT.Qta).subtract(new BigDecimal(feeamount)).toPlainString();
-                    RT[0] = dataForId + "_" + Exchange + "_" + totMov + "_"+movScambio+"_AC"; // TrasID
-                    RT[5] = "ACQUISTO CRYPTO";
-                    RT[6] = FIAT.Moneta + " -> " + CRYPTO.Moneta;
-                    RT[8] = FIAT.Moneta;                                        // Moneta Acq/Ricevuta
-                    RT[9] = FIAT.Tipo;                                          // Tipo Moneta Acq.
-                    RT[10] = ValoreNegativo(FIAT.Qta);                                          // Quantità Acq.
-                    RT[11] = CRYPTO.Moneta;                                     // Moneta Acq/Ricevuta
-                    RT[12] = CRYPTO.Tipo;                                       // Tipo Moneta Acq.
-                    RT[13] = CRYPTO.Qta;                                        // Quantità Acq.
+                    FIAT.Qta=ValoreNegativo(new BigDecimal(FIAT.Qta).subtract(new BigDecimal(feeamount)).toPlainString());
+                    RT = MovimentiCrypto.creaMovimento(FIAT, CRYPTO, Exchange, "Principale",
+                            time, null, null, totMov, movScambio, null,
+                            null, "A", null, null, null);
                 } else //Il fatto che sia prelievo è sottointeso visto che ci sono solo 2 opzioni
                 {
-                    RT[0] = dataForId + "_" + Exchange + "_" + totMov + "_"+movScambio+"_VC"; // TrasID
-                    RT[5] = "VENDITA CRYPTO";
-                    RT[6] = CRYPTO.Moneta + " -> " + FIAT.Moneta;
-                    RT[8] = CRYPTO.Moneta;                                      // Moneta Acq/Ricevuta
-                    RT[9] = CRYPTO.Tipo;                                        // Tipo Moneta Acq.
-                    RT[10] = ValoreNegativo(CRYPTO.Qta);                                        // Quantità Acq.
-                    RT[11] = FIAT.Moneta;                                       // Moneta Acq/Ricevuta
-                    RT[12] = FIAT.Tipo;                                         // Tipo Moneta Acq.
-                    RT[13] = FIAT.Qta;                                          // Quantità Acq.
+                    CRYPTO.Qta=ValoreNegativo(CRYPTO.Qta);
+                    RT = MovimentiCrypto.creaMovimento(CRYPTO, FIAT, Exchange, "Principale",
+                            time, null, null, totMov, movScambio, null,
+                            null, "A", null, null, null);
                 }
-                FIAT.Prezzo = Prezzi.DammiPrezzoTransazione(FIAT, CRYPTO, time, null, true, 2, null,"binance");
-                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(FIAT, CRYPTO, time, null, "binance");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-                RT[15] = FIAT.Prezzo;                                         // Valore in EURO (qui 0)
-                RT[22] = "A";                                               // Auto
-                RT[29] = insertTime;                                         // Timestamp
-                RT[39] = "A"; //Fonte dati A = API Exchange  
-
-                Importazioni.RiempiVuotiArray(RT);
-                lista.add(RT);
+                if (RT != null) {
+                    RT[2] = movScambio+" di "+numMovimenti;                    // Numero movimenti
+                    RT[7] = "Metodo di pagamento : " + metodo;                 // Causale originale
+                    RT[39] = "A"; //Fonte dati A = API Exchange
+                    Importazioni.RiempiVuotiArray(RT);
+                    lista.add(RT);
+                }
 
                 //Adesso è il turno delle commissioni
                 if (inserisciFee) {
-                    FEE.Prezzo = Prezzi.DammiPrezzoTransazione(FEE, null, time, null, true, 2, null,"binance");
-                    RT = new String[Importazioni.ColonneTabella];
-                    Prezzi.InfoPrezzo IPr = Prezzi.DammiPrezzoInfoTransazione(FEE, null, time, null, "binance");
-                                if (IPr!=null)RT[40] = IPr.Ritorna40();
-                    RT[1] = dataa;                                               // Data e ora
-                    RT[2] = movCommissione+" di "+numMovimenti;                  // Numero movimenti
-                    RT[3] = Exchange;                                            // Exchange
-                    RT[4] = "Principale";                                        // Wallet
-                    RT[7] = "";                                                  // Causale originale (vuoto)                
-                    RT[0] = dataForId + "_" + Exchange + "_" + totMov + "_"+movCommissione+"_CM"; // TrasID
-                    RT[5] = "COMMISSIONI";
-                    RT[6] = FEE.Moneta + " ->";
-                    RT[8] = FEE.Moneta;                                         // Moneta Acq/Ricevuta
-                    RT[9] = FEE.Tipo;                                           // Tipo Moneta Acq.
-                    RT[10] = ValoreNegativo(FEE.Qta);                                            // Quantità Acq.                
-                    RT[14] = "";                                                 // Valore Mercato originale
-                    RT[15] = FEE.Prezzo;                                         // Valore in EURO (qui 0)
-                    RT[22] = "A";                                               // Auto
-                    RT[29] = insertTime;                                         // Timestamp
-                    RT[39] = "A"; //Fonte dati A = API Exchange  
-
-                    Importazioni.RiempiVuotiArray(RT);
-                    lista.add(RT);
+                    FEE.Qta=ValoreNegativo(FEE.Qta);
+                    RT = MovimentiCrypto.creaMovimento(FEE, null, Exchange, "Principale",
+                            time, null, null, totMov, movCommissione, null,
+                            null, "A", null, "COMMISSIONE", null);
+                    if (RT != null) {
+                        RT[2] = movCommissione+" di "+numMovimenti;            // Numero movimenti
+                        RT[39] = "A"; //Fonte dati A = API Exchange
+                        Importazioni.RiempiVuotiArray(RT);
+                        lista.add(RT);
+                    }
                 }
             }
         }
@@ -1394,111 +1269,38 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             Moneta Mon=new Moneta();
             Mon.Moneta=coin;
             Mon.Tipo=tipoMoneta;
-            Mon.Qta=new BigDecimal(amount).abs().multiply(new BigDecimal(-1)).toPlainString();
-            // Calcolo prezzo transazione - qui lo lasciamo vuoto oppure 0
-            Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null,"");
+            Mon.Qta=ValoreNegativo(amount);
 
-            String[] RT = new String[Importazioni.ColonneTabella];
-            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, time, null, "");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-            RT[1] = dataa;                                               // Data e ora
-            RT[2] = "1 di 2";                                 // Numero movimenti
-            RT[3] = Exchange;                                            // Exchange
-            RT[4] = "Principale";                                        // Wallet
-            RT[7] = "";                                                  // Causale originale (vuoto)
-            // Prelievo → moneta uscente
-            if (tipoMoneta.equals("FIAT"))
-            {    
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_PF"; // TrasID
-                RT[5]="PRELIEVO FIAT";
+            String[] RT = MovimentiCrypto.creaMovimento(Mon, null, Exchange, "Principale",
+                    time, null, null, totMov, i, null,
+                    "Rete di trasferimento : "+ network, "A", txId, null, null);
+            if (RT != null) {
+                RT[2] = "1 di 2";                                        // Numero movimenti
+                RT[37] = address;
+                RT[39] = "A"; //Fonte dati A = API Exchange
+                Importazioni.RiempiVuotiArray(RT);
+                lista.add(RT);
             }
-            else 
-            {    
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_PC"; // TrasID
-                RT[5]="PRELIEVO CRYPTO";
-            }
-            RT[6]  = Mon.Moneta + " ->";                                       // Dettaglio Movimento
-            RT[8]  = Mon.Moneta;                                               // Moneta Venduta/Trasferita (vuoto per deposito)
-            RT[9]  = Mon.Tipo;                                         // Tipo Moneta Venduta
-            RT[10] = Mon.Qta;                                             // Quantità Venduta
-            RT[11] = "";
-            RT[12] = "";
-            RT[13] = "";
-            RT[14] = "";                                                 // Valore Mercato originale
-            RT[15] = Mon.Prezzo;                                         // Valore in EURO (qui 0)
-            RT[16] = ""; RT[17] = ""; RT[18] = ""; RT[19] = ""; RT[20] = ""; RT[21] = "";
-            RT[22] = "A";                                               // Auto
-            RT[23] = "";                                                 // [DEFI] Blocco Transazione
-            RT[24] = txId;                                               // [DEFI] Hash Transazione
-            RT[25] = "";                                                 // Nome Token Uscita
-            RT[26] = "";                                                 // Address Token Uscita
-            RT[27] = "";                                                 // Nome Token Entrata
-            RT[28] = "";                                                 // Address Token Entrata
-            RT[29] = insertTime;                                         // Timestamp
-            RT[30] = "";                                                 // Address controparte
-            RT[31] = "";                                                 // Data fine trasferimento
-            RT[32] = "";                                                 // Movimento ha prezzo
-            RT[33] = "";                                                 // Movimento genera plusvalenza
-            RT[21] = "Rete di trasferimento : "+ network;                  // Note
-            RT[35] = ""; RT[36] = ""; 
-            RT[37] = address; 
-            RT[38] = ""; 
-            RT[39] = "A"; //Fonte dati A = API Exchange  
 
-            Importazioni.RiempiVuotiArray(RT);
-            //System.out.println(RT[0]);
-            lista.add(RT);
-            
-            
             //SECONDA PARTE RELATIVA ALLE FEE
-            Mon.Qta=new BigDecimal(fee).abs().multiply(new BigDecimal(-1)).toPlainString();
-            Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null,"");
-            
-            RT = new String[Importazioni.ColonneTabella];
-            IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, time, null, "");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-            RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + "2" + "_CM"; // TrasID
-            RT[1] = dataa;                                               // Data e ora
-            RT[2] = "2 di 2";                                 // Numero movimenti
-            RT[3] = Exchange;                                            // Exchange
-            RT[4] = "Principale";                                        // Wallet
-            RT[5] = "COMMISSIONI";
-            RT[7] = "";                                                  // Causale originale (vuoto)
-            RT[6]  = Mon.Moneta + " ->";                                       // Dettaglio Movimento
-            RT[8]  = Mon.Moneta;                                               // Moneta Venduta/Trasferita (vuoto per deposito)
-            RT[9]  = Mon.Tipo;                                         // Tipo Moneta Venduta
-            RT[10] = Mon.Qta;                                             // Quantità Venduta
-            RT[11] = "";
-            RT[12] = "";
-            RT[13] = "";
-            RT[14] = "";                                                 // Valore Mercato originale
-            RT[15] = Mon.Prezzo;                                         // Valore in EURO (qui 0)
-            RT[16] = ""; RT[17] = ""; RT[18] = ""; RT[19] = ""; RT[20] = ""; RT[21] = "";
-            RT[22] = "A";                                               // Auto
-            RT[23] = "";                                                 // [DEFI] Blocco Transazione
-            RT[24] = txId;                                               // [DEFI] Hash Transazione
-            RT[25] = "";                                                 // Nome Token Uscita
-            RT[26] = "";                                                 // Address Token Uscita
-            RT[27] = "";                                                 // Nome Token Entrata
-            RT[28] = "";                                                 // Address Token Entrata
-            RT[29] = insertTime;                                         // Timestamp
-            RT[30] = "";                                                 // Address controparte
-            RT[31] = "";                                                 // Data fine trasferimento
-            RT[32] = "";                                                 // Movimento ha prezzo
-            RT[33] = "";                                                 // Movimento genera plusvalenza
-            RT[21] = "Rete di trasferimento : "+ network;                                          // Rete
-            RT[35] = ""; RT[36] = ""; 
-            RT[37] = address; 
-            RT[38] = ""; 
-            RT[39] = "A"; //Fonte dati A = API Exchange  
-
-            Importazioni.RiempiVuotiArray(RT);
-            //System.out.println(RT[0]);
-            lista.add(RT);
+            Moneta Fee=new Moneta();
+            Fee.Moneta=coin;
+            Fee.Tipo=tipoMoneta;
+            Fee.Qta=ValoreNegativo(fee);
+            RT = MovimentiCrypto.creaMovimento(Fee, null, Exchange, "Principale",
+                    time, null, null, totMov, 2, null,
+                    "Rete di trasferimento : "+ network, "A", txId, "COMMISSIONE", null);
+            if (RT != null) {
+                RT[2] = "2 di 2";                                        // Numero movimenti
+                RT[37] = address;
+                RT[39] = "A"; //Fonte dati A = API Exchange
+                Importazioni.RiempiVuotiArray(RT);
+                lista.add(RT);
+            }
         }
 
         return lista;
-    }     
+    }
     
    public static List<String[]> convertTrades(JsonArray jsonList,String Exchange) {
         List<String[]> lista = new ArrayList<>();
@@ -1573,119 +1375,27 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             String dataa = data.trim().substring(0, data.length()-3);
 
 
-            String PrezzoT = Prezzi.DammiPrezzoTransazione(mu, me, time, null, true, 2, null,"");
+            String[] RT = MovimentiCrypto.creaMovimento(mu, me, Exchange, "Principale",
+                    time, null, null, totMov, i, null,
+                    null, "A", null, null, null);
+            if (RT != null) {
+                RT[2] = "1 di 2";                                        // Numero movimenti
+                RT[39] = "A"; //Fonte dati A = API Exchange
+                Importazioni.RiempiVuotiArray(RT);
+                lista.add(RT);
+            }
 
-            String[] RT = new String[Importazioni.ColonneTabella];
-            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(mu, me, time, null, "");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-            RT[1] = dataa;                                               // Data e ora
-            RT[2] = "1 di 2";                                 // Numero movimenti
-            RT[3] = Exchange;                                            // Exchange
-            RT[4] = "Principale";                                        // Wallet
-            RT[7] = "";                                                  // Causale originale (vuoto)
-            // Prelievo → moneta uscente
-            
-            //Scambio FIAT
-            if (mu.Tipo.equalsIgnoreCase("FIAT") && me.Tipo.equalsIgnoreCase("FIAT"))
-            {    
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_SF"; // TrasID
-                RT[5]="SCAMBIO FIAT";
-            }
-            //Acquisto Crypto
-            else if (mu.Tipo.equalsIgnoreCase("FIAT") && !me.Tipo.equalsIgnoreCase("FIAT"))
-            {    
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_AC"; // TrasID
-                RT[5]="ACQUISTO CRYPTO";
-            }
-            //Vendita Crypto
-            else if (!mu.Tipo.equalsIgnoreCase("FIAT") && me.Tipo.equalsIgnoreCase("FIAT"))
-            {    
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_VC"; // TrasID
-                RT[5]="VENDITA CRYPTO";
-            }
-            //Scambio Crypto
-            else {
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_SC"; // TrasID
-                RT[5]="SCAMBIO CRYPTO";
-            }
-            RT[6]  = mu.Moneta + " -> "+me.Moneta;                                       // Dettaglio Movimento
-            RT[8]  = mu.Moneta;                                               // Moneta Venduta/Trasferita (vuoto per deposito)
-            RT[9]  = mu.Tipo;                                         // Tipo Moneta Venduta
-            RT[10] = mu.Qta;                                             // Quantità Venduta
-            RT[11] = me.Moneta;
-            RT[12] = me.Tipo;
-            RT[13] = me.Qta;
-            RT[14] = "";                                                 // Valore Mercato originale
-            RT[15] = PrezzoT;                                          // Valore in EURO (qui 0)
-            RT[16] = ""; RT[17] = ""; RT[18] = ""; RT[19] = ""; RT[20] = ""; RT[21] = "";
-            RT[22] = "A";                                               // Auto
-            RT[23] = "";                                                 // [DEFI] Blocco Transazione
-            RT[24] = "";                                               // [DEFI] Hash Transazione
-            RT[25] = "";                                                 // Nome Token Uscita
-            RT[26] = "";                                                 // Address Token Uscita
-            RT[27] = "";                                                 // Nome Token Entrata
-            RT[28] = "";                                                 // Address Token Entrata
-            RT[29] = Time;                                                 // Timestamp
-            RT[30] = "";                                                 // Address controparte
-            RT[31] = "";                                                 // Data fine trasferimento
-            RT[32] = "";                                                 // Movimento ha prezzo
-            RT[33] = "";                                                 // Movimento genera plusvalenza
-            RT[34] = "";                                            // Rete
-            RT[35] = ""; RT[36] = ""; 
-            RT[37] = ""; 
-            RT[38] = ""; 
-            RT[39] = "A"; //Fonte dati A = API Exchange  
-
-            Importazioni.RiempiVuotiArray(RT);
-            //System.out.println(RT[0]);
-            lista.add(RT);
-            
-            
             //SECONDA PARTE RELATIVA ALLE FEE
             mc.Qta=new BigDecimal(mc.Qta).abs().multiply(new BigDecimal(-1)).toPlainString();
-            String PrezzoC = Prezzi.DammiPrezzoTransazione(mc, null, time, null, true, 2, null,"");
-            
-            RT = new String[Importazioni.ColonneTabella];
-            IP = Prezzi.DammiPrezzoInfoTransazione(mc, null, time, null, "");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-            RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + "2" + "_CM"; // TrasID
-            RT[1] = dataa;                                               // Data e ora
-            RT[2] = "2 di 2";                                 // Numero movimenti
-            RT[3] = Exchange;                                            // Exchange
-            RT[4] = "Principale";                                        // Wallet
-            RT[5] = "COMMISSIONI";
-            RT[7] = "";                                                  // Causale originale (vuoto)
-            RT[6]  = mc.Moneta + " ->";                                       // Dettaglio Movimento
-            RT[8]  = mc.Moneta;                                               // Moneta Venduta/Trasferita (vuoto per deposito)
-            RT[9]  = mc.Tipo;                                         // Tipo Moneta Venduta
-            RT[10] = mc.Qta;                                             // Quantità Venduta
-            RT[11] = "";
-            RT[12] = "";
-            RT[13] = "";
-            RT[14] = "";                                                 // Valore Mercato originale
-            RT[15] = PrezzoC;                                         // Valore in EURO (qui 0)
-            RT[16] = ""; RT[17] = ""; RT[18] = ""; RT[19] = ""; RT[20] = ""; RT[21] = "";
-            RT[22] = "A";                                               // Auto
-            RT[23] = "";                                                 // [DEFI] Blocco Transazione
-            RT[24] = "";                                               // [DEFI] Hash Transazione
-            RT[25] = "";                                                 // Nome Token Uscita
-            RT[26] = "";                                                 // Address Token Uscita
-            RT[27] = "";                                                 // Nome Token Entrata
-            RT[28] = "";                                                 // Address Token Entrata
-            RT[29] = Time;                                         // Timestamp
-            RT[30] = "";                                                 // Address controparte
-            RT[31] = "";                                                 // Data fine trasferimento
-            RT[32] = "";                                                 // Movimento ha prezzo
-            RT[33] = "";                                                 // Movimento genera plusvalenza
-            RT[34] = "";                                            // Rete
-            RT[35] = ""; RT[36] = ""; 
-            RT[37] = ""; 
-            RT[38] = ""; 
-            RT[39] = "A"; //Fonte dati A = API Exchange  
-
-            Importazioni.RiempiVuotiArray(RT);
-            //System.out.println(RT[0]);
-            lista.add(RT);
+            RT = MovimentiCrypto.creaMovimento(mc, null, Exchange, "Principale",
+                    time, null, null, totMov, 2, null,
+                    null, "A", null, "COMMISSIONE", null);
+            if (RT != null) {
+                RT[2] = "2 di 2";                                        // Numero movimenti
+                RT[39] = "A"; //Fonte dati A = API Exchange
+                Importazioni.RiempiVuotiArray(RT);
+                lista.add(RT);
+            }
         }
 
         return lista;
@@ -1756,95 +1466,33 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             String dataa = data.trim().substring(0, data.length()-3);
 
 
-            String PrezzoT = Prezzi.DammiPrezzoTransazione(mu, me, time, null, true, 2, null,"binance");
+            String[] RT = MovimentiCrypto.creaMovimento(mu, me, Exchange, "Principale",
+                    time, null, null, totMov, i, null,
+                    null, "A", null, null, null);
+            if (RT != null) {
+                RT[2] = i + " di " + totMov;                             // Numero movimenti
+                RT[7] = "asset/dribblet (API)";                          // Causale originale
+                RT[39] = "A"; //Fonte dati A = API Exchange
+                Importazioni.RiempiVuotiArray(RT);
+                lista.add(RT);
+            }
 
-            String[] RT = new String[Importazioni.ColonneTabella];
-            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(mu, me, time, null, "binance");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-            RT[1] = dataa;                                               // Data e ora
-            RT[2] = i + " di " + totMov;                                 // Numero movimenti
-            RT[3] = Exchange;                                            // Exchange
-            RT[4] = "Principale";                                        // Wallet
-            RT[7] = "asset/dribblet (API)";                              // Causale originale (vuoto)
-            // Prelievo → moneta uscente
-            
-            //Scambio FIAT
-            if (mu.Tipo.equalsIgnoreCase("FIAT") && me.Tipo.equalsIgnoreCase("FIAT"))
-            {    
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_SF"; // TrasID
-                RT[5]="SCAMBIO FIAT";
-            }
-            //Acquisto Crypto
-            else if (mu.Tipo.equalsIgnoreCase("FIAT") && !me.Tipo.equalsIgnoreCase("FIAT"))
-            {    
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_AC"; // TrasID
-                RT[5]="ACQUISTO CRYPTO";
-            }
-            //Vendita Crypto
-            else if (!mu.Tipo.equalsIgnoreCase("FIAT") && me.Tipo.equalsIgnoreCase("FIAT"))
-            {    
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_VC"; // TrasID
-                RT[5]="VENDITA CRYPTO";
-            }
-            //Scambio Crypto
-            else {
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_SC"; // TrasID
-                RT[5]="SCAMBIO CRYPTO";
-            }
-            RT[6]  = mu.Moneta + " -> "+me.Moneta;                                       // Dettaglio Movimento
-            RT[8]  = mu.Moneta;                                               // Moneta Venduta/Trasferita (vuoto per deposito)
-            RT[9]  = mu.Tipo;                                         // Tipo Moneta Venduta
-            RT[10] = mu.Qta;                                             // Quantità Venduta
-            RT[11] = me.Moneta;
-            RT[12] = me.Tipo;
-            RT[13] = me.Qta;
-            RT[14] = "";                                                 // Valore Mercato originale
-            RT[15] = PrezzoT;                                          // Valore in EURO (qui 0)
-            RT[16] = ""; RT[17] = ""; RT[18] = ""; RT[19] = ""; RT[20] = ""; RT[21] = "";
-            RT[22] = "A";                                               // Auto
-            RT[29] = Time;                                                 // Timestamp
-            RT[39] = "A"; //Fonte dati A = API Exchange                      
-
-            Importazioni.RiempiVuotiArray(RT);
-            //System.out.println(RT[0]);
-            lista.add(RT);
-            
-            
             //SECONDA PARTE RELATIVA ALLE FEE
             mc.Qta=new BigDecimal(mc.Qta).abs().multiply(new BigDecimal(-1)).toPlainString();
-            String PrezzoC = Prezzi.DammiPrezzoTransazione(mc, null, time, null, true, 2, null,"binance");
-            
-            RT = new String[Importazioni.ColonneTabella];
-            IP = Prezzi.DammiPrezzoInfoTransazione(mc, null, time, null, "binance");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-            RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + "2" + "_CM"; // TrasID
-            RT[1] = dataa;                                               // Data e ora
-            RT[2] = i + " di " + totMov;                                 // Numero movimenti
-            RT[3] = Exchange;                                            // Exchange
-            RT[4] = "Principale";                                        // Wallet
-            RT[5] = "COMMISSIONI";
-            RT[7] = "asset/dribblet (API)";                                                  // Causale originale (vuoto)
-            RT[6]  = mc.Moneta + " ->";                                       // Dettaglio Movimento
-            RT[8]  = mc.Moneta;                                               // Moneta Venduta/Trasferita (vuoto per deposito)
-            RT[9]  = mc.Tipo;                                         // Tipo Moneta Venduta
-            RT[10] = mc.Qta;                                             // Quantità Venduta
-            RT[11] = "";
-            RT[12] = "";
-            RT[13] = "";
-            RT[14] = "";                                                 // Valore Mercato originale
-            RT[15] = PrezzoC;                                         // Valore in EURO (qui 0)
-            RT[16] = ""; RT[17] = ""; RT[18] = ""; RT[19] = ""; RT[20] = ""; RT[21] = "";
-            RT[22] = "A";                                               // Auto
-            RT[29] = Time;                                         // Timestamp
-            RT[39] = "A"; //Fonte dati A = API Exchange  
-
-            Importazioni.RiempiVuotiArray(RT);
-            //System.out.println(RT[0]);
-            lista.add(RT);
+            RT = MovimentiCrypto.creaMovimento(mc, null, Exchange, "Principale",
+                    time, null, null, totMov, 2, null,
+                    null, "A", null, "COMMISSIONE", null);
+            if (RT != null) {
+                RT[2] = i + " di " + totMov;                             // Numero movimenti
+                RT[7] = "asset/dribblet (API)";                          // Causale originale
+                RT[39] = "A"; //Fonte dati A = API Exchange
+                Importazioni.RiempiVuotiArray(RT);
+                lista.add(RT);
+            }
         }
 
         return lista;
-    } 
+    }
    
         public static List<String[]> convertBinanceConversioni(JsonArray jsonList,String Exchange) {
         List<String[]> lista = new ArrayList<>();
@@ -1907,64 +1555,20 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             String dataa = data.trim().substring(0, data.length()-3);
 
 
-            String PrezzoT = Prezzi.DammiPrezzoTransazione(mu, me, time, null, true, 2, null,"binance");
-
-            String[] RT = new String[Importazioni.ColonneTabella];
-            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(mu, me, time, null, "binance");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-            RT[1] = dataa;                                               // Data e ora
-            RT[2] = i + " di " + totMov;                                 // Numero movimenti
-            RT[3] = Exchange;                                            // Exchange
-            RT[4] = "Principale";                                        // Wallet
-            RT[7] = "convert/tradeFlow (API)";                              // Causale originale (vuoto)
-            // Prelievo → moneta uscente
-            
-            //Scambio FIAT
-            if (mu.Tipo.equalsIgnoreCase("FIAT") && me.Tipo.equalsIgnoreCase("FIAT"))
-            {    
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_SF"; // TrasID
-                RT[5]="SCAMBIO FIAT";
+            String[] RT = MovimentiCrypto.creaMovimento(mu, me, Exchange, "Principale",
+                    time, null, null, totMov, i, null,
+                    null, "A", null, null, null);
+            if (RT != null) {
+                RT[2] = i + " di " + totMov;                             // Numero movimenti
+                RT[7] = "convert/tradeFlow (API)";                       // Causale originale
+                RT[39] = "A"; //Fonte dati A = API Exchange
+                Importazioni.RiempiVuotiArray(RT);
+                lista.add(RT);
             }
-            //Acquisto Crypto
-            else if (mu.Tipo.equalsIgnoreCase("FIAT") && !me.Tipo.equalsIgnoreCase("FIAT"))
-            {    
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_AC"; // TrasID
-                RT[5]="ACQUISTO CRYPTO";
-            }
-            //Vendita Crypto
-            else if (!mu.Tipo.equalsIgnoreCase("FIAT") && me.Tipo.equalsIgnoreCase("FIAT"))
-            {    
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_VC"; // TrasID
-                RT[5]="VENDITA CRYPTO";
-            }
-            //Scambio Crypto
-            else {
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_SC"; // TrasID
-                RT[5]="SCAMBIO CRYPTO";
-            }
-            RT[6]  = mu.Moneta + " -> "+me.Moneta;                                       // Dettaglio Movimento
-            RT[8]  = mu.Moneta;                                               // Moneta Venduta/Trasferita (vuoto per deposito)
-            RT[9]  = mu.Tipo;                                         // Tipo Moneta Venduta
-            RT[10] = mu.Qta;                                             // Quantità Venduta
-            RT[11] = me.Moneta;
-            RT[12] = me.Tipo;
-            RT[13] = me.Qta;
-            RT[14] = "";                                                 // Valore Mercato originale
-            RT[15] = PrezzoT;                                          // Valore in EURO (qui 0)
-            RT[16] = ""; RT[17] = ""; RT[18] = ""; RT[19] = ""; RT[20] = ""; RT[21] = "";
-            RT[22] = "A";                                               // Auto
-            RT[29] = Time;                                                 // Timestamp
-            RT[39] = "A"; //Fonte dati A = API Exchange                      
-
-            Importazioni.RiempiVuotiArray(RT);
-            //System.out.println(RT[0]);
-            lista.add(RT);
-            
-            
         }
 
         return lista;
-    }    
+    }
     
    public static List<String[]> convertBinanceEarn(JsonArray jsonList,String Exchange) {
         List<String[]> lista = new ArrayList<>();
@@ -2032,66 +1636,21 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             Mon.Moneta=coin;
             Mon.Tipo=tipoMoneta;
             Mon.Qta=amount;
-            
-            
-            // Calcolo prezzo transazione - qui lo lasciamo vuoto oppure 0
-            Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null,"binance");
 
-            String[] RT = new String[Importazioni.ColonneTabella];
-            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, time, null, "binance");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-            RT[1] = dataa;                                               // Data e ora
-            RT[2] = i + " di " + totMov;                                 // Numero movimenti
-            RT[3] = Exchange;                                            // Exchange
-            RT[4] = "Principale";                                        // Wallet
-            RT[7] = tipo;                                                  // Causale originale (vuoto)
-            if (tipoMoneta.equals("FIAT"))
-            {
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_DF"; // TrasID
-                RT[5]="DEPOSITO FIAT";
-            }else 
-                {
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_RW"; // TrasID
-                RT[5]="EARN";
-                }
-            // Deposito → moneta entrante
-            RT[6]  = "-> " + Mon.Moneta;                                 // Dettaglio Movimento
-            RT[8]  = "";
-            RT[9]  = "";
-            RT[10] = "";
-            RT[11] = Mon.Moneta;                                         // Moneta Acq/Ricevuta
-            RT[12] = Mon.Tipo;                                           // Tipo Moneta Acq.
-            RT[13] = Mon.Qta;                                            // Quantità Acq.
-        
-            RT[14] = "";                                                 // Valore Mercato originale
-            RT[15] = Mon.Prezzo;                                         // Valore in EURO (qui 0)
-            RT[16] = ""; RT[17] = ""; RT[18] = ""; RT[19] = ""; RT[20] = ""; RT[21] = "";
-            RT[22] = "A";                                               // Auto
-            RT[23] = "";                                                 // [DEFI] Blocco Transazione
-            RT[24] = "";                                               // [DEFI] Hash Transazione
-            RT[25] = "";                                                 // Nome Token Uscita
-            RT[26] = "";                                                 // Address Token Uscita
-            RT[27] = "";                                                 // Nome Token Entrata
-            RT[28] = "";                                                 // Address Token Entrata
-            RT[29] = insertTime;                                         // Timestamp
-            RT[30] = "";                                                 // Address controparte
-            RT[31] = "";                                                 // Data fine trasferimento
-            RT[32] = "";                                                 // Movimento ha prezzo
-            RT[33] = "";                                                 // Movimento genera plusvalenza
-            RT[34] = "";                                            // Rete
-            RT[35] = ""; RT[36] = ""; 
-            RT[37] = ""; 
-            RT[38] = ""; 
-            RT[39] = "A"; //Fonte dati A = API Exchange  
-
-            Importazioni.RiempiVuotiArray(RT);
-            //System.out.println(RT[0]);
-            //inserisco il movimento solo se il quantitativo è diverso da zero
-            if (!Mon.Qta.equals("0")) lista.add(RT);
+            String[] RT = MovimentiCrypto.creaMovimento(null, Mon, Exchange, "Principale",
+                    time, null, null, totMov, i, null,
+                    null, "A", null, tipoMoneta.equals("FIAT") ? null : "EARN", null);
+            if (RT != null) {
+                RT[2] = i + " di " + totMov;                             // Numero movimenti
+                RT[7] = tipo;                                            // Causale originale
+                RT[39] = "A"; //Fonte dati A = API Exchange
+                Importazioni.RiempiVuotiArray(RT);
+                lista.add(RT);
+            }
         }
 
         return lista;
-    }    
+    }
    
    
       public static List<String[]> convertBinanceRewards(JsonArray jsonList,String Exchange) {
@@ -2163,64 +1722,26 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             Mon.Moneta=coin;
             Mon.Tipo=tipoMoneta;
             Mon.Qta=amount;
-            // Calcolo prezzo transazione - qui lo lasciamo vuoto oppure 0
-            Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null,"binance");
 
-            String[] RT = new String[Importazioni.ColonneTabella];
-            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, time, null, "binance");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-            RT[1] = dataa;                                               // Data e ora
-            RT[2] = i + " di " + totMov;                                 // Numero movimenti
-            RT[3] = Exchange;                                            // Exchange
-            RT[4] = "Principale";                                        // Wallet
-            RT[7] = tipo;                                                  // Causale originale (vuoto)
-            if (tipoMoneta.equals("FIAT"))
-            {
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_DF"; // TrasID
-                RT[5]="DEPOSITO FIAT";
-            }else 
-                {
-                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_RW"; // TrasID
-                RT[5]="EARN";
-                if (tipo.toLowerCase().contains("staking"))RT[5]="STAKING";
-                }
-            // Deposito → moneta entrante
-            RT[6]  = "-> " + Mon.Moneta;                                 // Dettaglio Movimento
-            RT[8]  = "";
-            RT[9]  = "";
-            RT[10] = "";
-            RT[11] = Mon.Moneta;                                         // Moneta Acq/Ricevuta
-            RT[12] = Mon.Tipo;                                           // Tipo Moneta Acq.
-            RT[13] = Mon.Qta;                                            // Quantità Acq.
-        
-            RT[14] = "";                                                 // Valore Mercato originale
-            RT[15] = Mon.Prezzo;                                         // Valore in EURO (qui 0)
-            RT[16] = ""; RT[17] = ""; RT[18] = ""; RT[19] = ""; RT[20] = ""; RT[21] = "";
-            RT[22] = "A";                                               // Auto
-            RT[23] = "";                                                 // [DEFI] Blocco Transazione
-            RT[24] = "";                                               // [DEFI] Hash Transazione
-            RT[25] = "";                                                 // Nome Token Uscita
-            RT[26] = "";                                                 // Address Token Uscita
-            RT[27] = "";                                                 // Nome Token Entrata
-            RT[28] = "";                                                 // Address Token Entrata
-            RT[29] = insertTime;                                         // Timestamp
-            RT[30] = "";                                                 // Address controparte
-            RT[31] = "";                                                 // Data fine trasferimento
-            RT[32] = "";                                                 // Movimento ha prezzo
-            RT[33] = "";                                                 // Movimento genera plusvalenza
-            RT[34] = "";                                            // Rete
-            RT[35] = ""; RT[36] = ""; 
-            RT[37] = ""; 
-            RT[38] = ""; 
-            RT[39] = "A"; //Fonte dati A = API Exchange  
+            String TipoTr = null;
+            if (!tipoMoneta.equals("FIAT")) {
+                TipoTr = tipo.toLowerCase().contains("staking") ? "STAKING REWARD" : "EARN";
+            }
 
-            Importazioni.RiempiVuotiArray(RT);
-            //System.out.println(RT[0]);
-            if (!Mon.Qta.equals("0")) lista.add(RT);
+            String[] RT = MovimentiCrypto.creaMovimento(null, Mon, Exchange, "Principale",
+                    time, null, null, totMov, i, null,
+                    null, "A", null, TipoTr, null);
+            if (RT != null) {
+                RT[2] = i + " di " + totMov;                             // Numero movimenti
+                RT[7] = tipo;                                            // Causale originale
+                RT[39] = "A"; //Fonte dati A = API Exchange
+                Importazioni.RiempiVuotiArray(RT);
+                lista.add(RT);
+            }
         }
 }
         return lista;
-    }    
+    }
    
    
    

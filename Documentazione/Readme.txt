@@ -25,6 +25,14 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.58
+Nuove Implementazioni :
+
+Correzione Bug :
+- Corretto bug che nel caso si cercasse di classificare più token come scam in contemporanea il programma a volte proponeva il rigo errato
+- Corretto bug che impediva al programma in alcuni casi di fare il controllo delle giacenze CRO a fine scaricamento dati dalla cronoschain
+- Corretto bug nello scarico dei dati da cointracking, il programma teneva per buono il prezzo del csv anche se questo era a zero
+
 ver. 1.0.57
 Nuove Implementazioni :
 - Aggiunto supporto alla Blockchain Bitcoin con importazione delle transazioni BTC.

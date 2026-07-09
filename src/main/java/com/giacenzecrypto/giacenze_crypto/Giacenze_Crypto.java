@@ -107,8 +107,27 @@ public class Giacenze_Crypto {
         }
 
         Principale g = new Principale();
-        g.pack();
+
+        String finestraLarghezza = DatabaseH2.Opzioni_Leggi("Finestra_Larghezza");
+        String finestraAltezza = DatabaseH2.Opzioni_Leggi("Finestra_Altezza");
+        String finestraMassimizzata = DatabaseH2.Opzioni_Leggi("Finestra_Massimizzata");
+
+        if (finestraLarghezza != null && finestraAltezza != null) {
+            try {
+                g.setSize(Integer.parseInt(finestraLarghezza), Integer.parseInt(finestraAltezza));
+            } catch (NumberFormatException ex) {
+                g.pack();
+            }
+        } else {
+            g.pack();
+        }
+
         g.setLocationRelativeTo(null);
+
+        if ("true".equalsIgnoreCase(finestraMassimizzata)) {
+            g.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
+        }
+
         g.setVisible(true);
     }
 

@@ -1495,7 +1495,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo))
                 .addGap(5, 5, 5)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 483, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2894,8 +2894,8 @@ private static final long serialVersionUID = 3L;
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(RW_Text_IC, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(RW_Label_SegnalaRicalcolo, javax.swing.GroupLayout.PREFERRED_SIZE, 729, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 142, Short.MAX_VALUE)
+                        .addComponent(RW_Label_SegnalaRicalcolo, javax.swing.GroupLayout.PREFERRED_SIZE, 765, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2907,7 +2907,7 @@ private static final long serialVersionUID = 3L;
                 .addComponent(jLabel5)
                 .addGap(18, 18, 18)
                 .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.PREFERRED_SIZE, 750, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 334, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 374, Short.MAX_VALUE)
                 .addComponent(RW_CheckBox_VediSoloErrori))
             .addGroup(RWLayout.createSequentialGroup()
                 .addContainerGap()
@@ -2956,7 +2956,7 @@ private static final long serialVersionUID = 3L;
                         .addComponent(RW_Bottone_ModificaVIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -3256,6 +3256,7 @@ private static final long serialVersionUID = 3L;
         GestioneTokenScam_ScrollPane.setViewportView(GestioneTokenScam_Tabella);
         GestioneTokenScam_Tabella.getTableHeader().setPreferredSize(new Dimension(GestioneTokenScam_Tabella.getColumnModel().getTotalColumnWidth(), 42));
 
+        GestioneTokenScam_Bottone_RimuoviScam.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Banana.png"))); // NOI18N
         GestioneTokenScam_Bottone_RimuoviScam.setText("Rimuovi da SCAM");
         GestioneTokenScam_Bottone_RimuoviScam.setEnabled(false);
         GestioneTokenScam_Bottone_RimuoviScam.addActionListener(new java.awt.event.ActionListener() {
@@ -3264,6 +3265,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        GestioneTokenScam_Bottone_EliminaMovimenti.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Cestino.png"))); // NOI18N
         GestioneTokenScam_Bottone_EliminaMovimenti.setText("Elimina Movimenti del Token");
         GestioneTokenScam_Bottone_EliminaMovimenti.setEnabled(false);
         GestioneTokenScam_Bottone_EliminaMovimenti.addActionListener(new java.awt.event.ActionListener() {
@@ -3325,28 +3327,29 @@ private static final long serialVersionUID = 3L;
             .addGroup(GestioneTokenScamLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(GestioneTokenScamLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(GestioneTokenScam_ScrollPane)
+                    .addComponent(GestioneTokenScam_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1423, Short.MAX_VALUE)
                     .addComponent(GestioneTokenScam_ScrollPaneMovimenti)
                     .addComponent(GestioneTokenScam_Label_Movimenti, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(GestioneTokenScamLayout.createSequentialGroup()
-                        .addComponent(GestioneTokenScam_Bottone_RimuoviScam, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(GestioneTokenScam_Bottone_RimuoviScam, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(GestioneTokenScam_Bottone_EliminaMovimenti, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(GestioneTokenScam_Bottone_EliminaMovimenti, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         GestioneTokenScamLayout.setVerticalGroup(
             GestioneTokenScamLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(GestioneTokenScamLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(GestioneTokenScam_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                .addComponent(GestioneTokenScam_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GestioneTokenScamLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(GestioneTokenScam_Bottone_RimuoviScam)
-                    .addComponent(GestioneTokenScam_Bottone_EliminaMovimenti))
+                    .addComponent(GestioneTokenScam_Bottone_RimuoviScam, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(GestioneTokenScam_Bottone_EliminaMovimenti, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(GestioneTokenScam_Label_Movimenti)
-                .addGap(4, 4, 4)
-                .addComponent(GestioneTokenScam_ScrollPaneMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(GestioneTokenScam_ScrollPaneMovimenti, javax.swing.GroupLayout.PREFERRED_SIZE, 361, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -7700,10 +7703,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         //Se selezionato Situazione Import Crypto lo aggiorno
        System.out.println("Aggiorna Tutto");
        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-       //Segnalo che la tabella Gestione Token Scam va ricaricata alla prossima apertura del tab
-       GestioneTokenScamDaAggiornare = true;
            
-        //Emetto messaggio di ricalcolo sulla tabella RT se già compilata
+        //Emetto messaggio di ricalcolo sulla tabella RT se già compilata e 
+       //Segnalo che la tabella Gestione Token Scam va ricaricata alla prossima apertura del tab
         AccendiLabelRicalcolo();
         //RW_RicalcolaRWseEsiste();//Questo non aggiorna nulla ma avvisa di aggiornare, è l'equivalente delle riga sopra ma per l'RW
         if(GiacenzeaData_Tabella.getRowCount()>0)GiacenzeaData_Label_Aggiornare.setVisible(true);
@@ -8101,9 +8103,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     
     
     private void Analisi_CryptoComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_Analisi_CryptoComponentShown
-        // TODO add your handling code here:
-        //System.out.println("CaricaTabella");
-       // DepositiPrelievi_Caricatabella();
+        if (AnalisiCrypto.getSelectedComponent() == GestioneTokenScam) {
+            GestioneTokenScamComponentShown(evt);
+        }
     }//GEN-LAST:event_Analisi_CryptoComponentShown
 
     private void GiacenzeaDataComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_GiacenzeaDataComponentShown
@@ -8733,63 +8735,101 @@ GiacenzeaData_CompilaTabellaToken(true);
     }//GEN-LAST:event_GestioneTokenScam_TabellaKeyReleased
 
     private void GestioneTokenScam_Bottone_RimuoviScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GestioneTokenScam_Bottone_RimuoviScamActionPerformed
-        if (GestioneTokenScam_Tabella.getSelectedRow() >= 0) {
-            int rigaselezionata = GestioneTokenScam_Tabella.getRowSorter().convertRowIndexToModel(GestioneTokenScam_Tabella.getSelectedRow());
-            String NomeToken = GestioneTokenScam_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            String Address = GestioneTokenScam_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
-            String Rete = GestioneTokenScam_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
+        int[] righeSelezionate = GestioneTokenScam_Tabella.getSelectedRows();
+        if (righeSelezionate.length == 0) return;
 
-            //Stessa logica condivisa usata da GiacenzeaData_Bottone_ScamActionPerformed e DepositiPrelievi_Bottone_ScamActionPerformed
-            //Il token qui è sempre già SCAM, quindi la funzione esegue il ramo di rimozione (con conferma dell'utente e ripristino del nome originale)
-            GiacenzeaData_Funzione_IdentificaComeScam(NomeToken, Address, Rete, "Tutti");
+        //Copio Nome/Address/Rete di tutti i token selezionati prima di modificare la tabella,
+        //altrimenti gli indici di riga cambierebbero durante il ciclo
+        List<String[]> tokenSelezionati = new ArrayList<>();
+        for (int rigaVista : righeSelezionate) {
+            int riga = GestioneTokenScam_Tabella.getRowSorter().convertRowIndexToModel(rigaVista);
+            String NomeToken = GestioneTokenScam_Tabella.getModel().getValueAt(riga, 0).toString();
+            String Address = GestioneTokenScam_Tabella.getModel().getValueAt(riga, 1).toString();
+            String Rete = GestioneTokenScam_Tabella.getModel().getValueAt(riga, 2).toString();
+            tokenSelezionati.add(new String[]{NomeToken, Address, Rete});
+        }
 
+        if (tokenSelezionati.size() > 1) {
+            AppDialog.DialogResult result = AppDialog.builder(this)
+                    .windowTitle("Rimozione stato SCAM")
+                    .bodyTitle("Rimuovere lo stato SCAM dai token selezionati?")
+                    .showTitleInBody(true)
+                    .theme()
+                    .type(AppDialog.DialogType.WARNING)
+                    .message("Hai selezionato " + tokenSelezionati.size() + " token.")
+                    .details("Per ciascun token verrà comunque richiesta una conferma separata.")
+                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("continue", "Continua")
+                            .role(AppDialog.ActionRole.DANGER)
+                            .build())
+                    .showDialog();
+            if (result == null || !result.isAction("continue")) {
+                return;
+            }
+        }
+
+        //Stessa logica condivisa usata da GiacenzeaData_Bottone_ScamActionPerformed e DepositiPrelievi_Bottone_ScamActionPerformed
+        //Il token qui è sempre già SCAM, quindi la funzione esegue il ramo di rimozione (con conferma dell'utente e ripristino del nome originale)
+        for (String[] token : tokenSelezionati) {
+            GiacenzeaData_Funzione_IdentificaComeScam(token[0], token[1], token[2], "Tutti");
+        }
+
+        Funzioni_AggiornaTutto();
+        GestioneTokenScam_CaricaTabellaPrincipale();
+        Tabelle.Funzioni_PulisciTabella((DefaultTableModel) GestioneTokenScam_TabellaMovimenti.getModel());
+        GestioneTokenScam_Bottone_RimuoviScam.setEnabled(false);
+        GestioneTokenScam_Bottone_EliminaMovimenti.setEnabled(false);
+    }//GEN-LAST:event_GestioneTokenScam_Bottone_RimuoviScamActionPerformed
+
+    private void GestioneTokenScam_Bottone_EliminaMovimentiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GestioneTokenScam_Bottone_EliminaMovimentiActionPerformed
+        int[] righeSelezionate = GestioneTokenScam_Tabella.getSelectedRows();
+        if (righeSelezionate.length == 0) return;
+
+        List<String> nomiToken = new ArrayList<>();
+        for (int rigaVista : righeSelezionate) {
+            int riga = GestioneTokenScam_Tabella.getRowSorter().convertRowIndexToModel(rigaVista);
+            nomiToken.add(GestioneTokenScam_Tabella.getModel().getValueAt(riga, 0).toString());
+        }
+
+        //Raccolgo gli ID di tutti i movimenti attualmente mostrati nella tabella di dettaglio (colonna 8, nascosta)
+        //che ora contiene i movimenti di tutti i token selezionati in GestioneTokenScam_Tabella
+        Set<String> idDaEliminare = new LinkedHashSet<>();
+        int righeDettaglio = GestioneTokenScam_TabellaMovimenti.getModel().getRowCount();
+        for (int i = 0; i < righeDettaglio; i++) {
+            idDaEliminare.add(GestioneTokenScam_TabellaMovimenti.getModel().getValueAt(i, 8).toString());
+        }
+        if (idDaEliminare.isEmpty()) return;
+
+        boolean piuToken = nomiToken.size() > 1;
+        String elencoToken = String.join("<br> ", nomiToken);
+
+        AppDialog.DialogResult result = AppDialog.builder(this)
+                .windowTitle("Eliminazione movimenti token SCAM")
+                .bodyTitle(piuToken ? "Eliminare tutti i movimenti dei token selezionati?" : "Eliminare tutti i movimenti del token?")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message("Stai per eliminare tutti i " + idDaEliminare.size() + " movimenti " + (piuToken ? "dei " + nomiToken.size() + " token: <br>" : "del token ") + elencoToken + ".")
+                .details("L'operazione rimuoverà definitivamente questi movimenti dall'archivio.<br>Premi <b>Salva</b> per rendere permanente la cancellazione.")
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("delete", "Elimina Movimenti")
+                        .role(AppDialog.ActionRole.DANGER)
+                        .build())
+                .showDialog();
+
+        if (result != null && result.isAction("delete")) {
+            for (String ID : idDaEliminare) {
+                Funzioni.RimuoviMovimentazioneXID(ID);
+            }
             Funzioni_AggiornaTutto();
             GestioneTokenScam_CaricaTabellaPrincipale();
             Tabelle.Funzioni_PulisciTabella((DefaultTableModel) GestioneTokenScam_TabellaMovimenti.getModel());
             GestioneTokenScam_Bottone_RimuoviScam.setEnabled(false);
             GestioneTokenScam_Bottone_EliminaMovimenti.setEnabled(false);
-        }
-    }//GEN-LAST:event_GestioneTokenScam_Bottone_RimuoviScamActionPerformed
-
-    private void GestioneTokenScam_Bottone_EliminaMovimentiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GestioneTokenScam_Bottone_EliminaMovimentiActionPerformed
-        if (GestioneTokenScam_Tabella.getSelectedRow() >= 0) {
-            int rigaselezionata = GestioneTokenScam_Tabella.getRowSorter().convertRowIndexToModel(GestioneTokenScam_Tabella.getSelectedRow());
-            String NomeToken = GestioneTokenScam_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-
-            //Raccolgo gli ID di tutti i movimenti attualmente mostrati nella tabella di dettaglio (colonna 8, nascosta)
-            Set<String> idDaEliminare = new LinkedHashSet<>();
-            int righeDettaglio = GestioneTokenScam_TabellaMovimenti.getModel().getRowCount();
-            for (int i = 0; i < righeDettaglio; i++) {
-                idDaEliminare.add(GestioneTokenScam_TabellaMovimenti.getModel().getValueAt(i, 8).toString());
-            }
-            if (idDaEliminare.isEmpty()) return;
-
-            AppDialog.DialogResult result = AppDialog.builder(this)
-                    .windowTitle("Eliminazione movimenti token SCAM")
-                    .bodyTitle("Eliminare tutti i movimenti del token?")
-                    .showTitleInBody(true)
-                    .theme()
-                    .type(AppDialog.DialogType.WARNING)
-                    .message("Stai per eliminare tutti i " + idDaEliminare.size() + " movimenti del token " + NomeToken + ".")
-                    .details("L'operazione rimuoverà definitivamente questi movimenti dall'archivio.<br>Premi <b>Salva</b> per rendere permanente la cancellazione.")
-                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
-                            .role(AppDialog.ActionRole.SECONDARY)
-                            .build())
-                    .action(AppDialog.DialogAction.builder("delete", "Elimina Movimenti")
-                            .role(AppDialog.ActionRole.DANGER)
-                            .build())
-                    .showDialog();
-
-            if (result != null && result.isAction("delete")) {
-                for (String ID : idDaEliminare) {
-                    Funzioni.RimuoviMovimentazioneXID(ID);
-                }
-                Funzioni_AggiornaTutto();
-                GestioneTokenScam_CaricaTabellaPrincipale();
-                Tabelle.Funzioni_PulisciTabella((DefaultTableModel) GestioneTokenScam_TabellaMovimenti.getModel());
-                GestioneTokenScam_Bottone_RimuoviScam.setEnabled(false);
-                GestioneTokenScam_Bottone_EliminaMovimenti.setEnabled(false);
-            }
         }
     }//GEN-LAST:event_GestioneTokenScam_Bottone_EliminaMovimentiActionPerformed
 
@@ -10049,9 +10089,17 @@ if (result.isAction("delete-all")) {
                 }
                 
         }
+
+        boolean massimizzata = (getExtendedState() & java.awt.Frame.MAXIMIZED_BOTH) == java.awt.Frame.MAXIMIZED_BOTH;
+        DatabaseH2.Opzioni_Scrivi("Finestra_Massimizzata", String.valueOf(massimizzata));
+        if (!massimizzata) {
+            DatabaseH2.Opzioni_Scrivi("Finestra_Larghezza", String.valueOf(getWidth()));
+            DatabaseH2.Opzioni_Scrivi("Finestra_Altezza", String.valueOf(getHeight()));
+        }
+
         LoggerGC.close();
         this.dispose();
-  
+
     }//GEN-LAST:event_formWindowClosing
 
     private void GiacenzeaData_CheckBox_NascondiScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_CheckBox_NascondiScamActionPerformed
@@ -10143,6 +10191,8 @@ if (result.isAction("delete-all")) {
         //Aggiorno gli eventuali label sull'RW e RT per avvisare che è necessario il ricalcolo
         if(RT_Tabella_Principale.getRowCount()>0)RT_Label_Avviso.setVisible(true);
         if(RW_Tabella.getRowCount()>0)RW_Label_SegnalaRicalcolo.setVisible(true); 
+        //inoltre metto a true tutti i booleani affinchè attivino il ricalcolo una volta selezionato il tab
+        GestioneTokenScamDaAggiornare=true;
     }
     
     private void Opzioni_GruppoWallet_TabellaPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_TabellaPropertyChange
@@ -13219,7 +13269,7 @@ if (result != null && !result.isAction("cancel")) {
         AccendiLabelRicalcolo();
         if(GiacenzeaData_Tabella.getRowCount()>0)GiacenzeaData_Label_Aggiornare.setVisible(true);
         this.setCursor(Cursor.getDefaultCursor());
-        GestioneTokenScamDaAggiornare=true;
+
     }//GEN-LAST:event_TransazioniCrypto_Bottone_AnnullaActionPerformed
 
     private void TransazioniCrypto_CheckBox_EscludiTIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_CheckBox_EscludiTIActionPerformed
@@ -13654,56 +13704,61 @@ if (result != null && !result.isAction("cancel")) {
         DefaultTableModel modello = (DefaultTableModel) GestioneTokenScam_TabellaMovimenti.getModel();
         Tabelle.Funzioni_PulisciTabella(modello);
 
-        boolean rigaSelezionata = GestioneTokenScam_Tabella.getSelectedRow() >= 0;
+        int[] righeSelezionate = GestioneTokenScam_Tabella.getSelectedRows();
+        boolean rigaSelezionata = righeSelezionate.length > 0;
         if (rigaSelezionata) {
-            int riga = GestioneTokenScam_Tabella.getRowSorter().convertRowIndexToModel(GestioneTokenScam_Tabella.getSelectedRow());
-            String mon = GestioneTokenScam_Tabella.getModel().getValueAt(riga, 0).toString();
-            String Address = GestioneTokenScam_Tabella.getModel().getValueAt(riga, 1).toString();
-            String Rete = GestioneTokenScam_Tabella.getModel().getValueAt(riga, 2).toString();
+            //Supporto la selezione multipla: accodo i movimenti di ciascun token selezionato,
+            //ricalcolando la Qta Residua separatamente per ogni token
+            for (int rigaVista : righeSelezionate) {
+                int riga = GestioneTokenScam_Tabella.getRowSorter().convertRowIndexToModel(rigaVista);
+                String mon = GestioneTokenScam_Tabella.getModel().getValueAt(riga, 0).toString();
+                String Address = GestioneTokenScam_Tabella.getModel().getValueAt(riga, 1).toString();
+                String Rete = GestioneTokenScam_Tabella.getModel().getValueAt(riga, 2).toString();
 
-            BigDecimal TotaleQta = new BigDecimal(0);
-            int NumNegativi = 0;
-            for (String[] movimento : MappaCryptoWallet.values()) {
-                String ReteMov = Funzioni.TrovaReteDaIMovimento(movimento);
-                if (ReteMov == null) ReteMov = "";
-                if (!Rete.equals(ReteMov)) continue;
+                BigDecimal TotaleQta = new BigDecimal(0);
+                int NumNegativi = 0;
+                for (String[] movimento : MappaCryptoWallet.values()) {
+                    String ReteMov = Funzioni.TrovaReteDaIMovimento(movimento);
+                    if (ReteMov == null) ReteMov = "";
+                    if (!Rete.equals(ReteMov)) continue;
 
-                String AddressU = movimento[26];
-                String AddressE = movimento[28];
+                    String AddressU = movimento[26];
+                    String AddressE = movimento[28];
 
-                if (movimento[8].equals(mon) && Address.equalsIgnoreCase(AddressU)) {
-                    TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
-                    String riga2[] = new String[13];
-                    riga2[0] = Funzioni.getOradaID(movimento[0]);
-                    riga2[1] = movimento[3];
-                    riga2[2] = movimento[8];
-                    riga2[3] = AddressU;
-                    riga2[4] = movimento[5];
-                    riga2[5] = movimento[10];
-                    riga2[6] = movimento[15];
-                    riga2[7] = TotaleQta.toPlainString();
-                    riga2[8] = movimento[0];
-                    riga2[9] = "";
-                    if (NumNegativi > 0) riga2[9] = "S";
-                    if (riga2[7].contains("-")) NumNegativi++;
-                    modello.addRow(riga2);
-                }
-                if (movimento[11].equals(mon) && Address.equalsIgnoreCase(AddressE)) {
-                    TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
-                    String riga2[] = new String[13];
-                    riga2[0] = Funzioni.getOradaID(movimento[0]);
-                    riga2[1] = movimento[3];
-                    riga2[2] = movimento[11];
-                    riga2[3] = AddressE;
-                    riga2[4] = movimento[5];
-                    riga2[5] = movimento[13];
-                    riga2[6] = movimento[15];
-                    riga2[7] = TotaleQta.toPlainString();
-                    riga2[8] = movimento[0];
-                    riga2[9] = "";
-                    if (NumNegativi > 0) riga2[9] = "S";
-                    if (riga2[7].contains("-")) NumNegativi++;
-                    modello.addRow(riga2);
+                    if (movimento[8].equals(mon) && Address.equalsIgnoreCase(AddressU)) {
+                        TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
+                        String riga2[] = new String[13];
+                        riga2[0] = Funzioni.getOradaID(movimento[0]);
+                        riga2[1] = movimento[3];
+                        riga2[2] = movimento[8];
+                        riga2[3] = AddressU;
+                        riga2[4] = movimento[5];
+                        riga2[5] = movimento[10];
+                        riga2[6] = movimento[15];
+                        riga2[7] = TotaleQta.toPlainString();
+                        riga2[8] = movimento[0];
+                        riga2[9] = "";
+                        if (NumNegativi > 0) riga2[9] = "S";
+                        if (riga2[7].contains("-")) NumNegativi++;
+                        modello.addRow(riga2);
+                    }
+                    if (movimento[11].equals(mon) && Address.equalsIgnoreCase(AddressE)) {
+                        TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
+                        String riga2[] = new String[13];
+                        riga2[0] = Funzioni.getOradaID(movimento[0]);
+                        riga2[1] = movimento[3];
+                        riga2[2] = movimento[11];
+                        riga2[3] = AddressE;
+                        riga2[4] = movimento[5];
+                        riga2[5] = movimento[13];
+                        riga2[6] = movimento[15];
+                        riga2[7] = TotaleQta.toPlainString();
+                        riga2[8] = movimento[0];
+                        riga2[9] = "";
+                        if (NumNegativi > 0) riga2[9] = "S";
+                        if (riga2[7].contains("-")) NumNegativi++;
+                        modello.addRow(riga2);
+                    }
                 }
             }
             //coloro la tabella con lo stesso stile usato in Giacenze a Data

@@ -156,9 +156,17 @@ public class DatabaseH2 {
                     + "is_honeypot VARCHAR(5), is_blacklisted VARCHAR(5), cannot_sell_all VARCHAR(5), is_true_token VARCHAR(5), "
                     + "is_airdrop_scam VARCHAR(5), trust_list VARCHAR(5), sell_tax VARCHAR(20), mintable VARCHAR(5), "
                     + "freezable VARCHAR(5), closable VARCHAR(5), balance_mutable_authority VARCHAR(5), trusted_token VARCHAR(5), "
+                    + "fake_token VARCHAR(5), holder_count VARCHAR(20), dex_count VARCHAR(10), is_open_source VARCHAR(5), "
                     + "TimestampVerifica BIGINT)";
             preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute();
+            //Migrazione: aggiunge le colonne dei nuovi campi (rilevazione SPAM) ai database creati prima della loro introduzione
+            try (Statement stmtGoPlus = connection.createStatement()) {
+                stmtGoPlus.execute("ALTER TABLE GOPLUSSECURITY ADD COLUMN IF NOT EXISTS fake_token VARCHAR(5)");
+                stmtGoPlus.execute("ALTER TABLE GOPLUSSECURITY ADD COLUMN IF NOT EXISTS holder_count VARCHAR(20)");
+                stmtGoPlus.execute("ALTER TABLE GOPLUSSECURITY ADD COLUMN IF NOT EXISTS dex_count VARCHAR(10)");
+                stmtGoPlus.execute("ALTER TABLE GOPLUSSECURITY ADD COLUMN IF NOT EXISTS is_open_source VARCHAR(5)");
+            }
 
             createTableSQL = "CREATE TABLE IF NOT EXISTS EXCHANGEAPI (Nome VARCHAR(255) PRIMARY KEY, Exchange VARCHAR(255), Chiave VARCHAR(255), Segreto VARCHAR(255),Opzionale VARCHAR(255))";
             preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
@@ -1250,7 +1258,8 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
 
     private static final String[] GOPLUSSECURITY_CAMPI = {
         "is_honeypot", "is_blacklisted", "cannot_sell_all", "is_true_token", "is_airdrop_scam",
-        "trust_list", "sell_tax", "mintable", "freezable", "closable", "balance_mutable_authority", "trusted_token"
+        "trust_list", "sell_tax", "mintable", "freezable", "closable", "balance_mutable_authority", "trusted_token",
+        "fake_token", "holder_count", "dex_count", "is_open_source"
     };
 
     /**

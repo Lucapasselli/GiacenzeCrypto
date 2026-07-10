@@ -59,6 +59,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
@@ -8057,10 +8058,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             }
         }
 
-          //FASE 7 : Classificare o eliminare i movimenti che passano da CRO a CRO su diversa chain  
+          //FASE 7 : Classificare o eliminare i movimenti che passano da CRO a CRO su diversa chain
             //NON DEVO FAR NULLA MA SEMPLICEMENTE GESTIRE LA CRONOS POS CHAIN CON IL WALLET CORRETTO NELLE IMPORTAZIONI
-        
-        
+
+        //FASE 8 : Sistemo i token di debito AAVE (variableDebt) che non hanno prezzo di mercato
+        numeromodifiche = numeromodifiche + AAVE_SistemaTokenDiDebito();
+
         if (numeromodifiche>0){
 
          Messaggi.SuccessMessage("Movimenti accoppiati", 
@@ -8073,7 +8076,49 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
-    
+
+    /**
+     * Sistema automaticamente i movimenti dei token di debito AAVE (variableDebt...).
+     * Questi token non hanno un prezzo di mercato reale (rappresentano solo il debito acceso),
+     * quindi vengono prezzati a 0.00 e tolti dalla lista dei depositi/prelievi da classificare:
+     * - mint (DC) del token di debito -> "MINT TOKEN DI DEBITO", campo18="DCZ - MINT TOKEN DI DEBITO"
+     * - burn (PC) del token di debito -> "BURN TOKEN DI DEBITO", campo18="PWN - BURN TOKEN DI DEBITO"
+     *
+     * @return numero di movimenti sistemati
+     */
+    private int AAVE_SistemaTokenDiDebito(){
+        int modifiche=0;
+        for (String IDnc : Principale.DepositiPrelieviDaCategorizzare){
+            String Movimento[]=MappaCryptoWallet.get(IDnc);
+            if (Movimento[18].equalsIgnoreCase("")){
+                String categoria=IDnc.split("_")[4];
+                if (categoria.equalsIgnoreCase("DC")
+                        && Movimento[11].startsWith("variableDebt")
+                        && Movimento[27].contains("Aave")
+                        && Movimento[27].contains("Variable Debt")){
+
+                    Movimento[15] = "0.00";
+                    Movimento[32] = "SI";
+                    Movimento[5] = "MINT TOKEN DI DEBITO";
+                    Movimento[18] = "DCZ - MINT TOKEN DI DEBITO";
+                    modifiche++;
+                }
+                else if (categoria.equalsIgnoreCase("PC")
+                        && Movimento[8].startsWith("variableDebt")
+                        && Movimento[25].contains("Aave")
+                        && Movimento[25].contains("Variable Debt")){
+
+                    Movimento[15] = "0.00";
+                    Movimento[32] = "SI";
+                    Movimento[5] = "BURN TOKEN DI DEBITO";
+                    Movimento[18] = "PWN - BURN TOKEN DI DEBITO";
+                    modifiche++;
+                }
+            }
+        }
+        return modifiche;
+    }
+
     private void SituazioneImportComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_SituazioneImportComponentShown
         // TODO add your handling code here:    
     }//GEN-LAST:event_SituazioneImportComponentShown
@@ -12634,13 +12679,25 @@ if (result != null && !result.isAction("cancel")) {
                     String rete = token[2];
                     progress.SetAvanzamento(i);
                     progress.SetMessaggioAvanzamento("Verifica " + nomeMoneta + " (" + rete + ") - " + i + " di " + candidati.size());
+
+                    //Prima le regole locali (gratuite, istantanee): nome/simbolo con pattern da phishing/spam,
+                    //oppure simbolo di un token noto ma con address diverso (impersonazione).
+                    String motivoLocale = DepositiPrelievi_VerificaSpamNome(nomeMoneta);
+                    if (motivoLocale == null) motivoLocale = DepositiPrelievi_VerificaSpamImpersonazione(nomeMoneta, address, rete);
+                    if (motivoLocale != null) {
+                        System.out.println("Token " + nomeMoneta + " (" + address + " - " + rete + ") identificato come SCAM/SPAM da regola locale: " + motivoLocale);
+                        MarcaTokenComeScam(nomeMoneta, address, rete);
+                        if (Principale.InterrompiCiclo) break;
+                        continue;
+                    }
+
                     try {
                         String motivoScam = DepositiPrelievi_GoPlus_VerificaScam(address, rete);
                         if (motivoScam != null) {
-                            System.out.println("Token " + nomeMoneta + " (" + address + " - " + rete + ") identificato come SCAM da GoPlusLabs: " + motivoScam);
+                            System.out.println("Token " + nomeMoneta + " (" + address + " - " + rete + ") identificato come SCAM/SPAM da GoPlusLabs: " + motivoScam);
                             MarcaTokenComeScam(nomeMoneta, address, rete);
                         } else {
-                            System.out.println("Token " + nomeMoneta + " (" + address + " - " + rete + ") non marcato come SCAM (nessun rischio rilevato, o non verificabile su GoPlusLabs).");
+                            System.out.println("Token " + nomeMoneta + " (" + address + " - " + rete + ") non marcato come SCAM/SPAM (nessun rischio rilevato, o non verificabile su GoPlusLabs).");
                         }
                     } catch (IOException ex) {
                         LoggerGC.ScriviErrore(ex);
@@ -12712,6 +12769,50 @@ if (result != null && !result.isAction("cancel")) {
         return candidati;
     }
 
+    //Pattern per riconoscere nomi/simboli tipici dei token SPAM da phishing (es. "Visit uniswap-claim.com to claim reward"):
+    //URL/domini o parole-esca tipiche degli airdrop truffaldini. Non richiede alcuna chiamata API.
+    private static final Pattern SPAM_NOME_PATTERN = Pattern.compile(
+            "https?://|www\\.|\\.(com|net|org|io|xyz|app|site|online|click|top|win|vip|gg|to|me|finance|gift|fun|live)\\b"
+            + "|\\b(claim|airdrop|reward|bonus|voucher|redeem|visit|access)\\b",
+            Pattern.CASE_INSENSITIVE);
+
+    /**
+     * Verifica gratuita (nessuna chiamata API) basata sul nome/simbolo del token: i token SPAM distribuiti
+     * via airdrop non richiesto usano spesso nomi con URL o parole-esca ("Visit xxx.com to claim") per indurre
+     * la vittima a visitare un sito di phishing. Restituisce il motivo se il nome è sospetto, altrimenti null.
+     */
+    private String DepositiPrelievi_VerificaSpamNome(String nomeMoneta) {
+        if (nomeMoneta == null || nomeMoneta.isBlank()) return null;
+        if (SPAM_NOME_PATTERN.matcher(nomeMoneta).find()) {
+            return "nome/simbolo con pattern tipico da spam/phishing (URL o parola-esca): \"" + nomeMoneta + "\"";
+        }
+        return null;
+    }
+
+    /**
+     * Verifica gratuita (nessuna chiamata API) di impersonazione: se sulla STESSA rete esiste in
+     * {@link #Mappa_AddressRete_Nome} un token noto con lo stesso simbolo ma un address diverso, si tratta
+     * quasi certamente di un token contraffatto (es. un finto "USDT" sulla stessa chain del vero USDT).
+     * Il confronto è limitato alla stessa rete perché la mappa è una piccola lista di alias non esaustiva:
+     * un simbolo noto solo su un'altra chain (es. USDT su ETH, non presente in mappa) non è un'impersonazione,
+     * è semplicemente una rete che la mappa non copre.
+     */
+    private String DepositiPrelievi_VerificaSpamImpersonazione(String nomeMoneta, String address, String rete) {
+        if (nomeMoneta == null || address == null || rete == null) return null;
+        String chiave = address + "_" + rete;
+        for (Map.Entry<String, String> entry : Mappa_AddressRete_Nome.entrySet()) {
+            String chiaveNota = entry.getKey();
+            String reteNota = chiaveNota.substring(chiaveNota.lastIndexOf('_') + 1);
+            if (entry.getValue().equalsIgnoreCase(nomeMoneta)
+                    && reteNota.equalsIgnoreCase(rete)
+                    && !chiaveNota.equalsIgnoreCase(chiave)) {
+                return "simbolo \"" + nomeMoneta + "\" coincide con il token noto " + entry.getValue()
+                        + " sulla stessa rete (" + chiaveNota + ") ma con address diverso: possibile impersonazione";
+            }
+        }
+        return null;
+    }
+
     private static final Map<String, String> GOPLUS_CHAIN_ID = Map.ofEntries(
             Map.entry("ETH", "1"),
             Map.entry("BSC", "56"),
@@ -12744,7 +12845,14 @@ if (result != null && !result.isAction("cancel")) {
             DatabaseH2.GoPlusSecurity_Scrivi(addressChain, rete, address, dati);
         }
 
-        return isSolana ? DepositiPrelievi_GoPlus_MotivoScamSolana(dati) : DepositiPrelievi_GoPlus_MotivoScamEVM(dati);
+        if (isSolana) {
+            String motivoSolana = DepositiPrelievi_GoPlus_MotivoScamSolana(dati);
+            if (motivoSolana == null) motivoSolana = DepositiPrelievi_GoPlus_MotivoSpamSolana(dati);
+            return motivoSolana;
+        }
+        String motivo = DepositiPrelievi_GoPlus_MotivoScamEVM(dati);
+        if (motivo == null) motivo = DepositiPrelievi_GoPlus_MotivoSpamEVM(dati);
+        return motivo;
     }
 
     /**
@@ -12802,6 +12910,12 @@ if (result != null && !result.isAction("cancel")) {
         valori.put("is_airdrop_scam", dati.optString("is_airdrop_scam", ""));
         valori.put("trust_list", dati.optString("trust_list", ""));
         valori.put("sell_tax", dati.optString("sell_tax", ""));
+        //Campi aggiuntivi usati per riconoscere lo SPAM (token senza rischio "attivo" ma privo di ogni valore reale)
+        JSONObject fakeToken = dati.optJSONObject("fake_token");
+        valori.put("fake_token", fakeToken != null && fakeToken.optInt("value", 0) == 1 ? "1" : "0");
+        valori.put("holder_count", dati.optString("holder_count", ""));
+        valori.put("dex_count", String.valueOf(dati.optJSONArray("dex") != null ? dati.optJSONArray("dex").length() : 0));
+        valori.put("is_open_source", dati.optString("is_open_source", ""));
         return valori;
     }
 
@@ -12812,6 +12926,9 @@ if (result != null && !result.isAction("cancel")) {
         valori.put("closable", DepositiPrelievi_GoPlus_FlagSolana(dati, "closable") ? "1" : "0");
         valori.put("balance_mutable_authority", DepositiPrelievi_GoPlus_FlagSolana(dati, "balance_mutable_authority") ? "1" : "0");
         valori.put("trusted_token", "1".equals(String.valueOf(dati.opt("trusted_token"))) ? "1" : "0");
+        //Campo facoltativo: non tutte le versioni dell'API solana lo restituiscono, se assente resta vuoto
+        //e la relativa regola SPAM viene semplicemente saltata (nessun falso positivo per campo mancante).
+        valori.put("holder_count", dati.optString("holder_count", ""));
         return valori;
     }
 
@@ -12839,12 +12956,57 @@ if (result != null && !result.isAction("cancel")) {
         return null;
     }
 
+    /**
+     * Riconosce i token SPAM (a differenza dello SCAM "attivo" non cercano di rubare fondi, sono semplicemente
+     * privi di ogni valore/liquidità reale, spesso distribuiti in massa via airdrop non richiesto).
+     * GoPlusLabs non li segnala come "rischio", quindi va combinata l'assenza di ogni liquidità reale
+     * (dex_count=0) con pochissimi holder, oppure il flag esplicito fake_token (impersonazione di un token noto).
+     */
+    private String DepositiPrelievi_GoPlus_MotivoSpamEVM(Map<String, String> dati) {
+        if ("1".equals(dati.getOrDefault("trust_list", ""))) return null; //token esplicitamente fidato
+        if ("1".equals(dati.getOrDefault("fake_token", ""))) return "fake_token (impersona un token noto)";
+        try {
+            String holderCount = dati.get("holder_count");
+            String dexCount = dati.get("dex_count");
+            boolean pochiHolder = holderCount != null && !holderCount.isBlank() && Integer.parseInt(holderCount) <= 10;
+            boolean nessunaLiquidita = dexCount != null && !dexCount.isBlank() && Integer.parseInt(dexCount) == 0;
+            boolean nonVerificato = "0".equals(dati.get("is_open_source"));
+            //L'assenza di liquidità è la condizione ancorante (un token davvero tradeable non la soddisfa mai);
+            //pochi holder o contratto non verificato sono segnali corroboranti che riducono i falsi positivi
+            //sui token semplicemente appena lanciati.
+            if (nessunaLiquidita && (pochiHolder || nonVerificato)) {
+                return "nessuna liquidità su DEX (dex_count=0) combinata con "
+                        + (pochiHolder ? "pochi holder (<=10)" : "contratto non verificato (is_open_source=0)")
+                        + ": probabile spam/dust";
+            }
+        } catch (NumberFormatException ignored) {
+        }
+        return null;
+    }
+
     private String DepositiPrelievi_GoPlus_MotivoScamSolana(Map<String, String> dati) {
         if ("1".equals(dati.getOrDefault("trusted_token", ""))) return null; //token esplicitamente fidato
         if ("1".equals(dati.getOrDefault("mintable", ""))) return "mintable";
         if ("1".equals(dati.getOrDefault("freezable", ""))) return "freezable";
         if ("1".equals(dati.getOrDefault("closable", ""))) return "closable";
         if ("1".equals(dati.getOrDefault("balance_mutable_authority", ""))) return "balance_mutable_authority";
+        return null;
+    }
+
+    /**
+     * Equivalente Solana di {@link #DepositiPrelievi_GoPlus_MotivoSpamEVM}: qui il segnale disponibile è solo
+     * holder_count (il campo non è documentato su tutte le versioni dell'API solana di GoPlusLabs; se assente
+     * o non numerico la regola viene semplicemente saltata, senza generare falsi positivi).
+     */
+    private String DepositiPrelievi_GoPlus_MotivoSpamSolana(Map<String, String> dati) {
+        if ("1".equals(dati.getOrDefault("trusted_token", ""))) return null; //token esplicitamente fidato
+        try {
+            String holderCount = dati.get("holder_count");
+            if (holderCount != null && !holderCount.isBlank() && Integer.parseInt(holderCount) <= 3) {
+                return "holder_count<=3: probabile spam/dust";
+            }
+        } catch (NumberFormatException ignored) {
+        }
         return null;
     }
 

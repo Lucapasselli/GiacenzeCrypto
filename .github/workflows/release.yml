@@ -1,0 +1,251 @@
+name: Release
+
+env:
+  PROJECT_NAME: Giacenze_Crypto
+  JAVA_VERSION: 24
+  JAVA_DISTRIBUTION: temurin
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
+
+      - name: Estrai versione dal pom.xml
+        shell: pwsh
+        run: |
+          [xml]$pom = Get-Content pom.xml
+          $version = $pom.project.version
+          if (-not $version) {
+            Write-Error "Versione non trovata nel pom.xml"
+            exit 1
+          }
+          Write-Host "Versione estratta: $version"
+          echo "VERSIONE=$version" >> $env:GITHUB_ENV
+
+      - name: Build JAR with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Prepara cartella build con risorse
+        shell: pwsh
+        run: |
+          mkdir build\Immagini
+          mkdir build\Scripts
+          copy Scripts\* build\Scripts\
+          copy Immagini\* build\Immagini\
+          copy logo.png build\
+          copy GestitiCoincap.csv build\
+          copy target\Giacenze_Crypto-$env:VERSIONE-jar-with-dependencies.jar build\Giacenze_Crypto.jar
+          mkdir out
+
+      - name: Crea pacchetto Portable Multipiattaforma (zip)
+        shell: pwsh
+        run: |
+          Compress-Archive -Path build\* -DestinationPath out\GiacenzeCrypto_$($env:VERSIONE)_Beta_Portable_Multipiattaforma.zip
+
+      - name: Build app-image Windows (portable)
+        shell: pwsh
+        run: |
+          jpackage `
+            --type app-image `
+            --input build `
+            --dest out\portable `
+            --name $env:PROJECT_NAME `
+            --main-jar Giacenze_Crypto.jar `
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto `
+            --arguments "--risorse app/" `
+            --icon logo.ico `
+            --app-version $env:VERSIONE `
+            --vendor Luca
+
+      - name: Crea pacchetto Portable Windows (zip)
+        shell: pwsh
+        run: |
+          Compress-Archive -Path out\portable\$env:PROJECT_NAME\* -DestinationPath out\GiacenzeCrypto_$($env:VERSIONE)_Beta_Portable_Windows.zip
+
+      - name: Build app-image Windows (per installer)
+        shell: pwsh
+        run: |
+          jpackage `
+            --type app-image `
+            --input build `
+            --dest installer `
+            --name $env:PROJECT_NAME `
+            --main-jar Giacenze_Crypto.jar `
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto `
+            --arguments "--risorse app/ --workdir HOME/AppData/Local/Programs/Giacenze_Crypto/" `
+            --icon logo.ico `
+            --app-version $env:VERSIONE `
+            --vendor Luca
+
+      - name: Installa Inno Setup
+        run: choco install innosetup -y
+
+      - name: Compila installer con Inno Setup
+        shell: cmd
+        run: '"C:\Program Files (x86)\Inno Setup 6\iscc.exe" "installer\InnoScript.iss" /DMyAppVersion="%VERSIONE% Beta"'
+
+      - name: Copia installer in out\
+        shell: pwsh
+        run: |
+          copy installer\Output\Giacenze_Crypto.exe out\GiacenzeCrypto_$($env:VERSIONE)_Beta_installer.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Windows
+          path: out/GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Windows.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Multipiattaforma
+          path: out/GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Multipiattaforma.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Installer
+          path: out/GiacenzeCrypto_${{ env.VERSIONE }}_Beta_installer.exe
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
+
+      - name: Estrai versione dal pom.xml
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "VERSIONE=$VERSION" >> $GITHUB_ENV
+
+      - name: Build JAR with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Copy extra resources
+        run: |
+          mkdir -p build/Immagini
+          mkdir -p build/Scripts
+          cp -r Scripts/* build/Scripts/
+          cp -r Immagini/* build/Immagini/
+          cp logo.png build/
+          cp GestitiCoincap.csv build/
+          cp target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar build/Giacenze_Crypto.jar
+
+      - name: Build Linux app-image
+        run: |
+          jpackage \
+            --type app-image \
+            --input build \
+            --dest out/linux \
+            --name $PROJECT_NAME \
+            --main-jar Giacenze_Crypto.jar \
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
+            --icon logo.png \
+            --app-version $VERSIONE \
+            --vendor Luca
+
+      - name: Build Debian package (.deb) with jpackage
+        run: |
+          WORKDIR="HOME/GiacenzeCrypto/"
+          jpackage \
+            --type deb \
+            --input build \
+            --dest out/deb \
+            --name $PROJECT_NAME \
+            --main-jar Giacenze_Crypto.jar \
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
+            --arguments "--workdir \"$WORKDIR\"" \
+            --icon logo.png \
+            --app-version $VERSIONE \
+            --vendor Luca \
+            --linux-shortcut \
+            --linux-menu-group "Utility" \
+            --linux-package-name giacenze-crypto \
+            --linux-deb-maintainer "Luca <giacenzecrypto@gmail.com>"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Linux
+          path: out/linux/${{ env.PROJECT_NAME }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Debian_Package
+          path: out/deb
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
+
+      - name: Setup Python virtualenv and install Pillow
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install pillow
+
+      - name: Convert logo.png to .icns
+        run: |
+          source venv/bin/activate
+          python3 Python/generate_icns.py
+          iconutil -c icns icon.iconset -o logo.icns
+
+      - name: Estrai versione dal pom.xml
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "VERSIONE=$VERSION" >> $GITHUB_ENV
+
+      - name: Build JAR with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Prepare input directory for jpackage
+        run: |
+          mkdir -p build/Immagini
+          cp -r Immagini/* build/Immagini/
+          mkdir -p build/Scripts
+          cp -r Scripts/* build/Scripts/
+          cp logo.png build/
+          cp GestitiCoincap.csv build/
+          cp target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar build/Giacenze_Crypto.jar
+
+      - name: Build macOS .dmg
+        run: |
+          WORKDIR="HOME/Library/Application Support/GiacenzeCrypto/"
+          jpackage \
+            --type dmg \
+            --input build \
+            --dest out/dmg \
+            --name ${{ env.PROJECT_NAME }} \
+            --main-jar Giacenze_Crypto.jar \
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
+            --arguments "--workdir \"$WORKDIR\"" \
+            --icon logo.icns \
+            --app-version ${{ env.VERSIONE }} \
+            --vendor Luca
+
+      - name: Upload .dmg
+        uses: actions/upload-artifact@v4
+        with:
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_DMG_MacOS
+          path: out/dmg/*.dmg

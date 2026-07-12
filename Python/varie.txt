@@ -1,0 +1,5 @@
+uvicorn main:app --reload
+
+http://localhost:8000/historical_multi?exchanges=binance,coinbase,bybit,cryptocom,okx,kucoin&symbol=BABY/USDT&timeframe=1m&since=2025-06-12T00:00:00Z&until=2025-06-12T00:05:00Z
+
+pip install fastapi uvicorn ccxt

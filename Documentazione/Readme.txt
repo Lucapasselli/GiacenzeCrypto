@@ -27,11 +27,25 @@ Changelog
 
 ver. 1.0.58
 Nuove Implementazioni :
+- Aggiunta DefiLlama come nuova fonte per lo scaricamento dei prezzi.
+- Aggiunto pulsante per riscaricare tutti i prezzi dalle fonti direttamente dalla finestra di modifica prezzo di un movimento.
+- Aggiunta in "Opzioni" una nuova sezione "Preferenze Provider DeFi" per scegliere, per ogni chain, quale provider usare per scaricare i movimenti (Moralis/Blockscout/Etherscan/Cronoscan/Helius), con possibilità di impostare un URL e un'ApiKey Blockscout personalizzati.
+- Aggiunto supporto alla Blockchain Gnosis Chain.
+- Aggiunta identificazione automatica SCAM/SPAM dei depositi/prelievi non classificati tramite l'API di sicurezza GoPlusLabs, estesa anche al riconoscimento di token phishing/impersonazione senza bisogno di chiamate API.
+- Aggiunta nuova schermata "Gestione Token Scam" con l'elenco dei token marcati come SCAM/SPAM, da cui è possibile rimuovere la marcatura o eliminare in blocco i movimenti associati.
+- Aggiunta la classificazione dei movimenti relativi a prestiti DeFi (ricezione fondi, messa/sblocco collaterale, liquidazione forzata) e gestione automatica dei token di debito AAVE.
+- La finestra principale ora ricorda dimensione e stato massimizzato tra una sessione e l'altra, invece di riaprirsi sempre con le dimensioni predefinite.
 
 Correzione Bug :
 - Corretto bug che nel caso si cercasse di classificare più token come scam in contemporanea il programma a volte proponeva il rigo errato
 - Corretto bug che impediva al programma in alcuni casi di fare il controllo delle giacenze CRO a fine scaricamento dati dalla cronoschain
 - Corretto bug nello scarico dei dati da cointracking, il programma teneva per buono il prezzo del csv anche se questo era a zero
+- Corretto bug per cui interrompere uno scaricamento poteva erroneamente interrompere anche un altro scaricamento aperto in sequenza.
+- Corretto bug per cui interrompere uno scaricamento di movimenti DeFi durante il recupero prezzi poteva lasciare in tabella movimenti parzialmente importati, invece di scartare l'intera sessione.
+- Corretto bug nello scaricamento delle transazioni dalla rete Cronos che poteva causare la perdita silenziosa di transazioni storiche; ora eventuali errori del server vengono segnalati con un messaggio chiaro.
+- Corretto bug per cui, modificando un movimento, se il nuovo ID calcolato coincideva per caso con quello di un altro movimento esistente il salvataggio si bloccava con l'errore "Movimento con Stesso ID"; ora viene generato automaticamente un ID alternativo.
+- Corretto il movimento sintetico WCRO->CRO generato durante la sistemazione delle giacenze CRO a fine importazione, che poteva risultare incompleto.
+- Migliorata la cache dei prezzi irrecuperabili in modo da evitare di ripetere inutilmente le stesse richieste API in futuro.
 
 ver. 1.0.57
 Nuove Implementazioni :

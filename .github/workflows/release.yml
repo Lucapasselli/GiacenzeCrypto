@@ -188,7 +188,14 @@ jobs:
           path: out/deb
 
   build-macos:
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        include:
+          - os: macos-13
+            arch: Intel
+          - os: macos-14
+            arch: AppleSilicon
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -246,5 +253,5 @@ jobs:
       - name: Upload .dmg
         uses: actions/upload-artifact@v4
         with:
-          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_DMG_MacOS
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_DMG_MacOS_${{ matrix.arch }}
           path: out/dmg/*.dmg

@@ -27,9 +27,12 @@ import java.util.TreeMap;
  */
 public class DatabaseH2 {
 
-    static String jdbcUrl = VarStatiche.getDBPrincipale();
-    static String jdbcUrl2 = VarStatiche.getDBPersonale();
-    static String jdbcPrezzi = VarStatiche.getDBPrezzi();
+    //Gli URL JDBC vengono risolti in CreaoCollegaDatabase() e non qui:
+    //la working directory deve poter essere impostata prima della connessione
+    //anche se la classe è già stata caricata (es. nei test automatici)
+    static String jdbcUrl;
+    static String jdbcUrl2;
+    static String jdbcPrezzi;
     static String usernameH2 = "sa";
     static String passwordH2 = "";
     static Connection connection;
@@ -41,6 +44,9 @@ public class DatabaseH2 {
     public static boolean CreaoCollegaDatabase() {
         boolean successo=false;
         try {
+            jdbcUrl = VarStatiche.getDBPrincipale();
+            jdbcUrl2 = VarStatiche.getDBPersonale();
+            jdbcPrezzi = VarStatiche.getDBPrezzi();
             connection = DriverManager.getConnection(jdbcUrl, usernameH2, passwordH2);
             connectionPersonale = DriverManager.getConnection(jdbcUrl2, usernameH2, passwordH2);
             

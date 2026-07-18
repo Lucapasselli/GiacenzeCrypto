@@ -5866,11 +5866,11 @@
                                           </Group>
                                           <Group type="102" attributes="0">
                                               <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="Plusvalenze_Opzioni_NonConsiderareMovimentiNC" alignment="0" min="-2" pref="741" max="-2" attributes="0"/>
-                                                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                                                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
                                                       <Component id="Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni" alignment="0" max="32767" attributes="0"/>
                                                       <Component id="RT_Bottone_Documentazione1" alignment="0" max="32767" attributes="0"/>
                                                   </Group>
+                                                  <Component id="Plusvalenze_Opzioni_NonConsiderareMovimentiNC" min="-2" pref="877" max="-2" attributes="0"/>
                                               </Group>
                                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                           </Group>

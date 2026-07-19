@@ -193,7 +193,7 @@ jobs:
         include:
           - os: macos-15-intel
             arch: Intel
-          - os: macos-14
+          - os: macos-15
             arch: AppleSilicon
     runs-on: ${{ matrix.os }}
     steps:
@@ -235,13 +235,13 @@ jobs:
           cp logo.png build/
           cp target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar build/Giacenze_Crypto.jar
 
-      - name: Build macOS .dmg
+      - name: Build macOS app-image
         run: |
           WORKDIR="HOME/Library/Application Support/GiacenzeCrypto/"
           jpackage \
-            --type dmg \
+            --type app-image \
             --input build \
-            --dest out/dmg \
+            --dest out/appimage \
             --name ${{ env.PROJECT_NAME }} \
             --main-jar Giacenze_Crypto.jar \
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
@@ -249,6 +249,18 @@ jobs:
             --icon logo.icns \
             --app-version ${{ env.VERSIONE }} \
             --vendor Luca
+
+      - name: Firma ad-hoc app-image (necessaria su Intel, dove jpackage non firma di default)
+        run: codesign --force --deep -s - "out/appimage/${{ env.PROJECT_NAME }}.app"
+
+      - name: Build macOS .dmg da app-image firmato
+        run: |
+          jpackage \
+            --type dmg \
+            --app-image "out/appimage/${{ env.PROJECT_NAME }}.app" \
+            --dest out/dmg \
+            --name ${{ env.PROJECT_NAME }} \
+            --app-version ${{ env.VERSIONE }}
 
       - name: Upload .dmg
         uses: actions/upload-artifact@v4

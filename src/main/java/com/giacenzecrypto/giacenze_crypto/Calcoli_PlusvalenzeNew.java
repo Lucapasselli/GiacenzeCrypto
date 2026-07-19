@@ -368,7 +368,21 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         boolean PlusXWallet = (PlusXW != null && PlusXW.equalsIgnoreCase("SI"));
         String NoPlusCom=DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_NoPlusvalenzeCommissioni");
         boolean NoPlusCommissioni = (NoPlusCom != null && NoPlusCom.equalsIgnoreCase("SI"));
-        
+
+        //A1: queste opzioni e la data soglia 2023 sono costanti per tutto il ricalcolo,
+        //le leggo una volta sola qui invece che a ogni movimento del loop
+        long long2023=FunzioniDate.ConvertiDatainLongMinuto("2023-01-01 00:00");
+        boolean Pre2023EarnCostoZero = false;
+        String Plusvalenze_Pre2023EarnCostoZero = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023EarnCostoZero");
+        if (Plusvalenze_Pre2023EarnCostoZero != null && Plusvalenze_Pre2023EarnCostoZero.equalsIgnoreCase("SI")) {
+            Pre2023EarnCostoZero=true;
+        }
+        boolean Pre2023ScambiRilevanti = false;
+        String Plusvalenze_Pre2023ScambiRilevanti = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023ScambiRilevanti");
+        if (Plusvalenze_Pre2023ScambiRilevanti != null && Plusvalenze_Pre2023ScambiRilevanti.equalsIgnoreCase("SI")) {
+            Pre2023ScambiRilevanti=true;
+        }
+
         for (String[] v : MappaCryptoWallet.values()) {
             String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);
                // System.out.println(GruppoWallet);
@@ -404,21 +418,10 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             String NuovoPrezzoCarico="0.00";
             String Plusvalenza="0.00";
             String CalcoloPlusvalenza="N";
-            long long2023=FunzioniDate.ConvertiDatainLongMinuto("2023-01-01 00:00");
             long dataLong=FunzioniDate.ConvertiDatainLongMinuto(v[1]);
             boolean DataSuperiore2023=true;
             if (dataLong<long2023){DataSuperiore2023=false;}
-            boolean Pre2023EarnCostoZero = false;
-            boolean Pre2023ScambiRilevanti = false;
-            String Plusvalenze_Pre2023EarnCostoZero = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023EarnCostoZero");
-            if (Plusvalenze_Pre2023EarnCostoZero != null && Plusvalenze_Pre2023EarnCostoZero.equalsIgnoreCase("SI")) {
-                Pre2023EarnCostoZero=true;
-            }
-            String Plusvalenze_Pre2023ScambiRilevanti = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023ScambiRilevanti");
-            if (Plusvalenze_Pre2023ScambiRilevanti != null && Plusvalenze_Pre2023ScambiRilevanti.equalsIgnoreCase("SI")) {
-                Pre2023ScambiRilevanti=true;
-            }
-            
+
             
             //TIPOLOGIA = 0 (Vendita Crypto)
             //System.out.println("aaa "+IDTransazione);

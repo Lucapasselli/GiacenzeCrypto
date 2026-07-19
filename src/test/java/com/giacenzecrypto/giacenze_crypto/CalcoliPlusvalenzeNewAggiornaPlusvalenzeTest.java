@@ -515,6 +515,9 @@ class CalcoliPlusvalenzeNewAggiornaPlusvalenzeTest {
                 "DELETE FROM OPZIONI")) {
             ps.executeUpdate();
         }
+        // la DELETE diretta bypassa Pers_Opzioni_Scrivi, quindi la cache delle opzioni (A1)
+        // va invalidata a mano per far davvero leggere il DB vuoto
+        DatabaseH2.Pers_Opzioni_InvalidaCache();
         String[] acq = acquisto("2024-01-01 10:00", "BTC", "1", "1000");
         String[] ven = vendita("2024-06-01 10:00", "BTC", "1", "1500");
         String[] rw = movimento("2024-03-01 10:00", "RW", "", "STAKING REWARD",

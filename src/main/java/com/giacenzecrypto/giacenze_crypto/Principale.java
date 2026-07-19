@@ -6100,7 +6100,7 @@ private void AvviaSplashScreen() {
         }
         
         ProventoDetenzione=DatabaseH2.Pers_Opzioni_Leggi("PDD_Airdrop"); 
-        if (ProventoDetenzione==null)DatabaseH2.Pers_Opzioni_Scrivi("PDD_Airdrop","SI");
+        if (ProventoDetenzione==null)DatabaseH2.Pers_Opzioni_Scrivi("PDD_Airdrop","NO");
         else if(ProventoDetenzione.equalsIgnoreCase("NO")){
             OpzioniRewards_JCB_PDD_Airdrop.setSelected(false);
         }

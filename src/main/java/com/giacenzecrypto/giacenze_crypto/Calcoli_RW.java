@@ -318,7 +318,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
     }
 //System.out.println("-------------------");
     }
-    if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoSubMovimenti").equalsIgnoreCase("NO"))
+    if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoSubMovimenti","NO").equalsIgnoreCase("NO"))
     {
         return stackRitorno;
     }
@@ -462,7 +462,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                     //System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
                     Map<String, ArrayDeque<ElementiStack>> CryptoStackTemp;
                     String WR = key;
-                    if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) {
+                    if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo","NO").equals("SI")) {
                         WR = "Unico 01";
                     }
                     CryptoStackTemp = MappaGrWallet_CryptoStack.get(WR);
@@ -940,11 +940,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         //Rilevanza D = Tutti gli scambi 
         //Assegno ad un booleano le opzioni di calcolo per l'RW
         boolean ChiudiRWsuTrasferimento=false;
-        if (DatabaseH2.Pers_Opzioni_Leggi("RW_ChiudiRWsuTrasferimento").equals("SI")) ChiudiRWsuTrasferimento=true;
+        if (DatabaseH2.Pers_Opzioni_Leggi("RW_ChiudiRWsuTrasferimento","NO").equals("SI")) ChiudiRWsuTrasferimento=true;
         boolean StakingZero = false;
-        if (DatabaseH2.Pers_Opzioni_Leggi("RW_StakingZero").equals("SI")) StakingZero=true;
+        if (DatabaseH2.Pers_Opzioni_Leggi("RW_StakingZero","NO").equals("SI")) StakingZero=true;
         boolean LiFoComplessivo = false;
-        if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) LiFoComplessivo=true;
+        if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo","NO").equals("SI")) LiFoComplessivo=true;
         
         Principale.Mappa_RW_ListeXGruppoWallet.clear();
         Principale.Mappa_RW_GiacenzeInizioPeriodo.clear();
@@ -1665,7 +1665,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                             //Questa parte sotto è momentaneamente disabilitata con quell'if perchè non mi sembra corretto concettualmente
                             //anche se ho riscontrato lo stesso comportamento in altri software
                             //con questa opzione si rischia di avere valori di chiusura rw di un wallet più alti di quelli reali
-                            if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SIs")) {
+                            if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo","NO").equals("SIs")) {
                              //   ChiudiRWFR(m, CryptoStackTemp, "null", DataFineAnno, m.Prezzo, "Fine Anno", "Giacenza Fine Anno");
 
                                 ArrayDeque<ElementiStack> StackRitorno = StackLIFO_TogliQtaFR(CryptoStackTemp, m.Moneta, m.Qta, "ininfluente", false);

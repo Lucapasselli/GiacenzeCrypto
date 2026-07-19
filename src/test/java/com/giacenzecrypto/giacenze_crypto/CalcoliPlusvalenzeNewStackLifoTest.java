@@ -277,35 +277,57 @@ class CalcoliPlusvalenzeNewStackLifoTest {
     }
 
     // ------------------------------------------------------------------
-    // StackLIFO_TogliQta - input degeneri (comportamento attuale, vedi C2)
+    // StackLIFO_TogliQta - input degeneri (correzioni C2 e A2)
     // ------------------------------------------------------------------
 
     @Test
     void monetaOQuantitaVuote_ritornanoStringaVuota() {
-        // ATTENZIONE (voce C2 dell'analisi): questo "" a valle viene passato a
-        // new BigDecimal(...) dal chiamante e genera NumberFormatException.
-        // Il test fotografa il comportamento attuale del solo metodo.
         String[] mov = nuovoMovimento();
         assertEquals("", Calcoli_PlusvalenzeNew.StackLIFO_TogliQta(stacks, "", "5", true, mov[0]));
         assertEquals("", Calcoli_PlusvalenzeNew.StackLIFO_TogliQta(stacks, "BTC", "", true, mov[0]));
     }
 
     @Test
-    void quantitaNonNumerica_attualmenteLanciaNumberFormatException() {
-        // Comportamento attuale documentato dalla voce C2 dell'analisi:
-        // quando C2 verrà corretta questo test DEVE essere aggiornato di conseguenza.
+    void quantitaNonNumerica_nonCrashaESegnalaConFlagE() {
+        // Correzione C2: una quantità non numerica non lancia più
+        // NumberFormatException; il movimento resta senza effetto sul LIFO
+        // e viene segnalato con la lettera "E" nel campo 38.
         String[] mov = nuovoMovimento();
-        assertThrows(NumberFormatException.class,
-                () -> Calcoli_PlusvalenzeNew.StackLIFO_TogliQta(stacks, "BTC", "abc", true, mov[0]));
+        assertEquals("", Calcoli_PlusvalenzeNew.StackLIFO_TogliQta(stacks, "BTC", "abc", true, mov[0]));
+        assertTrue(mov[38].contains("E"), "atteso flag E nel campo 38, trovato: \"" + mov[38] + "\"");
     }
 
     @Test
-    void movimentoAssenteDallaMappa_conGiacenzaInsufficiente_attualmenteLanciaNPE() {
-        // Comportamento attuale documentato dalla voce A2 dell'analisi: mov[38]="A"
-        // viene assegnato senza null-check se l'ID non esiste in MappaCryptoWallet.
-        // Quando A2 verrà corretta questo test DEVE essere aggiornato di conseguenza.
-        assertThrows(NullPointerException.class,
-                () -> Calcoli_PlusvalenzeNew.StackLIFO_TogliQta(
-                        stacks, "BTC", "5", true, "ID_INESISTENTE_" + (++progressivoID)));
+    void movimentoAssenteDallaMappa_conGiacenzaInsufficiente_nonCrasha() {
+        // Correzione A2: se l'ID non esiste in MappaCryptoWallet la giacenza
+        // insufficiente non causa più NPE (non c'è un movimento su cui segnalare
+        // l'anomalia, ma il costo recuperabile viene comunque ritornato).
+        assertDoesNotThrow(() -> Calcoli_PlusvalenzeNew.StackLIFO_TogliQta(
+                stacks, "BTC", "5", true, "ID_INESISTENTE_" + (++progressivoID)));
+    }
+
+    @Test
+    void quantitaNonNumericaInInserisciValore_nonEntraNelloStackESegnalaConFlagE() {
+        // Correzione C2 su StackLIFO_InserisciValore: quantità non numerica
+        // -> nessun inserimento nello stack e flag "E" sul movimento.
+        String[] mov = nuovoMovimento();
+        Calcoli_PlusvalenzeNew.StackLIFO_InserisciValore(stacks, "BTC", "xyz", "100", mov[0]);
+        assertTrue(stacks.get("BTC") == null || stacks.get("BTC").isEmpty());
+        assertTrue(mov[38].contains("E"), "atteso flag E nel campo 38, trovato: \"" + mov[38] + "\"");
+    }
+
+    @Test
+    void flagAnomalia_AedE_coesistonoENonSiSovrascrivono() {
+        // I flag del campo 38 sono cumulativi: la "E" (dato non valido) non deve
+        // cancellare la "A" (giacenza insufficiente) e viceversa.
+        String[] mov = nuovoMovimento();
+        // giacenza insufficiente -> "A"
+        Calcoli_PlusvalenzeNew.StackLIFO_InserisciValore(stacks, "BTC", "1", "100", mov[0]);
+        Calcoli_PlusvalenzeNew.StackLIFO_TogliQta(stacks, "BTC", "5", true, mov[0]);
+        assertTrue(mov[38].contains("A"));
+        // quantità non numerica sullo stesso movimento -> si aggiunge la "E"
+        Calcoli_PlusvalenzeNew.StackLIFO_TogliQta(stacks, "BTC", "abc", true, mov[0]);
+        assertTrue(mov[38].contains("A") && mov[38].contains("E"),
+                "attesi flag A ed E nel campo 38, trovato: \"" + mov[38] + "\"");
     }
 }

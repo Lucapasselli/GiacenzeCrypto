@@ -128,6 +128,37 @@ C-DC-RW -> da finire di compilare, ma verrà fatto in un secondo momento e poi �
     //DDO -> Donazioni (deposito)  
 */
  
+    /*  FLAG DI ANOMALIA NEL CAMPO 38 (cumulativi, una lettera per tipo di problema):
+        "A" -> giacenza LIFO insufficiente (movimento in ingresso mancante)
+        "E" -> campo numerico non valido nel movimento (quantità o valore non numerici,
+               trattati come zero nel calcolo invece di interrompere il ricalcolo)
+        "M" -> ID transazione malformato (meno di 5 segmenti: il tipo movimento non è
+               ricavabile dall'ID, la classificazione si basa solo sul campo 18)
+        Le lettere si sommano (es. "AE") e ogni reset rimuove solo la propria lettera,
+        così i tipi di segnalazione non si sovrascrivono a vicenda.
+        Il conteggio/filtro "LiFo mancante" in Principale considera solo la "A". */
+
+    //Aggiunge la lettera di anomalia indicata al campo 38 senza toccare le altre
+    private static void AggiungiFlagAnomalia(String[] mov, String lettera) {
+        if (mov != null && !mov[38].contains(lettera)) mov[38] = mov[38] + lettera;
+    }
+
+    //C2: parsing sicuro dei campi numerici provenienti dai dati importati.
+    //Un valore vuoto o non numerico viene trattato come zero invece di interrompere
+    //l'intero ricalcolo con una NumberFormatException (che lascerebbe la mappa
+    //movimenti aggiornata solo in parte); il caso non numerico viene segnalato
+    //nel log e con la lettera "E" nel campo 38 del movimento.
+    static BigDecimal toBigDecimalSicuro(String Valore, String IDTransazione) {
+        if (Valore == null || Valore.isBlank()) return BigDecimal.ZERO;
+        try {
+            return new BigDecimal(Valore.trim());
+        } catch (NumberFormatException ex) {
+            LoggerGC.ScriviErrore("Valore non numerico \"" + Valore + "\" nel movimento " + IDTransazione + ": considerato 0 nel calcolo plusvalenze");
+            AggiungiFlagAnomalia(MappaCryptoWallet.get(IDTransazione), "E");
+            return BigDecimal.ZERO;
+        }
+    }
+
 public static String StackLIFO_TogliQta(Map<String, ArrayDeque<String[]>> CryptoStack, String Moneta,String Qta,boolean toglidaStack,String IDTransazione) {
     
     LifoXID lifoID=MappaIDTrans_LifoxID.computeIfAbsent(IDTransazione, k -> new LifoXID());
@@ -135,9 +166,20 @@ public static String StackLIFO_TogliQta(Map<String, ArrayDeque<String[]>> Crypto
    String mov[]=MappaCryptoWallet.get(IDTransazione);
    //mov[38]="";
    
-    //Se la qta o la moneta sono vuoti non ritorno nulla, quei campi devono essere obbligatoriamente valorizzati 
+    //Se la qta o la moneta sono vuoti non ritorno nulla, quei campi devono essere obbligatoriamente valorizzati
     if (Moneta.isBlank() || Qta.isBlank()) return "";
-    
+
+    //C2: una quantità non numerica viene trattata come i campi vuoti (nessun effetto sul LIFO)
+    //invece di far crashare l'intero ricalcolo; il movimento viene segnalato con la "E" nel campo 38
+    BigDecimal qtaRichiesta;
+    try {
+        qtaRichiesta = new BigDecimal(Qta.trim());
+    } catch (NumberFormatException ex) {
+        LoggerGC.ScriviErrore("Quantità non numerica \"" + Qta + "\" nel movimento " + IDTransazione + ": movimento senza effetto sul LIFO");
+        AggiungiFlagAnomalia(mov, "E");
+        return "";
+    }
+
     //Se lo stack è vuoto salvo l'errore e ritorno 0.00 come costo di carico
     ArrayDeque<String[]> originalStack = CryptoStack.get(Moneta);
     if (originalStack == null) 
@@ -148,14 +190,14 @@ public static String StackLIFO_TogliQta(Map<String, ArrayDeque<String[]>> Crypto
     // Se non devo togliere dallo stack originale, lo clono
     ArrayDeque<String[]> stack = toglidaStack ? originalStack : originalStack.clone();
 
-    BigDecimal qtaRimanente = new BigDecimal(Qta).abs();
+    BigDecimal qtaRimanente = qtaRichiesta.abs();
     BigDecimal costoTransazione = BigDecimal.ZERO;
 
 
 while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         String[] ultimoRecupero = stack.pop();
-        BigDecimal qtaEstratta = new BigDecimal(ultimoRecupero[1]).abs();
-        BigDecimal costoEstratto = new BigDecimal(ultimoRecupero[2]).abs();
+        BigDecimal qtaEstratta = toBigDecimalSicuro(ultimoRecupero[1], IDTransazione).abs();
+        BigDecimal costoEstratto = toBigDecimalSicuro(ultimoRecupero[2], IDTransazione).abs();
 
         if (qtaEstratta.compareTo(qtaRimanente) <= 0) {
             // Caso semplice: uso tutta la quantità
@@ -237,18 +279,22 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         lifoID.StackUscito.addLast(valoriDaTogliere);//lo inserisco in coda allo stack (devo ordinarli inversamente)
 
 //Segnalo l'errore anche direttamente sul movimento ma solo se questo non è scam
+        //A2: mov può essere null se l'ID non è (più) presente nella mappa movimenti:
+        //in quel caso non c'è nessun movimento su cui segnalare l'anomalia
         //System.out.println("Errore");
-        if (!Funzioni.isSCAM(Moneta))
-        {
-           // System.out.println("Lifomancante : "+mov[1]);
-            mov[38]="A";
-        }else{
-            mov[38]="";
+        if (mov != null) {
+            if (!Funzioni.isSCAM(Moneta))
+            {
+               // System.out.println("Lifomancante : "+mov[1]);
+                AggiungiFlagAnomalia(mov, "A");
+            }else{
+                mov[38]=mov[38].replace("A", "");
+            }
         }
        // System.out.println("Errore "+IDTransazione);
     }else if (mov!=null&&!mov[38].isBlank()){
-        //Segnalo che il movimento non ha mancanze nel LiFo
-        mov[38]="";
+        //Segnalo che il movimento non ha mancanze nel LiFo (le altre lettere restano)
+        mov[38]=mov[38].replace("A", "");
     }
 
     return costoTransazione.setScale(VarStatiche.DecimaliPlus, RoundingMode.HALF_UP).toPlainString();
@@ -259,10 +305,21 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
     
    public static void StackLIFO_InserisciValore(Map<String, ArrayDeque<String[]>> CryptoStack, String Moneta,String Qta,String Valore,String IDTransazione) {
     
+    //C2: una quantità vuota o non numerica non può entrare nel LIFO: la segnalo
+    //(log + lettera "E" nel campo 38) e non inserisco nulla invece di crashare
+    BigDecimal qtaInserita;
+    try {
+        qtaInserita = new BigDecimal(Qta.trim());
+    } catch (NumberFormatException | NullPointerException ex) {
+        LoggerGC.ScriviErrore("Quantità non valida \"" + Qta + "\" nel movimento " + IDTransazione + ": valore non inserito nel LIFO");
+        AggiungiFlagAnomalia(MappaCryptoWallet.get(IDTransazione), "E");
+        return;
+    }
+
    // ArrayDeque<String[]> stack;
     String valori[]=new String[4];
     valori[0]=Moneta;
-    valori[1]=new BigDecimal(Qta).abs().toPlainString();
+    valori[1]=qtaInserita.abs().toPlainString();
     valori[2]=Valore;
     valori[3]=IDTransazione;
    /* if (CryptoStack.get(Moneta)==null){
@@ -298,7 +355,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         
        //Con questa opzione decido che fare in caso di movimenti non classificati, se conteggiarli o meno
        boolean ConsideraMovimentiNC=true;
-       if(DatabaseH2.Pers_Opzioni_Leggi("PL_CosiderareMovimentiNC").equalsIgnoreCase("NO"))ConsideraMovimentiNC=false;
+       if(DatabaseH2.Pers_Opzioni_Leggi("PL_CosiderareMovimentiNC","SI").equalsIgnoreCase("NO"))ConsideraMovimentiNC=false;
        
        // Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         Map<String, Map<String, ArrayDeque<String[]>>> MappaGrWallet_CryptoStack = new TreeMap<>();
@@ -325,6 +382,18 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             String TipoME = Funzioni.RitornaTipoCrypto(v[11].trim(),v[1].trim(),v[12].trim());
             String IDTransazione=v[0];
             String IDTS[]=IDTransazione.split("_");
+            //C2/A3: tolgo le eventuali segnalazioni "errore dati" e "ID malformato" della
+            //passata precedente, verranno rimesse subito sotto o durante l'elaborazione
+            //se il problema è ancora presente
+            v[38]=v[38].replace("E", "").replace("M", "");
+            //A3: un ID malformato (meno di 5 segmenti) non deve far crashare il ricalcolo:
+            //il tipo movimento dell'ID resta vuoto, la classificazione si basa solo su v[18]
+            //e il movimento viene segnalato con la lettera "M" nel campo 38
+            String TipoID = IDTS.length > 4 ? IDTS[4] : "";
+            if (IDTS.length <= 4) {
+                LoggerGC.ScriviErrore("ID transazione malformato (meno di 5 segmenti): \"" + IDTransazione + "\"");
+                AggiungiFlagAnomalia(v, "M");
+            }
             String MonetaU=v[8];
             String QtaU=v[10];
             String MonetaE=v[11];
@@ -353,7 +422,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             
             //TIPOLOGIA = 0 (Vendita Crypto)
             //System.out.println("aaa "+IDTransazione);
-            if (IDTS[4].equals("VC")){
+            if (TipoID.equals("VC")){
                 //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
                 VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
                 
@@ -361,7 +430,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 NuovoPrezzoCarico="";
                 
                 //Calcolo la plusvalenza
-                Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString(); 
+                Plusvalenza=toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString(); 
                 CalcoloPlusvalenza="S";
             }           
             //TIPOLOGIA = 1  (Scambio Cripto Attività medesime Caratteristiche)
@@ -391,7 +460,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                     StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
                     
                     //La plusvalenza è uguale al valore della moneta entrante meno il costo di carico della moneta uscente
-                    Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                    Plusvalenza=toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
                     CalcoloPlusvalenza="S";
                 }                                      
             } 
@@ -411,7 +480,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                     StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
                     
                     //La plusvalenza è uguale al valore della moneta entrante meno il costo di carico della moneta uscente
-                    Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                    Plusvalenza=toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
                     CalcoloPlusvalenza="S";
                                        
             }
@@ -445,7 +514,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 NuovoPrezzoCarico="";
                 
                 //Calcolo la plusvalenza
-                Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                Plusvalenza=toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
                 CalcoloPlusvalenza="S";                
                  
             } 
@@ -458,7 +527,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 //valorizzo la tipologia corretta
                 
                 //TIPOLOGIA = 7; ( Deposito Criptoattività x rewards, stacking,cashback etc... - Plusvalenza immediata)
-                if (IDTS[4].equalsIgnoreCase("RW") || v[18].contains("DAI")) {
+                if (TipoID.equalsIgnoreCase("RW") || v[18].contains("DAI")) {
                     //Se è un cashback ed è attiva l'assimilazione ai cashback fiat allora lo gestisco come tale, altrimenti passo alle if successive
                     if (Funzioni.CashbackComeFIAT(IDTransazione)){
                         NuovoPrezzoCarico = Valore;
@@ -497,7 +566,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 }
 
                 //Tipologia = 5; (Deposito Criptoattività x spostamento tra wallet)
-                else if (IDTS[4].equalsIgnoreCase("TI") || v[18].contains("DTW")) {
+                else if (TipoID.equalsIgnoreCase("TI") || v[18].contains("DTW")) {
                     
                     
                     
@@ -523,6 +592,12 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                         //DA VEDERE PERCHE' IL CRYPTO STACK E' DIVERSO
                     String Mov[] = Principale.MappaCryptoWallet.get(IDControparte);
                     Map<String, ArrayDeque<String[]>> CryptoStack2=MappaGrWallet_CryptoStack.get(GruppoWalletControparte);// = new TreeMap<>();
+                        //A2: se il movimento controparte è stato cancellato nel frattempo
+                        //tratto il movimento come non collegato invece di crashare con NPE
+                        if (Mov == null) {
+                            LoggerGC.ScriviErrore("Movimento controparte \"" + IDControparte + "\" non trovato per il movimento " + IDTransazione);
+                            NuovoPrezzoCarico = "";
+                        } else {
                     Mov[31]=v[1];
                         if (CryptoStack2 == null) {
                             //In teoria qua non ci dovrei mai entrare
@@ -530,6 +605,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                         } else {
                             NuovoPrezzoCarico = StackLIFO_TogliQta(CryptoStack2, Mov[8], Mov[10], true,IDTransazione);
                             StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico,IDTransazione);
+                        }
                         }
 
                     } else {
@@ -556,7 +632,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 }
                 
                 //Tipologia = 3; (Acquisto Crypto)
-                else if(v[18].contains("DAC")||IDTS[4].equals("AC")){
+                else if(v[18].contains("DAC")||TipoID.equals("AC")){
                     
                     NuovoPrezzoCarico=Valore;
                     StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
@@ -607,7 +683,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 //valorizzo la tipologia corretta                         
                 
                 //Tipologia = 4 Sto facendo il rimborso di un cashback o altro quindi lo considero come vendita
-                if (IDTS[4].equalsIgnoreCase("RW")) {
+                if (TipoID.equalsIgnoreCase("RW")) {
                     if (Funzioni.CashbackComeFIAT(IDTransazione)) {
                         //Rimborso casback in presenza di cashback considerato come fiat
                         //non calcolo plusvalenza, in sostanza lo tratto come tratto le donazioni
@@ -626,12 +702,12 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                         NuovoPrezzoCarico = "";
 
                         //Calcolo la plusvalenza
-                        Plusvalenza = new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                        Plusvalenza = toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
                         CalcoloPlusvalenza = "S";
                     }
                 }
                 //Tipologia = 8;//Prelievo Criptoattività x servizi, acquisto beni etc... //per ora uguale alla tipologia 4
-                else if (IDTS[4].equalsIgnoreCase("CM") || v[18].contains("PCO")) {
+                else if (TipoID.equalsIgnoreCase("CM") || v[18].contains("PCO")) {
                     //Se contiene commissioni e è fleggato noplusvalenze commissioni lo considero come una donazione a livello fiscale
                     //System.out.println(v[15]);
                     if (v[5].toUpperCase().contains("COMMISSION") && NoPlusCommissioni) {
@@ -650,13 +726,13 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
 
                         //Calcolo la plusvalenza
                         //  if (Funzioni.Funzioni_isNumeric(Valore, false)&&Funzioni.Funzioni_isNumeric(VecchioPrezzoCarico, false))
-                        Plusvalenza = new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                        Plusvalenza = toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
                         CalcoloPlusvalenza = "S";
                         // else Plusvalenza="ERRORE";
                     }
                 }
                 //Tipologia = 6;//Prelievo Criptoattività x spostamento tra wallet
-                else if (IDTS[4].equalsIgnoreCase("TI")||v[18].contains("PTW")) {
+                else if (TipoID.equalsIgnoreCase("TI")||v[18].contains("PTW")) {
                          
                     //Se è segnalato che manca stack del LiFo lo tolgo perchè è un movimento interno.
                     v[38]=v[38].replace("A", "");
@@ -700,7 +776,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                         NuovoPrezzoCarico = "";
 
                         //Calcolo la plusvalenza
-                        Plusvalenza = new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                        Plusvalenza = toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
                         CalcoloPlusvalenza = "S";
                     } else {
                         Plusvalenza = "0.00";
@@ -805,6 +881,11 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                     //perchè se fanno parte dello stesso gruppo non devo fare nulla
                     //se fanno parte dello stesso gruppo infatti è lo stesso movimento di scambio a spostare il costo di carico
 
+                    //A2: un ID collegato può non esistere più nella mappa (movimento cancellato)
+                    if (Mov == null) {
+                        LoggerGC.ScriviErrore("Movimento collegato \"" + IdM + "\" non trovato per il movimento " + v[0]);
+                        continue;
+                    }
                     if (v[18].contains("DTW") && Mov[18].contains("PTW") && Mov[22].contains("AU")
                             && !GruppoWallet.equals(DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3],true))) {
                         IDControparte = IdM;
@@ -819,6 +900,11 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                     //devo trovare la controparte che in questo caso è l'unico movimento di prelievo
                     //inoltre vedo verificare che il gruppo wallet del deposito sia differente dal gruppo wallet del prelievo
                     //perchè se fanno parte dello stesso gruppo non devo fare nulla
+                    //A2: un ID collegato può non esistere più nella mappa (movimento cancellato)
+                    if (Mov == null) {
+                        LoggerGC.ScriviErrore("Movimento collegato \"" + IdM + "\" non trovato per il movimento " + v[0]);
+                        continue;
+                    }
                     if (v[18].contains("DTW") && Mov[18].contains("PTW")
                             && !GruppoWallet.equals(DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3],true))) {
                         IDControparte = IdM;

@@ -56,6 +56,7 @@ class CalcoliPlusvalenzeNewAggiornaPlusvalenzeTest {
     @BeforeEach
     void setUp() {
         Principale.MappaCryptoWallet.clear();
+        Principale.Mappa_EMoney.clear();
         // Opzioni di default per tutti gli scenari: ogni test può sovrascriverle.
         DatabaseH2.Pers_Opzioni_Scrivi("PL_CosiderareMovimentiNC", "SI");
         DatabaseH2.Pers_Opzioni_Scrivi("PlusXWallet", "NO");
@@ -310,22 +311,247 @@ class CalcoliPlusvalenzeNewAggiornaPlusvalenzeTest {
     }
 
     // ------------------------------------------------------------------
-    // Bug C1 (comportamento attuale documentato)
+    // Scenari derivati dai pattern del dataset reale (Fase 3, anonimizzati):
+    // commissioni, cashback come FIAT, rimborsi cashback, NFT, rettifiche
+    // PWN, donazioni ricevute, depositi DCZ, cashout PCO, token EMoney.
+    // Wallet, monete, quantità e importi sono fittizi.
     // ------------------------------------------------------------------
 
     @Test
-    void opzioneMancanteNelDatabase_attualmenteLanciaNPE_bugC1() throws Exception {
-        // Comportamento attuale documentato dalla voce C1 dell'analisi:
-        // su un database dove PL_CosiderareMovimentiNC non è mai stata scritta,
-        // AggiornaPlusvalenze() crasha con NullPointerException ancora prima
-        // di elaborare i movimenti. Quando C1 verrà corretta questo test DEVE
-        // essere sostituito con la verifica del comportamento di default.
+    void commissione_realizzaPlusvalenzaComeCashout() {
+        acquisto("2024-01-01 10:00", "BTC", "1", "1000");
+        String[] com = movimento("2024-03-01 10:00", "CM", "", "COMMISSIONI",
+                "BTC", "Crypto", "0.1", "", "", "", "5");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        // La commissione consuma il LIFO e realizza (qui una minusvalenza):
+        // costo di carico di 0.1 BTC = 100, valore 5 -> -95
+        assertEquals("100.00", com[16]);
+        assertEquals("", com[17]);
+        assertEquals("-95.00", com[19]);
+        assertEquals("S", com[33]);
+    }
+
+    @Test
+    void commissione_conOpzioneNoPlusvalenzeCommissioni_neutraMaConsumaIlLifo() {
+        DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_NoPlusvalenzeCommissioni", "SI");
+        acquisto("2024-01-01 10:00", "BTC", "1", "1000");
+        String[] com = movimento("2024-03-01 10:00", "CM", "", "COMMISSIONI",
+                "BTC", "Crypto", "0.1", "", "", "", "5");
+        String[] ven = vendita("2024-06-01 10:00", "BTC", "0.9", "1800");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        // Con l'opzione attiva la commissione non genera plusvalenza...
+        assertEquals("100.00", com[16]);
+        assertEquals("0.00", com[19]);
+        assertEquals("N", com[33]);
+        // ...ma toglie comunque 0.1 BTC dal LIFO: la vendita trova solo 0.9 BTC a 900
+        assertEquals("900.00", ven[16]);
+        assertEquals("900.00", ven[19]); // 1800 - 900
+        assertEquals("S", ven[33]);
+    }
+
+    @Test
+    void cashbackComeFIAT_depositoNeutroConCaricoPariAlValore() {
+        DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIAT", "SI");
+        DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIATAnno", "2010");
+        String[] cb = movimento("2024-01-10 10:00", "RW", "", "CASHBACK",
+                "", "", "", "CRO", "Crypto", "100", "25");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        // Assimilato ai cashback fiat: nessuna plusvalenza, carico = valore
+        assertEquals("", cb[16]);
+        assertEquals("25", cb[17]);
+        assertEquals("0.00", cb[19]);
+        assertEquals("N", cb[33]);
+    }
+
+    @Test
+    void cashbackComeFIAT_primaDellAnnoImpostato_restaRewardTassata() {
+        DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIAT", "SI");
+        DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIATAnno", "2025");
+        String[] cb = movimento("2024-01-10 10:00", "RW", "", "CASHBACK",
+                "", "", "", "CRO", "Crypto", "100", "25");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        // Il movimento è del 2024, prima dell'anno impostato: resta una reward
+        // fiscalmente rilevante (PDD_CashBack=SI di default nei test)
+        assertEquals("25", cb[17]);
+        assertEquals("25", cb[19]);
+        assertEquals("S", cb[33]);
+    }
+
+    @Test
+    void rimborsoCashback_conCashbackComeFIAT_neutro() {
+        DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIAT", "SI");
+        DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIATAnno", "2010");
+        movimento("2024-01-10 10:00", "RW", "", "CASHBACK",
+                "", "", "", "CRO", "Crypto", "100", "25");
+        String[] rimborso = movimento("2024-02-10 10:00", "RW", "", "RIMBORSO CASHBACK",
+                "CRO", "Crypto", "40", "", "", "", "10");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        // Il rimborso restituisce il cashback senza realizzo: toglie dal LIFO
+        // il carico proporzionale (25 * 40/100 = 10) ma la plusvalenza resta zero
+        assertEquals("10.00", rimborso[16]);
+        assertEquals("", rimborso[17]);
+        assertEquals("0.00", rimborso[19]);
+        assertEquals("N", rimborso[33]);
+    }
+
+    @Test
+    void scambioEterogeneo_cryptoVersoNft_realizzaPlusvalenza() {
+        acquisto("2024-01-01 10:00", "ETH", "10", "1000");
+        String[] scambio = movimento("2024-02-01 10:00", "SC", "", "ACQUISTO NFT",
+                "ETH", "Crypto", "10", "COOLNFT #1", "NFT", "1", "1500");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        // Crypto -> NFT non è omogeneo: realizzo anche post-2023
+        assertEquals("1000.00", scambio[16]);
+        assertEquals("1500", scambio[17]); // l'NFT entra nel LIFO al valore di scambio
+        assertEquals("500.00", scambio[19]);
+        assertEquals("S", scambio[33]);
+    }
+
+    @Test
+    void rettificaGiacenzaPWN_riduceIlLifoSenzaPlusvalenza() {
+        acquisto("2024-01-01 10:00", "BTC", "1", "1000");
+        String[] rettifica = movimento("2024-03-01 10:00", "PC", "PWN - RETTIFICA GIACENZA", "RETTIFICA GIACENZA",
+                "BTC", "Crypto", "0.4", "", "", "", "0");
+        String[] ven = vendita("2024-06-01 10:00", "BTC", "0.6", "1200");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        // La rettifica toglie dal LIFO senza generare plusvalenza
+        assertEquals("400.00", rettifica[16]);
+        assertEquals("", rettifica[17]);
+        assertEquals("0.00", rettifica[19]);
+        assertEquals("N", rettifica[33]);
+        // La vendita trova solo i 0.6 BTC residui (costo 600)
+        assertEquals("600.00", ven[16]);
+        assertEquals("600.00", ven[19]); // 1200 - 600
+        assertEquals("", ven[38]);       // giacenza sufficiente, nessuna anomalia
+    }
+
+    @Test
+    void donazioneRicevutaDDO_entraNelLifoAlCostoDiCaricoIndicato() {
+        String[] don = movimento("2024-01-01 10:00", "DC", "DDO - Donazione", "DONAZIONE",
+                "", "", "", "BTC", "Crypto", "1", "1000");
+        don[17] = "300"; // costo di carico storico del donante, impostato a mano nell'app
+        String[] ven = vendita("2024-06-01 10:00", "BTC", "1", "1000");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        // La donazione è neutra e mantiene il costo di carico indicato in v[17]
+        assertEquals("300", don[17]);
+        assertEquals("0.00", don[19]);
+        assertEquals("N", don[33]);
+        // La vendita usa il costo di carico del donante
+        assertEquals("300.00", ven[16]);
+        assertEquals("700.00", ven[19]); // 1000 - 300
+        assertEquals("S", ven[33]);
+    }
+
+    @Test
+    void depositoACostoZeroDCZ_neutroECaricoZero() {
+        String[] dep = movimento("2024-01-01 10:00", "DC", "DCZ - Deposito a costo zero (no plusvalenza)",
+                "DEPOSITO CRYPTO (a costo zero)", "", "", "", "BTC", "Crypto", "1", "1000");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        assertEquals("0.00", dep[17]); // entra nel LIFO a costo zero
+        assertEquals("0.00", dep[19]);
+        assertEquals("N", dep[33]);
+    }
+
+    @Test
+    void cashoutClassificatoPCO_realizzaPlusvalenza() {
+        acquisto("2024-01-01 10:00", "BTC", "1", "1000");
+        String[] cashout = movimento("2024-06-01 10:00", "PC",
+                "PCO - Cashout, acquisti con crypto etc.. (plusvalenza)", "CASHOUT o SIMILARI",
+                "BTC", "Crypto", "1", "", "", "", "1500");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        assertEquals("1000.00", cashout[16]);
+        assertEquals("", cashout[17]);
+        assertEquals("500.00", cashout[19]); // 1500 - 1000
+        assertEquals("S", cashout[33]);
+    }
+
+    @Test
+    void tokenEMoney_scambioDaCryptoDiventaEterogeneoERealizza() {
+        // Un token marcato EMoney (tabella EMONEY / Mappa_EMoney) da una certa data
+        // rende lo scambio crypto->EMoney NON omogeneo anche post-2023
+        Principale.Mappa_EMoney.put("USDX", "2023-06-01");
+        acquisto("2024-01-01 10:00", "BTC", "1", "1000");
+        String[] scambio = movimento("2024-02-01 10:00", "SC", "", "SCAMBIO",
+                "BTC", "Crypto", "1", "USDX", "Crypto", "1200", "1200");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        assertEquals("1000.00", scambio[16]);
+        assertEquals("1200", scambio[17]);
+        assertEquals("200.00", scambio[19]); // 1200 - 1000: realizzo
+        assertEquals("S", scambio[33]);
+    }
+
+    // ------------------------------------------------------------------
+    // Correzioni C1 e A3 (robustezza su DB nuovo e ID malformati)
+    // ------------------------------------------------------------------
+
+    @Test
+    void databaseSenzaOpzioni_usaIDefaultENonCrasha_correzioneC1() throws Exception {
+        // Correzione C1: su un database dove le opzioni non sono mai state
+        // scritte il ricalcolo non deve più crashare con NPE ma usare i default
+        // (PL_CosiderareMovimentiNC=SI, PDD_*=SI, CashBackComeFIAT=NO).
         try (PreparedStatement ps = DatabaseH2.connectionPersonale.prepareStatement(
-                "DELETE FROM OPZIONI WHERE Opzione = ?")) {
-            ps.setString(1, "PL_CosiderareMovimentiNC");
+                "DELETE FROM OPZIONI")) {
             ps.executeUpdate();
         }
+        String[] acq = acquisto("2024-01-01 10:00", "BTC", "1", "1000");
+        String[] ven = vendita("2024-06-01 10:00", "BTC", "1", "1500");
+        String[] rw = movimento("2024-03-01 10:00", "RW", "", "STAKING REWARD",
+                "", "", "", "ETH", "Crypto", "1", "100");
 
-        assertThrows(NullPointerException.class, Calcoli_PlusvalenzeNew::AggiornaPlusvalenze);
+        assertDoesNotThrow(Calcoli_PlusvalenzeNew::AggiornaPlusvalenze);
+
+        // Comportamento coerente con i default: vendita realizzata, reward rilevante
+        assertEquals("1000", acq[17]);
+        assertEquals("500.00", ven[19]);
+        assertEquals("S", ven[33]);
+        assertEquals("100", rw[19]); // PDD_Staking default SI -> reward tassata
+        assertEquals("S", rw[33]);
+    }
+
+    @Test
+    void idMalformato_nonCrashaEVieneSegnalatoConFlagM_correzioneA3() {
+        // Correzione A3: un ID con meno di 5 segmenti non deve far crashare il
+        // ricalcolo; il movimento viene segnalato con la lettera "M" nel campo 38
+        // e la classificazione ricade sul campo 18 (qui vuoto -> nessun effetto).
+        String[] malformato = new String[Importazioni.ColonneTabella];
+        java.util.Arrays.fill(malformato, "");
+        malformato[0] = "IDCORTO";
+        malformato[1] = "2024-02-01 10:00";
+        malformato[3] = "TEST";
+        malformato[11] = "BTC";
+        malformato[12] = "Crypto";
+        malformato[13] = "1";
+        malformato[15] = "100";
+        Principale.MappaCryptoWallet.put(malformato[0], malformato);
+        String[] acq = acquisto("2024-01-01 10:00", "BTC", "1", "1000");
+
+        assertDoesNotThrow(Calcoli_PlusvalenzeNew::AggiornaPlusvalenze);
+
+        assertTrue(malformato[38].contains("M"),
+                "atteso flag M nel campo 38, trovato: \"" + malformato[38] + "\"");
+        // Gli altri movimenti vengono comunque elaborati normalmente
+        assertEquals("1000", acq[17]);
     }
 }

@@ -2504,6 +2504,13 @@ return MappaLista;
     public static boolean MovimentoRilevante(String[] Mov){
         String ID = Mov[0];
         String IDTS[] = ID.split("_");
+        //A3: un ID malformato (meno di 5 segmenti) non deve far crashare la valutazione:
+        //normalizzo a 5 segmenti con tipo vuoto, così la classificazione ricade sul campo 18
+        if (IDTS.length <= 4) {
+            LoggerGC.ScriviErrore("MovimentoRilevante: ID transazione malformato \"" + ID + "\"");
+            IDTS = java.util.Arrays.copyOf(IDTS, 5);
+            for (int i = 0; i < IDTS.length; i++) if (IDTS[i] == null) IDTS[i] = "";
+        }
         Moneta m[] = Moneta.RitornaMoneteDaMov(Mov);
         String Data = Mov[1];
         boolean Pre2023EarnCostoZero = false;
@@ -2524,7 +2531,7 @@ return MappaLista;
         }
         //Con questa opzione decido che fare in caso di movimenti non classificati, se conteggiarli o meno
        boolean ConsideraMovimentiNC=true;
-       if(DatabaseH2.Pers_Opzioni_Leggi("PL_CosiderareMovimentiNC").equalsIgnoreCase("NO"))ConsideraMovimentiNC=false;
+       if(DatabaseH2.Pers_Opzioni_Leggi("PL_CosiderareMovimentiNC","SI").equalsIgnoreCase("NO"))ConsideraMovimentiNC=false;
         
         
         boolean rilevante=true;
@@ -2644,32 +2651,38 @@ return MappaLista;
 
        String[] Mov=MappaCryptoWallet.get(ID);
        String IDTS[]=ID.split("_");
+       //A2/A3: movimento assente dalla mappa o ID malformato (meno di 5 segmenti):
+       //non posso stabilire il tipo, considero la reward fiscalmente rilevante (default prudente)
+       if (Mov == null || IDTS.length <= 4) {
+           LoggerGC.ScriviErrore("RewardRilevante: movimento \"" + ID + "\" " + (Mov == null ? "non trovato nella mappa" : "con ID malformato"));
+           return true;
+       }
        String TipoTrasf=Mov[18].split("-")[0].trim();
-       
-       //Perchè sia una reward devo verificare se è classificata come tale alla fonte (RW) 
+
+       //Perchè sia una reward devo verificare se è classificata come tale alla fonte (RW)
        //oppure se è stata classificata dopo quindi DAI
        if (IDTS[4].equals("RW")||
               TipoTrasf.equals("DAI") ){
            
            if (Mov[5].toUpperCase().contains("CASHBACK"))
            {               
-               return DatabaseH2.Pers_Opzioni_Leggi("PDD_CashBack").equalsIgnoreCase("SI");
+               return DatabaseH2.Pers_Opzioni_Leggi("PDD_CashBack","SI").equalsIgnoreCase("SI");
            }           
            else if (Mov[5].toUpperCase().contains("STAKING"))
            {               
-               return DatabaseH2.Pers_Opzioni_Leggi("PDD_Staking").equalsIgnoreCase("SI");
+               return DatabaseH2.Pers_Opzioni_Leggi("PDD_Staking","SI").equalsIgnoreCase("SI");
            }           
            else if (Mov[5].toUpperCase().contains("AIRDROP"))
            {               
-               return DatabaseH2.Pers_Opzioni_Leggi("PDD_Airdrop").equalsIgnoreCase("SI");
+               return DatabaseH2.Pers_Opzioni_Leggi("PDD_Airdrop","SI").equalsIgnoreCase("SI");
            }           
            else if (Mov[5].toUpperCase().contains("EARN"))
            {               
-               return DatabaseH2.Pers_Opzioni_Leggi("PDD_Earn").equalsIgnoreCase("SI");
+               return DatabaseH2.Pers_Opzioni_Leggi("PDD_Earn","SI").equalsIgnoreCase("SI");
            }           
            else if (Mov[5].toUpperCase().contains("REWARD"))
            {               
-               return DatabaseH2.Pers_Opzioni_Leggi("PDD_Reward").equalsIgnoreCase("SI");
+               return DatabaseH2.Pers_Opzioni_Leggi("PDD_Reward","SI").equalsIgnoreCase("SI");
            }
            else return true;
 
@@ -2684,9 +2697,20 @@ return MappaLista;
 
        String[] Mov=MappaCryptoWallet.get(ID);
        String IDTS[]=ID.split("_");
+       //A2/A3: movimento assente dalla mappa o ID malformato (meno di 5 segmenti o senza
+       //anno iniziale): non posso applicare l'assimilazione a fiat, la reward resta tassata
+       if (Mov == null || IDTS.length <= 4) {
+           LoggerGC.ScriviErrore("CashbackComeFIAT: movimento \"" + ID + "\" " + (Mov == null ? "non trovato nella mappa" : "con ID malformato"));
+           return false;
+       }
        String TipoTrasf=Mov[18].split("-")[0].trim();
-       String Anno=Mov[0].substring(0, 4);
-       int AnnoInt=Integer.parseInt(Anno);
+       int AnnoInt;
+       try {
+           AnnoInt=Integer.parseInt(Mov[0].substring(0, 4));
+       } catch (NumberFormatException | StringIndexOutOfBoundsException ex) {
+           LoggerGC.ScriviErrore("CashbackComeFIAT: ID \"" + ID + "\" senza anno iniziale valido");
+           return false;
+       }
        
        boolean CashbackComeFiat=false;
        
@@ -2697,7 +2721,7 @@ return MappaLista;
            
            if (Mov[5].toUpperCase().contains("CASHBACK"))
            {               
-               CashbackComeFiat = DatabaseH2.Pers_Opzioni_Leggi("CashBackComeFIAT").equalsIgnoreCase("SI");
+               CashbackComeFiat = DatabaseH2.Pers_Opzioni_Leggi("CashBackComeFIAT","NO").equalsIgnoreCase("SI");
                if (CashbackComeFiat) {
                    String AnnoDB = DatabaseH2.Pers_Opzioni_Leggi("CashBackComeFIATAnno");
                    int AnnoDBInt = 2010;

@@ -15532,7 +15532,9 @@ try {
 
             boolean lifomancante=false;
             //2 - parte del LiFo Mancante
-            if (!v[38].isBlank()) {
+            //Il campo 38 ora può contenere più lettere di anomalia (vedi Calcoli_PlusvalenzeNew):
+            //per il conteggio/filtro "LiFo mancante" conta solo la "A" (giacenza insufficiente)
+            if (v[38].contains("A")) {
               NumErroriStackLiFoMancante++;
               lifomancante=true;
             }

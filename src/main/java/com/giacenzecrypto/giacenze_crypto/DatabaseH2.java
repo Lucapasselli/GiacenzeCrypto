@@ -1994,6 +1994,14 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
         }
         return Risultato;
     }
+
+    //Variante che non ritorna mai null: se l'opzione non è mai stata scritta nel DB
+    //(database nuovo o ripristino parziale) torna il valore di default indicato.
+    //Da usare nei punti dove il risultato viene dereferenziato direttamente.
+    public static String Pers_Opzioni_Leggi(String Opzione, String ValoreDefault) {
+        String Risultato = Pers_Opzioni_Leggi(Opzione);
+        return Risultato != null ? Risultato : ValoreDefault;
+    }
         
         
     /**

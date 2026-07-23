@@ -21,10 +21,9 @@ public class Trans_Solana {
     private static String HELIUS_API_KEY = DatabaseH2.Opzioni_Leggi("ApiKey_Helius"); // Inserisci la tua API key
     private static final String HELIUS_RPC_URL = "https://api.helius.xyz/v0/addresses/";
     private static final String HELIUS_RPC_URL2 = "https://mainnet.helius-rpc.com/";
-    private static final String SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com";
     private static final OkHttpClient httpClient = new OkHttpClient();
     private static final Map<String, String> tokenNameCache = new HashMap<>();
-    static boolean verbose = false;
+    static boolean verbose = true;
 
 
     public static Map<String, TransazioneDefi> fetchAndParseTransactions(String walletAddress, int afterBlock) throws InterruptedException {
@@ -352,6 +351,8 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
         return owner;
     }
 
+    private static final int MAX_RETRY_GET_ACCOUNT_OWNER = 3;
+
     private static String getAccountOwner(String tokenAccount) throws IOException {
         String jsonPayload = "{" +
                 "\"jsonrpc\":\"2.0\"," +
@@ -360,25 +361,45 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
                 "\"params\": [\"" + tokenAccount + "\", {\"encoding\": \"jsonParsed\"}]}";
 
         RequestBody body = RequestBody.create(jsonPayload, MediaType.get("application/json"));
+        // Usa l'endpoint RPC Helius (già pagato con HELIUS_API_KEY) invece del nodo pubblico:
+        // quest'ultimo è pesantemente rate-limitato e causava perdite silenziose di movimenti
+        // sugli import massivi quando Helius non fornisce già "userAccount" in tokenBalanceChanges.
         Request request = new Request.Builder()
-                .url(SOLANA_RPC_URL)
+                .url(HELIUS_RPC_URL2 + "?api-key=" + HELIUS_API_KEY)
                 .post(body)
                 .build();
 
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (response.body() != null) {
-                JSONObject jsonResponse = new JSONObject(response.body().string());
-                JSONObject result = jsonResponse.optJSONObject("result");
-                JSONObject value = result != null ? result.optJSONObject("value") : null;
-                if (value != null) {
-                    JSONObject data = value.optJSONObject("data");
-                    JSONObject parsed = data != null ? data.optJSONObject("parsed") : null;
-                    JSONObject info = parsed != null ? parsed.optJSONObject("info") : null;
-                    if (info != null) {
-                        return info.optString("owner", null);
+        IOException ultimoErrore = null;
+        for (int tentativo = 1; tentativo <= MAX_RETRY_GET_ACCOUNT_OWNER; tentativo++) {
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (response.isSuccessful() && response.body() != null) {
+                    JSONObject jsonResponse = new JSONObject(response.body().string());
+                    JSONObject result = jsonResponse.optJSONObject("result");
+                    JSONObject value = result != null ? result.optJSONObject("value") : null;
+                    if (value != null) {
+                        JSONObject data = value.optJSONObject("data");
+                        JSONObject parsed = data != null ? data.optJSONObject("parsed") : null;
+                        JSONObject info = parsed != null ? parsed.optJSONObject("info") : null;
+                        if (info != null) {
+                            return info.optString("owner", null);
+                        }
                     }
+                    return null;
+                }
+            } catch (IOException ex) {
+                ultimoErrore = ex;
+            }
+            if (tentativo < MAX_RETRY_GET_ACCOUNT_OWNER) {
+                try {
+                    Thread.sleep(500L * tentativo);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
                 }
             }
+        }
+        if (ultimoErrore != null) {
+            throw ultimoErrore;
         }
         return null;
     }

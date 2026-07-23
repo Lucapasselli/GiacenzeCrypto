@@ -77,8 +77,10 @@ import org.jsoup.Jsoup;
  * @author Luca
  */
 public class Funzioni {
-    
-    
+
+    //A5: client OkHttp condiviso invece di uno nuovo per chiamata (evita di accumulare connection pool/dispatcher inutilizzati)
+    private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
+
     private static final Set<String> PREFISSI_VALIDI_TrovaReteDaIMovimento = Set.of(
         "BC", "00BC", "01BC", "02BC", "03BC", "04BC", "ZZBC"
 );
@@ -2997,32 +2999,10 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
 
 
     
-    public static boolean isApiKeyValidaCoincap(String ApiKey) {
-        //String apiUrl = "rest.coincap.io/v3/assets?apiKey=YourApiKey (New Api)" + ID + "/history?interval=h1&start=" + timestampIniziale + "&end=" + dataFin;
-        String COINCAP_URL = "https://rest.coincap.io/v3/assets/bitcoin?apiKey=";
-        OkHttpClient client = new OkHttpClient();
-        String url = COINCAP_URL + ApiKey;
-        //System.out.println(url);
-        Request request = new Request.Builder().url(url).build();
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                return false; // Errore di connessione o chiave non valida
-            }
-            String responseBody = response.body().string();
-            //System.out.println(responseBody);
-            // Parsing JSON con Gson
-            JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
-            return !json.has("error");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     public static boolean isApiKeyValidaEtherscan(String ApiKey) {
        // return true;
         String ETHERSCAN_URL = "https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_blockNumber&apikey=";
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = HTTP_CLIENT;
         String url = ETHERSCAN_URL + ApiKey;
         Request request = new Request.Builder().url(url).build();
         try (Response response = client.newCall(request).execute()) {
@@ -3046,7 +3026,7 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
     public static boolean isApiKeyValidaCronos(String ApiKey) {
        // return true;
         String ETHERSCAN_URL = "https://explorer-api.cronos.org/mainnet/api/v2?module=proxy&action=eth_blockNumber&apikey=";
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = HTTP_CLIENT;
         String url = ETHERSCAN_URL + ApiKey;
         Request request = new Request.Builder().url(url).build();
         try (Response response = client.newCall(request).execute()) {
@@ -3069,7 +3049,7 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
 
     public static boolean isApiKeyValidaCoinMarketCap(String ApiKey) {
         if (ApiKey == null || ApiKey.isBlank()) return false;
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = HTTP_CLIENT;
         Request request = new Request.Builder()
                 .url("https://pro-api.coinmarketcap.com/v1/cryptocurrency/map?listing_status=active&limit=1")
                 .header("X-CMC_PRO_API_KEY", ApiKey)
@@ -3086,7 +3066,7 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
     }
 
     public static boolean isApiKeyValidaCoingecko(String ApiKey) {
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = HTTP_CLIENT;
         Request request = new Request.Builder().url("https://api.coingecko.com/api/v3/ping").get().addHeader("accept", "application/json").addHeader("x-cg-demo-api-key", ApiKey).build();
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
@@ -3114,7 +3094,7 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
         List<String> fileAggiornati = new ArrayList<>();
         String apiUrl = "https://api.github.com/repos/Lucapasselli/GiacenzeCrypto/contents/ImportConfig?ref=master";
 
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = HTTP_CLIENT;
         Request request = new Request.Builder()
                 .url(apiUrl)
                 .header("User-Agent", "GiacenzeCrypto")

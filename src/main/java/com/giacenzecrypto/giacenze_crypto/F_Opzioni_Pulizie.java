@@ -83,7 +83,7 @@ public class F_Opzioni_Pulizie {
                 w.close();
 
             } catch (IOException ex) {
-
+                LoggerGC.ScriviErrore(ex);
             }
 
             return true;

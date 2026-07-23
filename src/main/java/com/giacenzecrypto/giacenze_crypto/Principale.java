@@ -91,6 +91,8 @@ import org.json.JSONObject;
  */
 public class Principale extends javax.swing.JFrame {
 private static final long serialVersionUID = 3L;
+    //A5: client OkHttp condiviso invece di uno nuovo per chiamata (evita di accumulare connection pool/dispatcher inutilizzati)
+    private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
 
 
     
@@ -756,9 +758,6 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKey_Etherscan_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_Etherscan_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Etherscan_LabelSito = new javax.swing.JLabel();
-        Opzioni_ApiKey_Coincap_TextField = new javax.swing.JTextField();
-        Opzioni_ApiKey_Coincap_Label = new javax.swing.JLabel();
-        Opzioni_ApiKey_Coincap_LabelSito = new javax.swing.JLabel();
         Opzioni_ApiKey_Coingecko_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Coingecko_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_Coingecko_LabelSito = new javax.swing.JLabel();
@@ -5162,32 +5161,6 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        Opzioni_ApiKey_Coincap_TextField.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                Opzioni_ApiKey_Coincap_TextFieldMouseReleased(evt);
-            }
-        });
-        Opzioni_ApiKey_Coincap_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                Opzioni_ApiKey_Coincap_TextFieldKeyReleased(evt);
-            }
-        });
-
-        Opzioni_ApiKey_Coincap_Label.setText("ApiKey Coincap :");
-
-        Opzioni_ApiKey_Coincap_LabelSito.setText("https://pro.coincap.io/dashboard");
-        Opzioni_ApiKey_Coincap_LabelSito.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                Opzioni_ApiKey_Coincap_LabelSitoMouseClicked(evt);
-            }
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                Opzioni_ApiKey_Coincap_LabelSitoMouseEntered(evt);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                Opzioni_ApiKey_Coincap_LabelSitoMouseExited(evt);
-            }
-        });
-
         Opzioni_ApiKey_Coingecko_Label.setText("ApiKey Coingecko :");
 
         Opzioni_ApiKey_Coingecko_TextField.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -5317,18 +5290,13 @@ private static final long serialVersionUID = 3L;
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                         .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(Opzioni_ApiKey_Helius_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
-                            .addComponent(Opzioni_ApiKey_Etherscan_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(Opzioni_ApiKey_Coincap_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(Opzioni_ApiKey_Etherscan_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ApiKeyLayout.createSequentialGroup()
                                 .addComponent(Opzioni_ApiKey_Helius_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(Opzioni_ApiKey_Helius_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ApiKeyLayout.createSequentialGroup()
-                                .addComponent(Opzioni_ApiKey_Coincap_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(Opzioni_ApiKey_Coincap_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ApiKeyLayout.createSequentialGroup()
                                 .addComponent(Opzioni_ApiKey_Etherscan_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
@@ -5384,11 +5352,6 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_ApiKey_Etherscan_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_ApiKey_Etherscan_Label)
                     .addComponent(Opzioni_ApiKey_Etherscan_LabelSito))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Opzioni_ApiKey_Coincap_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Opzioni_ApiKey_Coincap_Label)
-                    .addComponent(Opzioni_ApiKey_Coincap_LabelSito))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ApiKey_Coingecko_Label)
@@ -6119,7 +6082,6 @@ private void AvviaSplashScreen() {
         
         Opzioni_ApiKey_Helius_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"));
         Opzioni_ApiKey_Etherscan_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"));
-        Opzioni_ApiKey_Coincap_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"));
         Opzioni_ApiKey_Coingecko_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"));
         Opzioni_ApiKey_Moralis_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"));
         Opzioni_ApiKey_Cronos_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"));
@@ -6292,9 +6254,9 @@ private void AvviaSplashScreen() {
        w.close();
 
     }catch (IOException ex) {
-                 //  LoggerGC.ScriviErrore(ex);
+                   LoggerGC.ScriviErrore(ex);
                }
-   
+
    }
             
     
@@ -7041,7 +7003,7 @@ private void AvviaSplashScreen() {
        b.close();
        w.close();
     }catch (IOException ex) {
-                 //  LoggerGC.ScriviErrore(ex);
+                   LoggerGC.ScriviErrore(ex);
                }
     }
     
@@ -7057,7 +7019,7 @@ private void AvviaSplashScreen() {
        b.close();
        w.close();
     }catch (IOException ex) {
-                 //  LoggerGC.ScriviErrore(ex);
+                   LoggerGC.ScriviErrore(ex);
                }
     }
     
@@ -8170,8 +8132,23 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     }//GEN-LAST:event_GiacenzeaData_Bottone_ModificaValoreMouseClicked
 
-    private void GiacenzeaData_Funzione_ModificaValore() {  
-        
+    private void AvvisaErroreSalvataggioPrezzoPersonalizzato() {
+        AppDialog.builder(this)
+                .windowTitle("Errore salvataggio prezzo")
+                .bodyTitle("Impossibile salvare il prezzo personalizzato")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message("Il prezzo inserito non è stato salvato a causa di un errore.")
+                .details("Controlla il log per i dettagli. Il valore precedente resta invariato.")
+                .action(AppDialog.DialogAction.builder("ok", "OK")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .showDialog();
+    }
+
+    private void GiacenzeaData_Funzione_ModificaValore() {
+
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
             long DataRiferimento;// = 0;
             if (GiacenzeaData_Data_DataChooser.getDate() != null) {
@@ -8275,7 +8252,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         }*/
                     //Timestamp da cancellare è il timestamp del prezzo attualmente salvato che potrebbe essere un personalizzato
                     //Devo ovviamente cancellarlo per inserirne uno nuovo altrimenti questo prende il sopravvento
-                    DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.Fonte, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, Gruppo,timestampDaCancellare);
+                    boolean prezzoSalvato = DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.Fonte, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, Gruppo,timestampDaCancellare);
+                    if (!prezzoSalvato) {
+                        AvvisaErroreSalvataggioPrezzoPersonalizzato();
+                    }
 
                 }
                 //Una volta cambiato il prezzo aggiorno la tabella
@@ -8397,6 +8377,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         }
                     }
 
+                    boolean tuttiPrezziSalvati = true;
                     for (Moneta Mone : MappaAddressNomeMoneta.values()) {
                         Rete = Mone.Rete;
                         Address = Mone.MonetaAddress;
@@ -8409,8 +8390,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         }
 
                         //Se è un numero inserisco il prezzo e lo salvo a sistema
-                        DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.Fonte, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, "TUTTI", timestampDaCancellare);
+                        tuttiPrezziSalvati &= DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.Fonte, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, "TUTTI", timestampDaCancellare);
 
+                    }
+                    if (!tuttiPrezziSalvati) {
+                        AvvisaErroreSalvataggioPrezzoPersonalizzato();
                     }
 
                     //Una volta cambiato il prezzo aggiorno la tabella
@@ -8541,6 +8525,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             }
                         }
                         
+                        boolean tuttiPrezziSalvati = true;
                         for (Moneta Mone : MappaAddressNomeMoneta.values()) {
 
                         Rete = Mone.Rete;
@@ -8556,7 +8541,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         //Se è un numero inserisco il prezzo e lo salvo a sistema
                         //BigDecimal PrezzoUnitario = new BigDecimal(Prezz).divide(Qta, DecimaliCalcoli + 10, RoundingMode.HALF_UP).stripTrailingZeros();
                         //  System.out.println(InfoRitorno.timestamp+"-"+mon+"-"+InfoRitorno.prezzoUnitario);
-           DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.Fonte, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, "TUTTI",timestampDaCancellare);
+           tuttiPrezziSalvati &= DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.Fonte, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, "TUTTI",timestampDaCancellare);
                       /*  if (Address != null && Rete != null) {
 
                             DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(), true);
@@ -8564,6 +8549,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         } else {
                             DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(), true);
                         }*/
+                    }
+                    if (!tuttiPrezziSalvati) {
+                        AvvisaErroreSalvataggioPrezzoPersonalizzato();
                     }
                     
                 
@@ -9375,7 +9363,7 @@ if (result.isAction("delete-all")) {
                 w.close();
 
             } catch (IOException ex) {
-
+                LoggerGC.ScriviErrore(ex);
             }
 
             CDC_FiatWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCFiatWallet());
@@ -11458,7 +11446,6 @@ if (result != null && !result.isAction("cancel")) {
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         boolean HeliusDiversa=true;
         boolean EtherscanDiversa=true;
-        boolean CoincapDiversa=true;
         boolean CoingeckoDiversa=true;
         boolean MoralisDiversa=true;
         boolean CronosDiversa=true;
@@ -11469,8 +11456,6 @@ if (result != null && !result.isAction("cancel")) {
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))))HeliusDiversa=false;
         if (Opzioni_ApiKey_Etherscan_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherescan"))))EtherscanDiversa=false;
-        if (Opzioni_ApiKey_Coincap_TextField.getText().trim()
-                .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"))))CoincapDiversa=false;
         if (Opzioni_ApiKey_Coingecko_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"))))CoingeckoDiversa=false;
         if (Opzioni_ApiKey_Moralis_TextField.getText().trim()
@@ -11502,17 +11487,6 @@ if (result != null && !result.isAction("cancel")) {
         }else if (EtherscanDiversa){
                         Messaggi.WarningMessage("Errore in validazione chiave",
                             "Attenzione! la ApiKey di Etherscan inserita non è valida o manca la connessione internet<br>"
-                                        + "L'operazione verrà annullata!<br>",this);
-        }
-        
-        //Controllo ed eventualmente salvo le api Coincap
-        if (CoincapDiversa&&Funzioni.isApiKeyValidaCoincap(Opzioni_ApiKey_Coincap_TextField.getText().trim())||
-                Opzioni_ApiKey_Coincap_TextField.getText().isBlank()){
-            //anche se non metto nulla scrivo la chiave ovvero svuoto il campo
-            DatabaseH2.Opzioni_Scrivi("ApiKey_Coincap", Opzioni_ApiKey_Coincap_TextField.getText().trim());
-        }else if (CoincapDiversa){
-                        Messaggi.WarningMessage("Errore in validazione chiave",
-                            "Attenzione! la ApiKey di Coincap inserita non è valida o manca la connessione internet<br>"
                                         + "L'operazione verrà annullata!<br>",this);
         }
         
@@ -11572,7 +11546,6 @@ if (result != null && !result.isAction("cancel")) {
         // TODO add your handling code here:
         Opzioni_ApiKey_Helius_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius")));
         Opzioni_ApiKey_Etherscan_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan")));
-        Opzioni_ApiKey_Coincap_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap")));
         Opzioni_ApiKey_Coingecko_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko")));
         Opzioni_ApiKey_Moralis_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis")));
         Opzioni_ApiKey_Cronos_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos")));
@@ -11755,26 +11728,6 @@ if (result != null && !result.isAction("cancel")) {
         }
     }//GEN-LAST:event_RT_Bottone_StampaActionPerformed
 
-    private void Opzioni_ApiKey_Coincap_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coincap_TextFieldKeyReleased
-        // TODO add your handling code here:
-        Opzioni_ApiKey_ControllaPulsanti();
-    }//GEN-LAST:event_Opzioni_ApiKey_Coincap_TextFieldKeyReleased
-
-    private void Opzioni_ApiKey_Coincap_LabelSitoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coincap_LabelSitoMouseClicked
-        // TODO add your handling code here:
-        Funzioni.ApriWeb("https://pro.coincap.io/dashboard");
-    }//GEN-LAST:event_Opzioni_ApiKey_Coincap_LabelSitoMouseClicked
-
-    private void Opzioni_ApiKey_Coincap_LabelSitoMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coincap_LabelSitoMouseEntered
-        // TODO add your handling code here:
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    }//GEN-LAST:event_Opzioni_ApiKey_Coincap_LabelSitoMouseEntered
-
-    private void Opzioni_ApiKey_Coincap_LabelSitoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coincap_LabelSitoMouseExited
-        // TODO add your handling code here:
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-    }//GEN-LAST:event_Opzioni_ApiKey_Coincap_LabelSitoMouseExited
-
     private void Opzioni_ApiKey_Coingecko_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coingecko_TextFieldKeyReleased
         // TODO add your handling code here:
         Opzioni_ApiKey_ControllaPulsanti();
@@ -11884,12 +11837,6 @@ if (result != null && !result.isAction("cancel")) {
         //Funzione che apre il popupmenu se premuto il tasto destro
         Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_Opzioni_ApiKey_Etherscan_TextFieldMouseReleased
-
-    private void Opzioni_ApiKey_Coincap_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coincap_TextFieldMouseReleased
-        // TODO add your handling code here:
-        //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
-    }//GEN-LAST:event_Opzioni_ApiKey_Coincap_TextFieldMouseReleased
 
     private void Opzioni_ApiKey_Coingecko_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coingecko_TextFieldMouseReleased
         // TODO add your handling code here:
@@ -12871,7 +12818,7 @@ if (result != null && !result.isAction("cancel")) {
             url = "https://api.gopluslabs.io/api/v1/token_security/" + chainId + "?contract_addresses=" + address;
         }
 
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = HTTP_CLIENT;
         Request request = new Request.Builder().url(url).header("Accept", "application/json").build();
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful() || response.body() == null) {
@@ -13783,7 +13730,6 @@ if (result != null && !result.isAction("cancel")) {
         String NuovoValore=
                 Opzioni_ApiKey_Helius_TextField.getText()+
                 Opzioni_ApiKey_Etherscan_TextField.getText()+
-                Opzioni_ApiKey_Coincap_TextField.getText()+
                 Opzioni_ApiKey_Coingecko_TextField.getText()+
                 Opzioni_ApiKey_Moralis_TextField.getText()+
                 Opzioni_ApiKey_Cronos_TextField.getText()+
@@ -13793,7 +13739,6 @@ if (result != null && !result.isAction("cancel")) {
         String ValoreSalvato=
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))+
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))+
-                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"))+
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"))+
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"))+
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"))+
@@ -16170,9 +16115,6 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JPanel Opzioni_ApiKey;
     private javax.swing.JButton Opzioni_ApiKey_Bottone_Annulla;
     private javax.swing.JButton Opzioni_ApiKey_Bottone_Salva;
-    private javax.swing.JLabel Opzioni_ApiKey_Coincap_Label;
-    private javax.swing.JLabel Opzioni_ApiKey_Coincap_LabelSito;
-    private javax.swing.JTextField Opzioni_ApiKey_Coincap_TextField;
     private javax.swing.JLabel Opzioni_ApiKey_Coingecko_Label;
     private javax.swing.JLabel Opzioni_ApiKey_Coingecko_LabelSito;
     private javax.swing.JTextField Opzioni_ApiKey_Coingecko_TextField;

@@ -448,7 +448,7 @@ public class TransazioneDefi {
           if (TimeStamp == null || TimeStamp.trim().isEmpty()) TimeStamp = String.valueOf(TimeStampL);
           if (Long.parseLong(TimeStamp) < 100000000000L) TimeStamp = String.valueOf(Long.parseLong(TimeStamp) * 1000);
           TimeStampL=Long.parseLong(TimeStamp);
-      } catch (Exception e) {}
+      } catch (Exception e) { LoggerGC.ScriviErrore(e); }
       //String PrimaParteID=DataOra.replaceAll(" |-|:", "")+"_BC."+Rete+"."+Wallet+"."+HashTransazione;
       if (TipoTransazione!=null) TipoTransazione=TipoTransazione.split("\\(")[0].trim();
 

@@ -54,6 +54,8 @@ import okhttp3.Response;
  * @author luca.passelli
  */
 public class Prezzi {
+    //A5: client OkHttp condiviso invece di uno nuovo per chiamata (evita di accumulare connection pool/dispatcher inutilizzati)
+    private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
     //static Map<String, String> MappaWallets = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneUSDEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 //    static Map<String, String> MappaCoppieBinance = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -1201,16 +1203,6 @@ public class Prezzi {
             RecuperaTassidiCambioUSDT_Coingecko(DataGiorno, DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
             risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
         }*/
-        //Cerco su  CoinCap
-        if (risultato == null) {
-            ZZZ_RecuperaTassidiCambiodaSimbolo_CoinCap("USDT",DataGiorno);
-            risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
-            //solo se arrivo fino a qua metto gli ND sulle ore che non sono riuscito a recuperare e per 30gg
-            //che sono i giorni per cui di solito recupero i prezzi
-            //Questo perchè questo è l'ultimo providfer da cui posso recuperare i dati quindi tutti i buchi di prezzo sono 
-            //sicuro che non potrò farci nulla
-            mettereND=true;
-        }
         //se arrivo qua cerco il prezzo del giorno invece che quello orario
         if (risultato == null) {
             risultato = DatabaseH2.XXXEUR_Leggi(DataGiorno + " " + "USDT");
@@ -1457,7 +1449,7 @@ public class Prezzi {
         if (adesso <= dataUltimoScarico + 86400000) return; // cache valida per 24h
 
         String apiUrl = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/map?listing_status=active&sort=cmc_rank&limit=5000";
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = HTTP_CLIENT;
         Request.Builder requestBuilder = new Request.Builder()
                 .url(apiUrl)
                 .header("Accept", "application/json");
@@ -1533,7 +1525,7 @@ public class Prezzi {
 
             System.out.println("RecuperaPrezziDaCoinMarketCap: scarico prezzi " + Crypto + " (id=" + cmcId + ") per " + FunzioniDate.ConvertiDatadaLong(timestamp));
 
-            OkHttpClient client = new OkHttpClient();
+            OkHttpClient client = HTTP_CLIENT;
             Request request = new Request.Builder().url(apiUrl).header("Accept", "application/json").build();
 
             try (Response response = client.newCall(request).execute()) {
@@ -1592,95 +1584,7 @@ public class Prezzi {
         }
     }
 
-        public static String ZZZ_RecuperaTassidiCambiodaSimbolo_CoinCap(String Crypto, String DataIniziale) {
-        String ApiKey = Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"));
-        if (!ApiKey.isBlank()) {
-            String ok = null;
-            long dataFin = FunzioniDate.ConvertiDatainLong(DataIniziale) + Long.parseLong("864000000");
-            long timestampIniziale = FunzioniDate.ConvertiDatainLong(DataIniziale);
-            String ID = DatabaseH2.GestitiCoinCap_Leggi(Crypto);
-
-            //String DataFinale = OperazioniSuDate.ConvertiDatadaLong(dataFin);
-
-            String apiUrl = "https://rest.coincap.io/v3/assets/" + ID + "/history?interval=h1&start=" + timestampIniziale + "&end=" + dataFin;
-            apiUrl=apiUrl+"&apiKey="+ApiKey;
-            //System.out.println(apiUrl);
-
-            try {
-                URL url = new URI(apiUrl).toURL();
-                //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
-                if (Principale.Mappa_RichiesteAPIGiaEffettuate.get(url.toString()) != null) {
-                    return null;
-                }
-                Principale.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
-                URLConnection connection = url.openConnection();
-                // System.out.println(url);
-                System.out.println("Recupero prezzi " + Crypto + " da Coincap da data " + DataIniziale);
-                try (BufferedReader in = new BufferedReader(
-                        new InputStreamReader(connection.getInputStream()))) {
-                    StringBuilder response = new StringBuilder();
-                    String line;
-
-                    while ((line = in.readLine()) != null) {
-                        response.append(line);
-
-                    }
-                    //System.out.println(response);
-                    Gson gson = new Gson();
-                    JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
-                    JsonArray pricesArray = jsonObject.getAsJsonArray("data");
-                    //List<String> simboli = new ArrayList<>();
-                    if (pricesArray != null || !pricesArray.isEmpty()) {
-                        for (JsonElement element : pricesArray) {
-
-                            JsonObject Coppie = element.getAsJsonObject();
-                            String prezzoUSD = Coppie.get("priceUsd").getAsString();
-                            long Unixtime = Coppie.get("time").getAsLong();
-                            //System.out.println(prezzoUSD+" - "+Unixtime);
-                            String Data = FunzioniDate.ConvertiDatadaLong(Unixtime);
-                            String DataOra = FunzioniDate.ConvertiDatadaLongallOra(Unixtime);
-                            String PrezzoEuro = CambioUSDEUR(prezzoUSD, Data);
-                            //Controllo ora se non ha il prezzo e in quel caso lo scrivo
-                            if (DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto) == null || DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto).equals("ND")) {
-                                DatabaseH2.OLD_XXXEUR_Scrivi(DataOra + " " + Crypto, PrezzoEuro, false);
-                            }
-                            if (DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto) == null || DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto).equals("ND")) {
-                                DatabaseH2.OLD_XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro, false);
-                            }
-
-                        }
-
-                    } else {
-                        ok = null;
-                    }
-
-                } catch (IOException ex) {
-                    ok = null;
-                }
-                TimeUnit.SECONDS.sleep(1);
-
-            } catch (MalformedURLException ex) {
-                LoggerGC.ScriviErrore(ex);
-                ok = null;
-            } catch (IOException ex) {
-                LoggerGC.ScriviErrore(ex);
-                ok = null;
-            } catch (InterruptedException ex) {
-                ok = null;
-                LoggerGC.ScriviErrore(ex);
-            } catch (URISyntaxException ex) {
-                LoggerGC.ScriviErrore(ex);
-            }
-
-            return ok;
-        } else {
-            return null;
-        }
-    }  
-      
-      
-    
-    public static String RecuperaTassidiCambio(String DataIniziale,String DataFinale)  {      
+    public static String RecuperaTassidiCambio(String DataIniziale,String DataFinale)  {
         String ok="ok";
         try {     
             TimeUnit.SECONDS.sleep(1);
@@ -1800,7 +1704,7 @@ public class Prezzi {
             CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");*/
             System.out.println("Recupero prezzi token " + Simbolo + " con Address " + Address + " da coingecko su rete " + Principale.Mappa_ChainExplorer.get(Rete)[3]
                     + " da data " + FunzioniDate.ConvertiDatadaLongAlSecondo(dataIni * 1000));
-            OkHttpClient client = new OkHttpClient();
+            OkHttpClient client = HTTP_CLIENT;
             Request request;
             if (ApiKey.isBlank()){ 
                 request= new Request.Builder()
@@ -1923,7 +1827,7 @@ public class Prezzi {
             System.out.println("Recupero prezzi token " + Simbolo + " con Address " + Address + " da DefiLlama su rete " + nomeReteDefiLlama
                     + " da data " + FunzioniDate.ConvertiDatadaLongAlSecondo(dataIni * 1000));
 
-            OkHttpClient client = new OkHttpClient();
+            OkHttpClient client = HTTP_CLIENT;
             Request request = new Request.Builder().url(apiUrl).build();
 
             try (Response response = client.newCall(request).execute()) {
@@ -2293,48 +2197,6 @@ public class Prezzi {
         
 
      
-        public static String RecuperaCoinsCoinCap() {
-        String ok = "ok";
-        //come prima cosa recupero l'ora atuale
-        //poi la verifico con quella dell'ultimo scarico da binance e se sono passate almeno 24h allora richiedo la nuova lista
-        //altrimenti tengo buona quella presente nel database
-        
-        long adesso = System.currentTimeMillis();
-        //String dataUltimoScaricoString = DatabaseH2.Opzioni_Leggi("Data_Lista_CryptoHistory");
-        String dataUltimoScaricoString = DatabaseH2.Opzioni_Leggi("Data_Lista_CoinCap");
-        long dataUltimoScarico = 0;
-        if (dataUltimoScaricoString != null) {
-            dataUltimoScarico = Long.parseLong(dataUltimoScaricoString);
-        }
-        if (adesso > (dataUltimoScarico + 86400000)) {
-            System.out.println("Recupero gestiti Coincap+CryptoCompare");
-            //ORA che coincap è a pagamento non posso usare più la richiesta api diretta perchè da sola farebbe fuori il 10% delle richieste mensili
-            //al posto suo prenderò i dati da un file csv precedentemente preparato che vedrò come tenere aggiornato nel futuro
-            
-            String riga;
-        try (FileReader fire = new FileReader(VarStatiche.getPathRisorse()+"Gestiticoincap.csv"); 
-                BufferedReader bure = new BufferedReader(fire);) 
-            {
-                List<String[]> gestiti = new ArrayList<>();
-                while((riga=bure.readLine())!=null)
-                {
-                    String rigaSplittata[]=riga.split(";");
-                    gestiti.add(rigaSplittata);
-                }
-                DatabaseH2.GestitiCoinCap_ScriviNuovaTabella(gestiti);
-                DatabaseH2.Opzioni_Scrivi("Data_Lista_CoinCap", String.valueOf(adesso));
-            
-        }   catch (FileNotFoundException ex) {
-                LoggerGC.ScriviErrore(ex);
-            } catch (IOException ex) {
-                LoggerGC.ScriviErrore(ex);
-            }
-           
-        }
-        return ok;
-    }   
-     
-    
         public static String RecuperaCoinsCoingecko() {
         String ok = "ok";
         //come prima cosa recupero l'ora atuale

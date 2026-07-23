@@ -526,11 +526,11 @@ public class BinanceTaxReportClient {
                     "amount", "interest", "dividendAmount", "rewardAmt", "income");
             double amount = 0d;
             if (amountStr != null) {
-                try { amount = Double.parseDouble(amountStr); } catch (Exception ignored) {}
+                try { amount = Double.parseDouble(amountStr); } catch (Exception ex) { LoggerGC.ScriviErrore(ex); }
             } else {
                 for (String k : new String[]{"amount", "interest", "income"}) {
                     if (raw.has(k)) {
-                        try { amount = raw.getDouble(k); } catch (Exception ignored) {}
+                        try { amount = raw.getDouble(k); } catch (Exception ex) { LoggerGC.ScriviErrore(ex); }
                     }
                 }
             }

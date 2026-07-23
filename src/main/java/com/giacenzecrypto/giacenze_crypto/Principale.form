@@ -6916,7 +6916,6 @@
                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                           <Component id="Opzioni_ApiKey_Helius_Label" alignment="0" pref="153" max="32767" attributes="0"/>
                                           <Component id="Opzioni_ApiKey_Etherscan_Label" alignment="0" max="32767" attributes="0"/>
-                                          <Component id="Opzioni_ApiKey_Coincap_Label" alignment="0" max="32767" attributes="0"/>
                                       </Group>
                                       <EmptySpace max="32767" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
@@ -6924,11 +6923,6 @@
                                               <Component id="Opzioni_ApiKey_Helius_TextField" min="-2" pref="658" max="-2" attributes="0"/>
                                               <EmptySpace type="separate" max="-2" attributes="0"/>
                                               <Component id="Opzioni_ApiKey_Helius_LabelSito" min="-2" pref="381" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" alignment="1" attributes="0">
-                                              <Component id="Opzioni_ApiKey_Coincap_TextField" min="-2" pref="658" max="-2" attributes="0"/>
-                                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                                              <Component id="Opzioni_ApiKey_Coincap_LabelSito" min="-2" pref="381" max="-2" attributes="0"/>
                                           </Group>
                                           <Group type="102" alignment="1" attributes="0">
                                               <Component id="Opzioni_ApiKey_Etherscan_TextField" min="-2" pref="658" max="-2" attributes="0"/>
@@ -7003,12 +6997,6 @@
                                   <Component id="Opzioni_ApiKey_Etherscan_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="Opzioni_ApiKey_Etherscan_Label" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="Opzioni_ApiKey_Etherscan_LabelSito" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="Opzioni_ApiKey_Coincap_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="Opzioni_ApiKey_Coincap_Label" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="Opzioni_ApiKey_Coincap_LabelSito" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
@@ -7116,27 +7104,6 @@
                         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Etherscan_LabelSitoMouseClicked"/>
                         <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Etherscan_LabelSitoMouseEntered"/>
                         <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Etherscan_LabelSitoMouseExited"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JTextField" name="Opzioni_ApiKey_Coincap_TextField">
-                      <Events>
-                        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Coincap_TextFieldMouseReleased"/>
-                        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ApiKey_Coincap_TextFieldKeyReleased"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JLabel" name="Opzioni_ApiKey_Coincap_Label">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="ApiKey Coincap :"/>
-                      </Properties>
-                    </Component>
-                    <Component class="javax.swing.JLabel" name="Opzioni_ApiKey_Coincap_LabelSito">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="https://pro.coincap.io/dashboard"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Coincap_LabelSitoMouseClicked"/>
-                        <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Coincap_LabelSitoMouseEntered"/>
-                        <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Coincap_LabelSitoMouseExited"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JLabel" name="Opzioni_ApiKey_Coingecko_Label">

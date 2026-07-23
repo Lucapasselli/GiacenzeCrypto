@@ -6,16 +6,20 @@ Utilizzando questo software, l'utente accetta integralmente questi termini.
 
 
 
-Il programma si occupa del calcolo delle giacenze medie, saldi iniziali e finali del Fiat e Card Wallet di Crypto.com.
-Offre inolte la possibilità di rendicontare le crypto detenute su diverse piattafome.
+Il programma si occupa tra le altre cose anche del calcolo delle giacenze medie, saldi iniziali e finali del Fiat e Card Wallet di Crypto.com.
 
-Tra i file disponibili troverete sia un Installer che un Portable per Windows.
-Negli zip dove non c'è specificato nulla invece ci sono gli eseguibili multipiattaforma (Windows/mac/linux) di Java
-che richiedono però l'installazione del runtime di Java per funzionare.
+Verranno distribuiti i seguenti pacchetti:
+- Pacchetto Multipiattaforma ( Funziona su tutte le piattaforme, Linux, Mac e Windows ma richiede che sia installato il runtime java,anche le versioni open vanno benissimo)
+- Pacchetto portable x Windows
+- Installer x Windows
+- Pacchetto portable per Linux
+- Installer deb per le distribuzioni basate su Debian/Ubuntu
+- Installer DMG per MacOS (Siccome l'app non è firmata può richiedere l'esecuzione di questo comando "xattr -cr /Applications/Giacenze_Crypto.app" affinchè l'app parta)
+- Installer DMG per MacOS con processori Intel (Siccome l'app non è firmata può richiedere l'esecuzione di questo comando "xattr -cr /Applications/Giacenze_Crypto.app" affinchè l'app parta)
 
 Se doveste riscontrare problemi chiedete supporto sul gruppo telegram https://t.me/+6kfy5mjov-I2ODY8
 
-NB: Per aggiornare la versione del programma basta sovrascrivere la cartella originale facendo prima un backup della cartella per sicurezza.
+NB: Per aggiornare la versione portable/multipiattaforma del programma basta sovrascrivere la cartella originale facendo prima un backup della cartella per sicurezza.
     Per gli utenti MAC attenzione che la sovrascrittura della cartella comporterà la perdita di tutti i dati, bisognerà aggiornare manualmente solo il contenuto della stessa.
     La versione con installer invece basta installarla sopra quella vecchia e verranno mantenuti i dati, questo dalla versione 1.0.4 in poi.
     Anche qui è consigliato sempre fare una copia di sicurezza.

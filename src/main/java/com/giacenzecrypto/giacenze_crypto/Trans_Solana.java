@@ -21,6 +21,7 @@ public class Trans_Solana {
     private static String HELIUS_API_KEY = DatabaseH2.Opzioni_Leggi("ApiKey_Helius"); // Inserisci la tua API key
     private static final String HELIUS_RPC_URL = "https://api.helius.xyz/v0/addresses/";
     private static final String HELIUS_RPC_URL2 = "https://mainnet.helius-rpc.com/";
+    private static final String SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com";
     private static final OkHttpClient httpClient = new OkHttpClient();
     private static final Map<String, String> tokenNameCache = new HashMap<>();
     static boolean verbose = false;
@@ -205,6 +206,8 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
         Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         //System.out.println("\n Transazioni per il wallet: " + walletAddress);
 
+        Map<String, String> tokenAccountOwnerBatch = CostruisciMappaTokenAccountOwner(transactions);
+
         for (int i = 0; i < transactions.length(); i++) {
             int numMovimenti = 0;
             TransazioneDefi trans = new TransazioneDefi();
@@ -266,6 +269,10 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
                             // System.out.println("numero tokenBalanceChanges "+tokenBalanceChanges.length());
                             JSONObject tokenBalanceChange = tokenBalanceChanges.getJSONObject(k);
                             String userAccount = tokenBalanceChange.optString("userAccount", "N/A");
+                            if (userAccount.isBlank() || userAccount.equalsIgnoreCase("N/A")) {
+                                String tokenAccount = tokenBalanceChange.optString("tokenAccount", "");
+                                userAccount = RisolviOwnerTokenAccount(tokenAccount, signature, tokenAccountOwnerBatch);
+                            }
                             if (userAccount.equalsIgnoreCase(walletAddress)) {
                                 String mint = tokenBalanceChange.optString("mint", "N/A");
                                 JSONObject dettagli = tokenBalanceChange.getJSONObject("rawTokenAmount");
@@ -305,6 +312,76 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
         return MappaTransazioniDefi;
     }
 
+
+    private static Map<String, String> CostruisciMappaTokenAccountOwner(JSONArray transactions) {
+        Map<String, String> mappa = new HashMap<>();
+        for (int i = 0; i < transactions.length(); i++) {
+            JSONArray AccountChanges = transactions.getJSONObject(i).optJSONArray("accountData");
+            if (AccountChanges == null) continue;
+            for (int j = 0; j < AccountChanges.length(); j++) {
+                JSONArray tokenBalanceChanges = AccountChanges.getJSONObject(j).optJSONArray("tokenBalanceChanges");
+                if (tokenBalanceChanges == null) continue;
+                for (int k = 0; k < tokenBalanceChanges.length(); k++) {
+                    JSONObject tokenBalanceChange = tokenBalanceChanges.getJSONObject(k);
+                    String userAccount = tokenBalanceChange.optString("userAccount", "");
+                    String tokenAccount = tokenBalanceChange.optString("tokenAccount", "");
+                    if (!userAccount.isBlank() && !tokenAccount.isBlank()) {
+                        mappa.put(tokenAccount, userAccount);
+                    }
+                }
+            }
+        }
+        return mappa;
+    }
+
+    private static String RisolviOwnerTokenAccount(String tokenAccount, String signature, Map<String, String> tokenAccountOwnerBatch) {
+        if (tokenAccount.isBlank()) return "";
+        String owner = null;
+        try {
+            owner = getAccountOwner(tokenAccount);
+        } catch (IOException ex) {
+            Logger.getLogger(Trans_Solana.class.getName()).log(Level.WARNING, "Errore interrogando getAccountInfo per tokenAccount " + tokenAccount, ex);
+        }
+        if (owner == null) {
+            owner = tokenAccountOwnerBatch.get(tokenAccount);
+        }
+        if (owner == null) {
+            Logger.getLogger(Trans_Solana.class.getName()).log(Level.WARNING, "Owner non risolvibile per tokenAccount {0} nella transazione {1}: il movimento potrebbe essere classificato in modo errato", new Object[]{tokenAccount, signature});
+            return "";
+        }
+        return owner;
+    }
+
+    private static String getAccountOwner(String tokenAccount) throws IOException {
+        String jsonPayload = "{" +
+                "\"jsonrpc\":\"2.0\"," +
+                "\"id\":\"text\"," +
+                "\"method\":\"getAccountInfo\"," +
+                "\"params\": [\"" + tokenAccount + "\", {\"encoding\": \"jsonParsed\"}]}";
+
+        RequestBody body = RequestBody.create(jsonPayload, MediaType.get("application/json"));
+        Request request = new Request.Builder()
+                .url(SOLANA_RPC_URL)
+                .post(body)
+                .build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (response.body() != null) {
+                JSONObject jsonResponse = new JSONObject(response.body().string());
+                JSONObject result = jsonResponse.optJSONObject("result");
+                JSONObject value = result != null ? result.optJSONObject("value") : null;
+                if (value != null) {
+                    JSONObject data = value.optJSONObject("data");
+                    JSONObject parsed = data != null ? data.optJSONObject("parsed") : null;
+                    JSONObject info = parsed != null ? parsed.optJSONObject("info") : null;
+                    if (info != null) {
+                        return info.optString("owner", null);
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
     private static String[] getTokenName(String mintAddress) throws IOException {
         //campo[0]=Simbolo

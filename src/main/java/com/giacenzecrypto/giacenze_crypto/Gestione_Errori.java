@@ -135,9 +135,9 @@ private static final long serialVersionUID = 5L;
                     //CDC_Grafica.CDC_FiatWallet_MappaTipiMovimenti.put(TabellaErrori.getModel().getValueAt(0, 9).toString(), Nuovariga);
                     b.close();
                     w.close();
-                }catch (IOException ex) 
+                }catch (IOException ex)
                 {
-
+                    LoggerGC.ScriviErrore(ex);
                 }
                 
                 JOptionPane.showMessageDialog(null,"Impostato "+TabellaErrori.getModel().getValueAt(TabellaErrori.getSelectedRow(), 9)+" come movimento da sommare", "Tipo movimento impostato", JOptionPane.INFORMATION_MESSAGE);
@@ -159,9 +159,9 @@ private static final long serialVersionUID = 5L;
                     //CDC_Grafica.CDC_FiatWallet_MappaTipiMovimenti.put(TabellaErrori.getModel().getValueAt(0, 9).toString(), Nuovariga);
                     b.close();
                     w.close();
-                }catch (IOException ex) 
+                }catch (IOException ex)
                 {
-
+                    LoggerGC.ScriviErrore(ex);
                 }
                 JOptionPane.showMessageDialog(null,"Impostato "+TabellaErrori.getModel().getValueAt(TabellaErrori.getSelectedRow(), 9)+" come movimento da sottrarre", "Tipo movimento impostato", JOptionPane.INFORMATION_MESSAGE);
                 this.dispose();

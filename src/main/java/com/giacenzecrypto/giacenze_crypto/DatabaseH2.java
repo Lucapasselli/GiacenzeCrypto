@@ -38,6 +38,9 @@ public class DatabaseH2 {
     static Connection connection;
     static Connection connectionPersonale;
     static Connection connectionPrezzi;
+    //C5: memorizza l'ultima eccezione di connessione, per permettere al chiamante di distinguere
+    //il lock da un altro processo (H2 error code 90020) da qualsiasi altro errore (DB corrotto, disco pieno, versione H2 incompatibile...)
+    private static SQLException ultimaEccezioneConnessione;
     static Map<String, String> Mappa_Wallet_Gruppo = new TreeMap<>();//memorizzo anche qua l'associazione dei gruppi per rendere più veloce la ricerca
 
     //per compattare database comando -> SHUTDOWN COMPACT //da valutare quando farlo
@@ -47,6 +50,7 @@ public class DatabaseH2 {
         //della sessione precedente non sono più valide
         Pers_Opzioni_InvalidaCache();
         Mappa_Wallet_Gruppo.clear();
+        ultimaEccezioneConnessione = null;
         try {
             jdbcUrl = VarStatiche.getDBPrincipale();
             jdbcUrl2 = VarStatiche.getDBPersonale();
@@ -210,15 +214,24 @@ public class DatabaseH2 {
                 preparedStatement.setString(2, "Pippo");
                 preparedStatement.executeUpdate();*/
         } catch (SQLException ex) {
+            ultimaEccezioneConnessione = ex;
             LoggerGC.ScriviErrore(ex);
-            
+
         }
         return successo;
     }
-    
-    
-    
-    
+
+    //C5: true se l'ultimo fallimento di CreaoCollegaDatabase() è dovuto a un lock di un'altra sessione
+    //già aperta (H2 error code 90020 = DATABASE_ALREADY_OPEN_1), false per qualsiasi altro errore
+    //(DB corrotto, disco pieno, versione H2 incompatibile...) o se non c'è stato nessun errore
+    public static boolean isErroreDatabaseGiaAperto() {
+        return ultimaEccezioneConnessione != null && ultimaEccezioneConnessione.getErrorCode() == 90020;
+    }
+
+    public static SQLException getUltimaEccezioneConnessione() {
+        return ultimaEccezioneConnessione;
+    }
+
     //Esegue una singola istruzione DDL/SQL senza risultato chiudendo subito lo statement (correzione M1: niente leak di risorse JDBC)
     private static void EseguiDDL(Connection con, String sql) throws SQLException {
         try (PreparedStatement ps = con.prepareStatement(sql)) {
@@ -276,7 +289,7 @@ public class DatabaseH2 {
         }
     }
     
-public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, String Moneta, String VU, String Rete, String Address, String Gruppo,long timestampDaCancellare) {
+public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, String Moneta, String VU, String Rete, String Address, String Gruppo,long timestampDaCancellare) {
     try {
         Double ValoreUnitario = Double.valueOf(VU);
         //System.out.println(Timestamp);
@@ -346,7 +359,7 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
                   AND address = ?
                 """;
         } else {
-            return;
+            return false;
         }
 
         try (PreparedStatement del = DatabaseH2.connectionPersonale.prepareStatement(deleteSql)) {
@@ -401,8 +414,10 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
             ps.executeUpdate();
         }
 
+        return true;
     } catch (NumberFormatException | SQLException ex) {
         LoggerGC.ScriviErrore(ex);
+        return false;
     }
 }
 
@@ -1773,45 +1788,6 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
   
         
         
-        public static String GestitiCoinCap_Leggi(String Gestito) {
-        String Risultato = null;
-        try (PreparedStatement checkStatement = connection.prepareStatement("SELECT NOME FROM GESTITICOINCAP WHERE Symbol = ?")) {
-            checkStatement.setString(1, Gestito);
-            try (ResultSet resultSet = checkStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    Risultato = resultSet.getString("NOME");
-                }
-            }
-        } catch (SQLException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-        return Risultato;
-    } 
-        
-        
-   
-    
-        public static String[] GestitiCoinCap_LeggiInteraRiga(String Gestito) {
-        String Risultato[] = new String[2];
-        try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT Symbol,Nome FROM GESTITICOINCAP WHERE Symbol = ?";
-            try (PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL)) {
-                checkStatement.setString(1, Gestito);
-                try (ResultSet resultSet = checkStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        Risultato[0] = resultSet.getString("Symbol");
-                        Risultato[1] = resultSet.getString("Nome");
-                    }
-                }
-            }
-
-        } catch (SQLException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-        return Risultato;
-    } 
-    
         public static void CoppieBinance_ScriviNuovaTabella(List<String> Coppie) {
         try {
             // Connessione al database
@@ -1935,30 +1911,6 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
         
       
         
-                public static void GestitiCoinCap_ScriviNuovaTabella(List<String[]> Gestiti) {
-        try {
-            // Connessione al database
-            EseguiDDL(connection, "DROP TABLE IF EXISTS GESTITICOINCAP");
-            EseguiDDL(connection, "CREATE TABLE IF NOT EXISTS GESTITICOINCAP  (Symbol VARCHAR(255) PRIMARY KEY, Nome VARCHAR(255))");
-            String insertSQL = "INSERT INTO GESTITICOINCAP (Symbol,Nome) VALUES (?, ?)";
-            try (PreparedStatement insertStatement = connection.prepareStatement(insertSQL)) {
-                for (String gestito[]:Gestiti){
-                    //la pulizia di apostrofi e asterischi viene mantenuta per non cambiare i nomi salvati rispetto alle versioni precedenti
-                    gestito[1]=gestito[1].replace("'", "").replace("*", "");
-                    //Inserisco il simbolo della moneta solo se questa non è già stata gestita, anche perchè il simbolo è un campo univoco e mi darebbe errore
-                    if (GestitiCoinCap_Leggi(gestito[0])==null)
-                    {
-                        insertStatement.setString(1, gestito[0]);
-                        insertStatement.setString(2, gestito[1]);
-                        insertStatement.executeUpdate();
-                    }
-                }
-            }
-        } catch (SQLException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-    }
-
     public static Integer GestitiCoinMarketCap_Leggi(String Symbol) {
         try (PreparedStatement ps = connection.prepareStatement(
                 "SELECT CmcId FROM GESTITICOINMARKETCAP WHERE Symbol = ?")) {

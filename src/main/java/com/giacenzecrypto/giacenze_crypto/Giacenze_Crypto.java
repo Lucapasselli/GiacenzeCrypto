@@ -14,6 +14,7 @@ import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.plaf.FontUIResource;
@@ -23,7 +24,7 @@ public class Giacenze_Crypto {
     private static final float DEFAULT_FONT_SIZE = 12f;
     private static final String DEFAULT_FONT_FAMILY = "Inter";
 
-    public static void main(String[] args) throws UnsupportedLookAndFeelException {
+    public static void main(String[] args) {
 
         System.out.println("user.dir : " + System.getProperty("user.dir"));
         VarStatiche.setPathRisorse(getJarPath() + "/");
@@ -73,9 +74,19 @@ public class Giacenze_Crypto {
         System.out.println("Working Directory : " + VarStatiche.getWorkingDirectory());
 
         if (!DatabaseH2.CreaoCollegaDatabase()) {
+            //C5: distingue il lock da un'altra sessione (H2 error code 90020) da qualsiasi altro
+            //errore di connessione (DB corrotto, disco pieno, versione H2 incompatibile...), che
+            //altrimenti veniva mascherato dallo stesso messaggio fuorviante
+            String messaggio;
+            if (DatabaseH2.isErroreDatabaseGiaAperto()) {
+                messaggio = "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!";
+            } else {
+                messaggio = "Attenzione, non è stato possibile aprire il database, questa sessione verrà terminata!!\n"
+                        + "Dettaglio errore: " + DatabaseH2.getUltimaEccezioneConnessione();
+            }
             JOptionPane.showConfirmDialog(
                     null,
-                    "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!",
+                    messaggio,
                     "Attenzione",
                     JOptionPane.DEFAULT_OPTION,
                     JOptionPane.INFORMATION_MESSAGE,
@@ -93,42 +104,49 @@ public class Giacenze_Crypto {
 
         impostaFontGlobale(fontFamily, fontSize);
 
-        if (Principale.tema.equalsIgnoreCase("Scuro")) {
-            //FlatLaf.registerCustomDefaultsSource("Temi");
-            UIManager.setLookAndFeel(new FlatDarkLaf());
-            Tabelle.verdeScuro = new Color(145, 255, 143);
-            Tabelle.rosso = new Color(255, 133, 133);
-            Tabelle.Rosso = "FFA07A";
-            Tabelle.Verde = "9ACD32";
-        } else {
-            UIManager.setLookAndFeel(new FlatLightLaf());
-            Tabelle.verdeScuro = new Color(23, 114, 69);
-            Tabelle.rosso = new Color(255, 100, 100);
-        }
-
-        Principale g = new Principale();
-
-        String finestraLarghezza = DatabaseH2.Opzioni_Leggi("Finestra_Larghezza");
-        String finestraAltezza = DatabaseH2.Opzioni_Leggi("Finestra_Altezza");
-        String finestraMassimizzata = DatabaseH2.Opzioni_Leggi("Finestra_Massimizzata");
-
-        if (finestraLarghezza != null && finestraAltezza != null) {
+        //A6: la costruzione della GUI Swing va fatta sull'Event Dispatch Thread, non sul main thread
+        SwingUtilities.invokeLater(() -> {
             try {
-                g.setSize(Integer.parseInt(finestraLarghezza), Integer.parseInt(finestraAltezza));
-            } catch (NumberFormatException ex) {
+                if (Principale.tema.equalsIgnoreCase("Scuro")) {
+                    //FlatLaf.registerCustomDefaultsSource("Temi");
+                    UIManager.setLookAndFeel(new FlatDarkLaf());
+                    Tabelle.verdeScuro = new Color(145, 255, 143);
+                    Tabelle.rosso = new Color(255, 133, 133);
+                    Tabelle.Rosso = "FFA07A";
+                    Tabelle.Verde = "9ACD32";
+                } else {
+                    UIManager.setLookAndFeel(new FlatLightLaf());
+                    Tabelle.verdeScuro = new Color(23, 114, 69);
+                    Tabelle.rosso = new Color(255, 100, 100);
+                }
+            } catch (UnsupportedLookAndFeelException ex) {
+                LoggerGC.ScriviErrore(ex);
+            }
+
+            Principale g = new Principale();
+
+            String finestraLarghezza = DatabaseH2.Opzioni_Leggi("Finestra_Larghezza");
+            String finestraAltezza = DatabaseH2.Opzioni_Leggi("Finestra_Altezza");
+            String finestraMassimizzata = DatabaseH2.Opzioni_Leggi("Finestra_Massimizzata");
+
+            if (finestraLarghezza != null && finestraAltezza != null) {
+                try {
+                    g.setSize(Integer.parseInt(finestraLarghezza), Integer.parseInt(finestraAltezza));
+                } catch (NumberFormatException ex) {
+                    g.pack();
+                }
+            } else {
                 g.pack();
             }
-        } else {
-            g.pack();
-        }
 
-        g.setLocationRelativeTo(null);
+            g.setLocationRelativeTo(null);
 
-        if ("true".equalsIgnoreCase(finestraMassimizzata)) {
-            g.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
-        }
+            if ("true".equalsIgnoreCase(finestraMassimizzata)) {
+                g.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
+            }
 
-        g.setVisible(true);
+            g.setVisible(true);
+        });
     }
 
     private static void impostaFontGlobale(String fontFamily, float size) {

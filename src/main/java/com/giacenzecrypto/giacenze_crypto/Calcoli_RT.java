@@ -365,6 +365,19 @@ public class Calcoli_RT {
 
   
     
+    /**
+     * Ricalcola da zero il quadro RT (plusvalenze fiscali) per tutti gli anni presenti in
+     * {@code Principale.MappaCryptoWallet}: è il metodo che orchestra l'intero motore del quadro
+     * RT, analogo a {@code Calcoli_PlusvalenzeNew.AggiornaPlusvalenze} per il motore LIFO
+     * principale. Scorre i movimenti in ordine cronologico raggruppandoli per gruppo wallet
+     * (secondo l'opzione {@code PlusXWallet}) e, a ogni cambio di anno, chiude l'anno precedente
+     * ({@link #ChiudiAnno}) calcolando la plusvalenza latente sulle giacenze residue. Rileva anche
+     * due categorie di errore complessivi: movimenti privi di classificazione (campo 18 vuoto su
+     * depositi/prelievi rilevanti) e movimenti rilevanti fiscalmente privi di prezzo.
+     *
+     * @param progress finestra di progresso/interruzione: se l'utente annulla ({@code progress.FineThread()}), il calcolo si interrompe restituendo {@code null}
+     * @return un {@link AnalisiPlus} con le plusvalenze per anno e la mappa completa gruppo wallet/moneta, oppure {@code null} se l'elaborazione è stata interrotta dall'utente
+     */
     public static AnalisiPlus CalcoliPlusvalenzeXAnno(Download progress){
         // DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
       //  Funzioni_Tabelle_PulisciTabella(ModelloTabellaRT);
@@ -815,6 +828,22 @@ public class Calcoli_RT {
                 }
     }*/
     
+       /**
+        * Chiude l'elaborazione RT di {@code Anno}: per ogni gruppo wallet e moneta con giacenza
+        * residua positiva, estrae dal LIFO RT il costo di carico corrispondente ({@link #StackLIFO_TogliQta}
+        * in sola lettura), recupera il prezzo di mercato a fine anno (o alla data odierna se
+        * {@code Anno} è l'anno corrente) e calcola la plusvalenza latente, accumulandola nel totale
+        * annuo ({@code PlusvalenzeXAnno}). Se tra {@code Anno} e {@code AnnoSuccessivo} ci sono anni
+        * senza movimenti, la mappa viene clonata e la chiusura richiamata ricorsivamente su
+        * quegli anni "vuoti" così da avere comunque un rigo per ciascuno.
+        *
+        * @param PlusvalenzeXAnno mappa anno → totali RT ({@code BigDecimal[7]}: anno, costo carico, realizzato, plusvalenza, plusvalenza latente, valore rimanenze, errori), aggiornata in place
+        * @param Anno anno da chiudere; se {@code null} non fa nulla e ritorna {@code true} (buco tra un anno e il successivo)
+        * @param MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta mappa completa anno/gruppo wallet/moneta con lo stato LIFO RT
+        * @param progress finestra di progresso/interruzione, controllata a ogni moneta elaborata
+        * @param AnnoSuccessivo anno immediatamente successivo nel ciclo dei movimenti, usato per rilevare ed elaborare anni intermedi senza movimenti
+        * @return {@code false} se l'utente ha interrotto l'elaborazione tramite {@code progress}; {@code true} altrimenti
+        */
        public static boolean ChiudiAnno(Map<String,BigDecimal[]> PlusvalenzeXAnno,
             String Anno,
             Map<String, Map<String, Map<String, PlusXMoneta>>> MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,
@@ -961,6 +990,18 @@ public class Calcoli_RT {
                 return ritorno;
     } 
     
+     /**
+      * Inserisce (push) un lotto nello stack LIFO RT della moneta indicata, analogo a
+      * {@code Calcoli_PlusvalenzeNew.StackLIFO_InserisciValore} ma per il motore del quadro RT
+      * (lo stack è tenuto dentro il {@link PlusXMoneta} della moneta invece che in una mappa esterna).
+      *
+      * @param MappaMoneta_PlusXMoneta mappa moneta → stato RT del gruppo wallet corrente; deve già contenere una entry per {@code Moneta}
+      * @param Moneta simbolo della criptoattività del lotto in ingresso
+      * @param Qta quantità del lotto (il segno non è rilevante, viene usato il valore assoluto)
+      * @param Valore costo di carico del lotto
+      * @param Data data del lotto
+      * @param ID ID della transazione di origine del lotto
+      */
      public static void StackLIFO_InserisciValore(Map<String, PlusXMoneta> MappaMoneta_PlusXMoneta, String Moneta,String Qta,String Valore,String Data,String ID) {
    // MappaMoneta_PlusXMoneta
            // Map<String, ArrayDeque> CryptoStack
@@ -986,6 +1027,17 @@ public class Calcoli_RT {
      
      
   
+      /**
+       * Estrae dallo stack LIFO RT di {@code Moneta} i lotti necessari a coprire {@code Qta} e ne
+       * calcola il costo di carico complessivo, analogo a {@code Calcoli_PlusvalenzeNew.StackLIFO_TogliQta}
+       * ma per il motore del quadro RT (lo stack è tenuto dentro il {@link PlusXMoneta} della moneta).
+       *
+       * @param MappaMoneta_PlusXMoneta mappa moneta → stato RT del gruppo wallet corrente
+       * @param Moneta simbolo della criptoattività da cui estrarre
+       * @param Qta quantità da estrarre (il segno non è rilevante, viene usato il valore assoluto); se vuota o {@code Moneta} è vuota non viene fatto nulla
+       * @param toglidaStack se {@code true} lo stack viene effettivamente modificato; se {@code false} si opera su un clone (sola lettura/simulazione, usato da {@link #ChiudiAnno})
+       * @return il costo di carico complessivo estratto, come stringa decimale (scala 2); "0.00" se lo stack della moneta non esiste, stringa vuota se {@code Qta}/{@code Moneta} sono vuote
+       */
       public static String StackLIFO_TogliQta(Map<String, PlusXMoneta> MappaMoneta_PlusXMoneta, String Moneta,String Qta,boolean toglidaStack) {
     
     //come ritorno ci invio il valore della movimentazione
@@ -1142,18 +1194,40 @@ public class Calcoli_RT {
   
   public String ListaIDcoinvolti="";
   
+  /**
+   * Imposta la mappa dei totali RT per anno.
+   *
+   * @param PlusXAnno mappa anno → totali RT ({@code BigDecimal[7]}, vedi {@link Calcoli_RT#ChiudiAnno})
+   */
   public void Put_PluvalenzeXAnno(Map<String,BigDecimal[]> PlusXAnno){
       PlusvalenzeXAnno=PlusXAnno;
   }
-  
+
+  /**
+   * @return la mappa dei totali RT per anno, così come impostata da {@link #Put_PluvalenzeXAnno}
+   */
   public Map<String,BigDecimal[]>  Get_TabellaPlusXAnno(){
       return PlusvalenzeXAnno;
   }
-  
+
+  /**
+   * Imposta la mappa completa anno/gruppo wallet/moneta con lo stato LIFO RT.
+   *
+   * @param MappaAnno_MappaGrWallet_MappaMoneta_PlusXMonetaA mappa anno → gruppo wallet → moneta → stato RT
+   */
   public void Put_MappaCompleta(Map<String, Map<String, Map<String, PlusXMoneta>>> MappaAnno_MappaGrWallet_MappaMoneta_PlusXMonetaA){
-     MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMonetaA; 
+     MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMonetaA;
   }
-  
+
+  /**
+   * Costruisce le righe da mostrare nella tabella RT di riepilogo dell'anno indicato: una riga per
+   * ogni coppia gruppo wallet/moneta non SCAM che ha avuto movimentazioni nell'anno o ha ancora
+   * giacenza diversa da zero, con vendite, costi, plusvalenza realizzata/latente, giacenza,
+   * prezzo e un'eventuale colonna di errore (giacenza negativa, token senza prezzo).
+   *
+   * @param Anno anno di cui costruire la tabella
+   * @return lista di righe ({@code Object[13]}: wallet, moneta, tipo, valore vendite, costo vendite, plus realizzata, plus latente, giacenza, prezzo, PMC, errori HTML, address, rete)
+   */
   public List<Object[]> RitornaTabellaAnno(String Anno){
       Map<String, Map<String, PlusXMoneta>> MappaGrWallet_MappaMoneta_PlusXMoneta=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno);
       List<Object[]> Tabella=new ArrayList<>();
@@ -1198,6 +1272,18 @@ public class Calcoli_RT {
       return Tabella;
   }
   
+  /**
+   * Costruisce le righe di dettaglio LIFO per la coppia gruppo wallet/moneta indicata nell'anno
+   * {@code Anno}: simula l'estrazione dell'intera giacenza residua dallo stack LIFO RT (senza
+   * modificarlo) e produce una riga per ciascun lotto attraversato, con quantità/costo estratti,
+   * prezzo di mercato alla data di riferimento (fine anno, o data odierna per l'anno corrente) e
+   * plusvalenza latente progressiva. Usato dalla GUI per il dettaglio del calcolo di un singolo token.
+   *
+   * @param Anno anno di riferimento
+   * @param Wallet gruppo wallet di riferimento
+   * @param Moneta simbolo della criptoattività di cui mostrare il dettaglio
+   * @return lista di righe ({@code Object[10]}: data, moneta, wallet, qta estratta, costo estratto, prezzo, plus latente lotto, qta progressiva, plus latente progressiva, ID transazione origine); vuota se non c'è stato/giacenza per quella moneta
+   */
   public List<Object[]> RitornaTabellaLiFo(String Anno,String Wallet,String Moneta){
         PlusXMoneta PlusXMon=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta);
         List<Object[]> Tabella=new ArrayList<>();
@@ -1329,14 +1415,19 @@ public class Calcoli_RT {
           ArrayDeque<String[]> Stack;
           
           
+          /**
+           * Sostituisce lo stack LIFO RT di questa moneta.
+           * @param PMStack nuovo stack (lotti moneta/quantità/costo/data/ID)
+           */
           public void Put_CryptoStack(ArrayDeque<String[]> PMStack)
           {
             Stack=PMStack;
           }
+          /** @return lo stack LIFO RT di questa moneta, o {@code null} se non ancora movimentata */
           public ArrayDeque<String[]> Get_CryptoStack()
           {
             return Stack;
-          }  
+          }
         /*  public void Put_Anno(String PMAnno)
           {
             Anno=PMAnno;
@@ -1345,61 +1436,102 @@ public class Calcoli_RT {
           {
             Wallet=PMWallet;
           } */
+          /**
+           * Imposta il simbolo della moneta sull'oggetto {@link Moneta} sottostante.
+           * @param PMMoneta simbolo della criptoattività
+           */
           public void Put_Moneta(String PMMoneta)
           {
             Mon.Moneta=PMMoneta;
-          } 
+          }
+          /**
+           * Imposta la tipologia (es. "Crypto", "FIAT", "EMoney") sull'oggetto {@link Moneta} sottostante.
+           * @param PMTipo tipologia della moneta
+           */
           public void Put_Tipo(String PMTipo)
           {
             Mon.Tipo=PMTipo;
-          } 
+          }
+          /**
+           * Imposta il valore complessivo delle vendite dell'anno per questa moneta.
+           * @param PMValVendite valore delle vendite, come stringa decimale
+           */
           public void Put_ValVendite(String PMValVendite)
           {
             ValVendita=PMValVendite;
-          } 
+          }
+          /** @return il valore complessivo delle vendite dell'anno per questa moneta */
           public BigDecimal Get_ValVendite()
           {
             return new BigDecimal(ValVendita);
-          } 
+          }
+          /**
+           * Imposta il costo di carico complessivo delle vendite dell'anno per questa moneta.
+           * @param Put_ValCosto costo di carico, come stringa decimale
+           */
           public void Put_ValCosto(String Put_ValCosto)
           {
             CostoVendite=Put_ValCosto;
-          } 
+          }
+          /** @return il costo di carico complessivo delle vendite dell'anno per questa moneta */
           public BigDecimal Get_ValCosto()
           {
             return new BigDecimal(CostoVendite);
-          } 
+          }
+          /**
+           * Imposta la plusvalenza realizzata dell'anno per questa moneta.
+           * @param PMPlusRealizzata plusvalenza realizzata, come stringa decimale
+           */
           public void Put_PlusRealizzata(String PMPlusRealizzata)
           {
             PlusRealizzata=PMPlusRealizzata;
           }
+          /** @return la plusvalenza realizzata dell'anno per questa moneta */
           public BigDecimal Get_PlusRealizzata()
           {
             return new BigDecimal(PlusRealizzata);
-          } 
+          }
+          /**
+           * Imposta la plusvalenza latente (non realizzata) di fine anno per questa moneta, calcolata da {@link Calcoli_RT#ChiudiAnno}.
+           * @param PMPlusLatente plusvalenza latente, come stringa decimale
+           */
           public void Put_PlusLatente(String PMPlusLatente)
           {
             PlusLatente=PMPlusLatente;
-          } 
+          }
+          /**
+           * Imposta il prezzo medio di carico (PMC) di fine anno per questa moneta.
+           * @param PMCx prezzo medio di carico, come stringa decimale
+           */
           public void Put_PMC(String PMCx)
           {
             PMC=PMCx;
-          } 
+          }
+          /**
+           * Imposta la giacenza sull'oggetto {@link Moneta} sottostante.
+           * @param PMGiacenza quantità in giacenza, come stringa decimale
+           */
           public void Put_Giacenza(String PMGiacenza)
           {
             Mon.Qta=PMGiacenza;
-          } 
+          }
+          /** @return la giacenza corrente di questa moneta */
           public BigDecimal Get_Giacenza()
           {
             return new BigDecimal(Mon.Qta);
-          } 
+          }
         /*  public void Put_Errori(String PMErrori)
           {
             Errori=PMErrori;
           } */
+          /**
+           * Imposta l'oggetto {@link Moneta} sottostante, sostituendo simbolo/tipo/giacenza/prezzo/rete in blocco.
+           * @param monet moneta da associare
+           */
           public void CompilaCampiDaMoneta(Moneta monet){
               Mon=monet;
           }
+          /** @return l'oggetto {@link Moneta} sottostante (simbolo, tipo, giacenza, prezzo, rete) */
           public Moneta Get_Moneta(){
               return Mon;
           }

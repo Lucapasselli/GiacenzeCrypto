@@ -96,7 +96,15 @@ public class Calcoli_PlusvalenzeNew {
     
     
 private static Map<String, LifoXID> MappaIDTrans_LifoxID = new TreeMap<>();
-    
+
+/**
+ * Ritorna lo stato LIFO (stack entrato/uscito) registrato per una transazione, popolato
+ * durante l'ultima esecuzione di {@link #AggiornaPlusvalenze()}. Usato dalla GUI di dettaglio
+ * transazione per mostrare quali lotti sono stati movimentati dal LIFO.
+ *
+ * @param id ID della transazione
+ * @return il {@link LifoXID} della transazione, o {@code null} se non ancora calcolato
+ */
 public static LifoXID getIDLiFo(String id){
     return MappaIDTrans_LifoxID.get(id);
 }
@@ -159,6 +167,23 @@ C-DC-RW -> da finire di compilare, ma verrà fatto in un secondo momento e poi �
         }
     }
 
+/**
+ * Estrae dallo stack LIFO di {@code Moneta} i lotti necessari a coprire {@code Qta}, partendo
+ * dall'ultimo entrato (LIFO), e ne calcola il costo di carico complessivo. Se un singolo lotto
+ * copre solo parzialmente la quantità richiesta, il lotto viene consumato per intero e si
+ * prosegue con quello precedente; se un lotto è più grande del necessario viene rimesso in
+ * stack per la parte residua (proporzionando il costo). Se lo stack si esaurisce prima di aver
+ * coperto tutta {@code Qta} il movimento viene marcato con l'anomalia "A" (giacenza LIFO
+ * insufficiente) nel campo 38, salvo il caso di token SCAM. Quantità o moneta vuote, o quantità
+ * non numerica, non hanno alcun effetto sul LIFO (quest'ultimo caso viene segnalato con "E").
+ *
+ * @param CryptoStack mappa moneta → stack LIFO dei lotti (moneta, quantità, costo, IDTransazione origine) del gruppo wallet corrente
+ * @param Moneta simbolo della criptoattività da cui estrarre
+ * @param Qta quantità da estrarre (il segno non è rilevante, viene usato il valore assoluto)
+ * @param toglidaStack se {@code true} lo stack viene effettivamente modificato e lo storico LIFO della transazione registrato in {@link LifoXID}; se {@code false} si opera su un clone (sola lettura/simulazione) e non si segnala alcuna anomalia
+ * @param IDTransazione ID della transazione corrente, usato per il log, l'anomalia e per indicizzare {@link #MappaIDTrans_LifoxID}
+ * @return il costo di carico complessivo estratto, come stringa decimale (scala {@code VarStatiche.DecimaliPlus}); stringa vuota se {@code Moneta} o {@code Qta} sono vuoti o {@code Qta} non è numerica
+ */
 public static String StackLIFO_TogliQta(Map<String, ArrayDeque<String[]>> CryptoStack, String Moneta,String Qta,boolean toglidaStack,String IDTransazione) {
     
     LifoXID lifoID=MappaIDTrans_LifoxID.computeIfAbsent(IDTransazione, k -> new LifoXID());
@@ -303,6 +328,18 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
  
  
     
+/**
+ * Inserisce (push) un nuovo lotto in cima allo stack LIFO di {@code Moneta}, registrando anche
+ * lo stato pre-movimento e il lotto stesso in {@link LifoXID} per la transazione corrente, ai
+ * fini della visualizzazione di dettaglio. Una quantità vuota o non numerica non viene inserita
+ * nel LIFO (nessun lotto aggiunto) e la transazione viene segnalata con l'anomalia "E".
+ *
+ * @param CryptoStack mappa moneta → stack LIFO dei lotti del gruppo wallet corrente, modificata in place
+ * @param Moneta simbolo della criptoattività del lotto in ingresso
+ * @param Qta quantità del lotto (il segno non è rilevante, viene usato il valore assoluto)
+ * @param Valore costo di carico del lotto
+ * @param IDTransazione ID della transazione corrente, usato per il log, l'anomalia e per indicizzare {@link #MappaIDTrans_LifoxID}
+ */
    public static void StackLIFO_InserisciValore(Map<String, ArrayDeque<String[]>> CryptoStack, String Moneta,String Qta,String Valore,String IDTransazione) {
     
     //C2: una quantità vuota o non numerica non può entrare nel LIFO: la segnalo
@@ -344,6 +381,19 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
 
 }
     
+/**
+ * Ricalcola da zero plusvalenza, costo di carico e stato dello stack LIFO per tutti i movimenti
+ * in {@code Principale.MappaCryptoWallet}, in ordine cronologico e raggruppati per gruppo wallet
+ * (uno stack LIFO indipendente per ogni gruppo, se l'opzione {@code PlusXWallet} è attiva,
+ * altrimenti un unico stack "Wallet 01"). È il metodo che orchestra l'intero motore fiscale:
+ * per ciascun movimento determina la categoria fiscale (vedi le costanti di categoria in testa
+ * alla classe), calcola plusvalenza/costo di carico secondo la tipologia, e movimenta il LIFO
+ * tramite {@link #StackLIFO_TogliQta} / {@link #StackLIFO_InserisciValore}. Le opzioni personali
+ * rilevanti (gestione movimenti non classificati, plusvalenze su commissioni, regole pre-2023)
+ * vengono lette una sola volta prima del ciclo. Aggiorna i movimenti in {@code MappaCryptoWallet}
+ * in place (campi plusvalenza, costo di carico, flag di anomalia nel campo 38) e ripopola
+ * {@link #MappaIDTrans_LifoxID}, che viene svuotata a ogni chiamata.
+ */
      public static void AggiornaPlusvalenze(){
          
       //   System.out.println("Aggiornamento Plusvalenze");
@@ -820,22 +870,6 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
 
    
 
-   /**
-     *
-     * @param Tipologia
-     * @param Data
-     * @param Token
-     * @return  In base alla Tipologia di movimento<br>
-     * 
-     * 
-     * 
-     * 
-     * 
-     * 
-     * 
-     * 
-     * 
-     */
   /* public static String RitornaTipoCrypto(String Token,String Data,String Tipologia) {
        String Tipo=Tipologia;
        String DataEmoney=CDC_Grafica.Mappa_EMoney.get(Token);
@@ -846,7 +880,18 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
        }
        return Tipo;
    }*/
-   
+
+    /**
+     * Se l'opzione {@code PlusXWallet} è attiva, individua il movimento "controparte" di un
+     * trasferimento tra wallet ({@code v}, di tipo DTW o PTW, importato o manuale) quando questo
+     * appartiene a un gruppo wallet diverso: serve a sapere se il costo di carico va spostato da
+     * uno stack LIFO di gruppo a un altro invece di restare nello stesso gruppo. Gestisce sia il
+     * trasferimento semplice (2-3 movimenti collegati) sia lo scambio differito (più di 3
+     * movimenti collegati, dove la controparte è il PTW automatico marcato "AU").
+     *
+     * @param v riga del movimento (formato {@code String[45]} di {@code Principale.MappaCryptoWallet})
+     * @return array di 2 elementi: {@code [0]} ID del movimento controparte, {@code [1]} il suo gruppo wallet; entrambi {@code null} se l'opzione è disattiva, il movimento non è un trasferimento, o la controparte è nello stesso gruppo
+     */
     public static String[] RitornaIDeGruppoControparteSeGruppoDiverso(String v[]) {
         
         String IDeGruppo[] = new String[2];
@@ -945,33 +990,55 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
           
           
           
+          /**
+           * Sostituisce interamente lo stack dei lotti entrati nel LIFO da questa transazione.
+           *
+           * @param PMStack nuovo stack da usare come {@code StackEntrato}
+           */
           public void sostituisci_CryptoStackEntrato(ArrayDeque<String[]> PMStack)
           {
             StackEntrato=PMStack;
           }
+          /**
+           * Aggiunge un singolo lotto (in coda) allo stack dei lotti entrati per questa transazione.
+           *
+           * @param Dettaglio riga del lotto (moneta, quantità, costo, ID transazione origine)
+           */
           public void aggiungi_Entrato_Dettagli(String Dettaglio[])
           {
             StackEntrato.add(Dettaglio);
           }
-          
+
+          /**
+           * @return lo stack dei lotti inseriti nel LIFO da questa transazione
+           */
           public ArrayDeque<String[]> Get_CryptoStackEntrato()
           {
             return StackEntrato;
-          }  
+          }
+          /**
+           * @return una copia dello stack LIFO della moneta così com'era immediatamente prima che questa transazione lo modificasse
+           */
           public ArrayDeque<String[]> Get_CryptoStackEntratoPreMovimento()
           {
             return StackEntratoPreMovimento;
-          } 
-          
+          }
+
+          /**
+           * @return lo stack dei lotti estratti dal LIFO da questa transazione (vedi {@link Calcoli_PlusvalenzeNew#StackLIFO_TogliQta})
+           */
           public ArrayDeque<String[]> Get_CryptoStackUscito()
           {
             return StackUscito;
-          }  
-          
+          }
+
+          /**
+           * @return una copia dello stack LIFO della moneta rimasto dopo l'estrazione operata da questa transazione
+           */
           public ArrayDeque<String[]> Get_CryptoStackUscitoRimanenze()
           {
             return StackUscitoRimanenze;
-          }  
+          }
       
       }     
 

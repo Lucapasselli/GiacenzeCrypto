@@ -43,7 +43,19 @@ public class DatabaseH2 {
     private static SQLException ultimaEccezioneConnessione;
     static Map<String, String> Mappa_Wallet_Gruppo = new TreeMap<>();//memorizzo anche qua l'associazione dei gruppi per rendere più veloce la ricerca
 
-    //per compattare database comando -> SHUTDOWN COMPACT //da valutare quando farlo
+    /**
+     * Apre (creandoli se non esistono) i tre database H2 dell'applicazione — principale, personale
+     * e prezzi — usando i percorsi correnti risolti da {@link VarStatiche}, e crea/allinea tutte le
+     * tabelle applicative (opzioni, wallet, gruppi wallet, cache prezzi/token, GoPlusLabs, ecc.),
+     * incluse le migrazioni per i database creati con schemi precedenti. Invalida anche la cache
+     * delle opzioni personali e la mappa wallet→gruppo, così un cambio di database (es. nei test)
+     * riparte pulito. In caso di errore (tipicamente un lock di un'altra sessione già aperta, vedi
+     * {@link #isErroreDatabaseGiaAperto()}) la {@link SQLException} viene salvata e recuperabile
+     * tramite {@link #getUltimaEccezioneConnessione()}.
+     *
+     * @return {@code true} se la connessione e la creazione delle tabelle sono andate a buon fine
+     * (per compattare database: comando SQL {@code SHUTDOWN COMPACT}, da valutare quando farlo)
+     */
     public static boolean CreaoCollegaDatabase() {
         boolean successo=false;
         //A1: se mi sto collegando a un database diverso (o ricollegando) le cache in memoria
@@ -221,13 +233,19 @@ public class DatabaseH2 {
         return successo;
     }
 
-    //C5: true se l'ultimo fallimento di CreaoCollegaDatabase() è dovuto a un lock di un'altra sessione
-    //già aperta (H2 error code 90020 = DATABASE_ALREADY_OPEN_1), false per qualsiasi altro errore
-    //(DB corrotto, disco pieno, versione H2 incompatibile...) o se non c'è stato nessun errore
+    /**
+     * @return {@code true} se l'ultimo fallimento di {@link #CreaoCollegaDatabase()} è dovuto a un
+     * lock di un'altra sessione già aperta (H2 error code 90020 = {@code DATABASE_ALREADY_OPEN_1});
+     * {@code false} per qualsiasi altro errore (DB corrotto, disco pieno, versione H2 incompatibile...)
+     * o se non c'è stato nessun errore
+     */
     public static boolean isErroreDatabaseGiaAperto() {
         return ultimaEccezioneConnessione != null && ultimaEccezioneConnessione.getErrorCode() == 90020;
     }
 
+    /**
+     * @return l'ultima {@link SQLException} verificatasi in {@link #CreaoCollegaDatabase()}, o {@code null} se l'ultima connessione è riuscita
+     */
     public static SQLException getUltimaEccezioneConnessione() {
         return ultimaEccezioneConnessione;
     }
@@ -239,6 +257,14 @@ public class DatabaseH2 {
         }
     }
 
+    /**
+     * Migrazione: se la colonna {@code VALORE} della tabella {@code OPZIONI} è più corta di 1000
+     * caratteri (schema creato da una versione precedente dell'app), la allarga a
+     * {@code VARCHAR(1000)}. Non fa nulla se la colonna è già della dimensione corretta o se la
+     * tabella non esiste ancora.
+     *
+     * @param connection connessione al database su cui verificare/allargare la colonna
+     */
     public static void aggiornaDimensioneColonnaValoreH2Opzioni(Connection connection) {
     try (Statement stmt = connection.createStatement()) {
         // 1. Controlla la dimensione corrente della colonna
@@ -289,6 +315,25 @@ public class DatabaseH2 {
         }
     }
     
+/**
+ * Salva (o sovrascrive) un prezzo personalizzato per un token, inserito manualmente dall'utente,
+ * su {@code connectionPersonale}. Se {@code Address}/{@code Rete} sono valorizzati il prezzo viene
+ * indicizzato per address+rete, altrimenti per nome moneta; prima dell'inserimento cancella
+ * eventuali valori precedenti per la stessa chiave (sia al {@code Timestamp} indicato sia a
+ * {@code timestampDaCancellare}, tipicamente il timestamp del prezzo di mercato che si sta
+ * sostituendo) e anche i vecchi valori residui nelle tabelle legacy {@code XXXEUR} e
+ * {@code Prezzo_ora_Address_Chain}.
+ *
+ * @param Timestamp istante (epoch minuti) a cui associare il prezzo personalizzato
+ * @param Fonte etichetta della fonte del prezzo (viene ripulita di eventuali suffissi tra parentesi e ricomposta con {@code Gruppo})
+ * @param Moneta simbolo della criptoattività (usato quando {@code Address}/{@code Rete} sono vuoti)
+ * @param VU valore unitario del prezzo, come stringa numerica
+ * @param Rete rete blockchain del token (vuota per prezzo indicizzato per nome)
+ * @param Address indirizzo del contratto del token (vuota per prezzo indicizzato per nome); se non valido per {@code Rete} viene azzerato
+ * @param Gruppo gruppo wallet a cui applicare il prezzo personalizzato ("TUTTI" se vuoto)
+ * @param timestampDaCancellare timestamp aggiuntivo di cui cancellare eventuali vecchi valori prima di inserire il nuovo
+ * @return {@code true} se il prezzo è stato salvato; {@code false} se {@code VU} non è numerico, se manca sia {@code Moneta} sia {@code Address}/{@code Rete}, o in caso di errore SQL (già loggato)
+ */
 public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, String Moneta, String VU, String Rete, String Address, String Gruppo,long timestampDaCancellare) {
     try {
         Double ValoreUnitario = Double.valueOf(VU);
@@ -511,6 +556,13 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         }
     }
         
+        /**
+         * Legge dal database la data a partire dalla quale {@code Moneta} è considerata e-money/stablecoin.
+         *
+         * @param Moneta simbolo della criptoattività da cercare
+         * @return la data di decorrenza registrata, o {@code null} se {@code Moneta} non è in {@code EMONEY}
+         * @throws IllegalArgumentException se {@code Moneta} è nulla o vuota
+         */
         public static String Pers_Emoney_Leggi(String Moneta) {
         if (Moneta == null || Moneta.isEmpty()) {
             throw new IllegalArgumentException("Moneta non può essere nullo o vuoto.");
@@ -532,6 +584,11 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         return Risultato;
     }
      
+        /**
+         * Legge tutti i wallet DeFi salvati dall'utente.
+         *
+         * @return mappa "{@code Wallet}_{@code Rete}" → "{@code Wallet};{@code Rete}" (formato mantenuto per retrocompatibilità con il vecchio formato su file)
+         */
         public static Map<String, String> Pers_Wallets_LeggiTabella() {
             //List<String> tabella= new ArrayList<>();
             Map<String, String> Mappa_Wallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -560,6 +617,12 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
    
     
         
+    /**
+     * Salva (o aggiorna) un wallet DeFi tracciato dall'utente.
+     *
+     * @param Wallet indirizzo del wallet
+     * @param Rete rete blockchain del wallet
+     */
     public static void Pers_Wallets_Scrivi(String Wallet, String Rete) {
       /*  if (Wallet == null || Wallet.isEmpty()) {
             throw new IllegalArgumentException("Wallet non può essere nullo o vuoto.");
@@ -590,6 +653,11 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         
         
         
+        /**
+         * Elimina un wallet DeFi tracciato dall'utente.
+         *
+         * @param IDWallet chiave del wallet nel formato "{@code Wallet}_{@code Rete}"
+         */
         public static void Pers_Wallets_Cancella(String IDWallet) {
                //completamente da gestire
         try {
@@ -604,6 +672,10 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         }
     }
         
+        /**
+         * Ricarica da zero {@code Principale.Mappa_EMoney} (svuotata prima) con tutte le coppie
+         * moneta/data di decorrenza e-money salvate nel database. Chiamata all'avvio dell'app.
+         */
         public static void Pers_Emoney_PopolaMappaEmoney() {
 
         Principale.Mappa_EMoney.clear();
@@ -626,12 +698,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
 
 
         //Con questa query ritorno sia il vecchio che il nuovo nome
-    }        
-        
-        private static String NormalizzaCampo(String campo){
-            //Questa funzione serve per pulire le stringhe dai campi che potrebbero far casino nelle query del database
-            return campo.replace("'", "''");
-        }
+    }
     
     /**
      * Posiziona il Wallet in uno specifico gruppo
@@ -831,6 +898,12 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
     
     
     
+        /**
+         * Legge le credenziali API salvate per un exchange.
+         *
+         * @param Nome nome/chiave con cui è stata salvata la credenziale
+         * @return array {@code [Nome, Exchange, Chiave, Segreto]}; tutti {@code null} se {@code Nome} non è presente in {@code EXCHANGEAPI}
+         */
         public static String[] Pers_ExchangeApi_Leggi(String Nome) {
                 String Risultato[] = new String[4];
         try {
@@ -856,6 +929,11 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
     }   
         
         
+            /**
+             * Legge tutte le credenziali API exchange salvate.
+             *
+             * @return mappa Nome → {@code [Nome, Exchange, Chiave, Segreto]}
+             */
             public static Map<String, String[]> Pers_ExchangeApi_LeggiTabella() {
             //List<String> tabella= new ArrayList<>();
             Map<String, String[]> Mappa_Wallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -882,6 +960,14 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
     }     
             
             
+        /**
+         * Salva (o aggiorna) le credenziali API di un exchange, usando {@code Exchange} anche come
+         * chiave univoca ({@code Nome}) del record.
+         *
+         * @param Exchange nome dell'exchange, usato anche come chiave del record
+         * @param Chiave API key
+         * @param Segreto API secret
+         */
         public static void Pers_ExchangeApi_Scrivi(String Exchange,String Chiave,String Segreto) {
         try {
             
@@ -923,7 +1009,13 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
     }    
     
         
-    //Serve per inserire nel database i token di cui devo trovare le coppie usando le api di binance per scaricare i movimenti di trade    
+    /**
+     * Aggiunge un token alla lista, specifica per exchange, dei token di cui recuperare i trade
+     * tramite le API (es. Binance). Upsert sulla chiave "{@code Exchange}_{@code Token}".
+     *
+     * @param Exchange nome dell'exchange
+     * @param Token simbolo del token da aggiungere alla lista
+     */
     public static void Pers_ExchangeTokens_Scrivi(String Exchange, String Token) {
         Map<String, Object> values = new HashMap<>();
         values.put("Exchange_Token", Exchange + "_" + Token);
@@ -933,6 +1025,18 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
 
     }      
         
+    /**
+     * Versione precedente di {@link #U_ScriviRecord}: inserisce o aggiorna dinamicamente un record
+     * costruendo un {@code SELECT COUNT(*)} seguito da un {@code UPDATE} o {@code INSERT} dinamico,
+     * invece dell'unico {@code MERGE INTO} usato dalla versione corrente. Mantenuta come riferimento
+     * storico, non più chiamata dal codice attivo.
+     *
+     * @param tableName nome della tabella su cui scrivere
+     * @param fieldValues mappa colonna → valore del record, deve includere {@code primaryKeyColumn}
+     * @param primaryKeyColumn nome della colonna chiave primaria
+     * @param con connessione JDBC su cui operare
+     * @throws IllegalArgumentException se {@code fieldValues} non contiene {@code primaryKeyColumn}
+     */
     public static void U_ScriviRecord_OLD(String tableName, Map<String, Object> fieldValues, String primaryKeyColumn,Connection con) {
     try {
         // Prendo il valore della chiave primaria
@@ -1083,6 +1187,16 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
 
 
         
+    /**
+     * Legge dinamicamente le righe di una tabella, con filtro opzionale in AND su una o più colonne
+     * (tutte in uguaglianza), costruendo la {@code SELECT} a runtime dai parametri.
+     *
+     * @param tableName nome della tabella da interrogare
+     * @param columnsToRead colonne da leggere; {@code null} o vuoto per {@code SELECT *}
+     * @param filters mappa colonna → valore da usare come condizione {@code WHERE ... = ? AND ...}; {@code null} o vuota per nessun filtro
+     * @param con connessione JDBC su cui eseguire la query
+     * @return lista di righe, ciascuna come mappa nome-colonna (maiuscolo) → valore; vuota in caso di errore SQL (già loggato) o nessun risultato
+     */
     public static List<Map<String, Object>> U_LeggiRecords(
             String tableName,
             List<String> columnsToRead,
@@ -1140,6 +1254,12 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
       
         
         
+    /**
+     * Legge la lista dei token registrati per un exchange (vedi {@link #Pers_ExchangeTokens_Scrivi}).
+     *
+     * @param Exchange nome dell'exchange
+     * @return lista dei simboli dei token registrati per quell'exchange
+     */
     public static List<String> Pers_ExchangeTokens_LeggiTokensExchange(String Exchange) {
         Map<String, Object> filters = new HashMap<>();
         filters.put("Exchange", Exchange);
@@ -1160,6 +1280,12 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         return tokens;
     }
         
+        /**
+         * Rimuove un token dalla lista dei token registrati per un exchange.
+         *
+         * @param Exchange nome dell'exchange
+         * @param Token simbolo del token da rimuovere
+         */
         public static void Pers_ExchangeTokens_Cancella(String Exchange,String Token) {
         //completamente da gestire
         Map<String, Object> filters = new HashMap<>();
@@ -1168,6 +1294,14 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
 
     }    
         
+     /**
+      * Cancella dinamicamente le righe di una tabella che soddisfano tutte le condizioni di
+      * {@code filters} (in AND, tutte in uguaglianza), costruendo la {@code DELETE} a runtime.
+      *
+      * @param tableName nome della tabella da cui cancellare
+      * @param filters mappa colonna → valore da usare come condizione {@code WHERE ... = ? AND ...}; obbligatoria e non vuota
+      * @throws IllegalArgumentException se {@code filters} è nullo o vuoto
+      */
      public static void U_CancellaRecords(String tableName, Map<String, Object> filters) {
     try {
         if (filters == null || filters.isEmpty()) {
@@ -1198,6 +1332,11 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
 }
    
     
+            /**
+             * Elimina le credenziali API salvate per un exchange.
+             *
+             * @param Exchange nome/chiave con cui è stata salvata la credenziale (colonna {@code Nome})
+             */
             public static void Pers_ExchangeApi_Cancella(String Exchange) {
                //completamente da gestire
         try {
@@ -1261,6 +1400,12 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         }
     }
         
+        /**
+         * Legge il vecchio e nuovo nome registrati per un token rinominato (es. marcatura SCAM).
+         *
+         * @param address_chain chiave "{@code Address}_{@code Rete}" del token
+         * @return array {@code [VecchioNome, NuovoNome]}; entrambi {@code null} se il token non è mai stato rinominato
+         */
         public static String[] RinominaToken_Leggi(String address_chain) {
                 String Risultato[] = new String[2];
         try {
@@ -1351,6 +1496,12 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         }
     }
 
+        /**
+         * Legge la giacenza salvata per una moneta di un wallet blockchain.
+         *
+         * @param wallet_blocco chiave del wallet/blocco (es. "{@code Wallet}_{@code Moneta}")
+         * @return la giacenza salvata, o {@code null} se non presente in {@code GIACENZEBLOCKCHAIN}
+         */
         public static String GiacenzeWalletMonetaBlockchain_Leggi(String wallet_blocco) {
                 String Valore = null;
         try {
@@ -1372,6 +1523,12 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         //Con questa query ritorno sia il vecchio che il nuovo nome
     }    
         
+        /**
+         * Salva (o aggiorna) la giacenza di una moneta di un wallet blockchain.
+         *
+         * @param wallet_blocco chiave del wallet/blocco (es. "{@code Wallet}_{@code Moneta}")
+         * @param Valore giacenza da salvare
+         */
         public static void GiacenzeWalletMonetaBlockchain_Scrivi(String wallet_blocco, String Valore) {
         try {
             // Connessione al database
@@ -1408,6 +1565,11 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         }
     } 
         
+        /**
+         * Legge tutti i token rinominati (es. marcatura SCAM).
+         *
+         * @return mappa "{@code Address}_{@code Rete}" → nuovo nome del token
+         */
         public static Map<String, String> RinominaToken_LeggiTabella() {
         Map<String, String> Mappa_NomiToken = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         try {
@@ -1429,6 +1591,11 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         //Con questa query ritorno sia il vecchio che il nuovo nome
     }
         
+        /**
+         * Rimuove la rinomina registrata per un token, ripristinandone il nome originale.
+         *
+         * @param address_chain chiave "{@code Address}_{@code Rete}" del token
+         */
         public static void RinominaToken_CancellaRiga(String address_chain) {
                //completamente da gestire
         try {
@@ -1445,6 +1612,14 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
     }
     
 
+    /**
+     * Legge il prezzo salvato per un token identificato da ora+address+chain, cercando prima tra i
+     * prezzi personalizzati ({@code connectionPersonale}) e, se assente, tra quelli globali
+     * ({@code connection}).
+     *
+     * @param ora_address_chain chiave "{@code ora}_{@code Address}_{@code Rete}" (address non normalizzato a maiuscolo per la rete Solana, case-sensitive)
+     * @return il prezzo salvato, o {@code null} se non trovato o se {@code ora_address_chain} non ha almeno 3 segmenti separati da "_"
+     */
     public static String PrezzoAddressChain_Leggi(String ora_address_chain) {
         //System.out.println(ora_address_chain);
         String Risultato = null;
@@ -1484,6 +1659,13 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         return Risultato;
     }
     
+    /**
+     * Legge il prezzo personalizzato salvato per un token identificato da ora+address+chain, solo
+     * dai prezzi personalizzati ({@code connectionPersonale}), senza fare fallback su quelli globali.
+     *
+     * @param ora_address_chain chiave "{@code ora}_{@code Address}_{@code Rete}" (address non normalizzato a maiuscolo per la rete Solana, case-sensitive)
+     * @return il prezzo personalizzato salvato, o {@code null} se non trovato o se {@code ora_address_chain} non ha almeno 3 segmenti separati da "_"
+     */
     public static String PrezzoAddressChainPers_Leggi(String ora_address_chain) {
         //System.out.println(ora_address_chain);
         String Risultato = null;
@@ -1512,6 +1694,16 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         return Risultato;
     }
 
+    /**
+     * Versione precedente di {@link #OLD_PrezzoAddressChain_Scrivi}: salva (o aggiorna) il prezzo di
+     * un token identificato da ora+address+chain componendo le query SQL per concatenazione di
+     * stringa invece che con parametri bind. Nessun chiamante vivo nel codice attuale, mantenuta come
+     * riferimento storico.
+     *
+     * @param ora_address_chain chiave "{@code ora}_{@code Address}_{@code Rete}"
+     * @param prezzo prezzo da salvare
+     * @param personalizzato se {@code true} scrive su {@code connectionPersonale}, altrimenti su {@code connection}
+     */
     public static void PrezzoAddressChain_Scrivi_OLD(String ora_address_chain, String prezzo,boolean personalizzato) {
         try {
             Connection connessione;
@@ -1560,6 +1752,15 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         }
     }
     
+    /**
+     * Salva (upsert via {@code MERGE INTO}) il prezzo di un token identificato da ora+address+chain.
+     * Nonostante il prefisso "OLD" è la versione attualmente in uso (l'omonima
+     * {@link #PrezzoAddressChain_Scrivi_OLD} basata su concatenazione di stringhe non ha più chiamanti vivi).
+     *
+     * @param ora_address_chain chiave "{@code ora}_{@code Address}_{@code Rete}" (normalizzata a maiuscolo salvo per la rete Solana, case-sensitive)
+     * @param prezzo prezzo da salvare
+     * @param personalizzato se {@code true} scrive su {@code connectionPersonale}, altrimenti su {@code connection}
+     */
     public static void OLD_PrezzoAddressChain_Scrivi(String ora_address_chain, String prezzo, boolean personalizzato) {
     try {
         // Seleziona la connessione corretta
@@ -1593,6 +1794,14 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
 
   
     
+       /**
+        * Legge il prezzo orario salvato per una moneta/data (tabella {@code XXXEUR}), cercando prima
+        * tra i prezzi personalizzati ({@code connectionPersonale}) e, se assente, tra quelli globali
+        * ({@code connection}).
+        *
+        * @param dataSimbolo chiave "{@code data ora}_{@code Moneta}"
+        * @return il prezzo salvato, o {@code null} se non trovato o se il valore salvato è letteralmente "null"
+        */
        public static String XXXEUR_Leggi(String dataSimbolo) {
        
         String Risultato = null;
@@ -1630,6 +1839,13 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         return Risultato;
     }
    
+           /**
+            * Legge il prezzo orario personalizzato salvato per una moneta/data (tabella {@code XXXEUR}),
+            * solo dai prezzi personalizzati ({@code connectionPersonale}), senza fallback sui prezzi globali.
+            *
+            * @param dataSimbolo chiave "{@code data ora}_{@code Moneta}"
+            * @return il prezzo personalizzato salvato, o {@code null} se non trovato o se il valore salvato è letteralmente "null"
+            */
            public static String XXXEUR_LeggiPers(String dataSimbolo) {
        
         String Risultato = null;
@@ -1656,6 +1872,15 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         return Risultato;
     }
     
+    /**
+     * Salva (upsert via {@code MERGE INTO}) il prezzo orario di una moneta/data (tabella
+     * {@code XXXEUR}). Nonostante il prefisso "OLD" è l'unica scrittura viva dei prezzi orari.
+     *
+     * @param dataSimbolo chiave "{@code data ora}_{@code Moneta}"
+     * @param prezzo prezzo da salvare
+     * @param personalizzato se {@code true} scrive su {@code connectionPersonale}, altrimenti su {@code connection}
+     * @throws IllegalArgumentException se {@code dataSimbolo} è nullo o vuoto
+     */
     public static void OLD_XXXEUR_Scrivi(String dataSimbolo, String prezzo, boolean personalizzato) {
         if (dataSimbolo == null || dataSimbolo.isEmpty()) {
             throw new IllegalArgumentException("dataSimbolo non può essere nullo o vuoto.");
@@ -1788,6 +2013,12 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
   
         
         
+        /**
+         * Ricrea da zero la tabella {@code GESTITIBINANCE} (drop + create) e la ripopola con l'elenco
+         * di coppie di trading gestite da Binance, tipicamente scaricato via API.
+         *
+         * @param Coppie elenco delle coppie di trading da salvare
+         */
         public static void CoppieBinance_ScriviNuovaTabella(List<String> Coppie) {
         try {
             // Connessione al database
@@ -1805,6 +2036,12 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         }
     } 
         
+    /**
+     * Ricrea da zero la tabella {@code GESTITICOINBASE} (drop + create) e la ripopola con l'elenco
+     * di simboli gestiti da Coinbase, tipicamente scaricato via API.
+     *
+     * @param Simboli elenco dei simboli da salvare
+     */
     public static void GestitiCoinbase_ScriviNuovaTabella(List<String> Simboli) {
         try {
             EseguiDDL(connection, "DROP TABLE IF EXISTS GESTITICOINBASE");
@@ -1822,6 +2059,14 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
     } 
         
         
+        /**
+         * Ricrea da zero la tabella {@code GESTITICOINGECKO} (drop + create) e la ripopola con
+         * l'elenco dei token gestiti da Coingecko, tipicamente scaricato via API. Pulisce apostrofi
+         * dal simbolo/nome e rimuove l'eventuale suffisso tra parentesi dal nome (mantenuto per
+         * compatibilità con i nomi già salvati dalle versioni precedenti).
+         *
+         * @param Gestiti elenco di righe {@code [Address_Chain, Simbolo, Nome]} da salvare
+         */
         public static void GestitiCoingecko_ScriviNuovaTabella(List<String[]> Gestiti) {
         try {
             // Connessione al database
@@ -1845,6 +2090,14 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         }
     }
         
+      /**
+       * Salva (o aggiorna) i metadati di un token Solana identificato dal suo address.
+       *
+       * @param Address indirizzo del token (mint address, case-sensitive)
+       * @param Simbolo simbolo del token
+       * @param Nome nome esteso del token
+       * @param Tipo tipologia del token
+       */
       public static void TokenSolana_AggiungiToken(String Address, String Simbolo, String Nome, String Tipo) {
         try {
             // Controllo se il token esiste già
@@ -1887,7 +2140,13 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         }
     } 
      
-        public static String[] TokenSolana_Leggi(String Address) {
+        /**
+     * Legge i metadati salvati per un token Solana.
+     *
+     * @param Address indirizzo del token (mint address, case-sensitive)
+     * @return array {@code [Simbolo, Nome, Tipo]}, o {@code null} se il token non è presente in {@code TOKENSOLANA}
+     */
+    public static String[] TokenSolana_Leggi(String Address) {
         String Risultato[]=new String[3];
         try {
             // Connessione al database
@@ -1911,6 +2170,12 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         
       
         
+    /**
+     * Legge l'ID CoinMarketCap associato a un simbolo (cache locale della lista dei token gestiti).
+     *
+     * @param Symbol simbolo del token (confrontato in maiuscolo)
+     * @return l'ID CoinMarketCap, o {@code null} se il simbolo non è in {@code GESTITICOINMARKETCAP}
+     */
     public static Integer GestitiCoinMarketCap_Leggi(String Symbol) {
         try (PreparedStatement ps = connection.prepareStatement(
                 "SELECT CmcId FROM GESTITICOINMARKETCAP WHERE Symbol = ?")) {
@@ -1924,6 +2189,12 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         return null;
     }
 
+    /**
+     * Ricrea da zero la tabella {@code GESTITICOINMARKETCAP} (drop + create) e la ripopola con
+     * l'elenco simbolo→ID CoinMarketCap, tipicamente scaricato via API, inserendo in batch.
+     *
+     * @param gestiti elenco di righe {@code [Symbol, CmcId]} da salvare
+     */
     public static void GestitiCoinMarketCap_ScriviNuovaTabella(List<String[]> gestiti) {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute("DROP TABLE IF EXISTS GESTITICOINMARKETCAP");
@@ -1945,6 +2216,13 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         }
     }
         
+        /**
+         * Legge un'opzione di sessione dal database principale (tabella {@code OPZIONI}, non
+         * cache-ata a differenza delle opzioni personali, vedi {@link #Pers_Opzioni_Leggi(String)}).
+         *
+         * @param Opzione nome dell'opzione
+         * @return il valore salvato, o {@code null} se l'opzione non è presente
+         */
         public static String Opzioni_Leggi(String Opzione) {
         String Risultato = null;
         try {
@@ -1973,13 +2251,24 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
     private static final Map<String, String> CacheOpzioniPersonali = new java.util.concurrent.ConcurrentHashMap<>();
     private static final String CACHE_OPZIONE_ASSENTE = " OPZIONE_ASSENTE ";
 
-    //Svuota la cache delle opzioni personali. Da chiamare se la tabella OPZIONI viene
-    //modificata senza passare da Pers_Opzioni_Scrivi/Pers_Opzioni_CancellaOpzione
-    //(es. SQL diretto nei test) o quando si collega un database diverso.
+    /**
+     * Svuota la cache delle opzioni personali. Da chiamare se la tabella {@code OPZIONI} viene
+     * modificata senza passare da {@link #Pers_Opzioni_Scrivi} / {@link #Pers_Opzioni_CancellaOpzione}
+     * (es. SQL diretto nei test) o quando si collega un database diverso (vedi {@link #CreaoCollegaDatabase()}).
+     */
     public static void Pers_Opzioni_InvalidaCache() {
         CacheOpzioniPersonali.clear();
     }
 
+    /**
+     * Legge un'opzione personale (tabella {@code OPZIONI} di {@code connectionPersonale}), servendo
+     * dalla cache in memoria {@link #CacheOpzioniPersonali} se già letta in questa sessione. Le
+     * letture fallite per errore SQL non vengono messe in cache (per non "congelare" un errore
+     * momentaneo per tutta la sessione).
+     *
+     * @param Opzione nome dell'opzione
+     * @return il valore salvato, o {@code null} se l'opzione non è presente
+     */
     public static String Pers_Opzioni_Leggi(String Opzione) {
         String inCache = CacheOpzioniPersonali.get(Opzione);
         if (inCache != null) {
@@ -2010,9 +2299,15 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         return Risultato;
     }
 
-    //Variante che non ritorna mai null: se l'opzione non è mai stata scritta nel DB
-    //(database nuovo o ripristino parziale) torna il valore di default indicato.
-    //Da usare nei punti dove il risultato viene dereferenziato direttamente.
+    /**
+     * Variante di {@link #Pers_Opzioni_Leggi(String)} che non ritorna mai {@code null}: se l'opzione
+     * non è mai stata scritta nel DB (database nuovo o ripristino parziale) torna
+     * {@code ValoreDefault}. Da usare nei punti dove il risultato viene dereferenziato direttamente.
+     *
+     * @param Opzione nome dell'opzione
+     * @param ValoreDefault valore da ritornare se l'opzione non è presente
+     * @return il valore salvato, o {@code ValoreDefault} se l'opzione non è presente
+     */
     public static String Pers_Opzioni_Leggi(String Opzione, String ValoreDefault) {
         String Risultato = Pers_Opzioni_Leggi(Opzione);
         return Risultato != null ? Risultato : ValoreDefault;
@@ -2143,6 +2438,13 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
 
                 
                 
+    /**
+     * Cancella un'opzione dalla tabella {@code OPZIONI} e invalida l'eventuale voce corrispondente
+     * nella cache delle opzioni personali {@link #CacheOpzioniPersonali}, così la prossima lettura
+     * tramite {@link #Pers_Opzioni_Leggi(String)} reinterroga il database.
+     *
+     * @param Opzione nome dell'opzione da cancellare
+     */
     public static void Pers_Opzioni_CancellaOpzione(String Opzione) {
         try {
             String checkIfExistsSQL = "DELETE FROM OPZIONI WHERE Opzione = ?";

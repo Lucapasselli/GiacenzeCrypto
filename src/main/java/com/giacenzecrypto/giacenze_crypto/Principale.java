@@ -6856,61 +6856,7 @@ private void AvviaSplashScreen() {
 
 
     }
-     
-    private void TransazioniCrypto_CalcolaPlusvalenzeFiltrate() {
-    new Thread(() -> {
-        try {
-            //do tempo alla tabella di finire di caricarsi
-            //System.out.println("Calcolo plus filtrate");
-            Thread.sleep(100);
-        } catch (InterruptedException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-        BigDecimal somma = BigDecimal.ZERO;
 
-        // Ottieni il modello di riga ordinato (se presente)
-        TableRowSorter<?> sorter = null;
-        if (TransazioniCryptoTabella.getRowSorter() instanceof TableRowSorter) {
-            sorter = (TableRowSorter<?>) TransazioniCryptoTabella.getRowSorter();
-        }
-
-        int rowCount = TransazioniCryptoTabella.getRowCount(); // righe visibili dopo filtro/ordinamento
-
-        for (int viewRow = 0; viewRow < rowCount; viewRow++) {
-            // Ottieni l'indice della riga nel modello originale
-            int modelRow = (sorter != null) ? sorter.convertRowIndexToModel(viewRow) : viewRow;
-
-            Object val = TransazioniCryptoTabella.getModel().getValueAt(modelRow, 19);
-
-            if (val != null) {
-                try {
-                    // Converti in BigDecimal in modo sicuro
-                    BigDecimal valore;
-                    if (val instanceof BigDecimal) {
-                        valore = (BigDecimal) val;
-                    } else if (val instanceof Number) {
-                        valore = new BigDecimal(((Number) val).toString());
-                    } else {
-                        valore = new BigDecimal(val.toString());
-                    }
-                    somma = somma.add(valore);
-                } catch (NumberFormatException ex) {
-                    // Ignora valori non numerici
-                }
-            }
-        }
-
-        final BigDecimal risultato = somma;
-
-        // Aggiorna la JLabel nel thread della GUI
-  //      SwingUtilities.invokeLater(() -> TransazioniCrypto_text_PlusFiltri.setText("Plusvalenze Filtrate : € " + Funzioni.formattaBigDecimal(risultato, true)));
-
-    }).start();
-}    
-        
-        
-
-   
       private void CDC_CardWallet_Funzione_Totali_per_tipo_movimento() {
           
         

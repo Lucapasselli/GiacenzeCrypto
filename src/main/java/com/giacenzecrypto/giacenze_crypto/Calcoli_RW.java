@@ -31,6 +31,17 @@ public class Calcoli_RW {
        static Map<String, String> MappaGruppo_IDPrimoMovimento = new TreeMap<>();//la mappa è così composta, (Gruppo,ID Primo Movimento)
        
        
+       /**
+        * Riclassifica un token come "EMoney" (invece della sua {@code Tipologia} originale) se alla
+        * {@code Data} indicata il token risultava già registrato in {@code Principale.Mappa_EMoney}
+        * come stablecoin/e-money a partire da una certa data. Usato per determinare l'omogeneità
+        * fiscale ai fini del quadro RW (vedi {@link #ScambioRilevante}).
+        *
+        * @param Token simbolo del token
+        * @param Data data del movimento/valorizzazione, nel formato usato da {@code FunzioniDate}
+        * @param Tipologia tipologia originale del token (es. "Crypto", "FIAT")
+        * @return "EMoney" se il token era già classificato e-money a quella data, altrimenti {@code Tipologia} invariata
+        */
        public static String RitornaTipoCrypto(String Token,String Data,String Tipologia) {
        String Tipo=Tipologia;
        String DataEmoney=Principale.Mappa_EMoney.get(Token);
@@ -42,6 +53,18 @@ public class Calcoli_RW {
        return Tipo;
    }
        
+    /**
+     * Determina se uno scambio tra le due monete {@code m} deve essere considerato "rilevante"
+     * ai fini della chiusura/apertura di un nuovo rigo RW, secondo l'opzione {@code RW_Rilevanza}:
+     * "D" tutti gli scambi sono rilevanti, "B" nessuno scambio tra criptoattività lo è (solo verso
+     * FIAT), altrimenti (es. "C") lo scambio è rilevante solo se le due monete appartengono a
+     * tipologie diverse una volta risolte tramite {@link #RitornaTipoCrypto} (es. Crypto vs EMoney).
+     *
+     * @param m coppia di monete coinvolte nello scambio (uscita/entrata)
+     * @param Data data dello scambio, usata per risolvere l'eventuale classificazione EMoney
+     * @param Rilevanza valore dell'opzione {@code RW_Rilevanza} ("B", "C" o "D"; "A" non ancora implementata)
+     * @return {@code true} se lo scambio è rilevante e deve quindi chiudere/aprire un rigo RW
+     */
     public static boolean ScambioRilevante(Moneta[] m,String Data,String Rilevanza){
 
         //Rilevanza A = Solo Valori iniziali e finali (ancora da implementare)!!!!!
@@ -62,6 +85,17 @@ public class Calcoli_RW {
    
        
     
+/**
+ * Inserisce (push) un lotto {@code el} nello stack LIFO RW di {@code el.Moneta} per il gruppo
+ * wallet indicato, analogo a {@code Calcoli_PlusvalenzeNew.StackLIFO_InserisciValore} ma per il
+ * motore del quadro RW (che traccia anche giorni di detenzione e gruppo wallet di origine). Se la
+ * quantità del lotto è negativa (giacenza negativa) non viene inserita nello stack ma registrata
+ * direttamente come riga di errore in {@code Principale.Mappa_RW_ListeXGruppoWallet}.
+ *
+ * @param CryptoStack mappa moneta → stack LIFO RW del gruppo wallet corrente, modificata in place
+ * @param GruppoWallet gruppo wallet su cui registrare l'eventuale errore di giacenza negativa
+ * @param el lotto da inserire (moneta, quantità, costo, dati di origine)
+ */
 public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiStack>> CryptoStack,String GruppoWallet,ElementiStack el) {
     
     //System.out.println(Moneta+" <> "+Qta);
@@ -121,6 +155,20 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
        
 
     
+      /**
+       * Estrae dallo stack LIFO RW di {@code Moneta} i lotti necessari a coprire {@code Qta},
+       * analogo a {@code Calcoli_PlusvalenzeNew.StackLIFO_TogliQta} ma per il motore del quadro RW:
+       * a differenza di quest'ultimo, ritorna direttamente lo stack dei lotti (parziali o interi)
+       * effettivamente estratti, con i relativi dati di origine (data, moneta, gruppo wallet, ID
+       * movimenti coinvolti), usati poi per calcolare i giorni di detenzione e i prezzi di apertura.
+       *
+       * @param CryptoStack mappa moneta → stack LIFO RW del gruppo wallet corrente
+       * @param Moneta simbolo della criptoattività da cui estrarre
+       * @param Qta quantità da estrarre (il segno non è rilevante, viene usato il valore assoluto); se vuota o {@code Moneta} è vuota non viene fatto nulla
+       * @param GruppoWallet gruppo wallet corrente (propagato nei lotti estratti)
+       * @param toglidaStack se {@code true} lo stack viene effettivamente modificato; se {@code false} si opera su un clone (sola lettura/simulazione)
+       * @return lo stack dei lotti estratti; vuoto se {@code Qta}/{@code Moneta} sono vuote o lo stack della moneta non esiste
+       */
       public static ArrayDeque<ElementiStack> StackLIFO_TogliQtaFR (Map<String, ArrayDeque<ElementiStack>> CryptoStack, String Moneta,String Qta,String GruppoWallet,boolean toglidaStack) {
     
     //in ritorno devo avere la lista delle qta estratte  e valore con relative date
@@ -394,6 +442,13 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         }*/
     //}
       
+        /**
+         * Verifica se tutti i movimenti correlati al movimento {@code ID} (campo 20, elenco ID
+         * separati da virgola) appartengono allo stesso gruppo wallet del movimento stesso.
+         *
+         * @param ID ID del movimento in {@code Principale.MappaCryptoWallet}
+         * @return {@code true} se nessun movimento correlato appartiene a un gruppo wallet diverso
+         */
         public static boolean StessoGruppoWalletContropate(String ID){
             boolean stessoGruppo=true;
             String Movimento[]=Principale.MappaCryptoWallet.get(ID);
@@ -408,6 +463,13 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
             return stessoGruppo;
         }
         
+        /**
+         * Ritorna il gruppo wallet della controparte di {@code ID}, cioè il primo gruppo wallet
+         * diverso da quello del movimento stesso trovato tra i movimenti correlati (campo 20).
+         *
+         * @param ID ID del movimento in {@code Principale.MappaCryptoWallet}
+         * @return il gruppo wallet della controparte, oppure il gruppo wallet di {@code ID} stesso se tutti i correlati sono nello stesso gruppo
+         */
         public static String RitornaGruppoWalletControparte(String ID){
             String Gruppo;
             String Movimento[]=Principale.MappaCryptoWallet.get(ID);
@@ -425,9 +487,17 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
             return Gruppo;
         }
         
+        /**
+         * Ritorna l'ID del movimento correlato a {@code ID} appartenente a un wallet diverso e
+         * marcato come apertura/movimento anomalo (campo 22 "A" o "M"), usato come controparte
+         * ai fini RW quando un trasferimento coinvolge wallet di gruppi diversi.
+         *
+         * @param ID ID del movimento in {@code Principale.MappaCryptoWallet}
+         * @return l'ID del movimento controparte, oppure {@code ID} stesso se nessun correlato soddisfa i criteri
+         */
         public static String RitornaIDControparte(String ID){
             //Ritorna l'id della controparte se fa parte di gruppi wallet diversi
-            //In futuro sarà da sistemare per farla funzionare anche se i gruppi 
+            //In futuro sarà da sistemare per farla funzionare anche se i gruppi
             String IDC=ID;
             String Movimento[]=Principale.MappaCryptoWallet.get(ID);
            // String GruppoWalletOrigine=DatabaseH2.Pers_GruppoWallet_Leggi(Movimento[3]);
@@ -446,6 +516,17 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         
     
         
+      /**
+       * Inizializza lo stack LIFO RW di ogni gruppo wallet con le giacenze di inizio periodo
+       * (diverse da FIAT e diverse da zero), valorizzandole al prezzo alla data di inizio anno e
+       * inserendole come primo lotto ({@link #StackLIFO_InserisciValoreFR}); popola anche
+       * {@code Principale.Mappa_RW_GiacenzeInizioPeriodo} usata per il rigo di apertura del quadro RW.
+       *
+       * @param MappaGrWallet_QtaCryptoInizio giacenze di inizio periodo per gruppo wallet e moneta
+       * @param MappaGrWallet_CryptoStack mappa gruppo wallet → stack LIFO RW per moneta, popolata in place
+       * @param inizio istante di inizio periodo (epoch minuti, per il recupero prezzo)
+       * @param DataInizioAnno data di inizio periodo in formato leggibile, usata per i lotti creati
+       */
       public static void CreaPrimiMovimenti(Map<String, Map<String, Moneta>> MappaGrWallet_QtaCryptoInizio,Map<String,
               Map<String, ArrayDeque<ElementiStack>>> MappaGrWallet_CryptoStack, long inizio, String DataInizioAnno) {
 
@@ -503,6 +584,22 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
     }
       
       
+        /**
+         * Chiude un rigo RW per {@code Monete} nel gruppo wallet indicato: estrae dal LIFO RW
+         * ({@link #StackLIFO_TogliQtaFR}) i lotti corrispondenti alla quantità in uscita e crea una
+         * o più righe in {@code Principale.Mappa_RW_ListeXGruppoWallet} (una per ciascun lotto
+         * estratto, con relativi giorni di detenzione e ID di apertura/chiusura); se lo stack risulta
+         * vuoto (nessun movimento tracciato per la moneta) viene comunque generata una riga di errore.
+         * Non fa nulla se la quantità di {@code Monete} è zero o se {@code Monete} è FIAT.
+         *
+         * @param Monete moneta e quantità in uscita da chiudere
+         * @param CryptoStack stack LIFO RW del gruppo wallet corrente, modificato in place
+         * @param GruppoWallet gruppo wallet di riferimento
+         * @param Data data di chiusura del movimento
+         * @param Valore valore/prezzo unitario alla chiusura
+         * @param Causale causale da riportare nel rigo RW (es. tipo di movimento)
+         * @param IDt ID del movimento di chiusura
+         */
         public static void ChiudiRWFR (Moneta Monete,Map<String, ArrayDeque<ElementiStack>> CryptoStack,String GruppoWallet,String Data,String Valore,String Causale,String IDt) {
         //System.out.println(Data+ " - "+Monete.Moneta+" - "+Monete.Qta+" - "+Monete.Prezzo+" - "+Valore+" - "+Monete.Rete+" - "+Monete.MonetaAddress);
         List<String[]> ListaRW;
@@ -625,6 +722,17 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
     }
         
         
+    /**
+     * Ricostruisce da zero (svuotandola prima) la lista dei righi RW per {@code GruppoWallet},
+     * accoppiando ogni moneta con giacenza iniziale e/o finale in un unico rigo "Giacenza Inizio
+     * Anno" → "Giacenza Fine Anno" con i relativi prezzi. Se il primo movimento assoluto del gruppo
+     * wallet è avvenuto durante l'anno di riferimento, la data/i giorni di detenzione di inizio
+     * periodo vengono ricalcolati su quella data invece che sul 1° gennaio, e la relativa moneta
+     * viene aggiunta alle giacenze di inizio periodo. Le giacenze negative vengono valorizzate a
+     * prezzo zero nel rigo (visualizzate ma senza impatto sul calcolo RW).
+     *
+     * @param GruppoWallet gruppo wallet per cui ricostruire i righi di apertura/chiusura
+     */
     public static void ChiudiRWGiacenzeFinali(String GruppoWallet) {
         //System.out.println(Data+ " - "+Monete.Moneta+" - "+Monete.Qta+" - "+Monete.Prezzo+" - "+Valore+" - "+Monete.Rete+" - "+Monete.MonetaAddress);
         //pulizia vecchia lista, tanto devo ricrearla da capo in questo caso perchè devo prendere solo i valori iniziali e finali
@@ -754,6 +862,13 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
     }
     
     
+    /**
+     * Analizza tutte le righe RW di {@code MappaLista} (gruppo wallet → righi) e valorizza il campo
+     * 15 ("Tipo Errore", HTML) segnalando i righi con prezzo di apertura o chiusura mancante/zero
+     * per un token che non è né SCAM né senza valore intrinseco. Modifica le righe in place.
+     *
+     * @param MappaLista mappa gruppo wallet → lista di righi RW ({@code String[17]}), tipicamente {@code Principale.Mappa_RW_ListeXGruppoWallet}
+     */
     public static void SistemaErroriInListe(Map<String, List<String[]>> MappaLista){
         
         //Se prezzo = 0.00 significa che non esiste il prezzo della moneta
@@ -910,6 +1025,17 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         }
     }
 
+    /**
+     * Distingue un token effettivamente senza mercato/prezzo da uno che ha semplicemente
+     * {@code Valore} = "0.00" per altri motivi: se {@code Valore} è "0.00", interroga
+     * {@link Prezzi#DammiPrezzoTransazione} alla {@code Data} indicata e, se anche quello ritorna
+     * "0.00", conclude che il token non ha proprio un prezzo di mercato.
+     *
+     * @param m moneta da verificare
+     * @param Valore valore attualmente assegnato al token (tipicamente "0.00" per attivare il controllo)
+     * @param Data data di riferimento per l'eventuale lookup del prezzo
+     * @return {@code true} se il token ha (o si presume abbia) un prezzo; {@code false} se risulta senza prezzo a quella data
+     */
     public static boolean TokenConPrezzo(Moneta m,String Valore,String Data){
         boolean TokenConPrezzo=true;
                         //Prima di inserire il token nello stack verifico se è valorizzato a 0.00
@@ -929,6 +1055,20 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
    
     
    
+        /**
+         * Ricalcola da zero il quadro RW (dichiarazione patrimoniale) per l'anno {@code AnnoRif}:
+         * è il metodo che orchestra l'intero motore RW, analogo a
+         * {@code Calcoli_PlusvalenzeNew.AggiornaPlusvalenze} per il quadro RT. Svuota le mappe RW
+         * globali ({@code Principale.Mappa_RW_*}, {@code VarCondivise.RW_MappaInfoPrezzo}), inizializza
+         * le giacenze di inizio periodo ({@link #CreaPrimiMovimenti}), scorre i movimenti dell'anno
+         * chiudendo/aprendo righi RW secondo la rilevanza dello scambio ({@link #ScambioRilevante},
+         * opzione {@code RW_Rilevanza}) e le opzioni {@code RW_ChiudiRWsuTrasferimento},
+         * {@code RW_StakingZero}, {@code RW_LiFoComplessivo}, chiude le giacenze finali per ogni
+         * gruppo wallet ({@link #ChiudiRWGiacenzeFinali}) e infine marca gli errori di prezzo mancante
+         * ({@link #SistemaErroriInListe}).
+         *
+         * @param AnnoRif anno di riferimento del quadro RW, come stringa numerica (es. "2024")
+         */
         public static void AggiornaRWFR(String AnnoRif) {
         
         MappaGruppo_IDPrimoMovimento=Funzioni.MappaPrimoMovimentoXGruppoWallet();
@@ -1767,6 +1907,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
   
   public String ListaIDcoinvolti="";
   
+  /**
+   * Aggiunge un ID movimento all'elenco (separato da virgola) degli ID coinvolti in questo lotto.
+   *
+   * @param ID ID del movimento da aggiungere
+   */
   public void AggiungiID(String ID){
       if (ListaIDcoinvolti.isBlank())
         ListaIDcoinvolti=ID;

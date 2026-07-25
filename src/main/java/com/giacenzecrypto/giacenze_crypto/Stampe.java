@@ -54,10 +54,12 @@ public class Stampe {
        
      } 
      
+     /** Apre il documento PDF per la scrittura (da chiamare prima di aggiungere qualsiasi contenuto). */
      public void ApriDocumento(){
-        doc.open(); 
+        doc.open();
      }
-     
+
+    /** Chiude il documento e lo scrive su disco, poi lo apre con l'applicazione predefinita del sistema se disponibile. */
     public void ScriviPDF(){
     try {
       doc.close();
@@ -76,10 +78,12 @@ public class Stampe {
           }
      }
     
+    /** Forza l'inizio di una nuova pagina nel documento PDF. */
     public void NuovaPagina(){
         doc.newPage();
     }
-    
+
+    /** @param piendino testo del piè di pagina, mostrato allineato a destra su ogni pagina */
     public void Piede(String piendino){
     //    doc.setFooter(new HeaderFooter(piedino,piedino));
         Font font = new Font(Font.HELVETICA, 6, Font.NORMAL);       
@@ -90,10 +94,21 @@ public class Stampe {
         
     } 
     
+    /** @param Titolo titolo da impostare nei metadati del documento PDF */
     public void AggiungiTitolo(String Titolo){
         doc.addTitle(Titolo);
      }
-    
+
+    /**
+     * Aggiunge al PDF una pagina del quadro W/RW (dichiarazione patrimoniale), sovrapponendo all'immagine del
+     * modulo fornita i dati del wallet (numero quadro, codice possesso/individuazione bene/quota fissi, valore
+     * iniziale/finale, giorni di detenzione), scalando l'immagine alla larghezza della pagina.
+     * @param Immagine percorso dell'immagine del modulo su cui sovrapporre i dati
+     * @param NumeroQuadro numero progressivo del quadro W
+     * @param ValoreIniziale valore iniziale del wallet (senza decimali, aggiunti automaticamente come {@code ",00"})
+     * @param ValoreFinale valore finale del wallet (senza decimali, aggiunti automaticamente come {@code ",00"})
+     * @param Giorni giorni di detenzione ai fini IVAFE; se vuoto o tra parentesi, marca la riga come "solo monitoraggio"
+     */
     public void AggiungiQuadroW(String Immagine,String NumeroQuadro,String ValoreIniziale,String ValoreFinale,String Giorni) {
           try {
               
@@ -148,8 +163,11 @@ public class Stampe {
     
         
     
-    //Da Rivedere con calma ma potrebbe semplificarmi di molto le cose
-    //Inoltre mi permetterebbe di avere dei documenti più dettagliati
+    /**
+     * Importa la prima pagina di un PDF esterno come template e la inserisce come contenuto nel documento
+     * corrente tramite {@link PdfContentByte#addTemplate}.
+     * @param FontePDF percorso del PDF sorgente da cui importare la prima pagina
+     */
     public void InserisciPDF(String FontePDF) {
         try {
             PdfReader reader = new PdfReader(FontePDF);
@@ -170,6 +188,10 @@ public class Stampe {
         }
     }
     
+    /**
+     * @return il testo HTML delle note di compilazione del quadro T (Redditi PF) per le annualità antecedenti
+     *         al 2025, con la spiegazione dei righi T41-T45
+     */
     public static String NoteCompilazioneTante2025(){
     return """
                             <html><font size="2" face="Courier New,Courier, mono" >
@@ -199,6 +221,10 @@ public class Stampe {
     
     }
     
+    /**
+     * @return il testo HTML delle note di compilazione del quadro T (Redditi PF) per l'annualità 2025, con la
+     *         spiegazione dei righi delle sezioni V, VII e VIII (T41-T45, T105, T112)
+     */
     public static String NoteCompilazioneT2025() {
         return """
                             <html><font size="2" face="Courier New,Courier, mono" >
@@ -245,6 +271,10 @@ public class Stampe {
 
     }
     
+        /**
+         * @return il testo HTML delle note di compilazione del quadro RT (modello Redditi) per le annualità
+         *         antecedenti al 2025, con la spiegazione dei righi RT41-RT45
+         */
         public static String NoteCompilazioneRTante2025() {
         return """
                             <html><font size="2" face="Courier New,Courier, mono" >
@@ -275,6 +305,10 @@ public class Stampe {
 
     }
         
+            /**
+             * @return il testo HTML delle note di compilazione del quadro RT (modello Redditi) per l'annualità
+             *         2025, con la spiegazione dei righi della sezione V-A (RT41-RT45 e successivi)
+             */
             public static String NoteCompilazioneRT2025() {
         return """
                             <html><font size="2" face="Courier New,Courier, mono" >
@@ -636,6 +670,12 @@ public class Stampe {
     
     
     
+         /**
+          * Aggiunge al PDF una pagina del rigo RW8 (crypto-attività), sovrapponendo il valore indicato
+          * all'immagine del modulo fornita.
+          * @param Immagine percorso dell'immagine del modulo su cui sovrapporre i dati
+          * @param Valore valore da riportare nel rigo
+          */
          public void AggiungiRW8(String Immagine,String Valore) {
           try {
               
@@ -662,10 +702,27 @@ public class Stampe {
           }
     }
     
+    /**
+     * Disegna una frase allineata a sinistra a coordinate assolute nella pagina PDF corrente.
+     * @param canvas contenuto diretto della pagina su cui disegnare
+     * @param p testo da disegnare
+     * @param x coordinata X
+     * @param y coordinata Y
+     */
     public void setPara(PdfContentByte canvas, Phrase p, float x, float y) {
     ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, p, x, y, 0);
 }
     
+    /**
+     * Aggiunge al PDF una pagina del quadro T (plusvalenze cripto-attività, modulo pre-2025), sovrapponendo
+     * all'immagine del modulo fornita il totale vendite, il costo di acquisto, la plusvalenza calcolata
+     * (vendite - costo) e le eventuali segnalazioni/errori.
+     * @param Immagine percorso dell'immagine del modulo su cui sovrapporre i dati
+     * @param Vendite totale corrispettivi delle vendite dell'anno, come stringa decimale
+     * @param Costo totale costo di acquisto relativo alle vendite, come stringa decimale
+     * @param Segnalazioni testo libero con eventuali segnalazioni/errori da riportare in calce
+     * @param Anno anno di riferimento
+     */
     public void AggiungiT(String Immagine,String Vendite,String Costo,String Segnalazioni,String Anno) {
           try {
               
@@ -720,6 +777,16 @@ public class Stampe {
           }
     }
     
+    /**
+     * Come {@link #AggiungiT}, ma per il modulo quadro T 2025: usa come sfondo la prima pagina di un PDF
+     * (invece di un'immagine), importata e scalata proporzionalmente tramite {@link PdfImportedPage}, con la
+     * posizione verticale di riferimento calcolata di conseguenza.
+     * @param FilePdf percorso del PDF del modulo da usare come sfondo
+     * @param Vendite totale corrispettivi delle vendite dell'anno, come stringa decimale
+     * @param Costo totale costo di acquisto relativo alle vendite, come stringa decimale
+     * @param Segnalazioni testo libero con eventuali segnalazioni/errori da riportare in calce
+     * @param Anno anno di riferimento
+     */
     public void AggiungiT2025(String FilePdf,String Vendite,String Costo,String Segnalazioni,String Anno) {
           try {
              
@@ -800,6 +867,14 @@ public class Stampe {
           }
     }
     
+    /**
+     * Come {@link #AggiungiT}, ma per il quadro RT (plusvalenze cripto-attività, modulo Redditi pre-2025).
+     * @param Immagine percorso dell'immagine del modulo su cui sovrapporre i dati
+     * @param Vendite totale corrispettivi delle vendite dell'anno, come stringa decimale
+     * @param Costo totale costo di acquisto relativo alle vendite, come stringa decimale
+     * @param Segnalazioni testo libero con eventuali segnalazioni/errori da riportare in calce
+     * @param Anno anno di riferimento
+     */
     public void AggiungiRT(String Immagine,String Vendite,String Costo,String Segnalazioni,String Anno) {
           try {
               
@@ -856,6 +931,14 @@ public class Stampe {
           }
     }
     
+    /**
+     * Come {@link #AggiungiT2025}, ma per il quadro RT 2025 (sfondo da PDF invece che immagine).
+     * @param FilePdf percorso del PDF del modulo da usare come sfondo
+     * @param Vendite totale corrispettivi delle vendite dell'anno, come stringa decimale
+     * @param Costo totale costo di acquisto relativo alle vendite, come stringa decimale
+     * @param Segnalazioni testo libero con eventuali segnalazioni/errori da riportare in calce
+     * @param Anno anno di riferimento
+     */
     public void AggiungiRT2025(String FilePdf, String Vendite, String Costo, String Segnalazioni, String Anno) {
         try {
 
@@ -944,6 +1027,14 @@ public class Stampe {
         }
     }
     
+    /**
+     * Come {@link #AggiungiRT2025}, ma per la seconda pagina del modulo quadro RT 2025 (sfondo da un PDF separato).
+     * @param FilePdf percorso del PDF della seconda pagina del modulo da usare come sfondo
+     * @param Vendite totale corrispettivi delle vendite dell'anno, come stringa decimale
+     * @param Costo totale costo di acquisto relativo alle vendite, come stringa decimale
+     * @param Segnalazioni testo libero con eventuali segnalazioni/errori da riportare in calce
+     * @param Anno anno di riferimento
+     */
     public void AggiungiRT2025p2(String FilePdf, String Vendite, String Costo, String Segnalazioni, String Anno) {
         try {
 
@@ -1031,6 +1122,12 @@ public class Stampe {
     
     
     
+    /**
+     * Aggiunge al PDF una tabella con intestazione in grassetto e righe di dettaglio in font monospace,
+     * a larghezza piena pagina. Le righe di dettaglio con meno colonne del previsto vengono ignorate.
+     * @param Titoli intestazioni delle colonne
+     * @param Dettagli righe di dati, ciascuna con lo stesso numero di colonne di {@code Titoli}
+     */
     public void AggiungiTabella(String[] Titoli,List<String[]> Dettagli){
       Font font = new Font(Font.HELVETICA, 10, Font.BOLD);
       int NumeroColonne=Titoli.length;
@@ -1068,6 +1165,10 @@ public class Stampe {
       
      }
     
+    /**
+     * Aggiunge al PDF un blocco di contenuto HTML, convertito tramite {@link HTMLWorker}.
+     * @param html markup HTML da aggiungere al documento
+     */
     public void AggiungiHtml(String html){
           try {
               StyleSheet style=new StyleSheet();
@@ -1083,6 +1184,12 @@ public class Stampe {
              
     }
     
+    /**
+     * Aggiunge al PDF un paragrafo di testo semplice (font Courier), allineato a sinistra.
+     * @param Testo testo da aggiungere
+     * @param intfont stile del font (es. {@link Font#NORMAL}, {@link Font#BOLD})
+     * @param size dimensione del font in punti
+     */
     public void AggiungiTesto(String Testo, int intfont, float size) {
         //Element e =new Element(Testo,FontFactory.getFont(FontFactory.COURIER,size, intfont));
         Paragraph par = new Paragraph();
@@ -1094,6 +1201,12 @@ public class Stampe {
 
     }
     
+    /**
+     * Come {@link #AggiungiTesto}, ma con il paragrafo centrato orizzontalmente.
+     * @param Testo testo da aggiungere
+     * @param intfont stile del font (es. {@link Font#NORMAL}, {@link Font#BOLD})
+     * @param size dimensione del font in punti
+     */
     public void AggiungiTestoCentrato(String Testo,int intfont,float size){
               Paragraph par = new Paragraph(Testo,FontFactory.getFont(FontFactory.COURIER,size, intfont));
               par.setAlignment(Element.ALIGN_CENTER);

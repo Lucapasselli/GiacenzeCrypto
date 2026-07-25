@@ -24,6 +24,14 @@ public class VarCondivise {
     
     
 
+    /**
+     * Popola {@link Principale#Mappa_ChainExplorer} con la configurazione di ciascuna blockchain EVM/non-EVM
+     * supportata (endpoint explorer, coin di commissione, nomi endpoint coingecko/DefiLlama), e
+     * {@link Principale#Mappa_AddressRete_Nome} con gli indirizzi di contratto noti dei principali
+     * stablecoin/token wrapped per rete, in modo da poterli identificare senza interrogare coingecko.
+     * Da chiamare una volta all'avvio dell'applicazione. Per aggiungere una nuova chain EVM vedi
+     * {@code Documentazione/IstruzioniVarie.txt}.
+     */
     public static void CompilaMappaChain() {
         //indirizzoExplorer,api,coin commissioni,nomeEndpointCoingecko,nomeEndpointDefiLlama
         //System.out.println("Compilo Mappe integrate nel codice");
@@ -69,6 +77,11 @@ public class VarCondivise {
         //Principale.Mappa_AddressRete_Nome.put("BNB_BSC", "BNB");
     }
 
+    /**
+     * Popola {@link Principale#MappaRetiSupportate} con l'insieme dei codici rete/blockchain riconosciuti
+     * dall'applicazione (incluse reti per cui non è disponibile un explorer DeFi integrato, come DASH o EOS).
+     * Da chiamare una volta all'avvio dell'applicazione.
+     */
     public static void CompilaMappaRetiSupportate() {
         Principale.MappaRetiSupportate.put("ARB", "");
         Principale.MappaRetiSupportate.put("AVAX", "");

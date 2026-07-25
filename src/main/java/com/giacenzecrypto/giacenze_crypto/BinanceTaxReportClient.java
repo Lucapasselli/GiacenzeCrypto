@@ -67,6 +67,11 @@ public class BinanceTaxReportClient {
 
     // ------------------ Utilità Tempo & Firma ------------------
 
+    /**
+     * Sincronizza l'offset tra l'orologio locale e quello del server Binance (necessario per firmare
+     * correttamente le richieste autenticate), interrogando l'endpoint pubblico {@code /api/v3/time}.
+     * @throws Exception in caso di errore di rete o di parsing della risposta
+     */
     public void syncTime() throws Exception {
         String resp = httpGet(BASE_URL + "/api/v3/time", null, false);
         JSONObject json = new JSONObject(resp);
@@ -75,6 +80,11 @@ public class BinanceTaxReportClient {
         System.out.println("[LOG] Time offset (server-local): " + timeOffset + " ms");
     }
 
+    /**
+     * Verifica che le credenziali API (chiave e secret) siano valide effettuando una richiesta autenticata
+     * all'endpoint {@code /api/v3/account}.
+     * @return {@code true} se l'autenticazione ha successo (risposta HTTP 200), {@code false} altrimenti (inclusi gli errori di rete)
+     */
     public boolean checkAuthentication() {
         try {
             Map<String, String> params = new LinkedHashMap<>();
@@ -233,6 +243,12 @@ public class BinanceTaxReportClient {
     // ------------------ Depositi / Prelievi (tutto lo storico) ------------------
 
     // /sapi/v1/capital/deposit/hisrec -> ARRAY root, supporta limit e offset
+    /**
+     * Scarica l'intero storico dei depositi dell'account, paginando tramite {@code offset}/{@code limit}
+     * finché una pagina restituisce meno risultati del limite richiesto.
+     * @return l'array JSON con tutti i depositi
+     * @throws Exception in caso di errore di rete o di parsing della risposta
+     */
     public JSONArray fetchDepositsAllHistory() throws Exception {
         System.out.println("[LOG] Scaricando Depositi (ALL)...");
         final int LIMIT = 1000;
@@ -253,6 +269,12 @@ public class BinanceTaxReportClient {
     }
 
     // /sapi/v1/capital/withdraw/history -> ARRAY root, supporta limit e offset
+    /**
+     * Scarica l'intero storico dei prelievi dell'account, paginando tramite {@code offset}/{@code limit}
+     * finché una pagina restituisce meno risultati del limite richiesto.
+     * @return l'array JSON con tutti i prelievi
+     * @throws Exception in caso di errore di rete o di parsing della risposta
+     */
     public JSONArray fetchWithdrawalsAllHistory() throws Exception {
         System.out.println("[LOG] Scaricando Prelievi (ALL)...");
         final int LIMIT = 1000;
@@ -275,6 +297,14 @@ public class BinanceTaxReportClient {
     // ------------------ Trades Spot (per simbolo, poi multi-simbolo) ------------------
 
     // /api/v3/myTrades -> symbol OBBLIGATORIO, paginazione via fromId
+    /**
+     * Scarica l'intero storico dei trade spot per un simbolo, paginando tramite {@code fromId} (l'ID
+     * successivo all'ultimo trade ricevuto) finché una pagina restituisce meno risultati del limite richiesto
+     * o non ci sono più nuovi ID (protezione anti-loop).
+     * @param symbol simbolo della coppia di trading (es. {@code "BTCUSDT"})
+     * @return l'array JSON con tutti i trade per il simbolo indicato
+     * @throws Exception in caso di errore di rete o di parsing della risposta
+     */
     public JSONArray fetchSpotTradesForSymbolAllHistory(String symbol) throws Exception {
         System.out.println("[LOG] Scaricando Trades Spot per " + symbol + " (ALL)...");
         final int LIMIT = 1000;
@@ -302,6 +332,14 @@ public class BinanceTaxReportClient {
         return all;
     }
 
+    /**
+     * Scarica l'intero storico dei trade spot per più simboli, richiamando {@link #fetchSpotTradesForSymbolAllHistory}
+     * per ciascuno e aggiungendo esplicitamente il campo {@code symbol} a ogni trade (l'API non lo restituisce
+     * sempre di default per ogni endpoint).
+     * @param symbols simboli delle coppie di trading da interrogare
+     * @return l'array JSON con tutti i trade di tutti i simboli indicati
+     * @throws Exception in caso di errore di rete o di parsing della risposta
+     */
     public JSONArray fetchSpotTradesForSymbolsAllHistory(Collection<String> symbols) throws Exception {
         JSONArray all = new JSONArray();
         for (String s : symbols) {
@@ -318,6 +356,13 @@ public class BinanceTaxReportClient {
     // ------------------ Earn: Asset Dividends ------------------
 
     // /sapi/v1/asset/assetDividend -> object { rows, total }
+    /**
+     * Scarica l'intero storico dei dividendi/reward su asset (staking, savings, ecc. distribuiti come
+     * dividendo), a partire dal 2017-01-01, paginando tramite {@code startTime} in avanti e marcando ogni
+     * riga con {@code sourceType = "ASSET_DIVIDEND"}.
+     * @return l'array JSON con tutti i dividendi asset
+     * @throws Exception in caso di errore di rete o di parsing della risposta
+     */
     public JSONArray fetchAssetDividendsAllHistory() throws Exception {
         System.out.println("[LOG] Scaricando Asset Dividends (ALL)...");
         final int LIMIT = 1000;
@@ -353,6 +398,12 @@ public class BinanceTaxReportClient {
     // ------------------ Earn: Simple Earn (Flexible / Locked) ------------------
 
     // /sapi/v1/simple-earn/flexible/history/rewards
+    /**
+     * Scarica l'intero storico delle reward Simple Earn Flexible, a partire dal 2017-01-01, paginando tramite
+     * {@code startTime} in avanti e marcando ogni riga con {@code sourceType = "SIMPLE_EARN_FLEXIBLE"}.
+     * @return l'array JSON con tutte le reward Simple Earn Flexible
+     * @throws Exception in caso di errore di rete o di parsing della risposta
+     */
     public JSONArray fetchSimpleEarnFlexibleRewardsAllHistory() throws Exception {
         System.out.println("[LOG] Scaricando Simple Earn Flexible (ALL)...");
         final int LIMIT = 1000;
@@ -384,6 +435,12 @@ public class BinanceTaxReportClient {
     }
 
     // /sapi/v1/simple-earn/locked/history/rewards
+    /**
+     * Scarica l'intero storico delle reward Simple Earn Locked, a partire dal 2017-01-01, paginando tramite
+     * {@code startTime} in avanti e marcando ogni riga con {@code sourceType = "SIMPLE_EARN_LOCKED"}.
+     * @return l'array JSON con tutte le reward Simple Earn Locked
+     * @throws Exception in caso di errore di rete o di parsing della risposta
+     */
     public JSONArray fetchSimpleEarnLockedRewardsAllHistory() throws Exception {
         System.out.println("[LOG] Scaricando Simple Earn Locked (ALL)...");
         final int LIMIT = 1000;
@@ -417,6 +474,15 @@ public class BinanceTaxReportClient {
     // ------------------ Earn: Staking / DeFi Staking ------------------
 
     // /sapi/v1/staking/record con txnType=INTEREST e product = STAKING | L_DEFI | F_DEFI
+    /**
+     * Scarica l'intero storico degli interessi da staking per un prodotto (staking classico, DeFi lock o
+     * DeFi flexible), a partire dal 2017-01-01, paginando tramite {@code startTime} in avanti e marcando ogni
+     * riga con il {@code sourceType} corrispondente al prodotto ({@code STAKING_INTEREST}, {@code DEFI_LOCKED_INTEREST}
+     * o {@code DEFI_FLEX_INTEREST}).
+     * @param product codice prodotto Binance ({@code "STAKING"}, {@code "L_DEFI"} o {@code "F_DEFI"})
+     * @return l'array JSON con tutti gli interessi da staking per il prodotto indicato
+     * @throws Exception in caso di errore di rete o di parsing della risposta
+     */
     public JSONArray fetchStakingInterestsAllHistory(String product) throws Exception {
         System.out.println("[LOG] Scaricando Staking Interests product=" + product + " (ALL)...");
         final int LIMIT = 1000;
@@ -453,6 +519,13 @@ public class BinanceTaxReportClient {
     // ------------------ Earn: Legacy Savings (opzionale) ------------------
 
     // /sapi/v1/lending/union/interestHistory -> spesso supporta size e current (pagina)
+    /**
+     * Scarica l'intero storico degli interessi da Legacy Savings, paginando tramite {@code current}/{@code size}
+     * finché una pagina restituisce meno risultati della dimensione richiesta, e marcando ogni riga con
+     * {@code sourceType = "LEGACY_SAVINGS_INTEREST"}.
+     * @return l'array JSON con tutti gli interessi Legacy Savings
+     * @throws Exception in caso di errore di rete o di parsing della risposta
+     */
     public JSONArray fetchLegacySavingsInterestAllHistory() throws Exception {
         System.out.println("[LOG] Scaricando Legacy Savings Interest (ALL)...");
         final int SIZE = 1000;
@@ -483,6 +556,12 @@ public class BinanceTaxReportClient {
 
     // ------------------ Aggregazione: TUTTI GLI EARN ------------------
 
+    /**
+     * Scarica e aggrega in un unico array l'intero storico di tutte le fonti Earn: dividendi asset, Simple
+     * Earn (flexible e locked), staking/DeFi staking (classico, lock, flexible) e Legacy Savings.
+     * @return l'array JSON con tutte le entrate Earn di ogni tipo
+     * @throws Exception in caso di errore di rete o di parsing della risposta
+     */
     public JSONArray fetchAllEarnAllHistory() throws Exception {
         JSONArray all = new JSONArray();
 
@@ -511,6 +590,13 @@ public class BinanceTaxReportClient {
     // ------------------ Normalizzazione ed Export ------------------
 
     // Normalizza record Earn eterogenei ad uno schema uniforme
+    /**
+     * Normalizza record Earn eterogenei (con nomi di campo diversi a seconda della fonte) in uno schema
+     * uniforme con timestamp, asset, importo, tipo sorgente, prodotto e ID transazione, mantenendo comunque
+     * il record originale nel campo {@code raw}.
+     * @param earnItems record Earn grezzi, così come restituiti dalle varie API {@code fetch*}
+     * @return l'array JSON dei record normalizzati
+     */
     public JSONArray normalizeEarn(JSONArray earnItems) {
         JSONArray out = new JSONArray();
         for (int i = 0; i < earnItems.length(); i++) {
@@ -553,6 +639,12 @@ public class BinanceTaxReportClient {
         return out;
     }
 
+    /**
+     * Esporta record Earn già normalizzati (via {@link #normalizeEarn}) in formato CSV.
+     * @param normalizedEarn record Earn normalizzati da esportare
+     * @param out destinazione su cui scrivere il CSV
+     * @throws Exception in caso di errore di scrittura
+     */
     public void exportEarnToCSV(JSONArray normalizedEarn, Appendable out) throws Exception {
         writeLine(out, "ts,datetime_utc,asset,amount,sourceType,product,txId");
         for (int i = 0; i < normalizedEarn.length(); i++) {
@@ -597,7 +689,12 @@ public class BinanceTaxReportClient {
         String quoteAsset;
     }
 
-    // Scarica i simboli Spot TRADING dall'exchangeInfo
+    /**
+     * Scarica dall'endpoint pubblico {@code /api/v3/exchangeInfo} l'elenco dei simboli spot attualmente in
+     * stato {@code TRADING} e con trading spot abilitato.
+     * @return la lista dei simboli spot negoziabili
+     * @throws Exception in caso di errore di rete o di parsing della risposta
+     */
     public List<SymbolInfo> fetchExchangeTradingSymbols() throws Exception {
         String resp = httpGet(BASE_URL + "/api/v3/exchangeInfo", null, false);
         JSONObject obj = new JSONObject(resp);
@@ -619,7 +716,13 @@ public class BinanceTaxReportClient {
         return out;
     }
 
-    // Raccoglie asset da depositi, prelievi e TUTTI gli earn
+    /**
+     * Raccoglie l'insieme di tutti gli asset (simboli, non coppie) visti nello storico dell'account, scorrendo
+     * depositi, prelievi e tutte le fonti Earn. Gli errori su una singola fonte vengono loggati come warning e
+     * non interrompono la raccolta dalle altre fonti.
+     * @return l'insieme (in maiuscolo) degli asset visti nello storico
+     * @throws Exception in caso di errore fatale nella raccolta (le singole fonti gestiscono i propri errori internamente)
+     */
     public Set<String> collectHistoryAssets() throws Exception {
         Set<String> assets = new HashSet<>();
 
@@ -662,7 +765,15 @@ public class BinanceTaxReportClient {
         return assets;
     }
 
-    // Determina simboli spot probabili dai tuoi asset storici
+    /**
+     * Determina l'insieme di simboli spot probabilmente rilevanti per l'account, incrociando gli asset visti
+     * nello storico ({@link #collectHistoryAssets}, esclusi quelli in {@code COMMON_QUOTES}, usati come
+     * "asset core") con l'elenco dei simboli negoziabili ({@link #fetchExchangeTradingSymbols}): include le
+     * coppie tra un asset core e una quote preferita, e le coppie tra due asset core visti entrambi nello
+     * storico. Non genera coppie in cui l'asset viene usato come quote, per evitare un'esplosione combinatoria.
+     * @return l'insieme dei simboli spot candidati
+     * @throws Exception in caso di errore di rete o di parsing della risposta
+     */
     public Set<String> discoverLikelySymbolsFromHistory() throws Exception {
         System.out.println("[LOG] Discovery simboli spot dai tuoi asset storici...");
         Set<String> seenAssets = collectHistoryAssets();
@@ -727,7 +838,12 @@ public class BinanceTaxReportClient {
         return result;
     }
 
-    // Scarica i trades spot su tutti i simboli “probabili”
+    /**
+     * Scarica l'intero storico dei trade spot per tutti i simboli individuati automaticamente tramite
+     * {@link #discoverLikelySymbolsFromHistory}.
+     * @return l'array JSON con tutti i trade dei simboli candidati, oppure un array vuoto se non se ne trova nessuno
+     * @throws Exception in caso di errore di rete o di parsing della risposta
+     */
     public JSONArray fetchAllSpotTradesAllHistoryAuto() throws Exception {
         Set<String> symbols = discoverLikelySymbolsFromHistory();
         if (symbols.isEmpty()) {
@@ -739,6 +855,13 @@ public class BinanceTaxReportClient {
 
     // ------------------ Esempio d’uso ------------------
 
+    /**
+     * Esempio d'uso standalone della classe (non l'entry point dell'applicazione): legge le credenziali dalle
+     * variabili d'ambiente {@code BINANCE_API_KEY}/{@code BINANCE_SECRET_KEY}, scarica ed esporta su stdout
+     * lo storico Earn in CSV, poi scarica lo storico completo dei trade spot sui simboli individuati automaticamente.
+     * @param args argomenti a riga di comando (non utilizzati)
+     * @throws Exception in caso di errore di rete, autenticazione o parsing
+     */
     public static void main(String[] args) throws Exception {
         String apiKey = System.getenv("BINANCE_API_KEY");
         String secretKey = System.getenv("BINANCE_SECRET_KEY");

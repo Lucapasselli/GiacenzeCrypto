@@ -18,6 +18,12 @@ public class Funzioni_WalletDeFi {
     
     
      
+     /**
+      * Apre nel browser predefinito la pagina dell'explorer blockchain relativa alla transazione di un
+      * movimento (usando {@link #ApriExplorer}), in base alla rete determinata da {@link Funzioni#TrovaReteDaID}.
+      * @param ID identificativo del movimento
+      * @return {@code true} se è stato possibile determinare rete e transazione (l'apertura del browser non ne condiziona il ritorno), {@code false} se il movimento non ha i campi attesi o la rete non è determinabile
+      */
      public static boolean ApriExplorer (String ID){
             
 
@@ -65,6 +71,13 @@ public class Funzioni_WalletDeFi {
 
     }
      
+     /**
+      * Apre nel browser predefinito la pagina dei movimenti di un token per un wallet sull'explorer della rete
+      * indicata (per Bitcoin apre semplicemente la pagina dell'indirizzo, non essendo un token).
+      * @param Wallet indirizzo del wallet
+      * @param Address indirizzo di contratto del token (ignorato per Bitcoin)
+      * @param Rete identificativo della blockchain/rete
+      */
      public static void ApriMovimentiWallet(String Wallet,String Address,String Rete){
            
             
@@ -106,6 +119,12 @@ public class Funzioni_WalletDeFi {
 
      }
      
+          /**
+           * Apre nel browser predefinito la pagina di riepilogo delle giacenze (token holdings/portfolio) di un
+           * wallet sull'explorer della rete indicata, se il sistema supporta {@link Desktop}.
+           * @param Wallet indirizzo del wallet
+           * @param Rete identificativo della blockchain/rete
+           */
           public static void ApriSituazioneWallet(String Wallet,String Rete){
            
             
@@ -148,6 +167,13 @@ public class Funzioni_WalletDeFi {
      }
      
      
+     /**
+      * Verifica se una stringa nel formato {@code indirizzo (RETE)} rappresenta un wallet DeFi valido: la rete
+      * deve essere tra quelle con explorer DeFi integrato e l'indirizzo deve essere valido per quella rete
+      * secondo {@link #isValidAddress}.
+      * @param wallet stringa wallet nel formato {@code indirizzo (RETE)}
+      * @return {@code true} se rete e indirizzo sono validi
+      */
      public static boolean isValidDefiWallet(String wallet) {
         //Questa funzione serve per sapere se una stringa wallet presente nella colonna wallet es 0x3423432aff4545 (ETH)
         //può essere considerata un wallet valido, si controllerà quindi l'indirizzo e se la rete è supportata
@@ -163,6 +189,14 @@ public class Funzioni_WalletDeFi {
         return false;
     }
     
+        /**
+         * Verifica se un indirizzo è sintatticamente valido per la rete indicata: formato Base58 a 32 byte per
+         * Solana ({@link #isValidSolanaAddress}), formato specifico per Bitcoin ({@link Trans_Bitcoin#isValidBitcoinAddress}),
+         * altrimenti formato esadecimale EVM standard ({@code 0x} seguito da 40 caratteri esadecimali).
+         * @param address indirizzo da validare
+         * @param Rete identificativo della blockchain/rete
+         * @return {@code true} se l'indirizzo è valido per la rete indicata, {@code false} anche se {@code Rete} è {@code null}
+         */
         public static boolean isValidAddress(String address,String Rete) {
         if (Rete==null) return false;
         if (Rete.equalsIgnoreCase("SOL")){

@@ -29,6 +29,13 @@ public class Moneta {
   
   
   
+    /**
+     * Imposta in blocco nome, quantità, indirizzo e tipologia della moneta.
+     * @param Nome simbolo della moneta
+     * @param Quantita quantità, come stringa decimale
+     * @param Address indirizzo di contratto del token
+     * @param Tipologia tipo della moneta ({@code NFT}, {@code FIAT} o {@code Crypto})
+     */
     public void InserisciValori(String Nome, String Quantita, String Address, String Tipologia) {
         SetNome(Nome);
         Qta = Quantita;
@@ -36,6 +43,7 @@ public class Moneta {
         Tipo = Tipologia;
     }
 
+    /** @return la fonte del prezzo associato ({@link Prezzi.InfoPrezzo#Fonte}), oppure {@code null} se non è impostato alcun {@link Prezzi.InfoPrezzo} */
     public String getFontePrezzo(){
         if (this.InfoPrezzo!=null){
             return InfoPrezzo.Fonte;
@@ -43,6 +51,10 @@ public class Moneta {
         return null;
     }
     
+    /**
+     * Imposta la fonte del prezzo, creando un {@link Prezzi.InfoPrezzo} vuoto se non ne esiste già uno.
+     * @param fonte fonte del prezzo da impostare
+     */
     public void setFontePrezzo(String fonte){
         if (InfoPrezzo==null){
             InfoPrezzo=new Prezzi.InfoPrezzo();
@@ -50,6 +62,13 @@ public class Moneta {
         }else InfoPrezzo.Fonte=fonte;
     }
     
+    /**
+     * Imposta nome, quantità e indirizzo della moneta, deducendo automaticamente la tipologia:
+     * {@code FIAT} solo per {@code EUR}/{@code USD}, {@code Crypto} per tutto il resto.
+     * @param Nome simbolo della moneta
+     * @param Quantita quantità, come stringa decimale
+     * @param Address indirizzo di contratto del token
+     */
     public void InserisciMonetaNoTipo(String Nome, String Quantita, String Address) {
         //Individua solo USD e EUR come FIAT
         Moneta = Nome;
@@ -65,45 +84,62 @@ public class Moneta {
 
     }
 
+/** @return il simbolo della moneta */
 public String GetNome(){
     return Moneta;
 }
+/** @return la rete/blockchain della moneta */
 public String GetRete(){
     return Rete;
 }
 
+/** @return il nome completo della moneta (usato per i token DeFi) */
 public String GetNomeEsteso(){
     //Nome completo per le monete in defi
     return NomeEsteso;
 }
 
 
+/** @param Nome simbolo della moneta da impostare */
 public void SetNome(String Nome){
     Moneta=Nome;
 }
+/** @param ReteT rete/blockchain da impostare */
 public void SetRete(String ReteT){
     Rete=ReteT;
 }
 
+/** @param Nome nome completo della moneta da impostare (usato per i token DeFi) */
 public void SetNomeEsteso(String Nome){
     //Nome completo per le monete in defi
     NomeEsteso=Nome;
 }
 
+/** @return la quantità, come stringa decimale */
 public String GetQta(){
     return Qta;
 }
+/** @return la quantità come {@link BigDecimal}, oppure {@code null} se {@link #Qta} non è un numero valido */
 public BigDecimal GetQtaBD(){
     if (Funzioni.isNumeric(Qta, false))return new BigDecimal(Qta);
     return null;
 }
 
+/**
+ * Imposta la quantità, solo se {@code Quant} è un valore numerico valido (altrimenti non modifica {@link #Qta}).
+ * @param Quant nuova quantità, come stringa decimale
+ */
 public void SetQta(String Quant){
     if (Funzioni.isNumeric(Quant, false)){
         Qta=Quant;
     }
 }
 
+/**
+ * Imposta il prezzo totale della moneta, solo se {@code Prz} è un valore numerico valido: crea un
+ * {@link Prezzi.InfoPrezzo} se non ne esiste già uno, e aggiorna anche {@link #Prezzo}.
+ * @param Prz nuovo prezzo totale, come stringa decimale
+ */
 public void SetPrezzo(String Prz){
     if (Funzioni.isNumeric(Prz, false)){
         if (InfoPrezzo==null){
@@ -117,22 +153,33 @@ public void SetPrezzo(String Prz){
     }
 }
 
+/**
+ * Sostituisce l'intero {@link Prezzi.InfoPrezzo} associato, aggiornando anche {@link #Prezzo} se disponibile.
+ * @param InfoPrz il nuovo {@link Prezzi.InfoPrezzo} da associare
+ */
 public void SetInfoPrezzo(Prezzi.InfoPrezzo InfoPrz){
     InfoPrezzo=InfoPrz;
     if (InfoPrezzo.prezzoQta!=null)Prezzo=InfoPrezzo.prezzoQta.toPlainString();
 }
 
+/** @param Address indirizzo di contratto da impostare */
 public void SetAddress(String Address){
     MonetaAddress=Address;
 }
 
+/** @return l'indirizzo di contratto della moneta */
 public String GetAddress(){
     return MonetaAddress;
 }
+/** @return la tipologia della moneta ({@code NFT}, {@code FIAT} o {@code Crypto}) */
 public String GetTipologia(){
     return Tipo;
 }
 
+/**
+ * Deduce e imposta automaticamente la tipologia della moneta: {@code FIAT} se il simbolo è tra
+ * {@code EUR}/{@code USD}/{@code TRY}/{@code GBP}, altrimenti {@code Crypto}.
+ */
 public void AssegnaTipoAuto(){
     Set<String> valute = Set.of("EUR", "USD", "TRY","GBP");
     if (valute.contains(Moneta)) {
@@ -146,8 +193,9 @@ public void AssegnaTipoAuto(){
     else Tipo="Crypto";*/
 }
 
-//Cambia il segno della qta della moneta
-//se il valore è negativo lo mette positivo e viceversa
+/**
+ * Inverte il segno di {@link #Qta}: se il valore è negativo lo rende positivo e viceversa.
+ */
 public void InvertiQta(){
     if (Qta!=null&&!Qta.isBlank()){
         if (Qta.contains("-"))
@@ -157,6 +205,11 @@ public void InvertiQta(){
     }
 }
 
+    /**
+     * Crea una copia superficiale di questa moneta (simbolo, indirizzo, prezzo, quantità, rete, tipo).
+     * Nota: {@link #NomeEsteso}, {@link #InfoPrezzo}, {@link #CostoCarico} e {@link #GruppoRW} non vengono copiati.
+     * @return la nuova istanza clonata
+     */
     public Moneta ClonaMoneta() {
         Moneta mo = new Moneta();
         mo.Moneta = Moneta;
@@ -169,6 +222,12 @@ public void InvertiQta(){
     } 
   
     
+    /**
+     * Costruisce le due monete (uscente ed entrante) coinvolte in un movimento, a partire dai suoi campi grezzi,
+     * ricavando la rete tramite {@link Funzioni#TrovaReteDaID}.
+     * @param v riga di movimento grezza
+     * @return array di 2 elementi: {@code [0]} moneta uscente, {@code [1]} moneta entrante
+     */
     public static Moneta[] RitornaMoneteDaMov(String[] v){
             
             String Rete = Funzioni.TrovaReteDaID(v[0]);

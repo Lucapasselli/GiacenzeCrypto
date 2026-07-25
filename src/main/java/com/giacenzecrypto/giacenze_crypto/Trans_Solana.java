@@ -26,6 +26,14 @@ public class Trans_Solana {
     static boolean verbose = true;
 
 
+    /**
+     * Scarica da Helius tutte le transazioni Solana di un wallet a partire da un blocco, e le converte in
+     * oggetti {@link TransazioneDefi} tramite {@link #parseTransactions}.
+     * @param walletAddress indirizzo del wallet Solana
+     * @param afterBlock numero di blocco a partire dal quale recuperare le transazioni
+     * @return mappa signature → {@link TransazioneDefi} delle transazioni trovate, oppure {@code null} se non ci sono transazioni o si verifica un errore di rete
+     * @throws InterruptedException se il thread viene interrotto durante l'attesa tra le richieste
+     */
     public static Map<String, TransazioneDefi> fetchAndParseTransactions(String walletAddress, int afterBlock) throws InterruptedException {
         try {
             
@@ -152,6 +160,12 @@ public class Trans_Solana {
 }
 
 
+  /**
+   * Verifica la validità di una API key Helius effettuando una chiamata JSON-RPC {@code getBalance} sull'indirizzo
+   * di sistema Solana {@code 11111111111111111111111111111111}.
+   * @param ApiKey API key da validare
+   * @return {@code true} se la risposta è andata a buon fine e contiene il campo {@code "result"}, {@code false} altrimenti (inclusi gli errori di rete)
+   */
   public static boolean isApiKeyValida(String ApiKey) {
       //HELIUS_RPC_URL2+"?api-key="+ApiKey
         //System.out.println(ApiKey);

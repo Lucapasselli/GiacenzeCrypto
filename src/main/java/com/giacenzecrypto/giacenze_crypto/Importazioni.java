@@ -155,6 +155,7 @@ public class Importazioni {
     //La mappa delle chain conterrà per ogni chain l'indirizzo del chain explorer e relativa api
     public static String movimentiSconosciuti="";
     
+    /** Azzera i contatori statici di sessione usati per riepilogare l'esito di un'importazione (transazioni totali, aggiunte, scartate, sconosciute) e la lista dei movimenti sconosciuti. */
     public static void AzzeraContatori()
             {           
                 Transazioni=0;
@@ -174,6 +175,17 @@ public class Importazioni {
     //29->Timestamp
     //
     
+        /**
+         * Importa un file CSV di export OKX: legge le righe, salta le transazioni già presenti in memoria
+         * (identificate per ID OKX), mappa le causali OKX verso le categorie interne (trasferimenti interni,
+         * depositi/prelievi, scambi crypto-crypto, reward, movimenti da ignorare) e delega il consolidamento
+         * dei movimenti raggruppati per timestamp a {@link #Ex_OKX_Consolida}.
+         * @param fileOKX percorso del file CSV OKX da importare
+         * @param SovrascriEsistenti se {@code true} sovrascrive i movimenti già presenti con lo stesso ID
+         * @param c componente parent per eventuali dialog
+         * @param progressb finestra di progresso su cui riportare l'avanzamento
+         * @return {@code true} se l'importazione è andata a buon fine, {@code false} in caso di errore di lettura del file
+         */
         public static boolean Ex_OKX_Importa(String fileOKX,boolean SovrascriEsistenti,Component c,Download progressb) {
         //Da sistemare problema su prezzi della giornata odierna/precendere che vanno in loop
         //Da sistemare problema con conversione dust su secondi diversi che da problemi
@@ -497,7 +509,17 @@ public class Importazioni {
     
 
     
-        public static boolean Ex_Binance_Importa(String fileBinance,boolean SovrascriEsistenti,Component c,Download progressb) {
+        /**
+     * Importa un file CSV di export Binance: legge le righe, salta le transazioni già presenti in memoria,
+     * mappa le causali Binance verso le categorie interne e delega il consolidamento dei movimenti
+     * raggruppati per timestamp a {@link #Ex_Binance_Consolida}.
+     * @param fileBinance percorso del file CSV Binance da importare
+     * @param SovrascriEsistenti se {@code true} sovrascrive i movimenti già presenti con lo stesso ID
+     * @param c componente parent per eventuali dialog
+     * @param progressb finestra di progresso su cui riportare l'avanzamento
+     * @return {@code true} se l'importazione è andata a buon fine, {@code false} in caso di errore di lettura del file
+     */
+    public static boolean Ex_Binance_Importa(String fileBinance,boolean SovrascriEsistenti,Component c,Download progressb) {
         //Da sistemare problema su prezzi della giornata odierna/precendere che vanno in loop
         //Da sistemare problema con conversione dust su secondi diversi che da problemi
         //Da sistemare problema con il nuovo stakin che non viene conteggiato (FATTO MA NON SO IL RITIRO DALLO STAKING con che causale sarà segnalato) bisognerà fare delle prove
@@ -714,6 +736,11 @@ public class Importazioni {
     
         
         
+    /**
+     * Versione legacy superata: inserisce in blocco una lista di movimenti in {@link Principale#MappaCryptoWallet}
+     * tramite {@link #InserisciMovimentosuMappaCryptoWallet}, marcando la tabella come da aggiornare.
+     * @param Movimenti righe di movimento da inserire (indice 0 = ID)
+     */
     public static void ZZZ_inserisciListaMovimentisuMappaCryptoWallet(List<String[]> Movimenti){
        for (String[] v : Movimenti) {
                InserisciMovimentosuMappaCryptoWallet(v[0], v);
@@ -725,6 +752,14 @@ public class Importazioni {
         
         
     
+    /**
+     * Inserisce (o sostituisce) un movimento in {@link Principale#MappaCryptoWallet}: se un movimento con lo
+     * stesso ID esiste già, prima rimuove le eventuali associazioni di trasferimento che lo coinvolgevano
+     * tramite {@link GUI_ClassificazioneMovimento#RiportaTransazioniASituazioneIniziale}, per evitare di
+     * lasciare riferimenti incrociati non aggiornati.
+     * @param Chiave ID del movimento (chiave nella mappa)
+     * @param Valore riga di movimento da inserire
+     */
     public static void InserisciMovimentosuMappaCryptoWallet(String Chiave, String[] Valore) {
        //QUA DOVRO' INSERIRE ANCHE L'EVENTUALE CAMBIO NOME DEL TOKEN
        //PER EVITARE DI FARLO AD OGNI CARICAMENTO DI TABELLA E AUMENTARE LA VELOCITA' MA LO VEDRO' CON CALMA PIU' AVANTI  
@@ -749,6 +784,13 @@ public class Importazioni {
     }
     
     
+    /**
+     * Importa un file CSV di export dell'app Crypto.com (wallet crypto): legge le righe, mappa le decine di
+     * causali specifiche dell'app (cashback, earn, staking, scambi, trasferimenti, acquisti/vendite) verso le
+     * categorie interne e delega il consolidamento a {@link #Ex_CDCAPP_Consolida}.
+     * @param fileCDCapp percorso del file CSV Crypto.com App da importare
+     * @param SovrascriEsistenti se {@code true} sovrascrive i movimenti già presenti con lo stesso ID
+     */
     public static void Ex_CDCAPP_Importa(String fileCDCapp, boolean SovrascriEsistenti) {
         //Da sistemare problema su prezzi della giornata odierna/precendere che vanno in loop
         //Da sistemare problema con conversione dust su secondi diversi che da problemi
@@ -974,11 +1016,14 @@ public class Importazioni {
 
     }
     
-    //Questa funzione inserisce nella mappa crypto i valori di una lista di array di stringhe con i dati
-    //Tiene conto del fatto che sia biffata o meno la possibilità di sovrascrivere i movimenti
-    //Ritorna il numero di movimenti inseriti e di quelli scartati in un array di interi
-    //al posto Zero ci sono i movimenti aggiunti
-    //al posto 1 ci sono i movimenti 
+    /**
+     * Inserisce una lista di movimenti già consolidati in {@link Principale#MappaCryptoWallet}, dopo averne
+     * reso univoci gli eventuali ID duplicati ({@link #CreaListaConIDUnivoco}) e, se {@code SovrascriEsistenti}
+     * è {@code false}, aver filtrato solo i movimenti effettivamente nuovi ({@link #F_ritornaSoloElementiNuovi}).
+     * @param lista movimenti consolidati da importare
+     * @param SovrascriEsistenti se {@code true} sovrascrive i movimenti già presenti con lo stesso ID, se {@code false} li scarta
+     * @return array di 2 interi: {@code [0]} movimenti effettivamente aggiunti, {@code [1]} movimenti scartati
+     */
     public static int[] ScriviListaSuMappaCrypto(List<String[]> lista,boolean SovrascriEsistenti){
         //===== 1 - CONTROLLA LA LISTA PER VEDERE CHE NON CI SIANO ID DUPLICATI, NEL QUAL CASO LI RENDE UNIVOCI =====
         lista=CreaListaConIDUnivoco(lista);  
@@ -1016,6 +1061,11 @@ public class Importazioni {
         
     
     
+        /**
+         * @param input stringa di cui calcolare l'hash
+         * @return l'hash MD5 di {@code input}, come stringa esadecimale a 32 caratteri (con zeri iniziali se necessario)
+         * @throws NoSuchAlgorithmException se l'algoritmo MD5 non è disponibile nella JVM corrente
+         */
         public String createMD5Hash(final String input)
            throws NoSuchAlgorithmException {
 
@@ -1040,6 +1090,17 @@ public class Importazioni {
    }
         
         
+    /**
+     * Versione legacy superata di importazione di un file CSV di export CoinTracking, sostituita da
+     * {@link #Ex_CoinTracking_ConsolidaMovimenti}.
+     * @param fileCoinTracking percorso del file CSV CoinTracking da importare
+     * @param SovrascriEsistenti se {@code true} sovrascrive i movimenti già presenti con lo stesso ID
+     * @param Exchange nome dell'exchange di provenienza dei movimenti nel file
+     * @param c componente parent per eventuali dialog
+     * @param PrezzoZero se {@code true} assegna prezzo zero ai movimenti senza prezzo invece di provare a recuperarlo
+     * @param progressb finestra di progresso su cui riportare l'avanzamento
+     * @return {@code true} se l'importazione è andata a buon fine, {@code false} in caso di errore di lettura del file
+     */
     public static boolean Ex_CoinTracking_ImportaOLD(String fileCoinTracking, boolean SovrascriEsistenti, String Exchange, Component c, boolean PrezzoZero, Download progressb) {
 
         AzzeraContatori();
@@ -1252,7 +1313,12 @@ public class Importazioni {
         return true;
     }
 
-//Questa funzione si occupa di scorrere la lista e di controllare se ci sono movimenti con lo stesso ID e nel qual caso cambiare l'ID per renderlo univoco
+/**
+ * Scorre una lista di movimenti consolidati e, per ogni eventuale collisione di ID all'interno della lista
+ * stessa, lo rende univoco tramite {@link MovimentiCrypto#getIDUnivoco}.
+ * @param listaConsolidata movimenti consolidati da rendere univoci
+ * @return la lista con gli ID resi univoci (i movimenti per cui non è stato possibile ottenere un ID valido vengono esclusi)
+ */
 public static List<String[]> CreaListaConIDUnivoco(List<String[]> listaConsolidata){
  
             List<String[]> ListaUnivoca=new ArrayList<>();
@@ -1273,6 +1339,15 @@ public static List<String[]> CreaListaConIDUnivoco(List<String[]> listaConsolida
 }
 
 
+/**
+ * Importa un file di Financial/Tax Report Binance: legge le righe secondo il formato specifico del report
+ * (con data in fuso CET) e delega il consolidamento dei movimenti a {@link #Ex_BinanceTaxReport_Consolida}.
+ * @param fileBinanceTaxReport percorso del file Tax Report Binance da importare
+ * @param SovrascriEsistenti se {@code true} sovrascrive i movimenti già presenti con lo stesso ID
+ * @param c componente parent per eventuali dialog
+ * @param progressb finestra di progresso su cui riportare l'avanzamento
+ * @return {@code true} se l'importazione è andata a buon fine, {@code false} in caso di errore di lettura del file
+ */
 public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,boolean SovrascriEsistenti,Component c,Download progressb ) {
         
 
@@ -1387,7 +1462,18 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
         
     }
     
-    public static boolean Ex_Tatax_Importa(String fileTatax, boolean SovrascriEsistenti, String Exchange, Component c, boolean PrezzoZero, Download progressb) {
+    /**
+ * Importa un file CSV di export Tatax (formato generico multi-exchange): legge le righe e delega il
+ * consolidamento a {@link #ConsolidaMovimentiSingolaRiga}.
+ * @param fileTatax percorso del file CSV Tatax da importare
+ * @param SovrascriEsistenti se {@code true} sovrascrive i movimenti già presenti con lo stesso ID
+ * @param Exchange nome dell'exchange di provenienza dei movimenti nel file
+ * @param c componente parent per eventuali dialog
+ * @param PrezzoZero se {@code true} assegna prezzo zero ai movimenti senza prezzo invece di provare a recuperarlo
+ * @param progressb finestra di progresso su cui riportare l'avanzamento
+ * @return {@code true} se l'importazione è andata a buon fine, {@code false} in caso di errore di lettura del file
+ */
+public static boolean Ex_Tatax_Importa(String fileTatax, boolean SovrascriEsistenti, String Exchange, Component c, boolean PrezzoZero, Download progressb) {
 
         AzzeraContatori();
         String fileDaImportare = fileTatax;
@@ -1596,6 +1682,17 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
     }
     
     
+      /**
+       * Importa un file CSV di export Crypto.com Exchange (distinto dall'app Crypto.com): legge le righe, mappa
+       * le causali specifiche dell'exchange (staking, trading, commissioni, dust conversion, trasferimenti)
+       * verso le categorie interne e delega il consolidamento a {@link #ConsolidaMovimentiSingolaRiga}.
+       * @param cdcExchange percorso del file CSV Crypto.com Exchange da importare
+       * @param SovrascriEsistenti se {@code true} sovrascrive i movimenti già presenti con lo stesso ID
+       * @param c componente parent per eventuali dialog
+       * @param PrezzoZero se {@code true} assegna prezzo zero ai movimenti senza prezzo invece di provare a recuperarlo
+       * @param progressb finestra di progresso su cui riportare l'avanzamento
+       * @return {@code true} se l'importazione è andata a buon fine, {@code false} in caso di errore di lettura del file
+       */
       public static boolean Ex_CryptoComExchange_Importa(String cdcExchange,boolean SovrascriEsistenti,Component c,boolean PrezzoZero,Download progressb ) {
        
     
@@ -1784,6 +1881,11 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
     
     
     
+        /**
+         * Sostituisce con {@code ""} tutti gli elementi {@code null} di un array di stringhe.
+         * @param array array da normalizzare (modificato in place)
+         * @return lo stesso array passato, con gli elementi {@code null} sostituiti da {@code ""}
+         */
         public static String[] RiempiVuotiArray(String[] array){
             for (int i=0;i<array.length;i++) {
                 if(array[i]==null){
@@ -1797,6 +1899,15 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
     
     
     
+        /**
+         * Serializza l'intera mappa dei movimenti su file (formato CSV a punto e virgola, senza escaping —
+         * i {@code ;} nei valori vengono rimossi), sostituendo il file di movimenti esistente. Prima della
+         * scrittura rinomina il file precedente come backup: nella cartella {@code Backup/} con timestamp se
+         * {@code SalvataggioPermanente} è {@code true}, altrimenti come singolo file di backup temporaneo
+         * (sovrascrivendo quello precedente).
+         * @param Mappa_Movimenti mappa ID → riga di movimento da salvare
+         * @param SalvataggioPermanente se {@code true} crea un backup permanente e timestampato nella cartella {@code Backup/}
+         */
         public static void Scrivi_Movimenti_Crypto(Map<String, String[]> Mappa_Movimenti,boolean SalvataggioPermanente) {
             
         File f = new File(VarStatiche.getFile_CryptoWallet());
@@ -1832,6 +1943,18 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
     }
         
     
+    /**
+     * Converte una {@link TransazioneDefi} (raggruppamento di token entrati/usciti di una singola transazione
+     * DeFi/CEX) nelle righe di movimento standard dell'applicazione, in base al tipo identificato tramite
+     * {@link TransazioneDefi#IdentificaTipoTransazioneCEX} (deposito, prelievo o scambio), assegnando a
+     * ciascun token il peso calcolato da {@link TransazioneDefi#AssegnaPesiaPartiTransazione} per ripartire
+     * proporzionalmente il valore complessivo tra le monete coinvolte.
+     * @param Scambio la transazione DeFi/CEX da convertire
+     * @param data data/ora della transazione, già formattata
+     * @param WalletPrincipale nome del wallet/exchange principale su cui registrare i movimenti
+     * @param WalletID identificativo del wallet/sottowallet
+     * @return la lista di righe di movimento generate, oppure lista vuota se la transazione non contiene token
+     */
     public static List<String[]> RitornaScambi(TransazioneDefi Scambio,String data,String WalletPrincipale,String WalletID) {
         List<String[]> lista=new ArrayList<>();
         if (!Scambio.isEmpty()) {
@@ -1952,7 +2075,15 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
 
     }
         
-         public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali){
+         /**
+ * Consolida le righe grezze già categorizzate dell'app Crypto.com ({@link #Ex_CDCAPP_Importa}) in movimenti
+ * completi nel formato standard dell'applicazione, raggruppando le righe con lo stesso timestamp/transazione
+ * (scambio, trasferimento, reward, ecc.) secondo le categorie in {@code Mappa_Conversione_Causali}.
+ * @param listaMovimentidaConsolidare righe grezze del CSV, già filtrate e in formato intermedio
+ * @param Mappa_Conversione_Causali mappa causale originale → categoria interna
+ * @return la lista di righe di movimento consolidate nel formato standard dell'applicazione
+ */
+public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali){
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
          //TI=Trasferimento Interno
          //TC=Trasferimento Criptoattività          -> non dovrebbe essere utilizzato
@@ -2474,6 +2605,10 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
         
          
  
+     /**
+      * @param s stringa da verificare
+      * @return {@code true} se {@code s} è un numero decimale valido e diverso da zero, {@code false} altrimenti (incluso {@code null}/vuota o non numerica)
+      */
      public static boolean F_isNumeroNonZero(String s) {
     if (s == null || s.trim().isEmpty()) {
         return false;
@@ -2498,8 +2633,12 @@ return filtrata;
      
      
      
-     //Funzione che serve per trovare l'offset UTC dal nome del file di Binance
-     //in questo modo anche se non si mette UTC+2 nel momento dell'export questo dovrebbe sistemare la cosa
+     /**
+      * Estrae l'offset UTC dal nome di un file di export Binance (es. {@code "...(UTC+2).csv"}), così da
+      * poter correggere le date anche se l'utente non ha specificato l'offset in fase di export.
+      * @param fileName nome del file da cui estrarre l'offset
+      * @return l'offset UTC in ore (positivo o negativo), oppure {@code 0} se non trovato nel nome del file
+      */
      public static int extractUtcOffsetBinance(String fileName) {
          Pattern UTC_PATTERN =Pattern.compile("\\(UTC([+-]?\\d*)\\)");
         Matcher matcher = UTC_PATTERN.matcher(fileName);
@@ -2619,7 +2758,15 @@ private static String F_safe(String s) {
      
      
      
-     public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<String, String> Mappa_Conversione_Causali){
+     /**
+ * Consolida un singolo record del Financial/Tax Report Binance (formato specifico con data in fuso CET) in
+ * una o più righe di movimento nel formato standard dell'applicazione, secondo le categorie in
+ * {@code Mappa_Conversione_Causali}.
+ * @param movimento riga grezza del report, così come letta dal file
+ * @param Mappa_Conversione_Causali mappa causale originale → categoria interna
+ * @return la lista di righe di movimento consolidate generate da questo record
+ */
+public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<String, String> Mappa_Conversione_Causali){
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
          //TI=Trasferimento Interno
          //TC=Trasferimento Criptoattività          -> non dovrebbe essere utilizzato
@@ -2916,7 +3063,14 @@ private static String F_safe(String s) {
     }   
   
      
-        //Questa funzione analizza i movimenti di scambio differito e li associa (utilizzando la stessa funzione che viene utilizzata nello scambio differito manuale)
+        /**
+         * Individua e associa automaticamente gli scambi differiti (prelievo su un exchange seguito da un
+         * deposito equivalente su un altro entro 15 minuti, con prezzo che non si discosta più del 10%),
+         * usando la stessa funzione di associazione manuale
+         * {@link GUI_ClassificazioneMovimento#CreaMovimentiScambioCryptoDifferito}.
+         * @param listaMovimentidaConsolidare movimenti da analizzare per la ricerca di scambi differiti
+         * @param SovrascrivoEsistenti se {@code true} analizza anche i movimenti già presenti in {@link Principale#MappaCryptoWallet} con lo stesso ID
+         */
         public static void ConsolidaMovimentiDifferiti(List<String[]> listaMovimentidaConsolidare,boolean SovrascrivoEsistenti){
             Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             int nElementi = listaMovimentidaConsolidare.size();
@@ -2968,6 +3122,16 @@ private static String F_safe(String s) {
         }
      
         
+          /**
+           * Consolida le righe grezze già categorizzate del CSV Binance ({@link #Ex_Binance_Importa}) in
+           * movimenti completi nel formato standard dell'applicazione, correggendo le date in base all'offset
+           * UTC rilevato ({@link #extractUtcOffsetBinance}) e integrando gli eventuali movimenti di auto-invest.
+           * @param listaMovimentidaConsolidare righe grezze del CSV, già filtrate e in formato intermedio
+           * @param Mappa_Conversione_Causali mappa causale originale → categoria interna
+           * @param listaAutoinvest righe relative ai piani di auto-invest, da integrare nel consolidamento
+           * @param offset offset UTC (in ore) da applicare alle date, secondo il fuso indicato nel nome del file esportato
+           * @return la lista di righe di movimento consolidate nel formato standard dell'applicazione
+           */
           public static List<String[]> Ex_Binance_Consolida(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali,List<String[]> listaAutoinvest,int offset){
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
          //TI=Trasferimento Interno
@@ -3352,7 +3516,15 @@ private static String F_safe(String s) {
         return lista;
     }   
      
-    public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaConsolidare, Map<String, String> Mappa_Conversione_Causali, List<String[]> listaAutoinvest) {
+    /**
+ * Consolida le righe grezze già categorizzate del CSV OKX ({@link #Ex_OKX_Importa}) in movimenti completi
+ * nel formato standard dell'applicazione, integrando gli eventuali movimenti di auto-invest.
+ * @param listaMovimentidaConsolidare righe grezze del CSV, già filtrate e in formato intermedio
+ * @param Mappa_Conversione_Causali mappa causale originale → categoria interna
+ * @param listaAutoinvest righe relative ai piani di auto-invest, da integrare nel consolidamento
+ * @return la lista di righe di movimento consolidate nel formato standard dell'applicazione
+ */
+public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaConsolidare, Map<String, String> Mappa_Conversione_Causali, List<String[]> listaAutoinvest) {
 
         //int mov è un indice che viene aggiunto all'ID per permettere a più transazioni con lo stesso id di coesistere
         //es. ho sue scambi identici alla stessa ora su 2 movimenti consolidati diversi, in questo caso idichero a un movimento Mov=1 e all'altro Mov=2
@@ -3551,6 +3723,17 @@ private static String F_safe(String s) {
     }  
     
          
+    /**
+     * Consolida righe grezze in formato "singola riga" (un'unica riga CSV rappresenta l'intero movimento, a
+     * differenza dei formati multi-riga come Binance/OKX) in movimenti completi nel formato standard
+     * dell'applicazione, usato ad esempio da Tatax e Crypto.com Exchange. Ogni riga viene classificata secondo
+     * le categorie in {@code Mappa_Conversione_Causali} e convertita nel corrispondente tipo di movimento
+     * (trasferimento interno, deposito/prelievo, acquisto/vendita, scambio, ecc.).
+     * @param listaMovimentidaConsolidare righe grezze da consolidare, una per movimento
+     * @param Mappa_Conversione_Causali mappa causale originale → categoria interna
+     * @param FontePrezzi fonte da usare per il recupero del prezzo dei movimenti
+     * @return la lista di righe di movimento consolidate nel formato standard dell'applicazione
+     */
     public static List<String[]> ConsolidaMovimentiSingolaRiga(List<String[]> listaMovimentidaConsolidare, Map<String, String> Mappa_Conversione_Causali, String FontePrezzi) {
 
         //int mov è un indice che viene aggiunto all'ID per permettere a più transazioni con lo stesso id di coesistere
@@ -3718,6 +3901,10 @@ private static String F_safe(String s) {
     }
           
     
+    /**
+     * @param numero numero come stringa decimale
+     * @return {@code numero} senza zeri decimali finali superflui, oppure {@code numero} invariato se non è un valore numerico valido
+     */
     public static String Funzioni_RitornaNumeroSenzaZeriFinali(String numero){
         if (Funzioni.isNumeric(numero, false)){
             return new BigDecimal(numero).stripTrailingZeros().toPlainString();
@@ -3725,6 +3912,14 @@ private static String F_safe(String s) {
         else return numero;
     }
     
+    /**
+     * Consolida le righe grezze di export CoinTracking ({@link #Ex_CoinTracking_ImportaOLD}) in movimenti
+     * completi nel formato standard dell'applicazione.
+     * @param listaMovimentidaConsolidare righe grezze del CSV CoinTracking, già filtrate e in formato intermedio
+     * @param Exchange nome dell'exchange di provenienza dei movimenti nel file
+     * @param PrezzoZero se {@code true} assegna prezzo zero ai movimenti senza prezzo invece di provare a recuperarlo
+     * @return la lista di righe di movimento consolidate nel formato standard dell'applicazione
+     */
     public static List<String[]> Ex_CoinTracking_ConsolidaMovimenti(List<String> listaMovimentidaConsolidare, String Exchange, boolean PrezzoZero) {
         //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
         //TI=Trasferimento Interno
@@ -4037,7 +4232,14 @@ private static String F_safe(String s) {
     }
     
         
-    public static String vespa(String strToDecrypt, String secret) 
+    /**
+     * Decifra una stringa Base64 con AES/ECB/PKCS5Padding, usando una chiave derivata da {@code secret}
+     * tramite {@link #setKey}.
+     * @param strToDecrypt testo cifrato, codificato in Base64
+     * @param secret chiave segreta da cui derivare la chiave AES
+     * @return il testo decifrato, oppure {@code null} in caso di errore di decrittazione
+     */
+    public static String vespa(String strToDecrypt, String secret)
     {
         try
         {
@@ -4054,7 +4256,13 @@ private static String F_safe(String s) {
     }  
         
     
-    public static SecretKeySpec setKey(String myKey) 
+    /**
+     * Deriva una chiave AES a 128 bit da una stringa arbitraria, applicando SHA-1 e troncando il digest ai
+     * primi 16 byte. Usata da {@link #vespa} per la decifratura.
+     * @param myKey stringa da cui derivare la chiave
+     * @return la chiave AES derivata, oppure {@code null} in caso di errore
+     */
+    public static SecretKeySpec setKey(String myKey)
     {
         MessageDigest sha;
         SecretKeySpec secretKey=null;
@@ -4074,7 +4282,15 @@ private static String F_safe(String s) {
     }   
      
     
-    //se int=1 ritorna tipologia altrimenti ritorna codice
+    /**
+     * Determina la tipologia (e il relativo codice a 2 lettere per l'ID transazione) di un movimento in base
+     * al tipo delle monete uscente ed entrante (Crypto/NFT/FIAT/assente), secondo la matrice di classificazione
+     * standard dell'applicazione (deposito/prelievo/scambio/acquisto/vendita).
+     * @param TipoUscita tipo della moneta uscente ({@code "Crypto"}, {@code "NFT"}, {@code "FIAT"}, oppure {@code null}/vuoto se assente)
+     * @param TipoEntrata tipo della moneta entrante ({@code "Crypto"}, {@code "NFT"}, {@code "FIAT"}, oppure {@code null}/vuoto se assente)
+     * @param valore se {@code 1} restituisce la descrizione testuale della tipologia, altrimenti il codice a 2 lettere
+     * @return la tipologia o il codice corrispondente, oppure {@code null} se sia uscita che entrata sono assenti
+     */
      public static String RitornaTipologiaTransazione(String TipoUscita,String TipoEntrata,int valore)
          {   
              String Tipologia=null;
@@ -4149,6 +4365,21 @@ private static String F_safe(String s) {
          }
     
 
+     /**
+      * Scarica, paginando (100 risultati per pagina finché una pagina ne restituisce meno), tutte le
+      * transazioni di un wallet da un explorer compatibile Etherscan/Blockscout (Cronoscan e simili) per una
+      * specifica tipologia di azione (es. {@code txlist}, {@code tokentx}, {@code token1155tx}). Gestisce sia
+      * la codifica di errore standard Etherscan (status 0, ignorando i messaggi "no ... found" che indicano
+      * semplicemente assenza di dati) sia lo status 2 di Blockscout (dati parziali non bloccanti).
+      * @param Dominio URL base dell'endpoint API dell'explorer
+      * @param walletAddress indirizzo del wallet da interrogare
+      * @param Tipo tipologia di azione API da richiedere (es. {@code "txlist"}, {@code "tokentx"})
+      * @param BloccoIniziale numero di blocco da cui iniziare (non usato per la paginazione, mantenuto per compatibilità)
+      * @param vespa API key dell'explorer (già decifrata)
+      * @param ccc componente parent per eventuali dialog di errore
+      * @param progressb finestra di progresso, usata anche per verificare se l'operazione è stata interrotta
+      * @return array di 2 elementi: {@code [0]} numero di transazioni (solo se la richiesta viene interrotta prematuramente per tipo non supportato), {@code [1]} array JSON con tutte le transazioni; oppure {@code null} in caso di errore o interruzione
+      */
      public static Object[] DeFi_RitornaTransazioniCronoscan(String Dominio,String walletAddress,String Tipo,String BloccoIniziale,String vespa,Component ccc,Download progressb){
          //L'oogetto in ritorno è un array di 2 oggetti
          //il primo è un int che indica il numero di transazioni
@@ -4254,6 +4485,14 @@ private static String F_safe(String s) {
      }        
          
 
+    /**
+     * Ripulisce un array di transazioni scaricate da Cronoscan/explorer compatibile: rimuove i duplicati
+     * (confrontando le transazioni senza il campo {@code confirmations}, che varia nel tempo) e scarta le
+     * transazioni con numero di blocco inferiore o uguale a quello indicato.
+     * @param txList array JSON delle transazioni grezze
+     * @param blocco numero di blocco soglia (escluso): le transazioni con blocco minore o uguale vengono scartate
+     * @return l'array JSON ripulito
+     */
     public static JSONArray DeFi_PulisciJSONCronos(JSONArray txList,long blocco) {
         //questa funzione fà 2 cose:
         //1 - Elimina i doppioni, cronos.org infatti manda diversi doppioni di transazioni
@@ -4308,6 +4547,23 @@ private static String F_safe(String s) {
         return cleaned;
     }*/
      
+     /**
+      * Scarica tutte le transazioni di un wallet da un explorer compatibile Etherscan v2/Blockscout, adattando
+      * la strategia di paginazione al tipo di dominio: multichain Etherscan v2 (dominio con {@code chainid=})
+      * e Blockscout-family generico paginano per numero di blocco ({@code startblock}), mentre Cronos (il cui
+      * explorer ignora di fatto {@code startblock}/{@code sort} e restituisce solo poche transazioni recenti)
+      * usa invece paginazione per pagina/offset con pulizia lato client dei duplicati tramite
+      * {@link #DeFi_PulisciJSONCronos}. Gestisce esplicitamente le risposte HTTP di errore (≥400) leggendo lo
+      * stream di errore per non perdere il messaggio del server.
+      * @param Dominio URL base (o base+query string {@code chainid=}) dell'endpoint API dell'explorer
+      * @param walletAddress indirizzo del wallet da interrogare
+      * @param Tipo tipologia di azione API da richiedere (es. {@code "txlist"}, {@code "tokentx"})
+      * @param BloccoIniziale numero di blocco da cui iniziare (usato solo nella paginazione per blocco)
+      * @param vespa API key dell'explorer (già decifrata), opzionale per alcune chain Blockscout
+      * @param ccc componente parent per eventuali dialog di errore
+      * @param progressb finestra di progresso, usata anche per verificare se l'operazione è stata interrotta
+      * @return array di 2 elementi: {@code [0]} numero di transazioni, {@code [1]} array JSON con tutte le transazioni; oppure {@code null} in caso di errore o interruzione
+      */
      public static Object[] DeFi_RitornaTransazioniEtherscan(String Dominio,String walletAddress,String Tipo,String BloccoIniziale,String vespa,Component ccc,Download progressb){
          //L'oogetto in ritorno è un array di 2 oggetti
          //il primo è un int che indica il numero di transazioni
@@ -4479,6 +4735,16 @@ private static String F_safe(String s) {
     //blocco e continuare, segnalando poi in un riepilogo quali blocchi non è stato possibile verificare.
     public static final String GIACENZE_CRO_BLOCCO_NON_DISPONIBILE = "N/D";
 
+    /**
+     * Recupera (con cache su {@link DatabaseH2#GiacenzeWalletMonetaBlockchain_Leggi}) la giacenza CRO nativa
+     * di un wallet a uno specifico blocco, interrogando il nodo RPC dell'explorer Cronos ({@code eth_get_balance}).
+     * Se il nodo non ha più (o non ha mai avuto) lo stato storico per quel blocco (HTTP 404), restituisce la
+     * sentinella {@link #GIACENZE_CRO_BLOCCO_NON_DISPONIBILE} invece di {@code null}, distinguendo così un
+     * limite di profondità dell'archivio (da saltare) da un vero errore (da bloccare l'importazione).
+     * @param Blocco numero di blocco a cui verificare la giacenza
+     * @param walletAddress indirizzo del wallet
+     * @return la giacenza CRO al blocco indicato, {@link #GIACENZE_CRO_BLOCCO_NON_DISPONIBILE} se non verificabile, oppure {@code null} in caso di errore
+     */
     public static String GiacenzeCRO_RimanzeBlocco(String Blocco, String walletAddress) {
         //In questa funzione dovrò recuperare le rimanenze CRO del wallet ad un determinato Blocco
         //Questo ci permetterà di sistemare le giacenze dei CRO in maniera esatta anche se porterà via molto tempo.
@@ -4535,6 +4801,14 @@ private static String F_safe(String s) {
     
     
     
+    /**
+     * Recupera la giacenza attuale della moneta nativa di una rete EVM per un wallet, interrogando l'API
+     * Etherscan v2 ({@code action=balance}) con la API key personale, solo se questa risulta valida
+     * ({@link Funzioni#isApiKeyValidaEtherscan}).
+     * @param walletAddress indirizzo del wallet
+     * @param Rete identificativo della blockchain/rete
+     * @return la giacenza della moneta nativa, oppure {@code null} se l'API key non è valida, la risposta non è valida/numerica, o si verifica un errore di rete
+     */
     public static String DeFi_GiacenzeL1_Rimanze(String walletAddress,String Rete) {
         //In questa funzione dovrò recuperare le rimanenze CRO del wallet ad un determinato Blocco
         //Questo ci permetterà di sistemare le giacenze dei CRO in maniera esatta anche se porterà via molto tempo.
@@ -4583,6 +4857,15 @@ private static String F_safe(String s) {
         return Valore;
     }
      
+     /**
+      * Genera un movimento di rettifica automatica (deposito o prelievo di CRO) per allineare la giacenza
+      * calcolata dal programma a quella reale riscontrata on-chain, con prezzo determinato tramite
+      * {@link Prezzi#DammiPrezzoInfoTransazione}/{@link Prezzi#DammiPrezzoTransazione}.
+      * @param IDrif ID del movimento di riferimento da cui derivare data/wallet/exchange del movimento correttivo
+      * @param QtaTot quantità di CRO attualmente calcolata dal programma
+      * @param QtaVoluta quantità di CRO reale riscontrata on-chain
+      * @return la riga di movimento correttivo generata (deposito se {@code QtaVoluta > QtaTot}, prelievo se minore), oppure {@code null} se le due quantità coincidono
+      */
      public static String[] GiacenzeCRO_CreaMovCorretivo(String IDrif,BigDecimal QtaTot,BigDecimal QtaVoluta) {
          BigDecimal differenzaQta=QtaVoluta.subtract(QtaTot).stripTrailingZeros();
             
@@ -4660,6 +4943,19 @@ private static String F_safe(String s) {
          //System.out.println(RT[0]);
          return RT;
      }
+        /**
+         * Corregge automaticamente le giacenze CRO nativo di un wallet DeFi Cronos: prima trasforma i
+         * trasferimenti WCRO in ingresso provenienti dal contratto di unwrap ({@code 0x5c7f...ae23}) in scambi
+         * WCRO→CRO (altrimenti verrebbero conteggiati come CRO aggiuntivo mai realmente ricevuto), poi confronta
+         * la giacenza calcolata dal programma con quella reale a ogni blocco tramite
+         * {@link #GiacenzeCRO_RimanzeBlocco} e genera i movimenti di rettifica necessari tramite
+         * {@link #GiacenzeCRO_CreaMovCorretivo}. Mostra l'avanzamento su {@code progressb} e può essere
+         * interrotta dall'utente.
+         * @param Wallet nome del wallet DeFi su cui operare
+         * @param ccc componente parent per eventuali dialog
+         * @param progressb finestra di progresso, usata anche per verificare se l'operazione è stata interrotta
+         * @return {@code "Ok"} se l'operazione è andata a buon fine, oppure {@code null} se interrotta dall'utente o in caso di errore
+         */
         public static String GiacenzeCRO_Sistema(String Wallet,Component ccc,Download progressb) {
         
             System.out.println("Sistemazione giacenze CRO");
@@ -4893,7 +5189,20 @@ private static String F_safe(String s) {
 
     }
         
-    public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Component ccc, Download progressb) {
+    /**
+ * Come {@link #GiacenzeCRO_Sistema}, ma generico per la moneta nativa (L1) di qualsiasi rete EVM diversa da
+ * Solana, BSC, Base, Avalanche, Cronos e Bitcoin (gestite separatamente): somma i movimenti della moneta
+ * nativa registrati sul wallet, confronta il totale con la giacenza reale on-chain
+ * ({@link #DeFi_GiacenzeL1_Rimanze}) e genera un movimento di rettifica (solo in negativo, cioè quando il
+ * programma ha calcolato più giacenza del reale) applicato subito dopo l'ultimo movimento della moneta.
+ * Non fa nulla (ma restituisce comunque {@code "Ok"}) se {@code Rete} è tra quelle gestite separatamente.
+ * @param Wallet nome del wallet DeFi su cui operare
+ * @param Rete identificativo della blockchain/rete
+ * @param ccc componente parent per eventuali dialog
+ * @param progressb finestra di progresso, usata anche per verificare se l'operazione è stata interrotta
+ * @return {@code "Ok"} al termine dell'elaborazione (anche se non applicabile alla rete indicata), oppure {@code null} se interrotta dall'utente
+ */
+public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Component ccc, Download progressb) {
         //sistemo le giacenze sulle rete ethereum compatibili
         if (!Rete.equals("SOL")&&!Rete.equals("BSC")&&!Rete.equals("BASE")&&!Rete.equals("AVA")&&!Rete.equals("CRO")&&!Rete.equals("BTC")){
         progressb.setDefaultCloseOperation(0);
@@ -5046,6 +5355,19 @@ private static String F_safe(String s) {
 
     }
     
+    /**
+     * Scarica tramite l'API Moralis {@code getWalletHistory} (usata solo per BSC, Base e Avalanche) la
+     * cronologia delle transazioni di un wallet a partire da un blocco, paginando tramite cursore fino a un
+     * massimo di 4 pagine (~500 movimenti) per limitare il consumo della quota API, e le raggruppa in oggetti
+     * {@link TransazioneDefi} per transazione. Scarta le transazioni (hash+blocco) già presenti in
+     * {@link Principale#MappaCryptoWallet} per evitare duplicati.
+     * @param walletAddress indirizzo del wallet da interrogare
+     * @param Rete identificativo della blockchain/rete (una tra quelle supportate da Moralis)
+     * @param Blocco numero di blocco da cui iniziare (incrementato di 1 rispetto all'ultimo importato, quindi qui decrementato di 1 per ripartire da quello potenzialmente incompleto)
+     * @param ccc componente parent per eventuali dialog
+     * @param progressb finestra di progresso, usata anche per verificare se l'operazione è stata interrotta
+     * @return mappa hash transazione → {@link TransazioneDefi} con le transazioni scaricate
+     */
     public static Map<String, TransazioneDefi> DeFi_RitornaTransazioniMoralis(String walletAddress, String Rete, String Blocco,Component ccc,Download progressb) {
         Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
        // progressb.setDefaultCloseOperation(0);
@@ -5413,6 +5735,17 @@ private static String F_safe(String s) {
         return null;
     }
 
+    /**
+     * Scarica le transazioni DeFi per una lista di wallet (ciascuno nel formato {@code indirizzo;blocco;rete}),
+     * instradando ogni wallet verso il provider più adatto in base alla rete: Helius per Solana (via
+     * {@link Trans_Solana#fetchAndParseTransactions}), Moralis per BSC/Base/Avalanche quando non gestite da
+     * Blockscout (via {@link #DeFi_RitornaTransazioniMoralis}), altrimenti gli explorer compatibili
+     * Etherscan/Blockscout (via {@link #DeFi_RitornaTransazioniEtherscan}/{@link #DeFi_RitornaTransazioniCronoscan}).
+     * @param Portafogli lista di wallet da analizzare, ciascuno nel formato {@code indirizzo;ultimoBlocco;rete}
+     * @param ccc componente parent per eventuali dialog
+     * @param progressb finestra di progresso su cui riportare l'avanzamento
+     * @return mappa chiave (indirizzo+hash) → {@link TransazioneDefi} con tutte le transazioni scaricate per tutti i wallet
+     */
     public static Map<String, TransazioneDefi> DeFi_RitornaTransazioni(List<String> Portafogli, Component ccc, Download progressb) {
         //Portafigli contiene la lista dei portafogli da analizzare e comprende indirizzo,ultimoblocco e rete
         //la mappa seguente va popolata per ogni chain explorer che viene implementato a programma 
@@ -5971,6 +6304,15 @@ private static String F_safe(String s) {
     
     
     
+        /**
+         * Corregge i movimenti DeFi in cui il deposito di un token LP su una piattaforma restituisce come
+         * "scambio" le reward accumulate fino a quel momento in un'altra moneta: individua i movimenti di
+         * scambio crypto-crypto con token uscente LP (simbolo contenente {@code "-LP"}) e causale originale
+         * {@code "deposit"}, li elimina e li sostituisce con un prelievo del token LP (verso la piattaforma
+         * DeFi) e un deposito classificato come reward ({@code DAI - Reward}) dell'altra moneta. Da eseguire
+         * al termine di ogni importazione DeFi, o una tantum sul pregresso prima del primo caricamento della
+         * tabella Depositi/Prelievi (non ad ogni caricamento, per non appesantire l'operazione).
+         */
         public static void ConvertiScambiLPinDepositiPrelievi(){
         //Ci sono alcuni depositi su piattaforma defi che nel momento in cui fai il deposito
         //ad esempio di un token lp sulla piattaforma poi ti restituiscono le reward accumulate fino a quel momento in altra moneta

@@ -23,6 +23,12 @@ import javax.swing.UnsupportedLookAndFeelException;
 public class ZZZ_Giacenze_Crypto {
     
 
+    /**
+     * Versione legacy superata del punto di ingresso dell'applicazione (vedi {@link Giacenze_Crypto#main}),
+     * mantenuta come riferimento storico. Non è l'entry point effettivamente configurato nel {@code pom.xml}.
+     * @param args argomenti a riga di comando
+     * @throws UnsupportedLookAndFeelException se il tema FlatLaf non può essere applicato
+     */
     public static void main(String[] args) throws UnsupportedLookAndFeelException {
         
         
@@ -180,6 +186,7 @@ private static void setWorkDir(String workingDir){
         progress.NoModale();
         Thread thread;
         thread = new Thread() {
+            /** Corpo vuoto (nessuna azione eseguita da questo thread). */
             public void run() {
             }
         };

@@ -12,6 +12,13 @@ import java.awt.Window;
  */
 public class Messaggi {
     
+    /**
+     * Mostra un dialog di conferma per assegnare valore zero a un token privo di prezzo.
+     * @param Moneta simbolo del token privo di prezzo
+     * @param Qta quantità del token
+     * @param w finestra parent del dialog
+     * @return {@code true} se l'utente conferma l'assegnazione di valore zero
+     */
     public static boolean ConfermaTokenSenzaPrezzo(String Moneta, String Qta,Window w) {
          AppDialog.DialogResult result = AppDialog.builder(w)
                         .windowTitle("Token senza prezzo")
@@ -33,6 +40,11 @@ public class Messaggi {
         
     }
     
+        /**
+         * Mostra un dialog di conferma per assegnare valore zero a un movimento privo di prezzo.
+         * @param w finestra parent del dialog
+         * @return {@code true} se l'utente conferma il valore zero
+         */
         public static boolean ConfermaMovimentoSenzaPrezzo(Window w) {
          AppDialog.DialogResult result = AppDialog.builder(w)
                         .windowTitle("Movimento senza prezzo")
@@ -58,24 +70,72 @@ public class Messaggi {
         
         //Messaggi di conferma semplificati
         
+        /**
+         * Mostra un dialog di avviso (tipo {@code WARNING}) senza messaggio principale, solo titolo e dettaglio.
+         * @param Titolo titolo del dialog
+         * @param Dettaglio testo di dettaglio
+         * @param w finestra parent del dialog
+         */
         public static void WarningMessage(String Titolo,String Dettaglio,Window w){
             Message(Titolo,"",Dettaglio,AppDialog.DialogType.WARNING,w);
         }
+        /**
+         * Mostra un dialog di avviso (tipo {@code WARNING}) con messaggio principale e dettaglio.
+         * @param Titolo titolo del dialog
+         * @param Messaggio messaggio principale
+         * @param Dettaglio testo di dettaglio
+         * @param w finestra parent del dialog
+         */
         public static void WarningMessage(String Titolo,String Messaggio,String Dettaglio,Window w){
             Message(Titolo,Messaggio,Dettaglio,AppDialog.DialogType.WARNING,w);
         }
+        /**
+         * Mostra un dialog informativo (tipo {@code INFO}) senza messaggio principale, solo titolo e dettaglio.
+         * @param Titolo titolo del dialog
+         * @param Dettaglio testo di dettaglio
+         * @param w finestra parent del dialog
+         */
         public static void InfoMessage(String Titolo,String Dettaglio,Window w){
             Message(Titolo,"",Dettaglio,AppDialog.DialogType.INFO,w);
         }
+        /**
+         * Mostra un dialog informativo (tipo {@code INFO}) con messaggio principale e dettaglio.
+         * @param Titolo titolo del dialog
+         * @param Messaggio messaggio principale
+         * @param Dettaglio testo di dettaglio
+         * @param w finestra parent del dialog
+         */
         public static void InfoMessage(String Titolo,String Messaggio,String Dettaglio,Window w){
-            Message(Titolo,Messaggio,Dettaglio,AppDialog.DialogType.INFO,w); 
+            Message(Titolo,Messaggio,Dettaglio,AppDialog.DialogType.INFO,w);
         }
+        /**
+         * Mostra un dialog di successo (tipo {@code SUCCESS}) senza messaggio principale, solo titolo e dettaglio.
+         * @param Titolo titolo del dialog
+         * @param Dettaglio testo di dettaglio
+         * @param w finestra parent del dialog
+         */
         public static void SuccessMessage(String Titolo,String Dettaglio,Window w){
             Message(Titolo,"",Dettaglio,AppDialog.DialogType.SUCCESS,w);
         }
+        /**
+         * Mostra un dialog di successo (tipo {@code SUCCESS}) con messaggio principale e dettaglio.
+         * @param Titolo titolo del dialog
+         * @param Messaggio messaggio principale
+         * @param Dettaglio testo di dettaglio
+         * @param w finestra parent del dialog
+         */
         public static void SuccessMessage(String Titolo,String Messaggio,String Dettaglio,Window w){
-            Message(Titolo,Messaggio,Dettaglio,AppDialog.DialogType.SUCCESS,w); 
+            Message(Titolo,Messaggio,Dettaglio,AppDialog.DialogType.SUCCESS,w);
         }
+        /**
+         * Mostra un dialog informativo generico con singolo pulsante "OK", usato come base dai metodi
+         * {@code WarningMessage}/{@code InfoMessage}/{@code SuccessMessage}.
+         * @param Titolo titolo del dialog
+         * @param Messaggio messaggio principale
+         * @param Dettaglio testo di dettaglio
+         * @param TipoM tipo di dialog (icona/stile)
+         * @param w finestra parent del dialog
+         */
         public static void Message(String Titolo,String Messaggio,String Dettaglio,AppDialog.DialogType TipoM,Window w){
         AppDialog.builder(w)
                             .title(Titolo)
@@ -92,6 +152,12 @@ public class Messaggi {
         
         
         
+    /**
+     * Mostra un dialog di conferma per modificare un movimento associato a un altro movimento, avvisando che
+     * l'associazione verrà rimossa.
+     * @param win finestra parent del dialog
+     * @return {@code true} se l'utente conferma di voler proseguire con la modifica
+     */
     public static boolean Personalizzati_SINO_ModificaMovimento(Window win) {
         AppDialog.DialogResult result = AppDialog.builder(win)
                     .windowTitle("Conferma modifica")
@@ -116,6 +182,12 @@ public class Messaggi {
     }
     
     
+     /**
+      * Mostra un dialog di conferma per rimuovere un token dalla lista degli E-Money Token.
+      * @param moneta simbolo del token da rimuovere
+      * @param win finestra parent del dialog
+      * @return {@code true} se l'utente conferma la rimozione
+      */
      public static boolean Personalizzati_SINO_RimuoviEmoneyToken(String moneta,Window win) {
         AppDialog.DialogResult result = AppDialog.builder(win)
                     .windowTitle("Gestione EMoney Token")
@@ -135,6 +207,12 @@ public class Messaggi {
         return (result != null && result.isAction("delete-emoney-token"));
     }
      
+     /**
+      * Mostra un dialog di input per digitare il nome (case-sensitive) di un nuovo token da aggiungere alla
+      * lista degli E-Money Token.
+      * @param win finestra parent del dialog
+      * @return il nome del token inserito, oppure {@code null} se l'operazione è stata annullata
+      */
      public static String Personalizzati_Input_NuovoEmoneyToken(Window win) {
         String testo = "Digita il nome della moneta da aggiungere alla lista degli E-Money Token.";
         String dettagli = """
@@ -167,6 +245,13 @@ public class Messaggi {
         return null;
     }
      
+     /**
+      * Mostra un dialog di input per modificare l'alias di un gruppo wallet, precompilato con il valore attuale.
+      * @param gruppo nome del gruppo wallet
+      * @param val valore attuale dell'alias, mostrato come default nel campo di input
+      * @param win finestra parent del dialog
+      * @return il nuovo alias inserito, oppure {@code null} se l'operazione è stata annullata
+      */
      public static String Personalizzati_Input_AliasGruppoWallet(String gruppo,String val,Window win) {
         AppDialog.DialogResult result = AppDialog.builder(win)
             .windowTitle("Alias gruppo wallet")
@@ -193,6 +278,15 @@ public class Messaggi {
     }
      
      
+     /**
+      * Mostra un dialog con una scelta tra 3 tipologie di errore da correggere (movimento non classificato,
+      * transazione senza prezzo, parte del LIFO mancante), mostrando il conteggio di ciascuna tipologia.
+      * @param NumErroriMovSconosciuti numero di movimenti non classificati
+      * @param NumErroriMovNoPrezzo numero di transazioni senza prezzo
+      * @param NumErroriStackLiFoMancante numero di errori con parte del LIFO mancante
+      * @param win finestra parent del dialog
+      * @return il risultato del dialog, da cui leggere l'azione scelta dall'utente tramite {@code isAction}
+      */
      public static AppDialog.DialogResult Personalizzati_Multi_ScegliErrori(int NumErroriMovSconosciuti,int NumErroriMovNoPrezzo,int NumErroriStackLiFoMancante,Window win) {
          String testo = "Scegli quale tipologia di errore correggere.";
          AppDialog.DialogResult result = AppDialog.builder(win)
@@ -220,6 +314,13 @@ public class Messaggi {
          return result;
      }
      
+          /**
+           * Mostra un dialog di avviso quando un token marcato come scam presenta movimenti diversi dal semplice
+           * deposito/prelievo, chiedendo se proseguire comunque nonostante il rischio di calcoli errati.
+           * @param NomeMoneta simbolo del token scam
+           * @param win finestra parent del dialog
+           * @return il risultato del dialog, da cui leggere l'azione scelta dall'utente tramite {@code isAction}
+           */
           public static AppDialog.DialogResult Personalizzati_SINO_SCAMMovimentiNonCongrui(String NomeMoneta,Window win) {
          AppDialog.DialogResult result = AppDialog.builder(win)
                         .windowTitle("Verifica movimenti")
@@ -244,6 +345,15 @@ public class Messaggi {
          return result;
      }
      
+                /**
+                 * Mostra un dialog di conferma per contrassegnare un token come scam o, se già scam, per rimuovere
+                 * la classificazione, adattando titolo/messaggio/dettaglio in base allo stato attuale.
+                 * @param scamAttuale {@code true} se il token è attualmente classificato come scam (mostra il dialog di rimozione), {@code false} altrimenti (mostra il dialog di contrassegno)
+                 * @param NomeMoneta simbolo del token
+                 * @param Address indirizzo di contratto del token (mostrato solo quando si contrassegna come scam)
+                 * @param win finestra parent del dialog
+                 * @return il risultato del dialog, da cui leggere l'azione scelta dall'utente tramite {@code isAction}
+                 */
                 public static AppDialog.DialogResult Personalizzati_SINO_SCAMRimuovereContrassegnare(boolean scamAttuale,String NomeMoneta,String Address,Window win) {
          String bodyTitle = scamAttuale
                         ? "Rimuovere classificazione SCAM?"

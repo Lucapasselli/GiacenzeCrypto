@@ -21,6 +21,14 @@ public class JTableConTooltipIcone extends JTable {
         super();
     }
 
+    /**
+     * Mostra un tooltip HTML esplicativo solo quando il mouse è sopra l'icona di allerta di una cella (colonne
+     * 5 = movimento non classificato, 15 = transazione senza prezzo, 19 = movimento in ingresso mancante, con
+     * calcolo della quantità/valore mancante tramite {@link #RecuperaQtaMancante}); altrove nella cella non
+     * mostra alcun tooltip.
+     * @param e evento del mouse da cui ricavare la cella e la posizione del cursore
+     * @return il tooltip HTML da mostrare, oppure {@code null} se il cursore non è sopra un'icona di allerta nota
+     */
     @Override
     public String getToolTipText(MouseEvent e) {
         Point p = e.getPoint();

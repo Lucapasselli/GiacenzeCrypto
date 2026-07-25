@@ -57,26 +57,35 @@ public class AppDialog extends JDialog {
         this.inputValue = inputValue;
     }
 
+    /** @return l'ID dell'azione con cui il dialog è stato chiuso, oppure {@code null} se chiuso dalla finestra */
     public String getActionId() {
         return actionId;
     }
 
+    /** @return il motivo di chiusura del dialog (azione cliccata o finestra chiusa) */
     public CloseReason getCloseReason() {
         return closeReason;
     }
 
+    /** @return il valore inserito nel campo di input del dialog, oppure {@code null} se non presente */
     public String getInputValue() {
         return inputValue;
     }
 
+    /**
+     * @param id ID di azione da confrontare
+     * @return {@code true} se il dialog è stato chiuso con l'azione avente questo ID
+     */
     public boolean isAction(String id) {
         return Objects.equals(this.actionId, id);
     }
 
+    /** @return {@code true} se il dialog è stato chiuso tramite la chiusura della finestra invece che con un'azione */
     public boolean isClosedByWindow() {
         return closeReason == CloseReason.WINDOW_CLOSE;
     }
 
+    /** @return {@code true} se il dialog ha restituito un valore di input */
     public boolean hasInputValue() {
         return inputValue != null;
     }
@@ -102,26 +111,36 @@ public class AppDialog extends JDialog {
             this.handler = builder.handler;
         }
 
+        /** @return l'identificativo di questa azione */
         public String getId() {
             return id;
         }
 
+        /** @return il testo mostrato sul pulsante di questa azione */
         public String getText() {
             return text;
         }
 
+        /** @return il ruolo visivo di questa azione (primaria, secondaria, pericolosa, neutra) */
         public ActionRole getRole() {
             return role;
         }
 
+        /** @return {@code true} se cliccando il pulsante il dialog si chiude automaticamente */
         public boolean isCloseOnClick() {
             return closeOnClick;
         }
 
+        /** @return il gestore da eseguire al click sul pulsante, oppure {@code null} se non impostato */
         public Consumer<AppDialog> getHandler() {
             return handler;
         }
 
+        /**
+         * @param id identificativo dell'azione
+         * @param text testo del pulsante
+         * @return un nuovo {@link Builder} per costruire questa {@link DialogAction}
+         */
         public static Builder builder(String id, String text) {
             return new Builder(id, text);
         }
@@ -143,21 +162,25 @@ public class AppDialog extends JDialog {
             
             
 
+            /** @param role ruolo visivo da assegnare all'azione @return questo builder, per il chaining */
             public Builder role(ActionRole role) {
                 this.role = Objects.requireNonNull(role);
                 return this;
             }
 
+            /** @param closeOnClick se {@code true}, il dialog si chiude automaticamente al click su questa azione @return questo builder, per il chaining */
             public Builder closeOnClick(boolean closeOnClick) {
                 this.closeOnClick = closeOnClick;
                 return this;
             }
 
+            /** @param handler gestore da eseguire al click sull'azione @return questo builder, per il chaining */
             public Builder onClick(Consumer<AppDialog> handler) {
                 this.handler = handler;
                 return this;
             }
 
+            /** @return la {@link DialogAction} costruita con i parametri impostati su questo builder */
             public DialogAction build() {
                 return new DialogAction(this);
             }
@@ -282,6 +305,10 @@ public class AppDialog extends JDialog {
             this.buttonFont = buttonFont;
         }
 
+        /**
+         * @param mode {@link ThemeMode#LIGHT} o {@link ThemeMode#DARK}
+         * @return la palette colori/font predefinita per il tema indicato
+         */
         public static UiTheme of(ThemeMode mode) {
             Font title = new Font("SansSerif", Font.BOLD, 18);
             Font message = new Font("SansSerif", Font.PLAIN, 13);
@@ -355,6 +382,12 @@ public class AppDialog extends JDialog {
 
         private final List<DialogAction> actions = new ArrayList<>();
 
+        /**
+         * Aggiunge al dialog una tendina a scelta singola.
+         * @param label etichetta della tendina
+         * @param options opzioni selezionabili
+         * @return questo builder, per il chaining
+         */
         public Builder comboField(String label, String... options) {
             this.comboEnabled = true;
             this.comboLabel = label;
@@ -362,12 +395,23 @@ public class AppDialog extends JDialog {
             return this;
         }
 
+        /**
+         * Aggiunge al dialog un campo di testo per l'input.
+         * @param label etichetta del campo
+         * @return questo builder, per il chaining
+         */
         public Builder inputField(String label) {
             this.inputEnabled = true;
             this.inputLabel = label;
             return this;
         }
 
+        /**
+         * Come {@link #inputField(String)}, con un valore iniziale precompilato.
+         * @param label etichetta del campo
+         * @param initialValue valore iniziale del campo (usato {@code ""} se {@code null})
+         * @return questo builder, per il chaining
+         */
         public Builder inputField(String label, String initialValue) {
             this.inputEnabled = true;
             this.inputLabel = label;
@@ -375,6 +419,7 @@ public class AppDialog extends JDialog {
             return this;
         }
 
+        /** @param inputColumns larghezza del campo di input in colonne (minimo 10) @return questo builder, per il chaining */
         public Builder inputColumns(int inputColumns) {
             this.inputColumns = Math.max(10, inputColumns);
             return this;
@@ -384,52 +429,65 @@ public class AppDialog extends JDialog {
             this.owner = owner;
         }
 
+        /** @param title titolo usato sia per la finestra sia per il corpo del dialog @return questo builder, per il chaining */
         public Builder title(String title) {
             this.windowTitle = title;
             this.bodyTitle = title;
             return this;
         }
 
+        /** @param windowTitle titolo della finestra del dialog @return questo builder, per il chaining */
         public Builder windowTitle(String windowTitle) {
             this.windowTitle = windowTitle;
             return this;
         }
 
+        /** @param bodyTitle titolo mostrato nel corpo del dialog @return questo builder, per il chaining */
         public Builder bodyTitle(String bodyTitle) {
             this.bodyTitle = bodyTitle;
             return this;
         }
 
+        /** @param showTitleInBody se {@code true} mostra il titolo anche nel corpo del dialog @return questo builder, per il chaining */
         public Builder showTitleInBody(boolean showTitleInBody) {
             this.showTitleInBody = showTitleInBody;
             return this;
         }
 
+        /** Nasconde il titolo dal corpo del dialog. @return questo builder, per il chaining */
         public Builder hideBodyTitle() {
             this.showTitleInBody = false;
             return this;
         }
 
+        /** Mostra il titolo nel corpo del dialog. @return questo builder, per il chaining */
         public Builder showBodyTitle() {
             this.showTitleInBody = true;
             return this;
         }
 
+        /** @param message messaggio principale del dialog (usato {@code ""} se {@code null}) @return questo builder, per il chaining */
         public Builder message(String message) {
             this.message = message != null ? message : "";
             return this;
         }
 
+        /** @param details testo di dettaglio, mostrato sotto il messaggio principale @return questo builder, per il chaining */
         public Builder details(String details) {
             this.details = details;
             return this;
         }
 
+        /** @param type tipo di dialog (icona/stile), usato {@link DialogType#INFO} se {@code null} @return questo builder, per il chaining */
         public Builder type(DialogType type) {
             this.type = type != null ? type : DialogType.INFO;
             return this;
         }
 
+        /**
+         * Applica il tema (chiaro/scuro) corrente dell'applicazione, letto da {@link Principale#tema}.
+         * @return questo builder, per il chaining
+         */
         public Builder theme() {
             this.theme = AppDialog.UiTheme.of(Principale.tema.equalsIgnoreCase("scuro")
                     ? AppDialog.ThemeMode.DARK
@@ -437,26 +495,36 @@ public class AppDialog extends JDialog {
             return this;
         }
 
+        /** @param modal se {@code true} il dialog è modale @return questo builder, per il chaining */
         public Builder modal(boolean modal) {
             this.modal = modal;
             return this;
         }
 
+        /** @param resizable se {@code true} il dialog è ridimensionabile @return questo builder, per il chaining */
         public Builder resizable(boolean resizable) {
             this.resizable = resizable;
             return this;
         }
 
+        /** @param minWidth larghezza minima del dialog in pixel (minimo 360) @return questo builder, per il chaining */
         public Builder minWidth(int minWidth) {
             this.minWidth = Math.max(360, minWidth);
             return this;
         }
 
+        /** @param maxButtons numero massimo di pulsanti azione consentiti (minimo 1) @return questo builder, per il chaining */
         public Builder maxButtons(int maxButtons) {
             this.maxButtons = Math.max(1, maxButtons);
             return this;
         }
 
+        /**
+         * Aggiunge un'azione (pulsante) al dialog.
+         * @param action azione da aggiungere, ignorata se {@code null}
+         * @return questo builder, per il chaining
+         * @throws IllegalStateException se è già stato raggiunto il numero massimo di pulsanti ({@link #maxButtons})
+         */
         public Builder action(DialogAction action) {
             if (action == null) {
                 return this;
@@ -470,30 +538,39 @@ public class AppDialog extends JDialog {
             return this;
         }
 
+        /** Aggiunge un'azione con ruolo {@link ActionRole#PRIMARY}. @param id identificativo @param text testo del pulsante @return questo builder, per il chaining */
         public Builder primaryAction(String id, String text) {
             return action(DialogAction.builder(id, text)
                     .role(ActionRole.PRIMARY)
                     .build());
         }
 
+        /** Aggiunge un'azione con ruolo {@link ActionRole#SECONDARY}. @param id identificativo @param text testo del pulsante @return questo builder, per il chaining */
         public Builder secondaryAction(String id, String text) {
             return action(DialogAction.builder(id, text)
                     .role(ActionRole.SECONDARY)
                     .build());
         }
 
+        /** Aggiunge un'azione con ruolo {@link ActionRole#DANGER}. @param id identificativo @param text testo del pulsante @return questo builder, per il chaining */
         public Builder dangerAction(String id, String text) {
             return action(DialogAction.builder(id, text)
                     .role(ActionRole.DANGER)
                     .build());
         }
 
+        /** Aggiunge un'azione con ruolo {@link ActionRole#NEUTRAL}. @param id identificativo @param text testo del pulsante @return questo builder, per il chaining */
         public Builder neutralAction(String id, String text) {
             return action(DialogAction.builder(id, text)
                     .role(ActionRole.NEUTRAL)
                     .build());
         }
 
+        /**
+         * Costruisce il dialog con i parametri impostati su questo builder, aggiungendo un'azione "OK" di
+         * default se non ne è stata specificata nessuna.
+         * @return il nuovo {@link AppDialog} costruito
+         */
         public AppDialog build() {
             if (actions.isEmpty()) {
                 primaryAction("ok", "OK");
@@ -501,6 +578,10 @@ public class AppDialog extends JDialog {
             return new AppDialog(this);
         }
 
+        /**
+         * Costruisce il dialog (vedi {@link #build()}) e lo mostra subito.
+         * @return il risultato dell'interazione dell'utente
+         */
         public DialogResult showDialog() {
             return build().showDialog();
         }
@@ -520,10 +601,18 @@ public class AppDialog extends JDialog {
         initUI();
     }
 
+    /**
+     * @param owner finestra parent del dialog
+     * @return un nuovo {@link Builder} per configurare e mostrare un {@link AppDialog}
+     */
     public static Builder builder(Window owner) {
         return new Builder(owner);
     }
 
+    /**
+     * Mostra il dialog (bloccando se modale) e ne restituisce il risultato una volta chiuso.
+     * @return il risultato dell'interazione dell'utente
+     */
     public DialogResult showDialog() {
         setVisible(true);
         return result;
@@ -555,6 +644,7 @@ public class AppDialog extends JDialog {
         installButtonNavigation();
 
         addWindowListener(new WindowAdapter() {
+            /** Registra la chiusura del dialog tramite la finestra (nessuna azione selezionata). */
             @Override
             public void windowClosing(WindowEvent e) {
                 result = new DialogResult(null, CloseReason.WINDOW_CLOSE);
@@ -706,6 +796,7 @@ public class AppDialog extends JDialog {
         applyNormalStyle(button, action.getRole(), theme);
 
         button.addFocusListener(new FocusAdapter() {
+            /** Aggiorna il pulsante di default e lo stile dei pulsanti quando questo pulsante riceve il focus. */
             @Override
             public void focusGained(FocusEvent e) {
                 focusedButtonIndex = actionButtons.indexOf(button);
@@ -713,6 +804,7 @@ public class AppDialog extends JDialog {
                 refreshButtonStyles();
             }
 
+            /** Aggiorna lo stile dei pulsanti quando questo pulsante perde il focus. */
             @Override
             public void focusLost(FocusEvent e) {
                 SwingUtilities.invokeLater(AppDialog.this::refreshButtonStyles);
@@ -846,6 +938,7 @@ public class AppDialog extends JDialog {
         };
 
         JPanel circle = new JPanel() {
+            /** Disegna un cerchio pieno, con antialiasing, colorato in base al tipo di dialog. */
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -900,6 +993,7 @@ public class AppDialog extends JDialog {
         inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "dialog.close");
 
         actionMap.put("dialog.prevButton", new AbstractAction() {
+            /** Sposta il focus sul pulsante precedente (frecce sinistra/su). */
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 focusPreviousButton();
@@ -907,6 +1001,7 @@ public class AppDialog extends JDialog {
         });
 
         actionMap.put("dialog.nextButton", new AbstractAction() {
+            /** Sposta il focus sul pulsante successivo (frecce destra/giù). */
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 focusNextButton();
@@ -914,6 +1009,7 @@ public class AppDialog extends JDialog {
         });
 
         actionMap.put("dialog.pressFocused", new AbstractAction() {
+            /** Attiva il pulsante attualmente a fuoco (tasto Invio). */
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 pressFocusedButton();
@@ -921,6 +1017,7 @@ public class AppDialog extends JDialog {
         });
 
         actionMap.put("dialog.close", new AbstractAction() {
+            /** Chiude il dialog senza selezionare alcuna azione (tasto Esc). */
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 result = new DialogResult(null, CloseReason.WINDOW_CLOSE);

@@ -279,6 +279,16 @@ public class ZZZ_Calcoli_Plusvalenze {
         return tipo;
     }
     
+ /**
+  * Versione legacy superata di {@link Calcoli_PlusvalenzeNew#StackLIFO_TogliQta}: estrae dallo stack LIFO di
+  * una moneta la quantità richiesta, calcolando il relativo costo di carico (con eventuale suddivisione
+  * parziale dell'ultimo elemento estratto se contiene più quantità del necessario).
+  * @param CryptoStack mappa moneta → stack LIFO di elementi {@code [moneta, quantità, costo]}
+  * @param Moneta moneta da cui estrarre
+  * @param Qta quantità da estrarre (in valore assoluto)
+  * @param toglidaStack se {@code true} modifica lo stack originale, se {@code false} opera su un suo clone lasciando l'originale intatto
+  * @return il costo di carico complessivo della quantità estratta, oppure {@code ""} se {@code Moneta} o {@code Qta} non sono valorizzate
+  */
  public static String StackLIFO_TogliQta(Map<String, ArrayDeque<String[]>> CryptoStack, String Moneta,String Qta,boolean toglidaStack) {
     
     //come ritorno ci invio il valore della movimentazione
@@ -347,6 +357,14 @@ public class ZZZ_Calcoli_Plusvalenze {
    // System.out.println(Moneta +" - "+stack.size());
 }      
     
+   /**
+    * Versione legacy superata di {@link Calcoli_PlusvalenzeNew#StackLIFO_InserisciValore}: inserisce in cima
+    * allo stack LIFO di una moneta un nuovo elemento {@code [moneta, quantità, valore]}.
+    * @param CryptoStack mappa moneta → stack LIFO di elementi {@code [moneta, quantità, costo]}
+    * @param Moneta moneta su cui inserire
+    * @param Qta quantità entrata (verrà salvata in valore assoluto)
+    * @param Valore costo di carico associato
+    */
    public static void StackLIFO_InserisciValore(Map<String, ArrayDeque<String[]>> CryptoStack, String Moneta,String Qta,String Valore) {
     
     ArrayDeque<String[]> stack;
@@ -366,6 +384,11 @@ public class ZZZ_Calcoli_Plusvalenze {
    // System.out.println(Moneta +" - "+stack.size());
 }
     
+     /**
+      * Versione legacy superata di {@link Calcoli_PlusvalenzeNew#AggiornaPlusvalenze}: ricalcola per intero
+      * le plusvalenze di tutti i movimenti scorrendo {@link Principale#MappaCryptoWallet} e mantenendo uno
+      * stack LIFO per moneta (per gruppo wallet o unico, in base all'opzione {@code PlusXWallet}).
+      */
      public static void AggiornaPlusvalenze(){
 ////////    Deque<String[]> stack = new ArrayDeque<String[]>(); Forse questo è da mettere
 
@@ -816,6 +839,11 @@ public class ZZZ_Calcoli_Plusvalenze {
 
     
        
+         /**
+          * Versione ancora più datata di {@link #AggiornaPlusvalenze}, con un unico stack LIFO globale (nessuna
+          * suddivisione per gruppo wallet) e categorizzazione tramite {@link #CategorizzaTransazioneOLD}.
+          * Mantenuta come riferimento storico, superata da {@link Calcoli_PlusvalenzeNew#AggiornaPlusvalenze}.
+          */
          public static void AggiornaPlusvalenzeOLD(){
 ////////    Deque<String[]> stack = new ArrayDeque<String[]>(); Forse questo è da mettere
 
@@ -914,6 +942,13 @@ public class ZZZ_Calcoli_Plusvalenze {
     }
     
  
+/**
+ * Versione legacy superata di categorizzazione dei movimenti in 6 macrocategorie fiscali (scambio tra
+ * criptoattività omogenee/non omogenee, spostamento tra wallet propri, vendita per fiat/servizi, acquisto con
+ * fiat, proventi da detenzione), ciascuna con proprie regole per plusvalenza, costo di carico e gestione dello
+ * stack LIFO (vedi i commenti nel corpo del metodo per il dettaglio di ogni categoria). Mantenuta come
+ * riferimento storico, superata dalla classificazione a 10 categorie di {@link Calcoli_PlusvalenzeNew}.
+ */
 public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
      /* Questa funzione si occupa di categorizzare i movimenti in 6 macrocategorie che ne identificano il modo in cui :
         - Verrà calcolata la plusvalenza
@@ -1024,6 +1059,12 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
     }
 
 
+   /**
+    * Prototipo legacy, incompleto, di motore LIFO basato su {@link #CategorizzaTransazioneOLD}, con gestione
+    * manuale caso per caso dei tipi di movimento (depositi/prelievi crypto, scambi, ecc., vedi i commenti nel
+    * corpo del metodo). Mantenuto come riferimento storico, mai completato e superato da
+    * {@link Calcoli_PlusvalenzeNew#AggiornaPlusvalenze}.
+    */
    public void TransazioniCrypto_Funzioni_AggiornaPlusvalenzeOLDest(){
       //il comando seguente è da eliminare una volta appurato che la categorizzazione funziona
       //per ora mancano ancora delle cosucce da sistemare
@@ -1244,6 +1285,15 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
        return Tipo;
    }
    
+    /**
+     * Versione legacy identica nella logica a {@link Calcoli_PlusvalenzeNew#RitornaIDeGruppoControparteSeGruppoDiverso}:
+     * se la distinzione delle plusvalenze per gruppo wallet è attiva (opzione {@code PlusXWallet}), individua
+     * l'ID e il gruppo wallet del movimento di controparte di un trasferimento tra wallet (diretto o tramite
+     * scambio differito), ma solo se tale controparte appartiene a un gruppo wallet diverso dal movimento
+     * dato (altrimenti lo spostamento del costo di carico è già gestito dal movimento di scambio stesso).
+     * @param v riga di movimento grezza
+     * @return array di 2 elementi {@code [ID controparte, gruppo wallet controparte]}, con elementi {@code null} se non trovata o se la distinzione per gruppo wallet non è attiva
+     */
     public static String[] RitornaIDeGruppoControparteSeGruppoDiverso(String v[]) {
         
         String IDeGruppo[] = new String[2];

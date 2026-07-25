@@ -47,12 +47,15 @@ public class TransazioneDefi {
     }
     
     
+   /** @return il numero di token distinti usciti in questa transazione */
    public int RitornaNumeroTokenUscita() {
        return MappaTokenUscita.size();
    }
+      /** @return il numero di token distinti entrati in questa transazione */
       public int RitornaNumeroTokenentrata() {
        return MappaTokenEntrata.size();
    }
+   /** @return la mappa (indirizzo → {@link ValoriToken}) dei token entrati in questa transazione */
    public Map<String,ValoriToken> RitornaMappaTokenEntrata(){
       /* //Prima di tornare la mappa dei token devo mettere tutti i prezzi in positivo
        for (ValoriToken monete : MappaTokenEntrata.values()){
@@ -60,6 +63,7 @@ public class TransazioneDefi {
        }*/
        return MappaTokenEntrata;
    }
+   /** @return la mappa (indirizzo → {@link ValoriToken}) dei token usciti in questa transazione */
    public Map<String,ValoriToken> RitornaMappaTokenUscita(){
      /*  //Prima di tornare la mappa dei token devo mettere tutti i prezzi in positivo
         for (ValoriToken monete : MappaTokenUscita.values()){
@@ -68,6 +72,17 @@ public class TransazioneDefi {
        return MappaTokenUscita;
    }
     
+    /**
+     * Aggiunge (o somma, se già presente per lo stesso indirizzo) un movimento di token a questa transazione
+     * DeFi, calcolandone il prezzo tramite {@link Prezzi#DammiPrezzoTransazione}. Le quantità in uscita devono
+     * arrivare già con il segno meno.
+     * @param Moneta simbolo del token
+     * @param MonetaName nome completo del token
+     * @param MonetaAddress indirizzo di contratto del token (usato come chiave della mappa interna)
+     * @param AddressNoWallet indirizzo del token non riferito a un wallet (usato per casi tecnici)
+     * @param Qta quantità movimentata (negativa se in uscita)
+     * @param Tipologia tipo del token ({@code NFT}, {@code FIAT} o {@code Crypto})
+     */
     public void InserisciMonete(String Moneta,String MonetaName,String MonetaAddress,String AddressNoWallet,String Qta, String Tipologia){
         ValoriToken monete;
         //le monete in uscita avranno il meno davanti alla qta mentre quelle in ingresso no
@@ -112,11 +127,22 @@ public class TransazioneDefi {
             }
     }
     
+    /** @return il numero totale di token distinti (entrata+uscita) inseriti in questa transazione tramite {@link #InserisciMonete} */
     public int lenght(){
         return MappaToken.size();
     }
     
    
+    /**
+     * Come {@link #InserisciMonete}, ma per movimenti provenienti da un exchange centralizzato (CEX): riceve
+     * direttamente un {@link Moneta} già prezzato (invece di ricalcolare il prezzo) e aggrega per simbolo
+     * (invece che per indirizzo di contratto). In caso di somma con un movimento già presente, allinea il
+     * segno del prezzo a quello della quantità prima di sommarlo.
+     * @param Moneta moneta movimentata (con quantità già firmata: negativa se in uscita)
+     * @param Wallet wallet/sottowallet secondario di provenienza
+     * @param CausaleOriginale causale originale del movimento, così come importata
+     * @param IDT identificativo della transazione
+     */
     public void InserisciMoneteCEX(Moneta Moneta,String Wallet,String CausaleOriginale,String IDT){
         ValoriToken monete;
         //le monete in uscita avranno il meno davanti alla qta mentre quelle in ingresso no
@@ -162,6 +188,14 @@ public class TransazioneDefi {
     }
         
 
+      /**
+       * Analizza i token inseriti tramite {@link #InserisciMonete}, smistandoli in {@code MappaTokenEntrata}
+       * (quantità positive) e {@code MappaTokenUscita} (quantità negative), separando gli eventuali movimenti
+       * tecnici del token {@code DIVIDEND_TRACKER} (indirizzo nullo) nelle rispettive mappe tecniche e
+       * rimuovendoli dalla mappa generale. Determina infine il tipo della transazione in base a cosa è stato trovato.
+       * @return {@code "Scambio"} se ci sono sia entrate che uscite non tecniche, {@code "Deposito"} se solo entrate,
+       *         {@code "Prelievo"} se solo uscite, {@code "Commissioni"} se nessuna delle due
+       */
       public String IdentificaTipoTransazione(){
           String Tipo;
           boolean trovataEntrata=false;
@@ -221,6 +255,7 @@ public class TransazioneDefi {
           return Tipo;
     }   
      
+      /** @return {@code true} se non è stato inserito alcun token in questa transazione tramite {@link #InserisciMonete} */
       public boolean isEmpty(){
           int i=0;
         for(ValoriToken token : MappaToken.values())
@@ -231,6 +266,13 @@ public class TransazioneDefi {
       }
       
       
+          /**
+           * Come {@link #IdentificaTipoTransazione}, ma per movimenti da exchange centralizzato (CEX): smista i
+           * token inseriti tramite {@link #InserisciMoneteCEX} tra entrate e uscite (per simbolo, senza gestione
+           * dei movimenti tecnici) e determina il tipo della transazione di conseguenza.
+           * @return {@code "Scambio"} se ci sono sia entrate che uscite, {@code "Deposito"} se solo entrate,
+           *         {@code "Prelievo"} se solo uscite, {@code "Commissioni"} se nessuna delle due
+           */
           public String IdentificaTipoTransazioneCEX(){
           String Tipo;
           boolean trovataEntrata=false;
@@ -268,6 +310,14 @@ public class TransazioneDefi {
     }    
       
       
+    /**
+     * Assegna a ciascun token entrato/uscito un "peso" (frazione del valore totale della transazione) da
+     * usare per ripartire proporzionalmente il valore complessivo tra i vari token coinvolti in uno scambio
+     * multi-token. Se si riesce a determinare un valore complessivo della transazione (somma dei prezzi dei
+     * token in entrata o, se maggiore, in uscita, con tutti i token prezzati), il peso di ogni token è
+     * proporzionale al proprio prezzo rispetto al totale (i token senza prezzo si dividono equamente il peso
+     * residuo); altrimenti il peso viene distribuito equamente tra tutti i token dello stesso lato (entrata/uscita).
+     */
     public void AssegnaPesiaPartiTransazione() {
 
         //Prima di tutto scorro le 2 mappe e controllo se ce n'è almeno una di cui riesco a trovare il prezzo completo della transazione
@@ -427,9 +477,13 @@ public class TransazioneDefi {
     }
 
   
+ /**
+  * Metodo attualmente privo di implementazione (corpo vuoto).
+  * @param Lista lista di righe di movimento (parametro non utilizzato)
+  */
  public void IdentificaScam(List<String[]> Lista){
-     
- }   
+
+ }
   //Parte nuova per la Defi
   // RT[23]=Blocco Transazione
   // RT[24]=Hash Transazione
@@ -439,6 +493,12 @@ public class TransazioneDefi {
   // RT[28]=Address Token Entrata
   // RT[29]=Timestamp
   // RT[30]=Address Controparte
+  /**
+   * Converte questa transazione DeFi in una o più righe nel formato tabella movimenti dell'applicazione
+   * (deposito, prelievo, scambio o sola commissione a seconda del tipo identificato e dell'esito della
+   * transazione on-chain), popolando anche i campi specifici DeFi (blocco, hash, address controparte, ecc.).
+   * @return la lista di righe di movimento generate da questa transazione
+   */
   public List<String[]> RitornaRigheTabella(){
       String RT[];
       List<String[]> righe=new ArrayList<>();
@@ -1245,6 +1305,11 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
   public Prezzi.InfoPrezzo InfoPrezzo;
   
   
+  /**
+   * Converte questo {@code ValoriToken} in un oggetto {@link Moneta} equivalente (simbolo, indirizzo,
+   * quantità, prezzo, tipo).
+   * @return il {@link Moneta} corrispondente
+   */
   public Moneta ConvertiInMoneta(){
       Moneta Mon=new Moneta();
       Mon.Moneta=Moneta;
@@ -1272,6 +1337,12 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
       return nome;
   }*/
   
+    /**
+     * Costruisce un identificativo testuale del token adatto a distinguere token con lo stesso simbolo ma
+     * indirizzo diverso: per NFT o token LP (simbolo che termina in {@code -LP}) include l'indirizzo di
+     * contratto tra parentesi, altrimenti restituisce il solo simbolo.
+     * @return l'identificativo del token
+     */
     public String RitornaIDToken(){
       String nome;
       if (Tipo.equalsIgnoreCase("NFT")){

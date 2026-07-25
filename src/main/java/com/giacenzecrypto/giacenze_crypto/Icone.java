@@ -33,6 +33,10 @@ public class Icone {
     
    // public static FlatSVGIcon svgImbuto = new FlatSVGIcon("Images/Imbuto.svg", 12, 12);
     
+    /**
+     * @param Dimensione larghezza e altezza dell'icona in pixel
+     * @return l'icona di alert (SVG) alla dimensione richiesta
+     */
     public static Icon getAlert(int Dimensione){
         return new FlatSVGIcon("Images/Alert.svg", Dimensione, Dimensione);
     }

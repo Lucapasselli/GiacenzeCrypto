@@ -38,6 +38,12 @@ public class CcxtInterop {
     
 
     
+    /**
+     * Verifica che la distribuzione standalone di Node.js ({@link #NODE_VERSION}) sia presente nella cartella
+     * {@code tools/node} della directory di lavoro; se manca, la scarica dal sito ufficiale (rilevando
+     * automaticamente sistema operativo e architettura) e la estrae.
+     * @throws IOException in caso di errore di rete o di estrazione dell'archivio
+     */
     public static void ensureNodeInstalled() throws IOException {
         
 
@@ -87,6 +93,13 @@ public class CcxtInterop {
 
     
     
+    /**
+     * Installa la libreria Node.js CCXT (se non già presente in {@code node_modules}) tramite {@code npm install},
+     * usando la distribuzione Node.js gestita da {@link #getNodeExePath()}.
+     * @throws IOException in caso di errore di avvio/lettura del processo npm
+     * @throws InterruptedException se il thread viene interrotto durante l'attesa del processo
+     * @throws RuntimeException se {@code npm install} termina con un codice di uscita diverso da zero
+     */
     public static void installCcxt() throws IOException, InterruptedException {
         
         
@@ -143,6 +156,13 @@ public class CcxtInterop {
     System.out.println("ccxt installato con successo");
 }
 
+ /**
+  * Come {@link #installCcxt}, ma generico per un qualsiasi modulo npm indicato per nome.
+  * @param Modulo nome del pacchetto npm da installare
+  * @throws IOException in caso di errore di avvio/lettura del processo npm
+  * @throws InterruptedException se il thread viene interrotto durante l'attesa del processo
+  * @throws RuntimeException se {@code npm install} termina con un codice di uscita diverso da zero
+  */
  public static void installModuleNode(String Modulo) throws IOException, InterruptedException {
     //Per il momento mi servono installati ccxt,express e cors    
         
@@ -190,6 +210,7 @@ public class CcxtInterop {
 }    
     
     
+    /** @return il percorso dell'eseguibile {@code npm} della distribuzione Node.js gestita da questa classe */
     public static Path getNpmPath() {
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("win")) {
@@ -201,6 +222,7 @@ public class CcxtInterop {
     }
 
     
+/** @return il percorso dell'eseguibile {@code node} della distribuzione Node.js gestita da questa classe */
 public static Path getNodeExePath() {
     String os = System.getProperty("os.name").toLowerCase();
     String nodeExecutable = os.contains("win") ? "node.exe" : "node";
@@ -253,6 +275,17 @@ public static Path getNodeExePath() {
     }
     
     
+    /**
+     * Avvia in background (tramite {@link SwingWorker}) il recupero dei movimenti da un exchange via CCXT
+     * ({@link #fetchMovimenti}), mostrando una finestra di progresso indeterminata mentre verifica/installa
+     * Node.js e CCXT ed esegue la chiamata.
+     * @param exchangeId identificativo CCXT dell'exchange
+     * @param apiKey API key dell'account
+     * @param secret API secret dell'account
+     * @param startDate data di inizio da cui recuperare i movimenti, millisecondi epoch
+     * @param Tokens elenco di token (separati da virgola) di cui recuperare esplicitamente i trade
+     * @param c componente rispetto a cui centrare la finestra di progresso
+     */
     public static void fetchMovimentiConBar(String exchangeId, String apiKey, String secret, long startDate,String Tokens,Component c) {
              // TODO add your handling code here:
         //CcxtInterop a = new CcxtInterop();
@@ -266,6 +299,7 @@ public static Path getNodeExePath() {
 
         // Esegui l'export in background
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
+        /** Verifica/installa Node.js e CCXT, poi esegue {@link #fetchMovimenti} in background. */
         @Override
         protected Void doInBackground() throws Exception {
         try {
@@ -284,6 +318,7 @@ public static Path getNodeExePath() {
         return null;
         }
         
+        /** Chiude la finestra di progresso e ripristina il cursore normale al termine dell'operazione. */
         @Override
         protected void done() {
         progress.dispose();
@@ -298,6 +333,23 @@ public static Path getNodeExePath() {
     
     
 
+    /**
+     * Recupera tramite CCXT (script Node) tutti i movimenti storici di un account exchange e li scrive in
+     * {@link Principale#MappaCryptoWallet}. Per {@code "Binance"}: scarica depositi, prelievi, movimenti fiat,
+     * conversioni, asset dividend ed earn ({@link #fetchMovimento}), determina i token effettivamente
+     * movimentati (giacenza netta diversa da zero, uniti a quelli passati esplicitamente in {@code Tokens} e a
+     * quelli forzati manualmente in {@link DatabaseH2#Pers_ExchangeTokens_LeggiTokensExchange}) e infine
+     * recupera anche i trade spot per quei token, importando tutto nel database tramite
+     * {@link Importazioni#ScriviListaSuMappaCrypto}. L'elaborazione può essere interrotta anticipatamente
+     * impostando {@link Principale#InterrompiCiclo} o in presenza di errori Node.js segnalati da {@code progress}.
+     * @param exchangeId identificativo CCXT dell'exchange (attualmente gestito solo {@code "Binance"}, con un ramo di test per {@code "Binancet"})
+     * @param apiKey API key dell'account
+     * @param secret API secret dell'account
+     * @param startDate data di inizio da cui recuperare i movimenti, millisecondi epoch
+     * @param Tokens elenco di token (separati da virgola) di cui recuperare esplicitamente i trade
+     * @param progress finestra di progresso su cui riportare l'avanzamento e verificare interruzione/errori
+     * @param c componente parent per gli eventuali dialog di avviso
+     */
     public static void fetchMovimenti(String exchangeId, String apiKey, String secret, long startDate,String Tokens,Download progress,Component c) {
        // Map<String, JsonObject> Mappa_Json = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         List<JsonObject> Jsons = new ArrayList<>();
@@ -515,10 +567,20 @@ public static Path getNodeExePath() {
         }
     }
     
+    /** @param S valore decimale come stringa
+     *  @return {@code S} come {@link BigDecimal} */
     public static BigDecimal BG(String S){
         return new BigDecimal(S);
     }
-    
+
+    /**
+     * Converte un unico oggetto JSON grezzo restituito da uno script CCXT (contenente eventualmente più
+     * sezioni: depositi, prelievi, trade, conversioni, movimenti fiat, earn/reward) nella lista di righe nel
+     * formato standard dei movimenti dell'applicazione, delegando a ciascun metodo {@code convert*} specifico.
+     * @param json oggetto JSON grezzo restituito dallo script Node
+     * @param Exchange nome dell'exchange di provenienza
+     * @return la lista di righe di movimento convertite
+     */
     public static List<String[]> getListaMovimento(JsonObject json,String Exchange) {
              List<String[]> lista = new ArrayList<>();       
              // Depositi
@@ -595,6 +657,13 @@ public static Path getNodeExePath() {
             return lista;
     }
     
+    /**
+     * Come {@link #getListaMovimento}, ma applicato a più oggetti JSON grezzi (uno per ogni chiamata script
+     * effettuata), concatenando i risultati.
+     * @param Jsons oggetti JSON grezzi restituiti dagli script Node
+     * @param Exchange nome dell'exchange di provenienza
+     * @return la lista concatenata di tutte le righe di movimento convertite
+     */
     public static List<String[]> getListaMovimenti(List<JsonObject> Jsons,String Exchange) {
         List<String[]> lista = new ArrayList<>();
         for(JsonObject json:Jsons){
@@ -603,6 +672,18 @@ public static Path getNodeExePath() {
        return lista; 
     }
     
+    /**
+     * Esegue uno specifico script Node CCXT (identificato per nome, in {@code Scripts/<script>.js}) passandogli
+     * credenziali, data di inizio e token come argomenti a riga di comando, e ne restituisce l'output JSON.
+     * L'esecuzione può essere interrotta anticipatamente impostando {@link Principale#InterrompiCiclo}.
+     * @param exchangeId identificativo CCXT dell'exchange
+     * @param apiKey API key dell'account
+     * @param secret API secret dell'account
+     * @param startDate data di inizio da cui recuperare i movimenti, millisecondi epoch
+     * @param Tokens elenco di token (separati da virgola) da passare allo script
+     * @param script nome dello script Node da eseguire (senza estensione {@code .js})
+     * @return l'oggetto JSON restituito dallo script, oppure {@code null} se node/script non sono trovati o l'esecuzione fallisce
+     */
     public static JsonObject fetchMovimento(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String script) {
     try {
         
@@ -711,6 +792,15 @@ public static Path getNodeExePath() {
     return null;
 }
 
+/**
+ * Versione legacy superata di {@link Prezzi#RecuperaPrezziDaCCXT}: lancia lo script Node
+ * {@code Historical_Multi_Eur.js} per recuperare quotazioni minuto-per-minuto di un simbolo da più exchange
+ * (binance, cryptocom, bybit, okx, coinbase, bitstamp, kucoin) in una finestra di 30 minuti prima/dopo il
+ * timestamp richiesto, salvandone i risultati nella tabella {@code PrezziNew}.
+ * @param Symbol simbolo della crypto da quotare
+ * @param timestamp data/ora di riferimento in millisecondi epoch
+ * @throws SQLException in caso di errore nell'inserimento dei prezzi nel database
+ */
 public static void recuperPrezzi_OLD(String Symbol,long timestamp) throws SQLException {
 
         //long timestampAttuale = System.currentTimeMillis();
@@ -858,6 +948,14 @@ public static void recuperPrezzi_OLD(String Symbol,long timestamp) throws SQLExc
 }
 
     
+/**
+ * Converte un array JSON di depositi (formato CCXT) nelle righe di movimento standard dell'applicazione,
+ * ordinandoli per data di inserimento/completamento e determinando il tipo (Crypto/FIAT) in base alla
+ * presenza dell'indirizzo di contratto. Può essere interrotta impostando {@link Principale#InterrompiCiclo}.
+ * @param jsonList array JSON dei depositi grezzi, oppure {@code null}
+ * @param Exchange nome dell'exchange di provenienza
+ * @return la lista di righe di movimento convertite (deposito), oppure {@code null} se l'elaborazione è stata interrotta, oppure lista vuota se {@code jsonList} è {@code null}
+ */
 public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange) {
         List<String[]> lista = new ArrayList<>();
         
@@ -945,6 +1043,15 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
     }
     
 
+/**
+ * Converte i movimenti fiat di Binance (depositi/prelievi in {@code orders} e acquisti/vendite crypto con
+ * fiat che non passano dai trade, es. con carta, in {@code payments}) nelle righe di movimento standard
+ * dell'applicazione, generando anche la relativa riga di commissione. Considera solo i movimenti con stato
+ * {@code "Successful"}. Può essere interrotta impostando {@link Principale#InterrompiCiclo}.
+ * @param JObjetc oggetto JSON grezzo con le sezioni {@code orders} e {@code payments}
+ * @param Exchange nome dell'exchange di provenienza
+ * @return la lista di righe di movimento convertite, oppure {@code null} se l'elaborazione è stata interrotta
+ */
 public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,String Exchange) {
         List<String[]> lista = new ArrayList<>();
         
@@ -1194,10 +1301,18 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         return lista;
     }    
 
+    /** @param qta quantità come stringa decimale (segno indifferente) @return il valore assoluto di {@code qta} reso negativo */
     public static String ValoreNegativo(String qta){
         return new BigDecimal(qta).abs().multiply(new BigDecimal(-1)).toPlainString();
     }
-   
+
+   /**
+    * Converte un array JSON di prelievi (formato CCXT) nelle righe di movimento standard dell'applicazione,
+    * analogamente a {@link #convertDepositi} ma per i prelievi (quantità resa negativa).
+    * @param jsonList array JSON dei prelievi grezzi, oppure {@code null}
+    * @param Exchange nome dell'exchange di provenienza
+    * @return la lista di righe di movimento convertite (prelievo), oppure {@code null} se l'elaborazione è stata interrotta, oppure lista vuota se {@code jsonList} è {@code null}
+    */
    public static List<String[]> convertPrelievi(JsonArray jsonList,String Exchange) {
         List<String[]> lista = new ArrayList<>();
         
@@ -1302,6 +1417,14 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         return lista;
     }
     
+   /**
+    * Converte un array JSON di trade spot (formato CCXT) nelle righe di movimento standard dell'applicazione
+    * (scambio tra le due monete della coppia, con relativa commissione), ordinandoli per timestamp e
+    * determinando moneta uscente/entrante in base al verso (buy/sell) del trade.
+    * @param jsonList array JSON dei trade grezzi, oppure {@code null}
+    * @param Exchange nome dell'exchange di provenienza
+    * @return la lista di righe di movimento convertite (scambio + commissione), oppure {@code null} se l'elaborazione è stata interrotta, oppure lista vuota se {@code jsonList} è {@code null}
+    */
    public static List<String[]> convertTrades(JsonArray jsonList,String Exchange) {
         List<String[]> lista = new ArrayList<>();
         
@@ -1401,6 +1524,13 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         return lista;
     }     
    
+      /**
+       * Converte un array JSON di conversioni "small asset" (dust) Binance nelle righe di movimento standard
+       * dell'applicazione (scambio tra le due monete + relativa commissione di servizio).
+       * @param jsonList array JSON delle conversioni grezze, oppure {@code null}
+       * @param Exchange nome dell'exchange di provenienza
+       * @return la lista di righe di movimento convertite, oppure {@code null} se l'elaborazione è stata interrotta, oppure lista vuota se {@code jsonList} è {@code null}
+       */
       public static List<String[]> convertBinanceConversioniSmall(JsonArray jsonList,String Exchange) {
         List<String[]> lista = new ArrayList<>();
          // Ordiniamo per completeTime (servono per avere gruppi ordinati)
@@ -1494,6 +1624,13 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         return lista;
     }
    
+        /**
+         * Converte un array JSON di conversioni della feature Binance Convert (senza commissione separata,
+         * a differenza di {@link #convertBinanceConversioniSmall}) nelle righe di movimento standard dell'applicazione.
+         * @param jsonList array JSON delle conversioni grezze, oppure {@code null}
+         * @param Exchange nome dell'exchange di provenienza
+         * @return la lista di righe di movimento convertite, oppure {@code null} se l'elaborazione è stata interrotta, oppure lista vuota se {@code jsonList} è {@code null}
+         */
         public static List<String[]> convertBinanceConversioni(JsonArray jsonList,String Exchange) {
         List<String[]> lista = new ArrayList<>();
          // Ordiniamo per completeTime (servono per avere gruppi ordinati)
@@ -1570,6 +1707,13 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         return lista;
     }
     
+   /**
+    * Converte un array JSON di reward Simple Earn (flessibile o bloccato) Binance nelle righe di movimento
+    * standard dell'applicazione, classificate come reward in entrata.
+    * @param jsonList array JSON delle reward Earn grezze, oppure {@code null}
+    * @param Exchange nome dell'exchange di provenienza
+    * @return la lista di righe di movimento convertite, oppure {@code null} se l'elaborazione è stata interrotta, oppure lista vuota se {@code jsonList} è {@code null}
+    */
    public static List<String[]> convertBinanceEarn(JsonArray jsonList,String Exchange) {
         List<String[]> lista = new ArrayList<>();
         
@@ -1653,6 +1797,13 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
     }
    
    
+      /**
+       * Converte un array JSON di asset dividend/reward Binance (ordinati per data di distribuzione) nelle
+       * righe di movimento standard dell'applicazione, classificate come reward in entrata.
+       * @param jsonList array JSON delle reward grezze, oppure {@code null}
+       * @param Exchange nome dell'exchange di provenienza
+       * @return la lista di righe di movimento convertite, oppure {@code null} se l'elaborazione è stata interrotta, oppure lista vuota se {@code jsonList} è {@code null}
+       */
       public static List<String[]> convertBinanceRewards(JsonArray jsonList,String Exchange) {
         List<String[]> lista = new ArrayList<>();
         
@@ -1747,6 +1898,10 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
    
    
 
+    /**
+     * Metodo attualmente privo di implementazione (corpo vuoto); non è l'entry point dell'applicazione (vedi {@link Giacenze_Crypto#main}).
+     * @param args argomenti a riga di comando (non utilizzati)
+     */
     public static void main(String[] args) {
 
     }

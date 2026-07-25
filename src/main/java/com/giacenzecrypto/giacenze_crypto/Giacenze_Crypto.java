@@ -24,6 +24,13 @@ public class Giacenze_Crypto {
     private static final float DEFAULT_FONT_SIZE = 12f;
     private static final String DEFAULT_FONT_FAMILY = "Inter";
 
+    /**
+     * Punto di ingresso dell'applicazione: interpreta gli argomenti a riga di comando (vedi {@code CLAUDE.md}
+     * per l'elenco completo — {@code --NoJarPath}, {@code --workdir}, {@code --workInRisorse}, {@code --risorse},
+     * {@code --debug}, {@code --fontSize}, {@code --fontFamily}), imposta i percorsi in {@link VarStatiche},
+     * applica il tema FlatLaf e le impostazioni di font globali, quindi apre la finestra {@link Principale}.
+     * @param args argomenti a riga di comando
+     */
     public static void main(String[] args) {
 
         System.out.println("user.dir : " + System.getProperty("user.dir"));
@@ -268,6 +275,7 @@ public class Giacenze_Crypto {
         progress.NoModale();
 
         Thread thread = new Thread() {
+            /** Corpo vuoto (nessuna azione eseguita da questo thread). */
             @Override
             public void run() {
             }

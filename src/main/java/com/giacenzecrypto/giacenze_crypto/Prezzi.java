@@ -125,6 +125,14 @@ public class Prezzi {
         return prezzato;
     }
     
+    /**
+     * Ricava il prezzo di cambio tra la moneta in uscita e quella in entrata di un movimento,
+     * estraendo dal record grezzo {@code v} le monete, le quantità, la rete e la data coinvolte
+     * e delegando il calcolo a {@link #DammiPrezzoTransazione}.
+     * @param v riga di movimento grezza (formato array di stringhe con gli indici standard)
+     * @param decimali numero di decimali desiderato nel prezzo restituito
+     * @return il prezzo calcolato, oppure {@code null} se non è stato possibile recuperarlo
+     */
     public static String DammiPrezzoDaTransazione(String[] v,int decimali){
         //Questa funzione ritorna null in caso di mancanza di prezzo
         //Da sistemare recuperando la fonte corretta per i prezzi
@@ -165,6 +173,10 @@ public class Prezzi {
     
     
     
+      /**
+       * Carica in {@link #MappaConversioneSwapTransIDCoins} le conversioni salvate nel file
+       * {@code conversioneTransIDCoins.db} (creato vuoto se non esiste), riga per riga in formato CSV a 5 campi.
+       */
       public static void GeneraMappaConversioneSwapTransIDCoins(){
          try {
              File file=new File ("conversioneTransIDCoins.db");
@@ -199,6 +211,10 @@ public class Prezzi {
     
     
     
+    /**
+     * Carica in {@link #MappaConversioneUSDEUR} i tassi di cambio USD/EUR salvati nel file
+     * indicato da {@link VarStatiche#getFileUSDEUR()} (creato vuoto se non esiste), riga per riga in formato CSV a 2 campi.
+     */
     public static void GeneraMappaCambioUSDEUR(){
          try {
              File file=new File (VarStatiche.getFileUSDEUR());
@@ -589,6 +605,15 @@ public class Prezzi {
       }*/
      
         
+    /**
+     * Converte un importo in USD nel corrispondente valore in EUR alla data indicata, usando i tassi
+     * caricati in {@link #MappaConversioneUSDEUR} (aggiornati chiamando {@link #RecuperaTassiCambioEURUSD()}).
+     * Se la data richiesta non ha un tasso disponibile (es. festivo o giorno corrente) risale di giorno in giorno
+     * fino a un massimo di 10 tentativi per trovare l'ultimo tasso valido precedente.
+     * @param Valore importo in USD da convertire, come stringa decimale
+     * @param Data data del cambio richiesto, formato {@code yyyy-MM-dd}
+     * @return l'importo convertito in EUR come stringa decimale, oppure {@code null} se non è stato trovato un tasso applicabile
+     */
     public static String CambioUSDEUR(String Valore, String Data) {
         RecuperaTassiCambioEURUSD();
         //System.out.println(Valore+" - "+Data);
@@ -647,6 +672,21 @@ public class Prezzi {
     
     
     
+    /**
+     * Recupera il prezzo in EUR di un token identificato dal suo indirizzo di contratto, provando in ordine:
+     * cache dei prezzi personalizzati, vecchio database, nuovo database, DefiLlama, quotazioni exchange
+     * (per le coppie in {@link #SimboliPrioritari} o per prezzi più vecchi di un anno) e infine coingecko.
+     * Se l'indirizzo non è valido per la rete indicata, delega direttamente a {@link #CambioXXXEUR} tramite simbolo.
+     * I tentativi falliti vengono registrati come irrecuperabili tramite {@link #PrezzoIrrecuperabileDaDB_Scrivi}
+     * per evitare richieste ripetute inutili.
+     * @param Qta quantità del token, come stringa decimale
+     * @param Datalong data/ora del movimento in millisecondi epoch
+     * @param Address indirizzo di contratto del token
+     * @param Rete identificativo della blockchain/rete
+     * @param Simbolo simbolo della moneta (usato come fallback e per completare il risultato)
+     * @param Fonte fonte prezzo da preferire nella ricerca nel database personale
+     * @return l'{@link InfoPrezzo} trovato, oppure {@code null} se il prezzo non è recuperabile da nessuna fonte
+     */
     public static InfoPrezzo CambioAddressEUR(String Qta, long Datalong, String Address, String Rete, String Simbolo,String Fonte) {
                     
         BigDecimal qta=new BigDecimal(Qta);
@@ -782,6 +822,10 @@ public class Prezzi {
     }
     
     
+    /**
+     * Popola {@link Principale#Mappa_MoneteStessoPrezzo} con le coppie di token wrapped/nativi noti
+     * per avere lo stesso prezzo (es. WCRO→CRO, WETH→ETH, XDAI→DAI).
+     */
     public static void CompilaMoneteStessoPrezzo(){
      Principale.Mappa_MoneteStessoPrezzo.put("WCRO", "CRO");
      Principale.Mappa_MoneteStessoPrezzo.put("WETH", "ETH");
@@ -935,6 +979,21 @@ public class Prezzi {
         return risultato;
     }*/
     
+      /**
+       * Recupera il prezzo in EUR di una moneta per simbolo, delegando ad {@link #CambioAddressEUR} se
+       * l'indirizzo di contratto fornito è valido per la rete, altrimenti cercando prima nel database dei
+       * prezzi personalizzati, poi (se {@code includiVecchi}) nella cache oraria storica, poi nel database
+       * dei prezzi esatti e infine, se necessario, richiedendo nuove quotazioni via {@link #RecuperaPrezziDaCCXT}.
+       * Ritorna {@code null} per date future, precedenti al 2017, o per token già noti come irrecuperabili.
+       * @param Crypto simbolo della moneta
+       * @param Qta quantità, come stringa decimale
+       * @param Datalong data/ora del movimento in millisecondi epoch
+       * @param Address indirizzo di contratto del token (usato solo se valido per la rete indicata)
+       * @param Rete identificativo della blockchain/rete
+       * @param Fonte fonte prezzo da preferire nella ricerca nel database personale
+       * @param includiVecchi se {@code true} include nella ricerca anche la vecchia cache dei prezzi orari
+       * @return l'{@link InfoPrezzo} trovato, oppure {@code null} se il prezzo non è recuperabile
+       */
       public static InfoPrezzo CambioXXXEUR(String Crypto, String Qta, long Datalong,String Address,String Rete,String Fonte,boolean includiVecchi) {
          
             
@@ -1039,6 +1098,15 @@ public class Prezzi {
       
       
       
+          /**
+           * Scarica da Binance le quotazioni orarie EUR/USDT nell'intervallo indicato (candlestick a 1h,
+           * suddividendo la richiesta in blocchi da 40 giorni per rispettare il limite di 1000 candele per
+           * chiamata) e le salva in {@link DatabaseH2#OLD_XXXEUR_Scrivi} sia a livello giornaliero che orario.
+           * Evita richieste duplicate verso la stessa URL tramite {@link Principale#Mappa_RichiesteAPIGiaEffettuate}.
+           * @param DataIniziale data di inizio dell'intervallo, formato {@code yyyy-MM-dd}
+           * @param DataFinale data di fine dell'intervallo, formato {@code yyyy-MM-dd}
+           * @return {@code "ok"} se almeno un blocco è stato recuperato con successo, altrimenti {@code null}
+           */
           public static String ZZZ_RecuperaTassidiCambioUSDTEUR_Binance(String DataIniziale, String DataFinale) {
                       
         String ok = null;
@@ -1159,6 +1227,16 @@ public class Prezzi {
     }   
 
       
+          /**
+           * Converte un importo in USDT nel corrispondente valore in EUR alla data indicata, cercando il
+           * tasso orario prima in cache, poi da Binance ({@link #ZZZ_RecuperaTassidiCambioUSDTEUR_Binance}),
+           * poi da Coinbase ({@link #ZZZ_RecuperaTassidiCambiodaSimbolo_Coinbase}), poi a livello giornaliero,
+           * e infine ripiegando sul cambio USD/EUR ({@link #CambioUSDEUR}) se non trova nessuna quotazione USDT.
+           * Ritorna {@code null} per date future o precedenti al 2017.
+           * @param Qta importo in USDT da convertire, come stringa decimale
+           * @param Datalong data/ora della conversione in millisecondi epoch
+           * @return l'importo convertito in EUR come stringa decimale, oppure {@code null} se non recuperabile
+           */
           public static String ZZZ_ConvertiUSDTEUR(String Qta, long Datalong) {
         //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
         /*      if (MappaConversioneUSDTEUR.isEmpty())
@@ -1242,6 +1320,16 @@ public class Prezzi {
         return risultato;
     }
           
+             /**
+              * Scarica da Coinbase le quotazioni orarie in USD di una crypto a partire dalla data indicata
+              * (candlestick a 1h, finestra massima di 10 giorni per rispettare il limite di 300 risultati per
+              * chiamata), le inverte in ordine cronologico (Coinbase le restituisce dal più recente) e le salva
+              * nel database interno. Evita richieste duplicate verso la stessa URL tramite
+              * {@link Principale#Mappa_RichiesteAPIGiaEffettuate}.
+              * @param Crypto simbolo della crypto da quotare contro USD
+              * @param DataIniziale data di inizio dell'intervallo, formato {@code yyyy-MM-dd}
+              * @return {@code "ok"} se il recupero è andato a buon fine, altrimenti {@code null}
+              */
              public static String ZZZ_RecuperaTassidiCambiodaSimbolo_Coinbase(String Crypto, String DataIniziale) {
         String ok = null;
         //Aggiungo 10 giorni alla data iniziale per trovare la data di fine
@@ -1328,6 +1416,14 @@ public class Prezzi {
         return ok;
     }     
           
+    /**
+     * Scarica da CryptoCompare le quotazioni orarie EUR di una crypto in una finestra di 30 giorni centrata
+     * (con offset) sul timestamp richiesto, e le salva nella tabella {@code PrezziNew} del database dei prezzi.
+     * Evita richieste duplicate nella stessa sessione tramite {@link #managerRichieste}. Non fa nulla per il
+     * simbolo {@code LAYER} (escluso esplicitamente).
+     * @param Crypto simbolo della crypto da quotare
+     * @param timestamp data/ora di riferimento in millisecondi epoch
+     */
     public static void RecuperaPrezziDaCryptoCompare(String Crypto, long timestamp) {
 
         try {
@@ -1584,6 +1680,14 @@ public class Prezzi {
         }
     }
 
+    /**
+     * Scarica dalla Banca d'Italia i tassi di cambio giornalieri EUR/USD nell'intervallo indicato, li carica
+     * in {@link #MappaConversioneUSDEUR} e li persiste su file tramite {@link #ScriviFileConversioneUSDEUR()}.
+     * Evita richieste duplicate verso la stessa URL tramite {@link Principale#Mappa_RichiesteAPIGiaEffettuate}.
+     * @param DataIniziale data di inizio dell'intervallo, formato {@code yyyy-MM-dd}
+     * @param DataFinale data di fine dell'intervallo, formato {@code yyyy-MM-dd}
+     * @return {@code "ok"} se il recupero è andato a buon fine, altrimenti {@code null}
+     */
     public static String RecuperaTassidiCambio(String DataIniziale,String DataFinale)  {
         String ok="ok";
         try {     
@@ -1629,6 +1733,19 @@ public class Prezzi {
      }
  
     
+    /**
+     * Scarica da coingecko le quotazioni orarie EUR di un token identificato dall'indirizzo di contratto,
+     * in una finestra di 90 giorni (allineata a non superare i 365 giorni dalla data odierna, oltre i quali
+     * coingecko non fornisce più dati orari), e le salva nella tabella {@code PrezziNew}. Usa la API key
+     * personale se presente (limiti di richiesta più ampi e attesa ridotta a 3s, altrimenti 13s). Evita
+     * richieste duplicate tramite {@link #managerRichieste} e richiede preventivamente che il token sia tra
+     * quelli gestiti da coingecko ({@link DatabaseH2#GestitiCoingecko_Leggi}).
+     * @param DataIniziale data di riferimento per l'inizio della finestra, formato {@code yyyy-MM-dd}
+     * @param Address indirizzo di contratto del token
+     * @param Rete identificativo della blockchain/rete
+     * @param Simbolo simbolo della moneta (usato solo per i messaggi di log)
+     * @return {@code "ok"} se il recupero è andato a buon fine, altrimenti {@code null}
+     */
     public static String RecuperaTassidiCambiodaAddress_Coingecko(String DataIniziale, String Address, String Rete, String Simbolo) {
 
         RecuperaCoinsCoingecko();
@@ -1789,11 +1906,26 @@ public class Prezzi {
     
     
 
+    /**
+     * Metodo attualmente privo di implementazione (corpo vuoto).
+     */
     public static void RitornaPrezzoDaInfoPrezzo()
     {
 
     }
 
+    /**
+     * Scarica da DefiLlama le quotazioni orarie EUR di un token identificato dall'indirizzo di contratto,
+     * in una finestra di 500 ore, convertendo i prezzi in USD forniti dall'API tramite {@link #MappaConversioneUSDEUR}.
+     * A differenza di coingecko, non richiede che il token sia in una lista di "gestiti" e non ha vincoli sui
+     * 365 giorni. Non fa nulla se la rete non ha un nome DefiLlama configurato in {@link Principale#Mappa_ChainExplorer}.
+     * Evita richieste duplicate tramite {@link #managerRichieste}.
+     * @param DataIniziale data di riferimento per l'inizio della finestra, formato {@code yyyy-MM-dd}
+     * @param Address indirizzo di contratto del token
+     * @param Rete identificativo della blockchain/rete
+     * @param Simbolo simbolo della moneta (usato solo per i messaggi di log)
+     * @return {@code "ok"} se il recupero è andato a buon fine, altrimenti {@code null}
+     */
     public static String RecuperaTassidiCambiodaAddress_DefiLlama(String DataIniziale, String Address, String Rete, String Simbolo) {
         long SinceVerifica = FunzioniDate.ConvertiDatainLong(DataIniziale) - 3600000;
         long UntilVerifica = FunzioniDate.ConvertiDatainLong(DataIniziale) + 3600000;
@@ -1904,6 +2036,22 @@ public class Prezzi {
 
 
 
+    /**
+     * Come {@link #DammiPrezzoTransazione}, ma in aggiunta salva l'{@link InfoPrezzo} calcolato nella mappa
+     * fornita (associandolo all'oggetto {@link Moneta} coinvolto nello scambio), utile per riutilizzare i
+     * dettagli del prezzo senza dover ripetere il calcolo.
+     * @param Moneta1a prima moneta dello scambio (uscita)
+     * @param Moneta2a seconda moneta dello scambio (entrata)
+     * @param Data data/ora della transazione in millisecondi epoch
+     * @param Prezzo valore di fallback da restituire se non è possibile calcolare il prezzo
+     * @param PrezzoZero se {@code true}, in mancanza di prezzo restituisce {@code "0.00"} invece di {@code Prezzo}
+     * @param Decimali numero di decimali del valore restituito
+     * @param Rete identificativo della blockchain/rete
+     * @param fonte fonte prezzo da preferire nella ricerca nel database personale
+     * @param Mappa mappa in cui salvare l'{@link InfoPrezzo} calcolato
+     * @param ChiaveMappa chiave con cui salvare il risultato in {@code Mappa}
+     * @return il valore della transazione come stringa decimale
+     */
     public static String DammiPrezzoTransazioneSalvaInfoPrezzo(Moneta Moneta1a, Moneta Moneta2a, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Rete,String fonte,Map<String,InfoPrezzo> Mappa,String ChiaveMappa) {
 
         InfoPrezzo IP=DammiPrezzoInfoTransazione(Moneta1a, Moneta2a, Data, Rete,fonte);
@@ -1935,6 +2083,19 @@ public class Prezzi {
 
 
 
+    /**
+     * Calcola il valore in EUR di una transazione di scambio tra due monete, delegando la scelta del prezzo
+     * unitario di riferimento a {@link #DammiPrezzoInfoTransazione}.
+     * @param Moneta1a prima moneta dello scambio (uscita)
+     * @param Moneta2a seconda moneta dello scambio (entrata)
+     * @param Data data/ora della transazione in millisecondi epoch
+     * @param Prezzo valore di fallback da restituire se non è possibile calcolare il prezzo
+     * @param PrezzoZero se {@code true}, in mancanza di prezzo restituisce {@code "0.00"} invece di {@code Prezzo}
+     * @param Decimali numero di decimali del valore restituito
+     * @param Rete identificativo della blockchain/rete
+     * @param fonte fonte prezzo da preferire nella ricerca nel database personale
+     * @return il valore assoluto della transazione come stringa decimale
+     */
     public static String DammiPrezzoTransazione(Moneta Moneta1a, Moneta Moneta2a, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Rete,String fonte) {
 
         InfoPrezzo IP=DammiPrezzoInfoTransazione(Moneta1a, Moneta2a, Data, Rete,fonte);
@@ -1950,6 +2111,21 @@ public class Prezzi {
         }
     }
     
+    /**
+     * Determina il prezzo di riferimento (unitario e totale) per uno scambio tra due monete, scegliendo quale
+     * delle due usare come base secondo un ordine di affidabilità: 1) FIAT EUR (prezzo esatto, nessuna ricerca),
+     * 2) USD (tramite {@link #CambioUSDEUR}), 3) monete tra {@link #SimboliPrioritari} (alta capitalizzazione,
+     * meno oscillazioni), 4) la prima delle due monete per cui si riesce a trovare un prezzo tramite
+     * {@link #CambioXXXEUR}. Le monete vengono clonate prima dell'elaborazione per non alterare gli oggetti
+     * originali, e normalizzate secondo {@link Principale#Mappa_AddressRete_Nome} quando l'indirizzo corrisponde
+     * a un token noto su una rete specifica.
+     * @param Moneta1a prima moneta dello scambio (uscita)
+     * @param Moneta2a seconda moneta dello scambio (entrata)
+     * @param Data data/ora della transazione in millisecondi epoch
+     * @param Rete identificativo della blockchain/rete
+     * @param fonte fonte prezzo da preferire nella ricerca nel database personale
+     * @return l'{@link InfoPrezzo} scelto, oppure {@code null} se non è stato possibile determinare un prezzo per nessuna delle due monete
+     */
     public static InfoPrezzo DammiPrezzoInfoTransazione(Moneta Moneta1a, Moneta Moneta2a, long Data, String Rete,String fonte) {
 
         InfoPrezzo IP;
@@ -2094,7 +2270,12 @@ public class Prezzi {
     }
 
     
-    //Recupero le coppie con il dollaro gestite da coinbase
+    /**
+     * Scarica da Coinbase l'elenco dei simboli con coppia in USD e li salva tramite {@link DatabaseH2#GestitiCoinbase_ScriviNuovaTabella}.
+     * Il download viene ripetuto solo se sono trascorse almeno 24 ore dall'ultimo aggiornamento registrato
+     * nell'opzione {@code Data_Lista_Coinbase}, altrimenti resta valida la lista già presente nel database.
+     * @return {@code "ok"} se il recupero (o il riutilizzo della lista già presente) è andato a buon fine, altrimenti {@code null}
+     */
     public static String RecuperaCoppieCoinbase() {
         String ok = "ok";
         //come prima cosa recupero l'ora atuale
@@ -2159,7 +2340,14 @@ public class Prezzi {
     
     
     
-    //questa funzione la chiamo sempre una sola volta per verificare quali sono le coppie di trading di cui binance mi fornisce i dati    
+    /**
+     * Aggiorna, se necessario, i tassi di cambio EUR/USD in {@link #MappaConversioneUSDEUR}: se la mappa è
+     * vuota la ricarica da file tramite {@link #GeneraMappaCambioUSDEUR()}, poi, se sono trascorse almeno
+     * 24 ore dall'ultimo aggiornamento (opzione {@code Data_TassiCambio_USDEUR}), richiede a Banca d'Italia
+     * i tassi mancanti dall'ultima data disponibile (o dal 2015-01-02 se la mappa parte da una data successiva)
+     * fino ad oggi tramite {@link #RecuperaTassidiCambio}.
+     * @return {@code "ok"} se l'aggiornamento (o il riutilizzo dei dati già presenti) è andato a buon fine, altrimenti {@code null}
+     */
     public static String RecuperaTassiCambioEURUSD() {
         if (MappaConversioneUSDEUR.isEmpty())
             {
@@ -2197,6 +2385,12 @@ public class Prezzi {
         
 
      
+        /**
+         * Scarica da coingecko l'elenco completo dei token gestiti (con relativi indirizzi di contratto per rete)
+         * e li salva tramite {@link DatabaseH2#GestitiCoingecko_ScriviNuovaTabella}. Il download viene ripetuto
+         * solo se sono trascorse almeno 24 ore dall'ultimo aggiornamento registrato nell'opzione {@code Data_Lista_Coingecko}.
+         * @return {@code "ok"} se il recupero (o il riutilizzo della lista già presente) è andato a buon fine, altrimenti {@code null}
+         */
         public static String RecuperaCoinsCoingecko() {
         String ok = "ok";
         //come prima cosa recupero l'ora atuale
@@ -2553,6 +2747,13 @@ public static boolean PrezzoIrrecuperabileDaDB_Leggi(
         }
 }
 
+/**
+ * Elimina dalla tabella {@code PrezziKO} (prezzi noti come irrecuperabili) tutti i record il cui timestamp
+ * ricade nell'intervallo indicato, così da forzare un nuovo tentativo di recupero prezzo per quel periodo.
+ * @param timestampIniziale inizio dell'intervallo (incluso), millisecondi epoch
+ * @param timestampFinale fine dell'intervallo (escluso), millisecondi epoch
+ * @return il numero di righe eliminate, oppure 0 in caso di errore SQL
+ */
 public static int PrezziKO_CancellaPeriodo(long timestampIniziale, long timestampFinale) {
     String sql = "DELETE FROM PrezziKO WHERE timestamp >= ? AND timestamp < ?";
     try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(sql)) {
@@ -2807,10 +3008,23 @@ public static List<InfoPrezzo> DammiListaPrezziDaDatabase(
 }
 
  
+/**
+ * Apre in un thread separato la finestra {@link GUI_ModificaPrezzo} per modificare il prezzo di una moneta,
+ * mostrando nel frattempo una finestra di attesa mentre viene ricalcolato il prezzo originale tramite
+ * {@link #DammiPrezzoInfoTransazione}. Se il prezzo ricalcolato non coincide con quello mostrato a video
+ * (dati incompleti passati alla funzione, es. senza address/rete) mostra solo i dati essenziali basati su
+ * {@code VecchioPrezzo}.
+ * @param M moneta di cui modificare il prezzo
+ * @param Ritorno array di output in cui la finestra scrive l'eventuale nuovo prezzo
+ * @param c componente rispetto a cui centrare le finestre
+ * @param dataL data/ora della transazione in millisecondi epoch
+ * @param VecchioPrezzo prezzo attualmente mostrato/salvato, come stringa decimale
+ * @return il timestamp del prezzo originale del token, utile per cancellare un eventuale prezzo personalizzato; 0 se non disponibile
+ */
 public static long GUI_ModificaPrezzoConAttesa(Moneta M,String[] Ritorno,Component c,long dataL,String VecchioPrezzo){
                 //In ritorno a questa funzione ricevo il timestamp del prezzo originale del token
                 //Questo mi servirà per cancellare l'eventuale prezzo personalizzato.
-    
+
                 long timestampDaCancellare[]=new long[1];
                 timestampDaCancellare[0]=0;
                 Download progress = new Download();
@@ -2819,6 +3033,7 @@ public static long GUI_ModificaPrezzoConAttesa(Moneta M,String[] Ritorno,Compone
                 //Prezzi.InfoPrezzo IPt=IPr;//creo una nuova variabile da passare al thread perchè questa deve essere final
                 Thread thread;
                 thread = new Thread() {
+                    /** Ricalcola il prezzo e apre {@link GUI_ModificaPrezzo} in background. */
                     public void run() {
                         Prezzi.InfoPrezzo IPr;
                 IPr=Prezzi.DammiPrezzoInfoTransazione(M, null, dataL,M.Rete,"" );
@@ -2854,10 +3069,21 @@ public static long GUI_ModificaPrezzoConAttesa(Moneta M,String[] Ritorno,Compone
                 return timestampDaCancellare[0];
 }
 
+/**
+ * Variante "test" di {@link #GUI_ModificaPrezzoConAttesa}: apre direttamente {@link GUI_ModificaPrezzo} in un
+ * thread separato usando {@code VecchioPrezzo} come prezzo, senza ricalcolarlo tramite le API prezzi e senza
+ * mostrare la finestra di attesa.
+ * @param M moneta di cui modificare il prezzo
+ * @param Ritorno array di output in cui la finestra scrive l'eventuale nuovo prezzo
+ * @param c componente rispetto a cui centrare le finestre
+ * @param dataL data/ora della transazione in millisecondi epoch
+ * @param VecchioPrezzo prezzo da mostrare, come stringa decimale
+ * @return sempre 0
+ */
 public static long GUI_ModificaPrezzoConAttesaTest(Moneta M,String[] Ritorno,Component c,long dataL,String VecchioPrezzo){
                 //In ritorno a questa funzione ricevo il timestamp del prezzo originale del token
                 //Questo mi servirà per cancellare l'eventuale prezzo personalizzato.
-    
+
                 Prezzi.InfoPrezzo IPr;
                 IPr = new Prezzi.InfoPrezzo(null, "", 0, new BigDecimal(VecchioPrezzo), null, M.Moneta);
                 Download progress = new Download();
@@ -2866,6 +3092,7 @@ public static long GUI_ModificaPrezzoConAttesaTest(Moneta M,String[] Ritorno,Com
                 Prezzi.InfoPrezzo IPt=IPr;//creo una nuova variabile da passare al thread perchè questa deve essere final
                 Thread thread;
                 thread = new Thread() {
+                    /** Apre {@link GUI_ModificaPrezzo} in background con il prezzo già determinato. */
                     public void run() {
                         GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(M, null,IPt,dataL,M.Rete,Ritorno,progress);                   
                         t.setLocationRelativeTo(c);
@@ -2879,6 +3106,16 @@ public static long GUI_ModificaPrezzoConAttesaTest(Moneta M,String[] Ritorno,Com
 }
 
 
+/**
+ * Lancia lo script Node {@code Binance_SaldiGiornalieri.js} (tramite CCXT, installato/verificato tramite
+ * {@link CcxtInterop}) per recuperare le giacenze giornaliere di un account exchange, passando le credenziali
+ * API come argomenti a riga di comando. Ne legge l'output JSON su stdout e ne verifica la validità come array;
+ * si limita a loggare errori a video se node, lo script o l'esecuzione stessa falliscono.
+ * @param Exchange nome dell'exchange (es. {@code "binance"})
+ * @param APIKey API key dell'account
+ * @param APISecret API secret dell'account
+ * @param Giorno giorno di riferimento, formato {@code yyyy-MM-dd}
+ */
 public static void RecuperaGiacenzeDaCCXT(String Exchange,String APIKey,String APISecret,String Giorno) {
 
     
@@ -3047,6 +3284,15 @@ public static void RecuperaGiacenzeDaCCXT(String Exchange,String APIKey,String A
 }
 
 
+/**
+ * Lancia lo script Node {@code Historical_Multi_Eur.js} (tramite CCXT, installato/verificato tramite
+ * {@link CcxtInterop}) per recuperare quotazioni minuto-per-minuto di un simbolo da più exchange
+ * (binance, cryptocom, bybit, okx, coinbase, bitstamp, kucoin) in una finestra di 2h prima/6h dopo il
+ * timestamp richiesto, e ne salva i risultati nella tabella {@code PrezziNew}. Evita richieste duplicate
+ * nella stessa sessione tramite {@link #managerRichieste}; non fa nulla se il timestamp è nel futuro.
+ * @param Symbol simbolo della crypto da quotare
+ * @param timestamp data/ora di riferimento in millisecondi epoch
+ */
 public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
 
         
@@ -3255,6 +3501,7 @@ public static class InfoPrezzo {
         }
         
     }*/
+    /** Marca la fonte di questo prezzo come {@code "Personalizzato"} (prezzo inserito manualmente dall'utente). */
     public void SetFontePersonalizzata(){
         Fonte="Personalizzato";
     }
@@ -3302,6 +3549,13 @@ public static class InfoPrezzo {
 
     }
     
+    /**
+     * Restituisce una rappresentazione testuale del timestamp di questo prezzo, adatta alla visualizzazione
+     * in GUI. Se il prezzo proviene dal vecchio database interno (precisione oraria) mostra solo l'ora
+     * seguita da {@code :XX:XX} per indicare che minuti/secondi non sono noti; altrimenti mostra data e ora
+     * complete al secondo.
+     * @return la data/ora formattata come stringa
+     */
     public String RitornaStringData(){
         if (this.Fonte.toLowerCase().contains("db interno"))
                     {
@@ -3310,6 +3564,13 @@ public static class InfoPrezzo {
         else return FunzioniDate.ConvertiDatadaLongAlSecondo(this.timestamp);
     }
     
+    /**
+     * Restituisce, come stringa leggibile, la differenza tra il timestamp di questo prezzo e la data indicata,
+     * espressa in secondi se inferiore al minuto, altrimenti in minuti. Se il prezzo proviene dal vecchio
+     * database interno (precisione oraria) restituisce sempre {@code "1 ora"}, essendo quella la precisione massima nota.
+     * @param datalong data/ora di confronto in millisecondi epoch
+     * @return la differenza temporale formattata come stringa (es. {@code "5 min"}, {@code "30 sec"}, {@code "1 ora"})
+     */
     public String RitornaStringDiffData(long datalong) {
 
         if (this.Fonte.toLowerCase().contains("db interno")) {
@@ -3327,6 +3588,11 @@ public static class InfoPrezzo {
         }
     }
     
+    /**
+     * Serializza i dati principali di questo prezzo (moneta, timestamp, prezzo unitario, fonte) in un'unica
+     * stringa con separatore {@code |}, nel formato consumato dal costruttore {@link #InfoPrezzo(String)}.
+     * @return la rappresentazione compatta di questo {@link InfoPrezzo}
+     */
     public String Ritorna40(){
         return this.Moneta+"|"+this.timestamp+"|"+this.prezzoUnitario+"|"+this.Fonte;
     }
@@ -3361,6 +3627,7 @@ public static class RangeRequestManager {
             this.end = Math.max(this.end, other.end);
         }
 
+        /** @return la rappresentazione testuale del range nel formato {@code [start,end]} */
         @Override
         public String toString() {
             return "[" + start + "," + end + "]";

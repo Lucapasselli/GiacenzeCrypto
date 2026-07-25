@@ -1222,6 +1222,12 @@ private LocalDateTime parseDataRaw(String dataCSV) {
     }
 }
 
+/**
+ * Converte una data grezza letta dal CSV (formato configurabile via {@code risolviFuso()}/{@code parseDataRaw})
+ * in millisecondi epoch, applicando il fuso orario di origine configurato per questo import.
+ * @param dataCSV data grezza da convertire, così come letta dal CSV
+ * @return i millisecondi epoch corrispondenti, oppure {@code 0L} se la data non è parsabile
+ */
 public long convertiDataInMillis(String dataCSV) {
     try {
         LocalDateTime ldt = parseDataRaw(dataCSV);
@@ -1236,6 +1242,12 @@ public long convertiDataInMillis(String dataCSV) {
     }
 }
 
+/**
+ * Converte una data grezza letta dal CSV dal fuso orario di origine configurato per questo import al fuso
+ * orario di sistema, restituendola nel formato standard interno {@code yyyy-MM-dd HH:mm:ss}.
+ * @param dataCSV data grezza da normalizzare, così come letta dal CSV
+ * @return la data normalizzata, oppure {@code null} se non è parsabile
+ */
 public String normalizzaData(String dataCSV) {
     try {
         LocalDateTime ldt = parseDataRaw(dataCSV);

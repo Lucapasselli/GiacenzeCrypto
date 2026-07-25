@@ -18,6 +18,11 @@ public class TextPaneOutputStream extends OutputStream {
         new Timer(100, e -> flushBufferToTextPane()).start();
     }
 
+    /**
+     * Accoda un byte al buffer interno, effettuando il flush verso il {@link JTextPane} quando il buffer
+     * raggiunge {@code maxBufferSize}.
+     * @param b il byte da scrivere (interpretato come carattere)
+     */
     @Override
     public synchronized void write(int b) throws IOException {
         buffer.append((char) b);
@@ -26,6 +31,13 @@ public class TextPaneOutputStream extends OutputStream {
         }
     }
 
+    /**
+     * Accoda una porzione di array di byte al buffer interno, effettuando il flush verso il {@link JTextPane}
+     * quando il buffer raggiunge {@code maxBufferSize}.
+     * @param b array sorgente
+     * @param off offset di partenza in {@code b}
+     * @param len numero di byte da scrivere
+     */
     @Override
     public synchronized void write(byte[] b, int off, int len) throws IOException {
         buffer.append(new String(b, off, len));

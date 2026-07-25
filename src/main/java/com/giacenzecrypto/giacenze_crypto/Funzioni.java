@@ -86,6 +86,14 @@ public class Funzioni {
 );
 
     
+        /**
+         * Rimuove da {@link Principale#MappaCryptoWallet} tutti i movimenti di un wallet compresi in un
+         * intervallo di date, sistemando anche i movimenti correlati tramite {@link #RimuoviMovimentazioneXID}.
+         * @param Wallet nome del wallet su cui operare, oppure {@code null} per operare su tutti i wallet
+         * @param DataIniziale inizio dell'intervallo (incluso), millisecondi epoch; ignorato insieme a {@code DataFinale} se entrambi sono 0
+         * @param DataFinale fine dell'intervallo (escluso), millisecondi epoch; ignorato insieme a {@code DataIniziale} se entrambi sono 0
+         * @return il numero di movimenti cancellati
+         */
         public static int CancellaMovimentazioniXWallet(String Wallet,long DataIniziale,long DataFinale){
         
         //Se Wallet=null  allora la pulizia la faccio su tutti i wallet
@@ -121,10 +129,12 @@ public class Funzioni {
         return movimentiCancellati;
     }
         
-        //Funzione che si occupa di rimuovere una movimentazione
-        //eliminando o sistemando anche tutti i movimenti correlati.
-        //ad esempio se devo rimuovere un movimento di prelievo che è associato ad un altro movimento di dieposito
-        //prima di rimuovere il prelievo vado a torgliere dal deposito i riferimenti al prelievo che devo eliminare
+         /**
+          * Rimuove da {@link Principale#MappaCryptoWallet} il movimento indicato, sistemando prima gli eventuali
+          * movimenti correlati (es. se si rimuove un prelievo associato a un deposito, i riferimenti al prelievo
+          * vengono tolti dal deposito) tramite {@link GUI_ClassificazioneMovimento#RiportaTransazioniASituazioneIniziale}.
+          * @param ID identificativo del movimento da rimuovere
+          */
          public static void RimuoviMovimentazioneXID(String ID){
              
             String Annessi[]=Principale.MappaCryptoWallet.get(ID);
@@ -140,6 +150,10 @@ public class Funzioni {
         
         
          
+        /**
+         * @return la directory che contiene il JAR (o la classe, se eseguita non impacchettata) di questa applicazione
+         * @throws RuntimeException se l'URI della sorgente del codice non è valido
+         */
         public static Path getJarPath() {
         try {
             return new File(
@@ -201,6 +215,13 @@ public class Funzioni {
         
         
         
+    /**
+     * Restituisce il gruppo di prezzi personalizzati a cui appartiene un wallet. Attualmente ritorna sempre
+     * {@code "TUTTI"} (i prezzi personalizzati non sono differenziati per wallet, per evitare confusione),
+     * ma il parametro {@code Wallet} è mantenuto per un'eventuale differenziazione futura.
+     * @param Wallet nome del wallet (attualmente non utilizzato)
+     * @return sempre {@code "TUTTI"}
+     */
     public static String getGruppoWalletXPrezzi(String Wallet){
         return "TUTTI";
         //Questa funzione servirà in futuro se vorro differenziare i prezi personalizzati per Wallet
@@ -228,6 +249,13 @@ public class Funzioni {
     }    
         
         
+    /**
+     * Estrae data e ora dal prefisso timestamp di un ID movimento (formato {@code yyyyMMddHHmmss_...}).
+     * Se il prefisso non è nel formato atteso, ripiega sulla data/ora già salvata nel movimento corrispondente
+     * in {@link Principale#MappaCryptoWallet}, con secondi impostati a {@code :00}.
+     * @param ID identificativo del movimento
+     * @return la data/ora formattata come {@code yyyy-MM-dd HH:mm:ss}
+     */
     public static String getOradaID(String ID) {
         String input = ID.split("_")[0];
         DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
@@ -241,6 +269,11 @@ public class Funzioni {
         }
     }
     
+        /**
+         * Incrementa di 1 secondo un timestamp nel formato {@code yyyyMMddHHmmss} (usato come prefisso degli ID movimento).
+         * @param input timestamp da incrementare, formato {@code yyyyMMddHHmmss}
+         * @return il timestamp incrementato nello stesso formato, oppure {@code "nonOK"} se {@code input} non è parsabile
+         */
         public static String DataIDaggiungiUnSecondo(String input) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
@@ -253,6 +286,11 @@ public class Funzioni {
         }
     }
         
+        /**
+         * Decrementa di 1 secondo un timestamp nel formato {@code yyyyMMddHHmmss} (usato come prefisso degli ID movimento).
+         * @param input timestamp da decrementare, formato {@code yyyyMMddHHmmss}
+         * @return il timestamp decrementato nello stesso formato, oppure {@code "nonOK"} se {@code input} non è parsabile
+         */
         public static String DataIDtogliUnSecondo(String input) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
@@ -265,6 +303,13 @@ public class Funzioni {
         }
     }
     
+        /**
+         * Formatta un {@link BigDecimal} secondo le convenzioni italiane (punto come separatore delle migliaia,
+         * virgola come separatore decimale).
+         * @param numero valore da formattare
+         * @param decimali se {@code true} mostra sempre 2 decimali (pattern {@code #,##0.00}), altrimenti nessun decimale (pattern {@code #,##0})
+         * @return la stringa formattata
+         */
         public static String formattaBigDecimal(BigDecimal numero,boolean decimali) {
         // Crea un'istanza di DecimalFormatSymbols per il locale italiano
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ITALY);
@@ -278,6 +323,7 @@ public class Funzioni {
         return formatter.format(numero);
     }
          
+       /** Simula la pressione della combinazione di tasti Ctrl+C tramite {@link Robot} (copia negli appunti). */
        public static void simulaCtrlC() {
         try {
             Robot robot = new Robot();
@@ -299,6 +345,7 @@ public class Funzioni {
         }
     }  
         
+              /** Simula la pressione della combinazione di tasti Ctrl+V tramite {@link Robot} (incolla dagli appunti). */
               public static void simulaCtrlV() {
         try {
             Robot robot = new Robot();
@@ -312,6 +359,16 @@ public class Funzioni {
         }
     }  
     
+    /**
+     * Verifica se un movimento di deposito/prelievo può essere classificato manualmente dall'utente: deve
+     * essere di tipo {@code DC}/{@code PC} (crypto, con la relativa moneta non scam) oppure, se richiesto
+     * tramite {@code VediFIAT}, di tipo {@code DF}/{@code PF} (fiat); in ogni caso non deve essere un
+     * movimento generato automaticamente (campo 22 diverso da {@code "AU"}).
+     * @param ID identificativo del movimento (se {@code null}, viene ricavato da {@code v[0]})
+     * @param v riga di movimento grezza (se {@code null}, viene recuperata da {@link Principale#MappaCryptoWallet} tramite {@code ID})
+     * @param VediFIAT se {@code true}, considera classificabili anche i movimenti fiat
+     * @return {@code true} se il movimento è classificabile
+     */
     public static boolean isDepositoPrelievoClassificabile(String ID,String v[],boolean VediFIAT){
         //posso passare alla funzione sia l'ID della transazione sia la transazione per intero o entrambe
         //I depositi classificabili sono quelli di tipo DC e PC che non sono movimenti artificiali
@@ -339,6 +396,17 @@ public class Funzioni {
     }         
               
               
+    /**
+     * Gestisce l'apertura del menu contestuale (tasto destro) su una tabella o campo di testo, abilitando o
+     * disabilitando le singole voci in base al contesto: se non è passato un ID movimento disabilita tutte le
+     * voci relative al movimento; altrimenti le abilita e regola "Classifica Movimento" in base a
+     * {@link #isDepositoPrelievoClassificabile} e "Cambia Tipologia Reward" in base al tipo di movimento.
+     * Distingue inoltre tra origine tabella (abilita "Esporta Tabella in Excel") e campo di testo (abilita "Incolla").
+     * @param c componente rispetto a cui posizionare il menu
+     * @param e evento del mouse che ha aperto il menu
+     * @param pop il menu contestuale da configurare e mostrare
+     * @param ID identificativo del movimento selezionato, oppure {@code null} se nessuno
+     */
     public static void PopUpMenu(Component c, java.awt.event.MouseEvent e, JPopupMenu pop,String ID) {
         //if (e.isPopupTrigger()) {
             if (e.getButton() == MouseEvent.BUTTON3) {
@@ -407,6 +475,11 @@ public class Funzioni {
     }
     
     
+    /**
+     * Verifica se una stringa rappresenta un valore decimale diverso da zero.
+     * @param valore stringa da valutare
+     * @return {@code true} se {@code valore} è un {@link BigDecimal} valido e diverso da zero, {@code false} altrimenti (incluso il caso di stringa non numerica)
+     */
     public static boolean isBigDecimalNonZero(String valore) {
     try {
         return new BigDecimal(valore).compareTo(BigDecimal.ZERO) != 0;
@@ -415,6 +488,13 @@ public class Funzioni {
     }
 }
     
+    /**
+     * Verifica se un clic del mouse su una tabella è avvenuto su una riga già presente nella selezione corrente
+     * (utile per decidere se un click destro deve preservare una selezione multipla esistente).
+     * @param table tabella su cui è avvenuto il clic
+     * @param e evento del mouse
+     * @return {@code true} se la riga cliccata è tra quelle selezionate, {@code false} se il clic è fuori da ogni riga o su una riga non selezionata
+     */
     public static boolean PopUp_ClickInternoASelezione(JTable table,java.awt.event.MouseEvent e){
         int clickedRow = table.rowAtPoint(e.getPoint());
         if (clickedRow == -1) return false; // clic fuori da qualsiasi riga
@@ -433,6 +513,10 @@ public class Funzioni {
     }
     
     
+        /**
+         * @param popupMenu il menu contestuale da esaminare
+         * @return la lista di tutti i {@link JMenuItem} diretti contenuti in {@code popupMenu}
+         */
         public static List<JMenuItem> PopUp_getAllMenuItems(JPopupMenu popupMenu) {
         List<JMenuItem> items = new ArrayList<>();
         for (Component comp : popupMenu.getComponents()) {
@@ -444,6 +528,11 @@ public class Funzioni {
     }
     
     
+    /**
+     * Disabilita, all'interno di un menu contestuale, la voce il cui testo corrisponde (case-insensitive) a quello indicato.
+     * @param popupMenu il menu contestuale da modificare
+     * @param textToDisable testo della voce da disabilitare
+     */
     public static void PopUp_disabilitaMenuDatesto(JPopupMenu popupMenu, String textToDisable) {
         for (JMenuItem item : PopUp_getAllMenuItems(popupMenu)) {
             if (item.getText() != null && item.getText().equalsIgnoreCase(textToDisable)) {
@@ -451,6 +540,11 @@ public class Funzioni {
             }
         }
     }
+        /**
+         * Abilita, all'interno di un menu contestuale, la voce il cui testo corrisponde (case-insensitive) a quello indicato.
+         * @param popupMenu il menu contestuale da modificare
+         * @param textToDisable testo della voce da abilitare
+         */
         public static void PopUp_abilitaMenuDaTesto(JPopupMenu popupMenu, String textToDisable) {
         for (JMenuItem item : PopUp_getAllMenuItems(popupMenu)) {
             if (item.getText() != null && item.getText().equalsIgnoreCase(textToDisable)) {
@@ -467,6 +561,14 @@ public class Funzioni {
 
         
         
+/**
+ * Estrae la sottostringa compresa tra la prima occorrenza di {@code simboloIniziale} e la successiva
+ * occorrenza di {@code simboloFinale}.
+ * @param parola stringa da cui estrarre
+ * @param simboloIniziale simbolo/sottostringa di apertura
+ * @param simboloFinale simbolo/sottostringa di chiusura
+ * @return la sottostringa (trimmata) tra i due simboli, oppure {@code ""} se uno dei due non è presente o sono in ordine invertito
+ */
 public static String getParolaTra2Simboli(String parola, String simboloIniziale, String simboloFinale) {
 
     int posIni = parola.indexOf(simboloIniziale);
@@ -704,6 +806,14 @@ public static boolean GUIModificaPrezzo(Component c, String ID) {
     }
 }
 
+        /**
+         * Versione legacy di {@link #GUIModificaPrezzo}, basata su {@link JOptionPane} invece che su {@code AppDialog}.
+         * Segue lo stesso flusso: scelta valuta (EURO/DOLLARI), presentazione del prezzo automatico suggerito,
+         * inserimento e validazione del nuovo prezzo, conferma esplicita se il valore finale è {@code "0.00"}.
+         * @param c componente parent dei dialog
+         * @param ID identificativo del movimento da modificare
+         * @return {@code true} se il prezzo viene modificato, {@code false} se l'operazione viene annullata o il valore inserito non è valido
+         */
         public static boolean ZZZ_GUIModificaPrezzo (Component c,String ID){
             
             //PARTE 1 -> Se conosco la data del movimento chiedo se voglio inserire il prezzo in dollari o in Euro
@@ -1011,6 +1121,19 @@ public static String GUIModificaPrezzo(Component c, Moneta MU, Moneta ME, String
     }
 }
         
+                /**
+                 * Versione legacy di {@link #GUIModificaPrezzo(Component, Moneta, Moneta, String, long, String)},
+                 * basata su {@link JOptionPane} invece che su {@code AppDialog}, per lo scambio tra due monete
+                 * (usata ad esempio dal quadro RW). Stesso flusso: scelta valuta, prezzo automatico calcolato da
+                 * {@link Prezzi#DammiPrezzoInfoTransazione}, inserimento e validazione del nuovo prezzo.
+                 * @param c componente parent dei dialog
+                 * @param MU moneta in uscita dello scambio
+                 * @param ME moneta in entrata dello scambio
+                 * @param Prezzo prezzo attuale mostrato come default nel campo di input
+                 * @param DataPrezzo data/ora della transazione in millisecondi epoch
+                 * @param Rete identificativo della blockchain/rete
+                 * @return il nuovo prezzo in euro come stringa, oppure {@code null} se l'operazione viene annullata o il valore inserito non è valido
+                 */
                 public static String ZZZ_GUIModificaPrezzo (Component c,Moneta MU,Moneta ME,String Prezzo,long DataPrezzo,String Rete){
             
             //PARTE 1 -> Se conosco la data del movimento chiedo se voglio inserire il prezzo in dollari o in Euro
@@ -1120,6 +1243,14 @@ public static String GUIModificaPrezzo(Component c, Moneta MU, Moneta ME, String
         
         
         
+       /**
+        * Mostra un dialog con una {@link JTextArea} per modificare le note testuali di un movimento (campo 21).
+        * I ritorni a capo inseriti vengono convertiti in {@code <br>} e i punto e virgola sostituiti con spazi
+        * prima del salvataggio, per evitare di corrompere il formato interno del campo.
+        * @param c componente parent del dialog (non utilizzato per il posizionamento, passato {@code null} come owner)
+        * @param ID identificativo del movimento di cui modificare le note
+        * @return {@code true} se le note sono state salvate, {@code false} se l'operazione è stata annullata
+        */
        public static boolean GUIModificaNote(Component c,String ID) {
         // Crea una JTextArea
         String trans[]=Principale.MappaCryptoWallet.get(ID);
@@ -1360,6 +1491,17 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
     }
 }    
         
+        /**
+         * Versione legacy di {@link #GUIDammiPrezzo}, basata su {@link JOptionPane} invece che su {@code AppDialog}.
+         * Stesso flusso: scelta valuta (se {@code DataPrezzo != 0}), scelta prezzo unitario/totale (se moneta e
+         * quantità sono note e diverse da 1), inserimento e validazione dell'importo, con restituzione sempre in euro.
+         * @param c componente parent dei dialog
+         * @param NomeMon nome della moneta/token, può essere {@code null}
+         * @param DataPrezzo data del prezzo in millisecondi epoch; se 0 non viene chiesta la valuta di riferimento
+         * @param Qta quantità del token, può essere {@code null}
+         * @param Prezzo prezzo iniziale da proporre nel campo input; se {@code null} viene usato {@code "0"}
+         * @return il prezzo finale in euro come stringa, oppure {@code null} se l'operazione viene annullata
+         */
         public static String ZZZGUIDammiPrezzo (Component c,String NomeMon,long DataPrezzo,String Qta,String Prezzo){
             
             //PARTE 1 -> Se conosco la data del movimento chiedo se voglio inserire il prezzo in dollari o in Euro
@@ -1492,6 +1634,12 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
         }
          
         
+        /**
+         * Verifica se la versione dell'applicazione salvata nell'opzione {@code Versione} è diversa da quella
+         * indicata (o assente), e aggiorna comunque l'opzione con la versione corrente passata.
+         * @param Versione versione corrente dell'applicazione
+         * @return {@code true} se la versione salvata era assente o diversa da {@code Versione}
+         */
         public static boolean CambiataVersione(String Versione){
             boolean VersioneCambiata=false;
             String Ver=DatabaseH2.Opzioni_Leggi("Versione");
@@ -1509,11 +1657,21 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
         
          
         
+        /**
+         * @param stringa stringa da normalizzare
+         * @return {@code ""} se {@code stringa} è {@code null}, altrimenti {@code stringa} invariata
+         */
         public static String TrasformaNullinBlanc(String stringa){
             if (stringa==null)return "";
             else return stringa;
         }
          
+        /**
+         * Rimuove da un nome i caratteri {@code ;} e {@code ,} che potrebbero interferire con la separazione
+         * dei campi nei file CSV/interni.
+         * @param Nome nome da normalizzare
+         * @return il nome ripulito
+         */
         public static String NormalizzaNome(String Nome){
             String NuovoNome=Nome.replace(";", "")
                    // .replace(" ", "")
@@ -1526,6 +1684,13 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
             return NuovoNome;
          }
         
+         /**
+          * Come {@link #NormalizzaNome}, ma più aggressiva: rimuove anche {@code _} e le sequenze letterali
+          * {@code \(} e {@code \)} (nota: essendo {@link String#replace(CharSequence, CharSequence)} non un
+          * regex, le semplici parentesi {@code (}/{@code )} senza backslash non vengono rimosse).
+          * @param Nome nome da normalizzare
+          * @return il nome ripulito
+          */
          public static String NormalizzaNomeStringente(String Nome){
             String NuovoNome=Nome.replace(";", "")
                    // .replace(" ", "")
@@ -1538,6 +1703,13 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
             return NuovoNome;
          }
         
+    /**
+     * Duplica un movimento esistente in {@link Principale#MappaCryptoWallet}, assegnandogli un nuovo ID
+     * ottenuto incrementando progressivamente il 4° segmento dell'ID originale (fino a 9 tentativi) finché
+     * non se ne trova uno libero. Il duplicato viene marcato come aggiunto manualmente (campo 22 = {@code "M"}).
+     * @param ID identificativo del movimento da duplicare
+     * @return {@code true} se il duplicato è stato creato, {@code false} se l'ID non ha il formato atteso o non si trova un ID libero entro i tentativi previsti
+     */
     public static boolean DuplicaMovimento(String ID){
         String riga[]=Principale.MappaCryptoWallet.get(ID);
         String nuovariga[]=riga.clone();
@@ -1564,6 +1736,13 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
         return false;
     }   
         
+    /**
+     * Converte una stringa esadecimale (con o senza prefisso {@code 0x}) nel corrispondente {@link BigInteger}.
+     * @param hexNumber stringa esadecimale da convertire
+     * @return il valore decimale corrispondente
+     * @throws IllegalArgumentException se {@code hexNumber} è {@code null} o vuota
+     * @throws NumberFormatException se {@code hexNumber} non è una stringa esadecimale valida
+     */
     public static BigInteger hexToDecimal(String hexNumber) {
         // Verifica se la stringa fornita è vuota o nulla
         if (hexNumber == null || hexNumber.isEmpty()) {
@@ -1581,7 +1760,12 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
     }
         
     
-        public static boolean isValidJSONArray(String jsonString) {
+        /**
+     * Verifica se una stringa è un array JSON sintatticamente valido.
+     * @param jsonString stringa da validare
+     * @return {@code true} se {@code jsonString} è un {@link JSONArray} valido, {@code false} altrimenti
+     */
+    public static boolean isValidJSONArray(String jsonString) {
         try {
             new JSONArray(jsonString); // Prova a creare un JSONArray
             return true;
@@ -1592,6 +1776,15 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
     }
  
         
+    /**
+     * Esporta il contenuto di una {@link JTable} in un file Excel (.xlsx) nella cartella temporanei
+     * ({@link VarStatiche#getCartella_Temporanei()}), nominato {@code Tabella_<timestamp>.xlsx}. Applica un
+     * layout di colonne dedicato per {@code TabellaMovimentiCrypto} (35 colonne fisse, con la colonna 1
+     * sostituita dalla data leggibile calcolata da {@link #getOradaID}) e per {@code RW_Tabella} (esclude la
+     * colonna 6); per ogni altra tabella esporta tutte le colonne del model così come sono. L'HTML
+     * eventualmente presente nelle celle/intestazioni viene ripulito tramite Jsoup prima della scrittura.
+     * @param tabella la tabella da esportare
+     */
     public static void Export_CreaExcelDaTabella(JTable tabella) {
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
@@ -1702,6 +1895,12 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
     }
         
     
+        /**
+         * Verifica su SourceForge se esiste una release successiva alla versione indicata, incrementando di 1
+         * il numero di patch (terzo segmento {@code X.Y.Z}) e controllando se la relativa pagina risponde 200 OK.
+         * @param versione versione corrente, formato {@code X.Y.Z}
+         * @return {@code true} se la pagina della versione successiva esiste, {@code false} altrimenti (inclusi gli errori di rete)
+         */
         public static boolean isAggiornamentoDisponibile(String versione) {
         try {
             String split[]=versione.split("\\.");
@@ -1726,6 +1925,12 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
     }    
         
         
+    /**
+     * Cancella tutti i file regolari in una directory la cui data di creazione risale a più di {@code Ore} ore fa.
+     * Gli errori di accesso a singoli file o alla directory vengono loggati su console e non interrompono la scansione.
+     * @param directory percorso della directory da ripulire
+     * @param Ore soglia di età in ore oltre la quale un file viene cancellato
+     */
     public static void Files_CancellaOltreTOTh(String directory, int Ore) {
         Path dir = Paths.get(directory);
         Instant now = Instant.now();
@@ -1755,6 +1960,16 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
         
         
         
+    /**
+     * Esporta in un file Excel (.xlsx, nella cartella temporanei) il dettaglio completo del quadro RW per un
+     * anno: un foglio di riepilogo per gruppo wallet, e per ciascun gruppo un set di fogli con i calcoli RW
+     * (da {@link Principale#Mappa_RW_ListeXGruppoWallet}), le giacenze di inizio/fine anno (da
+     * {@link #RW_GiacenzeaData}, prezzate tramite {@link Prezzi#DammiPrezzoTransazione}) e l'elenco dei
+     * movimenti dell'anno. I nomi dei gruppi vengono risolti tramite gli alias in
+     * {@link DatabaseH2#Pers_GruppoAlias_LeggiTabella()}. Al termine apre il file con l'applicazione predefinita del sistema.
+     * @param RW_Tabella la tabella RW da cui leggere il riepilogo per gruppo wallet
+     * @param Anno anno di riferimento del quadro RW
+     */
     public static void RW_CreaExcel(JTable RW_Tabella,String Anno){
 
         try {
@@ -1966,6 +2181,11 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
         }
     }
 
+    /**
+     * Costruisce una mappa gruppo wallet → ID del primo movimento incontrato per quel gruppo, scorrendo
+     * {@link Principale#MappaCryptoWallet} nell'ordine di iterazione della mappa.
+     * @return la mappa gruppo wallet → ID del primo movimento associato
+     */
     public static Map<String, String>  MappaPrimoMovimentoXGruppoWallet() {
         Map<String, String> Mappa_Gruppi = new TreeMap<>();//la mappa è così composta, (Gruppo,ID Primo Movimento)
         for (String[] v : MappaCryptoWallet.values()) {
@@ -1976,6 +2196,13 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
     }
     
     
+    /**
+     * Scrive un array di valori come riga di un {@link Worksheet}, convertendo automaticamente in numero
+     * (double) le stringhe che rappresentano valori numerici e lasciando le altre come testo.
+     * @param Valori valori da scrivere, una cella per elemento dell'array
+     * @param ws foglio Excel su cui scrivere
+     * @param riga indice della riga di destinazione (0-based)
+     */
     public static void ScriviRigaExcel(String Valori[], Worksheet ws, int riga) {
         int colonna = 0;
         for (String Valore : Valori) {
@@ -1995,6 +2222,16 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
     
     
     
+        /**
+         * Calcola le giacenze per moneta di un wallet (o gruppo wallet) a una data di riferimento, sommando
+         * tutti i movimenti precedenti a quella data che coinvolgono il wallet/sottowallet indicato (o l'intero
+         * gruppo wallet a cui appartiene, secondo {@link DatabaseH2#Pers_GruppoWallet_Leggi}), e valorizzandole
+         * in euro tramite {@link Prezzi#DammiPrezzoTransazione}. Le giacenze a zero vengono escluse dal risultato.
+         * @param DataRiferimento data di riferimento (esclusiva: solo movimenti strettamente precedenti), millisecondi epoch
+         * @param Wallet nome del wallet o del gruppo wallet, oppure {@code "tutti"} per includere tutti i wallet
+         * @param SottoWallet nome del sottowallet, oppure {@code "tutti"} per includere tutti i sottowallet del wallet indicato
+         * @return la lista delle giacenze, ciascuna come array {@code [moneta, rete, address, tipo, quantità, valore in euro]}
+         */
         public static List<String[]> RW_GiacenzeaData(long DataRiferimento,String Wallet,String SottoWallet){
             //Nel wallet si può mettere il nome del gruppo Wallet
         
@@ -2081,6 +2318,15 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
 return ListaSaldi;
 }
     
+      /**
+       * Calcola, per ciascun gruppo wallet, le giacenze crypto di inizio e fine anno (con relativo prezzo in
+       * euro tramite {@link Prezzi#DammiPrezzoTransazione}), producendo una riga per ogni moneta con
+       * quantità/prezzo iniziali e finali, giorni di detenzione e causale (che distingue tra "Fine Anno" e
+       * "Apertura Wallet/Fine Anno" per la prima moneta ricevuta dal wallet). Se il wallet ha ricevuto il suo
+       * primo movimento durante l'anno stesso, la giacenza iniziale parte da quella data e non dal 1° gennaio.
+       * @param Anno anno di riferimento, formato {@code yyyy}
+       * @return mappa gruppo wallet → lista di righe di dettaglio (una per moneta con giacenza diversa da zero in almeno uno dei due estremi)
+       */
       public static Map<String, List<String[]>> RW_GiacenzeInizioFineAnno(String Anno){
             //Nel wallet si può mettere il nome del gruppo Wallet
             /*
@@ -2265,6 +2511,12 @@ return MappaLista;
     }
     
     
+    /**
+     * Individua le combinazioni exchange/wallet/token per cui il saldo netto delle sole uscite (movimenti in
+     * cui il token compare come token ceduto) risulta negativo in un qualsiasi momento della cronologia,
+     * segnale tipico di un movimento in entrata mancante o mal classificato.
+     * @return la lista ordinata delle chiavi {@code exchange;wallet;token} segnalate come saldo negativo
+     */
     public static List<String> ControllaSaldiNegativi(){
         
          Map<String, BigDecimal> saldi = new HashMap<>();
@@ -2316,6 +2568,14 @@ return MappaLista;
     }
     
     
+    /**
+     * Apre un URL nel browser predefinito del sistema, usando {@link Desktop#browse} se disponibile, altrimenti
+     * (solo su Linux, se il desktop non supporta l'apertura browser) tentando {@code xdg-open} come fallback.
+     * Nota: nel ramo di fallback {@code xdg-open}, il metodo ritorna {@code true} anche se {@code exec} lancia
+     * {@link IOException} (l'eccezione viene solo loggata).
+     * @param Url indirizzo da aprire
+     * @return {@code true} se l'apertura tramite {@link Desktop#browse} è riuscita, oppure se si è tentato il fallback {@code xdg-open}; {@code false} solo se {@link Desktop#browse} fallisce o se il sistema non è Linux e nessun metodo è supportato
+     */
     public static boolean ApriWeb(String Url) {
 
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
@@ -2344,6 +2604,14 @@ return MappaLista;
     }
     
     
+        /**
+         * Ricava il nome della rete DeFi di un movimento dal formato del nome wallet (es. {@code indirizzo (RETE)})
+         * combinato con il prefisso {@code BC.} dell'ID, verificando che l'indirizzo sia valido su quella rete
+         * tramite {@link Funzioni_WalletDeFi#isValidAddress}.
+         * @param ID identificativo del movimento
+         * @param k parametro non utilizzato nel corpo del metodo
+         * @return il nome della rete DeFi individuata, oppure {@code ""} se il movimento non esiste o non è un wallet DeFi riconoscibile
+         */
         public static String Deprecato_RitornaReteDefi(String ID,int k) {
         String Transazione[]=MappaCryptoWallet.get(ID);
         if (Transazione==null)return "";
@@ -2503,6 +2771,20 @@ return MappaLista;
     
     
     
+    /**
+     * Determina se un movimento è fiscalmente rilevante ai fini del calcolo delle plusvalenze, in base al suo
+     * tipo (5° segmento dell'ID) e, quando serve, alla sottoclassificazione nel campo 18: vendite/commissioni
+     * ({@code VC}/{@code CM}) e acquisti ({@code AC}) sono sempre rilevanti; depositi/prelievi/scambi fiat e
+     * trasferimenti interni non lo sono mai; reward ({@code RW}) e airdrop/costo-zero ({@code DAI}/{@code DCZ})
+     * dipendono da {@link #RewardRilevante} e dalle opzioni {@code Plusvalenze_Pre2023EarnCostoZero} per i
+     * movimenti antecedenti al 2023-01-01; scambi crypto ({@code SC}) sono rilevanti solo se le due monete
+     * scambiate hanno tipo diverso secondo {@link #RitornaTipoCrypto} (a meno che l'opzione
+     * {@code Plusvalenze_Pre2023ScambiRilevanti} non li renda sempre rilevanti prima del 2023); depositi/prelievi
+     * crypto non classificati dipendono dall'opzione {@code PL_CosiderareMovimentiNC}. Un ID malformato (meno di
+     * 5 segmenti) viene normalizzato e loggato come errore anziché causare un'eccezione.
+     * @param Mov riga di movimento grezza
+     * @return {@code true} se il movimento è fiscalmente rilevante
+     */
     public static boolean MovimentoRilevante(String[] Mov){
         String ID = Mov[0];
         String IDTS[] = ID.split("_");
@@ -2637,6 +2919,15 @@ return MappaLista;
         
     
     
+    /**
+     * Restituisce il tipo effettivo di un token alla data indicata: se il token è classificato come
+     * {@code "Crypto"} ma è presente in {@link Principale#Mappa_EMoney} con una data di conversione a e-money
+     * anteriore o uguale alla data dello scambio, il tipo restituito diventa {@code "EMoney"}.
+     * @param Token simbolo del token
+     * @param Data data dello scambio
+     * @param Tipologia tipo dichiarato del token
+     * @return {@code "EMoney"} se il token è diventato e-money entro la data indicata, altrimenti {@code Tipologia} invariata
+     */
     public static String RitornaTipoCrypto(String Token,String Data,String Tipologia) {
        String Tipo=Tipologia;
        String DataEmoney=Principale.Mappa_EMoney.get(Token);
@@ -2649,6 +2940,17 @@ return MappaLista;
    }
     
     
+      /**
+       * Determina se una reward (staking, airdrop, cashback, earn, reward generico) genera plusvalenza,
+       * in base alla sottostringa contenuta nella descrizione del movimento (campo 5) e alla relativa opzione
+       * personale ({@code PDD_CashBack}, {@code PDD_Staking}, {@code PDD_Airdrop}, {@code PDD_Earn},
+       * {@code PDD_Reward}, tutte con default {@code "SI"}). Si applica solo ai movimenti classificati come
+       * reward alla fonte ({@code RW}) o riclassificati come tali ({@code DAI} nel campo 18); per ogni altro
+       * movimento (o se il movimento non è trovato o l'ID è malformato) restituisce sempre {@code true} come
+       * comportamento prudente di default.
+       * @param ID identificativo del movimento
+       * @return {@code true} se la reward è fiscalmente rilevante
+       */
       public static boolean RewardRilevante(String ID) {
 
        String[] Mov=MappaCryptoWallet.get(ID);
@@ -2695,6 +2997,16 @@ return MappaLista;
 
    }  
     
+      /**
+       * Determina se un movimento di cashback (classificato come reward {@code RW} o riclassificato {@code DAI})
+       * deve essere trattato fiscalmente come fiat invece che come reward crypto, in base all'opzione personale
+       * {@code CashBackComeFIAT} (default {@code "NO"}) e, se attiva, all'anno del movimento rispetto alla soglia
+       * configurata in {@code CashBackComeFIATAnno} (default 2010, quindi applicata a tutti gli anni se non impostata).
+       * Restituisce {@code false} se il movimento non è trovato, l'ID è malformato o non ha un anno iniziale valido,
+       * o se non è classificato come cashback.
+       * @param ID identificativo del movimento
+       * @return {@code true} se il cashback va trattato come fiat
+       */
       public static boolean CashbackComeFIAT(String ID) {
 
        String[] Mov=MappaCryptoWallet.get(ID);
@@ -2744,6 +3056,11 @@ return MappaLista;
    }  
     
     
+        /**
+         * Costruisce le due monete (uscente ed entrante) coinvolte in un movimento, a partire dai suoi campi grezzi.
+         * @param ID identificativo del movimento
+         * @return array di 2 elementi: {@code [0]} moneta uscente, {@code [1]} moneta entrante
+         */
         public static Moneta[] RitornaMoneteDaID(String ID){
             //Moneta[0] sarà la moneta uscente
             //Moneta[1] srà quella entrante
@@ -2766,6 +3083,11 @@ return MappaLista;
             return m;
         }
         
+        /**
+         * Verifica se un nome di moneta è marcato come scam, riconoscendo la convenzione interna del suffisso {@code " **"}.
+         * @param Nome nome della moneta da verificare
+         * @return {@code true} se il nome termina con {@code " **"}
+         */
         public static boolean isSCAM(String Nome){
             boolean SCAM=false;
             int Lnome=Nome.length();
@@ -2776,6 +3098,13 @@ return MappaLista;
             return SCAM;
         }
         
+        /**
+         * Converte una riga di movimento da array di {@link String} ad array di {@link Object}, trasformando in
+         * {@link BigDecimal} le colonne 15 (prezzo) e 19 (plusvalenza) e lasciando le altre colonne come stringa.
+         * Se la colonna 19 è vuota viene trattata come {@code "0"}.
+         * @param riga riga di movimento grezza
+         * @return la riga convertita, con le colonne 15 e 19 come {@link BigDecimal}
+         */
         public static Object[] Converti_String_Object(String[] riga){
             Object ritorno[]=new Object[riga.length];
            /* ritorno=riga.clone();
@@ -2805,11 +3134,23 @@ return MappaLista;
             return noData;
         }*/
         
+    /**
+     * @param valore stringa da verificare
+     * @return {@code true} se {@code valore} è {@code null} o vuota/composta solo da spazi
+     */
     public static boolean noData(String valore) {
         return valore == null || valore.isBlank();
     }
 
         
+        /**
+         * Determina la rete blockchain associata a un movimento a partire dal suo ID: se il movimento è già in
+         * {@link Principale#MappaCryptoWallet}, delega a {@link #TrovaReteDaIMovimento}; altrimenti ricava la
+         * rete direttamente dall'ID, riconoscendo il formato automatico {@code BC.<rete>....} (con uno dei
+         * prefissi validi) o il formato manuale {@code ...(<rete>)} (solo se la rete è tra quelle supportate).
+         * @param ID identificativo del movimento
+         * @return il codice della rete individuata, oppure {@code null} se non determinabile
+         */
         public static String TrovaReteDaID(String ID) {
         if (MappaCryptoWallet.get(ID) != null) {
             return TrovaReteDaIMovimento(Principale.MappaCryptoWallet.get(ID));
@@ -2841,6 +3182,15 @@ return MappaLista;
         }
     }
         
+        /**
+         * Determina la rete blockchain di un movimento, usando la cache nel campo 34 se già valorizzata,
+         * altrimenti ricavandola dall'ID: formato automatico {@code BC.<rete>....} (con uno dei prefissi validi
+         * in {@link #PREFISSI_VALIDI_TrovaReteDaIMovimento}, la rete trovata viene poi salvata nel campo 34 per
+         * le chiamate successive), o formato manuale {@code ...(<rete>)} (solo se la rete è tra quelle
+         * supportate in {@link Principale#MappaRetiSupportate}, in questo caso non viene salvata in cache).
+         * @param mov riga di movimento grezza
+         * @return il codice della rete individuata, oppure {@code null} se non determinabile
+         */
         public static String TrovaReteDaIMovimento(String[] mov){
         //boolean controllaAddress=false;
         //String Rete=null;
@@ -2888,6 +3238,14 @@ return MappaLista;
            // return "";
         }
        
+    /**
+     * Versione ottimizzata di {@link #TrovaReteDaIMovimento} che evita lo split via regex, usando ricerche di
+     * indice dirette ({@code indexOf}) sulla parte dell'ID successiva al primo underscore. Stessa logica:
+     * usa la cache nel campo 34 se presente, altrimenti riconosce il formato automatico {@code BC.<rete>....}
+     * (salvando il risultato in cache) o il formato manuale {@code ...(<rete>)} (solo se supportata).
+     * @param mov riga di movimento grezza
+     * @return il codice della rete individuata, oppure {@code null} se non determinabile
+     */
     public static String TrovaReteDaIMovimentoNEW(String[] mov) {
 
         // Cache: se già calcolata, ritorna subito
@@ -2947,6 +3305,11 @@ return MappaLista;
         
      
         
+       /**
+        * Sostituisce con {@code ""} tutti gli elementi {@code null} di un array di stringhe.
+        * @param array array da normalizzare (modificato in place)
+        * @return lo stesso array passato, con gli elementi {@code null} sostituiti da {@code ""}
+        */
        public static String[] RiempiVuotiArray(String[] array){
             for (int i=0;i<array.length;i++) {
                 if(array[i]==null){
@@ -2958,6 +3321,12 @@ return MappaLista;
      
        
     
+    /**
+     * Verifica se una stringa rappresenta un numero decimale valido.
+     * @param str stringa da verificare
+     * @param CampoVuotoContacomeNumero se {@code true}, una stringa vuota/composta solo da spazi è considerata numerica
+     * @return {@code true} se {@code str} è un {@link BigDecimal} valido (o vuota con {@code CampoVuotoContacomeNumero=true}), {@code false} se {@code null} o non numerica
+     */
     public static boolean isNumeric(String str, boolean CampoVuotoContacomeNumero) {
         
         if (str==null)return false;
@@ -2975,6 +3344,11 @@ return MappaLista;
 
     }
 
+/**
+ * Verifica la validità di una API key Moralis effettuando una richiesta minimale (numero ultimo blocco Ethereum).
+ * @param apiKey API key da validare
+ * @return {@code true} se la richiesta risponde con codice HTTP 200, {@code false} altrimenti (inclusi gli errori di rete)
+ */
 public static boolean isApiKeyValidaMoralis(String apiKey) {
     try {
         // SUPEREFFICIENTE - solo numero blocco!
@@ -2999,6 +3373,11 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
 
 
     
+    /**
+     * Verifica la validità di una API key Etherscan (v2, chain Ethereum) effettuando una richiesta {@code eth_blockNumber}.
+     * @param ApiKey API key da validare
+     * @return {@code true} se la risposta è una richiesta JSON-RPC 2.0 andata a buon fine, {@code false} altrimenti (inclusi gli errori di rete o parsing)
+     */
     public static boolean isApiKeyValidaEtherscan(String ApiKey) {
        // return true;
         String ETHERSCAN_URL = "https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_blockNumber&apikey=";
@@ -3023,6 +3402,11 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
         }
     }
     
+    /**
+     * Verifica la validità di una API key per l'explorer Cronos effettuando una richiesta {@code eth_blockNumber}.
+     * @param ApiKey API key da validare
+     * @return {@code true} se la risposta è una richiesta JSON-RPC 2.0 andata a buon fine, {@code false} altrimenti (inclusi gli errori di rete o parsing)
+     */
     public static boolean isApiKeyValidaCronos(String ApiKey) {
        // return true;
         String ETHERSCAN_URL = "https://explorer-api.cronos.org/mainnet/api/v2?module=proxy&action=eth_blockNumber&apikey=";
@@ -3047,6 +3431,11 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
         }
     }
 
+    /**
+     * Verifica la validità di una API key CoinMarketCap effettuando una richiesta minimale (mappa delle crypto attive, limite 1).
+     * @param ApiKey API key da validare
+     * @return {@code true} se la risposta ha {@code error_code} pari a {@code "0"}, {@code false} altrimenti (inclusi chiave assente/vuota, errori di rete o parsing)
+     */
     public static boolean isApiKeyValidaCoinMarketCap(String ApiKey) {
         if (ApiKey == null || ApiKey.isBlank()) return false;
         OkHttpClient client = HTTP_CLIENT;
@@ -3065,6 +3454,11 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
         }
     }
 
+    /**
+     * Verifica la validità di una API key coingecko effettuando una richiesta all'endpoint {@code /ping}.
+     * @param ApiKey API key da validare
+     * @return {@code true} se la risposta contiene il campo {@code gecko_says}, {@code false} altrimenti (inclusi gli errori di rete o parsing)
+     */
     public static boolean isApiKeyValidaCoingecko(String ApiKey) {
         OkHttpClient client = HTTP_CLIENT;
         Request request = new Request.Builder().url("https://api.coingecko.com/api/v3/ping").get().addHeader("accept", "application/json").addHeader("x-cg-demo-api-key", ApiKey).build();
@@ -3195,6 +3589,11 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
         }
     }
 
+    /**
+     * Verifica se una stringa è JSON sintatticamente valido, provando prima come oggetto e poi come array.
+     * @param test stringa da validare
+     * @return {@code true} se {@code test} è un {@link JSONObject} o un {@link JSONArray} valido, {@code false} altrimenti
+     */
     public static boolean isValidJSON(String test) {
         try {
             new JSONObject(test);

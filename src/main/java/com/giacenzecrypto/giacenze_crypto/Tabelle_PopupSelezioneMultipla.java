@@ -41,6 +41,7 @@ public Set<String> selectedValues = new HashSet<>();
     this(owner, new ArrayList<>());
 }
     
+    /** @return la finestra popup interna ({@link JWindow}) usata da questo componente */
     public Window getOwner(){
         return window;
     }
@@ -134,6 +135,7 @@ public Set<String> selectedValues = new HashSet<>();
 
         // Chiudi popup su ESC
         window.addKeyListener(new KeyAdapter() {
+            /** Chiude il popup (senza applicare la selezione) quando viene premuto ESC. */
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
@@ -149,6 +151,12 @@ public Set<String> selectedValues = new HashSet<>();
 
 
 
+/**
+ * Ricostruisce l'elenco di checkbox del popup a partire da una lista di coppie {@code [testo, "1"/"0"]},
+ * ordinando prima le opzioni selezionate poi quelle non selezionate (ordinamento numerico se possibile,
+ * alfabetico altrimenti tramite {@link #parseSmartNumber}), e riabilita la selezione con trascinamento.
+ * @param valori lista di coppie {@code [testo opzione, "1" se selezionata altrimenti "0"]}
+ */
 public void updateOptions(List<String[]> valori) {
     checkBoxes.clear();
     checkBoxPanel.removeAll();
@@ -221,6 +229,7 @@ private static BigDecimal parseSmartNumber(String s) {
 
 
 
+/** Svuota il campo di filtro testuale (senza modificare le selezioni correnti). */
 public void AzzeraTestoRicerca(){
     filterField.setText("");
 }
@@ -237,15 +246,18 @@ public void AzzeraTestoRicerca(){
         checkBoxPanel.repaint();
     }
     
+    /** @return {@code true} se il popup è attualmente visibile */
     public boolean isVisible() {
     return window.isVisible();
 }
 
-    
+
+    /** @return la lista di tutte le checkbox correntemente mostrate nel popup */
     public List<JCheckBox> getCheckBoxes() {
     return checkBoxes;
 }
 
+    /** @return i testi delle opzioni attualmente selezionate */
     public List<String> getSelectedOptions() {
         List<String> selected = new ArrayList<>();
         for (JCheckBox cb : checkBoxes) {
@@ -256,14 +268,20 @@ public void AzzeraTestoRicerca(){
         return selected;
     }
 
+    /** @param action azione da eseguire quando l'utente preme il pulsante "Applica" */
     public void setApplyAction(Runnable action) {
         this.applyAction = action;
     }
 
+    /** @param action azione da eseguire quando l'utente preme il pulsante "Annulla" */
     public void setCancelAction(Runnable action) {
         this.cancelAction = action;
     }
 
+    /**
+     * Mostra il popup posizionato subito sotto il componente indicato, se non è già visibile.
+     * @param invoker componente rispetto al quale posizionare il popup
+     */
     public void show(Component invoker) {
     if (window.isVisible()) {
         return; // Già visibile, non fare nulla
@@ -275,17 +293,24 @@ public void AzzeraTestoRicerca(){
     filterField.requestFocusInWindow();
 }
 
+    /**
+     * Mostra il popup a coordinate schermo assolute.
+     * @param x coordinata X
+     * @param y coordinata Y
+     */
     public void showAt(int x, int y) {
     window.setLocation(x, y);
     window.setVisible(true);
     filterField.requestFocusInWindow();
 }
-    
+
+    /** Nasconde il popup, senza eseguire {@link #applyAction} né {@link #cancelAction}. */
     public void hide() {
         window.setVisible(false);
     }
-    
-    
+
+
+    /** @return la dimensione preferita del popup, dopo aver forzato il ricalcolo del layout */
     public Dimension getPreferredSize() {
     window.pack();  // Assicura che le dimensioni siano aggiornate
     return window.getSize();
@@ -299,6 +324,7 @@ private void enableDragSelection(JPanel panel) {
     dragSelectionEnabled = true;
 
     panel.addMouseListener(new MouseAdapter() {
+        /** Inizia il trascinamento di selezione sulla checkbox sotto il cursore, invertendone lo stato. */
         @Override
 public void mousePressed(MouseEvent e) {
     if (!SwingUtilities.isLeftMouseButton(e)) return;
@@ -313,6 +339,7 @@ public void mousePressed(MouseEvent e) {
     }
 }
 
+        /** Termina il trascinamento di selezione. */
         @Override
         public void mouseReleased(MouseEvent e) {
             isDraggingSelection = false;
@@ -321,6 +348,7 @@ public void mousePressed(MouseEvent e) {
     });
 
     panel.addMouseMotionListener(new MouseMotionAdapter() {
+        /** Durante il trascinamento, applica la selezione a ogni nuova checkbox attraversata dal cursore. */
         @Override
         public void mouseDragged(MouseEvent e) {
             if (!isDraggingSelection) return;

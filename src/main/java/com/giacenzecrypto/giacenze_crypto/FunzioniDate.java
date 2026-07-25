@@ -30,6 +30,10 @@ import java.util.logging.Logger;
  * @author luca.passelli
  */
 public class FunzioniDate {
+        /**
+         * @param Data1 data/ora in millisecondi epoch
+         * @return la data formattata come {@code yyyy-MM-dd}, nel fuso orario Europe/Rome
+         */
         public static String ConvertiDatadaLong(long Data1) {
 
   
@@ -44,6 +48,10 @@ public class FunzioniDate {
         return m1;
     } 
     
+        /**
+         * @param Data1 data/ora in millisecondi epoch
+         * @return la data/ora formattata come {@code yyyy-MM-dd HH:mm:ss}, nel fuso orario Europe/Rome
+         */
         public static String ConvertiDatadaLongAlSecondo(long Data1) {
 
   
@@ -58,6 +66,10 @@ public class FunzioniDate {
         return m1;
     } 
         
+        /**
+         * @param unixTimestamp data/ora in millisecondi epoch
+         * @return la data/ora formattata secondo lo standard ISO 8601 ({@link DateTimeFormatter#ISO_INSTANT})
+         */
         public static String ConvertiUnixTimestampToIso(long unixTimestamp) {
             // Crea un oggetto Instant a partire dal timestamp fornito
             Instant instant = Instant.ofEpochMilli(unixTimestamp);
@@ -66,6 +78,12 @@ public class FunzioniDate {
             return DateTimeFormatter.ISO_INSTANT.format(instant);
         }
     
+            /**
+             * Calcola la differenza in giorni interi tra due date (solo la parte data, l'eventuale ora viene ignorata).
+             * @param DataInizio data iniziale, formato {@code yyyy-MM-dd} (con eventuale ora aggiuntiva, ignorata)
+             * @param DataFine data finale, formato {@code yyyy-MM-dd} (con eventuale ora aggiuntiva, ignorata)
+             * @return il numero di giorni tra {@code DataInizio} e {@code DataFine}
+             */
             public static int DifferenzaDate(String DataInizio,String DataFine)   {
                 //Il Formato della data deve essere es. 2023-02-15
                 //System.out.println(DataInizio);
@@ -78,6 +96,10 @@ public class FunzioniDate {
                 return Integer.parseInt(DiffData);
  }  
     
+        /**
+         * @param Data1 data/ora in millisecondi epoch
+         * @return la data/ora formattata come {@code yyyy-MM-dd HH} (precisione oraria), nel fuso orario Europe/Rome
+         */
         public static String ConvertiDatadaLongallOra(long Data1) {
 
   
@@ -92,6 +114,10 @@ public class FunzioniDate {
         return m1;
     } 
              
+        /**
+         * @param Data1 data di riferimento, formato {@code yyyy-MM-dd}
+         * @return la data del giorno precedente, formato {@code yyyy-MM-dd}, oppure {@code ""} se {@code Data1} non è parsabile
+         */
         public static String GiornoMenoUno(String Data1) {
         String giorno="";
         try {
@@ -110,6 +136,10 @@ public class FunzioniDate {
         return giorno;
     }
         
+            /**
+             * @param Data1 data, formato {@code yyyy-MM-dd}
+             * @return i millisecondi epoch (mezzanotte, fuso orario Europe/Rome) corrispondenti, oppure {@code 0} se {@code Data1} non è parsabile (errore loggato)
+             */
             public static long ConvertiDatainLong(String Data1) {
            long m1=0;
         try {
@@ -127,6 +157,10 @@ public class FunzioniDate {
         return m1;
     } 
      
+        /**
+         * @param Data1 data/ora, formato {@code yyyy-MM-dd HH:mm}
+         * @return i millisecondi epoch (fuso orario Europe/Rome) corrispondenti, oppure {@code 0} se {@code Data1} non è parsabile (errore loggato)
+         */
         public static long ConvertiDatainLongMinuto(String Data1) {
            long m1=0;
         try {
@@ -144,6 +178,12 @@ public class FunzioniDate {
         return m1;
     } 
         
+    /**
+     * Versione legacy superata di {@link #ConvertiDatainLongSecondo}, basata su {@link SimpleDateFormat} invece
+     * che sulle API {@code java.time}. Normalizza anche anni a 2 cifre (es. {@code "25-..."} → {@code "2025-..."}).
+     * @param Data1 data/ora, formato {@code yyyy-MM-dd HH:mm:ss} (o {@code yy-MM-dd HH:mm:ss})
+     * @return i millisecondi epoch (fuso orario Europe/Rome) corrispondenti, oppure {@code 0} se {@code Data1} non è parsabile
+     */
     public static long ConvertiDatainLongSecondo_OLD(String Data1) {
         long m1 = 0;
         try {
@@ -170,6 +210,13 @@ public class FunzioniDate {
         return m1;
     }
     
+    /**
+     * Converte una data/ora al secondo in millisecondi epoch (fuso orario Europe/Rome), normalizzando anche
+     * anni a 2 cifre (es. {@code "25-..."} → {@code "2025-..."}) e gestendo automaticamente le ore inesistenti
+     * per effetto del cambio ora legale/solare (spostate in avanti).
+     * @param Data1 data/ora, formato {@code yyyy-MM-dd HH:mm:ss} (o {@code yy-MM-dd HH:mm:ss})
+     * @return i millisecondi epoch corrispondenti, oppure {@code 0} se {@code Data1} non è parsabile
+     */
     public static long ConvertiDatainLongSecondo(String Data1) {
     try {
         String dataDaParsare = Data1;
@@ -194,6 +241,13 @@ public class FunzioniDate {
 }
         
     //l'offset indica il fuso orario rispetto a UTC es. offset 1 indica che sto utilizzando UTC+1 come fuso    
+    /**
+     * Converte una data/ora al secondo in millisecondi epoch, applicando un fuso orario UTC con offset esplicito
+     * (invece del fuso Europe/Rome usato dagli altri metodi di conversione), normalizzando anche anni a 2 cifre.
+     * @param Data1 data/ora, formato {@code yyyy-MM-dd HH:mm:ss} (o {@code yy-MM-dd HH:mm:ss})
+     * @param offset offset del fuso rispetto a UTC in ore (es. {@code 1} per UTC+1)
+     * @return i millisecondi epoch corrispondenti
+     */
     public static long ConvertiDatainLongSecondoUTC2(String Data1,int offset) {
             // Rimuove il suffisso " UTC+2"
        DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -210,6 +264,10 @@ public class FunzioniDate {
         return ldt.toEpochSecond(ZoneOffset.ofHours(offset))*1000;
     } 
         
+    /**
+     * @param Data1 timestamp nel formato usato come prefisso degli ID movimento, {@code yyyyMMddHHmmss}
+     * @return i millisecondi epoch (fuso orario Europe/Rome) corrispondenti, oppure {@code 0} se {@code Data1} non è parsabile (errore loggato)
+     */
     public static long ConvertiDataIDinLong(String Data1) {
            long m1=0;
         try {
@@ -229,6 +287,10 @@ public class FunzioniDate {
     }     
         
         
+        /**
+         * @param isoDate data/ora in formato ISO 8601 (es. {@code "2024-07-22T01:53:29.000Z"})
+         * @return i millisecondi epoch corrispondenti, oppure {@code 0L} se {@code isoDate} è {@code null}/vuota o non parsabile
+         */
         public static long ConvertiISO8601toMillis(String isoDate) {
     if (isoDate == null || isoDate.isEmpty()) {
         return 0L;
@@ -246,6 +308,12 @@ public class FunzioniDate {
     }
 }
         
+        /**
+         * Converte una data/ora espressa in UTC (in uno dei formati con ora a una/due cifre, con o senza
+         * millisecondi) nel fuso orario Europe/Rome, restituendola nel formato standard interno {@code yyyy-MM-dd HH:mm:ss}.
+         * @param Data data/ora in UTC da convertire
+         * @return la data/ora convertita, oppure {@code null} se non corrisponde a nessuno dei formati supportati
+         */
         public static String Formatta_Data_UTC(String Data) {
 
             //come prima cosa controllo che l'ora abbia effettivamente 2 caratteri per quanto riguarda le ore
@@ -278,6 +346,12 @@ public class FunzioniDate {
         
     }    
         
+    /**
+     * Converte una data nel formato specifico usato dal Binance Tax Report (es. {@code "2023-01-01-01:00:00"},
+     * fuso orario CET) in millisecondi epoch.
+     * @param Data data nel formato Binance Tax Report ({@code yyyy-MM-dd-HH:mm:ss})
+     * @return i millisecondi epoch corrispondenti, oppure {@code 0} se {@code Data} non è nel formato atteso
+     */
     public static long ConvertiDataBinanceTaxReportinLong(String Data) {
         //La data di Binance Tax Report è in questo formato 2023-01-01-01:00:00
         //ed è in orario CET, devo convertirla nel formato standard ovvero 2023-01-01 01:00:00
@@ -297,6 +371,13 @@ public class FunzioniDate {
         }
     }    
             
+        /**
+         * Converte una data nel formato di export di CoinTracking ({@code dd.MM.yyyy HH:mm[:ss]}) nel formato
+         * standard interno {@code yyyy-MM-dd HH:mm:ss}. Se {@code Data} contiene già più di 2 gruppi separati
+         * da {@code :} e nessun punto (già nel formato con secondi, non CoinTracking), viene restituita invariata.
+         * @param Data data nel formato CoinTracking (o già normalizzata)
+         * @return la data convertita, oppure {@code ""} se {@code Data} non è nel formato atteso
+         */
         public static String Formatta_Data_CoinTracking(String Data) {
 
         if (Data.split(":").length>2&&!Data.contains(".")) return Data;

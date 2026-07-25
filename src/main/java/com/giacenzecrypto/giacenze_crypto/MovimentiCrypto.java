@@ -443,8 +443,13 @@ static boolean PrezzoPrezzato(String Prezzo) {
     }
 
     
-    //La Funzione trova un id univoco sul movimento
-    //Se va in errore per qualche motivo restituisce null altrimenti restituisce l'ID
+     /**
+      * Trova un ID univoco per un movimento, incrementando il 4° campo dell'ID (tramite un helper interno)
+      * finché non se ne trova uno assente dalla mappa indicata.
+      * @param map mappa in cui verificare l'unicità dell'ID (tipicamente {@link Principale#MappaCryptoWallet})
+      * @param id ID di partenza da cui iniziare la ricerca
+      * @return un ID univoco non presente in {@code map}, oppure {@code null} se l'ID non è nel formato atteso o si raggiunge il limite 999 sul 4° campo
+      */
      public static String getIDUnivoco(Map<String, String[]> map, String id) {
         String currentId = id;
 
@@ -484,6 +489,17 @@ static boolean PrezzoPrezzato(String Prezzo) {
     }
     
     
+    /**
+     * Genera un nuovo ID posizionato immediatamente prima o dopo l'ID indicato, forzando l'ordinamento tramite
+     * l'aggiunta di un carattere speciale ({@code ~} per posizionarlo dopo, {@code $} per posizionarlo prima)
+     * su uno dei campi di ordinamento. Se l'ID generato collide già con uno esistente in
+     * {@link Principale#MappaCryptoWallet}, continua ad aggiungere il carattere opposto (fino a 40 tentativi)
+     * per garantire che resti nella posizione relativa desiderata.
+     * @param id ID di riferimento rispetto a cui posizionare il nuovo movimento
+     * @param n_campo campo dell'ID su cui operare: {@code 1}=exchange, {@code 2}=primo campo numerico di ordinamento, {@code 3}=secondo campo numerico di ordinamento
+     * @param incrementa se {@code true} posiziona il nuovo ID subito dopo quello di riferimento, se {@code false} subito prima
+     * @return il nuovo ID univoco, oppure {@code null} se l'ID non è nel formato atteso, {@code n_campo} non è compreso tra 1 e 3, o si supera il limite di tentativi
+     */
     public static String IncDecID(String id,int n_campo, boolean incrementa) {
         
         //Questa funzione usa i caratteri speciali per forzare un movimento subito dopo o subito prima un'altro

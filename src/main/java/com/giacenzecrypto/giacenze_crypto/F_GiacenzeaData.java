@@ -18,7 +18,18 @@ import javax.swing.JTable;
  */
 public class F_GiacenzeaData {
     
-    //ritorna true se ho fatto modifiche altrimenti ritorna false
+    /**
+     * Rettifica la giacenza di un token alla data selezionata nella tabella "Giacenze a data", chiedendo
+     * all'utente la nuova giacenza desiderata e generando un movimento artificiale di aggiustamento (deposito
+     * o prelievo, a seconda che la nuova giacenza sia maggiore o minore di quella attuale). Se il token ha
+     * giacenze negative precedenti, avvisa l'utente e richiede conferma esplicita prima di procedere.
+     * L'operazione è consentita solo per token di tipo {@code "Crypto"} e non è applicabile se il filtro
+     * wallet è impostato su {@code "tutti"}.
+     * @param TabMovimenti tabella da cui leggere la riga selezionata (moneta, giacenza attuale, ecc.)
+     * @param Wallet nome del wallet corrente, oppure {@code "tutti"} per disabilitare l'operazione
+     * @param owner finestra parent dei dialog
+     * @return {@code true} se è stata effettuata una modifica, {@code false} se l'operazione è stata annullata o non applicabile
+     */
     public static boolean GiacenzeaData_Funzione_SistemaQta(JTable TabMovimenti,String Wallet, Window owner) {
         
         boolean tuttook=false;

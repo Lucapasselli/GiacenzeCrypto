@@ -86,6 +86,14 @@ public class Tabelle {
 
     
     
+    /**
+     * Applica alla tabella dei movimenti crypto un renderer che alterna lo sfondo delle righe (in base al
+     * tema chiaro/scuro), colora in verde/rosso i depositi/prelievi e i valori positivi/negativi in colonna 11,
+     * e mostra un'icona di allerta (con tooltip implicito) sulle righe con deposito/prelievo non classificato,
+     * LIFO mancante o transazione senza prezzo — escludendo sempre le monete marcate come scam.
+     * @param table la tabella dei movimenti crypto a cui applicare il renderer
+     * @return la stessa tabella passata, con il renderer applicato
+     */
     public static JTable ColoraRigheTabellaCrypto(final JTable table) {
       //  bg=grigioChiaro;
      //   Data="";
@@ -231,6 +239,11 @@ public class Tabelle {
     
 
     
+    /**
+     * Ricostruisce il modello della tabella eliminando le righe duplicate (confronto testuale di tutti i
+     * valori di ogni riga), preservando l'ordine di prima occorrenza.
+     * @param table la tabella da cui rimuovere le righe duplicate
+     */
     public static void Funzioni_EliminaRigheDuplicate(JTable table) {
     DefaultTableModel model = (DefaultTableModel) table.getModel();
     int colCount = model.getColumnCount();
@@ -269,6 +282,12 @@ public class Tabelle {
     
     
     
+        /**
+         * Applica alla tabella 0 (riepilogo) di "Giacenze a data" un renderer che alterna lo sfondo delle righe
+         * (in base al tema) e colora in rosso la colonna 6 e la colonna 4 quando contiene un valore negativo.
+         * @param table la tabella a cui applicare il renderer
+         * @return la stessa tabella passata, con il renderer applicato
+         */
         public static JTable ColoraRigheTabella0GiacenzeaData(final JTable table) {
 
         DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
@@ -322,6 +341,13 @@ public class Tabelle {
     }
 
     
+        /**
+         * Applica alla tabella 1 (dettaglio) di "Giacenze a data" un renderer che alterna lo sfondo delle righe
+         * e colora in verde/rosso la colonna 5 in base al segno del valore, evidenziando in rosso la colonna 7
+         * (giacenza negativa) con tooltip che riepiloga le rimanenze per wallet/gruppo/totale.
+         * @param table la tabella a cui applicare il renderer
+         * @return la stessa tabella passata, con il renderer applicato
+         */
         public static JTable ColoraRigheTabella1GiacenzeaData(final JTable table) {
 
         DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
@@ -485,6 +511,13 @@ public class Tabelle {
     }
 }
    
+   /**
+    * Ripristina la selezione su una riga e la posizione di scroll verticale di una tabella (es. dopo un
+    * ricaricamento del modello che ne avrebbe altrimenti perso lo stato visivo).
+    * @param tabella la tabella su cui ripristinare selezione e scroll
+    * @param riga indice della riga da riselezionare
+    * @param scrollValue valore della barra di scroll verticale da ripristinare
+    */
    public static void Funzioni_RipristinaSelezioneEPosizione(JTable tabella, int riga,int scrollValue) {
    JScrollPane scrollPane = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, tabella);
   if (riga >= 0 && riga < tabella.getRowCount()) {
@@ -501,6 +534,12 @@ public class Tabelle {
 }
    
         
+   /**
+    * Applica alla tabella un renderer che alterna lo sfondo delle righe (in base al tema) e mostra il testo in
+    * grigio, usato per rappresentare visivamente dati non rilevanti/secondari.
+    * @param table la tabella a cui applicare il renderer
+    * @return la stessa tabella passata, con il renderer applicato
+    */
    public static JTable ColoraTabelladiGrigio(final JTable table) {
       //  bg=grigioChiaro;
      //   Data="";
@@ -553,6 +592,12 @@ public class Tabelle {
         return table;
     }  
     
+/**
+ * Applica alla tabella un renderer semplice che alterna lo sfondo delle righe in base al tema chiaro/scuro,
+ * senza altre logiche di colorazione condizionale.
+ * @param table la tabella a cui applicare il renderer
+ * @return la stessa tabella passata, con il renderer applicato
+ */
 public static JTable ColoraTabellaSemplice(final JTable table) {
     // Definizione dei colori
   //  final Color grigioChiaro = new Color(240, 240, 240); // Colore grigio chiaro
@@ -629,9 +674,16 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
     return table;
 }
 
+    /**
+     * Installa un {@link TransferHandler} sulla tabella che, alla copia (Ctrl+C), serializza la selezione
+     * corrente in testo delimitato da tabulazioni/a-capo, ripulendo eventuali celle con markup HTML tramite
+     * {@link #stripHtml}.
+     * @param table la tabella su cui installare il gestore di copia
+     */
     public static void CopiaPulitadaTAG(final JTable table) {
         table.setTransferHandler(new TransferHandler() {
 
+            /** Serializza la selezione corrente della tabella in testo delimitato da tabulazioni/a-capo, ripulendo l'eventuale HTML. */
             @Override
             protected Transferable createTransferable(JComponent c) {
                 JTable table = (JTable) c;
@@ -669,6 +721,7 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
                 return new StringSelection(sb.toString());
             }
 
+            /** @return {@link TransferHandler#COPY}, unica azione di trasferimento supportata */
             @Override
             public int getSourceActions(JComponent c) {
                 return COPY;
@@ -789,6 +842,12 @@ public static void GUI_ModificaPrezzo_ColoraTabelle(
     
 }
 
+/**
+ * Applica a tutte le colonne della tabella un renderer che alterna lo sfondo delle righe in base al tema e
+ * evidenzia in giallo la riga indicata (usato in "Modifica Prezzo" per segnalare la riga selezionata).
+ * @param table1 la tabella a cui applicare il renderer
+ * @param riga indice della riga da evidenziare in giallo
+ */
 public static void GUI_ModificaPrezzo_ColoraTabellaGialla(JTable table1,int riga) {
 
     
@@ -837,6 +896,14 @@ public static void GUI_ModificaPrezzo_ColoraTabellaGialla(JTable table1,int riga
 
 
 
+/**
+ * Applica alla tabella del dettaglio LIFO di una transazione un renderer che alterna lo sfondo delle righe (in
+ * base al tema), colorando in rosso chiaro le righe della tabella "Uscita" e in verde chiaro quelle della
+ * tabella "Entrata" quando la colonna booleana 7 è {@code true}, e mostrando un'icona di allerta sulla colonna
+ * 2 quando il testo contiene "negativa" (nome della tabella riconosciuto tramite {@link JTable#getName()}).
+ * @param table la tabella a cui applicare il renderer (deve chiamarsi {@code "Uscita"} o {@code "Entrata"} per la colorazione condizionale)
+ * @return la stessa tabella passata, con il renderer applicato
+ */
 public static JTable ColoraTabellaLiFoTransazione(final JTable table) {
     // Definizione dei colori
   //  final Color grigioChiaro = new Color(240, 240, 240); // Colore grigio chiaro
@@ -931,6 +998,13 @@ public static JTable ColoraTabellaLiFoTransazione(final JTable table) {
 }
 
 
+/**
+ * Ridimensiona un'icona alle dimensioni indicate, ridisegnandola su un'immagine bufferizzata e scalandola.
+ * @param icon icona da ridimensionare
+ * @param width larghezza desiderata in pixel
+ * @param height altezza desiderata in pixel
+ * @return la nuova icona ridimensionata
+ */
 public static Icon resizeIcon(Icon icon, int width, int height) {
     BufferedImage img = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
     Graphics2D g2d = img.createGraphics();
@@ -942,6 +1016,14 @@ public static Icon resizeIcon(Icon icon, int width, int height) {
 }
 
 
+/**
+ * Applica alla tabella un renderer che alterna lo sfondo delle righe (in base al tema) e colora il testo di
+ * verde o rosso per le colonne indicate negli array {@code ColVerde}/{@code ColRosso}.
+ * @param table la tabella a cui applicare il renderer
+ * @param ColVerde indici delle colonne da colorare di verde
+ * @param ColRosso indici delle colonne da colorare di rosso
+ * @return la stessa tabella passata, con il renderer applicato
+ */
 public static JTable ColoraTabellaSempliceVerdeRosso(final JTable table,int[] ColVerde,int[] ColRosso) {
     // Definizione dei colori
   //  final Color grigioChiaro = new Color(240, 240, 240); // Colore grigio chiaro
@@ -1001,6 +1083,11 @@ public static JTable ColoraTabellaSempliceVerdeRosso(final JTable table,int[] Co
     return table;
 }
 
+/**
+ * @param array array in cui cercare, può essere {@code null}
+ * @param target valore da cercare
+ * @return {@code true} se {@code target} è presente in {@code array}, {@code false} se non trovato o se {@code array} è {@code null}
+ */
 public static boolean contiene(int[] array, int target) {
     if (array==null)return false;
     for (int n : array) {
@@ -1009,6 +1096,12 @@ public static boolean contiene(int[] array, int target) {
     return false;
 }
 
+/**
+ * Applica alla tabella di dettaglio del quadro RT un renderer che alterna lo sfondo delle righe (in base al
+ * tema) e colora in rosso il testo della colonna 10 e della colonna 7 quando contiene un valore negativo.
+ * @param table la tabella a cui applicare il renderer
+ * @return la stessa tabella passata, con il renderer applicato
+ */
 public static JTable ColoraTabellaRTDettaglio(final JTable table) {
     // Definizione dei colori
   //  final Color grigioChiaro = new Color(240, 240, 240); // Colore grigio chiaro
@@ -1064,6 +1157,12 @@ public static JTable ColoraTabellaRTDettaglio(final JTable table) {
     return table;
 }    
     
+/**
+ * Applica alla tabella principale del quadro RT un renderer che alterna lo sfondo delle righe (in base al
+ * tema) e colora in rosso il testo della colonna 3 quando contiene un valore negativo.
+ * @param table la tabella a cui applicare il renderer
+ * @return la stessa tabella passata, con il renderer applicato
+ */
 public static JTable ColoraTabellaRTPrincipale(final JTable table) {
     // Definizione dei colori
   //  final Color grigioChiaro = new Color(240, 240, 240); // Colore grigio chiaro
@@ -1121,6 +1220,10 @@ public static JTable ColoraTabellaRTPrincipale(final JTable table) {
       
 
 
+/**
+ * @param table tabella da cui leggere la selezione
+ * @return l'indice (nel model, non nella vista) della riga attualmente selezionata, oppure {@code -1} se nessuna riga è selezionata
+ */
 public static int Funzioni_getRigaSelezionata(JTable table) {
     int viewRow = table.getSelectedRow();
     if (viewRow == -1) {
@@ -1129,6 +1232,10 @@ public static int Funzioni_getRigaSelezionata(JTable table) {
     return table.convertRowIndexToModel(viewRow);
 }
 
+/**
+ * @param table tabella da cui leggere la selezione
+ * @return gli indici (nel model, non nella vista) delle righe attualmente selezionate
+ */
 public static int[] Funzioni_getRigheSelezionate(JTable table) {
     int[] viewRows = table.getSelectedRows();
     int[] modelRows = new int[viewRows.length];
@@ -1140,6 +1247,12 @@ public static int[] Funzioni_getRigheSelezionate(JTable table) {
     return modelRows;
 }
        
+           /**
+            * Applica alla tabella un renderer che alterna lo sfondo delle righe (in base al tema) e colora in
+            * rosso il testo di una riga se una delle colonne 2, 4 o 15 contiene la parola "error".
+            * @param table la tabella a cui applicare il renderer
+            * @return la stessa tabella passata, con il renderer applicato
+            */
            public static JTable ColoraTabellaEvidenzaRigheErrore(final JTable table) {
       //  bg=grigioChiaro;
      //   Data="";
@@ -1208,6 +1321,11 @@ public static int[] Funzioni_getRigheSelezionate(JTable table) {
        
        
        
+       /**
+        * Adatta l'altezza di ogni riga della tabella al contenuto renderizzato più alto tra tutte le sue colonne
+        * (utile per celle multi-riga o con font/icone di dimensione variabile).
+        * @param table la tabella di cui ricalcolare le altezze delle righe
+        */
        public static void updateRowHeights(JTable table)
 {
     for (int row = 0; row < table.getRowCount(); row++)
@@ -1243,6 +1361,13 @@ public static int[] Funzioni_getRigheSelezionate(JTable table) {
     
  
     
+    /**
+     * Calcola in background (thread separato) la somma dei valori numerici di ogni colonna attualmente
+     * visibile nella tabella (rispettando l'eventuale filtro/ordinamento) e la memorizza in {@link #SommaColonne}
+     * per essere mostrata nell'header. Usa un contatore di versione per tabella così che, se viene richiesto un
+     * nuovo calcolo prima che il precedente termini, solo il risultato del calcolo più recente venga applicato.
+     * @param table la tabella di cui calcolare le somme delle colonne
+     */
     public static void Tabelle_getSommeColonne(JTable table) {
     SwingUtilities.invokeLater(() -> {
         int rowCount = table.getRowCount();
@@ -1459,6 +1584,12 @@ public static TableCellRenderer Tabelle_creaNuovoHeaderRenderer(
 }
 
 
+/**
+ * Converte un frammento HTML in testo semplice, trasformando i tag {@code <br>} in ritorni a capo e
+ * scartando ogni altro markup.
+ * @param html markup HTML da convertire
+ * @return il testo semplice risultante, senza spazi iniziali/finali
+ */
 public static String htmlToTextWithLineBreaks(String html) {
     Document doc = Jsoup.parse(html);
     StringBuilder sb = new StringBuilder();
@@ -1481,6 +1612,13 @@ private static void processNode(Node node, StringBuilder sb) {
 }
 
  
+ /**
+  * Applica all'header della tabella il renderer completo (grassetto+centrato, icone di ordinamento e filtro),
+  * inizializzando la mappa dei filtri attivi per questa tabella in {@link #tableFilters} se non già presente.
+  * Da chiamare nel costruttore, dopo {@code initComponents()}, per le tabelle che useranno anche
+  * {@link #Tabelle_FiltroColonne}.
+  * @param table la tabella su cui inizializzare l'header
+  */
  public static void Tabelle_InizializzaHeader(JTable table) {
     ImageIcon originalIco = new javax.swing.ImageIcon(Principale.class.getResource("/Images/24_Imbuto.png"));
     //Image image = Icone.svgImbuto.getImage();  // Ottiene l'immagine interna
@@ -1493,6 +1631,11 @@ private static void processNode(Node node, StringBuilder sb) {
     table.getTableHeader().setDefaultRenderer(Tabelle.Tabelle_creaNuovoHeaderRenderer(table, activeFilters, filterIco));
 }
 
+/**
+ * Applica all'header della tabella un renderer leggero (solo centrato) senza le icone di ordinamento/filtro,
+ * per le tabelle che non supportano il filtro colonne.
+ * @param table la tabella su cui applicare il renderer
+ */
 public static void Tabelle_ApplicaHeaderBoldCentrato(JTable table) {
     TableCellRenderer defaultRenderer = table.getTableHeader().getDefaultRenderer();
     table.getTableHeader().setDefaultRenderer((tbl, value, isSelected, hasFocus, row, col) -> {
@@ -1504,6 +1647,14 @@ public static void Tabelle_ApplicaHeaderBoldCentrato(JTable table) {
     });
 }
 
+     /**
+      * Applica al sorter della tabella la combinazione (AND logico) dei filtri per colonna già attivi
+      * (in {@link #tableFilters}) più, se non vuoto, un filtro globale che verifica se una qualsiasi colonna
+      * della riga contiene il testo indicato (case-insensitive). Ricalcola infine le somme colonna.
+      * @param table la tabella a cui applicare il filtro combinato
+      * @param sorter il sorter della tabella su cui impostare il filtro
+      * @param globalFilterText testo del filtro globale, oppure {@code null}/vuoto per non applicarne uno
+      */
      public static void Tabelle_applyCombinedFilter(JTable table, TableRowSorter<DefaultTableModel> sorter, String globalFilterText) {
     Map<Integer, RowFilter<DefaultTableModel, Integer>> filters = tableFilters.getOrDefault(table, Map.of());
 
@@ -1511,6 +1662,7 @@ public static void Tabelle_ApplicaHeaderBoldCentrato(JTable table) {
 
     if (globalFilterText != null && !globalFilterText.isEmpty()) {
         RowFilter<DefaultTableModel, Integer> globalFilter = new RowFilter<>() {
+            /** @return {@code true} se una qualsiasi colonna della riga contiene (case-insensitive) il testo del filtro globale */
             @Override
             public boolean include(RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry) {
                 for (int i = 0; i < entry.getValueCount(); i++) {
@@ -1538,6 +1690,14 @@ public static void Tabelle_ApplicaHeaderBoldCentrato(JTable table) {
 
      
      
+    /**
+     * Versione legacy superata di {@link #Tabelle_FiltroColonne}: installa il click destro sull'header per
+     * aprire il popup di selezione multipla dei valori di una colonna e applicare il filtro corrispondente,
+     * ma senza riapplicare il renderer dell'header (a differenza della versione corrente).
+     * @param table la tabella su cui abilitare il filtro colonne
+     * @param filtro campo di testo del filtro globale (può essere {@code null})
+     * @param popup popup di selezione multipla da usare per scegliere i valori da filtrare
+     */
     public static void Tabelle_FiltroColonne_OLD(JTable table,JTextField filtro,Tabelle_PopupSelezioneMultipla popup) {
 
     //Inizializza tableFilters se non esiste
@@ -1561,6 +1721,7 @@ public static void Tabelle_ApplicaHeaderBoldCentrato(JTable table) {
 
 
     header.addMouseListener(new MouseAdapter() {
+        /** Apre, al click destro sull'header, il popup di selezione multipla dei valori della colonna cliccata. */
         @Override
         public void mouseClicked(MouseEvent e) {
             if (e.getButton() == MouseEvent.BUTTON3) { // Tasto destro
@@ -1575,15 +1736,16 @@ public static void Tabelle_ApplicaHeaderBoldCentrato(JTable table) {
 
 
                     popup.setApplyAction(() -> {
-                        
+
                         List<String> selected = popup.getSelectedOptions();
                         if (selected.isEmpty() || selected.size() == mappa.size()) {
                             // Nessun filtro: rimuovi filtro e icona
                             activeFilters.remove(modelCol);
                          //   filteredColumns.remove(modelCol);
-                        } 
+                        }
                          else {
                             RowFilter<DefaultTableModel, Integer> filter = new RowFilter<>() {
+                                /** @return {@code true} se il valore della colonna filtrata è tra quelli selezionati nel popup */
                                 @Override
                                 public boolean include(RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry) {
                                     Object cellValue = entry.getValue(modelCol);
@@ -1629,6 +1791,15 @@ public static void Tabelle_ApplicaHeaderBoldCentrato(JTable table) {
 
 
 
+/**
+ * Abilita il filtro colonne su una tabella: applica subito il filtro combinato corrente e, se non già fatto
+ * in precedenza per questa tabella (tracciato in {@link #tabelleConFiltroColonne}), installa il click destro
+ * sull'header per aprire il popup di selezione multipla dei valori di una colonna e filtrare di conseguenza.
+ * Non riapplica il renderer dell'header (già impostato una volta da {@link #Tabelle_InizializzaHeader}).
+ * @param table la tabella su cui abilitare il filtro colonne
+ * @param filtro campo di testo del filtro globale (può essere {@code null})
+ * @param popup popup di selezione multipla da usare per scegliere i valori da filtrare
+ */
 public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabelle_PopupSelezioneMultipla popup) {
     // Inizializza tableFilters se non esiste
     tableFilters.putIfAbsent(table, new HashMap<>());
@@ -1653,11 +1824,13 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
     if (!tabelleConFiltroColonne.contains(table)) {
 
         header.addMouseListener(new MouseAdapter() {
+            /** @return un nome fisso, usato solo per riconoscere/loggare questo listener */
             @Override
             public String toString() {
                 return "FiltroColonneMouseListener";
             }
 
+            /** Apre, al click destro sull'header, il popup di selezione multipla dei valori della colonna cliccata. */
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) { // Tasto destro
@@ -1676,6 +1849,7 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
                                 activeFilters.remove(modelCol);
                             } else {
                                 RowFilter<DefaultTableModel, Integer> filter = new RowFilter<>() {
+                                    /** @return {@code true} se il valore della colonna filtrata è tra quelli selezionati nel popup */
                                     @Override
                                     public boolean include(RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry) {
                                         Object cellValue = entry.getValue(modelCol);
@@ -1725,6 +1899,12 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
    
      
      
+    /**
+     * Rimuove tutti i filtri per colonna attivi su una tabella (svuotando la relativa mappa in
+     * {@link #tableFilters}), azzera il {@link RowFilter} del sorter e forza il repaint dell'header per
+     * togliere le eventuali icone/evidenziazioni residue.
+     * @param table la tabella da cui rimuovere tutti i filtri
+     */
     public static void Tabella_RimuoviFiltri(JTable table) {
         
     
@@ -1762,6 +1942,10 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
  //   tableFilters.put(table, activeFilters);
 }
 
+    /**
+     * Svuota il modello di una tabella impostando direttamente il conteggio righe a zero (rapido).
+     * @param modello il modello da svuotare
+     */
     public static void Funzioni_PulisciTabella(DefaultTableModel modello) {
      /*   int z = modello.getRowCount();
         // System.out.println(modelProblemi.getRowCount());
@@ -1772,6 +1956,11 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
         modello.setRowCount(0);
     }
     
+            /**
+             * Come {@link #Funzioni_PulisciTabella}, ma rimuovendo le righe una alla volta (più lento, mantenuto
+             * per compatibilità con codice che si affida agli eventi di rimozione riga per riga).
+             * @param modello il modello da svuotare
+             */
             public static void Funzioni_PulisciTabellaLento(DefaultTableModel modello) {
         int z = modello.getRowCount();
         // System.out.println(modelProblemi.getRowCount());
@@ -1812,6 +2001,7 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
         this.filterIcon = filterIcon;
     }
 
+    /** @return la somma delle larghezze delle due icone componenti (0 per quelle assenti) */
     @Override
     public int getIconWidth() {
         int w1 = sortIcon != null ? sortIcon.getIconWidth() : 0;
@@ -1819,6 +2009,7 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
         return w1 + w2;
     }
 
+    /** @return la maggiore tra le altezze delle due icone componenti (0 per quelle assenti) */
     @Override
     public int getIconHeight() {
         int h1 = sortIcon != null ? sortIcon.getIconHeight() : 0;
@@ -1826,6 +2017,7 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
         return Math.max(h1, h2);
     }
 
+    /** Disegna in sequenza l'icona di ordinamento e quella di filtro, affiancate orizzontalmente. */
     @Override
     public void paintIcon(Component c, Graphics g, int x, int y) {
         int xPos = x;

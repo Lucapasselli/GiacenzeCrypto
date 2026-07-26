@@ -333,6 +333,16 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
     
     
     
+    /**
+     * Scarica in background i nuovi movimenti DeFi per i wallet indicati (o per tutti i wallet
+     * gestiti da un explorer supportato, se {@code selezionati} è {@code null}), li aggiunge a
+     * {@code MappaCryptoWallet} e, su conferma dell'utente, esegue la rettifica delle giacenze del
+     * token nativo delle chain coinvolte (escluse BSC, Avalanche, Base, Cronos e Solana, gestite
+     * altrove). Se l'utente interrompe l'operazione durante il recupero prezzi, scarta tutti i
+     * movimenti raccolti nella sessione corrente. Al termine aggiorna anche le conversioni LP e le
+     * giacenze Cronos e mostra un messaggio di riepilogo.
+     * @param selezionati lista degli indirizzi wallet da aggiornare, o {@code null} per aggiornarli tutti
+     */
     public void AggiornaWallets(List<String> selezionati) {
         Component c = com.giacenzecrypto.giacenze_crypto.GUI_GestioneWallets.this;
         Download progress = new Download();
@@ -343,6 +353,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
 
         Thread thread;
         thread = new Thread() {
+            /** Esegue il recupero e la scrittura dei movimenti DeFi descritti in {@link #AggiornaWallets}. */
             public void run() {
                 int i = 0;
                 List<String> Portafogli = new ArrayList<>();
@@ -505,6 +516,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         progress.setLocationRelativeTo(this);
                 Thread thread;
         thread = new Thread() {
+            /** Applica {@link Importazioni#GiacenzeCRO_Sistema} a tutti i wallet su rete Cronos. */
             public void run() {
                 //Importazioni.GiacenzeCRO_Sistema("", c, progress, thread);
                         for (String v : Mappa_Wallet.keySet()) {
@@ -664,6 +676,11 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
     }
 
     
+    /**
+     * Migra i wallet dal vecchio file {@code Wallets.db} (formato {@code IndirizzoWallet;Rete} per
+     * riga) al database, se il file esiste ancora. Passo di compatibilità con versioni precedenti
+     * del programma, quando i wallet non erano ancora persistiti nel database.
+     */
     public static void LeggiFileWallets() {
 
             //Il file wallet è così composto

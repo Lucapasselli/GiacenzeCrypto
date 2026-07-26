@@ -35,6 +35,16 @@ private static final long serialVersionUID = 8L;
         TextPane_Errori.setVisible(false);
     }
     
+    /**
+     * Popola i campi del riepilogo con i conteggi dell'importazione appena eseguita, evidenziando in
+     * rosso le transazioni scartate/sconosciute quando presenti e abilitando il pulsante di copia degli
+     * errori se sono presenti movimenti sconosciuti.
+     * @param T numero totale di transazioni elaborate
+     * @param TAggiunte numero di transazioni importate con successo
+     * @param TScartate numero di transazioni scartate perché già esistenti
+     * @param TSconosciute numero di transazioni scartate perché di tipo sconosciuto
+     * @param movScon testo con l'elenco dei movimenti sconosciuti, vuoto se nessuno
+     */
     public void ImpostaValori(int T,int TAggiunte,int TScartate,int TSconosciute,String movScon){
 
         this.Text_TransTotali.setText(String.valueOf(T));

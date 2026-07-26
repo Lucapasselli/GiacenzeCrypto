@@ -131,9 +131,17 @@ public class GUI_ScegliData extends javax.swing.JDialog {
         
     }
 
+     /**
+      * Imposta la data preselezionata nel calendario del dialog.
+      * @param data data da mostrare come selezionata
+      */
      public void ImpostaData(Date data){
          Calendario.setDate(data);
      }
+     /**
+      * Imposta il titolo della finestra di dialogo.
+      * @param Titolo testo da usare come titolo
+      */
      public void ImpostaTitolo(String Titolo){
          this.setTitle(Titolo);
      }

@@ -292,6 +292,7 @@ private static final long serialVersionUID = 3L;
 
         // Esegui l'export in background
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            /** Attende in background che il caricamento iniziale dei dati sia completato. */
             @Override
             protected Void doInBackground() throws Exception {
                 while (!FineCaricamentoDati) {
@@ -304,6 +305,7 @@ private static final long serialVersionUID = 3L;
                 return null;
             }
 
+            /** Chiude la finestra di progresso e ripristina il cursore a caricamento completato. */
             @Override
             protected void done() {
                 progress.dispose();
@@ -5640,6 +5642,7 @@ private void AvviaSplashScreen() {
         }
 
         JPanel root = new JPanel(new BorderLayout()) {
+            /** Disegna lo sfondo semitrasparente con bordi arrotondati dello splash screen. */
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -5694,11 +5697,13 @@ private void AvviaSplashScreen() {
                 timerAnimazione.start();
             }
 
+            /** Dimensione fissa del pannello che ospita il logo animato. */
             @Override
             public Dimension getPreferredSize() {
                 return new Dimension(300, 280);
             }
 
+            /** Disegna il logo centrato e ridimensionato, con dissolvenza (alpha) animata dal timer. */
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -5731,11 +5736,13 @@ private void AvviaSplashScreen() {
         };
 
         JPanel loadingBar = new JPanel() {
+            /** Dimensione fissa della barra di caricamento dello splash screen. */
             @Override
             public Dimension getPreferredSize() {
                 return new Dimension(220, 30);
             }
 
+            /** Disegna lo sfondo arrotondato della barra di caricamento dello splash screen. */
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -5816,10 +5823,13 @@ private void AvviaSplashScreen() {
 }
 
     
+    /**
+     * Aggiorna le tabelle dei wallet fiat e delle carte Crypto.com sulla GUI con i dati correnti.
+     */
     public void CDC_AggiornaGui() {
         CDC_FiatWallet_AggiornaDatisuGUI();
         CDC_CardWallet_AggiornaDatisuGUI();
-        
+
     }
     
     private void Funzione_CaricaTabelleSecondarieInBackgroud(){
@@ -6145,6 +6155,11 @@ private void AvviaSplashScreen() {
     
     
     
+    /**
+     * Nasconde dalla tabella delle transazioni crypto le colonne tecniche/di dettaglio non
+     * destinate alla visualizzazione diretta (indici interni, campi ausiliari), lasciando visibili
+     * solo le colonne di interesse per l'utente.
+     */
     public void TransazioniCrypto_Funzioni_NascondiColonneTabellaCrypto(){
        // this.CDC.remove(this.TransazioniCrypto);
         //per nascondere devo farlo al contrario
@@ -6260,6 +6275,15 @@ private void AvviaSplashScreen() {
    }
             
     
+    /**
+     * Importa in memoria (in {@code CDC_FiatWallet_Mappa}) i movimenti del wallet fiat Crypto.com
+     * dal file CSV indicato, scartando le righe malformate (che non hanno esattamente 10 campi),
+     * quelle senza data valida e i tipi movimento di "lock/unlock" degli ordini limite (transitori,
+     * non movimenti fiscalmente rilevanti). Ricarica anche la mappa dei tipi movimento riconosciuti
+     * (default più eventuali personalizzazioni salvate su file) e ricalcola infine la lista dei
+     * saldi tramite {@link #CDC_FiatWallet_Funzione_CalcolaListaSaldi()}.
+     * @param fiatwallet percorso del file CSV del wallet fiat da importare
+     */
     public void CDC_FiatWallet_Funzione_ImportaWallet(String fiatwallet) {
         // TODO add your handling code here:
 
@@ -6343,7 +6367,13 @@ private void AvviaSplashScreen() {
 
     }
 
-        public void CDC_CardWallet_Funzione_ImportaWallet(String cardwallet) {                                          
+        /**
+         * Importa in memoria (in {@code CDC_CardWallet_Mappa}) i movimenti della carta Crypto.com
+         * dal file CSV indicato, scartando le righe malformate (meno di 9 campi) e quelle senza data
+         * valida. Ricalcola infine la lista dei saldi tramite {@code CDC_CardWallet_Funzione_CalcolaListaSaldi()}.
+         * @param cardwallet percorso del file CSV della carta da importare
+         */
+        public void CDC_CardWallet_Funzione_ImportaWallet(String cardwallet) {
         String riga;
         try (FileReader fire = new FileReader(cardwallet); 
                 BufferedReader bure = new BufferedReader(fire);) 
@@ -6513,6 +6543,17 @@ private void AvviaSplashScreen() {
 
    } 
     
+   /**
+    * Ricalcola, a partire da {@code CDC_FiatWallet_Mappa}, l'andamento giorno per giorno del saldo
+    * del wallet fiat Crypto.com: per ogni movimento riconosciuto (tramite
+    * {@code VarCondivise.CDC_FiatWallet_MappaTipiMovimenti}) somma o sottrae l'importo al totale
+    * corrente, registrando sia il saldo di fine giornata sia il picco massimo intra-day. I
+    * movimenti non riconosciuti (colonna euro non trovata, o tipo movimento sconosciuto) vengono
+    * segnalati in {@code CDC_FiatWallet_MappaErrori} e mostrati come errore sulla GUI, ma non
+    * vengono contabilizzati.
+    * @return mappa con chiave {@code 0} → lista dei saldi di fine giornata ({@code "data,saldo"});
+    *         chiave {@code 1} → lista dei saldi che considerano il picco massimo giornaliero
+    */
    public Map<Integer, List<String>> CDC_FiatWallet_Funzione_CalcolaListaSaldi() {
        
         this.CDC_FiatWallet_Label_Errore1.setVisible(false);
@@ -7565,6 +7606,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
     }
     
+    /**
+     * Registra il wallet del movimento passato in {@code Mappa_Wallet} e aggiunge il suo dettaglio
+     * (sotto-wallet/indirizzo) alla lista associata in {@code Mappa_Wallets_e_Dettagli}, creandola
+     * se non esiste ancora.
+     * @param v riga del movimento (array di campi) da cui leggere wallet e dettaglio
+     */
     public static void Funzione_AggiornaMappaWallets(String[] v){
                   Mappa_Wallet.put(v[3], v[1]);
                   
@@ -7581,6 +7628,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
               }
     }
     
+    /**
+     * Aggiunge a {@code setCryptovalute} le monete di uscita e di entrata del movimento passato.
+     * @param v riga del movimento (array di campi) da cui leggere le monete
+     */
     public void Funzione_AggiornaListaCrypto(String[] v){
              /* if(!Lista_Cryptovalute.contains(v[8])){
                //   TransazioniCrypto_ComboBox_FiltroToken.addItem(v[8]);
@@ -7594,7 +7645,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             setCryptovalute.add(v[11]);
     }
     
-    public void Opzioni_RicreaListaWalletDisponibili(){ 
+    /**
+     * Ricostruisce da zero, a partire da {@code MappaCryptoWallet}, le mappe {@code Mappa_Wallet} e
+     * {@code Mappa_Wallets_e_Dettagli}, e ripopola la combo box per la cancellazione delle
+     * transazioni per wallet nella scheda Opzioni.
+     */
+    public void Opzioni_RicreaListaWalletDisponibili(){
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet.removeAllItems();
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet.addItem("----------");
           Mappa_Wallet.clear();
@@ -7608,6 +7664,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }
     
     
+    /**
+     * Ricalcola e aggiorna l'intera vista principale dopo una modifica ai movimenti: segnala che la
+     * tabella RT/Giacenze va ricalcolata, marca i dati come da salvare, ricalcola le plusvalenze
+     * (a meno che l'utente non abbia scelto il calcolo manuale) e ricarica la tabella delle
+     * transazioni crypto secondo i filtri correnti.
+     */
     public void Funzioni_AggiornaTutto() {
         //Se selezionato Situazione Import Crypto lo aggiorno
        System.out.println("Aggiorna Tutto");
@@ -8159,8 +8221,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 String Ritorno[]=new String[2];
                 Thread thread;
                 thread = new Thread() {
+                    /** Apre in background il dialogo {@link GUI_ModificaPrezzo} per la giacenza selezionata. */
                     public void run() {
-                        GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(MU, null,IPr,df,MU.Rete,Ritorno,progress);                   
+                        GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(MU, null,IPr,df,MU.Rete,Ritorno,progress);
                         t.setLocationRelativeTo(c);
                         t.setVisible(true);
                         progress.ChiudiFinestra();
@@ -8872,6 +8935,13 @@ GiacenzeaData_CompilaTabellaToken(true);
 
     }//GEN-LAST:event_GiacenzeaData_Bottone_CambiaNomeTokenActionPerformed
 
+    /**
+     * Chiede conferma all'utente e, se confermata, elimina il movimento indicato (e gli eventuali
+     * movimenti collegati) tramite {@link Funzioni#RimuoviMovimentazioneXID}, marcando la tabella
+     * come da salvare e mostrando un messaggio di conferma.
+     * @param ID ID del movimento da eliminare
+     * @param c componente da cui recuperare la finestra ancestor per i dialoghi
+     */
     public void Funzione_EliminaMovimento(String ID, Component c) {
         AppDialog.DialogResult result = AppDialog.builder(SwingUtilities.getWindowAncestor(c))
                 .windowTitle("Cancellazione transazione")
@@ -8901,6 +8971,15 @@ GiacenzeaData_CompilaTabellaToken(true);
         }
     }
     
+    /**
+     * Apre il dialogo {@link GUI_ModificaMovimento} per modificare il movimento indicato. Se il
+     * movimento fa parte di un gruppo di movimenti collegati e non è esso stesso un movimento
+     * automatico, chiede prima conferma all'utente e, in caso affermativo, riporta l'intero gruppo
+     * alla situazione originale (tramite {@link GUI_ClassificazioneMovimento#RiportaTransazioniASituazioneIniziale})
+     * prima di aprire il form di modifica.
+     * @param ID ID del movimento da modificare
+     * @param c componente da cui posizionare relativamente il dialogo di modifica
+     */
     public void Funzione_ModificaMovimento(String ID, Component c) {
         GUI_ModificaMovimento a = new GUI_ModificaMovimento();
         String[] riga = Principale.MappaCryptoWallet.get(ID);
@@ -9423,6 +9502,7 @@ if (result.isAction("delete-all")) {
         progress.setLocationRelativeTo(this);
         Thread thread;
         thread = new Thread() {
+            /** Calcola in background i dati del quadro RW (giacenze e periodi di detenzione per anno/wallet/moneta). */
             public void run() {
 
                 //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
@@ -11014,6 +11094,7 @@ if (result.isAction("delete-all")) {
 
         Thread thread;
         thread = new Thread() {
+            /** Calcola in background le plusvalenze per anno tramite {@link Calcoli_RT#CalcoliPlusvalenzeXAnno}. */
             public void run() {
                 progress.Titolo("Analisi sulle plusvalenze in corso.... Attendere");
                 progress.SetLabel("Analisi sulle plusvalenze in corso.... Attendere");
@@ -11199,6 +11280,7 @@ if (result.isAction("delete-all")) {
         //Questa funzione la faccio partire in un thread separato
         Thread thread;
         thread = new Thread() {
+            /** Verifica in background se è disponibile una nuova versione dell'applicativo. */
             public void run() {
                 if(Funzioni.isAggiornamentoDisponibile(VarStatiche.Versione)){
                     TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(true);
@@ -11215,6 +11297,7 @@ if (result.isAction("delete-all")) {
 
     private void Funzioni_AggiornamentoImportConfig() {
         Thread thread = new Thread() {
+            /** Aggiorna in background i file di configurazione import obsoleti nella cartella ImportConfig. */
             public void run() {
                 java.util.List<String> aggiornati = Funzioni.AggiornamentoImportConfig(VarStatiche.getCartella_ImportConfig());
                 if (!aggiornati.isEmpty()) {
@@ -11570,6 +11653,7 @@ if (result != null && !result.isAction("cancel")) {
 
         javax.swing.JComboBox<String> providerCombo = new javax.swing.JComboBox<>();
         javax.swing.DefaultCellEditor providerEditor = new javax.swing.DefaultCellEditor(providerCombo) {
+            /** Ricarica le opzioni della combo box in base alla chain della riga prima di mostrare l'editor. */
             @Override
             public java.awt.Component getTableCellEditorComponent(javax.swing.JTable table, Object value, boolean isSelected, int row, int column) {
                 String rete = (String) table.getValueAt(row, 0);
@@ -11815,6 +11899,7 @@ if (result != null && !result.isAction("cancel")) {
 
         // Esegui l'export in background
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            /** Esporta in background la tabella corrente in un file Excel. */
             @Override
             protected Void doInBackground() throws Exception {
                 if (PopUp_Tabella != null) {
@@ -11823,6 +11908,7 @@ if (result != null && !result.isAction("cancel")) {
                 return null;
             }
 
+            /** Chiude la finestra di progresso e ripristina il cursore al termine dell'export. */
             @Override
             protected void done() {
                 progress.dispose();
@@ -11868,7 +11954,8 @@ if (result != null && !result.isAction("cancel")) {
 
         Thread thread;
         thread = new Thread() {
-            public void run() {               
+            /** Ricalcola in background i prezzi di tutte le transazioni dall'anno scelto in poi, sostituendo quelli ancora vuoti o diversi dal nuovo valore trovato. */
+            public void run() {
                 //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
                 //in futuro dovrò mettere anche un limite per data e un limite per wallet
                 progress.Titolo("Ricalcolo prezzi in corso....");
@@ -11978,6 +12065,7 @@ if (result != null && !result.isAction("cancel")) {
         
         Thread thread;
             thread = new Thread() {
+            /** Apre in background il dialogo {@link GUI_ModificaPrezzo} per il movimento selezionato dal popup. */
             public void run() {
             GUI_ModificaPrezzo t =new GUI_ModificaPrezzo(PopUp_IDTrans,progress);
             t.setLocationRelativeTo(c);           
@@ -12562,6 +12650,7 @@ if (result != null && !result.isAction("cancel")) {
         progress.SetMassimo(candidati.size());
 
         Thread thread = new Thread() {
+            /** Verifica in background, token per token, se i candidati sono SCAM/SPAM (regole locali poi GoPlusLabs). */
             public void run() {
                 int i = 0;
                 for (String[] token : candidati) {
@@ -14178,21 +14267,7 @@ if (result != null && result.isAction("rename-wallet-token")) {
         }
 
     }
-    
-    public static String generateSignature(String data, String apiSecret) {
- /*       try {
-            Mac sha256Hmac = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secretKey = new SecretKeySpec(apiSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-            sha256Hmac.init(secretKey);
-            byte[] encodedBytes = sha256Hmac.doFinal(data.getBytes(StandardCharsets.UTF_8));
-            return Hex.encodeHexString(encodedBytes);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }*/
- return null;
-    }
-    
+       
     
         private void Opzioni_Export_Tatax(){
 
@@ -14466,17 +14541,8 @@ try {
 //SwingUtilities.invokeLater(() -> {
         Thread thread;
         thread = new Thread() {
+            /** Calcola in background le giacenze per token/wallet della scheda "Giacenze a Data". */
             public void run() {
-                
-
-                
-                
-                
-                
-                
-                
-                
-                
 
                 //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
                 //in futuro dovrò mettere anche un limite per data e un limite per wallet
@@ -14806,6 +14872,14 @@ try {
     }
  
     
+    /**
+     * Seleziona nella combo box l'elemento indicato se presente; se il wallet non è più disponibile
+     * (etichettato con il marcatore HTML "non più disponibile"), lo normalizza al nome semplice
+     * prima della ricerca. Se non trovato, aggiunge e seleziona una voce segnaposto che segnala il
+     * wallet come non più disponibile.
+     * @param comboBox combo box su cui operare
+     * @param item elemento da selezionare (eventualmente nel formato con marcatore HTML)
+     */
     public static void Funzione_RiposizionaComboBox(JComboBox<String> comboBox, String item) {
         if (item.contains("</b> non più disponibile</html>")){
             item=item.replace("</b> non più disponibile</html>", "");
@@ -14822,6 +14896,12 @@ try {
     }
     
     
+     /**
+      * Verifica se un elemento è già presente tra le voci della combo box.
+      * @param comboBox combo box in cui cercare
+      * @param item elemento da cercare
+      * @return {@code true} se l'elemento è presente, {@code false} altrimenti
+      */
      public static boolean Funzione_itemEsiste_ComboBox(JComboBox<String> comboBox, String item) {
         for (int i = 0; i < comboBox.getItemCount(); i++) {
             if (comboBox.getItemAt(i).equals(item)) {
@@ -14854,6 +14934,15 @@ try {
 
     
     
+        /**
+         * Popola la tabella di dettaglio della scheda "Transazioni Crypto" con i dati del movimento
+         * attualmente selezionato nella tabella principale (data, wallet, rete, causale, monete di
+         * uscita/entrata con relativo valore unitario, costo di carico, plusvalenza, dati on-chain,
+         * note, movimenti correlati, ecc.), mostrando solo le righe i cui campi non sono vuoti.
+         * Abilita i pulsanti di modifica/eliminazione ed il pulsante "DeFi" (solo se il movimento ha
+         * un hash di transazione e una rete riconosciuta). Non fa nulla se non c'è alcuna riga
+         * selezionata.
+         */
         public void TransazioniCrypto_CompilaTextPaneDatiMovimento() {
         if (TransazioniCryptoTabella.getSelectedRow()>=0){
             TransazioniCrypto_Bottone_MovimentoModifica.setEnabled(true);
@@ -15588,6 +15677,12 @@ try {
         
     }    
     
+/**
+ * Ricostruisce e riapplica alla tabella un {@link TableRowSorter} che combina (in AND) tutti i
+ * filtri per colonna attualmente salvati per quella tabella in {@code tableFilters}. Utile dopo un
+ * ricaricamento del modello, che invalida il sorter precedente.
+ * @param table tabella su cui ricostruire il sorter con i filtri salvati
+ */
 public static void ripristinaFiltri(JTable table) {
     // Crea un nuovo sorter per la tabella
     DefaultTableModel model = (DefaultTableModel) table.getModel();
@@ -15632,6 +15727,13 @@ public static void ripristinaFiltri(JTable table) {
         
     }
         
+    /**
+     * Converte il modello di una JTable in una lista di righe, ciascuna rappresentata come array di
+     * stringhe con tutti i valori delle colonne. Le celle con valore {@code null} vengono sostituite
+     * con la stringa {@code "movimento non conteggiato"}.
+     * @param tabella tabella da cui estrarre i dati
+     * @return lista delle righe della tabella, ciascuna come array di stringhe
+     */
     public static List<String[]> Funzioni_Tabelle_ListaTabella(JTable tabella) {
             int numeroRighe=tabella.getModel().getRowCount();
             int numeroColonne=tabella.getModel().getColumnCount();
@@ -15651,6 +15753,16 @@ public static void ripristinaFiltri(JTable table) {
      
     
     
+    /**
+     * Verifica se una stringa rappresenta un numero valido: deve essere parsabile come {@code double}
+     * e non contenere alcuna lettera. Quest'ultimo controllo rende la funzione più restrittiva di un
+     * semplice {@code Double.parseDouble}: una stringa in notazione scientifica (es. {@code "1e5"}),
+     * pur essendo un {@code double} valido, viene considerata non numerica perché contiene la
+     * lettera {@code "e"}.
+     * @param str stringa da verificare
+     * @param CampoVuotoContacomeNumero se {@code true}, una stringa vuota/blank viene considerata numerica
+     * @return {@code true} se la stringa è un numero valido (o vuota con il flag attivo), {@code false} altrimenti
+     */
     public static boolean Funzioni_isNumeric(String str,boolean CampoVuotoContacomeNumero) {
         //ritorna vero se il campo è vuoto oppure è un numero
   if(CampoVuotoContacomeNumero&&str.isBlank()) return true;
@@ -15666,102 +15778,15 @@ public static void ripristinaFiltri(JTable table) {
 
 }
     
-    public String[] ZZZ_Funzioni_Calcolo_SaldieMedie(Map<Integer, List<String>> listaSaldi, String DataInizialeS, String DataFinaleS, String SaldoInizioPeriodo, boolean MediaconPicchi) {
 
-        //  System.out.println(DataInizialeS+" "+DataFinaleS);
-        //  System.out.println (listaSaldi.length);
-//viene tornato come primo valore il saldo iniziale
-//come secondo valore il saldo finale
-//come terso la giacenza media
-// String SaldoPartenza=SaldoIniziale.toString();
-        String ritorno[] = new String[3];
-        String SaldoInizialeT = "0";
-        boolean TrovatoSaldoIniziale = false;
-        String SaldoFinaleT = "0";
-        String DataIniziale = DataInizialeS;
-        String DataFinale = DataFinaleS;
-        BigDecimal SaldoIniziale = new BigDecimal("0");
-        BigDecimal UltimoValore = new BigDecimal("0");
-        // System.out.println(DataIniziale);
-        //System.out.println(DataFinale);
-        long diffdate;
-        long longDatainiziale = Funzioni_Date_ConvertiDatainLong(DataIniziale);
-        long longDataFinale = Funzioni_Date_ConvertiDatainLong(DataFinale);
-        int contatore = 0;//il numero di giorni che serviranno per il calcolo della giacenza media
-        for (String valori : listaSaldi.get(0)) {
-            String splittata[] = valori.split(",");
-            // long longDatainiziale=ConvertiDatainLong(DataIniziale);
-
-            /*   if (longDatainiziale>ConvertiDatainLong(splittata[0]))
-                    {
-                  //   System.out.println("Errore, bisogna mettere una data inferiore o uguale a "+splittata[0]);
-                        break;
-                    }*/
-            if (longDatainiziale > Funzioni_Date_ConvertiDatainLong(splittata[0])) {
-                UltimoValore = new BigDecimal(splittata[1]);
-                SaldoInizialeT=splittata[1];
-                //  System.out.println("SaldoIniziale="+UltimoValore+" , "+splittata[0]);
-            }
-            if (longDatainiziale <= Funzioni_Date_ConvertiDatainLong(splittata[0]) && longDataFinale >= Funzioni_Date_ConvertiDatainLong(splittata[0])) {
-                //diffdate = Funzioni_Date_DifferenzaDate(splittata[0], DataIniziale);
-                
-                diffdate = FunzioniDate.DifferenzaDate(DataIniziale, splittata[0]);
-                //System.out.println(diffdate);
-                contatore = contatore + Integer.parseInt(String.valueOf(diffdate));
-                SaldoIniziale = UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
-                if (!TrovatoSaldoIniziale) {
-                    SaldoInizialeT = UltimoValore.toString();
-                }
-                TrovatoSaldoIniziale = true;
-                DataIniziale = splittata[0];
-                UltimoValore = new BigDecimal(splittata[1]);
-
-            }
-        }
-
-        SaldoFinaleT = UltimoValore.toString();
-
-        if (MediaconPicchi) {
-            DataIniziale = DataInizialeS;
-            SaldoIniziale = new BigDecimal("0");
-            UltimoValore = new BigDecimal("0");
-            contatore = 0;//il numero di giorni che serviranno per il calcolo della giacenza media
-            for (String valori : listaSaldi.get(1)) {
-                String splittata[] = valori.split(",");
-                if (longDatainiziale > Funzioni_Date_ConvertiDatainLong(splittata[0])) {
-                    UltimoValore = new BigDecimal(splittata[1]);
-                }
-                if (longDatainiziale <= Funzioni_Date_ConvertiDatainLong(splittata[0]) && longDataFinale >= Funzioni_Date_ConvertiDatainLong(splittata[0])) {
-                    //diffdate = Funzioni_Date_DifferenzaDate(splittata[0], DataIniziale);
-                    diffdate = FunzioniDate.DifferenzaDate(DataIniziale, splittata[0]);
-                    contatore = contatore + Integer.parseInt(String.valueOf(diffdate));
-                    SaldoIniziale = UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
-                    DataIniziale = splittata[0];
-                    UltimoValore = new BigDecimal(splittata[1]);
-                }
-
-            }
-        }
-
-        //diffdate = Funzioni_Date_DifferenzaDate(DataFinale, DataIniziale) + 1;
-        diffdate = FunzioniDate.DifferenzaDate(DataIniziale, DataFinale)+1;
-        contatore = contatore + Integer.parseInt(String.valueOf(diffdate));
-        SaldoIniziale = UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
-        BigDecimal GiacenzaMedia = SaldoIniziale.divide(new BigDecimal(contatore), 2, RoundingMode.HALF_UP).add(new BigDecimal(SaldoInizioPeriodo));
-        //  System.out.println("Giacenza media "+GiacenzaMedia+";"+SaldoInizialeT+";"+SaldoFinaleT);
-        this.CDC_Text_Giorni.setText("" + contatore);
-
-        SaldoInizialeT = new BigDecimal(SaldoInizialeT).add(new BigDecimal(SaldoInizioPeriodo)).toString();
-        SaldoFinaleT = new BigDecimal(SaldoFinaleT).add(new BigDecimal(SaldoInizioPeriodo)).toString();
-        // System.out.println("Giacenza media "+GiacenzaMedia+";"+SaldoInizialeT+";"+SaldoFinaleT);
-        ritorno[0] = SaldoInizialeT;
-        ritorno[1] = SaldoFinaleT;
-        ritorno[2] = GiacenzaMedia.toString();
-
-        return ritorno;
-
-    }
     
+    /**
+     * Calcola la differenza in giorni interi (arrotondati) tra due date in formato {@code yyyy-MM-dd}
+     * (l'orario viene fissato a mezzanotte per entrambe).
+     * @param Data1 prima data (minuendo)
+     * @param Data2 seconda data (sottraendo)
+     * @return {@code Data1 - Data2} espresso in giorni; {@code 0} se una delle date non è parsabile
+     */
     public static long Funzioni_Date_DifferenzaDate(String Data1, String Data2) {
         long differenza=0;
         try {
@@ -15780,6 +15805,13 @@ public static void ripristinaFiltri(JTable table) {
         return differenza;
     }
     
+    /**
+     * Calcola la differenza in secondi (arrotondati) tra due date in formato {@code yyyy-MM-dd}
+     * (l'orario viene fissato a mezzanotte per entrambe).
+     * @param Data1 prima data (minuendo)
+     * @param Data2 seconda data (sottraendo)
+     * @return {@code Data1 - Data2} espresso in secondi; {@code 0} se una delle date non è parsabile
+     */
     public static long Funzioni_Date_DifferenzaDateSecondi(String Data1, String Data2) {
         long differenza=0;
         try {
@@ -15798,6 +15830,12 @@ public static void ripristinaFiltri(JTable table) {
         return differenza;
     }
     
+       /**
+        * Converte una data in formato {@code yyyy-MM-dd} nel corrispondente timestamp epoch in
+        * millisecondi.
+        * @param Data1 data da convertire, in formato {@code yyyy-MM-dd}
+        * @return timestamp in millisecondi, oppure {@code 0} se la stringa non è una data valida in quel formato
+        */
        public static long Funzioni_Date_ConvertiDatainLong(String Data1) {
            long m1=0;
         try {
@@ -15813,6 +15851,12 @@ public static void ripristinaFiltri(JTable table) {
         return m1;
     } 
     
+        /**
+         * Converte un timestamp epoch in millisecondi nella corrispondente data in formato
+         * {@code yyyy-MM-dd}.
+         * @param Data1 timestamp in millisecondi da convertire
+         * @return data formattata come {@code yyyy-MM-dd}
+         */
         public static String Funzioni_Date_ConvertiDatadaLong(long Data1) {
 
   

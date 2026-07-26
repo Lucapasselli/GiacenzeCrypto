@@ -423,6 +423,15 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         return result.toString();
     }
     
+    /**
+     * Verifica la validità di una coppia di chiavi API Binance interrogando l'endpoint autenticato
+     * {@code /api/v3/account}, firmando la richiesta con HMAC-SHA256 e sincronizzando il timestamp
+     * con l'orologio del server tramite {@link #Binance_getServerTime()}.
+     * @param apiKey chiave API da testare
+     * @param secret secret associato alla chiave, usato per firmare la richiesta
+     * @return {@code true} se il server risponde con codice 200 (chiavi valide), {@code false} in
+     *         caso di risposta di errore o eccezione (es. rete non raggiungibile)
+     */
     public static boolean Binance_testApiKeys(String apiKey, String secret) {
         try {
             String BASE_URL = "https://api.binance.com";
@@ -524,6 +533,16 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     
     
     
+    /**
+     * Avvia (tramite {@link CcxtInterop#fetchMovimentiConBar}) lo scaricamento dei movimenti da un
+     * exchange CEX a partire dalla data dell'ultimo movimento già importato, o dal 1° gennaio 2017
+     * se non è presente alcun movimento precedente.
+     * @param Exchange nome dell'exchange da interrogare
+     * @param ApiKey chiave API da usare per l'autenticazione
+     * @param ApiSecret secret associato alla chiave API
+     * @param DataUltimoMovimento data dell'ultimo movimento già importato (formato leggibile), o
+     *                            {@code "0"} se non è presente alcun movimento
+     */
     public void ScaricaExchange(String Exchange,String ApiKey,String ApiSecret,String DataUltimoMovimento) {
 
             long data=Long.parseLong("1483228800000");//   01/01/2017 data di default
@@ -740,6 +759,11 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     }
 
     
+    /**
+     * Migra i wallet dal vecchio file {@code Wallets.db} (formato {@code IndirizzoWallet;Rete} per
+     * riga) al database, se il file esiste ancora. Passo di compatibilità con versioni precedenti
+     * del programma, quando i wallet non erano ancora persistiti nel database.
+     */
     public static void LeggiFileWallets() {
 
             //Il file wallet è così composto

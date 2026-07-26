@@ -303,6 +303,14 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
     
     
 
+/**
+ * Versione precedente (superata) dell'evidenziazione delle righe corrispondenti tra due tabelle:
+ * confronta le prime 6 colonne di ciascuna riga di {@code table1} e {@code table2} nella stessa
+ * posizione (per indice di riga, non per contenuto) e colora di giallo le righe di {@code table2}
+ * i cui valori coincidono. Non più utilizzata, mantenuta come riferimento storico.
+ * @param table1 tabella di riferimento con cui confrontare i valori
+ * @param table2 tabella su cui viene applicato il renderer di evidenziazione
+ */
 public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2) {
     int colonneDaControllare = Math.min(6, table1.getColumnCount());
     int righeDaControllare = Math.min(table1.getRowCount(), table2.getRowCount());
@@ -789,6 +797,10 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
         }
     }
 
+    /**
+     * Imposta l'ID del movimento associato al dialogo e lo mostra nell'etichetta dedicata.
+     * @param ID identificativo univoco del movimento
+     */
     public void GUI_SetID(String ID){
         this.ID=ID;
         jLabel1.setText(ID);

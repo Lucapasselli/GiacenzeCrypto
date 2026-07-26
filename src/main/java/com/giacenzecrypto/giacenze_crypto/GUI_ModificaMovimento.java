@@ -763,6 +763,15 @@ private static final long serialVersionUID = 9L;
         
     }//GEN-LAST:event_Bottone_OkActionPerformed
 
+    /**
+     * Valida i campi del form (tramite {@link #EvidenziaProblemi()}) e, se non emergono problemi,
+     * scrive il movimento in {@code MappaCryptoWallet}. Se l'ID proposto collide con un movimento
+     * già esistente e non si sta modificando un movimento esistente, tenta di generare un nuovo ID
+     * univoco e richiama se stesso ricorsivamente con il nuovo ID; se l'ID non ha il formato atteso
+     * mostra un messaggio di avviso invitando a variare l'orario della transazione. In caso di
+     * scrittura riuscita chiude il dialogo.
+     * @param ID identificativo proposto per il movimento da salvare
+     */
     public void ScritturaDati(String ID){
     if(!EvidenziaProblemi()){
             //se non trovo problemi nella compilazione allora procedo con l'inserimento del movimento
@@ -810,6 +819,14 @@ private static final long serialVersionUID = 9L;
     }
     
     
+    /**
+     * Precompila tutti i campi del form (data, wallet, monete, quantità, valore, note, prezzo) con
+     * i dati del movimento esistente identificato da {@code IDTransazione}, per consentirne la
+     * modifica. Se il movimento non è di tipo manuale ("M") né una rettifica automatica, disabilita
+     * i campi che non devono poter essere alterati (data, ID, wallet, monete, quantità, indirizzi),
+     * lasciando modificabili solo valore e note. Al termine richiama {@link #EvidenziaProblemi()}.
+     * @param IDTransazione ID del movimento da cui leggere i dati da precompilare
+     */
     public void CompilaCampidaID(String IDTransazione){
         try {
             String riga[]=Principale.MappaCryptoWallet.get(IDTransazione);
@@ -873,6 +890,11 @@ private static final long serialVersionUID = 9L;
         }
     }
     
+        /**
+         * Precompila solo i campi principali (data/ora e wallet) del form con i dati del movimento
+         * identificato da {@code IDTransazione}, senza toccare monete, quantità o valore.
+         * @param IDTransazione ID del movimento da cui leggere data e wallet
+         */
         public void CompilaCampiPrincipalidaID(String IDTransazione){
         try {
             String riga[]=Principale.MappaCryptoWallet.get(IDTransazione);
@@ -892,6 +914,13 @@ private static final long serialVersionUID = 9L;
         }
     }
         
+            /**
+             * Precompila il form con i dati del movimento identificato da {@code IDTransazione}
+             * invertendo moneta/quantità/indirizzo di entrata e uscita, per creare rapidamente il
+             * movimento speculare (ad es. la contropartita di un trasferimento). Data/ora vengono
+             * copiate identiche, wallet e wallet di dettaglio restano invariati (non impostati qui).
+             * @param IDTransazione ID del movimento di cui creare l'opposto
+             */
             public void CompilaMovimentoOppostoID(String IDTransazione){
         try {
             String riga[]=Principale.MappaCryptoWallet.get(IDTransazione);
@@ -1051,6 +1080,7 @@ private static final long serialVersionUID = 9L;
 
             Thread thread;
             thread = new Thread() {
+                /** Apre in background il dialogo {@link GUI_ModificaPrezzo} per la scelta/modifica del prezzo. */
                 public void run() {
                     String Rete=null;
                     if (ModificaMovimento) Rete=Funzioni.TrovaReteDaID(MovimentoRiportato[0]);
@@ -1181,6 +1211,7 @@ worker.execute();*/
 
             Thread thread;
             thread = new Thread() {
+                /** Recupera in background il prezzo della transazione tramite {@link Prezzi#DammiPrezzoInfoTransazione}. */
                 public void run() {
                     String Rete=null;
                     if (ModificaMovimento) Rete=Funzioni.TrovaReteDaID(MovimentoRiportato[0]);

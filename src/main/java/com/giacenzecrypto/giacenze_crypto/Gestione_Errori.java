@@ -219,6 +219,12 @@ private static final long serialVersionUID = 5L;
     
     
     
+    /**
+     * Svuota {@code TabellaErrori} e la ripopola con le righe della mappa passata, ciascuna già
+     * formattata come CSV (10 o 11 colonne separate da virgola). Se manca la colonna del tipo errore
+     * (riga da 12 campi con l'indice 10 vuoto) viene copiato al suo posto il valore della colonna successiva.
+     * @param Mappa mappa dei movimenti in errore da visualizzare, valori in formato CSV
+     */
     public  void CompilaTabellaErrori(Map<String, String> Mappa){
         DefaultTableModel ModelloTabellaErrori = (DefaultTableModel) TabellaErrori.getModel();
         PulisciTabella(ModelloTabellaErrori);
@@ -237,6 +243,11 @@ private static final long serialVersionUID = 5L;
     }
     
     
+         /**
+          * Rimuove tutte le righe dal modello di tabella passato, ripetendo la cancellazione della
+          * prima riga finché il modello non risulta vuoto.
+          * @param modello modello della tabella da svuotare
+          */
          public static void PulisciTabella(DefaultTableModel modello) {
            int z=modello.getRowCount();
         // System.out.println(modelProblemi.getRowCount());

@@ -41,6 +41,15 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
      private String IDdt=null;//ID del contesto attuale
 
 
+        /**
+         * Popola la tabella di dettaglio del dialogo con tutti i campi rilevanti del movimento
+         * identificato da {@code IDTransazione} (data, wallet, rete, causale, monete di
+         * uscita/entrata con relativo valore unitario calcolato o preso dalla fonte prezzo salvata,
+         * costo di carico, plusvalenza, dati on-chain, note, movimenti correlati, ecc.), mostrando
+         * solo le righe i cui campi non sono vuoti. Abilita il pulsante "DeFi" solo se il movimento
+         * ha un hash di transazione e una rete riconosciuta.
+         * @param IDTransazione ID del movimento di cui mostrare il dettaglio
+         */
         public void TransazioniCrypto_CompilaTextPaneDatiMovimento(String IDTransazione) {
             IDdt=IDTransazione;
             SerializzaIDMovimenti(IDTransazione);
@@ -559,6 +568,11 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Svuota la mappa statica ID→ordine dei movimenti, in modo che venga ricostruita da capo dalla
+     * prossima chiamata a {@link #TransazioniCrypto_CompilaTextPaneDatiMovimento(String)} (usato
+     * quando si apre una nuova istanza del dialogo dopo che la mappa dei movimenti è cambiata).
+     */
     public void AzzeraMap(){
         mappa_ID.clear();
     }
@@ -639,8 +653,9 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         this.dispose();
         Thread thread;
         thread = new Thread() {
+            /** Apre in background il dialogo {@link GUI_ModificaPrezzo} per il movimento selezionato. */
             public void run() {
-                
+
                 GUI_ModificaPrezzo t =new GUI_ModificaPrezzo(Principale.PopUp_IDTrans);
                 t.setLocationRelativeTo(c);
                 t.setVisible(true);
@@ -683,6 +698,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
 
         // Esegui l'export in background
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            /** Esporta in background la tabella corrente in un file Excel. */
             @Override
             protected Void doInBackground() throws Exception {
                 if (Principale.PopUp_Tabella != null) {
@@ -691,6 +707,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                 return null;
             }
 
+            /** Chiude la finestra di progresso e ripristina il cursore al termine dell'export. */
             @Override
             protected void done() {
                 progress.dispose();
@@ -730,6 +747,18 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
     
     
     
+      /**
+       * Apre il dialogo {@link GUI_ModificaMovimento} per modificare il movimento indicato. Se il
+       * movimento fa parte di un gruppo di movimenti collegati (es. uno scambio, con commissione o
+       * reward generati automaticamente) e non è esso stesso un movimento automatico, chiede prima
+       * conferma all'utente e, in caso affermativo, riporta l'intero gruppo alla situazione
+       * originale (tramite {@link GUI_ClassificazioneMovimento#RiportaTransazioniASituazioneIniziale})
+       * prima di aprire il form di modifica. Al termine della modifica riapre automaticamente il
+       * dialogo di dettaglio sul movimento risultante (che può avere un nuovo ID se ne è stato
+       * generato uno).
+       * @param ID ID del movimento da modificare
+       * @param c componente da cui recuperare la finestra ancestor per i messaggi di conferma
+       */
       public void Funzione_ModificaMovimento(String ID,Component c){
             GUI_ModificaMovimento a = new GUI_ModificaMovimento();
             String riga[]=Principale.MappaCryptoWallet.get(ID);

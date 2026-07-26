@@ -316,13 +316,28 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
   
     
     
+    /**
+     * Indica se il dialogo ha effettivamente classificato/modificato almeno un movimento.
+     * @return {@code true} se è stata effettuata una modifica, {@code false} altrimenti
+     */
     public boolean getModificaEffettuata(){
         return ModificaEffettuata;
     }
+    /**
+     * Imposta il flag che segnala se il dialogo ha effettuato una modifica.
+     * @param b nuovo valore del flag
+     */
     public void setModificaEffettuata(boolean b){
         ModificaEffettuata=b;
     }
-    
+
+    /**
+     * Costruisce la riga da mostrare nella tabella dei movimenti a partire dal movimento
+     * identificato da {@code ID}, scegliendo moneta e quantità di uscita o di entrata a seconda
+     * che il movimento sia un prelievo ({@code "PC"}) o un deposito.
+     * @param ID identificativo del movimento da cui estrarre i dati
+     * @return array di 8 colonne pronto per essere inserito nel modello della tabella
+     */
     public String[] DammiRigaTabellaDaID(String ID){
           String v[]=MappaCryptoWallet.get(ID);
           String TipoMovimento=v[0].split("_")[4].trim();
@@ -1174,6 +1189,20 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         return ritorno;
     }
     
+    /**
+     * Applica la classificazione scelta dall'utente (descrizione, dettaglio, note, eventuale nuovo
+     * prezzo) a tutti i movimenti indicati e ai loro movimenti associati (ripuliti prima tramite
+     * {@link #PulisciMovimentiAssociati(Set)}). Se il dettaglio è una donazione ({@code "DDO"}) il
+     * nuovo prezzo viene registrato solo come costo di carico senza alterare il valore della
+     * transazione; altrimenti sostituisce il valore della transazione, salvando il precedente in
+     * campo 35.
+     * @param IDsTr insieme degli ID dei movimenti da classificare
+     * @param descrizione descrizione da assegnare; se vuota viene dedotta automaticamente dal tipo di movimento
+     * @param dettaglio codice di dettaglio/categoria da assegnare
+     * @param Note note testuali da assegnare
+     * @param NuovoPrezzo nuovo prezzo/valore da applicare, o stringa vuota per non modificarlo
+     * @param MostraMessaggioFine se {@code true} mostra un messaggio di conferma al termine
+     */
     public void ClassificaMovimenti(Set<String> IDsTr,String descrizione,String dettaglio,String Note,String NuovoPrezzo,boolean MostraMessaggioFine){
         //Questa funzione si occupa di pulire tutti i movimenti compresi quelli associati e farli tornare alla situazione originale
         IDsTr=PulisciMovimentiAssociati(IDsTr);
@@ -1209,6 +1238,21 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 }
      }
     
+    /**
+     * Riclassifica una coppia prelievo/deposito come trasferimento tra wallet di proprietà (senza
+     * plusvalenza), confrontando le quantità prelevata e depositata:
+     * <ul>
+     *   <li>se la quantità prelevata è maggiore, crea un movimento di commissione ({@code CM}) pari
+     *       alla differenza, con valore proporzionale al valore unitario del prelievo;</li>
+     *   <li>se sono uguali, si limita a collegare i due movimenti tra loro;</li>
+     *   <li>se la quantità prelevata è minore, crea invece un movimento reward ({@code RW}) pari
+     *       alla differenza a favore del deposito.</li>
+     * </ul>
+     * I due movimenti originali vengono aggiornati (descrizione, dettaglio, importi, riferimenti
+     * incrociati) e l'eventuale movimento di commissione/reward viene inserito in {@code MappaCryptoWallet}.
+     * @param IDPrelievo ID del movimento di prelievo
+     * @param IDDeposito ID del movimento di deposito corrispondente
+     */
     public static void CreaMovimentiTrasferimentosuWalletProprio(String IDPrelievo,String IDDeposito){
         //come prima cosa devo generare un nuovo id per il prelievo
        // System.out.println("Creo commissione");
@@ -1579,6 +1623,16 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     
     
     
+        /**
+         * Classifica come "trasferimento a piattaforma/DeFi non presidiata" il prelievo indicato
+         * (tramite {@link #CreaMovimentoTrasferimentoA}) e, di riflesso, tutti gli altri movimenti
+         * non ancora classificati che condividono lo stesso indirizzo di contratto e la stessa
+         * moneta: i prelievi analoghi vengono trattati come nuovi trasferimenti verso la stessa
+         * piattaforma, mentre i depositi con tipo movimento inverso vengono trattati come rientri
+         * (tramite {@link #CreaMovimentoTrasferimentoDa}).
+         * @param ID ID del movimento di prelievo di partenza da classificare
+         * @return numero totale di movimenti classificati (quello originale più tutti quelli analoghi trovati)
+         */
         public static int CreaMovimentiTrasferimentoAVaultNonPresidiati(String ID){
             //controllo se ho movimenti simili e chiedo se voglio classificarli nella stessa maniera
             //poi creo movimento di deposito su Vault e movifico il movimento originale
@@ -1676,6 +1730,18 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     // Funzione accorpata: gestisce sia il trasferimento A Piattaforma/DeFi sia A Collaterale.
     // WalletControparte e DescrizioneMovimento distinguono i due casi (prima erano
     // CreaMovimentoTrasferimentoAVault e CreaMovimentoTrasferimentoACollaterale).
+    /**
+     * Classifica un prelievo come trasferimento verso un wallet di controparte esterno al giro dei
+     * wallet gestiti (piattaforma/DeFi non presidiata o collaterale bloccato, a seconda dei
+     * parametri passati dal chiamante): crea un movimento di deposito speculare sul wallet di
+     * controparte indicato (stessa moneta, quantità opposta, stesso valore) e aggiorna il movimento
+     * originale con la descrizione, il dettaglio e il riferimento incrociato al nuovo movimento.
+     * @param ID ID del movimento di prelievo da classificare
+     * @param Descrizione descrizione da assegnare al movimento originale
+     * @param Dettaglio codice di dettaglio da assegnare al movimento originale
+     * @param WalletControparte nome del wallet di controparte su cui creare il deposito speculare
+     * @param DescrizioneMovimento descrizione da assegnare al nuovo movimento di deposito creato
+     */
     public static void CreaMovimentoTrasferimentoA(String ID,String Descrizione,String Dettaglio,String WalletControparte,String DescrizioneMovimento){
         //Devo modificare il movimento originale + crearne uno nuovo
         String Movimento[]=MappaCryptoWallet.get(ID);
@@ -1899,6 +1965,20 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         // Funzione accorpata: gestisce sia il trasferimento DA Piattaforma/DeFi sia DA Collaterale.
         // WalletControparte e DescrizioneMovimento distinguono i due casi (prima erano
         // CreaMovimentoTrasferimentoDaVault e CreaMovimentoTrasferimentoDaCollaterale).
+        /**
+         * Classifica un deposito come rientro da un wallet di controparte esterno (piattaforma/DeFi
+         * non presidiata o sblocco di collaterale, a seconda del chiamante): individua ed etichetta
+         * come "REWARD" eventuali altri movimenti di deposito non ancora categorizzati con lo stesso
+         * hash di transazione (rendimenti aggiuntivi in altra moneta arrivati nella stessa
+         * transazione), poi crea sul wallet di controparte indicato un movimento di prelievo
+         * speculare (stessa moneta, quantità opposta, stesso valore) e aggiorna il movimento
+         * originale con descrizione, dettaglio e riferimento incrociato al nuovo movimento.
+         * @param ID ID del movimento di deposito da classificare
+         * @param Descrizione descrizione da assegnare al movimento originale
+         * @param Dettaglio codice di dettaglio da assegnare al movimento originale
+         * @param WalletControparte nome del wallet di controparte su cui creare il prelievo speculare
+         * @param DescrizioneMovimento descrizione da assegnare al nuovo movimento di prelievo creato
+         */
         public static void CreaMovimentoTrasferimentoDa(String ID,String Descrizione,String Dettaglio,String WalletControparte,String DescrizioneMovimento){
 
         // Quando si sblocca il collaterale (WalletControparte = "Collaterale Bloccato") NON si deve
@@ -2135,6 +2215,18 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     // (chiamare con Collaterale=true). Il dispatcher unico deriva internamente tutte le stringhe
     // che distinguono il caso Collaterale da quello Piattaforma/DeFi (Vault).
 
+    /**
+     * Classifica una coppia prelievo/deposito come "scambio crypto differito": il caso in cui la
+     * moneta prelevata da un wallet non è la stessa depositata su un altro (ad es. si deposita USDT
+     * su una piattaforma e, in tempi successivi, se ne preleva un token diverso ottenuto tramite
+     * scambio/airdrop). Riassegna nuovi ID ai due movimenti originali (per mantenerne l'ordine
+     * cronologico) e inserisce tra loro tre movimenti sintetici: un trasferimento in uscita verso
+     * una "piattaforma di scambio" fittizia, un movimento di scambio/acquisto/vendita crypto e un trasferimento in entrata
+     * verso il wallet di deposito originale. Tutti i movimenti vengono collegati tra loro tramite i
+     * riferimenti incrociati e scritti in {@code MappaCryptoWallet}.
+     * @param IDPrelievo ID del movimento di prelievo originale
+     * @param IDDeposito ID del movimento di deposito originale (moneta diversa da quella prelevata)
+     */
     public static void CreaMovimentiScambioCryptoDifferito(String IDPrelievo,String IDDeposito){
         //come prima cosa devo generare un nuovo id per il prelievo
         //System.out.println("Creo 3 movimenti");
@@ -2229,12 +2321,9 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         MS[13]=MovimentoDeposito[13];
 
         MT1[15]=MovimentoPrelievo[15];
-       // MS[15]=MovimentoDeposito[15];
-
-            //Il prezzo del movimento di scambio deve essere uguale al valore della moneta ceduta nel caso sia passato tanto tempo
-            //dal prelievo al deposito, mettiamo ad esempio il caso in cui metto degli USDT in una piattaforma in attesa che mi airdroppino
-            //un nuovo token, nel momento in cui il token viene airdroppato viene calcolata l'eventuale plusvalenza sugli USDT ceduti
-            //e il loro prezzo viene poi usato come costo di carico per il nuovo token acquistato.
+            
+            //Il prezzo segue il principio di cassa per cui dovrà essere preso nel momento in cui effettivamente mi airdroppano il token
+            //è quello il momento in cui ho effettivamente e definitivamente concluso l'operazione
             
             //Se è passato poco tempo invece significa che è semplicemente uno scambio che magari ci ha messo qualche minuto per arrivare,
             //in quel caso posso prendere il prezzo della transazione
@@ -2250,9 +2339,6 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             M2.InserisciValori(MovimentoDeposito[11], MovimentoDeposito[13], MovimentoPrelievo[28], MovimentoPrelievo[12]);*/
             String Prezzo;
             String Rete=Funzioni.TrovaReteDaID(MovimentoPrelievo[0]);
-            Prezzo=Prezzi.DammiPrezzoTransazione(M1, null, DatalongDeposito, "0", true, 3, Rete,"");
-            //Se la differenza è inferiore ai 30 minuti allora posso prendere sia il prezzo del token uscito che di quello entrato
-            if (DiffDate<1800000){
                 Moneta M2 = new Moneta();
                 M2.InserisciValori(MovimentoDeposito[11], MovimentoDeposito[13], MovimentoDeposito[28], MovimentoDeposito[12]);
                 Prezzo=Prezzi.DammiPrezzoTransazione(M1, M2, DatalongDeposito, "0", true, 3, Rete,"");
@@ -2261,10 +2347,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 if(Prezzo.equals("0.00")){
                     Prezzo=MovimentoDeposito[15];
                 }
-                /*else if(!MovimentoDeposito[32].equalsIgnoreCase("Si")){
-                    MovimentoDeposito[15]=Prezzo;
-                }*/
-            }
+
             if(Prezzo.equals("0.00")){
                 //Se il prezzo è 0.00 vuol dire che la crypto è senza prezzo
                 MS[32]="No";
@@ -2383,6 +2466,14 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     
     
     //MAP <ID Analizzato,Lista movimenti coinvolti>
+    /**
+     * Annulla la classificazione di più gruppi di movimenti collegati, riportando ciascun gruppo
+     * alla situazione originale tramite {@link #RiportaTransazioniASituazioneIniziale(String[], String)}.
+     * @param PartiConvolte mappa dall'ID del movimento principale all'elenco degli ID dei movimenti
+     *                      coinvolti (originali e generati automaticamente) da ripristinare
+     * @return insieme degli ID originali (eventualmente rinominati, nel caso di scambi differiti) su
+     *         cui è stato effettuato il ripristino
+     */
     public static Set<String> RiportaTransazioniASituazioneIniziale(Map<String,String[]> PartiConvolte){
         //In ritorno torno gli IDOriginali che nel frattempo potrebbero cambiare
         Set<String> IDsRitorno=new HashSet<>();
@@ -2398,6 +2489,20 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         return IDsRitorno;
     }
     
+/**
+ * Annulla la classificazione di un gruppo di movimenti collegati, riportandoli alla situazione
+ * precedente alla categorizzazione: rimuove i movimenti generati automaticamente (commissione
+ * "CM" o reward "RW", marcati "AU"), sommando/sottraendo la relativa quantità e valore al
+ * movimento di prelievo originale per compensarne l'effetto, quindi azzera su ciascun movimento
+ * residuo descrizione, dettaglio, note e riferimenti incrociati. Se il movimento fa parte di uno
+ * scambio differito (creato da {@link #CreaMovimentiScambioCryptoDifferito}), ne ripristina anche
+ * l'ID originale rimuovendo il prefisso aggiunto in fase di classificazione. Ripristina infine
+ * l'eventuale prezzo precedente salvato in campo 35 (movimenti riclassificati come acquisto o
+ * donazione).
+ * @param IDPartiConvolte elenco degli ID dei movimenti (originali e generati automaticamente) da ripristinare
+ * @param IDOri ID originale del movimento su cui si sta operando
+ * @return ID originale, oppure il nuovo ID assegnato al movimento se si trattava di uno scambio differito
+ */
 public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolte[],String IDOri){
         //In ritorno torno gli IDOriginali che nel frattempo potrebbero cambiare
         //if (IDPartiConvolte.length<2) return IDOri;
@@ -2506,6 +2611,16 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
     
     
 
+    /**
+     * Popola la tabella dei movimenti potenzialmente associabili al movimento {@code ID}, in base al
+     * tipo di classificazione selezionata in {@code ComboBox_TipoMovimento} ("trasferimento tra
+     * wallet" o "scambio differito"). Cerca tra tutti i movimenti non ancora generati
+     * automaticamente quelli di tipo opposto (prelievo/deposito), con moneta compatibile (identica
+     * per i trasferimenti tra wallet, diversa per gli scambi differiti), quantità entro
+     * l'escursione percentuale massima configurata e distanza temporale entro il numero di giorni
+     * configurato, proponendoli come possibili controparti da abbinare manualmente.
+     * @param ID ID del movimento per cui cercare i movimenti associabili
+     */
     public void CompilaTabellaMovimetiAssociabili(String ID) {
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.Tabella_MovimentiAbbinati.getModel();
         Tabelle.Funzioni_PulisciTabella(ModelloTabellaDepositiPrelievi);

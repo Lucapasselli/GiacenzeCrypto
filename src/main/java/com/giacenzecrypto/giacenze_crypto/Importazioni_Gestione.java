@@ -534,6 +534,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
     final boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
 
     Thread thread = new Thread() {
+        /** Esegue in background l'import generico configurato dal JSON selezionato. */
         @Override
         public void run() {
             try {
@@ -628,6 +629,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
 
                 Thread thread;
                 thread = new Thread() {
+                    /** Esegue in background l'import di un CSV Crypto.com Exchange. */
                     public void run() {
                         if (returnVal == JFileChooser.APPROVE_OPTION) {
                             String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
@@ -715,6 +717,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
 
             Thread thread;
             thread = new Thread() {
+                /** Esegue in background l'import di un CSV CoinTracking. */
                 public void run() {
                     //  try {
 
@@ -816,6 +819,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
 
             Thread thread;
             thread = new Thread() {
+                /** Esegue in background l'import di un CSV Tatax. */
                 public void run() {
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
 
@@ -877,6 +881,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
             boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
             Thread thread;
             thread = new Thread() {
+                /** Esegue in background l'import di un CSV Binance. */
                 public void run() {
 
                     // JFileChooser fc = new JFileChooser();
@@ -920,6 +925,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
             boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
             Thread thread;
             thread = new Thread() {
+                /** Esegue in background l'import di un Binance Tax Report. */
                 public void run() {
 
                     // JFileChooser fc = new JFileChooser();
@@ -963,6 +969,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
             boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
             Thread thread;
             thread = new Thread() {
+                /** Esegue in background l'import di un CSV OKX. */
                 public void run() {
 
                     // JFileChooser fc = new JFileChooser();

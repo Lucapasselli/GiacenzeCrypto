@@ -2114,8 +2114,9 @@ public class Prezzi {
     /**
      * Determina il prezzo di riferimento (unitario e totale) per uno scambio tra due monete, scegliendo quale
      * delle due usare come base secondo un ordine di affidabilità: 1) FIAT EUR (prezzo esatto, nessuna ricerca),
-     * 2) USD (tramite {@link #CambioUSDEUR}), 3) monete tra {@link #SimboliPrioritari} (alta capitalizzazione,
-     * meno oscillazioni), 4) la prima delle due monete per cui si riesce a trovare un prezzo tramite
+     * 2) EMoney token denominati in euro (cambio fisso 1:1, fonte {@code "EURO"}), 3) USD (tramite {@link #CambioUSDEUR}),
+     * 4) monete tra {@link #SimboliPrioritari} (alta capitalizzazione,
+     * meno oscillazioni), 5) la prima delle due monete per cui si riesce a trovare un prezzo tramite
      * {@link #CambioXXXEUR}. Le monete vengono clonate prima dell'elaborazione per non alterare gli oggetti
      * originali, e normalizzate secondo {@link Principale#Mappa_AddressRete_Nome} quando l'indirizzo corrisponde
      * a un token noto su una rete specifica.
@@ -2132,12 +2133,13 @@ public class Prezzi {
         //
          // tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
         //  System.out.println("Tempo CambioXXXEUR : "+tempoOperazione+"ms");
- /*Questa funzione si divide in 4 punti fondamentali:
+ /*Questa funzione si divide in 5 punti fondamentali:
         1 - Verifico che una delle 2 monete di scambio sia una Fiat e in quel caso prendo quello come prezzo della transazione anche perchè è il più affidabile
-        2 - Verifico se una delle 2 monete è USDT in quel caso prendo quello come valore in quanto USDT è una moneta di cui mi salvo tutti i prezzi storici
-        3 - Verifico se una delle 2 monete non faccia parte di uno specifico gruppo delle monete più capitalizzate presenti su binance, in quel caso prendo quello come
+        2 - Verifico se una delle 2 monete è un EMoney token denominato in euro (es. EURe): in quel caso il cambio è per definizione 1:1 con l'euro
+        3 - Verifico se una delle 2 monete è USDT in quel caso prendo quello come valore in quanto USDT è una moneta di cui mi salvo tutti i prezzi storici
+        4 - Verifico se una delle 2 monete non faccia parte di uno specifico gruppo delle monete più capitalizzate presenti su binance, in quel caso prendo quello come
         prezzo della transazione in quanto il prezzo risulta sicuramente più preciso di quello di una shitcoin o comunque di una moneta con bassa liquidità
-        4 - Prendo il prezzo della prima moneta disponibile essendo che l'affidabilità del prezzo è la stessa per entrambe le monete dello scambio      
+        5 - Prendo il prezzo della prima moneta disponibile essendo che l'affidabilità del prezzo è la stessa per entrambe le monete dello scambio
          */
 
         Moneta MonOri[] = new Moneta[]{Moneta1a, Moneta2a};
@@ -2170,6 +2172,7 @@ public class Prezzi {
         //PARTE 2 - STABILISCO LA PRIORITA' DI ASSEGNAZIONE PREZZI SUI TOKEN
         //(In caso in cui la transazioni presenti 2 token scelgo quale token determinerà iol prezzo della transazione con queasta priorità:)
         //A - FIAT
+        //A bis - EMONEY TOKEN DENOMINATI IN EURO (cambio fisso 1:1)
         //B - STABLECOIN
         //C - Selezione di Crypto ad alta capitalizzazione (quindi con meno oscillazioni)
         
@@ -2193,7 +2196,48 @@ public class Prezzi {
                 }
             }
         }
-        
+
+        //A bis - VERIFICO SE E' UN EMONEY TOKEN ANCORATO ALL'EURO (es. EURe)
+        //Se il token è presente nell'elenco degli EMoney (tabella EMONEY del database personale),
+        //la data del movimento è uguale o successiva alla data di decorrenza registrata per quel token
+        //e il simbolo contiene "EUR", allora il token è moneta elettronica denominata in euro:
+        //il suo valore è per definizione 1:1 con l'euro e non va cercato su exchange/defillama.
+        //Se il token ha sia address che rete, l'address deve essere riconosciuto anche da coingecko
+        //(controllo antiscam: evita che un token omonimo non censito venga valorizzato 1:1).
+        //NOTA: se il token ha l'address ma non la rete il controllo coingecko non è eseguibile e viene saltato.
+        for (int k = 0; k < 2; k++) {
+            if (mon[k] != null
+                    && mon[k].Qta != null
+                    && !mon[k].Qta.isBlank()
+                    && !mon[k].Tipo.trim().equalsIgnoreCase("NFT")
+                    && mon[k].Moneta.toUpperCase().contains("EUR")
+                    //stessa regola usata per la classificazione fiscale (Funzioni.RitornaTipoCrypto)
+                    && Funzioni.RitornaTipoCrypto(mon[k].Moneta, FunzioniDate.ConvertiDatadaLong(Data), "Crypto").equalsIgnoreCase("EMoney")) {
+
+                //verifica coingecko solo se ho address e rete (query al database, quindi eseguita per ultima)
+                //la rete del token ha la precedenza su quella della transazione (l'address appartiene al token)
+                String ReteToken = (mon[k].Rete != null && !mon[k].Rete.isBlank()) ? mon[k].Rete : Rete;
+                boolean AddressValido = true;
+                if (mon[k].MonetaAddress != null && !mon[k].MonetaAddress.isBlank()
+                        && ReteToken != null && !ReteToken.isBlank()) {
+                    AddressValido = DatabaseH2.GestitiCoingecko_Leggi(mon[k].MonetaAddress + "_" + ReteToken) != null;
+                }
+
+                if (AddressValido) {
+                    BigDecimal Qta = new BigDecimal(mon[k].Qta);
+                    IP = new InfoPrezzo();
+                    IP.Moneta = mon[k].Moneta;
+                    IP.Qta = Qta;
+                    IP.Fonte = "EURO";
+                    IP.prezzoUnitario = BigDecimal.ONE;
+                    IP.prezzoQta = Qta.abs();
+                    IP.timestamp = Data;
+                    IP.OggettoMoneta = mon[k];
+                    return IP;
+                }
+            }
+        }
+
         //B VERIFICO SE USD e prendo il prezzo da li
             for (int k=0;k<2;k++){
             if (mon[k] != null && mon[k].Moneta.equalsIgnoreCase("USD") && !mon[k].Tipo.trim().equalsIgnoreCase("NFT")&&mon[k].MonetaAddress == null) {

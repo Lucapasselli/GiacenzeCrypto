@@ -3,7 +3,14 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.giacenzecrypto</groupId>
   <artifactId>Giacenze_Crypto</artifactId>
-  <version>1.0.58</version>
+  <version>1.0.58.01</version>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
   <build>
     <plugins>
       <plugin>

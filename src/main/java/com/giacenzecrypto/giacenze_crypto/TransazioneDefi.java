@@ -36,6 +36,7 @@ public class TransazioneDefi {
   private final Map<String, ValoriToken> MappaTokenEntrata;
   private final Map<String, ValoriToken> MappaTokenTecniciEntrata;
   private final Map<String, ValoriToken> MappaTokenTecniciUscita;
+  private boolean EccezioniApplicate;//true dopo che le eccezioni di EccezioniDefi sono già state applicate
 
     public TransazioneDefi() {
         this.MappaToken = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -198,6 +199,9 @@ public class TransazioneDefi {
        */
       public String IdentificaTipoTransazione(){
           String Tipo;
+          //Normalmente le eccezioni sono già state applicate da RitornaRigheTabella;
+          //la chiamata qui è una sicurezza per eventuali usi diretti di questo metodo (non riapplica nulla)
+          ApplicaEccezioni();
           boolean trovataEntrata=false;
           boolean trovataUscita=false;
           List<String> daEliminare=new ArrayList<>();
@@ -484,6 +488,22 @@ public class TransazioneDefi {
  public void IdentificaScam(List<String[]> Lista){
 
  }
+    /**
+     * Applica alla transazione le eccezioni note delle importazioni DeFi raccolte in {@link EccezioniDefi},
+     * eliminando dalla mappa dei token i movimenti che l'explorer registra ma che non sono realmente
+     * transitati dal wallet (es. token movimentati sul vecchio contratto insieme al nuovo dopo una
+     * migrazione). Va eseguito quando tutti i token della transazione sono stati inseriti e prima di
+     * qualsiasi elaborazione ({@link #IdentificaTipoTransazione}, calcolo dei pesi, generazione righe);
+     * viene eseguito una sola volta anche se invocato più di una volta.
+     */
+    public void ApplicaEccezioni() {
+        if (EccezioniApplicate) return;
+        EccezioniApplicate = true;
+        for (String Indirizzo : EccezioniDefi.IndirizziDaEliminare(Rete, MappaToken)) {
+            MappaToken.remove(Indirizzo);
+        }
+    }
+
   //Parte nuova per la Defi
   // RT[23]=Blocco Transazione
   // RT[24]=Hash Transazione
@@ -497,10 +517,15 @@ public class TransazioneDefi {
    * Converte questa transazione DeFi in una o più righe nel formato tabella movimenti dell'applicazione
    * (deposito, prelievo, scambio o sola commissione a seconda del tipo identificato e dell'esito della
    * transazione on-chain), popolando anche i campi specifici DeFi (blocco, hash, address controparte, ecc.).
+   * <p>
+   * Prima di qualsiasi elaborazione applica alla transazione le eccezioni note delle importazioni DeFi
+   * tramite {@link #ApplicaEccezioni}.
    * @return la lista di righe di movimento generate da questa transazione
    */
   public List<String[]> RitornaRigheTabella(){
       String RT[];
+      //Correggo la transazione dai casi anomali noti prima di smistare e classificare i token
+      ApplicaEccezioni();
       List<String[]> righe=new ArrayList<>();
       //String dataAlMinuto=DataOra.trim().substring(0, DataOra.length()-3);
       long TimeStampL=FunzioniDate.ConvertiDatainLongSecondo(DataOra);

@@ -901,6 +901,19 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         return true;
     }
     
+    /**
+     * Classifica i movimenti indicati come cash out o come commissione (scelta chiesta all'utente),
+     * assegnando il dettaglio {@code "PCO - Cashout, acquisti con crypto etc.. (plusvalenza)"}.
+     * <p>
+     * Se la scelta è il cash out ed è stato selezionato un singolo movimento DeFi (con rete, address
+     * del token uscito e address della controparte valorizzati), cerca fra i prelievi non ancora
+     * classificati quelli analoghi — stessa rete, stesso token uscito, stesso address controparte e
+     * stessa causale originale — e, previa conferma dell'utente, applica anche a questi la stessa
+     * classificazione (come già avviene per i trasferimenti a vault/piattaforma e per le reward).
+     * @param IDsTr insieme degli ID dei movimenti di prelievo da classificare
+     * @param Note note testuali da assegnare ai movimenti classificati
+     * @return {@code true} se la classificazione è stata effettuata, {@code false} se l'utente ha annullato
+     */
     private boolean Crea_CashoutCommissioni(Set<String> IDsTr, String Note) {
         //Può essere un movimento multiplo
 
@@ -938,6 +951,86 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         descrizione = actionId;
 
         ClassificaMovimenti(IDsTr, descrizione, dettaglio, Note, "", false);
+
+        //FASE 2 :  CONTROLLO SE CI SONO MOVIMENTI ANALOGHI SULLA CHAIN
+        //Lo faccio solo per il cash out (non per le commissioni) e solo se ho selezionato un singolo movimento
+        if ("CASH OUT".equals(descrizione) && IDsTr.size() == 1) {
+            //Se il movimento è un movimento defi (ha rete, address del token uscito e address della controparte)
+            //cerco tutti i prelievi non ancora classificati che riguardano lo stesso token, la stessa controparte
+            //e la stessa causale originale e chiedo se voglio classificarli allo stesso modo
+            String IDSingolo = IDsTr.toArray()[0].toString();
+            String attuale[] = MappaCryptoWallet.get(IDSingolo);
+            if (attuale != null && attuale.length > 34) {
+                String Rete = Funzioni.TrovaReteDaIMovimento(attuale);
+                String Moneta = attuale[8];
+                String AddressMoneta = attuale[26];
+                String AddressControparte = attuale[30];
+                String CausaleOriginale = attuale[7];
+
+                if (Rete != null && !Rete.isBlank()
+                        && AddressMoneta != null && !AddressMoneta.isBlank()
+                        && AddressControparte != null && !AddressControparte.isBlank()) {
+
+                    ArrayList<String> ListaIDMovimentiUguali = new ArrayList<>();
+                    for (String IDnc : Principale.DepositiPrelieviDaCategorizzare) {
+                        String v[] = MappaCryptoWallet.get(IDnc);
+                        if (v == null || v.length <= 34) continue;
+                        if (!v[0].equals(IDSingolo)
+                                && v[0].split("_")[4].equalsIgnoreCase("PC")
+                                && v[18].isBlank()//questo serve per trovare solo i movimenti non ancora classificati
+                                && v[8].equals(Moneta)
+                                && v[26].equalsIgnoreCase(AddressMoneta)
+                                && v[30].equalsIgnoreCase(AddressControparte)
+                                && v[7].equalsIgnoreCase(CausaleOriginale)) {
+
+                            //Controllo la rete per ultimo perchè è il controllo più oneroso
+                            //(lo stesso address di contratto su reti diverse è un token diverso)
+                            String ReteMov = Funzioni.TrovaReteDaIMovimento(v);
+                            if (ReteMov != null && ReteMov.equalsIgnoreCase(Rete)) {
+                                //Sotto questa if ci sono tutti i movimenti di prelievo non classificati
+                                //che riguardano lo stesso token, la stessa controparte e la stessa causale originale
+                                ListaIDMovimentiUguali.add(v[0]);
+                            }
+                        }
+                    }
+
+                    if (!ListaIDMovimentiUguali.isEmpty()) {
+                        String message = "Sono stati trovati altri " + ListaIDMovimentiUguali.size()
+                                + " prelievi analoghi non ancora classificati (stesso token, stessa controparte e stessa causale originale).";
+                        String details = "Vuoi classificare come cash out anche gli altri movimenti simili?";
+
+                        result = AppDialog.builder(this)
+                                .windowTitle("Classificazione movimenti multipli")
+                                .bodyTitle("Applicare la stessa classificazione")
+                                .showTitleInBody(true)
+                                .theme()
+                                .type(AppDialog.DialogType.WARNING)
+                                .message(message)
+                                .details(details)
+                                .action(AppDialog.DialogAction.builder("no", "No")
+                                        .role(AppDialog.ActionRole.SECONDARY)
+                                        .build())
+                                .action(AppDialog.DialogAction.builder("yes", "Sì")
+                                        .role(AppDialog.ActionRole.PRIMARY)
+                                        .build())
+                                .showDialog();
+
+                        if (result != null && "yes".equals(result.getActionId())) {
+                            for (String idMov : ListaIDMovimentiUguali) {
+                                String[] mov = MappaCryptoWallet.get(idMov);
+                                mov[5] = descrizione;
+                                mov[17] = "";
+                                mov[18] = dettaglio;
+                                mov[19] = "";
+                                mov[20] = "";
+                                mov[21] = Note;
+                                MappaCryptoWallet.put(idMov, mov);
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         Messaggi.SuccessMessage("Modifiche effettuate con successo.", "Modifiche effettuate, ricordarsi di Salvare! <br>(sezione Transazioni Crypto)", this);
 

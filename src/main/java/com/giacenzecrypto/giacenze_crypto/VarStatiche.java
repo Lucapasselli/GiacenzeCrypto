@@ -4,17 +4,43 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
+import java.io.InputStream;
+import java.util.Properties;
+
 
 /**
  *
  * @author luca
  */
 public class VarStatiche {
-    
+
     //NOME DEL PROGRAMMA
-    static String Versione = "1.0.58";
+    static String Versione = leggiVersione();
     static String Titolo = "Giacenze Crypto " + VarStatiche.Versione + " Beta";
-    
+
+    /**_Giacenzeadata
+     * Legge la versione dell'applicazione da {@code version.properties}, generato da Maven
+     * a partire dalla {@code <version>} del pom tramite resource filtering.
+     * @return la versione del progetto, oppure {@code "sconosciuta"} se il file non è
+     *         leggibile o il segnaposto non è stato sostituito
+     */
+    private static String leggiVersione() {
+        try (InputStream in = VarStatiche.class.getResourceAsStream("version.properties")) {
+            if (in != null) {
+                Properties p = new Properties();
+                p.load(in);
+                String v = p.getProperty("versione", "").trim();
+                //se il filtering di Maven non è stato eseguito il segnaposto arriva qui letterale
+                if (!v.isEmpty() && !v.startsWith("${")) {
+                    return v;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Impossibile leggere la versione da version.properties : " + e.getMessage());
+        }
+        return "sconosciuta";
+    }
+
     //=== IMPOSTAZIONI GLOBALI RELATIVE AI CALCOLI ===
     static int DecimaliPlus=2;
     static int DecimaliCalcoli = 30;

@@ -279,6 +279,9 @@ public class Prezzi {
                 response.append(inputLine);
             }
             in.close();
+            if (VarCondivise.LogJsonPrezzi) {
+                System.out.println(response.toString());
+            }
             Gson gson = new Gson();
             JsonObject coinInfo = gson.fromJson(response.toString(), JsonObject.class);
             
@@ -1164,6 +1167,9 @@ public class Prezzi {
                         response.append(line);
 
                     }
+                    if (VarCondivise.LogJsonPrezzi) {
+                        System.out.println(response.toString());
+                    }
 
                     Gson gson = new Gson();
                     JsonArray pricesArray = gson.fromJson(response.toString(), JsonArray.class);
@@ -1360,7 +1366,9 @@ public class Prezzi {
                         response.append(line);
 
                     }
-                    //System.out.println(response);
+                    if (VarCondivise.LogJsonPrezzi) {
+                        System.out.println(response.toString());
+                    }
                     Gson gson = new Gson();
                     JsonArray pricesArray = gson.fromJson(response.toString(), JsonArray.class);
                      // Creazione di un nuovo JSONArray per contenere gli elementi in ordine inverso
@@ -1475,7 +1483,9 @@ public class Prezzi {
                     response.append(line);
 
                 }
-                //System.out.println(response);
+                if (VarCondivise.LogJsonPrezzi) {
+                    System.out.println(response.toString());
+                }
                 Gson gson = new Gson();
                 JsonObject JsonObj = gson.fromJson(response.toString(), JsonObject.class);
                 String Risposta = JsonObj.get("Response").getAsString();
@@ -1559,7 +1569,11 @@ public class Prezzi {
                 System.out.println("RecuperaCoinsCoinMarketCap: risposta API non valida, codice " + response.code());
                 return;
             }
-            JsonObject root = JsonParser.parseString(response.body().string()).getAsJsonObject();
+            String responseBody = response.body().string();
+            if (VarCondivise.LogJsonPrezzi) {
+                System.out.println(responseBody);
+            }
+            JsonObject root = JsonParser.parseString(responseBody).getAsJsonObject();
             JsonArray data = root.getAsJsonArray("data");
             if (data == null) return;
 
@@ -1629,7 +1643,11 @@ public class Prezzi {
                     System.out.println("RecuperaPrezziDaCoinMarketCap: risposta non valida codice " + response.code());
                     return;
                 }
-                JsonObject root = JsonParser.parseString(response.body().string()).getAsJsonObject();
+                String responseBody = response.body().string();
+                if (VarCondivise.LogJsonPrezzi) {
+                    System.out.println(responseBody);
+                }
+                JsonObject root = JsonParser.parseString(responseBody).getAsJsonObject();
                 JsonObject dataObj = root.getAsJsonObject("data");
                 if (dataObj == null) return;
                 JsonArray quotes = dataObj.getAsJsonArray("quotes");
@@ -1843,6 +1861,9 @@ public class Prezzi {
             }
            
             String responseBody = response.body().string();
+            if (VarCondivise.LogJsonPrezzi) {
+                System.out.println(responseBody);
+            }
 
             // Parsing JSON con Gson
             JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
@@ -1970,6 +1991,9 @@ public class Prezzi {
                 }
 
                 String responseBody = response.body().string();
+                if (VarCondivise.LogJsonPrezzi) {
+                    System.out.println(responseBody);
+                }
                 JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
                 JsonObject coins = json.getAsJsonObject("coins");
 
@@ -2346,6 +2370,10 @@ public class Prezzi {
                     //System.out.println(line);
                 }
 
+                if (VarCondivise.LogJsonPrezzi) {
+                    System.out.println(response.toString());
+                }
+
                 Gson gson = new Gson();
                 JsonArray pricesArray = gson.fromJson(response.toString(), JsonArray.class);
                // System.out.println(pricesArray.size());
@@ -2462,6 +2490,9 @@ public class Prezzi {
                 }
                 List<String[]> gestiti = new ArrayList<>();
                 String jsonString=response.toString();
+                if (VarCondivise.LogJsonPrezzi) {
+                    System.out.println(jsonString);
+                }
                // String jsonString=in.readLine();
                JsonElement jsonElement = JsonParser.parseString(jsonString);
 
@@ -3244,7 +3275,9 @@ public static void RecuperaGiacenzeDaCCXT(String Exchange,String APIKey,String A
                  
                  // Parse JSON con Gson in modo sicuro (manteniamo precisione per i long)
                  // Gson gson = new Gson();
-                 System.out.println("---"+output.toString()+"---");
+                 if (VarCondivise.LogJsonPrezzi) {
+                     System.out.println("---"+output.toString()+"---");
+                 }
                  JsonElement rootEl = JsonParser.parseString(output.toString());
                  if (!rootEl.isJsonArray()) {
                      System.err.println("Output non è un array JSON valido.");
@@ -3436,14 +3469,16 @@ public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
                  
                  // Parse JSON con Gson in modo sicuro (manteniamo precisione per i long)
                  // Gson gson = new Gson();
-                 //System.out.println("---"+output.toString()+"---");
+                 if (VarCondivise.LogJsonPrezzi) {
+                     System.out.println(output.toString());
+                 }
                  JsonElement rootEl = JsonParser.parseString(output.toString());
                  if (!rootEl.isJsonArray()) {
                      System.err.println("Output non è un array JSON valido.");
                      return;
                  }
                  JsonArray rootArr = rootEl.getAsJsonArray();
-                 
+
                  String mergeSql = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo,rete,address) KEY (timestamp, exchange, symbol,rete,address) VALUES (?, ?, ?, ?, ?, ?)";
                  try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(mergeSql)) {
                      

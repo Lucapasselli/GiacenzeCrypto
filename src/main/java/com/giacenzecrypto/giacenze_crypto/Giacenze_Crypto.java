@@ -36,16 +36,10 @@ public class Giacenze_Crypto {
         System.out.println("user.dir : " + System.getProperty("user.dir"));
         VarStatiche.setPathRisorse(getJarPath() + "/");
 
-        float fontSize = DEFAULT_FONT_SIZE;
-        String fontFamily = DEFAULT_FONT_FAMILY;
-
+        //Prima passata: solo gli argomenti che servono a localizzare il logo. Tutto il resto (--debug,
+        //--workdir, i font...) è rimandato alla seconda passata, perché lo splash deve comparire il
+        //prima possibile e queste opzioni costano tempo (attese, creazione di cartelle, dialoghi).
         for (int i = 0; i < args.length; i++) {
-            System.out.println(args[i]);
-
-            if (args[i].equals("--debug")) {
-                apriFinestraLog();
-            }
-
             if (args[i].equals("--risorse") && i + 1 < args.length
                     && args[i + 1].charAt(args[i + 1].length() - 1) == '/') {
                 VarStatiche.setPathRisorse(args[i + 1]);
@@ -53,6 +47,22 @@ public class Giacenze_Crypto {
 
             if (args[i].equals("--NoJarPath")) {
                 VarStatiche.setPathRisorse("./");
+            }
+        }
+
+        //Prima operazione visibile del programma: da qui in poi l'utente ha qualcosa a video mentre
+        //proseguono l'apertura del database e la costruzione della finestra principale.
+        SplashAvvio.mostra();
+
+        float fontSize = DEFAULT_FONT_SIZE;
+        String fontFamily = DEFAULT_FONT_FAMILY;
+
+        //Seconda passata: tutti gli altri argomenti.
+        for (int i = 0; i < args.length; i++) {
+            System.out.println(args[i]);
+
+            if (args[i].equals("--debug")) {
+                apriFinestraLog();
             }
 
             if (args[i].equalsIgnoreCase("--workdir") && i + 1 < args.length
@@ -81,6 +91,8 @@ public class Giacenze_Crypto {
         System.out.println("Working Directory : " + VarStatiche.getWorkingDirectory());
 
         if (!DatabaseH2.CreaoCollegaDatabase()) {
+            //Lo splash va chiuso prima del dialogo, altrimenti resterebbe sospeso sopra di esso.
+            SplashAvvio.chiudi();
             //C5: distingue il lock da un'altra sessione (H2 error code 90020) da qualsiasi altro
             //errore di connessione (DB corrotto, disco pieno, versione H2 incompatibile...), che
             //altrimenti veniva mascherato dallo stesso messaggio fuorviante
@@ -102,14 +114,33 @@ public class Giacenze_Crypto {
             System.exit(0);
         }
 
-        LoggerGC.init();
+        //Da qui in poi lo splash è a video: se il main thread muore per un'eccezione non c'è più nessuno
+        //che possa chiuderlo e, siccome una JWindow visibile tiene viva la JVM, il programma resterebbe
+        //appeso su uno splash non chiudibile. Prima di questa modifica non esisteva ancora nessuna
+        //finestra e un'eccezione qui terminava semplicemente il processo.
+        try {
+            LoggerGC.init();
 
-        Principale.tema = DatabaseH2.Opzioni_Leggi("Tema");
-        if (Principale.tema == null) {
-            Principale.tema = "Chiaro";
+            Principale.tema = DatabaseH2.Opzioni_Leggi("Tema");
+            if (Principale.tema == null) {
+                Principale.tema = "Chiaro";
+            }
+
+            impostaFontGlobale(fontFamily, fontSize);
+        } catch (Throwable t) {
+            SplashAvvio.chiudi();
+            t.printStackTrace();
+            JOptionPane.showConfirmDialog(
+                    null,
+                    "Attenzione, errore durante l'avvio del programma, questa sessione verrà terminata!!\n"
+                            + "Dettaglio errore: " + t,
+                    "Attenzione",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE,
+                    null
+            );
+            System.exit(1);
         }
-
-        impostaFontGlobale(fontFamily, fontSize);
 
         //A6: la costruzione della GUI Swing va fatta sull'Event Dispatch Thread, non sul main thread
         SwingUtilities.invokeLater(() -> {
@@ -130,29 +161,36 @@ public class Giacenze_Crypto {
                 LoggerGC.ScriviErrore(ex);
             }
 
-            Principale g = new Principale();
+            //Il finally garantisce che lo splash sparisca anche se la costruzione della finestra
+            //principale fallisce (il costruttore di Principale intercetta e ingoia le eccezioni):
+            //senza, resterebbe a video uno splash impossibile da chiudere.
+            try {
+                Principale g = new Principale();
 
-            String finestraLarghezza = DatabaseH2.Opzioni_Leggi("Finestra_Larghezza");
-            String finestraAltezza = DatabaseH2.Opzioni_Leggi("Finestra_Altezza");
-            String finestraMassimizzata = DatabaseH2.Opzioni_Leggi("Finestra_Massimizzata");
+                String finestraLarghezza = DatabaseH2.Opzioni_Leggi("Finestra_Larghezza");
+                String finestraAltezza = DatabaseH2.Opzioni_Leggi("Finestra_Altezza");
+                String finestraMassimizzata = DatabaseH2.Opzioni_Leggi("Finestra_Massimizzata");
 
-            if (finestraLarghezza != null && finestraAltezza != null) {
-                try {
-                    g.setSize(Integer.parseInt(finestraLarghezza), Integer.parseInt(finestraAltezza));
-                } catch (NumberFormatException ex) {
+                if (finestraLarghezza != null && finestraAltezza != null) {
+                    try {
+                        g.setSize(Integer.parseInt(finestraLarghezza), Integer.parseInt(finestraAltezza));
+                    } catch (NumberFormatException ex) {
+                        g.pack();
+                    }
+                } else {
                     g.pack();
                 }
-            } else {
-                g.pack();
+
+                g.setLocationRelativeTo(null);
+
+                if ("true".equalsIgnoreCase(finestraMassimizzata)) {
+                    g.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
+                }
+
+                g.setVisible(true);
+            } finally {
+                SplashAvvio.chiudi();
             }
-
-            g.setLocationRelativeTo(null);
-
-            if ("true".equalsIgnoreCase(finestraMassimizzata)) {
-                g.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
-            }
-
-            g.setVisible(true);
         });
     }
 
@@ -190,6 +228,7 @@ public class Giacenze_Crypto {
         File dir = new File(workingDir);
 
         if (dir.getPath().contains("..") || dir.getPath().contains(";") || dir.getPath().contains("|")) {
+            SplashAvvio.chiudi();
             JOptionPane.showConfirmDialog(
                     null,
                     "Attenzione! il parametro passato a --workdir '" + workingDir + "' non è valido!\n Il Programma verrà terminato.",
@@ -202,6 +241,7 @@ public class Giacenze_Crypto {
         }
 
         if (dir.isFile()) {
+            SplashAvvio.chiudi();
             JOptionPane.showConfirmDialog(
                     null,
                     "Attenzione! il parametro passato a --workdir '" + workingDir + "' non è un file e non una directory!\n Il Programma verrà terminato.",
@@ -216,6 +256,7 @@ public class Giacenze_Crypto {
         if (!dir.exists()) {
             boolean created = dir.mkdirs();
             if (!created) {
+                SplashAvvio.chiudi();
                 JOptionPane.showConfirmDialog(
                         null,
                         "Attenzione! non è possibile creare la directory specificata : '" + workingDir + "'\n Il Programma verrà terminato.",
@@ -230,6 +271,7 @@ public class Giacenze_Crypto {
 
         if (!dir.canWrite()) {
             System.err.println("La directory specificata non è scrivibile: " + dir.getAbsolutePath());
+            SplashAvvio.chiudi();
             JOptionPane.showConfirmDialog(
                     null,
                     "Attenzione! La directory specificata : '" + workingDir + "' non è scrivibile\n Il Programma verrà terminato.",

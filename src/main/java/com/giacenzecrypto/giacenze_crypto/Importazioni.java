@@ -4421,14 +4421,15 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
             }
             in.close();
             String Risposta=responseTxlist.toString();
-            //System.out.println(Risposta);
+            if (VarCondivise.LogJsonDefi) {
+                System.out.println(Risposta);
+            }
             //Se Risposta contiene "Query Timeout occurred." e la richiesta è per un erc1155
             //significa che l'explorer non lo supporta quindi ritorno il campo vuoto
             if (Tipo.equalsIgnoreCase("token1155tx") && Risposta.contains("Query Timeout occured.")){
                 ritorno[0]=0;
                 return ritorno;
             }
-            //System.out.println(Risposta);
             JSONObject jsonObjectTxlist = new JSONObject(Risposta);
             int status = Integer.parseInt(jsonObjectTxlist.getString("status"));
             //verifico che questa non sia andata in errore, in caso contratrio interrompo l'importazione
@@ -4637,6 +4638,9 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
                 in.close();
                 Risposta = responseTxlist.toString();
             }
+            if (VarCondivise.LogJsonDefi) {
+                System.out.println(Risposta);
+            }
             if (codiceRisposta >= 400) {
                 String messaggioErrore = Risposta.isBlank() ? "(nessun dettaglio nella risposta)" : Risposta;
                 try {
@@ -4773,6 +4777,9 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
                 in.close();
                 Risposta = responseTxlist.toString();
             }
+            if (VarCondivise.LogJsonDefi) {
+                System.out.println(Risposta);
+            }
             if (codiceRisposta == 404) {
                 //Il nodo RPC non ha più (o non ha mai avuto) lo stato per questo blocco storico: non è
                 //un errore da bloccare l'importazione, il chiamante deve saltare la verifica su questo blocco.
@@ -4834,6 +4841,9 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
                 responseTxlist.append(inputLine);
             }
             in.close();
+            if (VarCondivise.LogJsonDefi) {
+                System.out.println(responseTxlist.toString());
+            }
             if (!Funzioni.isValidJSON(responseTxlist.toString()))return null;
             JSONObject jsonObjectTxlist = new JSONObject(responseTxlist.toString());
             Valore = jsonObjectTxlist.getString("result");
@@ -5456,7 +5466,9 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                     e.printStackTrace();
                     }*/
                     
-                    LoggerGC.logInfo("Risposta: "+response);
+                    if (VarCondivise.LogJsonDefi) {
+                        LoggerGC.logInfo("Risposta: "+response);
+                    }
 
                     JSONObject jsonResponse = new JSONObject(response.toString());
                     JSONArray results = jsonResponse.getJSONArray("result");
@@ -5508,10 +5520,15 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                         // Timestamp ISO 8601
                         // Esempio: "2024-07-22T01:53:29.000Z"
                         String timeStampISO = tx.optString("block_timestamp", null);
-                        trans.TimeStamp = timeStampISO;
 
                         // Converto in long
                         long epochMs = FunzioniDate.ConvertiISO8601toMillis(timeStampISO);
+                        //Moralis è l'unico provider che espone la data in ISO 8601: tutti gli altri
+                        //(Etherscan, Blockscout, mempool.space) valorizzano TransazioneDefi.TimeStamp con un
+                        //epoch, ed è quello che si aspetta TransazioneDefi.RitornaRigheTabella, che altrimenti
+                        //fallisce il Long.parseLong e ripiega su DataOra segnalando un errore per ogni movimento.
+                        //Normalizzo quindi qui, alla sorgente, mantenendo l'invariante comune a tutti i provider.
+                        if (timeStampISO != null) trans.TimeStamp = String.valueOf(epochMs);
                         trans.DataOra = FunzioniDate.ConvertiDatadaLongAlSecondo(epochMs);
                         
                         trans.Wallet = walletAddress;
@@ -5733,6 +5750,64 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
         if (Rete.equalsIgnoreCase("CRO")) return "https://explorer-api.cronos.org/mainnet/api/v2";
         if (Rete.equalsIgnoreCase("GNOSIS")) return "https://gnosis.blockscout.com/api";
         return null;
+    }
+
+    /**
+     * Legge un campo di metadati opzionale dal JSON di una transazione restituito da un explorer,
+     * trattando allo stesso modo i tre casi di campo non valorizzato: assente, JSON {@code null} e
+     * stringa vuota.
+     * <p>Blockscout/Etherscan restituiscono {@code null} su {@code tokenName}, {@code tokenSymbol},
+     * {@code tokenDecimal} e {@code value} quando il contratto non implementa i corrispondenti metodi
+     * ERC (tipico dei contratti di spam/airdrop): {@code getString()} su un {@code JSONObject.NULL}
+     * solleva {@link org.json.JSONException}, che non essendo gestita fa abortire l'importazione
+     * dell'intero wallet scartando anche le transazioni già scaricate correttamente.
+     * @param transaction oggetto JSON della singola transazione
+     * @param campo nome del campo da leggere
+     * @return il valore del campo ripulito dagli spazi, oppure stringa vuota se non valorizzato
+     */
+    private static String DeFi_LeggiCampoOpzionale(JSONObject transaction, String campo) {
+        if (transaction.isNull(campo)) return "";
+        return transaction.optString(campo, "").trim();
+    }
+
+    /**
+     * Ricava l'hash della transazione dal JSON restituito da un explorer per l'endpoint {@code txlistinternal}:
+     * Etherscan valorizza il campo {@code hash}, Blockscout invece lo chiama {@code transactionHash} (e non
+     * espone affatto {@code hash}), per cui la sola {@code getString("hash")} solleva
+     * {@link org.json.JSONException} facendo abortire l'importazione dell'intero wallet.
+     * <p>A differenza dei metadati letti con {@link #DeFi_LeggiCampoOpzionale}, l'hash <b>non</b> è un campo
+     * opzionale: è la chiave con cui le transazioni vengono accorpate in {@code MappaTransazioniDefi}
+     * ({@code indirizzo + "." + hash}), quindi restituire stringa vuota farebbe confluire movimenti scorrelati
+     * sulla stessa {@link TransazioneDefi}. In assenza di entrambi i campi si restituisce stringa vuota perché
+     * il chiamante possa scartare il singolo record, senza mai usarla come chiave.
+     * @param transaction oggetto JSON della singola transazione
+     * @return l'hash della transazione, oppure stringa vuota se l'explorer non lo ha valorizzato
+     */
+    private static String DeFi_RicavaHashTransazione(JSONObject transaction) {
+        String hash = DeFi_LeggiCampoOpzionale(transaction, "hash");
+        if (hash.isBlank()) hash = DeFi_LeggiCampoOpzionale(transaction, "transactionHash");
+        return hash;
+    }
+
+    /**
+     * Ricava il simbolo di un token dai metadati dell'explorer applicando i fallback previsti quando il
+     * contratto non espone {@code symbol()}: prima il {@code tokenID} (che per NFT/ERC1155 identifica il
+     * singolo pezzo), poi l'indirizzo del contratto, che l'explorer valorizza sempre. Garantisce così un
+     * simbolo mai vuoto, necessario perché a valle {@link TransazioneDefi#InserisciMonete} lo usa come
+     * nome della moneta per la ricerca del prezzo.
+     * <p><b>Non</b> va concatenato qui l'indirizzo del contratto per disambiguare token omonimi: ci pensa
+     * già {@link TransazioneDefi.ValoriToken#RitornaIDToken()}, che per gli NFT produce la forma storica
+     * {@code simbolo (indirizzo)}. Aggiungerlo anche qui lo duplicherebbe, generando nomi moneta diversi
+     * da quelli dei movimenti già importati e impedendo così il riporto dei costi di carico nel LIFO.
+     * @param transaction oggetto JSON della singola transazione
+     * @param tokenAddress indirizzo del contratto, usato come fallback finale
+     * @return il simbolo del token, mai vuoto
+     */
+    private static String DeFi_RicavaSimboloToken(JSONObject transaction, String tokenAddress) {
+        String simbolo = DeFi_LeggiCampoOpzionale(transaction, "tokenSymbol");
+        if (simbolo.isBlank()) simbolo = DeFi_LeggiCampoOpzionale(transaction, "tokenID");
+        if (simbolo.isBlank()) simbolo = tokenAddress;
+        return simbolo;
     }
 
     /**
@@ -6039,14 +6114,17 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                     String qta;
                     JSONObject transaction = transactionsTokentx.getJSONObject(i);
                     //    System.out.println(transaction.toString());
-                    String tokenSymbol = transaction.getString("tokenSymbol");
-                    String tokenName = transaction.getString("tokenName");
                     String Data = FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
                     String tokenAddress = transaction.getString("contractAddress");
+                    //i contratti di spam/airdrop spesso non implementano symbol()/name(): l'explorer
+                    //restituisce null e i metadati vanno quindi letti in modo difensivo
+                    String tokenSymbol = DeFi_RicavaSimboloToken(transaction, tokenAddress);
+                    String tokenName = DeFi_LeggiCampoOpzionale(transaction, "tokenName");
+                    if (tokenName.isBlank()) tokenName = tokenSymbol;
                     //Blockscout lascia tokenDecimal vuoto quando il contratto non implementa decimals()
                     //(verificato: tipico di token-scam/dust senza decimals() on-chain, dove
                     //totalSupply ha senso solo a 0 decimali); uso 0 come fallback
-                    String tokenDecimal = transaction.getString("tokenDecimal");
+                    String tokenDecimal = DeFi_LeggiCampoOpzionale(transaction, "tokenDecimal");
                     if (tokenDecimal.isBlank()) tokenDecimal = "0";
                     String hash = transaction.getString("hash");
                     String from = transaction.getString("from");
@@ -6104,10 +6182,14 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                     String qta;
                     JSONObject transaction = transactionsTokenntfttx.getJSONObject(i);
                     //    System.out.println(transaction.toString());
-                    String tokenSymbol = transaction.getString("tokenID");
-                    String tokenName = transaction.getString("tokenName");
                     String Data = FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
                     String tokenAddress = transaction.getString("contractAddress");
+                    //per gli NFT il "simbolo" è il tokenID: l'indirizzo del contratto che lo rende univoco
+                    //viene aggiunto a valle da ValoriToken.RitornaIDToken(), non qui
+                    String tokenSymbol = DeFi_LeggiCampoOpzionale(transaction, "tokenID");
+                    if (tokenSymbol.isBlank()) tokenSymbol = DeFi_RicavaSimboloToken(transaction, tokenAddress);
+                    String tokenName = DeFi_LeggiCampoOpzionale(transaction, "tokenName");
+                    if (tokenName.isBlank()) tokenName = tokenSymbol;
                     // String tokenDecimal=transaction.getString("tokenDecimal");
                     String hash = transaction.getString("hash");
                     String from = transaction.getString("from");
@@ -6165,25 +6247,32 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                             String qta;
                             JSONObject transaction = transactionsTokenERC1155.getJSONObject(i);
                             //    System.out.println(transaction.toString());
-                            String tokenSymbol = transaction.getString("tokenSymbol");
-                            String tokenName = transaction.getString("tokenName");
                             String Data = FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
                             String tokenAddress = transaction.getString("contractAddress");
+                            //vedi commento analogo nel blocco tokentx: i contratti ERC1155 usati per gli
+                            //airdrop di spam restituiscono tokenName/tokenSymbol a null
+                            String tokenSymbol = DeFi_RicavaSimboloToken(transaction, tokenAddress);
+                            String tokenName = DeFi_LeggiCampoOpzionale(transaction, "tokenName");
+                            if (tokenName.isBlank()) tokenName = tokenSymbol;
                             String tokenDecimal;
                             String value = "0";
                             String Tipo = "Crypto";
                             //Blockscout non sempre valorizza entrambi i campi "tokenDecimal" e "value" insieme
                             if (transaction.has("tokenDecimal") && transaction.has("value")) {
-                                tokenDecimal = transaction.getString("tokenDecimal");
+                                tokenDecimal = DeFi_LeggiCampoOpzionale(transaction, "tokenDecimal");
                                 //vedi commento analogo nel blocco tokentx: tokenDecimal vuoto -> 0
                                 if (tokenDecimal.isBlank()) tokenDecimal = "0";
-                                value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-" + tokenDecimal)).stripTrailingZeros().toPlainString();
+                                String valoreGrezzo = DeFi_LeggiCampoOpzionale(transaction, "value");
+                                //value nullo o vuoto: non c'è nessuna quantità da calcolare, resta 0
+                                if (!valoreGrezzo.isBlank()) {
+                                    value = new BigDecimal(valoreGrezzo).multiply(new BigDecimal("1e-" + tokenDecimal)).stripTrailingZeros().toPlainString();
+                                }
 
                             }
                             String tokenValue;
                             if (transaction.has("tokenValue")) {
-                                tokenValue = transaction.getString("tokenValue");
-                                value = tokenValue;
+                                tokenValue = DeFi_LeggiCampoOpzionale(transaction, "tokenValue");
+                                if (!tokenValue.isBlank()) value = tokenValue;
                                 Tipo = "NFT";
                             }
                             String hash = transaction.getString("hash");
@@ -6241,8 +6330,16 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                     String qta;
                     String AddressNoWallet;
                     JSONObject transaction = transactionsTxlistinternal.getJSONObject(i);
-                    String hash = transaction.getString("hash");
-                    //      String hash =transaction.getString("transactionHash");
+                    //Etherscan usa "hash", Blockscout "transactionHash": vedi DeFi_RicavaHashTransazione
+                    String hash = DeFi_RicavaHashTransazione(transaction);
+                    if (hash.isBlank()) {
+                        //senza hash non è possibile accorpare la transazione interna a quella principale:
+                        //scarto il solo record anziché far fallire l'intera importazione del wallet
+                        System.out.println("Attenzione: transazione interna senza hash scartata (" + walletAddress + " - " + Rete + "): " + transaction);
+                        ava++;
+                        progressb.SetAvanzamento(ava);
+                        continue;
+                    }
                     String Data = FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
                     String from = transaction.getString("from");
                     //System.out.println(from + " - "+hash+" B4");

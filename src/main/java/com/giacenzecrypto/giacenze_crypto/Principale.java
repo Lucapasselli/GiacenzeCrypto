@@ -174,8 +174,6 @@ private static final long serialVersionUID = 3L;
    public Tabelle_PopupSelezioneMultipla popup = new Tabelle_PopupSelezioneMultipla(this);
         
         
-    public String SplashScreenText= "Caricamento in corso...";    
-
 
     
     
@@ -188,7 +186,8 @@ private static final long serialVersionUID = 3L;
         //imposto la velocità di comparsa dei tooltip a 100ms invece che 750
         ToolTipManager.sharedInstance().setInitialDelay(100);
         ToolTipManager.sharedInstance().setDismissDelay(10000); // 10 secondi
-            AvviaSplashScreen();
+            //Lo splash di avvio è già a video: viene mostrato da Giacenze_Crypto.main() prima ancora
+            //dell'apertura del database e chiuso da lì quando questa finestra è pronta.
             this.setTitle(VarStatiche.Titolo);
             ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
             this.setIconImage(icon.getImage());
@@ -721,6 +720,8 @@ private static final long serialVersionUID = 3L;
         Opzioni_Varie_Bottone_Disclaimer = new javax.swing.JButton();
         Opzioni_Varie_Bottone_ProblemiNoti = new javax.swing.JButton();
         Opzioni_Varie_RicalcolaPrezzi = new javax.swing.JButton();
+        Opzioni_Varie_Checkbox_LogJsonDefi = new javax.swing.JCheckBox();
+        Opzioni_Varie_Checkbox_LogJsonPrezzi = new javax.swing.JCheckBox();
         Opzioni_Pulizie = new javax.swing.JPanel();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         Opzioni_CardWallet_Pannello = new javax.swing.JPanel();
@@ -4721,6 +4722,22 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Opzioni_Varie_Checkbox_LogJsonDefi.setText("Scrivi nel log i JSON scaricati durante l'importazione dei wallet DeFi");
+        Opzioni_Varie_Checkbox_LogJsonDefi.setToolTipText("Attiva la registrazione nel file GiacenzeCrypto.log delle risposte JSON degli explorer (Etherscan, Solana, Bitcoin, Moralis). Utile per il debug, ma il log cresce molto rapidamente.");
+        Opzioni_Varie_Checkbox_LogJsonDefi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Varie_Checkbox_LogJsonDefiActionPerformed(evt);
+            }
+        });
+
+        Opzioni_Varie_Checkbox_LogJsonPrezzi.setText("Scrivi nel log i JSON scaricati durante il recupero dei prezzi");
+        Opzioni_Varie_Checkbox_LogJsonPrezzi.setToolTipText("Attiva la registrazione nel file GiacenzeCrypto.log delle risposte JSON dei servizi di prezzo (Coingecko, Binance, Coinbase, DefiLlama, CryptoCompare). Utile per il debug, ma il log cresce molto rapidamente.");
+        Opzioni_Varie_Checkbox_LogJsonPrezzi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Varie_Checkbox_LogJsonPrezziActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_VarieLayout = new javax.swing.GroupLayout(Opzioni_Varie);
         Opzioni_Varie.setLayout(Opzioni_VarieLayout);
         Opzioni_VarieLayout.setHorizontalGroup(
@@ -4732,6 +4749,14 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(Opzioni_VarieLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Opzioni_Varie_Checkbox_LogJsonDefi)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(Opzioni_VarieLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Opzioni_Varie_Checkbox_LogJsonPrezzi)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         Opzioni_VarieLayout.setVerticalGroup(
             Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4742,6 +4767,10 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Opzioni_Varie_Bottone_ProblemiNoti)
                 .addGap(86, 86, 86)
                 .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(Opzioni_Varie_Checkbox_LogJsonDefi)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Varie_Checkbox_LogJsonPrezzi)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -5626,201 +5655,6 @@ private void SettaIcone(){
 }
 
 
-private void AvviaSplashScreen() {
-    SwingUtilities.invokeLater(() -> {
-        final JWindow splash = new JWindow();
-
-        final int arc = 24;
-        final Color splashBg = new Color(10, 10, 10, 225);
-
-        final BufferedImage img;
-        try {
-            img = ImageIO.read(new File(VarStatiche.getPathRisorse() + "logo.png"));
-        } catch (IOException e) {
-            LoggerGC.ScriviErrore(e);
-            return;
-        }
-
-        JPanel root = new JPanel(new BorderLayout()) {
-            /** Disegna lo sfondo semitrasparente con bordi arrotondati dello splash screen. */
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-
-                Graphics2D g2 = (Graphics2D) g.create();
-                try {
-                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                    g2.setColor(splashBg);
-                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), arc, arc);
-
-                    g2.setColor(new Color(255, 255, 255, 55));
-                    g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, arc, arc);
-                } finally {
-                    g2.dispose();
-                }
-            }
-        };
-        root.setOpaque(false);
-        root.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
-
-        JPanel imagePanel = new JPanel() {
-            private float alpha = 1.0f;
-            private boolean fadingOut = true;
-
-            {
-                setOpaque(false);
-
-                Timer timerAnimazione = new Timer(80, e -> {
-                    if (!isShowing()) {
-                        ((Timer) e.getSource()).stop();
-                        return;
-                    }
-
-                    if (fadingOut) {
-                        alpha -= 0.025f;
-                        if (alpha <= 0.72f) {
-                            alpha = 0.72f;
-                            fadingOut = false;
-                        }
-                    } else {
-                        alpha += 0.025f;
-                        if (alpha >= 1.0f) {
-                            alpha = 1.0f;
-                            fadingOut = true;
-                        }
-                    }
-
-                    repaint();
-                });
-                timerAnimazione.setCoalesce(true);
-                timerAnimazione.start();
-            }
-
-            /** Dimensione fissa del pannello che ospita il logo animato. */
-            @Override
-            public Dimension getPreferredSize() {
-                return new Dimension(300, 280);
-            }
-
-            /** Disegna il logo centrato e ridimensionato, con dissolvenza (alpha) animata dal timer. */
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-
-                Graphics2D g2 = (Graphics2D) g.create();
-                try {
-                    g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                    int panelW = getWidth();
-                    int panelH = getHeight();
-
-                    int imgW = img.getWidth();
-                    int imgH = img.getHeight();
-
-                    double scale = Math.min((double) panelW / imgW, (double) panelH / imgH);
-                    int drawW = (int) Math.round(imgW * scale);
-                    int drawH = (int) Math.round(imgH * scale);
-
-                    int x = (panelW - drawW) / 2;
-                    int y = (panelH - drawH) / 2;
-
-                    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
-                    g2.drawImage(img, x, y, drawW, drawH, this);
-                } finally {
-                    g2.dispose();
-                }
-            }
-        };
-
-        JPanel loadingBar = new JPanel() {
-            /** Dimensione fissa della barra di caricamento dello splash screen. */
-            @Override
-            public Dimension getPreferredSize() {
-                return new Dimension(220, 30);
-            }
-
-            /** Disegna lo sfondo arrotondato della barra di caricamento dello splash screen. */
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-
-                Graphics2D g2 = (Graphics2D) g.create();
-                try {
-                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                    int w = getWidth();
-                    int h = getHeight();
-
-                    g2.setColor(new Color(30, 30, 30, 210));
-                    g2.fillRoundRect(0, 0, w, h, 14, 14);
-
-                    g2.setColor(new Color(255, 255, 255, 45));
-                    g2.drawRoundRect(0, 0, w - 1, h - 1, 14, 14);
-
-                    g2.setColor(Color.WHITE);
-                    g2.setFont(getFont().deriveFont(Font.BOLD, 13f));
-
-                    String text = SplashScreenText;
-                    FontMetrics fm = g2.getFontMetrics();
-                    int textX = (w - fm.stringWidth(text)) / 2;
-                    int textY = (h - fm.getHeight()) / 2 + fm.getAscent();
-
-                    g2.drawString(text, textX, textY);
-                } finally {
-                    g2.dispose();
-                }
-            }
-        };
-        loadingBar.setOpaque(false);
-
-        JPanel barraWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
-        barraWrapper.setOpaque(false);
-        barraWrapper.add(loadingBar);
-
-        root.add(imagePanel, BorderLayout.CENTER);
-        root.add(barraWrapper, BorderLayout.SOUTH);
-
-        splash.setContentPane(root);
-        splash.pack();
-
-        splash.setShape(new java.awt.geom.RoundRectangle2D.Double(
-                0, 0, splash.getWidth(), splash.getHeight(), arc, arc));
-
-        try {
-            splash.setOpacity(0.97f);
-        } catch (Exception ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-
-        splash.setLocationRelativeTo(null);
-        splash.setVisible(true);
-
-        Thread waitThread = new Thread(() -> {
-            while (!FineCaricamentoDati) {
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException ex) {
-                    LoggerGC.ScriviErrore(ex);
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-            }
-
-            SwingUtilities.invokeLater(() -> {
-                if (splash.isDisplayable()) {
-                    splash.setVisible(false);
-                    splash.dispose();
-                }
-            });
-        }, "SplashScreen-Waiter");
-
-        waitThread.setDaemon(true);
-        waitThread.start();
-    });
-}
 
     
     /**
@@ -5970,7 +5804,28 @@ private void AvviaSplashScreen() {
             Plusvalenze_Pre2023ScambiRilevanti="SI";
         }
         Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti.setSelected("SI".equalsIgnoreCase(Plusvalenze_Pre2023ScambiRilevanti));
-        
+
+        //Log verboso dei JSON scaricati: allineo sia il checkbox che il flag condiviso letto dalle
+        //funzioni di importazione/prezzatura, che devono avere il valore corretto anche se l'utente
+        //non tocca mai il checkbox.
+        String LogJsonDefi=DatabaseH2.Pers_Opzioni_Leggi("LogJsonDefi");
+        if(LogJsonDefi==null)
+        {
+            DatabaseH2.Pers_Opzioni_Scrivi("LogJsonDefi", "NO");
+            LogJsonDefi="NO";
+        }
+        VarCondivise.LogJsonDefi="SI".equalsIgnoreCase(LogJsonDefi);
+        Opzioni_Varie_Checkbox_LogJsonDefi.setSelected(VarCondivise.LogJsonDefi);
+
+        String LogJsonPrezzi=DatabaseH2.Pers_Opzioni_Leggi("LogJsonPrezzi");
+        if(LogJsonPrezzi==null)
+        {
+            DatabaseH2.Pers_Opzioni_Scrivi("LogJsonPrezzi", "NO");
+            LogJsonPrezzi="NO";
+        }
+        VarCondivise.LogJsonPrezzi="SI".equalsIgnoreCase(LogJsonPrezzi);
+        Opzioni_Varie_Checkbox_LogJsonPrezzi.setSelected(VarCondivise.LogJsonPrezzi);
+
         //Verifico se esiste l'opzione rilevanza e in caso la creo e gli assegno il valore C, qua sotto la simbologia
             //Rilevanza A = Solo Valori iniziali e finali
             //Rilevanza B = Solo scambi con FIAT
@@ -8699,7 +8554,7 @@ GiacenzeaData_CompilaTabellaToken(true);
     private void GiacenzeaData_Bottone_RettificaQtaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_RettificaQtaMouseReleased
         // TODO add your handling code here:
         //  boolean completato;
-        if(F_GiacenzeaData.GiacenzeaData_Funzione_SistemaQta(GiacenzeaData_TabellaDettaglioMovimenti,Giacenzeadata_Walleta_Label.getText().trim(),this))
+        if(Principale_GiacenzeaData.GiacenzeaData_Funzione_SistemaQta(GiacenzeaData_TabellaDettaglioMovimenti,Giacenzeadata_Walleta_Label.getText().trim(),this))
         GiacenzeaData_CompilaTabellaToken(true);
     }//GEN-LAST:event_GiacenzeaData_Bottone_RettificaQtaMouseReleased
    
@@ -9408,7 +9263,7 @@ if (result.isAction("delete-all")) {
         String dataIniziale = f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
         String dataFinale = f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
         
-        if (F_Opzioni_Pulizie.confermaECancellaWalletFIATeCARDPerIntervallo(dataIniziale, dataFinale, "FIAT Wallet",VarStatiche.getFile_CDCFiatWallet(), this))
+        if (Principale_Opzioni_Pulizie.confermaECancellaWalletFIATeCARDPerIntervallo(dataIniziale, dataFinale, "FIAT Wallet",VarStatiche.getFile_CDCFiatWallet(), this))
         {
             CDC_FiatWallet_Mappa.clear();
             CDC_FiatWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCFiatWallet());
@@ -9424,7 +9279,7 @@ if (result.isAction("delete-all")) {
         String dataIniziale = f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
         String dataFinale = f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
         
-        if (F_Opzioni_Pulizie.confermaECancellaWalletFIATeCARDPerIntervallo(dataIniziale, dataFinale, "Card Wallet",VarStatiche.getFile_CDCCardWallet(), this))
+        if (Principale_Opzioni_Pulizie.confermaECancellaWalletFIATeCARDPerIntervallo(dataIniziale, dataFinale, "Card Wallet",VarStatiche.getFile_CDCCardWallet(), this))
         {
             CDC_CardWallet_Mappa.clear();
             CDC_CardWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCCardWallet());
@@ -11436,6 +11291,18 @@ if (result != null && !result.isAction("cancel")) {
         Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Avvertenze%20e%20Problemi%20Noti.pdf/download");
     }//GEN-LAST:event_Opzioni_Varie_Bottone_ProblemiNotiActionPerformed
 
+    private void Opzioni_Varie_Checkbox_LogJsonDefiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Checkbox_LogJsonDefiActionPerformed
+        //Abilita/disabilita la stampa nel log dei JSON scaricati durante l'importazione dei wallet DeFi.
+        VarCondivise.LogJsonDefi = Opzioni_Varie_Checkbox_LogJsonDefi.isSelected();
+        DatabaseH2.Pers_Opzioni_Scrivi("LogJsonDefi", VarCondivise.LogJsonDefi ? "SI" : "NO");
+    }//GEN-LAST:event_Opzioni_Varie_Checkbox_LogJsonDefiActionPerformed
+
+    private void Opzioni_Varie_Checkbox_LogJsonPrezziActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Checkbox_LogJsonPrezziActionPerformed
+        //Abilita/disabilita la stampa nel log dei JSON scaricati durante il recupero dei prezzi.
+        VarCondivise.LogJsonPrezzi = Opzioni_Varie_Checkbox_LogJsonPrezzi.isSelected();
+        DatabaseH2.Pers_Opzioni_Scrivi("LogJsonPrezzi", VarCondivise.LogJsonPrezzi ? "SI" : "NO");
+    }//GEN-LAST:event_Opzioni_Varie_Checkbox_LogJsonPrezziActionPerformed
+
     private void Opzioni_Pulizie_DataChooser_InizialeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_Opzioni_Pulizie_DataChooser_InizialeFocusLost
         // TODO add your handling code here:
     }//GEN-LAST:event_Opzioni_Pulizie_DataChooser_InizialeFocusLost
@@ -12197,7 +12064,7 @@ if (result != null && !result.isAction("cancel")) {
 
     private void SaldiNegativi_Bottone_RettificaQtaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_SaldiNegativi_Bottone_RettificaQtaMouseReleased
         // TODO add your handling code here:
-        F_GiacenzeaData.GiacenzeaData_Funzione_SistemaQta(SaldiNegativi_TabellaDettaglioMovimenti,null,this);
+        Principale_GiacenzeaData.GiacenzeaData_Funzione_SistemaQta(SaldiNegativi_TabellaDettaglioMovimenti,null,this);
     }//GEN-LAST:event_SaldiNegativi_Bottone_RettificaQtaMouseReleased
 
     private void SaldiNegativi_Bottone_RettificaQtaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaldiNegativi_Bottone_RettificaQtaActionPerformed
@@ -16169,6 +16036,8 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JPanel Opzioni_Varie;
     private javax.swing.JButton Opzioni_Varie_Bottone_Disclaimer;
     private javax.swing.JButton Opzioni_Varie_Bottone_ProblemiNoti;
+    private javax.swing.JCheckBox Opzioni_Varie_Checkbox_LogJsonDefi;
+    private javax.swing.JCheckBox Opzioni_Varie_Checkbox_LogJsonPrezzi;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_TemaScuro;
     private javax.swing.JButton Opzioni_Varie_RicalcolaPrezzi;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni;

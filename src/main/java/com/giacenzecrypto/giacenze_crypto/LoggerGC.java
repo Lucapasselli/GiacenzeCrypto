@@ -32,7 +32,7 @@ public class LoggerGC {
             fileHandler = new FileHandler(
                     VarStatiche.getWorkingDirectory() + "GiacenzeCrypto.log",
                     5 * 1024 * 1024,
-                    3,
+                    6,
                     true
             );
             fileHandler.setFormatter(new SimpleMessageFormatter());

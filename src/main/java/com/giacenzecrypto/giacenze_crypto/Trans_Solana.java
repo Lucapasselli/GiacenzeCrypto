@@ -23,7 +23,7 @@ public class Trans_Solana {
     private static final String HELIUS_RPC_URL2 = "https://mainnet.helius-rpc.com/";
     private static final OkHttpClient httpClient = new OkHttpClient();
     private static final Map<String, String> tokenNameCache = new HashMap<>();
-    static boolean verbose = true;
+    //Il log verboso è ora governato da VarCondivise.LogJsonDefi (checkbox in Opzioni -> Varie).
 
 
     /**
@@ -82,7 +82,7 @@ public class Trans_Solana {
         try (Response response = httpClient.newCall(request).execute()) {
             if (response.body() != null) {
                 String jsonString = response.body().string();
-                if (verbose) {
+                if (VarCondivise.LogJsonDefi) {
                     System.out.println(jsonString);
                 }
                 if (Funzioni.isValidJSONArray(jsonString)&&!Principale.InterrompiCiclo) {
@@ -245,11 +245,11 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
             trans.Blocco = block;
             trans.HashTransazione = signature;
             trans.MonetaCommissioni = "SOL";
-            if (verbose) {
+            if (VarCondivise.LogJsonDefi) {
                 System.out.println("\nTimestamp: " + formattedTimestamp + " - Transazione #" + (i + 1) + " - Signature: " + signature);
             }
             trans.DataOra = formattedTimestamp;
-            if (verbose) {
+            if (VarCondivise.LogJsonDefi) {
                 System.out.println("Descrizione: " + description);
             }
             String AddressNoWallet = "";
@@ -257,7 +257,7 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
             JSONArray AccountChanges = tx.optJSONArray("accountData");
             BigDecimal NativeSOL = new BigDecimal(0);
             if (AccountChanges != null && AccountChanges.length() > 0) {
-                if (verbose) {
+                if (VarCondivise.LogJsonDefi) {
                     System.out.println("AccountChanges:");
                 }
                 for (int j = 0; j < AccountChanges.length(); j++) {
@@ -387,7 +387,11 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
         for (int tentativo = 1; tentativo <= MAX_RETRY_GET_ACCOUNT_OWNER; tentativo++) {
             try (Response response = httpClient.newCall(request).execute()) {
                 if (response.isSuccessful() && response.body() != null) {
-                    JSONObject jsonResponse = new JSONObject(response.body().string());
+                    String jsonString = response.body().string();
+                    if (VarCondivise.LogJsonDefi) {
+                        System.out.println(jsonString);
+                    }
+                    JSONObject jsonResponse = new JSONObject(jsonString);
                     JSONObject result = jsonResponse.optJSONObject("result");
                     JSONObject value = result != null ? result.optJSONObject("value") : null;
                     if (value != null) {
@@ -453,7 +457,9 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
         try (Response response = httpClient.newCall(request).execute()) {
             if (response.body() != null) {
                 String jsonString = response.body().string();
-                //System.out.println("Risposta JSON completa getTokenName: " + jsonString);
+                if (VarCondivise.LogJsonDefi) {
+                    System.out.println("Risposta JSON completa getTokenName: " + jsonString);
+                }
                 JSONObject jsonResponse = new JSONObject(jsonString);
                 if (jsonResponse.has("result")) {
                     JSONObject metadata = jsonResponse.getJSONObject("result").optJSONObject("content").optJSONObject("metadata");

@@ -18,7 +18,7 @@ import java.util.List;
  *
  * @author luca.passelli
  */
-public class F_Opzioni_Pulizie {
+public class Principale_Opzioni_Pulizie {
 
     public static boolean confermaECancellaWalletFIATeCARDPerIntervallo(
             String dataIniziale,

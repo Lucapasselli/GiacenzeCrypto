@@ -18,6 +18,13 @@ public class VarCondivise {
     static Map<String, Prezzi.InfoPrezzo> RW_MappaInfoPrezzo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     //=== VARIABILI RELATIVE AL FIAT E CARD WALLET DI CRYPTO.COM CONDIVISA
     static Map<String, String> CDC_FiatWallet_MappaTipiMovimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+    //=== OPZIONI DI LOG VERBOSO (checkbox in Opzioni -> Varie, persistite in personale.mv.db)
+    //Se true le risposte JSON scaricate dagli explorer durante l'importazione dei wallet DeFi
+    //vengono stampate su System.out e quindi finiscono in GiacenzeCrypto.log tramite LoggerGC.
+    public static boolean LogJsonDefi = false;
+    //Come sopra, ma per le risposte JSON dei servizi di quotazione usati dal recupero prezzi.
+    public static boolean LogJsonPrezzi = false;
     
 
     

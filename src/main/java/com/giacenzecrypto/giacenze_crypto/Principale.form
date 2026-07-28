@@ -6308,6 +6308,16 @@
                               </Group>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Opzioni_Varie_Checkbox_LogJsonDefi" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Opzioni_Varie_Checkbox_LogJsonPrezzi" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
@@ -6319,6 +6329,10 @@
                               <Component id="Opzioni_Varie_Bottone_ProblemiNoti" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="86" max="-2" attributes="0"/>
                               <Component id="Opzioni_Varie_RicalcolaPrezzi" min="-2" pref="95" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+                              <Component id="Opzioni_Varie_Checkbox_LogJsonDefi" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Opzioni_Varie_Checkbox_LogJsonPrezzi" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
@@ -6347,6 +6361,24 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_RicalcolaPrezziActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="Opzioni_Varie_Checkbox_LogJsonDefi">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Scrivi nel log i JSON scaricati durante l'importazione dei wallet DeFi"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Attiva la registrazione nel file GiacenzeCrypto.log delle risposte JSON degli explorer (Etherscan, Solana, Bitcoin, Moralis). Utile per il debug, ma il log cresce molto rapidamente."/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Checkbox_LogJsonDefiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="Opzioni_Varie_Checkbox_LogJsonPrezzi">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Scrivi nel log i JSON scaricati durante il recupero dei prezzi"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Attiva la registrazione nel file GiacenzeCrypto.log delle risposte JSON dei servizi di prezzo (Coingecko, Binance, Coinbase, DefiLlama, CryptoCompare). Utile per il debug, ma il log cresce molto rapidamente."/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Checkbox_LogJsonPrezziActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

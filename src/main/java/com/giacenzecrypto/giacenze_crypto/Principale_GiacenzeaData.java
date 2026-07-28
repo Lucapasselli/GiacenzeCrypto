@@ -16,7 +16,7 @@ import javax.swing.JTable;
  *
  * @author luca
  */
-public class F_GiacenzeaData {
+public class Principale_GiacenzeaData {
     
     /**
      * Rettifica la giacenza di un token alla data selezionata nella tabella "Giacenze a data", chiedendo

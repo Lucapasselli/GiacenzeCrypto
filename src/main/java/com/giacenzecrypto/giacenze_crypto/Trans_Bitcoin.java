@@ -40,7 +40,7 @@ public class Trans_Bitcoin {
 
     // Numero massimo di indirizzi consecutivi non usati prima di fermare la scansione (BIP44 gap limit)
     static final int GAP_LIMIT = 20;
-    static boolean verbose = false;
+    //Il log verboso è ora governato da VarCondivise.LogJsonDefi (checkbox in Opzioni -> Varie).
 
     // Version bytes delle chiavi estese Bitcoin mainnet
     private static final byte[] XPUB_BYTES = {0x04, (byte) 0x88, (byte) 0xB2, (byte) 0x1E};
@@ -140,7 +140,7 @@ public class Trans_Bitcoin {
                 if (progressb != null) {
                     progressb.SetLabel("[BTC] Scansione " + chainLabelShort + " #" + idx + ": " + abbreviate(address));
                 }
-                if (verbose) {
+                if (VarCondivise.LogJsonDefi) {
                     System.out.println("[BTC]   m/" + chain + "/" + idx + " -> " + address);
                 }
 
@@ -151,7 +151,7 @@ public class Trans_Bitcoin {
                     System.out.println("[BTC]   Trovato m/" + chain + "/" + idx + ": " + address + " (" + txCount + " tx)");
                 } else {
                     consecutiveUnused++;
-                    if (verbose) {
+                    if (VarCondivise.LogJsonDefi) {
                         System.out.println("[BTC]   Vuoto  m/" + chain + "/" + idx + " (gap " + consecutiveUnused + "/" + GAP_LIMIT + ")");
                     }
                 }
@@ -177,6 +177,9 @@ public class Trans_Bitcoin {
         try (Response response = httpClient.newCall(request).execute()) {
             if (response.body() != null) {
                 String json = response.body().string();
+                if (VarCondivise.LogJsonDefi) {
+                    System.out.println(json);
+                }
                 if (json != null && json.startsWith("{")) {
                     JSONObject obj = new JSONObject(json);
                     JSONObject stats = obj.optJSONObject("chain_stats");
@@ -209,6 +212,9 @@ public class Trans_Bitcoin {
             try (Response response = httpClient.newCall(request).execute()) {
                 if (response.body() != null) {
                     String json = response.body().string();
+                    if (VarCondivise.LogJsonDefi) {
+                        System.out.println(json);
+                    }
                     if (Funzioni.isValidJSONArray(json)) {
                         page = new JSONArray(json);
                     }
@@ -354,7 +360,7 @@ public class Trans_Bitcoin {
             trans.InserisciMonete("BTC", "BTC", "BTC", counterparty, btcAmount.toPlainString(), "Crypto");
         }
 
-        if (verbose) {
+        if (VarCondivise.LogJsonDefi) {
             System.out.println("[BTC] " + txid.substring(0, 12) + "... block=" + blockHeight
                     + " sent=" + sentSats + " received=" + receivedSats + " fee=" + feeSats);
         }
@@ -435,7 +441,7 @@ public class Trans_Bitcoin {
                 if (trans != null && !trans.isEmpty()) {
                     result.put(walletEntry + "." + trans.HashTransazione, trans);
                     movimentiValidi++;
-                    if (verbose) {
+                    if (VarCondivise.LogJsonDefi) {
                         System.out.println("[BTC]   + " + trans.DataOra + " " + trans.TipoTransazione);
                     }
                 }
@@ -493,6 +499,9 @@ public class Trans_Bitcoin {
             try (Response r = httpClient.newCall(req).execute()) {
                 if (!r.isSuccessful()) break;
                 String body = r.body() != null ? r.body().string() : "";
+                if (VarCondivise.LogJsonDefi) {
+                    System.out.println(body);
+                }
                 if (!body.startsWith("{")) break;
                 JSONObject json = new JSONObject(body);
                 if (json.optInt("code", -1) != 0) break;
@@ -536,6 +545,9 @@ public class Trans_Bitcoin {
             try (Response r = httpClient.newCall(req).execute()) {
                 if (!r.isSuccessful()) break;
                 String body = r.body() != null ? r.body().string() : "";
+                if (VarCondivise.LogJsonDefi) {
+                    System.out.println(body);
+                }
                 if (!body.startsWith("{")) break;
                 JSONObject json = new JSONObject(body);
                 if (json.optInt("code", -1) != 0) break;
@@ -609,6 +621,9 @@ public class Trans_Bitcoin {
             try (Response r = httpClient.newCall(req).execute()) {
                 if (!r.isSuccessful()) break;
                 String body = r.body() != null ? r.body().string() : "";
+                if (VarCondivise.LogJsonDefi) {
+                    System.out.println(body);
+                }
                 if (!body.startsWith("{")) break;
                 JSONObject json = new JSONObject(body);
                 if (json.optInt("code", -1) != 0) break;
@@ -652,6 +667,9 @@ public class Trans_Bitcoin {
             try (Response r = httpClient.newCall(req).execute()) {
                 if (!r.isSuccessful()) break;
                 String body = r.body() != null ? r.body().string() : "";
+                if (VarCondivise.LogJsonDefi) {
+                    System.out.println(body);
+                }
                 if (!body.startsWith("{")) break;
                 JSONObject json = new JSONObject(body);
                 if (json.optInt("code", -1) != 0) break;

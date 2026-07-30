@@ -8646,7 +8646,12 @@ GiacenzeaData_CompilaTabellaToken(true);
             tokenSelezionati.add(new String[]{NomeToken, Address, Rete});
         }
 
-        if (tokenSelezionati.size() > 1) {
+        if (tokenSelezionati.size() == 1) {
+            //Selezione singola: mantengo il flusso interattivo esistente, condiviso con
+            //GiacenzeaData_Bottone_ScamActionPerformed e DepositiPrelievi_Bottone_ScamActionPerformed
+            String[] token = tokenSelezionati.get(0);
+            GiacenzeaData_Funzione_IdentificaComeScam(token[0], token[1], token[2], "Tutti");
+        } else {
             AppDialog.DialogResult result = AppDialog.builder(this)
                     .windowTitle("Rimozione stato SCAM")
                     .bodyTitle("Rimuovere lo stato SCAM dai token selezionati?")
@@ -8654,7 +8659,7 @@ GiacenzeaData_CompilaTabellaToken(true);
                     .theme()
                     .type(AppDialog.DialogType.WARNING)
                     .message("Hai selezionato " + tokenSelezionati.size() + " token.")
-                    .details("Per ciascun token verrà comunque richiesta una conferma separata.")
+                    .details("Lo stato SCAM verrà rimosso da tutti i token selezionati, senza ulteriori richieste di conferma.")
                     .action(AppDialog.DialogAction.builder("cancel", "Annulla")
                             .role(AppDialog.ActionRole.SECONDARY)
                             .build())
@@ -8665,15 +8670,37 @@ GiacenzeaData_CompilaTabellaToken(true);
             if (result == null || !result.isAction("continue")) {
                 return;
             }
+
+            //Modifica massiva senza conferma per singolo token e senza ricalcolo delle tabelle ad ogni
+            //iterazione: GiacenzeaData_Funzione_IdentificaComeScam chiamata token per token innescherebbe,
+            //alla riacquisizione del focus della finestra principale dopo la chiusura di ogni dialog,
+            //il ricalcolo di Funzioni_AggiornaTutto() (tramite TabellaCryptodaAggiornare), con forti
+            //rallentamenti in caso di selezioni numerose. La finestra di attesa Download resta invece aperta
+            //e modale per l'intera durata dell'operazione, che viene eseguita in un thread separato.
+            Download progress = new Download();
+            progress.setLocationRelativeTo(this);
+            progress.NascondiInterrompi();
+
+            Thread thread = new Thread(() -> {
+                progress.Titolo("Rimozione stato SCAM");
+                progress.SetLabel("Rimozione dello stato SCAM in corso....");
+                progress.SetMassimo(tokenSelezionati.size());
+                int i = 0;
+                for (String[] token : tokenSelezionati) {
+                    i++;
+                    progress.SetAvanzamento(i);
+                    GiacenzeaData_Funzione_RimuoviScamSenzaConferma(token[0], token[1], token[2], "Tutti");
+                }
+                progress.ChiudiFinestra();
+            });
+            thread.start();
+            progress.setVisible(true);// Questo blocca finché done() non chiama dispose()
         }
 
-        //Stessa logica condivisa usata da GiacenzeaData_Bottone_ScamActionPerformed e DepositiPrelievi_Bottone_ScamActionPerformed
-        //Il token qui è sempre già SCAM, quindi la funzione esegue il ramo di rimozione (con conferma dell'utente e ripristino del nome originale)
-        for (String[] token : tokenSelezionati) {
-            GiacenzeaData_Funzione_IdentificaComeScam(token[0], token[1], token[2], "Tutti");
-        }
-
+        //Ricalcolo le tabelle una sola volta, per tutta la selezione, e azzero il flag in modo che
+        //la successiva riacquisizione del focus non lo rifaccia inutilmente una seconda volta
         Funzioni_AggiornaTutto();
+        TabellaCryptodaAggiornare = false;
         GestioneTokenScam_CaricaTabellaPrincipale();
         Tabelle.Funzioni_PulisciTabella((DefaultTableModel) GestioneTokenScam_TabellaMovimenti.getModel());
         GestioneTokenScam_Bottone_RimuoviScam.setEnabled(false);
@@ -13948,7 +13975,56 @@ if (result != null && !result.isAction("cancel")) {
 
         return NuovoNome;
     }
-    
+
+    /**
+     * Rimuove lo stato SCAM da un token senza chiedere alcuna conferma e senza mostrare
+     * i controlli di congruità di {@link #GiacenzeaData_Funzione_IdentificaComeScam}: quei controlli
+     * si attivano solo quando si sta *marcando* un token come SCAM, mai in fase di rimozione,
+     * quindi qui possono essere saltati in sicurezza.
+     * <p>
+     * Usato dalla rimozione massiva ({@link #GestioneTokenScam_Bottone_RimuoviScamActionPerformed}),
+     * dove la conferma viene chiesta una sola volta per l'intera selezione invece che token per token.
+     * </p>
+     */
+    private String GiacenzeaData_Funzione_RimuoviScamSenzaConferma(String NomeMoneta, String Address, String Rete, String Wallet) {
+        if (Wallet == null) Wallet = "Tutti";
+        if (Rete == null) Rete = "";
+        if (Address == null) Address = "";
+
+        Set<String> IDMovimentiTokenGlobale = Funzione_ElencoIDMovimentiTokeneWalletSelezionato("Tutti", "Tutti", NomeMoneta, Rete, Address);
+        Set<String> IDMovimentiTokenWallet = Funzione_ElencoIDMovimentiTokeneWalletSelezionato(Wallet, "Tutti", NomeMoneta, Rete, Address);
+
+        String NuovoNome;
+
+        if (!Address.isBlank() && !Rete.isBlank()) {
+            String nomi[] = DatabaseH2.RinominaToken_Leggi(Address + "_" + Rete);
+            if (nomi != null && nomi[0] != null) {
+                NuovoNome = nomi[0];
+                DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], NuovoNome);
+            } else {
+                NomeMoneta = NomeMoneta.replace(" **", "");
+                NuovoNome = NomeMoneta;
+                DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NuovoNome);
+            }
+        } else {
+            NuovoNome = NomeMoneta.replace(" **", "");
+            for (String ID : IDMovimentiTokenWallet) {
+                String[] Mov = MappaCryptoWallet.get(ID);
+                if (Mov[8].equals(NomeMoneta)) Mov[8] = NuovoNome;
+                if (Mov[11].equals(NomeMoneta)) Mov[11] = NuovoNome;
+            }
+        }
+
+        //Svuoto la colonna [32] dei movimenti coinvolti: il flag verrà rimesso in automatico
+        //non appena si ricaricherà la tabella crypto, che ricontrollerà se il prodotto ha prezzo o meno
+        for (String ID : IDMovimentiTokenGlobale) {
+            MappaCryptoWallet.get(ID)[32] = "";
+        }
+
+        TabellaCryptodaAggiornare = true;
+        return NuovoNome;
+    }
+
     private Set<String> Funzione_ElencoIDMovimentiTokeneWalletSelezionato(String Wallet,String SottoWallet,String Moneta,String Rete,String Address){
         
         if (Rete==null)Rete="";

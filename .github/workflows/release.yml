@@ -8,6 +8,9 @@ env:
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -267,3 +270,47 @@ jobs:
         with:
           name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_DMG_MacOS_${{ matrix.arch }}
           path: out/dmg/*.dmg
+
+  create-release:
+    needs: [build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Estrai versione dal pom.xml
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "VERSIONE=$VERSION" >> $GITHUB_ENV
+
+      - name: Scarica tutti gli artifact delle build
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepara gli asset della release (zippa le cartelle, lascia i singoli file così come sono)
+        run: |
+          mkdir -p release_assets
+          cd artifacts
+          for d in */; do
+            d="${d%/}"
+            files=$(find "$d" -mindepth 1 -maxdepth 1 -type f | wc -l)
+            dirs=$(find "$d" -mindepth 1 -maxdepth 1 -type d | wc -l)
+            if [ "$files" -eq 1 ] && [ "$dirs" -eq 0 ]; then
+              cp "$d"/* "../release_assets/"
+            else
+              (cd "$d" && zip -qr "../../release_assets/${d}.zip" .)
+            fi
+          done
+          cd ..
+          ls -la release_assets
+
+      # Il nome/tag della release deve restare esattamente "Giacenze_Crypto_<VERSIONE>":
+      # l'app (Funzioni.isAggiornamentoDisponibile / TransazioniCrypto_Bottone_AggiorbaVersione)
+      # controlla proprio https://sourceforge.net/.../files/Giacenze_Crypto_<VERSIONE>/,
+      # cartella che l'integrazione GitHub->SourceForge crea con lo stesso nome della release.
+      - name: Crea la Release GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: Giacenze_Crypto_${{ env.VERSIONE }}
+          name: Giacenze_Crypto_${{ env.VERSIONE }}
+          files: release_assets/*

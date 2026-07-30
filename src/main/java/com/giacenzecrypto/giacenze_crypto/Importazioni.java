@@ -6402,31 +6402,35 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
     
     
         /**
-         * Corregge i movimenti DeFi in cui il deposito di un token LP su una piattaforma restituisce come
-         * "scambio" le reward accumulate fino a quel momento in un'altra moneta: individua i movimenti di
-         * scambio crypto-crypto con token uscente LP (simbolo contenente {@code "-LP"}) e causale originale
+         * Corregge i movimenti DeFi in cui il deposito di un token LP su una piattaforma (farm, vault
+         * auto-compounding, ecc.) genera in cambio un altro token: individua i movimenti di scambio
+         * crypto-crypto con token uscente LP (simbolo contenente {@code "-LP"}) e causale originale
          * {@code "deposit"}, li elimina e li sostituisce con un prelievo del token LP (verso la piattaforma
-         * DeFi) e un deposito classificato come reward ({@code DAI - Reward}) dell'altra moneta. Da eseguire
-         * al termine di ogni importazione DeFi, o una tantum sul pregresso prima del primo caricamento della
+         * DeFi) e un deposito generico (non classificato) dell'altra moneta, da categorizzare manualmente
+         * nella tabella Depositi/Prelievi. Non viene classificato automaticamente come reward perché il
+         * token in arrivo può anche essere un token-quota di un vault (es. i "moo..." di Beefy Finance),
+         * cioè una semplice ricevuta della stessa posizione depositata e non un reddito. Da eseguire al
+         * termine di ogni importazione DeFi, o una tantum sul pregresso prima del primo caricamento della
          * tabella Depositi/Prelievi (non ad ogni caricamento, per non appesantire l'operazione).
          */
         public static void ConvertiScambiLPinDepositiPrelievi(){
         //Ci sono alcuni depositi su piattaforma defi che nel momento in cui fai il deposito
-        //ad esempio di un token lp sulla piattaforma poi ti restituiscono le reward accumulate fino a quel momento in altra moneta
-        //Questo fa si che il programma identifichi il movimento come uno scambio invece che come un deposito con una reward in rientro
+        //ad esempio di un token lp sulla piattaforma poi ti restituiscono un altro token (reward accumulate
+        //oppure, ad esempio nei vault auto-compounding, un token-quota della stessa posizione depositata)
+        //Questo fa si che il programma identifichi il movimento come uno scambio invece che come un deposito/prelievo
         //Questa funzione cancellerà il movimento di scambio e lo trasformerà in un prelievo/deposito
         //Dove il prelievo viene fatto dal wallet verso una piattaforma defi
-        //mentre il deposito sul wallet verrà fatto figurare come una reward come è giusto che sia
-        
+        //mentre il deposito sul wallet resta generico (non classificato), perché non è detto sia una reward:
+        //va categorizzato a mano nella tabella Depositi/Prelievi
+
         //Le conzioni perchè questo avvenga sono:
         //Trovo il movimento di scambio crypto-crypto
         //il token in uscita è un token LP
         //il movimento viene classificato come "deposit" sulla defi
-        
+
         //Cosa devo fare se le condizioni sono soddisfatte:
         //Genero un movimento di prelievo del token LP
-        //Genero movimento di deposito dell'altro token
-        //Classifico il movimento di deposito come reward
+        //Genero movimento di deposito dell'altro token, lasciandolo non classificato (generico)
         //Cancello il vecchio movimento
         
         //Ovviamente tutto questo lo devo fare su tutto il database
@@ -6466,19 +6470,20 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                 Funzioni.RiempiVuotiArray(RT);
                 MappaCryptoWallet.put(ID, RT);
                 
-                //2 - Genero il movimento di Deposito e lo classifico come rimborso
+                //2 - Genero il movimento di Deposito, lasciandolo generico (non classificato):
+                //va categorizzato a mano, perché non è detto sia una reward (es. token-quota di un vault)
                 RT=new String[ColonneTabella];
                 System.arraycopy(Movimento, 0, RT, 0, ColonneTabella); //ricopio tutti i movimenti
                 //adesso modifico quelli che mi interessano
                 PartiID=Movimento[0].split("_");
                 ID=PartiID[0]+"_"+PartiID[1]+"_"+PartiID[2]+"_"+PartiID[3]+"_DC";
                 RT[0]=ID;
-                RT[5]="REWARD";
+                RT[5]="DEPOSITO CRYPTO";
                 RT[6]="-> "+Movimento[11];
                 RT[8]="";
                 RT[9]="";
                 RT[10]="";
-                RT[18]="DAI - Reward";
+                RT[18]="";
                 RT[25]="";
                 RT[26]="";
                 Funzioni.RiempiVuotiArray(RT);

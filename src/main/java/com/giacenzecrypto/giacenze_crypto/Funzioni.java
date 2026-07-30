@@ -431,7 +431,9 @@ public class Funzioni {
                 PopUp_disabilitaMenuDatesto(pop,"Modifica Note");
                 PopUp_disabilitaMenuDatesto(pop,"Cambia Tipologia Reward");
                 PopUp_disabilitaMenuDatesto(pop,"Mostra LiFo Transazione");
-                
+                PopUp_disabilitaMenuDatesto(pop,"Separa in Deposito/Prelievo");
+                PopUp_disabilitaMenuDatesto(pop,"Crea movimento di scambio da Deposito/Prelievo");
+
             }else{
                 PopUp_abilitaMenuDaTesto(pop,"Dettagli Movimento");
                 PopUp_abilitaMenuDaTesto(pop,"Modifica Movimento");
@@ -445,9 +447,20 @@ public class Funzioni {
                    PopUp_abilitaMenuDaTesto(pop,"Classifica Movimento"); 
                 }else PopUp_disabilitaMenuDatesto(pop,"Classifica Movimento");
                 
-                if(ID.split("_")[4].equals("RW")||Principale.MappaCryptoWallet.get(ID)[18].contains("DAI -"))                    
+                if(ID.split("_")[4].equals("RW")||Principale.MappaCryptoWallet.get(ID)[18].contains("DAI -"))
                     PopUp_abilitaMenuDaTesto(pop,"Cambia Tipologia Reward");
                 else PopUp_disabilitaMenuDatesto(pop,"Cambia Tipologia Reward");
+
+                //Separazione: solo su selezione singola di un movimento che coinvolge due monete
+                if (Principale.PopUp_IDTransSelezionati.size()==1
+                        && Principale_Movimenti_SeparaUnisci.isSeparabileInDepositoPrelievo(ID)){
+                    PopUp_abilitaMenuDaTesto(pop,"Separa in Deposito/Prelievo");
+                }else PopUp_disabilitaMenuDatesto(pop,"Separa in Deposito/Prelievo");
+
+                //Fusione: solo su due movimenti non classificati (un deposito e un prelievo) fondibili
+                if (Principale_Movimenti_SeparaUnisci.isUnibileInScambio(Principale.PopUp_IDTransSelezionati)){
+                    PopUp_abilitaMenuDaTesto(pop,"Crea movimento di scambio da Deposito/Prelievo");
+                }else PopUp_disabilitaMenuDatesto(pop,"Crea movimento di scambio da Deposito/Prelievo");
             }
             
             //Se è una tabella mi comporto in questo modo
@@ -487,7 +500,30 @@ public class Funzioni {
         return false;
     }
 }
-    
+
+    /**
+     * Verifica se una quantità è negativa, cioè se rappresenta un movimento in <b>uscita</b>.
+     *
+     * <p>Nasce dalla correzione <b>M7</b> (vedi {@code Documentazione/Analisi_Bug_Criticita.md}): in tutto
+     * il programma la direzione di un movimento veniva dedotta cercando un trattino <i>in qualunque
+     * posizione</i> della stringa ({@code Qta.contains("-")}). Una quantità <b>positiva</b> scritta in
+     * notazione scientifica con esponente negativo ({@code 2.5E-9}, tipica dei token con molti decimali e
+     * prodotta spontaneamente da {@code BigDecimal.toString()}) contiene un trattino e veniva quindi
+     * scambiata per una quantità in uscita, rovesciando la classificazione del movimento.</p>
+     *
+     * <p>Per i valori <b>non numerici</b> viene mantenuto il vecchio comportamento testuale, in modo che
+     * la correzione cambi esito soltanto nel caso che intende correggere e non introduca differenze su
+     * dati malformati.</p>
+     *
+     * @param valore quantità da valutare
+     * @return {@code true} se la quantità è negativa; {@code false} se è positiva, nulla o {@code null}
+     */
+    public static boolean isNegativo(String valore) {
+        if (valore == null) return false;
+        if (!isNumeric(valore, false)) return valore.contains("-");
+        return new BigDecimal(valore).signum() < 0;
+    }
+
     /**
      * Verifica se un clic del mouse su una tabella è avvenuto su una riga già presente nella selezione corrente
      * (utile per decidere se un click destro deve preservare una selezione multipla esistente).

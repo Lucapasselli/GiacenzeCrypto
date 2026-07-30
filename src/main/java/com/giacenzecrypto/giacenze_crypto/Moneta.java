@@ -195,13 +195,19 @@ public void AssegnaTipoAuto(){
 
 /**
  * Inverte il segno di {@link #Qta}: se il valore è negativo lo rende positivo e viceversa.
+ *
+ * <p>Correzione <b>M7</b>: viene manipolato solo il segno iniziale. La versione precedente usava
+ * {@code contains("-")} e {@code replace("-","")}, che su una quantità in notazione scientifica ne
+ * cancellavano anche il segno dell'esponente: {@code 1.5E-8} diventava {@code 1.5E8}, cioè un valore
+ * moltiplicato per 10^16, e lo stesso accadeva invertendo {@code -1.5E-8}.</p>
  */
 public void InvertiQta(){
     if (Qta!=null&&!Qta.isBlank()){
-        if (Qta.contains("-"))
-            Qta = Qta.replace("-", "");
+        String Valore = Qta.trim();
+        if (Valore.startsWith("-"))
+            Qta = Valore.substring(1);
         else
-            Qta = "-" + Qta.replace("-", "");
+            Qta = "-" + Valore;
     }
 }
 

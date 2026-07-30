@@ -173,12 +173,12 @@ public class TransazioneDefi {
             //altrimenti faccio la somma
             monete=MappaToken.get(Moneta.Moneta);
             //Questo serve per sapere se il prezzo vecchio devo prenderlo negativo o meno
-            boolean VecchioSegno=monete.Qta.contains("-")&&!monete.Prezzo.contains("-");
+            boolean VecchioSegno=Funzioni.isNegativo(monete.Qta)&&!monete.Prezzo.contains("-");
           //  System.out.print("QTA: + "+Moneta.Qta+" + "+monete.Qta);
             monete.Qta=new BigDecimal(Moneta.Qta).add(new BigDecimal(monete.Qta)).stripTrailingZeros().toPlainString();
            // System.out.println(" = "+monete.Qta);
            //Se la qta è negativa anche il prezzo deve essere preso in negativo
-            if (Moneta.Qta.contains("-")&&!Moneta.Prezzo.contains("-"))Moneta.Prezzo="-"+Moneta.Prezzo;          
+            if (Funzioni.isNegativo(Moneta.Qta)&&!Moneta.Prezzo.contains("-"))Moneta.Prezzo="-"+Moneta.Prezzo;
            // System.out.print("PREZZO:"+Moneta.Prezzo+" + "+monete.Prezzo);
            if (VecchioSegno)monete.Prezzo="-"+monete.Prezzo;//Se la qta è negativa nella somma anche il prezzo deve essere preso in negativo
             monete.Prezzo=new BigDecimal(Moneta.Prezzo).add(new BigDecimal(monete.Prezzo)).stripTrailingZeros().abs().toPlainString();            
@@ -210,9 +210,9 @@ public class TransazioneDefi {
               {
                //   System.out.print(token.MonetaName+" _ "+token.Qta+" - ");
                 //  if (new BigDecimal(token.Qta).compareTo(new BigDecimal("0"))==1)
-                  if (!token.Qta.contains("-"))
+                  if (!Funzioni.isNegativo(token.Qta))
                    {
-                       
+
                        if (token.IndirizzoNoWallet!=null&&token.IndirizzoNoWallet.equalsIgnoreCase("0x0000000000000000000000000000000000000000")&&token.Moneta.toUpperCase().contains("DIVIDEND_TRACKER")){
                             //se trovo un movimento tecnico lo tolgo dalla lista generica e lo metto nelle movimentazioni specifiche tecniche
                             MappaTokenTecniciEntrata.put(token.MonetaAddress, token);
@@ -227,9 +227,9 @@ public class TransazioneDefi {
                        }
                    }  
                   //if (new BigDecimal(token.Qta).compareTo(new BigDecimal("0"))==-1)
-                  if (token.Qta.contains("-"))
+                  if (Funzioni.isNegativo(token.Qta))
                    {
-                       
+
                        if (token.IndirizzoNoWallet.equalsIgnoreCase("0x0000000000000000000000000000000000000000")&&token.Moneta.toUpperCase().contains("DIVIDEND_TRACKER")){
                             //se trovo un movimento tecnico lo tolgo dalla lista generica e lo metto nelle movimentazioni specifiche tecniche
                             MappaTokenTecniciUscita.put(token.MonetaAddress, token);
@@ -286,18 +286,18 @@ public class TransazioneDefi {
                //   System.out.print(token.MonetaName+" _ "+token.Qta+" - ");
                 //  if (new BigDecimal(token.Qta).compareTo(new BigDecimal("0"))==1)
                  /// System.out.println(token.Moneta);
-                  if (!token.Qta.contains("-"))
+                  if (!Funzioni.isNegativo(token.Qta))
                    {
-                     
+
                             MappaTokenEntrata.put(token.Moneta, token);
                             //System.out.println("Moneta Entrata : "+token.Moneta+" - "+token.Qta);
                             trovataEntrata=true;
                        
                    }  
                   //if (new BigDecimal(token.Qta).compareTo(new BigDecimal("0"))==-1)
-                  if (token.Qta.contains("-"))
+                  if (Funzioni.isNegativo(token.Qta))
                    {
-                     
+
                             MappaTokenUscita.put(token.Moneta, token);
                             //System.out.println("Moneta Uscita : "+token.Moneta+" - "+token.Qta);
                             trovataUscita=true;

@@ -2451,7 +2451,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                 
                                 if (movimentoSplittato[9].toLowerCase().contains("supercharger"))
                                 {
-                                    if (movimentoSplittato[3].contains("-"))
+                                    if (Funzioni.isNegativo(movimentoSplittato[3]))
                                     {
                                         WalletPartenza="Crypto Wallet";
                                         WalletDestinazione="Supercharger";
@@ -2463,7 +2463,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                     }
                                 }else if (movimentoSplittato[9].toLowerCase().contains("staking"))
                                 {
-                                    if (movimentoSplittato[3].contains("-"))
+                                    if (Funzioni.isNegativo(movimentoSplittato[3]))
                                     {
                                         WalletPartenza="Crypto Wallet";
                                         WalletDestinazione="Staking";
@@ -2475,7 +2475,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                     }
                                 }else if (movimentoSplittato[9].toLowerCase().contains("earn"))
                                 {
-                                    if (movimentoSplittato[3].contains("-"))
+                                    if (Funzioni.isNegativo(movimentoSplittato[3]))
                                     {
                                         WalletPartenza="Crypto Wallet";
                                         WalletDestinazione="Earn";
@@ -2487,7 +2487,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                     }
                                 }else if (movimentoSplittato[9].toLowerCase().contains("lock"))
                                 {
-                                    if (movimentoSplittato[3].contains("-"))
+                                    if (Funzioni.isNegativo(movimentoSplittato[3]))
                                     {
                                         WalletPartenza="Crypto Wallet";
                                         WalletDestinazione="Fondi Bloccati";
@@ -2509,7 +2509,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                         //Per far si che questo accada aggiungo la lettera D davanti al nome dell'exchange
                                         ExchangeID="CDCAPP~B";
                                     }
-                                    if (!movimentoSplittato[3].contains("-"))
+                                    if (!Funzioni.isNegativo(movimentoSplittato[3]))
                                     {
                                         WalletPartenza="Crypto Wallet";
                                         WalletDestinazione="Crypto Basket";
@@ -3236,7 +3236,7 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
 
                             }
                            else if (movimentoConvertito.trim().equalsIgnoreCase("DEPOSITO FIAT")||
-                                   (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO")&&Mon.Tipo.equals("FIAT")&&!Mon.Qta.contains("-"))
+                                   (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO")&&Mon.Tipo.equals("FIAT")&&!Funzioni.isNegativo(Mon.Qta))
                                    )
                             {
                                  RT = MovimentiCrypto.creaMovimento(Mon, null,
@@ -3258,7 +3258,7 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
 
                                 //Cambio la descrizione in taluni casi particolari
                                 if (RT != null) {
-                                    if (Mon.Qta.contains("-")) {
+                                    if (Funzioni.isNegativo(Mon.Qta)) {
                                         if (CausaleOriginale.trim().equalsIgnoreCase("Binance Card Spending"))RT[5]="SPESA CON CARTA";
                                     }
                                     else{
@@ -3295,7 +3295,7 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("DUST-CONVERSION")||
                                     movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO CRYPTO-CRYPTO")||
-                                    (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO")&&Mon.Tipo.equals("FIAT")&&Mon.Qta.contains("-"))||
+                                    (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO")&&Mon.Tipo.equals("FIAT")&&Funzioni.isNegativo(Mon.Qta))||
                                     (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO")&&!Mon.Tipo.equals("FIAT"))
                                     )
                             {
@@ -3648,7 +3648,7 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
             
             else if (movimentoConvertito.trim().equalsIgnoreCase("DUST-CONVERSION")
                     || movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO CRYPTO-CRYPTO")
-                    || (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO") && Mon.Tipo.equals("FIAT") && Mon.Qta.contains("-"))
+                    || (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO") && Mon.Tipo.equals("FIAT") && Funzioni.isNegativo(Mon.Qta))
                     || (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO") && !Mon.Tipo.equals("FIAT"))) {
                 // serve solo per il calcolo della percentuale di cro da attivare
                 Scambio.InserisciMoneteCEX(Mon, WalletSecondario, CausaleOriginale, IDOriginale);
@@ -3856,7 +3856,7 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
 
             } else if (movimentoConvertito.trim().equalsIgnoreCase("DUST-CONVERSION")
                     || movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO CRYPTO-CRYPTO")
-                    || (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO") && Mon.Tipo.equals("FIAT") && Mon.Qta.contains("-"))
+                    || (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO") && Mon.Tipo.equals("FIAT") && Funzioni.isNegativo(Mon.Qta))
                     || (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO") && !Mon.Tipo.equals("FIAT"))) {
 
                 Scambio.InserisciMoneteCEX(Mon, WalletSecondario, CausaleOriginale, IDOriginale);
@@ -3872,7 +3872,7 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
                 //Se si creo anche il movimento opposto che arriva a destinazione
                 //oppure parte dall'origine
                 if (movimentoSplittato[15].equalsIgnoreCase("SI")) {
-                    Mon.Qta = Mon.Qta.contains("-") ? Mon.Qta.replace("-", "") : "-" + Mon.Qta;
+                    Mon.InvertiQta();
                     RT = MovimentiCrypto.creaMovimento(Mon, null, WalletPrincipale, movimentoSplittato[16], TimeStamp, movimentoSplittato[8], FontePrz, k + 1, 1, null, null, "A", IDOriginale, movimentoConvertito,null);
                     if (RT != null) {
                         lista.add(RT);

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.giacenzecrypto</groupId>
     <artifactId>Giacenze_Crypto</artifactId>
-    <version>1.0.58.01</version>
+    <version>1.0.58.03</version>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -103,6 +103,23 @@
         </dependency>
     </dependencies>
     <build>
+        <resources>
+            <!-- Solo version.properties viene filtrato, per sostituire ${project.version}:
+                 le altre risorse sono immagini binarie e il filtering le corromperebbe -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/version.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>**/version.properties</exclude>
+                </excludes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -134,6 +151,12 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto</mainClass>
+                                    <!-- Splash nativo AWT mostrato dalla JVM prima dell'avvio di Swing:
+                                         SplashAvvio.splashNativo() lo recupera con SplashScreen.getSplashScreen(),
+                                         che senza questa voce nel manifest restituisce null -->
+                                    <manifestEntries>
+                                        <SplashScreen-Image>splash.png</SplashScreen-Image>
+                                    </manifestEntries>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
                             </transformers>

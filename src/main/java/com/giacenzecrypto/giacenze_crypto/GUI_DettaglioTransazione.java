@@ -740,6 +740,13 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         int rigaSelezionata = tabella.getSelectedRow();
         if (rigaSelezionata != -1) {
 
+            //Questo popup lavora sempre su un solo movimento: allineo comunque la lista delle righe
+            //selezionate, altrimenti resterebbe quella dell'ultimo menu contestuale aperto altrove
+            Principale.PopUp_IDTransSelezionati = new java.util.ArrayList<>();
+            if (IDdt != null && Principale.MappaCryptoWallet.get(IDdt) != null) {
+                Principale.PopUp_IDTransSelezionati.add(IDdt);
+            }
+
             Funzioni.PopUpMenu(this, evt, PopupMenu, IDdt);
 
         }

@@ -146,7 +146,12 @@ private static Map<String, String[]> creaMappaTipologie() {
             if (MON != null &&
                 Funzioni.isNumeric(MON.Qta, false)&&
                 new BigDecimal(MON.Qta).abs().compareTo(BigDecimal.ZERO)!=0) {
-                if (MON.Qta.contains("-")) {
+                //Correzione M7: la direzione si ricava dal SEGNO della quantità, non dalla presenza di un
+                //trattino nella stringa. Con il vecchio test testuale una quantità positiva in notazione
+                //scientifica con esponente negativo (es. "2.5E-9", tipica dei token con molti decimali)
+                //veniva scambiata per una quantità in uscita. Il segno è sicuro da leggere qui perché le
+                //due condizioni sopra hanno già verificato che la quantità sia numerica e non nulla.
+                if (new BigDecimal(MON.Qta).signum() < 0) {
                     if (!MOut.isBlank()){
                         LoggerGC.ScriviErrore("Movimento incoerente, ci sono due monete in uscita : "+MOut+" e "+MON.Moneta+ " data movimento : "+data);
                         return null;

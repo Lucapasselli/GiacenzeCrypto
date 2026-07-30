@@ -148,6 +148,9 @@ private static final long serialVersionUID = 3L;
     public static String PopUp_IDTrans=null;
     public static Component PopUp_Component=null;
     public static JTable PopUp_Tabella=null;
+    //ID di TUTTE le righe selezionate al momento dell'apertura del menu contestuale (PopUp_IDTrans è
+    //solo il primo): serve alle voci che lavorano su più movimenti insieme
+    public static List<String> PopUp_IDTransSelezionati=new ArrayList<>();
     
     //Quasta rappresenta la lista delle crypto/FIAT/NFT trattati
     public static Set<String> setCryptovalute = new HashSet<>();
@@ -428,6 +431,8 @@ private static final long serialVersionUID = 3L;
         MenuItem_EliminaMovimento = new javax.swing.JMenuItem();
         jSeparator8 = new javax.swing.JPopupMenu.Separator();
         MenuItem_ClassificaMovimento = new javax.swing.JMenuItem();
+        MenuItem_SeparaMovimento = new javax.swing.JMenuItem();
+        MenuItem_UnisciMovimenti = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         MenuItem_ModificaPrezzo = new javax.swing.JMenuItem();
         MenuItem_ModificaNote = new javax.swing.JMenuItem();
@@ -866,6 +871,24 @@ private static final long serialVersionUID = 3L;
             }
         });
         PopupMenu.add(MenuItem_ClassificaMovimento);
+
+        MenuItem_SeparaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Separa.png"))); // NOI18N
+        MenuItem_SeparaMovimento.setText("Separa in Deposito/Prelievo");
+        MenuItem_SeparaMovimento.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_SeparaMovimentoActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_SeparaMovimento);
+
+        MenuItem_UnisciMovimenti.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Unisci.png"))); // NOI18N
+        MenuItem_UnisciMovimenti.setText("Crea movimento di scambio da Deposito/Prelievo");
+        MenuItem_UnisciMovimenti.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_UnisciMovimentiActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_UnisciMovimenti);
         PopupMenu.add(jSeparator6);
 
         MenuItem_ModificaPrezzo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
@@ -8917,17 +8940,26 @@ GiacenzeaData_CompilaTabellaToken(true);
 
         }
         int rigaSelezionata = tabella.getSelectedRow();
-         if (rigaSelezionata != -1) {            
+         if (rigaSelezionata != -1) {
             int rigaselezionata;
             if (tabella.getRowSorter()!=null)rigaselezionata = tabella.getRowSorter().convertRowIndexToModel(tabella.getSelectedRow());
             else rigaselezionata = tabella.convertRowIndexToModel(tabella.getSelectedRow());
             String IDTransazione=null;
+            //Raccolgo gli ID di tutte le righe selezionate (non solo della prima): le voci del menu che
+            //operano su più movimenti insieme decidono da qui se abilitarsi
+            PopUp_IDTransSelezionati=new ArrayList<>();
             if (posizioneID!=-1)
             {
-                
+
                 IDTransazione = tabella.getModel().getValueAt(rigaselezionata, posizioneID).toString();
                 if(Principale.MappaCryptoWallet.get(IDTransazione)==null){
                     IDTransazione=null;
+                }
+                for (int riga:Tabelle.Funzioni_getRigheSelezionate(tabella)){
+                    Object valore=tabella.getModel().getValueAt(riga, posizioneID);
+                    if (valore!=null&&Principale.MappaCryptoWallet.get(valore.toString())!=null){
+                        PopUp_IDTransSelezionati.add(valore.toString());
+                    }
                 }
             }
             Funzioni.PopUpMenu(this, evt, PopupMenu,IDTransazione);
@@ -11934,6 +11966,28 @@ if (result != null && !result.isAction("cancel")) {
             }
         }
     }//GEN-LAST:event_MenuItem_ClassificaMovimentoActionPerformed
+
+    private void MenuItem_SeparaMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_SeparaMovimentoActionPerformed
+        // TODO add your handling code here:
+        if (Principale_Movimenti_SeparaUnisci.SeparaInDepositoPrelievo(PopUp_IDTrans, this)) {
+            //Ricalcolo una sola volta e azzero il flag, così la riacquisizione del focus dopo la chiusura
+            //del dialog di conferma non rifà inutilmente lo stesso ricalcolo
+            Funzioni_AggiornaTutto();
+            TabellaCryptodaAggiornare = false;
+            DepositiPrelievi_Caricatabella();
+        }
+    }//GEN-LAST:event_MenuItem_SeparaMovimentoActionPerformed
+
+    private void MenuItem_UnisciMovimentiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_UnisciMovimentiActionPerformed
+        // TODO add your handling code here:
+        if (Principale_Movimenti_SeparaUnisci.CreaScambioDaDepositoPrelievo(PopUp_IDTransSelezionati, this)) {
+            //Ricalcolo una sola volta e azzero il flag, così la riacquisizione del focus dopo la chiusura
+            //del dialog di conferma non rifà inutilmente lo stesso ricalcolo
+            Funzioni_AggiornaTutto();
+            TabellaCryptodaAggiornare = false;
+            DepositiPrelievi_Caricatabella();
+        }
+    }//GEN-LAST:event_MenuItem_UnisciMovimentiActionPerformed
 
 
     
@@ -16036,6 +16090,8 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JMenuItem MenuItem_ModificaNote;
     private javax.swing.JMenuItem MenuItem_ModificaPrezzo;
     private javax.swing.JMenuItem MenuItem_ModificaReward;
+    private javax.swing.JMenuItem MenuItem_SeparaMovimento;
+    private javax.swing.JMenuItem MenuItem_UnisciMovimenti;
     private javax.swing.JPanel Opzioni;
     private javax.swing.JCheckBox OpzioniRewards_CashBackComeFIAT;
     private javax.swing.JComboBox<String> OpzioniRewards_CashBackComeFIAT_ComboBox;

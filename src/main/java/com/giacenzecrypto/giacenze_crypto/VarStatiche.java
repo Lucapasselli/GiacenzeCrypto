@@ -137,4 +137,9 @@ public class VarStatiche {
     public static String getCartella_ImportConfig() {
         return getWorkingDirectory() + "ImportConfig/";
     }
+
+    /** @return il percorso del file di configurazione dei chatbot usati dalla funzione "Chiedi a IA" */
+    public static String getFile_ChatbotIA() {
+        return getWorkingDirectory() + "ChatbotIA.json";
+    }
 }

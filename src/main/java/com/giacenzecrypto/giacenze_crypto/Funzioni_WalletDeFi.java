@@ -27,10 +27,10 @@ public class Funzioni_WalletDeFi {
      public static boolean ApriExplorer (String ID){
             
 
-        if (Principale.MappaCryptoWallet.get(ID).length < 24) {
+        if (Principale.MappaCryptoWallet.get(ID).length < 25) {
             return false;
         }
-        
+
         String IDTransazione = Principale.MappaCryptoWallet.get(ID)[24];
         // String ID=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
         String Rete = Funzioni.TrovaReteDaID(ID);
@@ -39,36 +39,39 @@ public class Funzioni_WalletDeFi {
             return false;
         }
         if (IDTransazione != null) {
-
-                    if (Rete.equalsIgnoreCase("BSC")) {
-                        Funzioni.ApriWeb("https://bscscan.com/tx/" + IDTransazione);
-                    } else if (Rete.equalsIgnoreCase("CRO")) {
-                        Funzioni.ApriWeb("https://cronoscan.com/tx/" + IDTransazione);
-                    } else if (Rete.equalsIgnoreCase("ETH")) {
-                        Funzioni.ApriWeb("https://etherscan.io/tx/" + IDTransazione);
-                    } else if (Rete.equalsIgnoreCase("BASE")){
-                        Funzioni.ApriWeb("https://basescan.org/tx/" + IDTransazione);
-                    } else if (Rete.equalsIgnoreCase("ARB")){
-                        Funzioni.ApriWeb("https://arbiscan.io/tx/" + IDTransazione);
-                    }else if (Rete.equalsIgnoreCase("SOL")){
-                        Funzioni.ApriWeb("https://solscan.io/tx/" + IDTransazione);
-                    }else if (Rete.equalsIgnoreCase("BERA")){
-                        Funzioni.ApriWeb("https://berascan.com/tx/" + IDTransazione);
-                    }else if (Rete.equalsIgnoreCase("AVAX")){
-                        Funzioni.ApriWeb("https://avascan.info/blockchain/c/tx/" + IDTransazione);
-                    }else if (Rete.equalsIgnoreCase("BTC")){
-                        Funzioni.ApriWeb("https://mempool.space/tx/" + IDTransazione);
-                    }else if (Rete.equalsIgnoreCase("POL")){
-                        Funzioni.ApriWeb("https://polygonscan.com/tx/" + IDTransazione);
-                    }else if (Rete.equalsIgnoreCase("MONAD")){
-                        Funzioni.ApriWeb("https://monadscan.com/tx/" + IDTransazione);
-                    }else if (Rete.equalsIgnoreCase("GNOSIS")){
-                        Funzioni.ApriWeb("https://gnosisscan.io/tx/" + IDTransazione);
-                    }
-
+            String Url = UrlExplorerTx(Rete, IDTransazione);
+            if (Url != null) Funzioni.ApriWeb(Url);
         }
         return true;
 
+    }
+
+     /**
+      * Costruisce l'indirizzo della pagina dell'explorer che mostra una transazione, senza aprirla: serve
+      * sia ad {@link #ApriExplorer} sia alla funzione "Chiedi a IA", che include il link nella domanda
+      * rivolta al chatbot.
+      * @param Rete codice della rete blockchain
+      * @param Hash hash della transazione
+      * @return l'URL della transazione sull'explorer della rete, oppure {@code null} se la rete non &egrave;
+      *         tra quelle note o se mancano rete o hash
+      */
+     public static String UrlExplorerTx(String Rete, String Hash) {
+        if (Rete == null || Hash == null || Hash.isBlank()) return null;
+
+        if (Rete.equalsIgnoreCase("BSC")) return "https://bscscan.com/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("CRO")) return "https://cronoscan.com/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("ETH")) return "https://etherscan.io/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("BASE")) return "https://basescan.org/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("ARB")) return "https://arbiscan.io/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("SOL")) return "https://solscan.io/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("BERA")) return "https://berascan.com/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("AVAX")) return "https://avascan.info/blockchain/c/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("BTC")) return "https://mempool.space/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("POL")) return "https://polygonscan.com/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("MONAD")) return "https://monadscan.com/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("GNOSIS")) return "https://gnosisscan.io/tx/" + Hash;
+
+        return null;
     }
      
      /**

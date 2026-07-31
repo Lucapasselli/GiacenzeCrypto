@@ -255,6 +255,9 @@ private static final long serialVersionUID = 3L;
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Opzioni_Emoney_Tabella);
       //  OverrideTabellaCrypto();
         SettaIcone();
+        //Il sottomenu "Chiedi a IA" viene creato vuoto dal Designer e riempito qui con i chatbot letti
+        //dal file ChatbotIA.json, così l'elenco si aggiorna senza ricompilare
+        ChatbotIA.PopolaMenu(MenuItem_ChiediIA, this);
         //Se nuova versione disponibile fa vedere il pulsante con il quale è possibile scaricarla.
         TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(false);
         Funzioni_NuovaVersioneDisponibile();
@@ -427,6 +430,7 @@ private static final long serialVersionUID = 3L;
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         MenuItem_LiFoTransazione = new javax.swing.JMenuItem();
         MenuItem_DettagliMovimento = new javax.swing.JMenuItem();
+        MenuItem_ChiediIA = new javax.swing.JMenu();
         MenuItem_ModificaMovimento = new javax.swing.JMenuItem();
         MenuItem_EliminaMovimento = new javax.swing.JMenuItem();
         jSeparator8 = new javax.swing.JPopupMenu.Separator();
@@ -843,6 +847,11 @@ private static final long serialVersionUID = 3L;
             }
         });
         PopupMenu.add(MenuItem_DettagliMovimento);
+
+        MenuItem_ChiediIA.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
+        MenuItem_ChiediIA.setText("Chiedi a IA");
+        MenuItem_ChiediIA.setToolTipText("Chiede a un chatbot di spiegare il movimento selezionato");
+        PopupMenu.add(MenuItem_ChiediIA);
 
         MenuItem_ModificaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
         MenuItem_ModificaMovimento.setText("Modifica Movimento");
@@ -16171,6 +16180,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel Giacenzeadata_Dettaglio_Label;
     private javax.swing.JLabel Giacenzeadata_Walleta_Label;
     private javax.swing.JLabel Giacenzeadata_Walletb_Label;
+    private javax.swing.JMenu MenuItem_ChiediIA;
     private javax.swing.JMenuItem MenuItem_ClassificaMovimento;
     private javax.swing.JMenuItem MenuItem_Copia;
     private javax.swing.JMenuItem MenuItem_CopiaID;

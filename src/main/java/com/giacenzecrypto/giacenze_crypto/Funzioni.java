@@ -433,6 +433,7 @@ public class Funzioni {
                 PopUp_disabilitaMenuDatesto(pop,"Mostra LiFo Transazione");
                 PopUp_disabilitaMenuDatesto(pop,"Separa in Deposito/Prelievo");
                 PopUp_disabilitaMenuDatesto(pop,"Crea movimento di scambio da Deposito/Prelievo");
+                PopUp_disabilitaMenuDatesto(pop,"Chiedi a IA");
 
             }else{
                 PopUp_abilitaMenuDaTesto(pop,"Dettagli Movimento");
@@ -442,7 +443,13 @@ public class Funzioni {
                 PopUp_abilitaMenuDaTesto(pop,"Modifica Prezzo");
                 PopUp_abilitaMenuDaTesto(pop,"Modifica Note");
                 PopUp_abilitaMenuDaTesto(pop,"Mostra LiFo Transazione");
-                
+
+                //"Chiedi a IA" costruisce la domanda sui dati del movimento: serve che il movimento ci sia
+                //davvero, perché il popup è condiviso con tabelle le cui righe non sono movimenti
+                if (Principale.MappaCryptoWallet.get(ID)!=null){
+                    PopUp_abilitaMenuDaTesto(pop,"Chiedi a IA");
+                }else PopUp_disabilitaMenuDatesto(pop,"Chiedi a IA");
+
                 if (isDepositoPrelievoClassificabile(ID, null,false)){
                    PopUp_abilitaMenuDaTesto(pop,"Classifica Movimento"); 
                 }else PopUp_disabilitaMenuDatesto(pop,"Classifica Movimento");

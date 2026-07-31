@@ -29,6 +29,35 @@ NB: Per aggiornare la versione portable/multipiattaforma del programma basta sov
 
 Changelog
 
+ver. 1.0.59
+Nuove Implementazioni :
+- Aggiunta la funzione "Chiedi a IA": dal tasto destro su un movimento si prepara una domanda già compilata con i dati di quel movimento e la si apre direttamente nel chatbot preferito (ChatGPT, Claude, Perplexity, Copilot, Grok, Gemini, Le Chat, DeepSeek).
+  Il testo viene sempre mostrato prima dell'invio e può essere modificato, e si può scegliere tra il profilo "Completo" (tutti i dati, hash e indirizzi compresi, così il chatbot può leggere la transazione sull'explorer) e il profilo "Generico"
+  (solo causale, monete e rete, senza dati riconducibili a voi). Facoltativamente si può chiedere anche l'inquadramento fiscale italiano. L'elenco dei chatbot è modificabile nel file ChatbotIA.json che viene creato nella cartella dei dati.
+- Aggiunte due nuove voci nel menu contestuale dei movimenti: "Separa in Deposito/Prelievo", che divide un movimento che coinvolge due monete nelle due operazioni indipendenti, e "Crea movimento di scambio da Deposito/Prelievo", che è
+  l'operazione inversa e riunisce un deposito e un prelievo non ancora classificati in un unico scambio.
+- Aggiunte in "Opzioni" - "Varie" due caselle per registrare nel log i JSON scaricati durante l'importazione dei wallet DeFi e durante il recupero dei prezzi: servono per capire cosa è successo quando qualcosa non torna
+  (attenzione, con queste opzioni attive il log cresce molto rapidamente).
+- Gli e-money token denominati in euro (per esempio EURe) vengono ora valorizzati 1:1 con l'euro a partire dalla data di decorrenza indicata in "Opzioni" - "E-MoneyToken", senza più cercarne la quotazione su DefiLlama o sugli altri servizi di
+  prezzo: un token che per definizione vale un euro non deve risentire di spread e illiquidità. Ne beneficiano anche le valorizzazioni di inizio e fine anno del quadro RW.
+- Nella classificazione manuale, scegliendo "CASH OUT" su un prelievo DeFi il programma propone ora di classificare allo stesso modo anche tutti gli altri prelievi non ancora classificati dello stesso tipo (stessa rete, stessa moneta, stesso
+  contratto e stessa controparte), come già avveniva per i reward e per i trasferimenti.
+- La rimozione in blocco dello stato SCAM da più token chiede ora una sola conferma ed esegue tutto con una barra di avanzamento, invece di chiedere conferma token per token rallentando progressivamente.
+- Il programma è ora rilasciato con licenza MIT: aggiunti i file LICENSE e THIRD-PARTY-LICENSES.md con l'elenco delle licenze dei componenti di terze parti utilizzati.
+Correzione Bug :
+- Corretto un bug che poteva rovesciare la classificazione dei movimenti sui token con molti decimali: quando la quantità veniva scritta in notazione scientifica (ad esempio 2.5E-9) il programma la interpretava come quantità in uscita anche
+  se era positiva, trasformando un deposito in un prelievo oppure scartando del tutto il movimento con l'errore "Movimento incoerente, ci sono due monete in uscita". Il difetto riguardava sia la creazione dei movimenti sia le importazioni
+  da exchange e da wallet DeFi. Era comunque un caso più teorico che reale.
+- Corretto un bug per cui l'importazione di un wallet DeFi si interrompeva del tutto, perdendo anche le transazioni già scaricate, quando l'explorer restituiva un token privo di nome, simbolo o decimali (tipico dei contratti di spam e degli
+  airdrop non richiesti) oppure quando si usava Blockscout, che chiama in modo diverso il campo con l'hash delle transazioni interne.
+- Corretta una particolarità della rete Gnosis: alcune piattaforme movimentano ancora il vecchio contratto del token EURe insieme a quello nuovo e l'explorer registrava così due movimenti al posto di uno; ora il movimento sul contratto
+  vecchio viene eliminato automaticamente.
+- Modificata l'assegnazione del prezzo quando si associa un prelievo a un deposito avvenuto molto tempo dopo (ad esempio dei token depositati in attesa di un airdrop): ora il prezzo viene preso alla data del deposito, cioè nel momento in cui
+  l'operazione si conclude davvero, seguendo il principio di cassa; prima in alcuni casi veniva usato il prezzo della moneta uscente alla data del prelievo.
+- Corretto un bug per cui alcuni swap sulla rete Solana venivano importati come "PRELIEVO CRYPTO" invece che come "SCAMBIO CRYPTO", perché una delle due gambe dello scambio veniva scartata quando l'explorer non indicava a chi apparteneva
+  il token account; il proprietario viene ora ricercato in due modi diversi prima di rinunciare. La correzione vale per le nuove importazioni.
+- Corretto un errore che poteva presentarsi aprendo l'explorer da un movimento privo di alcuni dati.
+
 ver. 1.0.58
 Nuove Implementazioni :
 - Aggiunta DefiLlama come nuova fonte per lo scaricamento dei prezzi.

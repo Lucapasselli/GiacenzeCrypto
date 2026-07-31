@@ -183,6 +183,11 @@ jobs:
             --linux-menu-group "Utility" \
             --linux-package-name giacenze-crypto \
             --linux-deb-maintainer "Luca <giacenzecrypto@gmail.com>"
+          # jpackage usa la convenzione Debian per il nome file (giacenze-crypto_<versione>_amd64.deb),
+          # che in "create-release" verrebbe copiato tale e quale e stonerebbe fra gli altri asset.
+          # Il nome del file non ha alcun valore per dpkg/apt (i metadati stanno dentro il pacchetto,
+          # e --linux-package-name resta "giacenze-crypto"), quindi si può allineare al pattern comune.
+          mv out/deb/*.deb "out/deb/GiacenzeCrypto_${VERSIONE}_Beta_Deb_Linux.deb"
 
       - uses: actions/upload-artifact@v4
         with:

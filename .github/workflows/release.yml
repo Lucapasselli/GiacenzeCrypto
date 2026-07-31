@@ -134,6 +134,10 @@ jobs:
       - name: Estrai versione dal pom.xml
         run: |
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            echo "Versione non trovata nel pom.xml" >&2
+            exit 1
+          fi
           echo "VERSIONE=$VERSION" >> $GITHUB_ENV
 
       - name: Build JAR with Maven
@@ -224,6 +228,10 @@ jobs:
       - name: Estrai versione dal pom.xml
         run: |
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            echo "Versione non trovata nel pom.xml" >&2
+            exit 1
+          fi
           echo "VERSIONE=$VERSION" >> $GITHUB_ENV
 
       - name: Build JAR with Maven
@@ -277,9 +285,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Serve anche qui: senza, "mvn" gira con il JDK di default del runner (17),
+      # che non riconosce le opzioni in .mvn/jvm.config e fa fallire il job.
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
+
       - name: Estrai versione dal pom.xml
         run: |
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            echo "Versione non trovata nel pom.xml" >&2
+            exit 1
+          fi
           echo "VERSIONE=$VERSION" >> $GITHUB_ENV
 
       - name: Scarica tutti gli artifact delle build

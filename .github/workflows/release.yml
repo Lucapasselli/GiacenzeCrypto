@@ -272,6 +272,12 @@ jobs:
             --dest out/dmg \
             --name ${{ env.PROJECT_NAME }} \
             --app-version ${{ env.VERSIONE }}
+          # jpackage nomina il file solo con nome+versione (Giacenze_Crypto-<versione>.dmg),
+          # quindi i due job della matrice (Intel e AppleSilicon) producono lo stesso identico
+          # nome file. Gli artifact restano distinti, ma in "create-release" i .dmg finiscono
+          # entrambi in release_assets/ e il secondo sovrascrive il primo: nella release ne
+          # comparirebbe uno solo. L'architettura va quindi messa nel nome del file.
+          mv out/dmg/*.dmg "out/dmg/GiacenzeCrypto_${VERSIONE}_Beta_DMG_MacOS_${{ matrix.arch }}.dmg"
 
       - name: Upload .dmg
         uses: actions/upload-artifact@v4

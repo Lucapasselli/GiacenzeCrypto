@@ -11969,13 +11969,7 @@ if (result != null && !result.isAction("cancel")) {
 
     private void MenuItem_SeparaMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_SeparaMovimentoActionPerformed
         // TODO add your handling code here:
-        if (Principale_Movimenti_SeparaUnisci.SeparaInDepositoPrelievo(PopUp_IDTrans, this)) {
-            //Ricalcolo una sola volta e azzero il flag, così la riacquisizione del focus dopo la chiusura
-            //del dialog di conferma non rifà inutilmente lo stesso ricalcolo
-            Funzioni_AggiornaTutto();
-            TabellaCryptodaAggiornare = false;
-            DepositiPrelievi_Caricatabella();
-        }
+        Movimenti_SeparaInDepositoPrelievo(PopUp_IDTrans);
     }//GEN-LAST:event_MenuItem_SeparaMovimentoActionPerformed
 
     private void MenuItem_UnisciMovimentiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_UnisciMovimentiActionPerformed
@@ -11989,9 +11983,108 @@ if (result != null && !result.isAction("cancel")) {
         }
     }//GEN-LAST:event_MenuItem_UnisciMovimentiActionPerformed
 
+    /**
+     * Gestisce la voce di menu "Separa in Deposito/Prelievo": chiede conferma, esegue la separazione dietro
+     * una mascherina di attesa e aggiorna le tabelle al termine.
+     *
+     * <p>La separazione può richiedere qualche secondo: quando il prezzo del movimento originale proviene
+     * da una sola delle due monete, il controvalore dell'altra gamba viene ricercato da capo sul database
+     * prezzi e, se serve, online. Per questo la sola preparazione delle gambe gira su un thread di
+     * background con una {@link Download} indeterminata davanti, mentre la sostituzione in
+     * {@link #MappaCryptoWallet} e l'aggiornamento delle tabelle restano sull'EDT.</p>
+     *
+     * <p>Tutta la parte grafica dell'operazione vive qui: {@link Principale_Movimenti_SeparaUnisci} si
+     * limita a calcolare e a restituire l'esito da mostrare.</p>
+     *
+     * @param ID ID del movimento da separare
+     */
+    private void Movimenti_SeparaInDepositoPrelievo(String ID) {
+        Principale_Movimenti_SeparaUnisci.Separazione separazione =
+                Principale_Movimenti_SeparaUnisci.VerificaSeparazione(ID);
 
-    
-    
+        if (!separazione.isSeparabile()) {
+            Messaggi.WarningMessage(separazione.Controlli.Titolo, separazione.Controlli.Messaggio, this);
+            return;
+        }
+
+        AppDialog.DialogResult result = AppDialog.builder(this)
+                .windowTitle("Separazione del movimento")
+                .bodyTitle("Separare il movimento in due?")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message("Il movimento verrà sostituito da due movimenti distinti.")
+                .details("Dal movimento <b>" + separazione.Descrizione + "</b> verranno creati:<br>"
+                        + " - un <b>prelievo</b> di " + separazione.MonetaUscita + "<br>"
+                        + " - un <b>deposito</b> di " + separazione.MonetaEntrata + "<br>"
+                        + "Il movimento originale verrà eliminato e i due nuovi movimenti risulteranno "
+                        + "da classificare nella scheda \"Depositi e Prelievi\".<br>"
+                        + "Il valore in euro di ciascuna gamba viene ricalcolato quando il prezzo del "
+                        + "movimento non riguarda la moneta di quella gamba.<br>"
+                        + "Si vuole proseguire?")
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("separa", "Separa il movimento")
+                        .role(AppDialog.ActionRole.DANGER)
+                        .build())
+                .showDialog();
+
+        if (result == null || !result.isAction("separa")) return;
+
+        //Alla chiusura del dialog di conferma la finestra principale riacquista il focus: con il flag di
+        //ricalcolo ancora acceso, formWindowGainedFocus lancerebbe un Funzioni_AggiornaTutto() proprio
+        //mentre la ricerca dei prezzi è in corso. Lo spengo qui perché il ricalcolo viene comunque fatto,
+        //una volta sola, in done(); se la separazione non va a buon fine lo riaccendo com'era
+        boolean ricalcoloPendente = TabellaCryptodaAggiornare;
+        TabellaCryptodaAggiornare = false;
+
+        Download progress = new Download();
+        progress.MostraProgressAttesa("Separazione del movimento", "Ricerca dei prezzi in corso...");
+        progress.setLocationRelativeTo(this);
+
+        SwingWorker<Principale_Movimenti_SeparaUnisci.Esito, Void> worker = new SwingWorker<>() {
+            /** Costruisce in background le due gambe e ne ricerca i prezzi, senza toccare la mappa dei movimenti. */
+            @Override
+            protected Principale_Movimenti_SeparaUnisci.Esito doInBackground() {
+                return Principale_Movimenti_SeparaUnisci.PreparaGambeSeparazione(separazione);
+            }
+
+            /** Chiude la mascherina, applica la separazione sull'EDT e aggiorna le tabelle (o mostra l'errore). */
+            @Override
+            protected void done() {
+                progress.ChiudiFinestra();
+                Principale_Movimenti_SeparaUnisci.Esito esito;
+                try {
+                    esito = get();
+                } catch (InterruptedException | java.util.concurrent.ExecutionException ex) {
+                    LoggerGC.ScriviErrore(ex);
+                    TabellaCryptodaAggiornare = ricalcoloPendente;
+                    Messaggi.WarningMessage("Separazione non riuscita",
+                            "Si è verificato un errore durante la preparazione dei due movimenti.<br>"
+                            + "Il movimento originale è stato lasciato invariato.", Principale.this);
+                    return;
+                }
+
+                if (esito.Riuscito) esito = Principale_Movimenti_SeparaUnisci.ApplicaSeparazione(separazione);
+                if (!esito.Riuscito) {
+                    TabellaCryptodaAggiornare = ricalcoloPendente;
+                    Messaggi.WarningMessage(esito.Titolo, esito.Messaggio, Principale.this);
+                    return;
+                }
+
+                //Ricalcolo una sola volta e azzero il flag, così la riacquisizione del focus dopo la chiusura
+                //della mascherina non rifà inutilmente lo stesso ricalcolo
+                Funzioni_AggiornaTutto();
+                TabellaCryptodaAggiornare = false;
+                DepositiPrelievi_Caricatabella();
+            }
+        };
+
+        worker.execute();
+        progress.setVisible(true);// Questo blocca finché done() non chiama ChiudiFinestra()
+    }
+
     private void MenuItem_CopiaIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_CopiaIDActionPerformed
         // TODO add your handling code here:
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();

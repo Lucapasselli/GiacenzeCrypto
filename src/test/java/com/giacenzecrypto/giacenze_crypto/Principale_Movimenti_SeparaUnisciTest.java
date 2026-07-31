@@ -13,8 +13,14 @@ import static org.junit.jupiter.api.Assertions.*;
  * fusione di un deposito e di un prelievo in un unico scambio.
  *
  * <p>Vengono verificate sia le condizioni di abilitazione delle voci di menu sia il risultato delle
- * trasformazioni, invocando i metodi {@code Esegui*} che eseguono il lavoro dopo la conferma
- * dell'utente (i metodi pubblici aprono un dialog e non sono eseguibili headless).</p>
+ * trasformazioni, invocando i metodi {@code Esegui*} che concatenano i passi eseguiti dopo la conferma
+ * dell'utente (la conferma e la mascherina di attesa vivono in {@link Principale}).</p>
+ *
+ * <p>I casi di separazione sono costruiti in modo da non richiedere mai una ricerca prezzi online: o la
+ * fonte del prezzo è generica (e allora entrambe le gambe la ereditano) oppure la gamba da riprezzare è
+ * in euro, il cui controvalore è la quantità stessa. Di conseguenza il round trip
+ * separazione/fusione riporta al movimento di partenza solo con la fonte generica: quando il prezzo
+ * proviene da una delle due monete la gamba non coperta viene riprezzata, ed è il comportamento voluto.</p>
  */
 class Principale_Movimenti_SeparaUnisciTest {
 
@@ -191,7 +197,7 @@ class Principale_Movimenti_SeparaUnisciTest {
         String Scambio[] = scambioCryptoCrypto();
         String IDOriginale = Scambio[0];
 
-        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Scambio, null));
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Scambio));
 
         assertNull(MappaCryptoWallet.get(IDOriginale), "il movimento originale deve essere eliminato");
         assertEquals(2, MappaCryptoWallet.size());
@@ -219,7 +225,7 @@ class Principale_Movimenti_SeparaUnisciTest {
     @Test
     void separazione_riportaIDatiDelMovimentoOriginale() {
         String Scambio[] = scambioCryptoCrypto();
-        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Scambio, null));
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Scambio));
 
         for (String Gamba[] : List.of(MappaCryptoWallet.get(DATA_ID + "_WalletTest_001_001_PC"),
                                       MappaCryptoWallet.get(DATA_ID + "_WalletTest_001A_001_DC"))) {
@@ -242,7 +248,7 @@ class Principale_Movimenti_SeparaUnisciTest {
         String Acquisto[] = movimento(DATA_ID + "_WalletTest_001_001_AC", "ACQUISTO CRYPTO",
                 "EUR", "FIAT", "-20000", "BTC", "Crypto", "0.5", "20000.00");
 
-        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Acquisto, null));
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Acquisto));
 
         String Prelievo[] = MappaCryptoWallet.get(DATA_ID + "_WalletTest_001_001_PF");
         String Deposito[] = MappaCryptoWallet.get(DATA_ID + "_WalletTest_001A_001_DC");
@@ -259,7 +265,7 @@ class Principale_Movimenti_SeparaUnisciTest {
         String Scambio[] = movimento(DATA_ID + "_WalletTest_001_001_SC", "SCAMBIO CRYPTO",
                 "SHIB", "Crypto", "-1.5E-8", "ETH", "Crypto", "2.5E-9", "100.00");
 
-        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Scambio, null));
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Scambio));
 
         //Entrambe le quantità restano invariate, esponenti negativi compresi: dopo la correzione M7
         //creaMovimento ricava la direzione dal segno numerico e non serve più riscriverle
@@ -275,7 +281,7 @@ class Principale_Movimenti_SeparaUnisciTest {
                 "BTC", "Crypto", "-0.5", "ETH", "Crypto", "8", "0");
         Scambio[32] = "NO";
 
-        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Scambio, null));
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Scambio));
 
         assertEquals("0.00", MappaCryptoWallet.get(DATA_ID + "_WalletTest_001_001_PC")[15]);
         assertEquals("0.00", MappaCryptoWallet.get(DATA_ID + "_WalletTest_001A_001_DC")[15]);
@@ -300,11 +306,116 @@ class Principale_Movimenti_SeparaUnisciTest {
     void separazione_ilPrelievoPrecedeIlDepositoNellOrdinamento() {
         //L'ordine degli ID è quello con cui il motore LIFO elabora i movimenti: prima si toglie, poi si mette
         String Scambio[] = scambioCryptoCrypto();
-        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Scambio, null));
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Scambio));
 
         String IDInOrdine[] = MappaCryptoWallet.keySet().toArray(new String[0]);
         assertEquals(DATA_ID + "_WalletTest_001_001_PC", IDInOrdine[0]);
         assertEquals(DATA_ID + "_WalletTest_001A_001_DC", IDInOrdine[1]);
+    }
+
+    // =============================================================================================
+    // PREZZO DELLE GAMBE SEPARATE
+    // =============================================================================================
+
+    /** Costruisce una moneta minimale, come quelle passate a creaMovimento dalla separazione. */
+    private static Moneta moneta(String Simbolo, String Tipo, String Qta) {
+        Moneta M = new Moneta();
+        M.Moneta = Simbolo;
+        M.Tipo = Tipo;
+        M.Qta = Qta;
+        return M;
+    }
+
+    @Test
+    void tokenFontePrezzo_riconosceLeFontiGeneriche() {
+        //Il primo segmento del campo 40 è il token su cui il prezzo è stato rilevato: se manca la fonte
+        //non è legata a una moneta in particolare
+        assertEquals("", Principale_Movimenti_SeparaUnisci.TokenFontePrezzo(null));
+        assertEquals("", Principale_Movimenti_SeparaUnisci.TokenFontePrezzo(""));
+        assertEquals("", Principale_Movimenti_SeparaUnisci.TokenFontePrezzo("|||Personalizzato"));
+        //Campo non nel formato atteso: trattato come fonte generica, non come errore
+        assertEquals("", Principale_Movimenti_SeparaUnisci.TokenFontePrezzo("valore inatteso"));
+
+        assertEquals("BTC", Principale_Movimenti_SeparaUnisci.TokenFontePrezzo("BTC|" + TIMESTAMP + "|40000|Binance"));
+        //Il prezzo preso dalla gamba in euro ha la fonte vuota ma il token valorizzato: resta specifico
+        assertEquals("EUR", Principale_Movimenti_SeparaUnisci.TokenFontePrezzo("EUR|" + TIMESTAMP + "|1|"));
+    }
+
+    @Test
+    void gambaCopertaDallaFonte_soloSeLaFonteRiguardaQuellaMoneta() {
+        Moneta BTC = moneta("BTC", "Crypto", "-0.5");
+        Moneta ETH = moneta("ETH", "Crypto", "8");
+
+        //Fonte generica: vale per il movimento nel suo complesso, quindi per entrambe le gambe
+        assertTrue(Principale_Movimenti_SeparaUnisci.GambaCopertaDallaFonte("|||Personalizzato", BTC, ""));
+        assertTrue(Principale_Movimenti_SeparaUnisci.GambaCopertaDallaFonte("|||Personalizzato", ETH, ""));
+
+        //Fonte specifica: copre solo la moneta da cui il prezzo è stato rilevato
+        String Fonte = "BTC|" + TIMESTAMP + "|40000|Binance";
+        assertTrue(Principale_Movimenti_SeparaUnisci.GambaCopertaDallaFonte(Fonte, BTC, ""));
+        assertFalse(Principale_Movimenti_SeparaUnisci.GambaCopertaDallaFonte(Fonte, ETH, ""));
+    }
+
+    @Test
+    void separazione_conFonteGenerica_assegnaLoStessoPrezzoAEntrambeLeGambe() {
+        //Prezzo imposto dall'utente: non deriva da uno dei due token, quindi vale per tutto il movimento
+        //e nessuna delle due gambe va riprezzata
+        String Scambio[] = scambioCryptoCrypto();
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Scambio));
+
+        String Prelievo[] = MappaCryptoWallet.get(DATA_ID + "_WalletTest_001_001_PC");
+        String Deposito[] = MappaCryptoWallet.get(DATA_ID + "_WalletTest_001A_001_DC");
+        assertEquals("20000.00", Prelievo[15]);
+        assertEquals("20000.00", Deposito[15]);
+        assertEquals("|||Personalizzato", Prelievo[40]);
+        assertEquals("|||Personalizzato", Deposito[40]);
+    }
+
+    @Test
+    void separazione_conFonteSuUnaSolaMoneta_riprezzaLAltraGamba() {
+        //Vendita di BTC contro euro: il controvalore del movimento è stato rilevato sul BTC, quindi
+        //descrive la sola gamba in uscita. La gamba in euro non vale gli stessi 20000 e va riprezzata
+        //(l'euro non richiede alcuna ricerca: il suo controvalore è la quantità stessa)
+        String Vendita[] = movimento(DATA_ID + "_WalletTest_001_001_VC", "VENDITA CRYPTO",
+                "BTC", "Crypto", "-0.5", "EUR", "FIAT", "19000", "20000.00");
+        Vendita[40] = "BTC|" + TIMESTAMP + "|40000|Binance";
+
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Vendita));
+
+        String Prelievo[] = MappaCryptoWallet.get(DATA_ID + "_WalletTest_001_001_PC");
+        String Deposito[] = MappaCryptoWallet.get(DATA_ID + "_WalletTest_001A_001_DF");
+        assertNotNull(Prelievo, "la gamba crypto in uscita deve diventare un prelievo crypto (PC)");
+        assertNotNull(Deposito, "la gamba FIAT in entrata deve diventare un deposito FIAT (DF)");
+
+        //La gamba coperta dalla fonte mantiene prezzo e fonte del movimento originale
+        assertEquals("20000.00", Prelievo[15]);
+        assertEquals("SI", Prelievo[32]);
+        assertEquals("BTC|" + TIMESTAMP + "|40000|Binance", Prelievo[40]);
+
+        //L'altra gamba viene riprezzata sulla propria moneta, con la fonte aggiornata
+        assertEquals("19000.00", Deposito[15]);
+        assertEquals("SI", Deposito[32]);
+        assertTrue(Deposito[40].startsWith("EUR|"), "la fonte deve riferirsi alla moneta della gamba: " + Deposito[40]);
+        assertTrue(Deposito[40].endsWith("|1|"), "il cambio dell'euro su sé stesso è 1: " + Deposito[40]);
+    }
+
+    @Test
+    void separazione_diUnMovimentoNonValorizzato_nonCercaAlcunPrezzo() {
+        //Senza prezzo di partenza non c'è nulla da ereditare né motivo di andare a cercarne uno:
+        //entrambe le gambe restano non valorizzate come l'originale
+        String Scambio[] = movimento(DATA_ID + "_WalletTest_001_001_SC", "SCAMBIO CRYPTO",
+                "BTC", "Crypto", "-0.5", "ETH", "Crypto", "8", "0.00");
+        Scambio[32] = "NO";
+        Scambio[40] = "";
+
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Scambio));
+
+        for (String Gamba[] : List.of(MappaCryptoWallet.get(DATA_ID + "_WalletTest_001_001_PC"),
+                                      MappaCryptoWallet.get(DATA_ID + "_WalletTest_001A_001_DC"))) {
+            assertEquals("0.00", Gamba[15]);
+            assertEquals("NO", Gamba[32]);
+            assertEquals("", Gamba[40]);
+        }
     }
 
     // =============================================================================================
@@ -403,7 +514,7 @@ class Principale_Movimenti_SeparaUnisciTest {
         String Scambio[] = scambioCryptoCrypto();
         String IDOriginale = Scambio[0];
 
-        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Scambio, null));
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Scambio));
 
         String Prelievo[] = MappaCryptoWallet.get(DATA_ID + "_WalletTest_001_001_PC");
         String Deposito[] = MappaCryptoWallet.get(DATA_ID + "_WalletTest_001A_001_DC");

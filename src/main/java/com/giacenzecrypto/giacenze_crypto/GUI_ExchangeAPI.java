@@ -76,6 +76,8 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         Label_IndirizzoWallet1 = new javax.swing.JLabel();
         Label_IndirizzoWallet = new javax.swing.JLabel();
         TextField_ApiSecret = new javax.swing.JTextField();
+        Label_Passphrase = new javax.swing.JLabel();
+        TextField_Passphrase = new javax.swing.JTextField();
         Label_Exchange = new javax.swing.JLabel();
         ComboBox_Exchange = new javax.swing.JComboBox<>();
         Bottone_InserisciChiave = new javax.swing.JButton();
@@ -111,17 +113,17 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         TabellaWallets.setAutoCreateRowSorter(true);
         TabellaWallets.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null}
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null}
             },
             new String [] {
-                "Gruppo", "Exchange", "API Key", "API Secret", "<html><center>Data Ultimo Movimento<br>Importato</html>"
+                "Gruppo", "Exchange", "API Key", "API Secret", "Passphrase", "<html><center>Data Ultimo Movimento<br>Importato</html>"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false
+                false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -136,6 +138,8 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             TabellaWallets.getColumnModel().getColumn(1).setMaxWidth(150);
             TabellaWallets.getColumnModel().getColumn(4).setPreferredWidth(150);
             TabellaWallets.getColumnModel().getColumn(4).setMaxWidth(150);
+            TabellaWallets.getColumnModel().getColumn(5).setPreferredWidth(150);
+            TabellaWallets.getColumnModel().getColumn(5).setMaxWidth(150);
         }
         TabellaWallets.getTableHeader().setPreferredSize(new Dimension(TabellaWallets.getColumnModel().getTotalColumnWidth(), 48));
 
@@ -145,10 +149,16 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         Label_IndirizzoWallet.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_IndirizzoWallet.setText("Api Secret :");
 
+        Label_Passphrase.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        Label_Passphrase.setText("Passphrase :");
+        Label_Passphrase.setToolTipText("Richiesta solo da alcuni exchange (es. OKX). Lasciare vuoto per gli altri.");
+
+        TextField_Passphrase.setToolTipText("Richiesta solo da alcuni exchange (es. OKX). Lasciare vuoto per gli altri.");
+
         Label_Exchange.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_Exchange.setText("Exchange :");
 
-        ComboBox_Exchange.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance" }));
+        ComboBox_Exchange.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance", "OKX" }));
         ComboBox_Exchange.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ComboBox_ExchangeActionPerformed(evt);
@@ -195,6 +205,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                 .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(Label_IndirizzoWallet1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(Label_IndirizzoWallet, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
+                    .addComponent(Label_Passphrase, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(Label_Exchange, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -202,6 +213,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                         .addComponent(ComboBox_Exchange, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(18, 18, 18)
                         .addComponent(Bottone_InserisciChiave))
+                    .addComponent(TextField_Passphrase, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
                     .addComponent(TextField_ApiSecret, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
                     .addComponent(TextField_ApiKey, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -230,6 +242,10 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                         .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(Label_IndirizzoWallet)
                             .addComponent(TextField_ApiSecret, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(Label_Passphrase)
+                            .addComponent(TextField_Passphrase, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(ComboBox_Exchange, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -372,6 +388,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         Map<String, String[]> MappaWallets=DatabaseH2.Pers_ExchangeApi_LeggiTabella();
         String Key=TextField_ApiKey.getText().trim();
         String Segreto=TextField_ApiSecret.getText().trim();
+        String Passphrase=TextField_Passphrase.getText().trim();
         String Exchange=ComboBox_Exchange.getItemAt(ComboBox_Exchange.getSelectedIndex());
 
         if(ComboBox_Exchange.getSelectedIndex()==0){
@@ -381,17 +398,21 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         else if (MappaWallets.get(Exchange)!=null){
                 Messaggi.WarningMessage("Exchange gia' presente", "Attenzione! <br>Exchange gia' prensente nella lista", this);
             }
+        else if (Exchange.trim().equalsIgnoreCase("OKX")&&Passphrase.isEmpty()){
+                //OKX firma le richieste con tre credenziali: senza passphrase non si va da nessuna parte
+                Messaggi.WarningMessage("Passphrase mancante", "Attenzione! <br>OKX richiede anche la passphrase scelta al momento della creazione della chiave API", this);
+        }
         else if (!isValidApi(Exchange,Key,Segreto)){
                 //non è un indirizzo di wallet valido
                 Messaggi.WarningMessage("API non valide", "Attenzione! <br>Le API specificate non sono valide", this);
         }
         else{
                // MappaWallets.put(Wallet+"_"+Rete, Wallet+";"+Rete);
-                DatabaseH2.Pers_ExchangeApi_Scrivi(Exchange, Key,Segreto);
+                DatabaseH2.Pers_ExchangeApi_Scrivi(Exchange, Key,Segreto,Passphrase);
                 System.out.println("Scrivo le Api Exchange nel Database : "+Exchange+" "+Key);
                  Messaggi.SuccessMessage("Chiavi API valide", "Le chiavi API fornite sono valide e sono state correttamente inserite.", this);
                 PopolaTabella();
-            
+
         }
     }//GEN-LAST:event_Bottone_InserisciChiaveActionPerformed
 
@@ -404,8 +425,14 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             //Per ora non faccio nessun controllo
             return true;
         }
+        else if (Exchange.trim().equalsIgnoreCase("OKX")){
+            //Nessuna verifica online: OKX firma in base64 (non in esadecimale come hmacSHA256 qui sopra) e
+            //richiede anche la passphrase, quindi il controllo non è riusabile. Le credenziali vengono
+            //verificate di fatto al primo scaricamento, dove un errore di OKX viene mostrato all'utente.
+            return !Key.isEmpty()&&!Secret.isEmpty();
+        }
         return valido;
-    
+
     }
     
     // Firma HMAC-SHA256
@@ -512,18 +539,19 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         //Questa sotto è la mappa dei wallet nella tabella
         for (String splittata[]:DatabaseH2.Pers_ExchangeApi_LeggiTabella().values())
         {
-                String rigaTabella[]=new String[5];
+                String rigaTabella[]=new String[6];
                 String w=splittata[0];
                 rigaTabella[0]=DatabaseH2.Pers_GruppoWallet_Leggi(w,true);
                 rigaTabella[0]=DatabaseH2.Pers_GruppoAlias_Leggi(rigaTabella[0])[1];
                 rigaTabella[1]=splittata[1];
                 rigaTabella[2]=splittata[2];
                 rigaTabella[3]=splittata[3];
+                rigaTabella[4]=splittata[4];
                 if (Mappa_Exchange.get(w)==null){
-                    rigaTabella[4]="0";
+                    rigaTabella[5]="0";
                 }
                 else{
-                    rigaTabella[4]=Mappa_Exchange.get(w);
+                    rigaTabella[5]=Mappa_Exchange.get(w);
                 }
                     
                 ModelloTabellaWallets.addRow(rigaTabella);            
@@ -540,19 +568,21 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
      * @param Exchange nome dell'exchange da interrogare
      * @param ApiKey chiave API da usare per l'autenticazione
      * @param ApiSecret secret associato alla chiave API
+     * @param Passphrase terza credenziale richiesta da alcuni exchange (la passphrase di OKX); stringa vuota
+     *                   per gli exchange che non la prevedono
      * @param DataUltimoMovimento data dell'ultimo movimento già importato (formato leggibile), o
      *                            {@code "0"} se non è presente alcun movimento
      */
-    public void ScaricaExchange(String Exchange,String ApiKey,String ApiSecret,String DataUltimoMovimento) {
+    public void ScaricaExchange(String Exchange,String ApiKey,String ApiSecret,String Passphrase,String DataUltimoMovimento) {
 
             long data=Long.parseLong("1483228800000");//   01/01/2017 data di default
             if (!DataUltimoMovimento.equals("0"))
             {
                 data = FunzioniDate.ConvertiDatainLongSecondo(DataUltimoMovimento)+1000; // 1 = seconda colonna
             }
-           CcxtInterop.fetchMovimentiConBar(Exchange, ApiKey, ApiSecret, data,"",this);
-        
-        
+           CcxtInterop.fetchMovimentiConBar(Exchange, ApiKey, ApiSecret, data,"",Passphrase,this);
+
+
 
     }
  
@@ -617,9 +647,10 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             String wallet = model.getValueAt(modelRow, 1).toString(); // 1 = seconda colonna
             String ApiKey = model.getValueAt(modelRow, 2).toString(); // 1 = seconda colonna
             String ApiSecret = model.getValueAt(modelRow, 3).toString(); // 1 = seconda colonna
-            String DataConSecondi =model.getValueAt(modelRow, 4).toString();
-            
-            ScaricaExchange(wallet,ApiKey,ApiSecret,DataConSecondi);
+            String Passphrase = model.getValueAt(modelRow, 4).toString();
+            String DataConSecondi =model.getValueAt(modelRow, 5).toString();
+
+            ScaricaExchange(wallet,ApiKey,ApiSecret,Passphrase,DataConSecondi);
         }
         PopolaTabella();
         
@@ -648,12 +679,13 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             String wallet = model.getValueAt(modelRow, 1).toString(); // 1 = seconda colonna
             String ApiKey = model.getValueAt(modelRow, 2).toString(); // 1 = seconda colonna
             String ApiSecret = model.getValueAt(modelRow, 3).toString(); // 1 = seconda colonna
-            String DataConSecondi =model.getValueAt(modelRow, 4).toString();
-            
-            ScaricaExchange(wallet,ApiKey,ApiSecret,DataConSecondi);
+            String Passphrase = model.getValueAt(modelRow, 4).toString();
+            String DataConSecondi =model.getValueAt(modelRow, 5).toString();
+
+            ScaricaExchange(wallet,ApiKey,ApiSecret,Passphrase,DataConSecondi);
         }
         PopolaTabella();
-     
+
     }//GEN-LAST:event_Bottone_AggiornaSelezionatiActionPerformed
 
     private void Binance_BottoneAggiungiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Binance_BottoneAggiungiActionPerformed
@@ -834,12 +866,14 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     private javax.swing.JLabel Label_Exchange;
     private javax.swing.JLabel Label_IndirizzoWallet;
     private javax.swing.JLabel Label_IndirizzoWallet1;
+    private javax.swing.JLabel Label_Passphrase;
     private javax.swing.JPanel Pannello_Binance;
     private javax.swing.JPanel Pannello_Chiavi;
     private javax.swing.JScrollPane ScrollPaneTabellaWallets;
     private javax.swing.JTable TabellaWallets;
     private javax.swing.JTextField TextField_ApiKey;
     private javax.swing.JTextField TextField_ApiSecret;
+    private javax.swing.JTextField TextField_Passphrase;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;

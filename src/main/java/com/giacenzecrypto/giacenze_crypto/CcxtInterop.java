@@ -287,6 +287,21 @@ public static Path getNodeExePath() {
      * @param c componente rispetto a cui centrare la finestra di progresso
      */
     public static void fetchMovimentiConBar(String exchangeId, String apiKey, String secret, long startDate,String Tokens,Component c) {
+        fetchMovimentiConBar(exchangeId, apiKey, secret, startDate, Tokens, "", c);
+    }
+
+    /**
+     * Come {@link #fetchMovimentiConBar(String, String, String, long, String, Component)}, ma con la terza
+     * credenziale richiesta da alcuni exchange (la passphrase di OKX, che CCXT chiama {@code password}).
+     * @param exchangeId identificativo CCXT dell'exchange
+     * @param apiKey API key dell'account
+     * @param secret API secret dell'account
+     * @param passphrase terza credenziale (passphrase OKX); stringa vuota per gli exchange che non la prevedono
+     * @param startDate data di inizio da cui recuperare i movimenti, millisecondi epoch
+     * @param Tokens elenco di token (separati da virgola) di cui recuperare esplicitamente i trade
+     * @param c componente rispetto a cui centrare la finestra di progresso
+     */
+    public static void fetchMovimentiConBar(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String passphrase,Component c) {
              // TODO add your handling code here:
         //CcxtInterop a = new CcxtInterop();
         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -309,7 +324,7 @@ public static Path getNodeExePath() {
         installCcxt();
         System.out.println("Eseguo la chiamata");
         
-        fetchMovimenti(exchangeId, apiKey, secret,startDate,Tokens,progress,c);
+        fetchMovimenti(exchangeId, apiKey, secret,startDate,Tokens,passphrase,progress,c);
         } catch (IOException ex) {
             Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {
@@ -347,10 +362,11 @@ public static Path getNodeExePath() {
      * @param secret API secret dell'account
      * @param startDate data di inizio da cui recuperare i movimenti, millisecondi epoch
      * @param Tokens elenco di token (separati da virgola) di cui recuperare esplicitamente i trade
+     * @param passphrase terza credenziale (passphrase OKX); stringa vuota per gli exchange che non la prevedono
      * @param progress finestra di progresso su cui riportare l'avanzamento e verificare interruzione/errori
      * @param c componente parent per gli eventuali dialog di avviso
      */
-    public static void fetchMovimenti(String exchangeId, String apiKey, String secret, long startDate,String Tokens,Download progress,Component c) {
+    public static void fetchMovimenti(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String passphrase,Download progress,Component c) {
        // Map<String, JsonObject> Mappa_Json = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         List<JsonObject> Jsons = new ArrayList<>();
         
@@ -557,13 +573,74 @@ public static Path getNodeExePath() {
             //Se non è andato tutto a buon fine non porto a termine l'importazione
             //Importazioni.inserisciListaMovimentisuMappaCryptoWallet(lista);
             int risultato[]=Importazioni.ScriviListaSuMappaCrypto(lista,true);
-            if (risultato[0]!=0) 
+            if (risultato[0]!=0)
             {
                 Principale.TabellaCryptodaAggiornare=true;
-                JOptionPane.showConfirmDialog(null, 
+                JOptionPane.showConfirmDialog(null,
                     "Impot terminato, sono stati inseriti "+risultato[0]+" nuovi movimenti.",
                     "Messaggio",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
             }
+        }
+
+        //OKX
+        if (exchangeId.equalsIgnoreCase("OKX")) {
+            //A differenza di Binance non serve scoprire prima i token movimentati: gli endpoint bills di OKX
+            //restituiscono tutti i movimenti senza che sia necessario indicare la coppia scambiata.
+            progress.setTitle("Scaricamento dei dati di "+exchangeId+" tramite API");
+            progress.SetMessaggioAvanzamento("Comunicazione con OKX in corso...");
+
+            JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, "", "OKX_Bills", passphrase);
+
+            if (Principale.InterrompiCiclo||progress.ErroriNodeJS()) {
+                JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                return;
+            }
+            if (json == null) {
+                JOptionPane.showConfirmDialog(null, "Nessuna risposta da OKX: importazione non eseguita.",
+                        "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                return;
+            }
+            if (json.has("error")) {
+                JOptionPane.showConfirmDialog(null, "Errore nella comunicazione con OKX:\n"+json.get("error").getAsString(),
+                        "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                return;
+            }
+
+            //Le righe dei due conti confluiscono in un'unica lista: il raggruppamento per orario deve poterle
+            //vedere insieme, perché le due gambe di uno scambio possono arrivare da conti diversi.
+            List<String[]> righe = new ArrayList<>();
+            JsonArray fundingBills = json.has("okx_fundingBills") ? json.getAsJsonArray("okx_fundingBills") : new JsonArray();
+            JsonArray tradingBills = json.has("okx_tradingBills") ? json.getAsJsonArray("okx_tradingBills") : new JsonArray();
+            List<String[]> rf = convertOKXBills(fundingBills, "Funding");
+            List<String[]> rt = convertOKXBills(tradingBills, "Trading");
+            if (rf == null || rt == null) {   //null = interruzione richiesta dall'utente
+                JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                return;
+            }
+            righe.addAll(rf);
+            righe.addAll(rt);
+
+            //Se lo script non è riuscito a scorrere tutto lo storico richiesto è meglio saperlo prima di importare
+            boolean completo = !json.has("okx_completo") || json.get("okx_completo").getAsBoolean();
+            if (!completo) {
+                JOptionPane.showConfirmDialog(null,
+                        "Lo scaricamento da OKX non è stato completato interamente:\n"
+                        + "alcuni movimenti potrebbero mancare. Controlla il log.",
+                        "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+            }
+
+            int risultato[]=Importazioni.Ex_OKX_ImportaDaAPI(righe);
+
+            String avviso = "Impot terminato, sono stati inseriti "+risultato[0]+" nuovi movimenti.";
+            if (Importazioni.TrasazioniSconosciute > 0) {
+                //I codici bill di OKX non ancora mappati vanno mostrati, non ignorati in silenzio
+                avviso = avviso + "\n\nCi sono " + Importazioni.TrasazioniSconosciute
+                        + " movimenti con causale non riconosciuta, che NON sono stati classificati:\n"
+                        + Importazioni.movimentiSconosciuti;
+                System.out.println("Causali OKX non mappate:\n"+Importazioni.movimentiSconosciuti);
+            }
+            JOptionPane.showConfirmDialog(null, avviso,
+                    "Messaggio",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
         }
     }
     
@@ -571,6 +648,93 @@ public static Path getNodeExePath() {
      *  @return {@code S} come {@link BigDecimal} */
     public static BigDecimal BG(String S){
         return new BigDecimal(S);
+    }
+
+    /**
+     * Converte i "bills" grezzi di OKX (l'equivalente API delle righe del CSV) nel formato intermedio a 19
+     * campi atteso da {@link Importazioni#Ex_OKX_RaggruppaEConsolida}, così che import da CSV e import da API
+     * condividano interamente classificazione e consolidamento.
+     *
+     * <p><b>Le causali vengono espresse con le stesse etichette testuali del CSV</b> ({@code "Buy"},
+     * {@code "Sell"}, {@code "deposit"}, {@code "withdrawal"}), non con i codici numerici di OKX: in questo
+     * modo {@link Importazioni#Ex_OKX_MappaCausali} resta l'unica tabella di conversione delle causali OKX.
+     *
+     * <p><b>Vengono mappati solo i codici verificabili</b>, per non classificare a caso movimenti fiscali:
+     * <ul>
+     *   <li>conto Trading, {@code type=2} = trade (confermato da {@code okx.parseLedgerEntryType} di CCXT).
+     *       {@code Buy}/{@code Sell} si ricavano dal <b>segno di {@code balChg}</b>, senza bisogno del
+     *       {@code subType}: le due righe di uno swap hanno lo stesso {@code ts} e segni opposti, che è
+     *       esattamente ciò che il raggruppamento per orario si aspetta;</li>
+     *   <li>conto Funding, {@code type=1} = deposito e {@code type=2} = prelievo. <b>Questa è un'assunzione</b>
+     *       (coerente con l'esempio di risposta nella sorgente CCXT) da confermare con un confronto contro
+     *       l'import dello stesso periodo via CSV.</li>
+     * </ul>
+     * Ogni altro codice viene lasciato <b>non mappato</b>, con il codice grezzo in causale: finisce così nel
+     * riepilogo dei movimenti sconosciuti già gestito dall'import, che diventa l'elenco esatto dei codici
+     * presenti sul conto dell'utente e ancora da mappare. È una scelta deliberata: meglio un movimento
+     * segnalato che un movimento classificato male.
+     *
+     * <p>Le fee non vengono riportate nei campi {@code [11]}/{@code [12]}: nei bill di OKX {@code balChg} è già
+     * la variazione netta di saldo e comprende quindi la commissione, per cui generare anche la riga di
+     * commissione la conteggerebbe due volte. Anche questo è da confermare con il confronto contro il CSV.
+     *
+     * @param bills array JSON dei bill grezzi restituiti da {@code OKX_Bills.js}, oppure {@code null}
+     * @param Wallet nome del conto di provenienza, {@code "Funding"} oppure {@code "Trading"}
+     * @return le righe in formato intermedio a 19 campi (non ordinate)
+     */
+    public static List<String[]> convertOKXBills(JsonArray bills, String Wallet) {
+        List<String[]> lista = new ArrayList<>();
+        if (bills == null) return lista;
+
+        boolean isTrading = Wallet.equalsIgnoreCase("Trading");
+
+        for (JsonElement el : bills) {
+            if (Principale.InterrompiCiclo) return null;
+            JSONObject obj = new JSONObject(el.toString());
+
+            String billId = obj.optString("billId", "");
+            String ccy    = obj.optString("ccy", "");
+            String balChg = obj.optString("balChg", "");
+            String tipo   = obj.optString("type", "");
+            String ts     = obj.optString("ts", "");
+
+            if (billId.isEmpty() || ccy.isEmpty() || balChg.isEmpty() || ts.isEmpty()) continue;
+            if (!Funzioni.isNumeric(balChg, false) || !Funzioni.isNumeric(ts, false)) continue;
+
+            //Un bill a saldo invariato non è un movimento
+            if (new BigDecimal(balChg).compareTo(BigDecimal.ZERO) == 0) continue;
+
+            //Causale nelle stesse etichette usate dal CSV, così la mappa causali resta una sola
+            String causale;
+            if (isTrading) {
+                if (tipo.equals("2")) causale = Funzioni.isNegativo(balChg) ? "Sell" : "Buy";
+                else causale = "OKX type " + tipo;   //non mappato: finirà tra i movimenti sconosciuti
+            } else {
+                if (tipo.equals("1"))      causale = "deposit";
+                else if (tipo.equals("2")) causale = "withdrawal";
+                else causale = "OKX type " + tipo;   //non mappato: finirà tra i movimenti sconosciuti
+            }
+
+            String DatoRiga[] = new String[19];
+            DatoRiga[0]  = FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(ts));   //Timestamp
+            DatoRiga[1]  = "OKX";                                                          //Exchange
+            DatoRiga[2]  = Wallet;                                                         //Conto di provenienza, noto senza euristiche
+            DatoRiga[3]  = "";                                                             //Categoria interna: la assegna Ex_OKX_RaggruppaEConsolida
+            DatoRiga[4]  = causale;                                                        //Causale originale
+            DatoRiga[5]  = ccy;                                                            //Moneta
+            DatoRiga[6]  = new BigDecimal(balChg).stripTrailingZeros().toPlainString();     //Qta, già con segno
+            DatoRiga[11] = "";                                                             //Moneta fee: vedi javadoc
+            DatoRiga[12] = "";                                                             //Qta fee: vedi javadoc
+            DatoRiga[14] = billId;                                                         //ID originale OKX
+            //"NO": Funding e Trading vengono scaricati entrambi nella stessa esecuzione, quindi un
+            //trasferimento interno compare già come bill su tutti e due i conti. Generare anche il
+            //movimento opposto lo conterebbe due volte.
+            DatoRiga[15] = "NO";
+            DatoRiga[16] = "";                                                             //Wallet destinazione
+            Importazioni.RiempiVuotiArray(DatoRiga);
+            lista.add(DatoRiga);
+        }
+        return lista;
     }
 
     /**
@@ -685,7 +849,27 @@ public static Path getNodeExePath() {
      * @return l'oggetto JSON restituito dallo script, oppure {@code null} se node/script non sono trovati o l'esecuzione fallisce
      */
     public static JsonObject fetchMovimento(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String script) {
+        return fetchMovimento(exchangeId, apiKey, secret, startDate, Tokens, script, "");
+    }
+
+    /**
+     * Come {@link #fetchMovimento(String, String, String, long, String, String)}, ma passa allo script anche la
+     * terza credenziale richiesta da alcuni exchange (la passphrase di OKX, che CCXT chiama {@code password}).
+     * <p>La passphrase viene aggiunta <b>in coda</b> agli argomenti a riga di comando, dopo {@code Tokens}: tutti
+     * gli script esistenti destrutturano {@code process.argv} per posizione, quindi inserirla in mezzo li
+     * romperebbe tutti.
+     * @param exchangeId identificativo CCXT dell'exchange
+     * @param apiKey API key dell'account
+     * @param secret API secret dell'account
+     * @param startDate data di inizio da cui recuperare i movimenti, millisecondi epoch
+     * @param Tokens elenco di token (separati da virgola) da passare allo script
+     * @param script nome dello script Node da eseguire (senza estensione {@code .js})
+     * @param passphrase terza credenziale (passphrase OKX); stringa vuota per gli exchange che non la prevedono
+     * @return l'oggetto JSON restituito dallo script, oppure {@code null} se node/script non sono trovati o l'esecuzione fallisce
+     */
+    public static JsonObject fetchMovimento(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String script,String passphrase) {
     try {
+        if (passphrase == null) passphrase = "";
         
         
         
@@ -708,7 +892,7 @@ public static Path getNodeExePath() {
         ProcessBuilder builder = new ProcessBuilder(
                 nodePath.toString(),
                 scriptPath.toAbsolutePath().toString(),
-                exchangeId.toLowerCase(), apiKey, secret, String.valueOf(startDate),Tokens
+                exchangeId.toLowerCase(), apiKey, secret, String.valueOf(startDate),Tokens,passphrase
         );
         builder.directory(scriptPath.getParent().toFile());
         // Non reindirizziamo stderr su stdout

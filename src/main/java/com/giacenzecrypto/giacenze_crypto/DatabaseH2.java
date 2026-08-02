@@ -902,13 +902,14 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
          * Legge le credenziali API salvate per un exchange.
          *
          * @param Nome nome/chiave con cui è stata salvata la credenziale
-         * @return array {@code [Nome, Exchange, Chiave, Segreto]}; tutti {@code null} se {@code Nome} non è presente in {@code EXCHANGEAPI}
+         * @return array {@code [Nome, Exchange, Chiave, Segreto, Opzionale]}; tutti {@code null} se {@code Nome} non è presente in {@code EXCHANGEAPI}.
+         *         {@code Opzionale} è la terza credenziale richiesta da alcuni exchange (es. la passphrase di OKX), vuota per gli altri
          */
         public static String[] Pers_ExchangeApi_Leggi(String Nome) {
-                String Risultato[] = new String[4];
+                String Risultato[] = new String[5];
         try {
             // Connessione al database
-            String checkIfExistsSQL = "SELECT Nome,Exchange,Chiave,Segreto FROM EXCHANGEAPI WHERE Nome = ?";
+            String checkIfExistsSQL = "SELECT Nome,Exchange,Chiave,Segreto,Opzionale FROM EXCHANGEAPI WHERE Nome = ?";
             try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL)) {
                 checkStatement.setString(1, Nome);
                 try (ResultSet resultSet = checkStatement.executeQuery()) {
@@ -917,6 +918,8 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
                         Risultato[1] = resultSet.getString("Exchange");
                         Risultato[2] = resultSet.getString("Chiave");
                         Risultato[3] = resultSet.getString("Segreto");
+                        Risultato[4] = resultSet.getString("Opzionale");
+                        if (Risultato[4] == null) Risultato[4] = "";
                     }
                 }
             }
@@ -932,7 +935,8 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
             /**
              * Legge tutte le credenziali API exchange salvate.
              *
-             * @return mappa Nome → {@code [Nome, Exchange, Chiave, Segreto]}
+             * @return mappa Nome → {@code [Nome, Exchange, Chiave, Segreto, Opzionale]}, dove {@code Opzionale} è la
+             *         terza credenziale richiesta da alcuni exchange (es. la passphrase di OKX), vuota per gli altri
              */
             public static Map<String, String[]> Pers_ExchangeApi_LeggiTabella() {
             //List<String> tabella= new ArrayList<>();
@@ -940,15 +944,17 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
 
             //String Risultato;
         try {
-            String checkIfExistsSQL = "SELECT Nome,Exchange,Chiave,Segreto FROM EXCHANGEAPI";
+            String checkIfExistsSQL = "SELECT Nome,Exchange,Chiave,Segreto,Opzionale FROM EXCHANGEAPI";
             try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL)) {
                 try (ResultSet resultSet = checkStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        String record[]=new String[4];
+                        String record[]=new String[5];
                         record[0] = resultSet.getString("Nome");
                         record[1] = resultSet.getString("Exchange");
                         record[2] = resultSet.getString("Chiave");
                         record[3] = resultSet.getString("Segreto");
+                        record[4] = resultSet.getString("Opzionale");
+                        if (record[4] == null) record[4] = "";
                         Mappa_Wallet.put(record[0], record);
                     }
                 }
@@ -969,8 +975,23 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
          * @param Segreto API secret
          */
         public static void Pers_ExchangeApi_Scrivi(String Exchange,String Chiave,String Segreto) {
+            Pers_ExchangeApi_Scrivi(Exchange, Chiave, Segreto, "");
+        }
+
+        /**
+         * Salva (o aggiorna) le credenziali API di un exchange, usando {@code Exchange} anche come
+         * chiave univoca ({@code Nome}) del record.
+         *
+         * @param Exchange nome dell'exchange, usato anche come chiave del record
+         * @param Chiave API key
+         * @param Segreto API secret
+         * @param Opzionale terza credenziale richiesta da alcuni exchange (la passphrase di OKX); stringa vuota
+         *                  per gli exchange che non la prevedono
+         */
+        public static void Pers_ExchangeApi_Scrivi(String Exchange,String Chiave,String Segreto,String Opzionale) {
         try {
-            
+            if (Opzionale == null) Opzionale = "";
+
             String checkIfExistsSQL = "SELECT COUNT(*) FROM EXCHANGEAPI WHERE Nome = ?";
             int rowCount = 0;
             try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL)) {
@@ -984,22 +1005,24 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
             }
             if (rowCount > 0) {
                 //Questa non dovrebbe servire a nulla perchè non devo mai aggiornare i valori di questa tabella ma solo cancellare e ricreare
-                String updateSQL = "UPDATE EXCHANGEAPI SET Exchange = ?,Chiave = ?,Segreto = ? WHERE Nome = ?";
+                String updateSQL = "UPDATE EXCHANGEAPI SET Exchange = ?,Chiave = ?,Segreto = ?,Opzionale = ? WHERE Nome = ?";
                 try (PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL)) {
                     updateStatement.setString(1, Exchange);
                     updateStatement.setString(2, Chiave);
                     updateStatement.setString(3, Segreto);
-                    updateStatement.setString(4, Exchange);
+                    updateStatement.setString(4, Opzionale);
+                    updateStatement.setString(5, Exchange);
                     updateStatement.executeUpdate();
                 }
             } else {
                 // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO EXCHANGEAPI (Nome, Exchange, Chiave, Segreto) VALUES (?, ?, ?, ?)";
+                String insertSQL = "INSERT INTO EXCHANGEAPI (Nome, Exchange, Chiave, Segreto, Opzionale) VALUES (?, ?, ?, ?, ?)";
                 try (PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL)) {
                     insertStatement.setString(1, Exchange);
                     insertStatement.setString(2, Exchange);
                     insertStatement.setString(3, Chiave);
                     insertStatement.setString(4, Segreto);
+                    insertStatement.setString(5, Opzionale);
                     insertStatement.executeUpdate();
                 }
             }

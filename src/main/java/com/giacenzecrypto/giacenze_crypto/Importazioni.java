@@ -209,39 +209,7 @@ public class Importazioni {
         
         String fileDaImportare = fileOKX;
        // System.out.println(fileBinance);
-        Map<String, String> Mappa_Conversione_Causali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        //fee,sell,buy,Transaction Fee,Transaction Spend,Transaction Buy,Transaction Revenue,Transaction Sold
-        //Sono tutte descrizioni che fanno parte di uno scambio tra crypto
-        //in quel caso il movimento si compone di tre parti principali che però possono essee multiple e sono
-        //le fee, la moneta venduta e la moneta acquistata
-        //per gestire la transazione dovremmo prendere tutte le righe con lo stesso orario e sommarle per ottenere
-        //i dati della transazione di scambio
-        //le tipologie sono alla posizione 3
-
-        
-        Mappa_Conversione_Causali.put("Savings subscription",                   "TRASFERIMENTO-CRYPTO-INTERNO");//
-        Mappa_Conversione_Causali.put("Savings redemption",                     "TRASFERIMENTO-CRYPTO-INTERNO");//
-        Mappa_Conversione_Causali.put("Stake",                                  "TRASFERIMENTO-CRYPTO-INTERNO");//
-        Mappa_Conversione_Causali.put("Redeem staking",                         "TRASFERIMENTO-CRYPTO-INTERNO");//
-        Mappa_Conversione_Causali.put("From unified trading account",           "TRASFERIMENTO-CRYPTO-INTERNO");      
-        Mappa_Conversione_Causali.put("To unified trading account",             "TRASFERIMENTO-CRYPTO-INTERNO");
-        Mappa_Conversione_Causali.put("Simple Earn subscription",               "TRASFERIMENTO-CRYPTO-INTERNO");
-        Mappa_Conversione_Causali.put("Simple Earn redemption",                 "TRASFERIMENTO-CRYPTO-INTERNO");
-        
-        Mappa_Conversione_Causali.put("withdrawal",                             "TRASFERIMENTO-CRYPTO");
-        Mappa_Conversione_Causali.put("deposit",                                "TRASFERIMENTO-CRYPTO");
-        
-        Mappa_Conversione_Causali.put("Convert",                                "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("Buy",                                    "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("Sell",                                   "SCAMBIO CRYPTO-CRYPTO");
-        
-        Mappa_Conversione_Causali.put("Deposit yield",                          "REWARD");
-        Mappa_Conversione_Causali.put("Crypto dust auto-transfer in",           "REWARD");
-        
-        Mappa_Conversione_Causali.put("Transfer in",                            "NON CONSIDERARE");
-        Mappa_Conversione_Causali.put("Transfer out",                           "NON CONSIDERARE");
-        Mappa_Conversione_Causali.put("",                                       "NON CONSIDERARE");
-
+        Map<String, String> Mappa_Conversione_Causali = Ex_OKX_MappaCausali();
 
         //il movimento che devo comporre per poi mandare al consolidamento deve avere le seguenti caratteristiche
         /*
@@ -416,61 +384,16 @@ public class Importazioni {
                     if (ColGiacIni!=99) DatoRiga[17]=splittata[ColGiacIni];
                     if (ColGiacFin!=99) DatoRiga[18]=splittata[ColGiacFin];
                     RiempiVuotiArray(DatoRiga);
-                    
-                    String secondo=splittata[ColTime].split(":")[2];
-                    int secondoInt=Integer.parseInt(secondo)-1;
-                    secondo=String.valueOf(secondoInt);//secondo è secondo meno 1
-                   /* System.out.println(splittata[ColTime]);
-                   // System.out.println(ultimaData);
-                   // System.out.println("-------");*/
-                    if (secondo.length()==1)secondo="0"+secondo;
-                    String DataMeno1Secondo = splittata[ColTime].split(":")[0] + ":" + splittata[ColTime].split(":")[1] + ":" + secondo;
-                    if (splittata[ColTime].equalsIgnoreCase(ultimaData)) {
-                        listaMovimentidaConsolidare.add(DatoRiga);
-                        
-                        if (listaMovimentidaConsolidare.size() > 1) {
-                            //Scorro la lista se esiste un movimento di sell e uno di buy consolido il movimento
-                            boolean trovatoBuy=false;
-                            boolean trovatoSell=false;
-                            for (String rigaLista[]:listaMovimentidaConsolidare){
-                                if (rigaLista[4].equalsIgnoreCase("Buy"))  trovatoBuy=true;
-                                if (rigaLista[4].equalsIgnoreCase("Sell")) trovatoSell=true;  
-                            }
-                            if (trovatoSell&&trovatoBuy){
-                                //Consolido il movimento
-                                //System.out.println("consolido il movimento");
-                                List<String[]> listaConsolidata = Ex_OKX_Consolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali, listaScambiDifferiti);
-                                listaCompleta.addAll(listaConsolidata);
-                                //una volta fatto tutto svuoto la lista movimenti e la preparo per il prossimo
-                                listaMovimentidaConsolidare = new ArrayList<>();
 
-                            }
-                        }
-                    } else if (DataMeno1Secondo.equalsIgnoreCase(ultimaData)
-                            && splittata[ColTipoTrans].contains("Convert")) {//intercetto i movimenti che avvengono ad 1 secondo di distanza
-                        listaMovimentidaConsolidare.add(DatoRiga);
-
-                    }
-
-                    else //altrimenti consolido il movimento precedente
-                    {
-
-                        List<String[]> listaConsolidata = Ex_OKX_Consolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali,listaScambiDifferiti);
-                        listaCompleta.addAll(listaConsolidata);
-
-                        //una volta fatto tutto svuoto la lista movimenti e la preparo per il prossimo
-                        listaMovimentidaConsolidare = new ArrayList<>();
-                        listaMovimentidaConsolidare.add(DatoRiga);
-                    }
-                    ultimaData = splittata[ColTime];
+                    listaMovimentidaConsolidare.add(DatoRiga);
 
                 }
-                
+
                 }
             }
-            List<String[]> listaConsolidata = Ex_OKX_Consolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali,listaScambiDifferiti);
-            listaCompleta.addAll(listaConsolidata);
-            
+            //Il raggruppamento per orario e il consolidamento sono condivisi con l'import via API
+            listaCompleta.addAll(Ex_OKX_RaggruppaEConsolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali, listaScambiDifferiti));
+
 
          //   bure.close();
           //  fire.close();
@@ -501,14 +424,194 @@ public class Importazioni {
 //////////////////////////////////////////////////////       Scrivi_Movimenti_Crypto(MappaCryptoWallet);
 
         if (TransazioniAggiunte>0)Principale.TabellaCryptodaAggiornare=true;
-        
-        
-    return true;    
-    }
-    
-    
 
-    
+
+    return true;
+    }
+
+    /**
+     * Mappa causale originale OKX → categoria interna, condivisa dall'import del CSV
+     * ({@link #Ex_OKX_Importa}) e da quello via API ({@link #Ex_OKX_ImportaDaAPI}).
+     * <p>fee, sell, buy, Transaction Fee, Transaction Spend, Transaction Buy, Transaction Revenue,
+     * Transaction Sold sono tutte descrizioni che fanno parte di uno scambio tra crypto: in quel caso il
+     * movimento si compone di tre parti principali, che però possono essere multiple, e sono le fee, la
+     * moneta venduta e la moneta acquistata. Per gestire la transazione si prendono tutte le righe con lo
+     * stesso orario e si sommano per ottenere i dati della transazione di scambio.
+     * @return la mappa causale → categoria, case-insensitive
+     */
+    public static Map<String, String> Ex_OKX_MappaCausali() {
+        Map<String, String> Mappa_Conversione_Causali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+        Mappa_Conversione_Causali.put("Savings subscription",                   "TRASFERIMENTO-CRYPTO-INTERNO");//
+        Mappa_Conversione_Causali.put("Savings redemption",                     "TRASFERIMENTO-CRYPTO-INTERNO");//
+        Mappa_Conversione_Causali.put("Stake",                                  "TRASFERIMENTO-CRYPTO-INTERNO");//
+        Mappa_Conversione_Causali.put("Redeem staking",                         "TRASFERIMENTO-CRYPTO-INTERNO");//
+        Mappa_Conversione_Causali.put("From unified trading account",           "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("To unified trading account",             "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("Simple Earn subscription",               "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("Simple Earn redemption",                 "TRASFERIMENTO-CRYPTO-INTERNO");
+
+        Mappa_Conversione_Causali.put("withdrawal",                             "TRASFERIMENTO-CRYPTO");
+        Mappa_Conversione_Causali.put("deposit",                                "TRASFERIMENTO-CRYPTO");
+
+        Mappa_Conversione_Causali.put("Convert",                                "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("Buy",                                    "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("Sell",                                   "SCAMBIO CRYPTO-CRYPTO");
+
+        Mappa_Conversione_Causali.put("Deposit yield",                          "REWARD");
+        Mappa_Conversione_Causali.put("Crypto dust auto-transfer in",           "REWARD");
+
+        Mappa_Conversione_Causali.put("Transfer in",                            "NON CONSIDERARE");
+        Mappa_Conversione_Causali.put("Transfer out",                           "NON CONSIDERARE");
+        Mappa_Conversione_Causali.put("",                                       "NON CONSIDERARE");
+
+        return Mappa_Conversione_Causali;
+    }
+
+    /**
+     * Raggruppa per orario le righe grezze OKX in formato intermedio a 19 campi (già ordinate
+     * cronologicamente) e le consolida in movimenti completi tramite {@link #Ex_OKX_Consolida}.
+     * <p>Estratta da {@link #Ex_OKX_Importa} per essere condivisa con l'import via API: la logica di
+     * raggruppamento è delicata (uno scambio è composto da più righe con lo stesso timestamp) e va
+     * mantenuta in un solo punto.
+     * <p>Un gruppo si chiude quando cambia l'orario, oppure — a parità di orario — non appena il gruppo
+     * contiene sia una riga {@code Buy} sia una riga {@code Sell}, perché a quel punto lo scambio è
+     * completo e le righe successive appartengono già al movimento seguente. Le righe {@code Convert} che
+     * arrivano a un solo secondo di distanza vengono tenute nello stesso gruppo, perché OKX impiega a
+     * volte un secondo a registrare tutte le righe di una dust conversion.
+     * @param righeOrdinate righe in formato intermedio a 19 campi, in ordine cronologico
+     * @param Mappa_Conversione_Causali mappa causale originale → categoria interna
+     * @param listaScambiDifferiti lista su cui accumulare gli scambi differiti, valorizzata da {@link #Ex_OKX_Consolida}
+     * @return la lista di movimenti consolidati nel formato standard dell'applicazione
+     */
+    public static List<String[]> Ex_OKX_RaggruppaEConsolida(List<String[]> righeOrdinate,
+            Map<String, String> Mappa_Conversione_Causali, List<String[]> listaScambiDifferiti) {
+
+        List<String[]> listaCompleta = new ArrayList<>();
+        List<String[]> listaMovimentidaConsolidare = new ArrayList<>();
+        String ultimaData = "";
+
+        for (String DatoRiga[] : righeOrdinate) {
+            String orario = DatoRiga[0];
+
+            //Calcolo l'orario diminuito di un secondo per intercettare le dust conversion spezzate su 2 secondi
+            String DataMeno1Secondo = "";
+            String pezzi[] = orario.split(":");
+            if (pezzi.length == 3) {
+                String secondo = String.valueOf(Integer.parseInt(pezzi[2].trim()) - 1);
+                if (secondo.length() == 1) secondo = "0" + secondo;
+                DataMeno1Secondo = pezzi[0] + ":" + pezzi[1] + ":" + secondo;
+            }
+
+            if (orario.equalsIgnoreCase(ultimaData)) {
+                listaMovimentidaConsolidare.add(DatoRiga);
+
+                if (listaMovimentidaConsolidare.size() > 1) {
+                    //Scorro la lista se esiste un movimento di sell e uno di buy consolido il movimento
+                    boolean trovatoBuy = false;
+                    boolean trovatoSell = false;
+                    for (String rigaLista[] : listaMovimentidaConsolidare) {
+                        if (rigaLista[4].equalsIgnoreCase("Buy"))  trovatoBuy = true;
+                        if (rigaLista[4].equalsIgnoreCase("Sell")) trovatoSell = true;
+                    }
+                    if (trovatoSell && trovatoBuy) {
+                        listaCompleta.addAll(Ex_OKX_Consolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali, listaScambiDifferiti));
+                        //una volta fatto tutto svuoto la lista movimenti e la preparo per il prossimo
+                        listaMovimentidaConsolidare = new ArrayList<>();
+                    }
+                }
+            } else if (DataMeno1Secondo.equalsIgnoreCase(ultimaData)
+                    && DatoRiga[4].contains("Convert")) {//intercetto i movimenti che avvengono ad 1 secondo di distanza
+                listaMovimentidaConsolidare.add(DatoRiga);
+            } else //altrimenti consolido il movimento precedente
+            {
+                listaCompleta.addAll(Ex_OKX_Consolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali, listaScambiDifferiti));
+
+                //una volta fatto tutto svuoto la lista movimenti e la preparo per il prossimo
+                listaMovimentidaConsolidare = new ArrayList<>();
+                listaMovimentidaConsolidare.add(DatoRiga);
+            }
+            ultimaData = orario;
+        }
+
+        listaCompleta.addAll(Ex_OKX_Consolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali, listaScambiDifferiti));
+        return listaCompleta;
+    }
+
+    /**
+     * Importa i movimenti OKX scaricati via API, già convertiti nel formato intermedio a 19 campi da
+     * {@link CcxtInterop#convertOKXBills}. Riusa lo stesso raggruppamento e consolidamento dell'import
+     * del CSV ({@link #Ex_OKX_RaggruppaEConsolida}), quindi la classificazione fiscale è identica sulle
+     * due strade.
+     * <p>La deduplica è fatta sull'ID originale OKX (il {@code billId}, in posizione {@code [24]} del
+     * movimento consolidato) confrontato con i movimenti OKX già presenti in {@link Principale#MappaCryptoWallet}:
+     * uno scarico incrementale ripetuto sullo stesso periodo non crea doppioni.
+     * @param righe righe in formato intermedio a 19 campi, in ordine qualsiasi
+     * @return array {@code [movimenti inseriti, movimenti scartati]}
+     */
+    public static int[] Ex_OKX_ImportaDaAPI(List<String[]> righe) {
+        AzzeraContatori();
+        Map<String, String> Mappa_Conversione_Causali = Ex_OKX_MappaCausali();
+
+        //L'ordine cronologico è un prerequisito del raggruppamento: due righe dello stesso scambio devono
+        //arrivare consecutive. Il CSV si affidava all'ordinamento lessicografico della riga grezza (l'id era
+        //la prima colonna); qui l'ordinamento va fatto esplicitamente su timestamp e, a parità di timestamp,
+        //su billId numerico, che in OKX è crescente nel tempo.
+        List<String[]> righeOrdinate = new ArrayList<>(righe);
+        righeOrdinate.sort((r1, r2) -> {
+            int cmp = r1[0].compareTo(r2[0]);
+            if (cmp != 0) return cmp;
+            if (Funzioni.isNumeric(r1[14], false) && Funzioni.isNumeric(r2[14], false)) {
+                return new BigDecimal(r1[14]).compareTo(new BigDecimal(r2[14]));
+            }
+            return r1[14].compareTo(r2[14]);
+        });
+
+        //Assegno la categoria interna e segnalo le causali non mappate, esattamente come fa l'import da CSV.
+        //Le causali non riconosciute (i codici numerici OKX non ancora mappati) restano senza categoria e
+        //vengono elencate nel riepilogo dei movimenti sconosciuti.
+        for (String riga[] : righeOrdinate) {
+            String MovGenerico = Mappa_Conversione_Causali.get(riga[4]);
+            if (MovGenerico == null) {
+                movimentiSconosciuti = movimentiSconosciuti + riga[0] + " " + riga[2] + " " + riga[4] + " " + riga[5] + " " + riga[6] + "\n";
+                TrasazioniSconosciute++;
+                riga[3] = "";
+            } else {
+                riga[3] = MovGenerico;
+            }
+        }
+
+        List<String[]> listaScambiDifferiti = new ArrayList<>();
+        List<String[]> listaCompleta = Ex_OKX_RaggruppaEConsolida(righeOrdinate, Mappa_Conversione_Causali, listaScambiDifferiti);
+
+        //Recupero gli ID OKX già importati per non reinserire movimenti già presenti
+        Map<String, String> MappaIDOKX = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        for (String Trans[] : Principale.MappaCryptoWallet.values()) {
+            if (Trans[3].equalsIgnoreCase("OKX")) {
+                MappaIDOKX.put(Trans[24], "");
+            }
+        }
+
+        List<String[]> listaDaImportare = new ArrayList<>();
+        for (String ElementoLista[] : listaCompleta) {
+            if (MappaIDOKX.get(ElementoLista[24]) == null) {
+                listaDaImportare.add(ElementoLista);
+            }
+        }
+
+        int InsScart[] = ScriviListaSuMappaCrypto(listaDaImportare, false);
+        TransazioniAggiunte = InsScart[0];
+        TrasazioniScartate = InsScart[1];
+        Transazioni = InsScart[0] + InsScart[1];
+
+        //questo lo faccio alla fine perchè vado ad agire direttamente sulla mappa già compilata
+        ConsolidaMovimentiDifferiti(listaScambiDifferiti, false);
+
+        if (TransazioniAggiunte > 0) Principale.TabellaCryptodaAggiornare = true;
+        return InsScart;
+    }
+
+
         /**
      * Importa un file CSV di export Binance: legge le righe, salta le transazioni già presenti in memoria,
      * mappa le causali Binance verso le categorie interne e delega il consolidamento dei movimenti
@@ -543,6 +646,8 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Commission Fee Shared With You",                              "CASHBACK");              //Cashback 
         
         Mappa_Conversione_Causali.put("Simple Earn Flexible Interest",              "EARN");  
+        Mappa_Conversione_Causali.put("Simple Earn Locked - Rewards Income",              "EARN");
+        Mappa_Conversione_Causali.put("Simple Earn Flexible - Rewards Income",              "EARN");
         Mappa_Conversione_Causali.put("Simple Earn Locked Rewards",                 "EARN");//
         Mappa_Conversione_Causali.put("Launchpool Earnings Withdrawal",             "EARN");//
         Mappa_Conversione_Causali.put("Cash Voucher Distribution",                  "REWARD");//
@@ -577,6 +682,7 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Transfer Between Spot and Strategy Account", "TRASFERIMENTO-CRYPTO-INTERNO");
         Mappa_Conversione_Causali.put("Launchpool Subscription/Redemption",         "TRASFERIMENTO-CRYPTO-INTERNO");
         Mappa_Conversione_Causali.put("Launchpad Subscribe",                        "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("Transfer Between Spot and Strategy",                        "TRASFERIMENTO-CRYPTO-INTERNO");
         
 
         Mappa_Conversione_Causali.put("withdraw",                                   "TRASFERIMENTO-CRYPTO");

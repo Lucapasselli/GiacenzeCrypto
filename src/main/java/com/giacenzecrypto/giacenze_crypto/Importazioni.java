@@ -700,8 +700,8 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Small Assets Exchange BNB (Spot)",           "DUST-CONVERSION");
         Mappa_Conversione_Causali.put("Small Assets Exchange BNB",                  "DUST-CONVERSION");
         
-        Mappa_Conversione_Causali.put("RWUSD - Redemption, RWUSD",                  "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("RWUSD - Subscription, RWUSD",                "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("RWUSD - Redemption",                  "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("RWUSD - Subscription",                "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Buy Crypto With Card",                       "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Transaction Buy",                            "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Transaction Sold",                           "SCAMBIO CRYPTO-CRYPTO");

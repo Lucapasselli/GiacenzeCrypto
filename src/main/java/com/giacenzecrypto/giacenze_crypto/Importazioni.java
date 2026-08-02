@@ -442,17 +442,26 @@ public class Importazioni {
     public static Map<String, String> Ex_OKX_MappaCausali() {
         Map<String, String> Mappa_Conversione_Causali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-        Mappa_Conversione_Causali.put("Savings subscription",                   "TRASFERIMENTO-CRYPTO-INTERNO");//
-        Mappa_Conversione_Causali.put("Savings redemption",                     "TRASFERIMENTO-CRYPTO-INTERNO");//
+        //Giroconti fra conti dello stesso utente (conto Funding, conto Trading unificato, prodotti Earn e
+        //Savings): fiscalmente non contano nulla e non vengono importati, come già si fa per Binance.
+        //Prima producevano un movimento TRASFERIMENTO-CRYPTO-INTERNO, cioè un movimento registrato ma
+        //neutro; allineati a NON CONSIDERARE il 03/08/2026 perché il ramo API li tratta già così, e lo
+        //stesso evento non deve comparire o sparire a seconda che arrivi da CSV o da API.
+        Mappa_Conversione_Causali.put("Savings subscription",                   "NON CONSIDERARE");
+        Mappa_Conversione_Causali.put("Savings redemption",                     "NON CONSIDERARE");
+        Mappa_Conversione_Causali.put("Simple Earn subscription",               "NON CONSIDERARE");
+        Mappa_Conversione_Causali.put("Simple Earn redemption",                 "NON CONSIDERARE");
+        Mappa_Conversione_Causali.put("From unified trading account",           "NON CONSIDERARE");
+        Mappa_Conversione_Causali.put("To unified trading account",             "NON CONSIDERARE");
+        //Lo staking non è un giroconto fra conti: resta un movimento registrato, benché neutro.
         Mappa_Conversione_Causali.put("Stake",                                  "TRASFERIMENTO-CRYPTO-INTERNO");//
         Mappa_Conversione_Causali.put("Redeem staking",                         "TRASFERIMENTO-CRYPTO-INTERNO");//
-        Mappa_Conversione_Causali.put("From unified trading account",           "TRASFERIMENTO-CRYPTO-INTERNO");
-        Mappa_Conversione_Causali.put("To unified trading account",             "TRASFERIMENTO-CRYPTO-INTERNO");
-        Mappa_Conversione_Causali.put("Simple Earn subscription",               "TRASFERIMENTO-CRYPTO-INTERNO");
-        Mappa_Conversione_Causali.put("Simple Earn redemption",                 "TRASFERIMENTO-CRYPTO-INTERNO");
 
         Mappa_Conversione_Causali.put("withdrawal",                             "TRASFERIMENTO-CRYPTO");
         Mappa_Conversione_Causali.put("deposit",                                "TRASFERIMENTO-CRYPTO");
+        //Accredito proveniente da un altro account OKX: è crypto che entra davvero nel wallet,
+        //quindi vale come un deposito e non come un giroconto interno.
+        Mappa_Conversione_Causali.put("Received",                               "TRASFERIMENTO-CRYPTO");
 
         Mappa_Conversione_Causali.put("Convert",                                "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Buy",                                    "SCAMBIO CRYPTO-CRYPTO");

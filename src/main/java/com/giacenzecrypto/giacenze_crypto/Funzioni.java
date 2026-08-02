@@ -532,6 +532,19 @@ public class Funzioni {
     }
 
     /**
+     * Riduce una credenziale (chiave API, secret, passphrase) alla forma abbreviata da usare nei log:
+     * le prime quattro cifre seguite da puntini. Serve a poter riconoscere <i>quale</i> credenziale sia
+     * in gioco senza scriverla per intero nei file di log, che possono essere allegati a una segnalazione.
+     * @param credenziale credenziale da mascherare
+     * @return la credenziale abbreviata, o {@code "(vuota)"} se non è valorizzata
+     */
+    public static String MascheraCredenziale(String credenziale) {
+        if (credenziale == null || credenziale.isBlank()) return "(vuota)";
+        if (credenziale.length() <= 4) return "…";
+        return credenziale.substring(0, 4) + "…";
+    }
+
+    /**
      * Verifica se un clic del mouse su una tabella è avvenuto su una riga già presente nella selezione corrente
      * (utile per decidere se un click destro deve preservare una selezione multipla esistente).
      * @param table tabella su cui è avvenuto il clic

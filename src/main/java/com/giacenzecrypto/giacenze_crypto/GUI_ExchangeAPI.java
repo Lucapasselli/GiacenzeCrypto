@@ -83,6 +83,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         Bottone_InserisciChiave = new javax.swing.JButton();
         Bottone_RimuoviChiave = new javax.swing.JButton();
         Bottone_AggiornaSelezionati = new javax.swing.JButton();
+        Bottone_EarnOKX = new javax.swing.JButton();
         Bottone_Aggiorna = new javax.swing.JButton();
         Pannello_Binance = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -189,6 +190,14 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             }
         });
 
+        Bottone_EarnOKX.setText("Rendimenti Earn OKX (diagnostica)");
+        Bottone_EarnOKX.setToolTipText("Interroga gli endpoint Earn di OKX e salva la risposta grezza in Temporanei/. Non importa nulla.");
+        Bottone_EarnOKX.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_EarnOKXActionPerformed(evt);
+            }
+        });
+
         Bottone_Aggiorna.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Aggiorna.png"))); // NOI18N
         Bottone_Aggiorna.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -204,7 +213,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(Label_IndirizzoWallet1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(Label_IndirizzoWallet, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
+                    .addComponent(Label_IndirizzoWallet, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(Label_Passphrase, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(Label_Exchange, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -219,7 +228,8 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Bottone_RimuoviChiave, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
-                    .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Bottone_EarnOKX, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(10, 10, 10)
                 .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -256,13 +266,15 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                         .addGroup(javax.swing.GroupLayout.Alignment.LEADING, Pannello_ChiaviLayout.createSequentialGroup()
                             .addComponent(Bottone_RimuoviChiave, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(Bottone_EarnOKX, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(7, 7, 7))
             .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(ScrollPaneTabellaWallets, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(104, Short.MAX_VALUE)))
+                    .addComponent(ScrollPaneTabellaWallets, javax.swing.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE)
+                    .addGap(140, 140, 140)))
         );
 
         Bottone_Aggiorna.setText("<html>Scarica nuovi movimenti<br>da tutti i Wallet della lista</html>");
@@ -330,7 +342,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             .addGroup(Pannello_BinanceLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(Pannello_BinanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 529, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)
                     .addGroup(Pannello_BinanceLayout.createSequentialGroup()
                         .addComponent(jScrollPane2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -409,7 +421,10 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         else{
                // MappaWallets.put(Wallet+"_"+Rete, Wallet+";"+Rete);
                 DatabaseH2.Pers_ExchangeApi_Scrivi(Exchange, Key,Segreto,Passphrase);
-                System.out.println("Scrivo le Api Exchange nel Database : "+Exchange+" "+Key);
+                //La chiave non viene scritta per intero: il log finisce nei file GiacenzeCrypto.log.*,
+                //che possono essere allegati a una segnalazione. Ne bastano le prime cifre per capire
+                //quale chiave sia stata inserita.
+                System.out.println("Scrivo le Api Exchange nel Database : "+Exchange+" "+Funzioni.MascheraCredenziale(Key));
                  Messaggi.SuccessMessage("Chiavi API valide", "Le chiavi API fornite sono valide e sono state correttamente inserite.", this);
                 PopolaTabella();
 
@@ -632,6 +647,19 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                 
                 
     }//GEN-LAST:event_Bottone_RimuoviChiaveActionPerformed
+
+    private void Bottone_EarnOKXActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_EarnOKXActionPerformed
+        //I rendimenti dei prodotti Earn non compaiono né nei bill scaricati via API né negli export CSV
+        //"Funding History"/"Trading History": hanno endpoint propri. Questa è una diagnostica che li
+        //interroga e salva la risposta grezza, senza importare nulla.
+        String[] api = DatabaseH2.Pers_ExchangeApi_Leggi("OKX");
+        if (api == null || api[2] == null || api[2].isBlank()) {
+            Messaggi.WarningMessage("Chiavi OKX non presenti",
+                    "Attenzione! <br>Devi prima inserire le chiavi API di OKX", this);
+            return;
+        }
+        CcxtInterop.diagnosticaEarnOKX(api[2], api[3], api[4], this);
+    }//GEN-LAST:event_Bottone_EarnOKXActionPerformed
 
     private void Bottone_AggiornaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AggiornaActionPerformed
         // TODO add your handling code here:
@@ -860,6 +888,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     private javax.swing.JTable Binance_Tabella;
     private javax.swing.JButton Bottone_Aggiorna;
     private javax.swing.JButton Bottone_AggiornaSelezionati;
+    private javax.swing.JButton Bottone_EarnOKX;
     private javax.swing.JButton Bottone_InserisciChiave;
     private javax.swing.JButton Bottone_RimuoviChiave;
     private javax.swing.JComboBox<String> ComboBox_Exchange;

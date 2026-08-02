@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.*;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import org.json.JSONObject;
 
@@ -35,7 +36,21 @@ public class CcxtInterop {
     
     public static final String NODE_VERSION = "v24.7.0";
     public static final Path NODE_DIR = Paths.get(VarStatiche.getWorkingDirectory()+"tools", "node").toAbsolutePath().normalize();;
-    
+
+    /**
+     * Giorni di storico oltre i quali lo scaricamento OKX via API non è più affidabile. Corrisponde a quanto
+     * ha effettivamente restituito {@code /api/v5/asset/bills} sui dati reali (una sola pagina, ferma a poco
+     * meno di un mese), che è il più corto dei due endpoint interrogati.
+     */
+    public static final int GIORNI_STORICO_OKX = 30;
+
+    /**
+     * Nome dell'opzione (in {@code personale.mv.db}) in cui viene ricordato il dominio regionale di OKX
+     * su cui la chiave API dell'utente esiste davvero. Vedi
+     * {@link #fetchMovimento(String, String, String, long, String, String, String, String)}.
+     */
+    public static final String OPZIONE_HOSTNAME_OKX = "OKX_Hostname";
+
 
     
     /**
@@ -286,6 +301,165 @@ public static Path getNodeExePath() {
      * @param Tokens elenco di token (separati da virgola) di cui recuperare esplicitamente i trade
      * @param c componente rispetto a cui centrare la finestra di progresso
      */
+    /**
+     * Avverte l'utente, e ne chiede conferma, quando uno scaricamento OKX via API dovrebbe partire da una data
+     * più vecchia di quanto gli endpoint bills siano in grado di restituire.
+     *
+     * <p>Gli endpoint interrogati coprono al massimo tre mesi, e sui dati reali il conto Funding
+     * ({@code asset/bills}) si è fermato a poco meno di un mese: uno scaricamento che parte da più indietro
+     * <b>non fallisce</b>, restituisce semplicemente meno movimenti di quelli richiesti, in silenzio. Senza
+     * questo avviso l'utente lo scoprirebbe solo confrontando i saldi. Lo storico più vecchio va recuperato
+     * dagli export CSV di OKX, per i quali esistono le configurazioni {@code ImportConfig/OKX_Funding.json} e
+     * {@code ImportConfig/OKX_Trading.json}.
+     *
+     * @param exchangeId exchange su cui si sta per scaricare; per tutti gli altri il controllo non si applica
+     * @param startDate data da cui partirebbe lo scaricamento, millisecondi epoch
+     * @param c componente rispetto a cui centrare la finestra
+     * @return {@code true} se si può procedere, {@code false} se l'utente ha rinunciato
+     */
+    static boolean ConfermaFinestraStoricoOKX(String exchangeId, long startDate, Component c) {
+        if (exchangeId == null || !exchangeId.trim().equalsIgnoreCase("OKX")) return true;
+
+        long giorni = (System.currentTimeMillis() - startDate) / (24L * 60 * 60 * 1000);
+        if (giorni <= GIORNI_STORICO_OKX) return true;
+
+        java.awt.Window owner = (c instanceof java.awt.Window w) ? w : SwingUtilities.getWindowAncestor(c);
+        AppDialog.DialogResult result = AppDialog.builder(owner)
+                .windowTitle("Storico OKX oltre il limite delle API")
+                .bodyTitle("Lo scaricamento partirebbe da troppo indietro")
+                .showTitleInBody(false)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message("")
+                .details("Lo scaricamento dovrebbe partire dal "
+                        + FunzioniDate.ConvertiDatadaLongAlSecondo(startDate) + ", cioè " + giorni + " giorni fa.\n\n"
+                        + "Le API di OKX restituiscono al massimo gli ultimi 3 mesi di movimenti, e sul conto "
+                        + "Funding (depositi, prelievi, giroconti) anche meno: circa un mese.\n\n"
+                        + "Lo scaricamento non fallisce, ma i movimenti più vecchi del limite NON verranno "
+                        + "scaricati e non ti verrà segnalato quali mancano. Per recuperarli serve l'export CSV "
+                        + "di OKX, da importare con le configurazioni OKX_Funding e OKX_Trading.\n\n"
+                        + "Vuoi procedere ugualmente con lo scaricamento via API?")
+                .action(AppDialog.DialogAction.builder("annulla", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("continua", "Procedi comunque")
+                        .role(AppDialog.ActionRole.DANGER)
+                        .build())
+                .showDialog();
+
+        return result != null && result.isAction("continua");
+    }
+
+    /**
+     * Interroga gli endpoint "Financial Product" di OKX ({@code Scripts/OKX_Earn.js}) e salva la risposta
+     * grezza in un file, senza importare nulla.
+     *
+     * <p>Serve perché i <b>rendimenti dei prodotti Earn non compaiono da nessun'altra parte</b>: né nei bill
+     * del conto Funding o del Trading, né negli export CSV "Funding History"/"Trading History", dove si vedono
+     * solo la sottoscrizione e il riscatto del capitale. Gli interessi restano dentro il prodotto Earn e hanno
+     * endpoint propri ({@code finance/savings/lending-history} per Simple Earn Flexible,
+     * {@code finance/staking-defi/orders-history} per On-chain Earn).
+     *
+     * <p>È volutamente una <b>diagnostica</b> e non un import: la documentazione OKX su quella sezione non è
+     * consultabile e i campi delle risposte non sono verificabili in anticipo, quindi il primo passo è vedere
+     * che forma abbiano davvero i dati. Tutte le chiamate sono di sola lettura.
+     *
+     * <p>Le credenziali arrivano da {@code EXCHANGEAPI} in {@code personale.mv.db} come per lo scaricamento
+     * dei movimenti, passphrase compresa, e viene riusato anche il dominio regionale già riconosciuto.
+     *
+     * @param apiKey API key dell'account OKX
+     * @param secret API secret dell'account
+     * @param passphrase passphrase della chiave API
+     * @param c componente rispetto a cui centrare le finestre
+     */
+    public static void diagnosticaEarnOKX(String apiKey, String secret, String passphrase, Component c) {
+        c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        Download progress = new Download();
+        progress.setIndeterminate(true);
+        progress.SetLabel("Interrogazione dei prodotti Earn di OKX...");
+        progress.setLocationRelativeTo(c);
+
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            /** Verifica Node/CCXT ed esegue lo script diagnostico, salvandone l'esito su file. */
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    ensureNodeInstalled();
+                    installCcxt();
+
+                    String hostnameOKX = DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_HOSTNAME_OKX);
+                    if (hostnameOKX == null) hostnameOKX = "";
+
+                    JsonObject json = fetchMovimento("okx", apiKey, secret, 0, "", "OKX_Earn", passphrase, hostnameOKX);
+                    if (json == null) {
+                        JOptionPane.showConfirmDialog(null,
+                                "Nessuna risposta utilizzabile da OKX: controlla il log.",
+                                "Attenzione", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                        return null;
+                    }
+
+                    //Il dominio riconosciuto vale anche per gli scaricamenti successivi
+                    if (json.has("okx_hostname")) {
+                        String riconosciuto = json.get("okx_hostname").getAsString();
+                        if (!riconosciuto.isBlank() && !riconosciuto.equals(DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_HOSTNAME_OKX))) {
+                            DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_HOSTNAME_OKX, riconosciuto);
+                        }
+                    }
+
+                    Path cartella = Paths.get(VarStatiche.getCartella_Temporanei());
+                    Files.createDirectories(cartella);
+                    Path file = cartella.resolve("OKX_Earn_"
+                            + new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date())
+                            + ".json");
+                    Files.writeString(file, json.toString(), StandardCharsets.UTF_8);
+
+                    JOptionPane.showConfirmDialog(null,
+                            "Risposta di OKX salvata in:\n" + file.toAbsolutePath()
+                            + "\n\n" + RiepilogoEarnOKX(json),
+                            "Prodotti Earn OKX", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                } catch (IOException | InterruptedException ex) {
+                    Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                return null;
+            }
+
+            /** Chiude la finestra di attesa e ripristina il cursore. */
+            @Override
+            protected void done() {
+                progress.dispose();
+                c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        };
+
+        worker.execute();
+        progress.setVisible(true);
+    }
+
+    /**
+     * Riassume in poche righe quanti record ha restituito ciascun endpoint Earn, per capire a colpo d'occhio
+     * dove ci sia qualcosa da importare senza dover aprire il file JSON.
+     * @param json risposta di {@code OKX_Earn.js}
+     * @return il riepilogo, una riga per endpoint
+     */
+    static String RiepilogoEarnOKX(JsonObject json) {
+        String[][] sezioni = {
+            {"savings_balance",  "Simple Earn - saldo attuale"},
+            {"savings_lending",  "Simple Earn - storico interessi"},
+            {"staking_attivi",   "On-chain Earn - posizioni aperte"},
+            {"staking_storico",  "On-chain Earn - storico ordini"}
+        };
+        StringBuilder sb = new StringBuilder();
+        for (String[] sezione : sezioni) {
+            sb.append(sezione[1]).append(": ");
+            JsonElement el = json.get(sezione[0]);
+            if (el == null || el.isJsonNull()) sb.append("assente");
+            else if (el.isJsonArray())         sb.append(el.getAsJsonArray().size()).append(" record");
+            else                               sb.append("errore, vedi il file");   //l'endpoint ha risposto con un errore
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+
     public static void fetchMovimentiConBar(String exchangeId, String apiKey, String secret, long startDate,String Tokens,Component c) {
         fetchMovimentiConBar(exchangeId, apiKey, secret, startDate, Tokens, "", c);
     }
@@ -304,6 +478,11 @@ public static Path getNodeExePath() {
     public static void fetchMovimentiConBar(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String passphrase,Component c) {
              // TODO add your handling code here:
         //CcxtInterop a = new CcxtInterop();
+
+        //L'avviso va dato prima di aprire la finestra di avanzamento: se l'utente rinuncia non deve
+        //essere partito nulla, né il download di Node né la chiamata all'exchange.
+        if (!ConfermaFinestraStoricoOKX(exchangeId, startDate, c)) return;
+
         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         Download progress = new Download();
         progress.setIndeterminate(true);
@@ -589,7 +768,20 @@ public static Path getNodeExePath() {
             progress.setTitle("Scaricamento dei dati di "+exchangeId+" tramite API");
             progress.SetMessaggioAvanzamento("Comunicazione con OKX in corso...");
 
-            JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, "", "OKX_Bills", passphrase);
+            //Il dominio regionale di OKX su cui la chiave esiste viene individuato dallo script alla prima
+            //esecuzione e poi ricordato: è una proprietà dell'account, non cambia da uno scaricamento all'altro.
+            String hostnameOKX = DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_HOSTNAME_OKX);
+            if (hostnameOKX == null) hostnameOKX = "";
+
+            JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, "", "OKX_Bills", passphrase, hostnameOKX);
+
+            if (json != null && json.has("okx_hostname")) {
+                String riconosciuto = json.get("okx_hostname").getAsString();
+                if (!riconosciuto.isBlank() && !riconosciuto.equals(hostnameOKX)) {
+                    DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_HOSTNAME_OKX, riconosciuto);
+                    System.out.println("Dominio OKX riconosciuto e memorizzato : "+riconosciuto);
+                }
+            }
 
             if (Principale.InterrompiCiclo||progress.ErroriNodeJS()) {
                 JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
@@ -619,6 +811,43 @@ public static Path getNodeExePath() {
             }
             righe.addAll(rf);
             righe.addAll(rt);
+
+            //I rendimenti dei prodotti Earn non sono nei bill: hanno endpoint propri e vanno chiesti a parte.
+            //Si riparte dalla mezzanotte del giorno di startDate, non da startDate: l'aggregazione è per
+            //giornata e una giornata va scaricata intera, altrimenti se ne importerebbe solo la coda.
+            progress.SetMessaggioAvanzamento("Rendimenti dei prodotti Earn...");
+            long inizioGiornata = FunzioniDate.ConvertiDatainLongSecondo(
+                    FunzioniDate.ConvertiDatadaLongAlSecondo(startDate).substring(0, 10) + " 00:00:00");
+            //Gli accrediti sono orari: al primo scaricamento, dove startDate è il 2017 di default, si
+            //chiederebbero anni di storico un'ora alla volta, si sbatterebbe contro il tetto di pagine e
+            //l'utente vedrebbe un avviso di scaricamento incompleto senza potervi rimediare. Ci si ferma
+            //quindi allo stesso orizzonte di 3 mesi degli altri endpoint OKX.
+            long limiteEarn = System.currentTimeMillis() - 90L * 24 * 60 * 60 * 1000;
+            if (inizioGiornata < limiteEarn) {
+                System.out.println("Rendimenti Earn: richiesta limitata a 3 mesi, da "
+                        + FunzioniDate.ConvertiDatadaLongAlSecondo(limiteEarn));
+                inizioGiornata = limiteEarn;
+            }
+            JsonObject jsonEarn = fetchMovimento(exchangeId, apiKey, secret, inizioGiornata, "", "OKX_Earn", passphrase, hostnameOKX);
+            if (jsonEarn != null && jsonEarn.has("savings_lending") && jsonEarn.get("savings_lending").isJsonArray()) {
+                List<String[]> re = convertOKXEarn(jsonEarn.getAsJsonArray("savings_lending"));
+                if (re == null) {
+                    JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                    return;
+                }
+                righe.addAll(re);
+                if (jsonEarn.has("savings_lending_completo") && !jsonEarn.get("savings_lending_completo").getAsBoolean()) {
+                    JOptionPane.showConfirmDialog(null,
+                            "Lo scaricamento dei rendimenti Earn non ha coperto tutto il periodo richiesto.\n\n"
+                            + "Gli interessi sono accreditati ogni ora e OKX li restituisce cento alla volta, "
+                            + "quindi lo storico più vecchio può non essere raggiungibile. Le giornate scaricate "
+                            + "sono comunque corrette: nel log trovi da quando partono.",
+                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                }
+            } else {
+                //Non è un errore bloccante: i bill sono già stati scaricati e vanno comunque importati
+                System.out.println("Nessun rendimento Earn restituito da OKX.");
+            }
 
             //Se lo script non è riuscito a scorrere tutto lo storico richiesto è meglio saperlo prima di importare
             boolean completo = !json.has("okx_completo") || json.get("okx_completo").getAsBoolean();
@@ -659,20 +888,13 @@ public static Path getNodeExePath() {
      * {@code "Sell"}, {@code "deposit"}, {@code "withdrawal"}), non con i codici numerici di OKX: in questo
      * modo {@link Importazioni#Ex_OKX_MappaCausali} resta l'unica tabella di conversione delle causali OKX.
      *
-     * <p><b>Vengono mappati solo i codici verificabili</b>, per non classificare a caso movimenti fiscali:
-     * <ul>
-     *   <li>conto Trading, {@code type=2} = trade (confermato da {@code okx.parseLedgerEntryType} di CCXT).
-     *       {@code Buy}/{@code Sell} si ricavano dal <b>segno di {@code balChg}</b>, senza bisogno del
-     *       {@code subType}: le due righe di uno swap hanno lo stesso {@code ts} e segni opposti, che è
-     *       esattamente ciò che il raggruppamento per orario si aspetta;</li>
-     *   <li>conto Funding, {@code type=1} = deposito e {@code type=2} = prelievo. <b>Questa è un'assunzione</b>
-     *       (coerente con l'esempio di risposta nella sorgente CCXT) da confermare con un confronto contro
-     *       l'import dello stesso periodo via CSV.</li>
-     * </ul>
-     * Ogni altro codice viene lasciato <b>non mappato</b>, con il codice grezzo in causale: finisce così nel
-     * riepilogo dei movimenti sconosciuti già gestito dall'import, che diventa l'elenco esatto dei codici
-     * presenti sul conto dell'utente e ancora da mappare. È una scelta deliberata: meglio un movimento
-     * segnalato che un movimento classificato male.
+     * <p>La decodifica dei codici {@code type} è in {@link #causaleBillOKX}. Per il conto Trading
+     * {@code Buy}/{@code Sell} si ricavano dal <b>segno di {@code balChg}</b>, senza bisogno del
+     * {@code subType}: le due righe di uno swap hanno lo stesso {@code ts} e segni opposti, che è
+     * esattamente ciò che il raggruppamento per orario si aspetta. I codici non riconosciuti restano
+     * <b>non mappati</b>, con il codice grezzo in causale: finiscono così nel riepilogo dei movimenti
+     * sconosciuti già gestito dall'import, che diventa l'elenco esatto dei codici ancora da decodificare.
+     * È una scelta deliberata: meglio un movimento segnalato che un movimento classificato male.
      *
      * <p>Le fee non vengono riportate nei campi {@code [11]}/{@code [12]}: nei bill di OKX {@code balChg} è già
      * la variazione netta di saldo e comprende quindi la commissione, per cui generare anche la riga di
@@ -682,6 +904,156 @@ public static Path getNodeExePath() {
      * @param Wallet nome del conto di provenienza, {@code "Funding"} oppure {@code "Trading"}
      * @return le righe in formato intermedio a 19 campi (non ordinate)
      */
+    /**
+     * Traduce il codice numerico {@code type} di un bill OKX nella causale testuale corrispondente, cioè
+     * nella stessa etichetta che comparirebbe nella colonna "Type"/"Action" dell'export CSV.
+     *
+     * <p>OKX non pubblica la tabella dei codici in forma consultabile: quelli qui sotto sono stati
+     * <b>ricavati per confronto</b> fra i bill scaricati via API e le righe degli export CSV dello stesso
+     * periodo (cartella {@code okx/} del dataset di prova), verificando la corrispondenza su data, moneta e
+     * importo. I conteggi coincidono esattamente: 29 bill Trading {@code type=1} ↔ 29 righe
+     * "Transfer in"/"Transfer out", 22 bill {@code type=12} ↔ 22 righe "Transfer" con azione vuota.
+     *
+     * <table><caption>Codici riconosciuti</caption>
+     * <tr><th>conto</th><th>type</th><th>riga CSV corrispondente</th><th>trattamento</th></tr>
+     * <tr><td>Trading</td><td>2</td><td>Spot Buy / Spot Sell</td><td>scambio</td></tr>
+     * <tr><td>Trading</td><td>1</td><td>Transfer in / Transfer out</td><td>giroconto interno</td></tr>
+     * <tr><td>Trading</td><td>12</td><td>Transfer (azione vuota, coppie +/-)</td><td>giroconto interno</td></tr>
+     * <tr><td>Funding</td><td>1</td><td>Deposit</td><td>trasferimento crypto</td></tr>
+     * <tr><td>Funding</td><td>2</td><td>Withdrawal</td><td>trasferimento crypto</td></tr>
+     * <tr><td>Funding</td><td>48</td><td>Received</td><td>trasferimento crypto</td></tr>
+     * <tr><td>Funding</td><td>130</td><td>From unified trading account</td><td>giroconto interno</td></tr>
+     * <tr><td>Funding</td><td>131</td><td>To unified trading account</td><td>giroconto interno</td></tr>
+     * <tr><td>Funding</td><td>76</td><td>Simple Earn redemption</td><td>giroconto interno</td></tr>
+     * </table>
+     *
+     * <p>Tutti i giroconti interni a OKX sono resi con le etichette {@code "Transfer in"}/{@code "Transfer out"},
+     * che {@link Importazioni#Ex_OKX_MappaCausali} associa a {@code NON CONSIDERARE}: sono spostamenti fra
+     * conti dello stesso utente e non vengono importati, come già si fa per Binance. Le tre righe della
+     * tabella che sono giroconti verso un prodotto Earn ricadono nella stessa categoria per lo stesso motivo.
+     *
+     * <p>{@code Received} è invece un accredito proveniente da un <b>altro</b> account OKX: è crypto che entra
+     * davvero nel wallet, quindi viene trattato come un deposito e non come un giroconto.
+     *
+     * <p>Restano volutamente <b>non mappati</b> i codici {@code 326}/{@code 327}, che nel campione compaiono
+     * solo a coppie di segno opposto sulla stessa moneta e per importi infinitesimi, e che non hanno alcuna
+     * riga corrispondente nell'export CSV: non essendo decodificabili dai dati disponibili non vengono
+     * indovinati, e continuano a comparire nel riepilogo dei movimenti sconosciuti.
+     *
+     * @param tipo valore del campo {@code type} del bill
+     * @param balChg variazione di saldo, usata per ricavare il verso del movimento
+     * @param isTrading {@code true} se il bill viene dal conto Trading, {@code false} dal Funding
+     * @return la causale testuale, oppure {@code "OKX type <n>"} se il codice non è fra quelli riconosciuti
+     */
+    static String causaleBillOKX(String tipo, String balChg, boolean isTrading) {
+        //Un giroconto interno è reso col verso giusto: le due etichette sono entrambe NON CONSIDERARE,
+        //ma tenerle distinte mantiene leggibile il movimento in caso di diagnostica.
+        String giroconto = Funzioni.isNegativo(balChg) ? "Transfer out" : "Transfer in";
+
+        if (isTrading) {
+            switch (tipo) {
+                case "2":  return Funzioni.isNegativo(balChg) ? "Sell" : "Buy";
+                case "1":
+                case "12": return giroconto;
+                default:   return "OKX type " + tipo;   //non mappato: finirà tra i movimenti sconosciuti
+            }
+        }
+        switch (tipo) {
+            case "1":   return "deposit";
+            case "2":   return "withdrawal";
+            case "48":  return "Received";
+            case "76":
+            case "130":
+            case "131": return giroconto;
+            default:    return "OKX type " + tipo;      //non mappato: finirà tra i movimenti sconosciuti
+        }
+    }
+
+    /**
+     * Converte lo storico degli interessi di OKX Simple Earn ({@code finance/savings/lending-history}) nelle
+     * righe in formato intermedio a 19 campi, <b>aggregando per giorno e per moneta</b>.
+     *
+     * <p>L'aggregazione non è un'ottimizzazione ma una necessità: OKX accredita gli interessi <b>ogni ora</b>
+     * (verificato sui dati reali: un record per moneta per ora, con importi dell'ordine di {@code 0.00000003}
+     * BTC), il che su tre monete fa circa 72 movimenti al giorno e 26.000 all'anno, ognuno con la propria
+     * ricerca prezzo. Sommandoli per giornata restano circa 3 movimenti al giorno: il rendimento imponibile è
+     * lo stesso, cambia solo il prezzo usato per convertirlo in euro — uno di fine giornata invece di 24.
+     *
+     * <p>Il movimento porta la data dell'<b>ultimo</b> accredito della giornata per quella moneta e la causale
+     * {@code "Deposit yield"}, che {@link Importazioni#Ex_OKX_MappaCausali} associa già a {@code REWARD}: non
+     * nasce quindi nessuna combinazione campo5/campo18/categoria nuova.
+     *
+     * <p>La <b>giornata in corso viene esclusa</b>, perché è ancora incompleta: verrebbe importata a metà e,
+     * essendo l'ID deterministico, la deduplica impedirebbe poi di completarla. Verrà importata per intero
+     * allo scaricamento successivo.
+     *
+     * <p>L'ID originale {@code [14]} è costruito come {@code EARN-<moneta>-<aaaammgg>}: è deterministico, così
+     * uno scaricamento ripetuto sullo stesso periodo riconosce le giornate già importate invece di duplicarle.
+     *
+     * @param lending array JSON dei record restituiti da {@code OKX_Earn.js}, oppure {@code null}
+     * @return le righe in formato intermedio a 19 campi, una per giornata e moneta
+     */
+    public static List<String[]> convertOKXEarn(JsonArray lending) {
+        List<String[]> lista = new ArrayList<>();
+        if (lending == null) return lista;
+
+        String oggi = FunzioniDate.ConvertiDatadaLongAlSecondo(System.currentTimeMillis()).substring(0, 10);
+
+        //chiave = giorno + moneta, così la somma è per giornata e valuta
+        Map<String, BigDecimal> somme = new TreeMap<>();
+        Map<String, String> monete = new TreeMap<>();
+        Map<String, Long> ultimoTs = new TreeMap<>();
+        //I record non hanno un id: moneta+timestamp è l'unica chiave disponibile (sui dati reali è univoca).
+        //Serve perché qui si somma, e un record ripetuto dalla paginazione gonfierebbe il totale del giorno
+        //senza che nulla se ne accorga.
+        Set<String> visti = new HashSet<>();
+
+        for (JsonElement el : lending) {
+            if (Principale.InterrompiCiclo) return null;
+            JSONObject obj = new JSONObject(el.toString());
+
+            String ccy      = obj.optString("ccy", "");
+            String earnings = obj.optString("earnings", "");
+            String ts       = obj.optString("ts", "");
+
+            if (ccy.isEmpty() || earnings.isEmpty() || ts.isEmpty()) continue;
+            if (!Funzioni.isNumeric(earnings, false) || !Funzioni.isNumeric(ts, false)) continue;
+            if (new BigDecimal(earnings).compareTo(BigDecimal.ZERO) == 0) continue;
+            if (!visti.add(ccy + "|" + ts)) continue;   //stesso accredito già conteggiato
+
+            long tsLong = Long.parseLong(ts);
+            String giorno = FunzioniDate.ConvertiDatadaLongAlSecondo(tsLong).substring(0, 10);
+            if (giorno.equals(oggi)) continue;   //giornata ancora in corso: si importa domani, intera
+
+            String chiave = giorno + "|" + ccy;
+            somme.merge(chiave, new BigDecimal(earnings), BigDecimal::add);
+            monete.put(chiave, ccy);
+            ultimoTs.merge(chiave, tsLong, Math::max);
+        }
+
+        for (Map.Entry<String, BigDecimal> voce : somme.entrySet()) {
+            String chiave = voce.getKey();
+            if (voce.getValue().compareTo(BigDecimal.ZERO) == 0) continue;
+
+            String DatoRiga[] = new String[19];
+            DatoRiga[0]  = FunzioniDate.ConvertiDatadaLongAlSecondo(ultimoTs.get(chiave));  //Timestamp
+            DatoRiga[1]  = "OKX";                                                           //Exchange
+            DatoRiga[2]  = "Funding";                                                       //Conto: l'Earn fa capo al Funding
+            DatoRiga[3]  = "";                                                              //Categoria: la assegna l'import
+            DatoRiga[4]  = "Deposit yield";                                                 //Causale già mappata su REWARD
+            DatoRiga[5]  = monete.get(chiave);                                              //Moneta
+            DatoRiga[6]  = voce.getValue().stripTrailingZeros().toPlainString();            //Interessi del giorno
+            DatoRiga[11] = "";                                                              //Nessuna fee sugli interessi
+            DatoRiga[12] = "";
+            DatoRiga[14] = "EARN-" + monete.get(chiave) + "-" + chiave.substring(0, 10).replace("-", "");
+            DatoRiga[15] = "NO";
+            DatoRiga[16] = "";
+            Importazioni.RiempiVuotiArray(DatoRiga);
+            lista.add(DatoRiga);
+        }
+        return lista;
+    }
+
     public static List<String[]> convertOKXBills(JsonArray bills, String Wallet) {
         List<String[]> lista = new ArrayList<>();
         if (bills == null) return lista;
@@ -705,15 +1077,7 @@ public static Path getNodeExePath() {
             if (new BigDecimal(balChg).compareTo(BigDecimal.ZERO) == 0) continue;
 
             //Causale nelle stesse etichette usate dal CSV, così la mappa causali resta una sola
-            String causale;
-            if (isTrading) {
-                if (tipo.equals("2")) causale = Funzioni.isNegativo(balChg) ? "Sell" : "Buy";
-                else causale = "OKX type " + tipo;   //non mappato: finirà tra i movimenti sconosciuti
-            } else {
-                if (tipo.equals("1"))      causale = "deposit";
-                else if (tipo.equals("2")) causale = "withdrawal";
-                else causale = "OKX type " + tipo;   //non mappato: finirà tra i movimenti sconosciuti
-            }
+            String causale = causaleBillOKX(tipo, balChg, isTrading);
 
             String DatoRiga[] = new String[19];
             DatoRiga[0]  = FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(ts));   //Timestamp
@@ -868,8 +1232,32 @@ public static Path getNodeExePath() {
      * @return l'oggetto JSON restituito dallo script, oppure {@code null} se node/script non sono trovati o l'esecuzione fallisce
      */
     public static JsonObject fetchMovimento(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String script,String passphrase) {
+        return fetchMovimento(exchangeId, apiKey, secret, startDate, Tokens, script, passphrase, "");
+    }
+
+    /**
+     * Come {@link #fetchMovimento(String, String, String, long, String, String, String)}, ma passa allo script
+     * anche il dominio da interrogare.
+     * <p>Serve a OKX, che non ha un dominio unico: le entità regionali sono separate e una chiave API creata
+     * su una di esse non esiste sulle altre (il dominio sbagliato risponde 50119 "API key doesn't exist" anche
+     * con credenziali valide). Lo script individua il dominio giusto da solo alla prima esecuzione; qui gli si
+     * ripassa quello già riconosciuto, per evitare di rifare ogni volta la stessa ricerca.
+     * <p>Anche questo argomento è aggiunto <b>in coda</b>, dopo la passphrase, per la stessa ragione: gli altri
+     * script destrutturano {@code process.argv} per posizione.
+     * @param exchangeId identificativo CCXT dell'exchange
+     * @param apiKey API key dell'account
+     * @param secret API secret dell'account
+     * @param startDate data di inizio da cui recuperare i movimenti, millisecondi epoch
+     * @param Tokens elenco di token (separati da virgola) da passare allo script
+     * @param script nome dello script Node da eseguire (senza estensione {@code .js})
+     * @param passphrase terza credenziale (passphrase OKX); stringa vuota per gli exchange che non la prevedono
+     * @param hostname dominio da interrogare; stringa vuota per lasciare allo script il compito di individuarlo
+     * @return l'oggetto JSON restituito dallo script, oppure {@code null} se node/script non sono trovati o l'esecuzione fallisce
+     */
+    public static JsonObject fetchMovimento(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String script,String passphrase,String hostname) {
     try {
         if (passphrase == null) passphrase = "";
+        if (hostname == null) hostname = "";
         
         
         
@@ -892,7 +1280,7 @@ public static Path getNodeExePath() {
         ProcessBuilder builder = new ProcessBuilder(
                 nodePath.toString(),
                 scriptPath.toAbsolutePath().toString(),
-                exchangeId.toLowerCase(), apiKey, secret, String.valueOf(startDate),Tokens,passphrase
+                exchangeId.toLowerCase(), apiKey, secret, String.valueOf(startDate),Tokens,passphrase,hostname
         );
         builder.directory(scriptPath.getParent().toFile());
         // Non reindirizziamo stderr su stdout

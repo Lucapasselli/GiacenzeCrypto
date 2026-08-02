@@ -1,0 +1,42 @@
+{
+  "_commento": "OKX - export 'Trading History' del conto Trading unificato (file 'OKX Trading History_<periodo>~<hash>_N.csv'). Colonne: 0=id 1=Order id 2=Time 3=Trade Type 4=Symbol 5=Action 6=Amount 7=Trading Unit 8=Filled Price 9=PnL 10=Fee 11=Fee Unit 12=Position Change 13=Position Balance 14=Balance Change 15=Balance 16=Balance Unit. La prima riga del file contiene UID e tipo di account, l'intestazione vera e' la seconda.",
+  "_commentoFuso": "Come per il Funding: il nome del file dice 'UTC0' ma gli orari sono nel fuso di visualizzazione dell'account (qui Europe/Rome), verificato confrontando le stesse operazioni scaricate via API. Se cambia il fuso impostato su OKX al momento dell'export, va cambiato anche qui.",
+  "versione": "1.000",
+  "nomeExchange": "OKX",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 2,
+  "rigaIntestazione": 2,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
+  "fuso": "Europe/Rome",
+  "_commentoColonne": "La quantita' e' 'Balance Change' (14) e non 'Amount' (6): e' la variazione di saldo effettiva ed e' gia' al netto della commissione (es. Amount 0.00034074 - Fee 0.00000023 = Balance Change 0.00034051). Per lo stesso motivo le colonne Fee NON sono mappate: aggiungere una riga di commissione la conterebbe due volte. La moneta e' 'Balance Unit' (16), non 'Symbol' (4) che contiene la coppia. 'idTransazione' e' volutamente NON impostato: vedi _commentoConsolidamento.",
+  "colonne": {
+    "data": 2,
+    "causale": 3,
+    "causale2": 5,
+    "quantita": 14,
+    "moneta": 16
+  },
+  "separatoreCausale": ".",
+  "_commentoConsolidamento": "Le due gambe di uno scambio (Buy e Sell) sono due righe con lo stesso orario, e vanno ricomposte in un unico movimento. Il raggruppamento e' quindi per solo orario, con tolleranza 0 (stesso secondo), come gia' fa l'import del CSV Binance. NON si usa l'Order id come chiave di raggruppamento anche se esiste: nel file le righe di ordini diversi con lo stesso orario sono mescolate fra loro (verificato: 8 ordini intrecciati alle 15:28:21 del 23/07/2026), e il raggruppamento e' sequenziale, quindi le coppie verrebbero spezzate. Raggruppando per orario le esecuzioni parziali dello stesso secondo vengono sommate per moneta in un unico scambio: verificato che nel campione nessun secondo contiene due coppie di trading diverse.",
+  "consolidaRigheStessaData": true,
+  "tolleranzaSecondiConsolidamento": 0,
+  "causaliDifferite": [],
+  "_commentoCausali": "La causale e' composta da 'Trade Type' + '.' + 'Action', cosi' le righe 'Transfer' con Action vuota (che nel file sono coppie +/- della stessa moneta) restano riconoscibili invece di diventare una causale vuota. Tutte le righe Transfer sono giroconti interni a OKX e non vengono importate.",
+  "mappaCausali": {
+    "Spot.Buy":               "SCAMBIO CRYPTO-CRYPTO",
+    "Spot.Sell":              "SCAMBIO CRYPTO-CRYPTO",
+    "Transfer.Transfer in":   "IGNORA",
+    "Transfer.Transfer out":  "IGNORA",
+    "Transfer.":              "IGNORA"
+  },
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": [],
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

@@ -85,6 +85,50 @@ class CcxtInteropConvertOKXBillsTest {
         assertEquals("Sell", righe.get(0)[4]);
     }
 
+    /**
+     * I codici dei giroconti interni a OKX, decodificati confrontando i bill scaricati via API con le
+     * righe degli export CSV dello stesso periodo. Devono finire tutti su {@code NON CONSIDERARE}: sono
+     * spostamenti fra conti dello stesso utente e non vanno importati.
+     */
+    @Test
+    void iGirocontiInterniNonVengonoImportati() {
+        var mappa = Importazioni.Ex_OKX_MappaCausali();
+
+        //Trading: 1 = Transfer in/out fra Funding e Trading, 12 = Transfer senza azione
+        for (String tipo : new String[]{"1", "12"}) {
+            assertEquals("Transfer out", CcxtInterop.causaleBillOKX(tipo, "-1", true), "Trading type " + tipo);
+            assertEquals("Transfer in",  CcxtInterop.causaleBillOKX(tipo, "1",  true), "Trading type " + tipo);
+        }
+        //Funding: 130 = From unified trading account, 131 = To unified, 76 = Simple Earn redemption
+        for (String tipo : new String[]{"76", "130", "131"}) {
+            assertEquals("Transfer out", CcxtInterop.causaleBillOKX(tipo, "-1", false), "Funding type " + tipo);
+            assertEquals("Transfer in",  CcxtInterop.causaleBillOKX(tipo, "1",  false), "Funding type " + tipo);
+        }
+        assertEquals("NON CONSIDERARE", mappa.get("Transfer in"));
+        assertEquals("NON CONSIDERARE", mappa.get("Transfer out"));
+    }
+
+    /**
+     * {@code Received} (Funding, codice 48) è un accredito che arriva da un altro account OKX: crypto che
+     * entra davvero nel wallet, quindi vale come un deposito e non come un giroconto interno.
+     */
+    @Test
+    void lAccreditoDaAltroAccountValeComeDeposito() {
+        assertEquals("Received", CcxtInterop.causaleBillOKX("48", "10.31", false));
+        assertEquals("TRASFERIMENTO-CRYPTO", Importazioni.Ex_OKX_MappaCausali().get("Received"));
+    }
+
+    /**
+     * I codici 326/327 compaiono solo a coppie di segno opposto sulla stessa moneta, non hanno riga
+     * corrispondente in alcun export CSV e non sono quindi decodificabili: devono restare non mappati
+     * invece di essere indovinati.
+     */
+    @Test
+    void iCodiciNonDecodificabiliRestanoTali() {
+        assertEquals("OKX type 326", CcxtInterop.causaleBillOKX("326", "-0.0000331", false));
+        assertEquals("OKX type 327", CcxtInterop.causaleBillOKX("327", "0.0000331", false));
+    }
+
     @Test
     void codiciNonMappatiRestanoNonClassificatiEVisibili() {
         List<String[]> righe = CcxtInterop.convertOKXBills(bills("""
@@ -154,8 +198,110 @@ class CcxtInteropConvertOKXBillsTest {
         assertEquals("", righe.get(0)[12].trim());
     }
 
+    /**
+     * L'avviso sullo storico troppo vecchio non deve scattare quando non serve. Sono coperti solo i due casi
+     * che ritornano prima di aprire la finestra: quelli che la aprono non sono verificabili senza interfaccia.
+     */
+    @Test
+    void lAvvisoSulloStoricoNonScattaQuandoNonServe() {
+        long ieri = System.currentTimeMillis() - 24L * 60 * 60 * 1000;
+        long dueAnniFa = System.currentTimeMillis() - 730L * 24 * 60 * 60 * 1000;
+
+        //Riguarda solo OKX: gli altri exchange non hanno questo limite di storico
+        assertTrue(CcxtInterop.ConfermaFinestraStoricoOKX("Binance", dueAnniFa, null));
+        //Entro la finestra coperta dalle API si procede senza disturbare l'utente
+        assertTrue(CcxtInterop.ConfermaFinestraStoricoOKX("OKX", ieri, null));
+    }
+
     @Test
     void unArrayNulloProduceUnaListaVuota() {
         assertTrue(CcxtInterop.convertOKXBills(null, "Funding").isEmpty());
+        assertTrue(CcxtInterop.convertOKXEarn(null).isEmpty());
+    }
+
+    /**
+     * Gli interessi di OKX Simple Earn sono accreditati <b>ogni ora</b>, una riga per moneta: vanno sommati per
+     * giornata, altrimenti si otterrebbero circa 72 movimenti al giorno. I record qui sotto hanno la stessa
+     * forma di quelli restituiti davvero da {@code finance/savings/lending-history}.
+     */
+    @Test
+    void gliInteressiOrariVengonoSommatiPerGiornataEMoneta() {
+        //Tre accrediti ETH e due BTC nella stessa giornata (2026-08-01, ora italiana)
+        List<String[]> righe = CcxtInterop.convertOKXEarn(bills("""
+            [{"ccy":"ETH","amt":"0.2","earnings":"0.00000136","rate":"0.06","ts":"1785535244000"},
+             {"ccy":"ETH","amt":"0.2","earnings":"0.00000136","rate":"0.06","ts":"1785538844000"},
+             {"ccy":"ETH","amt":"0.2","earnings":"0.00000100","rate":"0.06","ts":"1785542444000"},
+             {"ccy":"BTC","amt":"0.01","earnings":"0.00000003","rate":"0.03","ts":"1785535227000"},
+             {"ccy":"BTC","amt":"0.01","earnings":"0.00000004","rate":"0.03","ts":"1785538827000"}]
+            """));
+
+        assertEquals(2, righe.size(), "una riga per moneta, non una per accredito");
+
+        String[] btc = righe.stream().filter(r -> r[5].equals("BTC")).findFirst().orElseThrow();
+        String[] eth = righe.stream().filter(r -> r[5].equals("ETH")).findFirst().orElseThrow();
+
+        assertEquals("0.00000007", btc[6]);
+        assertEquals("0.00000372", eth[6]);
+        //Causale già presente nella mappa condivisa: nessuna nuova categoria da introdurre
+        assertEquals("Deposit yield", eth[4]);
+        assertEquals("REWARD", Importazioni.Ex_OKX_MappaCausali().get("Deposit yield"));
+        //ID deterministico: un secondo scaricamento sullo stesso periodo deve riconoscere la giornata
+        assertEquals("EARN-ETH-20260801", eth[14]);
+        assertEquals("EARN-BTC-20260801", btc[14]);
+        //Il movimento porta la data dell'ultimo accredito della giornata
+        assertEquals(FunzioniDate.ConvertiDatadaLongAlSecondo(1785542444000L), eth[0]);
+    }
+
+    @Test
+    void giornateDiverseRestanoMovimentiDiversi() {
+        List<String[]> righe = CcxtInterop.convertOKXEarn(bills("""
+            [{"ccy":"USDC","earnings":"0.001","ts":"1785535244000"},
+             {"ccy":"USDC","earnings":"0.002","ts":"1785621644000"}]
+            """));
+
+        assertEquals(2, righe.size());
+        assertNotEquals(righe.get(0)[14], righe.get(1)[14]);
+    }
+
+    /**
+     * La giornata in corso è ancora incompleta: importarla adesso significherebbe congelarne una parte,
+     * perché l'ID è deterministico e la deduplica impedirebbe poi di completarla.
+     */
+    @Test
+    void laGiornataInCorsoNonVieneImportata() {
+        long ora = System.currentTimeMillis();
+        List<String[]> righe = CcxtInterop.convertOKXEarn(bills(
+                "[{\"ccy\":\"ETH\",\"earnings\":\"0.00000136\",\"ts\":\"" + ora + "\"}]"));
+
+        assertTrue(righe.isEmpty(), "la giornata odierna va importata solo quando è completa");
+    }
+
+    /**
+     * I record degli interessi non hanno un id, e non è verificato che l'endpoint onori la paginazione: se
+     * una pagina venisse restituita due volte, la somma della giornata risulterebbe gonfiata senza che nulla
+     * lo segnali. Moneta + timestamp è l'unica chiave disponibile per accorgersene.
+     */
+    @Test
+    void unAccreditoRipetutoNonVieneContatoDueVolte() {
+        List<String[]> righe = CcxtInterop.convertOKXEarn(bills("""
+            [{"ccy":"ETH","earnings":"0.00000136","ts":"1785535244000"},
+             {"ccy":"ETH","earnings":"0.00000136","ts":"1785535244000"},
+             {"ccy":"ETH","earnings":"0.00000136","ts":"1785538844000"}]
+            """));
+
+        assertEquals(1, righe.size());
+        assertEquals("0.00000272", righe.get(0)[6], "il doppione non deve entrare nella somma");
+    }
+
+    @Test
+    void gliAccreditiNulliOMalformatiNonProduconoMovimenti() {
+        List<String[]> righe = CcxtInterop.convertOKXEarn(bills("""
+            [{"ccy":"ETH","earnings":"0","ts":"1785535244000"},
+             {"ccy":"ETH","ts":"1785535244000"},
+             {"ccy":"ETH","earnings":"non-numerico","ts":"1785535244000"},
+             {"earnings":"0.001","ts":"1785535244000"}]
+            """));
+
+        assertTrue(righe.isEmpty());
     }
 }

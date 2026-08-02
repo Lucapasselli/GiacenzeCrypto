@@ -650,6 +650,8 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Simple Earn Flexible - Rewards Income",              "EARN");
         Mappa_Conversione_Causali.put("Simple Earn Locked Rewards",                 "EARN");//
         Mappa_Conversione_Causali.put("Launchpool Earnings Withdrawal",             "EARN");//
+        Mappa_Conversione_Causali.put("RWUSD - Distribution",                       "EARN");//
+        
         Mappa_Conversione_Causali.put("Cash Voucher Distribution",                  "REWARD");//
         Mappa_Conversione_Causali.put("Airdrop Assets",                             "REWARD");//
         Mappa_Conversione_Causali.put("Launchpool Airdrop",                         "REWARD");//non li metto in airdrop perchè sono comunque rewards date per detenzione
@@ -697,6 +699,9 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Token Swap - Distribution",                  "SCAMBIO DIFFERITO");//08-01-2025
         Mappa_Conversione_Causali.put("Small Assets Exchange BNB (Spot)",           "DUST-CONVERSION");
         Mappa_Conversione_Causali.put("Small Assets Exchange BNB",                  "DUST-CONVERSION");
+        
+        Mappa_Conversione_Causali.put("RWUSD - Redemption, RWUSD",                  "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("RWUSD - Subscription, RWUSD",                "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Buy Crypto With Card",                       "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Transaction Buy",                            "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Transaction Sold",                           "SCAMBIO CRYPTO-CRYPTO");

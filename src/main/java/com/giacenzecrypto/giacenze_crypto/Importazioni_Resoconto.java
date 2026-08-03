@@ -31,10 +31,27 @@ private static final long serialVersionUID = 8L;
     public Importazioni_Resoconto() {
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
+        //Nascondo gli scrollpane e non solo i TextPane che contengono: nascondendo solo questi ultimi
+        //resterebbero visibili due riquadri vuoti anche quando non c'è nulla da segnalare.
+        jScrollPane1.setVisible(false);
+        jScrollPane2.setVisible(false);
         TextPane_Attenzione.setVisible(false);
         TextPane_Errori.setVisible(false);
     }
-    
+
+    /**
+     * Popola il riepilogo a partire dall'esito di un'importazione, intestandolo con la sua origine.
+     * <p>È la forma usata dallo scaricamento via API degli exchange, dove più importazioni possono essere
+     * sommate in un unico esito e mostrate in una sola finestra.
+     * @param E esito dell'importazione (o somma degli esiti di più exchange)
+     */
+    public void ImpostaValori(Importazioni.Esito E) {
+        if (!E.Origine.isBlank()) {
+            Label_Titolo.setText("RESOCONTO IMPORTAZIONE - " + E.Origine.toUpperCase());
+        }
+        ImpostaValori(E.Transazioni, E.Aggiunte, E.Scartate, E.Sconosciute, E.MovimentiSconosciuti);
+    }
+
     /**
      * Popola i campi del riepilogo con i conteggi dell'importazione appena eseguita, evidenziando in
      * rosso le transazioni scartate/sconosciute quando presenti e abilitando il pulsante di copia degli
@@ -55,11 +72,14 @@ private static final long serialVersionUID = 8L;
         if (TScartate==0) this.Text_TransScartate.setForeground(Color.BLACK); else Text_TransScartate.setForeground(Color.RED);
         if (!movScon.trim().equalsIgnoreCase("")){
             this.Bottone_CopiaAppunti.setEnabled(true);
+            this.jScrollPane1.setVisible(true);
+            this.jScrollPane2.setVisible(true);
             this.TextPane_Attenzione.setVisible(true);
             this.TextPane_Errori.setVisible(true);
             this.TextPane_Errori.setText(movScon);
           //  this.
         }
+        pack();
               
         
     }
@@ -119,6 +139,8 @@ private static final long serialVersionUID = 8L;
         Text_TransScartate.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         Text_TransScartate.setForeground(new java.awt.Color(204, 0, 0));
 
+        Bottone_Ok.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        Bottone_Ok.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Salva.png"))); // NOI18N
         Bottone_Ok.setText("OK");
         Bottone_Ok.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -126,6 +148,7 @@ private static final long serialVersionUID = 8L;
             }
         });
 
+        Bottone_CopiaAppunti.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Copia.png"))); // NOI18N
         Bottone_CopiaAppunti.setText("Copia errori negli appunti");
         Bottone_CopiaAppunti.setEnabled(false);
         Bottone_CopiaAppunti.addActionListener(new java.awt.event.ActionListener() {
@@ -153,7 +176,7 @@ private static final long serialVersionUID = 8L;
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(Bottone_CopiaAppunti, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(Bottone_Ok))
+                        .addComponent(Bottone_Ok, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -195,9 +218,10 @@ private static final long serialVersionUID = 8L;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Bottone_Ok)
-                    .addComponent(Bottone_CopiaAppunti)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(Bottone_CopiaAppunti, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
+                    .addComponent(Bottone_Ok, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();

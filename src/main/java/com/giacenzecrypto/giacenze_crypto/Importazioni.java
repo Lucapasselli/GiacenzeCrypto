@@ -155,6 +155,81 @@ public class Importazioni {
     //La mappa delle chain conterrà per ogni chain l'indirizzo del chain explorer e relativa api
     public static String movimentiSconosciuti="";
     
+    /**
+     * Esito di una singola importazione, nella forma che serve a {@link Importazioni_Resoconto}.
+     *
+     * <p>Esiste perché i contatori qui sopra sono statici e valgono solo per l'ultima importazione eseguita:
+     * quando se ne incatenano più di una (lo scaricamento da tutti gli exchange della lista) i numeri del
+     * primo exchange verrebbero sovrascritti da quelli del secondo. Fotografandoli man mano si può poi
+     * sommarli e mostrare un resoconto unico.
+     */
+    public static class Esito {
+
+        /** Exchange (o file) da cui proviene questo esito, usato per intestare il resoconto */
+        public String Origine = "";
+        public int Transazioni = 0;
+        public int Aggiunte = 0;
+        public int Scartate = 0;
+        public int Sconosciute = 0;
+        public String MovimentiSconosciuti = "";
+
+        /** Esito vuoto, da riempire sommando quelli delle singole importazioni. */
+        public Esito() {
+        }
+
+        /**
+         * @param Origine exchange o file di provenienza
+         * @param Transazioni movimenti elaborati in totale
+         * @param Aggiunte movimenti effettivamente importati
+         * @param Scartate movimenti scartati perché già presenti
+         * @param Sconosciute movimenti scartati perché di causale non riconosciuta
+         * @param MovimentiSconosciuti elenco testuale dei movimenti non riconosciuti
+         */
+        public Esito(String Origine, int Transazioni, int Aggiunte, int Scartate, int Sconosciute, String MovimentiSconosciuti) {
+            this.Origine = Origine == null ? "" : Origine;
+            this.Transazioni = Transazioni;
+            this.Aggiunte = Aggiunte;
+            this.Scartate = Scartate;
+            this.Sconosciute = Sconosciute;
+            this.MovimentiSconosciuti = MovimentiSconosciuti == null ? "" : MovimentiSconosciuti;
+        }
+
+        /**
+         * Fotografa i contatori statici al termine di un'importazione che li valorizza tutti.
+         * <p><b>Da usare solo dopo un'importazione che chiami {@link #AzzeraContatori()}</b>, altrimenti si
+         * leggerebbero i numeri di quella precedente: {@link #ScriviListaSuMappaCrypto} da sola non li tocca.
+         * @param Origine exchange o file di provenienza
+         * @return l'esito corrispondente ai contatori attuali
+         */
+        public static Esito daiContatori(String Origine) {
+            //I nomi vanno qualificati: i campi di Esito hanno lo stesso nome dei contatori statici
+            return new Esito(Origine, Importazioni.Transazioni, Importazioni.TransazioniAggiunte,
+                    Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute,
+                    Importazioni.movimentiSconosciuti);
+        }
+
+        /**
+         * Somma a questo esito quello di un'altra importazione, per il resoconto unico di più exchange.
+         * L'elenco dei movimenti sconosciuti viene intestato con l'origine, che altrimenti non sarebbe
+         * ricostruibile dalle righe una volta messe una di seguito all'altra.
+         * @param Altro esito da sommare, eventualmente {@code null} (importazione non portata a termine)
+         */
+        public void Somma(Esito Altro) {
+            if (Altro == null) return;
+            Transazioni += Altro.Transazioni;
+            Aggiunte += Altro.Aggiunte;
+            Scartate += Altro.Scartate;
+            Sconosciute += Altro.Sconosciute;
+            if (!Origine.isBlank() && !Altro.Origine.isBlank()) Origine = Origine + " + " + Altro.Origine;
+            else if (Origine.isBlank()) Origine = Altro.Origine;
+            if (!Altro.MovimentiSconosciuti.isBlank()) {
+                if (!MovimentiSconosciuti.isBlank()) MovimentiSconosciuti = MovimentiSconosciuti + "\n";
+                MovimentiSconosciuti = MovimentiSconosciuti
+                        + "----- " + Altro.Origine + " -----\n" + Altro.MovimentiSconosciuti;
+            }
+        }
+    }
+
     /** Azzera i contatori statici di sessione usati per riepilogare l'esito di un'importazione (transazioni totali, aggiunte, scartate, sconosciute) e la lista dei movimenti sconosciuti. */
     public static void AzzeraContatori()
             {           

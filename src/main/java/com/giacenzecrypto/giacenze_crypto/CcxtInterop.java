@@ -350,118 +350,8 @@ public static Path getNodeExePath() {
         return result != null && result.isAction("continua");
     }
 
-    /**
-     * Interroga gli endpoint "Financial Product" di OKX ({@code Scripts/OKX_Earn.js}) e salva la risposta
-     * grezza in un file, senza importare nulla.
-     *
-     * <p>Serve perché i <b>rendimenti dei prodotti Earn non compaiono da nessun'altra parte</b>: né nei bill
-     * del conto Funding o del Trading, né negli export CSV "Funding History"/"Trading History", dove si vedono
-     * solo la sottoscrizione e il riscatto del capitale. Gli interessi restano dentro il prodotto Earn e hanno
-     * endpoint propri ({@code finance/savings/lending-history} per Simple Earn Flexible,
-     * {@code finance/staking-defi/orders-history} per On-chain Earn).
-     *
-     * <p>È volutamente una <b>diagnostica</b> e non un import: la documentazione OKX su quella sezione non è
-     * consultabile e i campi delle risposte non sono verificabili in anticipo, quindi il primo passo è vedere
-     * che forma abbiano davvero i dati. Tutte le chiamate sono di sola lettura.
-     *
-     * <p>Le credenziali arrivano da {@code EXCHANGEAPI} in {@code personale.mv.db} come per lo scaricamento
-     * dei movimenti, passphrase compresa, e viene riusato anche il dominio regionale già riconosciuto.
-     *
-     * @param apiKey API key dell'account OKX
-     * @param secret API secret dell'account
-     * @param passphrase passphrase della chiave API
-     * @param c componente rispetto a cui centrare le finestre
-     */
-    public static void diagnosticaEarnOKX(String apiKey, String secret, String passphrase, Component c) {
-        c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        Download progress = new Download();
-        progress.setIndeterminate(true);
-        progress.SetLabel("Interrogazione dei prodotti Earn di OKX...");
-        progress.setLocationRelativeTo(c);
-
-        SwingWorker<Void, Void> worker = new SwingWorker<>() {
-            /** Verifica Node/CCXT ed esegue lo script diagnostico, salvandone l'esito su file. */
-            @Override
-            protected Void doInBackground() throws Exception {
-                try {
-                    ensureNodeInstalled();
-                    installCcxt();
-
-                    String hostnameOKX = DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_HOSTNAME_OKX);
-                    if (hostnameOKX == null) hostnameOKX = "";
-
-                    JsonObject json = fetchMovimento("okx", apiKey, secret, 0, "", "OKX_Earn", passphrase, hostnameOKX);
-                    if (json == null) {
-                        JOptionPane.showConfirmDialog(null,
-                                "Nessuna risposta utilizzabile da OKX: controlla il log.",
-                                "Attenzione", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
-                        return null;
-                    }
-
-                    //Il dominio riconosciuto vale anche per gli scaricamenti successivi
-                    if (json.has("okx_hostname")) {
-                        String riconosciuto = json.get("okx_hostname").getAsString();
-                        if (!riconosciuto.isBlank() && !riconosciuto.equals(DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_HOSTNAME_OKX))) {
-                            DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_HOSTNAME_OKX, riconosciuto);
-                        }
-                    }
-
-                    Path cartella = Paths.get(VarStatiche.getCartella_Temporanei());
-                    Files.createDirectories(cartella);
-                    Path file = cartella.resolve("OKX_Earn_"
-                            + new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date())
-                            + ".json");
-                    Files.writeString(file, json.toString(), StandardCharsets.UTF_8);
-
-                    JOptionPane.showConfirmDialog(null,
-                            "Risposta di OKX salvata in:\n" + file.toAbsolutePath()
-                            + "\n\n" + RiepilogoEarnOKX(json),
-                            "Prodotti Earn OKX", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                } catch (IOException | InterruptedException ex) {
-                    Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                return null;
-            }
-
-            /** Chiude la finestra di attesa e ripristina il cursore. */
-            @Override
-            protected void done() {
-                progress.dispose();
-                c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        };
-
-        worker.execute();
-        progress.setVisible(true);
-    }
-
-    /**
-     * Riassume in poche righe quanti record ha restituito ciascun endpoint Earn, per capire a colpo d'occhio
-     * dove ci sia qualcosa da importare senza dover aprire il file JSON.
-     * @param json risposta di {@code OKX_Earn.js}
-     * @return il riepilogo, una riga per endpoint
-     */
-    static String RiepilogoEarnOKX(JsonObject json) {
-        String[][] sezioni = {
-            {"savings_balance",  "Simple Earn - saldo attuale"},
-            {"savings_lending",  "Simple Earn - storico interessi"},
-            {"staking_attivi",   "On-chain Earn - posizioni aperte"},
-            {"staking_storico",  "On-chain Earn - storico ordini"}
-        };
-        StringBuilder sb = new StringBuilder();
-        for (String[] sezione : sezioni) {
-            sb.append(sezione[1]).append(": ");
-            JsonElement el = json.get(sezione[0]);
-            if (el == null || el.isJsonNull()) sb.append("assente");
-            else if (el.isJsonArray())         sb.append(el.getAsJsonArray().size()).append(" record");
-            else                               sb.append("errore, vedi il file");   //l'endpoint ha risposto con un errore
-            sb.append("\n");
-        }
-        return sb.toString();
-    }
-
-    public static void fetchMovimentiConBar(String exchangeId, String apiKey, String secret, long startDate,String Tokens,Component c) {
-        fetchMovimentiConBar(exchangeId, apiKey, secret, startDate, Tokens, "", c);
+    public static Importazioni.Esito fetchMovimentiConBar(String exchangeId, String apiKey, String secret, long startDate,String Tokens,Component c) {
+        return fetchMovimentiConBar(exchangeId, apiKey, secret, startDate, Tokens, "", c);
     }
 
     /**
@@ -474,14 +364,21 @@ public static Path getNodeExePath() {
      * @param startDate data di inizio da cui recuperare i movimenti, millisecondi epoch
      * @param Tokens elenco di token (separati da virgola) di cui recuperare esplicitamente i trade
      * @param c componente rispetto a cui centrare la finestra di progresso
+     * @return l'esito dello scaricamento da mostrare nel resoconto, oppure {@code null} se l'importazione non
+     *         è stata portata a termine (rinuncia dell'utente, interruzione o errore già segnalato)
      */
-    public static void fetchMovimentiConBar(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String passphrase,Component c) {
+    public static Importazioni.Esito fetchMovimentiConBar(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String passphrase,Component c) {
              // TODO add your handling code here:
         //CcxtInterop a = new CcxtInterop();
 
         //L'avviso va dato prima di aprire la finestra di avanzamento: se l'utente rinuncia non deve
         //essere partito nulla, né il download di Node né la chiamata all'exchange.
-        if (!ConfermaFinestraStoricoOKX(exchangeId, startDate, c)) return;
+        if (!ConfermaFinestraStoricoOKX(exchangeId, startDate, c)) return null;
+
+        //L'esito viene raccolto qui dal thread in background e letto solo quando la finestra di progresso
+        //(modale) si è chiusa, cioè quando lo scaricamento è finito: il resoconto lo mostra il chiamante,
+        //così più exchange scaricati di seguito possono confluire in un'unica finestra.
+        final Importazioni.Esito Esiti[] = new Importazioni.Esito[1];
 
         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         Download progress = new Download();
@@ -503,7 +400,7 @@ public static Path getNodeExePath() {
         installCcxt();
         System.out.println("Eseguo la chiamata");
         
-        fetchMovimenti(exchangeId, apiKey, secret,startDate,Tokens,passphrase,progress,c);
+        Esiti[0]=fetchMovimenti(exchangeId, apiKey, secret,startDate,Tokens,passphrase,progress,c);
         } catch (IOException ex) {
             Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {
@@ -522,7 +419,8 @@ public static Path getNodeExePath() {
 
         worker.execute();
         progress.setVisible(true);// Questo blocca finché done() non chiama dispose()
-        
+
+        return Esiti[0];
     }
     
     
@@ -544,8 +442,10 @@ public static Path getNodeExePath() {
      * @param passphrase terza credenziale (passphrase OKX); stringa vuota per gli exchange che non la prevedono
      * @param progress finestra di progresso su cui riportare l'avanzamento e verificare interruzione/errori
      * @param c componente parent per gli eventuali dialog di avviso
+     * @return l'esito dell'importazione (conteggi e movimenti sconosciuti) da mostrare nel resoconto, oppure
+     *         {@code null} se l'elaborazione è stata interrotta o non è arrivata all'importazione
      */
-    public static void fetchMovimenti(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String passphrase,Download progress,Component c) {
+    public static Importazioni.Esito fetchMovimenti(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String passphrase,Download progress,Component c) {
        // Map<String, JsonObject> Mappa_Json = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         List<JsonObject> Jsons = new ArrayList<>();
         
@@ -664,7 +564,7 @@ public static Path getNodeExePath() {
                 if (Principale.InterrompiCiclo||progress.ErroriNodeJS())
                 {
                     JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                    return;
+                    return null;
                 }
                 j++;
                 progress.SetMessaggioAvanzamento("Comunicazione con endpoint "+j+" di "+chiamate+" in corso...");
@@ -744,7 +644,7 @@ public static Path getNodeExePath() {
             if (Principale.InterrompiCiclo||progress.ErroriNodeJS())
                 {
                     JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                    return;
+                    return null;
                 }
 
             //4 - IMPORTO TUTTO NEL DATABASE
@@ -755,10 +655,11 @@ public static Path getNodeExePath() {
             if (risultato[0]!=0)
             {
                 Principale.TabellaCryptodaAggiornare=true;
-                JOptionPane.showConfirmDialog(null,
-                    "Impot terminato, sono stati inseriti "+risultato[0]+" nuovi movimenti.",
-                    "Messaggio",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
             }
+            //ScriviListaSuMappaCrypto non tocca i contatori statici di Importazioni: l'esito va costruito
+            //dai valori che restituisce, altrimenti si mostrerebbero i numeri di un'importazione precedente.
+            //Il ramo CCXT di Binance non produce causali sconosciute: quello che non sa convertire non lo genera.
+            return new Importazioni.Esito(exchangeId, risultato[0]+risultato[1], risultato[0], risultato[1], 0, "");
         }
 
         //OKX
@@ -785,17 +686,17 @@ public static Path getNodeExePath() {
 
             if (Principale.InterrompiCiclo||progress.ErroriNodeJS()) {
                 JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                return;
+                return null;
             }
             if (json == null) {
                 JOptionPane.showConfirmDialog(null, "Nessuna risposta da OKX: importazione non eseguita.",
                         "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
-                return;
+                return null;
             }
             if (json.has("error")) {
                 JOptionPane.showConfirmDialog(null, "Errore nella comunicazione con OKX:\n"+json.get("error").getAsString(),
                         "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
-                return;
+                return null;
             }
 
             //Le righe dei due conti confluiscono in un'unica lista: il raggruppamento per orario deve poterle
@@ -807,7 +708,7 @@ public static Path getNodeExePath() {
             List<String[]> rt = convertOKXBills(tradingBills, "Trading");
             if (rf == null || rt == null) {   //null = interruzione richiesta dall'utente
                 JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                return;
+                return null;
             }
             righe.addAll(rf);
             righe.addAll(rt);
@@ -833,7 +734,7 @@ public static Path getNodeExePath() {
                 List<String[]> re = convertOKXEarn(jsonEarn.getAsJsonArray("savings_lending"));
                 if (re == null) {
                     JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                    return;
+                    return null;
                 }
                 righe.addAll(re);
                 if (jsonEarn.has("savings_lending_completo") && !jsonEarn.get("savings_lending_completo").getAsBoolean()) {
@@ -858,19 +759,17 @@ public static Path getNodeExePath() {
                         "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
             }
 
-            int risultato[]=Importazioni.Ex_OKX_ImportaDaAPI(righe);
-
-            String avviso = "Impot terminato, sono stati inseriti "+risultato[0]+" nuovi movimenti.";
+            Importazioni.Ex_OKX_ImportaDaAPI(righe);
             if (Importazioni.TrasazioniSconosciute > 0) {
-                //I codici bill di OKX non ancora mappati vanno mostrati, non ignorati in silenzio
-                avviso = avviso + "\n\nCi sono " + Importazioni.TrasazioniSconosciute
-                        + " movimenti con causale non riconosciuta, che NON sono stati classificati:\n"
-                        + Importazioni.movimentiSconosciuti;
+                //I codici bill di OKX non ancora mappati finiscono nel resoconto, ma restano anche a log
                 System.out.println("Causali OKX non mappate:\n"+Importazioni.movimentiSconosciuti);
             }
-            JOptionPane.showConfirmDialog(null, avviso,
-                    "Messaggio",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+            //Ex_OKX_ImportaDaAPI azzera e rivalorizza i contatori statici, quindi qui sono suoi di sicuro
+            return Importazioni.Esito.daiContatori(exchangeId);
         }
+
+        //Exchange non gestito da questa funzione: nessun resoconto da mostrare
+        return null;
     }
     
     /** @param S valore decimale come stringa
@@ -925,6 +824,7 @@ public static Path getNodeExePath() {
      * <tr><td>Funding</td><td>130</td><td>From unified trading account</td><td>giroconto interno</td></tr>
      * <tr><td>Funding</td><td>131</td><td>To unified trading account</td><td>giroconto interno</td></tr>
      * <tr><td>Funding</td><td>76</td><td>Simple Earn redemption</td><td>giroconto interno</td></tr>
+     * <tr><td>Funding</td><td>326 / 327</td><td>nessuna</td><td>giroconto interno</td></tr>
      * </table>
      *
      * <p>Tutti i giroconti interni a OKX sono resi con le etichette {@code "Transfer in"}/{@code "Transfer out"},
@@ -935,10 +835,12 @@ public static Path getNodeExePath() {
      * <p>{@code Received} è invece un accredito proveniente da un <b>altro</b> account OKX: è crypto che entra
      * davvero nel wallet, quindi viene trattato come un deposito e non come un giroconto.
      *
-     * <p>Restano volutamente <b>non mappati</b> i codici {@code 326}/{@code 327}, che nel campione compaiono
-     * solo a coppie di segno opposto sulla stessa moneta e per importi infinitesimi, e che non hanno alcuna
-     * riga corrispondente nell'export CSV: non essendo decodificabili dai dati disponibili non vengono
-     * indovinati, e continuano a comparire nel riepilogo dei movimenti sconosciuti.
+     * <p>I codici {@code 326}/{@code 327} compaiono solo a coppie di segno opposto sulla stessa moneta, sullo
+     * stesso istante e per importi infinitesimi, e non hanno alcuna riga corrispondente nell'export CSV: sono
+     * <b>spostamenti fra wallet dello stesso utente</b> e ricadono quindi fra i giroconti interni. Erano
+     * inizialmente lasciati non mappati perché non decodificabili dai soli dati scaricati; sono stati
+     * riconosciuti come giroconti il 03/08/2026 sui movimenti reali del 23/07/2026, dove le due gambe si
+     * compensano esattamente.
      *
      * @param tipo valore del campo {@code type} del bill
      * @param balChg variazione di saldo, usata per ricavare il verso del movimento
@@ -964,7 +866,10 @@ public static Path getNodeExePath() {
             case "48":  return "Received";
             case "76":
             case "130":
-            case "131": return giroconto;
+            case "131":
+            //326/327: le due gambe di uno spostamento fra wallet dello stesso utente, vedi javadoc
+            case "326":
+            case "327": return giroconto;
             default:    return "OKX type " + tipo;      //non mappato: finirà tra i movimenti sconosciuti
         }
     }

@@ -849,7 +849,7 @@ private static final long serialVersionUID = 3L;
         PopupMenu.add(MenuItem_DettagliMovimento);
 
         MenuItem_ChiediIA.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
-        MenuItem_ChiediIA.setText("Chiedi a IA");
+        MenuItem_ChiediIA.setText("Chiedi all'IA");
         MenuItem_ChiediIA.setToolTipText("Chiede a un chatbot di spiegare il movimento selezionato");
         PopupMenu.add(MenuItem_ChiediIA);
 
@@ -1426,7 +1426,7 @@ private static final long serialVersionUID = 3L;
                                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                            .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 112, Short.MAX_VALUE)
+                                                            .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
                                                             .addComponent(TransazioniCrypto_Text_CostiCarico))
                                                         .addGap(51, 51, 51)
                                                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4776,18 +4776,13 @@ private static final long serialVersionUID = 3L;
             Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_VarieLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(Opzioni_Varie_Bottone_ProblemiNoti, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                    .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(Opzioni_VarieLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(Opzioni_Varie_Checkbox_LogJsonDefi)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(Opzioni_VarieLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(Opzioni_Varie_Checkbox_LogJsonPrezzi)
+                .addGroup(Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(Opzioni_Varie_Bottone_ProblemiNoti, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                        .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(Opzioni_Varie_Checkbox_LogJsonDefi)
+                    .addComponent(Opzioni_Varie_Checkbox_LogJsonPrezzi))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         Opzioni_VarieLayout.setVerticalGroup(

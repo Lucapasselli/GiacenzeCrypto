@@ -119,14 +119,17 @@ class CcxtInteropConvertOKXBillsTest {
     }
 
     /**
-     * I codici 326/327 compaiono solo a coppie di segno opposto sulla stessa moneta, non hanno riga
-     * corrispondente in alcun export CSV e non sono quindi decodificabili: devono restare non mappati
-     * invece di essere indovinati.
+     * I codici 326/327 compaiono solo a coppie di segno opposto sulla stessa moneta e sullo stesso istante,
+     * senza riga corrispondente in alcun export CSV: sono spostamenti fra wallet dello stesso utente e
+     * vanno quindi esclusi dall'importazione come gli altri giroconti interni.
      */
     @Test
-    void iCodiciNonDecodificabiliRestanoTali() {
-        assertEquals("OKX type 326", CcxtInterop.causaleBillOKX("326", "-0.0000331", false));
-        assertEquals("OKX type 327", CcxtInterop.causaleBillOKX("327", "0.0000331", false));
+    void iCodiciDelloSpostamentoFraWalletSonoGirocontiInterni() {
+        assertEquals("Transfer out", CcxtInterop.causaleBillOKX("326", "-0.0000331", false));
+        assertEquals("Transfer in", CcxtInterop.causaleBillOKX("327", "0.0000331", false));
+        var mappa = Importazioni.Ex_OKX_MappaCausali();
+        assertEquals("NON CONSIDERARE", mappa.get("Transfer out"));
+        assertEquals("NON CONSIDERARE", mappa.get("Transfer in"));
     }
 
     @Test

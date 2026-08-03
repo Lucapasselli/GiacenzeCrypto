@@ -74,7 +74,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/Images/24_Libro.png"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Chiedi a IA"/>
+            <Property name="text" type="java.lang.String" value="Chiedi all&apos;IA"/>
             <Property name="toolTipText" type="java.lang.String" value="Chiede a un chatbot di spiegare il movimento selezionato"/>
           </Properties>
         </Menu>
@@ -6332,21 +6332,15 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Component id="Opzioni_Varie_Bottone_ProblemiNoti" pref="229" max="32767" attributes="0"/>
-                                  <Component id="Opzioni_Varie_Bottone_Disclaimer" max="32767" attributes="0"/>
-                                  <Component id="Opzioni_Varie_RicalcolaPrezzi" max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="Opzioni_Varie_Bottone_ProblemiNoti" pref="229" max="32767" attributes="0"/>
+                                      <Component id="Opzioni_Varie_Bottone_Disclaimer" max="32767" attributes="0"/>
+                                      <Component id="Opzioni_Varie_RicalcolaPrezzi" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Component id="Opzioni_Varie_Checkbox_LogJsonDefi" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_Varie_Checkbox_LogJsonPrezzi" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_Varie_Checkbox_LogJsonDefi" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_Varie_Checkbox_LogJsonPrezzi" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
@@ -6396,7 +6390,7 @@
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="Opzioni_Varie_Checkbox_LogJsonDefi">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Scrivi nel log i JSON scaricati durante l'importazione dei wallet DeFi"/>
+                        <Property name="text" type="java.lang.String" value="Scrivi nel log i JSON scaricati durante l&apos;importazione dei wallet DeFi"/>
                         <Property name="toolTipText" type="java.lang.String" value="Attiva la registrazione nel file GiacenzeCrypto.log delle risposte JSON degli explorer (Etherscan, Solana, Bitcoin, Moralis). Utile per il debug, ma il log cresce molto rapidamente."/>
                       </Properties>
                       <Events>

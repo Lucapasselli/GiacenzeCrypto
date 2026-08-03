@@ -1,29 +1,13 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JDialog.java to edit this template
  */
 package com.giacenzecrypto.giacenze_crypto;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.StringSelection;
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -31,8 +15,10 @@ import javax.swing.event.DocumentListener;
  * Dialogo della funzione "Chiedi a IA": mostra in anteprima il testo che verr&agrave; consegnato al chatbot
  * scelto, permette di cambiarne il profilo di riservatezza e lo consegna tramite gli appunti e/o l'URL.
  *
- * <p>Non ha un file {@code .form}: &egrave; scritto a mano perch&eacute; il contenuto (elenco chatbot,
- * anteprima ricalcolata) &egrave; dinamico.</p>
+ * <p>La finestra &egrave; costruita con il GUI Builder di NetBeans ({@code GUI_ChiediIA.form}). Quello che
+ * &egrave; dinamico resta fuori da {@code initComponents()}: l'elenco dei chatbot viene letto da
+ * {@link ChatbotIA} e caricato nella combo a runtime, e cos&igrave; il testo dell'anteprima, la riga di
+ * stato e l'etichetta del pulsante di apertura, che dipendono dalle scelte fatte nel dialogo.</p>
  *
  * <p>Il testo non viene mai inviato da solo: l'utente lo vede, pu&ograve; modificarlo e deve premere
  * esplicitamente il pulsante di apertura. Al primo utilizzo viene mostrato un avviso sui dati che escono
@@ -40,7 +26,9 @@ import javax.swing.event.DocumentListener;
  *
  * @author luca.passelli
  */
-public class GUI_ChiediIA extends JDialog {
+public class GUI_ChiediIA extends javax.swing.JDialog {
+
+    private static final long serialVersionUID = 1L;
 
     private static final String OPZ_AVVISO = "IA_AvvisoPrivacy";
     private static final String OPZ_CHATBOT = "IA_Chatbot";
@@ -48,13 +36,6 @@ public class GUI_ChiediIA extends JDialog {
     private static final String OPZ_FISCALE = "IA_Fiscale";
 
     private final String ID;
-    private final JComboBox<ChatbotIA.Bot> ComboChatbot = new JComboBox<>();
-    private final JRadioButton RadioCompleto = new JRadioButton("Completo");
-    private final JRadioButton RadioGenerico = new JRadioButton("Generico (senza dati riconducibili a me)");
-    private final JCheckBox CheckFiscale = new JCheckBox("Chiedi anche l'inquadramento fiscale italiano");
-    private final JTextArea AreaPrompt = new JTextArea(18, 76);
-    private final JLabel LabelStato = new JLabel(" ");
-    private final JButton BottoneApri = new JButton("Apri");
 
     /**
      * Mostra il dialogo per un movimento, previo avviso sui dati condivisi alla prima esecuzione.
@@ -113,101 +94,32 @@ public class GUI_ChiediIA extends JDialog {
     }
 
     /**
+     * Creates new form GUI_ChiediIA
      * @param ID identificativo del movimento su cui costruire la domanda
      * @param Preselezionato chatbot scelto dal menu, eventualmente {@code null}
      * @param Proprietario finestra parent
      */
     private GUI_ChiediIA(String ID, ChatbotIA.Bot Preselezionato, Window Proprietario) {
-        super(Proprietario, "Chiedi a IA", ModalityType.APPLICATION_MODAL);
+        super(Proprietario, ModalityType.APPLICATION_MODAL);
         this.ID = ID;
+        initComponents();
 
-        for (ChatbotIA.Bot b : ChatbotIA.Lista()) ComboChatbot.addItem(b);
+        //L'elenco dei chatbot arriva da ChatbotIA.json e cambia da un'installazione all'altra: la combo
+        //viene quindi creata vuota nel form e riempita qui.
+        for (ChatbotIA.Bot b : ChatbotIA.Lista()) ComboBox_Chatbot.addItem(b);
         ChatbotIA.Bot iniziale = Preselezionato != null
                 ? Preselezionato
                 : ChatbotIA.CercaPerNome(DatabaseH2.Pers_Opzioni_Leggi(OPZ_CHATBOT, ""));
-        ComboChatbot.setSelectedItem(iniziale);
+        ComboBox_Chatbot.setSelectedItem(iniziale);
 
         boolean generico = "GENERICO".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(OPZ_PROFILO, "COMPLETO"));
-        RadioCompleto.setSelected(!generico);
-        RadioGenerico.setSelected(generico);
-        ButtonGroup gruppo = new ButtonGroup();
-        gruppo.add(RadioCompleto);
-        gruppo.add(RadioGenerico);
+        RadioButton_Completo.setSelected(!generico);
+        RadioButton_Generico.setSelected(generico);
+        CheckBox_Fiscale.setSelected(!"NO".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(OPZ_FISCALE, "SI")));
 
-        CheckFiscale.setSelected(!"NO".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(OPZ_FISCALE, "SI")));
-
-        RadioCompleto.setToolTipText("Tutti i dati del movimento: hash, indirizzi, quantità e controvalore. "
-                + "È il profilo che permette al chatbot di leggere la transazione sull'explorer.");
-        RadioGenerico.setToolTipText("Solo piattaforma, causale e simboli delle monete: niente hash, "
-                + "indirizzi, importi o date.");
-
-        add(PannelloOpzioni(), BorderLayout.NORTH);
-        add(PannelloAnteprima(), BorderLayout.CENTER);
-        add(PannelloBottoni(), BorderLayout.SOUTH);
-
-        ComboChatbot.addActionListener(e -> AggiornaStato());
-        RadioCompleto.addActionListener(e -> AggiornaPrompt());
-        RadioGenerico.addActionListener(e -> AggiornaPrompt());
-        CheckFiscale.addActionListener(e -> AggiornaPrompt());
-
-        AggiornaPrompt();
-        pack();
-        setMinimumSize(new Dimension(640, 480));
-    }
-
-    /**
-     * @return il pannello superiore con la scelta del chatbot, del profilo e dell'inquadramento fiscale
-     */
-    private JPanel PannelloOpzioni() {
-        JPanel p = new JPanel(new GridBagLayout());
-        p.setBorder(BorderFactory.createEmptyBorder(10, 12, 4, 12));
-        GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(2, 2, 2, 8);
-        c.anchor = GridBagConstraints.WEST;
-
-        c.gridx = 0;
-        c.gridy = 0;
-        p.add(new JLabel("Chatbot:"), c);
-        c.gridx = 1;
-        c.gridwidth = 2;
-        p.add(ComboChatbot, c);
-
-        c.gridwidth = 1;
-        c.gridx = 0;
-        c.gridy = 1;
-        p.add(new JLabel("Dati da inviare:"), c);
-        c.gridx = 1;
-        p.add(RadioCompleto, c);
-        c.gridx = 2;
-        p.add(RadioGenerico, c);
-
-        c.gridx = 1;
-        c.gridy = 2;
-        c.gridwidth = 2;
-        p.add(CheckFiscale, c);
-
-        //riempitivo a destra: senza di esso GridBagLayout centrerebbe tutte le opzioni nel pannello
-        c.gridx = 3;
-        c.gridy = 0;
-        c.gridwidth = 1;
-        c.weightx = 1.0;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        p.add(new JLabel(), c);
-        return p;
-    }
-
-    /**
-     * @return il pannello centrale con l'anteprima modificabile della domanda
-     */
-    private JPanel PannelloAnteprima() {
-        JPanel p = new JPanel(new BorderLayout(0, 4));
-        p.setBorder(BorderFactory.createEmptyBorder(4, 12, 4, 12));
-        p.add(new JLabel("Testo che verrà consegnato al chatbot (puoi modificarlo):"), BorderLayout.NORTH);
-
-        AreaPrompt.setLineWrap(true);
-        AreaPrompt.setWrapStyleWord(true);
-        //il conteggio caratteri deve seguire anche le modifiche fatte a mano nell'anteprima
-        AreaPrompt.getDocument().addDocumentListener(new DocumentListener() {
+        //Il conteggio caratteri deve seguire anche le modifiche fatte a mano nell'anteprima. Il listener
+        //resta scritto a mano: il GUI Builder non modella gli eventi del Document.
+        TextArea_Prompt.getDocument().addDocumentListener(new DocumentListener() {
             /** @param e evento di inserimento */
             @Override public void insertUpdate(DocumentEvent e) { AggiornaStato(); }
             /** @param e evento di cancellazione */
@@ -215,45 +127,208 @@ public class GUI_ChiediIA extends JDialog {
             /** @param e evento di modifica degli attributi */
             @Override public void changedUpdate(DocumentEvent e) { AggiornaStato(); }
         });
-        p.add(new JScrollPane(AreaPrompt), BorderLayout.CENTER);
-        return p;
+
+        AggiornaPrompt();
+        pack();
+        setMinimumSize(new Dimension(640, 480));
     }
 
     /**
-     * @return il pannello inferiore con lo stato e i pulsanti di azione
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
      */
-    private JPanel PannelloBottoni() {
-        JPanel p = new JPanel(new BorderLayout());
-        p.setBorder(BorderFactory.createEmptyBorder(0, 12, 10, 12));
-        p.add(LabelStato, BorderLayout.WEST);
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
 
-        JPanel destra = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
-        JButton bCopia = new JButton("Copia negli appunti");
-        bCopia.addActionListener(e -> {
-            Copia();
-            LabelStato.setText("Testo copiato negli appunti.");
+        GruppoProfilo = new javax.swing.ButtonGroup();
+        Label_Chatbot = new javax.swing.JLabel();
+        ComboBox_Chatbot = new javax.swing.JComboBox<>();
+        Label_Dati = new javax.swing.JLabel();
+        RadioButton_Completo = new javax.swing.JRadioButton();
+        RadioButton_Generico = new javax.swing.JRadioButton();
+        CheckBox_Fiscale = new javax.swing.JCheckBox();
+        Label_Anteprima = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        TextArea_Prompt = new javax.swing.JTextArea();
+        Label_Stato = new javax.swing.JLabel();
+        Bottone_Copia = new javax.swing.JButton();
+        Bottone_Apri = new javax.swing.JButton();
+        Bottone_Chiudi = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Chiedi a IA");
+
+        Label_Chatbot.setText("Chatbot :");
+
+        ComboBox_Chatbot.setToolTipText("L'elenco viene letto dal file ChatbotIA.json nella cartella dei dati");
+        ComboBox_Chatbot.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ComboBox_ChatbotActionPerformed(evt);
+            }
         });
-        JButton bChiudi = new JButton("Chiudi");
-        bChiudi.addActionListener(e -> dispose());
 
-        BottoneApri.addActionListener(e -> Apri());
-        destra.add(bCopia);
-        destra.add(BottoneApri);
-        destra.add(bChiudi);
-        p.add(destra, BorderLayout.EAST);
-        return p;
-    }
+        Label_Dati.setText("Dati da inviare :");
+
+        GruppoProfilo.add(RadioButton_Completo);
+        RadioButton_Completo.setSelected(true);
+        RadioButton_Completo.setText("Completo");
+        RadioButton_Completo.setToolTipText("Tutti i dati del movimento: hash, indirizzi, quantità e controvalore. È il profilo che permette al chatbot di leggere la transazione sull'explorer.");
+        RadioButton_Completo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RadioButton_CompletoActionPerformed(evt);
+            }
+        });
+
+        GruppoProfilo.add(RadioButton_Generico);
+        RadioButton_Generico.setText("Generico (senza dati riconducibili a me)");
+        RadioButton_Generico.setToolTipText("Solo piattaforma, causale e simboli delle monete: niente hash, indirizzi, importi o date.");
+        RadioButton_Generico.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RadioButton_GenericoActionPerformed(evt);
+            }
+        });
+
+        CheckBox_Fiscale.setText("Chiedi anche l'inquadramento fiscale italiano");
+        CheckBox_Fiscale.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CheckBox_FiscaleActionPerformed(evt);
+            }
+        });
+
+        Label_Anteprima.setText("Testo che verrà consegnato al chatbot (puoi modificarlo) :");
+
+        TextArea_Prompt.setColumns(76);
+        TextArea_Prompt.setLineWrap(true);
+        TextArea_Prompt.setRows(18);
+        TextArea_Prompt.setWrapStyleWord(true);
+        jScrollPane1.setViewportView(TextArea_Prompt);
+
+        Label_Stato.setText(" ");
+
+        Bottone_Copia.setText("Copia negli appunti");
+        Bottone_Copia.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_CopiaActionPerformed(evt);
+            }
+        });
+
+        Bottone_Apri.setText("Apri");
+        Bottone_Apri.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_ApriActionPerformed(evt);
+            }
+        });
+
+        Bottone_Chiudi.setText("Chiudi");
+        Bottone_Chiudi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_ChiudiActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                    .addComponent(Label_Anteprima)
+                    .addComponent(CheckBox_Fiscale)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(Label_Chatbot)
+                            .addComponent(Label_Dati))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(ComboBox_Chatbot, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(RadioButton_Completo)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(RadioButton_Generico))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(Label_Stato)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(Bottone_Copia)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Bottone_Apri)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Bottone_Chiudi)))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Label_Chatbot)
+                    .addComponent(ComboBox_Chatbot, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Label_Dati)
+                    .addComponent(RadioButton_Completo)
+                    .addComponent(RadioButton_Generico))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(CheckBox_Fiscale)
+                .addGap(18, 18, 18)
+                .addComponent(Label_Anteprima)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Label_Stato)
+                    .addComponent(Bottone_Copia)
+                    .addComponent(Bottone_Apri)
+                    .addComponent(Bottone_Chiudi))
+                .addContainerGap())
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void ComboBox_ChatbotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ComboBox_ChatbotActionPerformed
+        //Il testo non cambia col chatbot: cambia solo il modo in cui gli verrà consegnato
+        AggiornaStato();
+    }//GEN-LAST:event_ComboBox_ChatbotActionPerformed
+
+    private void RadioButton_CompletoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RadioButton_CompletoActionPerformed
+        AggiornaPrompt();
+    }//GEN-LAST:event_RadioButton_CompletoActionPerformed
+
+    private void RadioButton_GenericoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RadioButton_GenericoActionPerformed
+        AggiornaPrompt();
+    }//GEN-LAST:event_RadioButton_GenericoActionPerformed
+
+    private void CheckBox_FiscaleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CheckBox_FiscaleActionPerformed
+        AggiornaPrompt();
+    }//GEN-LAST:event_CheckBox_FiscaleActionPerformed
+
+    private void Bottone_CopiaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_CopiaActionPerformed
+        Copia();
+        Label_Stato.setText("Testo copiato negli appunti.");
+    }//GEN-LAST:event_Bottone_CopiaActionPerformed
+
+    private void Bottone_ApriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ApriActionPerformed
+        Apri();
+    }//GEN-LAST:event_Bottone_ApriActionPerformed
+
+    private void Bottone_ChiudiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ChiudiActionPerformed
+        dispose();
+    }//GEN-LAST:event_Bottone_ChiudiActionPerformed
 
     /** @return il profilo attualmente selezionato nel dialogo */
     private PromptIA.Profilo ProfiloSelezionato() {
-        return RadioGenerico.isSelected() ? PromptIA.Profilo.GENERICO : PromptIA.Profilo.COMPLETO;
+        return RadioButton_Generico.isSelected() ? PromptIA.Profilo.GENERICO : PromptIA.Profilo.COMPLETO;
     }
 
     /** Ricostruisce il testo della domanda in base alle opzioni selezionate e aggiorna lo stato. */
     private void AggiornaPrompt() {
-        String testo = PromptIA.Costruisci(ID, ProfiloSelezionato(), CheckFiscale.isSelected());
-        AreaPrompt.setText(testo == null ? "" : testo);
-        AreaPrompt.setCaretPosition(0);
+        String testo = PromptIA.Costruisci(ID, ProfiloSelezionato(), CheckBox_Fiscale.isSelected());
+        TextArea_Prompt.setText(testo == null ? "" : testo);
+        TextArea_Prompt.setCaretPosition(0);
         AggiornaStato();
     }
 
@@ -262,22 +337,22 @@ public class GUI_ChiediIA extends JDialog {
      * chatbot selezionato: direttamente nell'indirizzo oppure tramite gli appunti.
      */
     private void AggiornaStato() {
-        ChatbotIA.Bot b = (ChatbotIA.Bot) ComboChatbot.getSelectedItem();
+        ChatbotIA.Bot b = (ChatbotIA.Bot) ComboBox_Chatbot.getSelectedItem();
         if (b == null) return;
-        BottoneApri.setText("Apri " + b.Nome);
+        Bottone_Apri.setText("Apri " + b.Nome);
 
-        int caratteri = AreaPrompt.getText().length();
-        if (ChatbotIA.UrlConDomanda(b, AreaPrompt.getText()) != null) {
-            LabelStato.setText(caratteri + " caratteri - la domanda verrà inserita direttamente nella chat.");
+        int caratteri = TextArea_Prompt.getText().length();
+        if (ChatbotIA.UrlConDomanda(b, TextArea_Prompt.getText()) != null) {
+            Label_Stato.setText(caratteri + " caratteri - la domanda verrà inserita direttamente nella chat.");
         } else {
-            LabelStato.setText(caratteri + " caratteri - il testo verrà copiato: incollalo con Ctrl+V nella chat.");
+            Label_Stato.setText(caratteri + " caratteri - il testo verrà copiato: incollalo con Ctrl+V nella chat.");
         }
     }
 
     /** Copia negli appunti il testo attualmente presente nell'anteprima. */
     private void Copia() {
         Toolkit.getDefaultToolkit().getSystemClipboard()
-                .setContents(new StringSelection(AreaPrompt.getText()), null);
+                .setContents(new StringSelection(TextArea_Prompt.getText()), null);
     }
 
     /**
@@ -286,16 +361,33 @@ public class GUI_ChiediIA extends JDialog {
      * sulla sola pagina della chat quando il testo &egrave; troppo lungo o il chatbot non supporta il prefill.
      */
     private void Apri() {
-        ChatbotIA.Bot b = (ChatbotIA.Bot) ComboChatbot.getSelectedItem();
+        ChatbotIA.Bot b = (ChatbotIA.Bot) ComboBox_Chatbot.getSelectedItem();
         if (b == null) return;
 
         Copia();
-        String url = ChatbotIA.UrlConDomanda(b, AreaPrompt.getText());
+        String url = ChatbotIA.UrlConDomanda(b, TextArea_Prompt.getText());
         Funzioni.ApriWeb(url != null ? url : b.Url);
 
         DatabaseH2.Pers_Opzioni_Scrivi(OPZ_CHATBOT, b.Nome);
         DatabaseH2.Pers_Opzioni_Scrivi(OPZ_PROFILO, ProfiloSelezionato().name());
-        DatabaseH2.Pers_Opzioni_Scrivi(OPZ_FISCALE, CheckFiscale.isSelected() ? "SI" : "NO");
+        DatabaseH2.Pers_Opzioni_Scrivi(OPZ_FISCALE, CheckBox_Fiscale.isSelected() ? "SI" : "NO");
         dispose();
     }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Bottone_Apri;
+    private javax.swing.JButton Bottone_Chiudi;
+    private javax.swing.JButton Bottone_Copia;
+    private javax.swing.JCheckBox CheckBox_Fiscale;
+    private javax.swing.JComboBox<ChatbotIA.Bot> ComboBox_Chatbot;
+    private javax.swing.ButtonGroup GruppoProfilo;
+    private javax.swing.JLabel Label_Anteprima;
+    private javax.swing.JLabel Label_Chatbot;
+    private javax.swing.JLabel Label_Dati;
+    private javax.swing.JLabel Label_Stato;
+    private javax.swing.JRadioButton RadioButton_Completo;
+    private javax.swing.JRadioButton RadioButton_Generico;
+    private javax.swing.JTextArea TextArea_Prompt;
+    private javax.swing.JScrollPane jScrollPane1;
+    // End of variables declaration//GEN-END:variables
 }

@@ -83,7 +83,6 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         Bottone_InserisciChiave = new javax.swing.JButton();
         Bottone_RimuoviChiave = new javax.swing.JButton();
         Bottone_AggiornaSelezionati = new javax.swing.JButton();
-        Bottone_EarnOKX = new javax.swing.JButton();
         Bottone_Aggiorna = new javax.swing.JButton();
         Pannello_Binance = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -190,14 +189,6 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             }
         });
 
-        Bottone_EarnOKX.setText("Rendimenti Earn OKX (diagnostica)");
-        Bottone_EarnOKX.setToolTipText("Interroga gli endpoint Earn di OKX e salva la risposta grezza in Temporanei/. Non importa nulla.");
-        Bottone_EarnOKX.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Bottone_EarnOKXActionPerformed(evt);
-            }
-        });
-
         Bottone_Aggiorna.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Aggiorna.png"))); // NOI18N
         Bottone_Aggiorna.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -228,8 +219,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Bottone_RimuoviChiave, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
-                    .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(Bottone_EarnOKX, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(10, 10, 10)
                 .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -266,9 +256,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                         .addGroup(javax.swing.GroupLayout.Alignment.LEADING, Pannello_ChiaviLayout.createSequentialGroup()
                             .addComponent(Bottone_RimuoviChiave, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(Bottone_EarnOKX, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(7, 7, 7))
             .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
@@ -587,20 +575,39 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
      *                   per gli exchange che non la prevedono
      * @param DataUltimoMovimento data dell'ultimo movimento già importato (formato leggibile), o
      *                            {@code "0"} se non è presente alcun movimento
+     * @return l'esito dell'importazione da riportare nel resoconto, oppure {@code null} se lo scaricamento
+     *         non è stato portato a termine (rinuncia, interruzione o errore già segnalato all'utente)
      */
-    public void ScaricaExchange(String Exchange,String ApiKey,String ApiSecret,String Passphrase,String DataUltimoMovimento) {
+    public Importazioni.Esito ScaricaExchange(String Exchange,String ApiKey,String ApiSecret,String Passphrase,String DataUltimoMovimento) {
 
             long data=Long.parseLong("1483228800000");//   01/01/2017 data di default
             if (!DataUltimoMovimento.equals("0"))
             {
                 data = FunzioniDate.ConvertiDatainLongSecondo(DataUltimoMovimento)+1000; // 1 = seconda colonna
             }
-           CcxtInterop.fetchMovimentiConBar(Exchange, ApiKey, ApiSecret, data,"",Passphrase,this);
+           return CcxtInterop.fetchMovimentiConBar(Exchange, ApiKey, ApiSecret, data,"",Passphrase,this);
 
 
 
     }
- 
+
+    /**
+     * Mostra il riepilogo di uno scaricamento via API, riusando la stessa finestra dell'import da file.
+     * <p>Quando gli exchange scaricati sono più di uno gli esiti sono già stati sommati dal chiamante, così
+     * l'utente vede <b>una sola</b> finestra invece di una per exchange.
+     * @param E esito complessivo, oppure {@code null} se nessuno scaricamento è arrivato in fondo
+     */
+    private void MostraResoconto(Importazioni.Esito E) {
+        //Se nessuno scaricamento è arrivato all'importazione non c'è niente da riepilogare: l'interruzione
+        //o l'errore hanno già mostrato il loro avviso.
+        if (E == null) return;
+
+        Importazioni_Resoconto res = new Importazioni_Resoconto();
+        res.ImpostaValori(E);
+        res.setLocationRelativeTo(this);
+        res.setVisible(true);
+    }
+
 
     
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
@@ -648,19 +655,6 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                 
     }//GEN-LAST:event_Bottone_RimuoviChiaveActionPerformed
 
-    private void Bottone_EarnOKXActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_EarnOKXActionPerformed
-        //I rendimenti dei prodotti Earn non compaiono né nei bill scaricati via API né negli export CSV
-        //"Funding History"/"Trading History": hanno endpoint propri. Questa è una diagnostica che li
-        //interroga e salva la risposta grezza, senza importare nulla.
-        String[] api = DatabaseH2.Pers_ExchangeApi_Leggi("OKX");
-        if (api == null || api[2] == null || api[2].isBlank()) {
-            Messaggi.WarningMessage("Chiavi OKX non presenti",
-                    "Attenzione! <br>Devi prima inserire le chiavi API di OKX", this);
-            return;
-        }
-        CcxtInterop.diagnosticaEarnOKX(api[2], api[3], api[4], this);
-    }//GEN-LAST:event_Bottone_EarnOKXActionPerformed
-
     private void Bottone_AggiornaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AggiornaActionPerformed
         // TODO add your handling code here:
       //  AggiornaWallets(null);
@@ -669,7 +663,10 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             return;
             }
         TableModel model = TabellaWallets.getModel();
-        
+
+        //Gli esiti dei singoli exchange vengono sommati e mostrati in un'unica finestra a fine giro:
+        //altrimenti l'utente si troverebbe a chiudere un resoconto per ogni exchange della lista.
+        Importazioni.Esito Riepilogo = null;
         for (int i=0;i<numeroRighi;i++) {
             int modelRow = TabellaWallets.convertRowIndexToModel(i);
             String wallet = model.getValueAt(modelRow, 1).toString(); // 1 = seconda colonna
@@ -678,10 +675,17 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             String Passphrase = model.getValueAt(modelRow, 4).toString();
             String DataConSecondi =model.getValueAt(modelRow, 5).toString();
 
-            ScaricaExchange(wallet,ApiKey,ApiSecret,Passphrase,DataConSecondi);
+            Importazioni.Esito E = ScaricaExchange(wallet,ApiKey,ApiSecret,Passphrase,DataConSecondi);
+            if (E != null) {
+                if (Riepilogo == null) Riepilogo = new Importazioni.Esito();
+                Riepilogo.Somma(E);
+            }
         }
+        //Prima aggiorno la tabella e poi mostro il resoconto: il resoconto è modale e il refresh
+        //resterebbe altrimenti in attesa che l'utente lo chiuda.
         PopolaTabella();
-        
+        MostraResoconto(Riepilogo);
+
     }//GEN-LAST:event_Bottone_AggiornaActionPerformed
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
@@ -701,7 +705,9 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             return;
             }
         TableModel model = TabellaWallets.getModel();
-        
+
+        //Come per lo scaricamento di tutta la lista: un solo resoconto, anche se le righe selezionate sono più d'una
+        Importazioni.Esito Riepilogo = null;
         for (int viewRow : selectedRows) {
             int modelRow = TabellaWallets.convertRowIndexToModel(viewRow);
             String wallet = model.getValueAt(modelRow, 1).toString(); // 1 = seconda colonna
@@ -710,9 +716,14 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             String Passphrase = model.getValueAt(modelRow, 4).toString();
             String DataConSecondi =model.getValueAt(modelRow, 5).toString();
 
-            ScaricaExchange(wallet,ApiKey,ApiSecret,Passphrase,DataConSecondi);
+            Importazioni.Esito E = ScaricaExchange(wallet,ApiKey,ApiSecret,Passphrase,DataConSecondi);
+            if (E != null) {
+                if (Riepilogo == null) Riepilogo = new Importazioni.Esito();
+                Riepilogo.Somma(E);
+            }
         }
         PopolaTabella();
+        MostraResoconto(Riepilogo);
 
     }//GEN-LAST:event_Bottone_AggiornaSelezionatiActionPerformed
 
@@ -888,7 +899,6 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     private javax.swing.JTable Binance_Tabella;
     private javax.swing.JButton Bottone_Aggiorna;
     private javax.swing.JButton Bottone_AggiornaSelezionati;
-    private javax.swing.JButton Bottone_EarnOKX;
     private javax.swing.JButton Bottone_InserisciChiave;
     private javax.swing.JButton Bottone_RimuoviChiave;
     private javax.swing.JComboBox<String> ComboBox_Exchange;

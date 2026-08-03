@@ -18,6 +18,7 @@
     "quantita": 3,
     "moneta": 6
   },
+  "_commentoFee": "Nessuna colonna commissione, e non e' una dimenticanza: l'export del Funding ha 7 colonne e nessuna riporta la fee, ne' esiste un 'Type' di sola commissione (verificato sull'export reale 2026-01-01~2026-07-31: gli unici Type presenti sono Deposit, Withdrawal, Received, Simple Earn subscription/redemption e i due giroconti col conto Trading). Anche i bill del Funding scaricati via API non hanno il campo 'fee'. Sulla riga di prelievo l'importo e' quello che ha effettivamente lasciato il conto, quindi la fee di rete e' gia' dentro e non e' separabile da questo file. Diverso il Trading, dove la commissione c'e' e viene scorporata: vedi OKX_Trading.json.",
   "_commentoConsolidamento": "Ogni riga del Funding e' un movimento a se': depositi, prelievi e giroconti. Non ci sono scambi da ricomporre, quindi nessun consolidamento per orario.",
   "consolidaRigheStessaData": false,
   "tolleranzaSecondiConsolidamento": 0,

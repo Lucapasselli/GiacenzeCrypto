@@ -190,14 +190,56 @@ class CcxtInteropConvertOKXBillsTest {
         assertEquals("NO", righe.get(0)[15]);
     }
 
+    /**
+     * Le commissioni vanno <b>scorporate</b>: {@code balChg} è il netto, e importarlo così com'è
+     * equivarrebbe a dedurre la commissione dal costo di carico, cosa che l'art. 68 c.9-bis del TUIR non
+     * consente per le cripto-attività. La quantità deve quindi tornare al lordo e la fee deve viaggiare nei
+     * campi {@code [11]}/{@code [12]}, da cui {@code Ex_OKX_Consolida} genera il movimento COMMISSIONI.
+     */
     @Test
-    void leFeeNonVengonoRiportateCosiDaNonContarleDueVolte() {
-        //balChg è già la variazione netta di saldo e comprende la commissione
+    void laFeeVieneScorporataELaQuantitaTornaAlLordo() {
+        //Caso reale: sz 0.010711 - fee 0.000007229925 = balChg 0.010703770075
         List<String[]> righe = CcxtInterop.convertOKXBills(bills("""
-            [{"billId":"800","ccy":"BTC","balChg":"0.01","type":"2","fee":"-0.00001","ts":"1700000000000"}]
+            [{"billId":"800","ccy":"ETH","balChg":"0.010703770075","type":"2","sz":"0.010711",
+              "fee":"-0.000007229925","ts":"1700000000000"}]
             """), "Trading");
 
+        assertEquals(1, righe.size());
+        //[6] è il lordo, cioè esattamente sz
+        assertEquals(0, new java.math.BigDecimal("0.010711").compareTo(new java.math.BigDecimal(righe.get(0)[6])));
+        assertEquals("ETH", righe.get(0)[11]);
+        //La fee è negativa: è un'uscita, e come tale la legge Ex_OKX_Consolida
+        assertEquals(0, new java.math.BigDecimal("-0.000007229925").compareTo(new java.math.BigDecimal(righe.get(0)[12])));
+    }
+
+    /**
+     * Il lordo si ricava da {@code balChg - fee} e non da {@code sz}, perché il segno di {@code sz} non è
+     * affidabile su tutti i tipi di bill mentre {@code balChg} porta sempre il verso reale del movimento.
+     * Sulla gamba in uscita OKX non addebita fee, quindi lordo e netto coincidono.
+     */
+    @Test
+    void sullaGambaInUscitaSenzaFeeLaQuantitaRestaQuellaDiBalChg() {
+        List<String[]> righe = CcxtInterop.convertOKXBills(bills("""
+            [{"billId":"801","ccy":"USDC","balChg":"-19.58924079","type":"2","sz":"19.58924079",
+              "fee":"0","ts":"1700000000000"}]
+            """), "Trading");
+
+        assertEquals(1, righe.size());
+        assertEquals(0, new java.math.BigDecimal("-19.58924079").compareTo(new java.math.BigDecimal(righe.get(0)[6])));
+        //Fee nulla: i campi restano vuoti, altrimenti nascerebbe un movimento di commissione fantasma
         assertEquals("", righe.get(0)[11].trim());
+        assertEquals("", righe.get(0)[12].trim());
+    }
+
+    /** I bill del Funding non hanno affatto il campo {@code fee}: la sua assenza non deve rompere nulla. */
+    @Test
+    void unBillSenzaCampoFeeVieneImportatoComunque() {
+        List<String[]> righe = CcxtInterop.convertOKXBills(bills("""
+            [{"billId":"802","ccy":"BTC","balChg":"0.5","type":"1","ts":"1700000000000"}]
+            """), "Funding");
+
+        assertEquals(1, righe.size());
+        assertEquals(0, new java.math.BigDecimal("0.5").compareTo(new java.math.BigDecimal(righe.get(0)[6])));
         assertEquals("", righe.get(0)[12].trim());
     }
 

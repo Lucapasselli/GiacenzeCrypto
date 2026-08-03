@@ -4,14 +4,18 @@
 // gestito da Importazioni.Ex_OKX_Importa: ogni riga e' una variazione di saldo su una moneta.
 //
 // Vengono interrogati i due conti separatamente, esattamente come i due CSV Funding e Trading:
-//   - Funding account -> /api/v5/asset/bills          (depositi, prelievi, trasferimenti, earn, reward)
+//   - Funding account -> /api/v5/asset/bills-history   (depositi, prelievi, trasferimenti, earn, reward)
 //   - Trading account -> /api/v5/account/bills-archive (trade, conversioni, fee)
 //
-// ATTENZIONE: entrambi gli endpoint coprono AL MASSIMO gli ultimi 3 MESI, e il Funding restituisce
-// molto meno: nella prova su dati reali (02/08/2026) asset/bills ha risposto con una sola pagina di
-// 39 record fermi a ~1 MESE, mentre account/bills-archive ha coperto tutti e 3 i mesi richiesti.
-// Per lo storico piu' vecchio - e per il Funding, gia' dopo poche settimane - resta necessario
-// l'import del CSV. Se startDate e' piu' vecchia del limite viene silenziosamente limitata.
+// I due conti hanno finestre storiche MOLTO diverse, per questo il limite non e' piu' unico:
+//   - Funding: asset/bills-history restituisce l'intero storico. Verificato su dati reali
+//     (03/08/2026): 100 movimenti dal 19/02/2025 al 28/07/2026, 524 giorni, con la pagina
+//     successiva vuota. E' molto piu' capiente di asset/bills, che si fermava a ~1 mese e che era
+//     l'endpoint usato prima. Costa pero' 10 unita' di rate limit: fra una pagina e l'altra
+//     servono ~1,1 s, e a 300 ms si prende un 50011 "Too many requests".
+//   - Trading: account/bills-archive copre AL MASSIMO 3 MESI. Per lo storico piu' vecchio serve
+//     l'archivio trimestrale (OKX_Archivio.js) oppure l'import del CSV.
+// Se startDate e' piu' vecchia del limite del Trading, per quel solo conto viene limitata.
 //
 // argv: exchangeId apiKey secret startDate(ms) tokens passphrase hostname
 // Passphrase e hostname sono in CODA perche' tutti gli altri script destrutturano argv
@@ -21,11 +25,16 @@ const ccxt = require('ccxt');
 
 // ======================= Costanti & Utils =======================
 
-// Gli endpoint bills di OKX coprono al massimo 3 mesi. Si tiene un margine di qualche giorno
-// per non farsi rifiutare la richiesta al limite esatto della finestra.
-const FINESTRA_MAX_MS = 88 * 24 * 60 * 60 * 1000;
+// Il solo conto Trading e' limitato a 3 mesi. Si tiene un margine di qualche giorno per non farsi
+// rifiutare la richiesta al limite esatto della finestra. Il Funding non ha questo limite:
+// asset/bills-history torna tutto lo storico, quindi la sua data di partenza non va toccata.
+const FINESTRA_MAX_TRADING_MS = 88 * 24 * 60 * 60 * 1000;
 const LIMIT = 100;        // massimo consentito da OKX per pagina
-const MAX_PAGINE = 500;   // 50.000 movimenti: ben oltre quanto stia in 3 mesi
+const MAX_PAGINE = 500;   // 50.000 movimenti
+
+// Attesa fra due pagine. asset/bills-history costa 10 unita' di rate limit (~1,1 s con il
+// moltiplicatore di 110 ms di CCXT): a 300 ms si prende un 50011 gia' alla seconda pagina.
+const PAUSA_PAGINA_MS = 1500;
 
 // OKX non ha un solo dominio: le entita' regionali (europea, statunitense, globale) sono separate
 // e una chiave API creata su una di esse NON esiste sulle altre. Interrogare il dominio sbagliato
@@ -165,7 +174,9 @@ async function fetchBills(exchange, metodo, startTime, endTime, etichetta) {
           log(`${etichetta} errore definitivo alla pagina ${pagina}: ${e.message}`);
           return { bills: out, completo: false };
         }
-        const attesa = 3000 * tentativo;
+        //Il 50011 (troppe richieste) non e' un guasto: basta rallentare. Si attende di piu' che
+        //per gli altri errori, perche' rientrare subito nella finestra lo ripresenterebbe.
+        const attesa = (codice === '50011' ? 6000 : 3000) * tentativo;
         log(`${etichetta} errore (tentativo ${tentativo}): ${e.message} - riprovo tra ${attesa}ms`);
         await sleep(attesa);
       }
@@ -195,7 +206,7 @@ async function fetchBills(exchange, metodo, startTime, endTime, etichetta) {
     if (data.length < LIMIT) { completo = true; break; }
     if (piuVecchio === undefined || piuVecchio === after) { completo = true; break; }
     after = piuVecchio;
-    await sleep(300);
+    await sleep(PAUSA_PAGINA_MS);
   }
 
   if (!completo) {
@@ -218,12 +229,19 @@ async function main() {
 
   const endTime = Date.now();
   let startTime = Number(startDateArg);
-  if (!Number.isFinite(startTime) || startTime <= 0) startTime = endTime - FINESTRA_MAX_MS;
+  if (!Number.isFinite(startTime) || startTime <= 0) startTime = endTime - FINESTRA_MAX_TRADING_MS;
 
-  const limiteMin = endTime - FINESTRA_MAX_MS;
-  if (startTime < limiteMin) {
-    log(`Data richiesta (${new Date(startTime).toISOString()}) oltre il limite di 3 mesi degli endpoint bills di OKX: limitata a ${new Date(limiteMin).toISOString()}`);
-    startTime = limiteMin;
+  //Il Funding parte dalla data richiesta senza alcun taglio: asset/bills-history torna tutto lo
+  //storico, e limitarlo ai 3 mesi del Trading butterebbe via anni di movimenti realmente disponibili.
+  const startTimeFunding = startTime;
+
+  //Il Trading invece e' davvero limitato a 3 mesi: chiedere di piu' non fa fallire la richiesta,
+  //restituisce solo meno righe, quindi il taglio va reso esplicito nel log.
+  let startTimeTrading = startTime;
+  const limiteTrading = endTime - FINESTRA_MAX_TRADING_MS;
+  if (startTimeTrading < limiteTrading) {
+    log(`Trading: data richiesta (${new Date(startTimeTrading).toISOString()}) oltre il limite di 3 mesi di account/bills-archive, limitata a ${new Date(limiteTrading).toISOString()}. Per lo storico precedente serve l'archivio trimestrale o l'import del CSV.`);
+    startTimeTrading = limiteTrading;
   }
 
   const ExchangeClass = ccxt[exchangeId] || ccxt.okx;
@@ -252,10 +270,10 @@ async function main() {
   }
   exchange.hostname = risoluzione.hostname;
 
-  const funding = await fetchBills(exchange, 'privateGetAssetBills', startTime, endTime, 'Funding')
+  const funding = await fetchBills(exchange, 'privateGetAssetBillsHistory', startTimeFunding, endTime, 'Funding')
     .catch(e => { log(`Funding fallito: ${e.message}`); return { bills: [], completo: false }; });
 
-  const trading = await fetchBills(exchange, 'privateGetAccountBillsArchive', startTime, endTime, 'Trading')
+  const trading = await fetchBills(exchange, 'privateGetAccountBillsArchive', startTimeTrading, endTime, 'Trading')
     .catch(e => { log(`Trading fallito: ${e.message}`); return { bills: [], completo: false }; });
 
   const risultato = {

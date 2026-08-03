@@ -11,14 +11,19 @@
   "autoDetectColonne": false,
   "formatoData": "yyyy-MM-dd HH:mm:ss",
   "fuso": "Europe/Rome",
-  "_commentoColonne": "La quantita' e' 'Balance Change' (14) e non 'Amount' (6): e' la variazione di saldo effettiva ed e' gia' al netto della commissione (es. Amount 0.00034074 - Fee 0.00000023 = Balance Change 0.00034051). Per lo stesso motivo le colonne Fee NON sono mappate: aggiungere una riga di commissione la conterebbe due volte. La moneta e' 'Balance Unit' (16), non 'Symbol' (4) che contiene la coppia. 'idTransazione' e' volutamente NON impostato: vedi _commentoConsolidamento.",
+  "_commentoColonne": "La quantita' e' 'Balance Change' (14) e non 'Amount' (6): e' la variazione di saldo effettiva ed e' l'unica colonna con il segno, quindi l'unica da cui si capisce il verso della gamba ('Amount' e' sempre positivo). E' pero' gia' al netto della commissione (es. Amount 0.00034074 - Fee 0.00000023 = Balance Change 0.00034051), percio' le colonne Fee (10 = importo, 11 = moneta) vengono mappate e 'ricostruisciLordoSeFeeSuMonetaEntrata' riporta la quantita' al lordo: vedi _commentoFee. La moneta e' 'Balance Unit' (16), non 'Symbol' (4) che contiene la coppia. 'idTransazione' e' volutamente NON impostato: vedi _commentoConsolidamento.",
   "colonne": {
     "data": 2,
     "causale": 3,
     "causale2": 5,
     "quantita": 14,
-    "moneta": 16
+    "moneta": 16,
+    "quantitaFee": 10,
+    "monetaFee": 11
   },
+  "_commentoFee": "Per le cripto-attivita' le commissioni NON sono deducibili (art. 68 c.9-bis del TUIR, circolare 30/E del 27/10/23), a differenza delle attivita' finanziarie del c.6. Importare direttamente 'Balance Change' porterebbe in carico solo il netto, il che equivarrebbe a dedurre la commissione dal costo di carico. Si ricostruisce quindi il lordo e la fee viene emessa come movimento COMMISSIONI a se' stante, subito dopo lo scambio. OKX addebita la commissione sempre sulla gamba in ENTRATA e nella stessa moneta, quindi serve solo il flag 'Entrata': quello sull'uscita resta false perche' su questo export non si verifica mai. Verificato sull'export reale 2026-01-01~2026-07-31 (391 righe): la colonna Fee e' diversa da zero solo sulle 170 righe 'Buy', mai sulle 170 righe 'Sell', e 'Fee Unit' coincide sempre con 'Balance Unit', quindi non esistono ne' doppi conteggi ne' fee in moneta terza. Attenzione: OKX arrotonda Amount, Fee e Balance Change a 8 decimali in modo indipendente, quindi su 19 righe su 170 il lordo ricostruito differisce di 1e-8 dall'Amount dichiarato; l'import via API non ha questo limite perche' i bill hanno la precisione piena.",
+  "ricostruisciLordoSeFeeSuMonetaEntrata": true,
+  "ricostruisciLordoSeFeeSuMonetaUscita": false,
   "separatoreCausale": ".",
   "_commentoConsolidamento": "Le due gambe di uno scambio (Buy e Sell) sono due righe con lo stesso orario, e vanno ricomposte in un unico movimento. Il raggruppamento e' quindi per solo orario, con tolleranza 0 (stesso secondo), come gia' fa l'import del CSV Binance. NON si usa l'Order id come chiave di raggruppamento anche se esiste: nel file le righe di ordini diversi con lo stesso orario sono mescolate fra loro (verificato: 8 ordini intrecciati alle 15:28:21 del 23/07/2026), e il raggruppamento e' sequenziale, quindi le coppie verrebbero spezzate. Raggruppando per orario le esecuzioni parziali dello stesso secondo vengono sommate per moneta in un unico scambio: verificato che nel campione nessun secondo contiene due coppie di trading diverse.",
   "consolidaRigheStessaData": true,

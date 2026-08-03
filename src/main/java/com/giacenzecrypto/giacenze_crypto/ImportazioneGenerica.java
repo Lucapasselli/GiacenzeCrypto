@@ -422,6 +422,9 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         String walletID = null;
         boolean haMovimentiDefi = false;
 
+        // Commissioni incontrate nel gruppo, emesse in coda: {moneta, qta assoluta, causale CSV, id originale}
+        List<String[]> feeDaEmettere = new ArrayList<>();
+
         for (String[] riga : gruppo) {
             String causaleCSV = cfg.getCausaleCSV(riga);
             String tipoMovimento = cfg.convertiCausale(causaleCSV);
@@ -483,6 +486,26 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             mon.InserisciValori(moneta, qtaStr, "", "");
             mon.AssegnaTipoAuto();
 
+            // Commissioni della riga: vanno scorporate dalla quantità, non lasciate dentro.
+            // Se il CSV riporta la quantità già al netto della fee (tipico degli export che danno la
+            // variazione di saldo, come il Trading di OKX), importarla così com'è equivarrebbe a dedurre
+            // la commissione dal costo di carico, cosa che per le cripto-attività l'art. 68 c.9-bis del
+            // TUIR non consente. Si ricostruisce quindi il lordo e la fee diventa un movimento a sé.
+            // La ricostruzione va fatta PRIMA della ricerca prezzo, che lavora sulla quantità.
+            String monetaFee = cfg.normalizzaMoneta(safe(riga, cfg.colonnaMonetaFee));
+            String qtaFee = normalizzaNumero(safe(riga, cfg.colonnaQuantitaFee));
+            boolean haFee = !qtaFee.isBlank()
+                    && !monetaFee.isBlank()
+                    && Funzioni.isNumeric(qtaFee, false)
+                    && new BigDecimal(qtaFee).compareTo(BigDecimal.ZERO) != 0;
+
+            if (haFee) {
+                BigDecimal qtaFeeBD = new BigDecimal(qtaFee).abs();
+                ricostruisciLordoConFee(mon, monetaFee, qtaFeeBD, cfg);
+                feeDaEmettere.add(new String[]{monetaFee, qtaFeeBD.stripTrailingZeros().toPlainString(),
+                    causaleCSV, idOrig});
+            }
+
             // Recupero prezzo se disponibile
             String valEuro = normalizzaNumero(safe(riga, cfg.colonnaValoreEuro));
             String prezzoUn = normalizzaNumero(safe(riga, cfg.colonnaPrezzo));
@@ -522,6 +545,39 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                     scambio, dataDiGruppo, cfg.nomeExchange, null);
             if (movScambio != null) {
                 risultato.addAll(movScambio);
+            }
+        }
+
+        // Movimenti di commissione, dopo lo scambio: la fee cede la moneta che lo scambio ha appena
+        // accreditato, quindi deve pescare da un carico che esiste già.
+        // Anche a parità di secondo l'ordine è garantito dalle chiavi: il calcolo plusvalenze scorre
+        // MappaCryptoWallet.values(), che è una TreeMap con String.CASE_INSENSITIVE_ORDER, lo scambio ha
+        // identificativo "<exchange>" e la commissione "<exchange>C" (la "C" la accoda creaMovimento ai
+        // movimenti CM in uscita). Il confronto è case-INsensitive, quindi avviene sui caratteri minuscoli:
+        // '_' (0x5F) precede 'c' (0x63) e lo scambio resta primo. Con un confronto sensibile alle maiuscole
+        // l'ordine sarebbe invertito ('C' = 0x43), quindi non è un dettaglio da dare per scontato.
+        long dataFeeLong = feeDaEmettere.isEmpty() ? 0 : cfg.convertiDataInMillis(dataRawDiGruppo);
+        for (String[] fee : feeDaEmettere) {
+            Moneta mFee = new Moneta();
+            mFee.InserisciValori(fee[0], "-" + fee[1], "", "");
+            mFee.AssegnaTipoAuto();
+
+            String[] rtFee = MovimentiCrypto.creaMovimento(
+                    mFee, null,
+                    cfg.nomeExchange, walletPrincipale,
+                    dataFeeLong,
+                    null, "CSV",
+                    1, 1, null, null, "A",
+                    fee[3], "COMMISSIONI", cfg.nomeExchange);
+
+            if (rtFee != null) {
+                if (rtFee.length > 7) {
+                    rtFee[7] = fee[2];
+                }
+                if (rtFee.length > 39) {
+                    rtFee[39] = "D";
+                }
+                risultato.add(rtFee);
             }
         }
 
@@ -569,6 +625,57 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
      * @return array di stringhe nel formato interno del movimento, oppure
      * {@code null} se la riga non produce un movimento valido
      */
+    /**
+     * Riporta al lordo la quantità di {@code m} quando il CSV la fornisce già decurtata della commissione,
+     * <b>modificando l'oggetto sul posto</b>. Non fa nulla se la fee è su un'altra moneta o se il flag
+     * corrispondente della configurazione è spento.
+     *
+     * <p>Serve perché per le cripto-attività le commissioni non sono deducibili (art. 68 c.9-bis del TUIR,
+     * circolare 30/E del 27/10/23): importare la quantità netta equivarrebbe a dedurre la commissione dal
+     * costo di carico. La quantità torna quindi al lordo e la fee viene emessa come movimento
+     * {@code COMMISSIONI} a sé stante dal chiamante.
+     *
+     * <p>È l'<b>unico</b> punto in cui vive la formula: la usano sia {@link #costruisciMovimenti} (righe
+     * singole) sia {@link #consolidaGruppo} (gruppi multi-riga), così lo stesso flag di configurazione non
+     * può significare due cose diverse a seconda del formato del file.
+     *
+     * <p><b>Nota aperta sul lato uscita.</b> La formula qui sotto è quella storica, mantenuta invariata
+     * perché è quella con cui è stato tarato l'import CoinTracking, l'unica configurazione che accende
+     * {@code ricostruisciLordoSeFeeSuMonetaUscita}. Somma però la fee anche quando la quantità è negativa,
+     * il che <i>riduce</i> il modulo dell'uscita ({@code -485,86 + 1,18 = -484,68}), mentre il commento
+     * originale del metodo indicava {@code -485,86 - 1,18 = -487,04}, cioè un'uscita più grande. Le due
+     * letture corrispondono a due convenzioni diverse su cosa contenga la colonna del CSV (quantità già
+     * comprensiva della fee oppure al netto), e senza un export CoinTracking di riferimento non è
+     * decidibile. Sul lato entrata non c'è ambiguità: il lordo è sempre maggiore del netto. Gli import di
+     * OKX non sono toccati dalla questione, perché tengono il flag sull'uscita spento (la commissione è
+     * sempre addebitata sulla gamba in entrata).
+     *
+     * @param m moneta da correggere, può essere {@code null}
+     * @param monetaFee simbolo della moneta in cui è espressa la commissione
+     * @param qtaFeeAssoluta quantità della commissione, in valore assoluto
+     * @param cfg configurazione attiva dell'importazione
+     */
+    private static void ricostruisciLordoConFee(Moneta m, String monetaFee,
+            BigDecimal qtaFeeAssoluta, ConfigurazioneImport cfg) {
+
+        if (m == null || monetaFee == null || monetaFee.isBlank()) return;
+
+        String nome = m.GetNome();
+        if (!monetaFee.equalsIgnoreCase(nome)) return;
+
+        BigDecimal qtaNetta = new BigDecimal(m.GetQta());
+        boolean inUscita = qtaNetta.signum() < 0;
+
+        if (inUscita && !cfg.ricostruisciLordoSeFeeSuMonetaUscita) return;
+        if (!inUscita && !cfg.ricostruisciLordoSeFeeSuMonetaEntrata) return;
+
+        //Entrata: ne è arrivata di meno, il lordo è più grande (2130 + 1,18 = 2131,18).
+        //Uscita: formula storica, vedi la nota aperta nel javadoc.
+        BigDecimal qtaLorda = qtaNetta.add(qtaFeeAssoluta);
+        m.InserisciValori(nome, qtaLorda.stripTrailingZeros().toPlainString(), "", "");
+        m.AssegnaTipoAuto();
+    }
+
     private static List<String[]> costruisciMovimenti(String[] riga, String tipoForzato, ConfigurazioneImport cfg) {
     try {
         List<String[]> risultato = new ArrayList<>();
@@ -682,30 +789,8 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         BigDecimal qtaFeeBD = BigDecimal.ZERO;
         if (haFee) {
             qtaFeeBD = new BigDecimal(qtaFee).abs();
-
-            String nomeMonetaOut = mOUT != null ? mOUT.GetNome() : "";
-            String nomeMonetaIn = mIN != null ? mIN.GetNome() : "";
-
-            boolean feeSuMonetaUscita = mOUT != null && monetaFee.equalsIgnoreCase(nomeMonetaOut);
-            boolean feeSuMonetaEntrata = mIN != null && monetaFee.equalsIgnoreCase(nomeMonetaIn);
-
-            if (feeSuMonetaUscita && cfg.ricostruisciLordoSeFeeSuMonetaUscita) {
-                // mOUT è già negativo: es. -485.86
-                // Lordo corretto: -485.86 - 1.18 = -487.04
-                BigDecimal qtaNettaOut = new BigDecimal(mOUT.GetQta());
-                BigDecimal qtaLordaOut = qtaNettaOut.add(qtaFeeBD);
-                mOUT.InserisciValori(nomeMonetaOut, qtaLordaOut.stripTrailingZeros().toPlainString(), "", "");
-                mOUT.AssegnaTipoAuto();
-            }
-
-            if (feeSuMonetaEntrata && cfg.ricostruisciLordoSeFeeSuMonetaEntrata) {
-                // mIN è positivo: es. 2130
-                // Lordo corretto: 2130 + 1.18 = 2131.18
-                BigDecimal qtaNettaIn = new BigDecimal(mIN.GetQta());
-                BigDecimal qtaLordaIn = qtaNettaIn.add(qtaFeeBD);
-                mIN.InserisciValori(nomeMonetaIn, qtaLordaIn.stripTrailingZeros().toPlainString(), "", "");
-                mIN.AssegnaTipoAuto();
-            }
+            ricostruisciLordoConFee(mOUT, monetaFee, qtaFeeBD, cfg);
+            ricostruisciLordoConFee(mIN, monetaFee, qtaFeeBD, cfg);
         }
 
         // Movimento principale

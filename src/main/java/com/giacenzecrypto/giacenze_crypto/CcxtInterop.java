@@ -51,6 +51,65 @@ public class CcxtInterop {
      */
     public static final String OPZIONE_HOSTNAME_OKX = "OKX_Hostname";
 
+    /**
+     * Primo anno coperto dall'archivio storico di OKX: i dati partono dal 1° febbraio 2021, quindi 2021 Q1
+     * è il trimestre più vecchio che abbia senso chiedere.
+     */
+    public static final int ANNO_MIN_ARCHIVIO_OKX = 2021;
+
+    /**
+     * Elenca i trimestri da chiedere all'archivio storico di OKX per coprire il periodo che va da
+     * {@code dalTimestamp} a oggi, <b>dal più recente al più vecchio</b>.
+     *
+     * <p>Due esclusioni, entrambe imposte dall'endpoint e non da noi:
+     * <ul>
+     *   <li>il <b>trimestre in corso</b> non è generabile, e va comunque coperto dallo scaricamento
+     *       ordinario a 3 mesi di {@code OKX_Bills.js};</li>
+     *   <li>non si scende sotto il {@value #ANNO_MIN_ARCHIVIO_OKX}, perché prima non ci sono dati.</li>
+     * </ul>
+     *
+     * <p>L'ordine dal più recente al più vecchio non è estetico: lo script invia <b>una sola</b> richiesta di
+     * generazione per esecuzione, quindi il primo trimestre dell'elenco è quello che l'utente ottiene per
+     * primo, ed è ragionevole che sia il più vicino ai movimenti che gli mancano.
+     *
+     * <p>I confini di trimestre sono calcolati nel fuso locale mentre OKX ragiona nel proprio: sui pochi
+     * giorni di scarto si preferisce abbondare, perché un trimestre chiesto in più non fa danni (i movimenti
+     * già presenti si deduplicano sull'identificativo) mentre uno in meno lascerebbe un buco silenzioso.
+     *
+     * @param dalTimestamp inizio del periodo da coprire, millisecondi epoch
+     * @param adesso istante corrente, millisecondi epoch
+     * @return i trimestri nella forma {@code <anno>Q<n>}, dal più recente al più vecchio; lista vuota se non
+     *         c'è nulla da chiedere
+     */
+    static List<String> trimestriArchivioOKX(long dalTimestamp, long adesso) {
+        java.time.ZoneId fuso = java.time.ZoneId.systemDefault();
+        java.time.LocalDate inizio = java.time.Instant.ofEpochMilli(dalTimestamp).atZone(fuso).toLocalDate();
+        java.time.LocalDate oggi = java.time.Instant.ofEpochMilli(adesso).atZone(fuso).toLocalDate();
+
+        if (inizio.getYear() < ANNO_MIN_ARCHIVIO_OKX) {
+            inizio = java.time.LocalDate.of(ANNO_MIN_ARCHIVIO_OKX, 1, 1);
+        }
+
+        int annoInizio = inizio.getYear();
+        int trimInizio = (inizio.getMonthValue() - 1) / 3 + 1;
+        int annoFine = oggi.getYear();
+        int trimFine = (oggi.getMonthValue() - 1) / 3 + 1;
+
+        //Si arretra di uno: il trimestre in corso non è generabile.
+        trimFine--;
+        if (trimFine == 0) { trimFine = 4; annoFine--; }
+
+        List<String> trimestri = new ArrayList<>();
+        int anno = annoFine, trim = trimFine;
+        while (anno > annoInizio || (anno == annoInizio && trim >= trimInizio)) {
+            if (anno < ANNO_MIN_ARCHIVIO_OKX) break;
+            trimestri.add(anno + "Q" + trim);
+            trim--;
+            if (trim == 0) { trim = 4; anno--; }
+        }
+        return trimestri;
+    }
+
 
     
     /**
@@ -320,8 +379,40 @@ public static Path getNodeExePath() {
     static boolean ConfermaFinestraStoricoOKX(String exchangeId, long startDate, Component c) {
         if (exchangeId == null || !exchangeId.trim().equalsIgnoreCase("OKX")) return true;
 
+        return SceltaStoricoOKX(exchangeId, startDate, c) != SceltaStorico.ANNULLA;
+    }
+
+    /** Cosa fare quando lo scaricamento OKX partirebbe da più indietro di quanto le API a 3 mesi coprano. */
+    public enum SceltaStorico {
+        /** Solo lo scaricamento ordinario: i movimenti Trading più vecchi di 3 mesi non arriveranno. */
+        PROCEDI,
+        /** Scaricamento ordinario più il recupero dall'archivio storico trimestrale del conto Trading. */
+        PROCEDI_CON_ARCHIVIO,
+        /** L'utente ha rinunciato: non deve partire nulla. */
+        ANNULLA
+    }
+
+    /**
+     * Chiede all'utente come procedere quando lo scaricamento OKX dovrebbe partire da una data più vecchia di
+     * quanto {@code account/bills-archive} sia in grado di restituire.
+     *
+     * <p>Il limite riguarda ormai il <b>solo conto Trading</b>: dal 03/08/2026 il Funding passa da
+     * {@code asset/bills-history}, che restituisce l'intero storico (verificato: 524 giorni in una sola
+     * pagina). Per il Trading esiste invece l'archivio trimestrale, asincrono ma rapido — 105 secondi sui
+     * dati reali — che questo dialogo permette di attivare.
+     *
+     * @param exchangeId exchange su cui si sta per scaricare; per tutti gli altri il controllo non si applica
+     * @param startDate data da cui partirebbe lo scaricamento, millisecondi epoch
+     * @param c componente rispetto a cui centrare la finestra
+     * @return la scelta dell'utente; {@link SceltaStorico#PROCEDI} anche quando il dialogo non serve
+     */
+    static SceltaStorico SceltaStoricoOKX(String exchangeId, long startDate, Component c) {
+        if (exchangeId == null || !exchangeId.trim().equalsIgnoreCase("OKX")) return SceltaStorico.PROCEDI;
+
         long giorni = (System.currentTimeMillis() - startDate) / (24L * 60 * 60 * 1000);
-        if (giorni <= GIORNI_STORICO_OKX) return true;
+        if (giorni <= GIORNI_STORICO_OKX) return SceltaStorico.PROCEDI;
+
+        List<String> trimestri = trimestriArchivioOKX(startDate, System.currentTimeMillis());
 
         java.awt.Window owner = (c instanceof java.awt.Window w) ? w : SwingUtilities.getWindowAncestor(c);
         AppDialog.DialogResult result = AppDialog.builder(owner)
@@ -333,21 +424,29 @@ public static Path getNodeExePath() {
                 .message("")
                 .details("Lo scaricamento dovrebbe partire dal "
                         + FunzioniDate.ConvertiDatadaLongAlSecondo(startDate) + ", cioè " + giorni + " giorni fa.\n\n"
-                        + "Le API di OKX restituiscono al massimo gli ultimi 3 mesi di movimenti, e sul conto "
-                        + "Funding (depositi, prelievi, giroconti) anche meno: circa un mese.\n\n"
-                        + "Lo scaricamento non fallisce, ma i movimenti più vecchi del limite NON verranno "
-                        + "scaricati e non ti verrà segnalato quali mancano. Per recuperarli serve l'export CSV "
-                        + "di OKX, da importare con le configurazioni OKX_Funding e OKX_Trading.\n\n"
-                        + "Vuoi procedere ugualmente con lo scaricamento via API?")
+                        + "Il conto Funding (depositi, prelievi, giroconti) non ha limiti: viene scaricato per intero.\n\n"
+                        + "Il conto Trading invece torna al massimo gli ultimi 3 mesi. I movimenti più vecchi si "
+                        + "recuperano dall'archivio storico di OKX, che li fornisce un trimestre alla volta: "
+                        + "servono " + trimestri.size() + " trimestri per coprire il periodo.\n\n"
+                        + "OKX prepara un trimestre per volta e ci mette qualche minuto. Il programma ne chiede "
+                        + "uno a ogni scaricamento e attende fino a 5 minuti: se al termine non è pronto, "
+                        + "basta rilanciare lo scaricamento più tardi e verrà raccolto senza rifare la richiesta.\n\n"
+                        + "Come vuoi procedere?")
                 .action(AppDialog.DialogAction.builder("annulla", "Annulla")
                         .role(AppDialog.ActionRole.SECONDARY)
                         .build())
-                .action(AppDialog.DialogAction.builder("continua", "Procedi comunque")
+                .action(AppDialog.DialogAction.builder("continua", "Solo ultimi 3 mesi")
                         .role(AppDialog.ActionRole.DANGER)
+                        .build())
+                .action(AppDialog.DialogAction.builder("archivio", "Recupera anche l'archivio")
+                        .role(AppDialog.ActionRole.PRIMARY)
                         .build())
                 .showDialog();
 
-        return result != null && result.isAction("continua");
+        if (result == null) return SceltaStorico.ANNULLA;
+        if (result.isAction("archivio")) return SceltaStorico.PROCEDI_CON_ARCHIVIO;
+        if (result.isAction("continua")) return SceltaStorico.PROCEDI;
+        return SceltaStorico.ANNULLA;
     }
 
     public static Importazioni.Esito fetchMovimentiConBar(String exchangeId, String apiKey, String secret, long startDate,String Tokens,Component c) {
@@ -373,7 +472,9 @@ public static Path getNodeExePath() {
 
         //L'avviso va dato prima di aprire la finestra di avanzamento: se l'utente rinuncia non deve
         //essere partito nulla, né il download di Node né la chiamata all'exchange.
-        if (!ConfermaFinestraStoricoOKX(exchangeId, startDate, c)) return null;
+        final SceltaStorico scelta = SceltaStoricoOKX(exchangeId, startDate, c);
+        if (scelta == SceltaStorico.ANNULLA) return null;
+        final boolean conArchivio = (scelta == SceltaStorico.PROCEDI_CON_ARCHIVIO);
 
         //L'esito viene raccolto qui dal thread in background e letto solo quando la finestra di progresso
         //(modale) si è chiusa, cioè quando lo scaricamento è finito: il resoconto lo mostra il chiamante,
@@ -400,7 +501,7 @@ public static Path getNodeExePath() {
         installCcxt();
         System.out.println("Eseguo la chiamata");
         
-        Esiti[0]=fetchMovimenti(exchangeId, apiKey, secret,startDate,Tokens,passphrase,progress,c);
+        Esiti[0]=fetchMovimenti(exchangeId, apiKey, secret,startDate,Tokens,passphrase,progress,c,conArchivio);
         } catch (IOException ex) {
             Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {
@@ -446,6 +547,18 @@ public static Path getNodeExePath() {
      *         {@code null} se l'elaborazione è stata interrotta o non è arrivata all'importazione
      */
     public static Importazioni.Esito fetchMovimenti(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String passphrase,Download progress,Component c) {
+        return fetchMovimenti(exchangeId, apiKey, secret, startDate, Tokens, passphrase, progress, c, false);
+    }
+
+    /**
+     * Come {@link #fetchMovimenti(String, String, String, long, String, String, Download, Component)}, ma con
+     * la possibilità di recuperare anche l'archivio storico trimestrale del conto Trading di OKX.
+     *
+     * @param conArchivio {@code true} per aggiungere allo scaricamento ordinario il recupero dall'archivio
+     *        storico; ignorato per gli exchange diversi da OKX
+     * @return l'esito dell'importazione, oppure {@code null} se l'elaborazione è stata interrotta
+     */
+    public static Importazioni.Esito fetchMovimenti(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String passphrase,Download progress,Component c,boolean conArchivio) {
        // Map<String, JsonObject> Mappa_Json = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         List<JsonObject> Jsons = new ArrayList<>();
         
@@ -713,6 +826,19 @@ public static Path getNodeExePath() {
             righe.addAll(rf);
             righe.addAll(rt);
 
+            //Archivio storico del conto Trading, solo se richiesto: recupera i trimestri che account/bills-archive
+            //non copre. I movimenti che ne escono hanno gli stessi identificativi di quelli appena scaricati,
+            //quindi i periodi sovrapposti si deduplicano da soli e non serve alcun coordinamento fra i due.
+            if (conArchivio) {
+                List<String[]> ra = ScaricaArchivioOKX(exchangeId, apiKey, secret, startDate, passphrase,
+                        hostnameOKX, progress);
+                if (ra == null) {
+                    JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                    return null;
+                }
+                righe.addAll(ra);
+            }
+
             //I rendimenti dei prodotti Earn non sono nei bill: hanno endpoint propri e vanno chiesti a parte.
             //Si riparte dalla mezzanotte del giorno di startDate, non da startDate: l'aggregazione è per
             //giornata e una giornata va scaricata intera, altrimenti se ne importerebbe solo la coda.
@@ -795,9 +921,28 @@ public static Path getNodeExePath() {
      * sconosciuti già gestito dall'import, che diventa l'elenco esatto dei codici ancora da decodificare.
      * È una scelta deliberata: meglio un movimento segnalato che un movimento classificato male.
      *
-     * <p>Le fee non vengono riportate nei campi {@code [11]}/{@code [12]}: nei bill di OKX {@code balChg} è già
-     * la variazione netta di saldo e comprende quindi la commissione, per cui generare anche la riga di
-     * commissione la conteggerebbe due volte. Anche questo è da confermare con il confronto contro il CSV.
+     * <p><b>Le commissioni vengono scorporate.</b> Nei bill di OKX {@code balChg} è la variazione <i>netta</i>
+     * di saldo, cioè la quantità già decurtata della commissione ({@code balChg = sz + fee}, con {@code fee}
+     * negativo; verificato su tutti i bill reali scaricati, dove la fee è sempre addebitata sulla gamba in
+     * <b>entrata</b> e sempre nella stessa moneta del bill). Importare direttamente {@code balChg}
+     * porterebbe in carico solo il netto, cioè <b>dedurrebbe di fatto la commissione dal costo di carico</b>:
+     * per le cripto-attività l'art. 68 c.9-bis del TUIR (e la circolare 30/E del 27/10/23) non lo consente,
+     * a differenza di quanto vale per le attività finanziarie con il c.6.
+     *
+     * <p>Si riporta quindi in {@code [6]} la quantità <b>lorda</b> ({@code balChg - fee}) e la commissione in
+     * {@code [11]}/{@code [12]}, da cui {@link Importazioni#Ex_OKX_Consolida} genera un secondo movimento di
+     * tipo {@code COMMISSIONI}. Il costo di carico resta così sull'intero importo scambiato e la commissione
+     * diventa una cessione a sé stante, con la sua eventuale plusvalenza accessoria.
+     *
+     * <p>La commissione deve essere elaborata <b>dopo</b> lo scambio, perché cede la moneta che lo scambio ha
+     * appena accreditato. Lo garantisce l'ordinamento delle chiavi: {@code Calcoli_PlusvalenzeNew} scorre
+     * {@code MappaCryptoWallet.values()}, e la mappa è una {@code TreeMap} con
+     * {@code String.CASE_INSENSITIVE_ORDER}. Qui lo scambio ha identificativo {@code OKX$IDE$} e la
+     * commissione {@code OKX<billId>C}, e {@code '$'} precede le cifre. Attenzione che il confronto è
+     * <b>case-insensitive</b>, quindi confronta i caratteri in minuscolo: è per questo che il suffisso
+     * {@code "C"} che {@code creaMovimento} accoda ai movimenti {@code CM} in uscita li porta dopo e non
+     * prima ({@code '_'} = 0x5F precede {@code 'c'} = 0x63, mentre precederebbe {@code 'C'} = 0x43 in un
+     * confronto sensibile alle maiuscole).
      *
      * @param bills array JSON dei bill grezzi restituiti da {@code OKX_Bills.js}, oppure {@code null}
      * @param Wallet nome del conto di provenienza, {@code "Funding"} oppure {@code "Trading"}
@@ -823,9 +968,16 @@ public static Path getNodeExePath() {
      * <tr><td>Funding</td><td>48</td><td>Received</td><td>trasferimento crypto</td></tr>
      * <tr><td>Funding</td><td>130</td><td>From unified trading account</td><td>giroconto interno</td></tr>
      * <tr><td>Funding</td><td>131</td><td>To unified trading account</td><td>giroconto interno</td></tr>
+     * <tr><td>Funding</td><td>75</td><td>Simple Earn subscription</td><td>giroconto interno</td></tr>
      * <tr><td>Funding</td><td>76</td><td>Simple Earn redemption</td><td>giroconto interno</td></tr>
-     * <tr><td>Funding</td><td>326 / 327</td><td>nessuna</td><td>giroconto interno</td></tr>
+     * <tr><td>Funding</td><td>326 / 327</td><td>Data migration out / in</td><td>giroconto interno</td></tr>
      * </table>
+     *
+     * <p>Dal 03/08/2026 la tabella non è più ricavata solo per confronto con il CSV: l'endpoint
+     * {@code asset/bills-history} restituisce anche il campo {@code notes}, che porta l'etichetta in chiaro
+     * del tipo ({@code "Simple Earn subscription"}, {@code "Data migration out"}, …). È da lì che vengono le
+     * righe 75 e 326/327 di questa tabella, e per questo i tipi non riconosciuti riportano {@code notes} nella
+     * causale: il prossimo codice ignoto arriva già con la propria descrizione, senza bisogno di indagini.
      *
      * <p>Tutti i giroconti interni a OKX sono resi con le etichette {@code "Transfer in"}/{@code "Transfer out"},
      * che {@link Importazioni#Ex_OKX_MappaCausali} associa a {@code NON CONSIDERARE}: sono spostamenti fra
@@ -836,11 +988,10 @@ public static Path getNodeExePath() {
      * davvero nel wallet, quindi viene trattato come un deposito e non come un giroconto.
      *
      * <p>I codici {@code 326}/{@code 327} compaiono solo a coppie di segno opposto sulla stessa moneta, sullo
-     * stesso istante e per importi infinitesimi, e non hanno alcuna riga corrispondente nell'export CSV: sono
-     * <b>spostamenti fra wallet dello stesso utente</b> e ricadono quindi fra i giroconti interni. Erano
-     * inizialmente lasciati non mappati perché non decodificabili dai soli dati scaricati; sono stati
-     * riconosciuti come giroconti il 03/08/2026 sui movimenti reali del 23/07/2026, dove le due gambe si
-     * compensano esattamente.
+     * stesso istante, e non hanno alcuna riga corrispondente nell'export CSV. Il campo {@code notes} li
+     * identifica come {@code "Data migration out"} e {@code "Data migration in"}: sono le due gambe della
+     * <b>migrazione dei dati fra entità regionali di OKX</b>, non movimenti reali. Restano fra i giroconti
+     * interni, cioè non importati, che è il trattamento corretto: le due gambe si compensano esattamente.
      *
      * @param tipo valore del campo {@code type} del bill
      * @param balChg variazione di saldo, usata per ricavare il verso del movimento
@@ -848,6 +999,22 @@ public static Path getNodeExePath() {
      * @return la causale testuale, oppure {@code "OKX type <n>"} se il codice non è fra quelli riconosciuti
      */
     static String causaleBillOKX(String tipo, String balChg, boolean isTrading) {
+        return causaleBillOKX(tipo, balChg, isTrading, "");
+    }
+
+    /**
+     * Come {@link #causaleBillOKX(String, String, boolean)}, ma per i codici non riconosciuti riporta anche
+     * l'etichetta in chiaro che OKX espone nel campo {@code notes} del bill.
+     *
+     * @param tipo valore del campo {@code type} del bill
+     * @param balChg variazione di saldo, usata per ricavare il verso del movimento
+     * @param isTrading {@code true} se il bill viene dal conto Trading, {@code false} dal Funding
+     * @param notes campo {@code notes} del bill; può essere vuoto o {@code null}
+     * @return la causale testuale, oppure {@code "OKX type <n> (<notes>)"} se il codice non è riconosciuto
+     */
+    static String causaleBillOKX(String tipo, String balChg, boolean isTrading, String notes) {
+        String sconosciuto = "OKX type " + tipo;
+        if (notes != null && !notes.isBlank()) sconosciuto = sconosciuto + " (" + notes.trim() + ")";
         //Un giroconto interno è reso col verso giusto: le due etichette sono entrambe NON CONSIDERARE,
         //ma tenerle distinte mantiene leggibile il movimento in caso di diagnostica.
         String giroconto = Funzioni.isNegativo(balChg) ? "Transfer out" : "Transfer in";
@@ -857,20 +1024,23 @@ public static Path getNodeExePath() {
                 case "2":  return Funzioni.isNegativo(balChg) ? "Sell" : "Buy";
                 case "1":
                 case "12": return giroconto;
-                default:   return "OKX type " + tipo;   //non mappato: finirà tra i movimenti sconosciuti
+                default:   return sconosciuto;   //non mappato: finirà tra i movimenti sconosciuti
             }
         }
         switch (tipo) {
             case "1":   return "deposit";
             case "2":   return "withdrawal";
             case "48":  return "Received";
+            //75/76: sottoscrizione e riscatto di Simple Earn, cioè spostamenti fra il conto Funding e il
+            //prodotto Earn dello stesso utente. Il 75 è stato riconosciuto il 03/08/2026 dal campo notes.
+            case "75":
             case "76":
             case "130":
             case "131":
-            //326/327: le due gambe di uno spostamento fra wallet dello stesso utente, vedi javadoc
+            //326/327: le due gambe della migrazione fra entità regionali di OKX, vedi javadoc
             case "326":
             case "327": return giroconto;
-            default:    return "OKX type " + tipo;      //non mappato: finirà tra i movimenti sconosciuti
+            default:    return sconosciuto;      //non mappato: finirà tra i movimenti sconosciuti
         }
     }
 
@@ -959,6 +1129,205 @@ public static Path getNodeExePath() {
         return lista;
     }
 
+    /**
+     * Traduce la coppia {@code instType}/{@code subType} del CSV d'archivio nel codice {@code type} usato dai
+     * bill JSON, così che la classificazione resti governata da {@link #causaleBillOKX} e non esista un
+     * secondo classificatore da tenere allineato.
+     *
+     * <p>Il CSV dell'archivio <b>non ha la colonna {@code type}</b>: espone solo {@code subType}, che è un
+     * vocabolario diverso. La corrispondenza qui sotto non è dedotta dalla documentazione ma <b>ricavata sui
+     * dati</b>: i 112 {@code billId} dell'archivio 2026 Q2 sono tutti presenti anche fra i bill scaricati via
+     * API, quindi per ogni riga è stato possibile leggere il {@code type} corrispondente.
+     *
+     * <table><caption>Corrispondenza verificata il 03/08/2026</caption>
+     * <tr><th>instType</th><th>subType</th><th>type</th><th>significato</th></tr>
+     * <tr><td>SPOT</td><td>1 / 2</td><td>2</td><td>gambe di uno scambio spot</td></tr>
+     * <tr><td>-</td><td>11 / 12</td><td>1</td><td>giroconto col conto Funding</td></tr>
+     * <tr><td>-</td><td>200 / 202</td><td>12</td><td>giroconto interno</td></tr>
+     * </table>
+     *
+     * <p>Il verso non si ricava dal {@code subType} ma sempre dal segno di {@code balChg}, come già fa
+     * {@code causaleBillOKX}: sui dati reali le 44 righe {@code subType=1} hanno tutte {@code balChg}
+     * positivo e le 44 {@code subType=2} tutte negativo, quindi le due letture coincidono e quella per segno
+     * vale anche per i tipi non spot.
+     *
+     * @param instType valore della colonna {@code instType} ({@code "SPOT"} oppure {@code "-"})
+     * @param subType valore della colonna {@code subType}
+     * @return il codice {@code type} corrispondente, oppure stringa vuota se la combinazione è ignota, così
+     *         che il movimento finisca fra quelli sconosciuti invece di essere classificato a caso
+     */
+    /**
+     * Recupera dall'archivio storico trimestrale di OKX i movimenti del conto Trading più vecchi dei 3 mesi
+     * coperti da {@code account/bills-archive}, e li restituisce già nel formato intermedio a 19 campi.
+     *
+     * <p>Lo script {@code OKX_Archivio.js} chiede la generazione di <b>un solo trimestre per esecuzione</b>,
+     * perché la richiesta è fortemente limitata da OKX, e attende fino a 5 minuti che il file sia pronto
+     * (misurato: 105 secondi). I trimestri restanti si recuperano rilanciando lo scaricamento: quelli già
+     * generati vengono presi al volo, senza spendere una seconda richiesta.
+     *
+     * <p>L'esito di ciascun trimestre viene riportato all'utente, altrimenti un recupero parziale — che è la
+     * norma quando i trimestri sono molti — sarebbe indistinguibile da uno completo.
+     *
+     * @param exchangeId identificativo CCXT dell'exchange
+     * @param apiKey API key dell'account
+     * @param secret API secret dell'account
+     * @param startDate inizio del periodo da coprire, millisecondi epoch
+     * @param passphrase passphrase di OKX
+     * @param hostname dominio regionale già riconosciuto, stringa vuota se ancora ignoto
+     * @param progress finestra di progresso su cui riportare l'avanzamento
+     * @return le righe in formato intermedio a 19 campi, lista vuota se non c'è nulla da recuperare, oppure
+     *         {@code null} se l'utente ha interrotto
+     */
+    static List<String[]> ScaricaArchivioOKX(String exchangeId, String apiKey, String secret, long startDate,
+            String passphrase, String hostname, Download progress) {
+
+        List<String> trimestri = trimestriArchivioOKX(startDate, System.currentTimeMillis());
+        if (trimestri.isEmpty()) {
+            System.out.println("Archivio storico OKX: nessun trimestre da recuperare.");
+            return new ArrayList<>();
+        }
+
+        if (progress != null) progress.SetMessaggioAvanzamento("Archivio storico OKX (può richiedere qualche minuto)...");
+        System.out.println("Archivio storico OKX, trimestri richiesti: " + String.join(", ", trimestri));
+
+        JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate,
+                String.join(",", trimestri), "OKX_Archivio", passphrase, hostname);
+
+        if (Principale.InterrompiCiclo) return null;
+        if (json == null) {
+            JOptionPane.showConfirmDialog(null, "Nessuna risposta da OKX per l'archivio storico.\n\n"
+                    + "Lo scaricamento ordinario è stato comunque importato.",
+                    "Attenzione", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+            return new ArrayList<>();
+        }
+
+        //Il riepilogo per trimestre è la parte utile del messaggio: dice cosa è entrato e cosa va ritentato.
+        StringBuilder riepilogo = new StringBuilder();
+        boolean daRitentare = false;
+        if (json.has("okx_periodi") && json.get("okx_periodi").isJsonArray()) {
+            for (JsonElement el : json.getAsJsonArray("okx_periodi")) {
+                JsonObject p = el.getAsJsonObject();
+                String periodo = p.has("periodo") ? p.get("periodo").getAsString() : "?";
+                String stato = p.has("stato") ? p.get("stato").getAsString() : "?";
+                riepilogo.append("  ").append(periodo).append(" : ").append(stato);
+                if (p.has("righe")) riepilogo.append(" (").append(p.get("righe").getAsString()).append(" movimenti)");
+                if (p.has("dettaglio")) riepilogo.append(" - ").append(p.get("dettaglio").getAsString());
+                riepilogo.append("\n");
+                if (!stato.equals("scaricato")) daRitentare = true;
+            }
+        }
+        System.out.println("Archivio storico OKX:\n" + riepilogo);
+
+        JsonArray archivio = json.has("okx_archivioBills") ? json.getAsJsonArray("okx_archivioBills") : new JsonArray();
+        List<String[]> righe = convertOKXArchivio(archivio);
+
+        if (daRitentare) {
+            JOptionPane.showConfirmDialog(null,
+                    "Archivio storico OKX: recupero parziale.\n\n" + riepilogo + "\n"
+                    + "OKX prepara un trimestre alla volta e ne è stato chiesto uno solo, come impone il suo "
+                    + "limite di frequenza. Rilancia lo scaricamento fra qualche minuto per prendere quello "
+                    + "in preparazione e chiedere il successivo.",
+                    "Archivio storico OKX", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+        }
+        return righe;
+    }
+
+    /**
+     * Ricostruisce {@code balChg} a partire da {@code sz}, che nel CSV dell'archivio è il campo pulito,
+     * <b>modificando l'oggetto sul posto</b>.
+     *
+     * <p>Le due fonti riportano lo stesso movimento con precisione diversa: l'API dà
+     * {@code balChg = 0.00046266282}, il CSV dà {@code 0.0004626628199999993}, cioè lo stesso numero con la
+     * sbavatura di un passaggio in virgola mobile. {@code sz} invece coincide esattamente in entrambe
+     * ({@code 0.00046359}), quindi ricalcolare {@code balChg = segno × |sz| + fee} restituisce cifra per
+     * cifra il valore dell'API. Senza questo passaggio lo stesso scambio importato dalle due strade
+     * darebbe quantità diverse a partire dalla quindicesima cifra: irrilevante per l'imposta, ma è
+     * sporcizia che non ha motivo di entrare nei calcoli.
+     *
+     * <p>La riscrittura avviene solo se {@code sz} è valorizzato e il valore ricostruito coincide con quello
+     * dichiarato entro un margine minimo. Sui dati reali il controllo passa su tutte le 88 righe spot,
+     * mentre le 24 righe di giroconto hanno {@code sz} a zero e restano com'erano: se un domani OKX
+     * cambiasse il significato di {@code sz}, il controllo se ne accorgerebbe e non toccherebbe nulla.
+     *
+     * @param o riga dell'archivio, già in forma di bill
+     */
+    private static void ripulisciBalChgArchivioOKX(JsonObject o) {
+        if (!o.has("sz") || !o.has("balChg")) return;
+        String sz = o.get("sz").getAsString();
+        String balChg = o.get("balChg").getAsString();
+        String fee = o.has("fee") ? o.get("fee").getAsString() : "0";
+        if (!Funzioni.isNumeric(sz, false) || !Funzioni.isNumeric(balChg, false)) return;
+        if (!Funzioni.isNumeric(fee, false)) fee = "0";
+
+        BigDecimal szBD = new BigDecimal(sz);
+        if (szBD.compareTo(BigDecimal.ZERO) == 0) return;   //giroconti: sz non valorizzato
+
+        BigDecimal vecchio = new BigDecimal(balChg);
+        BigDecimal feeBD = new BigDecimal(fee).abs().negate();
+        BigDecimal nuovo = (vecchio.signum() < 0 ? szBD.abs().negate() : szBD.abs()).add(feeBD);
+
+        //Tolleranza relativa: si corregge la sbavatura, non si riscrive un valore diverso
+        BigDecimal margine = vecchio.abs().multiply(new BigDecimal("0.000000001")).add(new BigDecimal("1E-18"));
+        if (nuovo.subtract(vecchio).abs().compareTo(margine) <= 0) {
+            o.addProperty("balChg", nuovo.toPlainString());
+        }
+    }
+
+    static String tipoDaArchivioOKX(String instType, String subType) {
+        if (instType != null && instType.trim().equalsIgnoreCase("SPOT")) return "2";
+        if (subType == null) return "";
+        switch (subType.trim()) {
+            case "11":
+            case "12":  return "1";
+            case "200":
+            case "202": return "12";
+            default:    return "";
+        }
+    }
+
+    /**
+     * Converte le righe del CSV dell'archivio storico ({@code Scripts/OKX_Archivio.js}) nel formato
+     * intermedio a 19 campi, riusando integralmente {@link #convertOKXBills}.
+     *
+     * <p>L'unico adattamento è la sintesi del campo {@code type} tramite {@link #tipoDaArchivioOKX}, assente
+     * dal CSV. Tutto il resto — verso, scorporo delle commissioni, causali, ID originale — passa dalla stessa
+     * strada dello scaricamento a 3 mesi, ed è questo che fa sì che i movimenti dell'archivio abbiano
+     * <b>gli stessi identificativi</b> di quelli già importati via API: i periodi sovrapposti si deduplicano
+     * da soli invece di generare doppioni.
+     *
+     * <p>L'apostrofo iniziale con cui il CSV forza il testo per Excel ({@code '3702022358013911044}) viene
+     * tolto anche qui e non solo nello script: è la condizione perché gli ID coincidano, e va garantita nel
+     * punto in cui l'ID viene consumato.
+     *
+     * @param righe array JSON delle righe del CSV, oppure {@code null}
+     * @return le righe in formato intermedio a 19 campi
+     */
+    public static List<String[]> convertOKXArchivio(JsonArray righe) {
+        if (righe == null) return new ArrayList<>();
+
+        JsonArray comeBill = new JsonArray();
+        for (JsonElement el : righe) {
+            if (!el.isJsonObject()) continue;
+            JsonObject o = el.getAsJsonObject().deepCopy();
+
+            String instType = o.has("instType") ? o.get("instType").getAsString() : "";
+            String subType  = o.has("subType")  ? o.get("subType").getAsString()  : "";
+            String tipo = tipoDaArchivioOKX(instType, subType);
+            //Se la combinazione è ignota si conserva il subType nel codice, così il riepilogo dei movimenti
+            //sconosciuti dice esattamente quale valore va decodificato.
+            o.addProperty("type", tipo.isEmpty() ? "archivio subType " + subType : tipo);
+
+            if (o.has("billId")) {
+                String id = o.get("billId").getAsString();
+                if (id.startsWith("'")) o.addProperty("billId", id.substring(1));
+            }
+
+            ripulisciBalChgArchivioOKX(o);
+            comeBill.add(o);
+        }
+        return convertOKXBills(comeBill, "Trading");
+    }
+
     public static List<String[]> convertOKXBills(JsonArray bills, String Wallet) {
         List<String[]> lista = new ArrayList<>();
         if (bills == null) return lista;
@@ -974,15 +1343,30 @@ public static Path getNodeExePath() {
             String balChg = obj.optString("balChg", "");
             String tipo   = obj.optString("type", "");
             String ts     = obj.optString("ts", "");
+            String fee    = obj.optString("fee", "");
+            //Etichetta in chiaro del tipo, presente sui bill del Funding: serve solo a rendere
+            //autoesplicativi i codici non ancora mappati nel riepilogo dei movimenti sconosciuti.
+            String notes  = obj.optString("notes", "");
 
             if (billId.isEmpty() || ccy.isEmpty() || balChg.isEmpty() || ts.isEmpty()) continue;
             if (!Funzioni.isNumeric(balChg, false) || !Funzioni.isNumeric(ts, false)) continue;
 
-            //Un bill a saldo invariato non è un movimento
-            if (new BigDecimal(balChg).compareTo(BigDecimal.ZERO) == 0) continue;
+            //La commissione è sempre nella stessa moneta del bill (verificato su tutti i bill reali) ed è
+            //già compresa in balChg: la si scorpora per riportare in carico il lordo. Il campo manca del
+            //tutto sui bill del Funding, quindi la sua assenza è la norma e non un errore.
+            BigDecimal feeBD = BigDecimal.ZERO;
+            if (!fee.isEmpty() && Funzioni.isNumeric(fee, false)) feeBD = new BigDecimal(fee).abs().negate();
+
+            //Quantità lorda: balChg è il netto, la fee è negativa, quindi sottrarla la riaggiunge.
+            //Si ricava da balChg e non da sz perché il segno di sz non è affidabile su tutti i tipi di bill,
+            //mentre balChg porta sempre il verso reale del movimento.
+            BigDecimal lordo = new BigDecimal(balChg).subtract(feeBD);
+
+            //Un bill che non muove nulla, nemmeno in commissioni, non è un movimento
+            if (lordo.compareTo(BigDecimal.ZERO) == 0 && feeBD.compareTo(BigDecimal.ZERO) == 0) continue;
 
             //Causale nelle stesse etichette usate dal CSV, così la mappa causali resta una sola
-            String causale = causaleBillOKX(tipo, balChg, isTrading);
+            String causale = causaleBillOKX(tipo, balChg, isTrading, notes);
 
             String DatoRiga[] = new String[19];
             DatoRiga[0]  = FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(ts));   //Timestamp
@@ -991,9 +1375,16 @@ public static Path getNodeExePath() {
             DatoRiga[3]  = "";                                                             //Categoria interna: la assegna Ex_OKX_RaggruppaEConsolida
             DatoRiga[4]  = causale;                                                        //Causale originale
             DatoRiga[5]  = ccy;                                                            //Moneta
-            DatoRiga[6]  = new BigDecimal(balChg).stripTrailingZeros().toPlainString();     //Qta, già con segno
-            DatoRiga[11] = "";                                                             //Moneta fee: vedi javadoc
-            DatoRiga[12] = "";                                                             //Qta fee: vedi javadoc
+            DatoRiga[6]  = lordo.stripTrailingZeros().toPlainString();                     //Qta LORDA, già con segno
+            //Fee lasciate vuote quando sono nulle: Ex_OKX_Consolida genera il movimento di commissione sulla
+            //sola base di [12] non vuoto, e uno "0" produrrebbe un movimento fantasma su ogni bill senza fee.
+            if (feeBD.compareTo(BigDecimal.ZERO) != 0) {
+                DatoRiga[11] = ccy;                                                        //Moneta fee
+                DatoRiga[12] = feeBD.stripTrailingZeros().toPlainString();                 //Qta fee, negativa: è un'uscita
+            } else {
+                DatoRiga[11] = "";
+                DatoRiga[12] = "";
+            }
             DatoRiga[14] = billId;                                                         //ID originale OKX
             //"NO": Funding e Trading vengono scaricati entrambi nella stessa esecuzione, quindi un
             //trasferimento interno compare già come bill su tutti e due i conti. Generare anche il

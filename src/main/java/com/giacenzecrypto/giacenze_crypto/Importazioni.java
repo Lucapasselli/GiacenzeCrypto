@@ -3719,6 +3719,34 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
  * @param listaAutoinvest righe relative ai piani di auto-invest, da integrare nel consolidamento
  * @return la lista di righe di movimento consolidate nel formato standard dell'applicazione
  */
+/**
+ * Decide il numero di movimento da usare nell'identificativo di una riga di commissione OKX.
+ *
+ * <p>È una scelta che tocca la <b>deduplica</b>, non l'estetica dell'ID. Il numero di movimento entra
+ * nell'identificativo, e usare la posizione della riga nel gruppo di consolidamento lo rende dipendente da
+ * <i>quali altre righe sono state scaricate insieme</i>: lo stesso bill, preso una volta dai 3 mesi di
+ * {@code account/bills-archive} e una volta dall'archivio trimestrale — due finestre che si sovrappongono —
+ * si trova in posizioni diverse e ottiene due identificativi diversi. Il risultato è che la stessa
+ * commissione entra <b>due volte</b> invece di essere riconosciuta come già presente.
+ *
+ * <p>Verificato sui movimenti reali: 44 commissioni duplicate nel solo giugno 2026, ognuna con lo stesso
+ * {@code billId}, la stessa data e la stessa quantità, e identificativi che differivano soltanto per questo
+ * contatore ({@code _001_} contro {@code _002_}, {@code _003_}, {@code _011_}).
+ *
+ * <p>Quando l'ID originale c'è — e sui bill di OKX c'è sempre — è già univoco ed è già dentro
+ * l'identificazione del movimento: il contatore diventa ridondante e va tenuto fisso, così l'identificativo
+ * dipende solo dal movimento e non da come lo si è scaricato. Resta il vecchio comportamento come ripiego
+ * per le righe senza ID originale, dove il contatore è l'unica cosa che le distingue.
+ *
+ * @param IDOriginale identificativo del bill così come arriva da OKX; può essere vuoto o {@code null}
+ * @param posizioneNelGruppo indice della riga dentro il gruppo di consolidamento, a base zero
+ * @return il numero di movimento da passare a {@code creaMovimento}
+ */
+static int Ex_OKX_NumMovimentoCommissione(String IDOriginale, int posizioneNelGruppo) {
+    if (IDOriginale != null && !IDOriginale.isBlank()) return 1;
+    return posizioneNelGruppo + 1;
+}
+
 public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaConsolidare, Map<String, String> Mappa_Conversione_Causali, List<String[]> listaAutoinvest) {
 
         //int mov è un indice che viene aggiunto all'ID per permettere a più transazioni con lo stesso id di coesistere
@@ -3805,10 +3833,12 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
                 m.Qta = movimentoSplittato[12];
                 m.AssegnaTipoAuto();
 
+                int numMovimentoFee = Ex_OKX_NumMovimentoCommissione(IDOriginale, k);
+
                 RT = MovimentiCrypto.creaMovimento(m, null,
                         WalletPrincipale, WalletSecondario,
                         TimeStamp, null,
-                        null, k + 1, 1, null, null, "A",
+                        null, numMovimentoFee, 1, null, null, "A",
                         IDOriginale, "COMMISSIONI", WalletPrincipale + IDOriginale);
                 if (RT != null) {
                     lista.add(RT);

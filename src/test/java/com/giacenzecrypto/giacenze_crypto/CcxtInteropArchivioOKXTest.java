@@ -69,6 +69,100 @@ class CcxtInteropArchivioOKXTest {
         assertTrue(t.isEmpty(), "atteso nessun trimestre, trovati: " + t);
     }
 
+    // ==================== anno di partenza scelto dall'utente ====================
+
+    /**
+     * L'anno scelto dall'utente alza il pavimento e accorcia l'elenco. È la leva che conta: la richiesta di
+     * generazione di un trimestre è la chiamata più limitata dell'integrazione con OKX, quindi ogni
+     * trimestre tolto è una richiesta risparmiata.
+     */
+    @Test
+    void lAnnoSceltoDallUtenteAccorciaLElencoDeiTrimestri() {
+        long dal = quando(2021, 6, 1), adesso = quando(2026, 8, 3);
+
+        //Senza indicazioni si parte dal primo anno coperto da OKX: 2021Q2 → 2026Q2
+        assertEquals(21, CcxtInterop.trimestriArchivioOKX(dal, adesso).size());
+
+        //Chi ha aperto il conto nel 2025 ne chiede 6 invece di 21
+        List<String> dal2025 = CcxtInterop.trimestriArchivioOKX(dal, adesso, 2025);
+        assertEquals(List.of("2026Q2", "2026Q1", "2025Q4", "2025Q3", "2025Q2", "2025Q1"), dal2025);
+    }
+
+    /**
+     * È un <b>pavimento</b>, non una data di partenza: abbassarlo non allunga l'elenco oltre la data da cui
+     * lo scaricamento parte davvero. Serve a rendere innocua la scelta di un anno troppo indietro.
+     */
+    @Test
+    void unAnnoPiuBassoDellaDataDiPartenzaNonAllungaNulla() {
+        long dal = quando(2025, 7, 1), adesso = quando(2026, 8, 3);
+
+        assertEquals(CcxtInterop.trimestriArchivioOKX(dal, adesso),
+                CcxtInterop.trimestriArchivioOKX(dal, adesso, 2021));
+        //E nemmeno un anno anteriore a quello in cui l'archivio di OKX comincia
+        assertEquals(CcxtInterop.trimestriArchivioOKX(dal, adesso),
+                CcxtInterop.trimestriArchivioOKX(dal, adesso, 1999));
+    }
+
+    @Test
+    void lAnnoSalvatoVieneRiportatoDentroIlimiti() {
+        //Mai scelto, illeggibile o assente: si torna al comportamento di sistema
+        assertEquals(CcxtInterop.ANNO_MIN_ARCHIVIO_OKX, CcxtInterop.annoInizioArchivioOKX(null, 2026));
+        assertEquals(CcxtInterop.ANNO_MIN_ARCHIVIO_OKX, CcxtInterop.annoInizioArchivioOKX("", 2026));
+        assertEquals(CcxtInterop.ANNO_MIN_ARCHIVIO_OKX, CcxtInterop.annoInizioArchivioOKX("boh", 2026));
+        //Prima del 2021 l'archivio non ha dati
+        assertEquals(CcxtInterop.ANNO_MIN_ARCHIVIO_OKX, CcxtInterop.annoInizioArchivioOKX("2015", 2026));
+        //Un anno futuro non lascerebbe alcun trimestre: vale come "quest'anno"
+        assertEquals(2026, CcxtInterop.annoInizioArchivioOKX("2030", 2026));
+        //Valore valido: passa così com'è, spazi compresi
+        assertEquals(2024, CcxtInterop.annoInizioArchivioOKX(" 2024 ", 2026));
+    }
+
+    // ==================== data di partenza digitata dall'utente ====================
+
+    /**
+     * Una data interpretata male non fa fallire nulla: manda lo scaricamento a partire dall'epoca sbagliata,
+     * e l'utente se ne accorgerebbe solo dai saldi. Per questo si rifiuta tutto ciò che non è una data
+     * passata e leggibile, lasciando invariata quella di prima ({@code -1}).
+     */
+    @Test
+    void laDataDigitataVieneAccettataSoloSePassataELeggibile() {
+        long adesso = quando(2026, 8, 4);
+
+        //Annullato o lasciato vuoto: nessun cambio
+        assertEquals(-1, CcxtInterop.dataInizioOKX(null, adesso));
+        assertEquals(-1, CcxtInterop.dataInizioOKX("", adesso));
+        assertEquals(-1, CcxtInterop.dataInizioOKX("   ", adesso));
+        //Non è una data
+        assertEquals(-1, CcxtInterop.dataInizioOKX("il mese scorso", adesso));
+        //Nel futuro: non c'è nulla da scaricare da lì in avanti
+        assertEquals(-1, CcxtInterop.dataInizioOKX("2027-01-01 00:00:00", adesso));
+
+        //Data valida: accettata, spazi compresi
+        long attesa = FunzioniDate.ConvertiDatainLongSecondo("2025-02-19 12:00:00");
+        assertEquals(attesa, CcxtInterop.dataInizioOKX("  2025-02-19 12:00:00  ", adesso));
+    }
+
+    /**
+     * Il caso che dà senso alla funzione: chi ha in archivio solo una parte della propria storia deve poter
+     * spostare indietro la partenza, perché l'elenco dei trimestri non va mai più indietro di quella data —
+     * scegliere l'anno minimo, da solo, non basterebbe.
+     */
+    @Test
+    void spostareIndietroLaDataEstendeIlRecuperoDellArchivio() {
+        long adesso = quando(2026, 8, 4);
+        long ultimoMovimento = quando(2026, 6, 15);
+
+        //Fermi all'ultimo movimento: l'anno minimo al 2025 non aggiunge nulla, perché è solo un pavimento
+        assertEquals(CcxtInterop.trimestriArchivioOKX(ultimoMovimento, adesso, 2021),
+                CcxtInterop.trimestriArchivioOKX(ultimoMovimento, adesso, 2025));
+        assertEquals(List.of("2026Q2"), CcxtInterop.trimestriArchivioOKX(ultimoMovimento, adesso, 2025));
+
+        //Spostando indietro la partenza il recupero si estende davvero
+        long scelta = CcxtInterop.dataInizioOKX("2025-01-01 00:00:00", adesso);
+        assertEquals(List.of("2026Q2", "2026Q1", "2025Q4", "2025Q3", "2025Q2", "2025Q1"),
+                CcxtInterop.trimestriArchivioOKX(scelta, adesso, 2025));
+    }
+
     // ==================== instType/subType -> type ====================
 
     /**

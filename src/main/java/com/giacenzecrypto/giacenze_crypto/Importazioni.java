@@ -132,6 +132,7 @@ import org.json.JSONObject;
 import java.util.List;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -568,6 +569,84 @@ public class Importazioni {
      * @param listaScambiDifferiti lista su cui accumulare gli scambi differiti, valorizzata da {@link #Ex_OKX_Consolida}
      * @return la lista di movimenti consolidati nel formato standard dell'applicazione
      */
+    /**
+     * Divide un gruppo di righe OKX gia' raccolte per orario in sottogruppi, uno per <b>ordine</b>
+     * ({@code ordId}, campo {@code [13]}), conservando l'ordine di prima comparsa.
+     *
+     * <p><b>Perche' serve.</b> Le righe di uno stesso istante non appartengono per forza alla stessa
+     * operazione. Sui dati reali del 23/07/2026 alle 15:28:21 ci sono <b>16 righe che sono 8 ordini
+     * distinti</b>, con le gambe interlacciate nel file. Raggruppare per solo orario li fonde in un unico
+     * scambio (e' cio' che faceva l'import da CSV), mentre chiudere il gruppo alla prima coppia Buy+Sell li
+     * spezza a caso e separa anche le due gambe di un ordine eseguito in piu' fill (e' cio' che faceva
+     * l'import da API). Suddividere per {@code ordId} da' la risposta giusta in tutti e due i casi, e la da'
+     * <b>uguale sulle due strade</b>, che e' il presupposto perche' la deduplica possa riconoscere lo stesso
+     * movimento importato da CSV e da API.
+     *
+     * <p><b>Perche' resta ancorata all'orario</b> invece di raggruppare per ordine su tutto il file: su 162
+     * ordini reali, 2 si estendono su piu' istanti — uno addirittura su 46 minuti (26/06/2026, 16:28:53 e
+     * 17:09:56). Un gruppo che attraversa piu' orari costringerebbe a scegliere quale data dare al movimento
+     * consolidato; restando ancorati all'istante quei due ordini restano due movimenti, che e' il
+     * comportamento odierno di entrambe le strade.
+     *
+     * <p><b>Righe senza {@code ordId}.</b> Finiscono tutte in un unico sottogruppo residuo, in coda. Sono i
+     * movimenti del conto Funding (depositi, prelievi, giroconti, rendimenti), che non sono ordini e non
+     * formano scambi. Verificato sui bill reali: <b>nessun bill di trade e' privo di {@code ordId}</b>,
+     * l'unico caso incontrato e' un {@code Withdrawal} del Funding.
+     *
+     * <p>Se <b>nessuna</b> riga del gruppo ha un {@code ordId} viene restituito il gruppo originale intatto:
+     * cosi' l'import del CSV storico ({@link #Ex_OKX_Importa}), le cui righe hanno {@code [13]} vuoto per
+     * costruzione, si comporta esattamente come prima.
+     *
+     * @param gruppo righe gia' raccolte per orario, in formato intermedio a 19 campi
+     * @return i sottogruppi da consolidare separatamente, nell'ordine in cui gli ordini compaiono
+     */
+    /** @return {@code true} se almeno una riga del gruppo porta un {@code ordId} nel campo {@code [13]} */
+    static boolean Ex_OKX_GruppoHaOrdini(List<String[]> gruppo) {
+        if (gruppo == null) return false;
+        for (String[] r : gruppo) {
+            if (r != null && r.length > 13 && r[13] != null && !r[13].trim().isEmpty()) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Consolida un gruppo raccolto per orario dividendolo prima per ordine: e' il punto in cui
+     * {@link #Ex_OKX_SuddividiPerOrdine} entra nella catena. Senza {@code ordId} il gruppo resta uno solo e
+     * il comportamento e' identico alla chiamata diretta a {@link #Ex_OKX_Consolida}.
+     */
+    static List<String[]> Ex_OKX_ConsolidaPerOrdine(List<String[]> gruppo,
+            Map<String, String> Mappa_Conversione_Causali, List<String[]> listaScambiDifferiti) {
+        List<String[]> risultato = new ArrayList<>();
+        for (List<String[]> sotto : Ex_OKX_SuddividiPerOrdine(gruppo)) {
+            risultato.addAll(Ex_OKX_Consolida(sotto, Mappa_Conversione_Causali, listaScambiDifferiti));
+        }
+        return risultato;
+    }
+
+    static List<List<String[]>> Ex_OKX_SuddividiPerOrdine(List<String[]> gruppo) {
+        List<List<String[]>> sottogruppi = new ArrayList<>();
+        if (gruppo == null || gruppo.isEmpty()) return sottogruppi;
+
+        Map<String, List<String[]>> perOrdine = new LinkedHashMap<>();
+        List<String[]> senzaOrdine = new ArrayList<>();
+
+        for (String[] riga : gruppo) {
+            String ordId = (riga != null && riga.length > 13 && riga[13] != null) ? riga[13].trim() : "";
+            if (ordId.isEmpty()) senzaOrdine.add(riga);
+            else perOrdine.computeIfAbsent(ordId, k -> new ArrayList<>()).add(riga);
+        }
+
+        //Nessun ordine riconoscibile: si restituisce il gruppo com'era, senza cambiare nulla
+        if (perOrdine.isEmpty()) {
+            sottogruppi.add(gruppo);
+            return sottogruppi;
+        }
+
+        sottogruppi.addAll(perOrdine.values());
+        if (!senzaOrdine.isEmpty()) sottogruppi.add(senzaOrdine);
+        return sottogruppi;
+    }
+
     public static List<String[]> Ex_OKX_RaggruppaEConsolida(List<String[]> righeOrdinate,
             Map<String, String> Mappa_Conversione_Causali, List<String[]> listaScambiDifferiti) {
 
@@ -590,7 +669,11 @@ public class Importazioni {
             if (orario.equalsIgnoreCase(ultimaData)) {
                 listaMovimentidaConsolidare.add(DatoRiga);
 
-                if (listaMovimentidaConsolidare.size() > 1) {
+                //Chiusura anticipata alla prima coppia Buy+Sell: e' un ripiego che serve solo quando non si
+                //sa a quale ordine appartenga una riga. Quando l'ordine e' noto separa a caso righe di ordini
+                //diversi arrivati nello stesso secondo, quindi si lascia accumulare l'intero istante e si
+                //divide dopo, per ordine, in Ex_OKX_SuddividiPerOrdine.
+                if (listaMovimentidaConsolidare.size() > 1 && !Ex_OKX_GruppoHaOrdini(listaMovimentidaConsolidare)) {
                     //Scorro la lista se esiste un movimento di sell e uno di buy consolido il movimento
                     boolean trovatoBuy = false;
                     boolean trovatoSell = false;
@@ -599,7 +682,7 @@ public class Importazioni {
                         if (rigaLista[4].equalsIgnoreCase("Sell")) trovatoSell = true;
                     }
                     if (trovatoSell && trovatoBuy) {
-                        listaCompleta.addAll(Ex_OKX_Consolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali, listaScambiDifferiti));
+                        listaCompleta.addAll(Ex_OKX_ConsolidaPerOrdine(listaMovimentidaConsolidare, Mappa_Conversione_Causali, listaScambiDifferiti));
                         //una volta fatto tutto svuoto la lista movimenti e la preparo per il prossimo
                         listaMovimentidaConsolidare = new ArrayList<>();
                     }
@@ -609,7 +692,7 @@ public class Importazioni {
                 listaMovimentidaConsolidare.add(DatoRiga);
             } else //altrimenti consolido il movimento precedente
             {
-                listaCompleta.addAll(Ex_OKX_Consolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali, listaScambiDifferiti));
+                listaCompleta.addAll(Ex_OKX_ConsolidaPerOrdine(listaMovimentidaConsolidare, Mappa_Conversione_Causali, listaScambiDifferiti));
 
                 //una volta fatto tutto svuoto la lista movimenti e la preparo per il prossimo
                 listaMovimentidaConsolidare = new ArrayList<>();
@@ -618,7 +701,7 @@ public class Importazioni {
             ultimaData = orario;
         }
 
-        listaCompleta.addAll(Ex_OKX_Consolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali, listaScambiDifferiti));
+        listaCompleta.addAll(Ex_OKX_ConsolidaPerOrdine(listaMovimentidaConsolidare, Mappa_Conversione_Causali, listaScambiDifferiti));
         return listaCompleta;
     }
 

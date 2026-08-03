@@ -182,10 +182,12 @@ public class ImportazioneGenerica {
 
             String[] riga = righe.get(i);
 
-            boolean usaIDTransazione = cfg.colonnaIDTransazione >= 0;
+            //Si raggruppa sulla colonna dedicata quando c'è, altrimenti sull'identificativo, come sempre
+            int colonnaGruppo = cfg.colonnaRaggruppamento();
+            boolean usaIDTransazione = colonnaGruppo >= 0;
 
             String idCorrente = usaIDTransazione
-                    ? safe(riga, cfg.colonnaIDTransazione)
+                    ? safe(riga, colonnaGruppo)
                     : "";
 
             String dataCsvCorrente = safe(riga, cfg.colonnaData);
@@ -331,10 +333,25 @@ public class ImportazioneGenerica {
         }
 
         // FASE 3 – ordino per data
+        //A parità di data si ordina anche per colonna di raggruppamento, quando ne è configurata una
+        //diversa dall'identificativo: il raggruppamento a valle è su righe CONSECUTIVE, e negli export le
+        //gambe di ordini diversi allo stesso secondo sono interlacciate (verificato sull'export OKX del
+        //23/07/2026: 16 righe di 8 ordini distinti, in ordine sparso). Senza questo pareggio ogni ordine
+        //verrebbe spezzato. Non si tocca l'ordinamento degli altri formati, dove la colonna non c'è.
+        int colonnaGruppo = cfg.colonnaIDGruppo;
+        int colonnaID = cfg.colonnaIDTransazione;
         risultato.sort((a, b) -> {
             long da = cfg.convertiDataInMillis(safe(a, cfg.colonnaData));
             long db = cfg.convertiDataInMillis(safe(b, cfg.colonnaData));
-            return Long.compare(da, db);
+            int cmp = Long.compare(da, db);
+            if (cmp != 0 || colonnaGruppo < 0) return cmp;
+            cmp = safe(a, colonnaGruppo).compareTo(safe(b, colonnaGruppo));
+            if (cmp != 0 || colonnaID < 0) return cmp;
+            //Terzo criterio, l'identificativo di riga: dentro un ordine eseguito in piu' parti decide quale
+            //gamba entra per prima nell'accumulatore, e quindi quale identificativo finisce nel movimento
+            //consolidato. L'import via API ordina gia' per (data, billId), quindi senza questo pareggio le due
+            //strade potrebbero scegliere gambe diverse e produrre due [24] diversi per lo stesso scambio.
+            return safe(a, colonnaID).compareTo(safe(b, colonnaID));
         });
 
         return risultato;
@@ -1012,7 +1029,20 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         public int colonnaMonetaFee = -1;
         public int colonnaQuantitaFee = -1;
         public int colonnaIDTransazione = -1;
+        //Colonna su cui raggruppare le righe, quando NON coincide con quella dell'identificativo.
+        //Serve perché i due ruoli sono distinti: `idTransazione` dice *chi è* la riga (finisce nel campo [24]
+        //del movimento ed è ciò su cui lavora la deduplica), `idGruppo` dice *con chi sta*. Nell'export di
+        //trading di OKX ogni gamba e ogni fill hanno un `id` diverso ma condividono l'`Order id`: usare il
+        //primo anche per raggruppare spezzerebbe ogni scambio in gambe isolate.
+        //Quando non è configurata si raggruppa come sempre sull'identificativo, quindi gli altri file di
+        //ImportConfig/ non cambiano comportamento.
+        public int colonnaIDGruppo = -1;
         public int colonnaWallet = -1;
+
+        /** @return la colonna da usare per decidere se due righe appartengono allo stesso movimento */
+        public int colonnaRaggruppamento() {
+            return colonnaIDGruppo >= 0 ? colonnaIDGruppo : colonnaIDTransazione;
+        }
         public int colonnaMonetaUscita  = -1;
         public int colonnaQuantitaUscita = -1;
         
@@ -1166,6 +1196,9 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 }
                 if (col.has("idTransazione")) {
                     cfg.colonnaIDTransazione = col.getInt("idTransazione");
+                }
+                if (col.has("idGruppo")) {
+                    cfg.colonnaIDGruppo = col.getInt("idGruppo");
                 }
                 if (col.has("wallet")) {
                     cfg.colonnaWallet = col.getInt("wallet");
@@ -1387,6 +1420,7 @@ public String normalizzaData(String dataCSV) {
                     case "monetafee"     -> colonnaMonetaFee     = idx;
                     case "quantitafee"   -> colonnaQuantitaFee   = idx;
                     case "idtransazione" -> colonnaIDTransazione = idx;
+                    case "idgruppo"      -> colonnaIDGruppo       = idx;
                     case "valoreeuro"    -> colonnaValoreEuro    = idx;
                     case "segno"         -> colonnaSegno         = idx;
                     case "wallet"        -> colonnaWallet        = idx;

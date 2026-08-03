@@ -7,14 +7,26 @@
 //   POST /api/v5/account/bills-history-archive  {year, quarter}  -> chiede la generazione
 //   GET  /api/v5/account/bills-history-archive  {year, quarter}  -> state + fileHref quando e' pronto
 // Il file e' uno ZIP che contiene un solo CSV (bills_history_archive_<dal>_<al>.csv).
-// Misurato su dati reali il 03/08/2026: generazione completata in 105 secondi.
+// Lo scaricamento avviene in TRE FASI, ed e' cosi' per una ragione misurata:
+//   1. ricognizione: una GET per trimestre (costo 2, ~150 ms) dice quali file esistono gia';
+//   2. richiesta: una POST per ogni trimestre mai chiesto, tutte di seguito;
+//   3. attesa e ritiro: si scarica ciascun file appena diventa disponibile.
+// La parte cara e' CHIEDERE, non ritirare: i file generati restano sul server e le esecuzioni
+// successive se li riprendono gratis con la sola GET.
 //
 // LIMITI DELL'ENDPOINT:
 //   - copre da febbraio 2021, ma NON il trimestre in corso;
 //   - riguarda solo il conto Trading unificato, non il Funding (che pero' non ne ha bisogno:
-//     asset/bills-history restituisce gia' tutto lo storico);
-//   - la POST e' fortemente limitata (CCXT le assegna costo 72000, cioe' ~2,2 ore fra due
-//     richieste), quindi se ne invia UNA SOLA per esecuzione.
+//     asset/bills-history restituisce gia' tutto lo storico).
+//
+// NOTA SUL LIMITE DELLA POST: CCXT le assegna costo 72000, che sulla sua base di 110 ms si
+// tradurrebbe in una richiesta ogni ~2h12m, e per questo la versione precedente ne inviava UNA SOLA
+// per esecuzione. Misurato sul campo il 04/08/2026, quel limite NON e' applicato dal server: 15
+// richieste consecutive a 1,5-3 s di distanza sono state tutte accettate, senza alcun 50011, e gli
+// 11 file del secondo lotto erano tutti pronti entro 5 minuti (9 entro il primo). Il limitatore di
+// CCXT resta quindi disattivato e le richieste si mandano tutte, ma un rifiuto va comunque gestito:
+// non e' escluso che esista una soglia piu' alta, o diversa da account ad account. Al primo rifiuto
+// per eccesso di richieste ci si ferma, si tiene quel che si e' ottenuto e lo si dice.
 //
 // Questo script e' volutamente "stupido": scarica, scompatta, trasforma il CSV in oggetti e li
 // consegna cosi' come sono. Tutta l'interpretazione delle causali resta in Java, dove vive gia'
@@ -29,10 +41,24 @@ const zlib = require('zlib');
 
 // ======================= Costanti & Utils =======================
 
-// Quanto si resta in attesa che OKX generi il file prima di rinunciare e invitare a ritentare.
-// La misura su dati reali e' 105 s: 5 minuti danno margine senza bloccare l'utente all'infinito.
-const ATTESA_MAX_MS = 5 * 60 * 1000;
+// Quanto si resta in attesa che OKX generi i file prima di rinunciare e invitare a ritentare.
+// Misurato su 11 trimestri chiesti insieme: tutti pronti entro 5 minuti, 9 entro il primo. Dieci
+// minuti danno quindi il doppio del margine osservato senza bloccare l'utente all'infinito.
+const ATTESA_MAX_MS = 10 * 60 * 1000;
+// Passo della ricognizione durante l'attesa. E' anche la latenza con cui il tasto Interrompi ha
+// effetto: il lato Java uccide il processo quando lo script scrive una riga di log, quindi il
+// passo non va allungato senza motivo.
 const ATTESA_PASSO_MS = 15000;
+
+// Codici con cui OKX dice "troppe richieste, riprova": al primo di questi si smette di chiedere.
+// Non svuotano quel che si e' gia' ottenuto, spostano solo il resto alla prossima esecuzione.
+const CODICI_TROPPE_RICHIESTE = ['50011', '50013', '50026'];
+
+// Pausa fra due letture consecutive. CCXT assegna alla GET costo 2, cioe' ~220 ms di distanza: qui il
+// limitatore e' disattivo e le letture partono alla velocita' della rete (95-233 ms misurati), che e'
+// proprio sul filo. Contro una ricognizione ogni 15 secondi questa pausa non costa nulla e toglie di
+// mezzo la causa piu' probabile di un rifiuto per frequenza.
+const PAUSA_GET_MS = 250;
 
 const ERRORI_CREDENZIALI = {
   '50119': "la chiave API non esiste su questo dominio di OKX",
@@ -163,7 +189,10 @@ async function leggiArchivio(exchange, anno, trimestre) {
   } catch (e) {
     const c = codiceErroreOKX(e);
     if (c === CODICE_DA_RICHIEDERE) return { daRichiedere: true };
-    if (c && ERRORI_CREDENZIALI[c]) return { errore: `${ERRORI_CREDENZIALI[c]} (codice OKX ${c})` };
+    //Solo le credenziali sono un guasto vero: con quelle sbagliate nessun trimestre potra' mai arrivare.
+    //Tutto il resto (timeout, 5xx, troppe richieste) e' transitorio e va ritentato, non fatto pesare
+    //sull'intero scaricamento.
+    if (c && ERRORI_CREDENZIALI[c]) return { errore: `${ERRORI_CREDENZIALI[c]} (codice OKX ${c})`, fatale: true };
     return { errore: messaggioOKX(e) };
   }
 }
@@ -205,73 +234,134 @@ async function main() {
 
   try { await exchange.loadTimeDifference(); exchange.options.adjustForTimeDifference = true; } catch (e) { }
 
-  const periodi = [];       // esito per trimestre, mostrato poi all'utente
+  // Esito per trimestre, nell'ordine in cui sono stati chiesti: e' cio' che l'utente vedra'.
+  const periodi = new Map();
+  for (const periodo of trimestri) periodi.set(periodo, { periodo, stato: 'da richiedere' });
+
   let bills = [];
-  let richiestaInviata = false;
   let errore;
 
+  const valido = p => /^\d{4}Q[1-4]$/.test(p);
+  const pezzi = p => [p.slice(0, 4), 'Q' + p.slice(5)];
+
+  // ===================== FASE 1: ricognizione =====================
+  // Una GET per trimestre. Costa 2 unita' di rate limit e risponde in ~150 ms, quindi si interrogano
+  // tutti sempre: e' il modo per accorgersi gratis dei file gia' generati da esecuzioni precedenti.
+  const daRichiedere = [];
+  const pendenti = [];
+  const pronti = [];
+
   for (const periodo of trimestri) {
-    const m = periodo.match(/^(\d{4})Q([1-4])$/);
-    if (!m) { periodi.push({ periodo, stato: 'ignorato' }); continue; }
-    const anno = m[1], trimestre = 'Q' + m[2];
+    if (!valido(periodo)) { periodi.set(periodo, { periodo, stato: 'ignorato' }); continue; }
+    const [anno, trimestre] = pezzi(periodo);
 
     logProg(`Archivio ${periodo}: verifica`);
-    let esito = await leggiArchivio(exchange, anno, trimestre);
+    const esito = await leggiArchivio(exchange, anno, trimestre);
+    await sleep(PAUSA_GET_MS);
 
     if (esito.errore) {
       log(`${periodo}: ${esito.errore}`);
-      periodi.push({ periodo, stato: 'errore', dettaglio: esito.errore });
-      errore = errore || esito.errore;
-      continue;
+      periodi.set(periodo, { periodo, stato: 'errore', dettaglio: esito.errore });
+      //Solo le credenziali fermano tutto: vedi leggiArchivio
+      if (esito.fatale) errore = errore || esito.errore;
+    } else if (esito.href) {
+      pronti.push({ periodo, href: esito.href });
+    } else if (esito.daRichiedere) {
+      daRichiedere.push(periodo);
+    } else {
+      //Generazione gia' in corso da un'esecuzione precedente: niente da chiedere, solo da attendere
+      pendenti.push(periodo);
+      periodi.set(periodo, { periodo, stato: 'in preparazione' });
     }
+  }
+  log(`Ricognizione: ${pronti.length} gia' pronti, ${pendenti.length} in preparazione, ${daRichiedere.length} da chiedere`);
 
-    if (esito.daRichiedere) {
-      //Una sola POST per esecuzione: le altre restano per i prossimi tentativi.
-      if (richiestaInviata) {
-        periodi.push({ periodo, stato: 'da richiedere' });
+  // ===================== FASE 2: richieste di generazione =====================
+  // Si mandano tutte. Al primo rifiuto per eccesso di richieste ci si ferma: i trimestri rimasti
+  // restano "da richiedere" e la prossima esecuzione ripartira' da li'.
+  let fermatoPerLimite = false;
+  for (const periodo of daRichiedere) {
+    if (fermatoPerLimite) break;
+    const [anno, trimestre] = pezzi(periodo);
+    logProg(`Archivio ${periodo}: richiesta di generazione`);
+    try {
+      await exchange.privatePostAccountBillsHistoryArchive({ year: anno, quarter: trimestre });
+      pendenti.push(periodo);
+      periodi.set(periodo, { periodo, stato: 'in preparazione' });
+    } catch (e) {
+      const c = codiceErroreOKX(e);
+      if (CODICI_TROPPE_RICHIESTE.includes(c)) {
+        //Non e' un guasto: e' la quota. Ci si ferma qui e si tiene quel che si e' ottenuto.
+        fermatoPerLimite = true;
+        log(`${periodo}: limite di richieste raggiunto (codice OKX ${c}), i restanti alla prossima esecuzione`);
+        periodi.set(periodo, { periodo, stato: 'da richiedere', dettaglio: 'limite di richieste raggiunto' });
         continue;
       }
-      logProg(`Archivio ${periodo}: richiesta di generazione`);
-      try {
-        await exchange.privatePostAccountBillsHistoryArchive({ year: anno, quarter: trimestre });
-        richiestaInviata = true;
-      } catch (e) {
-        const c = codiceErroreOKX(e);
-        const d = (c && ERRORI_CREDENZIALI[c]) ? `${ERRORI_CREDENZIALI[c]} (codice OKX ${c})` : messaggioOKX(e);
-        log(`${periodo}: richiesta rifiutata - ${d}`);
-        periodi.push({ periodo, stato: 'errore', dettaglio: d });
-        errore = errore || d;
-        continue;
-      }
-
-      const inizio = Date.now();
-      while (Date.now() - inizio < ATTESA_MAX_MS) {
-        await sleep(ATTESA_PASSO_MS);
-        const secondi = Math.round((Date.now() - inizio) / 1000);
-        logProg(`Archivio ${periodo}: in preparazione da ${secondi}s`);
-        esito = await leggiArchivio(exchange, anno, trimestre);
-        if (esito.href || esito.errore) break;
-      }
-    }
-
-    if (esito.href) {
-      try {
-        const righe = await scaricaRighe(esito.href, `Archivio ${periodo}`);
-        bills = bills.concat(righe);
-        periodi.push({ periodo, stato: 'scaricato', righe: righe.length });
-      } catch (e) {
-        log(`${periodo}: ${e.message}`);
-        periodi.push({ periodo, stato: 'errore', dettaglio: e.message });
-        errore = errore || e.message;
-      }
-    } else if (!esito.errore) {
-      //Generazione ancora in corso: non e' un errore, va solo ritentato piu' tardi.
-      log(`${periodo}: file non ancora pronto`);
-      periodi.push({ periodo, stato: 'in preparazione' });
+      const d = (c && ERRORI_CREDENZIALI[c]) ? `${ERRORI_CREDENZIALI[c]} (codice OKX ${c})` : messaggioOKX(e);
+      log(`${periodo}: richiesta rifiutata - ${d}`);
+      periodi.set(periodo, { periodo, stato: 'errore', dettaglio: d });
+      errore = errore || d;
     }
   }
 
-  const risultato = { okx_archivioBills: bills, okx_periodi: periodi, okx_hostname: exchange.hostname };
+  // ===================== FASE 3: attesa e ritiro =====================
+  /** Scarica un file gia' disponibile e ne registra l'esito */
+  async function ritira(periodo, href) {
+    try {
+      const righe = await scaricaRighe(href, `Archivio ${periodo}`);
+      bills = bills.concat(righe);
+      periodi.set(periodo, { periodo, stato: 'scaricato', righe: righe.length });
+    } catch (e) {
+      //Il singolo file non scaricato viene riportato fra i periodi, ma non e' un guasto dell'intera
+      //operazione: gli altri trimestri restano validi e questo si ritenta alla prossima esecuzione.
+      log(`${periodo}: ${e.message}`);
+      periodi.set(periodo, { periodo, stato: 'errore', dettaglio: e.message });
+    }
+  }
+
+  //Prima quelli gia' pronti dalla ricognizione: sono immediati e non c'e' motivo di farli attendere
+  for (const p of pronti) await ritira(p.periodo, p.href);
+
+  const inizio = Date.now();
+  let daAttendere = pendenti.slice();
+  while (daAttendere.length > 0) {
+    const trascorsi = Math.round((Date.now() - inizio) / 1000);
+    if (Date.now() - inizio >= ATTESA_MAX_MS) {
+      log(`Attesa interrotta dopo ${trascorsi}s: ${daAttendere.length} trimestri ancora in preparazione`);
+      break;
+    }
+    logProg(`Archivio: ${daAttendere.length} trimestri in preparazione da ${trascorsi}s`);
+    await sleep(ATTESA_PASSO_MS);
+
+    const restano = [];
+    for (const periodo of daAttendere) {
+      const [anno, trimestre] = pezzi(periodo);
+      const esito = await leggiArchivio(exchange, anno, trimestre);
+      await sleep(PAUSA_GET_MS);
+      if (esito.href) {
+        await ritira(periodo, esito.href);
+      } else if (esito.fatale) {
+        //Credenziali: da qui in poi non arrivera' nulla, inutile continuare a interrogare
+        log(`${periodo}: ${esito.errore}`);
+        periodi.set(periodo, { periodo, stato: 'errore', dettaglio: esito.errore });
+        errore = errore || esito.errore;
+      } else if (esito.errore) {
+        //Errore passeggero: si RITENTA al giro successivo. Toglierlo dalla lista sarebbe la cosa
+        //peggiore possibile, perche' un timeout su un trimestre non deve costare gli altri venti.
+        log(`${periodo}: lettura fallita (${esito.errore}), ritento fra ${ATTESA_PASSO_MS / 1000}s`);
+        restano.push(periodo);
+      } else {
+        restano.push(periodo);
+      }
+    }
+    daAttendere = restano;
+  }
+
+  const risultato = { okx_archivioBills: bills, okx_periodi: [...periodi.values()], okx_hostname: exchange.hostname };
+  //ATTENZIONE: 'error' e' fatale per il chiamante — CcxtInterop.fetchMovimento restituisce null appena lo
+  //trova, buttando via TUTTI i bill raccolti. Ci va quindi soltanto cio' che rende inutile l'intera
+  //operazione, cioe' le credenziali. Il destino dei singoli trimestri si legge in okx_periodi, da cui il
+  //lato Java ricava gia' l'elenco di quelli da ritentare.
   if (errore) risultato.error = errore;
   console.log(JSON.stringify(risultato));
 }

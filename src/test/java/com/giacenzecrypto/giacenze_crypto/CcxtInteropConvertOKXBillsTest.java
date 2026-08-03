@@ -252,10 +252,23 @@ class CcxtInteropConvertOKXBillsTest {
         long ieri = System.currentTimeMillis() - 24L * 60 * 60 * 1000;
         long dueAnniFa = System.currentTimeMillis() - 730L * 24 * 60 * 60 * 1000;
 
+        long adesso = System.currentTimeMillis();
+
         //Riguarda solo OKX: gli altri exchange non hanno questo limite di storico
-        assertTrue(CcxtInterop.ConfermaFinestraStoricoOKX("Binance", dueAnniFa, null));
-        //Entro la finestra coperta dalle API si procede senza disturbare l'utente
-        assertTrue(CcxtInterop.ConfermaFinestraStoricoOKX("OKX", ieri, null));
+        assertFalse(CcxtInterop.serveDialogoStoricoOKX("Binance", dueAnniFa, adesso, false));
+        assertFalse(CcxtInterop.serveDialogoStoricoOKX(null, dueAnniFa, adesso, false));
+        //Entro la finestra coperta dalle API, e con la scelta gia' proposta, non si disturba l'utente
+        assertFalse(CcxtInterop.serveDialogoStoricoOKX("OKX", ieri, adesso, true));
+        //Ma la prima volta la scelta va offerta anche con movimenti recenti: e' il caso di chi ha
+        //importato solo una parte della propria storia e ha un buco dietro
+        assertTrue(CcxtInterop.serveDialogoStoricoOKX("OKX", ieri, adesso, false));
+        //Da lontano si chiede comunque, anche se e' gia' stata proposta
+        assertTrue(CcxtInterop.serveDialogoStoricoOKX("OKX", dueAnniFa, adesso, true));
+
+        //Quando il dialogo non serve, la data proposta arriva intatta al chiamante
+        assertEquals(CcxtInterop.SceltaStorico.PROCEDI,
+                CcxtInterop.SceltaStoricoOKX("Binance", dueAnniFa, null).scelta());
+        assertEquals(dueAnniFa, CcxtInterop.SceltaStoricoOKX("Binance", dueAnniFa, null).startDate());
     }
 
     @Test
@@ -348,5 +361,51 @@ class CcxtInteropConvertOKXBillsTest {
             """));
 
         assertTrue(righe.isEmpty());
+    }
+
+    /**
+     * Deduplica delle righe grezze: è il rimedio al difetto C6 di
+     * {@code Documentazione/Analisi_Bug_Criticita.md}. Lo scaricamento con archivio storico unisce due
+     * finestre che si sovrappongono ({@code account/bills-archive} copre ~3 mesi, l'archivio copre il
+     * trimestre intero), quindi le operazioni comuni arrivano due volte con lo stesso {@code billId}.
+     */
+    @Test
+    void loStessoBillArrivatoDaDueFinestreEntraUnaVoltaSola() {
+        //Le due gambe di uno scambio spot, prese una volta da bills-archive e una dall'archivio trimestrale
+        String[] usdcUscita = new String[19];
+        usdcUscita[2] = "Trading"; usdcUscita[5] = "USDC"; usdcUscita[6] = "-28.048493052"; usdcUscita[14] = "3685355100223121000";
+        String[] btcEntrata = new String[19];
+        btcEntrata[2] = "Trading"; btcEntrata[5] = "BTC"; btcEntrata[6] = "0.00046359"; btcEntrata[14] = "3685355100223121001";
+
+        List<String[]> righe = CcxtInterop.deduplicaBillOKX(List.of(
+                usdcUscita, btcEntrata, usdcUscita.clone(), btcEntrata.clone()));
+
+        assertEquals(2, righe.size(), "ogni bill deve restare una riga sola");
+        //Si tiene la prima occorrenza, cioè quella dello scaricamento ordinario, e l'ordine non cambia
+        assertSame(usdcUscita, righe.get(0));
+        assertSame(btcEntrata, righe.get(1));
+    }
+
+    @Test
+    void bilanciConIDugualeMaContiDiversiRestanoDistinti() {
+        //I due endpoint numerano i bill in modo indipendente: la collisione fra conti non è una duplicazione
+        String[] funding = new String[19];
+        funding[2] = "Funding"; funding[14] = "200031878277";
+        String[] trading = new String[19];
+        trading[2] = "Trading"; trading[14] = "200031878277";
+
+        assertEquals(2, CcxtInterop.deduplicaBillOKX(List.of(funding, trading)).size());
+    }
+
+    @Test
+    void leRigheSenzaIDvengonoSempreTenute() {
+        //Senza identificativo un doppione non è riconoscibile: scartarle perderebbe movimenti veri
+        String[] senzaId1 = new String[19];
+        senzaId1[2] = "Trading"; senzaId1[5] = "BTC"; senzaId1[14] = "";
+        String[] senzaId2 = new String[19];
+        senzaId2[2] = "Trading"; senzaId2[5] = "ETH"; senzaId2[14] = "";
+
+        assertEquals(2, CcxtInterop.deduplicaBillOKX(List.of(senzaId1, senzaId2)).size());
+        assertTrue(CcxtInterop.deduplicaBillOKX(List.of()).isEmpty());
     }
 }

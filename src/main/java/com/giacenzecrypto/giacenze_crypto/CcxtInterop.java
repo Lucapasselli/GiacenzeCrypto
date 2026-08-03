@@ -58,6 +58,30 @@ public class CcxtInterop {
     public static final int ANNO_MIN_ARCHIVIO_OKX = 2021;
 
     /**
+     * Nome dell'opzione (in {@code personale.mv.db}) in cui viene ricordato l'anno da cui l'utente vuole che
+     * parta il recupero dell'archivio storico di OKX.
+     *
+     * <p>Non e' una preferenza estetica: la richiesta di generazione di un trimestre e' l'operazione piu'
+     * limitata di tutta l'integrazione (CCXT le assegna un costo che si traduce in oltre due ore fra due
+     * richieste), e ogni trimestre in meno e' una richiesta risparmiata. Un conto aperto nel 2025 non ha
+     * motivo di far chiedere a OKX i 16 trimestri che vanno dal 2021 in poi.
+     */
+    public static final String OPZIONE_ANNO_ARCHIVIO_OKX = "OKX_AnnoInizioArchivio";
+
+    /**
+     * Nome dell'opzione (in {@code personale.mv.db}) che ricorda se la scelta sullo storico e' gia' stata
+     * proposta almeno una volta.
+     *
+     * <p>Serve a non far dipendere l'unico accesso a quella scelta dall'eta' dei dati. Il dialogo si apre
+     * quando lo scaricamento partirebbe da piu' di {@value #GIORNI_STORICO_OKX} giorni fa, il che va bene per
+     * chi non aggiorna da un po', ma taglia fuori proprio il caso per cui l'archivio esiste: chi ha importato
+     * solo una parte della propria storia e ha quindi movimenti <b>recenti</b> e un buco dietro. Quell'utente
+     * non vedrebbe mai il dialogo, e senza dialogo non c'e' modo di spostare indietro la data ne' di chiedere
+     * l'archivio. Proponendolo comunque la prima volta, la scelta gli viene almeno offerta.
+     */
+    public static final String OPZIONE_ARCHIVIO_PROPOSTO_OKX = "OKX_ArchivioProposto";
+
+    /**
      * Elenca i trimestri da chiedere all'archivio storico di OKX per coprire il periodo che va da
      * {@code dalTimestamp} a oggi, <b>dal più recente al più vecchio</b>.
      *
@@ -82,12 +106,29 @@ public class CcxtInterop {
      *         c'è nulla da chiedere
      */
     static List<String> trimestriArchivioOKX(long dalTimestamp, long adesso) {
+        return trimestriArchivioOKX(dalTimestamp, adesso, ANNO_MIN_ARCHIVIO_OKX);
+    }
+
+    /**
+     * Come {@link #trimestriArchivioOKX(long, long)}, ma con il pavimento sull'anno scelto dall'utente al
+     * posto del {@value #ANNO_MIN_ARCHIVIO_OKX} di sistema.
+     *
+     * <p>{@code annoMinimo} e' un <b>pavimento</b>, non una data di partenza: alzarlo accorcia l'elenco,
+     * abbassarlo non lo allunga oltre {@code dalTimestamp}. E' cosi' di proposito, perche' la domanda che
+     * l'utente si sente porre e' "prima di quale anno non c'e' niente da cercare", non "da quando scarico".
+     *
+     * @param annoMinimo primo anno da considerare; valori piu' bassi di {@value #ANNO_MIN_ARCHIVIO_OKX}
+     *                   vengono riportati a quello, perche' prima l'archivio non ha dati
+     */
+    static List<String> trimestriArchivioOKX(long dalTimestamp, long adesso, int annoMinimo) {
+        if (annoMinimo < ANNO_MIN_ARCHIVIO_OKX) annoMinimo = ANNO_MIN_ARCHIVIO_OKX;
+        final int pavimento = annoMinimo;
         java.time.ZoneId fuso = java.time.ZoneId.systemDefault();
         java.time.LocalDate inizio = java.time.Instant.ofEpochMilli(dalTimestamp).atZone(fuso).toLocalDate();
         java.time.LocalDate oggi = java.time.Instant.ofEpochMilli(adesso).atZone(fuso).toLocalDate();
 
-        if (inizio.getYear() < ANNO_MIN_ARCHIVIO_OKX) {
-            inizio = java.time.LocalDate.of(ANNO_MIN_ARCHIVIO_OKX, 1, 1);
+        if (inizio.getYear() < pavimento) {
+            inizio = java.time.LocalDate.of(pavimento, 1, 1);
         }
 
         int annoInizio = inizio.getYear();
@@ -102,7 +143,7 @@ public class CcxtInterop {
         List<String> trimestri = new ArrayList<>();
         int anno = annoFine, trim = trimFine;
         while (anno > annoInizio || (anno == annoInizio && trim >= trimInizio)) {
-            if (anno < ANNO_MIN_ARCHIVIO_OKX) break;
+            if (anno < pavimento) break;
             trimestri.add(anno + "Q" + trim);
             trim--;
             if (trim == 0) { trim = 4; anno--; }
@@ -360,26 +401,101 @@ public static Path getNodeExePath() {
      * @param Tokens elenco di token (separati da virgola) di cui recuperare esplicitamente i trade
      * @param c componente rispetto a cui centrare la finestra di progresso
      */
-    /**
-     * Avverte l'utente, e ne chiede conferma, quando uno scaricamento OKX via API dovrebbe partire da una data
-     * più vecchia di quanto gli endpoint bills siano in grado di restituire.
-     *
-     * <p>Gli endpoint interrogati coprono al massimo tre mesi, e sui dati reali il conto Funding
-     * ({@code asset/bills}) si è fermato a poco meno di un mese: uno scaricamento che parte da più indietro
-     * <b>non fallisce</b>, restituisce semplicemente meno movimenti di quelli richiesti, in silenzio. Senza
-     * questo avviso l'utente lo scoprirebbe solo confrontando i saldi. Lo storico più vecchio va recuperato
-     * dagli export CSV di OKX, per i quali esistono le configurazioni {@code ImportConfig/OKX_Funding.json} e
-     * {@code ImportConfig/OKX_Trading.json}.
-     *
-     * @param exchangeId exchange su cui si sta per scaricare; per tutti gli altri il controllo non si applica
-     * @param startDate data da cui partirebbe lo scaricamento, millisecondi epoch
-     * @param c componente rispetto a cui centrare la finestra
-     * @return {@code true} se si può procedere, {@code false} se l'utente ha rinunciato
-     */
-    static boolean ConfermaFinestraStoricoOKX(String exchangeId, long startDate, Component c) {
-        if (exchangeId == null || !exchangeId.trim().equalsIgnoreCase("OKX")) return true;
 
-        return SceltaStoricoOKX(exchangeId, startDate, c) != SceltaStorico.ANNULLA;
+    /**
+     * Interpreta il valore salvato in {@link #OPZIONE_ANNO_ARCHIVIO_OKX}, riportandolo dentro l'intervallo
+     * che ha senso chiedere a OKX.
+     *
+     * <p>E' tenuto separato dalla lettura del database per poterlo provare senza: e' la parte che decide, e
+     * un valore fuori scala qui si tradurrebbe in un elenco di trimestri sbagliato e quindi in richieste
+     * sprecate su un endpoint che ne concede pochissime.
+     *
+     * @param valoreSalvato quanto letto dalle preferenze; vuoto, nullo o non numerico se mai scelto
+     * @param annoCorrente anno di riferimento, passato dal chiamante per non dipendere dall'orologio
+     * @return l'anno da usare come pavimento, sempre fra {@value #ANNO_MIN_ARCHIVIO_OKX} e {@code annoCorrente}
+     */
+    static int annoInizioArchivioOKX(String valoreSalvato, int annoCorrente) {
+        if (valoreSalvato == null || valoreSalvato.isBlank()) return ANNO_MIN_ARCHIVIO_OKX;
+        int anno;
+        try {
+            anno = Integer.parseInt(valoreSalvato.trim());
+        } catch (NumberFormatException e) {
+            //Preferenza illeggibile: si torna al comportamento di sistema invece di indovinare
+            return ANNO_MIN_ARCHIVIO_OKX;
+        }
+        if (anno < ANNO_MIN_ARCHIVIO_OKX) return ANNO_MIN_ARCHIVIO_OKX;
+        //Un anno nel futuro non lascerebbe alcun trimestre da chiedere: si tratta come "quest'anno"
+        if (anno > annoCorrente) return annoCorrente;
+        return anno;
+    }
+
+    /** @return {@code true} se l'utente ha gia' scelto una volta da che anno partire */
+    static boolean annoInizioArchivioOKXGiaScelto() {
+        return !DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_ANNO_ARCHIVIO_OKX, "").isBlank();
+    }
+
+    /** @return l'anno di partenza dell'archivio scelto dall'utente, o {@value #ANNO_MIN_ARCHIVIO_OKX} */
+    static int annoInizioArchivioOKX() {
+        return annoInizioArchivioOKX(
+                DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_ANNO_ARCHIVIO_OKX, ""),
+                java.time.LocalDate.now().getYear());
+    }
+
+    /**
+     * Chiede da quale anno far partire il recupero dell'archivio storico, e ricorda la scelta.
+     *
+     * <p>La domanda si fa perche' la richiesta di generazione di un trimestre e' la chiamata piu' limitata di
+     * tutta l'integrazione con OKX: chiedere il 2021 a chi ha aperto il conto nel 2025 significa spendere
+     * una dozzina di richieste per scaricare trimestri vuoti. Ogni voce dell'elenco riporta quanti trimestri
+     * comporta, cosi' il costo della scelta e' visibile mentre la si fa e non dopo.
+     *
+     * <p>La scelta viene salvata e <b>non viene piu' richiesta</b>: {@link #SceltaStoricoOKX} apre questo
+     * dialogo solo quando l'opzione e' ancora vuota, cioe' al primo recupero dell'archivio. Chi vuole
+     * cambiarla trova nel dialogo principale l'azione dedicata, che compare appunto solo quando una scelta
+     * c'e' gia'.
+     *
+     * @param owner finestra rispetto a cui centrare il dialogo
+     * @param startDate data da cui partirebbe lo scaricamento, millisecondi epoch
+     * @param adesso istante di riferimento, millisecondi epoch
+     * @return l'anno scelto, oppure {@code -1} se l'utente ha annullato
+     */
+    static int ChiediAnnoInizioArchivioOKX(java.awt.Window owner, long startDate, long adesso) {
+        int annoCorrente = java.time.Instant.ofEpochMilli(adesso)
+                .atZone(java.time.ZoneId.systemDefault()).toLocalDate().getYear();
+        int annoSalvato = annoInizioArchivioOKX();
+
+        List<String> voci = new ArrayList<>();
+        for (int anno = annoCorrente; anno >= ANNO_MIN_ARCHIVIO_OKX; anno--) {
+            int quanti = trimestriArchivioOKX(startDate, adesso, anno).size();
+            voci.add(anno + (anno == ANNO_MIN_ARCHIVIO_OKX ? " (tutto lo storico)" : "")
+                    + " — " + quanti + (quanti == 1 ? " trimestre" : " trimestri"));
+        }
+        if (voci.isEmpty()) return ANNO_MIN_ARCHIVIO_OKX;
+
+        String scelta = AppDialog.showComboBoxDialog(owner,
+                "Archivio storico OKX",
+                "Da quale anno recuperare lo storico?",
+                "OKX prepara l'archivio un trimestre per volta, e la richiesta di generazione è "
+                + "fortemente limitata: ogni trimestre in meno è tempo risparmiato.\n\n"
+                + "Indica l'anno prima del quale non c'è nulla da cercare, tipicamente quello in cui hai "
+                + "aperto il conto. I trimestri più recenti di questa scelta vengono comunque scaricati."
+                + (annoSalvato > ANNO_MIN_ARCHIVIO_OKX ? "\n\nScelta attuale: " + annoSalvato + "." : ""),
+                "Non cercare nulla prima del:",
+                voci.toArray(new String[0]));
+
+        if (scelta == null || scelta.isBlank()) return -1;
+
+        int anno;
+        try {
+            anno = Integer.parseInt(scelta.trim().substring(0, 4));
+        } catch (RuntimeException e) {
+            //L'etichetta e' costruita qui sopra, quindi non dovrebbe succedere: se succede si torna al
+            //comportamento di sistema invece di far fallire lo scaricamento
+            LoggerGC.ScriviErrore(e);
+            return ANNO_MIN_ARCHIVIO_OKX;
+        }
+        DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_ANNO_ARCHIVIO_OKX, String.valueOf(anno));
+        return anno;
     }
 
     /** Cosa fare quando lo scaricamento OKX partirebbe da più indietro di quanto le API a 3 mesi coprano. */
@@ -390,6 +506,97 @@ public static Path getNodeExePath() {
         PROCEDI_CON_ARCHIVIO,
         /** L'utente ha rinunciato: non deve partire nulla. */
         ANNULLA
+    }
+
+    /**
+     * Decide se aprire il dialogo sullo storico OKX. È tenuta separata dal dialogo per poterla provare senza
+     * interfaccia: è una condizione a tre ingressi ed è il punto in cui un errore si tradurrebbe o in un
+     * modale a ogni scaricamento, o — peggio — in una funzione irraggiungibile proprio a chi serve.
+     *
+     * <p>Si apre in due casi:
+     * <ul>
+     *   <li>lo scaricamento partirebbe da più di {@value #GIORNI_STORICO_OKX} giorni fa, cioè da oltre la
+     *       finestra che le API coprono;</li>
+     *   <li>oppure la scelta non è <b>mai</b> stata proposta. Senza questo secondo caso resterebbe fuori
+     *       proprio chi ha importato solo una parte della propria storia: i suoi movimenti sono recenti,
+     *       quindi il primo controllo non scatta, ma il buco dietro resta e non avrebbe alcun modo di
+     *       spostare indietro la data o di chiedere l'archivio.</li>
+     * </ul>
+     *
+     * @param exchangeId exchange in corso; per tutti gli altri il dialogo non si applica
+     * @param startDate data da cui partirebbe lo scaricamento, millisecondi epoch
+     * @param adesso istante di riferimento, millisecondi epoch
+     * @param giaProposto se la scelta è già stata proposta almeno una volta
+     */
+    static boolean serveDialogoStoricoOKX(String exchangeId, long startDate, long adesso, boolean giaProposto) {
+        if (exchangeId == null || !exchangeId.trim().equalsIgnoreCase("OKX")) return false;
+        long giorni = (adesso - startDate) / (24L * 60 * 60 * 1000);
+        return giorni > GIORNI_STORICO_OKX || !giaProposto;
+    }
+
+    /**
+     * Esito del dialogo sullo storico OKX: cosa fare, e <b>da quando</b>.
+     *
+     * <p>La data viaggia insieme alla scelta perché l'utente può cambiarla nel dialogo stesso. Serve a un
+     * caso concreto: la data proposta è quella dell'ultimo movimento già importato, ottima per gli
+     * aggiornamenti incrementali, ma chi ha in archivio solo una parte della propria storia (un import
+     * parziale, movimenti cancellati) resterebbe altrimenti bloccato lì, perché
+     * {@link #trimestriArchivioOKX(long, long, int)} non elenca mai trimestri anteriori alla data di
+     * partenza, qualunque anno minimo si scelga.
+     *
+     * @param scelta cosa fare
+     * @param startDate data da cui partire, millisecondi epoch: quella proposta, o quella corretta dall'utente
+     */
+    record EsitoStorico(SceltaStorico scelta, long startDate) { }
+
+    /**
+     * Chiede una nuova data di partenza, proponendo quella corrente.
+     * @return la data scelta in millisecondi epoch, oppure {@code -1} se l'utente ha annullato o ha scritto
+     *         qualcosa di non interpretabile come data passata
+     */
+    static long ChiediDataInizioOKX(java.awt.Window owner, long startDate) {
+        String proposta = FunzioniDate.ConvertiDatadaLongAlSecondo(startDate);
+        String risposta = AppDialog.showTextInputDialog(owner,
+                "Data di partenza dello scaricamento",
+                "Da quando scaricare i movimenti?",
+                "La data proposta è quella dell'ultimo movimento OKX già in archivio: va bene per un "
+                + "aggiornamento normale.\n\nSpostala indietro se sai di avere dei buchi, per esempio perché "
+                + "hai importato solo una parte della tua storia: lo scaricamento non torna mai più indietro "
+                + "di questa data da solo.\n\nFormato: aaaa-MM-gg hh:mm:ss",
+                "Scarica a partire dal:", proposta);
+
+        long nuova = dataInizioOKX(risposta, System.currentTimeMillis());
+        if (nuova < 0 && risposta != null && !risposta.isBlank()) {
+            Messaggi.WarningMessage("Data non valida",
+                    "«" + risposta + "» non è una data passata scritta come aaaa-MM-gg hh:mm:ss.<br>"
+                    + "La data di partenza resta quella di prima.", owner);
+        }
+        return nuova;
+    }
+
+    /**
+     * Interpreta la data digitata dall'utente, tenuta separata dal dialogo per poterla provare senza.
+     *
+     * <p>È la parte che decide, ed è il punto in cui un errore non si vedrebbe: una data interpretata male
+     * non fa fallire nulla, manda semplicemente lo scaricamento a partire dall'epoca sbagliata, e l'utente
+     * se ne accorgerebbe solo dai saldi. Si rifiuta quindi tutto ciò che non è una data <b>passata</b> e
+     * leggibile, lasciando in quel caso invariata la data di prima.
+     *
+     * @param risposta testo digitato; {@code null} o vuoto se l'utente ha annullato
+     * @param adesso istante di riferimento, passato dal chiamante per non dipendere dall'orologio
+     * @return la data in millisecondi epoch, oppure {@code -1} se non è utilizzabile
+     */
+    static long dataInizioOKX(String risposta, long adesso) {
+        if (risposta == null || risposta.isBlank()) return -1;
+        long nuova;
+        try {
+            nuova = FunzioniDate.ConvertiDatainLongSecondo(risposta.trim());
+        } catch (RuntimeException e) {
+            //Formato illeggibile: si tiene la data di prima invece di indovinare
+            return -1;
+        }
+        if (nuova <= 0 || nuova > adesso) return -1;
+        return nuova;
     }
 
     /**
@@ -406,16 +613,31 @@ public static Path getNodeExePath() {
      * @param c componente rispetto a cui centrare la finestra
      * @return la scelta dell'utente; {@link SceltaStorico#PROCEDI} anche quando il dialogo non serve
      */
-    static SceltaStorico SceltaStoricoOKX(String exchangeId, long startDate, Component c) {
-        if (exchangeId == null || !exchangeId.trim().equalsIgnoreCase("OKX")) return SceltaStorico.PROCEDI;
+    static EsitoStorico SceltaStoricoOKX(String exchangeId, long startDate, Component c) {
+        boolean giaProposto = "SI".equalsIgnoreCase(
+                DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_ARCHIVIO_PROPOSTO_OKX, ""));
+        if (!serveDialogoStoricoOKX(exchangeId, startDate, System.currentTimeMillis(), giaProposto)) {
+            return new EsitoStorico(SceltaStorico.PROCEDI, startDate);
+        }
 
+        java.awt.Window owner = (c instanceof java.awt.Window w) ? w
+                : (c == null ? null : SwingUtilities.getWindowAncestor(c));
+        final long dataIniziale = startDate;
+
+        //Il dialogo si ripresenta dopo un cambio di data: il numero di trimestri e i giorni dipendono dalla
+        //data, quindi mostrarlo una volta sola vorrebbe dire far scegliere sulla base di conti superati.
+        while (true) {
         long giorni = (System.currentTimeMillis() - startDate) / (24L * 60 * 60 * 1000);
-        if (giorni <= GIORNI_STORICO_OKX) return SceltaStorico.PROCEDI;
+        List<String> trimestri = trimestriArchivioOKX(startDate, System.currentTimeMillis(), annoInizioArchivioOKX());
 
-        List<String> trimestri = trimestriArchivioOKX(startDate, System.currentTimeMillis());
+        boolean annoGiaScelto = annoInizioArchivioOKXGiaScelto();
+        int annoScelto = annoInizioArchivioOKX();
+        final long dataCorrente = startDate;
+        //Dopo un cambio manuale la data non e' piu' quella dell'ultimo movimento: dirlo lo stesso sarebbe
+        //un'affermazione falsa, e il conteggio dei giorni perderebbe senso.
+        final boolean dataProposta = (startDate == dataIniziale);
 
-        java.awt.Window owner = (c instanceof java.awt.Window w) ? w : SwingUtilities.getWindowAncestor(c);
-        AppDialog.DialogResult result = AppDialog.builder(owner)
+        AppDialog.Builder dialogo = AppDialog.builder(owner)
                 .windowTitle("Storico OKX oltre il limite delle API")
                 .bodyTitle("Lo scaricamento partirebbe da troppo indietro")
                 .showTitleInBody(false)
@@ -423,14 +645,23 @@ public static Path getNodeExePath() {
                 .type(AppDialog.DialogType.WARNING)
                 .message("")
                 .details("Lo scaricamento dovrebbe partire dal "
-                        + FunzioniDate.ConvertiDatadaLongAlSecondo(startDate) + ", cioè " + giorni + " giorni fa.\n\n"
+                        + FunzioniDate.ConvertiDatadaLongAlSecondo(startDate)
+                        + (dataProposta
+                            ? ", cioè " + giorni + " giorni fa: è la data dell'ultimo movimento OKX già in "
+                              + "archivio. Se sai di avere dei buchi, spostala indietro — lo scaricamento non "
+                              + "ci torna mai da solo.\n\n"
+                            : ", come hai indicato tu.\n\n")
                         + "Il conto Funding (depositi, prelievi, giroconti) non ha limiti: viene scaricato per intero.\n\n"
                         + "Il conto Trading invece torna al massimo gli ultimi 3 mesi. I movimenti più vecchi si "
                         + "recuperano dall'archivio storico di OKX, che li fornisce un trimestre alla volta: "
-                        + "servono " + trimestri.size() + " trimestri per coprire il periodo.\n\n"
-                        + "OKX prepara un trimestre per volta e ci mette qualche minuto. Il programma ne chiede "
-                        + "uno a ogni scaricamento e attende fino a 5 minuti: se al termine non è pronto, "
-                        + "basta rilanciare lo scaricamento più tardi e verrà raccolto senza rifare la richiesta.\n\n"
+                        + "servono " + trimestri.size() + " trimestri per coprire il periodo"
+                        + (annoGiaScelto
+                            ? ", perche' hai chiesto di non cercare nulla prima del " + annoScelto + ".\n\n"
+                            : ", ma potrai restringerli indicando l'anno in cui hai aperto il conto.\n\n")
+                        + "Il programma li chiede tutti insieme e attende fino a 10 minuti, ritirando ogni file "
+                        + "appena è pronto; sui dati reali 11 trimestri sono stati generati in 5 minuti. Quello "
+                        + "che non fa in tempo non va perso: basta rilanciare lo scaricamento più tardi e viene "
+                        + "raccolto senza rifare la richiesta.\n\n"
                         + "Come vuoi procedere?")
                 .action(AppDialog.DialogAction.builder("annulla", "Annulla")
                         .role(AppDialog.ActionRole.SECONDARY)
@@ -440,13 +671,51 @@ public static Path getNodeExePath() {
                         .build())
                 .action(AppDialog.DialogAction.builder("archivio", "Recupera anche l'archivio")
                         .role(AppDialog.ActionRole.PRIMARY)
-                        .build())
-                .showDialog();
+                        .build());
 
-        if (result == null) return SceltaStorico.ANNULLA;
-        if (result.isAction("archivio")) return SceltaStorico.PROCEDI_CON_ARCHIVIO;
-        if (result.isAction("continua")) return SceltaStorico.PROCEDI;
-        return SceltaStorico.ANNULLA;
+        //Una preferenza che si salva da sola dev'essere anche modificabile: senza questa voce l'anno scelto
+        //la prima volta resterebbe senza via d'uscita. Compare percio' solo quando una scelta c'e' gia'.
+        if (annoGiaScelto) {
+            dialogo.action(AppDialog.DialogAction.builder("cambiaAnno", "Cambia anno di partenza…")
+                    .role(AppDialog.ActionRole.SECONDARY)
+                    .build());
+        }
+        dialogo.action(AppDialog.DialogAction.builder("cambiaData", "Cambia data di partenza…")
+                .role(AppDialog.ActionRole.SECONDARY)
+                .build());
+
+        AppDialog.DialogResult result = dialogo.showDialog();
+
+        if (result == null) return new EsitoStorico(SceltaStorico.ANNULLA, dataCorrente);
+
+        //Da qui in poi si esce con una risposta: la proposta e' stata fatta e non va rifatta a ogni giro
+        DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_ARCHIVIO_PROPOSTO_OKX, "SI");
+
+        if (result.isAction("cambiaData")) {
+            long nuova = ChiediDataInizioOKX(owner, dataCorrente);
+            if (nuova > 0) startDate = nuova;
+            continue;   //si ritorna al dialogo, che ora mostra i conti aggiornati
+        }
+
+        if (result.isAction("archivio") || result.isAction("cambiaAnno")) {
+            //L'anno si chiede una volta sola, e solo a chi l'archivio lo vuole davvero: e' la scelta che
+            //determina quante richieste di generazione verranno spese su un endpoint che ne concede poche.
+            //Dal secondo recupero in poi vale quella salvata, e per cambiarla c'e' l'azione dedicata: senza,
+            //una preferenza persistente resterebbe senza via d'uscita.
+            //Annullare la scelta dell'anno annulla l'intero scaricamento, non solo l'archivio: chi voleva il
+            //solo scaricamento ordinario ha il suo pulsante, e ripetere costa un clic.
+            if (result.isAction("cambiaAnno") || !annoInizioArchivioOKXGiaScelto()) {
+                if (ChiediAnnoInizioArchivioOKX(owner, dataCorrente, System.currentTimeMillis()) < 0) {
+                    return new EsitoStorico(SceltaStorico.ANNULLA, dataCorrente);
+                }
+                //Cambiando l'anno cambia il numero di trimestri: si torna al dialogo a mostrarlo
+                if (result.isAction("cambiaAnno")) continue;
+            }
+            return new EsitoStorico(SceltaStorico.PROCEDI_CON_ARCHIVIO, dataCorrente);
+        }
+        if (result.isAction("continua")) return new EsitoStorico(SceltaStorico.PROCEDI, dataCorrente);
+        return new EsitoStorico(SceltaStorico.ANNULLA, dataCorrente);
+        }
     }
 
     public static Importazioni.Esito fetchMovimentiConBar(String exchangeId, String apiKey, String secret, long startDate,String Tokens,Component c) {
@@ -472,9 +741,11 @@ public static Path getNodeExePath() {
 
         //L'avviso va dato prima di aprire la finestra di avanzamento: se l'utente rinuncia non deve
         //essere partito nulla, né il download di Node né la chiamata all'exchange.
-        final SceltaStorico scelta = SceltaStoricoOKX(exchangeId, startDate, c);
-        if (scelta == SceltaStorico.ANNULLA) return null;
-        final boolean conArchivio = (scelta == SceltaStorico.PROCEDI_CON_ARCHIVIO);
+        final EsitoStorico esitoScelta = SceltaStoricoOKX(exchangeId, startDate, c);
+        if (esitoScelta.scelta() == SceltaStorico.ANNULLA) return null;
+        final boolean conArchivio = (esitoScelta.scelta() == SceltaStorico.PROCEDI_CON_ARCHIVIO);
+        //L'utente può aver spostato indietro la data nel dialogo: da qui in poi vale la sua.
+        final long dataInizio = esitoScelta.startDate();
 
         //L'esito viene raccolto qui dal thread in background e letto solo quando la finestra di progresso
         //(modale) si è chiusa, cioè quando lo scaricamento è finito: il resoconto lo mostra il chiamante,
@@ -501,7 +772,7 @@ public static Path getNodeExePath() {
         installCcxt();
         System.out.println("Eseguo la chiamata");
         
-        Esiti[0]=fetchMovimenti(exchangeId, apiKey, secret,startDate,Tokens,passphrase,progress,c,conArchivio);
+        Esiti[0]=fetchMovimenti(exchangeId, apiKey, secret,dataInizio,Tokens,passphrase,progress,c,conArchivio);
         } catch (IOException ex) {
             Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {
@@ -827,8 +1098,11 @@ public static Path getNodeExePath() {
             righe.addAll(rt);
 
             //Archivio storico del conto Trading, solo se richiesto: recupera i trimestri che account/bills-archive
-            //non copre. I movimenti che ne escono hanno gli stessi identificativi di quelli appena scaricati,
-            //quindi i periodi sovrapposti si deduplicano da soli e non serve alcun coordinamento fra i due.
+            //non copre. Le due finestre si SOVRAPPONGONO: l'archivio copre il trimestre intero, bills-archive gli
+            //ultimi ~3 mesi, quindi le operazioni che cadono in entrambe arrivano due volte. I doppioni vengono
+            //tolti subito sotto, da deduplicaBillOKX: non si eliminano da soli piu' avanti nella catena, perche'
+            //il consolidamento somma le gambe per moneta e la deduplica per ID che c'e' in Ex_OKX_ImportaDaAPI
+            //guarda solo i movimenti gia' salvati, non quelli dello stesso scaricamento.
             if (conArchivio) {
                 List<String[]> ra = ScaricaArchivioOKX(exchangeId, apiKey, secret, startDate, passphrase,
                         hostnameOKX, progress);
@@ -838,6 +1112,12 @@ public static Path getNodeExePath() {
                 }
                 righe.addAll(ra);
             }
+
+            //Si deduplica anche quando l'archivio non e' stato chiesto: costa una scansione su una lista
+            //gia' in memoria e non dipende da quale ramo l'ha riempita. Riguarda le sole righe dei bill:
+            //i rendimenti Earn qui sotto non ci passano, ma non ne hanno bisogno, perche' il loro ID
+            //(EARN-<moneta>-<aaaammgg>) e' uno per moneta e per giornata gia' per costruzione.
+            righe = deduplicaBillOKX(righe);
 
             //I rendimenti dei prodotti Earn non sono nei bill: hanno endpoint propri e vanno chiesti a parte.
             //Si riparte dalla mezzanotte del giorno di startDate, non da startDate: l'aggregazione è per
@@ -1160,10 +1440,16 @@ public static Path getNodeExePath() {
      * Recupera dall'archivio storico trimestrale di OKX i movimenti del conto Trading più vecchi dei 3 mesi
      * coperti da {@code account/bills-archive}, e li restituisce già nel formato intermedio a 19 campi.
      *
-     * <p>Lo script {@code OKX_Archivio.js} chiede la generazione di <b>un solo trimestre per esecuzione</b>,
-     * perché la richiesta è fortemente limitata da OKX, e attende fino a 5 minuti che il file sia pronto
-     * (misurato: 105 secondi). I trimestri restanti si recuperano rilanciando lo scaricamento: quelli già
-     * generati vengono presi al volo, senza spendere una seconda richiesta.
+     * <p>Lo script {@code OKX_Archivio.js} lavora in tre fasi: interroga tutti i trimestri (la lettura costa
+     * pochissimo e trova gratis i file già generati in passato), chiede la generazione di <b>tutti</b> quelli
+     * mai richiesti, poi attende fino a 10 minuti ritirando ciascun file appena è pronto.
+     *
+     * <p>Fino al 04/08/2026 ne veniva chiesto <b>uno solo per esecuzione</b>, sulla base del costo che CCXT
+     * assegna a quella chiamata. Misurato sul campo, quel limite non è applicato dal server: 15 richieste
+     * consecutive sono state tutte accettate e 11 file erano pronti entro 5 minuti. Un rifiuto resta però
+     * gestito, perché non è escluso che una soglia più alta esista: al primo "troppe richieste" lo script si
+     * ferma, tiene quel che ha ottenuto e lascia il resto alla prossima esecuzione, che ripartirà di lì
+     * ritirando gratis quanto nel frattempo è stato generato.
      *
      * <p>L'esito di ciascun trimestre viene riportato all'utente, altrimenti un recupero parziale — che è la
      * norma quando i trimestri sono molti — sarebbe indistinguibile da uno completo.
@@ -1181,7 +1467,7 @@ public static Path getNodeExePath() {
     static List<String[]> ScaricaArchivioOKX(String exchangeId, String apiKey, String secret, long startDate,
             String passphrase, String hostname, Download progress) {
 
-        List<String> trimestri = trimestriArchivioOKX(startDate, System.currentTimeMillis());
+        List<String> trimestri = trimestriArchivioOKX(startDate, System.currentTimeMillis(), annoInizioArchivioOKX());
         if (trimestri.isEmpty()) {
             System.out.println("Archivio storico OKX: nessun trimestre da recuperare.");
             return new ArrayList<>();
@@ -1224,9 +1510,10 @@ public static Path getNodeExePath() {
         if (daRitentare) {
             JOptionPane.showConfirmDialog(null,
                     "Archivio storico OKX: recupero parziale.\n\n" + riepilogo + "\n"
-                    + "OKX prepara un trimestre alla volta e ne è stato chiesto uno solo, come impone il suo "
-                    + "limite di frequenza. Rilancia lo scaricamento fra qualche minuto per prendere quello "
-                    + "in preparazione e chiedere il successivo.",
+                    + "I trimestri ancora in preparazione vengono generati da OKX anche adesso: rilancia lo "
+                    + "scaricamento fra qualche minuto e verranno ritirati senza rifare la richiesta. Quelli "
+                    + "eventualmente indicati come «da richiedere» sono rimasti fuori perché OKX ha smesso di "
+                    + "accettare richieste: verranno chiesti al prossimo tentativo.",
                     "Archivio storico OKX", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
         }
         return righe;
@@ -1328,6 +1615,70 @@ public static Path getNodeExePath() {
         return convertOKXBills(comeBill, "Trading");
     }
 
+    /**
+     * Toglie dalle righe grezze a 19 campi i bill che compaiono piu' di una volta, tenendo la prima
+     * occorrenza.
+     *
+     * <p><b>Perche' serve.</b> Lo scaricamento OKX mette insieme finestre temporali che si sovrappongono:
+     * {@code account/bills-archive} copre gli ultimi ~3 mesi, mentre l'archivio trimestrale di
+     * {@code OKX_Archivio.js} copre il trimestre per intero. Le operazioni che cadono in entrambe arrivano
+     * quindi due volte, con lo stesso {@code billId}.
+     *
+     * <p><b>Perche' va fatto qui e non dopo.</b> {@code Ex_OKX_Consolida} raggruppa le righe per istante e
+     * accumula le gambe in {@code TransazioneDefi.MappaToken}, che e' indicizzata per simbolo di moneta e
+     * <b>somma le quantita'</b>. Quattro gambe invece di due non producono due scambi identici — che la
+     * deduplica per ID a valle potrebbe ancora riconoscere — ma <b>un solo scambio con una gamba
+     * raddoppiata</b>, cioe' prezzo unitario dimezzato e costo di carico sbagliato, piu' un deposito o
+     * prelievo fantasma con l'avanzo spaiato. Una volta consolidato il danno non e' piu' reversibile:
+     * l'unico punto utile e' prima del raggruppamento.
+     *
+     * <p>Misurato sui dati reali di giugno 2026: 44 operazioni duplicate, che spiegavano esattamente il 100%
+     * dello scostamento fra lo scaricamento con archivio e quello senza.
+     *
+     * <p><b>Chiave.</b> Conto di provenienza ({@code [2]}, {@code "Funding"} o {@code "Trading"}) piu'
+     * {@code billId} ({@code [14]}). Il conto entra nella chiave perche' i due endpoint numerano i propri
+     * bill in modo indipendente: senza, un'ipotetica collisione fra un bill del Funding e uno del Trading
+     * farebbe sparire un movimento vero. Le due fonti che si sovrappongono sono entrambe {@code "Trading"}
+     * ({@code convertOKXArchivio} chiama {@code convertOKXBills(..., "Trading")}), quindi la deduplica che
+     * serve continua a funzionare.
+     *
+     * <p>Si tiene la <b>prima</b> occorrenza, cioe' quella dello scaricamento ordinario, che nell'ordine di
+     * composizione della lista precede l'archivio. Le due copie sono comunque allineate cifra per cifra,
+     * perche' {@code ripulisciBalChgArchivioOKX} riporta il {@code balChg} del CSV d'archivio al valore
+     * dell'API.
+     *
+     * <p>Una riga senza {@code billId} viene <b>sempre tenuta</b>: senza identificativo non c'e' modo di
+     * riconoscere un doppione, e scartarla significherebbe perdere un movimento per un dato che manca.
+     *
+     * @param righe righe in formato intermedio a 19 campi, in ordine di composizione
+     * @return una nuova lista senza i bill ripetuti, nello stesso ordine
+     */
+    static List<String[]> deduplicaBillOKX(List<String[]> righe) {
+        List<String[]> uniche = new ArrayList<>();
+        Set<String> visti = new HashSet<>();
+        int scartate = 0;
+
+        for (String[] r : righe) {
+            String billId = (r != null && r.length > 14 && r[14] != null) ? r[14].trim() : "";
+            if (billId.isEmpty()) {
+                uniche.add(r);
+                continue;
+            }
+            String conto = (r.length > 2 && r[2] != null) ? r[2].trim() : "";
+            if (visti.add(conto + "|" + billId)) {
+                uniche.add(r);
+            } else {
+                scartate++;
+            }
+        }
+
+        if (scartate > 0) {
+            System.out.println("Import OKX: " + scartate + " righe scartate perche' lo stesso bill era gia' "
+                    + "arrivato da un'altra finestra temporale (sovrapposizione archivio / bills-archive).");
+        }
+        return uniche;
+    }
+
     public static List<String[]> convertOKXBills(JsonArray bills, String Wallet) {
         List<String[]> lista = new ArrayList<>();
         if (bills == null) return lista;
@@ -1347,6 +1698,9 @@ public static Path getNodeExePath() {
             //Etichetta in chiaro del tipo, presente sui bill del Funding: serve solo a rendere
             //autoesplicativi i codici non ancora mappati nel riepilogo dei movimenti sconosciuti.
             String notes  = obj.optString("notes", "");
+            //Identificativo dell'ordine: presente su tutti i bill di trade, assente sui movimenti del
+            //Funding, che non sono ordini. Serve a raggruppare per ordine invece che a naso.
+            String ordId  = obj.optString("ordId", "");
 
             if (billId.isEmpty() || ccy.isEmpty() || balChg.isEmpty() || ts.isEmpty()) continue;
             if (!Funzioni.isNumeric(balChg, false) || !Funzioni.isNumeric(ts, false)) continue;
@@ -1385,6 +1739,7 @@ public static Path getNodeExePath() {
                 DatoRiga[11] = "";
                 DatoRiga[12] = "";
             }
+            DatoRiga[13] = ordId;                                                          //ID dell'ordine, vuoto sul Funding
             DatoRiga[14] = billId;                                                         //ID originale OKX
             //"NO": Funding e Trading vengono scaricati entrambi nella stessa esecuzione, quindi un
             //trasferimento interno compare già come bill su tutti e due i conti. Generare anche il

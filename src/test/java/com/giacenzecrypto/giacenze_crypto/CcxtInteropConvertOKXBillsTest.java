@@ -99,8 +99,9 @@ class CcxtInteropConvertOKXBillsTest {
             assertEquals("Transfer out", CcxtInterop.causaleBillOKX(tipo, "-1", true), "Trading type " + tipo);
             assertEquals("Transfer in",  CcxtInterop.causaleBillOKX(tipo, "1",  true), "Trading type " + tipo);
         }
-        //Funding: 130 = From unified trading account, 131 = To unified, 76 = Simple Earn redemption
-        for (String tipo : new String[]{"76", "130", "131"}) {
+        //Funding: 130 = From unified trading account, 131 = To unified, 76 = Simple Earn redemption,
+        //80/82 = sottoscrizione e riscatto dei Flash Deals, 311 = accredito dal conto Trading
+        for (String tipo : new String[]{"76", "80", "82", "130", "131", "311"}) {
             assertEquals("Transfer out", CcxtInterop.causaleBillOKX(tipo, "-1", false), "Funding type " + tipo);
             assertEquals("Transfer in",  CcxtInterop.causaleBillOKX(tipo, "1",  false), "Funding type " + tipo);
         }
@@ -130,6 +131,35 @@ class CcxtInteropConvertOKXBillsTest {
         var mappa = Importazioni.Ex_OKX_MappaCausali();
         assertEquals("NON CONSIDERARE", mappa.get("Transfer out"));
         assertEquals("NON CONSIDERARE", mappa.get("Transfer in"));
+    }
+
+    /**
+     * La conversione rapida di OKX (codice 61) è uno scambio fra due monete, non un movimento a sé: le due
+     * gambe arrivano sullo stesso istante con segno opposto, quindi devono portare l'etichetta che
+     * l'import del CSV già conosce, altrimenti il raggruppamento per orario non le riconoscerebbe.
+     */
+    @Test
+    void laConversioneRapidaEUnoScambioFraDueMonete() {
+        //Le due gambe reali del 30/12/2022 08:00:41: SHIB in uscita, USDT in entrata
+        assertEquals("Convert", CcxtInterop.causaleBillOKX("61", "-9127.5584", false));
+        assertEquals("Convert", CcxtInterop.causaleBillOKX("61", "0.0735811338275006", false));
+        assertEquals("SCAMBIO CRYPTO-CRYPTO", Importazioni.Ex_OKX_MappaCausali().get("Convert"));
+    }
+
+    /**
+     * Gli accrediti gratuiti del Funding: il rendimento dei Flash Deals (89), che arriva in una moneta
+     * diversa da quella investita, e l'omaggio promozionale della mystery box (189). Sono crypto che entra
+     * senza contropartita e vanno trattati come gli interessi di Simple Earn, non come giroconti.
+     */
+    @Test
+    void iRendimentiEGliOmaggiSonoReward() {
+        var mappa = Importazioni.Ex_OKX_MappaCausali();
+
+        assertEquals("Flash Deals Earnings", CcxtInterop.causaleBillOKX("89", "93.84434534", false));
+        assertEquals("REWARD", mappa.get("Flash Deals Earnings"));
+
+        assertEquals("Mystery box bonus", CcxtInterop.causaleBillOKX("189", "9127.55842556", false));
+        assertEquals("REWARD", mappa.get("Mystery box bonus"));
     }
 
     @Test
@@ -255,15 +285,18 @@ class CcxtInteropConvertOKXBillsTest {
         long adesso = System.currentTimeMillis();
 
         //Riguarda solo OKX: gli altri exchange non hanno questo limite di storico
-        assertFalse(CcxtInterop.serveDialogoStoricoOKX("Binance", dueAnniFa, adesso, false));
-        assertFalse(CcxtInterop.serveDialogoStoricoOKX(null, dueAnniFa, adesso, false));
+        assertFalse(CcxtInterop.serveDialogoStoricoOKX("Binance", dueAnniFa, adesso, false, false));
+        assertFalse(CcxtInterop.serveDialogoStoricoOKX(null, dueAnniFa, adesso, false, true));
         //Entro la finestra coperta dalle API, e con la scelta gia' proposta, non si disturba l'utente
-        assertFalse(CcxtInterop.serveDialogoStoricoOKX("OKX", ieri, adesso, true));
+        assertFalse(CcxtInterop.serveDialogoStoricoOKX("OKX", ieri, adesso, true, false));
         //Ma la prima volta la scelta va offerta anche con movimenti recenti: e' il caso di chi ha
         //importato solo una parte della propria storia e ha un buco dietro
-        assertTrue(CcxtInterop.serveDialogoStoricoOKX("OKX", ieri, adesso, false));
+        assertTrue(CcxtInterop.serveDialogoStoricoOKX("OKX", ieri, adesso, false, false));
         //Da lontano si chiede comunque, anche se e' gia' stata proposta
-        assertTrue(CcxtInterop.serveDialogoStoricoOKX("OKX", dueAnniFa, adesso, true));
+        assertTrue(CcxtInterop.serveDialogoStoricoOKX("OKX", dueAnniFa, adesso, true, false));
+        //E con dei trimestri ancora da ritirare si torna a chiedere anche da vicino: e' l'unica via
+        //rimasta per completare un recupero parziale, da quando la data di partenza non si sceglie piu'
+        assertTrue(CcxtInterop.serveDialogoStoricoOKX("OKX", ieri, adesso, true, true));
 
         //Quando il dialogo non serve, la data proposta arriva intatta al chiamante
         assertEquals(CcxtInterop.SceltaStorico.PROCEDI,

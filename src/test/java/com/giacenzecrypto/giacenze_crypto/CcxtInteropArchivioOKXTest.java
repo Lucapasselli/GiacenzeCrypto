@@ -117,38 +117,15 @@ class CcxtInteropArchivioOKXTest {
         assertEquals(2024, CcxtInterop.annoInizioArchivioOKX(" 2024 ", 2026));
     }
 
-    // ==================== data di partenza digitata dall'utente ====================
+    // ==================== data di partenza ====================
 
     /**
-     * Una data interpretata male non fa fallire nulla: manda lo scaricamento a partire dall'epoca sbagliata,
-     * e l'utente se ne accorgerebbe solo dai saldi. Per questo si rifiuta tutto ciò che non è una data
-     * passata e leggibile, lasciando invariata quella di prima ({@code -1}).
+     * Dal 04/08/2026 la data di partenza non si sceglie più: è sempre quella dell'ultimo movimento OKX già
+     * scaricato. È quindi lei, e non l'anno minimo, a decidere quanto si torna indietro — l'anno resta un
+     * semplice pavimento, che può solo accorciare l'elenco.
      */
     @Test
-    void laDataDigitataVieneAccettataSoloSePassataELeggibile() {
-        long adesso = quando(2026, 8, 4);
-
-        //Annullato o lasciato vuoto: nessun cambio
-        assertEquals(-1, CcxtInterop.dataInizioOKX(null, adesso));
-        assertEquals(-1, CcxtInterop.dataInizioOKX("", adesso));
-        assertEquals(-1, CcxtInterop.dataInizioOKX("   ", adesso));
-        //Non è una data
-        assertEquals(-1, CcxtInterop.dataInizioOKX("il mese scorso", adesso));
-        //Nel futuro: non c'è nulla da scaricare da lì in avanti
-        assertEquals(-1, CcxtInterop.dataInizioOKX("2027-01-01 00:00:00", adesso));
-
-        //Data valida: accettata, spazi compresi
-        long attesa = FunzioniDate.ConvertiDatainLongSecondo("2025-02-19 12:00:00");
-        assertEquals(attesa, CcxtInterop.dataInizioOKX("  2025-02-19 12:00:00  ", adesso));
-    }
-
-    /**
-     * Il caso che dà senso alla funzione: chi ha in archivio solo una parte della propria storia deve poter
-     * spostare indietro la partenza, perché l'elenco dei trimestri non va mai più indietro di quella data —
-     * scegliere l'anno minimo, da solo, non basterebbe.
-     */
-    @Test
-    void spostareIndietroLaDataEstendeIlRecuperoDellArchivio() {
+    void iTrimestriLiDecideLaDataDiPartenzaNonLAnnoMinimo() {
         long adesso = quando(2026, 8, 4);
         long ultimoMovimento = quando(2026, 6, 15);
 
@@ -157,10 +134,58 @@ class CcxtInteropArchivioOKXTest {
                 CcxtInterop.trimestriArchivioOKX(ultimoMovimento, adesso, 2025));
         assertEquals(List.of("2026Q2"), CcxtInterop.trimestriArchivioOKX(ultimoMovimento, adesso, 2025));
 
-        //Spostando indietro la partenza il recupero si estende davvero
-        long scelta = CcxtInterop.dataInizioOKX("2025-01-01 00:00:00", adesso);
+        //È la partenza più vecchia del primo scaricamento a estendere il recupero: da lì l'anno scelto
+        //dall'utente torna a contare, ed è l'unico momento in cui gli viene chiesto
+        long primoScaricamento = quando(2017, 1, 1);
         assertEquals(List.of("2026Q2", "2026Q1", "2025Q4", "2025Q3", "2025Q2", "2025Q1"),
-                CcxtInterop.trimestriArchivioOKX(scelta, adesso, 2025));
+                CcxtInterop.trimestriArchivioOKX(primoScaricamento, adesso, 2025));
+    }
+
+    /**
+     * L'elenco che viene davvero chiesto a OKX è ancorato all'anno scelto, non alla data di partenza dello
+     * scaricamento. È ciò che permette a un recupero rimasto a metà di completarsi alla corsa successiva:
+     * partendo dall'ultimo movimento — che a quel punto è recente — i trimestri vecchi non verrebbero più
+     * elencati e resterebbero irrecuperabili.
+     */
+    @Test
+    void lArchivioPartesempreDallAnnoSceltoENonDalloScaricamento() {
+        List<String> t = CcxtInterop.trimestriArchivioOKX();
+
+        assertFalse(t.isEmpty());
+        //Senza preferenza salvata il pavimento è il primo anno coperto da OKX, e l'elenco ci arriva
+        assertEquals(CcxtInterop.ANNO_MIN_ARCHIVIO_OKX + "Q1", t.get(t.size() - 1));
+        assertEquals(t, CcxtInterop.trimestriArchivioOKX(0, System.currentTimeMillis(),
+                CcxtInterop.ANNO_MIN_ARCHIVIO_OKX));
+    }
+
+    /**
+     * L'anno di partenza viene chiesto solo al primo scaricamento, e a riconoscerlo è questo controllo: se
+     * dicesse "vuoto" con dei movimenti OKX già presenti, la domanda tornerebbe a ogni recupero
+     * dell'archivio; se dicesse il contrario, non verrebbe fatta proprio quando è l'unica utile.
+     */
+    @Test
+    void lArchivioEVuotoFinoAlPrimoMovimentoOKX() {
+        Principale.MappaCryptoWallet.clear();
+        try {
+            assertTrue(CcxtInterop.archivioOKXVuoto(), "senza movimenti l'archivio è vuoto");
+
+            //Un movimento di un altro exchange non conta: è l'archivio di OKX che deve essere vuoto
+            Principale.MappaCryptoWallet.put("altro", movimentoDi("Binance"));
+            assertTrue(CcxtInterop.archivioOKXVuoto());
+
+            Principale.MappaCryptoWallet.put("okx", movimentoDi("okx"));
+            assertFalse(CcxtInterop.archivioOKXVuoto(), "il confronto non deve dipendere dal maiuscolo");
+        } finally {
+            Principale.MappaCryptoWallet.clear();
+        }
+    }
+
+    /** @return un movimento con il solo campo che qui conta, l'exchange in posizione {@code [3]} */
+    private static String[] movimentoDi(String exchange) {
+        String[] Trans = new String[39];
+        java.util.Arrays.fill(Trans, "");
+        Trans[3] = exchange;
+        return Trans;
     }
 
     // ==================== instType/subType -> type ====================
@@ -177,6 +202,10 @@ class CcxtInteropArchivioOKXTest {
         assertEquals("1", CcxtInterop.tipoDaArchivioOKX("-", "12"));
         assertEquals("12", CcxtInterop.tipoDaArchivioOKX("-", "200"));
         assertEquals("12", CcxtInterop.tipoDaArchivioOKX("-", "202"));
+        //290: unico subType che l'incrocio dei billId non copriva, perché l'archivio è l'unica fonte che lo
+        //espone. È l'uscita verso il Funding, riconosciuta dalla contropartita type=311 del 20/01/2024.
+        assertEquals("1", CcxtInterop.tipoDaArchivioOKX("-", "290"));
+        assertEquals("Transfer out", CcxtInterop.causaleBillOKX("1", "-0.000000654", true));
     }
 
     @Test

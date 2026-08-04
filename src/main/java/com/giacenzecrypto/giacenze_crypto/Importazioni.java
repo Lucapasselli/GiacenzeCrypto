@@ -545,6 +545,11 @@ public class Importazioni {
 
         Mappa_Conversione_Causali.put("Deposit yield",                          "REWARD");
         Mappa_Conversione_Causali.put("Crypto dust auto-transfer in",           "REWARD");
+        //Accrediti gratuiti riconosciuti il 04/08/2026 dal campo notes dei bill (codici 89 e 189): il
+        //rendimento dei Flash Deals — che arriva in una moneta diversa da quella investita — e l'omaggio
+        //promozionale della "mystery box". Sono crypto che entra senza contropartita, come gli interessi.
+        Mappa_Conversione_Causali.put("Flash Deals Earnings",                   "REWARD");
+        Mappa_Conversione_Causali.put("Mystery box bonus",                      "REWARD");
 
         Mappa_Conversione_Causali.put("Transfer in",                            "NON CONSIDERARE");
         Mappa_Conversione_Causali.put("Transfer out",                           "NON CONSIDERARE");

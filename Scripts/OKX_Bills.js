@@ -8,11 +8,13 @@
 //   - Trading account -> /api/v5/account/bills-archive (trade, conversioni, fee)
 //
 // I due conti hanno finestre storiche MOLTO diverse, per questo il limite non e' piu' unico:
-//   - Funding: asset/bills-history restituisce l'intero storico. Verificato su dati reali
-//     (03/08/2026): 100 movimenti dal 19/02/2025 al 28/07/2026, 524 giorni, con la pagina
-//     successiva vuota. E' molto piu' capiente di asset/bills, che si fermava a ~1 mese e che era
-//     l'endpoint usato prima. Costa pero' 10 unita' di rate limit: fra una pagina e l'altra
-//     servono ~1,1 s, e a 300 ms si prende un 50011 "Too many requests".
+//   - Funding: asset/bills-history e' molto piu' capiente di asset/bills, che si fermava a ~1 mese
+//     e che era l'endpoint usato prima. Costa pero' 10 unita' di rate limit: fra una pagina e
+//     l'altra servono ~1,1 s, e a 300 ms si prende un 50011 "Too many requests".
+//     ATTENZIONE: qui `after` e' un TIMESTAMP, non un billId - vedi fetchBills. La prima misura
+//     (03/08/2026) diceva "100 movimenti dal 19/02/2025 al 28/07/2026 e pagina successiva vuota,
+//     quindi storico completo": era sbagliata. Quei 100 erano una sola pagina, e la seconda
+//     tornava vuota perche' le si passava un billId al posto di una data.
 //   - Trading: account/bills-archive copre AL MASSIMO 3 MESI. Per lo storico piu' vecchio serve
 //     l'archivio trimestrale (OKX_Archivio.js) oppure l'import del CSV.
 // Se startDate e' piu' vecchia del limite del Trading, per quel solo conto viene limitata.
@@ -131,16 +133,32 @@ async function risolviHostname(exchange, hostnamePreferito) {
 }
 
 /**
- * Pagina un endpoint bills di OKX andando a ritroso con il solo parametro `after`
- * (che per OKX e' un billId, NON un timestamp) e fermandosi quando la pagina torna
- * corta o quando i movimenti diventano piu' vecchi di startTime.
+ * Pagina un endpoint bills di OKX andando a ritroso con il solo parametro `after`, e
+ * fermandosi quando la pagina torna corta o quando i movimenti diventano piu' vecchi
+ * di startTime.
+ *
+ * ATTENZIONE: `after` NON ha lo stesso significato sui due endpoint, ed e' la causa del
+ * difetto C8 (storico Funding troncato a 100 movimenti).
+ *   - `account/bills-archive` (Trading): `after` e' un **billId**.
+ *   - `asset/bills-history`  (Funding):  `after` e' un **timestamp in millisecondi**.
+ * Passare un billId dove serve un timestamp non da' errore: OKX lo interpreta come data.
+ * I billId del Funding sono numeri corti (~2e11), cioe' il 1976, quindi "movimenti
+ * anteriori al 1976" = nessuno, e la seconda pagina torna vuota facendo credere che lo
+ * storico sia finito. Per questo il significato viene passato esplicitamente in
+ * {@link chiaveAfter} invece di essere assunto.
+ *
+ * Con `after` = timestamp si chiede `tsMin + 1` e non `tsMin`, perche' il confronto e'
+ * stretto ("anteriori a"): con `tsMin` si perderebbero i movimenti che condividono
+ * l'istante piu' vecchio della pagina. Quelli riletti vengono scartati da `seenIds`.
  *
  * Volutamente NON si usano `begin`/`end`: non e' verificato che questi endpoint li
  * onorino, e una finestra temporale ignorata renderebbe la paginazione silenziosamente
  * inutile (stessa pagina richiesta all'infinito, scartata come duplicata). Il filtro
  * temporale viene quindi applicato qui sui risultati.
+ *
+ * @param chiaveAfter 'billId' oppure 'ts': cosa mettere in `after` per la pagina successiva
  */
-async function fetchBills(exchange, metodo, startTime, endTime, etichetta) {
+async function fetchBills(exchange, metodo, startTime, endTime, etichetta, chiaveAfter = 'billId') {
   const out = [];
   const seenIds = new Set();
   let after;
@@ -148,6 +166,9 @@ async function fetchBills(exchange, metodo, startTime, endTime, etichetta) {
   let tsMin = Number.MAX_SAFE_INTEGER;
   let tsMax = 0;
   let completo = false;
+  let paginaPrecedentePiena = false;
+
+  log(`${etichetta}: paginazione con after = ${chiaveAfter}`);
 
   while (pagina < MAX_PAGINE) {
     pagina++;
@@ -183,14 +204,28 @@ async function fetchBills(exchange, metodo, startTime, endTime, etichetta) {
     }
 
     const data = (risposta && Array.isArray(risposta.data)) ? risposta.data : [];
-    if (data.length === 0) { completo = true; break; }
+    if (data.length === 0) {
+      //Una pagina vuota SUBITO DOPO una pagina piena, senza aver raggiunto la data di partenza,
+      //non e' la fine dello storico: e' il sintomo di un `after` che l'endpoint non ha capito
+      //come ci si aspettava (difetto C8, rimasto invisibile per un giorno proprio perche' qui
+      //si dichiarava "completo"). Meglio un falso allarme quando lo storico finisce esattamente
+      //su un multiplo di 100 che una troncatura silenziosa.
+      if (pagina > 1 && paginaPrecedentePiena) {
+        log(`${etichetta}: pagina ${pagina} vuota subito dopo una pagina piena e senza aver raggiunto il ${new Date(startTime).toISOString()}: SCARICAMENTO CONSIDERATO INCOMPLETO (paginazione con after = ${chiaveAfter} probabilmente non interpretata dall'endpoint)`);
+      } else {
+        completo = true;
+      }
+      break;
+    }
 
     let nuovi = 0;
-    let piuVecchio;
+    let piuVecchioId;
+    let tsPagina = Number.MAX_SAFE_INTEGER;
     let raggiuntoInizio = false;
     for (const b of data) {
-      piuVecchio = b.billId;
+      piuVecchioId = b.billId;
       const ts = Number(b.ts);
+      if (Number.isFinite(ts) && ts < tsPagina) tsPagina = ts;
       if (ts < startTime) { raggiuntoInizio = true; continue; }
       if (ts > endTime) continue;
       if (seenIds.has(b.billId)) continue;
@@ -204,12 +239,29 @@ async function fetchBills(exchange, metodo, startTime, endTime, etichetta) {
 
     if (raggiuntoInizio) { completo = true; break; }
     if (data.length < LIMIT) { completo = true; break; }
-    if (piuVecchio === undefined || piuVecchio === after) { completo = true; break; }
-    after = piuVecchio;
+
+    //Una pagina piena che non porta nemmeno una riga nuova vuol dire che la paginazione non e'
+    //avanzata: o `after` non e' stato capito, o piu' di LIMIT movimenti condividono lo stesso
+    //istante. In nessuno dei due casi lo storico e' finito, quindi si esce SENZA dichiararlo
+    //completo - altrimenti si torna al difetto C8 con il segno opposto.
+    if (nuovi === 0) {
+      log(`${etichetta}: pagina ${pagina} interamente gia' vista, paginazione ferma - POSSIBILI MOVIMENTI MANCANTI`);
+      break;
+    }
+
+    const prossimoAfter = (chiaveAfter === 'ts')
+      ? (tsPagina === Number.MAX_SAFE_INTEGER ? undefined : String(tsPagina + 1))
+      : piuVecchioId;
+    if (prossimoAfter === undefined || prossimoAfter === after) {
+      log(`${etichetta}: la pagina ${pagina} non fa avanzare il cursore (after invariato) - POSSIBILI MOVIMENTI MANCANTI`);
+      break;
+    }
+    after = prossimoAfter;
+    paginaPrecedentePiena = (data.length === LIMIT);
     await sleep(PAUSA_PAGINA_MS);
   }
 
-  if (!completo) {
+  if (!completo && pagina >= MAX_PAGINE) {
     log(`${etichetta}: raggiunto il limite di ${MAX_PAGINE} pagine, POSSIBILI MOVIMENTI MANCANTI`);
   }
   // Log dell'intervallo realmente recuperato: se e' piu' stretto di quello richiesto,
@@ -270,10 +322,10 @@ async function main() {
   }
   exchange.hostname = risoluzione.hostname;
 
-  const funding = await fetchBills(exchange, 'privateGetAssetBillsHistory', startTimeFunding, endTime, 'Funding')
+  const funding = await fetchBills(exchange, 'privateGetAssetBillsHistory', startTimeFunding, endTime, 'Funding', 'ts')
     .catch(e => { log(`Funding fallito: ${e.message}`); return { bills: [], completo: false }; });
 
-  const trading = await fetchBills(exchange, 'privateGetAccountBillsArchive', startTimeTrading, endTime, 'Trading')
+  const trading = await fetchBills(exchange, 'privateGetAccountBillsArchive', startTimeTrading, endTime, 'Trading', 'billId')
     .catch(e => { log(`Trading fallito: ${e.message}`); return { bills: [], completo: false }; });
 
   const risultato = {

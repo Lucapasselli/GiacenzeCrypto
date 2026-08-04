@@ -82,6 +82,20 @@ public class CcxtInterop {
     public static final String OPZIONE_ARCHIVIO_PROPOSTO_OKX = "OKX_ArchivioProposto";
 
     /**
+     * Valore scritto in {@link #OPZIONE_ARCHIVIO_PROPOSTO_OKX} quando la scelta e' stata proposta.
+     *
+     * <p><b>E' versionato di proposito.</b> La proposta viene fatta una volta sola, e va bene finche'
+     * l'utente ha scelto sapendo come stavano le cose. Quando invece cambia il quadro - come con il
+     * difetto C8, che teneva lo storico del conto Funding fermo ai 100 movimenti piu' recenti e faceva
+     * anche dire al dialogo che il Funding "non ha limiti" - la scelta gia' data e' stata presa su
+     * un'informazione sbagliata, e chi ha un buco nei depositi resterebbe senza alcun modo di spostare
+     * indietro la data. Cambiando la costante il confronto non riconosce piu' il valore vecchio e il
+     * dialogo si riaffaccia <b>una volta sola</b> su ogni installazione, senza tornare a chiederlo ad
+     * ogni scaricamento.
+     */
+    static final String VALORE_ARCHIVIO_PROPOSTO_OKX = "SI-C8";
+
+    /**
      * Elenca i trimestri da chiedere all'archivio storico di OKX per coprire il periodo che va da
      * {@code dalTimestamp} a oggi, <b>dal più recente al più vecchio</b>.
      *
@@ -614,7 +628,7 @@ public static Path getNodeExePath() {
      * @return la scelta dell'utente; {@link SceltaStorico#PROCEDI} anche quando il dialogo non serve
      */
     static EsitoStorico SceltaStoricoOKX(String exchangeId, long startDate, Component c) {
-        boolean giaProposto = "SI".equalsIgnoreCase(
+        boolean giaProposto = VALORE_ARCHIVIO_PROPOSTO_OKX.equalsIgnoreCase(
                 DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_ARCHIVIO_PROPOSTO_OKX, ""));
         if (!serveDialogoStoricoOKX(exchangeId, startDate, System.currentTimeMillis(), giaProposto)) {
             return new EsitoStorico(SceltaStorico.PROCEDI, startDate);
@@ -651,7 +665,8 @@ public static Path getNodeExePath() {
                               + "archivio. Se sai di avere dei buchi, spostala indietro — lo scaricamento non "
                               + "ci torna mai da solo.\n\n"
                             : ", come hai indicato tu.\n\n")
-                        + "Il conto Funding (depositi, prelievi, giroconti) non ha limiti: viene scaricato per intero.\n\n"
+                        + "Il conto Funding (depositi, prelievi, giroconti) non ha limiti di finestra: viene "
+                          + "scaricato per intero, ma sempre e solo dalla data di partenza in avanti.\n\n"
                         + "Il conto Trading invece torna al massimo gli ultimi 3 mesi. I movimenti più vecchi si "
                         + "recuperano dall'archivio storico di OKX, che li fornisce un trimestre alla volta: "
                         + "servono " + trimestri.size() + " trimestri per coprire il periodo"
@@ -689,7 +704,7 @@ public static Path getNodeExePath() {
         if (result == null) return new EsitoStorico(SceltaStorico.ANNULLA, dataCorrente);
 
         //Da qui in poi si esce con una risposta: la proposta e' stata fatta e non va rifatta a ogni giro
-        DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_ARCHIVIO_PROPOSTO_OKX, "SI");
+        DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_ARCHIVIO_PROPOSTO_OKX, VALORE_ARCHIVIO_PROPOSTO_OKX);
 
         if (result.isAction("cambiaData")) {
             long nuova = ChiediDataInizioOKX(owner, dataCorrente);

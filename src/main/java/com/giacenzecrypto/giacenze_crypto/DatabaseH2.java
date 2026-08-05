@@ -490,43 +490,20 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         if (Data == null) {
             throw new IllegalArgumentException("Data non può essere nullo.");
         }
-        try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM EMONEY WHERE Moneta = ?";
-            int rowCount = 0;
-            try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL)) {
-                checkStatement.setString(1, Moneta);
-                // Esegui la query e controlla il risultato
-                try (ResultSet resultSet = checkStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        rowCount = resultSet.getInt(1);
-                    }
-                }
-            }
-            if (rowCount > 0) {
-                // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE EMONEY SET Data = ? WHERE Moneta = ?";
-                try (PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL)) {
-                    updateStatement.setString(1, Data);
-                    updateStatement.setString(2, Moneta);
-                    updateStatement.executeUpdate();
-                }
-            } else {
-                // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO EMONEY (Moneta, Data) VALUES (?, ?)";
-                try (PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL)) {
-                    insertStatement.setString(1, Moneta);
-                    insertStatement.setString(2, Data);
-                    insertStatement.executeUpdate();
-                }
-            }
-            //Se aggiungo una riga al DB la aggiungo anche alla mappa di riferimento
-            //Lavorare con le mappe risulta infatti + veloce del DB e uso quella come base per le ricerche
-            Principale.Mappa_EMoney.put(Moneta, Data);
-        } catch (SQLException ex) {
-        LoggerGC.ScriviErrore(ex);
-        throw new RuntimeException("Errore durante l'accesso al database: " + ex.getMessage(), ex);
-    }
+        //B5: un solo MERGE INTO al posto di SELECT COUNT + UPDATE/INSERT. EMONEY ha due sole
+        //colonne ed entrambe sono elencate qui: le colonne omesse resterebbero a NULL.
+        Map<String, Object> values = new HashMap<>();
+        values.put("Moneta", Moneta);
+        values.put("Data", Data);
+        if (!U_ScriviRecord("EMONEY", values, "Moneta", connectionPersonale)) {
+            //La SQLException è già stata registrata da U_ScriviRecord. Si continua a sollevare
+            //un'eccezione, come faceva la versione precedente: se la scrittura fallisce la mappa
+            //in memoria NON va aggiornata, altrimenti divergerebbe dal database senza alcun segnale.
+            throw new RuntimeException("Errore durante il salvataggio della moneta EMoney " + Moneta);
+        }
+        //Se aggiungo una riga al DB la aggiungo anche alla mappa di riferimento
+        //Lavorare con le mappe risulta infatti + veloce del DB e uso quella come base per le ricerche
+        Principale.Mappa_EMoney.put(Moneta, Data);
     }
         
         /**
@@ -700,51 +677,6 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         //Con questa query ritorno sia il vecchio che il nuovo nome
     }
     
-    /**
-     * Posiziona il Wallet in uno specifico gruppo
-     *
-     * @param Wallet Il Wallet di riferimento
-     * @param Gruppo Il Gruppo Wallet dove deve finire
-     * 
-     * @throws IllegalArgumentException se il wallet o il Gruppo sono blank o null
-     */
-    public static void Pers_GruppoWallet_Scrivi_OLD(String Wallet, String Gruppo) {
-        if (Wallet == null || Wallet.isEmpty()) {
-            throw new IllegalArgumentException("Wallet non pu\u00f2 essere nullo o vuoto.");
-        }
-        if (Gruppo == null || Gruppo.isEmpty()) {
-            throw new IllegalArgumentException("Gruppo non pu\u00f2 essere nullo o vuoto.");
-        }       
-        try {
-            //Wallet = NormalizzaCampo(Wallet);
-            //Gruppo = NormalizzaCampo(Gruppo);
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM WALLETGRUPPO WHERE Wallet = ?";
-            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
-            checkStatement.setString(1, Wallet);
-            int rowCount = 0;
-            ResultSet resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                rowCount = resultSet.getInt(1);
-            }
-            if (rowCount > 0) {
-                String updateSQL = "UPDATE WALLETGRUPPO SET Gruppo = ? WHERE Wallet = ?";
-                PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL);
-                updateStatement.setString(1, Gruppo);
-                updateStatement.setString(2, Wallet);
-                updateStatement.executeUpdate();
-            } else {
-                String insertSQL = "INSERT INTO WALLETGRUPPO (Wallet, Gruppo ) VALUES (?, ?)";
-                PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL);
-                insertStatement.setString(1, Wallet);
-                insertStatement.setString(2, Gruppo);
-                insertStatement.executeUpdate();
-            }
-            Mappa_Wallet_Gruppo.put(Wallet, Gruppo);
-        } catch (SQLException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-    }
-        
     /**
      * Posiziona il Wallet in uno specifico gruppo
      *
@@ -989,47 +921,21 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
          *                  per gli exchange che non la prevedono
          */
         public static void Pers_ExchangeApi_Scrivi(String Exchange,String Chiave,String Segreto,String Opzionale) {
-        try {
             if (Opzionale == null) Opzionale = "";
 
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM EXCHANGEAPI WHERE Nome = ?";
-            int rowCount = 0;
-            try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL)) {
-                checkStatement.setString(1, Exchange);
-                // Esegui la query e controlla il risultato
-                try (ResultSet resultSet = checkStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        rowCount = resultSet.getInt(1);
-                    }
-                }
-            }
-            if (rowCount > 0) {
-                //Questa non dovrebbe servire a nulla perchè non devo mai aggiornare i valori di questa tabella ma solo cancellare e ricreare
-                String updateSQL = "UPDATE EXCHANGEAPI SET Exchange = ?,Chiave = ?,Segreto = ?,Opzionale = ? WHERE Nome = ?";
-                try (PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL)) {
-                    updateStatement.setString(1, Exchange);
-                    updateStatement.setString(2, Chiave);
-                    updateStatement.setString(3, Segreto);
-                    updateStatement.setString(4, Opzionale);
-                    updateStatement.setString(5, Exchange);
-                    updateStatement.executeUpdate();
-                }
-            } else {
-                // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO EXCHANGEAPI (Nome, Exchange, Chiave, Segreto, Opzionale) VALUES (?, ?, ?, ?, ?)";
-                try (PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL)) {
-                    insertStatement.setString(1, Exchange);
-                    insertStatement.setString(2, Exchange);
-                    insertStatement.setString(3, Chiave);
-                    insertStatement.setString(4, Segreto);
-                    insertStatement.setString(5, Opzionale);
-                    insertStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-    }    
+            //B5: un solo MERGE INTO al posto di SELECT COUNT + UPDATE/INSERT.
+            //Vanno elencate TUTTE e cinque le colonne della tabella: quelle omesse resterebbero a
+            //NULL sul percorso di inserimento, e dimenticare Opzionale cancellerebbe in silenzio la
+            //passphrase di OKX, annullando la correzione M5. Nome è la chiave primaria e riceve lo
+            //stesso valore di Exchange, come faceva la INSERT precedente.
+            Map<String, Object> values = new HashMap<>();
+            values.put("Nome", Exchange);
+            values.put("Exchange", Exchange);
+            values.put("Chiave", Chiave);
+            values.put("Segreto", Segreto);
+            values.put("Opzionale", Opzionale);
+            U_ScriviRecord("EXCHANGEAPI", values, "Nome", connectionPersonale);
+    }
     
         
     /**
@@ -1048,87 +954,6 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
 
     }      
         
-    /**
-     * Versione precedente di {@link #U_ScriviRecord}: inserisce o aggiorna dinamicamente un record
-     * costruendo un {@code SELECT COUNT(*)} seguito da un {@code UPDATE} o {@code INSERT} dinamico,
-     * invece dell'unico {@code MERGE INTO} usato dalla versione corrente. Mantenuta come riferimento
-     * storico, non più chiamata dal codice attivo.
-     *
-     * @param tableName nome della tabella su cui scrivere
-     * @param fieldValues mappa colonna → valore del record, deve includere {@code primaryKeyColumn}
-     * @param primaryKeyColumn nome della colonna chiave primaria
-     * @param con connessione JDBC su cui operare
-     * @throws IllegalArgumentException se {@code fieldValues} non contiene {@code primaryKeyColumn}
-     */
-    public static void U_ScriviRecord_OLD(String tableName, Map<String, Object> fieldValues, String primaryKeyColumn,Connection con) {
-    try {
-        // Prendo il valore della chiave primaria
-        Object primaryKeyValue = fieldValues.get(primaryKeyColumn);
-        if (primaryKeyValue == null) {
-            throw new IllegalArgumentException("La mappa deve contenere il campo chiave: " + primaryKeyColumn);
-        }
-
-        // 1. Controllo se la riga esiste
-        String checkSQL = "SELECT COUNT(*) FROM " + tableName + " WHERE " + primaryKeyColumn + " = ?";
-        try (PreparedStatement checkStmt = con.prepareStatement(checkSQL)) {
-            checkStmt.setObject(1, primaryKeyValue);
-            ResultSet rs = checkStmt.executeQuery();
-            boolean exists = false;
-            if (rs.next()) {
-                exists = rs.getInt(1) > 0;
-            }
-
-            if (exists) {
-                // 2. UPDATE dinamico
-                StringBuilder updateSQL = new StringBuilder("UPDATE " + tableName + " SET ");
-                for (String col : fieldValues.keySet()) {
-                    if (!col.equals(primaryKeyColumn)) {
-                        updateSQL.append(col).append(" = ?, ");
-                    }
-                }
-                updateSQL.setLength(updateSQL.length() - 2); // tolgo ultima virgola
-                updateSQL.append(" WHERE ").append(primaryKeyColumn).append(" = ?");
-
-                try (PreparedStatement updateStmt = con.prepareStatement(updateSQL.toString())) {
-                    int i = 1;
-                    for (Map.Entry<String, Object> entry : fieldValues.entrySet()) {
-                        if (!entry.getKey().equals(primaryKeyColumn)) {
-                            updateStmt.setObject(i++, entry.getValue());
-                        }
-                    }
-                    updateStmt.setObject(i, primaryKeyValue); // condizione WHERE
-                    updateStmt.executeUpdate();
-                }
-
-            } else {
-                // 3. INSERT dinamico
-                StringBuilder insertSQL = new StringBuilder("INSERT INTO " + tableName + " (");
-                StringBuilder valuesSQL = new StringBuilder("VALUES (");
-                for (String col : fieldValues.keySet()) {
-                    insertSQL.append(col).append(", ");
-                    valuesSQL.append("?, ");
-                }
-                insertSQL.setLength(insertSQL.length() - 2);
-                valuesSQL.setLength(valuesSQL.length() - 2);
-                insertSQL.append(") ").append(valuesSQL).append(")");
-
-                try (PreparedStatement insertStmt = con.prepareStatement(insertSQL.toString())) {
-                    int i = 1;
-                    for (Object value : fieldValues.values()) {
-                        insertStmt.setObject(i++, value);
-                    }
-                    insertStmt.executeUpdate();
-                }
-            }
-        }
-
-    } catch (SQLException ex) {
-        LoggerGC.ScriviErrore(ex);
-    }
-}
-    
-    
-    
     /**
  * Inserisce o aggiorna dinamicamente un record in una tabella del database utilizzando un'unica istruzione SQL {@code MERGE INTO}.
  * <p>
@@ -1161,15 +986,30 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
  * @param primaryKeyColumn  nome della colonna che rappresenta la chiave primaria nella tabella.
  * @param con               connessione JDBC aperta verso il database.
  *
+ * <p>
+ * <b>Attenzione alle colonne omesse</b>: sul percorso di inserimento le colonne della tabella non
+ * presenti in {@code fieldValues} restano a {@code NULL}. La mappa deve quindi elencare <i>tutte</i>
+ * le colonne che il record deve avere valorizzate, non solo quelle che stanno cambiando.
+ *
+ * @param tableName         nome della tabella in cui scrivere il record (es. {@code "CLIENTI"}).
+ * @param fieldValues       mappa contenente le coppie {@code nomeColonna → valore} del record da inserire o aggiornare.
+ *                          Deve includere anche la chiave primaria.
+ * @param primaryKeyColumn  nome della colonna che rappresenta la chiave primaria nella tabella.
+ * @param con               connessione JDBC aperta verso il database.
+ * @return {@code true} se il record è stato scritto, {@code false} se la scrittura è fallita per un
+ *         errore SQL (già registrato con {@link LoggerGC#ScriviErrore}). L'esito è stato introdotto
+ *         con la voce B5 perché i chiamanti che prima gestivano da soli la {@code SQLException}
+ *         potessero continuare a distinguere il fallimento invece di proseguire come se fosse
+ *         andato tutto bene; i chiamanti che non se ne curano possono ignorarlo.
+ *
  * @throws IllegalArgumentException se la mappa {@code fieldValues} non contiene la chiave primaria specificata.
- * @throws SQLException se si verifica un errore SQL durante l'esecuzione della query.
  *
  * @see java.sql.Connection
  * @see java.sql.PreparedStatement
  * @see java.sql.SQLException
  */
 
-    public static void U_ScriviRecord(String tableName, Map<String, Object> fieldValues, String primaryKeyColumn, Connection con) {
+    public static boolean U_ScriviRecord(String tableName, Map<String, Object> fieldValues, String primaryKeyColumn, Connection con) {
     try {
         //1 Validazione chiave primaria
         Object primaryKeyValue = fieldValues.get(primaryKeyColumn);
@@ -1202,9 +1042,11 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
             }
             ps.executeUpdate();
         }
+        return true;
 
     } catch (SQLException ex) {
         LoggerGC.ScriviErrore(ex);
+        return false;
     }
 }
 
@@ -1391,36 +1233,20 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         if (NuovoNome == null || NuovoNome.isEmpty()) {
             throw new IllegalArgumentException("NuovoNome non pu\u00f2 essere nullo o vuoto.");
         }
-        try {
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM RINOMINATOKEN WHERE address_chain = ?";
-            int rowCount = 0;
-            try (PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL)) {
-                checkStatement.setString(1, address_chain);
-                try (ResultSet resultSet = checkStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        rowCount = resultSet.getInt(1);
-                    }
-                }
-            }
-            if (rowCount > 0) {
-                String updateSQL = "UPDATE RINOMINATOKEN SET NuovoNome = ? WHERE address_chain = ?";
-                try (PreparedStatement updateStatement = connection.prepareStatement(updateSQL)) {
-                    updateStatement.setString(1, NuovoNome);
-                    updateStatement.setString(2, address_chain);
-                    updateStatement.executeUpdate();
-                }
-            } else {
-                String insertSQL = "INSERT INTO RINOMINATOKEN (address_chain, VecchioNome, NuovoNome) VALUES (?, ?, ?)";
-                try (PreparedStatement insertStatement = connection.prepareStatement(insertSQL)) {
-                    insertStatement.setString(1, address_chain);
-                    insertStatement.setString(2, VecchioNome);
-                    insertStatement.setString(3, NuovoNome);
-                    insertStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
+        //B5: MERGE INTO al posto di SELECT COUNT + UPDATE/INSERT. Qui però l'UPDATE precedente
+        //scriveva DI PROPOSITO il solo NuovoNome, lasciando intatto VecchioNome: è il nome
+        //ORIGINALE del token, quello a cui viene aggiunto il suffisso " **" della marcatura SCAM,
+        //e perderlo sarebbe definitivo. Il MERGE riscrive tutte le colonne elencate, quindi quella
+        //protezione va riprodotta esplicitamente: se la riga esiste si riusa il VecchioNome già
+        //salvato e si ignora quello passato dal chiamante, esattamente come faceva la UPDATE.
+        String[] esistente = RinominaToken_Leggi(address_chain);
+        String vecchioNomeDaSalvare = (esistente != null && esistente[0] != null) ? esistente[0] : VecchioNome;
+
+        Map<String, Object> values = new HashMap<>();
+        values.put("address_chain", address_chain);
+        values.put("VecchioNome", vecchioNomeDaSalvare);
+        values.put("NuovoNome", NuovoNome);
+        U_ScriviRecord("RINOMINATOKEN", values, "address_chain", connection);
     }
         
         /**
@@ -1487,36 +1313,19 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
      * in modo da non dover reinterrogare le API la prossima volta che lo stesso token viene verificato.
      */
     public static void GoPlusSecurity_Scrivi(String address_chain, String rete, String address, Map<String, String> valori) {
-        try {
-            String checkSQL = "SELECT COUNT(*) FROM GOPLUSSECURITY WHERE address_chain = ?";
-            int rowCount = 0;
-            try (PreparedStatement check = connection.prepareStatement(checkSQL)) {
-                check.setString(1, address_chain);
-                try (ResultSet rs = check.executeQuery()) {
-                    if (rs.next()) rowCount = rs.getInt(1);
-                }
-            }
-            String sql;
-            if (rowCount > 0) {
-                sql = "UPDATE GOPLUSSECURITY SET Rete=?, Address=?, " + String.join("=?,", GOPLUSSECURITY_CAMPI) + "=?, TimestampVerifica=? WHERE address_chain=?";
-            } else {
-                sql = "INSERT INTO GOPLUSSECURITY (Rete, Address, " + String.join(",", GOPLUSSECURITY_CAMPI) + ", TimestampVerifica, address_chain) "
-                        + "VALUES (?,?," + "?,".repeat(GOPLUSSECURITY_CAMPI.length) + "?,?)";
-            }
-            try (PreparedStatement ps = connection.prepareStatement(sql)) {
-                int idx = 1;
-                ps.setString(idx++, rete);
-                ps.setString(idx++, address);
-                for (String campo : GOPLUSSECURITY_CAMPI) {
-                    ps.setString(idx++, valori.get(campo));
-                }
-                ps.setLong(idx++, System.currentTimeMillis());
-                ps.setString(idx, address_chain);
-                ps.executeUpdate();
-            }
-        } catch (SQLException ex) {
-            LoggerGC.ScriviErrore(ex);
+        //B5: MERGE INTO al posto di SELECT COUNT + UPDATE/INSERT. La mappa elenca tutte e 20 le
+        //colonne della tabella (chiave + Rete + Address + i 16 campi di dettaglio + il timestamp):
+        //quelle omesse resterebbero a NULL sul percorso di inserimento, svuotando la cache.
+        //I campi che l'API non restituisce su una certa rete restano null com'era già prima.
+        Map<String, Object> values = new HashMap<>();
+        values.put("address_chain", address_chain);
+        values.put("Rete", rete);
+        values.put("Address", address);
+        for (String campo : GOPLUSSECURITY_CAMPI) {
+            values.put(campo, valori.get(campo));
         }
+        values.put("TimestampVerifica", System.currentTimeMillis());
+        U_ScriviRecord("GOPLUSSECURITY", values, "address_chain", connection);
     }
 
         /**
@@ -1553,40 +1362,13 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
          * @param Valore giacenza da salvare
          */
         public static void GiacenzeWalletMonetaBlockchain_Scrivi(String wallet_blocco, String Valore) {
-        try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM GIACENZEBLOCKCHAIN WHERE Wallet_Blocco = ?";
-            int rowCount = 0;
-            try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL)) {
-                checkStatement.setString(1, wallet_blocco);
-                // Esegui la query e controlla il risultato
-                try (ResultSet resultSet = checkStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        rowCount = resultSet.getInt(1);
-                    }
-                }
-            }
-            if (rowCount > 0) {
-                // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE GIACENZEBLOCKCHAIN SET Valore = ? WHERE Wallet_Blocco = ?";
-                try (PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL)) {
-                    updateStatement.setString(1, Valore);
-                    updateStatement.setString(2, wallet_blocco);
-                    updateStatement.executeUpdate();
-                }
-            } else {
-                // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO GIACENZEBLOCKCHAIN (Wallet_Blocco, Valore) VALUES (?, ?)";
-                try (PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL)) {
-                    insertStatement.setString(1, wallet_blocco);
-                    insertStatement.setString(2, Valore);
-                    insertStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-    } 
+        //B5: MERGE INTO al posto di SELECT COUNT + UPDATE/INSERT. La tabella ha due sole colonne
+        //ed entrambe sono elencate qui: quelle omesse resterebbero a NULL.
+        Map<String, Object> values = new HashMap<>();
+        values.put("Wallet_Blocco", wallet_blocco);
+        values.put("Valore", Valore);
+        U_ScriviRecord("GIACENZEBLOCKCHAIN", values, "Wallet_Blocco", connectionPersonale);
+    }
         
         /**
          * Legge tutti i token rinominati (es. marcatura SCAM).
@@ -1718,67 +1500,10 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
     }
 
     /**
-     * Versione precedente di {@link #OLD_PrezzoAddressChain_Scrivi}: salva (o aggiorna) il prezzo di
-     * un token identificato da ora+address+chain componendo le query SQL per concatenazione di
-     * stringa invece che con parametri bind. Nessun chiamante vivo nel codice attuale, mantenuta come
-     * riferimento storico.
-     *
-     * @param ora_address_chain chiave "{@code ora}_{@code Address}_{@code Rete}"
-     * @param prezzo prezzo da salvare
-     * @param personalizzato se {@code true} scrive su {@code connectionPersonale}, altrimenti su {@code connection}
-     */
-    public static void PrezzoAddressChain_Scrivi_OLD(String ora_address_chain, String prezzo,boolean personalizzato) {
-        try {
-            Connection connessione;
-            if (personalizzato) connessione=connectionPersonale;
-            else connessione=connection;
-            // Connessione al database
-            //String OAC[]=ora_address_chain.split("_");
-            //ora_address_chain=ora_address_chain.toUpperCase();
-            
-            //Se rete solana l'address è case sensitive per cui non posso gestirlo metterlo maiuscolo
-            //System.out.println(ora_address_chain);
-            String OAC[]=ora_address_chain.split("_");
-            if (!OAC[2].equals("SOL")) ora_address_chain=ora_address_chain.toUpperCase();
-            
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM Prezzo_ora_Address_Chain WHERE ora_address_chain = '" + ora_address_chain + "'";
-            //System.out.println(checkIfExistsSQL);
-            PreparedStatement checkStatement = connessione.prepareStatement(checkIfExistsSQL);
-            //checkStatement.setString(1, address_chain);
-            int rowCount = 0;
-            // Esegui la query e controlla il risultato
-            var resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                rowCount = resultSet.getInt(1);
-            }
-            if (rowCount > 0) {
-                // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE Prezzo_ora_Address_Chain SET prezzo = '" + prezzo + "' WHERE ora_address_chain = '" + ora_address_chain + "'";
-                PreparedStatement updateStatement = connessione.prepareStatement(updateSQL);
-                // updateStatement.setString(1, data);
-                //updateStatement.setString(2, address_chain);
-                updateStatement.executeUpdate();
-                // System.out.println("Riga aggiornata con successo.");
-
-            } else {
-                // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO Prezzo_ora_Address_Chain (ora_address_chain, prezzo) VALUES ('" + ora_address_chain + "','" + prezzo + "')";
-                PreparedStatement insertStatement = connessione.prepareStatement(insertSQL);
-                //insertStatement.setString(1, address_chain);
-                //insertStatement.setString(2, data);
-                insertStatement.executeUpdate();
-                // System.out.println("Nuova riga inserita con successo.");
-
-            }
-        } catch (SQLException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-    }
-    
-    /**
      * Salva (upsert via {@code MERGE INTO}) il prezzo di un token identificato da ora+address+chain.
-     * Nonostante il prefisso "OLD" è la versione attualmente in uso (l'omonima
-     * {@link #PrezzoAddressChain_Scrivi_OLD} basata su concatenazione di stringhe non ha più chiamanti vivi).
+     * Nonostante il prefisso "OLD" è la versione attualmente in uso: l'omonima
+     * {@code PrezzoAddressChain_Scrivi_OLD}, basata su concatenazione di stringhe e senza chiamanti
+     * vivi, è stata rimossa il 2026-08-05 con la voce B1.
      *
      * @param ora_address_chain chiave "{@code ora}_{@code Address}_{@code Rete}" (normalizzata a maiuscolo salvo per la rete Solana, case-sensitive)
      * @param prezzo prezzo da salvare
@@ -2122,46 +1847,16 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
        * @param Tipo tipologia del token
        */
       public static void TokenSolana_AggiungiToken(String Address, String Simbolo, String Nome, String Tipo) {
-        try {
-            // Controllo se il token esiste già
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM TOKENSOLANA WHERE Address = ?";
-            int rowCount = 0;
-            try (PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL)) {
-                checkStatement.setString(1, Address);
-                try (ResultSet resultSet = checkStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        rowCount = resultSet.getInt(1);
-                    }
-                }
-            }
-
-            if (rowCount > 0) {
-                // Il token esiste già, aggiorno i dati
-                String updateSQL = "UPDATE TOKENSOLANA SET Simbolo = ?, Nome = ?, Tipo = ? WHERE Address = ?";
-                try (PreparedStatement updateStatement = connection.prepareStatement(updateSQL)) {
-                    updateStatement.setString(1, Simbolo);
-                    updateStatement.setString(2, Nome);
-                    updateStatement.setString(3, Tipo);
-                    updateStatement.setString(4, Address);
-                    updateStatement.executeUpdate();
-                }
-            } else {
-                // Il token non esiste, lo inserisco
-                String insertSQL = "INSERT INTO TOKENSOLANA (Address, Simbolo, Nome, Tipo) VALUES (?, ?, ?, ?)";
-                try (PreparedStatement insertStatement = connection.prepareStatement(insertSQL)) {
-                    insertStatement.setString(1, Address);
-                    insertStatement.setString(2, Simbolo);
-                    insertStatement.setString(3, Nome);
-                    insertStatement.setString(4, Tipo);
-                    insertStatement.executeUpdate();
-                }
-            }
-
-        } catch (SQLException ex) {
-            LoggerGC.ScriviErrore(ex);
-            //Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, "Errore durante l'inserimento/aggiornamento del token", ex);
-        }
-    } 
+        //B5: MERGE INTO al posto di SELECT COUNT + UPDATE/INSERT. Tutte e 4 le colonne sono
+        //elencate qui: quelle omesse resterebbero a NULL. L'address è la chiave ed è
+        //case-sensitive, ma il confronto della KEY è lo stesso della WHERE precedente.
+        Map<String, Object> values = new HashMap<>();
+        values.put("Address", Address);
+        values.put("Simbolo", Simbolo);
+        values.put("Nome", Nome);
+        values.put("Tipo", Tipo);
+        U_ScriviRecord("TOKENSOLANA", values, "Address", connection);
+    }
      
         /**
      * Legge i metadati salvati per un token Solana.

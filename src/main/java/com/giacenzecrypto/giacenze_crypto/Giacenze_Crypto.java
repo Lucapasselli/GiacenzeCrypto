@@ -11,8 +11,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.io.File;
 import java.net.URISyntaxException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -308,28 +306,37 @@ public class Giacenze_Crypto {
         }
     }
 
+    /**
+     * Apre la finestra dei log dell'opzione {@code --debug}, e ritorna solo quando è a video:
+     * quello che l'opzione serve a mostrare è il log dell'avvio che segue (connessione al
+     * database, tema, font, costruzione della finestra principale).
+     */
     private static void apriFinestraLog() {
-        Download progress = new Download();
-        progress.Titolo("Finestra dei Log");
-        progress.SetLabel("Finestra dei Log");
-        progress.NascondiInterrompi();
-        progress.NascondiBarra();
-        progress.NoModale();
-
-        Thread thread = new Thread() {
-            /** Corpo vuoto (nessuna azione eseguita da questo thread). */
-            @Override
-            public void run() {
-            }
-        };
-        thread.start();
-
-        progress.setVisible(true);
-
         try {
-            Thread.sleep(1000);
+            //A6: Download è un JDialog, quindi va costruito e mostrato sull'Event Dispatch Thread.
+            //Qui siamo nel ciclo di lettura degli argomenti di main(), cioè sul main thread e
+            //prima dell'invokeLater che avvolge il resto della GUI: senza questo blocco l'intera
+            //costruzione avveniva fuori dall'EDT. Residuo sfuggito alla correzione A6 originale.
+            //
+            //invokeAndWait e non invokeLater: con invokeLater main() proseguirebbe subito e la
+            //finestra potrebbe aprirsi dopo che l'avvio ha già prodotto il log da mostrare.
+            //Non blocca a lungo perché NoModale() rende il dialogo MODELESS: se non lo fosse
+            //(Download nasce modale) setVisible bloccherebbe l'EDT e l'avvio si pianterebbe.
+            SwingUtilities.invokeAndWait(() -> {
+                Download progress = new Download();
+                progress.Titolo("Finestra dei Log");
+                progress.SetLabel("Finestra dei Log");
+                progress.NascondiInterrompi();
+                progress.NascondiBarra();
+                progress.NoModale();
+                progress.setVisible(true);
+            });
         } catch (InterruptedException ex) {
-            Logger.getLogger(Giacenze_Crypto.class.getName()).log(Level.SEVERE, null, ex);
+            Thread.currentThread().interrupt();
+            LoggerGC.ScriviErrore(ex);
+        } catch (java.lang.reflect.InvocationTargetException ex) {
+            //LoggerGC.init() non è ancora stato chiamato: ScriviErrore scrive comunque su System.err
+            LoggerGC.ScriviErrore(ex);
         }
     }
 }

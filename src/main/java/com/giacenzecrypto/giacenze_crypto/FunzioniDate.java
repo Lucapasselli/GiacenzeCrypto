@@ -13,7 +13,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -178,38 +177,6 @@ public class FunzioniDate {
         return m1;
     } 
         
-    /**
-     * Versione legacy superata di {@link #ConvertiDatainLongSecondo}, basata su {@link SimpleDateFormat} invece
-     * che sulle API {@code java.time}. Normalizza anche anni a 2 cifre (es. {@code "25-..."} → {@code "2025-..."}).
-     * @param Data1 data/ora, formato {@code yyyy-MM-dd HH:mm:ss} (o {@code yy-MM-dd HH:mm:ss})
-     * @return i millisecondi epoch (fuso orario Europe/Rome) corrispondenti, oppure {@code 0} se {@code Data1} non è parsabile
-     */
-    public static long ConvertiDatainLongSecondo_OLD(String Data1) {
-        long m1 = 0;
-        try {
-            String dataDaParsare = Data1;
-
-            // Controlla se l'anno è a 2 cifre: il primo "-" si trova alla posizione 2
-            // es. "25-12-01 10:30:00" → diventa "2025-12-01 10:30:00"
-            if (Data1 != null && Data1.length() > 2 && Data1.charAt(2) == '-') {
-                dataDaParsare = "20" + Data1;
-            }
-
-           // System.out.println(Data1+" - "+dataDaParsare);
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
-            f.setLenient(true);
-            Date d = f.parse(dataDaParsare);
-            m1 = d.getTime();
-           // System.out.println(Data1+" - "+dataDaParsare+" - "+m1);
-
-        } catch (ParseException ex) {
-            // Data non valida, viene restituito 0 come da comportamento originale
-          //  System.out.println(ex.toString());
-        }
-        return m1;
-    }
-    
     /**
      * Converte una data/ora al secondo in millisecondi epoch (fuso orario Europe/Rome), normalizzando anche
      * anni a 2 cifre (es. {@code "25-..."} → {@code "2025-..."}) e gestendo automaticamente le ore inesistenti

@@ -10,6 +10,7 @@ import java.math.RoundingMode;
 import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -95,7 +96,26 @@ public class Calcoli_PlusvalenzeNew {
      */
     
     
-private static Map<String, LifoXID> MappaIDTrans_LifoxID = new TreeMap<>();
+/**
+ * Stato LIFO per ID transazione, ripopolato da ogni {@link #AggiornaPlusvalenze()}.
+ * È una {@code ConcurrentHashMap} e non una {@code TreeMap} perché viene letta dall'EDT
+ * (tooltip di {@link JTableConTooltipIcone}, {@link GUI_LiFoTransazione}) mentre un thread
+ * di background può essere dentro il ricalcolo che la svuota e la ripopola: {@code get} non
+ * controlla il modCount, quindi non solleva eccezione ma può attraversare un albero in fase di
+ * ribilanciamento e restituire un risultato errato. È una difesa del solo lettore: la corsa fra
+ * due ricalcoli è già chiusa dal {@code synchronized} su {@link #AggiornaPlusvalenze()}, e a
+ * differenza di quella non è dimostrabile con un test deterministico.
+ * <p>
+ * La perdita dell'ordinamento è qui senza effetti, ed è stato verificato voce per voce:
+ * il campo è {@code private} e non compare in nessun altro file, dentro la classe è usato
+ * soltanto con {@code get} / {@code computeIfAbsent} / {@code clear} e non viene mai
+ * iterato (nessun keySet/values/entrySet, nessun metodo di SortedMap). L'unico accesso
+ * esterno è {@link #getIDLiFo(String)}, che restituisce un singolo elemento per chiave.
+ * <b>Non è una sostituzione da replicare sulle altre mappe</b>: in {@code MappaCryptoWallet},
+ * per esempio, l'ordine della TreeMap È l'ordine cronologico con cui il motore elabora i
+ * movimenti, e sostituirla romperebbe il LIFO.
+ */
+private static final Map<String, LifoXID> MappaIDTrans_LifoxID = new ConcurrentHashMap<>();
 
 /**
  * Ritorna lo stato LIFO (stack entrato/uscito) registrato per una transazione, popolato
@@ -393,8 +413,14 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
  * vengono lette una sola volta prima del ciclo. Aggiorna i movimenti in {@code MappaCryptoWallet}
  * in place (campi plusvalenza, costo di carico, flag di anomalia nel campo 38) e ripopola
  * {@link #MappaIDTrans_LifoxID}, che viene svuotata a ogni chiamata.
+ * <p>
+ * Il metodo è {@code synchronized} (voce M6 di Analisi_Bug_Criticita.md): è invocato sia
+ * dall'EDT sia da thread di background (rimozione SCAM di massa, import), e due ricalcoli
+ * sovrapposti si riscriverebbero a vicenda i campi 16/17/19/33 producendo plusvalenze errate
+ * senza alcun errore visibile. Il lock serializza le esecuzioni invece di saltarle: la seconda
+ * chiamata attende e ricalcola comunque, così non restano mai valori stantii in quei campi.
  */
-     public static void AggiornaPlusvalenze(){
+     public static synchronized void AggiornaPlusvalenze(){
          
       //   System.out.println("Aggiornamento Plusvalenze");
 ////////    Deque<String[]> stack = new ArrayDeque<String[]>(); Forse questo è da mettere

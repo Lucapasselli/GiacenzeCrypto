@@ -557,4 +557,131 @@ class CalcoliPlusvalenzeNewAggiornaPlusvalenzeTest {
         // Gli altri movimenti vengono comunque elaborati normalmente
         assertEquals("1000", acq[17]);
     }
+
+    // ------------------------------------------------------------------
+    // M6 — ricalcoli concorrenti
+    // ------------------------------------------------------------------
+
+    /**
+     * Scenario ampio (molti lotti e prelievi parziali su più monete) per i test di
+     * concorrenza: un ricalcolo lungo allarga la finestra in cui due esecuzioni possono
+     * sovrapporsi, cosa che con una manciata di movimenti non si osserva mai.
+     */
+    private static java.util.List<String[]> scenarioAmpio() {
+        java.util.List<String[]> movimenti = new java.util.ArrayList<>();
+        String[] monete = {"BTC", "ETH", "SOL", "ADA"};
+        for (int i = 1; i <= 600; i++) {
+            String moneta = monete[i % monete.length];
+            String data = String.format("2024-%02d-%02d %02d:%02d",
+                    (i % 12) + 1, (i % 27) + 1, i % 24, i % 60);
+            movimenti.add(acquisto(data, moneta, "2", String.valueOf(1000 + i)));
+            if (i % 3 == 0) movimenti.add(vendita(data, moneta, "1", String.valueOf(900 + i)));
+        }
+        return movimenti;
+    }
+
+    /** Copia i 5 campi scritti dal motore, per confrontare due esecuzioni. */
+    private static java.util.List<String> esito(java.util.List<String[]> movimenti) {
+        java.util.List<String> valori = new java.util.ArrayList<>();
+        for (String[] m : movimenti) {
+            valori.add(m[16] + "|" + m[17] + "|" + m[19] + "|" + m[33] + "|" + m[38]);
+        }
+        return valori;
+    }
+
+    /**
+     * Correzione M6: {@code AggiornaPlusvalenze} è {@code synchronized}, quindi più
+     * ricalcoli lanciati in parallelo (doppio click, ricalcolo automatico post-import
+     * mentre uno manuale è in corso) si serializzano invece di riscriversi a vicenda i
+     * campi 16/17/19/33. L'esito finale deve coincidere con quello di una singola
+     * esecuzione.
+     * <p>
+     * Il test è stato validato togliendo la correzione: senza {@code synchronized} fallisce
+     * con {@code ConcurrentModificationException} (sollevata da {@code TreeMap.computeIfAbsent}
+     * su MappaIDTrans_LifoxID, che controlla il modCount). Serve però lo scenario ampio: con
+     * i 5 movimenti degli altri test il ricalcolo è troppo breve perché le esecuzioni si
+     * sovrappongano e il test passa anche sul codice difettoso.
+     */
+    @Test
+    @org.junit.jupiter.api.Timeout(60)
+    void ricalcoliConcorrenti_producanoLoStessoEsitoDiUnaSingolaEsecuzione_correzioneM6()
+            throws Exception {
+        java.util.List<String[]> movimenti = scenarioAmpio();
+
+        // Riferimento: una sola esecuzione, sul thread del test.
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        java.util.List<String> atteso = esito(movimenti);
+
+        final int THREAD = 4, GIRI = 6;
+        java.util.List<Throwable> errori =
+                java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+        java.util.concurrent.CountDownLatch via = new java.util.concurrent.CountDownLatch(1);
+        java.util.List<Thread> threads = new java.util.ArrayList<>();
+
+        for (int t = 0; t < THREAD; t++) {
+            Thread th = new Thread(() -> {
+                try {
+                    via.await();
+                    for (int i = 0; i < GIRI; i++) Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+                } catch (Throwable ex) {
+                    errori.add(ex);
+                }
+            });
+            threads.add(th);
+            th.start();
+        }
+        via.countDown();   // partenza simultanea, per massimizzare la sovrapposizione
+        for (Thread th : threads) th.join();
+
+        assertTrue(errori.isEmpty(), "eccezioni dai ricalcoli concorrenti: " + errori);
+        assertEquals(atteso, esito(movimenti),
+                "i ricalcoli concorrenti hanno prodotto un esito diverso da quello seriale");
+    }
+
+    /**
+     * Smoke test del lettore: {@code MappaIDTrans_LifoxID} è interrogata dall'EDT tramite
+     * {@code getIDLiFo} (tooltip della tabella, dettaglio LIFO) mentre un thread di background
+     * è dentro il ricalcolo che la svuota e la ripopola.
+     * <p>
+     * <b>Attenzione a cosa dimostra:</b> questo test passa anche con la vecchia TreeMap e
+     * anche senza {@code synchronized} — è stato verificato. {@code TreeMap.get} non controlla
+     * il modCount, quindi non solleva eccezione: può restituire un valore errato, e questo il
+     * test non lo può distinguere. Vale quindi solo come guardia contro una regressione che
+     * facesse eccezione o bloccare la lettura (il {@code @Timeout} copre il blocco), non come
+     * prova della necessità della ConcurrentHashMap.
+     */
+    @Test
+    @org.junit.jupiter.api.Timeout(60)
+    void letturaGetIDLiFoDuranteIlRicalcolo_nonSiRompeNeSiBlocca_correzioneM6() throws Exception {
+        java.util.List<String[]> movimenti = scenarioAmpio();
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        java.util.List<Throwable> errori =
+                java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+        java.util.concurrent.atomic.AtomicBoolean finito =
+                new java.util.concurrent.atomic.AtomicBoolean(false);
+
+        // Lettore: simula l'EDT che interroga la mappa mentre il ricalcolo la riscrive.
+        Thread lettore = new Thread(() -> {
+            try {
+                while (!finito.get()) {
+                    for (String[] m : movimenti) Calcoli_PlusvalenzeNew.getIDLiFo(m[0]);
+                }
+            } catch (Throwable ex) {
+                errori.add(ex);
+            }
+        });
+        lettore.start();
+        try {
+            for (int i = 0; i < 10; i++) Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        } finally {
+            finito.set(true);
+            lettore.join();
+        }
+
+        assertTrue(errori.isEmpty(), "eccezioni leggendo la mappa LIFO durante il ricalcolo: " + errori);
+        // A ricalcolo concluso la mappa è comunque popolata e interrogabile per ID.
+        assertNotNull(Calcoli_PlusvalenzeNew.getIDLiFo(movimenti.get(2)[0]),
+                "atteso stato LIFO per la vendita, che movimenta lo stack");
+    }
 }

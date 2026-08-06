@@ -15495,8 +15495,9 @@ try {
         TableRowSorter<TableModel> sorter =(TableRowSorter<TableModel>) TransazioniCryptoTabella.getRowSorter();
         List<? extends RowSorter.SortKey> sortKeys = sorter != null ? sorter.getSortKeys() : null;
 
-        // Rimuovi il filtro colonne dal TableRowSorter della tabella ma prima lo salvo  
-        RowFilter<? super TableModel, ? super Integer> filtroCorrente=(RowFilter<? super TableModel, ? super Integer>) sorter.getRowFilter();
+        // Rimuovo il filtro colonne per velocizzare il caricamento. Non serve salvarlo: viene
+        // ricostruito a fine metodo da Tabelle_FiltroColonne a partire da tableFilters e dal
+        // campo di ricerca, cioè dalle stesse fonti da cui era stato prodotto.
         sorter.setRowFilter(null);
         //Disattivo momentaneamente il sorter
         sorter.setSortKeys(null); 
@@ -15723,36 +15724,30 @@ try {
         
     //--------------------------------------------------------------------------------------------
     //RIPRISTINO I VARI SORTER
-        //Ripristino il filtro sulle colonne
-        RowSorter<?> rowSorter = TransazioniCryptoTabella.getRowSorter();
-        if (filtroCorrente!=null)((TableRowSorter<?>) rowSorter).setRowFilter((RowFilter) filtroCorrente);
-        
         //Riabilito il sort sul resto
         sorter.sort();
+
+        //Il filtro per colonna e quello globale li riapplica Tabelle_FiltroColonne, che li
+        //ricostruisce dalle stesse fonti persistenti (la mappa tableFilters e il campo di ricerca)
+        //da cui provenivano: riapplicarli anche qui a mano voleva dire ripetere due volte l'intera
+        //passata di filtro su tutte le righe, che su 100k movimenti è la passata più cara di tutte.
+        //Va PRIMA del ripristino dell'ordinamento, così l'ordinamento lavora solo sulle righe
+        //rimaste visibili invece che su tutte.
+        Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
+
        // Ripristino l’ordinamento precedente
         if (sortKeys != null) {
             sorter.setSortKeys(sortKeys);
         }
-    //--------------------------------------------------------------------------------------------    
+    //--------------------------------------------------------------------------------------------
 
-        
-      //  Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
-        //TransazioniCryptoTabella.setRowSorter(sorter);
+        //Il conteggio si legge DOPO aver riapplicato il filtro: prima veniva calcolato fra le due
+        //applicazioni e mostrava lo stato intermedio
         int righeVisualizzate =
         (sorter != null)
         ? sorter.getViewRowCount()
         : TransazioniCryptoTabella.getRowCount();
         TransazioniCrypto_RigheTabella_Label.setText("Transazioni Visualizzate : "+righeVisualizzate);
-        
-     /*   RowSorter<?> rowSorter = TransazioniCryptoTabella.getRowSorter();
-        // Riapplica le chiavi di ordinamento precedenti
-        if (sortKeys != null) {
-            rowSorter.setSortKeys(sortKeys);
-        }*/
-    // ripristinaFiltri(TransazioniCryptoTabella);
-
-     
-        Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
       // TransazioniCryptoTabella.getTableHeader().repaint();
         
       //  TransazioniCryptoTabella.setIgnoreRepaint(false);
@@ -15859,18 +15854,29 @@ public static void ripristinaFiltri(JTable table) {
      */
     public static boolean Funzioni_isNumeric(String str,boolean CampoVuotoContacomeNumero) {
         //ritorna vero se il campo è vuoto oppure è un numero
-  if(CampoVuotoContacomeNumero&&str.isBlank()) return true;
-        try  
-  {  
-    double d = Double.parseDouble(str);  
-  }  
-  catch(NumberFormatException nfe)  
-  {  
-    return false;  
-  }  
-  return !str.matches("^.*[a-zA-Z].*$");  
+        if(CampoVuotoContacomeNumero&&str.isBlank()) return true;
 
+        //Il test sulle lettere viene PRIMA di Double.parseDouble: l'esito è lo stesso
+        //(una stringa con lettere è comunque respinta, sia che parseDouble la accetti come
+        //"1e5" sia che lanci l'eccezione come "abc"), ma sui valori testuali si evita di
+        //costruire la NumberFormatException, che era il costo dominante nei cicli sulle tabelle.
+        if (PATTERN_CONTIENE_LETTERE.matcher(str).matches()) return false;
+
+        try {
+            double d = Double.parseDouble(str);
+        } catch(NumberFormatException nfe) {
+            return false;
+        }
+        return true;
 }
+
+    /**
+     * Pattern di {@link #Funzioni_isNumeric}, precompilato: {@code String.matches} ricompila
+     * l'espressione regolare a ogni invocazione, e la funzione è chiamata una volta per movimento
+     * nel caricamento della tabella.
+     */
+    private static final java.util.regex.Pattern PATTERN_CONTIENE_LETTERE =
+            java.util.regex.Pattern.compile("^.*[a-zA-Z].*$");
     
 
     
@@ -15925,6 +15931,22 @@ public static void ripristinaFiltri(JTable table) {
     }
     
        /**
+        * Formattatore riusato per {@link #Funzioni_Date_ConvertiDatainLong}, uno per thread.
+        * <p>
+        * La funzione è chiamata una volta per movimento nel caricamento della tabella: costruire
+        * un {@link SimpleDateFormat} a ogni chiamata costava circa 300 ms su 101.000 movimenti.
+        * {@code SimpleDateFormat} non è thread-safe, da qui il {@link ThreadLocal}.
+        * <p>
+        * <b>Attenzione, la differenza è voluta</b>: qui il fuso orario <b>non</b> viene impostato,
+        * quindi vale quello di default della JVM, mentre gli omonimi metodi di
+        * {@link FunzioniDate} fissano Europe/Rome. È il comportamento che il codice aveva già e
+        * viene mantenuto tale e quale: unificarlo cambierebbe i confronti fra date e va valutato
+        * a parte, non dentro una modifica di prestazioni.
+        */
+       private static final ThreadLocal<SimpleDateFormat> SDF_DATA_FUSO_DEFAULT =
+               ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd"));
+
+       /**
         * Converte una data in formato {@code yyyy-MM-dd} nel corrispondente timestamp epoch in
         * millisecondi.
         * @param Data1 data da convertire, in formato {@code yyyy-MM-dd}
@@ -15933,7 +15955,7 @@ public static void ripristinaFiltri(JTable table) {
        public static long Funzioni_Date_ConvertiDatainLong(String Data1) {
            long m1=0;
         try {
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat f = SDF_DATA_FUSO_DEFAULT.get();
             Date d = f.parse(Data1);
             m1 = d.getTime();
             

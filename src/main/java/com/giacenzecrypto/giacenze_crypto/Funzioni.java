@@ -2579,29 +2579,37 @@ return MappaLista;
         Set<String> segnalati = new HashSet<>();
 
         for (String[] movimento : MappaCryptoWallet.values()) {
+            String tokenUscita = movimento[8];
+            String tokenEntrata = movimento[11];
+
+            //Un movimento senza token né in uscita né in entrata non tocca alcun saldo: prima si
+            //costruivano comunque le chiavi e si tentavano le due conversioni
+            if (tokenUscita.isEmpty() && tokenEntrata.isEmpty()) continue;
+
             String exchange = movimento[3];
             String wallet = movimento[4];
+            //Il prefisso della chiave di controllo è lo stesso per uscita ed entrata: prima veniva
+            //ricostruito due volte, toLowerCase compresi.
+            //Nota: il token NON viene abbassato di caso, solo exchange e wallet - comportamento
+            //preesistente, cambiarlo unirebbe o spezzerebbe righe nella tabella dei saldi
+            String prefissoChiave = exchange.toLowerCase() + ";" + wallet.toLowerCase() + ";";
 
             // Uscita
-            String tokenUscita = movimento[8];
-            String keyUscita = exchange.toLowerCase() + ";" + wallet.toLowerCase() + ";" + tokenUscita;//usato per i controlli
-            String keyUscitaCase = exchange + ";" + wallet + ";" + tokenUscita;//usato come ritorno
-            BigDecimal qtaUscita = parseBigDecimalSafe(movimento[10]);
-
             if (!tokenUscita.isEmpty()) {
-                saldi.put(keyUscita, saldi.getOrDefault(keyUscita, BigDecimal.ZERO).add(qtaUscita));
-                if (saldi.get(keyUscita).compareTo(BigDecimal.ZERO) < 0) {
-                    segnalati.add(keyUscitaCase);
+                //merge = una sola operazione sulla mappa al posto di getOrDefault + put + get
+                BigDecimal saldo = saldi.merge(prefissoChiave + tokenUscita,
+                        parseBigDecimalSafe(movimento[10]), BigDecimal::add);
+                if (saldo.compareTo(BigDecimal.ZERO) < 0) {
+                    //La chiave che conserva le maiuscole serve solo quando c'è davvero da
+                    //segnalare: prima veniva costruita per ogni movimento
+                    segnalati.add(exchange + ";" + wallet + ";" + tokenUscita);
                 }
             }
 
-            // Entrata
-            String tokenEntrata = movimento[11];
-            String keyEntrata = exchange.toLowerCase() + ";" + wallet.toLowerCase() + ";" + tokenEntrata;
-            BigDecimal qtaEntrata = parseBigDecimalSafe(movimento[13]);
-
+            // Entrata (non genera mai segnalazioni, solo saldo)
             if (!tokenEntrata.isEmpty()) {
-                saldi.put(keyEntrata, saldi.getOrDefault(keyEntrata, BigDecimal.ZERO).add(qtaEntrata));
+                saldi.merge(prefissoChiave + tokenEntrata,
+                        parseBigDecimalSafe(movimento[13]), BigDecimal::add);
             }
         }
 
@@ -2615,12 +2623,25 @@ return MappaLista;
     
     
     
+    /**
+     * Converte una quantità in {@link BigDecimal}, restituendo {@link BigDecimal#ZERO} se il valore
+     * è {@code null}, vuoto o non numerico.
+     * <p>
+     * Passa da {@link #NumeroONull}, che scarta i valori non numerici <b>senza costruire
+     * l'eccezione</b>: su {@link #ControllaSaldiNegativi} circa 62.000 delle 202.000 conversioni
+     * riguardano quantità vuote (movimenti con la sola gamba in entrata o in uscita), e prima ognuna
+     * costava una {@code NumberFormatException} completa di stack trace.
+     * <p>
+     * Il {@code trim()} viene fatto <b>prima</b> del controllo, come nella versione precedente:
+     * invertirlo farebbe scartare valori validi con spazi attorno (es. {@code " 12"}).
+     *
+     * @param s quantità da convertire
+     * @return il valore convertito, oppure {@link BigDecimal#ZERO} se non convertibile
+     */
     private static BigDecimal parseBigDecimalSafe(String s) {
-        try {
-            return new BigDecimal(s.trim());
-        } catch (Exception e) {
-            return BigDecimal.ZERO;
-        }
+        if (s == null) return BigDecimal.ZERO;
+        BigDecimal v = NumeroONull(s.trim());
+        return v != null ? v : BigDecimal.ZERO;
     }
     
     
@@ -3398,6 +3419,88 @@ return MappaLista;
         }
         return true;
 
+    }
+
+    /**
+     * Filtro rapido che scarta i valori che {@link BigDecimal#BigDecimal(String)} rifiuterebbe
+     * sicuramente, senza costruire l'eccezione. Riconosce la sola grammatica accettata da
+     * {@code BigDecimal}: segno opzionale, cifre con eventuale punto decimale (almeno una cifra
+     * nella mantissa) ed eventuale esponente {@code e/E} con segno opzionale e almeno una cifra.
+     * <p>
+     * <b>È volutamente asimmetrico</b>: non deve MAI scartare una stringa che {@code BigDecimal}
+     * accetterebbe (un falso negativo cambierebbe i totali), mentre un falso positivo è innocuo
+     * perché il chiamante tenta comunque la conversione dentro un {@code try/catch}. Per questo
+     * accetta anche la notazione scientifica, che è il formato in cui {@code BigDecimal.toString()}
+     * emette le quantità piccole (es. {@code 2.5E-9}).
+     *
+     * @param s stringa da esaminare (non {@code null})
+     * @return {@code false} solo se la stringa non è certamente un numero
+     */
+    private static boolean PuoEssereNumero(String s) {
+        int n = s.length();
+        if (n == 0) return false;
+
+        int i = 0;
+        char c = s.charAt(i);
+        if (c == '+' || c == '-') i++;
+
+        //mantissa: cifre, al massimo un punto decimale, almeno una cifra in tutto
+        boolean cifraMantissa = false;
+        boolean punto = false;
+        while (i < n) {
+            c = s.charAt(i);
+            if (c >= '0' && c <= '9') { cifraMantissa = true; i++; }
+            else if (c == '.' && !punto) { punto = true; i++; }
+            else break;
+        }
+        if (!cifraMantissa) return false;
+        if (i == n) return true;
+
+        //esponente: e/E, segno opzionale, almeno una cifra, poi deve finire la stringa
+        c = s.charAt(i);
+        if (c != 'e' && c != 'E') return false;
+        i++;
+        if (i < n) {
+            c = s.charAt(i);
+            if (c == '+' || c == '-') i++;
+        }
+        boolean cifraEsponente = false;
+        while (i < n) {
+            c = s.charAt(i);
+            if (c < '0' || c > '9') return false;
+            cifraEsponente = true;
+            i++;
+        }
+        return cifraEsponente;
+    }
+
+    /**
+     * Converte in {@link BigDecimal} il valore di una cella di tabella, restituendo {@code null}
+     * se non è un numero. Pensata per i cicli su molte celle (vedi
+     * {@link Tabelle#Tabelle_getSommeColonne}), dove il costo dominante non è la conversione ma
+     * la costruzione della {@link NumberFormatException} sulle celle non numeriche (date, ID,
+     * simboli token, indirizzi): la maggior parte delle celle viene scartata da
+     * {@link #PuoEssereNumero} senza lanciare nulla.
+     * <p>
+     * Se il valore è già un {@code BigDecimal} (nella tabella principale le colonne 15 e 19 lo
+     * sono, vedi {@link #Converti_String_Object}) viene restituito così com'è, senza passare da
+     * {@code toString()}.
+     *
+     * @param valore contenuto della cella, tipicamente da {@code TableModel.getValueAt}
+     * @return il valore convertito, oppure {@code null} se {@code null}, vuoto o non numerico
+     */
+    public static BigDecimal NumeroONull(Object valore) {
+        if (valore == null) return null;
+        if (valore instanceof BigDecimal bd) return bd;
+
+        String s = valore.toString();
+        if (!PuoEssereNumero(s)) return null;
+        try {
+            return new BigDecimal(s);
+        } catch (NumberFormatException nfe) {
+            //rete di sicurezza: PuoEssereNumero è volutamente permissivo
+            return null;
+        }
     }
 
 /**

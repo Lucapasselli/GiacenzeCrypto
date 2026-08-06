@@ -1390,18 +1390,27 @@ public static int[] Funzioni_getRigheSelezionate(JTable table) {
             Map<Integer, String> valori = new HashMap<>();
 
             for (int col = 0; col < colCount; col++) {
+                //Se nel frattempo è partito un ricalcolo più recente per questa tabella, questo
+                //lavoro è già superato: mi fermo subito invece di completare tutte le colonne.
+                //Il controllo è per colonna e non per cella: su tabelle grandi le celle sono
+                //milioni, le colonne poche decine. Uscendo qui non viene scritto nulla, quindi
+                //un thread superato non lascia stati parziali.
+                if (versione.get() != versioneCorrente) {
+                    return;
+                }
+
                 BigDecimal somma = BigDecimal.ZERO;
 
                 for (int modelRow : visibleRows) {
                     try {
-                        Object val = model.getValueAt(modelRow, col);
+                        //NumeroONull scarta le celle non numeriche senza costruire l'eccezione:
+                        //la maggior parte delle colonne è testuale (date, ID, simboli, indirizzi)
+                        //e prima si pagava una NumberFormatException per ognuna di quelle celle
+                        BigDecimal val = Funzioni.NumeroONull(model.getValueAt(modelRow, col));
                         if (val != null) {
-                            String strVal = val.toString();
-                            if (Funzioni.isNumeric(strVal, false)) {
-                                somma = somma.add(new BigDecimal(strVal));
-                            }
+                            somma = somma.add(val);
                         }
-                    } catch (IndexOutOfBoundsException | NumberFormatException ignored) {
+                    } catch (IndexOutOfBoundsException ignored) {
                     }
                 }
 

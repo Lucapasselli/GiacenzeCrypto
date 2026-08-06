@@ -29,6 +29,42 @@ import java.util.logging.Logger;
  * @author luca.passelli
  */
 public class FunzioniDate {
+
+    /**
+     * Formattatori riusati, uno per pattern e per thread.
+     * <p>
+     * Prima ogni conversione costruiva un nuovo {@link SimpleDateFormat} (più la ricerca del
+     * {@link TimeZone}), e queste funzioni sono chiamate <b>una volta per movimento</b> dal motore
+     * delle plusvalenze e dal caricamento della tabella: su 101.000 movimenti la sola costruzione
+     * dei formattatori pesava più del parsing. Riusarli taglia circa il 70% del costo
+     * (vedi {@code Documentazione/Analisi_Performance_Caricamento.md}).
+     * <p>
+     * <b>Perché {@link ThreadLocal} e non un semplice {@code static final}</b>: {@code SimpleDateFormat}
+     * <b>non è thread-safe</b> e queste funzioni sono invocate sia dall'EDT sia dai thread di import
+     * e di ricalcolo. Un'istanza condivisa produrrebbe date sbagliate in modo intermittente e non
+     * riproducibile — molto peggio del costo che elimina.
+     * <p>
+     * Tutti fissano <b>Europe/Rome</b>, come faceva il codice sostituito.
+     */
+    private static final ThreadLocal<SimpleDateFormat> SDF_DATA = formattatoreRoma("yyyy-MM-dd");
+    private static final ThreadLocal<SimpleDateFormat> SDF_DATA_MINUTO = formattatoreRoma("yyyy-MM-dd HH:mm");
+    private static final ThreadLocal<SimpleDateFormat> SDF_DATA_SECONDO = formattatoreRoma("yyyy-MM-dd HH:mm:ss");
+    private static final ThreadLocal<SimpleDateFormat> SDF_DATA_ORA = formattatoreRoma("yyyy-MM-dd HH");
+    private static final ThreadLocal<SimpleDateFormat> SDF_DATA_ID = formattatoreRoma("yyyyMMddHHmmss");
+
+    /**
+     * Crea il contenitore per thread di un {@link SimpleDateFormat} sul fuso Europe/Rome.
+     * @param pattern pattern di formattazione/parsing
+     * @return il formattatore, uno per thread
+     */
+    private static ThreadLocal<SimpleDateFormat> formattatoreRoma(String pattern) {
+        return ThreadLocal.withInitial(() -> {
+            SimpleDateFormat f = new SimpleDateFormat(pattern);
+            f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
+            return f;
+        });
+    }
+
         /**
          * @param Data1 data/ora in millisecondi epoch
          * @return la data formattata come {@code yyyy-MM-dd}, nel fuso orario Europe/Rome
@@ -36,8 +72,7 @@ public class FunzioniDate {
         public static String ConvertiDatadaLong(long Data1) {
 
   
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-            f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
+            SimpleDateFormat f = SDF_DATA.get();
             Date d = new Date(Data1);
             //d=f.format(d);
             String m1=f.format(d);
@@ -54,8 +89,7 @@ public class FunzioniDate {
         public static String ConvertiDatadaLongAlSecondo(long Data1) {
 
   
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
+            SimpleDateFormat f = SDF_DATA_SECONDO.get();
             Date d = new Date(Data1);
             //d=f.format(d);
             String m1=f.format(d);
@@ -102,8 +136,7 @@ public class FunzioniDate {
         public static String ConvertiDatadaLongallOra(long Data1) {
 
   
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH");
-            f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
+            SimpleDateFormat f = SDF_DATA_ORA.get();
             Date d = new Date(Data1);
             //d=f.format(d);
             String m1=f.format(d);
@@ -120,13 +153,11 @@ public class FunzioniDate {
         public static String GiornoMenoUno(String Data1) {
         String giorno="";
         try {
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-            f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
+            SimpleDateFormat f = SDF_DATA_MINUTO.get();
             Date d = f.parse(Data1+" 00:00");
             long m1 = d.getTime();
-            long giornomenouno=m1-86400000;            
-            SimpleDateFormat f2 = new SimpleDateFormat("yyyy-MM-dd");
-            f2.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
+            long giornomenouno=m1-86400000;
+            SimpleDateFormat f2 = SDF_DATA.get();
             Date d1 = new Date(giornomenouno);
             giorno=f2.format(d1);
         } catch (ParseException ex) {
@@ -142,8 +173,7 @@ public class FunzioniDate {
             public static long ConvertiDatainLong(String Data1) {
            long m1=0;
         try {
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-            f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
+            SimpleDateFormat f = SDF_DATA.get();
             Date d = f.parse(Data1);
             m1 = d.getTime();
             
@@ -163,8 +193,7 @@ public class FunzioniDate {
         public static long ConvertiDatainLongMinuto(String Data1) {
            long m1=0;
         try {
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-            f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
+            SimpleDateFormat f = SDF_DATA_MINUTO.get();
             Date d = f.parse(Data1);
             m1 = d.getTime();
             
@@ -238,8 +267,7 @@ public class FunzioniDate {
     public static long ConvertiDataIDinLong(String Data1) {
            long m1=0;
         try {
-            SimpleDateFormat f = new SimpleDateFormat("yyyyMMddHHmmss");
-            f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
+            SimpleDateFormat f = SDF_DATA_ID.get();
             Date d = f.parse(Data1);
             m1 = d.getTime();
             

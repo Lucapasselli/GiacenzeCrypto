@@ -1,0 +1,53 @@
+{
+  "centralizzato":true,
+  "nomeExchange": "",
+  "logo": "cointracking",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 1,
+  "formatoData": "dd.MM.yyyy HH:mm:ss",
+  "fuso": "Europe/Rome",
+  "consolidaRigheStessaData": false,
+  "colonne": {
+    "causale":        0,
+    "quantita":       1,
+    "moneta":         2,
+    "quantitaUscita": 3,
+    "monetaUscita":   4,
+    "monetaFee":      6,
+    "quantitaFee":    5,
+    "data":          10
+  },
+  "ricostruisciLordoSeFeeSuMonetaUscita":  true,
+"ricostruisciLordoSeFeeSuMonetaEntrata": true,
+
+  "mappaCausali": {
+    "Trade":                      "SCAMBIO CRYPTO-CRYPTO",
+    "Operazione":                 "SCAMBIO CRYPTO-CRYPTO",
+    "Deposito":                   "TRASFERIMENTO-CRYPTO",
+    "Prelievo":                   "TRASFERIMENTO-CRYPTO",
+    "Other Income":               "ALTRE-REWARD",
+    "Reddito (non imponibile)":   "ALTRE-REWARD",
+    "Altri redditi":              "ALTRE-REWARD",
+    "Staking":                    "STAKING REWARDS",
+    "Interessi":                  "EARN",
+    "Other Fee":                  "COMMISSIONI",
+    "Spese (non imponibili)":     "SPESA"
+  },
+
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": [
+    "TRASFERIMENTO-CRYPTO",
+    "ALTRE-REWARD",
+    "STAKING REWARDS",
+    "EARN",
+    "COMMISSIONI",
+    "SPESA"
+  ],
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

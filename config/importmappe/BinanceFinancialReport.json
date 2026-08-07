@@ -1,0 +1,24 @@
+{
+  "versione": "1.000",
+  "centralizzato": true,
+  "descrizione": "Causali del Financial/Tax Report Binance: la chiave e' la concatenazione delle colonne 2, 3 e 4 separate da un punto",
+  "mappaCausali": {
+    "BUY..CONVERT": "ACQUISTO CRYPTO",
+    "BUY..OCBS": "ACQUISTO CRYPTO",
+    "BUY..SPOT": "ACQUISTO CRYPTO",
+    "DEPOSIT..FIAT": "DEPOSITO FIAT",
+    "DEPOSIT..OCBS": "DEPOSITO FIAT",
+    "RECEIVE..CRYPTO_DEPOSIT": "TRASFERIMENTO-CRYPTO",
+    "RECEIVE.AIRDROP.EARN": "EARN",
+    "RECEIVE.PAYMENT.PAY": "TRASFERIMENTO-CRYPTO",
+    "RECEIVE.REBATE.SPOT": "CASHBACK",
+    "RECEIVE.REWARD.EARN": "EARN",
+    "SELL..CONVERT": "VENDITA CRYPTO",
+    "SELL..SPOT": "VENDITA CRYPTO",
+    "SEND..CRYPTO_WITHDRAWAL": "TRASFERIMENTO-CRYPTO",
+    "TRADE..CONVERT": "SCAMBIO CRYPTO",
+    "TRADE..EARN": "SCAMBIO CRYPTO",
+    "TRADE..SPOT": "SCAMBIO CRYPTO",
+    "WITHDRAWAL..FIAT": "PRELIEVO FIAT"
+  }
+}

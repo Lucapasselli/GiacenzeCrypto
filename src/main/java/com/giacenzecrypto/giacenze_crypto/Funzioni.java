@@ -3637,15 +3637,28 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
     }
 
     /**
-     * Controlla i file JSON nella cartella ImportConfig locale rispetto al
-     * repository GitHub e aggiorna quelli obsoleti o mancanti.
+     * Controlla i file di una cartella di configurazione locale rispetto alla corrispondente cartella
+     * del repository GitHub e aggiorna quelli obsoleti o mancanti.
+     * <p>Il confronto avviene sullo sha blob git, quindi non scarica nulla se il contenuto coincide.
+     * Il download passa da {@code scaricaFileDaUrl}, che scrive i byte grezzi: va bene anche per i
+     * file binari (loghi PNG).
+     * <p><b>Nota di retrocompatibilità:</b> la cartella {@code ImportConfig/} del repository non va
+     * svuotata né rimossa. Le versioni installate prima dell'introduzione di {@code config/} continuano
+     * a sincronizzarsi da lì e cancellano i propri file marcati {@code "centralizzato": true} che non
+     * trovano più nel repository.
      *
-     * @param cartellaImportConfig path assoluta della cartella ImportConfig locale
+     * @param cartellaLocale path assoluta della cartella locale da allineare
+     * @param pathRepo path della cartella nel repository (es. {@code "config/importmappe"})
+     * @param estensione estensione dei file da considerare, minuscola e con il punto (es. {@code ".json"})
+     * @param cancellaOrfaniCentralizzati se {@code true} cancella i file locali marcati
+     *        {@code "centralizzato": true} non più presenti nel repository; da tenere a {@code false}
+     *        per le cartelle che non contengono JSON (il parse fallirebbe su ogni file)
      * @return lista dei nomi dei file effettivamente aggiornati/scaricati
      */
-    public static List<String> AggiornamentoImportConfig(String cartellaImportConfig) {
+    public static List<String> AggiornamentoConfigDaRepository(String cartellaLocale, String pathRepo,
+            String estensione, boolean cancellaOrfaniCentralizzati) {
         List<String> fileAggiornati = new ArrayList<>();
-        String apiUrl = "https://api.github.com/repos/Lucapasselli/GiacenzeCrypto/contents/ImportConfig?ref=master";
+        String apiUrl = "https://api.github.com/repos/Lucapasselli/GiacenzeCrypto/contents/" + pathRepo + "?ref=master";
 
         OkHttpClient client = HTTP_CLIENT;
         Request request = new Request.Builder()
@@ -3656,7 +3669,7 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                System.out.println("AggiornamentoImportConfig: risposta API GitHub non valida, codice " + response.code());
+                System.out.println("AggiornamentoConfig [" + pathRepo + "]: risposta API GitHub non valida, codice " + response.code());
                 return fileAggiornati;
             }
 
@@ -3668,53 +3681,58 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
                 if (!"file".equals(file.get("type").getAsString())) continue;
 
                 String name = file.get("name").getAsString();
+                if (!name.toLowerCase().endsWith(estensione)) continue;
+
                 String remoteSha = file.get("sha").getAsString();
                 String downloadUrl = file.get("download_url").getAsString();
 
                 nomiRemoti.add(name);
-                Path localPath = Paths.get(cartellaImportConfig, name);
+                Path localPath = Paths.get(cartellaLocale, name);
 
                 boolean daAggiornare;
                 if (!Files.exists(localPath)) {
                     daAggiornare = true;
-                    System.out.println("AggiornamentoImportConfig: file non presente localmente: " + name);
+                    System.out.println("AggiornamentoConfig [" + pathRepo + "]: file non presente localmente: " + name);
                 } else {
                     String localSha = calcolaBlobShaGit(localPath);
                     daAggiornare = !remoteSha.equalsIgnoreCase(localSha);
                     if (daAggiornare) {
-                        System.out.println("AggiornamentoImportConfig: file da aggiornare (sha diverso): " + name);
+                        System.out.println("AggiornamentoConfig [" + pathRepo + "]: file da aggiornare (sha diverso): " + name);
                     }
                 }
 
                 if (daAggiornare) {
+                    Files.createDirectories(localPath.getParent());
                     scaricaFileDaUrl(client, downloadUrl, localPath);
                     fileAggiornati.add(name);
-                    System.out.println("AggiornamentoImportConfig: aggiornato " + name);
+                    System.out.println("AggiornamentoConfig [" + pathRepo + "]: aggiornato " + name);
                 }
             }
 
             // Cancella file locali centralizzati non più presenti nel repository
-            File[] locali = new File(cartellaImportConfig).listFiles((dir, n) -> n.toLowerCase().endsWith(".json"));
-            if (locali != null) {
-                for (File f : locali) {
-                    if (nomiRemoti.contains(f.getName())) continue;
-                    try {
-                        StringBuilder sb = new StringBuilder();
-                        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(f))) {
-                            String riga;
-                            while ((riga = br.readLine()) != null) sb.append(riga);
+            if (cancellaOrfaniCentralizzati) {
+                File[] locali = new File(cartellaLocale).listFiles((dir, n) -> n.toLowerCase().endsWith(estensione));
+                if (locali != null) {
+                    for (File f : locali) {
+                        if (nomiRemoti.contains(f.getName())) continue;
+                        try {
+                            StringBuilder sb = new StringBuilder();
+                            try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(f))) {
+                                String riga;
+                                while ((riga = br.readLine()) != null) sb.append(riga);
+                            }
+                            if (new JSONObject(sb.toString()).optBoolean("centralizzato", false)) {
+                                Files.delete(f.toPath());
+                                System.out.println("AggiornamentoConfig [" + pathRepo + "]: rimosso file centralizzato non più nel repository: " + f.getName());
+                            }
+                        } catch (Exception ex) {
+                            System.out.println("AggiornamentoConfig [" + pathRepo + "]: errore nella verifica di " + f.getName() + " - " + ex.getMessage());
                         }
-                        if (new JSONObject(sb.toString()).optBoolean("centralizzato", false)) {
-                            Files.delete(f.toPath());
-                            System.out.println("AggiornamentoImportConfig: rimosso file centralizzato non più nel repository: " + f.getName());
-                        }
-                    } catch (Exception ex) {
-                        System.out.println("AggiornamentoImportConfig: errore nella verifica di " + f.getName() + " - " + ex.getMessage());
                     }
                 }
             }
         } catch (Exception e) {
-            System.out.println("AggiornamentoImportConfig: errore durante il controllo - " + e.getMessage());
+            System.out.println("AggiornamentoConfig [" + pathRepo + "]: errore durante il controllo - " + e.getMessage());
             LoggerGC.ScriviErrore(e);
         }
 

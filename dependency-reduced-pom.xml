@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.giacenzecrypto</groupId>
   <artifactId>Giacenze_Crypto</artifactId>
-  <version>1.0.58.03</version>
+  <version>1.0.59</version>
   <licenses>
     <license>
       <name>MIT License</name>
@@ -25,6 +25,13 @@
         <excludes>
           <exclude>**/version.properties</exclude>
         </excludes>
+      </resource>
+      <resource>
+        <targetPath>ImportMappe</targetPath>
+        <directory>config/importmappe</directory>
+        <includes>
+          <include>*.json</include>
+        </includes>
       </resource>
     </resources>
     <plugins>

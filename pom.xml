@@ -119,6 +119,17 @@
                     <exclude>**/version.properties</exclude>
                 </excludes>
             </resource>
+            <!-- Le mappe causali degli import nativi vivono in config/importmappe/ (da dove vengono
+                 sincronizzate con il repository) e vengono incluse nel jar come copia di default:
+                 MappeCausali.InstallaDefaultSeMancanti() le estrae al primo avvio, anche offline.
+                 Un'unica sorgente, nessuna copia da tenere allineata a mano. -->
+            <resource>
+                <directory>config/importmappe</directory>
+                <targetPath>ImportMappe</targetPath>
+                <includes>
+                    <include>*.json</include>
+                </includes>
+            </resource>
         </resources>
         <plugins>
             <plugin>

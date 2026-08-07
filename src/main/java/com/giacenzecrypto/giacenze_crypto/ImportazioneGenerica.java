@@ -1008,6 +1008,12 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
     public static class ConfigurazioneImport {
 
         public String nomeExchange = "";
+        /**
+         * Nome del file del logo in {@code config/loghi/}, senza estensione, mostrato accanto alla voce
+         * nella finestra di import. Se vuoto si usa lo slug di {@link #nomeExchange}: va indicato solo
+         * quando i due non coincidono, ad esempio per una configurazione che non fissa l'exchange.
+         */
+        public String logo = "";
         public String nomeWallet = "Principale";
         public String separatore = ",";
         public String encoding = "UTF-8";
@@ -1116,6 +1122,9 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 
             if (root.has("nomeExchange")) {
                 cfg.nomeExchange = root.getString("nomeExchange");
+            }
+            if (root.has("logo")) {
+                cfg.logo = root.getString("logo");
             }
             if (root.has("nomeWallet")) {
                 cfg.nomeWallet = root.getString("nomeWallet");

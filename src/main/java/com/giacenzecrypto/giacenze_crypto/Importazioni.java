@@ -233,13 +233,33 @@ public class Importazioni {
 
     /** Azzera i contatori statici di sessione usati per riepilogare l'esito di un'importazione (transazioni totali, aggiunte, scartate, sconosciute) e la lista dei movimenti sconosciuti. */
     public static void AzzeraContatori()
-            {           
+            {
                 Transazioni=0;
                 TransazioniAggiunte=0;
                 TrasazioniScartate=0;
                 TrasazioniSconosciute=0;
                 movimentiSconosciuti="";
             }
+
+    /**
+     * Avvisa l'utente che una mappa causali non è disponibile e annota il motivo nel riepilogo di import.
+     * <p>Le mappe delle causali non sono più scritte nel codice ma lette da {@code config/importmappe/}
+     * (vedi {@link MappeCausali}): se il file manca del tutto, l'import va interrotto invece di proseguire
+     * con una mappa vuota, che classificherebbe come sconosciuto ogni singolo movimento del file.
+     * @param nome nome della mappa mancante, una delle costanti di {@link MappeCausali}
+     * @param c componente parent per il dialog, può essere {@code null}
+     */
+    static void SegnalaMappaCausaliNonDisponibile(String nome, Component c) {
+        String messaggio = MappeCausali.MessaggioMappaNonDisponibile(nome);
+        movimentiSconosciuti = movimentiSconosciuti + messaggio + "\n";
+        //Il contatore va incrementato perché alcuni chiamanti (es. CcxtInterop) ignorano il valore di
+        //ritorno e giudicano l'esito dai soli contatori: senza questo l'import fallito passerebbe per
+        //un import riuscito con zero movimenti
+        TrasazioniSconosciute++;
+        LoggerGC.ScriviErrore(messaggio);
+        javax.swing.JOptionPane.showMessageDialog(c, messaggio, "Mappa causali non disponibile",
+                javax.swing.JOptionPane.ERROR_MESSAGE);
+    }
            
 
     //23->Blocco Transazione
@@ -286,6 +306,10 @@ public class Importazioni {
         String fileDaImportare = fileOKX;
        // System.out.println(fileBinance);
         Map<String, String> Mappa_Conversione_Causali = Ex_OKX_MappaCausali();
+        if (Mappa_Conversione_Causali == null) {
+            SegnalaMappaCausaliNonDisponibile(MappeCausali.OKX, c);
+            return false;
+        }
 
         //il movimento che devo comporre per poi mandare al consolidamento deve avere le seguenti caratteristiche
         /*
@@ -513,49 +537,11 @@ public class Importazioni {
      * movimento si compone di tre parti principali, che però possono essere multiple, e sono le fee, la
      * moneta venduta e la moneta acquistata. Per gestire la transazione si prendono tutte le righe con lo
      * stesso orario e si sommano per ottenere i dati della transazione di scambio.
-     * @return la mappa causale → categoria, case-insensitive
+     * <p>Il contenuto è letto da {@code config/importmappe/OKX.json} (vedi {@link MappeCausali}).
+     * @return la mappa causale → categoria, case-insensitive, oppure {@code null} se il file non è disponibile
      */
     public static Map<String, String> Ex_OKX_MappaCausali() {
-        Map<String, String> Mappa_Conversione_Causali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-
-        //Giroconti fra conti dello stesso utente (conto Funding, conto Trading unificato, prodotti Earn e
-        //Savings): fiscalmente non contano nulla e non vengono importati, come già si fa per Binance.
-        //Prima producevano un movimento TRASFERIMENTO-CRYPTO-INTERNO, cioè un movimento registrato ma
-        //neutro; allineati a NON CONSIDERARE il 03/08/2026 perché il ramo API li tratta già così, e lo
-        //stesso evento non deve comparire o sparire a seconda che arrivi da CSV o da API.
-        Mappa_Conversione_Causali.put("Savings subscription",                   "NON CONSIDERARE");
-        Mappa_Conversione_Causali.put("Savings redemption",                     "NON CONSIDERARE");
-        Mappa_Conversione_Causali.put("Simple Earn subscription",               "NON CONSIDERARE");
-        Mappa_Conversione_Causali.put("Simple Earn redemption",                 "NON CONSIDERARE");
-        Mappa_Conversione_Causali.put("From unified trading account",           "NON CONSIDERARE");
-        Mappa_Conversione_Causali.put("To unified trading account",             "NON CONSIDERARE");
-        //Lo staking non è un giroconto fra conti: resta un movimento registrato, benché neutro.
-        Mappa_Conversione_Causali.put("Stake",                                  "TRASFERIMENTO-CRYPTO-INTERNO");//
-        Mappa_Conversione_Causali.put("Redeem staking",                         "TRASFERIMENTO-CRYPTO-INTERNO");//
-
-        Mappa_Conversione_Causali.put("withdrawal",                             "TRASFERIMENTO-CRYPTO");
-        Mappa_Conversione_Causali.put("deposit",                                "TRASFERIMENTO-CRYPTO");
-        //Accredito proveniente da un altro account OKX: è crypto che entra davvero nel wallet,
-        //quindi vale come un deposito e non come un giroconto interno.
-        Mappa_Conversione_Causali.put("Received",                               "TRASFERIMENTO-CRYPTO");
-
-        Mappa_Conversione_Causali.put("Convert",                                "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("Buy",                                    "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("Sell",                                   "SCAMBIO CRYPTO-CRYPTO");
-
-        Mappa_Conversione_Causali.put("Deposit yield",                          "REWARD");
-        Mappa_Conversione_Causali.put("Crypto dust auto-transfer in",           "REWARD");
-        //Accrediti gratuiti riconosciuti il 04/08/2026 dal campo notes dei bill (codici 89 e 189): il
-        //rendimento dei Flash Deals — che arriva in una moneta diversa da quella investita — e l'omaggio
-        //promozionale della "mystery box". Sono crypto che entra senza contropartita, come gli interessi.
-        Mappa_Conversione_Causali.put("Flash Deals Earnings",                   "REWARD");
-        Mappa_Conversione_Causali.put("Mystery box bonus",                      "REWARD");
-
-        Mappa_Conversione_Causali.put("Transfer in",                            "NON CONSIDERARE");
-        Mappa_Conversione_Causali.put("Transfer out",                           "NON CONSIDERARE");
-        Mappa_Conversione_Causali.put("",                                       "NON CONSIDERARE");
-
-        return Mappa_Conversione_Causali;
+        return MappeCausali.Carica(MappeCausali.OKX);
     }
 
     /**
@@ -724,6 +710,10 @@ public class Importazioni {
     public static int[] Ex_OKX_ImportaDaAPI(List<String[]> righe) {
         AzzeraContatori();
         Map<String, String> Mappa_Conversione_Causali = Ex_OKX_MappaCausali();
+        if (Mappa_Conversione_Causali == null) {
+            SegnalaMappaCausaliNonDisponibile(MappeCausali.OKX, null);
+            return new int[]{0, 0};
+        }
 
         //L'ordine cronologico è un prerequisito del raggruppamento: due righe dello stesso scambio devono
         //arrivare consecutive. Il CSV si affidava all'ordinamento lessicografico della riga grezza (l'id era
@@ -784,6 +774,16 @@ public class Importazioni {
     }
 
 
+    /**
+     * Mappa causale originale Binance → categoria interna, usata dall'import del CSV storico
+     * ({@link #Ex_Binance_Importa}, voce {@code Binance_Old} nella finestra di import).
+     * <p>Il contenuto è letto da {@code config/importmappe/Binance_Old.json} (vedi {@link MappeCausali}).
+     * @return la mappa causale → categoria, case-insensitive, oppure {@code null} se il file non è disponibile
+     */
+    public static Map<String, String> Ex_Binance_MappaCausali() {
+        return MappeCausali.Carica(MappeCausali.BINANCE_OLD);
+    }
+
         /**
      * Importa un file CSV di export Binance: legge le righe, salta le transazioni già presenti in memoria,
      * mappa le causali Binance verso le categorie interne e delega il consolidamento dei movimenti
@@ -799,126 +799,18 @@ public class Importazioni {
         //Da sistemare problema con conversione dust su secondi diversi che da problemi
         //Da sistemare problema con il nuovo stakin che non viene conteggiato (FATTO MA NON SO IL RITIRO DALLO STAKING con che causale sarà segnalato) bisognerà fare delle prove
         //mettere almeno 1 secondo di tempo tra una richiesta e l'altra verso banchitalia
-        
+
         AzzeraContatori();
         List<String[]> listaScambiDifferiti=new ArrayList<>();
-        
+
         String fileDaImportare = fileBinance;
        // System.out.println(fileBinance);
-        Map<String, String> Mappa_Conversione_Causali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        //fee,sell,buy,Transaction Fee,Transaction Spend,Transaction Buy,Transaction Revenue,Transaction Sold
-        //Sono tutte descrizioni che fanno parte di uno scambio tra crypto
-        //in quel caso il movimento si compone di tre parti principali che però possono essee multiple e sono
-        //le fee, la moneta venduta e la moneta acquistata
-        //per gestire la transazione dovremmo prendere tutte le righe con lo stesso orario e sommarle per ottenere
-        //i dati della transazione di scambio
-        //le tipologie sono alla posizione 3
-        Mappa_Conversione_Causali.put("Binance Card Cashback",                      "CASHBACK");              //Cashback
-        Mappa_Conversione_Causali.put("Card Cashback",                              "CASHBACK");              //Cashback        
-        Mappa_Conversione_Causali.put("Commission Fee Shared With You",                              "CASHBACK");              //Cashback 
-        
-        Mappa_Conversione_Causali.put("Simple Earn Flexible Interest",              "EARN");  
-        Mappa_Conversione_Causali.put("Simple Earn Locked - Rewards Income",              "EARN");
-        Mappa_Conversione_Causali.put("Simple Earn Flexible - Rewards Income",              "EARN");
-        Mappa_Conversione_Causali.put("Simple Earn Locked Rewards",                 "EARN");//
-        Mappa_Conversione_Causali.put("Launchpool Earnings Withdrawal",             "EARN");//
-        Mappa_Conversione_Causali.put("RWUSD - Distribution",                       "EARN");//
-        
-        Mappa_Conversione_Causali.put("Cash Voucher Distribution",                  "REWARD");//
-        Mappa_Conversione_Causali.put("Airdrop Assets",                             "REWARD");//
-        Mappa_Conversione_Causali.put("Launchpool Airdrop",                         "REWARD");//non li metto in airdrop perchè sono comunque rewards date per detenzione
-        Mappa_Conversione_Causali.put("Cashback Voucher",                           "CASHBACK");
-        Mappa_Conversione_Causali.put("Megadrop Rewards",                           "REWARD");
-        Mappa_Conversione_Causali.put("Staking Rewards",                            "STAKING REWARDS");//
-        Mappa_Conversione_Causali.put("Distribution",                               "REWARD");//
-        Mappa_Conversione_Causali.put("BNB Vault Rewards",                          "REWARD");//
-        Mappa_Conversione_Causali.put("Launchpad Token Distribution",               "REWARD");//
-        Mappa_Conversione_Causali.put("Mission Reward Distribution",                "REWARD");//
-        Mappa_Conversione_Causali.put("Swap Farming Rewards",                       "REWARD");//
-        Mappa_Conversione_Causali.put("Commission History",                         "ALTRE-REWARD");//
-        Mappa_Conversione_Causali.put("Launchpool Airdrop - System Distribution",                         "AIRDROP");//
-        Mappa_Conversione_Causali.put("HODLer Airdrops Distribution",                         "REWARD");//
-        
-        
+        Map<String, String> Mappa_Conversione_Causali = Ex_Binance_MappaCausali();
+        if (Mappa_Conversione_Causali == null) {
+            SegnalaMappaCausaliNonDisponibile(MappeCausali.BINANCE_OLD, c);
+            return false;
+        }
 
-
-        Mappa_Conversione_Causali.put("ETH 2.0 Staking Rewards",                    "STAKING REWARDS");//
-        Mappa_Conversione_Causali.put("Simple Earn Flexible Subscription",          "TRASFERIMENTO-CRYPTO-INTERNO");//
-        Mappa_Conversione_Causali.put("Simple Earn Flexible Redemption",            "TRASFERIMENTO-CRYPTO-INTERNO");//
-        Mappa_Conversione_Causali.put("Simple Earn Locked Subscription",            "TRASFERIMENTO-CRYPTO-INTERNO");//
-        Mappa_Conversione_Causali.put("Simple Earn Locked Redemption",              "TRASFERIMENTO-CRYPTO-INTERNO");//
-        Mappa_Conversione_Causali.put("Transfer Between Main and Funding Wallet",   "TRASFERIMENTO-CRYPTO-INTERNO");      
-        Mappa_Conversione_Causali.put("Staking Purchase",                           "TRASFERIMENTO-CRYPTO-INTERNO");
-        Mappa_Conversione_Causali.put("Staking Redemption",                         "TRASFERIMENTO-CRYPTO-INTERNO");
-        Mappa_Conversione_Causali.put("Main and Funding Account Transfer",          "TRASFERIMENTO-CRYPTO-INTERNO");
-        Mappa_Conversione_Causali.put("transfer_in",                                "TRASFERIMENTO-CRYPTO-INTERNO");
-        Mappa_Conversione_Causali.put("transfer_out",                               "TRASFERIMENTO-CRYPTO-INTERNO");
-        Mappa_Conversione_Causali.put("Transfer Between Spot and Strategy Account", "TRASFERIMENTO-CRYPTO-INTERNO");
-        Mappa_Conversione_Causali.put("Launchpool Subscription/Redemption",         "TRASFERIMENTO-CRYPTO-INTERNO");
-        Mappa_Conversione_Causali.put("Launchpad Subscribe",                        "TRASFERIMENTO-CRYPTO-INTERNO");
-        Mappa_Conversione_Causali.put("Transfer Between Spot and Strategy",                        "TRASFERIMENTO-CRYPTO-INTERNO");
-        
-
-        Mappa_Conversione_Causali.put("withdraw",                                   "TRASFERIMENTO-CRYPTO");
-        Mappa_Conversione_Causali.put("deposit",                                    "TRASFERIMENTO-CRYPTO");
-        Mappa_Conversione_Causali.put("Fiat OCBS - Add Fiat and Fees",              "TRASFERIMENTO-CRYPTO");
-        //Fiat OCBS - Add Fiat and Fees
-        //Buy Crypto With Card
-        // La causale di autoinvestimento la dovrò poi convertire in Scambio Crypto Differito
-        // Possono passare infatti anche diversi minuti tra il movimento di uscita e quello di entrata
-        Mappa_Conversione_Causali.put("Auto-Invest Transaction",                    "SCAMBIO DIFFERITO");
-        Mappa_Conversione_Causali.put("Asset Recovery",                             "SCAMBIO DIFFERITO");//08-01-2025
-        Mappa_Conversione_Causali.put("Token Swap - Distribution",                  "SCAMBIO DIFFERITO");//08-01-2025
-        Mappa_Conversione_Causali.put("Small Assets Exchange BNB (Spot)",           "DUST-CONVERSION");
-        Mappa_Conversione_Causali.put("Small Assets Exchange BNB",                  "DUST-CONVERSION");
-        
-        Mappa_Conversione_Causali.put("RWUSD - Redemption",                  "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("RWUSD - Subscription",                "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("Buy Crypto With Card",                       "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("Transaction Buy",                            "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("Transaction Sold",                           "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("Transaction Spend",                          "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("Transaction Revenue",                        "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("Binance Convert",                            "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("Sell Crypto To Fiat",                        "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("Buy",                                        "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("Sell",                                       "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("Transaction Related",                        "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("ETH 2.0 Staking",                            "SCAMBIO CRYPTO-CRYPTO");//
-        Mappa_Conversione_Causali.put("ETH 2.0 Staking Withdrawals",                "SCAMBIO CRYPTO-CRYPTO");//
-        Mappa_Conversione_Causali.put("Stablecoins Auto-Conversion",                "SCAMBIO CRYPTO-CRYPTO");//
-        Mappa_Conversione_Causali.put("SOL Staking Redemption - Deduction",         "SCAMBIO CRYPTO-CRYPTO");//
-        Mappa_Conversione_Causali.put("SOL Staking Redemption - Distribute",        "SCAMBIO CRYPTO-CRYPTO");//
-        Mappa_Conversione_Causali.put("WBETH2.0 - Staking",                         "SCAMBIO CRYPTO-CRYPTO");//
-        Mappa_Conversione_Causali.put("SOL Staking - Purchase",                     "SCAMBIO CRYPTO-CRYPTO");//
-        Mappa_Conversione_Causali.put("WBETH2.0 - Redemption Unfreeze and Transfer","SCAMBIO CRYPTO-CRYPTO");//
-        
-        
-        Mappa_Conversione_Causali.put("Transaction Fee",                            "COMMISSIONI");
-        Mappa_Conversione_Causali.put("Fee",                                        "COMMISSIONI");
-        Mappa_Conversione_Causali.put("Strategy Trading Fee Rebate",                "COMMISSIONI");//Da Verificare
-        
-        
-        Mappa_Conversione_Causali.put("Fiat Deposit",                               "DEPOSITO FIAT");
-        Mappa_Conversione_Causali.put("Binance Card Spending",                      "PRELIEVO FIAT");
-        Mappa_Conversione_Causali.put("Fund Recovery",                              "PRELIEVO FIAT");
-        Mappa_Conversione_Causali.put("Fiat Withdraw",                              "PRELIEVO FIAT");
-        Mappa_Conversione_Causali.put("Fiat Withdrawal",                            "PRELIEVO FIAT");
-        
-        Mappa_Conversione_Causali.put("Buy Crypto",                                 "ACQUISTO CRYPTO");
-        Mappa_Conversione_Causali.put("Buy Crypto With Fiat",                       "ACQUISTO CRYPTO");//Inserito il 11/12/2024
-        Mappa_Conversione_Causali.put("Convert Fiat to Stablecoin Paysafe",         "ACQUISTO CRYPTO");//Inserito il 21/07/2024
-        Mappa_Conversione_Causali.put("Tax Liquidation",                            "VENDITA CRYPTO");//Inserito il 08/01/2025
-        Mappa_Conversione_Causali.put("Tax Payment",                                "VENDITA CRYPTO");//Inserito il 22/01/2026
-        
-        Mappa_Conversione_Causali.put("Referral Commission",                        "REWARD");//Inserito il 21/07/2024
-        Mappa_Conversione_Causali.put("Crypto Box",                                 "REWARD"); // Red carpet Binance rewards, Inserito il 21/07/2024
-        
-        //,Auto-Invest Transaction
-        //Binance Card Spending
-      /*  Mappa_Conversione_Causali.put("Fiat Deposit", "DEPOSITO FIAT");        //Scambio di una Crypto per un'altra Crypto*/
-        
-         
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
         //ad esempio questo succede per i dust conversion etc....
@@ -1068,6 +960,15 @@ public class Importazioni {
     
     
     /**
+     * Mappa causale originale dell'app Crypto.com → categoria interna, usata da {@link #Ex_CDCAPP_Importa}.
+     * <p>Il contenuto è letto da {@code config/importmappe/CryptoCom_App.json} (vedi {@link MappeCausali}).
+     * @return la mappa causale → categoria, case-insensitive, oppure {@code null} se il file non è disponibile
+     */
+    public static Map<String, String> Ex_CDCAPP_MappaCausali() {
+        return MappeCausali.Carica(MappeCausali.CRYPTOCOM_APP);
+    }
+
+    /**
      * Importa un file CSV di export dell'app Crypto.com (wallet crypto): legge le righe, mappa le decine di
      * causali specifiche dell'app (cashback, earn, staking, scambi, trasferimenti, acquisti/vendite) verso le
      * categorie interne e delega il consolidamento a {@link #Ex_CDCAPP_Consolida}.
@@ -1083,146 +984,11 @@ public class Importazioni {
         AzzeraContatori();
 
         String fileDaImportare = fileCDCapp;
-        Map<String, String> Mappa_Conversione_Causali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-
-        //Faccio una lista di causali per la conversione dei dati del csv
-        Mappa_Conversione_Causali.put("card_cashback_reverted", "CASHBACK");              //Cashback ripristinato
-        Mappa_Conversione_Causali.put("referral_card_cashback", "CASHBACK");              //Cashback della Carta MCO
-        Mappa_Conversione_Causali.put("gift_card_reward", "CASHBACK");
-        
-        Mappa_Conversione_Causali.put("crypto_earn_interest_paid", "EARN");               //Interessi maturati da una Crypto in Earn
-        Mappa_Conversione_Causali.put("mobile_airtime_reward", "EARN");               //Reward di qualche tipo, la classifico come Earn
-        Mappa_Conversione_Causali.put("finance.defi_staking.non_compound_interest.crypto_wallet", "STAKING REWARD");
-        Mappa_Conversione_Causali.put("finance.dpos.non_compound_restaking_interest.crypto_wallet", "STAKING REWARD");
-        //Mappa_Conversione_Causali.put("finance.defi_staking.staking.crypto_wallet", "STAKING REWARD");
-        Mappa_Conversione_Causali.put("finance.defi_lending.compound_interest.crypto_wallet", "REWARD");
-        Mappa_Conversione_Causali.put("finance.defi_staking.unstaking.crypto_wallet", "STAKING REWARD");
-        
-        
-        
-        Mappa_Conversione_Causali.put("crypto_exchange", "SCAMBIO CRYPTO-CRYPTO");        //Scambio di una Crypto per un'altra Crypto
-        Mappa_Conversione_Causali.put("trading_limit_order_crypto_wallet_exchange", "SCAMBIO CRYPTO-CRYPTO");//Ordine Limite Eseguito 
-        Mappa_Conversione_Causali.put("trading.limit_order.crypto_wallet.exchange", "SCAMBIO CRYPTO-CRYPTO");//Ordine Limite Eseguito
-        Mappa_Conversione_Causali.put("finance.crypto_basket.purchase.crypto_wallet.credit", "SCAMBIO CRYPTO-CRYPTO");//Primo acquisto dal basket
-        Mappa_Conversione_Causali.put("finance.dpos.wrapping.crypto_wallet", "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("finance.dpos.unwrapping.crypto_wallet", "SCAMBIO CRYPTO-CRYPTO");
-        
-        
-        //finance.crypto_basket.purchase.crypto_wallet.credit
-
-
-        
-        Mappa_Conversione_Causali.put("crypto_deposit", "TRASFERIMENTO-CRYPTO");          //Deposito di Crypto provenienti da wallet esterno
-        Mappa_Conversione_Causali.put("invest_deposit", "TRASFERIMENTO-CRYPTO");          //Totalmente controintuitivo ma questo è un prelievo (Testato su Koinly e Cointraking, per Tatax invece è un deposito)
-        Mappa_Conversione_Causali.put("invest_withdrawal", "TRASFERIMENTO-CRYPTO");       //Totalmente controintuitivo ma questo è un deposito (Testato su Koinly e Cointraking, per Tatax invece è un prelievo)
-        Mappa_Conversione_Causali.put("crypto_withdrawal", "TRASFERIMENTO-CRYPTO");       //Prelievo di una Crypto verso portafogli esterni
-        Mappa_Conversione_Causali.put("crypto_to_exchange_transfer", "TRASFERIMENTO-CRYPTO");//Trasferimento di una Crypto dall'App verso l'Exchange
-        Mappa_Conversione_Causali.put("crypto_transfer", "TRASFERIMENTO-CRYPTO");       //Trasferimento verso o da altro portafoglio crypto.com tramite app 
-        Mappa_Conversione_Causali.put("exchange_to_crypto_transfer", "TRASFERIMENTO-CRYPTO");    //Trasferimenti dall'Exchange verso l'App
-        Mappa_Conversione_Causali.put("admin_wallet_debited", "TRASFERIMENTO-CRYPTO");
-        Mappa_Conversione_Causali.put("transfer.p2p_transfer.crypto_wallet.crypto_wallet.debit", "TRASFERIMENTO-CRYPTO");
-        Mappa_Conversione_Causali.put("transfer.p2p_transfer.crypto_wallet.crypto_wallet.credit", "TRASFERIMENTO-CRYPTO");
-        
-        Mappa_Conversione_Causali.put("crypto_purchase", "ACQUISTO CRYPTO");          //Acquisto di Crypto da Carta di Credito
-        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.purchase_commit", "ACQUISTO CRYPTO");//Acquisto crypto da fill order limit
-        Mappa_Conversione_Causali.put("trading.crypto_purchase.google_pay", "ACQUISTO CRYPTO");//Acquisto crypto da google pay
-        Mappa_Conversione_Causali.put("trading.crypto_purchase.apple_pay", "ACQUISTO CRYPTO");//Acquisto crypto da apple pay
-        Mappa_Conversione_Causali.put("viban_purchase", "ACQUISTO CRYPTO");           //Acquisto di Crypto dal portafoglio EUR 
-        Mappa_Conversione_Causali.put("recurring_buy_order", "ACQUISTO CRYPTO");//Acquisto Crypto tramite acquisti ricorrenti
-        Mappa_Conversione_Causali.put("finance.crypto_basket.rebalance.credit", "ACQUISTO CRYPTO");//Acquisto Crypto Basket
-        Mappa_Conversione_Causali.put("finance.crypto_basket.sale.crypto_wallet.credit", "ACQUISTO CRYPTO");//Acquisto Crypto Basket
-
-        Mappa_Conversione_Causali.put("crypto_viban_exchange", "VENDITA CRYPTO");    //Vendita di una Crypto verso il portafoglio EUR
-        Mappa_Conversione_Causali.put("card_top_up", "VENDITA CRYPTO");    //Vendita di una Crypto verso il portafoglio EUR
-        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.sell_commit", "VENDITA CRYPTO");//Vendita crypto da fill order limit
-        Mappa_Conversione_Causali.put("finance.crypto_basket.rebalance.debit", "VENDITA CRYPTO");//Vendita crypto da rebalance
-        Mappa_Conversione_Causali.put("finance.crypto_basket.sale.crypto_wallet.debit", "VENDITA CRYPTO");//Vendita crypto da basket wallet
-//        Mappa_Conversione_Causali.put("crypto_wallet_swap_credited", fileDaImportare);    //Scambio MCO in CRO (MCO liberi nel portafoglio). Acquisto dei CRO
-//        Mappa_Conversione_Causali.put("crypto_wallet_swap_debited", fileDaImportare);     //Scambio MCO in CRO (MCO liberi nel portafoglio). Vendita degli MCO
-//finance.crypto_basket.rebalance.debit
-
-        Mappa_Conversione_Causali.put("dust_conversion_credited", "DUST-CONVERSION");//Conversione di Crypto in CRO. CRO Ricevuti dalla conversione.
-        Mappa_Conversione_Causali.put("dust_conversion_debited", "DUST-CONVERSION");//Conversione di Crypto in CRO. Crypto da convertire in CRO.
-        Mappa_Conversione_Causali.put("crypto_wallet_swap_credited", "DUST-CONVERSION");//Conversione di monete
-        Mappa_Conversione_Causali.put("crypto_wallet_swap_debited", "DUST-CONVERSION");//Conversione di monete  
-        Mappa_Conversione_Causali.put("interest_swap_credited", "DUST-CONVERSION");//Conversione di monete 
-        Mappa_Conversione_Causali.put("interest_swap_debited", "DUST-CONVERSION");//Conversione di monete 
-        Mappa_Conversione_Causali.put("finance.dpos.staking_conversion.terminate", "DUST-CONVERSION");//Conversione di staking
-        Mappa_Conversione_Causali.put("finance.dpos.staking_conversion.credit", "DUST-CONVERSION");//Conversione di staking
-//        Mappa_Conversione_Causali.put("lockup_swap_credited", "DUST-CONVERSION");//Conversione di monete (
-//        Mappa_Conversione_Causali.put("lockup_swap_debited", "DUST-CONVERSION");//Conversione di monete 
-//        Mappa_Conversione_Causali.put("dynamic_coin_swap_bonus_exchange_deposit", fileDaImportare);//Bonus Swap MCO/CRO
-        Mappa_Conversione_Causali.put("dynamic_coin_swap_credited", "IGNORA");     //Scambio MCO in CRO (MCO in Earn). Acquisto dei CRO
-        Mappa_Conversione_Causali.put("dynamic_coin_swap_debited", "IGNORA");      //Scambio MCO in CRO (MCO in Earn). Vendita degli MCO
-
-        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.purchase_unlock", "IGNORA"); //Ignoro il movimento in quanto sto bloccando Euro del Fiat Wallet
-        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.purchase_lock", "IGNORA"); //Ignoro il movimento in quanto sto bloccando fondi del Fiat Wallet
-        Mappa_Conversione_Causali.put("trading.limit_order.crypto_wallet.fund_lock", "IGNORA");          //Limit order
-        Mappa_Conversione_Causali.put("trading.limit_order.crypto_wallet.fund_unlock", "IGNORA");          //Limit order     
-        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.sell_unlock", "IGNORA");          //Limit order
-        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.sell_lock", "IGNORA");          //Limit order  
-        Mappa_Conversione_Causali.put("finance.crypto_basket.purchase.crypto_wallet", "IGNORA");          //Questo movimento fa parte di un movimento di spostamento da crypto wallet a basket, gestisco il tutto su altro movimento overo finance.crypto_basket.purchase.crypto_wallet.received 
-        Mappa_Conversione_Causali.put("finance.crypto_basket.rebalance", "IGNORA");  // Avvisa che c'è stato un ribilanciamento e l'importo in USD, si può ignorare
-        Mappa_Conversione_Causali.put("finance.crypto_basket.sale.crypto_wallet", "IGNORA"); //lo ignoro perchè il movimento viene generato in automatico dopo questo finance.crypto_basket.sale.crypto_wallet.credit
-        Mappa_Conversione_Causali.put("finance.crypto_basket.withdraw.crypto_wallet.credit", "IGNORA"); //già gestito con il debit
-        Mappa_Conversione_Causali.put("finance.crypto_basket.withdraw.crypto_wallet", "IGNORA");//da ignorare non da nessun dato utile
-        Mappa_Conversione_Causali.put("finance.defi_staking.staking.crypto_wallet", "IGNORA");//da ignorare movimento di messa in staking non utile
-        Mappa_Conversione_Causali.put("finance.defi_lending.staking.crypto_wallet", "IGNORA");
-      //  Mappa_Conversione_Causali.put("dynamic_coin_swap_bonus_exchange_deposit", "IGNORA");//in teoria è un movimento doppio ma per ora lo commento perchè non sono sicuro,infatti questo movimento sembra sia anche legato ad un movimento dell'exchange ovvero questo EARLY_SWAP_BONUS_DEPOSIT,
-        Mappa_Conversione_Causali.put("trading.limit_order.cash_account.sell_lock", "IGNORA");
-        Mappa_Conversione_Causali.put("trading.limit_order.cash_account.sell_unlock", "IGNORA");
-
-        //finance.crypto_basket.purchase.crypto_wallet.received
-        Mappa_Conversione_Causali.put("lockup_swap_credited", "DUST-CONVERSION"); //13/05/2026
-        Mappa_Conversione_Causali.put("lockup_swap_debited", "DUST-CONVERSION");  //13/05/2026
-        Mappa_Conversione_Causali.put("lockup_lock", "TRASFERIMENTO-CRYPTO-INTERNO");          //CRO Stake per la MCO Card. Nuovo Stake
-        Mappa_Conversione_Causali.put("lockup_unlock", "TRASFERIMENTO-CRYPTO-INTERNO");          //CRO Stake per la MCO Card. Nuovo unStake
-        Mappa_Conversione_Causali.put("finance.lockup.dpos_lock.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");          //CRO Stake per la MCO Card. Nuovo Stake
-        Mappa_Conversione_Causali.put("finance.lockup.dpos_unlock.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");          //CRO Stake per la MCO Card. Nuovo unStake
-        Mappa_Conversione_Causali.put("crypto_earn_program_created", "TRASFERIMENTO-CRYPTO-INTERNO");//Inserimento di una Crypto in Earn
-        Mappa_Conversione_Causali.put("crypto_earn_program_withdrawn", "TRASFERIMENTO-CRYPTO-INTERNO");//Prelievo di una Crypto dall'Earn
-        Mappa_Conversione_Causali.put("finance.dpos.staking.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");    //Nuovo Staking di Crypto.com
-        Mappa_Conversione_Causali.put("finance.dpos.unstaking.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");      //unstake
-        Mappa_Conversione_Causali.put("lockup_upgrade", "TRASFERIMENTO-CRYPTO-INTERNO");       //CRO Stake per la MCO Card. (Upgrade)
-        Mappa_Conversione_Causali.put("supercharger_deposit", "TRASFERIMENTO-CRYPTO-INTERNO"); //Deposito dei CRO nel supercharger
-        Mappa_Conversione_Causali.put("supercharger_withdrawal", "TRASFERIMENTO-CRYPTO-INTERNO");//Prelievo dei CRO dal supercharger
-        Mappa_Conversione_Causali.put("trading_limit_order_crypto_wallet_fund_lock", "TRASFERIMENTO-CRYPTO-INTERNO");//Blocca i fondi destinati ad un'ordine Limit 
-        Mappa_Conversione_Causali.put("finance.crypto_basket.purchase.crypto_wallet.received", "TRASFERIMENTO-CRYPTO-INTERNO");  //Trasferimenti verso Crypto Basket
-        Mappa_Conversione_Causali.put("finance.crypto_basket.withdraw.crypto_wallet.debit", "TRASFERIMENTO-CRYPTO-INTERNO");
-        Mappa_Conversione_Causali.put("lockup_swap_rebate", "TRASFERIMENTO-CRYPTO-INTERNO");
-        Mappa_Conversione_Causali.put("finance.lockup.dpos_lock_upgrade.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");
-
-//        Mappa_Conversione_Causali.put("lockup_swap_credited", fileDaImportare);         //Scambio MCO in CRO (MCO in Stake per la Carta). Acquisto dei CRO
-//        Mappa_Conversione_Causali.put("lockup_swap_debited", fileDaImportare);          //Scambio MCO in CRO (MCO in Stake per la Carta). Vendita degli MCO
-        Mappa_Conversione_Causali.put("mco_stake_reward", "STAKING REWARD");                       //Interessi che la MCO Card matura. Da (Jade in su)
-        Mappa_Conversione_Causali.put("finance.dpos.non_compound_interest.crypto_wallet", "STAKING REWARD");    //Nuovo Staking di Crypto.com
-        Mappa_Conversione_Causali.put("finance.dpos.compound_interest.crypto_wallet", "STAKING REWARD");
-        Mappa_Conversione_Causali.put("staking_reward", "STAKING REWARD");                       //Reward (Es. NEO Gas) 
-        Mappa_Conversione_Causali.put("finance.lockup.dpos_compound_interest.crypto_wallet", "STAKING REWARD");//Reward da staking con Carta 20/07/2024
-
-        Mappa_Conversione_Causali.put("pay_checkout_reward", "REWARD");                   //Ricompesa di Crypto.com Pay
-        Mappa_Conversione_Causali.put("finance.crypto_earn.loyalty_program_extra_interest_paid.crypto_wallet", "REWARD"); //12-01-2024
-        Mappa_Conversione_Causali.put("referral_gift", "REWARD");                         //Bonus di iscrizione sbloccato
-        Mappa_Conversione_Causali.put("reimbursement", "REWARD");                         //Rimborsi (Es. Netflix, Promozioni)
-        Mappa_Conversione_Causali.put("reimbursement_reverted", "REWARD");                //Annullamento di un rimborso (o parte)
-        Mappa_Conversione_Causali.put("reward.loyalty_program.trading_rebate.crypto_wallet", "REWARD");                //Altre reward
-        Mappa_Conversione_Causali.put("campaign_reward", "REWARD");                       //Vincita di una campagna (Es.: Telegram Madness
-        Mappa_Conversione_Causali.put("crypto_payment_refund", "REWARD");                 //Rimborso in Crypto. (Es. Rimborso Offerta per un NFT)
-        Mappa_Conversione_Causali.put("referral_bonus", "REWARD");                        //Bonus Referral 
-        Mappa_Conversione_Causali.put("crypto_earn_extra_interest_paid", "REWARD");//Earn Extra Reward 
-        Mappa_Conversione_Causali.put("supercharger_reward_to_app_credited", "REWARD");//Supercharger Reward in App
-        Mappa_Conversione_Causali.put("rewards_platform_deposit_credited", "REWARD");//Mission Reward
-
-//        Mappa_Conversione_Causali.put("nft_payout_credited", fileDaImportare);            //Vendita NFT 
-//        Mappa_Conversione_Causali.put("crypto_credit_withdrawal_created", fileDaImportare);//Crypto Loan
-//        Mappa_Conversione_Causali.put("crypto_credit_repayment_created", fileDaImportare);//Crypto Loan        
-//        Mappa_Conversione_Causali.put("crypto_credit_loan_credited", fileDaImportare);    //Crypto Loan
-//        Mappa_Conversione_Causali.put("crypto_credit_program_created", fileDaImportare);  //Crypto Loan 
-        Mappa_Conversione_Causali.put("admin_wallet_credited", "ALTRE-REWARD");//es. aggiustamenti luna 
-        Mappa_Conversione_Causali.put("transfer_cashback", "CASHBACK");              //Cashback su trasferimento crypto tra portafogli
-
-        //QUESTE 2 SOTTO SONO ANCORA DA GESTIRE
-        Mappa_Conversione_Causali.put("crypto_payment", "VENDITA CRYPTO");              //Pagamento in Crypto (Es.: Crypto Pay in CRO)
+        Map<String, String> Mappa_Conversione_Causali = Ex_CDCAPP_MappaCausali();
+        if (Mappa_Conversione_Causali == null) {
+            SegnalaMappaCausaliNonDisponibile(MappeCausali.CRYPTOCOM_APP, null);
+            return;
+        }
 
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
@@ -1623,6 +1389,18 @@ public static List<String[]> CreaListaConIDUnivoco(List<String[]> listaConsolida
 
 
 /**
+ * Mappa causale originale del Financial/Tax Report Binance → categoria interna, usata da
+ * {@link #Ex_BinanceTaxReport_Importa}.
+ * <p>La chiave è la concatenazione delle colonne 2, 3 e 4 del report separate da un punto, quindi
+ * contiene punti anche quando una delle tre colonne è vuota (es. {@code "BUY..SPOT"}).
+ * <p>Il contenuto è letto da {@code config/importmappe/BinanceFinancialReport.json} (vedi {@link MappeCausali}).
+ * @return la mappa causale → categoria, case-insensitive, oppure {@code null} se il file non è disponibile
+ */
+public static Map<String, String> Ex_BinanceTaxReport_MappaCausali() {
+        return MappeCausali.Carica(MappeCausali.BINANCE_FINANCIAL_REPORT);
+}
+
+/**
  * Importa un file di Financial/Tax Report Binance: legge le righe secondo il formato specifico del report
  * (con data in fuso CET) e delega il consolidamento dei movimenti a {@link #Ex_BinanceTaxReport_Consolida}.
  * @param fileBinanceTaxReport percorso del file Tax Report Binance da importare
@@ -1656,31 +1434,14 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
     16 - Valore Fee in Euro    
     */
   
-   Map<String, String> Mappa_Conversione_Causali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        //La tipologia di movimento la individuo dall'insieme delle colonne 2,3 e 4
-        
+ AzzeraContatori();
 
-        
-        Mappa_Conversione_Causali.put("RECEIVE.REWARD.EARN",                    "EARN");//
-        Mappa_Conversione_Causali.put("RECEIVE.AIRDROP.EARN",                   "EARN");//
-        Mappa_Conversione_Causali.put("RECEIVE.REBATE.SPOT",                    "CASHBACK");//
-        Mappa_Conversione_Causali.put("BUY..CONVERT",                           "ACQUISTO CRYPTO");//
-        Mappa_Conversione_Causali.put("BUY..SPOT",                              "ACQUISTO CRYPTO");//
-        Mappa_Conversione_Causali.put("BUY..OCBS",                              "ACQUISTO CRYPTO");//
-        Mappa_Conversione_Causali.put("SELL..SPOT",                             "VENDITA CRYPTO");//
-        Mappa_Conversione_Causali.put("SELL..CONVERT",                          "VENDITA CRYPTO");//
-        Mappa_Conversione_Causali.put("DEPOSIT..FIAT",                          "DEPOSITO FIAT");//
-        Mappa_Conversione_Causali.put("DEPOSIT..OCBS",                          "DEPOSITO FIAT");//
-        Mappa_Conversione_Causali.put("TRADE..SPOT",                            "SCAMBIO CRYPTO");//
-        Mappa_Conversione_Causali.put("TRADE..CONVERT",                         "SCAMBIO CRYPTO");//
-        Mappa_Conversione_Causali.put("TRADE..EARN",                            "SCAMBIO CRYPTO");//
-        Mappa_Conversione_Causali.put("RECEIVE.PAYMENT.PAY",                    "TRASFERIMENTO-CRYPTO");//
-        Mappa_Conversione_Causali.put("RECEIVE..CRYPTO_DEPOSIT",                "TRASFERIMENTO-CRYPTO");//
-        Mappa_Conversione_Causali.put("SEND..CRYPTO_WITHDRAWAL",                "TRASFERIMENTO-CRYPTO");//
-        Mappa_Conversione_Causali.put("WITHDRAWAL..FIAT",                       "PRELIEVO FIAT");//
-   
-   
- AzzeraContatori();        
+   Map<String, String> Mappa_Conversione_Causali = Ex_BinanceTaxReport_MappaCausali();
+        if (Mappa_Conversione_Causali == null) {
+            SegnalaMappaCausaliNonDisponibile(MappeCausali.BINANCE_FINANCIAL_REPORT, c);
+            return false;
+        }
+
         String fileDaImportare = fileBinanceTaxReport;
 
         //come prima cosa salvo il file in un array per conoscerne la lunghezza
@@ -1746,6 +1507,16 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
     }
     
     /**
+ * Mappa causale originale Tatax → categoria interna, usata dall'import del CSV Tatax vecchio formato
+ * ({@link #Ex_Tatax_Importa}, voce {@code Tatax_Old} nella finestra di import).
+ * <p>Il contenuto è letto da {@code config/importmappe/Tatax_Old.json} (vedi {@link MappeCausali}).
+ * @return la mappa causale → categoria, case-insensitive, oppure {@code null} se il file non è disponibile
+ */
+public static Map<String, String> Ex_Tatax_MappaCausali() {
+        return MappeCausali.Carica(MappeCausali.TATAX_OLD);
+}
+
+    /**
  * Importa un file CSV di export Tatax (formato generico multi-exchange): legge le righe e delega il
  * consolidamento a {@link #ConsolidaMovimentiSingolaRiga}.
  * @param fileTatax percorso del file CSV Tatax da importare
@@ -1761,22 +1532,11 @@ public static boolean Ex_Tatax_Importa(String fileTatax, boolean SovrascriEsiste
         AzzeraContatori();
         String fileDaImportare = fileTatax;
 
-        Map<String, String> Mappa_Conversione_Causali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-
-        //Faccio una lista di causali per la conversione dei dati del csv
-        Mappa_Conversione_Causali.put("CASHBACK", "CASHBACK");
-        Mappa_Conversione_Causali.put("STAKING", "STAKING REWARDS");
-        Mappa_Conversione_Causali.put("EARN", "EARN");
-        Mappa_Conversione_Causali.put("AIRDROP", "AIRDROP");
-        Mappa_Conversione_Causali.put("CREDIT", "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("DEBIT", "SCAMBIO CRYPTO-CRYPTO");
-        Mappa_Conversione_Causali.put("EXCHANGE_FEE", "COMMISSIONI");
-        Mappa_Conversione_Causali.put("BLOCKCHAIN_FEE", "COMMISSIONI");
-        Mappa_Conversione_Causali.put("FEE", "COMMISSIONI");
-        Mappa_Conversione_Causali.put("DEPOSIT", "TRASFERIMENTO-CRYPTO");//Deposito di Crypto o FIAT provenienti da wallet esterno
-        Mappa_Conversione_Causali.put("WITHDRAWAL", "TRASFERIMENTO-CRYPTO");//Prelievo di Crypto o FIAT su wallet esterno
-        Mappa_Conversione_Causali.put("CREDIT_FIX", "TRASFERIMENTO-CRYPTO");//Correzione Giacenza
-        Mappa_Conversione_Causali.put("DEBIT_FIX", "TRASFERIMENTO-CRYPTO");//Correzione Giacenza
+        Map<String, String> Mappa_Conversione_Causali = Ex_Tatax_MappaCausali();
+        if (Mappa_Conversione_Causali == null) {
+            SegnalaMappaCausaliNonDisponibile(MappeCausali.TATAX_OLD, c);
+            return false;
+        }
 
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
@@ -1966,6 +1726,16 @@ public static boolean Ex_Tatax_Importa(String fileTatax, boolean SovrascriEsiste
     
     
       /**
+       * Mappa causale originale di Crypto.com Exchange → categoria interna, usata da
+       * {@link #Ex_CryptoComExchange_Importa}.
+       * <p>Il contenuto è letto da {@code config/importmappe/CryptoCom_Exchange.json} (vedi {@link MappeCausali}).
+       * @return la mappa causale → categoria, case-insensitive, oppure {@code null} se il file non è disponibile
+       */
+      public static Map<String, String> Ex_CryptoComExchange_MappaCausali() {
+        return MappeCausali.Carica(MappeCausali.CRYPTOCOM_EXCHANGE);
+      }
+
+      /**
        * Importa un file CSV di export Crypto.com Exchange (distinto dall'app Crypto.com): legge le righe, mappa
        * le causali specifiche dell'exchange (staking, trading, commissioni, dust conversion, trasferimenti)
        * verso le categorie interne e delega il consolidamento a {@link #ConsolidaMovimentiSingolaRiga}.
@@ -1984,30 +1754,11 @@ public static boolean Ex_Tatax_Importa(String fileTatax, boolean SovrascriEsiste
         String fileDaImportare = cdcExchange;
         String Exchange="Crypto.com Exchange";
         
-         Map<String, String> Mappa_Conversione_Causali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-
-        //Faccio una lista di causali per la conversione dei dati del csv
-        //Mappa_Conversione_Causali.put("CASHBACK", "CASHBACK");  
-       // Mappa_Conversione_Causali.put("STAKING", "STAKING REWARDS");
-       //FIAT_OPENPAYD_DEPOSIT
-        Mappa_Conversione_Causali.put("STAKING", "NON CONSIDERARE");
-        Mappa_Conversione_Causali.put("FIAT_OPENPAYD_DEPOSIT", "TRASFERIMENTO-CRYPTO");
-        Mappa_Conversione_Causali.put("STAKING_REWARDS", "STAKING REWARDS");
-        //Mappa_Conversione_Causali.put("EARN", "EARN");              
-        //Mappa_Conversione_Causali.put("AIRDROP", "AIRDROP");            
-        Mappa_Conversione_Causali.put("TRADING", "SCAMBIO CRYPTO-CRYPTO");        
-        //Mappa_Conversione_Causali.put("DEBIT", "SCAMBIO CRYPTO-CRYPTO");          
-        Mappa_Conversione_Causali.put("TRADE_FEE", "COMMISSIONI");          
-        //Mappa_Conversione_Causali.put("BLOCKCHAIN_FEE", "COMMISSIONI");         
-        Mappa_Conversione_Causali.put("CRYPTO_DUSTING", "DUST-CONVERSION"); 
-        
-        Mappa_Conversione_Causali.put("ADMIN_ADJUSTMENT", "TRASFERIMENTO-CRYPTO");
-        Mappa_Conversione_Causali.put("OFFCHAIN_WITHDRAWAL", "TRASFERIMENTO-CRYPTO");//Deposito di Crypto o FIAT provenienti da wallet esterno
-        Mappa_Conversione_Causali.put("ONCHAIN_WITHDRAWAL", "TRASFERIMENTO-CRYPTO");//Deposito di Crypto o FIAT provenienti da wallet esterno
-        Mappa_Conversione_Causali.put("OFFCHAIN_DEPOSIT", "TRASFERIMENTO-CRYPTO");//Prelievo di Crypto o FIAT su wallet esterno
-        Mappa_Conversione_Causali.put("ONCHAIN_DEPOSIT", "TRASFERIMENTO-CRYPTO");//Prelievo di Crypto o FIAT su wallet esterno
-        //Mappa_Conversione_Causali.put("CREDIT_FIX", "TRASFERIMENTO-CRYPTO");//Correzione Giacenza
-        //Mappa_Conversione_Causali.put("DEBIT_FIX", "TRASFERIMENTO-CRYPTO");//Correzione Giacenza
+         Map<String, String> Mappa_Conversione_Causali = Ex_CryptoComExchange_MappaCausali();
+        if (Mappa_Conversione_Causali == null) {
+            SegnalaMappaCausaliNonDisponibile(MappeCausali.CRYPTOCOM_EXCHANGE, c);
+            return false;
+        }
 
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.

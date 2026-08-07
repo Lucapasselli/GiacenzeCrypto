@@ -1,0 +1,28 @@
+{
+  "versione": "1.000",
+  "centralizzato": true,
+  "descrizione": "Causali OKX, condivise fra l'import del CSV storico (voce OKX_Old) e l'import via API/CCXT",
+  "mappaCausali": {
+    "": "NON CONSIDERARE",
+    "Buy": "SCAMBIO CRYPTO-CRYPTO",
+    "Convert": "SCAMBIO CRYPTO-CRYPTO",
+    "Crypto dust auto-transfer in": "REWARD",
+    "deposit": "TRASFERIMENTO-CRYPTO",
+    "Deposit yield": "REWARD",
+    "Flash Deals Earnings": "REWARD",
+    "From unified trading account": "NON CONSIDERARE",
+    "Mystery box bonus": "REWARD",
+    "Received": "TRASFERIMENTO-CRYPTO",
+    "Redeem staking": "TRASFERIMENTO-CRYPTO-INTERNO",
+    "Savings redemption": "NON CONSIDERARE",
+    "Savings subscription": "NON CONSIDERARE",
+    "Sell": "SCAMBIO CRYPTO-CRYPTO",
+    "Simple Earn redemption": "NON CONSIDERARE",
+    "Simple Earn subscription": "NON CONSIDERARE",
+    "Stake": "TRASFERIMENTO-CRYPTO-INTERNO",
+    "To unified trading account": "NON CONSIDERARE",
+    "Transfer in": "NON CONSIDERARE",
+    "Transfer out": "NON CONSIDERARE",
+    "withdrawal": "TRASFERIMENTO-CRYPTO"
+  }
+}

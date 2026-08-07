@@ -1,0 +1,20 @@
+{
+  "versione": "1.000",
+  "centralizzato": true,
+  "descrizione": "Causali del CSV Tatax vecchio formato (voce Tatax_Old nella finestra di import)",
+  "mappaCausali": {
+    "AIRDROP": "AIRDROP",
+    "BLOCKCHAIN_FEE": "COMMISSIONI",
+    "CASHBACK": "CASHBACK",
+    "CREDIT": "SCAMBIO CRYPTO-CRYPTO",
+    "CREDIT_FIX": "TRASFERIMENTO-CRYPTO",
+    "DEBIT": "SCAMBIO CRYPTO-CRYPTO",
+    "DEBIT_FIX": "TRASFERIMENTO-CRYPTO",
+    "DEPOSIT": "TRASFERIMENTO-CRYPTO",
+    "EARN": "EARN",
+    "EXCHANGE_FEE": "COMMISSIONI",
+    "FEE": "COMMISSIONI",
+    "STAKING": "STAKING REWARDS",
+    "WITHDRAWAL": "TRASFERIMENTO-CRYPTO"
+  }
+}

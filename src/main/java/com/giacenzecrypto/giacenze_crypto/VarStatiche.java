@@ -133,9 +133,30 @@ public class VarStatiche {
         return getWorkingDirectory() + "Backup/";
     }
 
-    /** @return il percorso della cartella {@code ImportConfig/} nella directory di lavoro */
+    /**
+     * @return il percorso della cartella {@code ImportConfig/} nella directory di lavoro.
+     *         <p>Cartella storica delle configurazioni di import: non viene più sincronizzata con il
+     *         repository (quel compito è passato a {@link #getCartella_ConfigImport()}) ed è mantenuta
+     *         solo per retrocompatibilità con le installazioni precedenti. Da qui vanno letti soltanto
+     *         i file NON marcati {@code "centralizzato": true}, cioè quelli scritti dall'utente.
+     */
     public static String getCartella_ImportConfig() {
         return getWorkingDirectory() + "ImportConfig/";
+    }
+
+    /** @return il percorso della cartella {@code config/import/}, configurazioni di import complete */
+    public static String getCartella_ConfigImport() {
+        return getWorkingDirectory() + "config/import/";
+    }
+
+    /** @return il percorso della cartella {@code config/importmappe/}, sole mappe delle causali */
+    public static String getCartella_ConfigImportMappe() {
+        return getWorkingDirectory() + "config/importmappe/";
+    }
+
+    /** @return il percorso della cartella {@code config/loghi/}, loghi degli exchange/wallet */
+    public static String getCartella_ConfigLoghi() {
+        return getWorkingDirectory() + "config/loghi/";
     }
 
     /** @return il percorso del file di configurazione dei chatbot usati dalla funzione "Chiedi a IA" */

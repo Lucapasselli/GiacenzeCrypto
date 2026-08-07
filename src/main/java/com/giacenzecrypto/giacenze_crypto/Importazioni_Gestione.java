@@ -3,7 +3,6 @@ package com.giacenzecrypto.giacenze_crypto;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.util.ArrayList;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
@@ -50,35 +49,217 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     "Stellar (XLM)","Ripple (XRP)","Zcash (ZEC)"};
     
     static String NomeWallet="";
-    
+
+    /**
+     * Ordina alfabeticamente, ignorando maiuscole e minuscole, le voci di una lista di scelta, lasciando
+     * in testa — nel loro ordine originale — le voci speciali: il separatore {@code ----------}, il
+     * segnaposto {@code - nessuno -} e {@code *Nome Personalizzato*}, che non sono nomi di exchange e
+     * devono restare le prime.
+     * <p>L'ordinamento avviene qui e non negli array sorgente, così aggiungere un exchange significa
+     * accodarlo senza doverlo inserire nel punto giusto.
+     * @param voci le voci da ordinare, non modificato
+     * @return un nuovo array con le voci speciali in testa e le altre in ordine alfabetico
+     */
+    static String[] ordinaVoci(String[] voci) {
+        java.util.List<String> speciali = new ArrayList<>();
+        java.util.List<String> nomi = new ArrayList<>();
+
+        for (String v : voci) {
+            if (isVoceSpeciale(v)) {
+                speciali.add(v);
+            } else {
+                nomi.add(v);
+            }
+        }
+        nomi.sort(String.CASE_INSENSITIVE_ORDER);
+
+        java.util.List<String> ordinate = new ArrayList<>(speciali);
+        ordinate.addAll(nomi);
+        return ordinate.toArray(new String[0]);
+    }
+
+    /** @return {@code true} se la voce è un separatore o un segnaposto, non un nome da ordinare */
+    private static boolean isVoceSpeciale(String voce) {
+        String v = voce == null ? "" : voce.trim();
+        return v.startsWith("-") || v.startsWith("*");
+    }
+
+    //=== IDENTIFICATIVI DEGLI IMPORT NATIVI ===
+    //Sono codici interni, distinti dall'etichetta mostrata: così rinominare una voce nella combo non
+    //tocca lo smistamento. Prima l'etichetta era anche il discriminante (confronti su "Binance CSV",
+    //"OKX CSV", prefisso "[JSON]") e ogni rinomina rischiava di rompere silenziosamente un ramo.
+    static final String NAT_CDC_APP        = "CDC_APP";
+    static final String NAT_CDC_EXCHANGE   = "CDC_EXCHANGE";
+    static final String NAT_BINANCE_OLD    = "BINANCE_OLD";
+    static final String NAT_BINANCE_REPORT = "BINANCE_REPORT";
+    static final String NAT_COINTRACKING   = "COINTRACKING";
+    static final String NAT_TATAX_OLD      = "TATAX_OLD";
+    static final String NAT_OKX_OLD        = "OKX_OLD";
+
+    /**
+     * Una voce del menù "tipo di file da importare": o un import nativo, scritto nel programma, o una
+     * configurazione JSON letta da {@code config/import/} (o dalla vecchia {@code ImportConfig/}).
+     * <p>Le due famiglie convivono nello stesso elenco ordinato alfabeticamente, senza più il prefisso
+     * {@code [JSON]} che le distingueva a vista: la distinzione ora è nei campi, non nel testo.
+     */
+    static final class VoceImport {
+
+        /** Testo mostrato nella combo */
+        final String etichetta;
+        /** Identificativo dell'import nativo, {@code null} per le configurazioni JSON */
+        final String idNativo;
+        /** File di configurazione JSON, {@code null} per gli import nativi */
+        final java.io.File fileJson;
+        /** Nome del file del logo in {@code config/loghi/}, senza estensione; vuoto se non se ne conosce uno */
+        final String nomeLogo;
+
+        VoceImport(String etichetta, String idNativo, java.io.File fileJson, String nomeLogo) {
+            this.etichetta = etichetta;
+            this.idNativo = idNativo;
+            this.fileJson = fileJson;
+            this.nomeLogo = nomeLogo == null ? "" : nomeLogo;
+        }
+
+        /** @return {@code true} se la voce è una configurazione JSON */
+        boolean isJson() {
+            return fileJson != null;
+        }
+
+        /**
+         * @param id uno degli identificativi {@code NAT_*}
+         * @return {@code true} se la voce è l'import nativo indicato
+         */
+        boolean isNativo(String id) {
+            return id.equals(idNativo);
+        }
+
+        /** Il testo della voce, usato anche da {@link RenderVoceImport} per l'etichetta. */
+        @Override
+        public String toString() {
+            return etichetta;
+        }
+    }
+
+    /**
+     * Disegna le voci della combo del tipo di file con il logo dell'exchange a sinistra del nome, così
+     * la piattaforma si riconosce a colpo d'occhio.
+     * <p>Il lato dell'icona segue l'altezza del carattere invece di essere fisso, perché la dimensione
+     * del font si può cambiare all'avvio con {@code --fontSize}. Le voci senza logo ricevono un
+     * segnaposto trasparente della stessa dimensione, che tiene i nomi incolonnati.
+     */
+    private static final class RenderVoceImport extends javax.swing.DefaultListCellRenderer {
+
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public Component getListCellRendererComponent(javax.swing.JList<?> lista, Object valore,
+                int indice, boolean selezionato, boolean conFuoco) {
+
+            super.getListCellRendererComponent(lista, valore, indice, selezionato, conFuoco);
+
+            if (valore instanceof VoceImport voce) {
+                //un logo alto quanto il carattere risulta minuto in una riga da 40 pixel: il fattore
+                //lo porta a occupare la riga senza sovrastare il testo
+                int lato = Math.round(getFontMetrics(getFont()).getHeight() * 1.4f);
+                setIcon(LoghiImport.Dammi(voce.nomeLogo, lato));
+                setIconTextGap(8);
+            } else {
+                setIcon(null);
+            }
+            return this;
+        }
+    }
+
     public Importazioni_Gestione() {
         ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());
          this.setTitle("Import da File");
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
-        caricaVociJsonNelComboBox();
+        //Segnaposto finché non si sceglie che cosa importare: da quel momento il modello viene
+        //rimpiazzato con Exchanges, Wallets o BlockChain in ComboBox_TipoImportItemStateChanged.
+        //Prima nel .form c'era una copia completa e disallineata dell'array Exchanges, mai usata.
+        ComboBox_Exchanges.setModel(new DefaultComboBoxModel<>(new String[]{" - nessuno -"}));
+        popolaComboTipoFile();
     }
 
     
-private void caricaVociJsonNelComboBox() {
+/**
+ * Elenca le configurazioni di import disponibili, unendo le due cartelle in cui possono trovarsi.
+ * <p>Da {@code config/import/} (sincronizzata con il repository) vengono prese tutte le configurazioni;
+ * dalla vecchia {@code ImportConfig/}, che non è più sincronizzata e resta solo per retrocompatibilità,
+ * vengono prese quelle scritte dall'utente, cioè NON marcate {@code "centralizzato": true}: le altre
+ * sono la copia obsoleta di file ora gestiti sotto {@code config/} e comparirebbero doppie.
+ * <p>Lo scarto delle centralizzate scatta però solo se {@code config/import/} contiene già qualcosa.
+ * Al primo avvio dopo l'aggiornamento la cartella nuova è vuota — viene riempita in background, e la
+ * finestra di import può essere aperta prima che il download finisca, o senza connessione — e senza
+ * questa condizione sparirebbero dall'elenco tutte le configurazioni distribuite col programma.
+ * A parità di nome file vince comunque la versione in {@code config/import/}.
+ * @return i file di configurazione da proporre, ordinati per nome
+ */
+private static java.util.List<java.io.File> elencoConfigurazioniImport() {
+    java.util.Map<String, java.io.File> perNome = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+    java.io.File[] nuovi = new java.io.File(VarStatiche.getCartella_ConfigImport())
+            .listFiles((dir, name) -> name.toLowerCase().endsWith(".json"));
+    if (nuovi != null) {
+        for (java.io.File f : nuovi) {
+            perNome.put(f.getName(), f);
+        }
+    }
+    boolean cartellaNuovaPopolata = !perNome.isEmpty();
+
+    java.io.File[] vecchi = new java.io.File(VarStatiche.getCartella_ImportConfig())
+            .listFiles((dir, name) -> name.toLowerCase().endsWith(".json"));
+    if (vecchi != null) {
+        for (java.io.File f : vecchi) {
+            if (perNome.containsKey(f.getName())) {
+                continue;
+            }
+            if (cartellaNuovaPopolata) {
+                try {
+                    String contenuto = new String(java.nio.file.Files.readAllBytes(f.toPath()),
+                            java.nio.charset.StandardCharsets.UTF_8);
+                    if (new org.json.JSONObject(contenuto).optBoolean("centralizzato", false)) {
+                        continue;
+                    }
+                } catch (Exception ex) {
+                    //File illeggibile o non JSON: lo propongo comunque, sarà il caricamento a segnalare l'errore
+                    LoggerGC.ScriviErrore(ex);
+                }
+            }
+            perNome.put(f.getName(), f);
+        }
+    }
+
+    return new java.util.ArrayList<>(perNome.values());
+}
+
+/**
+ * Riempie la combo del tipo di file con gli import nativi e le configurazioni JSON, in un unico elenco
+ * ordinato alfabeticamente ignorando maiuscole e minuscole.
+ * <p>La combo è volutamente vuota nel {@code .form}: il suo contenuto dipende dai file presenti su
+ * disco, quindi non può stare nel modello generato dal Designer.
+ */
+private void popolaComboTipoFile() {
+    java.util.List<VoceImport> voci = new java.util.ArrayList<>();
+
+    //Il logo degli import nativi è indicato qui: l'etichetta non basterebbe a ricavarlo, perché
+    //descrive il formato del file ("Binance Financial Report") e non solo la piattaforma
+    voci.add(new VoceImport("Crypto.com App CSV",          NAT_CDC_APP,        null, "crypto-com"));
+    voci.add(new VoceImport("Crypto.com Exchange CSV",     NAT_CDC_EXCHANGE,   null, "crypto-com-exchange"));
+    voci.add(new VoceImport("Binance_Old",                 NAT_BINANCE_OLD,    null, "binance"));
+    voci.add(new VoceImport("Binance Financial Report",    NAT_BINANCE_REPORT, null, "binance"));
+    voci.add(new VoceImport("CoinTracking.info CSV",       NAT_COINTRACKING,   null, "cointracking"));
+    voci.add(new VoceImport("Tatax CSV (vecchia versione)",NAT_TATAX_OLD,      null, "tatax"));
+    voci.add(new VoceImport("OKX_Old",                     NAT_OKX_OLD,        null, "okx"));
+
     try {
-        java.io.File cartella = new java.io.File(VarStatiche.getCartella_ImportConfig());
-        if (!cartella.exists() || !cartella.isDirectory()) {
-            return;
-        }
-
-        java.io.File[] jsonFiles = cartella.listFiles((dir, name) -> name.toLowerCase().endsWith(".json"));
-        if (jsonFiles == null || jsonFiles.length == 0) {
-            return;
-        }
-
-        java.util.Arrays.sort(jsonFiles, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
-
-        for (java.io.File f : jsonFiles) {
+        for (java.io.File f : elencoConfigurazioniImport()) {
             // Il nome base è sempre il nome del file senza estensione
             String nomeBase = f.getName().replaceAll("(?i)\\.json$", "");
-            String nomeVoce = nomeBase;
+            String etichetta = nomeBase;
+            String nomeLogo = "";
 
             try {
                 ImportazioneGenerica.ConfigurazioneImport cfg =
@@ -86,59 +267,49 @@ private void caricaVociJsonNelComboBox() {
 
                 // Solo il suffisso cambia — il nome resta quello del file
                 if (cfg.testing) {
-                   // continue;
-                    nomeVoce = nomeBase + " (In fase di test, utilizzo consapevole)";
+                    etichetta = nomeBase + " (In fase di test, utilizzo consapevole)";
+                }
+
+                //Il campo "logo" del JSON vince; in mancanza si ricava dal nome dell'exchange, che
+                //copre il caso normale senza dover scrivere nulla nella configurazione
+                if (cfg.logo != null && !cfg.logo.isBlank()) {
+                    nomeLogo = LoghiImport.Slug(cfg.logo);
+                } else if (cfg.nomeExchange != null && !cfg.nomeExchange.isBlank()) {
+                    nomeLogo = LoghiImport.Slug(cfg.nomeExchange);
                 }
 
             } catch (Exception ex) {
                 LoggerGC.ScriviErrore(ex);
             }
 
-            ComboBox_TipoFile.addItem("[JSON] " + nomeVoce);
+            voci.add(new VoceImport(etichetta, null, f, nomeLogo));
         }
-
     } catch (Exception ex) {
         LoggerGC.ScriviErrore(ex);
     }
+
+    //L'ordinamento di List è stabile: a parità di etichetta ignorando il caso resta l'ordine di
+    //inserimento, quindi gli import nativi precedono le configurazioni JSON omonime
+    voci.sort(java.util.Comparator.comparing(v -> v.etichetta, String.CASE_INSENSITIVE_ORDER));
+
+    //setModel selezionerebbe la prima voce facendo scattare ComboBox_TipoFileItemStateChanged su una
+    //finestra non ancora inizializzata: stacco il listener e allineo lo stato una volta sola alla fine
+    java.awt.event.ItemListener[] listeners = ComboBox_TipoFile.getItemListeners();
+    for (java.awt.event.ItemListener l : listeners) {
+        ComboBox_TipoFile.removeItemListener(l);
+    }
+    ComboBox_TipoFile.setModel(new DefaultComboBoxModel<>(voci.toArray(new VoceImport[0])));
+    for (java.awt.event.ItemListener l : listeners) {
+        ComboBox_TipoFile.addItemListener(l);
+    }
+    ComboBox_TipoFile.setRenderer(new RenderVoceImport());
+
+    aggiornaStatoPerVoceSelezionata();
 }
-   
-   
-   
-private String trovaPercorsoJsonDaVoceCombo(String voceCombo) {
-    try {
-        if (voceCombo == null || voceCombo.isBlank() || !voceCombo.trim().startsWith("[JSON]")) {
-            return null;
-        }
 
-        // Rimuovo il prefisso "[JSON] " e l'eventuale suffisso " (in fase di test)"
-        String nomeBase = voceCombo.trim()
-                .substring("[JSON] ".length())
-                .replace(" (In fase di test, utilizzo consapevole)", "")
-                .trim();
-
-        java.io.File cartella = new java.io.File(VarStatiche.getCartella_ImportConfig());
-        if (!cartella.exists() || !cartella.isDirectory()) {
-            return null;
-        }
-
-        // Cerco il file il cui nome (senza estensione) corrisponde esattamente al nomeBase
-        java.io.File[] jsonFiles = cartella.listFiles((dir, name) -> name.toLowerCase().endsWith(".json"));
-        if (jsonFiles == null) {
-            return null;
-        }
-
-        for (java.io.File f : jsonFiles) {
-            String nomeFileSenzaExt = f.getName().replaceAll("(?i)\\.json$", "");
-            if (nomeFileSenzaExt.equalsIgnoreCase(nomeBase)) {
-                return f.getAbsolutePath();
-            }
-        }
-
-    } catch (Exception ex) {
-        LoggerGC.ScriviErrore(ex);
-    }
-
-    return null;
+/** @return la voce selezionata nella combo del tipo di file, {@code null} se la combo è vuota */
+private VoceImport voceSelezionata() {
+    return (VoceImport) ComboBox_TipoFile.getSelectedItem();
 }
    
    
@@ -174,7 +345,6 @@ private String trovaPercorsoJsonDaVoceCombo(String voceCombo) {
         Label_TipoFile.setText("Selezionare il tipo di file da importare");
 
         ComboBox_TipoFile.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
-        ComboBox_TipoFile.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Crypto.com App CSV", "Crypto.com Exchange CSV", "Binance CSV", "Binance Financial Report", "CoinTracking.info CSV", "Tatax CSV (vecchia versione)", "OKX CSV (Alpha)" }));
         ComboBox_TipoFile.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 ComboBox_TipoFileItemStateChanged(evt);
@@ -212,7 +382,6 @@ private String trovaPercorsoJsonDaVoceCombo(String voceCombo) {
         CheckBox_Sovrascrivi.setText("Sovrascrivere movimenti già presenti");
 
         ComboBox_Exchanges.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
-        ComboBox_Exchanges.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { " - nessuno -", "Abra", "Acx", "AscendEX", "BSDEX", "BTC Markets", "BTCPay Bybit", "BYDFI", "Binance", "Binance US", "Bison", "Bitcoin Suisse", "Bitcoin.de", "Bitfinex", "Bithumb Glo.", "Bitpanda", "Bitpanda Pro", "Bitrue", "Bitstamp", "Bittrex", "BlockFi", "CEX", "Cake Defl", "Celsius", "Changelly", "Circle", "CoinEx", "Coinbase", "Coinbase Pro", "Coinmate", "Coinmerce", "Coinmetro", "Coss", "Crex24", "Criptan", "Crypto.com", "Crypto.com Exchange", "DFX.swiss", "Deribit", "Digital Surge", "Gate.lo", "Gemini", "HRBTC", "Haru", "Hodinaut", "Hotbit", "Iconomi", "Idex", "Kraken", "KuCoin", "Localbitcoins", "Luxor", "MEXC", "Mercatox", "NFTBank", "Nexo", "Northcrypto", "OKColn", "OKX", "Phemex", "Pocket Bitcoin", "Poloniex", "Relal", "STEX", "SwissBorg", "Swyftx", "Tradeogre", "Uphold", "Voyager", "Yield App ", "Zerion" }));
         ComboBox_Exchanges.setEnabled(false);
         ComboBox_Exchanges.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -315,36 +484,32 @@ private String trovaPercorsoJsonDaVoceCombo(String voceCombo) {
     }// </editor-fold>//GEN-END:initComponents
 
     private void ComboBox_TipoFileItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_TipoFileItemStateChanged
-        // TODO add your handling code here:
-        String voceSelezionata = ComboBox_TipoFile.getItemAt(
-                ComboBox_TipoFile.getSelectedIndex()).trim();
+        aggiornaStatoPerVoceSelezionata();
+    }//GEN-LAST:event_ComboBox_TipoFileItemStateChanged
 
-        if (voceSelezionata.startsWith("[JSON]")) {
+    /**
+     * Abilita i campi della finestra in base alla voce selezionata nella combo del tipo di file.
+     * <p>Richiamata sia dall'evento della combo sia una volta al termine di {@link #popolaComboTipoFile()},
+     * perché il riempimento avviene con il listener staccato.
+     */
+    private void aggiornaStatoPerVoceSelezionata() {
+        VoceImport voceSelezionata = voceSelezionata();
 
-            String percorsoJson = trovaPercorsoJsonDaVoceCombo(voceSelezionata);
-            if (percorsoJson == null || percorsoJson.isBlank()) {
-                Label_NomeExchange.setEnabled(false);
-                Label_TipoImport.setEnabled(false);
-                ComboBox_Exchanges.setEnabled(false);
-                ComboBox_TipoImport.setEnabled(false);
-                Text_NomeWallet.setEnabled(false);
-                TextPane_Attenzione.setEnabled(false);
-                Bottone_SelezionaFile.setEnabled(false);
-                return;
-            }
+        if (voceSelezionata == null) {
+            disabilitaCampiImport();
+            return;
+        }
+
+        if (voceSelezionata.isJson()) {
 
             try {
                 ImportazioneGenerica.ConfigurazioneImport cfg
-                        = ImportazioneGenerica.ConfigurazioneImport.carica(percorsoJson);
+                        = ImportazioneGenerica.ConfigurazioneImport.carica(voceSelezionata.fileJson.getAbsolutePath());
 
                 String nomeExchange = cfg.nomeExchange != null ? cfg.nomeExchange.trim() : "";
 
                 if (nomeExchange.isBlank()) {
-                    ArrayList<String> elements = new ArrayList<>();
-                    elements.addAll(java.util.Arrays.asList(Exchanges));
-                    ComboBox_Exchanges.setModel(
-                            new DefaultComboBoxModel<>(elements.toArray(String[]::new))
-                    );
+                    ComboBox_Exchanges.setModel(new DefaultComboBoxModel<>(ordinaVoci(Exchanges)));
 
                     Label_TipoImport.setEnabled(true);
                     ComboBox_TipoImport.setEnabled(true);
@@ -367,16 +532,10 @@ private String trovaPercorsoJsonDaVoceCombo(String voceCombo) {
 
             } catch (Exception ex) {
                 LoggerGC.ScriviErrore(ex);
-                Label_NomeExchange.setEnabled(false);
-                Label_TipoImport.setEnabled(false);
-                ComboBox_Exchanges.setEnabled(false);
-                ComboBox_TipoImport.setEnabled(false);
-                Text_NomeWallet.setEnabled(false);
-                TextPane_Attenzione.setEnabled(false);
-                Bottone_SelezionaFile.setEnabled(false);
+                disabilitaCampiImport();
             }
-        } else if (voceSelezionata.equalsIgnoreCase("CoinTracking.info CSV")
-                || voceSelezionata.contains("Tatax CSV")) {
+        } else if (voceSelezionata.isNativo(NAT_COINTRACKING)
+                || voceSelezionata.isNativo(NAT_TATAX_OLD)) {
 
             // --- Comportamento originale CoinTracking / Tatax ---
             Label_TipoImport.setEnabled(true);
@@ -396,7 +555,18 @@ private String trovaPercorsoJsonDaVoceCombo(String voceCombo) {
             TextPane_Attenzione.setEnabled(false);
             Bottone_SelezionaFile.setEnabled(true);
         }
-    }//GEN-LAST:event_ComboBox_TipoFileItemStateChanged
+    }
+
+    /** Disabilita i campi dipendenti dal tipo di file, usato quando la voce selezionata non è utilizzabile. */
+    private void disabilitaCampiImport() {
+        Label_NomeExchange.setEnabled(false);
+        Label_TipoImport.setEnabled(false);
+        ComboBox_Exchanges.setEnabled(false);
+        ComboBox_TipoImport.setEnabled(false);
+        Text_NomeWallet.setEnabled(false);
+        TextPane_Attenzione.setEnabled(false);
+        Bottone_SelezionaFile.setEnabled(false);
+    }
 
     private void Bottone_AnnullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AnnullaActionPerformed
         // TODO add your handling code here:
@@ -409,14 +579,17 @@ private String trovaPercorsoJsonDaVoceCombo(String voceCombo) {
 
         // boolean selezioneok[]=new boolean[]{false};
         //this.setCursor(Cursor.WAIT_CURSOR);
-if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) {
+final VoceImport voce = voceSelezionata();
 
-    String voceJsonSelezionata = ComboBox_TipoFile.getSelectedItem().toString().trim();
+if (voce == null) {
+    return;
+}
 
-    // Recupera il percorso reale del file JSON associato alla voce selezionata
-    final String percorsoJson = trovaPercorsoJsonDaVoceCombo(voceJsonSelezionata);
+if (voce.isJson()) {
 
-    if (percorsoJson == null || percorsoJson.isBlank()) {
+    final String percorsoJson = voce.fileJson.getAbsolutePath();
+
+    if (!voce.fileJson.exists()) {
         JOptionPane.showMessageDialog(
                 this,
                 "Configurazione JSON non trovata.",
@@ -495,6 +668,16 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
     String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_Importazioni_Gestione");
     JFileChooser fc = new JFileChooser(Directory);
     int returnVal = fc.showOpenDialog(c);
+
+    //Se l'utente annulla la scelta del file getSelectedFile() è null: senza questa uscita anticipata
+    //la lettura del nome qui sotto sollevava una NullPointerException e i due pulsanti restavano
+    //disabilitati, lasciando la finestra inutilizzabile
+    if (returnVal != JFileChooser.APPROVE_OPTION) {
+        Bottone_SelezionaFile.setEnabled(true);
+        Bottone_Annulla.setEnabled(true);
+        progressb.dispose();
+        return;
+    }
 
     // Risolvo il fuso orario se non specificato nel JSON
     boolean PrioritaNomeFile=false;
@@ -594,7 +777,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
     progressb.setVisible(true);
 }
         
-        else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Crypto.com APP Csv")) {
+        else if (voce.isNativo(NAT_CDC_APP)) {
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
             JFileChooser fc = new JFileChooser(Directory);
@@ -614,7 +797,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
                 dispose();
             }
             this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Crypto.com Exchange Csv")) {
+        } else if (voce.isNativo(NAT_CDC_EXCHANGE)) {
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
             JFileChooser fc = new JFileChooser(Directory);
@@ -665,7 +848,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
                 progressb.setVisible(true);
             }
             this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().toUpperCase().contains("COINTRACKING")) {
+        } else if (voce.isNativo(NAT_COINTRACKING)) {
 
             if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain")) {
                 NomeWallet = Text_NomeWallet.getText().trim() + " " + ComboBox_Exchanges.getSelectedItem().toString().trim().substring(ComboBox_Exchanges.getSelectedItem().toString().indexOf("("), ComboBox_Exchanges.getSelectedItem().toString().indexOf(")") + 1);
@@ -767,7 +950,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
 
             }*/
 
-        } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().toUpperCase().contains("TATAX")) {
+        } else if (voce.isNativo(NAT_TATAX_OLD)) {
 
             if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain")) {
                 NomeWallet = Text_NomeWallet.getText().trim() + " " + ComboBox_Exchanges.getSelectedItem().toString().trim().substring(ComboBox_Exchanges.getSelectedItem().toString().indexOf("("), ComboBox_Exchanges.getSelectedItem().toString().indexOf(")") + 1);
@@ -870,7 +1053,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
 
             }*/
 
-        } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Binance CSV")) {
+        } else if (voce.isNativo(NAT_BINANCE_OLD)) {
             Component c = this;
             Download progressb = new Download();
             Bottone_SelezionaFile.setEnabled(false);
@@ -914,7 +1097,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
             progressb.setDefaultCloseOperation(0);
             progressb.setLocationRelativeTo(this);
             progressb.setVisible(true);
-        } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Binance Financial Report")) {
+        } else if (voce.isNativo(NAT_BINANCE_REPORT)) {
             Component c = this;
             Download progressb = new Download();
             Bottone_SelezionaFile.setEnabled(false);
@@ -958,7 +1141,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
             progressb.setDefaultCloseOperation(0);
             progressb.setLocationRelativeTo(this);
             progressb.setVisible(true);
-        } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().contains("OKX CSV")) {
+        } else if (voce.isNativo(NAT_OKX_OLD)) {
             Component c = this;
             Download progressb = new Download();
             Bottone_SelezionaFile.setEnabled(false);
@@ -1017,10 +1200,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
             ComboBox_Exchanges.setEnabled(true);
             Label_NomeExchange.setEnabled(true);
             
-            ArrayList<String> elements = new ArrayList<>();
-            elements.addAll(java.util.Arrays.asList(Exchanges));
-            ComboBoxModel<String> model = new DefaultComboBoxModel<>(elements.toArray(String[]::new));
-            ComboBox_Exchanges.setModel(model);
+            ComboBox_Exchanges.setModel(new DefaultComboBoxModel<>(ordinaVoci(Exchanges)));
             Bottone_SelezionaFile.setEnabled(false);
 
         }else if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Wallet"))
@@ -1030,10 +1210,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
             TextPane_Attenzione.setEnabled(true);
             ComboBox_Exchanges.setEnabled(true);
             Label_NomeExchange.setEnabled(true);
-            ArrayList<String> elements = new ArrayList<>();
-            elements.addAll(java.util.Arrays.asList(Wallets));
-            ComboBoxModel<String> model = new DefaultComboBoxModel<>(elements.toArray(String[]::new));
-            ComboBox_Exchanges.setModel(model);
+            ComboBox_Exchanges.setModel(new DefaultComboBoxModel<>(ordinaVoci(Wallets)));
             Bottone_SelezionaFile.setEnabled(false);
 
         }else if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni BlockChain"))
@@ -1043,10 +1220,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
             TextPane_Attenzione.setEnabled(true);
             ComboBox_Exchanges.setEnabled(true);
             Label_NomeExchange.setEnabled(true);
-            ArrayList<String> elements = new ArrayList<>();
-            elements.addAll(java.util.Arrays.asList(BlockChain));
-            ComboBoxModel<String> model = new DefaultComboBoxModel<>(elements.toArray(String[]::new));
-            ComboBox_Exchanges.setModel(model);
+            ComboBox_Exchanges.setModel(new DefaultComboBoxModel<>(ordinaVoci(BlockChain)));
             Bottone_SelezionaFile.setEnabled(false);
 
         }
@@ -1177,7 +1351,7 @@ if (ComboBox_TipoFile.getSelectedItem().toString().trim().startsWith("[JSON]")) 
     private javax.swing.JButton Bottone_SelezionaFile;
     private javax.swing.JCheckBox CheckBox_Sovrascrivi;
     private javax.swing.JComboBox<String> ComboBox_Exchanges;
-    private javax.swing.JComboBox<String> ComboBox_TipoFile;
+    private javax.swing.JComboBox<VoceImport> ComboBox_TipoFile;
     private javax.swing.JComboBox<String> ComboBox_TipoImport;
     private javax.swing.JLabel Label_NomeExchange;
     private javax.swing.JLabel Label_NomeWallet;

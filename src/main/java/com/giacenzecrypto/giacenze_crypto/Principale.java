@@ -213,7 +213,21 @@ private static final long serialVersionUID = 3L;
             
             cartella=new File (VarStatiche.getCartella_ImportConfig());
             if (!cartella.exists()) cartella.mkdir();
-            
+
+            //Le cartelle sotto config/ sono annidate: serve mkdirs(), mkdir() non creerebbe il livello "config"
+            cartella=new File (VarStatiche.getCartella_ConfigImport());
+            if (!cartella.exists()) cartella.mkdirs();
+
+            cartella=new File (VarStatiche.getCartella_ConfigImportMappe());
+            if (!cartella.exists()) cartella.mkdirs();
+
+            cartella=new File (VarStatiche.getCartella_ConfigLoghi());
+            if (!cartella.exists()) cartella.mkdirs();
+
+            //Copia su disco le mappe causali di default incluse nel jar, se non ci sono già:
+            //serve al primo avvio (anche offline) e dà al sync qualcosa con cui confrontarsi
+            MappeCausali.InstallaDefaultSeMancanti();
+
             cartella=new File (VarStatiche.getCartella_Temporanei());
             if (!cartella.exists()) cartella.mkdir();
             
@@ -11215,13 +11229,25 @@ if (result.isAction("delete-all")) {
 
     private void Funzioni_AggiornamentoImportConfig() {
         Thread thread = new Thread() {
-            /** Aggiorna in background i file di configurazione import obsoleti nella cartella ImportConfig. */
+            /**
+             * Aggiorna in background i file di configurazione obsoleti nelle cartelle sotto {@code config/}.
+             * <p>La vecchia cartella {@code ImportConfig/} NON viene più sincronizzata: resta a disposizione
+             * dell'utente per le proprie configurazioni personali, mentre quelle centralizzate sono passate
+             * a {@code config/import/}.
+             */
             public void run() {
-                java.util.List<String> aggiornati = Funzioni.AggiornamentoImportConfig(VarStatiche.getCartella_ImportConfig());
+                Aggiorna("import complete", VarStatiche.getCartella_ConfigImport(),      "config/import",      ".json", true);
+                Aggiorna("mappe causali",   VarStatiche.getCartella_ConfigImportMappe(), "config/importmappe", ".json", true);
+                Aggiorna("loghi",           VarStatiche.getCartella_ConfigLoghi(),       "config/loghi",       ".png",  false);
+            }
+
+            private void Aggiorna(String descrizione, String cartella, String pathRepo, String estensione, boolean cancellaOrfani) {
+                java.util.List<String> aggiornati =
+                        Funzioni.AggiornamentoConfigDaRepository(cartella, pathRepo, estensione, cancellaOrfani);
                 if (!aggiornati.isEmpty()) {
-                    System.out.println("AggiornamentoImportConfig: aggiornati " + aggiornati.size() + " file: " + aggiornati);
+                    System.out.println("AggiornamentoConfig (" + descrizione + "): aggiornati " + aggiornati.size() + " file: " + aggiornati);
                 } else {
-                    System.out.println("AggiornamentoImportConfig: configurazioni ImportConfig già aggiornate");
+                    System.out.println("AggiornamentoConfig (" + descrizione + "): già aggiornati");
                 }
             }
         };

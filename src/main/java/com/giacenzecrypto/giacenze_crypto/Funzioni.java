@@ -2574,11 +2574,28 @@ return MappaLista;
      * @return la lista ordinata delle chiavi {@code exchange;wallet;token} segnalate come saldo negativo
      */
     public static List<String> ControllaSaldiNegativi(){
-        
+        return ControllaSaldiNegativi(MappaCryptoWallet.values());
+    }
+
+    /**
+     * Come {@link #ControllaSaldiNegativi()}, ma sui movimenti passati invece che direttamente su
+     * {@code MappaCryptoWallet}. Serve a poter eseguire il calcolo <b>fuori dall'EDT</b> su una
+     * copia della collezione scattata sull'EDT: iterare la mappa viva da un altro thread mentre
+     * l'EDT la modifica produrrebbe una {@code ConcurrentModificationException}.
+     * <p>
+     * Le righe restano condivise con la mappa (si copiano i riferimenti, non i contenuti): è
+     * sicuro perché qui si leggono solo i campi 3, 4, 8, 10, 11 e 13, mentre il motore delle
+     * plusvalenze scrive esclusivamente 16, 17, 19, 33 e 38.
+     *
+     * @param movimenti movimenti da esaminare
+     * @return la lista ordinata delle chiavi {@code exchange;wallet;token} con saldo negativo
+     */
+    public static List<String> ControllaSaldiNegativi(java.util.Collection<String[]> movimenti){
+
          Map<String, BigDecimal> saldi = new HashMap<>();
         Set<String> segnalati = new HashSet<>();
 
-        for (String[] movimento : MappaCryptoWallet.values()) {
+        for (String[] movimento : movimenti) {
             String tokenUscita = movimento[8];
             String tokenEntrata = movimento[11];
 

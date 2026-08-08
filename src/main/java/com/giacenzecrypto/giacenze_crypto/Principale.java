@@ -133,6 +133,13 @@ private static final long serialVersionUID = 3L;
     static List<String> DepositiPrelieviDaCategorizzare;//viene salvata la lista degli id dei depositi e prelievi ancora da categorizzare
     static public Map<Integer, List<String>> CDC_FiatWallet_ListaSaldi;
     static public boolean TabellaCryptodaAggiornare=false;
+    /**
+     * Segnala che le righe della tabella movimenti non sono state ricostruite nell'ultimo
+     * ricalcolo perché la scheda non era a video. Viene azzerata appena la tabella viene
+     * ricostruita; il {@code HierarchyListener} installato nel costruttore la controlla ogni
+     * volta che la tabella torna visibile.
+     */
+    private boolean TabellaMovimentiDaRicostruire=false;
     static public boolean GestioneTokenScamDaAggiornare=true;
     static public boolean TransazioniCrypto_DaSalvare=false;//implementata per uso futuro attualmente non ancora utilizzata
     
@@ -1003,6 +1010,11 @@ private static final long serialVersionUID = 3L;
         TransazioniCryptoTabella.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 TransazioniCryptoTabellaKeyReleased(evt);
+            }
+        });
+        TransazioniCryptoTabella.addHierarchyListener(new java.awt.event.HierarchyListener() {
+            public void hierarchyChanged(java.awt.event.HierarchyEvent evt) {
+                TransazioniCryptoTabellaHierarchyChanged(evt);
             }
         });
         TransazioniCrypto_ScrollPane.setViewportView(TransazioniCryptoTabella);
@@ -5710,26 +5722,106 @@ private void SettaIcone(){
     private void Funzione_CaricaTabelleSecondarieInBackgroud(){
         //Verranno caricate tutte le tabelle secondarie che dovranno essere aggiornate  ad ogni cambio della tabella principale
         SwingUtilities.invokeLater(() -> {
-                   
-      //  new Thread(() -> {
-            long tempoOperazione=System.currentTimeMillis();
-            SaldiNegativi_CompilaTabellaPrincipale();
-            DepositiPrelievi_Caricatabella();
-            SituazioneImport_Caricatabella1();
-            tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
-        System.out.println("Tempo calcolo Tabelle secondarie : "+tempoOperazione+" millisec.");
-       // }).start();
+
+            //--- FASE 1: sull'EDT, tutto ciò che tocca Swing o la mappa dei movimenti ---
+
+            //Va fatto prima dello snapshot: ConvertiScambiLPinDepositiPrelievi MODIFICA
+            //MappaCryptoWallet, e non può girare fuori dall'EDT
+            if (!tabDepositiPrelieviCaricataprimavolta) {
+                tabDepositiPrelieviCaricataprimavolta = true;
+                //Questo serve per sistemare il pregresso prima della versione 1.15
+                Importazioni.ConvertiScambiLPinDepositiPrelievi();
+            }
+
+            final int versioneCorrente = versioneTabelleSecondarie.incrementAndGet();
+
+            //Copia della sola collezione: i riferimenti alle righe restano condivisi, ed è sicuro
+            //perché i tre calcoli leggono i campi 0,1,3,4,5,7,8,10,11,13,15,18,30 mentre il motore
+            //delle plusvalenze scrive esclusivamente 16,17,19,33,38. Serve invece a evitare la
+            //ConcurrentModificationException che si avrebbe iterando la mappa viva da un altro thread.
+            final List<String[]> movimenti = new ArrayList<>(MappaCryptoWallet.values());
+
+            //Parametri di filtro dei Depositi/Prelievi: sono componenti Swing, si leggono qui
+            final ParametriDepositiPrelievi parDP = DepositiPrelievi_LeggiParametri();
+
+            //--- FASE 2: fuori dall'EDT, il calcolo vero e proprio ---
+            new Thread(() -> {
+                long tempoOperazione = System.currentTimeMillis();
+
+                List<String> saldiNegativi = Funzioni.ControllaSaldiNegativi(movimenti);
+                Map<String, String[]> situazioneImport = SituazioneImport_Calcola(movimenti);
+                List<String> daCategorizzare = new ArrayList<>();
+                List<String[]> righeDP = DepositiPrelievi_Calcola(movimenti, parDP, daCategorizzare);
+
+                tempoOperazione = (System.currentTimeMillis() - tempoOperazione);
+                System.out.println("Tempo calcolo Tabelle secondarie : " + tempoOperazione + " millisec. (fuori dall'EDT)");
+
+                //Se nel frattempo è partito un aggiornamento più recente questo risultato è
+                //superato: meglio non aggiornare nulla che mescolare tabelle di due passate diverse
+                if (versioneTabelleSecondarie.get() != versioneCorrente) return;
+
+                //--- FASE 3: di nuovo sull'EDT, il solo riempimento delle tabelle ---
+                SwingUtilities.invokeLater(() -> {
+                    if (versioneTabelleSecondarie.get() != versioneCorrente) return;
+                    SaldiNegativi_Applica(saldiNegativi);
+                    DepositiPrelievi_Applica(righeDP, daCategorizzare);
+                    SituazioneImport_Applica(situazioneImport);
+                });
+            }, "TabelleSecondarie").start();
         });
     }
-    
+
+    /**
+     * Contatore di versione degli aggiornamenti delle tabelle secondarie: se ne parte uno nuovo
+     * mentre il precedente sta ancora calcolando, il risultato vecchio viene scartato invece di
+     * sovrascrivere quello nuovo.
+     */
+    private static final java.util.concurrent.atomic.AtomicInteger versioneTabelleSecondarie =
+            new java.util.concurrent.atomic.AtomicInteger();
+
+    /** Valori dei filtri della scheda Depositi/Prelievi, letti dai componenti Swing sull'EDT. */
+    private static final class ParametriDepositiPrelievi {
+        boolean mostraFIAT;
+        boolean movimentiClassificati;
+        String walletVoluto;
+        String gruppoWalletVoluto;
+        String tokenVoluto;
+    }
+
+    /** Legge dai componenti Swing i parametri di filtro dei Depositi/Prelievi. Da chiamare sull'EDT. */
+    private ParametriDepositiPrelievi DepositiPrelievi_LeggiParametri() {
+        ParametriDepositiPrelievi p = new ParametriDepositiPrelievi();
+        p.mostraFIAT = DepositiPrelievi_CheckBox_mostraFIAT.isSelected();
+        p.movimentiClassificati = DepositiPrelievi_CheckBox_movimentiClassificati.isSelected();
+        p.walletVoluto = DepositiPrelievi_ComboBox_FiltroWallet.getSelectedItem().toString();
+        p.gruppoWalletVoluto = "";
+        if (p.walletVoluto.contains(":")) {
+            p.gruppoWalletVoluto = p.walletVoluto.split(" : ")[1].split("\\(")[0].trim();
+        }
+        p.tokenVoluto = DepositiPrelievi_ComboBox_FiltroToken.getSelectedItem().toString();
+        return p;
+    }
+
     private void SaldiNegativi_CompilaTabellaPrincipale(){
-        
-        
+        //Percorso sincrono, usato dai chiamanti diretti: calcola e applica in un colpo solo.
+        //Il percorso asincrono (Funzione_CaricaTabelleSecondarieInBackgroud) chiama invece
+        //Funzioni.ControllaSaldiNegativi fuori dall'EDT e poi solo SaldiNegativi_Applica.
+        SaldiNegativi_Applica(Funzioni.ControllaSaldiNegativi());
+    }
+
+    /**
+     * Riempie le tabelle dei saldi negativi con il risultato già calcolato, ripristinando la
+     * selezione precedente. Tocca solo Swing: <b>va eseguita sull'EDT</b>.
+     * @param SaldiNegativit righe {@code exchange;wallet;token} da mostrare
+     */
+    private void SaldiNegativi_Applica(List<String> SaldiNegativit){
+
+
           //  System.out.println("Ricalcolo Saldi Negativi");
         //Il bottone  dei saldi le metto a false
         //Verrà rimesso a true solo se ci sono righe selezionate
-        
-        
+
+
         SaldiNegativi_Bottone_RettificaQta.setEnabled(false);
         
         //Se c'è una riga selezionata sulla tabella la salvo in modo da poter ripristinare la posizione una volta ricaricata
@@ -5761,9 +5853,8 @@ private void SettaIcone(){
         
         
         
-        //FUNZIONE DI VERIFICA DEI SALDI VERA E PROPRIA
+        //I saldi sono già stati calcolati dal chiamante (eventualmente fuori dall'EDT)
         boolean NascondiScam=SaldiNegativi_CheckBox_NascondiScam.isSelected();
-        List<String> SaldiNegativit=Funzioni.ControllaSaldiNegativi();
         for (String v : SaldiNegativit) {
             String riga[]=v.split(";");
             if (!NascondiScam||!Funzioni.isSCAM(riga[2]))
@@ -7592,38 +7683,45 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }
     
     private void DepositiPrelievi_Caricatabella() {
-       // long tempoOperazione=System.currentTimeMillis();
+        //Percorso sincrono, usato dai chiamanti diretti (cambio filtri, classificazione, ecc.):
+        //calcola e applica in un colpo solo. Il percorso asincrono
+        //(Funzione_CaricaTabelleSecondarieInBackgroud) chiama le due metà separatamente.
         if (!tabDepositiPrelieviCaricataprimavolta) {
             tabDepositiPrelieviCaricataprimavolta = true;
             //Questo serve per sistemare il pregresso prima della versione 1.15
             Importazioni.ConvertiScambiLPinDepositiPrelievi();
         }
-        DepositiPrelieviDaCategorizzare = new ArrayList<>();
-        DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.DepositiPrelievi_Tabella.getModel();
-        Tabelle.Funzioni_PulisciTabella(ModelloTabellaDepositiPrelievi);
-        DefaultTableModel ModelloTabella = (DefaultTableModel) DepositiPrelievi_TabellaCorrelati.getModel();
-        Tabelle.Funzioni_PulisciTabella(ModelloTabella);
-        Tabelle.ColoraRigheTabellaCrypto(DepositiPrelievi_Tabella);
-        Tabelle.Tabelle_FiltroColonne(DepositiPrelievi_Tabella,null,popup);
-        String WalletVoluto = DepositiPrelievi_ComboBox_FiltroWallet.getSelectedItem().toString();
-        String GruppoWalletVoluto = "";
-        if (WalletVoluto.contains(":")) {
-            GruppoWalletVoluto = WalletVoluto.split(" : ")[1].split("\\(")[0].trim();
-        }
-        String TokenVoluto = DepositiPrelievi_ComboBox_FiltroToken.getSelectedItem().toString();
-        for (String[] v : MappaCryptoWallet.values()) {
+        List<String> daCategorizzare = new ArrayList<>();
+        List<String[]> righe = DepositiPrelievi_Calcola(
+                MappaCryptoWallet.values(), DepositiPrelievi_LeggiParametri(), daCategorizzare);
+        DepositiPrelievi_Applica(righe, daCategorizzare);
+    }
+
+    /**
+     * Seleziona i movimenti da mostrare nella scheda Depositi/Prelievi e ne costruisce le righe.
+     * Non tocca Swing — i valori dei filtri arrivano già letti in {@code par}: <b>può girare fuori
+     * dall'EDT</b>.
+     *
+     * @param movimenti movimenti da esaminare
+     * @param par valori correnti dei filtri della scheda
+     * @param daCategorizzareOut lista, riempita dal metodo, degli ID non ancora categorizzati
+     * @return le righe della tabella, nell'ordine in cui vanno inserite
+     */
+    private static List<String[]> DepositiPrelievi_Calcola(java.util.Collection<String[]> movimenti,
+            ParametriDepositiPrelievi par, List<String> daCategorizzareOut) {
+        List<String[]> righeTabella = new ArrayList<>();
+        for (String[] v : movimenti) {
             String TipoMovimento = v[0].split("_")[4].trim();
-            if (Funzioni.isDepositoPrelievoClassificabile(null, v,DepositiPrelievi_CheckBox_mostraFIAT.isSelected())) {
-                //if (this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected())
-                
-                if (v[18].trim().equalsIgnoreCase("") || this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected()) {
+            if (Funzioni.isDepositoPrelievoClassificabile(null, v,par.mostraFIAT)) {
+
+                if (v[18].trim().equalsIgnoreCase("") || par.movimentiClassificati) {
                 //Filtro Wallet
                     String gwallet = DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);
 
-                    if (WalletVoluto.equalsIgnoreCase("Tutti") || v[3].equalsIgnoreCase(WalletVoluto) || gwallet.equalsIgnoreCase(GruppoWalletVoluto)) {
+                    if (par.walletVoluto.equalsIgnoreCase("Tutti") || v[3].equalsIgnoreCase(par.walletVoluto) || gwallet.equalsIgnoreCase(par.gruppoWalletVoluto)) {
                         //Filtro Token
-                        if (TokenVoluto.equalsIgnoreCase("Tutti") || v[8].equals(TokenVoluto) || v[11].equals(TokenVoluto)) {
-                            
+                        if (par.tokenVoluto.equalsIgnoreCase("Tutti") || v[8].equals(par.tokenVoluto) || v[11].equals(par.tokenVoluto)) {
+
                             String riga[] = new String[10];
                             riga[0] = v[0];
                             riga[1] = v[1];
@@ -7649,12 +7747,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             riga[8] = v[7];
                             riga[9] = v[30];
                             Funzioni.RiempiVuotiArray(riga);
-                            ModelloTabellaDepositiPrelievi.addRow(riga);
+                            righeTabella.add(riga);
                             //Se il movimento non è ancora categorizzato e non riguarda movimenti FIAT lo metto nella lista dei movimenti ancora non categorizzati
                             if (v[18].trim().equalsIgnoreCase("")&&
                                     Funzioni.isDepositoPrelievoClassificabile(null, v,false)
                                     ) {
-                                DepositiPrelieviDaCategorizzare.add(v[0]);
+                                daCategorizzareOut.add(v[0]);
                             }
                             // System.out.println("a");
                         }
@@ -7662,6 +7760,28 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 }
             }
 
+        }
+        return righeTabella;
+    }
+
+    /**
+     * Riempie le tabelle della scheda Depositi/Prelievi con le righe già calcolate.
+     * Tocca solo Swing e la variabile condivisa {@code DepositiPrelieviDaCategorizzare}:
+     * <b>va eseguita sull'EDT</b>.
+     *
+     * @param righe righe prodotte da {@link #DepositiPrelievi_Calcola}
+     * @param daCategorizzare ID non ancora categorizzati, da pubblicare nella variabile statica
+     */
+    private void DepositiPrelievi_Applica(List<String[]> righe, List<String> daCategorizzare) {
+        DepositiPrelieviDaCategorizzare = daCategorizzare;
+        DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.DepositiPrelievi_Tabella.getModel();
+        Tabelle.Funzioni_PulisciTabella(ModelloTabellaDepositiPrelievi);
+        DefaultTableModel ModelloTabella = (DefaultTableModel) DepositiPrelievi_TabellaCorrelati.getModel();
+        Tabelle.Funzioni_PulisciTabella(ModelloTabella);
+        Tabelle.ColoraRigheTabellaCrypto(DepositiPrelievi_Tabella);
+        Tabelle.Tabelle_FiltroColonne(DepositiPrelievi_Tabella,null,popup);
+        for (String[] riga : righe) {
+            ModelloTabellaDepositiPrelievi.addRow(riga);
         }
         
        
@@ -7685,12 +7805,20 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     
         private void SituazioneImport_Caricatabella1()
             {
+        //Percorso sincrono: calcola e applica. Il percorso asincrono chiama le due metà separatamente.
+        SituazioneImport_Applica(SituazioneImport_Calcola(MappaCryptoWallet.values()));
+    }
+
+    /**
+     * Riepiloga per wallet il primo movimento, l'ultimo e quanti ne sono stati importati.
+     * Non tocca Swing: <b>può girare fuori dall'EDT</b>.
+     * @param movimenti movimenti da riepilogare (in ordine cronologico)
+     * @return mappa wallet → riga {@code {wallet, primaData, ultimaData, conteggio}}
+     */
+    private static Map<String, String[]> SituazioneImport_Calcola(java.util.Collection<String[]> movimenti) {
         Map<String, String[]> SituazioneImport_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        DefaultTableModel ModelloTabella1SituazioneImport = (DefaultTableModel) this.SituazioneImport_Tabella1.getModel();
-        Tabelle.Funzioni_PulisciTabella(ModelloTabella1SituazioneImport);
-        Tabelle.ColoraRigheTabellaCrypto(SituazioneImport_Tabella1);
-        for (String[] v : MappaCryptoWallet.values()) {
-            
+        for (String[] v : movimenti) {
+
           String riga[]=new String[4];
         if (SituazioneImport_Mappa.get(v[3])==null)
         {
@@ -7707,14 +7835,24 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
              riga[3]=String.valueOf(Integer.parseInt(riga[3])+1);
              SituazioneImport_Mappa.put(v[3], riga);
           }
-
-          //  ModelloTabella1SituazioneImport.addRow(riga);                 
        }
+        return SituazioneImport_Mappa;
+    }
+
+    /**
+     * Riempie la tabella della situazione import con il riepilogo già calcolato.
+     * Tocca solo Swing: <b>va eseguita sull'EDT</b>.
+     * @param SituazioneImport_Mappa riepilogo prodotto da {@link #SituazioneImport_Calcola}
+     */
+    private void SituazioneImport_Applica(Map<String, String[]> SituazioneImport_Mappa) {
+        DefaultTableModel ModelloTabella1SituazioneImport = (DefaultTableModel) this.SituazioneImport_Tabella1.getModel();
+        Tabelle.Funzioni_PulisciTabella(ModelloTabella1SituazioneImport);
+        Tabelle.ColoraRigheTabellaCrypto(SituazioneImport_Tabella1);
         for (String[] v : SituazioneImport_Mappa.values()) {
-            ModelloTabella1SituazioneImport.addRow(v); 
-            
+            ModelloTabella1SituazioneImport.addRow(v);
+
         }
-        
+
     }
     
     
@@ -9378,8 +9516,10 @@ if (result.isAction("delete-all")) {
         }
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
       //  Calcoli_Plusvalenze.AggiornaPlusvalenze();
+        //Funzioni_AggiornaTutto() termina già ricaricando la tabella dei movimenti: la chiamata
+        //esplicita che stava qui la faceva ricostruire una seconda volta, insieme alle tabelle
+        //secondarie. Era l'unico punto del progetto con questo doppione.
         Funzioni_AggiornaTutto();
-        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_GruppoWallet_CheckBox_PlusXWalletActionPerformed
 
@@ -13544,6 +13684,25 @@ if (result != null && !result.isAction("cancel")) {
         TransazioniCrypto_CompilaTextPaneDatiMovimento();
     }//GEN-LAST:event_TransazioniCryptoTabellaKeyReleased
 
+    private void TransazioniCryptoTabellaHierarchyChanged(java.awt.event.HierarchyEvent evt) {//GEN-FIRST:event_TransazioniCryptoTabellaHierarchyChanged
+        //Quando la scheda dei movimenti non è a video, il ricalcolo salta la costruzione delle
+        //righe (vedi TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa): qui le ricostruiamo
+        //appena la tabella torna visibile.
+        //L'evento è agganciato alla tabella e non al JTabbedPane perché così copre sia il cambio
+        //scheda sia la prima comparsa della finestra, senza dipendere da come le schede sono
+        //annidate (la tabella sta dentro due tabbed pane: CDC -> TransazioniCrypto).
+        if ((evt.getChangeFlags() & java.awt.event.HierarchyEvent.SHOWING_CHANGED) != 0
+                && TransazioniCryptoTabella.isShowing()
+                && TabellaMovimentiDaRicostruire) {
+            //Terzo parametro false: qui i movimenti non sono cambiati, si stanno solo ricostruendo
+            //le righe rimaste indietro. Ricalcolare anche saldi negativi, depositi/prelievi e
+            //situazione import darebbe lo stesso risultato già calcolato.
+            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(
+                    TransazioniCrypto_CheckBox_EscludiTI.isSelected(),
+                    TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected(), false);
+        }
+    }//GEN-LAST:event_TransazioniCryptoTabellaHierarchyChanged
+
     private void TransazioniCryptoTabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TransazioniCryptoTabellaMouseReleased
         // TODO add your handling code here:
         // Funzioni.simulaTastoSinistro();
@@ -13874,6 +14033,25 @@ if (result != null && !result.isAction("cancel")) {
         Tabelle.ColoraTabellaSemplice(GestioneTokenScam_Tabella);
 
         Map<String, String> mappaRinomina = DatabaseH2.RinominaToken_LeggiTabella();
+
+        //I due cicli erano annidati: per OGNI token scam si riscorrevano TUTTI i movimenti.
+        //Sul dataset reale sono 131 token x 101.103 movimenti = oltre 13 milioni di giri, con una
+        //TrovaReteDaIMovimento ciascuno: ~4,6 secondi solo per aprire la scheda.
+        //Invertendo, si passa una volta sola sui movimenti costruendo i conteggi per
+        //address+rete, e poi si cerca ogni token nella mappa: ~95 ms, cioè 48 volte più veloce.
+        //Il conteggio resta identico, comprese le due particolarità dell'originale: un movimento
+        //che ha lo stesso address sia in uscita (26) sia in entrata (28) conta due volte, e gli
+        //address vuoti non vengono esclusi.
+        Map<String, Integer> movimentiPerAddressRete = new HashMap<>();
+        for (String[] movimento : MappaCryptoWallet.values()) {
+            String ReteMov = Funzioni.TrovaReteDaIMovimento(movimento);
+            if (ReteMov == null) ReteMov = "";
+            movimentiPerAddressRete.merge(
+                    movimento[26].toLowerCase(java.util.Locale.ROOT) + "_" + ReteMov, 1, Integer::sum);
+            movimentiPerAddressRete.merge(
+                    movimento[28].toLowerCase(java.util.Locale.ROOT) + "_" + ReteMov, 1, Integer::sum);
+        }
+
         for (Map.Entry<String, String> entry : mappaRinomina.entrySet()) {
             String NuovoNome = entry.getValue();
             if (!Funzioni.isSCAM(NuovoNome)) continue;
@@ -13884,16 +14062,11 @@ if (result != null && !result.isAction("cancel")) {
             String Address = addressChain.substring(0, idxSep);
             String Rete = addressChain.substring(idxSep + 1);
 
-            int numeroMovimenti = 0;
-            for (String[] movimento : MappaCryptoWallet.values()) {
-                String ReteMov = Funzioni.TrovaReteDaIMovimento(movimento);
-                if (ReteMov == null) ReteMov = "";
-                if (!Rete.equals(ReteMov)) continue;
-                if (Address.equalsIgnoreCase(movimento[26])) numeroMovimenti++;
-                if (Address.equalsIgnoreCase(movimento[28])) numeroMovimenti++;
-            }
+            Integer conteggio = movimentiPerAddressRete.get(
+                    Address.toLowerCase(java.util.Locale.ROOT) + "_" + Rete);
             //Se il token non ha più movimenti in memoria non lo mostro
-            if (numeroMovimenti == 0) continue;
+            if (conteggio == null) continue;
+            int numeroMovimenti = conteggio;
 
             modello.addRow(new Object[]{NuovoNome, Address, Rete, numeroMovimenti});
         }
@@ -15489,11 +15662,39 @@ try {
        
        
     private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(boolean EscludiTI,boolean VediSoloSenzaPrezzo) {
+        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(EscludiTI, VediSoloSenzaPrezzo, true);
+    }
+
+    /**
+     * @param aggiornaTabelleSecondarie {@code false} quando la chiamata è una semplice ri-resa
+     * grafica e i movimenti non sono cambiati: in quel caso saldi negativi, depositi/prelievi e
+     * situazione import darebbero esattamente lo stesso risultato dell'ultima volta e ricalcolarli
+     * sarebbe solo lavoro sprecato. È il caso della ricostruzione al ritorno sulla scheda.
+     */
+    private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(boolean EscludiTI,boolean VediSoloSenzaPrezzo,boolean aggiornaTabelleSecondarie) {
        // TransazioniCryptoTabella.setIgnoreRepaint(true);
         long tempoOperazione=System.currentTimeMillis();
         NumErroriMovSconosciuti=0;
         NumErroriMovNoPrezzo=0;
         NumErroriStackLiFoMancante=0;
+
+        //Se la scheda dei movimenti non è a video non ha senso costruirne le righe: nessuno le
+        //vedrebbe, e verrebbero comunque buttate al prossimo ricalcolo. Il caso tipico è l'utente
+        //fermo sulla scheda Opzioni che cambia un'opzione fiscale: 25 dei 42 punti che chiamano
+        //Funzioni_AggiornaTutto() sono esattamente quelli.
+        //Si salta SOLO la resa grafica (Converti_String_Object + addRow + sort/filtro): indici
+        //condivisi, contatori errori, totali e combo vengono aggiornati comunque, perché sono
+        //letti da altre schede e da GUI_ModificaMovimento, GUI_GestioneWallets, Importazioni.
+        //isShowing() è valutato UNA volta qui: rileggerlo dentro il ciclo, se l'utente cambiasse
+        //scheda a metà, produrrebbe una tabella riempita a metà senza flag di ricostruzione.
+        //
+        //Il primo controllo (!this.isShowing()) riguarda l'AVVIO: in costruzione la finestra non è
+        //ancora visibile, quindi anche la tabella risulta non a video. Saltando le righe in quel
+        //momento si finirebbe per rifare tutto due volte appena la finestra compare — misurato:
+        //897 ms + 1278 ms invece di un solo passaggio. Quindi si salta solo quando la finestra c'è
+        //ma la scheda mostrata è un'altra, che è il caso che questa ottimizzazione vuole coprire.
+        final boolean costruisciRighe = !this.isShowing() || TransazioniCryptoTabella.isShowing();
+        if (!costruisciRighe) TabellaMovimentiDaRicostruire = true;
       
        
        // Rimuovi il filtro dal TableRowSorter della tabella per velocizzare il caricamento della tabella con filtri attivi
@@ -15627,7 +15828,11 @@ try {
            //1 - Movimenti senza prezzo
             //Questo indica nella colonna 32 se il movimento è provvisto o meno di prezzo.
             String TipoMovimento=v[0].split("_")[4].trim().toUpperCase();
-            if (!Prezzi.isMovimentoPrezzato(v)) {
+            //Calcolata una volta sola: più sotto serve di nuovo (haPrezzo) per il filtro
+            //"solo movimenti senza prezzo". La funzione non è di sola lettura - normalizza
+            //il campo 32 - ma è idempotente, quindi la seconda chiamata dava lo stesso esito.
+            boolean haPrezzo = Prezzi.isMovimentoPrezzato(v);
+            if (!haPrezzo) {
                 NumErroriMovNoPrezzo++;
             }
 
@@ -15673,7 +15878,7 @@ try {
             //oppure se non è selezionato il checkbox che dice di far vedere solo i movimenti con lifo mancante
             boolean passaLifoMancante=lifomancante || !TransazioniCrypto_CheckBox_VediLiFoMancante.isSelected();
                     
-            boolean haPrezzo = Prezzi.isMovimentoPrezzato(v);
+            //haPrezzo è già stato calcolato sopra, nella sezione conteggio errori
             boolean haPlusvalenza = "S".equals(v[33]);
 
             boolean isTransferInterno = tipoMov.equalsIgnoreCase("Trasferimento Interno");
@@ -15712,8 +15917,12 @@ try {
                     }
                 }
 
-                Object[] z = Funzioni.Converti_String_Object(v);
-                ModelloTabellaCrypto.addRow(z);
+                //I totali qui sopra si calcolano sempre (finiscono nelle etichette di riepilogo);
+                //la riga vera e propria solo se la tabella è a video
+                if (costruisciRighe) {
+                    Object[] z = Funzioni.Converti_String_Object(v);
+                    ModelloTabellaCrypto.addRow(z);
+                }
             }
 
 
@@ -15750,39 +15959,50 @@ try {
         
     //--------------------------------------------------------------------------------------------
     //RIPRISTINO I VARI SORTER
-        //Riabilito il sort sul resto
-        sorter.sort();
+        //Solo se le righe sono state davvero costruite: su tabella vuota ordinare, filtrare e
+        //ricalcolare le somme di colonna sarebbe lavoro interamente sprecato. In particolare
+        //Tabelle_FiltroColonne è la porta d'ingresso di Tabelle_getSommeColonne, che da sola
+        //costa quasi un secondo di CPU su un thread separato.
+        if (costruisciRighe) {
+            //Riabilito il sort sul resto
+            sorter.sort();
 
-        //Il filtro per colonna e quello globale li riapplica Tabelle_FiltroColonne, che li
-        //ricostruisce dalle stesse fonti persistenti (la mappa tableFilters e il campo di ricerca)
-        //da cui provenivano: riapplicarli anche qui a mano voleva dire ripetere due volte l'intera
-        //passata di filtro su tutte le righe, che su 100k movimenti è la passata più cara di tutte.
-        //Va PRIMA del ripristino dell'ordinamento, così l'ordinamento lavora solo sulle righe
-        //rimaste visibili invece che su tutte.
-        Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
+            //Il filtro per colonna e quello globale li riapplica Tabelle_FiltroColonne, che li
+            //ricostruisce dalle stesse fonti persistenti (la mappa tableFilters e il campo di ricerca)
+            //da cui provenivano: riapplicarli anche qui a mano voleva dire ripetere due volte l'intera
+            //passata di filtro su tutte le righe, che su 100k movimenti è la passata più cara di tutte.
+            //Va PRIMA del ripristino dell'ordinamento, così l'ordinamento lavora solo sulle righe
+            //rimaste visibili invece che su tutte.
+            Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
 
-       // Ripristino l’ordinamento precedente
-        if (sortKeys != null) {
-            sorter.setSortKeys(sortKeys);
+           // Ripristino l’ordinamento precedente
+            if (sortKeys != null) {
+                sorter.setSortKeys(sortKeys);
+            }
+
+            //Il conteggio si legge DOPO aver riapplicato il filtro: prima veniva calcolato fra le due
+            //applicazioni e mostrava lo stato intermedio
+            int righeVisualizzate =
+            (sorter != null)
+            ? sorter.getViewRowCount()
+            : TransazioniCryptoTabella.getRowCount();
+            TransazioniCrypto_RigheTabella_Label.setText("Transazioni Visualizzate : "+righeVisualizzate);
+
+            //Le righe ora corrispondono ai movimenti correnti
+            TabellaMovimentiDaRicostruire = false;
         }
     //--------------------------------------------------------------------------------------------
-
-        //Il conteggio si legge DOPO aver riapplicato il filtro: prima veniva calcolato fra le due
-        //applicazioni e mostrava lo stato intermedio
-        int righeVisualizzate =
-        (sorter != null)
-        ? sorter.getViewRowCount()
-        : TransazioniCryptoTabella.getRowCount();
-        TransazioniCrypto_RigheTabella_Label.setText("Transazioni Visualizzate : "+righeVisualizzate);
       // TransazioniCryptoTabella.getTableHeader().repaint();
         
       //  TransazioniCryptoTabella.setIgnoreRepaint(false);
        // TransazioniCryptoTabella.repaint();
        
        //Se ho dovuto ricaricare la mappa sicuramente ho dei valori da aggiornare quindi prima di chiudere carico in backgroud la tabella dei saldi negativi
-       //Aggiorno in background la tabella dei saldi negativi 
-        //(Questa funzione viene lanciata in un thread separato per non appesantire il caricamento delle altre tabelle) 
-        Funzione_CaricaTabelleSecondarieInBackgroud();
+       //Aggiorno in background la tabella dei saldi negativi
+        //(Questa funzione viene lanciata in un thread separato per non appesantire il caricamento delle altre tabelle)
+        //Saltata quando questa è una semplice ri-resa grafica: i movimenti non sono cambiati,
+        //quindi le tabelle secondarie darebbero lo stesso risultato di prima
+        if (aggiornaTabelleSecondarie) Funzione_CaricaTabelleSecondarieInBackgroud();
         
         tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
         

@@ -397,11 +397,31 @@ public class Funzioni {
               
               
     /**
+     * Voci del menu contestuale dei movimenti che operano su <b>un solo</b> movimento e vanno quindi
+     * disattivate quando la selezione ne contiene più di uno.
+     *
+     * <p>Le stringhe devono corrispondere <b>esattamente</b> al testo delle voci, perché
+     * {@link #PopUp_disabilitaMenuDatesto} confronta le etichette: una stringa sbagliata non produce
+     * nessun errore, semplicemente non disabilita nulla. È già accaduto con "Chiedi a IA", scritta così
+     * qui dentro mentre la voce di menu si chiama "Chiedi all'IA", e quindi mai disabilitata. La
+     * corrispondenza è verificata da {@code PopUpMenuVociSingoloMovimentoTest} contro {@code Principale.form}.</p>
+     */
+    public static final List<String> POPUP_VOCI_SOLO_SINGOLO_MOVIMENTO = List.of(
+            "Copia ID Transazione",
+            "Modifica Movimento",
+            "Mostra LiFo Transazione",
+            "Chiedi all'IA",
+            "Modifica Prezzo",
+            "Dettagli Movimento");
+
+    /**
      * Gestisce l'apertura del menu contestuale (tasto destro) su una tabella o campo di testo, abilitando o
      * disabilitando le singole voci in base al contesto: se non è passato un ID movimento disabilita tutte le
      * voci relative al movimento; altrimenti le abilita e regola "Classifica Movimento" in base a
      * {@link #isDepositoPrelievoClassificabile} e "Cambia Tipologia Reward" in base al tipo di movimento.
      * Distingue inoltre tra origine tabella (abilita "Esporta Tabella in Excel") e campo di testo (abilita "Incolla").
+     * Le voci elencate in {@link #POPUP_VOCI_SOLO_SINGOLO_MOVIMENTO} vengono infine disattivate se la
+     * selezione contiene più di un movimento.
      * @param c componente rispetto a cui posizionare il menu
      * @param e evento del mouse che ha aperto il menu
      * @param pop il menu contestuale da configurare e mostrare
@@ -433,7 +453,7 @@ public class Funzioni {
                 PopUp_disabilitaMenuDatesto(pop,"Mostra LiFo Transazione");
                 PopUp_disabilitaMenuDatesto(pop,"Separa in Deposito/Prelievo");
                 PopUp_disabilitaMenuDatesto(pop,"Crea movimento di scambio da Deposito/Prelievo");
-                PopUp_disabilitaMenuDatesto(pop,"Chiedi a IA");
+                PopUp_disabilitaMenuDatesto(pop,"Chiedi all'IA");
 
             }else{
                 PopUp_abilitaMenuDaTesto(pop,"Dettagli Movimento");
@@ -447,8 +467,8 @@ public class Funzioni {
                 //"Chiedi a IA" costruisce la domanda sui dati del movimento: serve che il movimento ci sia
                 //davvero, perché il popup è condiviso con tabelle le cui righe non sono movimenti
                 if (Principale.MappaCryptoWallet.get(ID)!=null){
-                    PopUp_abilitaMenuDaTesto(pop,"Chiedi a IA");
-                }else PopUp_disabilitaMenuDatesto(pop,"Chiedi a IA");
+                    PopUp_abilitaMenuDaTesto(pop,"Chiedi all'IA");
+                }else PopUp_disabilitaMenuDatesto(pop,"Chiedi all'IA");
 
                 if (isDepositoPrelievoClassificabile(ID, null,false)){
                    PopUp_abilitaMenuDaTesto(pop,"Classifica Movimento"); 
@@ -468,6 +488,18 @@ public class Funzioni {
                 if (Principale_Movimenti_SeparaUnisci.isUnibileInScambio(Principale.PopUp_IDTransSelezionati)){
                     PopUp_abilitaMenuDaTesto(pop,"Crea movimento di scambio da Deposito/Prelievo");
                 }else PopUp_disabilitaMenuDatesto(pop,"Crea movimento di scambio da Deposito/Prelievo");
+
+                //Voci che hanno senso su un solo movimento: su selezione multipla vanno disattivate, perché
+                //lavorano tutte sul solo PopUp_IDTrans (la prima riga selezionata) e darebbero all'utente
+                //l'impressione di agire su tutta la selezione. Il blocco sta in fondo di proposito: deve
+                //vincere sulle abilitazioni fatte sopra. Non c'è un ramo "else" da scrivere perché la
+                //riabilitazione la fanno già le PopUp_abilitaMenuDaTesto all'inizio di questo stesso ramo
+                //("Chiedi all'IA" compresa, dentro il controllo sulla presenza del movimento)
+                if (Principale.PopUp_IDTransSelezionati.size()>1){
+                    for (String voce : POPUP_VOCI_SOLO_SINGOLO_MOVIMENTO){
+                        PopUp_disabilitaMenuDatesto(pop,voce);
+                    }
+                }
             }
             
             //Se è una tabella mi comporto in questo modo

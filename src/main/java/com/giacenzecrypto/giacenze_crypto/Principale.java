@@ -8070,10 +8070,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
         if (numeromodifiche>0){
 
-         Messaggi.SuccessMessage("Movimenti accoppiati", 
-                 "Sono stati individuati e aggiornati " + numeromodifiche
-                + " coppie di transazioni, ricordarsi di salvare le modifiche!!", this);
+            //Prima il ricalcolo (con il puntatore di attesa già attivo da inizio metodo), poi il messaggio:
+            //annunciandolo prima, l'utente riceveva la conferma con il lavoro ancora da fare
             Funzioni_AggiornaTutto();
+            Messaggi.SuccessMessage("Movimenti accoppiati",
+                    "Sono stati individuati e aggiornati " + numeromodifiche
+                    + " coppie di transazioni, ricordarsi di salvare le modifiche!!", this);
         }
         else{
             Messaggi.InfoMessage("Nessuna coppia trovata", "Non sono state trovare nuove coppie di transazioni da abbinare automaticamente", this);
@@ -8997,38 +8999,103 @@ GiacenzeaData_CompilaTabellaToken(true);
     }//GEN-LAST:event_GiacenzeaData_Bottone_CambiaNomeTokenActionPerformed
 
     /**
-     * Chiede conferma all'utente e, se confermata, elimina il movimento indicato (e gli eventuali
-     * movimenti collegati) tramite {@link Funzioni#RimuoviMovimentazioneXID}, marcando la tabella
-     * come da salvare e mostrando un messaggio di conferma.
+     * Elimina un singolo movimento. Delega a {@link #Funzione_EliminaMovimenti(List, Component)}, che è
+     * l'unica implementazione: qui cambia solo la comodità di passare un ID invece di una lista.
      * @param ID ID del movimento da eliminare
      * @param c componente da cui recuperare la finestra ancestor per i dialoghi
      */
     public void Funzione_EliminaMovimento(String ID, Component c) {
-        AppDialog.DialogResult result = AppDialog.builder(SwingUtilities.getWindowAncestor(c))
-                .windowTitle("Cancellazione transazione")
-                .bodyTitle("Eliminare la transazione?")
+        Funzione_EliminaMovimenti(List.of(ID), c);
+    }
+
+    /**
+     * Chiede conferma all'utente e, se confermata, elimina i movimenti indicati (e gli eventuali
+     * movimenti collegati) tramite {@link Funzioni#RimuoviMovimentazioneXID}, ricalcola le tabelle
+     * e solo alla fine mostra il messaggio di conferma.
+     *
+     * <p>L'ordine conta. Prima il ricalcolo veniva lasciato a {@link #TabellaCryptodaAggiornare}: il
+     * messaggio di conferma era accodato con {@code invokeLater}, mentre il {@code WINDOW_GAINED_FOCUS}
+     * generato dalla chiusura del dialog di conferma arrivava <b>dopo</b> di esso e veniva quindi
+     * smaltito dentro il ciclo di eventi modale del messaggio. Risultato: {@link #Funzioni_AggiornaTutto()}
+     * girava sull'EDT con il messaggio già a schermo ma non ancora disegnato, che restava grigio per
+     * tutta la durata del calcolo. Facendo il lavoro prima, e spegnendo il flag prima di aprire il
+     * messaggio (altrimenti la riacquisizione del focus rifarebbe una seconda volta lo stesso
+     * ricalcolo), durante l'elaborazione si vede il puntatore di attesa già impostato da
+     * {@code Funzioni_AggiornaTutto()} e il messaggio compare a movimento cancellato.</p>
+     *
+     * @param IDs ID dei movimenti da eliminare; un solo elemento produce i testi al singolare
+     * @param c componente da cui recuperare la finestra ancestor per i dialoghi
+     */
+    public void Funzione_EliminaMovimenti(List<String> IDs, Component c) {
+        if (IDs == null || IDs.isEmpty()) return;
+
+        //Copia locale dell'elenco: quando arriva da PopUp_IDTransSelezionati è la lista viva che
+        //Funzioni_RichiamaPopUpdaTabella ricrea ad ogni apertura del menu contestuale
+        List<String> daEliminare = new ArrayList<>(IDs);
+        boolean multipli = daEliminare.size() > 1;
+
+        //Stessa finestra per la conferma e per il messaggio finale, invece di ancestor per uno e this per
+        //l'altro. Il ripiego su this serve perché getWindowAncestor restituisce null su componente nullo,
+        //e la conferma finiva quindi senza proprietario: PopUp_Component è valorizzato da Funzioni.PopUpMenu
+        //solo quando il menu è già stato aperto almeno una volta
+        Window finestra = SwingUtilities.getWindowAncestor(c);
+        if (finestra == null) finestra = this;
+
+        AppDialog.DialogResult result = AppDialog.builder(finestra)
+                .windowTitle(multipli ? "Cancellazione transazioni crypto" : "Cancellazione transazione")
+                .bodyTitle(multipli ? "Eliminare i movimenti selezionati?" : "Eliminare la transazione?")
                 .showTitleInBody(true)
                 .theme()
                 .type(AppDialog.DialogType.WARNING)
-                .message("Stai per eliminare la transazione con ID " + ID + ".")
-                .details("L'operazione rimuoverà anche gli eventuali collegamenti associati.")
+                .message(multipli
+                        ? "Sono stati selezionati " + daEliminare.size() + " movimenti."
+                        : "Stai per eliminare la transazione con ID " + daEliminare.get(0) + ".")
+                .details(multipli
+                        ? "L'operazione eliminerà tutti i movimenti attualmente selezionati, "
+                                + "compresi gli eventuali collegamenti associati."
+                        : "L'operazione rimuoverà anche gli eventuali collegamenti associati.")
                 .action(AppDialog.DialogAction.builder("cancel", "Annulla")
                         .role(AppDialog.ActionRole.SECONDARY)
                         .build())
-                .action(AppDialog.DialogAction.builder("delete", "Elimina")
+                .action(AppDialog.DialogAction.builder("delete", multipli ? "Elimina selezionati" : "Elimina")
                         .role(AppDialog.ActionRole.DANGER)
                         .build())
                 .showDialog();
 
-        if (result.isAction("delete")) {
-            Funzioni.RimuoviMovimentazioneXID(ID);
-            TabellaCryptodaAggiornare = true;
+        if (result != null && result.isAction("delete")) {
+            int eliminati = 0;
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            try {
+                for (String ID : daEliminare) {
+                    //RimuoviMovimentazioneXID non fa nulla su un ID che non esiste più, e su selezione
+                    //multipla può capitare: rimuovendo un movimento collegato,
+                    //RiportaTransazioniASituazioneIniziale rinomina gli altri movimenti del suo gruppo.
+                    //Conto quindi soltanto quelli su cui l'operazione ha agito davvero, per non annunciare
+                    //più cancellazioni di quante ne siano avvenute
+                    if (MappaCryptoWallet.get(ID) != null) {
+                        Funzioni.RimuoviMovimentazioneXID(ID);
+                        eliminati++;
+                    }
+                }
+                Funzioni_AggiornaTutto();
+                TabellaCryptodaAggiornare = false;
+            } finally {
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
 
-            SwingUtilities.invokeLater(() -> {
-                Messaggi.SuccessMessage("Transazione eliminata", 
-                        "La transazione con ID " + ID + " è stata eliminata correttamente.<br>"
-                                + "Premi Salva nella sezione 'Transazioni Crypto' per rendere permanente la cancellazione.",this);
-            });
+            String promemoria = "Premi Salva nella sezione 'Transazioni Crypto' per rendere permanente la cancellazione.";
+            if (multipli) {
+                String dettaglio = "Movimenti eliminati: " + eliminati;
+                if (eliminati != daEliminare.size()) {
+                    dettaglio += " su " + daEliminare.size() + " selezionati: gli altri non erano più "
+                            + "presenti, perché rimossi insieme ai movimenti a cui erano collegati.";
+                } else dettaglio += ".";
+                Messaggi.SuccessMessage("Movimenti eliminati", dettaglio + "<br>" + promemoria, finestra);
+            } else {
+                Messaggi.SuccessMessage("Transazione eliminata",
+                        "La transazione con ID " + daEliminare.get(0) + " è stata eliminata correttamente.<br>"
+                                + promemoria, finestra);
+            }
         }
     }
     
@@ -12116,7 +12183,19 @@ if (result != null && !result.isAction("cancel")) {
         // TODO add your handling code here:
         if (PopUp_IDTrans != null) {
 
-                Funzione_EliminaMovimento(PopUp_IDTrans, PopUp_Component);
+                //Passo tutta la selezione, non solo la prima riga: la voce di menu resta attiva anche su
+                //selezione multipla, come il pulsante "Elimina Movimento". PopUp_IDTransSelezionati contiene
+                //solo gli ID che sono davvero movimenti, presi dalle righe selezionate già convertite in
+                //indici di modello da Tabelle.Funzioni_getRigheSelezionate (quindi corretti anche a tabella
+                //ordinata o filtrata).
+                //Con i due chiamanti attuali la lista non è mai vuota qui — se PopUp_IDTrans è valorizzato,
+                //la riga cliccata è un movimento e sta nella selezione. Il ripiego resta come rete di
+                //sicurezza per una tabella che aprisse questo popup senza riempire la lista: è l'invariante
+                //che CLAUDE.md segnala come facile da rompere, e romperla agirebbe sulla selezione precedente
+                if (PopUp_IDTransSelezionati.isEmpty())
+                    Funzione_EliminaMovimento(PopUp_IDTrans, PopUp_Component);
+                else
+                    Funzione_EliminaMovimenti(PopUp_IDTransSelezionati, PopUp_Component);
 
             // if (PopUp_Tabella.getName()!=null&&PopUp_Tabella.getName().equalsIgnoreCase("DepositiPrelievi"))DepositiPrelievi_Caricatabella();
         }
@@ -12761,11 +12840,12 @@ if (result != null && !result.isAction("cancel")) {
             int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);
             String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
             if(Funzioni.DuplicaMovimento(IDTransazione)){
-                Messaggi.SuccessMessage("Operazione conclusa","Movimento duplicato correttamente",this);
-                //Aggiorno la tabella
+                //Aggiorno la tabella e mi riposiziono sulla riga prima di confermare: il messaggio dato
+                //per primo annunciava l'operazione conclusa con il ricalcolo ancora da fare
                 Funzioni_AggiornaTutto();
                 //Mi riposiziono sulla riga
                 Tabelle.Funzioni_PosizionaTabellasuRiga(DepositiPrelievi_Tabella, rigaselezionata,false);
+                Messaggi.SuccessMessage("Operazione conclusa","Movimento duplicato correttamente",this);
             }
             else{
                 Messaggi.WarningMessage("Attenzione","Questo movimento non può essere duplicato",this);

@@ -17,6 +17,7 @@ import java.awt.Desktop;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Robot;
+import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -56,9 +57,7 @@ import java.util.stream.Stream;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableModel;
@@ -1332,47 +1331,167 @@ public static String GUIModificaPrezzo(Component c, Moneta MU, Moneta ME, String
         
         
        /**
-        * Mostra un dialog con una {@link JTextArea} per modificare le note testuali di un movimento (campo 21).
-        * I ritorni a capo inseriti vengono convertiti in {@code <br>} e i punto e virgola sostituiti con spazi
-        * prima del salvataggio, per evitare di corrompere il formato interno del campo.
-        * @param c componente parent del dialog (non utilizzato per il posizionamento, passato {@code null} come owner)
+        * Mostra il dialog di modifica delle note testuali di un movimento (campo 21).
+        * Delega a {@link #GUIModificaNote(Component, List)}, che è l'unica implementazione.
+        * @param c componente da cui ricavare la finestra proprietaria dei dialoghi
         * @param ID identificativo del movimento di cui modificare le note
         * @return {@code true} se le note sono state salvate, {@code false} se l'operazione è stata annullata
         */
        public static boolean GUIModificaNote(Component c,String ID) {
-        // Crea una JTextArea
-        String trans[]=Principale.MappaCryptoWallet.get(ID);
-        String TestoArea=trans[21].replace("<br>", "\n");
-        JTextArea textArea = new JTextArea(10, 30);  // 10 righe, 30 colonne
-        textArea.setLineWrap(true);
-        textArea.setWrapStyleWord(true);
-        textArea.setText(TestoArea);
-        JScrollPane scrollPane = new JScrollPane(textArea);
-        String[] options = {"Salva", "Annulla"};
+        return GUIModificaNote(c, List.of(ID));
+    }
 
-        // Mostra un JOptionPane con la JTextArea
-        int result = JOptionPane.showOptionDialog(
-            null,
-            scrollPane,
-            "Note : ",
-            JOptionPane.DEFAULT_OPTION,
-            JOptionPane.PLAIN_MESSAGE,
-            null,
-            options,
-            options[0]
-        );
+       /**
+        * Mostra il dialog di modifica delle note testuali (campo 21) di uno o più movimenti, tramite
+        * {@link Messaggi#Personalizzati_Input_Note}, e ne applica il risultato. I ritorni a capo inseriti
+        * vengono convertiti in {@code <br>} e i punto e virgola sostituiti con spazi prima del salvataggio,
+        * perché {@code movimenti.crypto.db} è un file di testo con i campi separati da {@code ;} e una nota
+        * che ne contenesse uno spezzerebbe la riga.
+        *
+        * <p>Su <b>selezione singola</b> il comportamento è quello di sempre: l'area di testo parte con la nota
+        * attuale, che si modifica direttamente.</p>
+        *
+        * <p>Su <b>selezione multipla</b> l'area parte vuota — i movimenti selezionati possono avere note diverse
+        * e non ce n'è una da mostrare. Se almeno uno di essi ha già una nota, prima di scrivere viene chiesto se
+        * <i>accodare</i> il nuovo testo a capo sotto quello esistente oppure <i>sostituirlo</i>. La domanda non
+        * viene posta quando le note sono tutte vuote, perché le due scelte darebbero lo stesso risultato.</p>
+        *
+        * @param c componente da cui ricavare la finestra proprietaria della domanda accoda/sostituisci
+        * @param IDs identificativi dei movimenti di cui modificare le note
+        * @return {@code true} se almeno un movimento è stato modificato, {@code false} se l'operazione è stata
+        *         annullata o non c'era nulla da cambiare
+        */
+       public static boolean GUIModificaNote(Component c,List<String> IDs) {
+        if (IDs == null || IDs.isEmpty()) return false;
+
+        //Copia locale: quando arriva da PopUp_IDTransSelezionati è la lista viva che
+        //Funzioni_RichiamaPopUpdaTabella ricrea ad ogni apertura del menu contestuale.
+        //Scarto gli ID che non sono (più) movimenti, così il conteggio annunciato e la domanda
+        //accoda/sostituisci si basano solo su righe realmente scrivibili
+        List<String> daModificare = new ArrayList<>();
+        for (String ID : IDs) {
+            if (ID != null && MappaCryptoWallet.get(ID) != null) daModificare.add(ID);
+        }
+        if (daModificare.isEmpty()) return false;
+        boolean multipli = daModificare.size() > 1;
+
+        //Su selezione multipla non c'è una nota da precaricare: partirei da quella di un movimento
+        //arbitrario e la si finirebbe per copiare sugli altri senza accorgersene
+        String TestoArea = multipli ? "" : MappaCryptoWallet.get(daModificare.get(0))[21].replace("<br>", "\n");
+
+        //Il controllo su c non è di prudenza: SwingUtilities.getWindowAncestor(null) solleva
+        //NullPointerException, non restituisce null. Senza owner i dialoghi restano senza proprietario,
+        //come le altre AppDialog di questa classe, che è statica e non ha un frame su cui ripiegare
+        Window finestra = c != null ? SwingUtilities.getWindowAncestor(c) : null;
+
+        String inputText = Messaggi.Personalizzati_Input_Note(daModificare.size(), TestoArea, finestra);
 
         // Gestione risultato
-        if (result == 0) {
-            String inputText = textArea.getText();
+        if (inputText != null) {
             inputText = inputText.replace(";", " ").replace("\n", "<br>");//Tolgo i caratteri che potrebbero dar fastidio alle note
-            trans[21]=inputText;
-            return true;
+
+            //Sulla singola riga si è modificato direttamente il testo esistente: accodare o sostituire
+            //non ha senso, quello che c'è nell'area è già il risultato voluto
+            boolean accoda = false;
+            int conNota = multipli ? ConteggioNoteNonVuote(daModificare) : 0;
+            if (conNota > 0) {
+                AppDialog.DialogResult scelta = AppDialog.builder(finestra)
+                        .windowTitle("Note già presenti")
+                        .bodyTitle("Come applicare la nota?")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.WARNING)
+                        //Il numero cambia la decisione: sostituire 1 nota su 30 e sostituirne 30 su 30 sono
+                        //due cose diverse, e senza il conteggio non si capisce in quale dei due casi si è
+                        .message(conNota + " dei " + daModificare.size() + " movimenti selezionati "
+                                + (conNota == 1 ? "ha" : "hanno") + " già una nota.")
+                        .details("""
+                                Accoda: la nuova nota viene aggiunta a capo sotto quella esistente.
+                                Sostituisci: la nota esistente viene cancellata e rimpiazzata da quella appena scritta.
+
+                                I movimenti senza nota ricevono in ogni caso soltanto il nuovo testo.
+                                Annulla non scrive nulla, e il testo appena digitato viene perso.
+                                """)
+                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("accoda", "Accoda")
+                                .role(AppDialog.ActionRole.PRIMARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("sostituisci", "Sostituisci")
+                                .role(AppDialog.ActionRole.DANGER)
+                                .build())
+                        .showDialog();
+
+                if (scelta == null || !(scelta.isAction("accoda") || scelta.isAction("sostituisci"))) return false;
+                accoda = scelta.isAction("accoda");
+            }
+
+            return ApplicaNotaAiMovimenti(daModificare, inputText, accoda) > 0;
             //System.out.println("Hai scritto:\n" + inputText);
         } else {
            // System.out.println("Operazione annullata.");
         }
         return false;
+    }
+
+       /**
+        * Conta quanti dei movimenti indicati hanno già una nota (campo 21) con del testo. Il numero serve
+        * nella domanda accoda/sostituisci: sapere <b>quante</b> note verrebbero sovrascritte è ciò su cui si
+        * decide. Un campo che contiene solo separatori {@code <br>} viene considerato vuoto: è quello che si
+        * ottiene salvando un'area di testo con delle righe bianche, e accodarci sotto lascerebbe uno stacco
+        * casuale.
+        * @param IDs identificativi dei movimenti da esaminare
+        * @return quante note non sono vuote; {@code 0} se sono tutte vuote
+        */
+       static int ConteggioNoteNonVuote(List<String> IDs) {
+        int conNota = 0;
+        for (String ID : IDs) {
+            String trans[] = MappaCryptoWallet.get(ID);
+            if (trans != null && !NotaVuota(trans[21])) conNota++;
+        }
+        return conNota;
+    }
+
+       /** Una nota è vuota se, togliendo i separatori di riga {@code <br>}, non resta nulla di visibile. */
+       static boolean NotaVuota(String nota) {
+        return nota == null || nota.replace("<br>", "").isBlank();
+    }
+
+       /**
+        * Compone la nota da scrivere in un movimento, nel formato interno con {@code <br>} come ritorno a capo.
+        * @param notaEsistente nota attualmente presente sul movimento
+        * @param nuovaNota testo appena scritto dall'utente
+        * @param accoda {@code true} per aggiungere la nuova nota a capo sotto quella esistente, {@code false}
+        *        per sostituirla
+        * @return la nota risultante
+        */
+       static String ComponiNota(String notaEsistente,String nuovaNota,boolean accoda) {
+        if (!accoda || NotaVuota(notaEsistente)) return nuovaNota == null ? "" : nuovaNota;
+        //Accodare il vuoto non deve lasciare un <br> in coda: la nota resta com'era
+        if (NotaVuota(nuovaNota)) return notaEsistente;
+        return notaEsistente + "<br>" + nuovaNota;
+    }
+
+       /**
+        * Scrive la nota nei movimenti indicati, accodandola o sostituendola secondo {@link #ComponiNota}.
+        * @param IDs identificativi dei movimenti da modificare
+        * @param nuovaNota nota già nel formato interno (senza {@code ;}, con {@code <br>} al posto dei ritorni a capo)
+        * @param accoda {@code true} per accodare alla nota esistente, {@code false} per sostituirla
+        * @return quanti movimenti hanno effettivamente cambiato nota
+        */
+       static int ApplicaNotaAiMovimenti(List<String> IDs,String nuovaNota,boolean accoda) {
+        int modificati = 0;
+        for (String ID : IDs) {
+            String trans[] = MappaCryptoWallet.get(ID);
+            if (trans == null) continue;
+            String risultato = ComponiNota(trans[21], nuovaNota, accoda);
+            if (!risultato.equals(trans[21])) {
+                trans[21] = risultato;
+                modificati++;
+            }
+        }
+        return modificati;
     }
         
     /**

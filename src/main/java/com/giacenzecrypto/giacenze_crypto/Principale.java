@@ -9035,10 +9035,11 @@ GiacenzeaData_CompilaTabellaToken(true);
         boolean multipli = daEliminare.size() > 1;
 
         //Stessa finestra per la conferma e per il messaggio finale, invece di ancestor per uno e this per
-        //l'altro. Il ripiego su this serve perché getWindowAncestor restituisce null su componente nullo,
-        //e la conferma finiva quindi senza proprietario: PopUp_Component è valorizzato da Funzioni.PopUpMenu
-        //solo quando il menu è già stato aperto almeno una volta
-        Window finestra = SwingUtilities.getWindowAncestor(c);
+        //l'altro. Il ripiego su this serve perché la conferma finiva senza proprietario: PopUp_Component è
+        //valorizzato da Funzioni.PopUpMenu solo quando il menu è già stato aperto almeno una volta.
+        //Il componente va controllato prima: getWindowAncestor(null) solleva NullPointerException invece
+        //di restituire null, quindi senza il controllo il ripiego non verrebbe mai raggiunto
+        Window finestra = c != null ? SwingUtilities.getWindowAncestor(c) : null;
         if (finestra == null) finestra = this;
 
         AppDialog.DialogResult result = AppDialog.builder(finestra)
@@ -12371,8 +12372,15 @@ if (result != null && !result.isAction("cancel")) {
 
     private void MenuItem_ModificaNoteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaNoteActionPerformed
         // TODO add your handling code here:
-        if (Funzioni.GUIModificaNote(PopUp_Component, PopUp_IDTrans))TabellaCryptodaAggiornare=true;
-        
+        //Come per "Elimina Movimento": la voce resta attiva su selezione multipla, quindi passo tutta la
+        //selezione e non solo la riga cliccata. Il ripiego su PopUp_IDTrans copre la tabella che aprisse
+        //questo popup senza riempire PopUp_IDTransSelezionati
+        if (PopUp_IDTransSelezionati.isEmpty()) {
+            if (Funzioni.GUIModificaNote(PopUp_Component, PopUp_IDTrans))TabellaCryptodaAggiornare=true;
+        } else {
+            if (Funzioni.GUIModificaNote(PopUp_Component, PopUp_IDTransSelezionati))TabellaCryptodaAggiornare=true;
+        }
+
     }//GEN-LAST:event_MenuItem_ModificaNoteActionPerformed
 
     private void MenuItem_ModificaRewardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaRewardActionPerformed

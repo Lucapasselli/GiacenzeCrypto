@@ -10,16 +10,20 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class AppDialog extends JDialog {
 
     private JTextField inputField;
+    private JTextArea textArea;
     private JComboBox<String> comboBox;
 
     public enum ThemeMode {
@@ -376,6 +380,12 @@ public class AppDialog extends JDialog {
         private String inputInitialValue = "";
         private int inputColumns = 28;
 
+        private boolean textAreaEnabled = false;
+        private String textAreaLabel;
+        private String textAreaInitialValue = "";
+        private int textAreaRows = 8;
+        private int textAreaColumns = 34;
+
         private boolean comboEnabled = false;
         private String comboLabel;
         private String[] comboOptions = new String[0];
@@ -422,6 +432,45 @@ public class AppDialog extends JDialog {
         /** @param inputColumns larghezza del campo di input in colonne (minimo 10) @return questo builder, per il chaining */
         public Builder inputColumns(int inputColumns) {
             this.inputColumns = Math.max(10, inputColumns);
+            return this;
+        }
+
+        /**
+         * Aggiunge al dialog un'area di testo multiriga, per i testi in cui i ritorni a capo contano
+         * (le note di un movimento, per esempio). A differenza di {@link #inputField(String)} il tasto Invio
+         * va a capo nel testo invece di premere il pulsante di default: l'area consuma il tasto prima che
+         * arrivi alle scorciatoie del dialog. Il Tab, al contrario, sposta il fuoco sui pulsanti come nel
+         * resto dei dialoghi, invece di inserire una tabulazione.
+         * @param label etichetta mostrata sopra l'area ({@code null} o vuota per non mostrarla)
+         * @return questo builder, per il chaining
+         */
+        public Builder textAreaField(String label) {
+            this.textAreaEnabled = true;
+            this.textAreaLabel = label;
+            return this;
+        }
+
+        /**
+         * Come {@link #textAreaField(String)}, con un testo iniziale precompilato.
+         * @param label etichetta mostrata sopra l'area ({@code null} o vuota per non mostrarla)
+         * @param initialValue testo iniziale dell'area (usato {@code ""} se {@code null})
+         * @return questo builder, per il chaining
+         */
+        public Builder textAreaField(String label, String initialValue) {
+            this.textAreaEnabled = true;
+            this.textAreaLabel = label;
+            this.textAreaInitialValue = initialValue != null ? initialValue : "";
+            return this;
+        }
+
+        /**
+         * @param rows righe visibili dell'area di testo (minimo 2)
+         * @param columns larghezza dell'area in colonne (minimo 10)
+         * @return questo builder, per il chaining
+         */
+        public Builder textAreaSize(int rows,int columns) {
+            this.textAreaRows = Math.max(2, rows);
+            this.textAreaColumns = Math.max(10, columns);
             return this;
         }
 
@@ -659,6 +708,11 @@ public class AppDialog extends JDialog {
             if (config.inputEnabled && inputField != null) {
                 inputField.requestFocusInWindow();
                 inputField.selectAll();
+            } else if (config.textAreaEnabled && textArea != null) {
+                //Caret in fondo e niente selectAll: qui il testo iniziale è spesso quello da correggere,
+                //e selezionarlo tutto lo farebbe cancellare dal primo tasto premuto
+                textArea.requestFocusInWindow();
+                textArea.setCaretPosition(textArea.getDocument().getLength());
             } else if (config.comboEnabled && comboBox != null) {
                 comboBox.requestFocusInWindow();
             } else if (!actionButtons.isEmpty()) {
@@ -726,6 +780,44 @@ public class AppDialog extends JDialog {
 
     panel.add(inputField);
 }
+
+        if (config.textAreaEnabled) {
+            panel.add(Box.createVerticalStrut(12));
+
+            if (config.textAreaLabel != null && !config.textAreaLabel.isBlank()) {
+                JLabel areaLabel = new JLabel(config.textAreaLabel);
+                areaLabel.setFont(theme.messageFont);
+                areaLabel.setForeground(theme.textPrimary);
+                areaLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+                panel.add(areaLabel);
+                panel.add(Box.createVerticalStrut(6));
+            }
+
+            textArea = new JTextArea(config.textAreaInitialValue, config.textAreaRows, config.textAreaColumns);
+            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true);
+            textArea.setFont(theme.messageFont.deriveFont(14f));
+            textArea.setForeground(theme.textPrimary);
+            textArea.setBackground(theme.surface);
+            textArea.setCaretColor(theme.textPrimary);
+            textArea.setBorder(new EmptyBorder(8, 10, 8, 10));
+
+            //Il Tab dentro una JTextArea inserirebbe una tabulazione, intrappolando il fuoco: qui deve
+            //spostarlo sui pulsanti come in tutti gli altri dialoghi. L'Invio invece resta all'area, che
+            //lo consuma con la propria mappa WHEN_FOCUSED prima delle scorciatoie di finestra del dialog
+            textArea.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+                    Set.of(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0)));
+            textArea.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
+                    Set.of(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_DOWN_MASK)));
+
+            JScrollPane areaScroll = new JScrollPane(textArea);
+            areaScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
+            areaScroll.setBorder(BorderFactory.createLineBorder(theme.border));
+            areaScroll.getViewport().setBackground(theme.surface);
+            areaScroll.setBackground(theme.surface);
+
+            panel.add(areaScroll);
+        }
 
         if (config.comboEnabled) {
             panel.add(Box.createVerticalStrut(12));
@@ -815,6 +907,8 @@ public class AppDialog extends JDialog {
             String value;
             if (inputField != null) {
                 value = inputField.getText();
+            } else if (textArea != null) {
+                value = textArea.getText();
             } else if (comboBox != null) {
                 Object sel = comboBox.getSelectedItem();
                 value = sel != null ? sel.toString() : null;

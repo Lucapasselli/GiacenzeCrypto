@@ -398,10 +398,61 @@ public class Messaggi {
                                 .role(actionRole)
                                 .build())
                         .showDialog();
-         
+
          return result;
      }
-     
-     
+
+     /**
+      * Mostra il dialog di modifica delle note di uno o più movimenti, con un'area di testo multiriga.
+      *
+      * <p>Sostituisce il {@code JOptionPane} usato in precedenza, che era l'unica finestra del programma a
+      * non avere la grafica degli altri messaggi. L'area multiriga è arrivata in {@link AppDialog} per
+      * questa funzione: nelle note i ritorni a capo contano, quindi il campo a riga singola di
+      * {@code inputField} non basta.</p>
+      *
+      * @param NumMovimenti quanti movimenti riceveranno la nota; con più di uno il testo passa al plurale
+      *        e avvisa che verrà applicata a tutta la selezione
+      * @param NotaIniziale testo da precaricare nell'area, con i ritorni a capo già veri ({@code \n});
+      *        vuoto su selezione multipla, dove non c'è una nota da mostrare
+      * @param win finestra parent del dialog
+      * @return il testo inserito, anche vuoto se l'utente ha svuotato l'area, oppure {@code null} se
+      *         l'operazione è stata annullata (pulsante Annulla, Esc o chiusura della finestra)
+      */
+     public static String Personalizzati_Input_Note(int NumMovimenti,String NotaIniziale,Window win) {
+        boolean multipli = NumMovimenti > 1;
+
+        AppDialog.DialogResult result = AppDialog.builder(win)
+                .windowTitle(multipli ? "Note di " + NumMovimenti + " movimenti" : "Note della transazione")
+                .bodyTitle(multipli ? "Nota per i movimenti selezionati" : "Modifica note")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message(multipli
+                        ? "La nota verrà applicata ai " + NumMovimenti + " movimenti selezionati."
+                        : "Modifica le note della transazione.")
+                .details("""
+                        I ritorni a capo vengono conservati.
+
+                        Il punto e virgola non è ammesso e viene sostituito con uno spazio.
+                        """)
+                .textAreaField(multipli ? "Nota da applicare:" : "Note:", NotaIniziale)
+                .textAreaSize(10, 34)
+                .resizable(true)
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("save-note", "Salva")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .showDialog();
+
+        //Il testo vuoto è una risposta valida (svuota la nota), quindi va distinto dall'annullamento:
+        //null solo quando l'utente non ha premuto Salva
+        if (result != null && result.isAction("save-note")) {
+            String testo = result.getInputValue();
+            return testo != null ? testo : "";
+        }
+        return null;
+    }
 
 }

@@ -47,6 +47,9 @@ class CalcoliPlusvalenzeNewStackLifoTest {
     void setUp() {
         stacks = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         Principale.MappaCryptoWallet.clear();
+        //Il flag dei dettagli LIFO è statico e surefire riusa la JVM: lo riporto
+        //all'impostazione normale del motore, altrimenti un test lo eredita da un altro
+        Calcoli_PlusvalenzeNew.ImpostaDettagliLifoCompleti(false);
     }
 
     /** Crea un movimento minimo valido (tutti i campi a "") e lo registra in MappaCryptoWallet. */
@@ -85,8 +88,74 @@ class CalcoliPlusvalenzeNewStackLifoTest {
         Calcoli_PlusvalenzeNew.LifoXID lifo = Calcoli_PlusvalenzeNew.getIDLiFo(mov[0]);
         assertNotNull(lifo);
         assertEquals(1, lifo.Get_CryptoStackEntrato().size());
-        // Lo snapshot pre-movimento è lo stack PRIMA dell'inserimento (vuoto)
+    }
+
+    // ------------------------------------------------------------------
+    // Dettagli LIFO completi (stack pre-movimento e residuo)
+    //
+    // Sono dati di sola visualizzazione per GUI_LiFoTransazione: registrarli costava una copia
+    // dell'intero stack della moneta a ogni movimento di ogni ricalcolo, per cui ora il motore
+    // li produce solo su richiesta. Restano prodotti dentro il calcolo reale, non da un percorso
+    // separato che potrebbe divergerne.
+    // ------------------------------------------------------------------
+
+    @Test
+    void dettagliLifoDisattivi_nonRegistranoLeCopieDegliStack() {
+        // Impostazione normale del motore: nessun dettaglio completo
+        assertFalse(Calcoli_PlusvalenzeNew.isDettagliLifoCompleti());
+
+        inserisci("BTC", "10", "100");
+        String[] mov = nuovoMovimento();
+        Calcoli_PlusvalenzeNew.StackLIFO_InserisciValore(stacks, "BTC", "5", "50", mov[0]);
+        Calcoli_PlusvalenzeNew.StackLIFO_TogliQta(stacks, "BTC", "3", true, mov[0]);
+
+        Calcoli_PlusvalenzeNew.LifoXID lifo = Calcoli_PlusvalenzeNew.getIDLiFo(mov[0]);
+        // I delta del movimento restano registrati: servono al tooltip della tabella
+        assertEquals(1, lifo.Get_CryptoStackEntrato().size());
+        assertEquals(1, lifo.Get_CryptoStackUscito().size());
+        // Le copie dell'intero stack no
         assertEquals(0, lifo.Get_CryptoStackEntratoPreMovimento().size());
+        assertEquals(0, lifo.Get_CryptoStackUscitoRimanenze().size());
+    }
+
+    @Test
+    void dettagliLifoAttivi_registranoStackPreMovimentoEResiduo() {
+        Calcoli_PlusvalenzeNew.ImpostaDettagliLifoCompleti(true);
+        try {
+            inserisci("BTC", "10", "100");
+            String[] mov = nuovoMovimento();
+            Calcoli_PlusvalenzeNew.StackLIFO_InserisciValore(stacks, "BTC", "5", "50", mov[0]);
+
+            Calcoli_PlusvalenzeNew.LifoXID lifo = Calcoli_PlusvalenzeNew.getIDLiFo(mov[0]);
+            // Lo stack pre-movimento è lo stack PRIMA dell'inserimento: il solo lotto da 10
+            assertEquals(1, lifo.Get_CryptoStackEntratoPreMovimento().size());
+            assertEquals("10", lifo.Get_CryptoStackEntratoPreMovimento().peek()[1]);
+
+            // Tolgo 3 dei 5 appena inseriti: restano il lotto residuo da 2 e quello da 10
+            Calcoli_PlusvalenzeNew.StackLIFO_TogliQta(stacks, "BTC", "3", true, mov[0]);
+            assertEquals(2, lifo.Get_CryptoStackUscitoRimanenze().size());
+            assertEquals("2", lifo.Get_CryptoStackUscitoRimanenze().peek()[1]);
+        } finally {
+            Calcoli_PlusvalenzeNew.ImpostaDettagliLifoCompleti(false);
+        }
+    }
+
+    @Test
+    void disattivareIDettagli_liberaLeCopieGiaRegistrate() {
+        Calcoli_PlusvalenzeNew.ImpostaDettagliLifoCompleti(true);
+        String[] mov;
+        try {
+            inserisci("BTC", "10", "100");
+            mov = nuovoMovimento();
+            Calcoli_PlusvalenzeNew.StackLIFO_InserisciValore(stacks, "BTC", "5", "50", mov[0]);
+            assertEquals(1, Calcoli_PlusvalenzeNew.getIDLiFo(mov[0])
+                    .Get_CryptoStackEntratoPreMovimento().size());
+        } finally {
+            Calcoli_PlusvalenzeNew.ImpostaDettagliLifoCompleti(false);
+        }
+        // La memoria va liberata subito, senza attendere il ricalcolo successivo
+        assertEquals(0, Calcoli_PlusvalenzeNew.getIDLiFo(mov[0])
+                .Get_CryptoStackEntratoPreMovimento().size());
     }
 
     @Test

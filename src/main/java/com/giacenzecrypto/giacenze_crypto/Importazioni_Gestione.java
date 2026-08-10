@@ -43,7 +43,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     "BitBox","Citcoin Core Client","Blochchain.com","Electrum","Exodus","Gate Hub","Ledger Live","Mycellum","Trezor"};
     
     static String BlockChain[]=new String[]{"----------",
-    "Arbitrum (ARB)","Avalanche (AVAX)","Base (BASE)","Bitcoin (BTC)","Cardano (ADA)","Binance Chain (BNB)","Binance Smart Chain (BSC)",
+    "Arbitrum (ARB)","Avalanche (AVAX)","Base (BASE)","Berachain (BERA)","Bitcoin (BTC)","Cardano (ADA)","Binance Chain (BNB)","Binance Smart Chain (BSC)",
     "Cronos Chain (CRO)","Dash (DASH)","Dogecoin (DOGE)","Polkadot (DOT)","Eos (EOS)","Ethereum (ETH)",
     "Fantom (FTM)","Gnosis Chain (GNOSIS)","Litecoin (LTC)","Terra Classic (LUNA)","Polygon (POL)","Tron (TRX)","Solana (SOL)","Monad (MONAD)",
     "Stellar (XLM)","Ripple (XRP)","Zcash (ZEC)"};
@@ -78,10 +78,13 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         return ordinate.toArray(new String[0]);
     }
 
-    /** @return {@code true} se la voce è un separatore o un segnaposto, non un nome da ordinare */
+    /**
+     * @return {@code true} se la voce è un separatore o un segnaposto, non un nome da ordinare
+     *         <p>Stessa regola con cui {@link LoghiImport} decide a quali voci non mettere il logo: una
+     *         voce speciale non è il nome di una piattaforma né in un elenco né nell'altro.
+     */
     private static boolean isVoceSpeciale(String voce) {
-        String v = voce == null ? "" : voce.trim();
-        return v.startsWith("-") || v.startsWith("*");
+        return LoghiImport.isVoceSpeciale(voce);
     }
 
     //=== IDENTIFICATIVI DEGLI IMPORT NATIVI ===
@@ -174,46 +177,8 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         }
     }
 
-    /**
-     * Disegna le voci di una combo con il logo dell'exchange a sinistra del nome, così la piattaforma si
-     * riconosce a colpo d'occhio.
-     * <p>Serve le due combo che contengono nomi di piattaforme: quella del fornitore dei dati e quella
-     * dell'exchange/wallet/blockchain. Il logo si ricava dal nome con {@link LoghiImport#Slug(String)} —
-     * è la stessa regola con cui i file sono stati salvati, quindi le due parti non possono divergere.
-     * <p>Non serve invece alla combo delle estrazioni: lì il fornitore è già indicato sopra, e ripeterne
-     * il logo su ogni riga sarebbe solo rumore.
-     * <p>Il lato dell'icona segue l'altezza del carattere invece di essere fisso, perché la dimensione del
-     * font si può cambiare all'avvio con {@code --fontSize}. Le voci senza logo ricevono un segnaposto
-     * trasparente della stessa dimensione, che tiene i nomi incolonnati.
-     */
-    private static final class RenderConLogo extends javax.swing.DefaultListCellRenderer {
-
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public Component getListCellRendererComponent(javax.swing.JList<?> lista, Object valore,
-                int indice, boolean selezionato, boolean conFuoco) {
-
-            super.getListCellRendererComponent(lista, valore, indice, selezionato, conFuoco);
-
-            String nomeLogo = null;
-            if (valore instanceof String nome && !isVoceSpeciale(nome)) {
-                nomeLogo = LoghiImport.Slug(nome);
-            }
-
-            if (nomeLogo == null) {
-                setIcon(null);
-                return this;
-            }
-
-            //un logo alto quanto il carattere risulta minuto in una riga da 40 pixel: il fattore
-            //lo porta a occupare la riga senza sovrastare il testo
-            int lato = Math.round(getFontMetrics(getFont()).getHeight() * 1.4f);
-            setIcon(LoghiImport.Dammi(nomeLogo, lato));
-            setIconTextGap(8);
-            return this;
-        }
-    }
+    //Il renderer con il logo sta in LoghiImport.RenderComboConLogo: lo usa anche la combo della rete
+    //nella gestione dei wallet, e una copia per finestra sarebbe destinata a divergere.
 
     public Importazioni_Gestione() {
         ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
@@ -225,7 +190,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         //rimpiazzato con Exchanges, Wallets o BlockChain in ComboBox_TipoImportItemStateChanged.
         //Prima nel .form c'era una copia completa e disallineata dell'array Exchanges, mai usata.
         ComboBox_Exchanges.setModel(new DefaultComboBoxModel<>(new String[]{" - nessuno -"}));
-        ComboBox_Exchanges.setRenderer(new RenderConLogo());
+        ComboBox_Exchanges.setRenderer(new LoghiImport.RenderComboConLogo());
         popolaComboTipoFile();
     }
 
@@ -381,7 +346,7 @@ private void popolaComboTipoFile() {
     for (java.awt.event.ItemListener l : listeners) {
         ComboBox_TipoFile.addItemListener(l);
     }
-    ComboBox_TipoFile.setRenderer(new RenderConLogo());
+    ComboBox_TipoFile.setRenderer(new LoghiImport.RenderComboConLogo());
 
     popolaComboTipoEstrazione();
 }
@@ -573,7 +538,7 @@ private VoceImport voceSelezionata() {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(Label_TipoFile, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -596,7 +561,7 @@ private VoceImport voceSelezionata() {
                         .addComponent(Label_NomeWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Text_NomeWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(ScrollPane_Attenzione, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 391, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(ScrollPane_Attenzione))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)

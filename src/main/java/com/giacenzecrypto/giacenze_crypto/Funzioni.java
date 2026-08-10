@@ -80,6 +80,12 @@ public class Funzioni {
     //A5: client OkHttp condiviso invece di uno nuovo per chiamata (evita di accumulare connection pool/dispatcher inutilizzati)
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
 
+    /** Repository e ramo da cui si allineano le configurazioni distribuite (vedi {@link #AggiornamentoConfigDaRepositoryUnicaChiamata}). */
+    private static final String REPO_GITHUB = "Lucapasselli/GiacenzeCrypto";
+    private static final String BRANCH_GITHUB = "master";
+    /** Cartella radice delle configurazioni nel repository: è l'albero chiesto con la chiamata unica. */
+    private static final String RADICE_CONFIG_REPO = "config";
+
     private static final Set<String> PREFISSI_VALIDI_TrovaReteDaIMovimento = Set.of(
         "BC", "00BC", "01BC", "02BC", "03BC", "04BC", "ZZBC"
 );
@@ -3826,7 +3832,7 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
     public static List<String> AggiornamentoConfigDaRepository(String cartellaLocale, String pathRepo,
             String estensione, boolean cancellaOrfaniCentralizzati) {
         List<String> fileAggiornati = new ArrayList<>();
-        String apiUrl = "https://api.github.com/repos/Lucapasselli/GiacenzeCrypto/contents/" + pathRepo + "?ref=master";
+        String apiUrl = "https://api.github.com/repos/" + REPO_GITHUB + "/contents/" + pathRepo + "?ref=" + BRANCH_GITHUB;
 
         OkHttpClient client = HTTP_CLIENT;
         Request request = new Request.Builder()
@@ -3851,53 +3857,16 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
                 String name = file.get("name").getAsString();
                 if (!name.toLowerCase().endsWith(estensione)) continue;
 
-                String remoteSha = file.get("sha").getAsString();
-                String downloadUrl = file.get("download_url").getAsString();
-
                 nomiRemoti.add(name);
-                Path localPath = Paths.get(cartellaLocale, name);
-
-                boolean daAggiornare;
-                if (!Files.exists(localPath)) {
-                    daAggiornare = true;
-                    System.out.println("AggiornamentoConfig [" + pathRepo + "]: file non presente localmente: " + name);
-                } else {
-                    String localSha = calcolaBlobShaGit(localPath);
-                    daAggiornare = !remoteSha.equalsIgnoreCase(localSha);
-                    if (daAggiornare) {
-                        System.out.println("AggiornamentoConfig [" + pathRepo + "]: file da aggiornare (sha diverso): " + name);
-                    }
-                }
-
-                if (daAggiornare) {
-                    Files.createDirectories(localPath.getParent());
-                    scaricaFileDaUrl(client, downloadUrl, localPath);
+                if (allineaFileConfig(client, pathRepo, cartellaLocale, name,
+                        file.get("sha").getAsString(), file.get("download_url").getAsString())) {
                     fileAggiornati.add(name);
-                    System.out.println("AggiornamentoConfig [" + pathRepo + "]: aggiornato " + name);
                 }
             }
 
             // Cancella file locali centralizzati non più presenti nel repository
-            if (cancellaOrfaniCentralizzati) {
-                File[] locali = new File(cartellaLocale).listFiles((dir, n) -> n.toLowerCase().endsWith(estensione));
-                if (locali != null) {
-                    for (File f : locali) {
-                        if (nomiRemoti.contains(f.getName())) continue;
-                        try {
-                            StringBuilder sb = new StringBuilder();
-                            try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(f))) {
-                                String riga;
-                                while ((riga = br.readLine()) != null) sb.append(riga);
-                            }
-                            if (new JSONObject(sb.toString()).optBoolean("centralizzato", false)) {
-                                Files.delete(f.toPath());
-                                System.out.println("AggiornamentoConfig [" + pathRepo + "]: rimosso file centralizzato non più nel repository: " + f.getName());
-                            }
-                        } catch (Exception ex) {
-                            System.out.println("AggiornamentoConfig [" + pathRepo + "]: errore nella verifica di " + f.getName() + " - " + ex.getMessage());
-                        }
-                    }
-                }
+            if (cancellaOrfaniCentralizzati && !nomiRemoti.isEmpty()) {
+                cancellaConfigOrfani(cartellaLocale, pathRepo, estensione, nomiRemoti);
             }
         } catch (Exception e) {
             System.out.println("AggiornamentoConfig [" + pathRepo + "]: errore durante il controllo - " + e.getMessage());
@@ -3905,6 +3874,216 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
         }
 
         return fileAggiornati;
+    }
+
+    /**
+     * Cartella di configurazione da allineare al repository, usata da
+     * {@link #AggiornamentoConfigDaRepositoryUnicaChiamata(List)}.
+     */
+    public static class CartellaConfig {
+
+        /** Path assoluta della cartella locale da allineare. */
+        public final String cartellaLocale;
+        /** Nome della sottocartella dentro {@code config/} nel repository (es. {@code "importmappe"}). */
+        public final String sottoCartellaRepo;
+        /** Estensione dei file da considerare, minuscola e con il punto (es. {@code ".json"}). */
+        public final String estensione;
+        /** Se cancellare i file locali marcati {@code "centralizzato": true} spariti dal repository. */
+        public final boolean cancellaOrfaniCentralizzati;
+
+        public CartellaConfig(String cartellaLocale, String sottoCartellaRepo, String estensione,
+                boolean cancellaOrfaniCentralizzati) {
+            this.cartellaLocale = cartellaLocale;
+            this.sottoCartellaRepo = sottoCartellaRepo;
+            this.estensione = estensione;
+            this.cancellaOrfaniCentralizzati = cancellaOrfaniCentralizzati;
+        }
+
+        /** @return il path della cartella nel repository, usato nei log (es. {@code "config/loghi"}). */
+        String pathRepo() {
+            return RADICE_CONFIG_REPO + "/" + sottoCartellaRepo;
+        }
+    }
+
+    /**
+     * Allinea in una sola chiamata all'API GitHub tutte le sottocartelle di {@code config/}.
+     * <p>Invece di un {@code contents/<cartella>} per cartella, chiede l'albero git della sola radice
+     * {@code config} con {@code recursive=1}: una richiesta restituisce nome e sha blob di ogni file di
+     * tutte le sottocartelle. Il confronto sullo sha e il download restano identici a quelli di
+     * {@link #AggiornamentoConfigDaRepository}, e i file veri e propri si scaricano da
+     * {@code raw.githubusercontent.com}, che non consuma quota API.
+     * <p>Se l'albero non è disponibile (errore di rete, risposta non valida) o è {@code truncated},
+     * si ripiega sul metodo per cartella, che fa di nuovo una chiamata per cartella ma è comunque
+     * corretto.
+     * <p><b>La cancellazione degli orfani non parte mai su un elenco vuoto:</b> una sottocartella che non
+     * compare nell'albero viene trattata come "elenco non disponibile", non come "cartella vuota nel
+     * repository". Senza questa cautela un albero incompleto svuoterebbe {@code config/importmappe/} e
+     * bloccherebbe tutti gli import nativi.
+     *
+     * @param cartelle cartelle da allineare
+     * @return mappa {@code sottoCartellaRepo} → nomi dei file effettivamente aggiornati/scaricati
+     */
+    public static Map<String, List<String>> AggiornamentoConfigDaRepositoryUnicaChiamata(List<CartellaConfig> cartelle) {
+        Map<String, List<String>> risultato = new HashMap<>();
+        for (CartellaConfig c : cartelle) {
+            risultato.put(c.sottoCartellaRepo, new ArrayList<>());
+        }
+
+        String apiUrl = "https://api.github.com/repos/" + REPO_GITHUB + "/git/trees/"
+                + BRANCH_GITHUB + ":" + RADICE_CONFIG_REPO + "?recursive=1";
+
+        OkHttpClient client = HTTP_CLIENT;
+        Request request = new Request.Builder()
+                .url(apiUrl)
+                .header("User-Agent", "GiacenzeCrypto")
+                .header("Accept", "application/vnd.github.v3+json")
+                .build();
+
+        // sottoCartella -> (nome file -> sha blob)
+        Map<String, Map<String, String>> remoti = new HashMap<>();
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                System.out.println("AggiornamentoConfig: albero GitHub non disponibile, codice " + response.code()
+                        + " - ripiego sulle chiamate per cartella");
+                return AggiornamentoConfigPerCartella(cartelle);
+            }
+
+            JsonObject albero = JsonParser.parseString(response.body().string()).getAsJsonObject();
+            if (albero.has("truncated") && albero.get("truncated").getAsBoolean()) {
+                System.out.println("AggiornamentoConfig: albero GitHub troncato - ripiego sulle chiamate per cartella");
+                return AggiornamentoConfigPerCartella(cartelle);
+            }
+
+            for (JsonElement el : albero.getAsJsonArray("tree")) {
+                JsonObject nodo = el.getAsJsonObject();
+                if (!"blob".equals(nodo.get("type").getAsString())) continue;
+
+                String path = nodo.get("path").getAsString();
+                int sep = path.indexOf('/');
+                // Solo i file direttamente dentro una sottocartella: un eventuale annidamento più
+                // profondo verrebbe altrimenti appiattito nella cartella locale.
+                if (sep <= 0 || path.indexOf('/', sep + 1) >= 0) continue;
+
+                String sottoCartella = path.substring(0, sep);
+                String name = path.substring(sep + 1);
+                remoti.computeIfAbsent(sottoCartella, k -> new TreeMap<>()).put(name, nodo.get("sha").getAsString());
+            }
+        } catch (Exception e) {
+            System.out.println("AggiornamentoConfig: errore nella lettura dell'albero GitHub - " + e.getMessage()
+                    + " - ripiego sulle chiamate per cartella");
+            LoggerGC.ScriviErrore(e);
+            return AggiornamentoConfigPerCartella(cartelle);
+        }
+
+        for (CartellaConfig c : cartelle) {
+            String pathRepo = c.pathRepo();
+            Map<String, String> fileRemoti = remoti.get(c.sottoCartellaRepo);
+            if (fileRemoti == null || fileRemoti.isEmpty()) {
+                System.out.println("AggiornamentoConfig [" + pathRepo + "]: nessun file nell'albero, cartella ignorata");
+                continue;
+            }
+
+            Set<String> nomiRemoti = new HashSet<>();
+            for (Map.Entry<String, String> e : fileRemoti.entrySet()) {
+                String name = e.getKey();
+                if (!name.toLowerCase().endsWith(c.estensione)) continue;
+                nomiRemoti.add(name);
+                try {
+                    String downloadUrl = urlRawGitHub(c.sottoCartellaRepo, name);
+                    if (allineaFileConfig(client, pathRepo, c.cartellaLocale, name, e.getValue(), downloadUrl)) {
+                        risultato.get(c.sottoCartellaRepo).add(name);
+                    }
+                } catch (Exception ex) {
+                    System.out.println("AggiornamentoConfig [" + pathRepo + "]: errore su " + name + " - " + ex.getMessage());
+                    LoggerGC.ScriviErrore(ex);
+                }
+            }
+
+            if (c.cancellaOrfaniCentralizzati && !nomiRemoti.isEmpty()) {
+                cancellaConfigOrfani(c.cartellaLocale, pathRepo, c.estensione, nomiRemoti);
+            }
+        }
+
+        return risultato;
+    }
+
+    /** Ripiego di {@link #AggiornamentoConfigDaRepositoryUnicaChiamata(List)}: una chiamata per cartella. */
+    private static Map<String, List<String>> AggiornamentoConfigPerCartella(List<CartellaConfig> cartelle) {
+        Map<String, List<String>> risultato = new HashMap<>();
+        for (CartellaConfig c : cartelle) {
+            risultato.put(c.sottoCartellaRepo, AggiornamentoConfigDaRepository(c.cartellaLocale, c.pathRepo(),
+                    c.estensione, c.cancellaOrfaniCentralizzati));
+        }
+        return risultato;
+    }
+
+    /** @return l'URL raw del file, con i segmenti del path codificati (i nomi contengono spazi e parentesi). */
+    private static String urlRawGitHub(String sottoCartellaRepo, String nomeFile) {
+        return "https://raw.githubusercontent.com/" + REPO_GITHUB + "/" + BRANCH_GITHUB + "/"
+                + RADICE_CONFIG_REPO + "/" + codificaSegmentoUrl(sottoCartellaRepo) + "/" + codificaSegmentoUrl(nomeFile);
+    }
+
+    private static String codificaSegmentoUrl(String segmento) {
+        try {
+            return java.net.URLEncoder.encode(segmento, java.nio.charset.StandardCharsets.UTF_8.name()).replace("+", "%20");
+        } catch (java.io.UnsupportedEncodingException e) {
+            return segmento; // UTF-8 c'è sempre
+        }
+    }
+
+    /**
+     * Scarica il file di configurazione se manca in locale o se il suo sha blob differisce da quello remoto.
+     * @return {@code true} se il file è stato effettivamente scaricato
+     */
+    private static boolean allineaFileConfig(OkHttpClient client, String pathRepo, String cartellaLocale,
+            String name, String remoteSha, String downloadUrl) throws Exception {
+        Path localPath = Paths.get(cartellaLocale, name);
+
+        boolean daAggiornare;
+        if (!Files.exists(localPath)) {
+            daAggiornare = true;
+            System.out.println("AggiornamentoConfig [" + pathRepo + "]: file non presente localmente: " + name);
+        } else {
+            daAggiornare = !remoteSha.equalsIgnoreCase(calcolaBlobShaGit(localPath));
+            if (daAggiornare) {
+                System.out.println("AggiornamentoConfig [" + pathRepo + "]: file da aggiornare (sha diverso): " + name);
+            }
+        }
+
+        if (daAggiornare) {
+            Files.createDirectories(localPath.getParent());
+            scaricaFileDaUrl(client, downloadUrl, localPath);
+            System.out.println("AggiornamentoConfig [" + pathRepo + "]: aggiornato " + name);
+        }
+        return daAggiornare;
+    }
+
+    /**
+     * Cancella dalla cartella locale i file marcati {@code "centralizzato": true} che non compaiono più
+     * fra quelli remoti. Da chiamare solo con un elenco remoto non vuoto: su un elenco vuoto o non
+     * disponibile svuoterebbe la cartella.
+     */
+    private static void cancellaConfigOrfani(String cartellaLocale, String pathRepo, String estensione,
+            Set<String> nomiRemoti) {
+        File[] locali = new File(cartellaLocale).listFiles((dir, n) -> n.toLowerCase().endsWith(estensione));
+        if (locali == null) return;
+
+        for (File f : locali) {
+            if (nomiRemoti.contains(f.getName())) continue;
+            try {
+                StringBuilder sb = new StringBuilder();
+                try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(f))) {
+                    String riga;
+                    while ((riga = br.readLine()) != null) sb.append(riga);
+                }
+                if (new JSONObject(sb.toString()).optBoolean("centralizzato", false)) {
+                    Files.delete(f.toPath());
+                    System.out.println("AggiornamentoConfig [" + pathRepo + "]: rimosso file centralizzato non più nel repository: " + f.getName());
+                }
+            } catch (Exception ex) {
+                System.out.println("AggiornamentoConfig [" + pathRepo + "]: errore nella verifica di " + f.getName() + " - " + ex.getMessage());
+            }
+        }
     }
 
     private static String calcolaBlobShaGit(Path filePath) throws Exception {

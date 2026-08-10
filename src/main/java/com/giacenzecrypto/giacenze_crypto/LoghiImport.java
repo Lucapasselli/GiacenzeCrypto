@@ -129,4 +129,136 @@ public class LoghiImport {
         CACHE.clear();
         SEGNAPOSTO.clear();
     }
+
+    /** Etichetta di rete nella forma {@code "Nome (CODICE)"}: il codice è quello salvato nei dati */
+    private static final java.util.regex.Pattern CODICE_RETE =
+            java.util.regex.Pattern.compile(".*\\(\\s*([A-Za-z0-9]+)\\s*\\)\\s*$");
+
+    /**
+     * Ricava dalle etichette complete delle reti la mappa <i>codice rete → nome del file del logo</i>.
+     * <p>Serve dove la rete è salvata con il solo codice — la colonna "Rete" della tabella dei wallet,
+     * per esempio, contiene {@code ARB}, non {@code "Arbitrum (ARB)"} — mentre il logo prende il nome
+     * dall'etichetta intera ({@code arbitrum-arb.png}). Le etichette sono quelle già mostrate nelle
+     * finestre, così a una rete aggiunta a un elenco l'icona segue da sola.
+     * <p>A parità di codice vince il primo elenco: si passa per primo quello della finestra che si sta
+     * disegnando.
+     * @param elenchi elenchi di etichette, nella forma {@code "Nome (CODICE)"}; le voci di altra forma
+     *        (separatori, segnaposto) vengono ignorate
+     * @return mappa dal codice rete in maiuscolo allo slug del logo
+     */
+    public static Map<String, String> MappaLoghiRete(String[]... elenchi) {
+        Map<String, String> mappa = new HashMap<>();
+        for (String[] elenco : elenchi) {
+            if (elenco == null) continue;
+            for (String etichetta : elenco) {
+                if (etichetta == null) continue;
+                java.util.regex.Matcher m = CODICE_RETE.matcher(etichetta);
+                if (m.matches()) {
+                    mappa.putIfAbsent(m.group(1).toUpperCase(), Slug(etichetta));
+                }
+            }
+        }
+        return mappa;
+    }
+
+    /** @return {@code true} se la voce è un separatore o un segnaposto, non un nome con un logo */
+    static boolean isVoceSpeciale(String voce) {
+        String v = voce == null ? "" : voce.trim();
+        return v.isEmpty() || v.startsWith("-") || v.startsWith("*");
+    }
+
+    /**
+     * Disegna le voci di una combo con il logo della piattaforma a sinistra del nome, così la si
+     * riconosce a colpo d'occhio.
+     * <p>Serve tutte le combo che contengono nomi di exchange, wallet o blockchain: quelle della finestra
+     * di import e quella della rete nella gestione dei wallet. Il logo si ricava dal nome con
+     * {@link #Slug(String)} — è la stessa regola con cui i file sono stati salvati, quindi le due parti
+     * non possono divergere.
+     * <p>Non serve invece alle combo che ripetono un nome già indicato altrove (le estrazioni di un
+     * fornitore): lì il logo su ogni riga sarebbe solo rumore.
+     * <p>Il lato dell'icona segue l'altezza del carattere invece di essere fisso, perché la dimensione del
+     * font si può cambiare all'avvio con {@code --fontSize}. Le voci senza logo ricevono un segnaposto
+     * trasparente della stessa dimensione, che tiene i nomi incolonnati.
+     */
+    public static class RenderComboConLogo extends javax.swing.DefaultListCellRenderer {
+
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> lista, Object valore,
+                int indice, boolean selezionato, boolean conFuoco) {
+
+            super.getListCellRendererComponent(lista, valore, indice, selezionato, conFuoco);
+
+            String nomeLogo = null;
+            if (valore instanceof String nome && !isVoceSpeciale(nome)) {
+                nomeLogo = Slug(nome);
+            }
+
+            if (nomeLogo == null) {
+                setIcon(null);
+                return this;
+            }
+
+            //un logo alto quanto il carattere risulta minuto in una riga da 40 pixel: il fattore
+            //lo porta a occupare la riga senza sovrastare il testo
+            int lato = Math.round(getFontMetrics(getFont()).getHeight() * 1.4f);
+            setIcon(Dammi(nomeLogo, lato));
+            setIconTextGap(8);
+            return this;
+        }
+    }
+
+    /**
+     * Disegna una colonna di tabella con il logo a sinistra del testo.
+     * <p>Il colore di fondo delle righe lo decide il renderer di default installato sulla tabella
+     * (le righe alternate di {@link Tabelle#ColoraTabellaSemplice}, che cambia anche col tema): questo
+     * renderer glielo chiede a ogni disegno e ne <b>copia</b> l'aspetto invece di restituirne il
+     * componente. La copia è necessaria, non un vezzo: {@code DefaultTableCellRenderer} riusa sempre la
+     * stessa etichetta, quindi un'icona posata su quella condivisa resterebbe attaccata anche alle celle
+     * delle altre colonne disegnate dopo.
+     * <p>L'icona è alta quanto la riga: una più alta verrebbe tagliata.
+     */
+    public static class RenderTabellaConLogo extends javax.swing.table.DefaultTableCellRenderer {
+
+        private static final long serialVersionUID = 1L;
+
+        /** Ricava dal valore della cella il nome del file del logo; può restituire {@code null} */
+        private final java.util.function.Function<Object, String> nomeLogo;
+
+        /**
+         * @param nomeLogo funzione dal valore della cella al nome del logo (senza estensione), libera di
+         *        restituire {@code null} per le celle che non ne hanno uno
+         */
+        public RenderTabellaConLogo(java.util.function.Function<Object, String> nomeLogo) {
+            this.nomeLogo = nomeLogo;
+        }
+
+        @Override
+        public java.awt.Component getTableCellRendererComponent(javax.swing.JTable tabella, Object valore,
+                boolean selezionato, boolean conFuoco, int riga, int colonna) {
+
+            super.getTableCellRendererComponent(tabella, valore, selezionato, conFuoco, riga, colonna);
+
+            javax.swing.table.TableCellRenderer predefinito = tabella.getDefaultRenderer(Object.class);
+            if (predefinito != null && predefinito != this) {
+                java.awt.Component base = predefinito.getTableCellRendererComponent(
+                        tabella, valore, selezionato, conFuoco, riga, colonna);
+                setOpaque(true);
+                setBackground(base.getBackground());
+                setForeground(base.getForeground());
+                setFont(base.getFont());
+                if (base instanceof javax.swing.JComponent jc) {
+                    setBorder(jc.getBorder());
+                }
+            }
+
+            //l'icona non deve superare l'altezza della riga, altrimenti viene tagliata
+            int perFont = Math.round(getFontMetrics(getFont()).getHeight() * 1.4f);
+            int lato = Math.min(perFont, tabella.getRowHeight() - 2);
+            setIcon(Dammi(nomeLogo.apply(valore), lato));
+            setIconTextGap(6);
+            return this;
+        }
+    }
 }

@@ -47,11 +47,11 @@ public class VarCondivise {
         String[] ETH = new String[]{"https://api.etherscan.io/v2/api?chainid=1", "", "ETH", "ethereum", "ethereum"};
         String[] BASE = new String[]{"https://api.etherscan.io/v2/api?chainid=8453", "", "ETH", "base", "base"};
         String[] ARB = new String[]{"https://api.etherscan.io/v2/api?chainid=42161", "", "ETH", "arbitrum-one", "arbitrum"};
-        String[] BERA = new String[]{"https://api.etherscan.io/v2/api?chainid=80094", "", "BERA", "berachain", ""};
+        String[] BERA = new String[]{"https://api.etherscan.io/v2/api?chainid=80094", "", "BERA", "berachain", "berachain"};
         String[] AVAX = new String[]{"https://api.etherscan.io/v2/api?chainid=43114", "", "AVAX", "avalanche", "avax"};
         String[] SOL = new String[]{"https://solscan.io/", "", "SOL", "solana", "solana"};
         String[] POL = new String[]{"https://api.etherscan.io/v2/api?chainid=137", "", "POL", "polygon-pos", "polygon"};
-        String[] MONAD = new String[]{"https://api.etherscan.io/v2/api?chainid=143", "", "MON", "monad", ""};
+        String[] MONAD = new String[]{"https://api.etherscan.io/v2/api?chainid=143", "", "MON", "monad", "monad"};
         String[] BTC = new String[]{"https://mempool.space/api", "", "BTC", "bitcoin", "bitcoin"};
         String[] GNOSIS = new String[]{"https://api.etherscan.io/v2/api?chainid=100", "", "XDAI", "xdai", "xdai"};
         Principale.Mappa_ChainExplorer.put("CRO", CRO);

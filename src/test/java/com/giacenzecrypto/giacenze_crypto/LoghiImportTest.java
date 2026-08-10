@@ -42,6 +42,40 @@ public class LoghiImportTest {
     }
 
     @Test
+    public void ilCodiceDellaReteRitrovaIlLogoDellEtichettaCompleta() {
+        //Nei dati la rete è salvata col solo codice ("ARB"), il logo prende il nome dall'etichetta
+        //intera ("arbitrum-arb"): senza questa mappa la colonna "Rete" resterebbe senza icone
+        java.util.Map<String, String> loghi = LoghiImport.MappaLoghiRete(new String[]{
+            "--- nessuna selezione ---", "Arbitrum (ARB)", "Gnosis Chain (GNOSIS)", "Monad (MONAD)"});
+
+        assertEquals("arbitrum-arb", loghi.get("ARB"));
+        assertEquals("gnosis-chain-gnosis", loghi.get("GNOSIS"));
+        assertEquals("monad-monad", loghi.get("MONAD"));
+        assertEquals(3, loghi.size(), "le voci senza codice fra parentesi non vanno in mappa");
+        assertEquals(null, loghi.get("SCONOSCIUTA"), "un codice ignoto non deve inventare un logo");
+    }
+
+    @Test
+    public void aParitaDiCodiceVinceIlPrimoElenco() {
+        java.util.Map<String, String> loghi = LoghiImport.MappaLoghiRete(
+                new String[]{"Ethereum (ETH)"},
+                new String[]{"Etereo (ETH)"});
+        assertEquals("ethereum-eth", loghi.get("ETH"));
+    }
+
+    @Test
+    public void leBlockchainDellaFinestraDiImportHannoUnLogoSuDisco() {
+        //Se un file cambia nome o non viene committato l'icona sparisce senza che nulla vada in errore.
+        //L'elenco è quello da cui GeneraLoghi produce i PNG: una rete aggiunta alla sola combo dei
+        //wallet non avrebbe nessun logo, ed è questo il test che lo fa notare
+        for (String etichetta : Importazioni_Gestione.BlockChain) {
+            if (etichetta.startsWith("-")) continue;
+            assertTrue(new File(VarStatiche.getCartella_ConfigLoghi(), LoghiImport.Slug(etichetta) + ".png").isFile(),
+                    "manca il logo della blockchain " + etichetta);
+        }
+    }
+
+    @Test
     public void ilGeneratoreUsaLaStessaRegolaDelCaricatore() {
         for (String voce : new String[]{"Binance", "Crypto.com Exchange", "Bitcoin (BTC)", "Yield App", "DFX.swiss"}) {
             assertEquals(LoghiImport.Slug(voce), GeneraLoghi.Slug(voce),

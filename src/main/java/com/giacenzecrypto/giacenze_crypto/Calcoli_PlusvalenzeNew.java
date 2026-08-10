@@ -128,7 +128,66 @@ private static final Map<String, LifoXID> MappaIDTrans_LifoxID = new ConcurrentH
 public static LifoXID getIDLiFo(String id){
     return MappaIDTrans_LifoxID.get(id);
 }
-    
+
+/**
+ * Se attivo, il ricalcolo registra in {@link LifoXID} anche i due stack "completi"
+ * ({@code StackEntratoPreMovimento} e {@code StackUscitoRimanenze}), cioè lo stato dell'intero
+ * stack LIFO della moneta prima e dopo ogni movimento. Normalmente è {@code false}.
+ * <p>
+ * Quei due stack non entrano in nessun calcolo: servono soltanto alla maschera di dettaglio
+ * {@link GUI_LiFoTransazione}, che li mostra un movimento alla volta e su richiesta esplicita
+ * dell'utente. Registrarli sempre costava una copia dell'intero stack della moneta per ogni
+ * movimento elaborato — O(movimenti × profondità dello stack) in allocazioni a ogni ricalcolo,
+ * e altrettanta memoria trattenuta per tutta la sessione, dato che {@code MappaIDTrans_LifoxID}
+ * conserva un {@link LifoXID} per movimento.
+ * <p>
+ * Il flag è uno stato del motore e non un parametro di {@link #AggiornaPlusvalenze()} di
+ * proposito: finché la maschera di dettaglio è aperta anche un ricalcolo lanciato da altro
+ * (import, rimozione SCAM di massa, modifica di un movimento) deve continuare a produrre i
+ * dettagli, altrimenti la finestra si troverebbe con le tabelle vuote. Ed è per lo stesso
+ * motivo che i dettagli restano prodotti <i>dentro</i> il ricalcolo invece che da una funzione
+ * separata: non esiste un secondo percorso di calcolo che possa divergere da quello reale.
+ */
+private static volatile boolean DettagliLifoCompleti = false;
+
+/**
+ * Attiva o disattiva la registrazione degli stack LIFO completi (vedi
+ * {@link #DettagliLifoCompleti}). Attivarlo non popola nulla da solo: i dettagli compaiono al
+ * primo ricalcolo successivo, per cui chi li vuole subito usa
+ * {@link #AggiornaPlusvalenzeConDettagliLifo()}. Disattivandolo i dettagli già registrati
+ * vengono liberati immediatamente, senza bisogno di un altro ricalcolo.
+ *
+ * @param Attivi {@code true} per registrare i dettagli completi dai ricalcoli successivi
+ */
+public static void ImpostaDettagliLifoCompleti(boolean Attivi) {
+    DettagliLifoCompleti = Attivi;
+    if (!Attivi) {
+        //Libero subito le copie già in memoria: sono la parte pesante di MappaIDTrans_LifoxID
+        for (LifoXID lifo : MappaIDTrans_LifoxID.values()) {
+            lifo.StackEntratoPreMovimento = new ArrayDeque<>();
+            lifo.StackUscitoRimanenze = new ArrayDeque<>();
+        }
+    }
+}
+
+/**
+ * @return {@code true} se il motore sta registrando gli stack LIFO completi
+ */
+public static boolean isDettagliLifoCompleti() {
+    return DettagliLifoCompleti;
+}
+
+/**
+ * Attiva i dettagli LIFO completi e ricalcola, così che {@link #getIDLiFo(String)} li
+ * restituisca per ogni movimento. Da chiamare all'apertura di {@link GUI_LiFoTransazione} (o di
+ * qualunque altra funzione che debba mostrare gli stack completi), ricordando di richiamare
+ * {@link #ImpostaDettagliLifoCompleti(boolean)} con {@code false} quando non servono più.
+ */
+public static void AggiornaPlusvalenzeConDettagliLifo() {
+    ImpostaDettagliLifoCompleti(true);
+    AggiornaPlusvalenze();
+}
+
 /*
     ------ ELENCO NUOVE TIPOLOGIE E CARATTERISTICHE ------
 C-VC -> VENDITA CRYPTO
@@ -310,7 +369,9 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
            // 
         }
     }
-    if (toglidaStack) {
+    //La copia dell'intero stack residuo serve solo alla maschera di dettaglio: la registro
+    //soltanto se i dettagli completi sono stati richiesti (vedi DettagliLifoCompleti)
+    if (toglidaStack && DettagliLifoCompleti) {
         lifoID.StackUscitoRimanenze = stack.clone();
     }
 
@@ -392,7 +453,8 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
     //Aggiungo allo stack della moneta anche questo valore
     ArrayDeque<String[]> stack = CryptoStack.computeIfAbsent(Moneta, k -> new ArrayDeque<>());
     LifoXID lifoID=MappaIDTrans_LifoxID.computeIfAbsent(IDTransazione, k -> new LifoXID());
-    lifoID.StackEntratoPreMovimento=stack.clone();
+    //Come sopra: lo stack pre-movimento è dato di sola visualizzazione, non di calcolo
+    if (DettagliLifoCompleti) lifoID.StackEntratoPreMovimento=stack.clone();
     stack.push(valori);
     
     //Aggiungo allo stack relativo all'id anche questo valore relativamente a quello che è entrato
@@ -1043,7 +1105,8 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             return StackEntrato;
           }
           /**
-           * @return una copia dello stack LIFO della moneta così com'era immediatamente prima che questa transazione lo modificasse
+           * @return una copia dello stack LIFO della moneta così com'era immediatamente prima che questa transazione lo modificasse;
+           *         vuoto se il ricalcolo non è stato eseguito con i dettagli completi attivi (vedi {@link Calcoli_PlusvalenzeNew#AggiornaPlusvalenzeConDettagliLifo()})
            */
           public ArrayDeque<String[]> Get_CryptoStackEntratoPreMovimento()
           {
@@ -1059,7 +1122,8 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
           }
 
           /**
-           * @return una copia dello stack LIFO della moneta rimasto dopo l'estrazione operata da questa transazione
+           * @return una copia dello stack LIFO della moneta rimasto dopo l'estrazione operata da questa transazione;
+           *         vuoto se il ricalcolo non è stato eseguito con i dettagli completi attivi (vedi {@link Calcoli_PlusvalenzeNew#AggiornaPlusvalenzeConDettagliLifo()})
            */
           public ArrayDeque<String[]> Get_CryptoStackUscitoRimanenze()
           {

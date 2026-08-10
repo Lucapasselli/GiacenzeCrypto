@@ -5278,7 +5278,7 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
  */
 public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Component ccc, Download progressb) {
         //sistemo le giacenze sulle rete ethereum compatibili
-        if (!Rete.equals("SOL")&&!Rete.equals("BSC")&&!Rete.equals("BASE")&&!Rete.equals("AVA")&&!Rete.equals("CRO")&&!Rete.equals("BTC")){
+        if (!Rete.equals("SOL")&&!Rete.equals("BSC")&&!Rete.equals("BASE")&&!Rete.equals("AVAX")&&!Rete.equals("CRO")&&!Rete.equals("BTC")){
         progressb.setDefaultCloseOperation(0);
         progressb.Titolo("Sistemazione Giacenze moneta di Scambio su Wallet " + Wallet);
         progressb.SetLabel("Sistemazione Giacenze");

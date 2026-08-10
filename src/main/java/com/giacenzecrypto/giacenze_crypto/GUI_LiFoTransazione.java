@@ -26,9 +26,37 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
     private static String ID="";
    // private String Movimento[];
     public Tabelle_PopupSelezioneMultipla popup = new Tabelle_PopupSelezioneMultipla(this);
-    
+
+    /**
+     * Numero di maschere di dettaglio LIFO aperte. Il motore non registra gli stack LIFO completi
+     * per non pagarne il costo su ogni movimento di ogni ricalcolo (vedi
+     * {@code Calcoli_PlusvalenzeNew.DettagliLifoCompleti}): li si chiede all'apertura di questa
+     * finestra e li si rilascia alla chiusura dell'ultima, non della prima, altrimenti chiudendo
+     * una di due finestre aperte l'altra si troverebbe senza dati appena si usano le frecce di
+     * navigazione.
+     */
+    private static int FinestreAperte = 0;
+
+    /** Evita che questa finestra scali {@link #FinestreAperte} due volte (rilascio + evento di chiusura). */
+    private boolean RilasciataQuestaFinestra = false;
+
+    /**
+     * Segnala che questa maschera non ha più bisogno degli stack LIFO completi e, se era l'ultima
+     * aperta, li fa liberare al motore. È idempotente: può essere chiamata sia dall'evento di
+     * chiusura sia dal costruttore quando l'inizializzazione fallisce.
+     */
+    private void RilasciaDettagliLifo() {
+        if (RilasciataQuestaFinestra) return;
+        RilasciataQuestaFinestra = true;
+        FinestreAperte--;
+        if (FinestreAperte <= 0) {
+            FinestreAperte = 0;
+            Calcoli_PlusvalenzeNew.ImpostaDettagliLifoCompleti(false);
+        }
+    }
+
     public GUI_LiFoTransazione(String IDtr) {
-      //  ID=IDtr;              
+      //  ID=IDtr;
         initComponents();
         Tabelle.Tabelle_InizializzaHeader(Tabella_Lifo_Entrata);
         Tabelle.Tabelle_InizializzaHeader(Tabella_Lifo_Uscita);
@@ -38,8 +66,34 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
         this.Bottone_MU_FrecciaDestra.setIcon(Icone.FrecciaDestra);
         this.Bottone_ME_FrecciaSinistra.setIcon(Icone.FrecciaSinistra);
         this.Bottone_MU_FrecciaSinistra.setIcon(Icone.FrecciaSinistra);
-        setIconImage(icon.getImage());       
-        InizializzaOggetti(IDtr);        
+        setIconImage(icon.getImage());
+
+        //Gli stack LIFO completi che questa maschera mostra non vengono registrati dal ricalcolo
+        //normale: li chiedo qui e ricalcolo, così i dati mostrati vengono comunque dal motore
+        //reale e non da un secondo calcolo che potrebbe divergerne.
+        //Contatore e listener PRIMA del ricalcolo: se il costruttore si interrompe dopo (movimento
+        //non più in mappa, errore nel ricalcolo) il percorso di rilascio deve comunque esistere,
+        //altrimenti il flag resterebbe attivo per tutta la sessione rimettendo in piedi, senza
+        //alcun sintomo visibile, proprio le copie per movimento che questa modifica ha tolto.
+        FinestreAperte++;
+        RilasciataQuestaFinestra = false;
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                RilasciaDettagliLifo();
+            }
+        });
+        try {
+            Calcoli_PlusvalenzeNew.AggiornaPlusvalenzeConDettagliLifo();
+            InizializzaOggetti(IDtr);
+        } catch (RuntimeException ex) {
+            //La finestra non è utilizzabile: rilascio subito senza contare sull'evento di
+            //chiusura, che non arriva se la finestra non è mai diventata visibile
+            LoggerGC.ScriviErrore(ex);
+            RilasciaDettagliLifo();
+            dispose();
+            throw ex;
+        }
     }
     
     private void InizializzaOggetti(String IDtr){

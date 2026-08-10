@@ -49,11 +49,43 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
 
     
     public boolean TabellaDaAggiornare=false;
+
+    /** Codice rete (come sta nei dati: {@code ARB}, {@code BTC}, …) → nome del file del logo */
+    private Map<String, String> LoghiPerRete = Map.of();
+
     public GUI_GestioneWallets() {
         ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());
         initComponents();
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(TabellaWallets);
+        MostraLoghiRete();
+    }
+
+    /**
+     * Mette il logo della blockchain accanto al nome nella combo della rete e accanto al codice nella
+     * colonna "Rete" della tabella.
+     * <p>La corrispondenza codice → logo si ricava dalle etichette della combo stessa
+     * ({@code "Arbitrum (ARB)"} → {@code arbitrum-arb.png}): i wallet in tabella sono stati inseriti da
+     * lì, quindi aggiungere una rete alla combo basta perché l'icona compaia anche in tabella. Come
+     * secondo elenco vengono le blockchain della finestra di import, che coprono i codici arrivati dalla
+     * migrazione del vecchio {@code Wallets.db} e mai proposti da questa combo (DOGE, ADA, …).
+     * <p>Una rete senza file del logo — oggi Berachain, per cui {@link GeneraLoghi} non ha ancora
+     * prodotto il PNG — riceve un segnaposto trasparente e resta incolonnata con le altre.
+     */
+    private void MostraLoghiRete() {
+        String[] etichetteCombo = new String[ComboBox_Rete.getItemCount()];
+        for (int i = 0; i < etichetteCombo.length; i++) {
+            etichetteCombo[i] = ComboBox_Rete.getItemAt(i);
+        }
+        LoghiPerRete = LoghiImport.MappaLoghiRete(etichetteCombo, Importazioni_Gestione.BlockChain);
+
+        ComboBox_Rete.setRenderer(new LoghiImport.RenderComboConLogo());
+
+        //il renderer viaggia con la colonna: se l'utente riordina le colonne resta sulla rete
+        TabellaWallets.getColumnModel().getColumn(2).setCellRenderer(
+                new LoghiImport.RenderTabellaConLogo(v -> v == null
+                        ? null
+                        : LoghiPerRete.get(v.toString().trim().toUpperCase())));
     }
 
 
@@ -136,8 +168,8 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         if (TabellaWallets.getColumnModel().getColumnCount() > 0) {
             TabellaWallets.getColumnModel().getColumn(0).setPreferredWidth(150);
             TabellaWallets.getColumnModel().getColumn(0).setMaxWidth(150);
-            TabellaWallets.getColumnModel().getColumn(2).setPreferredWidth(60);
-            TabellaWallets.getColumnModel().getColumn(2).setMaxWidth(60);
+            TabellaWallets.getColumnModel().getColumn(2).setPreferredWidth(110);
+            TabellaWallets.getColumnModel().getColumn(2).setMaxWidth(110);
             TabellaWallets.getColumnModel().getColumn(3).setPreferredWidth(200);
             TabellaWallets.getColumnModel().getColumn(3).setMaxWidth(200);
             TabellaWallets.getColumnModel().getColumn(4).setPreferredWidth(100);

@@ -22,7 +22,7 @@ import org.json.JSONObject;
 /**
  * Strumento di sviluppo, non fa parte dell'applicazione: scarica da CoinGecko i loghi degli exchange e
  * delle blockchain e li salva in {@code config/loghi/}, da dove vengono poi distribuiti agli utenti
- * insieme alle altre configurazioni (vedi {@link Funzioni#AggiornamentoConfigDaRepository}).
+ * insieme alle altre configurazioni (vedi {@link Funzioni#AggiornamentoConfigDaRepositoryUnicaChiamata}).
  * <p>Il download si fa qui, una volta, e il risultato si committa: gli utenti non devono spendere la
  * quota CoinGecko dell'applicazione, che serve già per i prezzi.
  * <p>Uso: {@code java -cp target/classes com.giacenzecrypto.giacenze_crypto.GeneraLoghi [cartella]}
@@ -76,6 +76,7 @@ public class GeneraLoghi {
         PIATTAFORMA_CHAIN.put("Arbitrum (ARB)", "arbitrum-one");
         PIATTAFORMA_CHAIN.put("Avalanche (AVAX)", "avalanche");
         PIATTAFORMA_CHAIN.put("Base (BASE)", "base");
+        PIATTAFORMA_CHAIN.put("Berachain (BERA)", "berachain");
         PIATTAFORMA_CHAIN.put("Binance Chain (BNB)", "binancecoin");
         PIATTAFORMA_CHAIN.put("Binance Smart Chain (BSC)", "binance-smart-chain");
         PIATTAFORMA_CHAIN.put("Cronos Chain (CRO)", "cronos");

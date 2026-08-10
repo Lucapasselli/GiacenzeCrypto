@@ -15,7 +15,7 @@ import org.json.JSONObject;
  * <p>Il file JSON è l'unica fonte: nel codice non esiste più nessuna copia della mappa. Questo permette
  * di correggere o aggiungere una causale distribuendo un file, senza rilasciare una nuova versione del
  * programma. I file vivono in {@code config/importmappe/} e vengono allineati al repository all'avvio da
- * {@link Funzioni#AggiornamentoConfigDaRepository}; una copia di default è inclusa nel jar sotto
+ * {@link Funzioni#AggiornamentoConfigDaRepositoryUnicaChiamata}; una copia di default è inclusa nel jar sotto
  * {@code /ImportMappe/} e viene usata come ripiego se il file su disco manca o è illeggibile.
  * <p>La mappa viene riletta da disco a ogni import, così un file aggiornato a mano ha effetto subito;
  * gli aggiornamenti scaricati dal repository, invece, sono scaricati in background e diventano effettivi

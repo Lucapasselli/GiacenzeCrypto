@@ -11439,20 +11439,26 @@ if (result.isAction("delete-all")) {
         Thread thread = new Thread() {
             /**
              * Aggiorna in background i file di configurazione obsoleti nelle cartelle sotto {@code config/}.
+             * <p>Le tre cartelle si allineano con una sola chiamata all'API GitHub (l'albero di
+             * {@code config/}), non più una per cartella.
              * <p>La vecchia cartella {@code ImportConfig/} NON viene più sincronizzata: resta a disposizione
              * dell'utente per le proprie configurazioni personali, mentre quelle centralizzate sono passate
              * a {@code config/import/}.
              */
             public void run() {
-                Aggiorna("import complete", VarStatiche.getCartella_ConfigImport(),      "config/import",      ".json", true);
-                Aggiorna("mappe causali",   VarStatiche.getCartella_ConfigImportMappe(), "config/importmappe", ".json", true);
-                Aggiorna("loghi",           VarStatiche.getCartella_ConfigLoghi(),       "config/loghi",       ".png",  false);
+                java.util.Map<String, java.util.List<String>> aggiornati =
+                        Funzioni.AggiornamentoConfigDaRepositoryUnicaChiamata(java.util.List.of(
+                                new Funzioni.CartellaConfig(VarStatiche.getCartella_ConfigImport(),      "import",      ".json", true),
+                                new Funzioni.CartellaConfig(VarStatiche.getCartella_ConfigImportMappe(), "importmappe", ".json", true),
+                                new Funzioni.CartellaConfig(VarStatiche.getCartella_ConfigLoghi(),       "loghi",       ".png",  false)));
+
+                Riepiloga("import complete", aggiornati.get("import"));
+                Riepiloga("mappe causali",   aggiornati.get("importmappe"));
+                Riepiloga("loghi",           aggiornati.get("loghi"));
             }
 
-            private void Aggiorna(String descrizione, String cartella, String pathRepo, String estensione, boolean cancellaOrfani) {
-                java.util.List<String> aggiornati =
-                        Funzioni.AggiornamentoConfigDaRepository(cartella, pathRepo, estensione, cancellaOrfani);
-                if (!aggiornati.isEmpty()) {
+            private void Riepiloga(String descrizione, java.util.List<String> aggiornati) {
+                if (aggiornati != null && !aggiornati.isEmpty()) {
                     System.out.println("AggiornamentoConfig (" + descrizione + "): aggiornati " + aggiornati.size() + " file: " + aggiornati);
                 } else {
                     System.out.println("AggiornamentoConfig (" + descrizione + "): già aggiornati");
@@ -12465,8 +12471,12 @@ if (result != null && !result.isAction("cancel")) {
         // TODO add your handling code here:
         if (PopUp_IDTrans!=null){
             //Calcoli_PlusvalenzeNew.LifoXID lifoID=Calcoli_PlusvalenzeNew.getIDLiFo(PopUp_IDTrans);
+            //Il costruttore rilancia il ricalcolo per ottenere gli stack LIFO completi, che il
+            //ricalcolo normale non registra: su archivi grandi si fa attendere, quindi clessidra
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             GUI_LiFoTransazione t =new GUI_LiFoTransazione(PopUp_IDTrans);
-            t.setLocationRelativeTo(PopUp_Component);           
+            t.setLocationRelativeTo(PopUp_Component);
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             t.setVisible(true);
         }
     }//GEN-LAST:event_MenuItem_LiFoTransazioneActionPerformed

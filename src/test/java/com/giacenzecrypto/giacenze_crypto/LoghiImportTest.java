@@ -5,6 +5,7 @@ import javax.swing.Icon;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -14,6 +15,20 @@ import org.junit.jupiter.api.Test;
  * nulla vada in errore.
  */
 public class LoghiImportTest {
+
+    /**
+     * Riporta la directory di lavoro alla radice del progetto, dove stanno i loghi veri.
+     * <p>Serve perché altri test della suite ({@code DatabaseH2UpsertTest},
+     * {@code CalcoliPlusvalenzeNewAggiornaPlusvalenzeTest}) la spostano su una cartella temporanea e non
+     * la ripristinano: surefire riusa la stessa JVM, quindi senza questo tutte le icone tornerebbero
+     * segnaposto e le verifiche passerebbero senza verificare nulla. Va svuotata anche la cache, che
+     * potrebbe aver già memorizzato le assenze lette dalla cartella sbagliata.
+     */
+    @BeforeEach
+    public void riportaLaCartellaDiLavoroSullaRadiceDelProgetto() {
+        VarStatiche.setWorkingDirectory(System.getProperty("user.dir") + "/");
+        LoghiImport.SvuotaCache();
+    }
 
     @Test
     public void loSlugSegueLaConvenzioneDeiNomiFile() {
@@ -56,13 +71,64 @@ public class LoghiImportTest {
             Icon i = LoghiImport.Dammi("binance", lato);
             assertEquals(lato, i.getIconWidth());
             assertEquals(lato, i.getIconHeight());
+            //Anche il segnaposto è quadrato del lato giusto: senza questo il test passerebbe pure
+            //se il file del logo non venisse trovato
+            assertTrue(HaPixelVisibili(i), "il logo binance non è stato caricato, icona vuota");
         }
+    }
+
+    /** @return {@code true} se l'icona contiene almeno un pixel non trasparente */
+    private static boolean HaPixelVisibili(Icon icona) {
+        java.awt.image.BufferedImage im = new java.awt.image.BufferedImage(
+                icona.getIconWidth(), icona.getIconHeight(), java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        java.awt.Graphics2D g = im.createGraphics();
+        icona.paintIcon(null, g, 0, 0);
+        g.dispose();
+        for (int y = 0; y < im.getHeight(); y++) {
+            for (int x = 0; x < im.getWidth(); x++) {
+                if ((im.getRGB(x, y) >>> 24) > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Test
     public void ilLatoRestaEntroLimitiUsabili() {
         assertTrue(LoghiImport.Dammi("binance", 2).getIconWidth() >= 14, "lato troppo piccolo non riportato al minimo");
         assertTrue(LoghiImport.Dammi("binance", 500).getIconWidth() <= 40, "lato troppo grande non riportato al massimo");
+    }
+
+    /**
+     * I loghi vanno riprodotti come sono nel file, senza correzioni legate al tema in uso: un tentativo
+     * di posare quelli poco contrastati su una piastrella neutra finiva per incorniciare di nero i loghi
+     * semplicemente colorati e chiari, come il cerchio verde di Tatax.
+     */
+    @Test
+    public void ilLogoNonVieneAlteratoInBaseAlTema() throws Exception {
+        //Sagome su fondo trasparente: l'angolo deve restare trasparente anche dopo il ridimensionamento.
+        //Se comparisse un colore pieno vorrebbe dire che è stato aggiunto uno sfondo che nel file non c'è
+        for (String nome : new String[]{"tatax", "dogecoin-doge", "ledger-live"}) {
+            assertEquals(0, AlphaAngolo(LoghiImport.Dammi(nome, 32)),
+                    "l'angolo del logo " + nome + " non è trasparente: è stato aggiunto uno sfondo");
+        }
+
+        //Loghi che portano il proprio fondo pieno fino ai bordi: quello va conservato, non rimosso
+        int alphaOriginale = javax.imageio.ImageIO.read(new File("config/loghi", "binance.png")).getRGB(0, 0) >>> 24;
+        assertEquals(255, alphaOriginale, "binance.png non è più un quadrato opaco: scegliere un altro esempio");
+        assertEquals(255, AlphaAngolo(LoghiImport.Dammi("binance", 32)),
+                "il fondo pieno del logo binance è andato perso");
+    }
+
+    /** @return la trasparenza dell'angolo in alto a sinistra dell'icona, da 0 (trasparente) a 255 (opaco) */
+    private static int AlphaAngolo(Icon icona) {
+        java.awt.image.BufferedImage im = new java.awt.image.BufferedImage(
+                icona.getIconWidth(), icona.getIconHeight(), java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        java.awt.Graphics2D g = im.createGraphics();
+        icona.paintIcon(null, g, 0, 0);
+        g.dispose();
+        return im.getRGB(0, 0) >>> 24;
     }
 
     @Test

@@ -1,7 +1,7 @@
 {
   "centralizzato":true,
   "nomeExchange": "",
-  "logo": "cointracking",
+  "estrazione": "CSV (vecchio layout)",
   "nomeWallet": "Principale",
   "separatore": ",",
   "encoding": "UTF-8",

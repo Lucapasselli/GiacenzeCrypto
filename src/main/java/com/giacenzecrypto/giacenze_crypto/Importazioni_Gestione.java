@@ -97,6 +97,40 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     static final String NAT_OKX_OLD        = "OKX_OLD";
 
     /**
+     * Fornitori riconosciuti dalla parola contenuta nel nome del file di configurazione.
+     * <p>Serve ai formati che non appartengono a un singolo exchange: l'esportazione di un servizio di
+     * rendicontazione contiene i movimenti di piattaforme diverse — quale si sceglie poi nella finestra —
+     * quindi la configurazione non fissa nessun {@code nomeExchange} da cui dedurre il raggruppamento.
+     * Per gli exchange veri il problema non si pone, il nome della piattaforma è già nella configurazione.
+     * <p>Le chiavi vanno scritte normalizzate: minuscole e senza caratteri non alfanumerici.
+     */
+    private static final java.util.Map<String, String> FORNITORI_DA_NOME_FILE = new java.util.LinkedHashMap<>();
+
+    static {
+        FORNITORI_DA_NOME_FILE.put("cointracking", "CoinTracking");
+        //Refuso presente nei nomi dei file distribuiti: "Cointraking", senza la seconda c
+        FORNITORI_DA_NOME_FILE.put("cointraking", "CoinTracking");
+        FORNITORI_DA_NOME_FILE.put("tatax", "Tatax");
+    }
+
+    /**
+     * Riconosce il fornitore dalla parola contenuta nel nome di un file di configurazione.
+     * @param nomeFile nome del file senza estensione
+     * @return il nome del fornitore, oppure {@code null} se il nome non contiene nessuna delle parole note
+     */
+    static String FornitoreDaNomeFile(String nomeFile) {
+        //Stessa normalizzazione dello slug dei loghi, meno i trattini: così "Cointraking (Vecchio
+        //Layout)", "cointracking_2024" e "CoinTracking.info" cadono tutti sulla stessa chiave
+        String normalizzato = LoghiImport.Slug(nomeFile).replace("-", "");
+        for (java.util.Map.Entry<String, String> e : FORNITORI_DA_NOME_FILE.entrySet()) {
+            if (normalizzato.contains(e.getKey())) {
+                return e.getValue();
+            }
+        }
+        return null;
+    }
+
+    /**
      * Una voce del menù "tipo di file da importare": o un import nativo, scritto nel programma, o una
      * configurazione JSON letta da {@code config/import/} (o dalla vecchia {@code ImportConfig/}).
      * <p>Le due famiglie convivono nello stesso elenco ordinato alfabeticamente, senza più il prefisso
@@ -104,20 +138,20 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
      */
     static final class VoceImport {
 
-        /** Testo mostrato nella combo */
-        final String etichetta;
+        /** Exchange o fornitore dei dati: è la voce della prima combo e raggruppa le estrazioni */
+        final String fornitore;
+        /** Nome dell'estrazione dentro il fornitore: è la voce della seconda combo */
+        final String estrazione;
         /** Identificativo dell'import nativo, {@code null} per le configurazioni JSON */
         final String idNativo;
         /** File di configurazione JSON, {@code null} per gli import nativi */
         final java.io.File fileJson;
-        /** Nome del file del logo in {@code config/loghi/}, senza estensione; vuoto se non se ne conosce uno */
-        final String nomeLogo;
 
-        VoceImport(String etichetta, String idNativo, java.io.File fileJson, String nomeLogo) {
-            this.etichetta = etichetta;
+        VoceImport(String fornitore, String estrazione, String idNativo, java.io.File fileJson) {
+            this.fornitore = fornitore;
+            this.estrazione = estrazione;
             this.idNativo = idNativo;
             this.fileJson = fileJson;
-            this.nomeLogo = nomeLogo == null ? "" : nomeLogo;
         }
 
         /** @return {@code true} se la voce è una configurazione JSON */
@@ -133,21 +167,26 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             return id.equals(idNativo);
         }
 
-        /** Il testo della voce, usato anche da {@link RenderVoceImport} per l'etichetta. */
+        /** Nella seconda combo si mostra solo l'estrazione: il fornitore è già nella prima. */
         @Override
         public String toString() {
-            return etichetta;
+            return estrazione;
         }
     }
 
     /**
-     * Disegna le voci della combo del tipo di file con il logo dell'exchange a sinistra del nome, così
-     * la piattaforma si riconosce a colpo d'occhio.
-     * <p>Il lato dell'icona segue l'altezza del carattere invece di essere fisso, perché la dimensione
-     * del font si può cambiare all'avvio con {@code --fontSize}. Le voci senza logo ricevono un
-     * segnaposto trasparente della stessa dimensione, che tiene i nomi incolonnati.
+     * Disegna le voci di una combo con il logo dell'exchange a sinistra del nome, così la piattaforma si
+     * riconosce a colpo d'occhio.
+     * <p>Serve le due combo che contengono nomi di piattaforme: quella del fornitore dei dati e quella
+     * dell'exchange/wallet/blockchain. Il logo si ricava dal nome con {@link LoghiImport#Slug(String)} —
+     * è la stessa regola con cui i file sono stati salvati, quindi le due parti non possono divergere.
+     * <p>Non serve invece alla combo delle estrazioni: lì il fornitore è già indicato sopra, e ripeterne
+     * il logo su ogni riga sarebbe solo rumore.
+     * <p>Il lato dell'icona segue l'altezza del carattere invece di essere fisso, perché la dimensione del
+     * font si può cambiare all'avvio con {@code --fontSize}. Le voci senza logo ricevono un segnaposto
+     * trasparente della stessa dimensione, che tiene i nomi incolonnati.
      */
-    private static final class RenderVoceImport extends javax.swing.DefaultListCellRenderer {
+    private static final class RenderConLogo extends javax.swing.DefaultListCellRenderer {
 
         private static final long serialVersionUID = 1L;
 
@@ -157,15 +196,21 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
             super.getListCellRendererComponent(lista, valore, indice, selezionato, conFuoco);
 
-            if (valore instanceof VoceImport voce) {
-                //un logo alto quanto il carattere risulta minuto in una riga da 40 pixel: il fattore
-                //lo porta a occupare la riga senza sovrastare il testo
-                int lato = Math.round(getFontMetrics(getFont()).getHeight() * 1.4f);
-                setIcon(LoghiImport.Dammi(voce.nomeLogo, lato));
-                setIconTextGap(8);
-            } else {
-                setIcon(null);
+            String nomeLogo = null;
+            if (valore instanceof String nome && !isVoceSpeciale(nome)) {
+                nomeLogo = LoghiImport.Slug(nome);
             }
+
+            if (nomeLogo == null) {
+                setIcon(null);
+                return this;
+            }
+
+            //un logo alto quanto il carattere risulta minuto in una riga da 40 pixel: il fattore
+            //lo porta a occupare la riga senza sovrastare il testo
+            int lato = Math.round(getFontMetrics(getFont()).getHeight() * 1.4f);
+            setIcon(LoghiImport.Dammi(nomeLogo, lato));
+            setIconTextGap(8);
             return this;
         }
     }
@@ -180,6 +225,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         //rimpiazzato con Exchanges, Wallets o BlockChain in ComboBox_TipoImportItemStateChanged.
         //Prima nel .form c'era una copia completa e disallineata dell'array Exchanges, mai usata.
         ComboBox_Exchanges.setModel(new DefaultComboBoxModel<>(new String[]{" - nessuno -"}));
+        ComboBox_Exchanges.setRenderer(new RenderConLogo());
         popolaComboTipoFile();
     }
 
@@ -236,61 +282,92 @@ private static java.util.List<java.io.File> elencoConfigurazioniImport() {
 }
 
 /**
- * Riempie la combo del tipo di file con gli import nativi e le configurazioni JSON, in un unico elenco
- * ordinato alfabeticamente ignorando maiuscole e minuscole.
- * <p>La combo è volutamente vuota nel {@code .form}: il suo contenuto dipende dai file presenti su
- * disco, quindi non può stare nel modello generato dal Designer.
+ * Tutte le estrazioni disponibili, native e da configurazione JSON, raggruppate per fornitore.
+ * <p>Costruita una volta all'apertura della finestra e usata per riempire le due combo: la prima elenca
+ * le chiavi, la seconda le estrazioni del fornitore scelto.
  */
-private void popolaComboTipoFile() {
-    java.util.List<VoceImport> voci = new java.util.ArrayList<>();
+private final java.util.Map<String, java.util.List<VoceImport>> estrazioniPerFornitore =
+        new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-    //Il logo degli import nativi è indicato qui: l'etichetta non basterebbe a ricavarlo, perché
-    //descrive il formato del file ("Binance Financial Report") e non solo la piattaforma
-    voci.add(new VoceImport("Crypto.com App CSV",          NAT_CDC_APP,        null, "crypto-com"));
-    voci.add(new VoceImport("Crypto.com Exchange CSV",     NAT_CDC_EXCHANGE,   null, "crypto-com-exchange"));
-    voci.add(new VoceImport("Binance_Old",                 NAT_BINANCE_OLD,    null, "binance"));
-    voci.add(new VoceImport("Binance Financial Report",    NAT_BINANCE_REPORT, null, "binance"));
-    voci.add(new VoceImport("CoinTracking.info CSV",       NAT_COINTRACKING,   null, "cointracking"));
-    voci.add(new VoceImport("Tatax CSV (vecchia versione)",NAT_TATAX_OLD,      null, "tatax"));
-    voci.add(new VoceImport("OKX_Old",                     NAT_OKX_OLD,        null, "okx"));
+/**
+ * Raccoglie gli import nativi e le configurazioni JSON e li raggruppa per fornitore.
+ * <p>Il nome dell'estrazione è volutamente scritto senza il fornitore davanti: quello sta già nella
+ * prima combo, ripeterlo allungherebbe le voci senza aggiungere informazione.
+ */
+private void raccogliEstrazioni() {
+    estrazioniPerFornitore.clear();
+
+    aggiungiEstrazione(new VoceImport("Crypto.com",   "App CSV",          NAT_CDC_APP,        null));
+    aggiungiEstrazione(new VoceImport("Crypto.com",   "Exchange CSV",     NAT_CDC_EXCHANGE,   null));
+    aggiungiEstrazione(new VoceImport("Binance",      "Formato storico",  NAT_BINANCE_OLD,    null));
+    aggiungiEstrazione(new VoceImport("Binance",      "Financial Report", NAT_BINANCE_REPORT, null));
+    aggiungiEstrazione(new VoceImport("CoinTracking", "Formato storico",  NAT_COINTRACKING,   null));
+    aggiungiEstrazione(new VoceImport("Tatax",        "Formato storico",  NAT_TATAX_OLD,      null));
+    aggiungiEstrazione(new VoceImport("OKX",          "Formato storico",  NAT_OKX_OLD,        null));
 
     try {
         for (java.io.File f : elencoConfigurazioniImport()) {
             // Il nome base è sempre il nome del file senza estensione
             String nomeBase = f.getName().replaceAll("(?i)\\.json$", "");
-            String etichetta = nomeBase;
-            String nomeLogo = "";
+
+            //La parola nel nome del file viene riconosciuta prima ancora di leggere la configurazione,
+            //così una esportazione CoinTracking o Tatax finisce sotto il proprio fornitore anche se il
+            //file è illeggibile
+            String daNomeFile = FornitoreDaNomeFile(nomeBase);
+            //Senza nessun indizio la configurazione resta utilizzabile: diventa un fornitore a sé con
+            //una sola estrazione, che è come si comportano le configurazioni scritte dall'utente
+            String fornitore = daNomeFile != null ? daNomeFile : nomeBase;
+            String estrazione = nomeBase;
 
             try {
                 ImportazioneGenerica.ConfigurazioneImport cfg =
                         ImportazioneGenerica.ConfigurazioneImport.carica(f.getAbsolutePath());
 
-                // Solo il suffisso cambia — il nome resta quello del file
-                if (cfg.testing) {
-                    etichetta = nomeBase + " (In fase di test, utilizzo consapevole)";
+                if (cfg.fornitore != null && !cfg.fornitore.isBlank()) {
+                    //Indicazione esplicita: vince su tutto
+                    fornitore = cfg.fornitore.trim();
+                } else if (daNomeFile == null && cfg.nomeExchange != null && !cfg.nomeExchange.isBlank()) {
+                    //Formato di un singolo exchange: il nome della piattaforma è già nella configurazione
+                    fornitore = cfg.nomeExchange.trim();
                 }
 
-                //Il campo "logo" del JSON vince; in mancanza si ricava dal nome dell'exchange, che
-                //copre il caso normale senza dover scrivere nulla nella configurazione
-                if (cfg.logo != null && !cfg.logo.isBlank()) {
-                    nomeLogo = LoghiImport.Slug(cfg.logo);
-                } else if (cfg.nomeExchange != null && !cfg.nomeExchange.isBlank()) {
-                    nomeLogo = LoghiImport.Slug(cfg.nomeExchange);
+                if (cfg.estrazione != null && !cfg.estrazione.isBlank()) {
+                    estrazione = cfg.estrazione.trim();
+                }
+
+                if (cfg.testing) {
+                    estrazione = estrazione + " (In fase di test, utilizzo consapevole)";
                 }
 
             } catch (Exception ex) {
                 LoggerGC.ScriviErrore(ex);
             }
 
-            voci.add(new VoceImport(etichetta, null, f, nomeLogo));
+            aggiungiEstrazione(new VoceImport(fornitore, estrazione, null, f));
         }
     } catch (Exception ex) {
         LoggerGC.ScriviErrore(ex);
     }
 
-    //L'ordinamento di List è stabile: a parità di etichetta ignorando il caso resta l'ordine di
-    //inserimento, quindi gli import nativi precedono le configurazioni JSON omonime
-    voci.sort(java.util.Comparator.comparing(v -> v.etichetta, String.CASE_INSENSITIVE_ORDER));
+    //Dentro ogni fornitore le estrazioni restano in ordine alfabetico, come le voci della prima combo
+    for (java.util.List<VoceImport> elenco : estrazioniPerFornitore.values()) {
+        elenco.sort(java.util.Comparator.comparing(v -> v.estrazione, String.CASE_INSENSITIVE_ORDER));
+    }
+}
+
+/** Registra una estrazione sotto il proprio fornitore. */
+private void aggiungiEstrazione(VoceImport voce) {
+    estrazioniPerFornitore.computeIfAbsent(voce.fornitore, f -> new ArrayList<>()).add(voce);
+}
+
+/**
+ * Riempie la combo dei fornitori con le chiavi raccolte, in ordine alfabetico ignorando maiuscole e
+ * minuscole, e a cascata quella delle estrazioni.
+ * <p>Le due combo sono volutamente vuote nel {@code .form}: il loro contenuto dipende dai file presenti
+ * su disco, quindi non può stare nel modello generato dal Designer.
+ */
+private void popolaComboTipoFile() {
+    raccogliEstrazioni();
 
     //setModel selezionerebbe la prima voce facendo scattare ComboBox_TipoFileItemStateChanged su una
     //finestra non ancora inizializzata: stacco il listener e allineo lo stato una volta sola alla fine
@@ -298,18 +375,47 @@ private void popolaComboTipoFile() {
     for (java.awt.event.ItemListener l : listeners) {
         ComboBox_TipoFile.removeItemListener(l);
     }
-    ComboBox_TipoFile.setModel(new DefaultComboBoxModel<>(voci.toArray(new VoceImport[0])));
+    //La TreeMap è già ordinata ignorando maiuscole e minuscole
+    ComboBox_TipoFile.setModel(new DefaultComboBoxModel<>(
+            estrazioniPerFornitore.keySet().toArray(new String[0])));
     for (java.awt.event.ItemListener l : listeners) {
         ComboBox_TipoFile.addItemListener(l);
     }
-    ComboBox_TipoFile.setRenderer(new RenderVoceImport());
+    ComboBox_TipoFile.setRenderer(new RenderConLogo());
+
+    popolaComboTipoEstrazione();
+}
+
+/**
+ * Riempie la combo delle estrazioni con quelle del fornitore selezionato, e la abilita solo se c'è più
+ * di una scelta da fare: con una sola estrazione la voce resta visibile — così si sa che cosa verrà
+ * importato — ma non c'è nulla da scegliere.
+ */
+private void popolaComboTipoEstrazione() {
+    Object fornitore = ComboBox_TipoFile.getSelectedItem();
+    java.util.List<VoceImport> elenco = fornitore == null
+            ? java.util.List.of()
+            : estrazioniPerFornitore.getOrDefault(fornitore.toString(), java.util.List.of());
+
+    java.awt.event.ItemListener[] listeners = ComboBox_TipoEstrazione.getItemListeners();
+    for (java.awt.event.ItemListener l : listeners) {
+        ComboBox_TipoEstrazione.removeItemListener(l);
+    }
+    ComboBox_TipoEstrazione.setModel(new DefaultComboBoxModel<>(elenco.toArray(new VoceImport[0])));
+    for (java.awt.event.ItemListener l : listeners) {
+        ComboBox_TipoEstrazione.addItemListener(l);
+    }
+
+    boolean daScegliere = elenco.size() > 1;
+    ComboBox_TipoEstrazione.setEnabled(daScegliere);
+    Label_TipoEstrazione.setEnabled(daScegliere);
 
     aggiornaStatoPerVoceSelezionata();
 }
 
-/** @return la voce selezionata nella combo del tipo di file, {@code null} se la combo è vuota */
+/** @return l'estrazione selezionata, {@code null} se non ce n'è nessuna disponibile */
 private VoceImport voceSelezionata() {
-    return (VoceImport) ComboBox_TipoFile.getSelectedItem();
+    return (VoceImport) ComboBox_TipoEstrazione.getSelectedItem();
 }
    
    
@@ -325,6 +431,8 @@ private VoceImport voceSelezionata() {
 
         Label_TipoFile = new javax.swing.JLabel();
         ComboBox_TipoFile = new javax.swing.JComboBox<>();
+        Label_TipoEstrazione = new javax.swing.JLabel();
+        ComboBox_TipoEstrazione = new javax.swing.JComboBox<>();
         Bottone_SelezionaFile = new javax.swing.JButton();
         Label_NomeExchange = new javax.swing.JLabel();
         ScrollPane_Attenzione = new javax.swing.JScrollPane();
@@ -342,12 +450,24 @@ private VoceImport voceSelezionata() {
         setResizable(false);
 
         Label_TipoFile.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
-        Label_TipoFile.setText("Selezionare il tipo di file da importare");
+        Label_TipoFile.setText("Selezionare l'exchange o il fornitore dei dati");
 
         ComboBox_TipoFile.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         ComboBox_TipoFile.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 ComboBox_TipoFileItemStateChanged(evt);
+            }
+        });
+
+        Label_TipoEstrazione.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
+        Label_TipoEstrazione.setText("Selezionare il tipo di estrazione");
+        Label_TipoEstrazione.setEnabled(false);
+
+        ComboBox_TipoEstrazione.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
+        ComboBox_TipoEstrazione.setEnabled(false);
+        ComboBox_TipoEstrazione.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                ComboBox_TipoEstrazioneItemStateChanged(evt);
             }
         });
 
@@ -440,7 +560,9 @@ private VoceImport voceSelezionata() {
                         .addComponent(Bottone_SelezionaFile, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 109, Short.MAX_VALUE)
                         .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(ComboBox_TipoFile, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(ComboBox_TipoFile, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Label_TipoEstrazione, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(ComboBox_TipoEstrazione, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 13, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(ScrollPane_Attenzione, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 403, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -456,6 +578,10 @@ private VoceImport voceSelezionata() {
                         .addComponent(Label_TipoFile, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(ComboBox_TipoFile, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Label_TipoEstrazione, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ComboBox_TipoEstrazione, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(CheckBox_Sovrascrivi, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -484,8 +610,14 @@ private VoceImport voceSelezionata() {
     }// </editor-fold>//GEN-END:initComponents
 
     private void ComboBox_TipoFileItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_TipoFileItemStateChanged
-        aggiornaStatoPerVoceSelezionata();
+        //Cambiando fornitore cambiano le estrazioni disponibili; lo stato dei campi viene poi
+        //riallineato da popolaComboTipoEstrazione sulla nuova selezione
+        popolaComboTipoEstrazione();
     }//GEN-LAST:event_ComboBox_TipoFileItemStateChanged
+
+    private void ComboBox_TipoEstrazioneItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_TipoEstrazioneItemStateChanged
+        aggiornaStatoPerVoceSelezionata();
+    }//GEN-LAST:event_ComboBox_TipoEstrazioneItemStateChanged
 
     /**
      * Abilita i campi della finestra in base alla voce selezionata nella combo del tipo di file.
@@ -1351,10 +1483,12 @@ if (voce.isJson()) {
     private javax.swing.JButton Bottone_SelezionaFile;
     private javax.swing.JCheckBox CheckBox_Sovrascrivi;
     private javax.swing.JComboBox<String> ComboBox_Exchanges;
-    private javax.swing.JComboBox<VoceImport> ComboBox_TipoFile;
+    private javax.swing.JComboBox<VoceImport> ComboBox_TipoEstrazione;
+    private javax.swing.JComboBox<String> ComboBox_TipoFile;
     private javax.swing.JComboBox<String> ComboBox_TipoImport;
     private javax.swing.JLabel Label_NomeExchange;
     private javax.swing.JLabel Label_NomeWallet;
+    private javax.swing.JLabel Label_TipoEstrazione;
     private javax.swing.JLabel Label_TipoFile;
     private javax.swing.JLabel Label_TipoImport;
     private javax.swing.JScrollPane ScrollPane_Attenzione;

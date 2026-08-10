@@ -79,6 +79,7 @@
     "Transfer Between Main and Funding Wallet": "TRASFERIMENTO-CRYPTO-INTERNO",
     "Transfer Between Spot and Strategy": "TRASFERIMENTO-CRYPTO-INTERNO",
     "Transfer Between Spot and Strategy Account": "TRASFERIMENTO-CRYPTO-INTERNO",
+	"Transfer Between Spot and Funding": "TRASFERIMENTO-CRYPTO-INTERNO",
     "transfer_in": "TRASFERIMENTO-CRYPTO-INTERNO",
     "transfer_out": "TRASFERIMENTO-CRYPTO-INTERNO",
     "WBETH2.0 - Redemption Unfreeze and Transfer": "SCAMBIO CRYPTO-CRYPTO",

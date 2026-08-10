@@ -2,7 +2,7 @@
   "versione": "1.000",
   "centralizzato":true,
   "nomeExchange": "",
-  "logo": "tatax",
+  "estrazione": "CSV",
   "nomeWallet": "Principale",
   "separatore": ",",
   "encoding": "UTF-8",

@@ -1009,11 +1009,22 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 
         public String nomeExchange = "";
         /**
-         * Nome del file del logo in {@code config/loghi/}, senza estensione, mostrato accanto alla voce
-         * nella finestra di import. Se vuoto si usa lo slug di {@link #nomeExchange}: va indicato solo
-         * quando i due non coincidono, ad esempio per una configurazione che non fissa l'exchange.
+         * Exchange o fornitore dei dati sotto cui raggruppare questa configurazione nella finestra di
+         * import: è la voce della prima combo, e il suo slug è anche il nome del file del logo in
+         * {@code config/loghi/}.
+         * <p>Va indicato solo quando il fornitore non si ricava da solo, perché nell'ordine normale
+         * basta {@link #nomeExchange} (formati di un singolo exchange) oppure una parola nota nel nome
+         * del file (formati multi-exchange come CoinTracking e Tatax, vedi
+         * {@code Importazioni_Gestione.FornitoreDaNomeFile}). In mancanza di tutto si usa il nome del
+         * file di configurazione.
          */
-        public String logo = "";
+        public String fornitore = "";
+        /**
+         * Nome dell'estrazione all'interno del fornitore, cioè la voce della seconda combo: {@code "CSV"},
+         * {@code "Funding"}, {@code "Trading"}… Va scritto senza ripetere il nome del fornitore, che è già
+         * nella prima combo. Se vuoto si usa il nome del file di configurazione.
+         */
+        public String estrazione = "";
         public String nomeWallet = "Principale";
         public String separatore = ",";
         public String encoding = "UTF-8";
@@ -1123,8 +1134,11 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             if (root.has("nomeExchange")) {
                 cfg.nomeExchange = root.getString("nomeExchange");
             }
-            if (root.has("logo")) {
-                cfg.logo = root.getString("logo");
+            if (root.has("fornitore")) {
+                cfg.fornitore = root.getString("fornitore");
+            }
+            if (root.has("estrazione")) {
+                cfg.estrazione = root.getString("estrazione");
             }
             if (root.has("nomeWallet")) {
                 cfg.nomeWallet = root.getString("nomeWallet");

@@ -3,6 +3,7 @@
   "_commentoFuso": "ATTENZIONE: il nome del file dice 'UTC0' ma gli orari NON sono in UTC. Verificato confrontando le stesse operazioni scaricate via API (bill 'Received' del 28/07/2026: ts API 10:02:03Z, CSV 12:02:03), gli orari sono nel fuso di visualizzazione dell'account, qui Europe/Rome. Se l'export viene fatto con un altro fuso impostato su OKX, cambiare questo campo, altrimenti gli stessi movimenti importati da CSV e da API finiscono su orari diversi. Verificato solo su righe estive (ora legale): Europe/Rome e' preferito a UTC+2 perche' gestisce da solo il cambio d'ora.",
   "versione": "1.000",
   "nomeExchange": "OKX",
+  "estrazione": "Funding",
   "nomeWallet": "Principale",
   "separatore": ",",
   "encoding": "UTF-8",

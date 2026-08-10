@@ -41,6 +41,8 @@
                       <Component id="Bottone_Annulla" min="-2" pref="240" max="-2" attributes="0"/>
                   </Group>
                   <Component id="ComboBox_TipoFile" alignment="0" max="32767" attributes="0"/>
+                  <Component id="Label_TipoEstrazione" alignment="0" max="32767" attributes="0"/>
+                  <Component id="ComboBox_TipoEstrazione" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace pref="13" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -60,6 +62,10 @@
                       <Component id="Label_TipoFile" min="-2" pref="30" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="ComboBox_TipoFile" min="-2" pref="40" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Label_TipoEstrazione" min="-2" pref="30" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="ComboBox_TipoEstrazione" min="-2" pref="40" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="CheckBox_Sovrascrivi" min="-2" pref="40" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -96,7 +102,7 @@
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
           <Font name="Noto Sans" size="14" style="0"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Selezionare il tipo di file da importare"/>
+        <Property name="text" type="java.lang.String" value="Selezionare l&apos;exchange o il fornitore dei dati"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="ComboBox_TipoFile">
@@ -107,6 +113,29 @@
       </Properties>
       <Events>
         <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="ComboBox_TipoFileItemStateChanged"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="Label_TipoEstrazione">
+      <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Noto Sans" size="14" style="0"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Selezionare il tipo di estrazione"/>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="ComboBox_TipoEstrazione">
+      <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Noto Sans" size="14" style="1"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="ComboBox_TipoEstrazioneItemStateChanged"/>
       </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;VoceImport&gt;"/>

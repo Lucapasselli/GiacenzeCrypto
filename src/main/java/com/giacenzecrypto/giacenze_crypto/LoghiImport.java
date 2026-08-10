@@ -18,6 +18,12 @@ import javax.swing.ImageIcon;
  * PNG con il nome giusto, senza toccare il programma.
  * <p>Le icone vengono disegnate dentro un quadrato di lato fisso: un logo mancante o non quadrato non
  * sposta il testo, e le etichette dell'elenco restano incolonnate.
+ * <p>I loghi sono riprodotti <b>come sono nel file</b>, senza correzioni di contrasto rispetto al tema in
+ * uso. Si era provato a posare quelli poco contrastati su una piastrella neutra, ma la luminosità media
+ * non distingue una sagoma monocromatica da un logo semplicemente colorato: il cerchio verde di Tatax o
+ * la moneta d'oro di Dogecoin, perfettamente leggibili su bianco, si ritrovavano dentro un riquadro nero.
+ * Il prezzo di rinunciarci è che un paio di loghi neri su fondo trasparente (Ledger, Mycelium) restano
+ * poco leggibili sul tema scuro: si risolve sostituendo quei due file, non alterando tutti gli altri.
  *
  * @author luca.passelli
  */
@@ -56,41 +62,26 @@ public class LoghiImport {
      * @return un'icona mai {@code null}
      */
     public static Icon Dammi(String nomeLogo, int lato) {
-        return Dammi(nomeLogo, lato, null);
-    }
-
-    /**
-     * Come {@link #Dammi(String, int)}, ma sapendo su quale sfondo il logo verrà disegnato.
-     * <p>Molti loghi sono una sagoma monocromatica su fondo trasparente — Ledger e Trezor sono neri,
-     * altri sono bianchi — e contano sul colore della pagina che li ospita. Sul tema sbagliato
-     * diventerebbero invisibili: quando il contrasto con lo sfondo è insufficiente il logo viene posato
-     * su una piastrella neutra di tono opposto, che lo rende leggibile senza alterarne i colori.
-     * @param nomeLogo nome del file senza estensione, già in forma di slug; può essere {@code null}
-     * @param lato lato del quadrato in pixel
-     * @param sfondo colore su cui l'icona verrà disegnata, {@code null} per non applicare nessuna correzione
-     * @return un'icona mai {@code null}
-     */
-    public static Icon Dammi(String nomeLogo, int lato, java.awt.Color sfondo) {
         int l = Math.max(LATO_MIN, Math.min(LATO_MAX, lato));
 
         if (nomeLogo == null || nomeLogo.isBlank()) {
             return Segnaposto(l);
         }
 
-        String chiave = nomeLogo + "@" + l + "@" + (sfondo == null ? "-" : sfondo.getRGB());
+        String chiave = nomeLogo + "@" + l;
         if (CACHE.containsKey(chiave)) {
             Icon i = CACHE.get(chiave);
             return i != null ? i : Segnaposto(l);
         }
 
-        Icon icona = Carica(nomeLogo, l, sfondo);
+        Icon icona = Carica(nomeLogo, l);
         //anche l'assenza va messa in cache, altrimenti si ritenta la lettura a ogni ridisegno
         CACHE.put(chiave, icona);
         return icona != null ? icona : Segnaposto(l);
     }
 
     /** @return l'icona letta da {@code config/loghi/<nomeLogo>.png}, oppure {@code null} se assente o illeggibile */
-    private static Icon Carica(String nomeLogo, int lato, java.awt.Color sfondo) {
+    private static Icon Carica(String nomeLogo, int lato) {
         try {
             File f = new File(VarStatiche.getCartella_ConfigLoghi(), nomeLogo + ".png");
             if (!f.isFile()) {
@@ -112,6 +103,7 @@ public class LoghiImport {
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
             g.drawImage(originale, (lato - w) / 2, (lato - h) / 2, w, h, null);
             g.dispose();
 

@@ -3,6 +3,7 @@
   "_commentoFuso": "Come per il Funding: il nome del file dice 'UTC0' ma gli orari sono nel fuso di visualizzazione dell'account (qui Europe/Rome), verificato confrontando le stesse operazioni scaricate via API. Se cambia il fuso impostato su OKX al momento dell'export, va cambiato anche qui.",
   "versione": "1.000",
   "nomeExchange": "OKX",
+  "estrazione": "Trading",
   "nomeWallet": "Principale",
   "separatore": ",",
   "encoding": "UTF-8",

@@ -144,7 +144,8 @@ public class DatabaseH2 {
 
             createTableSQL = "CREATE TABLE IF NOT EXISTS PROVIDERDEFI (Rete VARCHAR(20) PRIMARY KEY, Provider VARCHAR(50), UrlCustom VARCHAR(500))";
             EseguiDDL(connection, createTableSQL);
-            
+            ProviderDefi_MigraGnosisSuBlockscout();
+
             createTableSQL = "CREATE TABLE IF NOT EXISTS GIACENZEBLOCKCHAIN (Wallet_Blocco VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
             EseguiDDL(connectionPersonale, createTableSQL);
             
@@ -2097,6 +2098,10 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
      */
     public static Map<String, String[]> ProviderDefi_LeggiTutti() {
         Map<String, String[]> Risultato = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        //Senza database aperto non ci sono preferenze salvate: i chiamanti ricadono sui default del codice
+        if (connection == null) {
+            return Risultato;
+        }
         try {
             String sql = "SELECT Rete, Provider, UrlCustom FROM PROVIDERDEFI";
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -2135,6 +2140,58 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
             ps.setString(2, Provider);
             ps.setString(3, UrlCustom);
             ps.executeUpdate();
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+    /**
+     * Migrazione una tantum: sposta GNOSIS da Etherscan a Blockscout anche per chi ha
+     * già una preferenza esplicita salvata in PROVIDERDEFI.
+     * <p>
+     * Serve perché il bottone "Salva" della scheda "Preferenze Provider DeFi" riscrive
+     * <b>tutte</b> le righe della tabella con il provider effettivo del momento, non solo
+     * quelle modificate: chi ha salvato anche una sola volta ha quindi una riga
+     * GNOSIS-&gt;ETHERSCAN esplicita, che vincerebbe sul nuovo default di
+     * {@link Importazioni#DeFi_ProviderDefault(String)} e lascerebbe l'importazione rotta
+     * dal 01/09/2026, quando Gnosis esce dal piano gratuito di Etherscan V2.
+     * <p>
+     * Viene toccata solo la riga che vale esattamente ETHERSCAN, e in due modi diversi a
+     * seconda dell'URL: se l'utente ha davvero indicato un'istanza Blockscout sua, la riga
+     * viene solo spostata su BLOCKSCOUT conservando l'URL; altrimenti viene cancellata, così
+     * tornano a valere insieme il provider e l'URL di default. Il secondo caso è quello
+     * normale ma <b>non</b> ha l'URL vuoto: la tabella delle opzioni mostra in colonna
+     * l'URL Blockscout predefinito anche quando il provider è Etherscan, e il Salva lo
+     * scrive tale e quale in UrlCustom. L'URL di default è ripetuto qui come costante
+     * perché una migrazione deve restare ferma a com'era il codice quando è stata scritta.
+     * <p>
+     * L'opzione di controllo è versionata (come {@code OKX_ArchivioProposto}): cambiando il
+     * valore atteso la migrazione si ripete una volta sola ovunque.
+     */
+    private static void ProviderDefi_MigraGnosisSuBlockscout() {
+        final String OPZIONE = "MigrazioneProviderDefi_Gnosis";
+        final String VALORE = "SI-BLOCKSCOUT";
+        final String URL_DEFAULT = "https://gnosis.blockscout.com/api";
+        try {
+            if (VALORE.equals(Opzioni_Leggi(OPZIONE))) {
+                return;
+            }
+            int Spostate = 0;
+            //Prima l'URL personalizzato: passando a BLOCKSCOUT la riga esce dal filtro della DELETE
+            String sql = "UPDATE PROVIDERDEFI SET Provider='BLOCKSCOUT' WHERE UPPER(Rete)='GNOSIS' AND UPPER(Provider)='ETHERSCAN'"
+                    + " AND UrlCustom IS NOT NULL AND TRIM(UrlCustom)<>'' AND TRIM(UrlCustom)<>?";
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setString(1, URL_DEFAULT);
+                Spostate += ps.executeUpdate();
+            }
+            sql = "DELETE FROM PROVIDERDEFI WHERE UPPER(Rete)='GNOSIS' AND UPPER(Provider)='ETHERSCAN'";
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                Spostate += ps.executeUpdate();
+            }
+            if (Spostate > 0) {
+                LoggerGC.logInfo("Preferenza provider DeFi di GNOSIS spostata su Blockscout: Etherscan non sarà più gratuito per questa chain dal 01/09/2026.");
+            }
+            Opzioni_Scrivi(OPZIONE, VALORE);
         } catch (SQLException ex) {
             LoggerGC.ScriviErrore(ex);
         }

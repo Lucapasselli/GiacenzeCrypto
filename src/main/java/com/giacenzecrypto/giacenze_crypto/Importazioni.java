@@ -4873,9 +4873,11 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
     
     
     /**
-     * Recupera la giacenza attuale della moneta nativa di una rete EVM per un wallet, interrogando l'API
-     * Etherscan v2 ({@code action=balance}) con la API key personale, solo se questa risulta valida
-     * ({@link Funzioni#isApiKeyValidaEtherscan}).
+     * Recupera la giacenza attuale della moneta nativa di una rete EVM per un wallet, interrogando
+     * ({@code action=balance}) lo stesso provider usato per lo scaricamento dei movimenti
+     * ({@link #DeFi_ProviderEffettivo}): Etherscan v2 con la API key personale, solo se questa risulta
+     * valida ({@link Funzioni#isApiKeyValidaEtherscan}), oppure l'istanza Blockscout della rete, dove
+     * l'ApiKey è facoltativa.
      * @param walletAddress indirizzo del wallet
      * @param Rete identificativo della blockchain/rete
      * @return la giacenza della moneta nativa, oppure {@code null} se l'API key non è valida, la risposta non è valida/numerica, o si verifica un errore di rete
@@ -4884,16 +4886,27 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
         //In questa funzione dovrò recuperare le rimanenze CRO del wallet ad un determinato Blocco
         //Questo ci permetterà di sistemare le giacenze dei CRO in maniera esatta anche se porterà via molto tempo.
         String Valore = null;
+        //Su Blockscout non serve una chiave: la richiesta è comunque possibile se l'istanza è configurata
+        boolean usaBlockscout = DeFi_ProviderEffettivo(Rete).equals("BLOCKSCOUT")
+                && DeFi_ProviderBlockscoutUrl(Rete) != null && !DeFi_ProviderBlockscoutUrl(Rete).isBlank();
          try {
-             if (Funzioni.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))) {
-            String apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan");
-            String Indirizzo = Principale.Mappa_ChainExplorer.get(Rete)[0];
+             if (usaBlockscout || Funzioni.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))) {
+            String apiKey = usaBlockscout ? DatabaseH2.Opzioni_Leggi("ApiKey_Blockscout") : DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan");
+            String Indirizzo = usaBlockscout ? DeFi_ProviderBlockscoutUrl(Rete) : Principale.Mappa_ChainExplorer.get(Rete)[0];
             String MonetaRete = Principale.Mappa_ChainExplorer.get(Rete)[2];
             //String vespa = vespa(apiKey, "paperino");
-             
+
            // String urls = Indirizzo+"/api?module=account&action=balance&address="+walletAddress+"&apikey="+vespa;
-            String urls = Indirizzo+"&module=account&action=balance&address="+walletAddress+"&apikey="+apiKey;
-            
+            //L'URL Etherscan v2 contiene già la query string (?chainid=...), quello Blockscout no; su
+            //Blockscout l'apikey si aggiunge solo se l'utente ne ha inserita una
+            String urls;
+            if (usaBlockscout) {
+                urls = Indirizzo+"?module=account&action=balance&address="+walletAddress;
+                if (apiKey != null && !apiKey.isBlank()) urls += "&apikey="+apiKey;
+            } else {
+                urls = Indirizzo+"&module=account&action=balance&address="+walletAddress+"&apikey="+apiKey;
+            }
+
             System.out.println("Controllo giacenze "+MonetaRete+" per il Wallet "+ walletAddress);
             URL url = new URI(urls).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -5769,9 +5782,15 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
      * una preferenza esplicita nella tabella PROVIDERDEFI.
      * Cronos usa Blockscout di default perché il vecchio provider Cronoscan
      * non permette di impostare un blocco di partenza per lo scaricamento.
+     * Gnosis (chainid 100) usa Blockscout perché dal 01/09/2026 esce dal piano
+     * gratuito di Etherscan V2: l'istanza pubblica gnosis.blockscout.com risponde
+     * senza chiave a tutte e 5 le azioni usate dall'importazione, rispetta
+     * startblock/sort e restituisce fino a 10000 record per richiesta, quindi la
+     * paginazione per blocco già usata per Etherscan funziona identica.
      */
     public static String DeFi_ProviderDefault(String Rete) {
         if (Rete.equalsIgnoreCase("CRO")) return "BLOCKSCOUT";
+        if (Rete.equalsIgnoreCase("GNOSIS")) return "BLOCKSCOUT";
         if (Rete.equalsIgnoreCase("BSC") || Rete.equalsIgnoreCase("BASE") || Rete.equalsIgnoreCase("AVAX")) return "MORALIS";
         if (Rete.equalsIgnoreCase("SOL")) return "HELIUS";
         if (Rete.equalsIgnoreCase("BTC")) return "BITCOIN";

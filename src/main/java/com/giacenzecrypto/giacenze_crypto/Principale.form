@@ -5916,6 +5916,11 @@
                               <Component id="Opzioni_GruppoWallet_CheckBox_PlusManuali" min="-2" pref="989" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale" min="-2" pref="989" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
@@ -5927,6 +5932,8 @@
                               <Component id="jScrollPane6" min="-2" pref="63" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Opzioni_GruppoWallet_CheckBox_PlusManuali" min="-2" pref="54" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale" min="-2" pref="54" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jSeparator3" min="-2" pref="10" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -6031,6 +6038,14 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_GruppoWallet_CheckBox_PlusManualiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Ricalcolo incrementale : &lt;/b&gt;Ricalcola le plusvalenze solo dal movimento modificato pi&#249; vecchio in poi, invece che sempre da capo (consigliato attivo)&lt;br&gt;(Toglierlo forza il ricalcolo completo ad ogni modifica: serve se un risultato appare sospetto, per capire se dipenda dal ricalcolo incrementale)&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementaleActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

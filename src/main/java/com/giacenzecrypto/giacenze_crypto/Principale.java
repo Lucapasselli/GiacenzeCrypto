@@ -728,6 +728,7 @@ private static final long serialVersionUID = 3L;
         RT_Bottone_Documentazione1 = new javax.swing.JButton();
         Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni = new javax.swing.JCheckBox();
         Opzioni_GruppoWallet_CheckBox_PlusManuali = new javax.swing.JCheckBox();
+        Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale = new javax.swing.JCheckBox();
         Opzioni_RW_Pannello = new javax.swing.JPanel();
         RW_Opzioni_CheckBox_LiFoComplessivo = new javax.swing.JCheckBox();
         RW_Opzioni_CheckBox_StakingZero = new javax.swing.JCheckBox();
@@ -4498,6 +4499,13 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale.setText("<html><b>Ricalcolo incrementale : </b>Ricalcola le plusvalenze solo dal movimento modificato più vecchio in poi, invece che sempre da capo (consigliato attivo)<br>(Toglierlo forza il ricalcolo completo ad ogni modifica: serve se un risultato appare sospetto, per capire se dipenda dal ricalcolo incrementale)</html>");
+        Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementaleActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_Calcolo_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Calcolo_Pannello);
         Opzioni_Calcolo_Pannello.setLayout(Opzioni_Calcolo_PannelloLayout);
         Opzioni_Calcolo_PannelloLayout.setHorizontalGroup(
@@ -4527,6 +4535,10 @@ private static final long serialVersionUID = 3L;
                 .addContainerGap()
                 .addComponent(Opzioni_GruppoWallet_CheckBox_PlusManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         Opzioni_Calcolo_PannelloLayout.setVerticalGroup(
             Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4537,6 +4549,8 @@ private static final long serialVersionUID = 3L;
                 .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_GruppoWallet_CheckBox_PlusManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -5912,7 +5926,11 @@ private void SettaIcone(){
         if(PlusManuali!=null && PlusManuali.equalsIgnoreCase("SI")){
             Opzioni_GruppoWallet_CheckBox_PlusManuali.setSelected(true);
         }
-        
+
+        //Ricalcolo incrementale: attivo salvo esplicito "NO", come lo legge Calcoli_PlusvalenzeNew
+        Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale.setSelected(
+                !DatabaseH2.Pers_Opzioni_Leggi(Calcoli_PlusvalenzeNew.OPZIONE_INCREMENTALE, "SI").equalsIgnoreCase("NO"));
+
         String Plusvalenze_NoPlusvalenzeCommissioni=DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_NoPlusvalenzeCommissioni");
         if(Plusvalenze_NoPlusvalenzeCommissioni==null)
         {
@@ -12533,6 +12551,17 @@ if (result != null && !result.isAction("cancel")) {
         SaldiNegativi_CompilaTabellaMovimenti();
     }//GEN-LAST:event_SaldiNegativi_CheckBox_DettaglioFiltraQtaNegativeActionPerformed
 
+    private void Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementaleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementaleActionPerformed
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_PlusvalenzeNew.OPZIONE_INCREMENTALE,
+                Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale.isSelected() ? "SI" : "NO");
+        //Butto impronte e checkpoint e ricalcolo subito: chi tocca questa casella lo fa perché ha
+        //un dubbio su un risultato, e vuole vedere adesso il numero prodotto nell'altra modalità
+        Calcoli_PlusvalenzeNew.InvalidaStatoIncrementale();
+        Funzioni_AggiornaTutto();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementaleActionPerformed
+
     private void Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed
         // TODO add your handling code here:
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -16650,6 +16679,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti;
+    private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_NonConsiderareMovimentiNC;
     private javax.swing.JPopupMenu PopupMenu;
     private javax.swing.JPanel RT;

@@ -8,7 +8,9 @@ import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayDeque;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -116,6 +118,54 @@ public class Calcoli_PlusvalenzeNew {
  * movimenti, e sostituirla romperebbe il LIFO.
  */
 private static final Map<String, LifoXID> MappaIDTrans_LifoxID = new ConcurrentHashMap<>();
+
+/**
+ * Opzione personale che disattiva il ricalcolo incrementale ("NO" = sempre passata completa).
+ * <p>
+ * Esiste come assicurazione, non come impostazione da usare tutti i giorni: se un numero risultasse
+ * mai sospetto, spegnerla separa in un clic "è il calcolo" da "è l'incrementale". Su
+ * un'applicazione fiscale è l'unica forma di bisezione disponibile a chi non può leggere il codice.
+ */
+public static final String OPZIONE_INCREMENTALE = "Plusvalenze_RicalcoloIncrementale";
+
+/**
+ * Ogni quanti movimenti elaborati viene salvato un checkpoint dello stato LIFO.
+ * <p>
+ * Il valore <b>non</b> è a fine trimestre, che sarebbe la scelta istintiva: i movimenti reali sono
+ * distribuiti malissimo (48.282 su 101.103 in un solo trimestre nel dataset di riferimento), e un
+ * checkpoint trimestrale lascerebbe fino a 48.000 movimenti da rielaborare. A blocchi fissi il
+ * lavoro di ripartenza è limitato a un blocco: 46-91 ms misurati, contro ~1.000 della passata
+ * completa. Una copia costa 0,31 ms e i 21 checkpoint di quel dataset occupano ~2,3 MB.
+ */
+static int MOVIMENTI_PER_CHECKPOINT = 5000;
+
+/**
+ * Quanti movimenti ha rielaborato l'ultima passata, e se è stata completa. Servono al messaggio di
+ * log e ai test: senza un modo di osservare che il percorso incrementale sia stato davvero preso,
+ * un test di equivalenza passerebbe anche se ogni passata fosse completa.
+ */
+static int UltimaPassata_Elaborati = 0;
+static boolean UltimaPassata_Completa = true;
+
+private static final long SEME_IMPRONTA = 0xcbf29ce484222325L;
+private static final long PRIMO_IMPRONTA = 0x100000001b3L;
+
+/**
+ * Impronte dei movimenti come erano a fine ultima passata. {@code null} significa "nessuno stato
+ * valido": la prossima passata sarà completa. Vedi {@link #InvalidaStatoIncrementale()}.
+ */
+private static Map<String, Long> ImpronteUltimaPassata = null;
+
+/** Valore di {@link OpzioniRicalcolo#Epoca()} all'inizio dell'ultima passata. */
+private static long EpocaUltimaPassata = 0;
+
+/**
+ * Stato LIFO fotografato ogni {@link #MOVIMENTI_PER_CHECKPOINT} movimenti, con per chiave l'ID del
+ * movimento <b>prima</b> del quale la fotografia è stata presa. Ordinato come
+ * {@code MappaCryptoWallet}, così {@code floorEntry} trova il punto di ripartenza utilizzabile.
+ */
+private static final NavigableMap<String, Map<String, Map<String, ArrayDeque<String[]>>>> Checkpoint =
+        new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 /**
  * Ritorna lo stato LIFO (stack entrato/uscito) registrato per una transazione, popolato
@@ -467,14 +517,17 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
  * Ricalcola da zero plusvalenza, costo di carico e stato dello stack LIFO per tutti i movimenti
  * in {@code Principale.MappaCryptoWallet}, in ordine cronologico e raggruppati per gruppo wallet
  * (uno stack LIFO indipendente per ogni gruppo, se l'opzione {@code PlusXWallet} è attiva,
- * altrimenti un unico stack "Wallet 01"). È il metodo che orchestra l'intero motore fiscale:
- * per ciascun movimento determina la categoria fiscale (vedi le costanti di categoria in testa
- * alla classe), calcola plusvalenza/costo di carico secondo la tipologia, e movimenta il LIFO
- * tramite {@link #StackLIFO_TogliQta} / {@link #StackLIFO_InserisciValore}. Le opzioni personali
- * rilevanti (gestione movimenti non classificati, plusvalenze su commissioni, regole pre-2023)
- * vengono lette una sola volta prima del ciclo. Aggiorna i movimenti in {@code MappaCryptoWallet}
+ * altrimenti un unico stack "Wallet 01"). È il metodo che orchestra l'intero motore fiscale, ma
+ * il calcolo del singolo movimento sta in {@link #ElaboraMovimento}: qui restano soltanto la
+ * lettura delle opzioni ({@link OpzioniRicalcolo}, una volta sola prima del ciclo), la creazione
+ * dello stato LIFO e il ciclo sui movimenti. Aggiorna i movimenti in {@code MappaCryptoWallet}
  * in place (campi plusvalenza, costo di carico, flag di anomalia nel campo 38) e ripopola
  * {@link #MappaIDTrans_LifoxID}, che viene svuotata a ogni chiamata.
+ * <p>
+ * <b>L'unico stato che attraversa i movimenti è {@code MappaGrWallet_CryptoStack}</b>, creato qui
+ * e passato a {@code ElaboraMovimento}: è il presupposto del ricalcolo incrementale (vedi
+ * {@code test/Documentazione/Analisi_Ricalcolo_Incrementale_Plusvalenze.md}), perché è l'unica
+ * cosa che andrà salvata nei checkpoint per poter ripartire da metà storico.
  * <p>
  * Il metodo è {@code synchronized} (voce M6 di Analisi_Bug_Criticita.md): è invocato sia
  * dall'EDT sia da thread di background (rimozione SCAM di massa, import), e due ricalcoli
@@ -483,473 +536,774 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
  * chiamata attende e ricalcola comunque, così non restano mai valori stantii in quei campi.
  */
      public static synchronized void AggiornaPlusvalenze(){
-         
-      //   System.out.println("Aggiornamento Plusvalenze");
-////////    Deque<String[]> stack = new ArrayDeque<String[]>(); Forse questo è da mettere
 
+        long Avvio = System.currentTimeMillis();
 
-        MappaIDTrans_LifoxID.clear();
+       //A1: le opzioni personali e la data soglia 2023 sono costanti per tutto il ricalcolo,
+       //le leggo una volta sola qui invece che a ogni movimento del loop.
+       //L'epoca va calcolata SEMPRE qui, prima del ciclo: Mappa_Wallet_Gruppo si popola
+       //pigramente durante la passata, quindi confrontare un valore preso prima con uno preso
+       //dopo darebbe sempre differenza e spegnerebbe l'incrementale in silenzio.
+       OpzioniRicalcolo Opzioni = new OpzioniRicalcolo();
+       long Epoca = Opzioni.Epoca();
 
-        
-       //Con questa opzione decido che fare in caso di movimenti non classificati, se conteggiarli o meno
-       boolean ConsideraMovimentiNC=true;
-       if(DatabaseH2.Pers_Opzioni_Leggi("PL_CosiderareMovimentiNC","SI").equalsIgnoreCase("NO"))ConsideraMovimentiNC=false;
-       
-       // Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        Map<String, Map<String, ArrayDeque<String[]>>> MappaGrWallet_CryptoStack = new TreeMap<>();
-       // Map<String, ArrayDeque<String[]>> CryptoStack;// = new TreeMap<>();
-        
-    //    Map<String, String[]> MappaCryptoWalletTemp=MappaCryptoWallet;
-        
-        //controllo se devo o meno prendere in considerazione i gruppi wallet per il calcolo della plusvalenza
-        String PlusXW=DatabaseH2.Pers_Opzioni_Leggi("PlusXWallet");
-        boolean PlusXWallet = (PlusXW != null && PlusXW.equalsIgnoreCase("SI"));
-        String NoPlusCom=DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_NoPlusvalenzeCommissioni");
-        boolean NoPlusCommissioni = (NoPlusCom != null && NoPlusCom.equalsIgnoreCase("SI"));
+       Map<String, Long> Impronte = CalcolaImpronte();
 
-        //A1: queste opzioni e la data soglia 2023 sono costanti per tutto il ricalcolo,
-        //le leggo una volta sola qui invece che a ogni movimento del loop
-        long long2023=FunzioniDate.ConvertiDatainLongMinuto("2023-01-01 00:00");
-        boolean Pre2023EarnCostoZero = false;
-        String Plusvalenze_Pre2023EarnCostoZero = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023EarnCostoZero");
-        if (Plusvalenze_Pre2023EarnCostoZero != null && Plusvalenze_Pre2023EarnCostoZero.equalsIgnoreCase("SI")) {
-            Pre2023EarnCostoZero=true;
-        }
-        boolean Pre2023ScambiRilevanti = false;
-        String Plusvalenze_Pre2023ScambiRilevanti = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023ScambiRilevanti");
-        if (Plusvalenze_Pre2023ScambiRilevanti != null && Plusvalenze_Pre2023ScambiRilevanti.equalsIgnoreCase("SI")) {
-            Pre2023ScambiRilevanti=true;
-        }
+       String Ripartenza = null;   //chiave da cui rielaborare; null = passata completa
+       String Motivo;
+       if (DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_INCREMENTALE, "SI").equalsIgnoreCase("NO")) {
+           Motivo = "incrementale disattivato dalle opzioni";
+       } else if (ImpronteUltimaPassata == null) {
+           Motivo = "nessuno stato valido dalla passata precedente";
+       } else if (Epoca != EpocaUltimaPassata) {
+           Motivo = "opzioni o tabelle personali cambiate";
+       } else {
+           Ripartenza = ChiaveSporcaMinima(Impronte);
+           if (Ripartenza == null) {
+               //Nessun movimento è cambiato: i campi in mappa sono già quelli giusti.
+               UltimaPassata_Elaborati = 0;
+               UltimaPassata_Completa = false;
+               System.out.println("Plusvalenze: nessuna modifica, ricalcolo non necessario ("
+                       + (System.currentTimeMillis() - Avvio) + " ms)");
+               return;
+           }
+           Motivo = null;
+       }
 
-        for (String[] v : MappaCryptoWallet.values()) {
-            String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);
-               // System.out.println(GruppoWallet);
-            if(!PlusXWallet)GruppoWallet="Wallet 01";
-                
-            //Questa funzione inizializza la mappa CryptoStack nel caso non esista già nella mappa MappaGrWallet_CryptoStack, nel qual caso recupera il suo valore         
-            Map<String, ArrayDeque<String[]>> CryptoStack = MappaGrWallet_CryptoStack.computeIfAbsent(GruppoWallet, k -> new TreeMap<>());
+        boolean AndataABuonFine = false;
+        try {
+            Map<String, Map<String, ArrayDeque<String[]>>> MappaGrWallet_CryptoStack;
+            String DaDove;
 
-            String TipoMU = Funzioni.RitornaTipoCrypto(v[8].trim(),v[1].trim(),v[9].trim());
-           // if (v[12]==null)System.out.println(v[11]+"_"+v[1]+"_"+v[12]);
-            String TipoME = Funzioni.RitornaTipoCrypto(v[11].trim(),v[1].trim(),v[12].trim());
-            String IDTransazione=v[0];
-            String IDTS[]=IDTransazione.split("_");
-            //C2/A3: tolgo le eventuali segnalazioni "errore dati" e "ID malformato" della
-            //passata precedente, verranno rimesse subito sotto o durante l'elaborazione
-            //se il problema è ancora presente
-            v[38]=v[38].replace("E", "").replace("M", "");
-            //A3: un ID malformato (meno di 5 segmenti) non deve far crashare il ricalcolo:
-            //il tipo movimento dell'ID resta vuoto, la classificazione si basa solo su v[18]
-            //e il movimento viene segnalato con la lettera "M" nel campo 38
-            String TipoID = IDTS.length > 4 ? IDTS[4] : "";
-            if (IDTS.length <= 4) {
-                LoggerGC.ScriviErrore("ID transazione malformato (meno di 5 segmenti): \"" + IDTransazione + "\"");
-                AggiungiFlagAnomalia(v, "M");
+            if (Ripartenza == null) {
+                //Passata completa: si riparte da zero e si buttano gli stati precedenti
+                MappaIDTrans_LifoxID.clear();
+                Checkpoint.clear();
+                MappaGrWallet_CryptoStack = new TreeMap<>();
+                DaDove = MappaCryptoWallet.isEmpty() ? null : MappaCryptoWallet.firstKey();
+            } else {
+                //Ripartenza dal checkpoint più recente che NON superi la chiave sporca
+                Map.Entry<String, Map<String, Map<String, ArrayDeque<String[]>>>> Punto =
+                        Checkpoint.floorEntry(Ripartenza);
+                if (Punto == null) {
+                    MappaGrWallet_CryptoStack = new TreeMap<>();
+                    DaDove = MappaCryptoWallet.firstKey();
+                } else {
+                    MappaGrWallet_CryptoStack = CopiaStatoLifo(Punto.getValue());
+                    DaDove = Punto.getKey();
+                }
+                //I checkpoint oltre il punto di ripartenza sono stati calcolati su dati vecchi
+                Checkpoint.tailMap(DaDove, false).clear();
+                //6.1: i dettagli LIFO non si svuotano (servono ai movimenti che non si rielaborano)
+                //ma vanno tolti quelli dei movimenti spariti E quelli dei movimenti che stiamo per
+                //rielaborare: StackLIFO_* fa push su un LifoXID recuperato con computeIfAbsent, e
+                //senza rimozione le pile di dettaglio crescerebbero a ogni passata.
+                final String Da = DaDove;
+                MappaIDTrans_LifoxID.keySet().removeIf(id -> !MappaCryptoWallet.containsKey(id)
+                        || String.CASE_INSENSITIVE_ORDER.compare(id, Da) >= 0);
             }
-            String MonetaU=v[8];
-            String QtaU=v[10];
-            String MonetaE=v[11];
-            String QtaE=v[13];
-            String Valore=v[15];
-            String CostoCaricoDonazioni=v[17];
-            String VecchioPrezzoCarico="0.00";
-            String NuovoPrezzoCarico="0.00";
-            String Plusvalenza="0.00";
-            String CalcoloPlusvalenza="N";
-            long dataLong=FunzioniDate.ConvertiDatainLongMinuto(v[1]);
-            boolean DataSuperiore2023=true;
-            if (dataLong<long2023){DataSuperiore2023=false;}
 
+            int Elaborati = 0;
+            if (DaDove != null) {
+                for (String[] v : MappaCryptoWallet.tailMap(DaDove, true).values()) {
+                    //Il checkpoint fotografa lo stato PRIMA del movimento che gli fa da chiave
+                    if (Elaborati % MOVIMENTI_PER_CHECKPOINT == 0) {
+                        Checkpoint.put(v[0], CopiaStatoLifo(MappaGrWallet_CryptoStack));
+                    }
+                    ElaboraMovimento(v, MappaGrWallet_CryptoStack, Opzioni);
+                    Elaborati++;
+                }
+                //Le impronte dei movimenti rielaborati vanno riprese DOPO le scritture del motore
+                //(v[17] è insieme ingresso e uscita): così l'impronta memorizzata è sempre
+                //"stato a fine passata" e la prossima non li vede sporchi per finta.
+                for (String[] v : MappaCryptoWallet.tailMap(DaDove, true).values()) {
+                    Impronte.put(v[0], Impronta(v));
+                }
+            }
+
+            ImpronteUltimaPassata = Impronte;
+            EpocaUltimaPassata = Epoca;
+            UltimaPassata_Elaborati = Elaborati;
+            UltimaPassata_Completa = (Ripartenza == null);
+            AndataABuonFine = true;
+
+            System.out.println("Plusvalenze: " + (Ripartenza == null ? "passata completa (" + Motivo + ")"
+                    : "incrementale da " + DaDove) + " - " + Elaborati + " movimenti su "
+                    + MappaCryptoWallet.size() + " in " + (System.currentTimeMillis() - Avvio) + " ms");
+        } finally {
+            //14.1: se il motore esplode a metà, la mappa resta scritta a metà. Senza questo
+            //azzeramento il prefisso corrotto risulterebbe "già verificato" e nessuna passata
+            //successiva lo toccherebbe più: un errore transitorio diventerebbe permanente.
+            if (!AndataABuonFine) InvalidaStatoIncrementale();
+        }
+    }
+
+    /**
+     * Butta via impronte e checkpoint: la prossima {@link #AggiornaPlusvalenze()} sarà completa.
+     * Da chiamare da fuori solo se si cambia qualcosa che il motore legge e che né la riga del
+     * movimento né {@link OpzioniRicalcolo#Epoca()} riescono a vedere. Non serve dopo una normale
+     * modifica ai movimenti: quella la rileva l'impronta da sola.
+     */
+    public static synchronized void InvalidaStatoIncrementale() {
+        ImpronteUltimaPassata = null;
+        Checkpoint.clear();
+    }
+
+    /**
+     * Prima chiave (nell'ordine della mappa) in cui i dati di adesso differiscono da quelli di fine
+     * passata precedente: movimento modificato, aggiunto o cancellato. {@code null} se non è
+     * cambiato niente.
+     * <p>
+     * Le due mappe hanno lo stesso ordinamento, quindi si percorrono in parallelo senza fare
+     * ricerche: la prima divergenza incontrata <b>è</b> la minima.
+     */
+    private static String ChiaveSporcaMinima(Map<String, Long> Attuali) {
+        Iterator<Map.Entry<String, Long>> Adesso = Attuali.entrySet().iterator();
+        Iterator<Map.Entry<String, Long>> Prima = ImpronteUltimaPassata.entrySet().iterator();
+        Map.Entry<String, Long> a = Adesso.hasNext() ? Adesso.next() : null;
+        Map.Entry<String, Long> p = Prima.hasNext() ? Prima.next() : null;
+
+        while (a != null && p != null) {
+            int Confronto = String.CASE_INSENSITIVE_ORDER.compare(a.getKey(), p.getKey());
+            if (Confronto < 0) return a.getKey();          //movimento aggiunto
+            if (Confronto > 0) return p.getKey();          //movimento cancellato
+            if (!a.getValue().equals(p.getValue())) return a.getKey();   //movimento modificato
+            a = Adesso.hasNext() ? Adesso.next() : null;
+            p = Prima.hasNext() ? Prima.next() : null;
+        }
+        if (a != null) return a.getKey();                  //aggiunti in coda
+        if (p != null) return p.getKey();                  //cancellati in coda
+        return null;
+    }
+
+    /** Impronta di ogni movimento della mappa, nell'ordine della mappa. */
+    private static Map<String, Long> CalcolaImpronte() {
+        Map<String, Long> Impronte = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        for (String[] v : MappaCryptoWallet.values()) Impronte.put(v[0], Impronta(v));
+        return Impronte;
+    }
+
+    /**
+     * Impronta a 64 bit dei soli campi che il motore <b>legge</b> (vedi il paragrafo 4.3
+     * dell'analisi), più un digest dei movimenti elencati in {@code v[20]}.
+     * <p>
+     * Il digest dei collegati non è un di più: un PTW legge campi del suo DTW, che nell'ordine
+     * della mappa può venire <b>dopo</b>. Senza, modificare il DTW non sporcherebbe il PTW che lo
+     * precede, la ripartenza avverrebbe troppo avanti e resterebbe un costo di carico sbagliato
+     * senza alcun errore visibile (paragrafo 5.1, dimostrato da
+     * {@code CalcoliPlusvalenzeNewEquivalenzaIncrementaleTest}).
+     * <p>
+     * Fuori dall'impronta restano le uscite {@code v[16]}, {@code v[19]}, {@code v[33]},
+     * {@code v[38]} e {@code v[31]}. {@code v[17]} invece c'è: per i DDO è un ingresso inserito
+     * dall'utente, e il motore lo riscrive uguale, quindi a passata conclusa è stabile.
+     */
+    private static long Impronta(String[] v) {
+        long h = SEME_IMPRONTA;
+        h = Mescola(h, v[0]);  h = Mescola(h, v[1]);  h = Mescola(h, v[3]);
+        h = Mescola(h, v[5]);  h = Mescola(h, v[8]);  h = Mescola(h, v[9]);
+        h = Mescola(h, v[10]); h = Mescola(h, v[11]); h = Mescola(h, v[12]);
+        h = Mescola(h, v[13]); h = Mescola(h, v[15]); h = Mescola(h, v[17]);
+        h = Mescola(h, v[18]); h = Mescola(h, v[20]); h = Mescola(h, v[22]);
+
+        if (!v[20].isBlank()) {
+            for (String IdM : v[20].split(",")) {
+                String[] Mov = MappaCryptoWallet.get(IdM);
+                h = Mescola(h, IdM);
+                //La presenza fa parte dell'impronta: un collegato che sparisce (o ricompare)
+                //cambia il risultato del movimento che lo cita
+                h = Mescola(h, Mov == null ? "ASSENTE" : "PRESENTE");
+                if (Mov != null) {
+                    h = Mescola(h, Mov[3]);  h = Mescola(h, Mov[8]);  h = Mescola(h, Mov[10]);
+                    h = Mescola(h, Mov[18]); h = Mescola(h, Mov[22]);
+                }
+            }
+        }
+        return h;
+    }
+
+    /**
+     * Mescola un campo nell'impronta. La <b>lunghezza entra prima del contenuto</b>: senza,
+     * {@code "AB"+"C"} e {@code "A"+"BC"} darebbero la stessa impronta pur essendo due movimenti
+     * diversi, ed è un'ambiguità sistematica, molto più probabile di una collisione casuale a
+     * 64 bit (paragrafo 14.3).
+     */
+    private static long Mescola(long h, String s) {
+        if (s == null) s = "";
+        h = (h ^ s.length()) * PRIMO_IMPRONTA;
+        for (int i = 0; i < s.length(); i++) h = (h ^ s.charAt(i)) * PRIMO_IMPRONTA;
+        return h;
+    }
+
+    /**
+     * Copia di uno stato LIFO: duplica mappe e pile ma <b>condivide gli array dei lotti</b>,
+     * perché il motore non li modifica mai in place (il consumo parziale in
+     * {@link #StackLIFO_TogliQta} alloca un array nuovo). Misurata a 0,31 ms in media su un
+     * dataset da 101.103 movimenti.
+     * <p>
+     * <b>Invariante non difesa dal compilatore</b>: se un domani {@code StackLIFO_TogliQta}
+     * scrivesse dentro i lotti invece di riallocare, tutti i checkpoint si corromperebbero in
+     * silenzio e retroattivamente. Il guardiano è
+     * {@code CalcoliPlusvalenzeNewEquivalenzaIncrementaleTest}.
+     */
+    private static Map<String, Map<String, ArrayDeque<String[]>>> CopiaStatoLifo(
+            Map<String, Map<String, ArrayDeque<String[]>>> Stato) {
+        Map<String, Map<String, ArrayDeque<String[]>>> Copia = new TreeMap<>();
+        for (Map.Entry<String, Map<String, ArrayDeque<String[]>>> Gruppo : Stato.entrySet()) {
+            Map<String, ArrayDeque<String[]>> PerMoneta = new TreeMap<>();
+            for (Map.Entry<String, ArrayDeque<String[]>> Moneta : Gruppo.getValue().entrySet()) {
+                PerMoneta.put(Moneta.getKey(), Moneta.getValue().clone());
+            }
+            Copia.put(Gruppo.getKey(), PerMoneta);
+        }
+        return Copia;
+    }
+
+    /**
+     * Elabora un singolo movimento: ne determina la categoria fiscale, calcola plusvalenza e costo
+     * di carico, movimenta le pile LIFO e riscrive in place i campi 16/17/19/33 (piu' la lettera di
+     * anomalia nel campo 38, e il campo 31 del movimento controparte nel caso DTW fra gruppi
+     * diversi). E' il corpo del ciclo di {@link #AggiornaPlusvalenze()}, estratto senza alcuna
+     * modifica di comportamento.
+     * <p>
+     * L'estrazione non e' cosmetica: rende esplicito che l'unico stato che attraversa i movimenti e'
+     * {@code MappaGrWallet_CryptoStack}, e che tutto il resto e' o dentro la riga o dentro
+     * {@link OpzioniRicalcolo}. E' il presupposto del ricalcolo incrementale descritto in
+     * {@code test/Documentazione/Analisi_Ricalcolo_Incrementale_Plusvalenze.md}, dove lo stesso
+     * metodo verra' invocato a partire da un checkpoint invece che dal primo movimento.
+     *
+     * @param v riga del movimento, formato {@code String[45]} di {@code Principale.MappaCryptoWallet}
+     * @param MappaGrWallet_CryptoStack stato LIFO gruppo wallet -> moneta -> pila dei lotti, letto e modificato
+     * @param Opzioni opzioni personali lette una sola volta prima del ciclo
+     */
+    //Volutamente package-private e non private: CalcoliPlusvalenzeNewEquivalenzaIncrementaleTest
+    //lo invoca direttamente per verificare che una ripartenza da checkpoint dia lo stesso
+    //risultato della passata unica (paragrafo 7 dell'analisi sul ricalcolo incrementale).
+    static void ElaboraMovimento(String[] v,
+            Map<String, Map<String, ArrayDeque<String[]>>> MappaGrWallet_CryptoStack,
+            OpzioniRicalcolo Opzioni) {
+        String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);
+           // System.out.println(GruppoWallet);
+        if(!Opzioni.PlusXWallet)GruppoWallet="Wallet 01";
             
-            //TIPOLOGIA = 0 (Vendita Crypto)
-            //System.out.println("aaa "+IDTransazione);
-            if (TipoID.equals("VC")){
-                //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
+        //Questa funzione inizializza la mappa CryptoStack nel caso non esista già nella mappa MappaGrWallet_CryptoStack, nel qual caso recupera il suo valore         
+        Map<String, ArrayDeque<String[]>> CryptoStack = MappaGrWallet_CryptoStack.computeIfAbsent(GruppoWallet, k -> new TreeMap<>());
+
+        String TipoMU = Funzioni.RitornaTipoCrypto(v[8].trim(),v[1].trim(),v[9].trim());
+       // if (v[12]==null)System.out.println(v[11]+"_"+v[1]+"_"+v[12]);
+        String TipoME = Funzioni.RitornaTipoCrypto(v[11].trim(),v[1].trim(),v[12].trim());
+        String IDTransazione=v[0];
+        String IDTS[]=IDTransazione.split("_");
+        //C2/A3: tolgo le eventuali segnalazioni "errore dati" e "ID malformato" della
+        //passata precedente, verranno rimesse subito sotto o durante l'elaborazione
+        //se il problema è ancora presente
+        v[38]=v[38].replace("E", "").replace("M", "");
+        //A3: un ID malformato (meno di 5 segmenti) non deve far crashare il ricalcolo:
+        //il tipo movimento dell'ID resta vuoto, la classificazione si basa solo su v[18]
+        //e il movimento viene segnalato con la lettera "M" nel campo 38
+        String TipoID = IDTS.length > 4 ? IDTS[4] : "";
+        if (IDTS.length <= 4) {
+            LoggerGC.ScriviErrore("ID transazione malformato (meno di 5 segmenti): \"" + IDTransazione + "\"");
+            AggiungiFlagAnomalia(v, "M");
+        }
+        String MonetaU=v[8];
+        String QtaU=v[10];
+        String MonetaE=v[11];
+        String QtaE=v[13];
+        String Valore=v[15];
+        String CostoCaricoDonazioni=v[17];
+        String VecchioPrezzoCarico="0.00";
+        String NuovoPrezzoCarico="0.00";
+        String Plusvalenza="0.00";
+        String CalcoloPlusvalenza="N";
+        long dataLong=FunzioniDate.ConvertiDatainLongMinuto(v[1]);
+        boolean DataSuperiore2023=true;
+        if (dataLong<Opzioni.long2023){DataSuperiore2023=false;}
+
+        
+        //TIPOLOGIA = 0 (Vendita Crypto)
+        //System.out.println("aaa "+IDTransazione);
+        if (TipoID.equals("VC")){
+            //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
+            VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
+            
+            //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
+            NuovoPrezzoCarico="";
+            
+            //Calcolo la plusvalenza
+            Plusvalenza=toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString(); 
+            CalcoloPlusvalenza="S";
+        }           
+        //TIPOLOGIA = 1  (Scambio Cripto Attività medesime Caratteristiche)
+        else if (!TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")//non devono essere fiata
+                && TipoMU.equalsIgnoreCase(TipoME)&&//moneta uscita e entrata dello stesso tipo
+                !TipoMU.isBlank() && !TipoME.isBlank()) //non devno essere campi nulli (senza scambi)
+        {
+            
+            if (DataSuperiore2023||!Opzioni.Pre2023ScambiRilevanti){//se la data è superiore al 2023 oppure gli scambi pre 2023 non voglio renderli rilvenati
+                //Tolgo dallo stack il costo di carico della cripèto uscita
                 VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
                 
-                //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
-                NuovoPrezzoCarico="";
+                //Inserisco il costo di carico nello stack della cripto entrata
+                NuovoPrezzoCarico=VecchioPrezzoCarico;
+                StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
                 
-                //Calcolo la plusvalenza
-                Plusvalenza=toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString(); 
-                CalcoloPlusvalenza="S";
-            }           
-            //TIPOLOGIA = 1  (Scambio Cripto Attività medesime Caratteristiche)
-            else if (!TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")//non devono essere fiata
-                    && TipoMU.equalsIgnoreCase(TipoME)&&//moneta uscita e entrata dello stesso tipo
-                    !TipoMU.isBlank() && !TipoME.isBlank()) //non devno essere campi nulli (senza scambi)
-            {
-                
-                if (DataSuperiore2023||!Pre2023ScambiRilevanti){//se la data è superiore al 2023 oppure gli scambi pre 2023 non voglio renderli rilvenati
-                    //Tolgo dallo stack il costo di carico della cripèto uscita
-                    VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
-                    
-                    //Inserisco il costo di carico nello stack della cripto entrata
-                    NuovoPrezzoCarico=VecchioPrezzoCarico;
-                    StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
-                    
-                    //La plusvalenza va valorizzata a zero
-                    Plusvalenza="0.00";
-                    CalcoloPlusvalenza="N";
-                 }else {//altrimenti calcolo la plusvalenza
-                    //Tolgo dallo stack il vecchio costo di carico
-                    VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
-                    
-                    //il prezzo di carico della moneta entrante diventa il valore della moneta stessa
-                    //lo aggiungo quindi allo stack del lifo
-                    NuovoPrezzoCarico=Valore;
-                    StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
-                    
-                    //La plusvalenza è uguale al valore della moneta entrante meno il costo di carico della moneta uscente
-                    Plusvalenza=toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
-                    CalcoloPlusvalenza="S";
-                }                                      
-            } 
-            
-            
-            //TIPOLOGIA = 2 (Scambio Cripto Attività Diverse Caratteristiche)
-            else if (!TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")
-                    && !TipoMU.equalsIgnoreCase(TipoME)&&
-                    !TipoMU.isBlank() && !TipoME.isBlank())  
-            {
-                    //Tolgo dallo stack il vecchio costo di carico
-                    VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
-                    
-                    //il prezzo di carico della moneta entrante diventa il valore della moneta stessa
-                    //lo aggiungo quindi allo stack del lifo
-                    NuovoPrezzoCarico=Valore;
-                    StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
-                    
-                    //La plusvalenza è uguale al valore della moneta entrante meno il costo di carico della moneta uscente
-                    Plusvalenza=toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
-                    CalcoloPlusvalenza="S";
-                                       
-            }
-            
-            
-            //TIPOLOGIA = 3 (Acquisto di Cripto attività tramite FIAT)
-            else if (TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")&&
-                    !TipoMU.isBlank() && !TipoME.isBlank())  
-            {
-                
-                    NuovoPrezzoCarico=Valore;
-                    StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
-                    
-                    Plusvalenza="0.00";
-                    CalcoloPlusvalenza="N";
-                                         
-                    VecchioPrezzoCarico=""; 
-                    
-                    
-                    
-            }
-            
-            //TIPOLOGIA = 4 (Vendita Criptoattività per FIAT)
-            else if (!TipoMU.equalsIgnoreCase("FIAT") && TipoME.equalsIgnoreCase("FIAT")&&
-                    !TipoMU.isBlank() && !TipoME.isBlank())  
-            {
-                //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
+                //La plusvalenza va valorizzata a zero
+                Plusvalenza="0.00";
+                CalcoloPlusvalenza="N";
+             }else {//altrimenti calcolo la plusvalenza
+                //Tolgo dallo stack il vecchio costo di carico
                 VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
                 
-                //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
-                NuovoPrezzoCarico="";
+                //il prezzo di carico della moneta entrante diventa il valore della moneta stessa
+                //lo aggiungo quindi allo stack del lifo
+                NuovoPrezzoCarico=Valore;
+                StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
                 
-                //Calcolo la plusvalenza
+                //La plusvalenza è uguale al valore della moneta entrante meno il costo di carico della moneta uscente
                 Plusvalenza=toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
-                CalcoloPlusvalenza="S";                
-                 
-            } 
+                CalcoloPlusvalenza="S";
+            }                                      
+        } 
+        
+        
+        //TIPOLOGIA = 2 (Scambio Cripto Attività Diverse Caratteristiche)
+        else if (!TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")
+                && !TipoMU.equalsIgnoreCase(TipoME)&&
+                !TipoMU.isBlank() && !TipoME.isBlank())  
+        {
+                //Tolgo dallo stack il vecchio costo di carico
+                VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
+                
+                //il prezzo di carico della moneta entrante diventa il valore della moneta stessa
+                //lo aggiungo quindi allo stack del lifo
+                NuovoPrezzoCarico=Valore;
+                StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
+                
+                //La plusvalenza è uguale al valore della moneta entrante meno il costo di carico della moneta uscente
+                Plusvalenza=toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
+                CalcoloPlusvalenza="S";
+                                   
+        }
+        
+        
+        //TIPOLOGIA = 3 (Acquisto di Cripto attività tramite FIAT)
+        else if (TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")&&
+                !TipoMU.isBlank() && !TipoME.isBlank())  
+        {
             
+                NuovoPrezzoCarico=Valore;
+                StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
+                
+                Plusvalenza="0.00";
+                CalcoloPlusvalenza="N";
+                                     
+                VecchioPrezzoCarico=""; 
+                
+                
+                
+        }
+        
+        //TIPOLOGIA = 4 (Vendita Criptoattività per FIAT)
+        else if (!TipoMU.equalsIgnoreCase("FIAT") && TipoME.equalsIgnoreCase("FIAT")&&
+                !TipoMU.isBlank() && !TipoME.isBlank())  
+        {
+            //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
+            VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
             
-            //TIPOLOGIA = 5 , 7 e 9 -> Deposito Criptoattività di vario tipo
-            else if (TipoMU.isBlank() && !TipoME.equalsIgnoreCase("FIAT")) 
-            {
-                //Se arrivo qua vuol dire che questo è un deposito, poi a secondo di che tipo di deposito è
-                //valorizzo la tipologia corretta
-                
-                //TIPOLOGIA = 7; ( Deposito Criptoattività x rewards, stacking,cashback etc... - Plusvalenza immediata)
-                if (TipoID.equalsIgnoreCase("RW") || v[18].contains("DAI")) {
-                    //Se è un cashback ed è attiva l'assimilazione ai cashback fiat allora lo gestisco come tale, altrimenti passo alle if successive
-                    if (Funzioni.CashbackComeFIAT(IDTransazione)){
-                        NuovoPrezzoCarico = Valore;
-                        StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico,IDTransazione);
-                        Plusvalenza = "0.00";
-                        CalcoloPlusvalenza="N";
-                        VecchioPrezzoCarico = "";
-                    }            
-                   // Funzioni.RewardRilevante(IDTransazione);
-                    //Se data superiore a 2023 e la reward è fiscalmente rilvente oppure se
-                    //la data è inferiore al 2023, la reward è rilevante e non è attiva l'opzione per cui tutte le reward pre2023 sono da mettere a costo carico a zero
-                    //allore considero la reward rilevante
-                    //altrimenti non rilevante
-                    else if ((DataSuperiore2023&&Funzioni.RewardRilevante(IDTransazione)) || 
-                            (!DataSuperiore2023&&!Pre2023EarnCostoZero&&Funzioni.RewardRilevante(IDTransazione))
-                            ) 
-                    {
-                        NuovoPrezzoCarico = Valore;
-
-                        StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico,IDTransazione);
-
-                        Plusvalenza = Valore;
-                        CalcoloPlusvalenza="S";
-
-                        VecchioPrezzoCarico = "";
-                    } else {
-                        NuovoPrezzoCarico = "0.00";
-                        StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico,IDTransazione);
-
-                        Plusvalenza = "0.00";
-                        CalcoloPlusvalenza="N";
-
-                        VecchioPrezzoCarico = "";
-                    }
-
-                }
-
-                //Tipologia = 5; (Deposito Criptoattività x spostamento tra wallet)
-                else if (TipoID.equalsIgnoreCase("TI") || v[18].contains("DTW")) {
-                    
-                    
-                    
-                    
-                //else if (TipoMU.isBlank()&&(IDTS[4].equalsIgnoreCase("TI") || v[18].isBlank() || v[18].contains("DTW"))) {
-                    //il compito è trovare la controparte del movimento qualora questa si riferisse ad un diverso gruppo wallet
-                    //e da li spostare il costo di carico
-                   // String IDControparte = null;
-                   // String GruppoWalletControparte = null;
-                    String temp[]=RitornaIDeGruppoControparteSeGruppoDiverso(v);
-                    //questa funzione mi torna dei valori diversi da null se
-                    //il wallet controparte è diverso da quello originale e se la plusvalenza va calcolata divisa per gruppo wallet
-                    String IDControparte=temp[0];
-                    String GruppoWalletControparte = temp[1];
-                    
-               
-                    //Se ID controparte è diverso da null vuol dire che devo gestire il calcolo delle plusvalenze, altrimenti no
-                    if (IDControparte != null) {
-                        Plusvalenza = "0.00";
-                        CalcoloPlusvalenza="N";
-                        VecchioPrezzoCarico = "";
-                        
-                        //DA VEDERE PERCHE' IL CRYPTO STACK E' DIVERSO
-                    String Mov[] = Principale.MappaCryptoWallet.get(IDControparte);
-                    Map<String, ArrayDeque<String[]>> CryptoStack2=MappaGrWallet_CryptoStack.get(GruppoWalletControparte);// = new TreeMap<>();
-                        //A2: se il movimento controparte è stato cancellato nel frattempo
-                        //tratto il movimento come non collegato invece di crashare con NPE
-                        if (Mov == null) {
-                            LoggerGC.ScriviErrore("Movimento controparte \"" + IDControparte + "\" non trovato per il movimento " + IDTransazione);
-                            NuovoPrezzoCarico = "";
-                        } else {
-                    Mov[31]=v[1];
-                        if (CryptoStack2 == null) {
-                            //In teoria qua non ci dovrei mai entrare
-                            NuovoPrezzoCarico = "";
-                        } else {
-                            NuovoPrezzoCarico = StackLIFO_TogliQta(CryptoStack2, Mov[8], Mov[10], true,IDTransazione);
-                            StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico,IDTransazione);
-                        }
-                        }
-
-                    } else {
-                        Plusvalenza = "0.00";
-                        CalcoloPlusvalenza="N";
-
-                        NuovoPrezzoCarico = "";
-
-                        VecchioPrezzoCarico = "";
-                    }
-
-                }
-                
-                //Tipologia = 9; (Deposito a costo di carico zero)
-                else if(v[18].contains("DCZ")){
-                     
-                     NuovoPrezzoCarico="0.00";
-                     StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
-                     
-                     Plusvalenza="0.00";
-                     CalcoloPlusvalenza="N";
-                     
-                     VecchioPrezzoCarico="";
-                }
-                
-                //Tipologia = 3; (Acquisto Crypto)
-                else if(v[18].contains("DAC")||TipoID.equals("AC")){
-                    
-                    NuovoPrezzoCarico=Valore;
-                    StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
-                    
-                    Plusvalenza="0.00";
-                    CalcoloPlusvalenza="N";
-                                         
-                    VecchioPrezzoCarico=""; 
-                }
-                //Tipologia = 3; (Donazioni)
-                else if(v[18].contains("DDO")){
-                    
-                    NuovoPrezzoCarico=CostoCaricoDonazioni;
-                    StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
-                    
-                    Plusvalenza="0.00";
-                    CalcoloPlusvalenza="N";
-                                         
-                    VecchioPrezzoCarico=""; 
-                }
-                //Tipologia = XY; (Deposito non categorizzato) -> Vengono caricati sul LiFo a costo di carico Zero
-                else if(v[18].isBlank()){
-                    // nel caso la variabile considera movimenti non classficati sia a trueconsidero il movimento come deposito a zero
-                     if (ConsideraMovimentiNC) {
-                        NuovoPrezzoCarico = "0.00";
-                        StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico,IDTransazione);
-
-                        Plusvalenza = "0.00";
-                        CalcoloPlusvalenza = "N";
-
-                        VecchioPrezzoCarico = "";
-                    } else {
-                        //altrimenti non lo considero
-                        Plusvalenza = "0.00";
-                        CalcoloPlusvalenza = "N";
-
-                        NuovoPrezzoCarico = "";
-
-                        VecchioPrezzoCarico = "";
-                    }
-                }
-            } 
+            //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
+            NuovoPrezzoCarico="";
             
-            //TIPOLOGIA = 6 , 8 e 10 -> Prelievo Criptoattività di vario tipo
-            else if (!TipoMU.equalsIgnoreCase("FIAT") && TipoME.isBlank()) 
-            {
-                //Se arrivo qua vuol dire che questo è un Prelievo, poi a secondo di che tipo di deposito è
-                //valorizzo la tipologia corretta                         
-                
-                //Tipologia = 4 Sto facendo il rimborso di un cashback o altro quindi lo considero come vendita
-                if (TipoID.equalsIgnoreCase("RW")) {
-                    if (Funzioni.CashbackComeFIAT(IDTransazione)) {
-                        //Rimborso casback in presenza di cashback considerato come fiat
-                        //non calcolo plusvalenza, in sostanza lo tratto come tratto le donazioni
-                        //ritorno il cashback e stop
-                        VecchioPrezzoCarico = StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true, IDTransazione);
-
-                        NuovoPrezzoCarico = "";
-
-                        Plusvalenza = "0.00";
-                        CalcoloPlusvalenza = "N";
-                    } else {
-                        //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
-                        VecchioPrezzoCarico = StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true, IDTransazione);
-
-                        //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
-                        NuovoPrezzoCarico = "";
-
-                        //Calcolo la plusvalenza
-                        Plusvalenza = toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
-                        CalcoloPlusvalenza = "S";
-                    }
-                }
-                //Tipologia = 8;//Prelievo Criptoattività x servizi, acquisto beni etc... //per ora uguale alla tipologia 4
-                else if (TipoID.equalsIgnoreCase("CM") || v[18].contains("PCO")) {
-                    //Se contiene commissioni e è fleggato noplusvalenze commissioni lo considero come una donazione a livello fiscale
-                    //System.out.println(v[15]);
-                    if (v[5].toUpperCase().contains("COMMISSION") && NoPlusCommissioni) {
-                        VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
-                    
-                        NuovoPrezzoCarico="";
-                    
-                        Plusvalenza="0.00";
-                        CalcoloPlusvalenza="N";  
-                    } else {
-                        //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
-                        VecchioPrezzoCarico = StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true, IDTransazione);
-
-                        //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
-                        NuovoPrezzoCarico = "";
-
-                        //Calcolo la plusvalenza
-                        //  if (Funzioni.Funzioni_isNumeric(Valore, false)&&Funzioni.Funzioni_isNumeric(VecchioPrezzoCarico, false))
-                        Plusvalenza = toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
-                        CalcoloPlusvalenza = "S";
-                        // else Plusvalenza="ERRORE";
-                    }
-                }
-                //Tipologia = 6;//Prelievo Criptoattività x spostamento tra wallet
-                else if (TipoID.equalsIgnoreCase("TI")||v[18].contains("PTW")) {
-                         
-                    //Se è segnalato che manca stack del LiFo lo tolgo perchè è un movimento interno.
-                    v[38]=v[38].replace("A", "");
-                    Plusvalenza="0.00";
+            //Calcolo la plusvalenza
+            Plusvalenza=toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
+            CalcoloPlusvalenza="S";                
+             
+        } 
+        
+        
+        //TIPOLOGIA = 5 , 7 e 9 -> Deposito Criptoattività di vario tipo
+        else if (TipoMU.isBlank() && !TipoME.equalsIgnoreCase("FIAT")) 
+        {
+            //Se arrivo qua vuol dire che questo è un deposito, poi a secondo di che tipo di deposito è
+            //valorizzo la tipologia corretta
+            
+            //TIPOLOGIA = 7; ( Deposito Criptoattività x rewards, stacking,cashback etc... - Plusvalenza immediata)
+            if (TipoID.equalsIgnoreCase("RW") || v[18].contains("DAI")) {
+                //Se è un cashback ed è attiva l'assimilazione ai cashback fiat allora lo gestisco come tale, altrimenti passo alle if successive
+                if (Funzioni.CashbackComeFIAT(IDTransazione)){
+                    NuovoPrezzoCarico = Valore;
+                    StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico,IDTransazione);
+                    Plusvalenza = "0.00";
                     CalcoloPlusvalenza="N";
-                     
-                    NuovoPrezzoCarico="";
-                     
-                    String temp[]=RitornaIDeGruppoControparteSeGruppoDiverso(v);
-                    String GruppoWalletControparte = temp[1];
-                     
-                    if (v[18].contains("PTW") && GruppoWalletControparte!=null &&!GruppoWallet.equalsIgnoreCase(GruppoWalletControparte)) {
-                        //Inserisco il prezzo di carico del token in uscita solo se va poi a finire su un gruppoWallet diverso
-                        //e solo se ho attiva l'opzione che vuole il calcolo delle plusvalenze divise per wallet
-                        //altrimenti lo tratto alla stregua di un trasferimento interno e non metto nulla, tanto è un movimento completamente irrilevante
-                        //In ogni caso non lo tolgo dal LiFo perchè lo toglierò dal LiFo nel momento in cui c'è il deposito nel nuovo wallet
-                        VecchioPrezzoCarico = StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, false,IDTransazione);
-                    } else
-                        VecchioPrezzoCarico = "";
+                    VecchioPrezzoCarico = "";
+                }            
+               // Funzioni.RewardRilevante(IDTransazione);
+                //Se data superiore a 2023 e la reward è fiscalmente rilvente oppure se
+                //la data è inferiore al 2023, la reward è rilevante e non è attiva l'opzione per cui tutte le reward pre2023 sono da mettere a costo carico a zero
+                //allore considero la reward rilevante
+                //altrimenti non rilevante
+                else if ((DataSuperiore2023&&Funzioni.RewardRilevante(IDTransazione)) || 
+                        (!DataSuperiore2023&&!Opzioni.Pre2023EarnCostoZero&&Funzioni.RewardRilevante(IDTransazione))
+                        ) 
+                {
+                    NuovoPrezzoCarico = Valore;
 
-                } 
-                
-                //Tipologia = 10;//(Prelievo a plusvalenza Zero ma toglie dal Lifo) FURTO o DONAZIONE
-                else if(v[18].contains("PWN")){
-                    
-                    VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
-                    
-                    NuovoPrezzoCarico="";
-                    
-                    Plusvalenza="0.00";
-                    CalcoloPlusvalenza="N";                    
-                    
-                }
-                //Tipologia = XY;//(Movimento non categorizzato) - Lo Considero come un cashOut
-                else if(v[18].isBlank()){
-                    if (ConsideraMovimentiNC) {
-                        //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
-                        VecchioPrezzoCarico = StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true,IDTransazione);
+                    StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico,IDTransazione);
 
-                        //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
-                        NuovoPrezzoCarico = "";
+                    Plusvalenza = Valore;
+                    CalcoloPlusvalenza="S";
 
-                        //Calcolo la plusvalenza
-                        Plusvalenza = toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
-                        CalcoloPlusvalenza = "S";
-                    } else {
-                        Plusvalenza = "0.00";
-                        CalcoloPlusvalenza = "N";
-                        NuovoPrezzoCarico = "";
-                        VecchioPrezzoCarico = "";
-                    }
-                }
-            } 
-            //TIPOLOGIA = 11 -> Deposito FIAT o Prelievo FIAT
-            else if ((TipoMU.isBlank() && TipoME.equalsIgnoreCase("FIAT"))||(TipoME.isBlank() && TipoMU.equalsIgnoreCase("FIAT"))) 
-            {
-                    
-                    NuovoPrezzoCarico="";
-                    
-                    Plusvalenza="0.00";
+                    VecchioPrezzoCarico = "";
+                } else {
+                    NuovoPrezzoCarico = "0.00";
+                    StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico,IDTransazione);
+
+                    Plusvalenza = "0.00";
                     CalcoloPlusvalenza="N";
-                                           
-                    VecchioPrezzoCarico="";
-                    
+
+                    VecchioPrezzoCarico = "";
+                }
+
             }
-            else {
-                LoggerGC.ScriviErrore("CategorizzaTransazione x Plusvalenze - Nessuna Tipologia Individuata");
-                System.out.println("Tipologie Uscita ed entrata usate -> "+TipoMU+" - "+TipoME);
-            }           
 
-                    v[16]=VecchioPrezzoCarico;
-                    v[17]=NuovoPrezzoCarico;
-                    v[19]=Plusvalenza;
-                    v[33]=CalcoloPlusvalenza;
+            //Tipologia = 5; (Deposito Criptoattività x spostamento tra wallet)
+            else if (TipoID.equalsIgnoreCase("TI") || v[18].contains("DTW")) {
+                
+                
+                
+                
+            //else if (TipoMU.isBlank()&&(IDTS[4].equalsIgnoreCase("TI") || v[18].isBlank() || v[18].contains("DTW"))) {
+                //il compito è trovare la controparte del movimento qualora questa si riferisse ad un diverso gruppo wallet
+                //e da li spostare il costo di carico
+               // String IDControparte = null;
+               // String GruppoWalletControparte = null;
+                String temp[]=RitornaIDeGruppoControparteSeGruppoDiverso(v);
+                //questa funzione mi torna dei valori diversi da null se
+                //il wallet controparte è diverso da quello originale e se la plusvalenza va calcolata divisa per gruppo wallet
+                String IDControparte=temp[0];
+                String GruppoWalletControparte = temp[1];
+                
+           
+                //Se ID controparte è diverso da null vuol dire che devo gestire il calcolo delle plusvalenze, altrimenti no
+                if (IDControparte != null) {
+                    Plusvalenza = "0.00";
+                    CalcoloPlusvalenza="N";
+                    VecchioPrezzoCarico = "";
+                    
+                    //DA VEDERE PERCHE' IL CRYPTO STACK E' DIVERSO
+                String Mov[] = Principale.MappaCryptoWallet.get(IDControparte);
+                Map<String, ArrayDeque<String[]>> CryptoStack2=MappaGrWallet_CryptoStack.get(GruppoWalletControparte);// = new TreeMap<>();
+                    //A2: se il movimento controparte è stato cancellato nel frattempo
+                    //tratto il movimento come non collegato invece di crashare con NPE
+                    if (Mov == null) {
+                        LoggerGC.ScriviErrore("Movimento controparte \"" + IDControparte + "\" non trovato per il movimento " + IDTransazione);
+                        NuovoPrezzoCarico = "";
+                    } else {
+                Mov[31]=v[1];
+                    if (CryptoStack2 == null) {
+                        //In teoria qua non ci dovrei mai entrare
+                        NuovoPrezzoCarico = "";
+                    } else {
+                        NuovoPrezzoCarico = StackLIFO_TogliQta(CryptoStack2, Mov[8], Mov[10], true,IDTransazione);
+                        StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico,IDTransazione);
+                    }
+                    }
+
+                } else {
+                    Plusvalenza = "0.00";
+                    CalcoloPlusvalenza="N";
+
+                    NuovoPrezzoCarico = "";
+
+                    VecchioPrezzoCarico = "";
+                }
+
+            }
+            
+            //Tipologia = 9; (Deposito a costo di carico zero)
+            else if(v[18].contains("DCZ")){
+                 
+                 NuovoPrezzoCarico="0.00";
+                 StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
+                 
+                 Plusvalenza="0.00";
+                 CalcoloPlusvalenza="N";
+                 
+                 VecchioPrezzoCarico="";
+            }
+            
+            //Tipologia = 3; (Acquisto Crypto)
+            else if(v[18].contains("DAC")||TipoID.equals("AC")){
+                
+                NuovoPrezzoCarico=Valore;
+                StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
+                
+                Plusvalenza="0.00";
+                CalcoloPlusvalenza="N";
+                                     
+                VecchioPrezzoCarico=""; 
+            }
+            //Tipologia = 3; (Donazioni)
+            else if(v[18].contains("DDO")){
+                
+                NuovoPrezzoCarico=CostoCaricoDonazioni;
+                StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
+                
+                Plusvalenza="0.00";
+                CalcoloPlusvalenza="N";
+                                     
+                VecchioPrezzoCarico=""; 
+            }
+            //Tipologia = XY; (Deposito non categorizzato) -> Vengono caricati sul LiFo a costo di carico Zero
+            else if(v[18].isBlank()){
+                // nel caso la variabile considera movimenti non classficati sia a trueconsidero il movimento come deposito a zero
+                 if (Opzioni.ConsideraMovimentiNC) {
+                    NuovoPrezzoCarico = "0.00";
+                    StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico,IDTransazione);
+
+                    Plusvalenza = "0.00";
+                    CalcoloPlusvalenza = "N";
+
+                    VecchioPrezzoCarico = "";
+                } else {
+                    //altrimenti non lo considero
+                    Plusvalenza = "0.00";
+                    CalcoloPlusvalenza = "N";
+
+                    NuovoPrezzoCarico = "";
+
+                    VecchioPrezzoCarico = "";
+                }
+            }
+        } 
+        
+        //TIPOLOGIA = 6 , 8 e 10 -> Prelievo Criptoattività di vario tipo
+        else if (!TipoMU.equalsIgnoreCase("FIAT") && TipoME.isBlank()) 
+        {
+            //Se arrivo qua vuol dire che questo è un Prelievo, poi a secondo di che tipo di deposito è
+            //valorizzo la tipologia corretta                         
+            
+            //Tipologia = 4 Sto facendo il rimborso di un cashback o altro quindi lo considero come vendita
+            if (TipoID.equalsIgnoreCase("RW")) {
+                if (Funzioni.CashbackComeFIAT(IDTransazione)) {
+                    //Rimborso casback in presenza di cashback considerato come fiat
+                    //non calcolo plusvalenza, in sostanza lo tratto come tratto le donazioni
+                    //ritorno il cashback e stop
+                    VecchioPrezzoCarico = StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true, IDTransazione);
+
+                    NuovoPrezzoCarico = "";
+
+                    Plusvalenza = "0.00";
+                    CalcoloPlusvalenza = "N";
+                } else {
+                    //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
+                    VecchioPrezzoCarico = StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true, IDTransazione);
+
+                    //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
+                    NuovoPrezzoCarico = "";
+
+                    //Calcolo la plusvalenza
+                    Plusvalenza = toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
+                    CalcoloPlusvalenza = "S";
+                }
+            }
+            //Tipologia = 8;//Prelievo Criptoattività x servizi, acquisto beni etc... //per ora uguale alla tipologia 4
+            else if (TipoID.equalsIgnoreCase("CM") || v[18].contains("PCO")) {
+                //Se contiene commissioni e è fleggato noplusvalenze commissioni lo considero come una donazione a livello fiscale
+                //System.out.println(v[15]);
+                if (v[5].toUpperCase().contains("COMMISSION") && Opzioni.NoPlusCommissioni) {
+                    VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
+                
+                    NuovoPrezzoCarico="";
+                
+                    Plusvalenza="0.00";
+                    CalcoloPlusvalenza="N";  
+                } else {
+                    //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
+                    VecchioPrezzoCarico = StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true, IDTransazione);
+
+                    //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
+                    NuovoPrezzoCarico = "";
+
+                    //Calcolo la plusvalenza
+                    //  if (Funzioni.Funzioni_isNumeric(Valore, false)&&Funzioni.Funzioni_isNumeric(VecchioPrezzoCarico, false))
+                    Plusvalenza = toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
+                    CalcoloPlusvalenza = "S";
+                    // else Plusvalenza="ERRORE";
+                }
+            }
+            //Tipologia = 6;//Prelievo Criptoattività x spostamento tra wallet
+            else if (TipoID.equalsIgnoreCase("TI")||v[18].contains("PTW")) {
+                     
+                //Se è segnalato che manca stack del LiFo lo tolgo perchè è un movimento interno.
+                v[38]=v[38].replace("A", "");
+                Plusvalenza="0.00";
+                CalcoloPlusvalenza="N";
+                 
+                NuovoPrezzoCarico="";
+                 
+                String temp[]=RitornaIDeGruppoControparteSeGruppoDiverso(v);
+                String GruppoWalletControparte = temp[1];
+                 
+                if (v[18].contains("PTW") && GruppoWalletControparte!=null &&!GruppoWallet.equalsIgnoreCase(GruppoWalletControparte)) {
+                    //Inserisco il prezzo di carico del token in uscita solo se va poi a finire su un gruppoWallet diverso
+                    //e solo se ho attiva l'opzione che vuole il calcolo delle plusvalenze divise per wallet
+                    //altrimenti lo tratto alla stregua di un trasferimento interno e non metto nulla, tanto è un movimento completamente irrilevante
+                    //In ogni caso non lo tolgo dal LiFo perchè lo toglierò dal LiFo nel momento in cui c'è il deposito nel nuovo wallet
+                    VecchioPrezzoCarico = StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, false,IDTransazione);
+                } else
+                    VecchioPrezzoCarico = "";
+
+            } 
+            
+            //Tipologia = 10;//(Prelievo a plusvalenza Zero ma toglie dal Lifo) FURTO o DONAZIONE
+            else if(v[18].contains("PWN")){
+                
+                VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
+                
+                NuovoPrezzoCarico="";
+                
+                Plusvalenza="0.00";
+                CalcoloPlusvalenza="N";                    
+                
+            }
+            //Tipologia = XY;//(Movimento non categorizzato) - Lo Considero come un cashOut
+            else if(v[18].isBlank()){
+                if (Opzioni.ConsideraMovimentiNC) {
+                    //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
+                    VecchioPrezzoCarico = StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true,IDTransazione);
+
+                    //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
+                    NuovoPrezzoCarico = "";
+
+                    //Calcolo la plusvalenza
+                    Plusvalenza = toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
+                    CalcoloPlusvalenza = "S";
+                } else {
+                    Plusvalenza = "0.00";
+                    CalcoloPlusvalenza = "N";
+                    NuovoPrezzoCarico = "";
+                    VecchioPrezzoCarico = "";
+                }
+            }
+        } 
+        //TIPOLOGIA = 11 -> Deposito FIAT o Prelievo FIAT
+        else if ((TipoMU.isBlank() && TipoME.equalsIgnoreCase("FIAT"))||(TipoME.isBlank() && TipoMU.equalsIgnoreCase("FIAT"))) 
+        {
+                
+                NuovoPrezzoCarico="";
+                
+                Plusvalenza="0.00";
+                CalcoloPlusvalenza="N";
+                                       
+                VecchioPrezzoCarico="";
+                
+        }
+        else {
+            LoggerGC.ScriviErrore("CategorizzaTransazione x Plusvalenze - Nessuna Tipologia Individuata");
+            System.out.println("Tipologie Uscita ed entrata usate -> "+TipoMU+" - "+TipoME);
+        }           
+
+                v[16]=VecchioPrezzoCarico;
+                v[17]=NuovoPrezzoCarico;
+                v[19]=Plusvalenza;
+                v[33]=CalcoloPlusvalenza;
 
 
+    }
+
+    /**
+     * Le opzioni personali (e la data soglia 2023) che il motore legge <b>una volta sola</b> prima
+     * del ciclo: sono costanti per l'intero ricalcolo e valgono per tutti i movimenti.
+     * <p>
+     * <b>E' anche l'elenco completo degli ingressi del motore che non stanno dentro la riga del
+     * movimento</b>: cambiarne uno cambia il risultato di tutto lo storico senza che nessun
+     * movimento risulti modificato. Chi aggiunge qui una nuova opzione deve tenerne conto nel
+     * ricalcolo incrementale (paragrafo 6 di
+     * {@code test/Documentazione/Analisi_Ricalcolo_Incrementale_Plusvalenze.md}), dove questo
+     * elenco e' quello che decide quando il ricalcolo deve tornare completo.
+     */
+    static final class OpzioniRicalcolo {
+
+        /** Se {@code false} i movimenti non classificati non vengono conteggiati ({@code PL_CosiderareMovimentiNC}). */
+        final boolean ConsideraMovimentiNC;
+        /** Se {@code true} ogni gruppo wallet ha una pila LIFO indipendente ({@code PlusXWallet}). */
+        final boolean PlusXWallet;
+        /** Se {@code true} le commissioni non generano plusvalenza ({@code Plusvalenze_NoPlusvalenzeCommissioni}). */
+        final boolean NoPlusCommissioni;
+        /** Se {@code true} le reward precedenti al 2023 entrano nel LIFO a costo zero ({@code Plusvalenze_Pre2023EarnCostoZero}). */
+        final boolean Pre2023EarnCostoZero;
+        /** Se {@code true} gli scambi fra cripto dello stesso tipo sono rilevanti anche prima del 2023 ({@code Plusvalenze_Pre2023ScambiRilevanti}). */
+        final boolean Pre2023ScambiRilevanti;
+        /** 1 gennaio 2023 nel formato long dei minuti, soglia delle due regole qui sopra. */
+        final long long2023;
+
+        OpzioniRicalcolo() {
+            //Con questa opzione decido che fare in caso di movimenti non classificati, se conteggiarli o meno
+            ConsideraMovimentiNC = !DatabaseH2.Pers_Opzioni_Leggi("PL_CosiderareMovimentiNC", "SI").equalsIgnoreCase("NO");
+
+            //controllo se devo o meno prendere in considerazione i gruppi wallet per il calcolo della plusvalenza
+            String PlusXW = DatabaseH2.Pers_Opzioni_Leggi("PlusXWallet");
+            PlusXWallet = (PlusXW != null && PlusXW.equalsIgnoreCase("SI"));
+
+            String NoPlusCom = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_NoPlusvalenzeCommissioni");
+            NoPlusCommissioni = (NoPlusCom != null && NoPlusCom.equalsIgnoreCase("SI"));
+
+            String Pre2023Earn = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023EarnCostoZero");
+            Pre2023EarnCostoZero = (Pre2023Earn != null && Pre2023Earn.equalsIgnoreCase("SI"));
+
+            String Pre2023Scambi = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023ScambiRilevanti");
+            Pre2023ScambiRilevanti = (Pre2023Scambi != null && Pre2023Scambi.equalsIgnoreCase("SI"));
+
+            long2023 = FunzioniDate.ConvertiDatainLongMinuto("2023-01-01 00:00");
+        }
+
+        /**
+         * Impronta di <b>tutto ciò che il motore legge e che non sta dentro la riga di un
+         * movimento</b>. Se cambia, non esiste un punto di ripartenza: il verdetto cambia su tutto
+         * lo storico senza che nessun movimento risulti modificato, e il ricalcolo torna completo.
+         * <p>
+         * Comprende anche le opzioni che il motore non legge direttamente ma attraverso
+         * {@code Funzioni.RewardRilevante} e {@code Funzioni.CashbackComeFIAT}, e le due mappe in
+         * memoria da cui dipendono gruppi wallet e token EMoney. Sono piccole (una voce per wallet,
+         * una per token EMoney), quindi si possono hashare per intero a ogni passata: <b>è
+         * volutamente diverso da un contatore di versione</b> da incrementare dove quelle tabelle
+         * vengono scritte, che sarebbe l'ennesima cosa da ricordarsi in N punti del programma.
+         * <p>
+         * <b>Chi aggiunge un'opzione al motore la aggiunga anche qui</b>: è l'unico elenco di
+         * questo lavoro che va tenuto aggiornato a mano. Dimenticarla produce risultati stantii.
+         */
+        long Epoca() {
+            long h = SEME_IMPRONTA;
+            h = Mescola(h, ConsideraMovimentiNC ? "1" : "0");
+            h = Mescola(h, PlusXWallet ? "1" : "0");
+            h = Mescola(h, NoPlusCommissioni ? "1" : "0");
+            h = Mescola(h, Pre2023EarnCostoZero ? "1" : "0");
+            h = Mescola(h, Pre2023ScambiRilevanti ? "1" : "0");
+            h = Mescola(h, Long.toString(long2023));
+            //Lette dentro Funzioni.RewardRilevante
+            h = Mescola(h, DatabaseH2.Pers_Opzioni_Leggi("PDD_CashBack", "SI"));
+            h = Mescola(h, DatabaseH2.Pers_Opzioni_Leggi("PDD_Staking", "SI"));
+            h = Mescola(h, DatabaseH2.Pers_Opzioni_Leggi("PDD_Airdrop", "SI"));
+            h = Mescola(h, DatabaseH2.Pers_Opzioni_Leggi("PDD_Earn", "SI"));
+            h = Mescola(h, DatabaseH2.Pers_Opzioni_Leggi("PDD_Reward", "SI"));
+            //Lette dentro Funzioni.CashbackComeFIAT
+            h = Mescola(h, DatabaseH2.Pers_Opzioni_Leggi("CashBackComeFIAT", "NO"));
+            h = Mescola(h, DatabaseH2.Pers_Opzioni_Leggi("CashBackComeFIATAnno"));
+            //Attivare i dettagli LIFO completi obbliga a una passata intera: i movimenti prima del
+            //punto di ripartenza resterebbero senza dettagli, ed è esattamente per averli tutti che
+            //AggiornaPlusvalenzeConDettagliLifo() viene chiamata
+            h = Mescola(h, DettagliLifoCompleti ? "1" : "0");
+            //Wallet -> gruppo: cambiare un gruppo ridistribuisce le pile LIFO di tutto lo storico
+            for (Map.Entry<String, String> e : DatabaseH2.Mappa_Wallet_Gruppo.entrySet()) {
+                h = Mescola(h, e.getKey());
+                h = Mescola(h, e.getValue());
+            }
+            //Token EMoney: spostare la data di un token riclassifica movimenti passati
+            for (Map.Entry<String, String> e : Principale.Mappa_EMoney.entrySet()) {
+                h = Mescola(h, e.getKey());
+                h = Mescola(h, e.getValue());
+            }
+            return h;
         }
     }
 

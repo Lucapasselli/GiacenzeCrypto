@@ -532,4 +532,64 @@ class Principale_Movimenti_SeparaUnisciTest {
         assertEquals("8", Ricomposto[13]);
         assertEquals("20000.00", Ricomposto[15]);
     }
+
+    // =============================================================================================
+    // DOCUMENTO DI ORIGINE (campo 41)
+    // =============================================================================================
+
+    @Test
+    void separazione_riportaIlDocumentoDiOrigineSuEntrambeLeGambe() {
+        String Scambio[] = scambioCryptoCrypto();
+        Scambio[41] = "12";
+
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Scambio));
+
+        //Le gambe sono RICOSTRUITE da creaMovimento, non copiate: senza il 41 in CampiDaRiportare il
+        //legame al file da cui il movimento proveniva si perderebbe proprio manipolandolo
+        assertEquals("12", MappaCryptoWallet.get(DATA_ID + "_WalletTest_001_001_PC")[41]);
+        assertEquals("12", MappaCryptoWallet.get(DATA_ID + "_WalletTest_001A_001_DC")[41]);
+    }
+
+    @Test
+    void fusione_ereditaIlDocumentoDiOrigineDelPrelievo() {
+        String Prelievo[] = movimento(DATA_ID + "_WalletTest_001_001_PC", "PRELIEVO CRYPTO",
+                "BTC", "Crypto", "-0.5", "", "", "", "20000.00");
+        String Deposito[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "8", "20000.00");
+        Prelievo[41] = "12";
+        Deposito[41] = "99";
+
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiFusione(Prelievo, Deposito, null));
+
+        assertEquals("12", MappaCryptoWallet.get(DATA_ID + "_WalletTest_001_001_SC")[41],
+                "vince il primo valorizzato, e il prelievo viene prima del deposito");
+    }
+
+    @Test
+    void fusione_conSoloIlDepositoDocumentato_prendeQuelloDelDeposito() {
+        String Prelievo[] = movimento(DATA_ID + "_WalletTest_001_001_PC", "PRELIEVO CRYPTO",
+                "BTC", "Crypto", "-0.5", "", "", "", "20000.00");
+        String Deposito[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "8", "20000.00");
+        Deposito[41] = "99";
+
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiFusione(Prelievo, Deposito, null));
+
+        assertEquals("99", MappaCryptoWallet.get(DATA_ID + "_WalletTest_001_001_SC")[41]);
+    }
+
+    @Test
+    void separazioneEFusione_conservanoIlDocumentoDiOrigine() {
+        String Scambio[] = scambioCryptoCrypto();
+        String IDOriginale = Scambio[0];
+        Scambio[41] = "12";
+
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Scambio));
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiFusione(
+                MappaCryptoWallet.get(DATA_ID + "_WalletTest_001_001_PC"),
+                MappaCryptoWallet.get(DATA_ID + "_WalletTest_001A_001_DC"), null));
+
+        assertEquals("12", MappaCryptoWallet.get(IDOriginale)[41],
+                "l'andata e ritorno non deve far perdere il legame con il file di origine");
+    }
 }

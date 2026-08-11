@@ -237,7 +237,12 @@ private static final long serialVersionUID = 3L;
 
             cartella=new File (VarStatiche.getCartella_Temporanei());
             if (!cartella.exists()) cartella.mkdir();
-            
+
+            //Copie dei file da cui sono stati importati i movimenti. NON va sotto Backup/ né Temporanei/:
+            //quelle due vengono potate qui sotto e un documento di origine non deve scadere.
+            cartella=new File (VarStatiche.getCartella_DocumentiFonte());
+            if (!cartella.exists()) cartella.mkdir();
+
             //Cancello i backup automatici più vecchi di 6 Mesi
             Funzioni.Files_CancellaOltreTOTh(VarStatiche.getCartella_Backup(), 4320);
             //Cancello i file temporanei, tipicamente esportazioni o stampe più vecchi di 24h
@@ -452,6 +457,7 @@ private static final long serialVersionUID = 3L;
         MenuItem_LiFoTransazione = new javax.swing.JMenuItem();
         MenuItem_DettagliMovimento = new javax.swing.JMenuItem();
         MenuItem_ChiediIA = new javax.swing.JMenu();
+        MenuItem_DocumentoFonte = new javax.swing.JMenuItem();
         MenuItem_ModificaMovimento = new javax.swing.JMenuItem();
         MenuItem_EliminaMovimento = new javax.swing.JMenuItem();
         jSeparator8 = new javax.swing.JPopupMenu.Separator();
@@ -698,6 +704,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_Emoney_Bottone_Aggiungi = new javax.swing.JButton();
         Opzioni_Emoney_Bottone_Precompila = new javax.swing.JButton();
         Opzioni_Export_Pannello = new javax.swing.JPanel();
+        Opzioni_Bottone_DocumentiFonte = new javax.swing.JButton();
         Opzioni_Export_Wallets_Combobox = new javax.swing.JComboBox<>();
         jLabel9 = new javax.swing.JLabel();
         Opzioni_Export_Tatax_Bottone = new javax.swing.JButton();
@@ -772,7 +779,7 @@ private static final long serialVersionUID = 3L;
         jLabel18 = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
         jLabel20 = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
+        Opzioni_Donazioni = new javax.swing.JPanel();
         jLabel22 = new javax.swing.JLabel();
         jLabel23 = new javax.swing.JLabel();
         jLabel24 = new javax.swing.JLabel();
@@ -874,6 +881,16 @@ private static final long serialVersionUID = 3L;
         MenuItem_ChiediIA.setText("Chiedi all'IA");
         MenuItem_ChiediIA.setToolTipText("Chiede a un chatbot di spiegare il movimento selezionato");
         PopupMenu.add(MenuItem_ChiediIA);
+
+        MenuItem_DocumentoFonte.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Documento.png"))); // NOI18N
+        MenuItem_DocumentoFonte.setText("Apri documento di origine");
+        MenuItem_DocumentoFonte.setToolTipText("Apre il file da cui il movimento selezionato è stato importato");
+        MenuItem_DocumentoFonte.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_DocumentoFonteActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_DocumentoFonte);
 
         MenuItem_ModificaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
         MenuItem_ModificaMovimento.setText("Modifica Movimento");
@@ -1453,7 +1470,7 @@ private static final long serialVersionUID = 3L;
                                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                            .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                                                            .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 112, Short.MAX_VALUE)
                                                             .addComponent(TransazioniCrypto_Text_CostiCarico))
                                                         .addGap(51, 51, 51)
                                                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1557,7 +1574,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo))
                 .addGap(5, 5, 5)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -4263,6 +4280,15 @@ private static final long serialVersionUID = 3L;
 
         Opzioni_TabbedPane.addTab("E-Money Token (EMT)", Opzioni_Emoney_Pannello);
 
+        Opzioni_Bottone_DocumentiFonte.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Documento.png"))); // NOI18N
+        Opzioni_Bottone_DocumentiFonte.setText("Gestione dei documenti di origine dei movimenti");
+        Opzioni_Bottone_DocumentiFonte.setToolTipText("Elenca i file da cui i movimenti sono stati importati: movimenti agganciati, wallet, periodo, apertura di una copia, esportazione ed eliminazione");
+        Opzioni_Bottone_DocumentiFonte.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Bottone_DocumentiFonteActionPerformed(evt);
+            }
+        });
+
         Opzioni_Export_Wallets_Combobox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         jLabel9.setText("Scegli il wallet da esportare : ");
@@ -4289,9 +4315,11 @@ private static final long serialVersionUID = 3L;
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Opzioni_Export_Wallets_Combobox, javax.swing.GroupLayout.PREFERRED_SIZE, 419, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Opzioni_Export_Tatax_Bottone))
-                    .addComponent(Opzioni_Export_EsportaPrezzi_CheckBox))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(Opzioni_Export_Tatax_Bottone)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Opzioni_Export_EsportaPrezzi_CheckBox))
+                    .addComponent(Opzioni_Bottone_DocumentiFonte))
+                .addContainerGap(392, Short.MAX_VALUE))
         );
         Opzioni_Export_PannelloLayout.setVerticalGroup(
             Opzioni_Export_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4299,11 +4327,12 @@ private static final long serialVersionUID = 3L;
                 .addGap(4, 4, 4)
                 .addGroup(Opzioni_Export_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel9)
-                    .addComponent(Opzioni_Export_Wallets_Combobox, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Opzioni_Export_Tatax_Bottone))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(Opzioni_Export_EsportaPrezzi_CheckBox)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(Opzioni_Export_Wallets_Combobox, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_Export_Tatax_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_Export_EsportaPrezzi_CheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(145, 145, 145)
+                .addComponent(Opzioni_Bottone_DocumentiFonte, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(609, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Export", Opzioni_Export_Pannello);
@@ -4528,17 +4557,11 @@ private static final long serialVersionUID = 3L;
                                     .addGroup(Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                         .addComponent(Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(RT_Bottone_Documentazione1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                    .addComponent(Plusvalenze_Opzioni_NonConsiderareMovimentiNC, javax.swing.GroupLayout.PREFERRED_SIZE, 877, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(Plusvalenze_Opzioni_NonConsiderareMovimentiNC, javax.swing.GroupLayout.PREFERRED_SIZE, 877, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(Opzioni_GruppoWallet_CheckBox_PlusManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
-            .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(Opzioni_GruppoWallet_CheckBox_PlusManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         Opzioni_Calcolo_PannelloLayout.setVerticalGroup(
             Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -5123,63 +5146,63 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        javax.swing.GroupLayout Opzioni_DonazioniLayout = new javax.swing.GroupLayout(Opzioni_Donazioni);
+        Opzioni_Donazioni.setLayout(Opzioni_DonazioniLayout);
+        Opzioni_DonazioniLayout.setHorizontalGroup(
+            Opzioni_DonazioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_DonazioniLayout.createSequentialGroup()
                 .addComponent(jLabel24, javax.swing.GroupLayout.PREFERRED_SIZE, 1276, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 178, Short.MAX_VALUE))
-            .addGroup(jPanel2Layout.createSequentialGroup()
+            .addGroup(Opzioni_DonazioniLayout.createSequentialGroup()
                 .addGap(43, 43, 43)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(Opzioni_DonazioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Donazioni_Bottone2, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
+                    .addGroup(Opzioni_DonazioniLayout.createSequentialGroup()
                         .addComponent(jLabel23)
                         .addGap(18, 18, 18)
                         .addComponent(jLabel26, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(Opzioni_DonazioniLayout.createSequentialGroup()
+                        .addGroup(Opzioni_DonazioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel22)
                             .addComponent(Donazioni_Bottone1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
                         .addComponent(jLabel25, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(121, 121, 121)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(Opzioni_DonazioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jLabel29, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(18, 18, 18)
                         .addComponent(jLabel30, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        Opzioni_DonazioniLayout.setVerticalGroup(
+            Opzioni_DonazioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_DonazioniLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel24, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(Opzioni_DonazioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(Opzioni_DonazioniLayout.createSequentialGroup()
+                        .addGroup(Opzioni_DonazioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(Opzioni_DonazioniLayout.createSequentialGroup()
                                 .addGap(33, 33, 33)
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addGroup(Opzioni_DonazioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addComponent(jLabel22, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(jLabel29, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                            .addGroup(jPanel2Layout.createSequentialGroup()
+                            .addGroup(Opzioni_DonazioniLayout.createSequentialGroup()
                                 .addGap(61, 61, 61)
                                 .addComponent(jLabel30, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(Opzioni_DonazioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jButton1)
                             .addComponent(Donazioni_Bottone1)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_DonazioniLayout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel25, javax.swing.GroupLayout.PREFERRED_SIZE, 236, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(Opzioni_DonazioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(Opzioni_DonazioniLayout.createSequentialGroup()
                         .addGap(44, 44, 44)
                         .addComponent(jLabel23, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
+                    .addGroup(Opzioni_DonazioniLayout.createSequentialGroup()
                         .addGap(95, 95, 95)
                         .addComponent(jLabel26, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -5187,7 +5210,7 @@ private static final long serialVersionUID = 3L;
                 .addContainerGap(183, Short.MAX_VALUE))
         );
 
-        Opzioni_TabbedPane.addTab("Donazioni", jPanel2);
+        Opzioni_TabbedPane.addTab("Donazioni", Opzioni_Donazioni);
 
         Opzioni_ApiKey_Helius_Label.setText("ApiKey Helius x Solana :");
 
@@ -5510,7 +5533,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_ProviderDefi_TextAreaIstruzioni.setColumns(20);
         Opzioni_ProviderDefi_TextAreaIstruzioni.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         Opzioni_ProviderDefi_TextAreaIstruzioni.setRows(3);
-        Opzioni_ProviderDefi_TextAreaIstruzioni.setText("Scegli, per ogni chain, quale provider usare per lo scaricamento dei movimenti DeFi. Per Cronos il default è Blockscout perché permette di impostare un blocco di partenza per lo scaricamento (a differenza del vecchio provider); Cronos usa sempre la ApiKey Cronos inserita nel tab \"ApiKey\", non quella Blockscout (anch'essa nel tab \"ApiKey\").");
+        Opzioni_ProviderDefi_TextAreaIstruzioni.setText("Scegli, per ogni chain, quale provider usare per lo scaricamento dei movimenti DeFi. \nPer Cronos il default è Blockscout perché permette di impostare un blocco di partenza per lo scaricamento (a differenza del vecchio provider); Cronos usa sempre la ApiKey Cronos inserita nel tab \"ApiKey\", non quella Blockscout (anch'essa nel tab \"ApiKey\").");
         Opzioni_ProviderDefi_TextAreaIstruzioni.setPreferredSize(new java.awt.Dimension(774, 44));
         Opzioni_ProviderDefi_ScrollIstruzioni.setViewportView(Opzioni_ProviderDefi_TextAreaIstruzioni);
 
@@ -5558,9 +5581,9 @@ private static final long serialVersionUID = 3L;
         Opzioni_ProviderDefi_PannelloLayout.setVerticalGroup(
             Opzioni_ProviderDefi_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ProviderDefi_PannelloLayout.createSequentialGroup()
-                .addComponent(Opzioni_ProviderDefi_ScrollIstruzioni, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(Opzioni_ProviderDefi_ScrollIstruzioni, javax.swing.GroupLayout.DEFAULT_SIZE, 86, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_ProviderDefi_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 680, Short.MAX_VALUE)
+                .addComponent(Opzioni_ProviderDefi_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 646, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Opzioni_ProviderDefi_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ProviderDefi_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -12078,6 +12101,14 @@ if (result != null && !result.isAction("cancel")) {
         }
     }//GEN-LAST:event_MenuItem_DettagliMovimentoActionPerformed
 
+    private void MenuItem_DocumentoFonteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_DocumentoFonteActionPerformed
+        Principale_DocumentiFonte.ApriDocumentoDiOrigine(PopUp_IDTrans, this);
+    }//GEN-LAST:event_MenuItem_DocumentoFonteActionPerformed
+
+    private void Opzioni_Bottone_DocumentiFonteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_DocumentiFonteActionPerformed
+        GUI_DocumentiFonte.Mostra(this);
+    }//GEN-LAST:event_Opzioni_Bottone_DocumentiFonteActionPerformed
+
     private void MenuItem_EsportaTabellaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_EsportaTabellaActionPerformed
 
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -16586,6 +16617,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JMenuItem MenuItem_Copia;
     private javax.swing.JMenuItem MenuItem_CopiaID;
     private javax.swing.JMenuItem MenuItem_DettagliMovimento;
+    private javax.swing.JMenuItem MenuItem_DocumentoFonte;
     private javax.swing.JMenuItem MenuItem_EliminaMovimento;
     private javax.swing.JMenuItem MenuItem_EsportaTabella;
     private javax.swing.JMenuItem MenuItem_Incolla;
@@ -16629,11 +16661,13 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JTextField Opzioni_ApiKey_UniSat_TextField;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
+    private javax.swing.JButton Opzioni_Bottone_DocumentiFonte;
     private javax.swing.JButton Opzioni_Bottone_PuliziaPrezziKO;
     private javax.swing.JPanel Opzioni_Calcolo_Pannello;
     private javax.swing.JPanel Opzioni_CardWallet_Pannello;
     private javax.swing.JComboBox<String> Opzioni_Combobox_CancellaTransazioniCryptoXwallet;
     private javax.swing.JPanel Opzioni_Crypto_Pannello;
+    private javax.swing.JPanel Opzioni_Donazioni;
     private javax.swing.JButton Opzioni_Emoney_Bottone_Aggiungi;
     private javax.swing.JButton Opzioni_Emoney_Bottone_Precompila;
     private javax.swing.JButton Opzioni_Emoney_Bottone_Rimuovi;
@@ -16802,7 +16836,6 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane10;
     private javax.swing.JScrollPane jScrollPane11;

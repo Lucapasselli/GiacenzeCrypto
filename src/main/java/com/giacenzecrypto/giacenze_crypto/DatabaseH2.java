@@ -178,6 +178,24 @@ public class DatabaseH2 {
 
             createTableSQL = "CREATE TABLE IF NOT EXISTS EXCHANGEAPI (Nome VARCHAR(255) PRIMARY KEY, Exchange VARCHAR(255), Chiave VARCHAR(255), Segreto VARCHAR(255),Opzionale VARCHAR(255))";
             EseguiDDL(connectionPersonale, createTableSQL);
+
+            //Registro dei documenti di origine dei movimenti: le copie dei file importati stanno compresse in
+            //DocumentiFonte/ e il campo [41] di ogni movimento contiene l'Id della riga di questa tabella.
+            //Sta nel database personale perché è dato dell'utente, non registro né cache. Hash è l'impronta
+            //SHA-256 del contenuto ORIGINALE (non del .gz), ed è ciò che riconosce il reimport dello stesso file.
+            createTableSQL = "CREATE TABLE IF NOT EXISTS DOCUMENTIFONTE ("
+                    + "Id INT PRIMARY KEY, "
+                    + "PercorsoRelativo VARCHAR(500) NOT NULL, "
+                    + "NomeOriginale VARCHAR(255), "
+                    + "Tipo VARCHAR(20), "
+                    + "Origine VARCHAR(255), "
+                    + "DataImport BIGINT, "
+                    + "Hash VARCHAR(64), "
+                    + "Movimenti INT DEFAULT 0)";
+            EseguiDDL(connectionPersonale, createTableSQL);
+            try (Statement stmtDoc = connectionPersonale.createStatement()) {
+                stmtDoc.execute("CREATE INDEX IF NOT EXISTS IDX_DOCUMENTIFONTE_HASH ON DOCUMENTIFONTE (Hash)");
+            }
             
             //Tabella che associa i Wallet ad un Gruppo per poter poi gestire correttamente i quadri RW
             createTableSQL = "CREATE TABLE IF NOT EXISTS WALLETGRUPPO  (Wallet VARCHAR(255) PRIMARY KEY, Gruppo VARCHAR(255))";

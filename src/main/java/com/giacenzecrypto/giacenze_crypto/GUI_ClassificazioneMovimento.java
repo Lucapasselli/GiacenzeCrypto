@@ -1450,6 +1450,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     MovimentoCommissione[29] = "";                    // in origine [29] restava vuoto
                     MovimentoCommissione[32] = MovimentoPrelievo[32]; // [32] copiato dal prelievo
                     MovimentoCommissione[40] = "";
+                    MovimentoCommissione[41] = MovimentoPrelievo[41]; // documento di origine: descrive la stessa riga del prelievo
                     //Se Qta prelievo maggiore di Qta Depositata
                     MappaCryptoWallet.put(IDCommissione, MovimentoCommissione);
                     MovimentoPrelievo[10]=new BigDecimal(MovimentoPrelievo[10]).subtract(new BigDecimal(MovimentoCommissione[10])).toPlainString();
@@ -1526,6 +1527,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     MovimentoReward[29] = "";                    // in origine [29] restava vuoto
                     MovimentoReward[32] = MovimentoPrelievo[32]; // [32] copiato dal prelievo
                     MovimentoReward[40] = "";
+                    MovimentoReward[41] = MovimentoDeposito[41]; // documento di origine: il reward nasce dal deposito
 
                     MappaCryptoWallet.put(IDReward, MovimentoReward);
                     MovimentoPrelievo[10]=new BigDecimal(MovimentoPrelievo[10]).subtract(new BigDecimal(MovimentoReward[13])).toPlainString();
@@ -2483,9 +2485,17 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         //    System.out.println(MovimentoPrelievo[25]+" - "+MovimentoPrelievo[26]);
         }
 
+            //Documento di origine: i tre movimenti generati (trasferimento, scambio, trasferimento) descrivono
+            //quello che è successo fra il prelievo e il deposito, quindi risalgono agli stessi file. Va scritto
+            //qui perché sono costruiti da zero e non passano dal punto di strozzatura dell'import, che è già
+            //stato attraversato dai due movimenti di partenza
+            MT1[41]=MovimentoPrelievo[41];
+            MS[41]=Funzioni.noData(MovimentoPrelievo[41])?MovimentoDeposito[41]:MovimentoPrelievo[41];
+            MT2[41]=MovimentoDeposito[41];
+
             Importazioni.RiempiVuotiArray(MT1);
             Importazioni.RiempiVuotiArray(MS);
-            Importazioni.RiempiVuotiArray(MT2); 
+            Importazioni.RiempiVuotiArray(MT2);
 
             
 

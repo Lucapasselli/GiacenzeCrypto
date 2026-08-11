@@ -2,6 +2,7 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.io.File;
 import java.util.ArrayList;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -830,14 +831,16 @@ if (voce.isJson()) {
                     c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     Importazioni.AzzeraContatori();
 
-                    boolean ok = ImportazioneGenerica.importa(
-                            FileDaImportare,
-                            percorsoJson,
-                            SovrascriEsistenti,
-                            progressb,
-                            nomeExchangeFinale[0],
-                            fusoFinale[0]
-                    );
+                    boolean ok = DocumentiFonte.EseguiImportDaFile(
+                            new File(FileDaImportare), DocumentiFonte.TIPO_CSV, new File(percorsoJson).getName(),
+                            () -> ImportazioneGenerica.importa(
+                                    FileDaImportare,
+                                    percorsoJson,
+                                    SovrascriEsistenti,
+                                    progressb,
+                                    nomeExchangeFinale[0],
+                                    fusoFinale[0]
+                            ));
 
                     if (ok && Importazioni.TransazioniAggiunte > 0) {
                         Principale.TabellaCryptodaAggiornare = true;
@@ -887,7 +890,9 @@ if (voce.isJson()) {
                 //System.out.println(Directory);
                 boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
                 Importazioni.AzzeraContatori();
-                Importazioni.Ex_CDCAPP_Importa(FileDaImportare, SovrascriEsistenti);
+                DocumentiFonte.EseguiImportDaFile(
+                        new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Crypto.com App CSV",
+                        () -> { Importazioni.Ex_CDCAPP_Importa(FileDaImportare, SovrascriEsistenti); return true; });
                 Importazioni_Resoconto res = new Importazioni_Resoconto();
                 res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
                 res.setLocationRelativeTo(this);
@@ -924,7 +929,10 @@ if (voce.isJson()) {
                                 PrezzoZero = true;
 
                             }
-                            Importazioni.Ex_CryptoComExchange_Importa(FileDaImportare, SovrascriEsistenti, c, PrezzoZero, progressb);
+                            final boolean PrezzoZeroF = PrezzoZero;
+                            DocumentiFonte.EseguiImportDaFile(
+                                    new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Crypto.com Exchange CSV",
+                                    () -> Importazioni.Ex_CryptoComExchange_Importa(FileDaImportare, SovrascriEsistenti, c, PrezzoZeroF, progressb));
                             Importazioni_Resoconto res = new Importazioni_Resoconto();
                             res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
                             res.setLocationRelativeTo(c);
@@ -1016,7 +1024,10 @@ if (voce.isJson()) {
                             PrezzoZero = true;
 
                         }
-                        Importazioni.Ex_CoinTracking_Importa(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZero, progressb);
+                        final boolean PrezzoZeroF = PrezzoZero;
+                        DocumentiFonte.EseguiImportDaFile(
+                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "CoinTracking CSV",
+                                () -> Importazioni.Ex_CoinTracking_Importa(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZeroF, progressb));
 
                         Importazioni_Resoconto res = new Importazioni_Resoconto();
                         res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
@@ -1117,7 +1128,10 @@ if (voce.isJson()) {
 
                         }
 
-                        Importazioni.Ex_Tatax_Importa(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZero, progressb);
+                        final boolean PrezzoZeroF = PrezzoZero;
+                        DocumentiFonte.EseguiImportDaFile(
+                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Tatax CSV",
+                                () -> Importazioni.Ex_Tatax_Importa(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZeroF, progressb));
 
                         Importazioni_Resoconto res = new Importazioni_Resoconto();
                         res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
@@ -1173,7 +1187,9 @@ if (voce.isJson()) {
                         DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         Importazioni.AzzeraContatori();
-                        Importazioni.Ex_Binance_Importa(FileDaImportare, SovrascriEsistenti, c, progressb);
+                        DocumentiFonte.EseguiImportDaFile(
+                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Binance CSV (formato storico)",
+                                () -> Importazioni.Ex_Binance_Importa(FileDaImportare, SovrascriEsistenti, c, progressb));
                         Importazioni_Resoconto res = new Importazioni_Resoconto();
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
@@ -1217,7 +1233,9 @@ if (voce.isJson()) {
                         DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         Importazioni.AzzeraContatori();
-                        Importazioni.Ex_BinanceTaxReport_Importa(FileDaImportare, SovrascriEsistenti, c, progressb);
+                        DocumentiFonte.EseguiImportDaFile(
+                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Binance Financial Report",
+                                () -> Importazioni.Ex_BinanceTaxReport_Importa(FileDaImportare, SovrascriEsistenti, c, progressb));
                         Importazioni_Resoconto res = new Importazioni_Resoconto();
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
@@ -1261,7 +1279,9 @@ if (voce.isJson()) {
                         DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         Importazioni.AzzeraContatori();
-                        Importazioni.Ex_OKX_Importa(FileDaImportare, SovrascriEsistenti, c, progressb);
+                        DocumentiFonte.EseguiImportDaFile(
+                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "OKX CSV (formato storico)",
+                                () -> Importazioni.Ex_OKX_Importa(FileDaImportare, SovrascriEsistenti, c, progressb));
                         Importazioni_Resoconto res = new Importazioni_Resoconto();
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);

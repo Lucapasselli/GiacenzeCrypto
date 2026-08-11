@@ -48,12 +48,17 @@ public class Principale_Movimenti_SeparaUnisci {
     /**
      * Campi che {@link MovimentiCrypto#creaMovimento} non popola e che descrivono la provenienza del
      * movimento (progressivo, causale originale, blocco, address controparte/provenienza/destinazione,
-     * fonte dati...): vanno riportati sui movimenti generati per non perdere informazioni.
+     * fonte dati, documento di origine...): vanno riportati sui movimenti generati per non perdere
+     * informazioni.
      * Sono volutamente esclusi i campi calcolati dai motori di calcolo (16/17 costo di carico,
      * 19/33 plusvalenza, 38 flag di anomalia) e il campo 35 (backup temporaneo del prezzo usato
      * dalla classificazione manuale).
+     *
+     * <p>Il 41 (documento di origine) è qui perché le due gambe della separazione sono <b>ricostruite</b> da
+     * {@link MovimentiCrypto#creaMovimento}, non copiate: senza questa lista il legame al file da cui il
+     * movimento proveniva andrebbe perso proprio nel momento in cui lo si manipola.
      */
-    private static final int[] CampiDaRiportare = {2, 7, 14, 23, 30, 31, 36, 37, 39};
+    private static final int[] CampiDaRiportare = {2, 7, 14, 23, 30, 31, 36, 37, 39, 41};
 
     // =================================================================================================
     // ABILITAZIONE DELLE VOCI DI MENU

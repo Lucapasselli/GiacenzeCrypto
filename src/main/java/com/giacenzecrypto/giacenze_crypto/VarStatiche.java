@@ -159,6 +159,17 @@ public class VarStatiche {
         return getWorkingDirectory() + "config/loghi/";
     }
 
+    /**
+     * @return il percorso della cartella {@code DocumentiFonte/} nella directory di lavoro, dove vengono
+     *         conservate compresse le copie dei file sorgente delle importazioni (CSV, JSON, NDJSON delle API).
+     *         <p>Deliberatamente <b>fuori</b> da {@code Backup/} e {@code Temporanei/}: all'avvio
+     *         {@link Funzioni#Files_CancellaOltreTOTh} pota quelle due cartelle (4320 h e 24 h) e un documento
+     *         fiscale di origine non deve scadere.
+     */
+    public static String getCartella_DocumentiFonte() {
+        return getWorkingDirectory() + "DocumentiFonte/";
+    }
+
     /** @return il percorso del file di configurazione dei chatbot usati dalla funzione "Chiedi a IA" */
     public static String getFile_ChatbotIA() {
         return getWorkingDirectory() + "ChatbotIA.json";

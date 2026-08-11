@@ -428,6 +428,17 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                     Portafogli=selezionati;
                     }
 
+                //Documento di origine dello scaricamento: come per le API degli exchange non c'è nessun file
+                //da copiare, quindi se ne crea uno NDJSON con le risposte degli explorer (le chiavi API
+                //vengono oscurate). Un documento per scaricamento, non uno per chiamata: un solo wallet può
+                //richiedere decine di pagine per ognuna delle tipologie di transazione
+                //Azzerato prima di aprire la sessione: se lo scaricamento non arriva a valorizzarlo (nessuna
+                //transazione trovata) la chiusura leggerebbe il conteggio di un'importazione precedente e
+                //conserverebbe un documento a cui non punta nessun movimento
+                Importazioni.TransazioniAggiunte = 0;
+                final int IdDocumentoDefi = DocumentiFonte.ApriSessione("DeFi");
+                Importazioni.DocumentoFonteCorrente = IdDocumentoDefi;
+
                 //Tutte le nuove operazioni trovat vengono messe nella mappaTransazioniDefi
                 Map<String,String[]> Mappa_Wallet_Dati = new TreeMap<>();
                 Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.DeFi_RitornaTransazioni(Portafogli, c, progress);
@@ -469,6 +480,10 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                         //Questo serve a fare in modo che se per qualche motivo trovo qualche movimento con lo stesso id lo aggiorno affinchè diventi univoco
                         //prima di inserire il tutto enlla mappa
                         st[0]=MovimentiCrypto.getIDUnivoco(MappaCryptoWallet, st[0]);
+
+                        //Timbro qui il documento di origine perché questa strada NON passa dal punto di
+                        //strozzatura Importazioni.ScriviListaSuMappaCrypto, dove lo fanno tutte le altre
+                        if (IdDocumentoDefi>0 && st.length>41 && Funzioni.noData(st[41])) st[41]=String.valueOf(IdDocumentoDefi);
 
                         Importazioni.InserisciMovimentosuMappaCryptoWallet(st[0], st);
                      //   MappaCryptoWallet.put(st[0], st);
@@ -524,6 +539,14 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
 
                 }
                 }
+
+                //Chiusura del documento di origine: uno scaricamento che non ha aggiunto nulla (nessuna
+                //novità, o interruzione dell'utente) butta via il proprio NDJSON, altrimenti il registro si
+                //riempirebbe di documenti a cui nessun movimento fa riferimento
+                Importazioni.DocumentoFonteCorrente = 0;
+                DocumentiFonte.ChiudiSessione(IdDocumentoDefi);
+                DocumentiFonte.ChiudiRegistrazione(
+                        new DocumentiFonte.Registrazione(IdDocumentoDefi, true), Importazioni.TransazioniAggiunte);
 
                 progress.dispose();
 

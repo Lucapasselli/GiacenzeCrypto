@@ -78,6 +78,18 @@
             <Property name="toolTipText" type="java.lang.String" value="Chiede a un chatbot di spiegare il movimento selezionato"/>
           </Properties>
         </Menu>
+        <MenuItem class="javax.swing.JMenuItem" name="MenuItem_DocumentoFonte">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/Images/24_Documento.png"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Apri documento di origine"/>
+            <Property name="toolTipText" type="java.lang.String" value="Apre il file da cui il movimento selezionato &#xe8; stato importato"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_DocumentoFonteActionPerformed"/>
+          </Events>
+        </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="MenuItem_ModificaMovimento">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
@@ -447,7 +459,7 @@
                           <Component id="TransazioniCrypto_CheckBox_VediSenzaPrezzo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                      <Component id="TransazioniCrypto_ScrollPane" pref="425" max="32767" attributes="0"/>
+                      <Component id="TransazioniCrypto_ScrollPane" pref="426" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="TransazioniCrypto_Label_Plusvalenza" min="-2" pref="31" max="-2" attributes="0"/>
@@ -5604,10 +5616,12 @@
                                       <Component id="Opzioni_Export_Wallets_Combobox" min="-2" pref="419" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="Opzioni_Export_Tatax_Bottone" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="Opzioni_Export_EsportaPrezzi_CheckBox" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="Opzioni_Export_EsportaPrezzi_CheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_Bottone_DocumentiFonte" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="32767" attributes="0"/>
+                              <EmptySpace pref="392" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -5617,17 +5631,30 @@
                               <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="jLabel9" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="Opzioni_Export_Wallets_Combobox" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
-                                  <Component id="Opzioni_Export_Tatax_Bottone" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_Export_Wallets_Combobox" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_Export_Tatax_Bottone" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_Export_EsportaPrezzi_CheckBox" alignment="1" min="-2" pref="50" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="Opzioni_Export_EsportaPrezzi_CheckBox" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
+                              <EmptySpace min="-2" pref="145" max="-2" attributes="0"/>
+                              <Component id="Opzioni_Bottone_DocumentiFonte" min="-2" pref="50" max="-2" attributes="0"/>
+                              <EmptySpace pref="609" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
                   </Layout>
                   <SubComponents>
+                    <Component class="javax.swing.JButton" name="Opzioni_Bottone_DocumentiFonte">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/Images/24_Documento.png"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Gestione dei documenti di origine dei movimenti"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Elenca i file da cui i movimenti sono stati importati: movimenti agganciati, wallet, periodo, apertura di una copia, esportazione ed eliminazione"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Bottone_DocumentiFonteActionPerformed"/>
+                      </Events>
+                    </Component>
                     <Component class="javax.swing.JComboBox" name="Opzioni_Export_Wallets_Combobox">
                       <Properties>
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
@@ -5903,6 +5930,8 @@
                                                       <Component id="RT_Bottone_Documentazione1" alignment="0" max="32767" attributes="0"/>
                                                   </Group>
                                                   <Component id="Plusvalenze_Opzioni_NonConsiderareMovimentiNC" min="-2" pref="877" max="-2" attributes="0"/>
+                                                  <Component id="Opzioni_GruppoWallet_CheckBox_PlusManuali" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
+                                                  <Component id="Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
                                               </Group>
                                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                           </Group>
@@ -5910,16 +5939,6 @@
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_GruppoWallet_CheckBox_PlusManuali" min="-2" pref="989" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale" min="-2" pref="989" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -6042,7 +6061,7 @@
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Ricalcolo incrementale : &lt;/b&gt;Ricalcola le plusvalenze solo dal movimento modificato pi&#249; vecchio in poi, invece che sempre da capo (consigliato attivo)&lt;br&gt;(Toglierlo forza il ricalcolo completo ad ogni modifica: serve se un risultato appare sospetto, per capire se dipenda dal ricalcolo incrementale)&lt;/html&gt;"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Ricalcolo incrementale : &lt;/b&gt;Ricalcola le plusvalenze solo dal movimento modificato pi&#xf9; vecchio in poi, invece che sempre da capo (consigliato attivo)&lt;br&gt;(Toglierlo forza il ricalcolo completo ad ogni modifica: serve se un risultato appare sospetto, per capire se dipenda dal ricalcolo incrementale)&lt;/html&gt;"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementaleActionPerformed"/>
@@ -6782,7 +6801,7 @@
                     </Component>
                   </SubComponents>
                 </Container>
-                <Container class="javax.swing.JPanel" name="jPanel2">
+                <Container class="javax.swing.JPanel" name="Opzioni_Donazioni">
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
                       <JTabbedPaneConstraints tabName="Donazioni">
@@ -7313,10 +7332,10 @@
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="Opzioni_ProviderDefi_ScrollIstruzioni" min="-2" pref="52" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_ProviderDefi_ScrollTabella" pref="680" max="32767" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Opzioni_ProviderDefi_ScrollIstruzioni" pref="86" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="Opzioni_ProviderDefi_ScrollTabella" pref="646" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="Opzioni_ProviderDefi_Bottone_Salva" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
                                   <Component id="Opzioni_ProviderDefi_Bottone_Annulla" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
@@ -7395,7 +7414,7 @@
                               <Font name="Segoe UI" size="14" style="0"/>
                             </Property>
                             <Property name="rows" type="int" value="3"/>
-                            <Property name="text" type="java.lang.String" value="Scegli, per ogni chain, quale provider usare per lo scaricamento dei movimenti DeFi. Per Cronos il default &#xe8; Blockscout perch&#xe9; permette di impostare un blocco di partenza per lo scaricamento (a differenza del vecchio provider); Cronos usa sempre la ApiKey Cronos inserita nel tab &quot;ApiKey&quot;, non quella Blockscout (anch&apos;essa nel tab &quot;ApiKey&quot;)."/>
+                            <Property name="text" type="java.lang.String" value="Scegli, per ogni chain, quale provider usare per lo scaricamento dei movimenti DeFi. &#xa;Per Cronos il default &#xe8; Blockscout perch&#xe9; permette di impostare un blocco di partenza per lo scaricamento (a differenza del vecchio provider); Cronos usa sempre la ApiKey Cronos inserita nel tab &quot;ApiKey&quot;, non quella Blockscout (anch&apos;essa nel tab &quot;ApiKey&quot;)."/>
                             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                               <Dimension value="[774, 44]"/>
                             </Property>

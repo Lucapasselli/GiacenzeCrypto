@@ -371,8 +371,15 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                 ModelloTabellaCrypto.addRow(Val);
             }
         }
-        
-        
+
+        //Documento da cui il movimento è stato importato. Mostra sempre il nome originale, mai quello del
+        //file conservato (che è compresso): il ".gz" è un dettaglio di come lo si archivia, non di cosa sia
+        Valore=DocumentiFonte.Descrizione(Transazione[41]);
+        if (!Valore.isBlank()){
+            Val=new String[]{"Documento di origine",Valore};
+            ModelloTabellaCrypto.addRow(Val);
+        }
+
         Tabelle.ColoraTabellaSemplice(Tabella);
         Tabelle.updateRowHeights(Tabella);
 
@@ -396,6 +403,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         PopupMenu = new javax.swing.JPopupMenu();
         MenuItem_CopiaID = new javax.swing.JMenuItem();
         MenuItem_Copia = new javax.swing.JMenuItem();
+        MenuItem_DocumentoFonte = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         MenuItem_ModificaPrezzo = new javax.swing.JMenuItem();
         MenuItem_ModificaNote = new javax.swing.JMenuItem();
@@ -426,6 +434,16 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             }
         });
         PopupMenu.add(MenuItem_Copia);
+
+        MenuItem_DocumentoFonte.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Documento.png"))); // NOI18N
+        MenuItem_DocumentoFonte.setText("Apri documento di origine");
+        MenuItem_DocumentoFonte.setToolTipText("Apre il file da cui il movimento è stato importato");
+        MenuItem_DocumentoFonte.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_DocumentoFonteActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_DocumentoFonte);
         PopupMenu.add(jSeparator6);
 
         MenuItem_ModificaPrezzo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
@@ -633,6 +651,10 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         // TODO add your handling code here:
         Funzioni.simulaCtrlC();
     }//GEN-LAST:event_MenuItem_CopiaActionPerformed
+
+    private void MenuItem_DocumentoFonteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_DocumentoFonteActionPerformed
+        Principale_DocumentiFonte.ApriDocumentoDiOrigine(Principale.PopUp_IDTrans, this);
+    }//GEN-LAST:event_MenuItem_DocumentoFonteActionPerformed
 
 
     
@@ -867,6 +889,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
     private javax.swing.JButton Bottone_MovPrecedente;
     private javax.swing.JButton Bottone_MovSuccessivo;
     private javax.swing.JMenuItem MenuItem_Copia;
+    private javax.swing.JMenuItem MenuItem_DocumentoFonte;
     private javax.swing.JMenuItem MenuItem_CopiaID;
     private javax.swing.JMenuItem MenuItem_EsportaTabella;
     private javax.swing.JMenuItem MenuItem_ModificaNote;

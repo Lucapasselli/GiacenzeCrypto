@@ -416,6 +416,7 @@ public class Funzioni {
             "Modifica Movimento",
             "Mostra LiFo Transazione",
             "Chiedi all'IA",
+            "Apri documento di origine",
             "Modifica Prezzo",
             "Dettagli Movimento");
 
@@ -459,6 +460,7 @@ public class Funzioni {
                 PopUp_disabilitaMenuDatesto(pop,"Separa in Deposito/Prelievo");
                 PopUp_disabilitaMenuDatesto(pop,"Crea movimento di scambio da Deposito/Prelievo");
                 PopUp_disabilitaMenuDatesto(pop,"Chiedi all'IA");
+                PopUp_disabilitaMenuDatesto(pop,"Apri documento di origine");
 
             }else{
                 PopUp_abilitaMenuDaTesto(pop,"Dettagli Movimento");
@@ -474,6 +476,15 @@ public class Funzioni {
                 if (Principale.MappaCryptoWallet.get(ID)!=null){
                     PopUp_abilitaMenuDaTesto(pop,"Chiedi all'IA");
                 }else PopUp_disabilitaMenuDatesto(pop,"Chiedi all'IA");
+
+                //"Apri documento di origine" ha senso solo se il movimento viene da un file ancora conservato:
+                //i movimenti manuali non ne hanno uno, quelli importati prima di questa versione nemmeno, e un
+                //backup ripristinato altrove può puntare a un id che qui non esiste. In tutti e tre i casi si
+                //ingrigisce la voce, non si fallisce
+                if (Principale.MappaCryptoWallet.get(ID)!=null
+                        && DocumentiFonte.Apribile(Principale.MappaCryptoWallet.get(ID)[41])){
+                    PopUp_abilitaMenuDaTesto(pop,"Apri documento di origine");
+                }else PopUp_disabilitaMenuDatesto(pop,"Apri documento di origine");
 
                 if (isDepositoPrelievoClassificabile(ID, null,false)){
                    PopUp_abilitaMenuDaTesto(pop,"Classifica Movimento"); 

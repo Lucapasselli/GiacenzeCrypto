@@ -153,6 +153,18 @@ public class Importazioni {
     public static int TrasazioniScartate=0;
     public static int TrasazioniSconosciute=0;
     public static int ColonneTabella=45;
+    /**
+     * Id del documento di origine dell'importazione in corso, timbrato nel campo {@code [41]} di ogni movimento
+     * che passa da {@link #ScriviListaSuMappaCrypto}; {@code 0} quando non c'è un documento da collegare.
+     *
+     * <p>È lo stesso schema di {@link #Transazioni} e {@link #TransazioniAggiunte}: statici che descrivono
+     * "l'importazione corrente". <b>Non va azzerato in {@link #AzzeraContatori()}</b>, che in più rami di
+     * {@code Importazioni_Gestione} viene chiamato due volte (una fuori dal thread e una dentro {@code run()}):
+     * il secondo azzeramento cancellerebbe l'id e tutti i movimenti di quell'import uscirebbero con {@code [41]}
+     * vuoto, senza alcun errore visibile. Chi importa lo imposta e lo riazzera in un {@code try/finally} che
+     * avvolge direttamente la chiamata di importazione.
+     */
+    public static int DocumentoFonteCorrente=0;
     //La mappa delle chain conterrà per ogni chain l'indirizzo del chain explorer e relativa api
     public static String movimentiSconosciuti="";
     
@@ -1074,8 +1086,25 @@ public class Importazioni {
      * @return array di 2 interi: {@code [0]} movimenti effettivamente aggiunti, {@code [1]} movimenti scartati
      */
     public static int[] ScriviListaSuMappaCrypto(List<String[]> lista,boolean SovrascriEsistenti){
+        return ScriviListaSuMappaCrypto(lista, SovrascriEsistenti, DocumentoFonteCorrente);
+    }
+
+    /**
+     * Come {@link #ScriviListaSuMappaCrypto(List, boolean)}, ma timbrando esplicitamente nel campo {@code [41]}
+     * di ogni movimento l'id del documento di origine.
+     *
+     * <p>Questo è il punto di strozzatura attraversato da tutti gli importatori da file e dalle due strade
+     * CCXT: timbrare qui copre CSV e API in un colpo solo, senza toccare i ~50 punti in cui vengono costruite
+     * le righe.
+     *
+     * @param lista movimenti consolidati da importare
+     * @param SovrascriEsistenti se {@code true} sovrascrive i movimenti già presenti con lo stesso ID, se {@code false} li scarta
+     * @param IdDocumento id del documento di origine, {@code 0} per non timbrare nulla
+     * @return array di 2 interi: {@code [0]} movimenti effettivamente aggiunti, {@code [1]} movimenti scartati
+     */
+    public static int[] ScriviListaSuMappaCrypto(List<String[]> lista,boolean SovrascriEsistenti,int IdDocumento){
         //===== 1 - CONTROLLA LA LISTA PER VEDERE CHE NON CI SIANO ID DUPLICATI, NEL QUAL CASO LI RENDE UNIVOCI =====
-        lista=CreaListaConIDUnivoco(lista);  
+        lista=CreaListaConIDUnivoco(lista);
         
         
         int numI = lista.size();
@@ -1094,6 +1123,12 @@ public class Importazioni {
             //Se non devo sovrascrivere i movimenti e trovo lo stesso id per qualche motivo nella lista allora cambio l'ID e lo rendo univoco           
             if (!SovrascriEsistenti) {
                 mov[0]=MovimentiCrypto.getIDUnivoco(MappaCryptoWallet, mov[0]);
+            }
+            //Timbro il documento di origine. Non sovrascrivo un [41] già valorizzato: chi conosce l'origine
+            //esatta di quella riga l'ha già scritta. Il controllo sulla lunghezza è una difesa: se un
+            //produttore costruisse righe più corte di ColonneTabella l'accesso diretto lancerebbe a metà import.
+            if (IdDocumento>0 && mov!=null && mov.length>41 && Funzioni.noData(mov[41])) {
+                mov[41]=String.valueOf(IdDocumento);
             }
             if (mov[0]!=null){
                 InserisciMovimentosuMappaCryptoWallet(mov[0], mov);
@@ -4488,6 +4523,9 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
             if (VarCondivise.LogJsonDefi) {
                 System.out.println(Risposta);
             }
+            //Traccia nel documento di origine dello scaricamento DeFi in corso (la chiave API, che sta
+            //dentro l'URL, viene oscurata da AggiungiRispostaWeb)
+            DocumentiFonte.AggiungiRispostaWeb(DocumentoFonteCorrente, urls, Risposta);
             //Se Risposta contiene "Query Timeout occurred." e la richiesta è per un erc1155
             //significa che l'explorer non lo supporta quindi ritorno il campo vuoto
             if (Tipo.equalsIgnoreCase("token1155tx") && Risposta.contains("Query Timeout occured.")){
@@ -4728,6 +4766,8 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
                 return ritorno;
             }
             //System.out.println(Risposta);
+            //Traccia nel documento di origine dello scaricamento DeFi in corso (chiave API oscurata)
+            DocumentiFonte.AggiungiRispostaWeb(DocumentoFonteCorrente, urls, Risposta);
             JSONObject jsonObjectTxlist = new JSONObject(Risposta);
             int status = Integer.parseInt(jsonObjectTxlist.getString("status"));
             //verifico che questa non sia andata in errore, in caso contratrio interrompo l'importazione
@@ -5547,6 +5587,9 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                         LoggerGC.logInfo("Risposta: "+response);
                     }
 
+                    //Traccia nel documento di origine dello scaricamento DeFi in corso. Qui la chiave API
+                    //viaggia nell'header X-API-Key e non nell'URL, quindi non c'è nulla da oscurare
+                    DocumentiFonte.AggiungiRispostaWeb(DocumentoFonteCorrente, url, response.toString());
                     JSONObject jsonResponse = new JSONObject(response.toString());
                     JSONArray results = jsonResponse.getJSONArray("result");
                     cursor = jsonResponse.optString("cursor", "");  // aggiornamento cursor

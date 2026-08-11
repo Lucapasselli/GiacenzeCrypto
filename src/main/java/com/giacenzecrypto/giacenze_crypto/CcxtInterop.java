@@ -877,6 +877,33 @@ public static Path getNodeExePath() {
      * @return l'esito dell'importazione, oppure {@code null} se l'elaborazione è stata interrotta
      */
     public static Importazioni.Esito fetchMovimenti(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String passphrase,Download progress,Component c,boolean conArchivio) {
+        //Scaricamento da API: il documento di origine non esiste su disco, va creato. Uno solo per
+        //scaricamento, in NDJSON, perché uno "scarico da exchange" non è una chiamata sola: OKX_Bills pagina
+        //a 100 record, Binance_Trades gira una volta per token e OKX_Archivio raccoglie fino a 21 trimestri.
+        //Un documento per risposta produrrebbe centinaia di file per un solo scaricamento.
+        int IdSessione = DocumentiFonte.ApriSessione(exchangeId);
+        IdDocumentoSessione = IdSessione;
+        Importazioni.DocumentoFonteCorrente = IdSessione;
+        Importazioni.Esito Esito;
+        try {
+            Esito = fetchMovimentiInterno(exchangeId, apiKey, secret, startDate, Tokens, passphrase, progress, c, conArchivio);
+        } finally {
+            IdDocumentoSessione = 0;
+            Importazioni.DocumentoFonteCorrente = 0;
+            DocumentiFonte.ChiudiSessione(IdSessione);
+        }
+        //Uno scaricamento che non aggiunge nulla (nessuna novità, interruzione, errore) butta via il proprio
+        //NDJSON: il registro resterebbe altrimenti pieno di documenti a cui nessun movimento fa riferimento.
+        DocumentiFonte.ChiudiRegistrazione(new DocumentiFonte.Registrazione(IdSessione, true),
+                Esito == null ? 0 : Esito.Aggiunte);
+        return Esito;
+    }
+
+    /** Id del documento NDJSON dello scaricamento in corso, a cui {@link #fetchMovimento} appende le risposte. */
+    private static int IdDocumentoSessione = 0;
+
+    /** Corpo di {@link #fetchMovimenti(String, String, String, long, String, String, Download, Component, boolean)}, eseguito con la sessione di documento già aperta. */
+    private static Importazioni.Esito fetchMovimentiInterno(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String passphrase,Download progress,Component c,boolean conArchivio) {
        // Map<String, JsonObject> Mappa_Json = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         List<JsonObject> Jsons = new ArrayList<>();
         
@@ -2089,6 +2116,16 @@ public static Path getNodeExePath() {
         Gson gson = new Gson();
         System.out.println(output.toString());
         JsonObject json = gson.fromJson(output.toString(), JsonObject.class);
+
+        //Traccia della risposta nel documento di origine dello scaricamento in corso.
+        //ATTENZIONE: apiKey, secret e passphrase NON devono comparire qui. Il documento contiene già
+        //l'intera storia transazionale dell'utente; aggiungerci le credenziali lo renderebbe un singolo
+        //punto di compromissione dell'account. Si registrano solo gli argomenti non segreti.
+        DocumentiFonte.AggiungiAllaSessione(IdDocumentoSessione, script,
+                exchangeId + " startDate=" + startDate
+                + (Tokens == null || Tokens.isBlank() ? "" : " tokens=" + Tokens)
+                + (hostname.isBlank() ? "" : " hostname=" + hostname),
+                json == null ? null : json.toString());
 
         if (json.has("error") && !json.get("error").isJsonNull() && !json.get("error").getAsString().isEmpty()) {
             System.err.println("Errore dallo script JS: " + json.get("error").getAsString());

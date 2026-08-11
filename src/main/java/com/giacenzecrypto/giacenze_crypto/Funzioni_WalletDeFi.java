@@ -70,6 +70,16 @@ public class Funzioni_WalletDeFi {
         if (Rete.equalsIgnoreCase("POL")) return "https://polygonscan.com/tx/" + Hash;
         if (Rete.equalsIgnoreCase("MONAD")) return "https://monadscan.com/tx/" + Hash;
         if (Rete.equalsIgnoreCase("GNOSIS")) return "https://gnosisscan.io/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("LINEA")) return "https://lineascan.build/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("BLAST")) return "https://blastscan.io/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("UNICHAIN")) return "https://uniscan.xyz/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("WORLD")) return "https://worldscan.org/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("TAIKO")) return "https://taikoscan.io/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("ABSTRACT")) return "https://abscan.org/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("KATANA")) return "https://katanascan.com/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("SONIC")) return "https://sonicscan.org/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("MANTLE")) return "https://mantlescan.xyz/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("OP")) return "https://optimistic.etherscan.io/tx/" + Hash;
 
         return null;
     }
@@ -118,6 +128,36 @@ public class Funzioni_WalletDeFi {
                         else if(Rete.equalsIgnoreCase("GNOSIS")){
                            Funzioni.ApriWeb("https://gnosisscan.io/token/"+Address +"?a="+ Wallet);
                         }
+                        else if(Rete.equalsIgnoreCase("LINEA")){
+                           Funzioni.ApriWeb("https://lineascan.build/token/"+Address +"?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("BLAST")){
+                           Funzioni.ApriWeb("https://blastscan.io/token/"+Address +"?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("UNICHAIN")){
+                           Funzioni.ApriWeb("https://uniscan.xyz/token/"+Address +"?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("WORLD")){
+                           Funzioni.ApriWeb("https://worldscan.org/token/"+Address +"?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("TAIKO")){
+                           Funzioni.ApriWeb("https://taikoscan.io/token/"+Address +"?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("ABSTRACT")){
+                           Funzioni.ApriWeb("https://abscan.org/token/"+Address +"?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("KATANA")){
+                           Funzioni.ApriWeb("https://katanascan.com/token/"+Address +"?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("SONIC")){
+                           Funzioni.ApriWeb("https://sonicscan.org/token/"+Address +"?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("MANTLE")){
+                           Funzioni.ApriWeb("https://mantlescan.xyz/token/"+Address +"?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("OP")){
+                           Funzioni.ApriWeb("https://optimistic.etherscan.io/token/"+Address +"?a="+ Wallet);
+                        }
 
 
      }
@@ -165,6 +205,36 @@ public class Funzioni_WalletDeFi {
                         else if(Rete.equalsIgnoreCase("GNOSIS")){
                            Funzioni.ApriWeb("https://gnosisscan.io/tokenholdings?a="+ Wallet);
                         }
+                        else if(Rete.equalsIgnoreCase("LINEA")){
+                           Funzioni.ApriWeb("https://lineascan.build/tokenholdings?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("BLAST")){
+                           Funzioni.ApriWeb("https://blastscan.io/tokenholdings?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("UNICHAIN")){
+                           Funzioni.ApriWeb("https://uniscan.xyz/tokenholdings?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("WORLD")){
+                           Funzioni.ApriWeb("https://worldscan.org/tokenholdings?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("TAIKO")){
+                           Funzioni.ApriWeb("https://taikoscan.io/tokenholdings?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("ABSTRACT")){
+                           Funzioni.ApriWeb("https://abscan.org/tokenholdings?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("KATANA")){
+                           Funzioni.ApriWeb("https://katanascan.com/tokenholdings?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("SONIC")){
+                           Funzioni.ApriWeb("https://sonicscan.org/tokenholdings?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("MANTLE")){
+                           Funzioni.ApriWeb("https://mantlescan.xyz/tokenholdings?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("OP")){
+                           Funzioni.ApriWeb("https://optimistic.etherscan.io/tokenholdings?a="+ Wallet);
+                        }
                     }
 
      }
@@ -180,7 +250,7 @@ public class Funzioni_WalletDeFi {
      public static boolean isValidDefiWallet(String wallet) {
         //Questa funzione serve per sapere se una stringa wallet presente nella colonna wallet es 0x3423432aff4545 (ETH)
         //può essere considerata un wallet valido, si controllerà quindi l'indirizzo e se la rete è supportata
-        String RetiSupportate="||BSC||CRO||BASE||ARB||ETH||SOL||BERA||AVAX||POL||MONAD||BTC||GNOSIS||";
+        String RetiSupportate="||BSC||CRO||BASE||ARB||ETH||SOL||BERA||AVAX||POL||MONAD||BTC||GNOSIS||LINEA||BLAST||UNICHAIN||WORLD||TAIKO||ABSTRACT||KATANA||SONIC||MANTLE||OP||";
         String sWallet[]=wallet.split("\\(");
         String address;
         String Rete;

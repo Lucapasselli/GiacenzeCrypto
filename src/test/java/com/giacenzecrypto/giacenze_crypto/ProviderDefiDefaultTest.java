@@ -25,6 +25,10 @@ public class ProviderDefiDefaultTest {
         assertEquals("MORALIS", Importazioni.DeFi_ProviderDefault("BSC"));
         assertEquals("MORALIS", Importazioni.DeFi_ProviderDefault("BASE"));
         assertEquals("MORALIS", Importazioni.DeFi_ProviderDefault("AVAX"));
+        //OP è la quarta chain fuori dal piano gratuito, ma a differenza delle altre tre l'istanza
+        //pubblica Blockscout la copre per intero: niente Moralis e niente crediti da consumare
+        assertEquals("BLOCKSCOUT", Importazioni.DeFi_ProviderDefault("OP"));
+        assertEquals("https://optimism.blockscout.com/api", Importazioni.DeFi_ProviderBlockscoutUrl("OP"));
     }
 
     @Test
@@ -47,11 +51,18 @@ public class ProviderDefiDefaultTest {
     @Test
     public void ogniChainConDefaultBlockscoutHaUnEndpointConfigurato() {
         //Senza URL l'importazione si ferma con un messaggio in log: un default BLOCKSCOUT senza
-        //endpoint sarebbe una chain che non scarica più nulla
-        for (String Rete : new String[]{"GNOSIS", "CRO"}) {
+        //endpoint sarebbe una chain che non scarica più nulla.
+        //L'elenco non è scritto a mano ma ricavato dalle chain configurate, così una chain futura
+        //messa su Blockscout e dimenticata qui viene trovata da questo test invece che dall'utente
+        VarCondivise.CompilaMappaChain();
+        int Controllate = 0;
+        for (String Rete : Principale.Mappa_ChainExplorer.keySet()) {
+            if (!"BLOCKSCOUT".equals(Importazioni.DeFi_ProviderDefault(Rete))) continue;
+            Controllate++;
             String Url = Importazioni.DeFi_ProviderBlockscoutUrl(Rete);
             assertNotNull(Url, "manca l'URL Blockscout per " + Rete);
             assertTrue(Url.startsWith("https://"), "URL Blockscout non valido per " + Rete + ": " + Url);
         }
+        assertTrue(Controllate >= 3, "attese almeno CRO, GNOSIS e OP con default Blockscout, trovate " + Controllate);
     }
 }

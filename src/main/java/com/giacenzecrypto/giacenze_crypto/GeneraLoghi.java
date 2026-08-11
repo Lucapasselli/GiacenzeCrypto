@@ -91,6 +91,16 @@ public class GeneraLoghi {
         PIATTAFORMA_CHAIN.put("Stellar (XLM)", "stellar");
         PIATTAFORMA_CHAIN.put("Terra Classic (LUNA)", "terra");
         PIATTAFORMA_CHAIN.put("Tron (TRX)", "tron");
+        PIATTAFORMA_CHAIN.put("Linea (LINEA)", "linea");
+        PIATTAFORMA_CHAIN.put("Blast (BLAST)", "blast");
+        PIATTAFORMA_CHAIN.put("Unichain (UNICHAIN)", "unichain");
+        PIATTAFORMA_CHAIN.put("World Chain (WORLD)", "world-chain");
+        PIATTAFORMA_CHAIN.put("Taiko (TAIKO)", "taiko");
+        PIATTAFORMA_CHAIN.put("Abstract (ABSTRACT)", "abstract");
+        PIATTAFORMA_CHAIN.put("Katana (KATANA)", "katana");
+        PIATTAFORMA_CHAIN.put("Sonic (SONIC)", "sonic");
+        PIATTAFORMA_CHAIN.put("Mantle (MANTLE)", "mantle");
+        PIATTAFORMA_CHAIN.put("Optimism (OP)", "optimistic-ethereum");
 
         MONETA_CHAIN.put("Bitcoin (BTC)", "bitcoin");
         MONETA_CHAIN.put("Cardano (ADA)", "cardano");

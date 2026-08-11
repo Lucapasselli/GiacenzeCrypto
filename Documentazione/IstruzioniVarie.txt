@@ -1,18 +1,81 @@
 Cosa fare quando si aggiunge rete ETH like
 
-- Aggiungere a Mappa_chain in Funzioni_WalletDeFi.CompilaMappaChain()
-- Aggiungere alla Funzione Funzioni_WalletDeFi.isValidDefiWallet() la nuova rete supportata
-- Aggiungere alla Funzione Funzioni_WalletDeFi.ApriSituazioneWallet() la nuova rete supportata
-- Aggiungere alla Funzione Funzioni_WalletDeFi.ApriMovimentiWallet() la nuova rete supportata
-- Aggiungere alla Funzione Funzioni_WalletDeFi.ApriExplorer() la nuova rete supportata
-- Aggiungere nuova rete a GestioneWallets
+I punti sono 10, non 6: questo elenco e' stato corretto l'11/08/2026 dopo aver ricavato dal
+codice tutti i punti che citano le chain aggiunte piu' di recente. I quattro segnati con (!)
+mancavano, e sono proprio quelli che NON danno errore se dimenticati: la chain sembra
+funzionare e sbaglia in un angolo.
+
+ 1 - VarCondivise.CompilaMappaChain(): riga String[] XXX = {url api, "", moneta gas,
+     id piattaforma CoinGecko, slug DefiLlama}, piu' la put nella Mappa_ChainExplorer.
+     (Prima qui c'era scritto Funzioni_WalletDeFi.CompilaMappaChain: la funzione non e'
+     mai stata in quella classe.)
+ 2 - (!) VarCondivise.CompilaMappaRetiSupportate(): put("XXX",""). Senza questa voce la
+     chain scarica, ma la rete viene azzerata nel percorso prezzi (Prezzi.java,
+     GUI_ModificaPrezzo) e in Funzioni.TrovaReteDaID per i movimenti manuali scritti
+     come (XXX): il prezzo per contratto non parte.
+ 3 - Funzioni_WalletDeFi.isValidDefiWallet(): stringa RetiSupportate, altrimenti il
+     wallet viene rifiutato all'inserimento.
+ 4 - Funzioni_WalletDeFi.ApriSituazioneWallet(): ramo della chain.
+ 5 - Funzioni_WalletDeFi.ApriMovimentiWallet(): ramo della chain.
+ 6 - Funzioni_WalletDeFi.UrlExplorerTx(): URL dell'explorer. (Prima qui era indicata
+     ApriExplorer(): gli URL sono stati spostati in UrlExplorerTx, che li condivide con
+     la funzione "Chiedi a IA".)
+ 7 - GUI_GestioneWallets: la voce del ComboBox_Rete va messa NEI DUE file, .java e .form.
+     Nel .form e' uno <StringItem index="N">: si accoda senza rinumerare, ma va
+     aggiornato l'attributo count dello <StringArray>.
+ 8 - (!) Importazioni_Gestione.java, array BlockChain[]: e' la seconda tendina di reti,
+     quella dell'importazione. Senza la voce la chain non si puo' scegliere li'.
+ 9 - (!) GeneraLoghi.java, mappa PIATTAFORMA_CHAIN: senza la voce il generatore non sa da
+     dove scaricare il logo e i token di quella chain restano senza icona. Dopo la
+     modifica va rilanciato GeneraLoghi e vanno committati i PNG in config/loghi, se no
+     LoghiImportTest fallisce.
+10 - (!) Principale.GOPLUS_CHAIN_ID: mappa del controllo scam GoPlus. Senza la voce
+     DepositiPrelievi_GoPlus_VerificaScam tratta la rete come non supportata e non
+     verifica nulla, in silenzio. Da riempire SOLO per le chain che GoPlus dichiara
+     supportate (/api/v1/supported_chains): una voce inventata e' peggio di nessuna voce.
+
+Facoltativo, solo se la chain non passa da Etherscan: Importazioni.DeFi_ProviderDefault()
+e DeFi_ProviderBlockscoutUrl().
+
+C'e' un undicesimo punto, ma NON e' automatico ed e' una scelta fiscale, non meccanica:
+Prezzi.SimboliPrioritari. Quella lista non e' solo un'ottimizzazione, in
+DammiPrezzoInfoTransazione decide QUALE DELLE DUE MONETE di uno scambio fa da base per il
+prezzo, nell'ordine in cui i simboli sono scritti. Metterci la moneta di gas di una chain
+nuova cambia il prezzo di scambi gia' registrati. Va fatto solo se la moneta e' ad alta
+capitalizzazione e ben quotata sugli exchange, e sapendo che il golden master si muove.
+Il precedente non e' uniforme: MON (Monad) e' in lista, BERA (Berachain) no, e XDAI e'
+gestito in un altro modo ancora (Prezzi.CompilaMoneteStessoPrezzo lo aggancia a DAI).
+Attenzione ai simboli di una sola lettera: il confronto e' un equals sul simbolo, quindi
+"S" (Sonic) intercetterebbe qualunque token che si chiami "S".
+
+Attenzione: l'etichetta della rete ("Linea (LINEA)") non e' una didascalia, e' una chiave.
+Compare identica nel .java e nel .form di GUI_GestioneWallets, in BlockChain[] e come
+CHIAVE di PIATTAFORMA_CHAIN. Due grafie diverse compilano entrambe e fanno sparire il logo
+senza dire niente.
+
+Il test ChainConfigurazioneCompletaTest controlla i punti 2, 3, 6, 7, 8, 9 e 10 per ogni
+chain presente in Mappa_ChainExplorer: se si dimentica un aggancio diventa rosso.
 
 Prossime chain da inserire:
-Sonic
-Polygon
-Mantle
+(La lista precedente diceva Sonic, Polygon, Mantle: Polygon era gia' implementata come POL
+dal chainid 137, Sonic e Mantle sono state aggiunte l'11/08/2026. La lista e' vuota.)
+
+Aggiunte l'11/08/2026: Linea, Blast, Unichain, World Chain, Taiko, Abstract, Katana,
+Sonic, Mantle, Optimism (OP).
+
+Nota su OP: e' fuori dal piano gratuito di Etherscan, quindi il provider predefinito e'
+BLOCKSCOUT su https://optimism.blockscout.com/api. In Mappa_ChainExplorer il campo [0]
+resta pero' l'endpoint Etherscan: quel campo viene letto SOLO dal ramo ETHERSCAN, quindi
+scriverci l'URL Blockscout impedirebbe di tornare su Etherscan a chi ha la chiave a
+pagamento. Stessa configurazione di GNOSIS.
+
+L'analisi di quali chain siano aggiungibili a costo zero con il piano gratuito, con tutte
+le colonne verificate contro le API, e' in test/Documentazione/Analisi_Chain_Aggiungibili.md.
 
 Qua sotto gli ID delle reti compatibili e interrogabili da etherscan
+ATTENZIONE: essere in questo elenco non vuol dire essere nel piano gratuito. BNB Smart
+Chain, Base, OP Mainnet e Avalanche C-Chain sono a pagamento; Moonbeam e Moonriver hanno
+il supporto API deprecato dal 31/07/2026 e non vanno adottate.
 
 Ethereum Mainnet 1
 

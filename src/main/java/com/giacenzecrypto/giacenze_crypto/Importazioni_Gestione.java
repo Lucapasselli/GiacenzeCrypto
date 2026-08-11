@@ -46,7 +46,8 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     "Arbitrum (ARB)","Avalanche (AVAX)","Base (BASE)","Berachain (BERA)","Bitcoin (BTC)","Cardano (ADA)","Binance Chain (BNB)","Binance Smart Chain (BSC)",
     "Cronos Chain (CRO)","Dash (DASH)","Dogecoin (DOGE)","Polkadot (DOT)","Eos (EOS)","Ethereum (ETH)",
     "Fantom (FTM)","Gnosis Chain (GNOSIS)","Litecoin (LTC)","Terra Classic (LUNA)","Polygon (POL)","Tron (TRX)","Solana (SOL)","Monad (MONAD)",
-    "Stellar (XLM)","Ripple (XRP)","Zcash (ZEC)"};
+    "Stellar (XLM)","Ripple (XRP)","Zcash (ZEC)",
+    "Linea (LINEA)","Blast (BLAST)","Unichain (UNICHAIN)","World Chain (WORLD)","Taiko (TAIKO)","Abstract (ABSTRACT)","Katana (KATANA)","Sonic (SONIC)","Mantle (MANTLE)","Optimism (OP)"};
     
     static String NomeWallet="";
 

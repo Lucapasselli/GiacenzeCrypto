@@ -54,6 +54,22 @@ public class VarCondivise {
         String[] MONAD = new String[]{"https://api.etherscan.io/v2/api?chainid=143", "", "MON", "monad", "monad"};
         String[] BTC = new String[]{"https://mempool.space/api", "", "BTC", "bitcoin", "bitcoin"};
         String[] GNOSIS = new String[]{"https://api.etherscan.io/v2/api?chainid=100", "", "XDAI", "xdai", "xdai"};
+        //Chain L2 con ETH come moneta di gas: nessuna moneta nuova da prezzare, vedi test/Documentazione/Analisi_Chain_Aggiungibili.md
+        String[] LINEA = new String[]{"https://api.etherscan.io/v2/api?chainid=59144", "", "ETH", "linea", "linea"};
+        String[] BLAST = new String[]{"https://api.etherscan.io/v2/api?chainid=81457", "", "ETH", "blast", "blast"};
+        String[] UNICHAIN = new String[]{"https://api.etherscan.io/v2/api?chainid=130", "", "ETH", "unichain", "unichain"};
+        String[] WORLD = new String[]{"https://api.etherscan.io/v2/api?chainid=480", "", "ETH", "world-chain", "world-chain"};
+        String[] TAIKO = new String[]{"https://api.etherscan.io/v2/api?chainid=167000", "", "ETH", "taiko", "taiko"};
+        String[] ABSTRACT = new String[]{"https://api.etherscan.io/v2/api?chainid=2741", "", "ETH", "abstract", "abstract"};
+        String[] KATANA = new String[]{"https://api.etherscan.io/v2/api?chainid=747474", "", "ETH", "katana", "katana"};
+        //Chain con moneta di gas propria: il prezzo di S e MNT passa dal percorso "simbolo" (exchange/CoinGecko)
+        //e non da quello "address su chain", perché la moneta nativa non ha un indirizzo di contratto
+        String[] SONIC = new String[]{"https://api.etherscan.io/v2/api?chainid=146", "", "S", "sonic", "sonic"};
+        String[] MANTLE = new String[]{"https://api.etherscan.io/v2/api?chainid=5000", "", "MNT", "mantle", "mantle"};
+        //OP non è nel piano gratuito di Etherscan V2, quindi il provider predefinito è Blockscout
+        //(DeFi_ProviderDefault). Qui resta comunque l'endpoint Etherscan, come per GNOSIS: chi ha una
+        //chiave a pagamento può riportare la chain su ETHERSCAN dalle preferenze e continua a funzionare
+        String[] OP = new String[]{"https://api.etherscan.io/v2/api?chainid=10", "", "ETH", "optimistic-ethereum", "optimism"};
         Principale.Mappa_ChainExplorer.put("CRO", CRO);
         Principale.Mappa_ChainExplorer.put("BSC", BSC);
         Principale.Mappa_ChainExplorer.put("ETH", ETH);
@@ -66,6 +82,16 @@ public class VarCondivise {
         Principale.Mappa_ChainExplorer.put("POL", POL);
         Principale.Mappa_ChainExplorer.put("MONAD", MONAD);
         Principale.Mappa_ChainExplorer.put("GNOSIS", GNOSIS);
+        Principale.Mappa_ChainExplorer.put("LINEA", LINEA);
+        Principale.Mappa_ChainExplorer.put("BLAST", BLAST);
+        Principale.Mappa_ChainExplorer.put("UNICHAIN", UNICHAIN);
+        Principale.Mappa_ChainExplorer.put("WORLD", WORLD);
+        Principale.Mappa_ChainExplorer.put("TAIKO", TAIKO);
+        Principale.Mappa_ChainExplorer.put("ABSTRACT", ABSTRACT);
+        Principale.Mappa_ChainExplorer.put("KATANA", KATANA);
+        Principale.Mappa_ChainExplorer.put("SONIC", SONIC);
+        Principale.Mappa_ChainExplorer.put("MANTLE", MANTLE);
+        Principale.Mappa_ChainExplorer.put("OP", OP);
         Principale.Mappa_AddressRete_Nome.put("0x66e428c3f67a68878562e79A0234c1F83c208770_CRO", "USDT");
         Principale.Mappa_AddressRete_Nome.put("0x55d398326f99059fF775485246999027B3197955_BSC", "USDT");
         Principale.Mappa_AddressRete_Nome.put("0xc21223249CA28397B4B6541dfFaEcC539BfF0c59_CRO", "USDC");
@@ -110,6 +136,16 @@ public class VarCondivise {
         Principale.MappaRetiSupportate.put("LUNA", "");
         Principale.MappaRetiSupportate.put("POL", "");
         Principale.MappaRetiSupportate.put("MONAD", "");
+        Principale.MappaRetiSupportate.put("LINEA", "");
+        Principale.MappaRetiSupportate.put("BLAST", "");
+        Principale.MappaRetiSupportate.put("UNICHAIN", "");
+        Principale.MappaRetiSupportate.put("WORLD", "");
+        Principale.MappaRetiSupportate.put("TAIKO", "");
+        Principale.MappaRetiSupportate.put("ABSTRACT", "");
+        Principale.MappaRetiSupportate.put("KATANA", "");
+        Principale.MappaRetiSupportate.put("SONIC", "");
+        Principale.MappaRetiSupportate.put("MANTLE", "");
+        Principale.MappaRetiSupportate.put("OP", "");
         Principale.MappaRetiSupportate.put("TRX", "");
         Principale.MappaRetiSupportate.put("SOL", "");
         Principale.MappaRetiSupportate.put("XLM", "");

@@ -5791,6 +5791,9 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
     public static String DeFi_ProviderDefault(String Rete) {
         if (Rete.equalsIgnoreCase("CRO")) return "BLOCKSCOUT";
         if (Rete.equalsIgnoreCase("GNOSIS")) return "BLOCKSCOUT";
+        //OP è fuori dal piano gratuito di Etherscan V2; l'istanza pubblica Blockscout risponde a tutte
+        //e 5 le azioni usate dall'import, quindi la chain è utilizzabile senza chiave a pagamento
+        if (Rete.equalsIgnoreCase("OP")) return "BLOCKSCOUT";
         if (Rete.equalsIgnoreCase("BSC") || Rete.equalsIgnoreCase("BASE") || Rete.equalsIgnoreCase("AVAX")) return "MORALIS";
         if (Rete.equalsIgnoreCase("SOL")) return "HELIUS";
         if (Rete.equalsIgnoreCase("BTC")) return "BITCOIN";
@@ -5819,7 +5822,7 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
     /**
      * URL base dell'istanza Blockscout da usare per una chain: quello personalizzato
      * salvato dall'utente se presente, altrimenti un'istanza pubblica verificata
-     * (solo ETH/ARB/BASE/POL/CRO/GNOSIS). Per le altre chain (es. BSC/AVAX/BERA/MONAD)
+     * (solo ETH/ARB/BASE/POL/CRO/GNOSIS/OP). Per le altre chain (es. BSC/AVAX/BERA/MONAD)
      * ritorna null: l'utente deve compilare l'URL personalizzato nella tabella
      * "Preferenze Provider DeFi" prima di poter usare Blockscout su quella chain.
      */
@@ -5832,6 +5835,7 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
         if (Rete.equalsIgnoreCase("POL")) return "https://polygon.blockscout.com/api";
         if (Rete.equalsIgnoreCase("CRO")) return "https://explorer-api.cronos.org/mainnet/api/v2";
         if (Rete.equalsIgnoreCase("GNOSIS")) return "https://gnosis.blockscout.com/api";
+        if (Rete.equalsIgnoreCase("OP")) return "https://optimism.blockscout.com/api";
         return null;
     }
 

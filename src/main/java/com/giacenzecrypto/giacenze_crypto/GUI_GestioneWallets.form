@@ -197,7 +197,7 @@
           <Font name="Segoe UI" size="14" style="0"/>
         </Property>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="13">
+          <StringArray count="23">
             <StringItem index="0" value="--- nessuna selezione ---"/>
             <StringItem index="1" value="Arbitrum (ARB)"/>
             <StringItem index="2" value="Avalanche (AVAX)"/>
@@ -211,6 +211,16 @@
             <StringItem index="10" value="Solana (SOL)"/>
             <StringItem index="11" value="Polygon (POL)"/>
             <StringItem index="12" value="Monad (MONAD)"/>
+            <StringItem index="13" value="Linea (LINEA)"/>
+            <StringItem index="14" value="Blast (BLAST)"/>
+            <StringItem index="15" value="Unichain (UNICHAIN)"/>
+            <StringItem index="16" value="World Chain (WORLD)"/>
+            <StringItem index="17" value="Taiko (TAIKO)"/>
+            <StringItem index="18" value="Abstract (ABSTRACT)"/>
+            <StringItem index="19" value="Katana (KATANA)"/>
+            <StringItem index="20" value="Sonic (SONIC)"/>
+            <StringItem index="21" value="Mantle (MANTLE)"/>
+            <StringItem index="22" value="Optimism (OP)"/>
           </StringArray>
         </Property>
       </Properties>

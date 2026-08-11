@@ -13114,7 +13114,18 @@ if (result != null && !result.isAction("cancel")) {
             Map.entry("POL", "137"),
             Map.entry("BERA", "80094"),
             Map.entry("GNOSIS", "100"),
-            Map.entry("MONAD", "143")
+            Map.entry("MONAD", "143"),
+            //Solo le chain che GoPlus dichiara supportate in /api/v1/supported_chains: una voce per una
+            //chain non coperta farebbe credere di aver verificato un token che invece nessuno ha guardato.
+            //Restano fuori di proposito TAIKO (167000) e KATANA (747474).
+            Map.entry("LINEA", "59144"),
+            Map.entry("BLAST", "81457"),
+            Map.entry("UNICHAIN", "130"),
+            Map.entry("WORLD", "480"),
+            Map.entry("ABSTRACT", "2741"),
+            Map.entry("SONIC", "146"),
+            Map.entry("MANTLE", "5000"),
+            Map.entry("OP", "10")
     );
 
     /**

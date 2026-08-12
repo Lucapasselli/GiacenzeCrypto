@@ -1,23 +1,20 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 import java.awt.AlphaComposite;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
-import javax.swing.JPanel;
 
 /**
  * Genera le immagini dello splash nativo AWT ({@code src/main/resources/splash*.png}).
  * <p>
  * Non fa parte della build né dell'applicazione: è uno strumento da lanciare a mano, e solo quando cambia
- * {@code logo.png} oppure la grafica dello splash in {@link SplashAvvio}. Disegna la <em>stessa</em>
- * gerarchia di pannelli usata a runtime ({@link SplashAvvio#creaContenuto}), quindi l'immagine nativa non
- * può divergere dalla finestra Swing che la sostituisce durante l'avvio.
+ * {@code logo.png} oppure la grafica dello splash in {@link SplashAvvio}. Disegna con la <em>stessa</em>
+ * routine usata a runtime ({@link SplashAvvio#disegnaContenuto}), quindi l'immagine nativa non può
+ * divergere dalla finestra Swing che la sostituisce durante l'avvio. La barra di avanzamento viene
+ * disegnata vuota: è esattamente il fotogramma in cui lo splash nativo passa il testimone alla finestra.
  * <p>
  * Uso: da NetBeans basta "Run File" su questa classe. Da riga di comando, nella root del progetto (serve
  * solo un JDK, funziona su qualsiasi piattaforma; il rendering è offscreen quindi gira anche in ambiente
@@ -57,57 +54,40 @@ public final class GeneraSplash {
         scrivi(img, 2.0, new File(destinazione, "splash.scale-200.png"));
     }
 
-    /** Disegna il contenuto dello splash alla scala richiesta e lo salva come PNG con trasparenza. */
+    /**
+     * Disegna il contenuto dello splash alla scala richiesta e lo salva come PNG con trasparenza.
+     * <p>Il disegno avviene <b>direttamente alla risoluzione finale</b> e non ingrandendo la versione 1x:
+     * a runtime la finestra fa lo stesso (vedi il fattore di scala in {@link SplashAvvio}), e una variante
+     * HiDPI interpolata si vedrebbe come uno scatto di nitidezza nel passaggio dallo splash nativo alla
+     * finestra Swing.
+     */
     private static void scrivi(BufferedImage logo, double scala, File destinazione) throws Exception {
-        JPanel root = SplashAvvio.creaContenuto(logo, false).root;
+        int w = (int) Math.round(SplashAvvio.LARGHEZZA * scala);
+        int h = (int) Math.round(SplashAvvio.ALTEZZA * scala);
 
-        Dimension dim = root.getPreferredSize();
-        root.setSize(dim);
-        disponi(root);
-
-        //Il pannello viene disegnato a piena opacità su un'immagine di appoggio; l'opacità della finestra
+        //Il contenuto viene disegnato a piena opacità su un'immagine di appoggio; l'opacità della finestra
         //(JWindow.setOpacity, che offscreen non ha equivalente) viene poi applicata una sola volta
         //sull'intero risultato, altrimenti i bordi arrotondati verrebbero scuriti due volte.
-        BufferedImage piena = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage piena = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D gp = piena.createGraphics();
         try {
-            gp.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            gp.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            root.paint(gp);
+            gp.scale(scala, scala);
+            SplashAvvio.disegnaContenuto(gp, logo, 0, "Caricamento in corso...");
         } finally {
             gp.dispose();
         }
 
-        int w = (int) Math.round(dim.width * scala);
-        int h = (int) Math.round(dim.height * scala);
-
         BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = out.createGraphics();
         try {
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, SplashAvvio.OPACITA));
-            g.drawImage(piena, 0, 0, w, h, null);
+            g.drawImage(piena, 0, 0, null);
         } finally {
             g.dispose();
         }
 
         ImageIO.write(out, "png", destinazione);
         System.out.println("Creato " + destinazione.getPath() + " (" + w + " x " + h + ")");
-    }
-
-    /**
-     * Dispone ricorsivamente la gerarchia dei pannelli. Serve perché il contenuto non viene mai inserito in
-     * una finestra: {@code pack()} lancerebbe {@code HeadlessException} e renderebbe lo strumento
-     * inutilizzabile proprio dove serve di più (build headless, sviluppo da Linux senza display). Senza la
-     * discesa ricorsiva i figli dei contenitori interni resterebbero a dimensione zero.
-     */
-    private static void disponi(Container contenitore) {
-        contenitore.doLayout();
-        for (Component figlio : contenitore.getComponents()) {
-            if (figlio instanceof Container) {
-                disponi((Container) figlio);
-            }
-        }
     }
 }

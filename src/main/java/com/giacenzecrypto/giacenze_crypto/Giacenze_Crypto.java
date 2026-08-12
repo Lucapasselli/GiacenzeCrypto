@@ -88,6 +88,11 @@ public class Giacenze_Crypto {
         System.out.println("Path Risorse : " + VarStatiche.getPathRisorse());
         System.out.println("Working Directory : " + VarStatiche.getWorkingDirectory());
 
+        //Da qui in poi la barra dello splash segue le fasi dell'avvio. La prima fase va dichiarata
+        //dopo la lettura degli argomenti: solo adesso la directory di lavoro è quella definitiva, ed
+        //è da lì che SplashAvvio legge i tempi dell'avvio precedente per pesare la barra.
+        SplashAvvio.fase(SplashAvvio.Fase.DATABASE);
+
         if (!DatabaseH2.CreaoCollegaDatabase()) {
             //Lo splash va chiuso prima del dialogo, altrimenti resterebbe sospeso sopra di esso.
             SplashAvvio.chiudi();
@@ -117,6 +122,7 @@ public class Giacenze_Crypto {
         //appeso su uno splash non chiudibile. Prima di questa modifica non esisteva ancora nessuna
         //finestra e un'eccezione qui terminava semplicemente il processo.
         try {
+            SplashAvvio.fase(SplashAvvio.Fase.AMBIENTE);
             LoggerGC.init();
 
             Principale.tema = DatabaseH2.Opzioni_Leggi("Tema");

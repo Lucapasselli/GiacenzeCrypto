@@ -141,6 +141,14 @@ private static final long serialVersionUID = 3L;
      */
     private boolean TabellaMovimentiDaRicostruire=false;
     static public boolean GestioneTokenScamDaAggiornare=true;
+    /**
+     * Segnala che il tab "Gestione Documentale" mostra dati vecchi e va riletto quando torna visibile.
+     * <p>Si alza sia da {@link #AccendiLabelRicalcolo()}, perché il conteggio dei movimenti agganciati a
+     * ogni documento si ricava da {@code MappaCryptoWallet}, sia alla chiusura del dialogo
+     * {@link GUI_DocumentiFonte}, che è una <b>seconda istanza</b> dello stesso pannello e può aver
+     * eliminato dei documenti mentre il tab li mostrava ancora.
+     */
+    static public boolean GestioneDocumentaleDaAggiornare=true;
     static public boolean TransazioniCrypto_DaSalvare=false;//implementata per uso futuro attualmente non ancora utilizzata
     
     
@@ -249,9 +257,11 @@ private static final long serialVersionUID = 3L;
             Funzioni.Files_CancellaOltreTOTh(VarStatiche.getCartella_Temporanei(), 24);
 
             VarCondivise.CompilaMappaRetiSupportate();//compila le rete supportate nella mappa MappaRetiSupportate
- 
 
-            
+
+        //initComponents() è un unico metodo generato: non è divisibile, quindi la barra dello splash
+        //resta ferma per tutta la sua durata. Il peso della fase serve a farla ripartire nel punto giusto.
+        SplashAvvio.fase(SplashAvvio.Fase.INTERFACCIA);
         initComponents();
         // Tabelle con filtri: header completo applicato subito, Tabelle_FiltroColonne non lo rieseguirà
         Tabelle.Tabelle_InizializzaHeader(TransazioniCryptoTabella);
@@ -291,6 +301,8 @@ private static final long serialVersionUID = 3L;
         Prezzi.CompilaMoneteStessoPrezzo();
         Bottone_Titolo.setText(VarStatiche.Titolo);
 
+        SplashAvvio.fase(SplashAvvio.Fase.IMPOSTAZIONI);
+
               if (tema!=null&&tema.equalsIgnoreCase("Scuro"))
         {
             ((JTextFieldDateEditor)CDC_DataChooser_Iniziale.getDateEditor()).setBackground(Color.lightGray);
@@ -310,6 +322,9 @@ private static final long serialVersionUID = 3L;
             VersioneCambiata = false;//intanto così poi verrà utilizzata per altre cose in futuro
         }
         if (VersioneCambiata) {
+            //Questo avvio riscrive l'intero file dei movimenti e apre una finestra di attesa: i suoi
+            //tempi non descrivono un avvio normale e non devono pesare la barra del prossimo.
+            SplashAvvio.tempiNonAttendibili();
             DatabaseH2.Opzioni_Scrivi("Data_Lista_Coingecko", "1000000000000");
 
             
@@ -415,6 +430,7 @@ private static final long serialVersionUID = 3L;
         
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
         CDC_AggiornaGui();
+        SplashAvvio.fase(SplashAvvio.Fase.FINE);
         FineCaricamentoDati=true;
          
 
@@ -628,6 +644,7 @@ private static final long serialVersionUID = 3L;
         GestioneTokenScam_Label_Movimenti = new javax.swing.JLabel();
         GestioneTokenScam_ScrollPaneMovimenti = new javax.swing.JScrollPane();
         GestioneTokenScam_TabellaMovimenti = new javax.swing.JTable();
+        GestioneDocumentale = new javax.swing.JPanel();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -3434,6 +3451,25 @@ private static final long serialVersionUID = 3L;
 
         AnalisiCrypto.addTab("Gestione Token Scam", GestioneTokenScam);
 
+        GestioneDocumentale.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                GestioneDocumentaleComponentShown(evt);
+            }
+        });
+
+        javax.swing.GroupLayout GestioneDocumentaleLayout = new javax.swing.GroupLayout(GestioneDocumentale);
+        GestioneDocumentale.setLayout(GestioneDocumentaleLayout);
+        GestioneDocumentaleLayout.setHorizontalGroup(
+            GestioneDocumentaleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 1465, Short.MAX_VALUE)
+        );
+        GestioneDocumentaleLayout.setVerticalGroup(
+            GestioneDocumentaleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 856, Short.MAX_VALUE)
+        );
+
+        AnalisiCrypto.addTab("Gestione Documentale", GestioneDocumentale);
+
         javax.swing.GroupLayout Analisi_CryptoLayout = new javax.swing.GroupLayout(Analisi_Crypto);
         Analisi_Crypto.setLayout(Analisi_CryptoLayout);
         Analisi_CryptoLayout.setHorizontalGroup(
@@ -4325,11 +4361,12 @@ private static final long serialVersionUID = 3L;
             Opzioni_Export_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_Export_PannelloLayout.createSequentialGroup()
                 .addGap(4, 4, 4)
-                .addGroup(Opzioni_Export_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel9)
-                    .addComponent(Opzioni_Export_Wallets_Combobox, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Opzioni_Export_Tatax_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Opzioni_Export_EsportaPrezzi_CheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(Opzioni_Export_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Opzioni_Export_EsportaPrezzi_CheckBox, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(Opzioni_Export_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel9)
+                        .addComponent(Opzioni_Export_Wallets_Combobox, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(Opzioni_Export_Tatax_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(145, 145, 145)
                 .addComponent(Opzioni_Bottone_DocumentiFonte, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(609, Short.MAX_VALUE))
@@ -8195,10 +8232,39 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     
     
     private void Analisi_CryptoComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_Analisi_CryptoComponentShown
+        //componentShown del tab interno NON scatta quando si torna sul tab "Analisi Crypto" e quello interno
+        //era già quello selezionato : senza questo inoltro il contenuto resterebbe fermo a com'era.
         if (AnalisiCrypto.getSelectedComponent() == GestioneTokenScam) {
             GestioneTokenScamComponentShown(evt);
         }
+        if (AnalisiCrypto.getSelectedComponent() == GestioneDocumentale) {
+            GestioneDocumentaleComponentShown(evt);
+        }
     }//GEN-LAST:event_Analisi_CryptoComponentShown
+
+    /**
+     * Il pannello della gestione documentale montato nel tab, creato alla prima apertura.
+     * <p>Non si costruisce insieme alla finestra perché il suo costruttore legge già il registro e conta i
+     * movimenti agganciati percorrendo {@code MappaCryptoWallet} : all'avvio quella mappa non è ancora
+     * caricata, quindi il lavoro sarebbe sia inutile sia sbagliato.
+     */
+    private GUI_DocumentiFonte_Pannello GestioneDocumentale_Pannello = null;
+
+    private void GestioneDocumentaleComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_GestioneDocumentaleComponentShown
+        if (GestioneDocumentale_Pannello == null) {
+            //Il tab è un contenitore vuoto lato Designer : il contenuto è il pannello condiviso con il
+            //dialogo GUI_DocumentiFonte, e si riempie da solo nel proprio costruttore.
+            GestioneDocumentale_Pannello = new GUI_DocumentiFonte_Pannello();
+            GestioneDocumentale.setLayout(new java.awt.BorderLayout());
+            GestioneDocumentale.add(GestioneDocumentale_Pannello, java.awt.BorderLayout.CENTER);
+            GestioneDocumentale.revalidate();
+            GestioneDocumentale.repaint();
+        } else if (GestioneDocumentaleDaAggiornare) {
+            //Rileggo solo se qualcosa è cambiato : il conteggio dei movimenti percorre tutta la mappa
+            GestioneDocumentale_Pannello.Ricarica();
+        }
+        GestioneDocumentaleDaAggiornare = false;
+    }//GEN-LAST:event_GestioneDocumentaleComponentShown
 
     private void GiacenzeaDataComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_GiacenzeaDataComponentShown
         // TODO add your handling code here:
@@ -10433,6 +10499,9 @@ if (result.isAction("delete-all")) {
         if(RW_Tabella.getRowCount()>0)RW_Label_SegnalaRicalcolo.setVisible(true); 
         //inoltre metto a true tutti i booleani affinchè attivino il ricalcolo una volta selezionato il tab
         GestioneTokenScamDaAggiornare=true;
+        //I documenti di origine mostrano quanti movimenti vi puntano adesso : cambiata la mappa, il conteggio
+        //è vecchio. È anche la via da cui passa un'importazione, che è proprio quando il tab va riletto.
+        GestioneDocumentaleDaAggiornare=true;
     }
     
     private void Opzioni_GruppoWallet_TabellaPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_TabellaPropertyChange
@@ -15735,8 +15804,22 @@ try {
                     String riga;
                     Mappa_Wallet.clear();
                     Mappa_Wallets_e_Dettagli.clear();
+
+                    SplashAvvio.fase(SplashAvvio.Fase.MOVIMENTI);
+                    //Avanzamento della barra dello splash: si stima sui byte letti e non sulle righe,
+                    //perché quante siano si sa solo dopo aver letto tutto il file. La lunghezza in
+                    //caratteri approssima quella in byte (le righe sono quasi tutte ASCII) e comunque
+                    //avanzamentoFase() satura a 1.
+                    final long DimensioneFile = Math.max(1, TransazioniCrypto1.length());
+                    long BytesLetti = 0;
+                    long RigheLette = 0;
+
                     try (FileReader fire = new FileReader(fileDaImportare); BufferedReader bure = new BufferedReader(fire);) {
                         while ((riga = bure.readLine()) != null) {
+                            BytesLetti += riga.length() + 1;
+                            if (++RigheLette % 2000 == 0) {
+                                SplashAvvio.avanzamentoFase((double) BytesLetti / DimensioneFile);
+                            }
                             String splittata[] = riga.split(";",-1);
                             //questo serve affinchè ogni movimento abbia sempre un numero di colonne pari a ColonneTabella
                             //serve affinchè possa incrementare a piacimento il numero di colonne senza avere problemi poi
@@ -15810,8 +15893,9 @@ try {
                 }
 
 
+        SplashAvvio.fase(SplashAvvio.Fase.PLUSVALENZE);
         Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
-        
+
         if (VersioneCambiata){
             //Se c'è un cambio versione può essere che vi sia anche una modifica del file
             //per questo salverei una copia di backup del vecchio file e ne creerei uno nuovo con le modifiche
@@ -15819,6 +15903,7 @@ try {
             Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet,true);
         }
         
+        SplashAvvio.fase(SplashAvvio.Fase.TABELLE);
         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(EscludiTI,VediSoloSenzaPrezzo);
         /*    this.TransazioniCrypto_Text_Plusvalenza.setText("€ "+Plusvalenza.toPlainString());
         Color verde=new Color (45, 155, 103);
@@ -15940,8 +16025,16 @@ try {
         
         long dataInizio = Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale);
         long dataFine = Funzioni_Date_ConvertiDatainLong(CDC_DataFinale);
-        
+
+        //Avanzamento della barra dello splash all'avvio: qui il totale è noto, quindi la frazione è
+        //esatta. A programma avviato attivo() è falso e resta solo l'incremento del contatore.
+        final double MovimentiTotali = Math.max(1, MappaCryptoWallet.size());
+        long MovimentiEsaminati = 0;
+
         for (String[] v : MappaCryptoWallet.values()) {
+            if (++MovimentiEsaminati % 2000 == 0) {
+                SplashAvvio.avanzamentoFase(MovimentiEsaminati / MovimentiTotali);
+            }
             Funzione_AggiornaMappaWallets(v);
             Funzione_AggiornaListaCrypto(v);
 
@@ -16575,6 +16668,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JTable DepositiPrelievi_TabellaCorrelati;
     private javax.swing.JButton Donazioni_Bottone1;
     private javax.swing.JButton Donazioni_Bottone2;
+    private javax.swing.JPanel GestioneDocumentale;
     private javax.swing.JPanel GestioneTokenScam;
     private javax.swing.JButton GestioneTokenScam_Bottone_EliminaMovimenti;
     private javax.swing.JButton GestioneTokenScam_Bottone_RimuoviScam;

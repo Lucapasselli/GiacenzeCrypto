@@ -118,6 +118,15 @@ public class VarStatiche {
     }
 
 
+    /**
+     * @return il percorso del file con i tempi delle fasi dell'ultimo avvio, usati da
+     *         {@link SplashAvvio} per dare alla barra di caricamento pesi coerenti con questa
+     *         installazione (un archivio da centomila movimenti non ha i tempi di uno vuoto)
+     */
+    public static String getFile_TempiAvvio() {
+        return getWorkingDirectory() + "avvio.tempi.db";
+    }
+
     /** @return il percorso del file dei tipi movimento personalizzati per il fiat wallet Crypto.com */
     public static String getFile_CDCFiatWallet_FileTipiMovimentiPers() {
         return getWorkingDirectory() + "crypto.com.fiatwallet.tipimovimentiPers.db";

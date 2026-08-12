@@ -605,7 +605,17 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
 
             int Elaborati = 0;
             if (DaDove != null) {
+                //Avanzamento della barra dello splash all'avvio. Il denominatore e' la dimensione della
+                //coda che verra' rielaborata, non l'intera mappa: in una passata incrementale il motore
+                //tocca solo una parte dei movimenti e usare il totale lascerebbe la barra al palo.
+                //size() su una vista tailMap costa una scansione, quindi si paga solo se lo splash c'e'.
+                final double DaElaborare = SplashAvvio.attivo()
+                        ? Math.max(1, MappaCryptoWallet.tailMap(DaDove, true).size()) : 1;
+
                 for (String[] v : MappaCryptoWallet.tailMap(DaDove, true).values()) {
+                    if (Elaborati % 2000 == 0) {
+                        SplashAvvio.avanzamentoFase(Elaborati / DaElaborare);
+                    }
                     //Il checkpoint fotografa lo stato PRIMA del movimento che gli fa da chiave
                     if (Elaborati % MOVIMENTI_PER_CHECKPOINT == 0) {
                         Checkpoint.put(v[0], CopiaStatoLifo(MappaGrWallet_CryptoStack));

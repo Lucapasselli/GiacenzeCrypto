@@ -389,6 +389,8 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella);
+        //Come in Principale: il popup non è figlio di nessun contenitore finché non viene mostrato
+        Icone.AdattaIconeAlTema(PopupMenu);
     }
 
     /**

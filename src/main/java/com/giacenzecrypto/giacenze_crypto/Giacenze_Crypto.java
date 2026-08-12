@@ -6,6 +6,7 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.Color;
 import java.awt.Font;
@@ -149,8 +150,12 @@ public class Giacenze_Crypto {
         //A6: la costruzione della GUI Swing va fatta sull'Event Dispatch Thread, non sul main thread
         SwingUtilities.invokeLater(() -> {
             try {
+                //Va registrata PRIMA di installare il Look&Feel, e una volta sola: è un registro
+                //statico globale di FlatLaf, quindi vale anche per il cambio tema a caldo di
+                //Principale. Carica src/main/resources/Temi/FlatDarkLaf.properties, che alza il
+                //contrasto rispetto al tema di serie (sfondo #3c3f41 e testo #bbb, grigio su grigio).
+                FlatLaf.registerCustomDefaultsSource("Temi");
                 if (Principale.tema.equalsIgnoreCase("Scuro")) {
-                    //FlatLaf.registerCustomDefaultsSource("Temi");
                     UIManager.setLookAndFeel(new FlatDarkLaf());
                     Tabelle.verdeScuro = new Color(145, 255, 143);
                     Tabelle.rosso = new Color(255, 133, 133);
@@ -161,6 +166,8 @@ public class Giacenze_Crypto {
                     Tabelle.verdeScuro = new Color(23, 114, 69);
                     Tabelle.rosso = new Color(255, 100, 100);
                 }
+                //Le icone dell'applicazione sono nere: sullo sfondo scuro vanno ridisegnate in chiaro
+                Icone.InizializzaTema(Principale.tema.equalsIgnoreCase("Scuro"));
             } catch (UnsupportedLookAndFeelException ex) {
                 LoggerGC.ScriviErrore(ex);
             }

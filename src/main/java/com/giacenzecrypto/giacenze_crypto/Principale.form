@@ -3648,7 +3648,10 @@
                                           <Component id="RT_Bottone_Stampa" max="32767" attributes="0"/>
                                       </Group>
                                       <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="RT_Label_Avviso" min="-2" pref="795" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="RT_Label_Avviso" min="-2" pref="795" max="-2" attributes="0"/>
+                                          <Component id="RT_CheckBox_EscludiAnnoCorrente" min="-2" max="-2" attributes="0"/>
+                                      </Group>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                           <Component id="RT_Bottone_CorreggiErrori" max="32767" attributes="0"/>
@@ -3672,6 +3675,7 @@
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Component id="RT_Bottone_Stampa" min="-2" pref="29" max="-2" attributes="0"/>
                                   <Component id="RT_Bottone_CorreggiErrori" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RT_CheckBox_EscludiAnnoCorrente" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="jScrollPane11" min="-2" pref="140" max="-2" attributes="0"/>
@@ -4115,6 +4119,15 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RT_Bottone_CorreggiErroriActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="RT_CheckBox_EscludiAnnoCorrente">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Non calcolare l&apos;anno corrente"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Esclude l&apos;anno in corso dal calcolo: evita il recupero dei prezzi attuali di tutte le monete in giacenza, che è la parte più lenta dell&apos;elaborazione."/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RT_CheckBox_EscludiAnnoCorrenteActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>
@@ -6764,6 +6777,62 @@
                             </Component>
                           </SubComponents>
                         </Container>
+                        <Container class="javax.swing.JPanel" name="Opzioni_Compattazione_Pannello">
+                          <Events>
+                            <EventHandler event="componentShown" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="Opzioni_Compattazione_PannelloComponentShown"/>
+                          </Events>
+                          <Constraints>
+                            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                              <JTabbedPaneConstraints tabName="Compattazione database">
+                                <Property name="tabTitle" type="java.lang.String" value="Compattazione database"/>
+                              </JTabbedPaneConstraints>
+                            </Constraint>
+                          </Constraints>
+
+                          <Layout>
+                            <DimensionLayout dim="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="Opzioni_Bottone_Compattazione" alignment="0" max="32767" attributes="0"/>
+                                          <Component id="Opzioni_Label_StatoCompattazione" alignment="0" max="32767" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                            </DimensionLayout>
+                            <DimensionLayout dim="1">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="Opzioni_Label_StatoCompattazione" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="Opzioni_Bottone_Compattazione" min="-2" pref="50" max="-2" attributes="0"/>
+                                      <EmptySpace pref="650" max="32767" attributes="0"/>
+                                  </Group>
+                              </Group>
+                            </DimensionLayout>
+                          </Layout>
+                          <SubComponents>
+                            <Component class="javax.swing.JButton" name="Opzioni_Bottone_Compattazione">
+                              <Properties>
+                                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                                  <Image iconType="3" name="/Images/24_FrecceContrapposte.png"/>
+                                </Property>
+                                <Property name="text" type="java.lang.String" value="Compatta i file dei database (non cancella nessun dato)"/>
+                              </Properties>
+                              <Events>
+                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Bottone_CompattazioneActionPerformed"/>
+                              </Events>
+                            </Component>
+                            <Component class="javax.swing.JLabel" name="Opzioni_Label_StatoCompattazione">
+                              <Properties>
+                                <Property name="text" type="java.lang.String" value=" "/>
+                              </Properties>
+                            </Component>
+                          </SubComponents>
+                        </Container>
                       </SubComponents>
                     </Container>
                     <Component class="com.toedter.calendar.JDateChooser" name="Opzioni_Pulizie_DataChooser_Iniziale">
@@ -7483,6 +7552,31 @@
                       </Events>
                     </Component>
                   </SubComponents>
+                </Container>
+                <Container class="javax.swing.JPanel" name="Opzioni_Backup_Pannello">
+                  <Events>
+                    <EventHandler event="componentShown" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="Opzioni_Backup_PannelloComponentShown"/>
+                  </Events>
+                  <Constraints>
+                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                      <JTabbedPaneConstraints tabName="Backup / Ripristino">
+                        <Property name="tabTitle" type="java.lang.String" value="Backup / Ripristino"/>
+                      </JTabbedPaneConstraints>
+                    </Constraint>
+                  </Constraints>
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <EmptySpace min="0" pref="1465" max="32767" attributes="0"/>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <EmptySpace min="0" pref="856" max="32767" attributes="0"/>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
                 </Container>
               </SubComponents>
             </Container>

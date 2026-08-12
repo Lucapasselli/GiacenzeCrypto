@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.8" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+  </AuxValues>
+
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="ScrollPane_Elenco" pref="1160" max="32767" attributes="0"/>
+                  <Component id="ScrollPane_Dettaglio" pref="1160" max="32767" attributes="0"/>
+                  <Component id="Label_Dettaglio" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Component id="Label_Riepilogo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="Bottone_Esegui" min="-2" pref="170" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Ripristina" min="-2" pref="170" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Esporta" min="-2" pref="170" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Importa" min="-2" pref="170" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Elimina" min="-2" pref="140" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Aggiorna" min="-2" pref="140" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="ScrollPane_Elenco" pref="280" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="Label_Dettaglio" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="ScrollPane_Dettaglio" min="-2" pref="240" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="Label_Riepilogo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="Bottone_Esegui" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                  <Component id="Bottone_Ripristina" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                  <Component id="Bottone_Esporta" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                  <Component id="Bottone_Importa" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                  <Component id="Bottone_Elimina" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                  <Component id="Bottone_Aggiorna" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Container class="javax.swing.JScrollPane" name="ScrollPane_Elenco">
+      <AuxValues>
+        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JTable" name="Tabella_Elenco">
+          <Properties>
+            <Property name="autoCreateRowSorter" type="boolean" value="true"/>
+            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+              <Table columnCount="9" rowCount="0">
+                <Column editable="false" title="Data del backup" type="java.lang.String"/>
+                <Column editable="false" title="Movimenti" type="java.lang.Integer"/>
+                <Column editable="false" title="Primo movimento" type="java.lang.String"/>
+                <Column editable="false" title="Ultimo movimento" type="java.lang.String"/>
+                <Column editable="false" title="Prezzi" type="java.lang.String"/>
+                <Column editable="false" title="Documenti" type="java.lang.Integer"/>
+                <Column editable="false" title="Dimensione" type="java.lang.String"/>
+                <Column editable="false" title="Versione" type="java.lang.String"/>
+                <Column editable="false" title="Origine" type="java.lang.String"/>
+              </Table>
+            </Property>
+          </Properties>
+        </Component>
+      </SubComponents>
+    </Container>
+    <Component class="javax.swing.JLabel" name="Label_Dettaglio">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Dettaglio del backup selezionato"/>
+      </Properties>
+    </Component>
+    <Container class="javax.swing.JScrollPane" name="ScrollPane_Dettaglio">
+      <AuxValues>
+        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JTable" name="Tabella_Dettaglio">
+          <Properties>
+            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+              <Table columnCount="2" rowCount="0">
+                <Column editable="false" title="Voce" type="java.lang.String"/>
+                <Column editable="false" title="Valore" type="java.lang.String"/>
+              </Table>
+            </Property>
+          </Properties>
+        </Component>
+      </SubComponents>
+    </Container>
+    <Component class="javax.swing.JLabel" name="Label_Riepilogo">
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Esegui">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Salva.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Esegui Backup"/>
+        <Property name="toolTipText" type="java.lang.String" value="Crea un nuovo archivio completo nella cartella ArchivioBackup"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_EseguiActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Ripristina">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_FrecceContrapposte.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Ripristina Backup"/>
+        <Property name="toolTipText" type="java.lang.String" value="Sostituisce i dati attuali con quelli del backup selezionato, previo backup di sicurezza"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_RipristinaActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Esporta">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Upload.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Esporta Backup"/>
+        <Property name="toolTipText" type="java.lang.String" value="Copia l&apos;archivio selezionato in una cartella a scelta"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_EsportaActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Importa">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_FrecciaSotto.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Importa Backup"/>
+        <Property name="toolTipText" type="java.lang.String" value="Aggiunge all&apos;elenco un archivio conservato altrove"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_ImportaActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Elimina">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Cestino.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Elimina"/>
+        <Property name="toolTipText" type="java.lang.String" value="Gli archivi non scadono mai: questo &#xe8; l&apos;unico modo per liberare spazio"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_EliminaActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Aggiorna">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Aggiorna.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Aggiorna"/>
+        <Property name="toolTipText" type="java.lang.String" value="Rilegge la cartella degli archivi"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_AggiornaActionPerformed"/>
+      </Events>
+    </Component>
+  </SubComponents>
+</Form>

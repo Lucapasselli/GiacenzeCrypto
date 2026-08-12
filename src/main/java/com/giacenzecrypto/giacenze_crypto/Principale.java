@@ -225,7 +225,13 @@ private static final long serialVersionUID = 3L;
             
             File cartella=new File (VarStatiche.getCartella_Backup());
             if (!cartella.exists()) cartella.mkdir();
-            
+
+            //ArchivioBackup/ è volutamente separata da Backup/ : quest'ultima viene potata a 4320 h
+            //poco più sotto, e gli archivi di backup non devono scadere (ritenzione eterna, cancellazione
+            //manuale dal pannello Opzioni -> Backup / Ripristino)
+            cartella=new File (VarStatiche.getCartella_ArchivioBackup());
+            if (!cartella.exists()) cartella.mkdir();
+
             cartella=new File (VarStatiche.getCartella_ImportConfig());
             if (!cartella.exists()) cartella.mkdir();
 
@@ -291,6 +297,9 @@ private static final long serialVersionUID = 3L;
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Opzioni_Emoney_Tabella);
       //  OverrideTabellaCrypto();
         SettaIcone();
+        //Il popup dei movimenti non è figlio di nessun contenitore finché non viene mostrato, quindi
+        //non lo raggiunge la visita che Icone fa all'apertura della finestra: va passato a mano
+        Icone.AdattaIconeAlTema(PopupMenu);
         //Il sottomenu "Chiedi a IA" viene creato vuoto dal Designer e riempito qui con i chatbot letti
         //dal file ChatbotIA.json, così l'elenco si aggiorna senza ricompilare
         ChatbotIA.PopolaMenu(MenuItem_ChiediIA, this);
@@ -636,6 +645,7 @@ private static final long serialVersionUID = 3L;
         RT_Bottone_Documentazione = new javax.swing.JButton();
         RT_Bottone_Stampa = new javax.swing.JButton();
         RT_Bottone_CorreggiErrori = new javax.swing.JButton();
+        RT_CheckBox_EscludiAnnoCorrente = new javax.swing.JCheckBox();
         GestioneTokenScam = new javax.swing.JPanel();
         GestioneTokenScam_ScrollPane = new javax.swing.JScrollPane();
         GestioneTokenScam_Tabella = new javax.swing.JTable();
@@ -791,6 +801,9 @@ private static final long serialVersionUID = 3L;
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet = new javax.swing.JComboBox<>();
         Opzioni_PrezziKO_Pannello = new javax.swing.JPanel();
         Opzioni_Bottone_PuliziaPrezziKO = new javax.swing.JButton();
+        Opzioni_Compattazione_Pannello = new javax.swing.JPanel();
+        Opzioni_Bottone_Compattazione = new javax.swing.JButton();
+        Opzioni_Label_StatoCompattazione = new javax.swing.JLabel();
         Opzioni_Pulizie_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
         Opzioni_Pulizie_DataChooser_Finale = new com.toedter.calendar.JDateChooser();
         jLabel18 = new javax.swing.JLabel();
@@ -832,6 +845,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_ProviderDefi_ApiKeyBlockscout_Label = new javax.swing.JLabel();
         Opzioni_ProviderDefi_ApiKeyBlockscout_TextField = new javax.swing.JTextField();
         Opzioni_ProviderDefi_Pannello = new javax.swing.JPanel();
+        Opzioni_Backup_Pannello = new javax.swing.JPanel();
         Opzioni_ProviderDefi_ScrollTabella = new javax.swing.JScrollPane();
         Opzioni_ProviderDefi_Tabella = new javax.swing.JTable();
         Opzioni_ProviderDefi_ScrollIstruzioni = new javax.swing.JScrollPane();
@@ -3268,6 +3282,14 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        RT_CheckBox_EscludiAnnoCorrente.setText("Non calcolare l'anno corrente");
+        RT_CheckBox_EscludiAnnoCorrente.setToolTipText("Esclude l'anno in corso dal calcolo: evita il recupero dei prezzi attuali di tutte le monete in giacenza, che è la parte più lenta dell'elaborazione.");
+        RT_CheckBox_EscludiAnnoCorrente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RT_CheckBox_EscludiAnnoCorrenteActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout RTLayout = new javax.swing.GroupLayout(RT);
         RT.setLayout(RTLayout);
         RTLayout.setHorizontalGroup(
@@ -3282,7 +3304,9 @@ private static final long serialVersionUID = 3L;
                             .addComponent(RT_Bottone_Documentazione, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(RT_Bottone_Stampa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(RT_Label_Avviso, javax.swing.GroupLayout.PREFERRED_SIZE, 795, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(RT_Label_Avviso, javax.swing.GroupLayout.PREFERRED_SIZE, 795, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(RT_CheckBox_EscludiAnnoCorrente))
                         .addGap(18, 18, 18)
                         .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(RT_Bottone_CorreggiErrori, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -3299,7 +3323,8 @@ private static final long serialVersionUID = 3L;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(RT_Bottone_Stampa, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(RT_Bottone_CorreggiErrori))
+                    .addComponent(RT_Bottone_CorreggiErrori)
+                    .addComponent(RT_CheckBox_EscludiAnnoCorrente))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -5048,6 +5073,45 @@ private static final long serialVersionUID = 3L;
 
         jTabbedPane2.addTab("Pulizia PrezziKO", Opzioni_PrezziKO_Pannello);
 
+        Opzioni_Compattazione_Pannello.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                Opzioni_Compattazione_PannelloComponentShown(evt);
+            }
+        });
+
+        Opzioni_Bottone_Compattazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_FrecceContrapposte.png"))); // NOI18N
+        Opzioni_Bottone_Compattazione.setText("Compatta i file dei database (non cancella nessun dato)");
+        Opzioni_Bottone_Compattazione.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Bottone_CompattazioneActionPerformed(evt);
+            }
+        });
+
+        Opzioni_Label_StatoCompattazione.setText(" ");
+
+        javax.swing.GroupLayout Opzioni_Compattazione_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Compattazione_Pannello);
+        Opzioni_Compattazione_Pannello.setLayout(Opzioni_Compattazione_PannelloLayout);
+        Opzioni_Compattazione_PannelloLayout.setHorizontalGroup(
+            Opzioni_Compattazione_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_Compattazione_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(Opzioni_Compattazione_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Opzioni_Bottone_Compattazione, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Opzioni_Label_StatoCompattazione, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        Opzioni_Compattazione_PannelloLayout.setVerticalGroup(
+            Opzioni_Compattazione_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_Compattazione_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Opzioni_Label_StatoCompattazione)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Bottone_Compattazione, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(650, Short.MAX_VALUE))
+        );
+
+        jTabbedPane2.addTab("Compattazione database", Opzioni_Compattazione_Pannello);
+
         Opzioni_Pulizie_DataChooser_Iniziale.setDateFormatString("yyyy-MM-dd");
         Opzioni_Pulizie_DataChooser_Iniziale.setFont(Opzioni_Pulizie_DataChooser_Iniziale.getFont().deriveFont(Opzioni_Pulizie_DataChooser_Iniziale.getFont().getStyle() | java.awt.Font.BOLD));
         Opzioni_Pulizie_DataChooser_Iniziale.setMinimumSize(new java.awt.Dimension(100, 31));
@@ -5631,6 +5695,25 @@ private static final long serialVersionUID = 3L;
 
         Opzioni_TabbedPane.addTab("Preferenze Provider DeFi", Opzioni_ProviderDefi_Pannello);
 
+        Opzioni_Backup_Pannello.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                Opzioni_Backup_PannelloComponentShown(evt);
+            }
+        });
+
+        javax.swing.GroupLayout Opzioni_Backup_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Backup_Pannello);
+        Opzioni_Backup_Pannello.setLayout(Opzioni_Backup_PannelloLayout);
+        Opzioni_Backup_PannelloLayout.setHorizontalGroup(
+            Opzioni_Backup_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 1465, Short.MAX_VALUE)
+        );
+        Opzioni_Backup_PannelloLayout.setVerticalGroup(
+            Opzioni_Backup_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 856, Short.MAX_VALUE)
+        );
+
+        Opzioni_TabbedPane.addTab("Backup / Ripristino", Opzioni_Backup_Pannello);
+
         javax.swing.GroupLayout OpzioniLayout = new javax.swing.GroupLayout(Opzioni);
         Opzioni.setLayout(OpzioniLayout);
         OpzioniLayout.setHorizontalGroup(
@@ -5985,6 +6068,12 @@ private void SettaIcone(){
         String PlusManuali=DatabaseH2.Pers_Opzioni_Leggi("PlusManuali");
         if(PlusManuali!=null && PlusManuali.equalsIgnoreCase("SI")){
             Opzioni_GruppoWallet_CheckBox_PlusManuali.setSelected(true);
+        }
+
+        //RT: esclusione dell'anno corrente dall'analisi delle plusvalenze (default: incluso)
+        String EscludiAnnoCorrente=DatabaseH2.Pers_Opzioni_Leggi("RT_EscludiAnnoCorrente");
+        if(EscludiAnnoCorrente!=null && EscludiAnnoCorrente.equalsIgnoreCase("SI")){
+            RT_CheckBox_EscludiAnnoCorrente.setSelected(true);
         }
 
         //Ricalcolo incrementale: attivo salvo esplicito "NO", come lo legge Calcoli_PlusvalenzeNew
@@ -7617,6 +7706,9 @@ private void SettaIcone(){
         
         //DataChooser.get
         column1.setCellRenderer(new JDateChooserRenderer());
+        //Entrambe le colonne sono non modificabili nel modello, quindi questo editor non entra mai in
+        //funzione: la data si cambia col dialogo GUI_ScegliData aperto da Opzioni_Emoney_TabellaMouseClicked.
+        //Per questo i colori del tema sono sistemati solo nel renderer qui sopra.
         column1.setCellEditor(new JDateChooserCellEditor());
         //testColumn.setCellEditor(new JDateChooser());
         for (String a: Mappa_EMoney.keySet()){
@@ -7638,6 +7730,8 @@ private void SettaIcone(){
     private void Opzioni_GruppoWallet_CaricaGruppiWallet(){
         DefaultTableModel GruppoWallet_ModelloTabella = (DefaultTableModel) this.Opzioni_GruppoWallet_Tabella.getModel();
         Tabelle.Funzioni_PulisciTabella(GruppoWallet_ModelloTabella);
+        //Stesso motivo a righe alternate delle altre tabelle (vedi Opzioni_Emoney_CaricaTabellaEmoney)
+        Tabelle.ColoraTabellaSemplice(Opzioni_GruppoWallet_Tabella);
         Map<String, String[]> Mappa_GruppiAlias=DatabaseH2.Pers_GruppoAlias_LeggiTabella();
         JComboBox<String> comboBox = new JComboBox<>();
         JCheckBox CheckBox=new JCheckBox();
@@ -8265,6 +8359,84 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
         GestioneDocumentaleDaAggiornare = false;
     }//GEN-LAST:event_GestioneDocumentaleComponentShown
+
+    /**
+     * Il pannello di backup montato nel sotto-tab di Opzioni, creato alla prima apertura.
+     * <p>Lazy come quello della gestione documentale : il suo costruttore legge la cartella degli
+     * archivi e ne apre i manifest, lavoro che all'avvio sarebbe fatto per niente.
+     */
+    private GUI_Backup_Pannello Backup_Pannello = null;
+
+    private void Opzioni_Backup_PannelloComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_Opzioni_Backup_PannelloComponentShown
+        if (Backup_Pannello == null) {
+            Backup_Pannello = new GUI_Backup_Pannello();
+            //Il ricaricamento dopo un ripristino resta qui : tocca metodi privati di questa classe, e
+            //soprattutto è dove sta tutto l'altro refresh
+            Backup_Pannello.ImpostaAzionePostRipristino(this::Backup_DopoRipristino);
+            Opzioni_Backup_Pannello.setLayout(new java.awt.BorderLayout());
+            Opzioni_Backup_Pannello.add(Backup_Pannello, java.awt.BorderLayout.CENTER);
+            Opzioni_Backup_Pannello.revalidate();
+            Opzioni_Backup_Pannello.repaint();
+        } else {
+            Backup_Pannello.Ricarica();
+        }
+    }//GEN-LAST:event_Opzioni_Backup_PannelloComponentShown
+
+    /**
+     * Rimette l'applicazione in linea con i dati appena ripristinati, e verifica che i calcoli tornino.
+     *
+     * <p>Le <b>invalidazioni</b> delle cache in memoria (stato incrementale del motore, cache delle
+     * opzioni, mappa wallet→gruppo, mappa EMoney) non sono qui: le fa {@code Backup_Restore} appena
+     * finito di riscrivere le tabelle, perché sono cache del livello dati e dimenticarle produce
+     * risultati sbagliati senza alcun errore visibile. Qui resta il <b>ricaricamento</b>, che tocca
+     * metodi privati di questa classe.
+     *
+     * <p>Si ricalcola una volta sola, alla fine, e si confronta l'impronta delle plusvalenze con quella
+     * registrata nel backup : è l'unico controllo che distingue "ripristinato" da "ristampa identica".
+     * Il confronto viene saltato quando il ripristino è parziale — vedi
+     * {@code Principale_Backup.VerificaDopoRipristino}.
+     */
+    private void Backup_DopoRipristino(Backup_Restore.EsitoRipristino esito) {
+        if (esito == null || !esito.Riuscito) {
+            Messaggi.WarningMessage("Ripristino non riuscito",
+                    "Il ripristino non è stato completato.",
+                    esito == null ? "" : String.join("<br>", esito.Avvisi), this);
+            return;
+        }
+        setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+        try {
+            CDC_LeggiFileDatiDB();
+            CDC_FiatWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCFiatWallet());
+            CDC_CardWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCCardWallet());
+            if (esito.MovimentiRipristinati) {
+                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(
+                        TransazioniCrypto_CheckBox_EscludiTI.isSelected(),
+                        TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
+            }
+            AggiornaSpunte();
+            Funzioni_AggiornaTutto();
+            //Ricalcolo esplicito prima della verifica. Funzioni_AggiornaTutto() lo esegue già, ma solo
+            //se "Plusvalenze manuali" non è spuntata : con quell'opzione attiva i campi calcolati
+            //resterebbero quelli arrivati dall'archivio, e il confronto con l'impronta del backup
+            //tornerebbe verde confrontando i dati ripristinati con sé stessi. Una verifica che non può
+            //fallire non verifica niente. La chiamata è idempotente : se il ricalcolo è appena avvenuto,
+            //il motore incrementale non trova nulla di sporco e torna subito.
+            Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+            //Il ricalcolo è appena stato fatto : la successiva riacquisizione del focus non deve rifarlo
+            TabellaCryptodaAggiornare = false;
+            CDC_AggiornaGui();
+        } catch (Exception e) {
+            LoggerGC.ScriviErrore(e);
+            Messaggi.WarningMessage("Ripristino",
+                    "I dati sono stati ripristinati ma il ricaricamento è fallito.",
+                    "Chiudi e riapri Giacenze Crypto per lavorare sui dati ripristinati.<br><br>"
+                    + "Dettaglio : " + e.getMessage(), this);
+            return;
+        } finally {
+            setCursor(java.awt.Cursor.getDefaultCursor());
+        }
+        Principale_Backup.VerificaDopoRipristino(esito, this);
+    }
 
     private void GiacenzeaDataComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_GiacenzeaDataComponentShown
         // TODO add your handling code here:
@@ -9598,6 +9770,17 @@ if (result.isAction("delete-all")) {
         }
     }//GEN-LAST:event_Opzioni_Bottone_PuliziaPrezziKOActionPerformed
 
+    private void Opzioni_Bottone_CompattazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_CompattazioneActionPerformed
+        if (Principale_Opzioni_Pulizie.CompattaDatabase(this))
+            Opzioni_Label_StatoCompattazione.setText(Principale_Opzioni_Pulizie.DescrizioneStatoCompattazione());
+    }//GEN-LAST:event_Opzioni_Bottone_CompattazioneActionPerformed
+
+    private void Opzioni_Compattazione_PannelloComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_Opzioni_Compattazione_PannelloComponentShown
+        //Lo stato si legge qui e non nel costruttore: al momento del costruttore il database dei prezzi
+        //non e' ancora stato riempito, e la dimensione cambia durante tutta la sessione
+        Opzioni_Label_StatoCompattazione.setText(Principale_Opzioni_Pulizie.DescrizioneStatoCompattazione());
+    }//GEN-LAST:event_Opzioni_Compattazione_PannelloComponentShown
+
     private void CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed
         // TODO add your handling code here:
 
@@ -10402,6 +10585,9 @@ if (result.isAction("delete-all")) {
             DatabaseH2.Opzioni_Scrivi("Finestra_Larghezza", String.valueOf(getWidth()));
             DatabaseH2.Opzioni_Scrivi("Finestra_Altezza", String.valueOf(getHeight()));
         }
+
+        //Dopo le Opzioni_Scrivi: la compattazione chiude i database, e quelle ci scrivono ancora
+        Principale_Opzioni_Pulizie.CompattaSeConviene(this);
 
         LoggerGC.close();
         this.dispose();
@@ -11498,9 +11684,15 @@ if (result.isAction("delete-all")) {
                 Tabelle.Rosso="FFA07A";
                 Tabelle.Verde="9ACD32";
                 Bottone_Errori.setForeground(Tabelle.rosso);
-                
+                //Le icone nere vanno schiarite. Sugli SVG il filtro agisce al primo ridisegno, quindi
+                //si vede subito; i PNG già assegnati vanno ripassati sull'albero dei componenti.
+                //Il resto (colori delle righe, sfondi) resta comunque da riavvio, come dice il messaggio.
+                Icone.InizializzaTema(true);
+                Icone.AdattaIconeAlTema(this);
+                Icone.AdattaIconeAlTema(PopupMenu);
+
                 //Tabelle.rosso=new Color(255, 40, 40);
-                
+
             } catch (UnsupportedLookAndFeelException ex) {
                 LoggerGC.ScriviErrore(ex);
             }
@@ -12062,6 +12254,14 @@ if (result != null && !result.isAction("cancel")) {
         // TODO add your handling code here:
         Funzioni_CorrezioneErroriPrincipali();
     }//GEN-LAST:event_RT_Bottone_CorreggiErroriActionPerformed
+
+    private void RT_CheckBox_EscludiAnnoCorrenteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_CheckBox_EscludiAnnoCorrenteActionPerformed
+        //L'opzione è letta da Calcoli_RT.CalcoliPlusvalenzeXAnno all'inizio di ogni elaborazione,
+        //quindi qui basta salvarla e segnalare che i dati a video non sono più aggiornati
+        if (RT_CheckBox_EscludiAnnoCorrente.isSelected()) DatabaseH2.Pers_Opzioni_Scrivi("RT_EscludiAnnoCorrente","SI");
+        else DatabaseH2.Pers_Opzioni_Scrivi("RT_EscludiAnnoCorrente","NO");
+        if (RT_Tabella_Principale.getRowCount()>0) RT_Label_Avviso.setVisible(true);
+    }//GEN-LAST:event_RT_CheckBox_EscludiAnnoCorrenteActionPerformed
 
     private void MenuItem_CopiaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_CopiaActionPerformed
         // TODO add your handling code here:
@@ -16573,9 +16773,42 @@ public static void ripristinaFiltri(JTable table) {
             this.setCalendar(calendar);
           //  this.setDateFormatString("AA");
         }
+
+        //I colori vanno messi DOPO setDate/setCalendar, non una volta sola alla costruzione:
+        //JTextFieldDateEditor si riscrive il foreground a Color.BLACK dentro setDate() ogni volta,
+        //ed è per questo che col tema scuro la data spariva su sfondo scuro.
+        Color Sfondo;
+        if (table.isCellSelected(row, column)) Sfondo = table.getSelectionBackground();
+        else if (table.isRowSelected(row)) Sfondo = table.getSelectionBackground().brighter();
+        else Sfondo = Tabelle.SfondoRigaAlternata(row);
+        DataChooser_ColoriDaTema(this, Sfondo);
         return this;
     }
 }
+
+    /**
+     * Allinea al tema attivo i colori di un {@link JDateChooser} usato come renderer di cella.
+     *
+     * <p>Va richiamata <b>dopo</b> {@code setDate}/{@code setCalendar} e a ogni disegno, non una volta
+     * sola: {@link JTextFieldDateEditor} si riscrive il foreground a {@code Color.BLACK} dentro
+     * {@code setDate()}. Che il renderer riparta a ogni disegno è proprio ciò che rende sicuro questo
+     * rimedio; per i JDateChooser fissi della finestra, dove {@code setDate} lo chiama l'utente
+     * scegliendo dal calendario e nessuno ridisegna dopo, resta valido il rimedio opposto già in uso,
+     * cioè schiarire lo sfondo ({@code setBackground(Color.lightGray)}).</p>
+     *
+     * @param Scelta il selettore di data da sistemare
+     * @param Sfondo sfondo da applicare al selettore e al suo campo di testo
+     */
+    private static void DataChooser_ColoriDaTema(JDateChooser Scelta, Color Sfondo) {
+        Scelta.setBackground(Sfondo);
+        if (Scelta.getDateEditor() instanceof JTextFieldDateEditor Editor) {
+            Editor.setBackground(Sfondo);
+            //Il rosso è la segnalazione di data non valida: non va persa
+            if (!Color.RED.equals(Editor.getForeground()))
+                Editor.setForeground(tema != null && tema.equalsIgnoreCase("Scuro")
+                        ? new Color(0xE8E8E8) : Color.BLACK);
+        }
+    }
     
    
 
@@ -16755,11 +16988,13 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JTextField Opzioni_ApiKey_UniSat_TextField;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
+    private javax.swing.JButton Opzioni_Bottone_Compattazione;
     private javax.swing.JButton Opzioni_Bottone_DocumentiFonte;
     private javax.swing.JButton Opzioni_Bottone_PuliziaPrezziKO;
     private javax.swing.JPanel Opzioni_Calcolo_Pannello;
     private javax.swing.JPanel Opzioni_CardWallet_Pannello;
     private javax.swing.JComboBox<String> Opzioni_Combobox_CancellaTransazioniCryptoXwallet;
+    private javax.swing.JPanel Opzioni_Compattazione_Pannello;
     private javax.swing.JPanel Opzioni_Crypto_Pannello;
     private javax.swing.JPanel Opzioni_Donazioni;
     private javax.swing.JButton Opzioni_Emoney_Bottone_Aggiungi;
@@ -16779,12 +17014,14 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JPanel Opzioni_GruppoWallet_Pannello;
     private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollTabella;
     private javax.swing.JTable Opzioni_GruppoWallet_Tabella;
+    private javax.swing.JLabel Opzioni_Label_StatoCompattazione;
     private javax.swing.JPanel Opzioni_PrezziKO_Pannello;
     private javax.swing.JLabel Opzioni_ProviderDefi_ApiKeyBlockscout_Label;
     private javax.swing.JTextField Opzioni_ProviderDefi_ApiKeyBlockscout_TextField;
     private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Annulla;
     private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Ripristina;
     private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Salva;
+    private javax.swing.JPanel Opzioni_Backup_Pannello;
     private javax.swing.JPanel Opzioni_ProviderDefi_Pannello;
     private javax.swing.JScrollPane Opzioni_ProviderDefi_ScrollIstruzioni;
     private javax.swing.JScrollPane Opzioni_ProviderDefi_ScrollTabella;
@@ -16818,6 +17055,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JButton RT_Bottone_ModificaGiacenza;
     private javax.swing.JButton RT_Bottone_ModificaPrezzo;
     private javax.swing.JButton RT_Bottone_Stampa;
+    private javax.swing.JCheckBox RT_CheckBox_EscludiAnnoCorrente;
     private javax.swing.JLabel RT_Label_Avviso;
     private javax.swing.JTable RT_Tabella_DettaglioMonete;
     private javax.swing.JTable RT_Tabella_LiFo;

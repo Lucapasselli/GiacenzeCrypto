@@ -399,6 +399,16 @@ public class Calcoli_RT {
         if(PlusXW!=null && PlusXW.equalsIgnoreCase("SI")){
             PlusXWallet=true;
         }
+        
+        //Opzione della scheda "RT & Analisi P&L": se attiva, l'anno in corso non viene calcolato.
+        //I suoi movimenti non vengono nemmeno letti, così l'ultimo anno chiuso resta il precedente
+        //e si evita il recupero dei prezzi attuali di tutte le monete in giacenza (la parte lenta di ChiudiAnno).
+        boolean EscludiAnnoCorrente=false;
+        String EAC=DatabaseH2.Pers_Opzioni_Leggi("RT_EscludiAnnoCorrente");
+        if(EAC!=null && EAC.equalsIgnoreCase("SI")){
+            EscludiAnnoCorrente=true;
+        }
+        String AnnoCorrente=String.valueOf(Year.now().getValue());
         String Anno=null;
         Map<String,BigDecimal[]> PlusvalenzeXAnno = new TreeMap<>(); 
         //BigDecimal[] così composto
@@ -416,6 +426,9 @@ public class Calcoli_RT {
      //   setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         for (String[] v : MappaCryptoWallet.values()) {
             
+            //Il salto è in testa al ciclo perché i movimenti dell'anno escluso non devono contribuire
+            //nemmeno a "Errori", che è cumulativo e finirebbe sulla riga dell'ultimo anno analizzato
+            if (EscludiAnnoCorrente && v[1].split("-")[0].equals(AnnoCorrente)) continue;
             
            //Verifico se il movimento contiene errori di mancata classificazione
             String TipoMovimento=v[0].split("_")[4].trim();
@@ -742,7 +755,9 @@ public class Calcoli_RT {
                                             
         }
               //ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,progress);
-          String year = String.valueOf(Year.now().getValue()+1);
+          //Con l'anno corrente escluso si passa l'anno corrente stesso: dentro ChiudiAnno il riempimento
+          //dei buchi scatta solo se la distanza è maggiore di 1, quindi la riga esclusa non viene ricreata
+          String year = String.valueOf(Year.now().getValue()+(EscludiAnnoCorrente?0:1));
           //System.out.println(year);
           if(!ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,progress,year))return null;
       // return PlusvalenzeXAnno;

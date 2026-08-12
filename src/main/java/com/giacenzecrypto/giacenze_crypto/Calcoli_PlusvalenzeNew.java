@@ -660,6 +660,22 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
     }
 
     /**
+     * Impronta corrente di tutto ciò che il motore legge e che <b>non</b> sta dentro la riga di un
+     * movimento: opzioni di calcolo, gruppi wallet, token EMoney.
+     *
+     * <p>Esiste per {@link Backup_Restore}, che la scrive nel manifest del backup. Confrontarla dopo un
+     * ripristino dice, con un solo numero, se tutte le impostazioni che influenzano il calcolo sono
+     * tornate quelle di allora — senza doverle confrontare una per una, e senza doversi ricordare di
+     * aggiungere al confronto le opzioni introdotte in futuro: quelle entrano in
+     * {@link OpzioniRicalcolo#Epoca()}, che è l'unico elenco già mantenuto a mano.
+     *
+     * @return il valore di {@link OpzioniRicalcolo#Epoca()} calcolato adesso
+     */
+    public static long EpocaCorrente() {
+        return new OpzioniRicalcolo().Epoca();
+    }
+
+    /**
      * Prima chiave (nell'ordine della mappa) in cui i dati di adesso differiscono da quelli di fine
      * passata precedente: movimento modificato, aggiunto o cancellato. {@code null} se non è
      * cambiato niente.

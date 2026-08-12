@@ -38,6 +38,17 @@ public class DatabaseH2 {
     static Connection connection;
     static Connection connectionPersonale;
     static Connection connectionPrezzi;
+
+    /**
+     * Opzioni di connessione del database dei prezzi.
+     *
+     * <p>Sono una costante e non una stringa scritta sul posto perché la riapertura dopo una
+     * compattazione ({@link #CompattaPrezzi(boolean)}) deve usare <b>esattamente</b> le stesse:
+     * riaprire con flag diversi cambierebbe in silenzio la messa a punto scelta per il caricamento.
+     * {@code AUTO_COMPACT_FILL_RATE=0} e {@code RETENTION_TIME=0} tolgono i cicli di compattazione
+     * dal percorso di caricamento, ed è il motivo per cui il file va compattato a comando.
+     */
+    static final String OPZIONI_H2_PREZZI = ";AUTO_COMPACT_FILL_RATE=0;MAX_COMPACT_TIME=5000;RETENTION_TIME=0;CACHE_SIZE=131072";
     //C5: memorizza l'ultima eccezione di connessione, per permettere al chiamante di distinguere
     //il lock da un altro processo (H2 error code 90020) da qualsiasi altro errore (DB corrotto, disco pieno, versione H2 incompatibile...)
     private static SQLException ultimaEccezioneConnessione;
@@ -54,7 +65,7 @@ public class DatabaseH2 {
      * tramite {@link #getUltimaEccezioneConnessione()}.
      *
      * @return {@code true} se la connessione e la creazione delle tabelle sono andate a buon fine
-     * (per compattare database: comando SQL {@code SHUTDOWN COMPACT}, da valutare quando farlo)
+     * @see #CompattaPrezzi(boolean) per la compattazione del file, che qui non viene mai fatta
      */
     public static boolean CreaoCollegaDatabase() {
         boolean successo=false;
@@ -71,8 +82,7 @@ public class DatabaseH2 {
             connectionPersonale = DriverManager.getConnection(jdbcUrl2, usernameH2, passwordH2);
             
             // Versione ottimizzata per bloccare i cicli in background e potenziare le prestazioni:
-            String opzioniH2 = ";AUTO_COMPACT_FILL_RATE=0;MAX_COMPACT_TIME=5000;RETENTION_TIME=0;CACHE_SIZE=131072";
-            connectionPrezzi = DriverManager.getConnection(jdbcPrezzi + opzioniH2, usernameH2, passwordH2);
+            connectionPrezzi = DriverManager.getConnection(jdbcPrezzi + OPZIONI_H2_PREZZI, usernameH2, passwordH2);
             //connectionPrezzi = DriverManager.getConnection(jdbcPrezzi, usernameH2, passwordH2);
             // Creazione delle tabelle se non esistono
         /*    String createTableSQL = "CREATE TABLE IF NOT EXISTS Address_Senza_Prezzo  (address_chain VARCHAR(255) PRIMARY KEY, data VARCHAR(255))";
@@ -2250,6 +2260,192 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
 
         } catch (SQLException ex) {
             LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+    // =================================================================================================
+    // COMPATTAZIONE DEI FILE H2
+    // =================================================================================================
+    /**
+     * Percentuale di riempimento dei chunk sotto la quale la compattazione vale la pena.
+     *
+     * <p>Misurata sull'archivio di sviluppo: {@code prezzi.mv.db} sta a <b>35</b> con 2.847 MB di file
+     * per 565 MB di dati, {@code database.mv.db} sta a <b>84</b>. La soglia sta in mezzo apposta,
+     * perché la compattazione di un file già in ordine costa tempo e non restituisce niente.
+     */
+    static final int SOGLIA_RIEMPIMENTO_COMPATTAZIONE = 60;
+
+    /**
+     * Dimensione sotto la quale non si compatta comunque: su un file piccolo anche il 20% di spazio
+     * morto sono pochi MB, e non valgono l'attesa alla chiusura.
+     */
+    static final long SOGLIA_DIMENSIONE_COMPATTAZIONE = 50L * 1024L * 1024L;
+
+    /**
+     * Codice di errore H2 {@code DATABASE_IS_CLOSED}: {@code SHUTDOWN} chiude il database mentre lo sta
+     * eseguendo, quindi il driver lo incontra rilasciando lo statement. Non è un fallimento.
+     */
+    private static final int ERRORE_H2_DATABASE_CHIUSO = 90121;
+
+    /**
+     * Quanto spazio morto contiene il file di un database, senza aprire né leggere niente di pesante.
+     *
+     * <p>I due valori arrivano da {@code INFORMATION_SCHEMA.SETTINGS}, che MVStore tiene già calcolati:
+     * l'interrogazione costa poche decine di millisecondi anche su un file da qualche GB, ed è questo
+     * che permette di decidere alla chiusura se conviene compattare invece di compattare sempre.
+     */
+    public static class StatoCompattazione {
+
+        /** Percentuale di riempimento dei chunk ({@code info.CHUNKS_FILL_RATE}), -1 se non leggibile. */
+        public int Riempimento = -1;
+        /** Dimensione del file in byte ({@code info.FILE_SIZE}), -1 se non leggibile. */
+        public long DimensioneFile = -1;
+
+        /** @return i byte di dati vivi stimati, cioè quanto resterebbe dopo la compattazione */
+        public long DimensioneUtile() {
+            if (Riempimento < 0 || DimensioneFile < 0) {
+                return -1;
+            }
+            return DimensioneFile * Riempimento / 100L;
+        }
+
+        /** @return i byte che la compattazione libererebbe, 0 se non calcolabile */
+        public long SpazioRecuperabile() {
+            long utile = DimensioneUtile();
+            return utile < 0 ? 0 : DimensioneFile - utile;
+        }
+
+        /** @return {@code true} se il file è abbastanza grande e abbastanza sprecato da valere la compattazione */
+        public boolean Conviene() {
+            return Riempimento >= 0
+                    && Riempimento < SOGLIA_RIEMPIMENTO_COMPATTAZIONE
+                    && DimensioneFile >= SOGLIA_DIMENSIONE_COMPATTAZIONE;
+        }
+    }
+
+    /**
+     * Legge lo stato di frammentazione del file di una connessione aperta.
+     *
+     * @param Connessione connessione da interrogare; {@code null} è ammesso e produce uno stato vuoto
+     * @return lo stato letto, con i campi a -1 se non è stato possibile leggerli
+     */
+    public static StatoCompattazione LeggiStatoCompattazione(Connection Connessione) {
+        StatoCompattazione stato = new StatoCompattazione();
+        if (Connessione == null) {
+            return stato;
+        }
+        String sql = "SELECT SETTING_NAME, SETTING_VALUE FROM INFORMATION_SCHEMA.SETTINGS "
+                + "WHERE SETTING_NAME IN ('info.CHUNKS_FILL_RATE', 'info.FILE_SIZE')";
+        try (Statement st = Connessione.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                String nome = rs.getString(1);
+                String valore = rs.getString(2);
+                try {
+                    if ("info.CHUNKS_FILL_RATE".equals(nome)) {
+                        stato.Riempimento = Integer.parseInt(valore.trim());
+                    } else if ("info.FILE_SIZE".equals(nome)) {
+                        stato.DimensioneFile = Long.parseLong(valore.trim());
+                    }
+                } catch (NumberFormatException ignorata) {
+                    //Un valore illeggibile lascia il campo a -1, che Conviene() tratta come "non compattare"
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return stato;
+    }
+
+    /**
+     * Esegue {@code SHUTDOWN DEFRAG} su una connessione. Al ritorno il database è <b>chiuso</b> e il
+     * lock del file rilasciato: è responsabilità del chiamante riaprirlo se la sessione continua.
+     *
+     * @param Connessione connessione su cui eseguire la compattazione
+     * @return {@code true} se la compattazione è andata a buon fine
+     */
+    private static boolean EseguiDefrag(Connection Connessione) {
+        try (Statement st = Connessione.createStatement()) {
+            st.execute("SHUTDOWN DEFRAG");
+            return true;
+        } catch (SQLException ex) {
+            if (ex.getErrorCode() == ERRORE_H2_DATABASE_CHIUSO) {
+                return true;
+            }
+            LoggerGC.ScriviErrore(ex);
+            return false;
+        }
+    }
+
+    /**
+     * Compatta {@code prezzi.mv.db}, recuperando lo spazio che {@code AUTO_COMPACT_FILL_RATE=0} non
+     * libera mai da solo. Non cancella nessuna riga: al termine il contenuto è identico.
+     *
+     * <p>Sull'archivio di sviluppo porta il file da 2.847 MB a 565 MB in circa 11 secondi, a parità di
+     * 15.063.245 righe.
+     *
+     * <p>Se la riapertura fallisce, {@link #connectionPrezzi} resta valorizzata con la connessione
+     * <b>chiusa</b> anziché essere azzerata: i chiamanti in {@code Prezzi} sono tutti dentro un
+     * {@code catch (SQLException)}, mentre un {@code null} darebbe {@code NullPointerException} lungo
+     * percorsi che nessuno di loro protegge.
+     *
+     * @param Riapri {@code true} per riaprire la connessione al termine (obbligatorio se la sessione
+     *               continua); {@code false} quando si sta chiudendo l'applicazione
+     * @return {@code true} se la compattazione — e, se richiesta, la riapertura — sono riuscite
+     */
+    public static boolean CompattaPrezzi(boolean Riapri) {
+        if (connectionPrezzi == null) {
+            return false;
+        }
+        boolean compattato = EseguiDefrag(connectionPrezzi);
+        try {
+            connectionPrezzi.close();
+        } catch (SQLException ignorata) {
+            //Il database è già chiuso da SHUTDOWN: la chiusura dell'oggetto è solo pulizia
+        }
+        if (!compattato || !Riapri) {
+            return compattato;
+        }
+        try {
+            connectionPrezzi = DriverManager.getConnection(
+                    VarStatiche.getDBPrezzi() + OPZIONI_H2_PREZZI, usernameH2, passwordH2);
+            return true;
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+            return false;
+        }
+    }
+
+    /**
+     * Compatta {@code database.mv.db}, con le stesse regole di {@link #CompattaPrezzi(boolean)}.
+     *
+     * <p>Recupera molto meno — il file sta intorno agli 84% di riempimento — ma le tabelle
+     * {@code XXXEUR} e {@code PREZZO_ORA_ADDRESS_CHAIN} lo fanno crescere di continuo, e la
+     * compattazione è comunque a costo di sole righe morte.
+     *
+     * @param Riapri {@code true} per riaprire la connessione al termine
+     * @return {@code true} se la compattazione — e, se richiesta, la riapertura — sono riuscite
+     */
+    public static boolean CompattaPrincipale(boolean Riapri) {
+        if (connection == null) {
+            return false;
+        }
+        boolean compattato = EseguiDefrag(connection);
+        try {
+            connection.close();
+        } catch (SQLException ignorata) {
+            //Come sopra: SHUTDOWN ha già chiuso il database
+        }
+        if (!compattato || !Riapri) {
+            return compattato;
+        }
+        try {
+            connection = DriverManager.getConnection(VarStatiche.getDBPrincipale(), usernameH2, passwordH2);
+            //Nessuna cache da invalidare: la compattazione non cambia il contenuto, solo come è
+            //disposto nel file, quindi quello che è già stato letto resta valido
+            return true;
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+            return false;
         }
     }
                 

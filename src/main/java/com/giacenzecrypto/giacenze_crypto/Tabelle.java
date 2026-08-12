@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -41,6 +42,7 @@ import javax.swing.JTextField;
 import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
@@ -69,7 +71,10 @@ public class Tabelle {
     static Color rossoChiaro=new Color(255, 160, 160);
     static Color bianco=new Color(255, 255, 255);
     static Color grigioChiaro=new Color(245, 245, 245);
-    static Color grigio=new Color(70, 70, 70);
+    //Righe pari/dispari del tema scuro. Erano 70,70,70 e grigioScuro (64,64,64): 6 livelli
+    //di differenza, cioè nessun motivo visibile, e su uno sfondo tabella #202020 stonavano.
+    static Color grigio=new Color(0x2A2A2A);
+    static Color grigioScuro=new Color(0x202020);
     static String Rosso="red";
     static String Verde="green";
     static Color gialloChiaro = new Color(255, 250, 180);
@@ -117,7 +122,7 @@ public class Tabelle {
         Color bg; 
         Color fore;
         if (Principale.tema.equalsIgnoreCase("Scuro")){
-            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            bg= (row % 2 == 0  ? grigio : grigioScuro);
             fore=Color.lightGray;
         }
             else 
@@ -303,7 +308,7 @@ public class Tabelle {
                     Color bg; 
         Color fore;
         if (Principale.tema.equalsIgnoreCase("Scuro")){
-            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            bg= (row % 2 == 0  ? grigio : grigioScuro);
             fore=Color.lightGray;
         }
             else 
@@ -376,7 +381,7 @@ public class Tabelle {
         Color fore2;
         
         if (Principale.tema.equalsIgnoreCase("Scuro")){
-            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            bg= (row % 2 == 0  ? grigio : grigioScuro);
             bg2= (row % 2 == 0  ? rossoChiaro : rosso);
             fore=Color.lightGray;
             fore2=Color.lightGray;
@@ -561,7 +566,7 @@ public class Tabelle {
                     Color bg; 
         Color fore;
         if (Principale.tema.equalsIgnoreCase("Scuro")){
-            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            bg= (row % 2 == 0  ? grigio : grigioScuro);
             fore=Color.lightGray;
         }
             else 
@@ -598,6 +603,19 @@ public class Tabelle {
  * @param table la tabella a cui applicare il renderer
  * @return la stessa tabella passata, con il renderer applicato
  */
+/**
+ * Colore di sfondo della riga indicata nel motivo a righe alternate, secondo il tema attivo.
+ * <p>È esposto perché i renderer scritti a mano fuori da questa classe — per esempio quello delle date
+ * della tabella E-Money in {@code Principale} — devono usare esattamente lo stesso motivo delle altre
+ * colonne, altrimenti la loro colonna stona.</p>
+ * @param row indice di riga <em>di vista</em>
+ * @return lo sfondo da usare per quella riga quando non è selezionata
+ */
+public static Color SfondoRigaAlternata(int row) {
+    if (Principale.tema.equalsIgnoreCase("Scuro")) return (row % 2 == 0 ? grigio : grigioScuro);
+    return (row % 2 == 0 ? grigioChiaro : bianco);
+}
+
 public static JTable ColoraTabellaSemplice(final JTable table) {
     // Definizione dei colori
   //  final Color grigioChiaro = new Color(240, 240, 240); // Colore grigio chiaro
@@ -618,7 +636,7 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
                     Color bg; 
        // Color fore;
         if (Principale.tema.equalsIgnoreCase("Scuro")){
-            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            bg= (row % 2 == 0  ? grigio : grigioScuro);
             //fore=Color.lightGray;
         }
             else 
@@ -664,10 +682,36 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
         }
     };
 
+    //Le colonne booleane hanno bisogno di un renderer proprio: quello predefinito di JTable disegna
+    //la spunta ma ignora lo sfondo alternato, e la colonna resterebbe l'unica fuori dal motivo a righe
+    TableCellRenderer rendererBooleano = new TableCellRenderer() {
+        private final JCheckBox spunta = new JCheckBox();
+        @Override
+        public Component getTableCellRendererComponent(JTable table,
+                                                       Object value,
+                                                       boolean isSelected,
+                                                       boolean hasFocus,
+                                                       int row,
+                                                       int col) {
+            spunta.setHorizontalAlignment(SwingConstants.CENTER);
+            spunta.setOpaque(true);
+            spunta.setSelected(value instanceof Boolean && (Boolean) value);
+            spunta.setForeground(table.getForeground());
+            Color bg;
+            if (Principale.tema.equalsIgnoreCase("Scuro")) bg = (row % 2 == 0 ? grigio : grigioScuro);
+            else bg = (row % 2 == 0 ? grigioChiaro : bianco);
+            if (table.isCellSelected(row, col)) spunta.setBackground(table.getSelectionBackground());
+            else if (table.isRowSelected(row)) spunta.setBackground(table.getSelectionBackground().brighter());
+            else spunta.setBackground(bg);
+            return spunta;
+        }
+    };
+
     // Configura il renderer per i tipi più comuni
     table.setDefaultRenderer(Object.class, renderer);
     table.setDefaultRenderer(Double.class, renderer);
     table.setDefaultRenderer(Integer.class, renderer);
+    table.setDefaultRenderer(Boolean.class, rendererBooleano);
     
 
     // Restituisci la tabella
@@ -774,7 +818,7 @@ public static void GUI_ModificaPrezzo_ColoraTabelle(
             // ---------------------------
             Color bg;
             if (Principale.tema.equalsIgnoreCase("Scuro")) {
-                bg = (row % 2 == 0 ? grigio : Color.DARK_GRAY);
+                bg = (row % 2 == 0 ? grigio : grigioScuro);
                 c.setForeground(Color.LIGHT_GRAY);   // testo standard tema scuro
             } else {
                 bg = (row % 2 == 0 ? grigioChiaro : bianco);
@@ -865,7 +909,7 @@ public static void GUI_ModificaPrezzo_ColoraTabellaGialla(JTable table1,int riga
             // colore base
             if (!isSelected) {
                 if (Principale.tema.equalsIgnoreCase("Scuro")) {
-                    c.setBackground(row % 2 == 0 ? grigio : Color.DARK_GRAY);
+                    c.setBackground(row % 2 == 0 ? grigio : grigioScuro);
                     c.setForeground(Color.LIGHT_GRAY);
                 } else {
                     c.setBackground(row % 2 == 0 ? grigioChiaro : Color.WHITE);
@@ -933,7 +977,7 @@ public static JTable ColoraTabellaLiFoTransazione(final JTable table) {
        // Riconversione riga se usa RowSorter
     int modelRow = table.getRowSorter().convertRowIndexToModel(row);
         if (Principale.tema.equalsIgnoreCase("Scuro")){
-            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            bg= (row % 2 == 0  ? grigio : grigioScuro);
             //fore=Color.lightGray;
         }
             else 
@@ -1043,7 +1087,7 @@ public static JTable ColoraTabellaSempliceVerdeRosso(final JTable table,int[] Co
                     Color bg; 
         Color fore;
         if (Principale.tema.equalsIgnoreCase("Scuro")){
-            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            bg= (row % 2 == 0  ? grigio : grigioScuro);
             fore=Color.lightGray;
         }
             else 
@@ -1121,7 +1165,7 @@ public static JTable ColoraTabellaRTDettaglio(final JTable table) {
                     Color bg; 
         Color fore;
         if (Principale.tema.equalsIgnoreCase("Scuro")){
-            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            bg= (row % 2 == 0  ? grigio : grigioScuro);
             fore=Color.lightGray;
         }
             else 
@@ -1182,7 +1226,7 @@ public static JTable ColoraTabellaRTPrincipale(final JTable table) {
                     Color bg; 
         Color fore;
         if (Principale.tema.equalsIgnoreCase("Scuro")){
-            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            bg= (row % 2 == 0  ? grigio : grigioScuro);
             fore=Color.lightGray;
         }
             else 
@@ -1274,7 +1318,7 @@ public static int[] Funzioni_getRigheSelezionate(JTable table) {
                     Color bg; 
         Color fore;
         if (Principale.tema.equalsIgnoreCase("Scuro")){
-            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            bg= (row % 2 == 0  ? grigio : grigioScuro);
             fore=Color.lightGray;
         }
             else 
@@ -1634,7 +1678,10 @@ private static void processNode(Node node, StringBuilder sb) {
    // ImageIcon originalIco = new ImageIcon(image);  // Converte in ImageIcon
    //  ImageIcon originalIco = Icone.Imbuto;
     //ImageIcon originalIco = new javax.swing.ImageIcon(getClass().getResource("/Images/24_Imbuto.png"));
-    Image scaledImag = originalIco.getImage().getScaledInstance(12, 12, Image.SCALE_SMOOTH);
+    //Va adattata al tema PRIMA di rimpicciolirla: lo scaling produce un ImageIcon senza descrizione,
+    //e la descrizione è l'unica cosa da cui Icone.Adatta capisce di quale file si tratta
+    ImageIcon iconaTema = (ImageIcon) Icone.Adatta(originalIco);
+    Image scaledImag = iconaTema.getImage().getScaledInstance(12, 12, Image.SCALE_SMOOTH);
     Icon filterIco = new ImageIcon(scaledImag);
     Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = tableFilters.computeIfAbsent(table, k -> new HashMap<>());
     table.getTableHeader().setDefaultRenderer(Tabelle.Tabelle_creaNuovoHeaderRenderer(table, activeFilters, filterIco));

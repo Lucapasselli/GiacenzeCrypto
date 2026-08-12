@@ -52,6 +52,11 @@ public class GUI_DocumentiFonte_Pannello extends javax.swing.JPanel {
     public GUI_DocumentiFonte_Pannello() {
         initComponents();
 
+        //Le icone nere vanno schiarite qui e non basta la visita che Icone fa all'apertura della
+        //finestra: nel tab questo pannello è costruito pigramente al primo componentShown, cioè molto
+        //dopo che quella visita è passata. Nel dialogo la chiamata è solo ridondante (Icone è idempotente).
+        Icone.AdattaIconeAlTema(this);
+
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella);
         //Righe alternate che seguono il tema chiaro/scuro. Va installato prima del primo Ricarica() :
         //AdattaLarghezzaColonne() misura le celle con prepareRenderer, quindi con il renderer che

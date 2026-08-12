@@ -143,6 +143,18 @@ public class VarStatiche {
     }
 
     /**
+     * @return il percorso della cartella {@code ArchivioBackup/}, dove {@link Backup_Restore} conserva
+     *         gli archivi di backup completi (uno zip più il manifest json affiancato).
+     *         <p>Deliberatamente <b>fuori</b> da {@code Backup/} : all'avvio
+     *         {@link Funzioni#Files_CancellaOltreTOTh} pota quella cartella a 4320 h (180 giorni), e un
+     *         backup dell'archivio fiscale non deve scadere. La ritenzione qui è eterna e la cancellazione
+     *         solo manuale, dal pannello.
+     */
+    public static String getCartella_ArchivioBackup() {
+        return getWorkingDirectory() + "ArchivioBackup/";
+    }
+
+    /**
      * @return il percorso della cartella {@code ImportConfig/} nella directory di lavoro.
      *         <p>Cartella storica delle configurazioni di import: non viene più sincronizzata con il
      *         repository (quel compito è passato a {@link #getCartella_ConfigImport()}) ed è mantenuta

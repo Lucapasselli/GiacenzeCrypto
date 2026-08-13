@@ -680,6 +680,10 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                 if (Riepilogo == null) Riepilogo = new Importazioni.Esito();
                 Riepilogo.Somma(E);
             }
+            //INTERROMPI deve fermare il giro, non solo l'exchange in corso. Il controllo è sul flag e non
+            //su E==null: ScaricaExchange restituisce null anche quando l'utente rinuncia al dialogo dello
+            //storico OKX, e in quel caso gli exchange successivi vanno scaricati lo stesso.
+            if (Principale.InterrompiCiclo) break;
         }
         //Prima aggiorno la tabella e poi mostro il resoconto: il resoconto è modale e il refresh
         //resterebbe altrimenti in attesa che l'utente lo chiuda.
@@ -721,6 +725,8 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                 if (Riepilogo == null) Riepilogo = new Importazioni.Esito();
                 Riepilogo.Somma(E);
             }
+            //Come sopra: INTERROMPI ferma tutta la selezione, la rinuncia al dialogo dello storico no.
+            if (Principale.InterrompiCiclo) break;
         }
         PopolaTabella();
         MostraResoconto(Riepilogo);

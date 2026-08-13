@@ -109,6 +109,23 @@ public class CcxtInterop {
     public static final String OPZIONE_ARCHIVIO_DA_COMPLETARE_OKX = "OKX_ArchivioDaCompletare";
 
     /**
+     * Trimestri dell'archivio storico OKX rimasti indietro all'ultimo tentativo, separati da virgola
+     * (per esempio {@code "2023Q2,2023Q1"}), in {@code personale.mv.db}.
+     *
+     * <p>Serve perche' dal 13/08/2026 l'elenco dei trimestri e' <b>limitato alla data di partenza dello
+     * scaricamento</b> (vedi {@link #trimestriArchivioOKX(long, long, int)}): senza questa memoria, un
+     * recupero rimasto a meta' non si completerebbe piu'. Alla corsa successiva la partenza e' l'ultimo
+     * movimento importato — recente, perche' l'importazione precedente e' andata a buon fine — e i
+     * trimestri vecchi non comparirebbero piu' nell'elenco.
+     *
+     * <p>Si e' scelto di ricordare <b>i trimestri</b> e non una data di partenza arretrata: sono
+     * esattamente quelli gia' richiesti dall'utente e non arrivati, mentre una data avrebbe rimesso in
+     * gioco in silenzio anche tutto cio' che c'e' in mezzo — cioe' anni gia' chiusi e verificati, che e'
+     * proprio quello che il vincolo sulla data di partenza serve a evitare.
+     */
+    public static final String OPZIONE_ARCHIVIO_SOSPESI_OKX = "OKX_ArchivioTrimestriSospesi";
+
+    /**
      * Elenca i trimestri da chiedere all'archivio storico di OKX per coprire il periodo che va da
      * {@code dalTimestamp} a oggi, <b>dal più recente al più vecchio</b>.
      *
@@ -137,32 +154,20 @@ public class CcxtInterop {
     }
 
     /**
-     * I trimestri che l'archivio storico deve coprire: <b>tutti</b> quelli dall'anno scelto dall'utente a
-     * oggi, indipendentemente dalla data di partenza dello scaricamento ordinario.
-     *
-     * <p>Fino al 04/08/2026 l'elenco partiva dalla data dello scaricamento. Con la partenza ancorata
-     * all'ultimo movimento — che dopo il primo scaricamento e' sempre recente — quella regola avrebbe reso
-     * <b>irrecuperabili</b> i trimestri rimasti indietro: OKX ne prepara solo una parte per volta, e alla
-     * corsa successiva l'elenco si sarebbe fermato all'ultimo trimestre, cioe' proprio a quelli gia'
-     * arrivati. Partendo sempre dall'anno scelto, un recupero parziale si completa da solo alla corsa dopo.
-     *
-     * <p>Non e' spreco: un trimestre gia' generato in passato viene ritirato senza spendere una richiesta di
-     * generazione, e i movimenti che si ripetono si deduplicano sul {@code billId}. A limitare l'elenco e'
-     * l'anno di apertura del conto, che e' esattamente cio' che l'utente indica al primo scaricamento.
-     *
-     * @return i trimestri da chiedere, dal piu' recente al piu' vecchio
-     */
-    static List<String> trimestriArchivioOKX() {
-        return trimestriArchivioOKX(0, System.currentTimeMillis(), annoInizioArchivioOKX());
-    }
-
-    /**
      * Come {@link #trimestriArchivioOKX(long, long)}, ma con il pavimento sull'anno scelto dall'utente al
      * posto del {@value #ANNO_MIN_ARCHIVIO_OKX} di sistema.
      *
      * <p>{@code annoMinimo} e' un <b>pavimento</b>, non una data di partenza: alzarlo accorcia l'elenco,
      * abbassarlo non lo allunga oltre {@code dalTimestamp}. E' cosi' di proposito, perche' la domanda che
      * l'utente si sente porre e' "prima di quale anno non c'e' niente da cercare", non "da quando scarico".
+     *
+     * <p><b>La data di partenza limita l'elenco</b>, ed e' il chiamante a passarla. Fra il 04/08/2026 e il
+     * 13/08/2026 esisteva una variante senza argomenti che passava {@code 0}, cioe' chiedeva ogni trimestre
+     * dall'anno scelto a oggi qualunque fosse la partenza: serviva a far completare da solo un recupero
+     * rimasto a meta', ma il prezzo era che ogni scaricamento rimetteva in gioco anche anni fiscali gia'
+     * chiusi e verificati, con il rischio di farvi entrare movimenti nuovi non voluti. Quella variante e'
+     * stata tolta; i trimestri non arrivati si recuperano ricordandoli per nome, vedi
+     * {@link #OPZIONE_ARCHIVIO_SOSPESI_OKX} e {@link #trimestriDaChiedereOKX}.
      *
      * @param annoMinimo primo anno da considerare; valori piu' bassi di {@value #ANNO_MIN_ARCHIVIO_OKX}
      *                   vengono riportati a quello, perche' prima l'archivio non ha dati
@@ -517,9 +522,91 @@ public static Path getNodeExePath() {
         return "SI".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_ARCHIVIO_DA_COMPLETARE_OKX, ""));
     }
 
+    /**
+     * L'importazione e' stata abbandonata dopo che l'archivio era gia' stato chiesto: le sue righe sono
+     * state buttate via insieme alle altre, quindi <b>nessun</b> trimestre di questa corsa puo' contare
+     * come fatto. Si riscrive l'elenco completo di quelli chiesti (meno gli {@code ignorato}, che OKX non
+     * copre) e si riaccende il flag che riapre il dialogo dello storico.
+     */
+    static void ArchivioOKXAbbandonato() {
+        trimestriSospesiOKX(ArchivioOKX_SospesiSeAbbandonata);
+        archivioOKXDaCompletare(true);
+    }
+
     /** Ricorda se restano trimestri da ritirare, vedi {@link #OPZIONE_ARCHIVIO_DA_COMPLETARE_OKX}. */
     static void archivioOKXDaCompletare(boolean daCompletare) {
         DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_ARCHIVIO_DA_COMPLETARE_OKX, daCompletare ? "SI" : "NO");
+    }
+
+    /**
+     * @return i trimestri rimasti indietro all'ultimo tentativo, dal piu' recente al piu' vecchio; lista
+     *         vuota se non ce n'e' nessuno. Vedi {@link #OPZIONE_ARCHIVIO_SOSPESI_OKX}
+     */
+    static List<String> trimestriSospesiOKX() {
+        return trimestriSospesiOKX(DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_ARCHIVIO_SOSPESI_OKX, ""));
+    }
+
+    /**
+     * Parte pura di {@link #trimestriSospesiOKX()}, separata per poter essere provata senza database.
+     * Le voci che non hanno la forma {@code <anno>Q<n>} vengono ignorate: l'opzione e' testo su un file
+     * dell'utente, e una riga sporca non deve trasformarsi in una richiesta assurda a OKX.
+     * @param salvato valore grezzo dell'opzione, eventualmente {@code null}
+     */
+    static List<String> trimestriSospesiOKX(String salvato) {
+        List<String> esito = new ArrayList<>();
+        if (salvato == null) return esito;
+        for (String voce : salvato.split(",")) {
+            String t = voce.trim().toUpperCase();
+            if (t.matches("\\d{4}Q[1-4]") && !esito.contains(t)) esito.add(t);
+        }
+        return esito;
+    }
+
+    /**
+     * Trimestri da ricordare come sospesi se l'importazione arriva in fondo (quelli non arrivati) e se
+     * invece viene abbandonata (tutti quelli chiesti, tranne gli {@code ignorato}).
+     *
+     * <p>Sono due liste e non una perche' il salvataggio <b>non puo' avvenire dentro
+     * {@link #ScaricaArchivioOKX}</b>: da li' le righe dell'archivio possono ancora essere buttate via da
+     * un'uscita anticipata di {@link #fetchMovimenti} — errore sui rendimenti Earn, INTERROMPI, il
+     * cancello finale — e un elenco di sospesi gia' scritto direbbe "arrivato" di un trimestre i cui
+     * movimenti non sono mai stati importati. Con l'elenco limitato alla data di partenza (vedi C11)
+     * quel trimestre non tornerebbe piu' in nessun elenco: sarebbe perso in silenzio.
+     *
+     * <p>Sono statiche perche' la classe lo e' tutta e la catena di chiamate e' a un livello solo:
+     * {@link #ScaricaArchivioOKX} le riempie, {@link #fetchMovimenti} sceglie quale delle due scrivere.
+     */
+    static List<String> ArchivioOKX_SospesiSeCompletata = new ArrayList<>();
+    /** @see #ArchivioOKX_SospesiSeCompletata */
+    static List<String> ArchivioOKX_SospesiSeAbbandonata = new ArrayList<>();
+
+    /** Salva i trimestri rimasti indietro, vedi {@link #OPZIONE_ARCHIVIO_SOSPESI_OKX}. */
+    static void trimestriSospesiOKX(List<String> trimestri) {
+        DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_ARCHIVIO_SOSPESI_OKX,
+                trimestri == null ? "" : String.join(",", trimestri));
+    }
+
+    /**
+     * L'elenco dei trimestri da chiedere davvero: quelli coperti dalla data di partenza, piu' quelli
+     * rimasti indietro da un tentativo precedente, senza doppioni e ordinati dal piu' recente.
+     *
+     * <p>I due insiemi rispondono a due domande diverse e vanno tenuti distinti: il primo e' "fin dove
+     * arretrare", ed e' limitato dalla partenza dello scaricamento perche' oltre ci sono anni gia' chiusi
+     * che non vanno rimessi in gioco; il secondo e' "cosa mi manca di quello che ho gia' chiesto", e non
+     * ha nulla a che vedere con la partenza di oggi.
+     *
+     * @param dal data di partenza dello scaricamento, millisecondi epoch
+     * @param adesso istante corrente, millisecondi epoch
+     * @param annoMinimo pavimento sull'anno scelto dall'utente
+     * @param sospesi trimestri rimasti indietro dall'ultimo tentativo
+     */
+    static List<String> trimestriDaChiedereOKX(long dal, long adesso, int annoMinimo, List<String> sospesi) {
+        List<String> esito = new ArrayList<>(trimestriArchivioOKX(dal, adesso, annoMinimo));
+        for (String t : sospesi) if (!esito.contains(t)) esito.add(t);
+        //Dal piu' recente al piu' vecchio: e' l'ordine in cui lo script chiede i trimestri, e il primo
+        //dell'elenco e' quello che l'utente ottiene per primo.
+        esito.sort(java.util.Comparator.reverseOrder());
+        return esito;
     }
 
     /**
@@ -546,8 +633,11 @@ public static Path getNodeExePath() {
 
         List<String> voci = new ArrayList<>();
         for (int anno = annoCorrente; anno >= ANNO_MIN_ARCHIVIO_OKX; anno--) {
-            //Il conteggio è quello reale: l'archivio parte sempre dall'anno scelto, non dalla data dello
-            //scaricamento, quindi ogni voce mostra i trimestri che verrebbero davvero chiesti
+            //Qui la partenza e' volutamente 0, e NON la data dello scaricamento: la domanda del combo e'
+            //"prima di quale anno non c'e' niente da cercare", e ogni voce deve mostrare quanto costa
+            //quella scelta. Passando la partenza reale, tutti gli anni piu' vecchi mostrerebbero lo
+            //stesso numero e la scelta perderebbe senso. Il conteggio dei trimestri che verranno
+            //davvero chiesti e' quello del dialogo dello storico, che usa trimestriDaChiedereOKX.
             int quanti = trimestriArchivioOKX(0, adesso, anno).size();
             voci.add(anno + (anno == ANNO_MIN_ARCHIVIO_OKX ? " (tutto lo storico)" : "")
                     + " — " + quanti + (quanti == 1 ? " trimestre" : " trimestri"));
@@ -677,7 +767,10 @@ public static Path getNodeExePath() {
                 : (c == null ? null : SwingUtilities.getWindowAncestor(c));
 
         long giorni = (System.currentTimeMillis() - startDate) / (24L * 60 * 60 * 1000);
-        List<String> trimestri = trimestriArchivioOKX();
+        //Dev'essere lo stesso elenco che ScaricaArchivioOKX chiedera' davvero, altrimenti il conteggio
+        //mostrato nel dialogo direbbe una cosa e lo scaricamento ne farebbe un'altra.
+        List<String> trimestri = trimestriDaChiedereOKX(startDate, System.currentTimeMillis(),
+                annoInizioArchivioOKX(), trimestriSospesiOKX());
 
         //Primo scaricamento: non c'è un ultimo movimento da cui partire, quindi la partenza è quella di
         //default e l'anno da cui cercare è una domanda che ha senso porre. È l'unico caso in cui si pone.
@@ -836,8 +929,17 @@ public static Path getNodeExePath() {
         }
         };
 
-        worker.execute();
-        progress.setVisible(true);// Questo blocca finché done() non chiama dispose()
+        //Da qui in poi INTERROMPI vale per tutta l'operazione, fase di scaricamento prezzi compresa.
+        //Lo scope si apre e si chiude QUI, nel proprietario dell'operazione, e non nel costruttore di
+        //Download: le finestre di avanzamento si annidano, e legare lo scope alla finestra lascerebbe il
+        //conteggio disallineato appena una di esse salta la chiusura. Vedi Interruzione.
+        Interruzione.Apri();
+        try {
+            worker.execute();
+            progress.setVisible(true);// Questo blocca finché done() non chiama dispose()
+        } finally {
+            Interruzione.Chiudi();
+        }
 
         return Esiti[0];
     }
@@ -1140,6 +1242,12 @@ public static Path getNodeExePath() {
                     DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_HOSTNAME_OKX, riconosciuto);
                     System.out.println("Dominio OKX riconosciuto e memorizzato : "+riconosciuto);
                 }
+                //Il dominio va ripreso anche nella variabile locale, non solo salvato: OKX_Archivio.js non
+                //sonda i domini per conto suo (ripiega su www.okx.com) e gli script che seguono in QUESTA
+                //stessa esecuzione lo ricevono da qui. Senza, alla prima corsa di un account non-www
+                //l'archivio storico falliva tutti i trimestri con 50119 "la chiave API non esiste", e solo
+                //la corsa successiva - che rilegge l'opzione dal database - funzionava.
+                if (!riconosciuto.isBlank()) hostnameOKX = riconosciuto;
             }
 
             if (Principale.InterrompiCiclo||progress.ErroriNodeJS()) {
@@ -1177,14 +1285,28 @@ public static Path getNodeExePath() {
             //tolti subito sotto, da deduplicaBillOKX: non si eliminano da soli piu' avanti nella catena, perche'
             //il consolidamento somma le gambe per moneta e la deduplica per ID che c'e' in Ex_OKX_ImportaDaAPI
             //guarda solo i movimenti gia' salvati, non quelli dello stesso scaricamento.
+            //Se da qui in poi l'importazione viene abbandonata, le righe dell'archivio vengono buttate via
+            //insieme alle altre, e il flag "restano trimestri da completare" va riacceso: e' l'unica cosa
+            //che riapre il dialogo dello storico alla corsa successiva, e senza di esso un utente con
+            //movimenti recenti non avrebbe piu' modo di richiedere l'archivio. Non e' uno spreco: i file
+            //gia' generati restano pronti su OKX e vengono ritirati senza rispendere una richiesta.
+            boolean archivioDaRecuperare = false;
             if (conArchivio) {
                 List<String[]> ra = ScaricaArchivioOKX(exchangeId, apiKey, secret, startDate, passphrase,
                         hostnameOKX, progress);
                 if (ra == null) {
-                    JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                    //null = interruzione dell'utente oppure errore dell'API: in entrambi i casi non si importa
+                    //nulla, quindi nessun trimestre di questa corsa conta come fatto.
+                    ArchivioOKXAbbandonato();
+                    //L'avviso specifico dell'errore l'ha gia' mostrato ScaricaArchivioOKX: qui si parla solo
+                    //del caso interruzione, altrimenti l'utente vedrebbe due finestre di seguito.
+                    if (Principale.InterrompiCiclo) {
+                        JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                    }
                     return null;
                 }
                 righe.addAll(ra);
+                archivioDaRecuperare = true;
             }
 
             //Si deduplica anche quando l'archivio non e' stato chiesto: costa una scansione su una lista
@@ -1210,9 +1332,36 @@ public static Path getNodeExePath() {
                 inizioGiornata = limiteEarn;
             }
             JsonObject jsonEarn = fetchMovimento(exchangeId, apiKey, secret, inizioGiornata, "", "OKX_Earn", passphrase, hostnameOKX);
-            if (jsonEarn != null && jsonEarn.has("savings_lending") && jsonEarn.get("savings_lending").isJsonArray()) {
+
+            //Interruzione durante i rendimenti Earn: senza questo controllo il ramo "else" qui sotto la
+            //scambiava per un'assenza di rendimenti - jsonEarn e' null tanto quando OKX non risponde quanto
+            //quando l'utente ha premuto INTERROMPI e il processo Node e' stato ucciso - e l'importazione
+            //proseguiva fino in fondo, scaricando poi i prezzi dei movimenti appena inseriti. Premere
+            //INTERROMPI deve fermare tutto, non solo lo script in corso.
+            if (Principale.InterrompiCiclo || progress.ErroriNodeJS()) {
+                if (archivioDaRecuperare) ArchivioOKXAbbandonato();
+                JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                return null;
+            }
+            //Un errore dell'API sui rendimenti ferma l'importazione come tutte le altre chiamate dello stesso
+            //scaricamento. jsonEarn e' null solo in caso di guaio: fetchMovimento restituisce null se lo
+            //script non parte, se esce con codice diverso da zero o se il JSON porta un "error"; quando
+            //semplicemente non ci sono prodotti Earn lo script risponde con savings_lending vuoto.
+            //Fino al 13/08/2026 questo caso proseguiva con "Nessun rendimento Earn restituito da OKX",
+            //importando i bill e lasciando fuori i rendimenti senza che l'utente lo sapesse.
+            if (jsonEarn == null) {
+                if (archivioDaRecuperare) ArchivioOKXAbbandonato();
+                JOptionPane.showConfirmDialog(null, "Errore nella comunicazione con OKX durante lo scaricamento\n"
+                        + "dei rendimenti dei prodotti Earn: importazione non eseguita.\n\n"
+                        + "Nel log trovi il dettaglio dell'errore.",
+                        "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                System.out.println("Nessun rendimento Earn restituito da OKX: importazione interrotta.");
+                return null;
+            }
+            if (jsonEarn.has("savings_lending") && jsonEarn.get("savings_lending").isJsonArray()) {
                 List<String[]> re = convertOKXEarn(jsonEarn.getAsJsonArray("savings_lending"));
                 if (re == null) {
+                    if (archivioDaRecuperare) ArchivioOKXAbbandonato();
                     JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                     return null;
                 }
@@ -1226,8 +1375,17 @@ public static Path getNodeExePath() {
                             "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
                 }
             } else {
-                //Non è un errore bloccante: i bill sono già stati scaricati e vanno comunque importati
+                //Risposta valida ma senza l'array: nessun prodotto Earn sul conto, non c'e' nulla da aggiungere
                 System.out.println("Nessun rendimento Earn restituito da OKX.");
+            }
+
+            //Ultimo cancello prima di toccare la mappa dei movimenti: la conversione dei rendimenti e la
+            //deduplica non sono istantanee e l'utente puo' aver premuto INTERROMPI proprio li'. Da qui in
+            //poi l'importazione scrive, e dietro le scritture parte lo scaricamento dei prezzi.
+            if (Principale.InterrompiCiclo || progress.ErroriNodeJS()) {
+                if (archivioDaRecuperare) ArchivioOKXAbbandonato();
+                JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                return null;
             }
 
             //Se lo script non è riuscito a scorrere tutto lo storico richiesto è meglio saperlo prima di importare
@@ -1240,6 +1398,22 @@ public static Path getNodeExePath() {
             }
 
             Importazioni.Ex_OKX_ImportaDaAPI(righe);
+
+            //Il consolidamento fa da solo la parte piu' lunga dell'importazione — scarica i prezzi mancanti,
+            //un processo Node per quotazione — quindi INTERROMPI puo' arrivare li' dentro. In quel caso
+            //Ex_OKX_ImportaDaAPI esce senza scrivere nulla e qui si chiude come per ogni altra interruzione.
+            if (Interruzione.Richiesta()) {
+                if (archivioDaRecuperare) ArchivioOKXAbbandonato();
+                JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                return null;
+            }
+            //I movimenti dell'archivio sono ora in mappa: solo adesso i trimestri arrivati possono
+            //smettere di essere sospesi. Scriverlo prima avrebbe dichiarato "fatto" un trimestre le cui
+            //righe una delle uscite anticipate qui sopra avrebbe potuto ancora buttare via.
+            if (archivioDaRecuperare) {
+                trimestriSospesiOKX(ArchivioOKX_SospesiSeCompletata);
+                archivioOKXDaCompletare(!ArchivioOKX_SospesiSeCompletata.isEmpty());
+            }
             if (Importazioni.TrasazioniSconosciute > 0) {
                 //I codici bill di OKX non ancora mappati finiscono nel resoconto, ma restano anche a log
                 System.out.println("Causali OKX non mappate:\n"+Importazioni.movimentiSconosciuti);
@@ -1561,25 +1735,38 @@ public static Path getNodeExePath() {
      * @param exchangeId identificativo CCXT dell'exchange
      * @param apiKey API key dell'account
      * @param secret API secret dell'account
-     * @param startDate data di partenza dello scaricamento ordinario, millisecondi epoch; non entra
-     *                  nell'elenco dei trimestri, che parte sempre dall'anno scelto dall'utente (vedi
-     *                  {@link #trimestriArchivioOKX()}), ed è passata allo script solo per uniformità
+     * @param startDate data di partenza dello scaricamento, millisecondi epoch; <b>limita</b> l'elenco dei
+     *                  trimestri, ai quali si aggiungono solo quelli rimasti indietro da un tentativo
+     *                  precedente (vedi {@link #trimestriDaChiedereOKX})
      * @param passphrase passphrase di OKX
      * @param hostname dominio regionale già riconosciuto, stringa vuota se ancora ignoto
      * @param progress finestra di progresso su cui riportare l'avanzamento
      * @return le righe in formato intermedio a 19 campi, lista vuota se non c'è nulla da recuperare, oppure
-     *         {@code null} se l'utente ha interrotto
+     *         {@code null} se l'utente ha interrotto o se una richiesta è andata in errore — in quest'ultimo
+     *         caso l'avviso è già stato mostrato qui, e l'intera importazione non deve essere eseguita
      */
     static List<String[]> ScaricaArchivioOKX(String exchangeId, String apiKey, String secret, long startDate,
             String passphrase, String hostname, Download progress) {
 
-        List<String> trimestri = trimestriArchivioOKX();
+        List<String> sospesi = trimestriSospesiOKX();
+        List<String> trimestri = trimestriDaChiedereOKX(startDate, System.currentTimeMillis(),
+                annoInizioArchivioOKX(), sospesi);
+        //Finche' non si sa come e' finita, l'unica cosa certa e' che quello che c'era prima resta da fare
+        ArchivioOKX_SospesiSeCompletata = new ArrayList<>(sospesi);
+        ArchivioOKX_SospesiSeAbbandonata = new ArrayList<>(trimestri);
         if (trimestri.isEmpty()) {
             System.out.println("Archivio storico OKX: nessun trimestre da recuperare.");
             //Non c'e' nulla da chiedere: un eventuale sospeso non e' piu' completabile e tenerlo acceso
             //farebbe riaprire il dialogo a ogni scaricamento senza che l'utente possa farci nulla.
             archivioOKXDaCompletare(false);
+            trimestriSospesiOKX(new ArrayList<>());
+            ArchivioOKX_SospesiSeCompletata = new ArrayList<>();
+            ArchivioOKX_SospesiSeAbbandonata = new ArrayList<>();
             return new ArrayList<>();
+        }
+        if (!sospesi.isEmpty()) {
+            System.out.println("Archivio storico OKX, trimestri rimasti indietro dall'ultimo tentativo: "
+                    + String.join(", ", sospesi));
         }
 
         if (progress != null) progress.SetMessaggioAvanzamento("Archivio storico OKX (può richiedere qualche minuto)...");
@@ -1590,15 +1777,24 @@ public static Path getNodeExePath() {
 
         if (Principale.InterrompiCiclo) return null;
         if (json == null) {
+            //Fino al 13/08/2026 qui si proseguiva importando lo scaricamento ordinario. Un errore su questa
+            //chiamata e' pero' un errore dello stesso scaricamento: proseguire significa scrivere movimenti
+            //e scaricarne i prezzi mentre una parte della storia e' rimasta fuori. Del ritentare se ne
+            //occupa il chiamante, che su ra == null chiama ArchivioOKXAbbandonato().
             JOptionPane.showConfirmDialog(null, "Nessuna risposta da OKX per l'archivio storico.\n\n"
-                    + "Lo scaricamento ordinario è stato comunque importato.",
+                    + "L'importazione è stata interrotta e non è stato inserito nulla:\n"
+                    + "nel log trovi il dettaglio dell'errore. Rilancia lo scaricamento\n"
+                    + "quando il problema è risolto.",
                     "Attenzione", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
-            return new ArrayList<>();
+            return null;
         }
 
         //Il riepilogo per trimestre è la parte utile del messaggio: dice cosa è entrato e cosa va ritentato.
         StringBuilder riepilogo = new StringBuilder();
         boolean daRitentare = false;
+        boolean conErrori = false;
+        List<String> rimasti = new ArrayList<>();
+        List<String> ignorati = new ArrayList<>();
         if (json.has("okx_periodi") && json.get("okx_periodi").isJsonArray()) {
             for (JsonElement el : json.getAsJsonArray("okx_periodi")) {
                 JsonObject p = el.getAsJsonObject();
@@ -1609,14 +1805,40 @@ public static Path getNodeExePath() {
                 if (p.has("dettaglio")) riepilogo.append(" - ").append(p.get("dettaglio").getAsString());
                 riepilogo.append("\n");
                 if (!stato.equals("scaricato")) daRitentare = true;
+                //"errore" e' l'unico stato che segnala un guaio: "in preparazione" e "da richiedere" sono
+                //passaggi normali dell'archivio, che si completa da solo alla corsa successiva.
+                if (stato.equals("errore")) conErrori = true;
+                //I trimestri non arrivati vanno ricordati per nome: dal 13/08/2026 l'elenco e' limitato
+                //alla data di partenza, e senza questa memoria alla corsa successiva — con la partenza
+                //ormai recente — non verrebbero piu' chiesti. "ignorato" no: e' un trimestre che OKX non
+                //copre, chiederlo di nuovo non servirebbe a niente.
+                if (!stato.equals("scaricato") && !stato.equals("ignorato")) rimasti.add(periodo);
+                //Un trimestre che OKX non copre non va richiesto di nuovo nemmeno se la corsa viene
+                //abbandonata: non c'e' nulla da recuperare li'.
+                if (stato.equals("ignorato")) ignorati.add(periodo);
             }
         }
         System.out.println("Archivio storico OKX:\n" + riepilogo);
+        ArchivioOKX_SospesiSeCompletata = rimasti;
+        ArchivioOKX_SospesiSeAbbandonata.removeAll(ignorati);
 
         //Con la data di partenza ancorata all'ultimo movimento, questo flag e' l'unica cosa che riporta
         //l'utente dentro il dialogo per ritirare i trimestri rimasti indietro: senza, il prossimo
         //scaricamento partirebbe da ieri e il dialogo non si aprirebbe piu'.
         archivioOKXDaCompletare(daRitentare);
+
+        //Un trimestre andato in errore ferma tutta l'importazione, come ogni altra chiamata fallita di
+        //questo scaricamento: i trimestri riusciti non si perdono, perche' i file gia' generati restano
+        //pronti sul server di OKX e la corsa successiva li ritira senza rispendere una richiesta.
+        if (conErrori) {
+            JOptionPane.showConfirmDialog(null,
+                    "Archivio storico OKX: una o più richieste hanno dato errore.\n\n" + riepilogo + "\n"
+                    + "L'importazione è stata interrotta e non è stato inserito nulla. I trimestri già "
+                    + "generati restano pronti su OKX: risolto il problema, rilancia lo scaricamento e "
+                    + "verranno ritirati senza rifare la richiesta.",
+                    "Archivio storico OKX", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+            return null;
+        }
 
         JsonArray archivio = json.has("okx_archivioBills") ? json.getAsJsonArray("okx_archivioBills") : new JsonArray();
         List<String[]> righe = convertOKXArchivio(archivio);

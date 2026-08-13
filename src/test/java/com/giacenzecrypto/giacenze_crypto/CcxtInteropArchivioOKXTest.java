@@ -120,9 +120,10 @@ class CcxtInteropArchivioOKXTest {
     // ==================== data di partenza ====================
 
     /**
-     * Dal 04/08/2026 la data di partenza non si sceglie più: è sempre quella dell'ultimo movimento OKX già
-     * scaricato. È quindi lei, e non l'anno minimo, a decidere quanto si torna indietro — l'anno resta un
-     * semplice pavimento, che può solo accorciare l'elenco.
+     * La data di partenza non si sceglie: è sempre quella dell'ultimo movimento OKX già scaricato. È quindi
+     * lei, e non l'anno minimo, a decidere quanto si torna indietro — l'anno resta un semplice pavimento,
+     * che può solo accorciare l'elenco. Dal 13/08/2026 questo vale anche per l'elenco che viene davvero
+     * chiesto a OKX, vedi {@link #laPartenzaLimitaITrimestriEISospesiLiRiaggiungono()}.
      */
     @Test
     void iTrimestriLiDecideLaDataDiPartenzaNonLAnnoMinimo() {
@@ -142,20 +143,71 @@ class CcxtInteropArchivioOKXTest {
     }
 
     /**
-     * L'elenco che viene davvero chiesto a OKX è ancorato all'anno scelto, non alla data di partenza dello
-     * scaricamento. È ciò che permette a un recupero rimasto a metà di completarsi alla corsa successiva:
-     * partendo dall'ultimo movimento — che a quel punto è recente — i trimestri vecchi non verrebbero più
-     * elencati e resterebbero irrecuperabili.
+     * <b>L'elenco chiesto a OKX è limitato dalla data di partenza</b>, e i trimestri rimasti indietro da un
+     * tentativo precedente vi si aggiungono per nome.
+     *
+     * <p>Fra il 04/08/2026 e il 13/08/2026 valeva il contrario: l'elenco partiva sempre dall'anno scelto,
+     * qualunque fosse la partenza, così che un recupero rimasto a metà si completasse da solo alla corsa
+     * dopo. Il prezzo era che ogni scaricamento rimetteva in gioco anche anni fiscali già chiusi e
+     * verificati, con il rischio di farvi entrare movimenti nuovi non voluti — ed è il motivo per cui la
+     * regola è stata ribaltata. La completabilità è conservata dai soli trimestri sospesi, che sono
+     * esattamente quelli già richiesti e non arrivati: nulla di ciò che sta in mezzo torna in gioco.
      */
     @Test
-    void lArchivioPartesempreDallAnnoSceltoENonDalloScaricamento() {
-        List<String> t = CcxtInterop.trimestriArchivioOKX();
+    void laPartenzaLimitaITrimestriEISospesiLiRiaggiungono() {
+        long adesso = quando(2026, 8, 4);
+        long ultimoMovimento = quando(2026, 6, 15);
 
-        assertFalse(t.isEmpty());
-        //Senza preferenza salvata il pavimento è il primo anno coperto da OKX, e l'elenco ci arriva
-        assertEquals(CcxtInterop.ANNO_MIN_ARCHIVIO_OKX + "Q1", t.get(t.size() - 1));
-        assertEquals(t, CcxtInterop.trimestriArchivioOKX(0, System.currentTimeMillis(),
-                CcxtInterop.ANNO_MIN_ARCHIVIO_OKX));
+        //Partenza recente: si chiede solo il trimestre che la copre, anche con il pavimento al 2021
+        assertEquals(List.of("2026Q2"), CcxtInterop.trimestriDaChiedereOKX(
+                ultimoMovimento, adesso, 2021, List.of()));
+
+        //Un trimestre rimasto indietro torna nell'elenco, al posto giusto, senza portarsi dietro
+        //nient'altro dell'intervallo: 2023Q2 sì, 2023Q3..2026Q1 no
+        assertEquals(List.of("2026Q2", "2023Q2"), CcxtInterop.trimestriDaChiedereOKX(
+                ultimoMovimento, adesso, 2021, List.of("2023Q2")));
+
+        //Un sospeso già coperto dalla partenza non viene chiesto due volte
+        long primoScaricamento = quando(2017, 1, 1);
+        List<String> conDoppione = CcxtInterop.trimestriDaChiedereOKX(
+                primoScaricamento, adesso, 2025, List.of("2025Q4"));
+        assertEquals(List.of("2026Q2", "2026Q1", "2025Q4", "2025Q3", "2025Q2", "2025Q1"), conDoppione);
+    }
+
+    /**
+     * Le due liste che {@code ScaricaArchivioOKX} prepara non sono la stessa cosa, e confonderle perde
+     * trimestri in silenzio.
+     *
+     * <p>Il salvataggio dei sospesi <b>non può</b> avvenire quando l'archivio arriva: da lì in poi le sue
+     * righe possono ancora essere buttate via da un'uscita anticipata dell'importazione (errore sui
+     * rendimenti Earn, INTERROMPI, il cancello finale). Se in quel momento l'elenco dicesse già
+     * "2023Q2 arrivato", quel trimestre non tornerebbe in nessun elenco successivo — la partenza dello
+     * scaricamento non lo copre — e i suoi movimenti sarebbero persi senza che nessuno se ne accorga.
+     */
+    @Test
+    void unTrimestreToltoDaiSospesiNonTornaPiuNellElenco() {
+        long adesso = quando(2026, 8, 4);
+        long ultimoMovimento = quando(2026, 6, 15);
+
+        //Corsa con due trimestri vecchi sospesi: vengono richiesti insieme a quello coperto dalla partenza
+        assertEquals(List.of("2026Q2", "2023Q2", "2023Q1"), CcxtInterop.trimestriDaChiedereOKX(
+                ultimoMovimento, adesso, 2021, List.of("2023Q1", "2023Q2")));
+
+        //Se 2023Q2 viene tolto dai sospesi — cioè dichiarato "fatto" — non c'è più nulla che lo riporti
+        //nell'elenco: la partenza non lo copre e il pavimento sull'anno non lo aggiunge. È esattamente il
+        //motivo per cui i sospesi si scrivono DOPO l'importazione e non appena l'archivio arriva.
+        assertEquals(List.of("2026Q2", "2023Q1"), CcxtInterop.trimestriDaChiedereOKX(
+                ultimoMovimento, adesso, 2021, List.of("2023Q1")));
+    }
+
+    /** L'elenco dei sospesi è testo su un file dell'utente: le voci malformate non devono arrivare a OKX. */
+    @Test
+    void iTrimestriSospesiSiLeggonoIgnorandoLeVociSporche() {
+        assertEquals(List.of(), CcxtInterop.trimestriSospesiOKX((String) null));
+        assertEquals(List.of(), CcxtInterop.trimestriSospesiOKX(""));
+        assertEquals(List.of("2023Q1", "2024Q4"), CcxtInterop.trimestriSospesiOKX(" 2023q1 , 2024Q4 "));
+        //Doppioni, trimestri inesistenti e testo libero vengono scartati
+        assertEquals(List.of("2023Q1"), CcxtInterop.trimestriSospesiOKX("2023Q1,2023Q1,2023Q5,boh,,26Q1"));
     }
 
     /**

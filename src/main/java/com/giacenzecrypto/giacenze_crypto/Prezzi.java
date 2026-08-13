@@ -1074,6 +1074,14 @@ public class Prezzi {
         //Adesso verifico se è un token in cui è risaputo che non c'è prezzo in quel caso ritorno null
         if (PrezzoIrrecuperabileDaDB_Leggi(Crypto,Datalong,Rete,Address)) 
             return null;
+        //INTERROMPI premuto: si esce PRIMA della fase di rete, e soprattutto prima di
+        //PrezzoIrrecuperabileDaDB_Scrivi qui sotto. Registrare "prezzo non recuperabile" per un prezzo che
+        //non e' stato nemmeno cercato lo renderebbe irrecuperabile anche alle corse oneste successive.
+        //Questo e' il collo di bottiglia di tutti gli scaricamenti prezzi: ogni quotazione mancante costa
+        //un processo Node e qualche secondo, ed e' quello che rendeva un'importazione interrotta lunga
+        //ancora minuti. Interruzione.Richiesta() e' false fuori da un'operazione aperta, quindi qui non
+        //puo' spegnere in silenzio gli scaricamenti che non nascono da un'importazione.
+        if (Interruzione.Richiesta()) return null;
         //Se non c'è connessione internet mi fermo qua e ritorno null
         if (!Funzioni.CeConnessioneInternet()) return null;
         
@@ -1707,6 +1715,9 @@ public class Prezzi {
      * @return {@code "ok"} se il recupero è andato a buon fine, altrimenti {@code null}
      */
     public static String RecuperaTassidiCambio(String DataIniziale,String DataFinale)  {
+        //Come in CambioXXXEUR: a interruzione richiesta non si va in rete. Qui non c'e' nulla da marcare
+        //come irrecuperabile, la mappa dei cambi resta semplicemente com'era.
+        if (Interruzione.Richiesta()) return null;
         String ok="ok";
         try {     
             TimeUnit.SECONDS.sleep(1);

@@ -404,6 +404,10 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
         Principale.InterrompiCiclo = true;
+        //Chiudere la finestra vale come "interrompi". Chiedi() non e' appiccicoso: vale solo dentro
+        //l'operazione aperta dal proprietario, che la chiude subito dopo questa dispose, quindi la
+        //chiusura normale di fine lavoro non lascia nulla acceso per l'operazione successiva.
+        Interruzione.Chiedi();
         this.FineThread = true;
         LoggerGC.disableTextPaneOut();
         LoggerGC.disableTextPaneErr();
@@ -411,6 +415,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
     private void Bottone_InterrompiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_InterrompiActionPerformed
         Principale.InterrompiCiclo = true;
+        Interruzione.Chiedi();
         this.FineThread = true;
         Bottone_Interrompi.setEnabled(false);
         LabelAvanzamento.setText("Interruzione in corso...");

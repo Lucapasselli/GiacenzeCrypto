@@ -758,6 +758,15 @@ public class Importazioni {
         List<String[]> listaScambiDifferiti = new ArrayList<>();
         List<String[]> listaCompleta = Ex_OKX_RaggruppaEConsolida(righeOrdinate, Mappa_Conversione_Causali, listaScambiDifferiti);
 
+        //INTERROMPI premuto durante il consolidamento, cioe' durante lo scaricamento dei prezzi: si esce
+        //senza scrivere nulla. E' l'ultimo punto in cui si puo' farlo in modo pulito, perche' fin qui il
+        //consolidamento non tocca MappaCryptoWallet — la prima scrittura e' ScriviListaSuMappaCrypto qui
+        //sotto, e ConsolidaMovimentiDifferiti (che invece la modifica sul posto) viene dopo di quella.
+        if (Interruzione.Richiesta()) {
+            System.out.println("Import OKX: interrotto dall'utente durante il consolidamento, nessun movimento inserito.");
+            return new int[]{0, 0};
+        }
+
         //Recupero gli ID OKX già importati per non reinserire movimenti già presenti
         Map<String, String> MappaIDOKX = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (String Trans[] : Principale.MappaCryptoWallet.values()) {

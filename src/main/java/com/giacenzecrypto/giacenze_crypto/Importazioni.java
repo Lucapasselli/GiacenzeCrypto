@@ -709,6 +709,45 @@ public class Importazioni {
     }
 
     /**
+     * Chiave con cui {@link #Ex_OKX_ImportaDaAPI} confronta l'ID originale OKX ({@code [24]}) di un
+     * movimento appena scaricato con quelli gia' in archivio.
+     *
+     * <p>Non e' la stringa grezza perche' <b>l'ID degli scambi ha cambiato forma il 02/04/2026</b>: fino ad
+     * allora {@code RitornaScambi} univa le due gambe con {@code _} ({@code <idUscita>_<idEntrata>}), da
+     * allora con {@code -}. Confrontate carattere per carattere le due forme non si riconoscono, quindi uno
+     * scambio importato prima di quella data veniva reinserito tale e quale dallo scaricamento via API
+     * (difetto <b>C12</b>). Sui dati reali le due forme convivono: 202 scambi OKX con {@code _} e 191 con
+     * {@code -}.
+     *
+     * <p>La normalizzazione e' <b>volutamente stretta</b>: agisce solo su {@code <cifre>_<cifre>}, che e'
+     * esattamente la forma dell'ID composto, e lascia intatto tutto il resto. Serve a non toccare gli ID
+     * dei rendimenti Earn ({@code EARN-<moneta>-<aaaammgg>}), che un {@code replace} generico dei
+     * separatori avrebbe rimescolato.
+     *
+     * <p>Vale <b>solo per il confronto</b>: gli ID salvati non vengono riscritti. Riscriverli sposterebbe
+     * il golden master e sporcherebbe il ricalcolo incrementale senza cambiare un solo risultato fiscale.
+     *
+     * @param id contenuto del campo {@code [24]}, anche {@code null}
+     * @return la chiave normalizzata da usare nel confronto
+     */
+    static String ChiaveDedupOKX(String id) {
+        if (id == null) return "";
+        String s = id.trim();
+        int sep = s.indexOf('_');
+        if (sep <= 0 || sep == s.length() - 1) return s;
+        if (s.indexOf('_', sep + 1) >= 0) return s;
+        if (!SoloCifre(s.substring(0, sep)) || !SoloCifre(s.substring(sep + 1))) return s;
+        return s.substring(0, sep) + "-" + s.substring(sep + 1);
+    }
+
+    /** @return {@code true} se la stringa non e' vuota ed e' fatta di sole cifre decimali */
+    private static boolean SoloCifre(String s) {
+        if (s.isEmpty()) return false;
+        for (int i = 0; i < s.length(); i++) if (s.charAt(i) < '0' || s.charAt(i) > '9') return false;
+        return true;
+    }
+
+    /**
      * Importa i movimenti OKX scaricati via API, già convertiti nel formato intermedio a 19 campi da
      * {@link CcxtInterop#convertOKXBills}. Riusa lo stesso raggruppamento e consolidamento dell'import
      * del CSV ({@link #Ex_OKX_RaggruppaEConsolida}), quindi la classificazione fiscale è identica sulle
@@ -767,17 +806,18 @@ public class Importazioni {
             return new int[]{0, 0};
         }
 
-        //Recupero gli ID OKX già importati per non reinserire movimenti già presenti
+        //Recupero gli ID OKX già importati per non reinserire movimenti già presenti.
+        //Il confronto passa da ChiaveDedupOKX e non dalla stringa grezza: vedi il suo javadoc.
         Map<String, String> MappaIDOKX = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (String Trans[] : Principale.MappaCryptoWallet.values()) {
             if (Trans[3].equalsIgnoreCase("OKX")) {
-                MappaIDOKX.put(Trans[24], "");
+                MappaIDOKX.put(ChiaveDedupOKX(Trans[24]), "");
             }
         }
 
         List<String[]> listaDaImportare = new ArrayList<>();
         for (String ElementoLista[] : listaCompleta) {
-            if (MappaIDOKX.get(ElementoLista[24]) == null) {
+            if (MappaIDOKX.get(ChiaveDedupOKX(ElementoLista[24])) == null) {
                 listaDaImportare.add(ElementoLista);
             }
         }

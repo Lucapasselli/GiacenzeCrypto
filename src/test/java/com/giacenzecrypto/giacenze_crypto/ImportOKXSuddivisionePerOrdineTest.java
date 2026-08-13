@@ -166,4 +166,50 @@ class ImportOKXSuddivisionePerOrdineTest {
 
         assertTrue(Importazioni.Ex_OKX_GruppoHaOrdini(misto));
     }
+
+    // ==================== chiave di deduplica degli ID OKX (difetto C12) ====================
+
+    @Test
+    void loStessoScambioNelleDueFormeDellIDDaLaStessaChiave() {
+        //Fino al 02/04/2026 RitornaScambi univa le gambe con "_", da allora con "-": confrontate carattere
+        //per carattere le due forme non si riconoscono, e lo scambio veniva reinserito dallo scaricamento
+        //via API. Sui dati reali le due forme convivono (202 scambi con "_", 191 con "-").
+        assertEquals(Importazioni.ChiaveDedupOKX("699824500376358912-699824500376358913"),
+                     Importazioni.ChiaveDedupOKX("699824500376358912_699824500376358913"));
+    }
+
+    @Test
+    void unBillIdSempliceRestaSeStesso() {
+        assertEquals("4487306919", Importazioni.ChiaveDedupOKX("4487306919"));
+        assertEquals("4487306919", Importazioni.ChiaveDedupOKX("  4487306919  "));
+        assertEquals("", Importazioni.ChiaveDedupOKX(null));
+        assertEquals("", Importazioni.ChiaveDedupOKX(""));
+    }
+
+    @Test
+    void gliIDDeiRendimentiEarnNonVengonoToccati() {
+        //Contengono "-" come separatore di campi, non di gambe: una normalizzazione generica li
+        //rimescolerebbe, e sono 86 movimenti nel solo archivio di sviluppo.
+        assertEquals("EARN-USDC-20260714", Importazioni.ChiaveDedupOKX("EARN-USDC-20260714"));
+        assertEquals("EARN-BTC-20260716", Importazioni.ChiaveDedupOKX("EARN-BTC-20260716"));
+    }
+
+    @Test
+    void laNormalizzazioneAgisceSoloSullaFormaCifreSottolineaturaCifre() {
+        //Volutamente stretta: tutto ciò che non è esattamente <cifre>_<cifre> passa immutato, così una
+        //forma futura non viene riscritta a indovinare.
+        assertEquals("abc_123", Importazioni.ChiaveDedupOKX("abc_123"));
+        assertEquals("123_abc", Importazioni.ChiaveDedupOKX("123_abc"));
+        assertEquals("1_2_3", Importazioni.ChiaveDedupOKX("1_2_3"));
+        assertEquals("_123", Importazioni.ChiaveDedupOKX("_123"));
+        assertEquals("123_", Importazioni.ChiaveDedupOKX("123_"));
+    }
+
+    @Test
+    void dueScambiDiversiRestanoDiversi() {
+        //La normalizzazione non deve far collidere due movimenti veri: sarebbe un movimento perso, cioè
+        //il danno opposto e peggiore di quello che corregge.
+        assertNotEquals(Importazioni.ChiaveDedupOKX("100_200"), Importazioni.ChiaveDedupOKX("200_100"));
+        assertNotEquals(Importazioni.ChiaveDedupOKX("100_200"), Importazioni.ChiaveDedupOKX("100200"));
+    }
 }

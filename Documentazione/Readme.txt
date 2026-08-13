@@ -29,6 +29,46 @@ NB: Per aggiornare la versione portable/multipiattaforma del programma basta sov
 
 Changelog
 
+ver. 1.0.60
+Nuove Implementazioni :
+- Aggiunto lo scaricamento dei movimenti di OKX direttamente dalle API: si inseriscono chiave, secret e passphrase in "Opzioni" - "ApiKey" e il programma scarica i movimenti del conto Funding e del conto Trading,
+  i rendimenti di Simple Earn (raggruppati per giornata) e, su richiesta, l'archivio storico trimestrale che risale fino al 2021. Alla prima richiesta dell'archivio viene chiesto l'anno di apertura del conto, per non interrogare OKX su trimestri sicuramente vuoti.
+  Aggiunte anche due configurazioni di importazione (OKX_Funding e OKX_Trading) per i nuovi formati di export CSV di OKX.
+- Aggiunta la funzione "Backup / Ripristino" in "Opzioni": crea un unico archivio con movimenti, impostazioni, gruppi wallet, prezzi inseriti a mano, documenti di origine e configurazioni di importazione, e permette di ripristinarlo su un'altra installazione o dopo un problema.
+  Prima di ogni ripristino viene creato in automatico un backup di sicurezza e, al termine, il programma ricalcola le plusvalenze e verifica che coincidano con
+  quelle registrate nell'archivio.
+  I prezzi di mercato scaricati si possono includere per intero oppure nel solo insieme necessario ai calcoli, molto più leggero.
+- Ogni movimento importato ricorda ora il file da cui proviene: il file viene conservato compresso e può essere riaperto dal programma.
+  La nuova scheda "Analisi Crypto" - "Gestione Documentale" (raggiungibile anche da
+  "Opzioni" - "Export" - "Documenti di origine") elenca i documenti importati con i movimenti che ancora vi fanno riferimento, e permette di aprirli, esportarli o eliminare quelli non più collegati a nessun movimento.
+  Per gli scaricamenti da API e da wallet DeFi, dove un file non esiste, viene registrata la risposta grezza del server (senza le chiavi API, che vengono oscurate).
+- Aggiunto il pulsante "Filtri..." sopra la tabella dei movimenti, che raccoglie in un'unica finestra tutti i criteri di filtro e ne indica il numero attivo.
+  Fra questi ce n'è uno nuovo: si possono vedere i soli movimenti che hanno un documento di origine, quelli che non ce l'hanno, oppure quelli provenienti da un documento preciso.
+- Le plusvalenze vengono ora ricalcolate a partire dal primo movimento realmente modificato invece che sempre dall'inizio:
+  dopo un'importazione o una modifica l'attesa si riduce di molto.
+  Si può tornare al ricalcolo completo togliendo la spunta in "Opzioni" - "Opzioni di Calcolo".
+- L'avvio del programma mostra ora una vera barra di avanzamento, con l'indicazione della fase in corso, al posto della scritta "Caricamento in corso".
+- Tema scuro rivisto: sfondi e testi hanno colori propri (prima restavano quelli grigi di serie della libreria grafica) e tutte le icone vengono ridisegnate in chiaro.
+  Il cambio di tema, come già prima, richiede un riavvio per essere completo.
+- Aggiunta in "Opzioni" - "Pulizie" la nuova scheda "Compattazione database":
+  i database, in particolare quello dei prezzi, arrivano a occupare molto più spazio dei dati che contengono e possono essere compattati senza perdere una sola riga (nell'archivio di prova 2.847 MB tornati a 565 MB). La compattazione viene eseguita anche in automatico alla chiusura del programma, ma solo quando il recupero è consistente.
+- Aggiunto il supporto a dieci nuove blockchain: OP Mainnet, Linea, Blast, Unichain, World Chain, Taiko, Abstract, Katana, Sonic e Mantle.
+- Le importazioni della rete Gnosis passano da Etherscan a Blockscout, perché dal 01/09/2026 Gnosis esce dal piano gratuito di Etherscan; il passaggio è automatico anche per chi aveva già salvato le proprie preferenze nella scheda "Preferenze Provider DeFi".
+- Il menu contestuale dei movimenti (quello che compare facendo tasto destro del mouse sulla tabella) lavora ora sulla selezione multipla: "Elimina Movimento" cancella tutte le righe selezionate e "Modifica Note" le aggiorna tutte, chiedendo se accodare il nuovo testo a quello esistente oppure sostituirlo; le voci che agiscono su un solo movimento vengono invece disattivate quando le righe selezionate sono più di una.
+- La finestra per la modifica delle note ha ora la stessa veste grafica di tutti gli altri messaggi del programma, con l'area di testo su più righe ridimensionabile.
+- Aggiunta nella scheda "RT & Analisi P&L" la casella "Non calcolare l'anno corrente", che evita di dover recuperare i prezzi attuali di tutte le monete in giacenza quando interessa solo un anno già chiuso.
+- Migliorata sensibilmente la velocità di caricamento e di aggiornamento delle tabelle: sono state riscritte le somme delle colonne, il controllo dei saldi negativi e la conversione delle date, le tabelle secondarie
+  vengono calcolate senza bloccare la finestra e la tabella dei movimenti viene ricostruita solo quando la sua scheda è a video.
+  La scheda "Gestione Token Scam" si apre ora in una frazione del tempo di prima.
+- Aggiunte le righe alternate colorate, che seguono il tema, anche alla tabella dei gruppi wallet e a quella dei documenti importati.
+Correzione Bug :
+- Il pulsante "Interrompi" ferma ora davvero l'importazione da API, anche durante il recupero dei prezzi, e un errore restituito dall'exchange interrompe l'importazione invece di proseguire in silenzio con dati parziali.
+- Corretto un difetto per cui due ricalcoli delle plusvalenze avviati contemporaneamente (per esempio durante un'operazione di massa) potevano sovrascriversi a vicenda producendo risultati errati senza alcun messaggio.
+- Corretto il messaggio "Transazione eliminata" che compariva grigio e non disegnato fino al termine del ricalcolo; ora il lavoro viene svolto prima, con il puntatore di attesa.
+- Corretto un difetto per cui alcune voci del menu contestuale non venivano disattivate sulle righe che non sono movimenti.
+- Corretto un difetto per cui, tornando sulla scheda dei movimenti, venivano ricalcolate inutilmente anche le tabelle secondarie, e un altro per cui cambiando l'opzione "calcola LIFO per gruppo wallet" alcune tabelle venivano ricalcolate due volte.
+- Corretti alcuni errori che potevano presentarsi all'apertura di una richiesta di conferma priva della finestra proprietaria.
+
 ver. 1.0.59
 Nuove Implementazioni :
 - Aggiunta la funzione "Chiedi a IA": dal tasto destro su un movimento si prepara una domanda già compilata con i dati di quel movimento e la si apre direttamente nel chatbot preferito (ChatGPT, Claude, Perplexity, Copilot, Grok, Gemini, Le Chat, DeepSeek).

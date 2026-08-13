@@ -404,4 +404,85 @@ class CcxtInteropArchivioOKXTest {
         assertTrue(c.contains("999"), c);
         assertTrue(c.contains("Qualcosa di nuovo"), "notes rende autoesplicativo il codice ignoto: " + c);
     }
+
+    // ==================== filtro sulla data di partenza (difetto C12) ====================
+
+    /** @return una riga a 19 campi con la sola data valorizzata, che è l'unico campo che il filtro guarda */
+    private static String[] rigaAllOra(String data) {
+        String[] r = new String[19];
+        for (int i = 0; i < r.length; i++) r[i] = "";
+        r[0] = data;
+        r[14] = String.valueOf(data.hashCode());
+        return r;
+    }
+
+    @Test
+    void leRigheAnterioriAllaPartenzaVengonoScartate() {
+        //L'archivio si chiede per trimestri interi: il trimestre che contiene la partenza torna dal suo
+        //primo giorno, e quella coda è già in archivio.
+        List<String[]> righe = List.of(
+                rigaAllOra("2024-04-02 10:00:00"),
+                rigaAllOra("2024-04-14 21:32:43"),
+                rigaAllOra("2024-04-14 21:40:32"),
+                rigaAllOra("2024-05-01 08:00:00"));
+
+        long partenza = FunzioniDate.ConvertiDatainLongSecondo("2024-04-14 21:40:32");
+        List<String[]> tenute = CcxtInterop.filtraArchivioOKXPerData(righe, partenza, List.of());
+
+        assertEquals(2, tenute.size(), "restano solo le righe dalla partenza in avanti");
+        assertEquals("2024-04-14 21:40:32", tenute.get(0)[0], "la soglia è inclusiva sull'istante di partenza");
+        assertEquals("2024-05-01 08:00:00", tenute.get(1)[0]);
+    }
+
+    @Test
+    void unTrimestreInRecuperoNonVieneToccatoDalFiltro() {
+        //È il caso che rende il filtro pericoloso: un trimestre rimasto indietro (OKX_ArchivioTrimestriSospesi)
+        //è quasi sempre ANTERIORE alla partenza, perché nel frattempo lo scaricamento ordinario ha portato
+        //avanti l'ultimo movimento. Un filtro cieco lo svuoterebbe, e okx_periodi lo dichiarerebbe comunque
+        //"scaricato" togliendolo dai sospesi: diventerebbe irrecuperabile in silenzio.
+        List<String[]> righe = List.of(
+                rigaAllOra("2022-05-10 09:00:00"),   //trimestre in recupero
+                rigaAllOra("2022-06-30 23:00:00"),   //trimestre in recupero
+                rigaAllOra("2024-01-15 09:00:00"));  //vecchio ma NON in recupero
+
+        long partenza = FunzioniDate.ConvertiDatainLongSecondo("2026-08-01 00:00:00");
+        List<String[]> tenute = CcxtInterop.filtraArchivioOKXPerData(righe, partenza, List.of("2022Q2"));
+
+        assertEquals(2, tenute.size(), "il trimestre in recupero passa intero, il resto no");
+        assertEquals("2022-05-10 09:00:00", tenute.get(0)[0]);
+        assertEquals("2022-06-30 23:00:00", tenute.get(1)[0]);
+    }
+
+    @Test
+    void unaRigaSenzaDataLeggibileVieneTenuta() {
+        //Senza data non si può dimostrare che sia già stata importata: scartarla perderebbe un movimento
+        //per un dato che manca. Se ne occupa la deduplica per ID a valle.
+        List<String[]> righe = List.of(rigaAllOra(""), rigaAllOra("non una data"),
+                rigaAllOra("2020-01-01 00:00:00"));
+
+        long partenza = FunzioniDate.ConvertiDatainLongSecondo("2026-08-01 00:00:00");
+        List<String[]> tenute = CcxtInterop.filtraArchivioOKXPerData(righe, partenza, List.of());
+
+        assertEquals(2, tenute.size(), "le due righe senza data restano, quella datata e vecchia no");
+    }
+
+    @Test
+    void ilTrimestreDiUnaDataUsaLaStessaFormaDellElenco() {
+        //Le due cose si confrontano fra loro dentro il filtro: se la forma divergesse, l'eccezione dei
+        //sospesi non scatterebbe mai e il test precedente sarebbe l'unico a saperlo.
+        assertEquals("2024Q2", CcxtInterop.trimestreOKXdiData(quando(2024, 4, 14)));
+        assertEquals("2024Q1", CcxtInterop.trimestreOKXdiData(quando(2024, 3, 31)));
+        assertEquals("2026Q4", CcxtInterop.trimestreOKXdiData(quando(2026, 12, 1)));
+        assertTrue(CcxtInterop.trimestriArchivioOKX(quando(2024, 4, 14), quando(2026, 8, 3))
+                .contains(CcxtInterop.trimestreOKXdiData(quando(2024, 4, 14))),
+                "l'etichetta prodotta dev'essere una di quelle che l'elenco può contenere");
+    }
+
+    @Test
+    void senzaRigheAnterioriIlFiltroNonToglieNulla() {
+        List<String[]> righe = List.of(rigaAllOra("2026-07-01 00:00:00"), rigaAllOra("2026-07-02 00:00:00"));
+        long partenza = FunzioniDate.ConvertiDatainLongSecondo("2026-06-30 00:00:00");
+
+        assertEquals(2, CcxtInterop.filtraArchivioOKXPerData(righe, partenza, List.of()).size());
+    }
 }

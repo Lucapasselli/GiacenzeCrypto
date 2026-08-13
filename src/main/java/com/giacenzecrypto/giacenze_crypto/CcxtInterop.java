@@ -1841,7 +1841,7 @@ public static Path getNodeExePath() {
         }
 
         JsonArray archivio = json.has("okx_archivioBills") ? json.getAsJsonArray("okx_archivioBills") : new JsonArray();
-        List<String[]> righe = convertOKXArchivio(archivio);
+        List<String[]> righe = filtraArchivioOKXPerData(convertOKXArchivio(archivio), startDate, sospesi);
 
         if (daRitentare) {
             JOptionPane.showConfirmDialog(null,
@@ -1853,6 +1853,78 @@ public static Path getNodeExePath() {
                     "Archivio storico OKX", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
         }
         return righe;
+    }
+
+    /**
+     * Scarta dalle righe dell'archivio storico OKX quelle anteriori alla data di partenza dello
+     * scaricamento.
+     *
+     * <p><b>Perche' serve.</b> L'archivio si chiede per <b>trimestri interi</b>, quindi il trimestre che
+     * contiene {@code startDate} torna dal suo primo giorno: la coda che precede la partenza copre un
+     * periodo gia' importato. Il ramo dei bill ordinari questo filtro ce l'ha ({@code Scripts/OKX_Bills.js},
+     * {@code if (ts < startTime) continue}); il ramo dell'archivio no, e si reggeva sulla sola deduplica
+     * per ID a valle. Che bastasse era un'illusione: quella deduplica confronta {@code [24]} carattere per
+     * carattere, e uno scambio importato prima del 02/04/2026 porta le due gambe unite da {@code _} invece
+     * che da {@code -}, quindi non viene riconosciuto e il movimento entra due volte (difetto <b>C12</b>).
+     *
+     * <p><b>L'eccezione dei trimestri sospesi non e' un dettaglio.</b> Un trimestre rimasto indietro da un
+     * tentativo precedente ({@link #OPZIONE_ARCHIVIO_SOSPESI_OKX}) e' di norma <b>anteriore</b> alla
+     * partenza, perche' nel frattempo lo scaricamento ordinario ha portato avanti l'ultimo movimento. Un
+     * filtro cieco lo svuoterebbe, ma {@code okx_periodi} lo dichiarerebbe comunque {@code scaricato} e la
+     * corsa successiva lo toglierebbe dai sospesi: il trimestre diventerebbe irrecuperabile in silenzio,
+     * cioe' proprio cio' che i sospesi esistono per evitare.
+     *
+     * <p>Il confronto e' {@code ts < startDate}, e {@code startDate} e' gia' l'ultimo movimento + 1 s: e'
+     * la stessa soglia, con lo stesso verso, del filtro di {@code OKX_Bills.js}. Tenerla identica sulle due
+     * strade vale piu' del secondo di margine che entrambe perdono.
+     *
+     * <p>Una riga con data illeggibile viene <b>tenuta</b>: senza data non si puo' dimostrare che sia gia'
+     * stata importata, e scartarla perderebbe un movimento per un dato che manca.
+     *
+     * @param righe righe in formato intermedio a 19 campi; {@code null} passa attraverso
+     * @param startDate data di partenza dello scaricamento, millisecondi epoch
+     * @param sospesi trimestri chiesti in recupero, che il filtro non tocca; puo' essere {@code null}
+     * @return una nuova lista senza le righe gia' coperte dalla partenza, nello stesso ordine
+     */
+    static List<String[]> filtraArchivioOKXPerData(List<String[]> righe, long startDate, List<String> sospesi) {
+        if (righe == null) return null;
+        Set<String> recuperi = new HashSet<>();
+        if (sospesi != null) recuperi.addAll(sospesi);
+
+        List<String[]> tenute = new ArrayList<>();
+        int scartate = 0;
+        for (String[] r : righe) {
+            long ts = (r != null && r.length > 0 && r[0] != null && !r[0].isBlank())
+                    ? FunzioniDate.ConvertiDatainLongSecondo(r[0]) : 0;
+            if (ts <= 0 || ts >= startDate || recuperi.contains(trimestreOKXdiData(ts))) {
+                tenute.add(r);
+            } else {
+                scartate++;
+            }
+        }
+
+        if (scartate > 0) {
+            System.out.println("Archivio storico OKX: " + scartate + " righe scartate perche' anteriori a "
+                    + FunzioniDate.ConvertiDatadaLongAlSecondo(startDate) + ", data da cui parte lo scaricamento"
+                    + (recuperi.isEmpty() ? "." : " (trimestri in recupero esclusi dal filtro: "
+                            + String.join(", ", new TreeSet<>(recuperi)) + ")."));
+        }
+        return tenute;
+    }
+
+    /**
+     * Etichetta del trimestre ({@code 2024Q2}) in cui cade un istante, nella stessa forma e nello stesso
+     * fuso usati da {@link #trimestriArchivioOKX(long, long, int)} per comporre l'elenco: le due cose si
+     * confrontano fra loro in {@link #filtraArchivioOKXPerData}, e derivarle da fusi diversi sposterebbe di
+     * trimestre le righe a cavallo del confine.
+     *
+     * @param ms istante, millisecondi epoch
+     * @return l'etichetta del trimestre
+     */
+    static String trimestreOKXdiData(long ms) {
+        java.time.LocalDate d = java.time.Instant.ofEpochMilli(ms)
+                .atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+        return d.getYear() + "Q" + ((d.getMonthValue() - 1) / 3 + 1);
     }
 
     /**

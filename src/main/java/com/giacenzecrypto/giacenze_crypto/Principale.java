@@ -13143,75 +13143,326 @@ if (result != null && !result.isAction("cancel")) {
     }//GEN-LAST:event_DepositiPrelievi_Bottone_DuplicaActionPerformed
 
     private void DepositiPrelievi_Bottone_ScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_ScamActionPerformed
-        // TODO add your handling code here:
         int righeSelezionate[] = Tabelle.Funzioni_getRigheSelezionate(DepositiPrelievi_Tabella);
+        if (righeSelezionate.length == 0) return;
 
-        //Leggo subito gli ID di TUTTE le righe selezionate, prima di iniziare il ciclo di classificazione.
-        //Il ciclo sottostante mostra dialog di conferma la cui chiusura fa riguadagnare il focus alla finestra
-        //principale: se nel frattempo TabellaCryptodaAggiornare è stato messo a true (es. dopo aver marcato un
-        //token come SCAM), formWindowGainedFocus ricarica la tabella crypto e con essa anche DepositiPrelievi_Tabella.
-        //Se leggessimo il modello ad ogni iterazione con gli indici di riga originari, dopo un ricaricamento quegli
+        //Leggo subito gli ID di TUTTE le righe selezionate, prima di iniziare la classificazione.
+        //I dialog di conferma, chiudendosi, fanno riguadagnare il focus alla finestra principale: se nel
+        //frattempo TabellaCryptodaAggiornare è stato messo a true (es. dopo aver marcato un token come SCAM),
+        //formWindowGainedFocus ricarica la tabella crypto e con essa anche DepositiPrelievi_Tabella.
+        //Se leggessimo il modello a valle con gli indici di riga originari, dopo un ricaricamento quegli
         //indici punterebbero a righe/movimenti diversi da quelli effettivamente selezionati dall'utente.
         String idSelezionati[] = new String[righeSelezionate.length];
         for (int i = 0; i < righeSelezionate.length; i++) {
             idSelezionati[i] = DepositiPrelievi_Tabella.getModel().getValueAt(righeSelezionate[i], 0).toString();
         }
 
-        if (idSelezionati.length >= 0) {
+        //Selezione di una sola riga: resta il percorso interattivo condiviso con "Giacenze a Data", che è
+        //anche l'unico che sa proporre la rimozione dello stato SCAM su un token che lo è già.
+        if (idSelezionati.length == 1) {
+            String ID = idSelezionati[0];
+            String Movimento[] = MappaCryptoWallet.get(ID);
+            if (Movimento == null) return;
+            if (Movimento[18] != null && !Movimento[18].isBlank()) {
+                Messaggi.WarningMessage("Movimento già classificato",
+                        "Attenzione! Il movimento selezionato è già classificato<br>"
+                        + "e non può essere classificato come SCAM.", this);
+                return;
+            }
+            String Rete = Funzioni.TrovaReteDaIMovimento(Movimento);
+            String Tipo = ID.split("_")[4];
+            String NomeMoneta = "";
+            String Address = "";
+            if (Tipo.equalsIgnoreCase("PC")) {
+                NomeMoneta = Movimento[8];
+                Address = Movimento[26];
+            }
+            if (Tipo.equalsIgnoreCase("DC")) {
+                NomeMoneta = Movimento[11];
+                Address = Movimento[28];
+            }
+            if (Address == null || Address.isBlank() || Rete == null || Rete.isBlank()) {
+                Messaggi.WarningMessage("Token senza Address/Rete",
+                        "Il token <b>" + NomeMoneta + "</b> non ha un Address o una Rete associati "
+                        + "(tipico delle monete native o dei movimenti non on-chain).<br>"
+                        + "Non può essere classificato come SCAM da questa funzione ed è stato ignorato.<br>"
+                        + "Usa l'apposita funzione in \"Giacenze a Data\" se vuoi procedere comunque.", this);
+                return;
+            }
+            GiacenzeaData_Funzione_IdentificaComeScam(NomeMoneta, Address, Rete, Movimento[3]);
+            Funzioni_AggiornaTutto();
+            TabellaCryptodaAggiornare = false;
+            return;
+        }
 
-            //Secondo ciclo faccio le modifiche
-            Set<String> setUnivoco = new LinkedHashSet<>();
-            for (int i = 0; i < idSelezionati.length; i++) {
+        DepositiPrelievi_ClassificaScamMassiva(idSelezionati);
+    }//GEN-LAST:event_DepositiPrelievi_Bottone_ScamActionPerformed
 
-                String ID = idSelezionati[i];
-                //System.out.println(ID);
+    /**
+     * Oltre questo numero di token la marcatura SCAM di massa mostra la finestra di attesa; sotto,
+     * gira direttamente sull'EDT con il solo cursore di attesa (vedi il commento nel punto d'uso).
+     */
+    private static final int SOGLIA_ATTESA_SCAM_MASSIVA = 5;
 
-                //adesso controllo che sia un movimento non classificato e solo in quel caso vado avanti
-                String Movimento[] = MappaCryptoWallet.get(ID);
-                if (Movimento == null) continue; //il movimento potrebbe non esistere più nel frattempo
-                String Rete = Funzioni.TrovaReteDaIMovimento(Movimento);
-                if (Movimento[18] == null || Movimento[18].isBlank()) {
-                    //Controllo se è un movimento di prelievo o deposito
-                    String Tipo = ID.split("_")[4];
-                    String NomeMoneta = "";
-                    String Address = "";
-                    if (Tipo.equalsIgnoreCase("PC")) {
-                        NomeMoneta = Movimento[8];
-                        Address = Movimento[26];
-                    }
-                    if (Tipo.equalsIgnoreCase("DC")) {
-                        NomeMoneta = Movimento[11];
-                        Address = Movimento[28];
-                    }
-                    String Wallet=Movimento[3];
+    /**
+     * Un token candidato alla marcatura SCAM di massa, con l'esito che avrà nel riepilogo finale.
+     * {@code Motivo} valorizzato significa "lasciato normale", ed è la spiegazione mostrata all'utente.
+     */
+    private static class TokenScamCandidato {
+        final String Nome;
+        final String Address;
+        final String Rete;
+        /** Ha almeno un movimento in archivio valorizzato: i token SCAM non devono avere valore. */
+        boolean Valorizzato = false;
+        /** Ha in archivio movimenti diversi dal semplice deposito/prelievo. */
+        boolean NonCongruo = false;
+        String NuovoNome = "";
+        String Motivo = null;
 
-                    //Se non l'ho già fatto classifico il movimento
-                    if (!setUnivoco.contains(NomeMoneta)){
-                        //Senza Address o Rete la funzione condivisa non può identificare il singolo token e passa
-                        //al ramo pensato per "Giacenze a Data" (classificazione manuale su tutto il wallet):
-                        //in selezione multipla lo salto per evitare di proporre SCAM su token diversi da quelli selezionati.
-                        if (Address == null || Address.isBlank() || Rete == null || Rete.isBlank()) {
-                            Messaggi.WarningMessage("Token senza Address/Rete",
-                                "Il token <b>" + NomeMoneta + "</b> non ha un Address o una Rete associati "
-                                + "(tipico delle monete native o dei movimenti non on-chain).<br>"
-                                + "Non può essere classificato come SCAM dalla selezione multipla ed è stato ignorato.<br>"
-                                + "Usa l'apposita funzione in \"Giacenze a Data\" se vuoi procedere comunque.", this);
-                            setUnivoco.add(NomeMoneta);
-                        } else {
-                            String NuovoNome=GiacenzeaData_Funzione_IdentificaComeScam(NomeMoneta, Address, Rete,Wallet);
-                            setUnivoco.add(NuovoNome);
-                        }
-                    }
+        TokenScamCandidato(String Nome, String Address, String Rete) {
+            this.Nome = Nome;
+            this.Address = Address;
+            this.Rete = Rete;
+        }
+    }
 
-                } else {
-                    Messaggi.WarningMessage("Movimenti già classificati",
-                        "Attenzione! Sonostati trovati uno o più movimenti già classificati<br>"
-                        + "Questi movimenti non possono essere classificati come scam e sono stati ignorati.", this);
+    /**
+     * Classificazione SCAM di massa dei token dei movimenti selezionati in "Depositi e Prelievi".
+     * <p>
+     * Rispetto a {@link #GiacenzeaData_Funzione_IdentificaComeScam}, chiamata token per token, qui:
+     * i token sono raggruppati per address+rete, quindi lo stesso token presente su più righe selezionate
+     * viene valutato e marcato una sola volta; la conferma è <b>una sola</b> per l'intera selezione,
+     * comprese le eccezioni sui token con movimenti non congrui; al termine viene mostrato un riepilogo
+     * con i token marcati e quelli lasciati normali, ciascuno con il proprio motivo.
+     * </p>
+     * Le regole che lasciano un token normale sono le stesse della funzione interattiva: movimenti già
+     * classificati, address o rete mancanti, token già SCAM, presenza di movimenti valorizzati.
+     */
+    private void DepositiPrelievi_ClassificaScamMassiva(String[] idSelezionati) {
+
+        //1 - Raggruppo le righe selezionate per token. La chiave è address+rete, cioè l'identità su cui è
+        //costruita anche la tabella RINOMINATOKEN: il nome non va bene perché la marcatura lo cambia
+        //(aggiunge " **") ed è quello che faceva riproporre la domanda sullo stesso token già trattato.
+        java.util.LinkedHashMap<String, TokenScamCandidato> token = new java.util.LinkedHashMap<>();
+        Set<String> conRigheDaClassificare = new LinkedHashSet<>();
+
+        for (String ID : idSelezionati) {
+            String[] Movimento = MappaCryptoWallet.get(ID);
+            if (Movimento == null) continue; //il movimento potrebbe non esistere più nel frattempo
+
+            String Tipo = ID.split("_")[4];
+            String NomeMoneta = "";
+            String Address = "";
+            if (Tipo.equalsIgnoreCase("PC")) {
+                NomeMoneta = Movimento[8];
+                Address = Movimento[26];
+            }
+            if (Tipo.equalsIgnoreCase("DC")) {
+                NomeMoneta = Movimento[11];
+                Address = Movimento[28];
+            }
+            if (NomeMoneta == null || NomeMoneta.isBlank()) continue; //riga che non muove alcun token
+            String Rete = Funzioni.TrovaReteDaIMovimento(Movimento);
+            if (Address == null) Address = "";
+            if (Rete == null) Rete = "";
+
+            final String Nome_f = NomeMoneta, Address_f = Address, Rete_f = Rete;
+            String chiave = (Address.isBlank() || Rete.isBlank())
+                    ? "NOME:" + NomeMoneta
+                    : Address.toUpperCase() + "_" + Rete;
+
+            TokenScamCandidato t = token.computeIfAbsent(chiave, k -> new TokenScamCandidato(Nome_f, Address_f, Rete_f));
+
+            //Un movimento già classificato non può diventare SCAM: il token resta candidato solo se almeno
+            //una delle righe selezionate che lo riguardano è ancora da classificare.
+            if (Movimento[18] == null || Movimento[18].isBlank()) conRigheDaClassificare.add(chiave);
+        }
+        if (token.isEmpty()) return;
+
+        //2 - Regole che non dipendono dagli altri movimenti in archivio
+        for (Map.Entry<String, TokenScamCandidato> e : token.entrySet()) {
+            TokenScamCandidato t = e.getValue();
+            if (!conRigheDaClassificare.contains(e.getKey())) {
+                t.Motivo = "movimenti selezionati già classificati";
+            } else if (t.Address.isBlank() || t.Rete.isBlank()) {
+                t.Motivo = "senza Address o Rete (moneta nativa o movimento non on-chain)";
+            } else if (Funzioni.isSCAM(t.Nome)) {
+                t.Motivo = "già marcato come SCAM";
+            }
+        }
+
+        //3 - Controlli che riguardano tutti i movimenti del token presenti in archivio (valorizzazione e
+        //congruità), in un'unica passata su MappaCryptoWallet: farli token per token, come nella funzione
+        //interattiva, costerebbe una scansione completa della mappa per ciascun token selezionato.
+        Map<String, TokenScamCandidato> daVerificare = new HashMap<>();
+        for (Map.Entry<String, TokenScamCandidato> e : token.entrySet()) {
+            if (e.getValue().Motivo == null) daVerificare.put(e.getKey(), e.getValue());
+        }
+        if (!daVerificare.isEmpty()) {
+            for (String[] Mov : MappaCryptoWallet.values()) {
+                String ReteMov = Funzioni.TrovaReteDaIMovimento(Mov);
+                if (ReteMov == null) ReteMov = "";
+                TokenScamCandidato tUscita = null, tEntrata = null;
+                if (Mov[26] != null && !Mov[26].isBlank()) tUscita = daVerificare.get(Mov[26].toUpperCase() + "_" + ReteMov);
+                if (Mov[28] != null && !Mov[28].isBlank()) tEntrata = daVerificare.get(Mov[28].toUpperCase() + "_" + ReteMov);
+                if (tUscita == null && tEntrata == null) continue;
+
+                String TipoMov = Mov[0].split("_")[4];
+                boolean congruo = TipoMov.equals("PC") || TipoMov.equals("DC");
+                //Il controvalore è una stringa e può essere vuoto o non numerico: qui una sola eccezione
+                //interromperebbe la verifica dell'intera selezione, non di un singolo token.
+                boolean valorizzato = Prezzi.isMovimentoPrezzato(Mov) && Funzioni.isBigDecimalNonZero(Mov[15]);
+
+                if (tUscita != null) {
+                    if (!congruo) tUscita.NonCongruo = true;
+                    if (valorizzato) tUscita.Valorizzato = true;
+                }
+                if (tEntrata != null && tEntrata != tUscita) {
+                    if (!congruo) tEntrata.NonCongruo = true;
+                    if (valorizzato) tEntrata.Valorizzato = true;
                 }
             }
-            Funzioni_AggiornaTutto();
         }
-    }//GEN-LAST:event_DepositiPrelievi_Bottone_ScamActionPerformed
+        for (TokenScamCandidato t : daVerificare.values()) {
+            if (t.Valorizzato) t.Motivo = "ha movimenti valorizzati";
+        }
+
+        //4 - Un'unica domanda per tutta la selezione, comprese le eccezioni sui token non congrui
+        List<TokenScamCandidato> daMarcare = new ArrayList<>();
+        List<String> nomiNonCongrui = new ArrayList<>();
+        for (TokenScamCandidato t : token.values()) {
+            if (t.Motivo != null) continue;
+            daMarcare.add(t);
+            if (t.NonCongruo) nomiNonCongrui.add(t.Nome);
+        }
+
+        if (!daMarcare.isEmpty()) {
+            List<String> nomiDaMarcare = new ArrayList<>();
+            for (TokenScamCandidato t : daMarcare) nomiDaMarcare.add(t.Nome + " (" + t.Rete + ")");
+
+            String dettaglio = DepositiPrelievi_ElencoPerDialog(nomiDaMarcare, 10)
+                    + "<br>Nelle varie funzioni del programma sarà possibile nascondere questi asset e, quando "
+                    + "mostrati, verranno identificati con un doppio asterisco (**) alla fine del nome.<br>"
+                    + "<br>Per riportare un token allo stato normale, usa l'apposita funzione in \"Gestione Token Scam\".";
+            if (!nomiNonCongrui.isEmpty()) {
+                dettaglio = dettaglio + "<br><br><b>Attenzione:</b> " + nomiNonCongrui.size()
+                        + (nomiNonCongrui.size() == 1 ? " token presenta" : " token presentano")
+                        + " movimenti diversi dal semplice deposito o prelievo, e verranno marcati ugualmente. "
+                        + "Se prosegui senza verificarli, i calcoli potrebbero risultare errati:<br>"
+                        + DepositiPrelievi_ElencoPerDialog(nomiNonCongrui, 10);
+            }
+
+            AppDialog.DialogResult result = AppDialog.builder(this)
+                    .windowTitle("Classificazione token")
+                    .bodyTitle("Contrassegnare come SCAM i token selezionati?")
+                    .showTitleInBody(true)
+                    .theme()
+                    .type(AppDialog.DialogType.WARNING)
+                    .message("Verranno marcati come SCAM " + daMarcare.size() + " token, senza ulteriori richieste di conferma.")
+                    .details(dettaglio)
+                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("mark-scam", "Segna come SCAM")
+                            .role(AppDialog.ActionRole.DANGER)
+                            .build())
+                    .showDialog();
+            if (result == null || !result.isAction("mark-scam")) return;
+
+            //5 - Marcatura di massa: nessun dialog per token e nessun ricalcolo per iterazione (che la
+            //riacquisizione del focus innescherebbe tramite TabellaCryptodaAggiornare).
+            if (daMarcare.size() > SOGLIA_ATTESA_SCAM_MASSIVA) {
+                //Selezioni ampie: la finestra di attesa resta aperta e modale per l'intera durata, con il
+                //ciclo su un thread separato, come nella rimozione SCAM di massa.
+                Download progress = new Download();
+                progress.setLocationRelativeTo(this);
+                progress.NascondiInterrompi();
+
+                Thread thread = new Thread(() -> {
+                    progress.Titolo("Classificazione token SCAM");
+                    progress.SetLabel("Marcatura dei token come SCAM in corso....");
+                    progress.SetMassimo(daMarcare.size());
+                    int i = 0;
+                    for (TokenScamCandidato t : daMarcare) {
+                        i++;
+                        progress.SetAvanzamento(i);
+                        progress.SetMessaggioAvanzamento(t.Nome + " - " + i + " di " + daMarcare.size());
+                        t.NuovoNome = MarcaTokenComeScam(t.Nome, t.Address, t.Rete);
+                    }
+                    progress.ChiudiFinestra();
+                });
+                thread.start();
+                progress.setVisible(true);// Questo blocca finché il thread non chiama ChiudiFinestra()
+            } else {
+                //Pochi token: qui la marcatura è due sole operazioni sul database per token, quindi il
+                //thread finirebbe *prima* che l'EDT arrivi a setVisible(true). ChiudiFinestra() è un
+                //dispose() secco, senza memoria della chiusura già richiesta: la finestra verrebbe mostrata
+                //dopo, modale, e non la chiuderebbe più nessuno. Il ciclo gira quindi sull'EDT.
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                for (TokenScamCandidato t : daMarcare) {
+                    t.NuovoNome = MarcaTokenComeScam(t.Nome, t.Address, t.Rete);
+                }
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+
+            //Ricalcolo le tabelle una sola volta, per tutta la selezione, e azzero il flag in modo che la
+            //successiva riacquisizione del focus non lo rifaccia inutilmente una seconda volta
+            Funzioni_AggiornaTutto();
+            TabellaCryptodaAggiornare = false;
+        }
+
+        //6 - Riepilogo finale, mostrato anche quando non è stato marcato nulla: è il caso in cui l'utente
+        //ha più bisogno di sapere perché le regole del programma hanno lasciato i token allo stato normale.
+        DepositiPrelievi_RiepilogoScamMassiva(token.values());
+    }
+
+    /** Riepilogo finale della classificazione SCAM di massa: token marcati e token lasciati normali con il motivo. */
+    private void DepositiPrelievi_RiepilogoScamMassiva(java.util.Collection<TokenScamCandidato> token) {
+        List<String> marcati = new ArrayList<>();
+        List<String> normali = new ArrayList<>();
+        for (TokenScamCandidato t : token) {
+            if (t.Motivo == null && !t.NuovoNome.isBlank()) {
+                marcati.add(t.NuovoNome + (t.NonCongruo ? " <i>(con movimenti non solo di deposito/prelievo)</i>" : ""));
+            } else if (t.Motivo != null) {
+                normali.add("<b>" + t.Nome + "</b> : " + t.Motivo);
+            }
+        }
+
+        String dettaglio = "";
+        if (!marcati.isEmpty()) {
+            dettaglio = "<b>Token marcati come SCAM (" + marcati.size() + ") :</b><br>"
+                    + DepositiPrelievi_ElencoPerDialog(marcati, 10);
+        }
+        if (!normali.isEmpty()) {
+            if (!dettaglio.isEmpty()) dettaglio = dettaglio + "<br>";
+            dettaglio = dettaglio + "<b>Token lasciati normali (" + normali.size() + ") :</b><br>"
+                    + DepositiPrelievi_ElencoPerDialog(normali, 10)
+                    + "<br>Per i token valorizzati azzera prima il valore dei loro movimenti; per quelli senza "
+                    + "Address o Rete usa l'apposita funzione in \"Giacenze a Data\".";
+        }
+        if (dettaglio.isEmpty()) return;
+
+        String messaggio = marcati.size() + (marcati.size() == 1 ? " token marcato come SCAM, " : " token marcati come SCAM, ")
+                + normali.size() + (normali.size() == 1 ? " lasciato normale." : " lasciati normali.");
+
+        if (marcati.isEmpty()) {
+            Messaggi.WarningMessage("Classificazione SCAM", messaggio, dettaglio, this);
+        } else {
+            Messaggi.InfoMessage("Classificazione SCAM", messaggio, dettaglio, this);
+        }
+    }
+
+    /**
+     * Elenco puntato per il dettaglio di un dialog, troncato dopo {@code massimo} voci: il dettaglio è una
+     * JLabel HTML senza scroll, quindi un elenco lungo renderebbe la finestra più alta dello schermo.
+     */
+    private static String DepositiPrelievi_ElencoPerDialog(List<String> voci, int massimo) {
+        StringBuilder sb = new StringBuilder();
+        int mostrate = Math.min(voci.size(), massimo);
+        for (int i = 0; i < mostrate; i++) sb.append("• ").append(voci.get(i)).append("<br>");
+        if (voci.size() > mostrate) sb.append("• …e altri ").append(voci.size() - mostrate).append("<br>");
+        return sb.toString();
+    }
 
     private void DepositiPrelievi_Bottone_ScamAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_ScamAutoActionPerformed
         List<String[]> candidati = DepositiPrelievi_TrovaTokenCandidatiScamAuto();

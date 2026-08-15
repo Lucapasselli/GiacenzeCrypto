@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -1585,14 +1586,7 @@ public class Prezzi {
             JsonArray data = root.getAsJsonArray("data");
             if (data == null) return;
 
-            List<String[]> gestiti = new ArrayList<>();
-            for (JsonElement el : data) {
-                JsonObject coin = el.getAsJsonObject();
-                if (coin.get("is_active").getAsInt() != 1) continue;
-                String symbol = coin.get("symbol").getAsString().toUpperCase().trim();
-                String id = String.valueOf(coin.get("id").getAsInt());
-                gestiti.add(new String[]{symbol, id});
-            }
+            List<String[]> gestiti = DeduplicaMappaCoinMarketCap(data);
             DatabaseH2.GestitiCoinMarketCap_ScriviNuovaTabella(gestiti);
             DatabaseH2.Opzioni_Scrivi("Data_Lista_CoinMarketCap", String.valueOf(adesso));
             System.out.println("RecuperaCoinsCoinMarketCap: salvati " + gestiti.size() + " token");
@@ -1600,6 +1594,68 @@ public class Prezzi {
             System.out.println("RecuperaCoinsCoinMarketCap: errore - " + e.getMessage());
             LoggerGC.ScriviErrore(e);
         }
+    }
+
+    /**
+     * Riduce la lista scaricata da CoinMarketCap a una riga per simbolo, pronta per
+     * {@code GESTITICOINMARKETCAP} dove {@code Symbol} è chiave primaria.
+     * <p>
+     * CoinMarketCap elenca token diversi con lo stesso simbolo (es. due USDF): i doppioni vanno
+     * scartati qui e non lasciati fallire in fase di scrittura. Si tiene quello con il rank
+     * migliore (numero più basso); i token senza rank perdono contro qualunque token classificato
+     * e a parità vince il primo, cioè l'ordine restituito dall'API (`sort=cmc_rank`).
+     *
+     * @param data array {@code data} della risposta di {@code /v1/cryptocurrency/map}
+     * @return righe {@code [Symbol, Id]} senza simboli ripetuti, nell'ordine di prima comparsa
+     */
+    static List<String[]> DeduplicaMappaCoinMarketCap(JsonArray data) {
+        Map<String, String[]> perSimbolo = new LinkedHashMap<>();
+        Map<String, Integer> rankPerSimbolo = new HashMap<>();
+        int scartati = 0;
+        boolean rankTrovato = false;
+        for (JsonElement el : data) {
+            JsonObject coin = el.getAsJsonObject();
+            JsonElement attivo = coin.get("is_active");
+            //campo assente = attivo: la richiesta chiede già listing_status=active
+            if (attivo != null && !attivo.isJsonNull() && attivo.getAsInt() != 1) continue;
+            String symbol = coin.get("symbol").getAsString().toUpperCase().trim();
+            String id = String.valueOf(coin.get("id").getAsInt());
+            int rank = RankCoinMarketCap(coin);
+            if (rank != Integer.MAX_VALUE) rankTrovato = true;
+            Integer rankPrecedente = rankPerSimbolo.get(symbol);
+            if (rankPrecedente != null) {
+                scartati++;
+                if (rank >= rankPrecedente) continue;
+            }
+            perSimbolo.put(symbol, new String[]{symbol, id});
+            rankPerSimbolo.put(symbol, rank);
+        }
+        if (scartati > 0) {
+            //se il rank non c'è la scelta degrada a "vince il primo": va detto, non subito in silenzio
+            System.out.println("RecuperaCoinsCoinMarketCap: " + scartati + " doppioni di simbolo scartati"
+                    + (rankTrovato ? "" : " (nessun rank nella risposta: tenuto il primo di ogni simbolo)"));
+        }
+        return new ArrayList<>(perSimbolo.values());
+    }
+
+    /**
+     * Legge il rank di un token della mappa CoinMarketCap, tollerando sia il nome del campo usato
+     * da {@code /cryptocurrency/map} sia quello degli altri endpoint, e i token non classificati
+     * (campo assente o {@code null}).
+     *
+     * @param coin oggetto JSON del token
+     * @return il rank, oppure {@link Integer#MAX_VALUE} se il token non ne ha uno
+     */
+    private static int RankCoinMarketCap(JsonObject coin) {
+        for (String campo : new String[]{"rank", "cmc_rank"}) {
+            JsonElement el = coin.get(campo);
+            if (el == null || el.isJsonNull()) continue;
+            try {
+                return el.getAsInt();
+            } catch (Exception ignored) {
+            }
+        }
+        return Integer.MAX_VALUE;
     }
 
     /**

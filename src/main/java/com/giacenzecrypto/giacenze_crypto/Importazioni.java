@@ -466,11 +466,13 @@ public class Importazioni {
                     
                   
                     String DatoRiga[]=new String[19];
-                    String NomeWallet="Funding";
-                    if (ColTime!=1)NomeWallet="Trading";
                     if (ColTime!=99) DatoRiga[0]=splittata[ColTime];//Timestamp
                     DatoRiga[1]="OKX";//exchange
-                    DatoRiga[2]=NomeWallet;//Wallet   ----> Da Sistemare in base al tipo di import
+                    //Un solo wallet per OKX, come per l'import via API e per gli ImportConfig/OKX_*.json:
+                    //il conto di provenienza (Funding o Trading, che qui si sarebbe dedotto dalla posizione
+                    //della colonna Time) non e' un portafoglio a se', perche' i giroconti fra i due conti
+                    //sono causali NON CONSIDERARE e non vengono importati.
+                    DatoRiga[2]=WALLET_OKX;//Wallet
                     DatoRiga[3]="";//conversione tipo movimento
                     if (MovGenerico!=null)DatoRiga[3]=MovGenerico;//conversione tipo movimento
                     if (ColTipoTrans!=99) DatoRiga[4]=splittata[ColTipoTrans];//Tipo Movimento csv
@@ -555,6 +557,15 @@ public class Importazioni {
     public static Map<String, String> Ex_OKX_MappaCausali() {
         return MappeCausali.Carica(MappeCausali.OKX);
     }
+
+    /**
+     * Unico wallet ({@code [4]} del movimento) su cui vengono registrati i movimenti OKX.
+     * <p>E' lo stesso valore che gli import da CSV dichiarano in {@code ImportConfig/OKX_Funding.json} e
+     * {@code ImportConfig/OKX_Trading.json} con la chiave {@code nomeWallet}: le due strade devono
+     * concordare, altrimenti lo stesso movimento importato dall'una e dall'altra finirebbe su due
+     * portafogli diversi.
+     */
+    static final String WALLET_OKX = "Principale";
 
     /**
      * Raggruppa per orario le righe grezze OKX in formato intermedio a 19 campi (già ordinate
@@ -792,6 +803,24 @@ public class Importazioni {
             } else {
                 riga[3] = MovGenerico;
             }
+        }
+
+        //I movimenti scaricati da OKX finiscono tutti sul wallet "Principale": i conti Funding e Trading
+        //non sono piu' due portafogli distinti, perche' i giroconti fra l'uno e l'altro sono causali
+        //NON CONSIDERARE e non vengono importati. Tenerli separati produceva due wallet fittizi in cui
+        //la stessa moneta risultava spezzata senza che nessun movimento ne giustificasse il passaggio.
+        //
+        //DOVE va fatto: qui, e non in CcxtInterop.convertOKXBills. Il conto di provenienza serve fino a
+        //un attimo prima:
+        //  - a convertOKXBills, per decodificare i codici "type", che hanno significati diversi sui due
+        //    conti (vedi causaleBillOKX);
+        //  - a deduplicaBillOKX, che discrimina su [2]+billId per togliere i doppioni delle finestre
+        //    temporali sovrapposte, e che gira PRIMA di questa funzione (CcxtInterop.fetchMovimenti);
+        //  - al riepilogo delle causali sconosciute qui sopra, che nomina il conto della riga.
+        //Se la deduplica venisse spostata dopo questa normalizzazione, un billId del Funding e uno del
+        //Trading diventerebbero indistinguibili.
+        for (String riga[] : righeOrdinate) {
+            riga[2] = WALLET_OKX;
         }
 
         List<String[]> listaScambiDifferiti = new ArrayList<>();

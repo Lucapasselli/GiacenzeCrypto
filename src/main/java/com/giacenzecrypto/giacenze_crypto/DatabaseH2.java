@@ -1950,7 +1950,11 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
             LoggerGC.ScriviErrore(ex);
             return;
         }
-        String insertSQL = "INSERT INTO GESTITICOINMARKETCAP (Symbol, CmcId) VALUES (?, ?)";
+        //MERGE e non INSERT: la tabella è appena stata ricreata, quindi l'unico conflitto possibile
+        //è un simbolo ripetuto dentro la stessa lista (CoinMarketCap ne ha diversi). Il chiamante
+        //li scarta già scegliendo il rank migliore, ma con INSERT un doppione sfuggito farebbe
+        //fallire il batch e riempirebbe il log di errori invece di limitarsi a sovrascriversi.
+        String insertSQL = "MERGE INTO GESTITICOINMARKETCAP (Symbol, CmcId) KEY (Symbol) VALUES (?, ?)";
         try (PreparedStatement ps = connection.prepareStatement(insertSQL)) {
             for (String[] entry : gestiti) {
                 ps.setString(1, entry[0].toUpperCase());

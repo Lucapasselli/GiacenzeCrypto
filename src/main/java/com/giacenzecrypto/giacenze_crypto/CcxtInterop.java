@@ -1511,6 +1511,12 @@ public static Path getNodeExePath() {
      * prima ({@code '_'} = 0x5F precede {@code 'c'} = 0x63, mentre precederebbe {@code 'C'} = 0x43 in un
      * confronto sensibile alle maiuscole).
      *
+     * <p><b>Il conto di provenienza scritto in {@code [2]} non arriva fino al movimento.</b> Serve alla
+     * decodifica dei codici {@code type}, che hanno significati diversi sui due conti, e alla deduplica di
+     * {@link #deduplicaBillOKX}, che discrimina su di esso; subito prima del consolidamento
+     * {@code Importazioni.Ex_OKX_ImportaDaAPI} lo sostituisce con {@code Importazioni.WALLET_OKX}, perche'
+     * Funding e Trading non sono due portafogli distinti (i giroconti fra i due non vengono importati).
+     *
      * @param bills array JSON dei bill grezzi restituiti da {@code OKX_Bills.js}, oppure {@code null}
      * @param Wallet nome del conto di provenienza, {@code "Funding"} oppure {@code "Trading"}
      * @return le righe in formato intermedio a 19 campi (non ordinate)

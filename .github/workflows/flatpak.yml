@@ -94,9 +94,24 @@ jobs:
           echo "sha256: $SHA"
 
           cd packaging/flatpak
-          sed -i "s|^\( *\)url: https://github.com/.*|\1url: $URL|" "$APP_ID.yml"
-          sed -i "s|^\( *\)sha256: .*|\1sha256: $SHA|" "$APP_ID.yml"
+          # Le due sostituzioni devono colpire SOLO la sorgente della release. Gli altri moduli
+          # hanno url e sha256 veri e fissati apposta (i font). Per questo:
+          #  - l'url si riconosce dal dominio: solo la release sta su github.com/.../releases,
+          #    i font stanno su raw.githubusercontent.com;
+          #  - il checksum si riconosce dal segnaposto di 64 zeri, che nessun file reale ha.
+          # Una sed generica su "sha256:" riscriverebbe anche i font col checksum dello zip, e la
+          # costruzione fallirebbe con un "Wrong sha256 checksum" che sembra un download storto.
+          sed -i "s|^\( *\)url: https://github.com/.*/releases/download/.*|\1url: $URL|" "$APP_ID.yml"
+          sed -i "s|^\( *\)sha256: 0\{64\}$|\1sha256: $SHA|" "$APP_ID.yml"
           sed -i "s|<release version=\"[^\"]*\"|<release version=\"$VERSIONE\"|" "$APP_ID.metainfo.xml"
+
+          # Se il segnaposto e' ancora li', la sostituzione non ha agito e il seguito scaricherebbe
+          # un asset con il checksum sbagliato: meglio fermarsi qui.
+          if grep -q "sha256: 0\{64\}" "$APP_ID.yml"; then
+            echo "ERRORE: il segnaposto dello sha256 non e' stato sostituito" >&2
+            exit 1
+          fi
+          grep -q "url: $URL" "$APP_ID.yml" || { echo "ERRORE: url non sostituito" >&2; exit 1; }
           grep -n "url:\|sha256:" "$APP_ID.yml"
 
       - name: Scarica runtime ed estensioni SDK

@@ -1,0 +1,11 @@
+#!/bin/sh
+# Launcher del pacchetto AUR giacenze-crypto-bin.
+#
+# --workdir usa il token "HOME" interpretato dall'app (VarStatiche), non $HOME della shell,
+# ed e' volutamente "HOME/GiacenzeCrypto/", lo stesso valore del pacchetto .deb: chi passa
+# dal .deb all'AUR ritrova il proprio archivio al suo posto invece di partire da vuoto.
+# NON allinearlo a $XDG_DATA_HOME: quella e' la scelta giusta solo per il flatpak, dove
+# la home reale non e' scrivibile.
+exec java -jar /usr/share/giacenze-crypto/Giacenze_Crypto.jar \
+    --risorse /usr/share/giacenze-crypto/ \
+    --workdir "HOME/GiacenzeCrypto/" "$@"

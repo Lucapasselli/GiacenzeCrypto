@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Metadati AppStream: sono quelli che rendono l'applicazione trovabile in GNOME Software,
+  KDE Discover e sul sito di Flathub. Senza questo file il flatpak si installa lo stesso ma
+  non compare in nessun catalogo.
+
+  Il nome del file, l'attributo <id> e il nome del .desktop devono coincidere esattamente
+  con l'app-id del manifest, altrimenti appstreamcli scarta i metadati senza errori fatali.
+
+  Da aggiungere prima di una eventuale candidatura a Flathub: almeno uno <screenshot> con
+  URL raggiungibile pubblicamente (Flathub lo pretende), e una <release> per ogni versione.
+-->
+<component type="desktop-application">
+  <id>io.github.lucapasselli.GiacenzeCrypto</id>
+
+  <name>Giacenze Crypto</name>
+  <summary>Crypto holdings and capital gains for the Italian tax return</summary>
+  <summary xml:lang="it">Giacenze e plusvalenze crypto per la dichiarazione dei redditi</summary>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+
+  <developer id="io.github.lucapasselli">
+    <name>Luca Passelli</name>
+  </developer>
+
+  <description>
+    <p>
+      Giacenze Crypto tracks cryptocurrency movements imported from exchanges, blockchains and
+      CSV files, computes capital gains with the LIFO method and produces the figures needed by
+      the Italian tax return (Quadro W/RW for holdings, Quadro T/RT for capital gains).
+    </p>
+    <p xml:lang="it">
+      Giacenze Crypto tiene traccia dei movimenti in criptovaluta importati da exchange, blockchain
+      e file CSV, calcola le plusvalenze con il metodo LIFO e produce i dati necessari alla
+      dichiarazione dei redditi italiana (Quadro W/RW per le giacenze, Quadro T/RT per le
+      plusvalenze).
+    </p>
+    <p>Main features:</p>
+    <p xml:lang="it">Funzioni principali:</p>
+    <ul>
+      <li>Import from exchange APIs, blockchain explorers and configurable CSV formats</li>
+      <li xml:lang="it">Importazione da API degli exchange, explorer blockchain e formati CSV configurabili</li>
+      <li>LIFO capital-gains engine with per-movement fiscal classification</li>
+      <li xml:lang="it">Motore LIFO delle plusvalenze con classificazione fiscale per movimento</li>
+      <li>Historical price lookup and local price cache</li>
+      <li xml:lang="it">Recupero dei prezzi storici e cache locale dei prezzi</li>
+      <li>All data stored locally: nothing is sent anywhere except to the price and exchange services</li>
+      <li xml:lang="it">Dati conservati solo in locale: niente viene inviato altrove se non ai servizi di prezzi ed exchange</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">io.github.lucapasselli.GiacenzeCrypto.desktop</launchable>
+
+  <url type="homepage">https://github.com/Lucapasselli/GiacenzeCrypto</url>
+  <url type="bugtracker">https://github.com/Lucapasselli/GiacenzeCrypto/issues</url>
+
+  <categories>
+    <category>Office</category>
+    <category>Finance</category>
+  </categories>
+
+  <content_rating type="oars-1.1"/>
+
+  <!-- La versione viene riscritta da .github/workflows/flatpak.yml. -->
+  <releases>
+    <release version="1.0.60" date="2026-08-15"/>
+  </releases>
+</component>

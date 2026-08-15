@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Giacenze Crypto
+GenericName=Crypto tax report
+GenericName[it]=Dichiarazione crypto
+Comment=Manage crypto holdings and capital gains for the Italian tax return
+Comment[it]=Gestione giacenze e plusvalenze crypto per la dichiarazione dei redditi italiana
+Exec=giacenze-crypto
+Icon=io.github.lucapasselli.GiacenzeCrypto
+Terminal=false
+Categories=Office;Finance;
+Keywords=crypto;bitcoin;tax;RW;RT;plusvalenze;giacenze;
+StartupWMClass=com-giacenzecrypto-giacenze_crypto-Giacenze_Crypto

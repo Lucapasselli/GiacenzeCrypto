@@ -1,0 +1,19 @@
+#!/bin/sh
+# Avviatore del pacchetto flatpak.
+#
+# I dati dell'utente stanno in $XDG_DATA_HOME, che dentro la sandbox e'
+# ~/.var/app/io.github.lucapasselli.GiacenzeCrypto/data (persistente, e scrivibile anche
+# dall'esterno della sandbox senza alcun permesso: e' cosi' che si migra un archivio
+# esistente, vedi test/Documentazione/Pubblicazione_Flatpak.md).
+#
+# NON usare "HOME/GiacenzeCrypto/" come fanno il .deb e il pacchetto AUR: senza
+# --filesystem=home flatpak monta un tmpfs su $HOME, la creazione dei file riesce, H2 crea
+# database nuovi e alla chiusura sparisce tutto senza un solo errore (verificato).
+#
+# Il percorso non deve contenere la stringa "HOME" in maiuscolo: Giacenze_Crypto.setWorkDir
+# fa una replace() testuale, non sostituisce un token delimitato.
+DATI="${XDG_DATA_HOME:-$HOME/.local/share}/GiacenzeCrypto"
+
+exec /app/jre/bin/java -jar /app/share/giacenze-crypto/Giacenze_Crypto.jar \
+    --risorse /app/share/giacenze-crypto/ \
+    --workdir "$DATI/" "$@"

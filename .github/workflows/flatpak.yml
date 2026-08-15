@@ -1,0 +1,159 @@
+name: Flatpak
+
+# Costruisce il pacchetto flatpak "io.github.lucapasselli.GiacenzeCrypto" e ne allega alla
+# release il bundle .flatpak (installabile con "flatpak install <file>", senza repository).
+#
+# Come aur.yml: NON ricompila l'applicazione e NON ricrea la release. Scarica l'asset
+# "Portable Multipiattaforma" gia' pubblicato, ne calcola lo sha256 e lo scrive nel manifest,
+# esattamente come updpkgsums fa per il PKGBUILD.
+#
+# E' un workflow separato perche' l'evento "release: published" NON e' utilizzabile: una release
+# creata col GITHUB_TOKEN di default non innesca altri workflow. Viene quindi richiamato in coda a
+# release.yml (workflow_call) oppure lanciato da solo (workflow_dispatch), senza dover ricostruire
+# e ripubblicare tutti gli asset — cosa che, sulla stessa versione, il mirror SourceForge non
+# gestisce bene.
+
+on:
+  workflow_dispatch:
+    inputs:
+      versione:
+        description: "Versione da pacchettizzare (vuoto = quella di pom.xml)"
+        required: false
+        default: ''
+      solo_prova:
+        description: "Costruisci e controlla senza allegare nulla alla release"
+        type: boolean
+        required: false
+        default: false
+  workflow_call:
+    inputs:
+      versione:
+        type: string
+        required: false
+        default: ''
+      solo_prova:
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  APP_ID: io.github.lucapasselli.GiacenzeCrypto
+  RUNTIME_VERSION: '25.08'
+
+jobs:
+  costruisci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installa flatpak-builder e i validatori
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder desktop-file-utils appstream libxml2-utils
+
+      - name: Determina la versione
+        id: ver
+        run: |
+          VERSIONE="${{ inputs.versione }}"
+          if [ -z "$VERSIONE" ]; then
+            # Il namespace Maven cambia fra le versioni del POM: si seleziona per nome locale.
+            VERSIONE=$(xmllint --xpath \
+              "/*[local-name()='project']/*[local-name()='version']/text()" pom.xml)
+          fi
+          if [ -z "$VERSIONE" ]; then
+            echo "Versione non determinabile" >&2
+            exit 1
+          fi
+          echo "Versione: $VERSIONE"
+          echo "versione=$VERSIONE" >> "$GITHUB_OUTPUT"
+
+      - name: Controlla il .desktop
+        run: desktop-file-validate "packaging/flatpak/$APP_ID.desktop"
+
+      - name: Controlla i metadati AppStream
+        # Non blocca: segnala la mancanza degli screenshot, che servono a una eventuale
+        # candidatura a Flathub e non all'installazione del bundle.
+        continue-on-error: true
+        run: appstreamcli validate --no-net "packaging/flatpak/$APP_ID.metainfo.xml"
+
+      - name: Scrivi url e sha256 dell'asset nel manifest
+        id: manifest
+        run: |
+          VERSIONE="${{ steps.ver.outputs.versione }}"
+          # Il tag della release e' "Giacenze_Crypto_<versione>", non "v<versione>":
+          # l'app cerca su SourceForge una cartella con quel nome.
+          URL="https://github.com/${{ github.repository }}/releases/download/Giacenze_Crypto_${VERSIONE}/GiacenzeCrypto_${VERSIONE}_Beta_Portable_Multipiattaforma.zip"
+          echo "Asset: $URL"
+          # Se la release non e' ancora pubblicata il workflow deve fallire qui, che e' il punto
+          # giusto: piu' avanti l'errore sarebbe un checksum che non torna.
+          curl -fLsS -o asset.zip "$URL"
+          SHA=$(sha256sum asset.zip | cut -d' ' -f1)
+          echo "sha256: $SHA"
+
+          cd packaging/flatpak
+          sed -i "s|^\( *\)url: https://github.com/.*|\1url: $URL|" "$APP_ID.yml"
+          sed -i "s|^\( *\)sha256: .*|\1sha256: $SHA|" "$APP_ID.yml"
+          sed -i "s|<release version=\"[^\"]*\"|<release version=\"$VERSIONE\"|" "$APP_ID.metainfo.xml"
+          grep -n "url:\|sha256:" "$APP_ID.yml"
+
+      - name: Scarica runtime ed estensioni SDK
+        run: |
+          flatpak remote-add --if-not-exists --user \
+            flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak install --user -y --noninteractive flathub \
+            org.freedesktop.Platform//$RUNTIME_VERSION \
+            org.freedesktop.Sdk//$RUNTIME_VERSION \
+            org.freedesktop.Sdk.Extension.openjdk21//$RUNTIME_VERSION \
+            org.freedesktop.Sdk.Extension.node24//$RUNTIME_VERSION
+
+      - name: Costruisci il flatpak
+        run: |
+          cd packaging/flatpak
+          flatpak-builder --user --force-clean --repo=/tmp/repo \
+            /tmp/build "$APP_ID.yml"
+
+      - name: Verifica il contenuto costruito
+        run: |
+          # Si controlla l'albero costruito, NON si lancia "flatpak run": su un runner ubuntu non
+          # ci sono XDG_RUNTIME_DIR ne' bus di sessione, e l'avvio della sandbox fallirebbe per
+          # motivi di ambiente dopo aver fatto tutto il lavoro costoso. /tmp/build/files e'
+          # esattamente cio' che a runtime diventa /app, e /tmp/build/metadata contiene i permessi.
+          set -eu
+          A=/tmp/build/files
+          test -x "$A/jre/bin/java"
+          test -x "$A/node/bin/node"
+          grep -m1 '"version"' "$A/node/node_modules/ccxt/package.json"
+          test -f "$A/share/giacenze-crypto/Giacenze_Crypto.jar"
+          test -d "$A/share/giacenze-crypto/Scripts"
+          test -d "$A/share/giacenze-crypto/Immagini"
+          test -f "$A/share/applications/$APP_ID.desktop"
+          test -f "$A/share/metainfo/$APP_ID.metainfo.xml"
+          test -f "$A/share/icons/hicolor/256x256/apps/$APP_ID.png"
+          echo '--- permessi e ambiente dichiarati ---'
+          cat /tmp/build/metadata
+          grep -q "GIACENZE_NODE_HOME=/app/node" /tmp/build/metadata
+          echo verifiche-ok
+
+      - name: Crea il bundle .flatpak
+        run: |
+          FILE="GiacenzeCrypto_${{ steps.ver.outputs.versione }}_Beta_Linux.flatpak"
+          flatpak build-bundle /tmp/repo "$FILE" "$APP_ID" \
+            --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo
+          ls -lh "$FILE"
+          echo "FILE_BUNDLE=$FILE" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GiacenzeCrypto_${{ steps.ver.outputs.versione }}_Beta_Linux_flatpak
+          path: ${{ env.FILE_BUNDLE }}
+
+      - name: Allega il bundle alla release
+        if: ${{ !inputs.solo_prova }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "Giacenze_Crypto_${{ steps.ver.outputs.versione }}" \
+            "$FILE_BUNDLE" --clobber

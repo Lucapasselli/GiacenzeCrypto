@@ -7,6 +7,25 @@ env:
 
 on:
   workflow_dispatch:
+    inputs:
+      pubblica_su_aur:
+        description: "Aggiorna anche il pacchetto AUR a fine release"
+        type: boolean
+        required: false
+        # Volutamente disattivato: la prima pubblicazione va fatta a mano con aur.yml in
+        # "solo_prova" (vedi test/Documentazione/Pubblicazione_AUR.md). Attivalo dopo.
+        default: false
+      pkgrel_aur:
+        description: "pkgrel del pacchetto AUR (alzalo se ripubblichi la stessa versione)"
+        required: false
+        default: '1'
+      pubblica_flatpak:
+        description: "Allega alla release anche il bundle .flatpak"
+        type: boolean
+        required: false
+        # Come per AUR, la prima volta conviene provarlo a mano con flatpak.yml in "solo_prova"
+        # (vedi test/Documentazione/Pubblicazione_Flatpak.md). Attivalo dopo.
+        default: false
 
 permissions:
   contents: write
@@ -47,6 +66,7 @@ jobs:
           copy Scripts\* build\Scripts\
           copy Immagini\* build\Immagini\
           copy logo.png build\
+          copy LICENSE build\
           copy target\Giacenze_Crypto-$env:VERSIONE-jar-with-dependencies.jar build\Giacenze_Crypto.jar
           mkdir out
 
@@ -150,6 +170,7 @@ jobs:
           cp -r Scripts/* build/Scripts/
           cp -r Immagini/* build/Immagini/
           cp logo.png build/
+          cp LICENSE build/
           cp target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar build/Giacenze_Crypto.jar
 
       - name: Build Linux app-image
@@ -249,6 +270,7 @@ jobs:
           mkdir -p build/Scripts
           cp -r Scripts/* build/Scripts/
           cp logo.png build/
+          cp LICENSE build/
           cp target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar build/Giacenze_Crypto.jar
 
       - name: Build macOS app-image
@@ -346,3 +368,24 @@ jobs:
           tag_name: Giacenze_Crypto_${{ env.VERSIONE }}
           name: Giacenze_Crypto_${{ env.VERSIONE }}
           files: release_assets/*
+
+  # L'aggiornamento di AUR e' richiamato qui e non con "on: release", perche' una release
+  # creata col GITHUB_TOKEN di default non innesca altri workflow. Resta comunque lanciabile
+  # da solo (workflow_dispatch di aur.yml) senza ricostruire e ripubblicare gli asset.
+  aggiorna-aur:
+    needs: create-release
+    if: ${{ inputs.pubblica_su_aur }}
+    uses: ./.github/workflows/aur.yml
+    with:
+      # Ripubblicare la stessa versione produce un asset con checksum diverso (il JAR non e'
+      # riproducibile): senza alzare pkgrel gli utenti non vedono l'aggiornamento.
+      pkgrel: ${{ inputs.pkgrel_aur }}
+    secrets: inherit
+
+  # Stesso motivo di aggiorna-aur. Aggiunge alla release il bundle .flatpak: non ricostruisce
+  # l'applicazione, riusa l'asset "Portable Multipiattaforma" appena pubblicato.
+  aggiorna-flatpak:
+    needs: create-release
+    if: ${{ inputs.pubblica_flatpak }}
+    uses: ./.github/workflows/flatpak.yml
+    secrets: inherit

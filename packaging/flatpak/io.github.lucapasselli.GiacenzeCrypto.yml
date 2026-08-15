@@ -1,0 +1,140 @@
+# Manifest flatpak di Giacenze Crypto.
+#
+# Come per il pacchetto AUR, non compila nulla: prende il fat JAR gia' pubblicato nella release
+# GitHub (asset "Portable Multipiattaforma", che contiene JAR + Scripts/ + Immagini/ + logo.png +
+# LICENSE). La riga "url:" e "sha256:" del modulo giacenze-crypto sono riscritte da
+# .github/workflows/flatpak.yml, che e' l'equivalente di updpkgsums per l'AUR: non aggiornarle a
+# mano se non per una prova locale.
+#
+# ATTENZIONE al tag: NON e' "v<versione>" ma "Giacenze_Crypto_<versione>", perche' l'app cerca su
+# SourceForge una cartella con quello stesso nome (Funzioni.isAggiornamentoDisponibile).
+#
+# ── Node e CCXT: qui dentro e solo qui ────────────────────────────────────────────────────────
+# Negli altri pacchetti l'app scarica da sola una distribuzione Node in <workdir>/tools/node e ci
+# fa "npm install ccxt" alla prima importazione via API. Nel flatpak non si puo': scaricare ed
+# eseguire codice a runtime e' vietato dalle regole di Flathub. Node e ccxt vengono quindi
+# installati qui a tempo di build sotto /app/node, e l'app viene istruita con la variabile
+# d'ambiente GIACENZE_NODE_HOME (vedi CcxtInterop.NODE_ESTERNO). Quella variabile non esiste in
+# nessun altro pacchetto, che restano identici a prima.
+#
+# ── Nota per una eventuale candidatura a Flathub ──────────────────────────────────────────────
+# Il buildbot di Flathub costruisce senza rete: il modulo "ccxt" qui sotto, che usa --share=network
+# per chiamare npm, andra' sostituito con le sorgenti generate da flatpak-node-generator a partire
+# da un package-lock.json. Finche' si producono bundle .flatpak per conto proprio non serve.
+
+app-id: io.github.lucapasselli.GiacenzeCrypto
+command: giacenze-crypto
+
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+
+sdk-extensions:
+  # openjdk21 e non l'estensione "openjdk" senza numero: quest'ultima segue l'ultima JDK
+  # disponibile e cambia sotto i piedi, mentre il progetto dichiara source/target 21
+  # (maven.compiler.source/target nel pom.xml) ed e' quello il minimo garantito.
+  - org.freedesktop.Sdk.Extension.openjdk21
+  - org.freedesktop.Sdk.Extension.node24
+
+finish-args:
+  - --share=ipc
+  # Solo x11, non fallback-x11: Swing non ha un backend Wayland utilizzabile, gira sempre su
+  # Xwayland. Senza questo la finestra non compare affatto.
+  - --socket=x11
+  - --device=dri
+  # Indispensabile: prezzi storici, API degli exchange, explorer blockchain, controllo versione.
+  - --share=network
+  # Stampa dei quadri RW/RT.
+  - --socket=cups
+
+  # Import/export CSV ed Excel. Swing usa JFileChooser, che NON passa dai portali XDG: vede solo
+  # i percorsi effettivamente montati nella sandbox. Deliberatamente non --filesystem=home: in
+  # personale.mv.db ci sono le chiavi API degli exchange e l'app ha gia' accesso alla rete.
+  - --filesystem=xdg-documents
+  - --filesystem=xdg-download
+
+  # Node fornito dal pacchetto, gia' completo di ccxt: l'app non scarica e non installa nulla.
+  - --env=GIACENZE_NODE_HOME=/app/node
+
+build-options:
+  env:
+    JAVA_HOME: /usr/lib/sdk/openjdk21/
+
+modules:
+  # Installa la JDK in /app/jre (percorso fissato da install.sh dell'estensione).
+  - name: openjdk
+    buildsystem: simple
+    build-commands:
+      - /usr/lib/sdk/openjdk21/install.sh
+      - test -x /app/jre/bin/java
+
+  # L'estensione SDK non esiste a runtime: va copiata dentro /app.
+  # Il layout risultante (/app/node/bin/node) e' quello che CcxtInterop si aspetta da
+  # GIACENZE_NODE_HOME, senza il nome della piattaforma nel percorso: vale anche su aarch64.
+  - name: node
+    buildsystem: simple
+    build-commands:
+      - mkdir -p /app/node
+      - cp -a /usr/lib/sdk/node24/. /app/node/
+      - rm -f /app/node/enable.sh
+      # npm e npx non possono essere invocati a runtime (/app e' di sola lettura, e infatti
+      # CcxtInterop.getNpmPath() lancia un'eccezione): toglierli rende esplicito il contratto
+      # invece di spedire un comando che non si puo' usare. Il modulo ccxt qui sotto usa comunque
+      # l'npm dell'estensione SDK, non questo (vedi append-path).
+      - rm -f /app/node/bin/npm /app/node/bin/npx
+      - test -x /app/node/bin/node
+      - /app/node/bin/node --version
+
+  # ccxt e le sue dipendenze, installate una volta per tutte in /app/node/node_modules.
+  # A runtime /app e' di sola lettura: CcxtInterop.installCcxt() trova la cartella e non fa
+  # nulla, e getNpmPath() lancia un'eccezione parlante se mai un modulo mancasse.
+  # Aggiornare la versione qui sotto e' l'unico modo di aggiornare ccxt nel flatpak.
+  - name: ccxt
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/node24/bin
+      build-args:
+        - --share=network
+      env:
+        npm_config_cache: /run/build/ccxt/npm-cache
+    build-commands:
+      - npm install --prefix /app/node --no-audit --no-fund ccxt@4.5.73
+      - test -d /app/node/node_modules/ccxt
+
+  - name: giacenze-crypto
+    buildsystem: simple
+    sources:
+      - type: archive
+        # Riscritti dal workflow. strip-components toglie la cartella "GiacenzeCrypto/".
+        url: https://github.com/Lucapasselli/GiacenzeCrypto/releases/download/Giacenze_Crypto_1.0.60/GiacenzeCrypto_1.0.60_Beta_Portable_Multipiattaforma.zip
+        sha256: 0000000000000000000000000000000000000000000000000000000000000000
+        strip-components: 1
+      - type: file
+        path: giacenze-crypto
+      - type: file
+        path: io.github.lucapasselli.GiacenzeCrypto.desktop
+      - type: file
+        path: io.github.lucapasselli.GiacenzeCrypto.metainfo.xml
+    build-commands:
+      - install -dm755 /app/share/giacenze-crypto
+      - cp -r Giacenze_Crypto.jar Scripts Immagini logo.png /app/share/giacenze-crypto/
+      # I permessi dentro lo zip arrivano da un artifact Windows e non sono affidabili.
+      - find /app/share/giacenze-crypto -type d -exec chmod 755 {} +
+      - find /app/share/giacenze-crypto -type f -exec chmod 644 {} +
+
+      - install -Dm755 giacenze-crypto /app/bin/giacenze-crypto
+      - install -Dm644 io.github.lucapasselli.GiacenzeCrypto.desktop
+          /app/share/applications/io.github.lucapasselli.GiacenzeCrypto.desktop
+      - install -Dm644 io.github.lucapasselli.GiacenzeCrypto.metainfo.xml
+          /app/share/metainfo/io.github.lucapasselli.GiacenzeCrypto.metainfo.xml
+      - install -Dm644 logo.png
+          /app/share/icons/hicolor/256x256/apps/io.github.lucapasselli.GiacenzeCrypto.png
+      # LICENSE e' stato aggiunto alla cartella build/ di release.yml solo il 2026-08-14: gli asset
+      # fino alla 1.0.60 compresa non ce l'hanno (verificato scaricandolo). Non e' un motivo per far
+      # fallire la costruzione — la licenza e' comunque dichiarata nel metainfo AppStream — ma la
+      # riga di log deve restare, cosi' su una release nuova ci si accorge subito se sparisce.
+      - >-
+        if [ -f LICENSE ];
+        then install -Dm644 LICENSE
+        /app/share/licenses/io.github.lucapasselli.GiacenzeCrypto/LICENSE;
+        else echo "ATTENZIONE: LICENSE non presente nello zip della release"; fi

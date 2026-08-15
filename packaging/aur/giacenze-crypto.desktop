@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Giacenze Crypto
+GenericName=Giacenze e plusvalenze crypto
+Comment=Calcolo delle plusvalenze crypto con metodo LIFO e dati per Quadro RW/RT
+Exec=giacenze-crypto
+Icon=giacenze-crypto
+Terminal=false
+Categories=Office;Finance;
+Keywords=crypto;bitcoin;plusvalenze;LIFO;dichiarazione;RW;RT;fisco;

@@ -1,0 +1,152 @@
+name: AUR
+
+# Pubblica/aggiorna il pacchetto AUR "giacenze-crypto-bin".
+#
+# NON ricompila niente e NON tocca la release GitHub: si limita a leggere l'asset
+# "Portable Multipiattaforma" gia' pubblicato, calcolarne il checksum e spingere il
+# PKGBUILD su AUR. E' deliberatamente separato da release.yml perche' rilanciare
+# release.yml sulla stessa versione ricarica tutti gli asset (softprops/action-gh-release
+# sovrascrive gli asset omonimi) e il mirror SourceForge non gestisce bene
+# l'aggiornamento di una release con lo stesso tag.
+#
+# Puo' essere lanciato da solo (workflow_dispatch) oppure richiamato in coda a
+# release.yml (workflow_call): l'evento "release: published" NON e' utilizzabile,
+# perche' una release creata col GITHUB_TOKEN di default non innesca altri workflow.
+
+on:
+  workflow_dispatch:
+    inputs:
+      versione:
+        description: "Versione da pubblicare (vuoto = quella di pom.xml)"
+        required: false
+        default: ''
+      pkgrel:
+        description: "pkgrel (alzalo se ripubblichi la stessa versione)"
+        required: false
+        default: '1'
+      solo_prova:
+        description: "Costruisci e controlla senza pubblicare su AUR"
+        type: boolean
+        required: false
+        default: false
+  workflow_call:
+    inputs:
+      versione:
+        type: string
+        required: false
+        default: ''
+      pkgrel:
+        type: string
+        required: false
+        default: '1'
+      solo_prova:
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  pubblica:
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - name: Installa gli strumenti di packaging
+        run: |
+          # L'immagine archlinux e' ricostruita di rado: se il keyring e' piu' vecchio delle firme
+          # dei pacchetti correnti, l'aggiornamento fallisce per firma non valida. Va aggiornato
+          # prima e da solo.
+          pacman -Sy --noconfirm archlinux-keyring
+          pacman -Syu --noconfirm --needed git openssh pacman-contrib namcap libxml2
+
+      - uses: actions/checkout@v4
+
+      - name: Determina la versione
+        id: ver
+        run: |
+          VERSIONE="${{ inputs.versione }}"
+          if [ -z "$VERSIONE" ]; then
+            # Il namespace Maven cambia fra le versioni del POM: si seleziona per nome locale.
+            VERSIONE=$(xmllint --xpath \
+              "/*[local-name()='project']/*[local-name()='version']/text()" pom.xml)
+          fi
+          if [ -z "$VERSIONE" ]; then
+            echo "Versione non determinabile" >&2
+            exit 1
+          fi
+          echo "Versione: $VERSIONE"
+          echo "versione=$VERSIONE" >> "$GITHUB_OUTPUT"
+
+      - name: Prepara il PKGBUILD
+        run: |
+          install -dm755 /tmp/aur
+          cp packaging/aur/PKGBUILD packaging/aur/giacenze-crypto \
+             packaging/aur/giacenze-crypto.desktop /tmp/aur/
+          cd /tmp/aur
+          sed -i "s/^pkgver=.*/pkgver=${{ steps.ver.outputs.versione }}/" PKGBUILD
+          sed -i "s/^pkgrel=.*/pkgrel=${{ inputs.pkgrel || '1' }}/" PKGBUILD
+
+          # makepkg si rifiuta di girare da root.
+          useradd -m builder
+          chown -R builder: /tmp/aur
+
+      - name: Calcola i checksum e genera .SRCINFO
+        run: |
+          cd /tmp/aur
+          # updpkgsums scarica davvero l'asset dalla release: se la versione non e' ancora
+          # pubblicata, il workflow fallisce qui, che e' esattamente il punto giusto.
+          sudo -u builder updpkgsums
+          sudo -u builder makepkg --printsrcinfo > .SRCINFO
+          cat PKGBUILD
+          echo '--- .SRCINFO ---'
+          cat .SRCINFO
+
+      - name: Costruisci il pacchetto e controllalo con namcap
+        run: |
+          cd /tmp/aur
+          # --nodeps: nel container non c'e' un JRE e non serve, il pacchetto non compila nulla.
+          sudo -u builder makepkg --nodeps --noconfirm -f
+          namcap PKGBUILD
+          namcap ./*.pkg.tar.zst
+          echo '--- contenuto del pacchetto ---'
+          bsdtar -tf ./*.pkg.tar.zst | head -40
+
+      - name: Verifica la chiave AUR
+        id: chiave
+        env:
+          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+        run: |
+          if [ -z "$AUR_SSH_PRIVATE_KEY" ]; then
+            echo "::warning::Secret AUR_SSH_PRIVATE_KEY assente: pubblicazione saltata."
+            echo "presente=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "presente=si" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Pubblica su AUR
+        if: ${{ steps.chiave.outputs.presente == 'si' && !inputs.solo_prova }}
+        env:
+          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+        run: |
+          install -dm700 ~/.ssh
+          printf '%s\n' "$AUR_SSH_PRIVATE_KEY" > ~/.ssh/aur
+          chmod 600 ~/.ssh/aur
+          ssh-keyscan -H aur.archlinux.org >> ~/.ssh/known_hosts 2>/dev/null
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/aur -o IdentitiesOnly=yes"
+
+          # Clonare un pacchetto non ancora esistente restituisce un repo vuoto:
+          # e' il flusso previsto da AUR, il pacchetto nasce al primo push.
+          git clone "ssh://aur@aur.archlinux.org/giacenze-crypto-bin.git" /tmp/aur-repo
+
+          cp /tmp/aur/PKGBUILD /tmp/aur/.SRCINFO /tmp/aur/giacenze-crypto \
+             /tmp/aur/giacenze-crypto.desktop /tmp/aur-repo/
+          cd /tmp/aur-repo
+          git config --global --add safe.directory /tmp/aur-repo
+          git config user.name "Luca Passelli"
+          git config user.email "luca.passelli@gmail.com"
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "Nessuna modifica rispetto a quanto e' gia' su AUR: niente da pubblicare."
+            exit 0
+          fi
+          git commit -m "giacenze-crypto-bin ${{ steps.ver.outputs.versione }}-${{ inputs.pkgrel || '1' }}"
+          git push origin HEAD:master

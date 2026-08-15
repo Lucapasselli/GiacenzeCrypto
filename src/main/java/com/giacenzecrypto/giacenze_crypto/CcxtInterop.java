@@ -32,7 +32,35 @@ import org.json.JSONObject;
 public class CcxtInterop {
     
     public static final String NODE_VERSION = "v24.7.0";
-    public static final Path NODE_DIR = Paths.get(VarStatiche.getWorkingDirectory()+"tools", "node").toAbsolutePath().normalize();;
+
+    /**
+     * Radice di una distribuzione Node.js <b>fornita dal pacchetto</b> invece che scaricata dall'app,
+     * letta dalla variabile d'ambiente {@code GIACENZE_NODE_HOME}. Serve al solo flatpak, dove
+     * scaricare ed eseguire codice a runtime non e' ammesso e {@code /app} e' di sola lettura: il
+     * pacchetto ci mette dentro {@code bin/node} e {@code node_modules/ccxt} (non npm: a runtime non
+     * si potrebbe usare, vedi {@link #getNpmPath()}).
+     * <p>
+     * In tutti gli altri pacchetti (deb, dmg, installer Windows, portable, AUR) la variabile non
+     * esiste, il campo resta {@code null} e ogni percorso di codice qui sotto e' identico a prima:
+     * Node viene scaricato in {@code <workdir>/tools/node} alla prima importazione via API.
+     * <p>
+     * Il layout atteso e' quello naturale di un prefisso Node ({@code bin/node}) e non quello della
+     * distribuzione standalone ({@code node-<versione>-<piattaforma>/bin/node}), apposta: non contiene
+     * il nome dell'architettura, e quindi vale anche su aarch64, dove {@link #getNodeExePath()}
+     * cercherebbe comunque una cartella {@code -x64} ({@code os.arch} "aarch64" contiene "64").
+     */
+    private static final Path NODE_ESTERNO = LeggiNodeEsterno();
+
+    /** @return la radice indicata da {@code GIACENZE_NODE_HOME}, oppure {@code null} se non impostata */
+    private static Path LeggiNodeEsterno() {
+        String v = System.getenv("GIACENZE_NODE_HOME");
+        if (v == null || v.isBlank()) return null;
+        return Paths.get(v.trim()).toAbsolutePath().normalize();
+    }
+
+    public static final Path NODE_DIR = NODE_ESTERNO != null
+            ? NODE_ESTERNO
+            : Paths.get(VarStatiche.getWorkingDirectory()+"tools", "node").toAbsolutePath().normalize();
 
     /**
      * Giorni di storico oltre i quali lo scaricamento OKX via API non è più affidabile. Corrisponde a quanto
@@ -212,9 +240,10 @@ public class CcxtInterop {
      * @throws IOException in caso di errore di rete o di estrazione dell'archivio
      */
     public static void ensureNodeInstalled() throws IOException {
-        
 
-        
+        // Node fornito dal pacchetto (flatpak): non c'e' niente da scaricare ne' dove scriverlo.
+        if (NODE_ESTERNO != null) return;
+
         String os = System.getProperty("os.name").toLowerCase();
         String arch = System.getProperty("os.arch").contains("64") ? "x64" : "x86";
 
@@ -379,6 +408,13 @@ public class CcxtInterop {
     
     /** @return il percorso dell'eseguibile {@code npm} della distribuzione Node.js gestita da questa classe */
     public static Path getNpmPath() {
+        if (NODE_ESTERNO != null) {
+            // La radice fornita dal pacchetto e' di sola lettura: un modulo mancante va aggiunto al
+            // manifest del pacchetto, non installato a runtime. Meglio un errore parlante qui che un
+            // "npm install" che fallisce con "EROFS" tre livelli piu' in basso.
+            throw new IllegalStateException("Node fornito dal pacchetto (" + NODE_ESTERNO
+                    + "): i moduli npm devono essere inclusi nel pacchetto, non installati a runtime.");
+        }
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("win")) {
             return NODE_DIR.resolve("node-" + NODE_VERSION + "-win-x64").resolve("npm.cmd");
@@ -393,6 +429,9 @@ public class CcxtInterop {
 public static Path getNodeExePath() {
     String os = System.getProperty("os.name").toLowerCase();
     String nodeExecutable = os.contains("win") ? "node.exe" : "node";
+
+    // Node fornito dal pacchetto (flatpak): prefisso semplice, senza cartella per piattaforma.
+    if (NODE_ESTERNO != null) return NODE_ESTERNO.resolve("bin").resolve(nodeExecutable);
 
     // Supponiamo di avere le distribuzioni in una cartella "nodejs" interna al progetto
     // es. nodejs/node-v18.20.3-win-x64/node.exe oppure nodejs/node-v18.20.3-linux-x64/bin/node

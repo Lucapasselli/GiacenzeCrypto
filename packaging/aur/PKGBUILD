@@ -1,0 +1,59 @@
+# Maintainer: Luca Passelli <luca.passelli@gmail.com>
+#
+# Sorgente di verita' del pacchetto AUR "giacenze-crypto-bin".
+# Il repository AUR e' generato da .github/workflows/aur.yml: NON modificarlo a mano,
+# le modifiche vanno fatte qui. Il workflow riscrive solo pkgver, pkgrel e i sha256sums.
+#
+# Il pacchetto e' di tipo "-bin": non compila nulla, installa il fat JAR gia' pubblicato
+# nella release GitHub (asset "Portable Multipiattaforma", che contiene JAR + Scripts/ +
+# Immagini/ + logo.png + LICENSE).
+#
+# Il tag della release NON e' "v<versione>" ma "Giacenze_Crypto_<versione>": il workflow di
+# release lo impone perche' l'app cerca su SourceForge una cartella con quello stesso nome
+# (Funzioni.isAggiornamentoDisponibile). Cambiarlo qui rompe il download.
+
+pkgname=giacenze-crypto-bin
+pkgver=1.0.60
+pkgrel=1
+pkgdesc="Gestione giacenze e plusvalenze crypto per la dichiarazione dei redditi italiana (Quadro RW/RT)"
+arch=('any')
+url="https://github.com/Lucapasselli/GiacenzeCrypto"
+license=('MIT')
+depends=('java-runtime>=21' 'hicolor-icon-theme')
+# Node non e' fra le dipendenze, nemmeno opzionali: l'app non usa quello di sistema, scarica
+# per conto suo una distribuzione standalone in <workdir>/tools/node (CcxtInterop.NODE_DIR)
+# alla prima importazione via API di un exchange. Serve solo connessione di rete.
+provides=('giacenze-crypto')
+conflicts=('giacenze-crypto')
+source=("$pkgname-$pkgver.zip::$url/releases/download/Giacenze_Crypto_$pkgver/GiacenzeCrypto_${pkgver}_Beta_Portable_Multipiattaforma.zip"
+        'giacenze-crypto'
+        'giacenze-crypto.desktop')
+sha256sums=('0000000000000000000000000000000000000000000000000000000000000000'
+            'SKIP'
+            'SKIP')
+noextract=()
+
+package() {
+    # Lo zip contiene una singola cartella "GiacenzeCrypto/" (release.yml, job build-windows,
+    # step "Prepara pacchetto Portable Multipiattaforma").
+    install -dm755 "$pkgdir/usr/share/giacenze-crypto"
+    cp -r "$srcdir/GiacenzeCrypto/." "$pkgdir/usr/share/giacenze-crypto/"
+
+    # I permessi dentro l'archivio non sono affidabili (passa da artifact Windows a zip Linux):
+    # normalizzarli evita le segnalazioni di namcap. Niente bit di esecuzione, nemmeno su
+    # logo.png, che nel repository e' 755.
+    find "$pkgdir/usr/share/giacenze-crypto" -type d -exec chmod 755 {} +
+    find "$pkgdir/usr/share/giacenze-crypto" -type f -exec chmod 644 {} +
+
+    # LICENSE viaggia dentro lo zip e va spostato nella posizione canonica di Arch.
+    install -Dm644 "$srcdir/GiacenzeCrypto/LICENSE" \
+        "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    rm -f "$pkgdir/usr/share/giacenze-crypto/LICENSE"
+
+    install -Dm644 "$srcdir/GiacenzeCrypto/logo.png" \
+        "$pkgdir/usr/share/icons/hicolor/256x256/apps/giacenze-crypto.png"
+
+    install -Dm755 "$srcdir/giacenze-crypto" "$pkgdir/usr/bin/giacenze-crypto"
+    install -Dm644 "$srcdir/giacenze-crypto.desktop" \
+        "$pkgdir/usr/share/applications/giacenze-crypto.desktop"
+}

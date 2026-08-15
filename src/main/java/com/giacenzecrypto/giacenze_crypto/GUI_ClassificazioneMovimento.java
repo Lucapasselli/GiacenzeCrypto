@@ -395,7 +395,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
 
         jLabel2.setText("Scegli la tipologia di movimento dalla lista :");
 
-        ComboBox_TipoMovimento.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        ComboBox_TipoMovimento.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         ComboBox_TipoMovimento.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 ComboBox_TipoMovimentoItemStateChanged(evt);
@@ -420,7 +420,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
 
         jLabel3.setText("Scegli movimento da abbinare qua sotto :");
 
-        jTable1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jTable1.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null, null, null, null, null}

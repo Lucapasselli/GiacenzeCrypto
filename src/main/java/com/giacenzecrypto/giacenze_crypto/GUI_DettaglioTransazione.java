@@ -536,7 +536,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
 
         TextPane_Titolo.setEditable(false);
         TextPane_Titolo.setContentType("text/html"); // NOI18N
-        TextPane_Titolo.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        TextPane_Titolo.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
 
         Bottone_Modifica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
         Bottone_Modifica.setText("Modifica Movimento");

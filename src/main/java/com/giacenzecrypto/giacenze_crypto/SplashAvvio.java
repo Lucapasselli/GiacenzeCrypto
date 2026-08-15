@@ -31,8 +31,9 @@ import javax.swing.SwingUtilities;
  * primissima operazione di {@link Giacenze_Crypto#main(String[])}, prima dell'apertura del database e
  * prima dell'installazione del Look&amp;Feel, in modo da mostrare qualcosa a video il prima possibile.
  * Per lo stesso motivo non tocca {@link Principale} (caricare quella classe significherebbe caricare
- * anche tutte le sue dipendenze prima di disegnare il primo pixel). L'unica dipendenza ammessa è
- * {@link VarStatiche}, che contiene solo percorsi.
+ * anche tutte le sue dipendenze prima di disegnare il primo pixel). Le uniche dipendenze ammesse sono
+ * {@link VarStatiche}, che contiene solo percorsi, e {@link FontApplicazione}, che carica il font dal
+ * jar: entrambe non trascinano dietro nient'altro.
  * <p>
  * A monte di questa finestra c'è lo splash nativo AWT ({@code SplashScreen-Image} nel manifest del jar),
  * che viene disegnato dalla JVM prima ancora del caricamento della classe main: {@link #mostra()} lo
@@ -67,7 +68,18 @@ public final class SplashAvvio {
     /** Opacità della finestra: applicata da Swing a runtime, va replicata a mano nel rendering offscreen. */
     static final float OPACITA = 0.97f;
     /** Font usato per il testo della barra di caricamento: esplicito perché il L&amp;F non è ancora installato. */
-    private static final Font FONT_BARRA = new Font(Font.SANS_SERIF, Font.BOLD, 12);
+    private static final Font FONT_BARRA = fontBarra();
+
+    /**
+     * Il font incluso nel jar, registrandolo se qualcun altro non l'ha già fatto. La registrazione è
+     * idempotente, e serve perché questa classe viene usata anche da {@link GeneraSplash}, che genera le
+     * immagini dello splash nativo fuori dall'applicazione: le due strade devono disegnare lo stesso
+     * testo con lo stesso font, altrimenti il passaggio dallo splash nativo alla finestra si vede.
+     */
+    private static Font fontBarra() {
+        FontApplicazione.Registra();
+        return new Font(FontApplicazione.FAMIGLIA, Font.BOLD, 12);
+    }
 
     /** Geometria dello splash: fissa, perché l'immagine dello splash nativo deve combaciare al pixel. */
     private static final int BORDO = 12;

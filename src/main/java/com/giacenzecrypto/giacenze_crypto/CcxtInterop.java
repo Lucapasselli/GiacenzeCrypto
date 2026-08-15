@@ -269,7 +269,7 @@ public class CcxtInterop {
             return;
         }
         System.out.println("Node.js non presente.");
-        System.out.println("⬇️ Scarico Node.js standalone...");
+        System.out.println("⬇️ Scarico Node.js standalone...");  //NON-A-VIDEO: va sulla console, non nell'interfaccia
         Path downloadPath = Paths.get(VarStatiche.getWorkingDirectory()+"tools", filename);
         Files.createDirectories(downloadPath.getParent());
 

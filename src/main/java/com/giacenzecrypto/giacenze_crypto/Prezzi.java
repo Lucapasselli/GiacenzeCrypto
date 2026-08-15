@@ -3777,7 +3777,7 @@ public static class RangeRequestManager {
     /** Stampa di debug */
     public synchronized void printState() {
         for (var entry : richiestePerMoneta.entrySet()) {
-            System.out.println(entry.getKey() + " → " + entry.getValue());
+            System.out.println(entry.getKey() + " → " + entry.getValue());  //NON-A-VIDEO: va sulla console, non nell'interfaccia
         }
     }
 

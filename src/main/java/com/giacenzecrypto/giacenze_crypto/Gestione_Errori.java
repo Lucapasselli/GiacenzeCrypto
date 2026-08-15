@@ -44,7 +44,7 @@ private static final long serialVersionUID = 5L;
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        Label_Titolo_TabellaErrori.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        Label_Titolo_TabellaErrori.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         Label_Titolo_TabellaErrori.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         Label_Titolo_TabellaErrori.setText("Tabella movimenti con Errori");
 

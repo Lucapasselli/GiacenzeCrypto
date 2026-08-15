@@ -266,7 +266,7 @@ private static final long serialVersionUID = 9L;
         ValoreTransazione_Label.setText("Valore Transazione in EURO : ");
 
         ValoreTransazione_TextField.setEditable(false);
-        ValoreTransazione_TextField.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        ValoreTransazione_TextField.setFont(new java.awt.Font("Noto Sans", 1, 18)); // NOI18N
         ValoreTransazione_TextField.setForeground(new java.awt.Color(51, 51, 51));
         ValoreTransazione_TextField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         ValoreTransazione_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -283,7 +283,7 @@ private static final long serialVersionUID = 9L;
             }
         });
 
-        Bottone_Ok.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        Bottone_Ok.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         Bottone_Ok.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Salva.png"))); // NOI18N
         Bottone_Ok.setText("OK");
         Bottone_Ok.addActionListener(new java.awt.event.ActionListener() {
@@ -292,7 +292,7 @@ private static final long serialVersionUID = 9L;
             }
         });
 
-        Bottone_Annulla.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        Bottone_Annulla.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         Bottone_Annulla.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Annulla.png"))); // NOI18N
         Bottone_Annulla.setText("Annulla");
         Bottone_Annulla.addActionListener(new java.awt.event.ActionListener() {

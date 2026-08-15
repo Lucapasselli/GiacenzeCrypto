@@ -1196,7 +1196,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        TransazioniCrypto_Label_MovimentiNonSalvati.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        TransazioniCrypto_Label_MovimentiNonSalvati.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         TransazioniCrypto_Label_MovimentiNonSalvati.setForeground(Tabelle.rosso);
         TransazioniCrypto_Label_MovimentiNonSalvati.setText("Attenzione ci sono dei movimenti non salvati, ricordarsi di farlo o all'uscita verranno persi!");
 
@@ -1237,13 +1237,13 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        TransazioniCrypto_Label_Plusvalenza.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        TransazioniCrypto_Label_Plusvalenza.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         TransazioniCrypto_Label_Plusvalenza.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         TransazioniCrypto_Label_Plusvalenza.setText("Plusvalenze del periodo selezionato : ");
 
         TransazioniCrypto_Text_Plusvalenza.setEditable(false);
         TransazioniCrypto_Text_Plusvalenza.setBackground(new java.awt.Color(51, 51, 51));
-        TransazioniCrypto_Text_Plusvalenza.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        TransazioniCrypto_Text_Plusvalenza.setFont(new java.awt.Font("Noto Sans", 1, 24)); // NOI18N
         TransazioniCrypto_Text_Plusvalenza.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         TransazioniCrypto_Text_Plusvalenza.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1353,7 +1353,7 @@ private static final long serialVersionUID = 3L;
 
         TransazioniCrypto_TabbedPane.addTab("Dettagli Riga", jScrollPane4);
 
-        jLabel10.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel10.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         jLabel10.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel10.setText("Movimenti fiscalmente rilevanti su periodo");
 
@@ -1370,7 +1370,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        Bottone_Errori.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        Bottone_Errori.setFont(new java.awt.Font("Noto Sans", 1, 18)); // NOI18N
         Bottone_Errori.setForeground(Tabelle.rosso);
         Bottone_Errori.setText("Errori (0)");
         Bottone_Errori.setToolTipText("Attenzione!\nSono presenti errori che se non corretti possono portare ad errori di calcolo sulle plusvalenze.\nPremere per sistemare.");
@@ -1420,7 +1420,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        TransazioniCrypto_RicalcolaPlusvalenze_Label.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        TransazioniCrypto_RicalcolaPlusvalenze_Label.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         TransazioniCrypto_RicalcolaPlusvalenze_Label.setForeground(Tabelle.rosso);
         TransazioniCrypto_RicalcolaPlusvalenze_Label.setText("Attenzione le plusvalenze sono da ricalcolare!");
 
@@ -1656,7 +1656,7 @@ private static final long serialVersionUID = 3L;
         });
 
         DepositiPrelievi_Bottone_AssegnazioneManuale.setBackground(new java.awt.Color(204, 255, 204));
-        DepositiPrelievi_Bottone_AssegnazioneManuale.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        DepositiPrelievi_Bottone_AssegnazioneManuale.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         DepositiPrelievi_Bottone_AssegnazioneManuale.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Classifica.png"))); // NOI18N
         DepositiPrelievi_Bottone_AssegnazioneManuale.setText("<html><h2>Classifica Movimento</h2></html>");
         DepositiPrelievi_Bottone_AssegnazioneManuale.setMaximumSize(new java.awt.Dimension(200, 35));
@@ -2047,7 +2047,7 @@ private static final long serialVersionUID = 3L;
         jScrollPane15.setViewportView(SaldiNegativi_TabPrincipale);
         Tabelle.ColoraTabellaSemplice(SaldiNegativi_TabPrincipale);
 
-        SaldiNegativi_LabelSpiegazioni.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        SaldiNegativi_LabelSpiegazioni.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
         SaldiNegativi_LabelSpiegazioni.setText("<html>\nIn questa sezione vengono elencati tutti i token che, anche una sola volta nell’intero storico di un singolo wallet, hanno registrato un <b>Saldo Negativo</b>.<br><br>\nSelezionando una riga nella tabella, sarà possibile visualizzare nel dettaglio le transazioni corrispondenti e i saldi associati, così da poter analizzare e, se necessario, correggere la posizione.\n</html>");
 
         SaldiNegativi_CheckBox_NascondiScam.setSelected(true);
@@ -2058,7 +2058,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        SaldiNegativi_TabellaDettaglioMovimenti.setFont(new java.awt.Font("sansserif", 0, 12)); // NOI18N
+        SaldiNegativi_TabellaDettaglioMovimenti.setFont(new java.awt.Font("Noto Sans", 0, 12)); // NOI18N
         SaldiNegativi_TabellaDettaglioMovimenti.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -2331,7 +2331,7 @@ private static final long serialVersionUID = 3L;
         GiacenzeaData_Tabella.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_Tabella.getColumnModel().getTotalColumnWidth(), 42));
         Tabelle.ColoraRigheTabella0GiacenzeaData(GiacenzeaData_Tabella);
 
-        GiacenzeaData_Totali_Label.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        GiacenzeaData_Totali_Label.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         GiacenzeaData_Totali_Label.setText("TOTALE in EURO : ");
 
         GiacenzeaData_Totali_TextField.setEditable(false);
@@ -2346,7 +2346,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        GiacenzeaData_TabellaDettaglioMovimenti.setFont(new java.awt.Font("sansserif", 0, 12)); // NOI18N
+        GiacenzeaData_TabellaDettaglioMovimenti.setFont(new java.awt.Font("Noto Sans", 0, 12)); // NOI18N
         GiacenzeaData_TabellaDettaglioMovimenti.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -2402,7 +2402,7 @@ private static final long serialVersionUID = 3L;
 
         Giacenzeadata_Dettaglio_Label.setText("Tabella dettaglio movimenti :");
 
-        Giacenzeadata_Walleta_Label.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        Giacenzeadata_Walleta_Label.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         Giacenzeadata_Walleta_Label.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 Giacenzeadata_Walleta_LabelPropertyChange(evt);
@@ -2437,7 +2437,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        GiacenzeaData_Bottone_GiacenzeExplorer.setFont(new java.awt.Font("Caladea", 0, 13)); // NOI18N
+        GiacenzeaData_Bottone_GiacenzeExplorer.setFont(new java.awt.Font("Noto Sans", 0, 13)); // NOI18N
         GiacenzeaData_Bottone_GiacenzeExplorer.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Wallet.png"))); // NOI18N
         GiacenzeaData_Bottone_GiacenzeExplorer.setText("<html> Vedi situazione <br> Wallet ad Oggi </html>");
         GiacenzeaData_Bottone_GiacenzeExplorer.setEnabled(false);
@@ -2511,7 +2511,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        GiacenzeaData_Label_Aggiornare.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        GiacenzeaData_Label_Aggiornare.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         GiacenzeaData_Label_Aggiornare.setForeground(Tabelle.rosso);
         GiacenzeaData_Label_Aggiornare.setText("ATTENZIONE! Sono variate delle informazioni, premere CALCOLA per vedere i valori corretti!");
 
@@ -2814,13 +2814,13 @@ private static final long serialVersionUID = 3L;
             RW_Tabella_DettaglioMovimenti.getColumnModel().getColumn(5).setMaxWidth(100);
         }
 
-        jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel5.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         jLabel5.setText("Dettaglio RW");
 
-        jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel6.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         jLabel6.setText("Movimenti dell'anno coinvolti");
 
-        jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel7.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         jLabel7.setText("Quadro RW");
 
         RW_Bottone_CorreggiErrore.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Attenzione.png"))); // NOI18N
@@ -2876,13 +2876,13 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        RW_Label_SegnalaErrori.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
+        RW_Label_SegnalaErrori.setFont(new java.awt.Font("Noto Sans", 1, 15)); // NOI18N
         RW_Label_SegnalaErrori.setForeground(Tabelle.rosso);
 
         jLabel13.setText("IC Dovuta Totale : ");
 
         RW_Text_IC.setEditable(false);
-        RW_Text_IC.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        RW_Text_IC.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         RW_Text_IC.setMinimumSize(new java.awt.Dimension(64, 31));
         RW_Text_IC.setPreferredSize(new java.awt.Dimension(64, 31));
 
@@ -2910,7 +2910,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        RW_Label_SegnalaRicalcolo.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        RW_Label_SegnalaRicalcolo.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         RW_Label_SegnalaRicalcolo.setForeground(Tabelle.rosso);
         RW_Label_SegnalaRicalcolo.setText("Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere \"Calcola\" per aggiornare.");
 
@@ -3188,7 +3188,7 @@ private static final long serialVersionUID = 3L;
 
         jTabbedPane1.addTab("Dettagli Anno", jPanel1);
 
-        RT_Label_Avviso.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        RT_Label_Avviso.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         RT_Label_Avviso.setForeground(Tabelle.rosso);
         RT_Label_Avviso.setText("Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere \"Calcola\" per aggiornare.");
 
@@ -3331,7 +3331,7 @@ private static final long serialVersionUID = 3L;
 
         GestioneTokenScam_Label_Movimenti.setText("Movimenti in memoria del token selezionato :");
 
-        GestioneTokenScam_TabellaMovimenti.setFont(new java.awt.Font("sansserif", 0, 12)); // NOI18N
+        GestioneTokenScam_TabellaMovimenti.setFont(new java.awt.Font("Noto Sans", 0, 12)); // NOI18N
         GestioneTokenScam_TabellaMovimenti.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -3488,7 +3488,7 @@ private static final long serialVersionUID = 3L;
         CDC_CardWallet_Label_GiacenzaMedia.setText("GiacenzaMedia : ");
 
         CDC_CardWallet_Text_GiacenzaMedia.setEditable(false);
-        CDC_CardWallet_Text_GiacenzaMedia.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_CardWallet_Text_GiacenzaMedia.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
 
         CDC_CardWallet_Label_Spese.setText("Totale Spese :");
 
@@ -3587,12 +3587,12 @@ private static final long serialVersionUID = 3L;
         Tabelle.ColoraTabellaSemplice(CDC_CardWallet_Tabella2);
 
         CDC_CardWallet_Label_Tabella1.setBackground(new java.awt.Color(255, 255, 255));
-        CDC_CardWallet_Label_Tabella1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_CardWallet_Label_Tabella1.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         CDC_CardWallet_Label_Tabella1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         CDC_CardWallet_Label_Tabella1.setText("TABELLA MOVIMENTI RAGRUPPATI PER CAUSALE");
 
         CDC_CardWallet_Label_Tabella2.setBackground(new java.awt.Color(255, 255, 255));
-        CDC_CardWallet_Label_Tabella2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_CardWallet_Label_Tabella2.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         CDC_CardWallet_Label_Tabella2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         CDC_CardWallet_Label_Tabella2.setText("TABELLA MOVIMENTI");
 
@@ -3771,7 +3771,7 @@ private static final long serialVersionUID = 3L;
         CDC_FiatWallet_Label_GiacenzaMedia.setText("GiacenzaMedia : ");
 
         CDC_FiatWallet_Text_GiacenzaMedia.setEditable(false);
-        CDC_FiatWallet_Text_GiacenzaMedia.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_FiatWallet_Text_GiacenzaMedia.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
 
         CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore.setText("Per il calcolo della giacenza media considera il valore più alto della giornata");
         CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -3869,19 +3869,19 @@ private static final long serialVersionUID = 3L;
         Tabelle.ColoraTabellaSemplice(CDC_FiatWallet_Tabella2);
 
         CDC_FiatWallet_Label_Tabella2.setBackground(new java.awt.Color(255, 255, 255));
-        CDC_FiatWallet_Label_Tabella2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_FiatWallet_Label_Tabella2.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         CDC_FiatWallet_Label_Tabella2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         CDC_FiatWallet_Label_Tabella2.setText("TABELLA MOVIMENTI");
 
-        CDC_FiatWallet_Label_Errore1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_FiatWallet_Label_Errore1.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         CDC_FiatWallet_Label_Errore1.setForeground(new java.awt.Color(255, 0, 51));
         CDC_FiatWallet_Label_Errore1.setText("Attenzione ci sono dei movimenti non contabilizzati!");
 
-        CDC_FiatWallet_Label_Errore2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_FiatWallet_Label_Errore2.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         CDC_FiatWallet_Label_Errore2.setForeground(new java.awt.Color(255, 0, 0));
         CDC_FiatWallet_Label_Errore2.setText("Premere sul pulsante qui sotto per visualizzarli!");
 
-        CDC_FiatWallet_Bottone_Errore.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_FiatWallet_Bottone_Errore.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         CDC_FiatWallet_Bottone_Errore.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Attenzione.png"))); // NOI18N
         CDC_FiatWallet_Bottone_Errore.setText("Vedi Errori");
         CDC_FiatWallet_Bottone_Errore.addActionListener(new java.awt.event.ActionListener() {
@@ -3935,7 +3935,7 @@ private static final long serialVersionUID = 3L;
         CDC_FiatWallet_Tabella3.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 40));
         Tabelle.ColoraTabellaSemplice(CDC_FiatWallet_Tabella3);
 
-        CDC_FiatWallet_Label_Tabella3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_FiatWallet_Label_Tabella3.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         CDC_FiatWallet_Label_Tabella3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         CDC_FiatWallet_Label_Tabella3.setText("Tabella Dettagli Aggregati");
 
@@ -4136,7 +4136,7 @@ private static final long serialVersionUID = 3L;
 
         jTextArea1.setEditable(false);
         jTextArea1.setColumns(20);
-        jTextArea1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jTextArea1.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
         jTextArea1.setRows(3);
         jTextArea1.setText("Per ogni Wallet selezionare un gruppo di appartenenza (più Nomi Wallet possono essere associati allo stesso Gruppo Wallet).\nVerrà generato un Quadro RW per ogni Gruppo.");
         jTextArea1.setPreferredSize(new java.awt.Dimension(774, 44));
@@ -4211,8 +4211,8 @@ private static final long serialVersionUID = 3L;
 
         jTextPane1.setEditable(false);
         jTextPane1.setContentType("text/html"); // NOI18N
-        jTextPane1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jTextPane1.setText("<html>\n<head>\n<style>\n  body {\n    font-family: 'Segoe UI', Arial, sans-serif;\n    font-size: 13px;\n    margin: 12px 16px;\n    line-height: 1.6;\n  }\n  h2 {\n    font-size: 15px;\n    font-weight: bold;\n    margin-bottom: 6px;\n    margin-top: 0;\n    padding-bottom: 4px;\n  }\n  p {\n    margin: 6px 0 10px 0;\n  }\n  ul {\n    margin: 6px 0 10px 18px;\n    padding: 0;\n  }\n  li {\n    margin-bottom: 5px;\n  }\n  b {\n    font-weight: bold;\n  }\n  .mono {\n    font-family: monospace;\n    font-size: 12px;\n    font-weight: bold;\n  }\n</style>\n</head>\n<body>\n\n<h2>&#127968; Classificazione E-Money Token</h2>\n\n<p>\n  Nella tabella sulla destra aggiungere il nome di tutti i token che si desidera\n  classificare come <b>E-Money Token</b> (es. <span class=\"mono\">USDC</span>).\n</p>\n<p>\n  Lo scambio tra <b>Crypto</b> ed <b>E-Money Token</b> verr&agrave; considerato\n  <b>fiscalmente rilevante</b> e potr&agrave; generare una eventuale\n  <b>plusvalenza</b> o <b>minusvalenza</b>.\n</p>\n\n<p>\n  Per <b>casistiche particolari</b> &mdash; ad esempio un token che diventa E-Money\n  solo da una certa data &mdash; &egrave; possibile indicare quest&#39;ultima\n  direttamente nella tabella.<br>\n  In questi casi, gli scambi saranno fiscalmente rilevanti <b>solo dalla data indicata in poi</b>.\n</p>\n<br>\n<br>\n\n<hr/>\n<br>\n<br>\n\n<h2>&#9881; Precompilazione rapida</h2>\n\n<p>Puoi precompilare la tabella, attraverso l'apposito pulsante, scegliendo una delle seguenti opzioni:</p>\n\n<ul>\n  <li>&#9989; <b>Tutte le stablecoin MiCA Compliant</b> &mdash; es. <span class=\"mono\">USDC</span></li>\n  <li>&#9888; <b>MiCA Compliant + quelle dubbie</b> &mdash; incluse es. <span class=\"mono\">USDT</span></li>\n  <li>&#128308; <b>Tutte le stablecoin</b> &mdash; comprese algoritmiche o Crypto-Collateralizzate come <span class=\"mono\">DAI</span></li>\n</ul>\n<br>\n<br>\n<hr/>\n<br>\n<br>\n<p>\n  <b>&#9888; Attenzione:</b>\n  La lista precompilata delle stablecoin <b>potrebbe non essere esaustiva</b>\n  o presentare <b>errori nella classificazione</b>. Verificare sempre la correttezza\n  delle informazioni prima dell&#39;utilizzo.\n</p>\n\n</body>\n</html>\n");
+        jTextPane1.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
+        jTextPane1.setText("<html>\n<head>\n<style>\n  body {\n    font-family: 'Noto Sans', Arial, sans-serif;\n    font-size: 13px;\n    margin: 12px 16px;\n    line-height: 1.6;\n  }\n  h2 {\n    font-size: 15px;\n    font-weight: bold;\n    margin-bottom: 6px;\n    margin-top: 0;\n    padding-bottom: 4px;\n  }\n  p {\n    margin: 6px 0 10px 0;\n  }\n  ul {\n    margin: 6px 0 10px 18px;\n    padding: 0;\n  }\n  li {\n    margin-bottom: 5px;\n  }\n  b {\n    font-weight: bold;\n  }\n  .mono {\n    font-family: monospace;\n    font-size: 12px;\n    font-weight: bold;\n  }\n</style>\n</head>\n<body>\n\n<h2>Classificazione E-Money Token</h2>\n\n<p>\n  Nella tabella sulla destra aggiungere il nome di tutti i token che si desidera\n  classificare come <b>E-Money Token</b> (es. <span class=\"mono\">USDC</span>).\n</p>\n<p>\n  Lo scambio tra <b>Crypto</b> ed <b>E-Money Token</b> verr&agrave; considerato\n  <b>fiscalmente rilevante</b> e potr&agrave; generare una eventuale\n  <b>plusvalenza</b> o <b>minusvalenza</b>.\n</p>\n\n<p>\n  Per <b>casistiche particolari</b> &mdash; ad esempio un token che diventa E-Money\n  solo da una certa data &mdash; &egrave; possibile indicare quest&#39;ultima\n  direttamente nella tabella.<br>\n  In questi casi, gli scambi saranno fiscalmente rilevanti <b>solo dalla data indicata in poi</b>.\n</p>\n<br>\n<br>\n\n<hr/>\n<br>\n<br>\n\n<h2>Precompilazione rapida</h2>\n\n<p>Puoi precompilare la tabella, attraverso l'apposito pulsante, scegliendo una delle seguenti opzioni:</p>\n\n<ul>\n  <li><b>Tutte le stablecoin MiCA Compliant</b> &mdash; es. <span class=\"mono\">USDC</span></li>\n  <li><b>MiCA Compliant + quelle dubbie</b> &mdash; incluse es. <span class=\"mono\">USDT</span></li>\n  <li><b>Tutte le stablecoin</b> &mdash; comprese algoritmiche o Crypto-Collateralizzate come <span class=\"mono\">DAI</span></li>\n</ul>\n<br>\n<br>\n<hr/>\n<br>\n<br>\n<p>\n  <b>Attenzione:</b>\n  La lista precompilata delle stablecoin <b>potrebbe non essere esaustiva</b>\n  o presentare <b>errori nella classificazione</b>. Verificare sempre la correttezza\n  delle informazioni prima dell&#39;utilizzo.\n</p>\n\n</body>\n</html>\n");
         jScrollPane5.setViewportView(jTextPane1);
 
         Opzioni_Emoney_Bottone_Rimuovi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Cestino.png"))); // NOI18N
@@ -4231,7 +4231,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        Opzioni_Emoney_Bottone_Precompila.setText("<html><h2>&#9881; Precompilazione rapida</h2></html>");
+        Opzioni_Emoney_Bottone_Precompila.setText("<html><h2>Precompilazione rapida</h2></html>");
         Opzioni_Emoney_Bottone_Precompila.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_Emoney_Bottone_PrecompilaActionPerformed(evt);
@@ -4634,7 +4634,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        jLabel14.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel14.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
         jLabel14.setText("<html>Scegli la <b>modalità di calcolo</b> da utilizzare per il <b>Quadro W/RW</b> : </html>");
 
         jLabel15.setText("<html>Quadro W/RW - <b>Ulteriori opzioni :</b></html>");
@@ -4681,7 +4681,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        RW_Bottone_Documentazione1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        RW_Bottone_Documentazione1.setFont(new java.awt.Font("Noto Sans", 1, 18)); // NOI18N
         RW_Bottone_Documentazione1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
         RW_Bottone_Documentazione1.setText("Vedi Documentazione");
         RW_Bottone_Documentazione1.addActionListener(new java.awt.event.ActionListener() {
@@ -5086,7 +5086,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        jLabel18.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        jLabel18.setFont(new java.awt.Font("Noto Sans", 0, 18)); // NOI18N
         jLabel18.setText("Selezionare in che range di date deve essere effettuata la pulizia dei dati :");
 
         jLabel19.setText("Inizio : ");
@@ -5139,17 +5139,17 @@ private static final long serialVersionUID = 3L;
 
         jLabel23.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/qrcode_solana.png"))); // NOI18N
 
-        jLabel24.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        jLabel24.setFont(new java.awt.Font("Noto Sans", 1, 24)); // NOI18N
         jLabel24.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel24.setText("<html><center>Ti piace questo software? <br>\nConsidera una piccola crypto donazione.<br>\nAiuti a mantenerlo libero, utile e migliorabile.</html>");
 
-        jLabel25.setFont(new java.awt.Font("Segoe UI Symbol", 1, 20)); // NOI18N
+        jLabel25.setFont(new java.awt.Font("Noto Sans", 1, 20)); // NOI18N
         jLabel25.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel25.setText("<html>\n  <body style='font-family:sans-serif; font-size:18px;'>\n    <b>Indirizzo per Reti:</b><br><br>\n    • BSC<br>\n    • CRONOS<br>\n    • ETHEREUM<br>\n    • BASE<br>\n    • ARBITRUM\n  </body>\n</html>");
+        jLabel25.setText("<html>\n  <body style='font-family:Noto Sans, sans-serif; font-size:18px;'>\n    <b>Indirizzo per Reti:</b><br><br>\n    • BSC<br>\n    • CRONOS<br>\n    • ETHEREUM<br>\n    • BASE<br>\n    • ARBITRUM\n  </body>\n</html>");
 
-        jLabel26.setFont(new java.awt.Font("Segoe UI Symbol", 1, 20)); // NOI18N
+        jLabel26.setFont(new java.awt.Font("Noto Sans", 1, 20)); // NOI18N
         jLabel26.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel26.setText("<html>\n  <body style='font-family:sans-serif; font-size:18px;'>\n    <b>Indirizzo per Reti:</b><br><br>\n    • SOLANA<br>\n  </body>\n</html>");
+        jLabel26.setText("<html>\n  <body style='font-family:Noto Sans, sans-serif; font-size:18px;'>\n    <b>Indirizzo per Reti:</b><br><br>\n    • SOLANA<br>\n  </body>\n</html>");
 
         Donazioni_Bottone1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Copia.png"))); // NOI18N
         Donazioni_Bottone1.setText("Copia Indirizzo");
@@ -5169,7 +5169,7 @@ private static final long serialVersionUID = 3L;
 
         jLabel29.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/qrcode_paypal.png"))); // NOI18N
 
-        jLabel30.setFont(new java.awt.Font("Segoe UI", 1, 64)); // NOI18N
+        jLabel30.setFont(new java.awt.Font("Noto Sans", 1, 64)); // NOI18N
         jLabel30.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel30.setText("PayPal");
 
@@ -5566,7 +5566,7 @@ private static final long serialVersionUID = 3L;
 
         Opzioni_ProviderDefi_TextAreaIstruzioni.setEditable(false);
         Opzioni_ProviderDefi_TextAreaIstruzioni.setColumns(20);
-        Opzioni_ProviderDefi_TextAreaIstruzioni.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        Opzioni_ProviderDefi_TextAreaIstruzioni.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
         Opzioni_ProviderDefi_TextAreaIstruzioni.setRows(3);
         Opzioni_ProviderDefi_TextAreaIstruzioni.setText("Scegli, per ogni chain, quale provider usare per lo scaricamento dei movimenti DeFi. \nPer Cronos il default è Blockscout perché permette di impostare un blocco di partenza per lo scaricamento (a differenza del vecchio provider); Cronos usa sempre la ApiKey Cronos inserita nel tab \"ApiKey\", non quella Blockscout (anch'essa nel tab \"ApiKey\").");
         Opzioni_ProviderDefi_TextAreaIstruzioni.setPreferredSize(new java.awt.Dimension(774, 44));
@@ -5693,7 +5693,7 @@ private static final long serialVersionUID = 3L;
         jLabel3.setText("Data Fine :");
 
         CDC_DataChooser_Finale.setDateFormatString("yyyy-MM-dd");
-        CDC_DataChooser_Finale.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_DataChooser_Finale.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         CDC_DataChooser_Finale.setMinimumSize(new java.awt.Dimension(100, 31));
         CDC_DataChooser_Finale.setPreferredSize(new java.awt.Dimension(100, 31));
         CDC_DataChooser_Finale.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
@@ -5705,11 +5705,11 @@ private static final long serialVersionUID = 3L;
         CDC_Label_Giorni.setText("Giorni : ");
 
         CDC_Text_Giorni.setEditable(false);
-        CDC_Text_Giorni.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_Text_Giorni.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         CDC_Text_Giorni.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
         Bottone_Titolo.setBackground(new java.awt.Color(204, 204, 204));
-        Bottone_Titolo.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        Bottone_Titolo.setFont(new java.awt.Font("Noto Sans", 1, 18)); // NOI18N
         Bottone_Titolo.setForeground(new java.awt.Color(51, 51, 51));
         Bottone_Titolo.setText("Titolo");
         Bottone_Titolo.setFocusPainted(false);
@@ -11192,9 +11192,9 @@ if (result.isAction("delete-all")) {
                             for (String a : Mappa_EMoney.keySet()) {
                                     i++;
                                     String Data = Mappa_EMoney.get(a);
-                                    testo = testo+"→ → - <b>"+a+"</b> dal "+Data+"<br>";
+                                    testo = testo+"→ → - <b>"+a+"</b> dal "+Data+"<br>";  //NON-A-VIDEO: questo testo finisce nel PDF, non nell'interfaccia
                             }
-                            if (i==0)testo = testo+"→ → - Nessun token è stato scelto come appartenente alla cateoria degli E-Money Token<br>";
+                            if (i==0)testo = testo+"→ → - Nessun token è stato scelto come appartenente alla cateoria degli E-Money Token<br>";  //NON-A-VIDEO: questo testo finisce nel PDF, non nell'interfaccia
                         }
                         if (RW_Opzioni_RilenvanteTuttigliScambi.isSelected()) {
                             testo = testo + """
@@ -16272,7 +16272,7 @@ try {
         //Le date si leggono dalle due stringhe della barra e non dal record: il record non le possiede
         //stabilmente (gliele si sovrappone al momento dell'uso) e Descrizione() non le guarda comunque.
         String periodo = (CDC_DataIniziale == null || CDC_DataIniziale.isBlank()) ? ""
-                : CDC_DataIniziale + "  →  " + CDC_DataFinale;
+                : CDC_DataIniziale + "  »  " + CDC_DataFinale;
 
         TransazioniCrypto_Bottone_Filtri.setToolTipText(Principale_FiltriMovimenti.Tooltip(
                 FILTRI_TOOLTIP_TESTA,

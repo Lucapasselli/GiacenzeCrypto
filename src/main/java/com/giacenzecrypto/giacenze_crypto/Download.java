@@ -335,7 +335,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
         LabelAvanzamento.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         LabelAvanzamento.setText("      ");
 
-        Bottone_Interrompi.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        Bottone_Interrompi.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         Bottone_Interrompi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_ImbutoX.png"))); // NOI18N
         Bottone_Interrompi.setText("<html><h2>Interrompi Elaborazione</h2></html>");
         Bottone_Interrompi.addActionListener(new java.awt.event.ActionListener() {

@@ -21,7 +21,8 @@ import javax.swing.plaf.FontUIResource;
 public class Giacenze_Crypto {
 
     private static final float DEFAULT_FONT_SIZE = 12f;
-    private static final String DEFAULT_FONT_FAMILY = "Inter";
+    /** Il font incluso nel jar: vedi {@link FontApplicazione} per il perché non è un nome di sistema. */
+    private static final String DEFAULT_FONT_FAMILY = FontApplicazione.FAMIGLIA;
 
     /**
      * Punto di ingresso dell'applicazione: interpreta gli argomenti a riga di comando (vedi {@code CLAUDE.md}
@@ -48,6 +49,10 @@ public class Giacenze_Crypto {
                 VarStatiche.setPathRisorse("./");
             }
         }
+
+        //Prima di qualunque cosa vada a video: lo splash disegna il proprio testo da sé, con il font
+        //dell'applicazione, e la finestra principale lo eredita dal Look&Feel più avanti.
+        FontApplicazione.Registra();
 
         //Prima operazione visibile del programma: da qui in poi l'utente ha qualcosa a video mentre
         //proseguono l'apertura del database e la costruzione della finestra principale.
@@ -206,16 +211,19 @@ public class Giacenze_Crypto {
     }
 
     private static void impostaFontGlobale(String fontFamily, float size) {
-        try {
-            Font uiFont = new Font(fontFamily, Font.PLAIN, Math.round(size));
-            UIManager.put("defaultFont", new FontUIResource(uiFont));
-            System.out.println("Font globale impostato: " + uiFont.getFontName() + " size=" + size);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            Font fallback = new Font("SansSerif", Font.PLAIN, Math.round(size));
-            UIManager.put("defaultFont", new FontUIResource(fallback));
-            System.out.println("Errore impostazione font custom, uso fallback: " + fallback.getFontName());
+        Font uiFont = new Font(fontFamily, Font.PLAIN, Math.round(size));
+
+        //new Font() su una famiglia assente non lancia niente: ripiega in silenzio sul font logico
+        //Dialog, che il sistema risolve come gli pare. Era esattamente il difetto che FontApplicazione
+        //è nata per chiudere, quindi qui va reso visibile invece che intercettato con un catch che
+        //non scatta mai. Non è un errore fatale: succede solo con un --fontFamily inesistente.
+        if (!fontFamily.equalsIgnoreCase(uiFont.getFamily(java.util.Locale.ROOT))) {
+            System.err.println("Attenzione: il font '" + fontFamily + "' non è disponibile, "
+                    + "il sistema userà al suo posto '" + uiFont.getFamily(java.util.Locale.ROOT) + "'");
         }
+
+        UIManager.put("defaultFont", new FontUIResource(uiFont));
+        System.out.println("Font globale impostato: " + uiFont.getFontName() + " size=" + size);
     }
 
     private static String getHomeUtente() {

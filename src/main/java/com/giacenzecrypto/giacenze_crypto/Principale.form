@@ -760,7 +760,7 @@
             <Component class="javax.swing.JLabel" name="TransazioniCrypto_Label_MovimentiNonSalvati">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Segoe UI" size="12" style="1"/>
+                  <Font name="Noto Sans" size="12" style="1"/>
                 </Property>
                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="Tabelle.rosso" type="code"/>
@@ -824,7 +824,7 @@
             <Component class="javax.swing.JLabel" name="TransazioniCrypto_Label_Plusvalenza">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Segoe UI" size="14" style="1"/>
+                  <Font name="Noto Sans" size="14" style="1"/>
                 </Property>
                 <Property name="horizontalAlignment" type="int" value="0"/>
                 <Property name="text" type="java.lang.String" value="Plusvalenze del periodo selezionato : "/>
@@ -837,7 +837,7 @@
                   <Color blue="33" green="33" red="33" type="rgb"/>
                 </Property>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Segoe UI" size="24" style="1"/>
+                  <Font name="Noto Sans" size="24" style="1"/>
                 </Property>
                 <Property name="horizontalAlignment" type="int" value="0"/>
               </Properties>
@@ -1019,7 +1019,7 @@
             <Component class="javax.swing.JLabel" name="jLabel10">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Segoe UI" size="12" style="1"/>
+                  <Font name="Noto Sans" size="12" style="1"/>
                 </Property>
                 <Property name="horizontalAlignment" type="int" value="0"/>
                 <Property name="text" type="java.lang.String" value="Movimenti fiscalmente rilevanti su periodo"/>
@@ -1051,7 +1051,7 @@
             <Component class="javax.swing.JButton" name="Bottone_Errori">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Segoe UI" size="18" style="1"/>
+                  <Font name="Noto Sans" size="18" style="1"/>
                 </Property>
                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="Tabelle.rosso" type="code"/>
@@ -1133,7 +1133,7 @@
             <Component class="javax.swing.JLabel" name="TransazioniCrypto_RicalcolaPlusvalenze_Label">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Segoe UI" size="12" style="1"/>
+                  <Font name="Noto Sans" size="12" style="1"/>
                 </Property>
                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="Tabelle.rosso" type="code"/>
@@ -1433,7 +1433,7 @@
                           <Color blue="cc" green="ff" red="cc" type="rgb"/>
                         </Property>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="12" style="1"/>
+                          <Font name="Noto Sans" size="12" style="1"/>
                         </Property>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/Images/24_Classifica.png"/>
@@ -2022,7 +2022,7 @@
                     <Component class="javax.swing.JLabel" name="SaldiNegativi_LabelSpiegazioni">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="14" style="0"/>
+                          <Font name="Noto Sans" size="14" style="0"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;In questa sezione vengono elencati tutti i token che, anche una sola volta nell&#x2019;intero storico di un singolo wallet, hanno registrato un &lt;b&gt;Saldo Negativo&lt;/b&gt;.&lt;br&gt;&lt;br&gt;&#xa;Selezionando una riga nella tabella, sar&#xe0; possibile visualizzare nel dettaglio le transazioni corrispondenti e i saldi associati, cos&#xec; da poter analizzare e, se necessario, correggere la posizione.&#xa;&lt;/html&gt;"/>
                       </Properties>
@@ -2046,7 +2046,7 @@
                         <Component class="javax.swing.JTable" name="SaldiNegativi_TabellaDettaglioMovimenti">
                           <Properties>
                             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                              <Font name="sansserif" size="12" style="0"/>
+                              <Font name="Noto Sans" size="12" style="0"/>
                             </Property>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                               <Table columnCount="13" rowCount="0">
@@ -2550,7 +2550,7 @@
                     <Component class="javax.swing.JLabel" name="GiacenzeaData_Totali_Label">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="12" style="1"/>
+                          <Font name="Noto Sans" size="12" style="1"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="TOTALE in EURO : "/>
                       </Properties>
@@ -2587,7 +2587,7 @@
                         <Component class="javax.swing.JTable" name="GiacenzeaData_TabellaDettaglioMovimenti">
                           <Properties>
                             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                              <Font name="sansserif" size="12" style="0"/>
+                              <Font name="Noto Sans" size="12" style="0"/>
                             </Property>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                               <Table columnCount="13" rowCount="0">
@@ -2697,7 +2697,7 @@
                     <Component class="javax.swing.JLabel" name="Giacenzeadata_Walleta_Label">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="12" style="1"/>
+                          <Font name="Noto Sans" size="12" style="1"/>
                         </Property>
                       </Properties>
                       <Events>
@@ -2746,7 +2746,7 @@
                     <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_GiacenzeExplorer">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Caladea" size="13" style="0"/>
+                          <Font name="Noto Sans" size="13" style="0"/>
                         </Property>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/Images/24_Wallet.png"/>
@@ -2861,7 +2861,7 @@
                     <Component class="javax.swing.JLabel" name="GiacenzeaData_Label_Aggiornare">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="14" style="1"/>
+                          <Font name="Noto Sans" size="14" style="1"/>
                         </Property>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                           <Connection code="Tabelle.rosso" type="code"/>
@@ -3334,7 +3334,7 @@
                     <Component class="javax.swing.JLabel" name="jLabel5">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="12" style="1"/>
+                          <Font name="Noto Sans" size="12" style="1"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Dettaglio RW"/>
                       </Properties>
@@ -3342,7 +3342,7 @@
                     <Component class="javax.swing.JLabel" name="jLabel6">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="12" style="1"/>
+                          <Font name="Noto Sans" size="12" style="1"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Movimenti dell&apos;anno coinvolti"/>
                       </Properties>
@@ -3350,7 +3350,7 @@
                     <Component class="javax.swing.JLabel" name="jLabel7">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="12" style="1"/>
+                          <Font name="Noto Sans" size="12" style="1"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Quadro RW"/>
                       </Properties>
@@ -3448,7 +3448,7 @@
                     <Component class="javax.swing.JLabel" name="RW_Label_SegnalaErrori">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="15" style="1"/>
+                          <Font name="Noto Sans" size="15" style="1"/>
                         </Property>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                           <Connection code="Tabelle.rosso" type="code"/>
@@ -3464,7 +3464,7 @@
                       <Properties>
                         <Property name="editable" type="boolean" value="false"/>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="14" style="1"/>
+                          <Font name="Noto Sans" size="14" style="1"/>
                         </Property>
                         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                           <Dimension value="[64, 31]"/>
@@ -3510,7 +3510,7 @@
                     <Component class="javax.swing.JLabel" name="RW_Label_SegnalaRicalcolo">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="14" style="1"/>
+                          <Font name="Noto Sans" size="14" style="1"/>
                         </Property>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                           <Connection code="Tabelle.rosso" type="code"/>
@@ -3975,7 +3975,7 @@
                     <Component class="javax.swing.JLabel" name="RT_Label_Avviso">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="14" style="1"/>
+                          <Font name="Noto Sans" size="14" style="1"/>
                         </Property>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                           <Connection code="Tabelle.rosso" type="code"/>
@@ -4150,7 +4150,7 @@
                         <Component class="javax.swing.JTable" name="GestioneTokenScam_TabellaMovimenti">
                           <Properties>
                             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                              <Font name="sansserif" size="12" style="0"/>
+                              <Font name="Noto Sans" size="12" style="0"/>
                             </Property>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                               <Table columnCount="13" rowCount="0">
@@ -4507,7 +4507,7 @@
               <Properties>
                 <Property name="editable" type="boolean" value="false"/>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Segoe UI" size="12" style="1"/>
+                  <Font name="Noto Sans" size="12" style="1"/>
                 </Property>
               </Properties>
             </Component>
@@ -4657,7 +4657,7 @@
                   <Color blue="ff" green="ff" red="ff" type="rgb"/>
                 </Property>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Segoe UI" size="12" style="1"/>
+                  <Font name="Noto Sans" size="12" style="1"/>
                 </Property>
                 <Property name="horizontalAlignment" type="int" value="0"/>
                 <Property name="text" type="java.lang.String" value="TABELLA MOVIMENTI RAGRUPPATI PER CAUSALE"/>
@@ -4669,7 +4669,7 @@
                   <Color blue="ff" green="ff" red="ff" type="rgb"/>
                 </Property>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Segoe UI" size="12" style="1"/>
+                  <Font name="Noto Sans" size="12" style="1"/>
                 </Property>
                 <Property name="horizontalAlignment" type="int" value="0"/>
                 <Property name="text" type="java.lang.String" value="TABELLA MOVIMENTI"/>
@@ -4929,7 +4929,7 @@
               <Properties>
                 <Property name="editable" type="boolean" value="false"/>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Segoe UI" size="12" style="1"/>
+                  <Font name="Noto Sans" size="12" style="1"/>
                 </Property>
               </Properties>
             </Component>
@@ -5075,7 +5075,7 @@
                   <Color blue="ff" green="ff" red="ff" type="rgb"/>
                 </Property>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Segoe UI" size="12" style="1"/>
+                  <Font name="Noto Sans" size="12" style="1"/>
                 </Property>
                 <Property name="horizontalAlignment" type="int" value="0"/>
                 <Property name="text" type="java.lang.String" value="TABELLA MOVIMENTI"/>
@@ -5084,7 +5084,7 @@
             <Component class="javax.swing.JLabel" name="CDC_FiatWallet_Label_Errore1">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Segoe UI" size="12" style="1"/>
+                  <Font name="Noto Sans" size="12" style="1"/>
                 </Property>
                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="33" green="0" red="ff" type="rgb"/>
@@ -5095,7 +5095,7 @@
             <Component class="javax.swing.JLabel" name="CDC_FiatWallet_Label_Errore2">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Segoe UI" size="12" style="1"/>
+                  <Font name="Noto Sans" size="12" style="1"/>
                 </Property>
                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="0" green="0" red="ff" type="rgb"/>
@@ -5106,7 +5106,7 @@
             <Component class="javax.swing.JButton" name="CDC_FiatWallet_Bottone_Errore">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Segoe UI" size="12" style="1"/>
+                  <Font name="Noto Sans" size="12" style="1"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/Images/24_Attenzione.png"/>
@@ -5173,7 +5173,7 @@
             <Component class="javax.swing.JLabel" name="CDC_FiatWallet_Label_Tabella3">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Segoe UI" size="12" style="1"/>
+                  <Font name="Noto Sans" size="12" style="1"/>
                 </Property>
                 <Property name="horizontalAlignment" type="int" value="0"/>
                 <Property name="text" type="java.lang.String" value="Tabella Dettagli Aggregati"/>
@@ -5347,7 +5347,7 @@
                             <Property name="editable" type="boolean" value="false"/>
                             <Property name="columns" type="int" value="20"/>
                             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                              <Font name="Segoe UI" size="14" style="0"/>
+                              <Font name="Noto Sans" size="14" style="0"/>
                             </Property>
                             <Property name="rows" type="int" value="3"/>
                             <Property name="text" type="java.lang.String" value="Per ogni Wallet selezionare un gruppo di appartenenza (pi&#xf9; Nomi Wallet possono essere associati allo stesso Gruppo Wallet).&#xa;Verr&#xe0; generato un Quadro RW per ogni Gruppo."/>
@@ -5489,9 +5489,9 @@
                             <Property name="editable" type="boolean" value="false"/>
                             <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
                             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                              <Font name="Segoe UI" size="14" style="0"/>
+                              <Font name="Noto Sans" size="14" style="0"/>
                             </Property>
-                            <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;&lt;head&gt;&#xa;&lt;style&gt;&#xa;  body {&#xa;    font-family: &apos;Segoe UI&apos;, Arial, sans-serif;&#xa;    font-size: 13px;&#xa;    margin: 12px 16px;&#xa;    line-height: 1.6;&#xa;  }&#xa;  h2 {&#xa;    font-size: 15px;&#xa;    font-weight: bold;&#xa;    margin-bottom: 6px;&#xa;    margin-top: 0;&#xa;    padding-bottom: 4px;&#xa;  }&#xa;  p {&#xa;    margin: 6px 0 10px 0;&#xa;  }&#xa;  ul {&#xa;    margin: 6px 0 10px 18px;&#xa;    padding: 0;&#xa;  }&#xa;  li {&#xa;    margin-bottom: 5px;&#xa;  }&#xa;  b {&#xa;    font-weight: bold;&#xa;  }&#xa;  .mono {&#xa;    font-family: monospace;&#xa;    font-size: 12px;&#xa;    font-weight: bold;&#xa;  }&#xa;&lt;/style&gt;&#xa;&lt;/head&gt;&#xa;&lt;body&gt;&#xa;&#xa;&lt;h2&gt;&amp;#127968; Classificazione E-Money Token&lt;/h2&gt;&#xa;&#xa;&lt;p&gt;&#xa;  Nella tabella sulla destra aggiungere il nome di tutti i token che si desidera&#xa;  classificare come &lt;b&gt;E-Money Token&lt;/b&gt; (es. &lt;span class=&quot;mono&quot;&gt;USDC&lt;/span&gt;).&#xa;&lt;/p&gt;&#xa;&lt;p&gt;&#xa;  Lo scambio tra &lt;b&gt;Crypto&lt;/b&gt; ed &lt;b&gt;E-Money Token&lt;/b&gt; verr&amp;agrave; considerato&#xa;  &lt;b&gt;fiscalmente rilevante&lt;/b&gt; e potr&amp;agrave; generare una eventuale&#xa;  &lt;b&gt;plusvalenza&lt;/b&gt; o &lt;b&gt;minusvalenza&lt;/b&gt;.&#xa;&lt;/p&gt;&#xa;&#xa;&lt;p&gt;&#xa;  Per &lt;b&gt;casistiche particolari&lt;/b&gt; &amp;mdash; ad esempio un token che diventa E-Money&#xa;  solo da una certa data &amp;mdash; &amp;egrave; possibile indicare quest&amp;#39;ultima&#xa;  direttamente nella tabella.&lt;br&gt;&#xa;  In questi casi, gli scambi saranno fiscalmente rilevanti &lt;b&gt;solo dalla data indicata in poi&lt;/b&gt;.&#xa;&lt;/p&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&#xa;&lt;hr/&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&#xa;&lt;h2&gt;&amp;#9881; Precompilazione rapida&lt;/h2&gt;&#xa;&#xa;&lt;p&gt;Puoi precompilare la tabella, attraverso l&apos;apposito pulsante, scegliendo una delle seguenti opzioni:&lt;/p&gt;&#xa;&#xa;&lt;ul&gt;&#xa;  &lt;li&gt;&amp;#9989; &lt;b&gt;Tutte le stablecoin MiCA Compliant&lt;/b&gt; &amp;mdash; es. &lt;span class=&quot;mono&quot;&gt;USDC&lt;/span&gt;&lt;/li&gt;&#xa;  &lt;li&gt;&amp;#9888; &lt;b&gt;MiCA Compliant + quelle dubbie&lt;/b&gt; &amp;mdash; incluse es. &lt;span class=&quot;mono&quot;&gt;USDT&lt;/span&gt;&lt;/li&gt;&#xa;  &lt;li&gt;&amp;#128308; &lt;b&gt;Tutte le stablecoin&lt;/b&gt; &amp;mdash; comprese algoritmiche o Crypto-Collateralizzate come &lt;span class=&quot;mono&quot;&gt;DAI&lt;/span&gt;&lt;/li&gt;&#xa;&lt;/ul&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&lt;hr/&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&lt;p&gt;&#xa;  &lt;b&gt;&amp;#9888; Attenzione:&lt;/b&gt;&#xa;  La lista precompilata delle stablecoin &lt;b&gt;potrebbe non essere esaustiva&lt;/b&gt;&#xa;  o presentare &lt;b&gt;errori nella classificazione&lt;/b&gt;. Verificare sempre la correttezza&#xa;  delle informazioni prima dell&amp;#39;utilizzo.&#xa;&lt;/p&gt;&#xa;&#xa;&lt;/body&gt;&#xa;&lt;/html&gt;&#xa;"/>
+                            <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;&lt;head&gt;&#xa;&lt;style&gt;&#xa;  body {&#xa;    font-family: &apos;Noto Sans&apos;, Arial, sans-serif;&#xa;    font-size: 13px;&#xa;    margin: 12px 16px;&#xa;    line-height: 1.6;&#xa;  }&#xa;  h2 {&#xa;    font-size: 15px;&#xa;    font-weight: bold;&#xa;    margin-bottom: 6px;&#xa;    margin-top: 0;&#xa;    padding-bottom: 4px;&#xa;  }&#xa;  p {&#xa;    margin: 6px 0 10px 0;&#xa;  }&#xa;  ul {&#xa;    margin: 6px 0 10px 18px;&#xa;    padding: 0;&#xa;  }&#xa;  li {&#xa;    margin-bottom: 5px;&#xa;  }&#xa;  b {&#xa;    font-weight: bold;&#xa;  }&#xa;  .mono {&#xa;    font-family: monospace;&#xa;    font-size: 12px;&#xa;    font-weight: bold;&#xa;  }&#xa;&lt;/style&gt;&#xa;&lt;/head&gt;&#xa;&lt;body&gt;&#xa;&#xa;&lt;h2&gt;Classificazione E-Money Token&lt;/h2&gt;&#xa;&#xa;&lt;p&gt;&#xa;  Nella tabella sulla destra aggiungere il nome di tutti i token che si desidera&#xa;  classificare come &lt;b&gt;E-Money Token&lt;/b&gt; (es. &lt;span class=&quot;mono&quot;&gt;USDC&lt;/span&gt;).&#xa;&lt;/p&gt;&#xa;&lt;p&gt;&#xa;  Lo scambio tra &lt;b&gt;Crypto&lt;/b&gt; ed &lt;b&gt;E-Money Token&lt;/b&gt; verr&amp;agrave; considerato&#xa;  &lt;b&gt;fiscalmente rilevante&lt;/b&gt; e potr&amp;agrave; generare una eventuale&#xa;  &lt;b&gt;plusvalenza&lt;/b&gt; o &lt;b&gt;minusvalenza&lt;/b&gt;.&#xa;&lt;/p&gt;&#xa;&#xa;&lt;p&gt;&#xa;  Per &lt;b&gt;casistiche particolari&lt;/b&gt; &amp;mdash; ad esempio un token che diventa E-Money&#xa;  solo da una certa data &amp;mdash; &amp;egrave; possibile indicare quest&amp;#39;ultima&#xa;  direttamente nella tabella.&lt;br&gt;&#xa;  In questi casi, gli scambi saranno fiscalmente rilevanti &lt;b&gt;solo dalla data indicata in poi&lt;/b&gt;.&#xa;&lt;/p&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&#xa;&lt;hr/&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&#xa;&lt;h2&gt;Precompilazione rapida&lt;/h2&gt;&#xa;&#xa;&lt;p&gt;Puoi precompilare la tabella, attraverso l&apos;apposito pulsante, scegliendo una delle seguenti opzioni:&lt;/p&gt;&#xa;&#xa;&lt;ul&gt;&#xa;  &lt;li&gt;&lt;b&gt;Tutte le stablecoin MiCA Compliant&lt;/b&gt; &amp;mdash; es. &lt;span class=&quot;mono&quot;&gt;USDC&lt;/span&gt;&lt;/li&gt;&#xa;  &lt;li&gt;&lt;b&gt;MiCA Compliant + quelle dubbie&lt;/b&gt; &amp;mdash; incluse es. &lt;span class=&quot;mono&quot;&gt;USDT&lt;/span&gt;&lt;/li&gt;&#xa;  &lt;li&gt;&lt;b&gt;Tutte le stablecoin&lt;/b&gt; &amp;mdash; comprese algoritmiche o Crypto-Collateralizzate come &lt;span class=&quot;mono&quot;&gt;DAI&lt;/span&gt;&lt;/li&gt;&#xa;&lt;/ul&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&lt;hr/&gt;&#xa;&lt;br&gt;&#xa;&lt;br&gt;&#xa;&lt;p&gt;&#xa;  &lt;b&gt;Attenzione:&lt;/b&gt;&#xa;  La lista precompilata delle stablecoin &lt;b&gt;potrebbe non essere esaustiva&lt;/b&gt;&#xa;  o presentare &lt;b&gt;errori nella classificazione&lt;/b&gt;. Verificare sempre la correttezza&#xa;  delle informazioni prima dell&amp;#39;utilizzo.&#xa;&lt;/p&gt;&#xa;&#xa;&lt;/body&gt;&#xa;&lt;/html&gt;&#xa;"/>
                           </Properties>
                         </Component>
                       </SubComponents>
@@ -5520,7 +5520,7 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="Opzioni_Emoney_Bottone_Precompila">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;h2&gt;&amp;#9881; Precompilazione rapida&lt;/h2&gt;&lt;/html&gt;"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;h2&gt;Precompilazione rapida&lt;/h2&gt;&lt;/html&gt;"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Emoney_Bottone_PrecompilaActionPerformed"/>
@@ -6166,7 +6166,7 @@
                     <Component class="javax.swing.JLabel" name="jLabel14">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="14" style="0"/>
+                          <Font name="Noto Sans" size="14" style="0"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="&lt;html&gt;Scegli la &lt;b&gt;modalit&#xe0; di calcolo&lt;/b&gt; da utilizzare per il &lt;b&gt;Quadro W/RW&lt;/b&gt; : &lt;/html&gt;"/>
                       </Properties>
@@ -6235,7 +6235,7 @@
                     <Component class="javax.swing.JButton" name="RW_Bottone_Documentazione1">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="18" style="1"/>
+                          <Font name="Noto Sans" size="18" style="1"/>
                         </Property>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/Images/24_Libro.png"/>
@@ -6775,7 +6775,7 @@
                     <Component class="javax.swing.JLabel" name="jLabel18">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="18" style="0"/>
+                          <Font name="Noto Sans" size="18" style="0"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Selezionare in che range di date deve essere effettuata la pulizia dei dati :"/>
                       </Properties>
@@ -6905,7 +6905,7 @@
                     <Component class="javax.swing.JLabel" name="jLabel24">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="24" style="1"/>
+                          <Font name="Noto Sans" size="24" style="1"/>
                         </Property>
                         <Property name="horizontalAlignment" type="int" value="0"/>
                         <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;center&gt;Ti piace questo software? &lt;br&gt;&#xa;Considera una piccola crypto donazione.&lt;br&gt;&#xa;Aiuti a mantenerlo libero, utile e migliorabile.&lt;/html&gt;"/>
@@ -6914,19 +6914,19 @@
                     <Component class="javax.swing.JLabel" name="jLabel25">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI Symbol" size="20" style="1"/>
+                          <Font name="Noto Sans" size="20" style="1"/>
                         </Property>
                         <Property name="horizontalAlignment" type="int" value="0"/>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;  &lt;body style=&apos;font-family:sans-serif; font-size:18px;&apos;&gt;&#xa;    &lt;b&gt;Indirizzo per Reti:&lt;/b&gt;&lt;br&gt;&lt;br&gt;&#xa;    &#x2022; BSC&lt;br&gt;&#xa;    &#x2022; CRONOS&lt;br&gt;&#xa;    &#x2022; ETHEREUM&lt;br&gt;&#xa;    &#x2022; BASE&lt;br&gt;&#xa;    &#x2022; ARBITRUM&#xa;  &lt;/body&gt;&#xa;&lt;/html&gt;"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;  &lt;body style=&apos;font-family:Noto Sans, sans-serif; font-size:18px;&apos;&gt;&#xa;    &lt;b&gt;Indirizzo per Reti:&lt;/b&gt;&lt;br&gt;&lt;br&gt;&#xa;    &#x2022; BSC&lt;br&gt;&#xa;    &#x2022; CRONOS&lt;br&gt;&#xa;    &#x2022; ETHEREUM&lt;br&gt;&#xa;    &#x2022; BASE&lt;br&gt;&#xa;    &#x2022; ARBITRUM&#xa;  &lt;/body&gt;&#xa;&lt;/html&gt;"/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JLabel" name="jLabel26">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI Symbol" size="20" style="1"/>
+                          <Font name="Noto Sans" size="20" style="1"/>
                         </Property>
                         <Property name="horizontalAlignment" type="int" value="0"/>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;  &lt;body style=&apos;font-family:sans-serif; font-size:18px;&apos;&gt;&#xa;    &lt;b&gt;Indirizzo per Reti:&lt;/b&gt;&lt;br&gt;&lt;br&gt;&#xa;    &#x2022; SOLANA&lt;br&gt;&#xa;  &lt;/body&gt;&#xa;&lt;/html&gt;"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;  &lt;body style=&apos;font-family:Noto Sans, sans-serif; font-size:18px;&apos;&gt;&#xa;    &lt;b&gt;Indirizzo per Reti:&lt;/b&gt;&lt;br&gt;&lt;br&gt;&#xa;    &#x2022; SOLANA&lt;br&gt;&#xa;  &lt;/body&gt;&#xa;&lt;/html&gt;"/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JButton" name="Donazioni_Bottone1">
@@ -6961,7 +6961,7 @@
                     <Component class="javax.swing.JLabel" name="jLabel30">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="64" style="1"/>
+                          <Font name="Noto Sans" size="64" style="1"/>
                         </Property>
                         <Property name="horizontalAlignment" type="int" value="0"/>
                         <Property name="text" type="java.lang.String" value="PayPal"/>
@@ -7402,7 +7402,7 @@
                             <Property name="editable" type="boolean" value="false"/>
                             <Property name="columns" type="int" value="20"/>
                             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                              <Font name="Segoe UI" size="14" style="0"/>
+                              <Font name="Noto Sans" size="14" style="0"/>
                             </Property>
                             <Property name="rows" type="int" value="3"/>
                             <Property name="text" type="java.lang.String" value="Scegli, per ogni chain, quale provider usare per lo scaricamento dei movimenti DeFi. &#xa;Per Cronos il default &#xe8; Blockscout perch&#xe9; permette di impostare un blocco di partenza per lo scaricamento (a differenza del vecchio provider); Cronos usa sempre la ApiKey Cronos inserita nel tab &quot;ApiKey&quot;, non quella Blockscout (anch&apos;essa nel tab &quot;ApiKey&quot;)."/>
@@ -7519,7 +7519,7 @@
       <Properties>
         <Property name="dateFormatString" type="java.lang.String" value="yyyy-MM-dd"/>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Segoe UI" size="12" style="1"/>
+          <Font name="Noto Sans" size="12" style="1"/>
         </Property>
         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[100, 31]"/>
@@ -7541,7 +7541,7 @@
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Segoe UI" size="12" style="1"/>
+          <Font name="Noto Sans" size="12" style="1"/>
         </Property>
         <Property name="horizontalAlignment" type="int" value="0"/>
       </Properties>
@@ -7552,7 +7552,7 @@
           <Color blue="cc" green="cc" red="cc" type="rgb"/>
         </Property>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Segoe UI" size="18" style="1"/>
+          <Font name="Noto Sans" size="18" style="1"/>
         </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="33" green="33" red="33" type="rgb"/>

@@ -111,7 +111,7 @@ private static final long serialVersionUID = 8L;
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        Label_Titolo.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        Label_Titolo.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         Label_Titolo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         Label_Titolo.setText("RESOCONTO IMPORTAZIONE");
 
@@ -130,16 +130,16 @@ private static final long serialVersionUID = 8L;
         jScrollPane2.setViewportView(TextPane_Errori);
 
         Text_TransTotali.setEditable(false);
-        Text_TransTotali.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        Text_TransTotali.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
 
         Text_TransImportate.setEditable(false);
-        Text_TransImportate.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        Text_TransImportate.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
 
         Text_TransScartate.setEditable(false);
-        Text_TransScartate.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        Text_TransScartate.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         Text_TransScartate.setForeground(new java.awt.Color(204, 0, 0));
 
-        Bottone_Ok.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        Bottone_Ok.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         Bottone_Ok.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Salva.png"))); // NOI18N
         Bottone_Ok.setText("OK");
         Bottone_Ok.addActionListener(new java.awt.event.ActionListener() {
@@ -160,7 +160,7 @@ private static final long serialVersionUID = 8L;
         Label_TransSconosciute.setText("Transazioni Scartate perchè sconosciute :");
 
         Text_TransSconosciute.setEditable(false);
-        Text_TransSconosciute.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        Text_TransSconosciute.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         Text_TransSconosciute.setForeground(new java.awt.Color(255, 51, 51));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());

@@ -94,13 +94,14 @@ jobs:
           echo "sha256: $SHA"
 
           cd packaging/flatpak
-          # Le due sostituzioni devono colpire SOLO la sorgente della release. Gli altri moduli
-          # hanno url e sha256 veri e fissati apposta (i font). Per questo:
-          #  - l'url si riconosce dal dominio: solo la release sta su github.com/.../releases,
-          #    i font stanno su raw.githubusercontent.com;
+          # Le due sostituzioni devono colpire SOLO la sorgente della release. Oggi e' l'unica
+          # con url e sha256, ma la selezione resta stretta apposta, perche' un modulo con un
+          # file fissato per checksum e' facile da riaggiungere (i font ne erano un esempio,
+          # finche' non sono passati dentro al jar):
+          #  - l'url si riconosce dal dominio: solo la release sta su github.com/.../releases;
           #  - il checksum si riconosce dal segnaposto di 64 zeri, che nessun file reale ha.
-          # Una sed generica su "sha256:" riscriverebbe anche i font col checksum dello zip, e la
-          # costruzione fallirebbe con un "Wrong sha256 checksum" che sembra un download storto.
+          # Una sed generica su "sha256:" riscriverebbe anche quelli veri, e la costruzione
+          # fallirebbe con un "Wrong sha256 checksum" che sembra un download storto.
           sed -i "s|^\( *\)url: https://github.com/.*/releases/download/.*|\1url: $URL|" "$APP_ID.yml"
           sed -i "s|^\( *\)sha256: 0\{64\}$|\1sha256: $SHA|" "$APP_ID.yml"
           sed -i "s|<release version=\"[^\"]*\"|<release version=\"$VERSIONE\"|" "$APP_ID.metainfo.xml"
@@ -147,33 +148,18 @@ jobs:
           test -f "$A/share/applications/$APP_ID.desktop"
           test -f "$A/share/metainfo/$APP_ID.metainfo.xml"
           test -f "$A/share/icons/hicolor/256x256/apps/$APP_ID.png"
-          test -f "$A/etc/fonts/fonts.conf"
-          test -f "$A/share/fonts/notosans/NotoSans-Regular.ttf"
-          test -f "$A/share/fonts/notosans/NotoSans-Bold.ttf"
           echo '--- permessi e ambiente dichiarati ---'
           cat /tmp/build/metadata
           grep -q "GIACENZE_NODE_HOME=/app/node" /tmp/build/metadata
-          grep -q "FONTCONFIG_FILE=/app/etc/fonts/fonts.conf" /tmp/build/metadata
 
-          # Che i file ci siano non basta: /app/share/fonts non e' nel percorso di ricerca dei
-          # font (il runtime fa <reset-dirs />), quindi fonts.conf deve dichiararlo e la riga deve
-          # stare dopo l'include. Sbagliare l'ordine non da' nessun errore, fa solo tornare
-          # DejaVu Sans. Qui si interroga fontconfig davvero, dentro la sandbox di costruzione.
-          echo '--- font effettivamente scelto ---'
-          cd packaging/flatpak
-          if ! RISULTATO=$(flatpak-builder --run /tmp/build "$APP_ID.yml" \
-                 sh -c "FONTCONFIG_FILE=/app/etc/fonts/fonts.conf fc-match --format='%{file}\n' sans-serif"); then
-            echo "ERRORE: impossibile interrogare fontconfig nella sandbox di costruzione" >&2
-            exit 1
-          fi
-          echo "$RISULTATO"
-          # Si controlla il PERCORSO, non il nome della famiglia: se la macchina che costruisce
-          # avesse Noto Sans installato, un controllo sul nome passerebbe anche con i font del
-          # pacchetto invisibili — cioe' proprio il caso che questo controllo esiste per prendere.
-          case "$RISULTATO" in
-            */app/share/fonts/*) echo "font ok" ;;
-            *) echo "ERRORE: sans-serif non arriva dai font inclusi nel pacchetto" >&2; exit 1 ;;
-          esac
+          # Il font non e' piu' un affare del pacchetto: sta dentro al jar e l'applicazione lo
+          # registra da sola all'avvio (FontApplicazione), cosi' la resa e' la stessa su ogni
+          # pacchetto e su ogni sistema operativo. Qui resta solo la verifica che nel jar ci sia
+          # davvero: se un giorno sparisse, il flatpak tornerebbe al DejaVu Sans del runtime e i
+          # pulsanti a dimensione fissa deraglierebbero, in silenzio.
+          echo '--- font incluso nel jar ---'
+          unzip -l "$A/share/giacenze-crypto/Giacenze_Crypto.jar" | grep -E "Fonts/NotoSans-(Regular|Bold)\.ttf" \
+            || { echo "ERRORE: il font non e' dentro al jar" >&2; exit 1; }
           echo verifiche-ok
 
       - name: Crea il bundle .flatpak

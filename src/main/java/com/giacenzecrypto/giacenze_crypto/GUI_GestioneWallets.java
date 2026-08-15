@@ -183,9 +183,9 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         Label_Rete.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_Rete.setText("Rete :");
 
-        TextField_IndirizzoWallet.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        TextField_IndirizzoWallet.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
 
-        ComboBox_Rete.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        ComboBox_Rete.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
         ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Arbitrum (ARB)", "Avalanche (AVAX)", "Base (BASE)", "Berachain (BERA)", "Binance Smart Chain (BSC)", "Bitcoin (BTC)", "Cronos Chain (CRO)", "Ethereum (ETH)", "Gnosis Chain (GNOSIS)", "Solana (SOL)", "Polygon (POL)", "Monad (MONAD)", "Linea (LINEA)", "Blast (BLAST)", "Unichain (UNICHAIN)", "World Chain (WORLD)", "Taiko (TAIKO)", "Abstract (ABSTRACT)", "Katana (KATANA)", "Sonic (SONIC)", "Mantle (MANTLE)", "Optimism (OP)" }));
 
         Bottone_Aggiorna.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Aggiorna.png"))); // NOI18N

@@ -1007,7 +1007,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
             domanda=domanda+"<br>Il prezzo attualmente memorizzato e' di <b>€"+PrezzoPrecedente+"</b><br></html>";*/
               String domanda = """
 <html>
-  <body style='font-family: Segoe UI, sans-serif; font-size: 13pt;'>
+  <body style='font-family: Noto Sans, sans-serif; font-size: 13pt;'>
     <div style='text-align: left;'>
       <p>Vuoi applicare il prezzo di <b>€%s</b> a questa transazione?</p>
       <div style='text-align: center;'>                         

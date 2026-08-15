@@ -314,10 +314,10 @@ public class AppDialog extends JDialog {
          * @return la palette colori/font predefinita per il tema indicato
          */
         public static UiTheme of(ThemeMode mode) {
-            Font title = new Font("SansSerif", Font.BOLD, 18);
-            Font message = new Font("SansSerif", Font.PLAIN, 13);
-            Font details = new Font("SansSerif", Font.PLAIN, 12);
-            Font button = new Font("SansSerif", Font.BOLD, 13);
+            Font title = new Font(FontApplicazione.FAMIGLIA, Font.BOLD, 18);
+            Font message = new Font(FontApplicazione.FAMIGLIA, Font.PLAIN, 13);
+            Font details = new Font(FontApplicazione.FAMIGLIA, Font.PLAIN, 12);
+            Font button = new Font(FontApplicazione.FAMIGLIA, Font.BOLD, 13);
 
             if (mode == ThemeMode.DARK) {
                 return new UiTheme(
@@ -1040,6 +1040,23 @@ public class AppDialog extends JDialog {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(color);
                 g2.fillOval(0, 0, getWidth(), getHeight());
+
+                //La spunta è disegnata, non scritta: nessuno dei caratteri di spunta
+                //(U+2713, U+2714) esiste in Noto Sans, il font incluso nel jar, e un carattere
+                //mancante in un font fisico diventa un rettangolo vuoto invece di essere
+                //cercato altrove come faceva il font logico. Vedi FontApplicazione.
+                if (type == DialogType.SUCCESS) {
+                    float l = getWidth(), h = getHeight();
+                    java.awt.geom.GeneralPath spunta = new java.awt.geom.GeneralPath();
+                    spunta.moveTo(l * 0.28f, h * 0.52f);
+                    spunta.lineTo(l * 0.43f, h * 0.68f);
+                    spunta.lineTo(l * 0.72f, h * 0.33f);
+                    g2.setColor(Color.WHITE);
+                    g2.setStroke(new BasicStroke(Math.max(2f, l * 0.09f),
+                            BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                    g2.draw(spunta);
+                }
+
                 g2.dispose();
             }
         };
@@ -1047,10 +1064,12 @@ public class AppDialog extends JDialog {
         circle.setPreferredSize(new Dimension(38, 38));
         circle.setLayout(new GridBagLayout());
 
-        JLabel symbol = new JLabel(getSymbol(type));
-        symbol.setForeground(Color.WHITE);
-        symbol.setFont(new Font("SansSerif", Font.BOLD, 18));
-        circle.add(symbol);
+        if (!getSymbol(type).isEmpty()) {
+            JLabel symbol = new JLabel(getSymbol(type));
+            symbol.setForeground(Color.WHITE);
+            symbol.setFont(new Font(FontApplicazione.FAMIGLIA, Font.BOLD, 18));
+            circle.add(symbol);
+        }
 
         panel.add(circle);
         return panel;
@@ -1061,7 +1080,8 @@ public class AppDialog extends JDialog {
             case INFO -> "i";
             case WARNING -> "!";
             case ERROR -> "×";
-            case SUCCESS -> "✓";
+            //SUCCESS non ha simbolo testuale: la spunta la disegna il cerchio, sopra.
+            case SUCCESS -> "";
         };
     }
 

@@ -135,7 +135,7 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
         if (Funzioni.MovimentoRilevante(Movimento)) {
             //Movimento Rilevante
             String text = "<html>"
-                    + "<div style='font-family: sans-serif; font-size: 11px;'>"
+                    + "<div style='font-family: Noto Sans, sans-serif; font-size: 11px;'>"
                     + "<b>Il movimento è <span style='color: #FF6600;'>RILEVANTE</span></b>, e significa che:"
                     + "<br>"
                     + "<ul style='margin-left: 15px;'>"
@@ -156,7 +156,7 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
         }else{
             //Movimento non Rilevante
             String text = "<html>"
-                    + "<div style='font-family: sans-serif; font-size: 11px;'>"
+                    + "<div style='font-family: Noto Sans, sans-serif; font-size: 11px;'>"
                     + "<b>Il movimento è <span style='color: #FF6600;'> NON RILEVANTE</span></b>, e significa che:"
                     + "<br>"
                     + "<ul style='margin-left: 15px;'>"

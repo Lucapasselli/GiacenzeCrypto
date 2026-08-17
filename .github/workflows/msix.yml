@@ -199,6 +199,15 @@ jobs:
           # --workdir HOME/GiacenzeCrypto/ e NON AppData: le scritture di un'app impacchettata sotto
           # AppData possono finire nella LocalCache virtualizzata del pacchetto, che viene cancellata
           # alla disinstallazione. Un archivio fiscale li' dentro non ci va.
+          #
+          # NIENTE --risorse, ed e' la differenza piu' importante rispetto agli altri job Windows.
+          # "--risorse app/" e' un percorso RELATIVO e viene risolto contro la directory di lavoro del
+          # processo: sotto MSIX quella e' C:\WINDOWS\system32, non la cartella d'installazione, e il
+          # programma cercava (verificato il 17/08/2026) gli script in C:\WINDOWS\system32\app\Scripts.
+          # Senza l'argomento vale il comportamento predefinito di Giacenze_Crypto.main(), che ricava le
+          # risorse dalla posizione del JAR (getJarPath, percorso ASSOLUTO, spazi compresi): sotto MSIX
+          # e' C:\Program Files\WindowsApps\<pacchetto>\app, cioe' esattamente dove stanno Scripts/,
+          # Immagini/, node/ e logo.png.
           jpackage `
             --type app-image `
             --input build `
@@ -206,7 +215,7 @@ jobs:
             --name $env:PROJECT_NAME `
             --main-jar Giacenze_Crypto.jar `
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto `
-            --arguments "--risorse app/ --workdir HOME/GiacenzeCrypto/" `
+            --arguments "--workdir HOME/GiacenzeCrypto/" `
             --icon logo.ico `
             --app-version $env:VERSIONE `
             --vendor Luca

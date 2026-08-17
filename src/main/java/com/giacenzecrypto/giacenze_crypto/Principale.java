@@ -369,48 +369,18 @@ private static final long serialVersionUID = 3L;
             VersioneCambiata = false;//intanto così poi verrà utilizzata per altre cose in futuro
         }
         if (VersioneCambiata) {
-            //Questo avvio riscrive l'intero file dei movimenti e apre una finestra di attesa: i suoi
-            //tempi non descrivono un avvio normale e non devono pesare la barra del prossimo.
+            //Questo avvio riscrive l'intero file dei movimenti: i suoi tempi non descrivono un avvio
+            //normale e non devono pesare la barra del prossimo.
             SplashAvvio.tempiNonAttendibili();
             DatabaseH2.Opzioni_Scrivi("Data_Lista_Coingecko", "1000000000000");
 
-            
-            
-            
-                    this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        Download progress = new Download();
-        progress.MostraProgressAttesa("Cambio Versione", "Aggiornamento archivi in corso...");
-        progress.setLocationRelativeTo(this);
-        progress.NoModale();
-
-        // Esegui l'export in background
-        SwingWorker<Void, Void> worker = new SwingWorker<>() {
-            /** Attende in background che il caricamento iniziale dei dati sia completato. */
-            @Override
-            protected Void doInBackground() throws Exception {
-                while (!FineCaricamentoDati) {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ex) {
-                            LoggerGC.ScriviErrore(ex);
-                        }
-                    }
-                return null;
-            }
-
-            /** Chiude la finestra di progresso e ripristina il cursore a caricamento completato. */
-            @Override
-            protected void done() {
-                progress.dispose();
-                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        };
-
-        worker.execute();        
-        progress.setVisible(true);// Questo blocca finché done() non chiama dispose()
-            
-            
-            
+            //Qui c'era una finestra di attesa "Cambio Versione - Aggiornamento archivi in corso...",
+            //rimossa il 17/08/2026. Era nata quando l'avvio non mostrava nulla; da quando c'è lo splash
+            //con la barra di avanzamento è il doppione di qualcosa che si vede già, e per giunta un
+            //doppione muto: MostraProgressAttesa nasconde quasi tutti i suoi componenti, e la finestra
+            //compariva dietro allo splash come un rettangolo bianco senza testo.
+            //Non serviva nemmeno a temporizzare qualcosa: NoModale() la rende MODELESS, quindi il
+            //setVisible(true) NON bloccava — malgrado il commento che c'era, e che diceva il contrario.
         }
         
         VarCondivise.CompilaMappaChain();

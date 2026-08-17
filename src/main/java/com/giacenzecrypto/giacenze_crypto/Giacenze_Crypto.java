@@ -197,9 +197,27 @@ public class Giacenze_Crypto {
                     g.pack();
                 }
 
+                //La finestra può risultare più grande dello schermo per due strade diverse, ed entrambe
+                //si vedono davvero: le dimensioni salvate vengono da un monitor più grande (o da un'altra
+                //macchina, via ripristino di un backup), oppure è pack() a chiederne più di quante ce ne
+                //siano — il layout di questa finestra è largo, e su uno schermo piccolo o su una macchina
+                //virtuale non ci sta. In tutti e due i casi il risultato era una finestra con i bordi e i
+                //pulsanti fuori dallo schermo, quindi non ridimensionabile con il mouse.
+                //getMaximumWindowBounds è la misura giusta perché toglie già la barra delle applicazioni.
+                java.awt.Rectangle schermo =
+                        java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+                boolean nonCiSta = g.getWidth() > schermo.width || g.getHeight() > schermo.height;
+                if (nonCiSta) {
+                    //Si riduce comunque la dimensione "da finestra", non solo lo stato: è quella che
+                    //l'utente si ritrova quando toglie la massimizzazione.
+                    g.setSize(Math.min(g.getWidth(), schermo.width), Math.min(g.getHeight(), schermo.height));
+                }
+
                 g.setLocationRelativeTo(null);
 
-                if ("true".equalsIgnoreCase(finestraMassimizzata)) {
+                //Se non ci sta si massimizza e se ne occupa il sistema, che sa gestire barra delle
+                //applicazioni, scalatura e monitor multipli meglio di qualunque calcolo fatto qui.
+                if (nonCiSta || "true".equalsIgnoreCase(finestraMassimizzata)) {
                     g.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
                 }
 

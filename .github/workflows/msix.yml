@@ -92,7 +92,12 @@ jobs:
       # Build dell'edizione Store
       # --------------------------------------------------------------------------------------------
       - name: Build JAR (edizione Store)
-        run: mvn clean package -DskipTests -Dgiacenze.edizione=store
+        shell: pwsh
+        # La proprieta' va VIRGOLETTATA: la shell predefinita dei runner Windows e' PowerShell, che
+        # spezza -Dgiacenze.edizione=store sul punto e consegna a Maven due argomenti, il secondo dei
+        # quali ".edizione=store" viene letto come fase del ciclo di vita ("Unknown lifecycle phase").
+        # -DskipTests sopravvive solo perche' non contiene punti.
+        run: mvn clean package -DskipTests "-Dgiacenze.edizione=store"
 
       - name: Verifica che il jar sia davvero l'edizione Store
         shell: pwsh

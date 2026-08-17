@@ -1285,11 +1285,11 @@ public class Prezzi {
                 risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
         }
         
-        //se ancora non ho il prezzo recupero il prezzo dall'altro provider ovvero CryptoCompare       
-        if (risultato == null) {
-              //  RecuperaPrezzidaCryptoCompare("USDT", DataGiorno);
-                risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
-        }
+        //Qui c'era CryptoCompare. Il suo livello gratuito è stato chiuso il 21/05/2026 (CryptoCompare è
+        //passata a CoinDesk Data e l'endpoint risponde 401 "API key required"), e il fetcher è stato
+        //rimosso: la chiamata era già commentata da tempo, quindi il blocco rileggeva soltanto lo stesso
+        //valore letto poco sopra. Le quotazioni già salvate in PrezziNew con exchange = 'CryptoCompare'
+        //restano valide e continuano a essere lette dalla normale ricerca dei prezzi.
         //Cerco su Coingecko
         //Escludo momentaneamente coingecko visto che ho tanti altri provider a cui chiedere in modo da diminuirne le richieste
       /*  if (risultato == null) {
@@ -1433,124 +1433,6 @@ public class Prezzi {
         return ok;
     }     
           
-    /**
-     * Scarica da CryptoCompare le quotazioni orarie EUR di una crypto in una finestra di 30 giorni centrata
-     * (con offset) sul timestamp richiesto, e le salva nella tabella {@code PrezziNew} del database dei prezzi.
-     * Evita richieste duplicate nella stessa sessione tramite {@link #managerRichieste}. Non fa nulla per il
-     * simbolo {@code LAYER} (escluso esplicitamente).
-     * @param Crypto simbolo della crypto da quotare
-     * @param timestamp data/ora di riferimento in millisecondi epoch
-     */
-    public static void RecuperaPrezziDaCryptoCompare(String Crypto, long timestamp) {
-
-        try {
-
-            Crypto = Crypto.toUpperCase().replaceAll("\\*", "").trim();
-            if (Crypto.equalsIgnoreCase("LAYER"))return;
-            
-            //Siccome timestamp nelle api di cryptocompare corrisponde alla data dell'ultimo dato che voglio ricevere
-            //e ricevo 30 gg di dati aggiungo sempre 20gg al timestamp in modo da avere i dati 10gg prima e 20 dopo la richiesta fatta.
-            long Until = timestamp + Long.parseLong("1728000000");           
-            long Adesso = System.currentTimeMillis();
-            if (Until > Adesso) {
-                //return;
-                Until = Adesso;
-            }
-            long Since = Until - Long.parseLong("2592000000");
-            //se ho già fatto questa richiesta in questa sessione termino immediatamente il ciclo
-            //per questa richiesta visto che la precisione è di 1 ora voglio avere almeno 1 ora di dati avanti e indietro di intervallo e controllo quelli
-            long SinceVerifica = timestamp - 3600000;
-            long UntilVerifica = timestamp + 3600000;
-            if (UntilVerifica > Adesso) {
-                UntilVerifica = Adesso;
-            }
-            if (SinceVerifica > Adesso) {
-                SinceVerifica = Adesso - 3600000;
-            }
-            //Se ho già effettuato la richiesta esco dal ciclo
-            if (managerRichieste.isAlreadyRequested("CryptoCompare_" + Crypto, SinceVerifica, UntilVerifica)) {
-                return;
-            }
-            TimeUnit.SECONDS.sleep(1);
-            long Fine = Until / 1000;
-
-            String apiUrl = "https://min-api.cryptocompare.com/data/v2/histohour?fsym=" + Crypto + "&tsym=EUR&limit=720&toTs=" + Fine;
-            // System.out.println(apiUrl);
-            managerRichieste.addRange("CryptoCompare_" + Crypto, Since, Until);
-            URL url = new URI(apiUrl).toURL();
-            
-            //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
-            URLConnection connection = url.openConnection();
-            // System.out.println(url);
-            System.out.println("Recupero prezzi " + Crypto + " da CryptoCompare per la data " + FunzioniDate.ConvertiDatadaLong(timestamp));
-            try (BufferedReader in = new BufferedReader(
-                    new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder response = new StringBuilder();
-                String line;
-
-                while ((line = in.readLine()) != null) {
-                    response.append(line);
-
-                }
-                if (VarCondivise.LogJsonPrezzi) {
-                    System.out.println(response.toString());
-                }
-                Gson gson = new Gson();
-                JsonObject JsonObj = gson.fromJson(response.toString(), JsonObject.class);
-                String Risposta = JsonObj.get("Response").getAsString();
-                if (Risposta.equalsIgnoreCase("Success")) {
-                    //Se la richiesta ha successo vado a leggere i dati delle crypto
-                    JsonArray pricesArray = JsonObj.getAsJsonObject("Data").getAsJsonArray("Data");
-
-                    //  List<PrezzoData> prezzoDataList = new ArrayList<>();
-                    if (pricesArray != null && pricesArray.size() > 0) {
-                        String mergeSql = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo, rete, address) "
-                                + "KEY (timestamp, exchange, symbol, rete, address) VALUES (?, ?, ?, ?, ?, ?)";
-
-                        try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(mergeSql)) {
-
-                            for (JsonElement element : pricesArray) {
-                               // JsonObject priceArray = element.getAsJsonObject();
-                               /* if (priceArray.size() != 2) {
-                                    continue;
-                                }*/
-
-                                long UnixTime = element.getAsJsonObject().get("time").getAsLong() * 1000;
-                                double prezzo;
-                                try {
-                                    prezzo = element.getAsJsonObject().get("open").getAsDouble();
-                                    if (prezzo==0)continue;//se il prezzo non è valorizzato non lo salvo
-                                } catch (Exception ex) {
-                                    continue; // skip valori non numerici
-                                }
-
-                                ps.setLong(1, UnixTime);
-                                ps.setString(2, "CryptoCompare");
-                                ps.setString(3, Crypto);
-                                ps.setDouble(4, prezzo);
-                                ps.setString(5, "");
-                                ps.setString(6, "");
-                                ps.addBatch();
-                            }
-
-                            ps.executeBatch();
-
-                        } catch (SQLException ex) {
-                            LoggerGC.ScriviErrore(ex);
-                        }
-                    }
-                }
-            } catch (IOException ex) {
-                LoggerGC.ScriviErrore(ex);
-            }
-
-        } catch (InterruptedException | URISyntaxException | MalformedURLException ex) {
-            LoggerGC.ScriviErrore(ex);
-        } catch (IOException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-    }  
-
     /**
      * Scarica e memorizza la mappa symbol→id di CoinMarketCap nel database (cache 24h).
      */

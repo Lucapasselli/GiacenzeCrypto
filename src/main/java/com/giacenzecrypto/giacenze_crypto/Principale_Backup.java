@@ -208,7 +208,7 @@ public class Principale_Backup {
                 + "con quelli dell'archivio. L'operazione non è reversibile con un annulla.<br><br>");
         dettagli.append("Verranno ripristinati :<br>");
         for (Backup_Restore.Gruppo g : gruppi) {
-            dettagli.append("&bull; ").append(g.Etichetta).append("<br>");
+            dettagli.append("&bull; ").append(g.Etichetta()).append("<br>");
         }
         dettagli.append("<br>Prima di procedere viene creato automaticamente un <b>backup di sicurezza</b> "
                 + "dello stato attuale, così è sempre possibile tornare indietro.");
@@ -285,7 +285,7 @@ public class Principale_Backup {
             boolean c = presenti.contains(g);
             //Le chiavi API restano deselezionate anche quando ci sono : sovrascrivere le credenziali in
             //uso con quelle di un backup vecchio è quasi sempre il contrario di quello che si vuole
-            JCheckBox cb = new JCheckBox(g.Etichetta, c && g != Backup_Restore.Gruppo.CHIAVI_API);
+            JCheckBox cb = new JCheckBox(g.Etichetta(), c && g != Backup_Restore.Gruppo.CHIAVI_API);
             cb.setEnabled(c);
             if (!c) {
                 cb.setToolTipText("Questo archivio non contiene dati di questo tipo");
@@ -342,7 +342,7 @@ public class Principale_Backup {
         if (!esito.VerificaMancanti.isEmpty()) {
             StringBuilder elenco = new StringBuilder();
             for (Backup_Restore.Gruppo g : esito.VerificaMancanti) {
-                elenco.append("&bull; ").append(g.Etichetta).append("<br>");
+                elenco.append("&bull; ").append(g.Etichetta()).append("<br>");
             }
             Messaggi.InfoMessage("Verifica del ripristino",
                     "Ripristino parziale : i calcoli non sono confrontabili.",

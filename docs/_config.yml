@@ -1,0 +1,8 @@
+title: Giacenze Crypto
+description: Calcolo delle giacenze e delle plusvalenze in criptovaluta per la dichiarazione dei redditi italiana
+theme: jekyll-theme-minimal
+lang: it
+# La cartella docs/ contiene solo le pagine pubbliche del progetto (oggi l'informativa privacy).
+# Il codice non la usa in nessun modo: non finisce nel jar e non viene sincronizzata a runtime.
+exclude:
+  - README.md

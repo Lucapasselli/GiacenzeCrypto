@@ -18,6 +18,15 @@ public class VarStatiche {
     static String Versione = leggiVersione();
     static String Titolo = "Giacenze Crypto " + VarStatiche.Versione + " Beta";
 
+    /** Valore dell'edizione destinata al Microsoft Store. Vedi {@link #EdizioneStore()}. */
+    static final String EDIZIONE_STORE = "store";
+
+    /**
+     * Edizione con cui il jar è stato costruito, letta da {@code version.properties}: {@code "completa"}
+     * (il default del pom) oppure {@code "store"}.
+     */
+    static String Edizione = leggiEdizione();
+
     /**_Giacenzeadata
      * Legge la versione dell'applicazione da {@code version.properties}, generato da Maven
      * a partire dalla {@code <version>} del pom tramite resource filtering.
@@ -25,20 +34,61 @@ public class VarStatiche {
      *         leggibile o il segnaposto non è stato sostituito
      */
     private static String leggiVersione() {
+        return leggiProprietaBuild("versione", "sconosciuta");
+    }
+
+    /**
+     * Legge l'edizione da {@code version.properties} (proprietà {@code giacenze.edizione} del pom).
+     * @return l'edizione dichiarata, oppure {@code "completa"} se il file non è leggibile o il
+     *         segnaposto non è stato sostituito: nel dubbio si assume il programma intero, perché
+     *         è la build ordinaria e l'edizione ridotta va scelta apposta
+     */
+    private static String leggiEdizione() {
+        return leggiProprietaBuild("edizione", "completa");
+    }
+
+    /**
+     * Legge una proprietà da {@code version.properties}, il file che Maven riempie in fase di build
+     * tramite resource filtering (vedi il blocco {@code <resources>} del pom).
+     * @param Chiave nome della proprietà
+     * @param Predefinito valore da usare se il file manca, non è leggibile o il segnaposto
+     *        {@code ${...}} non è stato sostituito (cioè se il filtering non è stato eseguito)
+     * @return il valore letto, oppure {@code Predefinito}
+     */
+    private static String leggiProprietaBuild(String Chiave, String Predefinito) {
         try (InputStream in = VarStatiche.class.getResourceAsStream("version.properties")) {
             if (in != null) {
                 Properties p = new Properties();
                 p.load(in);
-                String v = p.getProperty("versione", "").trim();
+                String v = p.getProperty(Chiave, "").trim();
                 //se il filtering di Maven non è stato eseguito il segnaposto arriva qui letterale
                 if (!v.isEmpty() && !v.startsWith("${")) {
                     return v;
                 }
             }
         } catch (Exception e) {
-            System.out.println("Impossibile leggere la versione da version.properties : " + e.getMessage());
+            System.out.println("Impossibile leggere " + Chiave + " da version.properties : " + e.getMessage());
         }
-        return "sconosciuta";
+        return Predefinito;
+    }
+
+    /**
+     * L'edizione destinata al Microsoft Store rinuncia a due cose, entrambe per motivi di policy e non
+     * di funzionalità (vedi {@code test/Documentazione/Pubblicazione_MicrosoftStore.md}):
+     * <ul>
+     * <li>lo <b>scaricamento dei movimenti dai conti exchange</b>, perché l'accesso a un exchange e la
+     *     conservazione di chiavi API sono "financial information" e imporrebbero un account Company
+     *     (policy 10.8.3 e 10.2.6), che non è una strada percorribile;</li>
+     * <li>i <b>loghi di exchange e blockchain</b> di {@code config/loghi/}, che sono immagini di terzi
+     *     (policy 11.2 e termini CoinGecko, vedi {@code Analisi_API_Terze_Parti.md}).</li>
+     * </ul>
+     * Senza quelle due, il programma ricade nella casistica esplicitamente permessa dalla 10.2.6: legge
+     * soltanto indirizzi pubblici e transazioni, e importa da file.
+     *
+     * @return {@code true} se il jar è stato costruito con {@code -Dgiacenze.edizione=store}
+     */
+    public static boolean EdizioneStore() {
+        return EDIZIONE_STORE.equalsIgnoreCase(Edizione);
     }
 
     //=== IMPOSTAZIONI GLOBALI RELATIVE AI CALCOLI ===

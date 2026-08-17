@@ -335,9 +335,18 @@ private static final long serialVersionUID = 3L;
         //Se nuova versione disponibile fa vedere il pulsante con il quale è possibile scaricarla.
         TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(false);
         Funzioni_NuovaVersioneDisponibile();
+        //L'edizione Store non scarica i movimenti dai conti exchange: è l'unico punto d'ingresso della
+        //funzione, e nasconderlo la spegne tutta (vedi VarStatiche.EdizioneStore()). GroupLayout rispetta
+        //la visibilità, quindi la barra non resta con un buco al suo posto.
+        if (VarStatiche.EdizioneStore()) TransazioniCrypto_Bottone_ExchangeAPI.setVisible(false);
         Funzioni_AggiornamentoImportConfig();
         Prezzi.CompilaMoneteStessoPrezzo();
         Bottone_Titolo.setText(VarStatiche.Titolo);
+        //Il titolo è l'unico elemento presente su tutte le schede, ed è da lì che si apre la finestra
+        //Informazioni: è la sede delle attribuzioni dovute a CoinGecko ed Etherscan, che vanno mostrate
+        //in un punto visibile e vicino ai dati (vedi GUI_Informazioni).
+        Bottone_Titolo.setToolTipText("Informazioni sul programma, fonti dei dati e licenze");
+        Bottone_Titolo.addActionListener(e -> GUI_Informazioni.Mostra(this));
 
         SplashAvvio.fase(SplashAvvio.Fase.IMPOSTAZIONI);
 
@@ -4822,7 +4831,7 @@ private static final long serialVersionUID = 3L;
         });
 
         Opzioni_Varie_Checkbox_LogJsonPrezzi.setText("Scrivi nel log i JSON scaricati durante il recupero dei prezzi");
-        Opzioni_Varie_Checkbox_LogJsonPrezzi.setToolTipText("Attiva la registrazione nel file GiacenzeCrypto.log delle risposte JSON dei servizi di prezzo (Coingecko, Binance, Coinbase, DefiLlama, CryptoCompare). Utile per il debug, ma il log cresce molto rapidamente.");
+        Opzioni_Varie_Checkbox_LogJsonPrezzi.setToolTipText("Attiva la registrazione nel file GiacenzeCrypto.log delle risposte JSON dei servizi di prezzo (Coingecko, Binance, Coinbase, DefiLlama). Utile per il debug, ma il log cresce molto rapidamente.");
         Opzioni_Varie_Checkbox_LogJsonPrezzi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_Varie_Checkbox_LogJsonPrezziActionPerformed(evt);
@@ -11681,15 +11690,25 @@ if (result.isAction("delete-all")) {
              * a {@code config/import/}.
              */
             public void run() {
+                //I loghi di exchange e blockchain vengono da CoinGecko e dalle favicon dei siti: sono
+                //immagini di terzi, e l'edizione Store non li distribuisce (policy 11.2 e termini
+                //CoinGecko, vedi test/Documentazione/Analisi_API_Terze_Parti.md). Non serve altro:
+                //LoghiImport restituisce null sul file mancante e le liste di importazione restano
+                //testuali. È l'unica via con cui i loghi arrivano all'utente — nel jar non ci sono.
+                boolean Store = VarStatiche.EdizioneStore();
+                java.util.List<Funzioni.CartellaConfig> cartelle = new java.util.ArrayList<>(java.util.List.of(
+                        new Funzioni.CartellaConfig(VarStatiche.getCartella_ConfigImport(),      "import",      ".json", true),
+                        new Funzioni.CartellaConfig(VarStatiche.getCartella_ConfigImportMappe(), "importmappe", ".json", true)));
+                if (!Store) {
+                    cartelle.add(new Funzioni.CartellaConfig(VarStatiche.getCartella_ConfigLoghi(), "loghi", ".png", false));
+                }
+
                 java.util.Map<String, java.util.List<String>> aggiornati =
-                        Funzioni.AggiornamentoConfigDaRepositoryUnicaChiamata(java.util.List.of(
-                                new Funzioni.CartellaConfig(VarStatiche.getCartella_ConfigImport(),      "import",      ".json", true),
-                                new Funzioni.CartellaConfig(VarStatiche.getCartella_ConfigImportMappe(), "importmappe", ".json", true),
-                                new Funzioni.CartellaConfig(VarStatiche.getCartella_ConfigLoghi(),       "loghi",       ".png",  false)));
+                        Funzioni.AggiornamentoConfigDaRepositoryUnicaChiamata(cartelle);
 
                 Riepiloga("import complete", aggiornati.get("import"));
                 Riepiloga("mappe causali",   aggiornati.get("importmappe"));
-                Riepiloga("loghi",           aggiornati.get("loghi"));
+                if (!Store) Riepiloga("loghi", aggiornati.get("loghi"));
             }
 
             private void Riepiloga(String descrizione, java.util.List<String> aggiornati) {

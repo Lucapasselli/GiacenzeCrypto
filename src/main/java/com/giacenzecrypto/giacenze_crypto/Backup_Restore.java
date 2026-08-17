@@ -227,11 +227,26 @@ public class Backup_Restore {
          */
         CACHE_TOKEN("Cache dei token analizzati (GoPlus, Solana)");
 
-        /** Etichetta mostrata nelle caselle del pannello. */
-        public final String Etichetta;
+        /** Etichetta dell'edizione completa. Si legge con {@link #Etichetta()}, non direttamente. */
+        private final String Etichetta;
 
         Gruppo(String Etichetta) {
             this.Etichetta = Etichetta;
+        }
+
+        /**
+         * Etichetta da mostrare nelle caselle del pannello.
+         *
+         * <p>Coincide con quella dichiarata tranne che per {@link #CHIAVI_API} nell'edizione Store, dove
+         * le chiavi degli exchange non esistono ({@link VarStatiche#EdizioneStore()}) e annunciarle
+         * sarebbe falso: lì restano solo quelle degli explorer e dei fornitori di dati. È un metodo e non
+         * un campo proprio perché nessuno possa aggirare questa distinzione leggendo l'etichetta grezza.
+         */
+        public String Etichetta() {
+            if (this == CHIAVI_API && VarStatiche.EdizioneStore()) {
+                return "Chiavi API degli explorer e dei fornitori di dati";
+            }
+            return Etichetta;
         }
     }
 
@@ -315,7 +330,13 @@ public class Backup_Restore {
         //Il registro dei documenti sta nel gruppo dei movimenti: il campo [41] di ogni movimento ne
         //referenzia l'Id, separarli lascerebbe quei riferimenti appesi
         t.add(new Tabella("DOCUMENTIFONTE", DB.PERSONALE, Gruppo.MOVIMENTI));
-        t.add(new Tabella("EXCHANGEAPI", DB.PERSONALE, Gruppo.CHIAVI_API));
+        //Nell'edizione Store la tabella non esiste (vedi VarStatiche.EdizioneStore()): fuori da questo
+        //elenco vuol dire che non viene salvata e che un archivio prodotto dall'edizione completa la
+        //salta al ripristino, con l'avviso già previsto da Backup_Compatibilita. Il gruppo CHIAVI_API
+        //resta comunque, perché contiene anche le opzioni ApiKey_* di explorer e fornitori di dati.
+        if (!VarStatiche.EdizioneStore()) {
+            t.add(new Tabella("EXCHANGEAPI", DB.PERSONALE, Gruppo.CHIAVI_API));
+        }
 
         //--- database.mv.db : in gran parte cache, ma non tutto
         t.add(new Tabella("OPZIONI", DB.PRINCIPALE, Gruppo.OPZIONI_CALCOLO, filtroOpzioni));
@@ -370,7 +391,10 @@ public class Backup_Restore {
 
         /** Se {@code true} salva tutta la tabella dei prezzi anziché il solo sottoinsieme necessario. */
         public boolean PrezziCompleti = false;
-        /** Se {@code true} include {@code EXCHANGEAPI} e le opzioni {@code ApiKey_*}. Default: no. */
+        /**
+         * Se {@code true} include le opzioni {@code ApiKey_*} e, nell'edizione completa, la tabella
+         * {@code EXCHANGEAPI} (che l'edizione Store non ha). Default: no.
+         */
         public boolean ChiaviApi = false;
         /** Se {@code true} include le cache token accumulate ({@link Gruppo#CACHE_TOKEN}). Default: sì. */
         public boolean CacheToken = true;

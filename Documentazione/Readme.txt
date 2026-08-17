@@ -29,6 +29,22 @@ NB: Per aggiornare la versione portable/multipiattaforma del programma basta sov
 
 Changelog
 
+ver. 1.0.61
+Nuove Implementazioni :
+- Il programma porta ora con sé il proprio carattere di scrittura (Noto Sans): l'interfaccia si presenta identica su Windows, Linux e Mac e su tutti i pacchetti, senza più dipendere dai font installati sul computer.
+  Prima, quando i caratteri richiesti non erano presenti, il sistema ne sostituiva uno diverso e più largo, e i testi risultavano tagliati o i pulsanti disallineati.
+  Di conseguenza sono state tolte dai testi dell'interfaccia le frecce, le spunte e le emoji, che un carattere di questo tipo non può disegnare.
+- La marcatura "Identifica come SCAM" nella scheda "Depositi e Prelievi" funziona ora su più righe selezionate: viene chiesta una sola conferma, che elenca anche i token con movimenti diversi da un semplice deposito o prelievo,
+  e al termine viene mostrato un riepilogo dei token marcati e di quelli lasciati normali con il motivo (già classificati, privi di indirizzo o rete, già SCAM, con movimenti valorizzati).
+  Selezionando una riga sola resta la procedura di prima, che è anche l'unica in grado di togliere lo stato SCAM.
+Correzione Bug :
+- I movimenti scaricati da OKX vengono ora registrati tutti sul wallet "Principale", invece di essere divisi fra i conti "Funding" e "Trading":
+  i giroconti fra i due conti non vengono importati (sono spostamenti interni allo stesso utente), quindi tenerli separati faceva risultare la stessa moneta spezzata su due portafogli senza alcun movimento che ne giustificasse il passaggio. Questo era anche un bug perchè poteva portare a segnalazioni di giacenze negative su okx in maniera errata.
+  La stessa regola vale per le importazioni da file CSV di OKX. I movimenti già presenti in archivio non vengono spostati: restano sui wallet con cui erano stati importati.
+- Corretto un difetto per cui, marcando come SCAM più token in una volta sola, lo stesso token poteva essere proposto due volte.
+- Corretto un difetto per cui il primo scaricamento dell'elenco monete da CoinMarketCap riempiva il log di errori: l'elenco contiene token diversi con lo stesso simbolo e i doppioni venivano rifiutati uno per uno.
+  Ora vengono scartati prima della scrittura tenendo il token più importante, e il conteggio mostrato al termine indica quelli effettivamente registrati.
+
 ver. 1.0.60
 Nuove Implementazioni :
 - Aggiunto lo scaricamento dei movimenti di OKX direttamente dalle API: si inseriscono chiave, secret e passphrase in "Opzioni" - "ApiKey" e il programma scarica i movimenti del conto Funding e del conto Trading,

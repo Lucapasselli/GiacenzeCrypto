@@ -54,6 +54,8 @@ Il JAR va distribuito insieme alla cartella `Immagini/` (icone e immagini non so
 
 L'applicazione lavora **in locale**: i movimenti, i wallet e le quotazioni scaricate vengono salvati in database H2 all'interno della cartella di lavoro (`database.mv.db`, `personale.mv.db`, `prezzi.mv.db`, ecc.). Le uniche chiamate di rete sono quelle necessarie a importare i movimenti (API degli exchange/wallet) e a recuperare le quotazioni storiche.
 
+Il dettaglio completo — cosa resta sul computer, cosa esce e verso chi — è nell'[informativa sulla privacy](https://lucapasselli.github.io/GiacenzeCrypto/privacy/) (sorgente in `docs/privacy/`).
+
 ## Disclaimer
 
 Questo software viene fornito "così com'è", **senza alcuna garanzia**, esplicita o implicita, di correttezza, completezza o idoneità a uno scopo particolare.

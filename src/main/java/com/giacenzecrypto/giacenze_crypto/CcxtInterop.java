@@ -35,14 +35,15 @@ public class CcxtInterop {
 
     /**
      * Radice di una distribuzione Node.js <b>fornita dal pacchetto</b> invece che scaricata dall'app,
-     * letta dalla variabile d'ambiente {@code GIACENZE_NODE_HOME}. Serve al solo flatpak, dove
-     * scaricare ed eseguire codice a runtime non e' ammesso e {@code /app} e' di sola lettura: il
-     * pacchetto ci mette dentro {@code bin/node} e {@code node_modules/ccxt} (non npm: a runtime non
-     * si potrebbe usare, vedi {@link #getNpmPath()}).
+     * individuata da {@link #LeggiNodeEsterno()} per variabile d'ambiente ({@code GIACENZE_NODE_HOME},
+     * la via del flatpak) oppure per posizione (una cartella {@code node/} accanto alle risorse, la via
+     * dell'MSIX). Serve dove scaricare ed eseguire codice a runtime non e' ammesso e la cartella di
+     * installazione e' di sola lettura: il pacchetto ci mette dentro {@code bin/node} e
+     * {@code node_modules/ccxt} (non npm: a runtime non si potrebbe usare, vedi {@link #getNpmPath()}).
      * <p>
-     * In tutti gli altri pacchetti (deb, dmg, installer Windows, portable, AUR) la variabile non
-     * esiste, il campo resta {@code null} e ogni percorso di codice qui sotto e' identico a prima:
-     * Node viene scaricato in {@code <workdir>/tools/node} alla prima importazione via API.
+     * Nei pacchetti che non includono Node (deb, dmg, installer Windows, portable, AUR) non c'e' ne'
+     * l'una ne' l'altra, il campo resta {@code null} e ogni percorso di codice qui sotto e' identico a
+     * prima: Node viene scaricato in {@code <workdir>/tools/node} alla prima importazione via API.
      * <p>
      * Il layout atteso e' quello naturale di un prefisso Node ({@code bin/node}) e non quello della
      * distribuzione standalone ({@code node-<versione>-<piattaforma>/bin/node}), apposta: non contiene
@@ -51,11 +52,37 @@ public class CcxtInterop {
      */
     private static final Path NODE_ESTERNO = LeggiNodeEsterno();
 
-    /** @return la radice indicata da {@code GIACENZE_NODE_HOME}, oppure {@code null} se non impostata */
+    /**
+     * Individua un Node fornito dal pacchetto, per nome di variabile d'ambiente oppure per posizione.
+     *
+     * <p>Le due vie non sono ridondanti. La variabile {@code GIACENZE_NODE_HOME} e' quella del flatpak,
+     * dove il manifest puo' impostarla e Node sta in un prefisso di sistema ({@code /app/node}). Un
+     * pacchetto <b>MSIX</b> per il Microsoft Store non ha lo stesso comodo: impostare una variabile
+     * d'ambiente da li' richiederebbe l'estensione {@code desktop6:windows.environmentVariables}, e
+     * scaricare Node a runtime e' proprio cio' che quel canale non gradisce (policy 10.2.2 e 10.2.3,
+     * vedi {@code test/Documentazione/Pubblicazione_MicrosoftStore.md}). Percio' vale anche una
+     * cartella {@code node/} <b>accanto alle risorse</b>, cioe' dove gia' stanno {@code Scripts/} e
+     * {@code Immagini/}: un pacchetto che include Node non deve fare altro che metterlo li'.
+     *
+     * <p>Il layout atteso resta quello di {@link #getNodeExePath()}, cioe' {@code node/bin/<eseguibile>}
+     * anche su Windows, dove nella distribuzione ufficiale {@code node.exe} sta invece nella radice:
+     * chi confeziona il pacchetto sposta l'eseguibile, non si tocca il codice.
+     *
+     * @return la radice del Node fornito dal pacchetto, oppure {@code null} se non ce n'e' uno e quindi
+     *         va scaricato in {@code <workdir>/tools/node} come sempre
+     */
     private static Path LeggiNodeEsterno() {
         String v = System.getenv("GIACENZE_NODE_HOME");
-        if (v == null || v.isBlank()) return null;
-        return Paths.get(v.trim()).toAbsolutePath().normalize();
+        if (v != null && !v.isBlank()) {
+            return Paths.get(v.trim()).toAbsolutePath().normalize();
+        }
+        //Il percorso delle risorse e' noto fin dall'analisi degli argomenti, prima di qualunque uso di
+        //questa classe: se la cartella non c'e', il campo resta null e non cambia niente.
+        Path accantoAlleRisorse = Paths.get(VarStatiche.getPathRisorse(), "node").toAbsolutePath().normalize();
+        if (Files.isDirectory(accantoAlleRisorse)) {
+            return accantoAlleRisorse;
+        }
+        return null;
     }
 
     public static final Path NODE_DIR = NODE_ESTERNO != null

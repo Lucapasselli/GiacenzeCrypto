@@ -6370,7 +6370,7 @@
                     <Component class="javax.swing.JCheckBox" name="Opzioni_Varie_Checkbox_LogJsonPrezzi">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Scrivi nel log i JSON scaricati durante il recupero dei prezzi"/>
-                        <Property name="toolTipText" type="java.lang.String" value="Attiva la registrazione nel file GiacenzeCrypto.log delle risposte JSON dei servizi di prezzo (Coingecko, Binance, Coinbase, DefiLlama, CryptoCompare). Utile per il debug, ma il log cresce molto rapidamente."/>
+                        <Property name="toolTipText" type="java.lang.String" value="Attiva la registrazione nel file GiacenzeCrypto.log delle risposte JSON dei servizi di prezzo (Coingecko, Binance, Coinbase, DefiLlama). Utile per il debug, ma il log cresce molto rapidamente."/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Checkbox_LogJsonPrezziActionPerformed"/>

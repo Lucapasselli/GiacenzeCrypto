@@ -186,8 +186,15 @@ public class DatabaseH2 {
                 stmtGoPlus.execute("ALTER TABLE GOPLUSSECURITY ADD COLUMN IF NOT EXISTS is_open_source VARCHAR(5)");
             }
 
-            createTableSQL = "CREATE TABLE IF NOT EXISTS EXCHANGEAPI (Nome VARCHAR(255) PRIMARY KEY, Exchange VARCHAR(255), Chiave VARCHAR(255), Segreto VARCHAR(255),Opzionale VARCHAR(255))";
-            EseguiDDL(connectionPersonale, createTableSQL);
+            //Nell'edizione Store la tabella non viene nemmeno creata: quella build non scarica i movimenti
+            //dai conti exchange e non ha quindi nessuna credenziale da conservare. "Non ci sono chiavi API"
+            //e "la tabella c'è ma è vuota" non sono la stessa affermazione, ed è la prima che va sostenuta
+            //davanti alla policy 10.8.3. Nessun accesso resta scoperto: gli unici lettori della tabella
+            //sono in GUI_ExchangeAPI, che in quella edizione non è raggiungibile.
+            if (!VarStatiche.EdizioneStore()) {
+                createTableSQL = "CREATE TABLE IF NOT EXISTS EXCHANGEAPI (Nome VARCHAR(255) PRIMARY KEY, Exchange VARCHAR(255), Chiave VARCHAR(255), Segreto VARCHAR(255),Opzionale VARCHAR(255))";
+                EseguiDDL(connectionPersonale, createTableSQL);
+            }
 
             //Registro dei documenti di origine dei movimenti: le copie dei file importati stanno compresse in
             //DocumentiFonte/ e il campo [41] di ogni movimento contiene l'Id della riga di questa tabella.

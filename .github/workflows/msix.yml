@@ -1,0 +1,237 @@
+name: MSIX (Microsoft Store)
+
+# Costruisce il pacchetto MSIX dell'EDIZIONE STORE, da caricare a mano su Partner Center.
+#
+# Tre cose che lo distinguono dagli altri job di release, tutte volute:
+#  - compila con -Dgiacenze.edizione=store : niente scaricamento dai conti exchange e niente loghi di
+#    terzi (policy 10.8.3/10.2.6 e 11.2), vedi test/Documentazione/Pubblicazione_MicrosoftStore.md;
+#  - include Node e ccxt nel pacchetto invece di lasciarli scaricare all'avvio (policy 10.2.2/10.2.3);
+#  - NON firma niente: allo Store il pacchetto lo firma Microsoft, e firmarlo da se' ci mette dentro
+#    un CN che non coincide con l'identita' di Partner Center.
+#
+# Il pacchetto non viene allegato alla release pubblica: un MSIX non firmato scaricato da GitHub non
+# si installa da solo, e la sua destinazione e' Partner Center.
+
+env:
+  PROJECT_NAME: Giacenze_Crypto
+  JAVA_VERSION: 24
+  JAVA_DISTRIBUTION: temurin
+  # Deve restare allineata a CcxtInterop.NODE_VERSION: e' la stessa distribuzione che l'applicazione
+  # scaricherebbe da se' negli altri pacchetti.
+  NODE_VERSION: v24.7.0
+
+# A differenza di aur.yml e flatpak.yml non c'e' nessun input "solo_prova" da cui difendersi: questo
+# workflow non tocca mai la release ne' niente di pubblicato, si limita a produrre un artifact. Ogni
+# esecuzione e' gia' una prova a vuoto.
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build-msix:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
+
+      # --------------------------------------------------------------------------------------------
+      # Versione: quella del pom non e' un numero MSIX valido
+      # --------------------------------------------------------------------------------------------
+      - name: Estrai versione e calcola quella MSIX
+        shell: pwsh
+        run: |
+          [xml]$pom = Get-Content pom.xml
+          $versione = $pom.project.version
+          if (-not $versione) { Write-Error "Versione non trovata nel pom.xml"; exit 1 }
+
+          # MSIX vuole quattro parti numeriche senza zeri iniziali, e lo Store pretende che la quarta
+          # sia 0 (se la riserva lui). La versione del progetto e' A.B.C.D con D a due cifre, quindi
+          # 1.0.58.03 -> 1.0.5803.0 : cresce sia quando cresce C sia quando cresce D, che e' la sola
+          # cosa che conta perche' Partner Center rifiuta un pacchetto non piu' recente del precedente.
+          $p = $versione.Split('.')
+          if ($p.Count -lt 3) { Write-Error "Versione '$versione' inattesa: servono almeno A.B.C"; exit 1 }
+          $A = [int]$p[0]; $B = [int]$p[1]; $C = [int]$p[2]
+          $D = if ($p.Count -ge 4) { [int]$p[3] } else { 0 }
+          if ($D -ge 100) { Write-Error "La quarta parte della versione ($D) non puo' superare 99 : la regola A.B.(C*100+D).0 non sarebbe piu' crescente"; exit 1 }
+          $versioneMsix = "$A.$B.$($C * 100 + $D).0"
+
+          Write-Host "Versione progetto : $versione"
+          Write-Host "Versione MSIX     : $versioneMsix"
+          echo "VERSIONE=$versione" >> $env:GITHUB_ENV
+          echo "VERSIONE_MSIX=$versioneMsix" >> $env:GITHUB_ENV
+
+      - name: Verifica che l'identita' di Partner Center sia stata compilata
+        shell: pwsh
+        run: |
+          # Si guardano i valori, non tutto il file: un commento che nomina i segnaposto non e' un
+          # segnaposto, e una guardia che scatta sui commenti prima o poi la si disattiva.
+          [xml]$manifest = Get-Content packaging\msix\AppxManifest.xml
+          $id = $manifest.Package.Identity
+          $valori = @($id.Name, $id.Publisher, $manifest.Package.Properties.PublisherDisplayName)
+          if ($valori | Where-Object { $_ -match 'DA-COMPILARE' -or [string]::IsNullOrWhiteSpace($_) }) {
+            Write-Error @"
+          packaging\msix\AppxManifest.xml contiene ancora i segnaposto DA-COMPILARE.
+          I tre valori si leggono in Partner Center dopo aver riservato il nome dell'applicazione
+          (Product identity): Package/Identity/Name, Package/Identity/Publisher (nella forma CN=...)
+          e Package/Properties/PublisherDisplayName. Non si indovinano, e dopo la creazione dell'app
+          non sono piu' modificabili.
+          "@
+            exit 1
+          }
+
+      # --------------------------------------------------------------------------------------------
+      # Build dell'edizione Store
+      # --------------------------------------------------------------------------------------------
+      - name: Build JAR (edizione Store)
+        run: mvn clean package -DskipTests -Dgiacenze.edizione=store
+
+      - name: Verifica che il jar sia davvero l'edizione Store
+        shell: pwsh
+        run: |
+          # Se il resource filtering non fosse passato, VarStatiche ripiegherebbe su "completa" e il
+          # pacchetto conterrebbe la funzione che allo Store non puo' esserci: meglio fermarsi qui.
+          $p = Get-Content target\classes\com\giacenzecrypto\giacenze_crypto\version.properties -Raw
+          if ($p -notmatch 'edizione\s*=\s*store') {
+            Write-Error "Il jar non e' stato costruito come edizione Store : $p"
+            exit 1
+          }
+
+      - name: Prepara cartella build con risorse
+        shell: pwsh
+        run: |
+          mkdir build\Immagini
+          mkdir build\Scripts
+          copy Scripts\* build\Scripts\
+          copy Immagini\* build\Immagini\
+          copy logo.png build\
+          copy LICENSE build\
+          copy THIRD-PARTY-LICENSES.md build\
+          copy target\Giacenze_Crypto-$env:VERSIONE-jar-with-dependencies.jar build\Giacenze_Crypto.jar
+
+      # --------------------------------------------------------------------------------------------
+      # Node e ccxt dentro il pacchetto, invece che scaricati al primo uso
+      # --------------------------------------------------------------------------------------------
+      - name: Includi Node e ccxt
+        shell: pwsh
+        run: |
+          # Il layout deve essere quello che CcxtInterop si aspetta da un Node fornito dal pacchetto:
+          #   <risorse>\node\bin\node.exe        (getNodeExePath, ramo NODE_ESTERNO)
+          #   <risorse>\node\node_modules\ccxt   (installCcxt esce subito se la trova; NODE_PATH ci punta)
+          # Nella distribuzione ufficiale per Windows node.exe sta nella radice: si sposta qui, e il
+          # Java non si tocca.
+          $versioneNode = "${env:NODE_VERSION}"
+          $url = "https://nodejs.org/dist/$versioneNode/node-$versioneNode-win-x64.zip"
+          Write-Host "Scarico $url"
+          Invoke-WebRequest -Uri $url -OutFile node.zip
+          Expand-Archive node.zip -DestinationPath nodetmp
+          $dist = Join-Path (Resolve-Path nodetmp) "node-$versioneNode-win-x64"
+
+          mkdir build\node\bin | Out-Null
+          $npm = Join-Path $dist "npm.cmd"
+
+          # npm serve solo adesso, in fase di build: a runtime, con Node fornito dal pacchetto,
+          # getNpmPath() lancia apposta invece di restituire un percorso (la cartella e' di sola
+          # lettura e un modulo mancante e' un difetto del pacchetto, non qualcosa da installare).
+          # Si installa con la CWD dentro build\node, non con --prefix: su Windows il significato di
+          # --prefix per un'installazione locale non e' quello che sembra, e qui l'unica cosa che deve
+          # valere e' che ccxt finisca in build\node\node_modules SENZA portarsi dietro anche npm
+          # (che nella distribuzione vive esso stesso dentro node_modules e nel pacchetto non serve).
+          Push-Location build\node
+          & $npm install ccxt --no-save --no-audit --no-fund --omit=dev
+          if ($LASTEXITCODE -ne 0) { Write-Error "npm install ccxt fallito"; exit 1 }
+          Pop-Location
+
+          Move-Item (Join-Path $dist "node.exe") build\node\bin\node.exe
+
+          if (-not (Test-Path build\node\bin\node.exe)) { Write-Error "node.exe non e' finito in build\node\bin"; exit 1 }
+          if (-not (Test-Path build\node\node_modules\ccxt)) { Write-Error "ccxt non e' finito in build\node\node_modules"; exit 1 }
+
+          # Del resto della distribuzione non si porta niente: node.exe per Windows e' autosufficiente.
+          # "Autosufficiente" pero' e' un'assunzione, e questo e' il binario da cui dipende tutto il
+          # recupero delle quotazioni: la si verifica qui invece di scoprirlo installando il pacchetto.
+          $v = & build\node\bin\node.exe --version
+          if ($LASTEXITCODE -ne 0) { Write-Error "il node.exe incluso non parte da solo"; exit 1 }
+          Write-Host "node incluso : $v"
+          if ($v.Trim() -ne $versioneNode) { Write-Error "versione inattesa: $v invece di $versioneNode"; exit 1 }
+
+          # E si verifica anche che ccxt si risolva NELLO STESSO MODO in cui lo caricera'
+          # l'applicazione, cioe' con NODE_PATH puntato a <node>\node_modules (vedi CcxtInterop):
+          # e' il contratto vero, non un suo surrogato.
+          $env:NODE_PATH = (Resolve-Path build\node\node_modules).Path
+          $esito = & build\node\bin\node.exe -e "require('ccxt'); console.log('ccxt ok')"
+          if ($LASTEXITCODE -ne 0) { Write-Error "ccxt non si risolve con NODE_PATH : $esito"; exit 1 }
+          Write-Host $esito
+          Remove-Item Env:\NODE_PATH
+
+          Write-Host "Node e ccxt inclusi nel pacchetto"
+
+      # --------------------------------------------------------------------------------------------
+      # App-image e pacchetto
+      # --------------------------------------------------------------------------------------------
+      - name: Build app-image (jpackage)
+        shell: pwsh
+        run: |
+          # --workdir HOME/GiacenzeCrypto/ e NON AppData: le scritture di un'app impacchettata sotto
+          # AppData possono finire nella LocalCache virtualizzata del pacchetto, che viene cancellata
+          # alla disinstallazione. Un archivio fiscale li' dentro non ci va.
+          jpackage `
+            --type app-image `
+            --input build `
+            --dest out `
+            --name $env:PROJECT_NAME `
+            --main-jar Giacenze_Crypto.jar `
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto `
+            --arguments "--risorse app/ --workdir HOME/GiacenzeCrypto/" `
+            --icon logo.ico `
+            --app-version $env:VERSIONE `
+            --vendor Luca
+
+      - name: Aggiungi manifest e icone all'app-image
+        shell: pwsh
+        run: |
+          $app = "out\$env:PROJECT_NAME"
+          (Get-Content packaging\msix\AppxManifest.xml -Raw).Replace('@VERSIONE_MSIX@', $env:VERSIONE_MSIX) `
+            | Set-Content -Encoding UTF8 (Join-Path $app "AppxManifest.xml")
+          Copy-Item packaging\msix\Assets $app -Recurse
+          Write-Host "Contenuto del pacchetto:"
+          Get-ChildItem $app | Select-Object Name
+
+      - name: Impacchetta con makeappx
+        shell: pwsh
+        run: |
+          # makeappx.exe non e' nel PATH del runner: sta nel Windows SDK, sotto una cartella che porta
+          # il numero di versione dell'SDK. Si cerca la piu' recente invece di inchiodarne una, che
+          # sarebbe rotta dal primo aggiornamento dell'immagine del runner.
+          $sdk = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin" -Directory -ErrorAction SilentlyContinue |
+                 Where-Object { Test-Path (Join-Path $_.FullName "x64\makeappx.exe") } |
+                 Sort-Object Name -Descending | Select-Object -First 1
+          if (-not $sdk) { Write-Error "makeappx.exe non trovato nel Windows SDK del runner"; exit 1 }
+          $makeappx = Join-Path $sdk.FullName "x64\makeappx.exe"
+          Write-Host "makeappx : $makeappx"
+
+          mkdir pacchetto | Out-Null
+          $msix = "pacchetto\GiacenzeCrypto_$($env:VERSIONE)_Store.msix"
+          & $makeappx pack /d "out\$env:PROJECT_NAME" /p $msix /o
+          if ($LASTEXITCODE -ne 0) { Write-Error "makeappx pack fallito"; exit 1 }
+          Write-Host "Pacchetto creato : $msix"
+          echo "PACCHETTO=$msix" >> $env:GITHUB_ENV
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_MSIX_Store
+          path: ${{ env.PACCHETTO }}
+
+      - name: Cosa farne
+        shell: pwsh
+        run: |
+          Write-Host "Il pacchetto e' l'artifact di questa esecuzione, NON e' allegato alla release."
+          Write-Host "Va caricato a mano su Partner Center, non firmato: lo firma lo Store."

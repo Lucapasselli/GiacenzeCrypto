@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.giacenzecrypto</groupId>
   <artifactId>Giacenze_Crypto</artifactId>
-  <version>1.0.60</version>
+  <version>1.0.61</version>
   <licenses>
     <license>
       <name>MIT License</name>
@@ -117,10 +117,11 @@
     </dependency>
   </dependencies>
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>21</maven.compiler.target>
     <exec.mainClass>com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto</exec.mainClass>
     <maven.compiler.source>21</maven.compiler.source>
     <graalvm.version>24.2.2</graalvm.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <giacenze.edizione>completa</giacenze.edizione>
   </properties>
 </project>

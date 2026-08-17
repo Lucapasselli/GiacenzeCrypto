@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Manifest del pacchetto MSIX per il Microsoft Store.
+
+  Identity/Name, Identity/Publisher e PublisherDisplayName sono i valori letti in Partner Center
+  (Product identity) dopo aver riservato il nome dell'applicazione, compilati il 17/08/2026. NON SONO
+  PIU' MODIFICABILI dopo la creazione dell'app: se un giorno non corrispondessero piu', Partner Center
+  rifiuterebbe il caricamento. .github/workflows/msix.yml controlla che non siano tornati a essere
+  segnaposto.
+
+  La Version invece la sostituisce il workflow a ogni build: MSIX vuole quattro parti numeriche senza
+  zeri iniziali e lo Store pretende che la quarta sia 0, quindi la 1.0.58.03 del pom non e' un numero
+  valido. Vedi test/Documentazione/Pubblicazione_MicrosoftStore.md.
+
+  Il pacchetto NON va firmato: allo Store lo firma Microsoft, e firmarlo da se' ci mette dentro il CN
+  del proprio certificato, che poi non coincide con l'identita' di Partner Center.
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap rescap">
+
+  <Identity
+    Name="Cryptofer.GiacenzeCrypto"
+    Publisher="CN=6F03A5B8-4074-4DD1-AF36-1C8E5AC97E6B"
+    Version="@VERSIONE_MSIX@"
+    ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>Giacenze Crypto</DisplayName>
+    <PublisherDisplayName>Cryptofer</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <!-- 10.0.17763 e' Windows 10 1809: la prima versione su cui l'installazione di un MSIX
+         desktop full-trust e' pienamente supportata -->
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="it-IT" />
+  </Resources>
+
+  <Applications>
+    <!-- Executable e' il lanciatore prodotto da jpackage con l'opzione name = Giacenze_Crypto.
+         EntryPoint Windows.FullTrustApplication e' quello che rende il pacchetto un'app desktop
+         normale invece di un'app in sandbox: senza, un programma Java non parte. -->
+    <Application Id="GiacenzeCrypto" Executable="Giacenze_Crypto.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="Giacenze Crypto"
+        Description="Calcolo delle giacenze e delle plusvalenze in criptovaluta per la dichiarazione dei redditi italiana, con metodo LIFO."
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile
+          Wide310x150Logo="Assets\Wide310x150Logo.png"
+          Square71x71Logo="Assets\Square71x71Logo.png"
+          Square310x310Logo="Assets\Square310x310Logo.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

@@ -67,6 +67,7 @@ jobs:
           copy Immagini\* build\Immagini\
           copy logo.png build\
           copy LICENSE build\
+          copy THIRD-PARTY-LICENSES.md build\
           copy target\Giacenze_Crypto-$env:VERSIONE-jar-with-dependencies.jar build\Giacenze_Crypto.jar
           mkdir out
 
@@ -171,6 +172,7 @@ jobs:
           cp -r Immagini/* build/Immagini/
           cp logo.png build/
           cp LICENSE build/
+          cp THIRD-PARTY-LICENSES.md build/
           cp target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar build/Giacenze_Crypto.jar
 
       - name: Build Linux app-image
@@ -271,6 +273,7 @@ jobs:
           cp -r Scripts/* build/Scripts/
           cp logo.png build/
           cp LICENSE build/
+          cp THIRD-PARTY-LICENSES.md build/
           cp target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar build/Giacenze_Crypto.jar
 
       - name: Build macOS app-image

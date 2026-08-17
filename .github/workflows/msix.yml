@@ -25,7 +25,18 @@ env:
 # esecuzione e' gia' una prova a vuoto.
 on:
   workflow_dispatch:
+    inputs:
+      pacchetto_di_prova:
+        description: "Pacchetto installabile a mano per il collaudo (NON caricabile su Partner Center)"
+        type: boolean
+        required: false
+        default: false
   workflow_call:
+    inputs:
+      pacchetto_di_prova:
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -202,16 +213,34 @@ jobs:
 
       - name: Aggiungi manifest e icone all'app-image
         shell: pwsh
+        env:
+          PACCHETTO_DI_PROVA: ${{ inputs.pacchetto_di_prova }}
         run: |
-          $app = "out\$env:PROJECT_NAME"
-          (Get-Content packaging\msix\AppxManifest.xml -Raw).Replace('@VERSIONE_MSIX@', $env:VERSIONE_MSIX) `
-            | Set-Content -Encoding UTF8 (Join-Path $app "AppxManifest.xml")
+          $app = (Resolve-Path "out\$env:PROJECT_NAME").Path
+          [xml]$manifest = Get-Content packaging\msix\AppxManifest.xml
+          $manifest.Package.Identity.Version = $env:VERSIONE_MSIX
+
+          if ($env:PACCHETTO_DI_PROVA -eq 'true') {
+            # Windows rifiuta un pacchetto NON FIRMATO la cui identita' non stia nel cosiddetto
+            # "spazio dei nomi non firmato" (errore 0x80073D2C): serve questo OID in coda al Publisher.
+            # Cambia l'identita' del pacchetto, ed e' voluto — cosi' una copia di collaudo non puo'
+            # spacciarsi per quella firmata. Per la stessa ragione l'OID NON deve esserci nel pacchetto
+            # caricato su Partner Center, dove il Publisher deve coincidere con l'identita' dichiarata.
+            $manifest.Package.Identity.Publisher =
+              "$($manifest.Package.Identity.Publisher), OID.2.25.311729368913984317654407730594956997722=1"
+            Write-Host "::warning::Pacchetto DI PROVA : identita' alterata con l'OID, NON caricabile su Partner Center"
+          }
+
+          $manifest.Save((Join-Path $app "AppxManifest.xml"))
           Copy-Item packaging\msix\Assets $app -Recurse
+          Write-Host "Identity/Publisher : $($manifest.Package.Identity.Publisher)"
           Write-Host "Contenuto del pacchetto:"
           Get-ChildItem $app | Select-Object Name
 
       - name: Impacchetta con makeappx
         shell: pwsh
+        env:
+          PACCHETTO_DI_PROVA: ${{ inputs.pacchetto_di_prova }}
         run: |
           # makeappx.exe non e' nel PATH del runner: sta nel Windows SDK, sotto una cartella che porta
           # il numero di versione dell'SDK. Si cerca la piu' recente invece di inchiodarne una, che
@@ -224,7 +253,10 @@ jobs:
           Write-Host "makeappx : $makeappx"
 
           mkdir pacchetto | Out-Null
-          $msix = "pacchetto\GiacenzeCrypto_$($env:VERSIONE)_Store.msix"
+          # Il nome dice cos'e': un pacchetto di prova che finisse su Partner Center verrebbe rifiutato,
+          # e uno da Store non si installa a mano. Distinguerli a occhio evita di provarci.
+          $suffisso = if ($env:PACCHETTO_DI_PROVA -eq 'true') { "PROVA" } else { "Store" }
+          $msix = "pacchetto\GiacenzeCrypto_$($env:VERSIONE)_$suffisso.msix"
           & $makeappx pack /d "out\$env:PROJECT_NAME" /p $msix /o
           if ($LASTEXITCODE -ne 0) { Write-Error "makeappx pack fallito"; exit 1 }
           Write-Host "Pacchetto creato : $msix"
@@ -232,11 +264,19 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: GiacenzeCrypto_${{ env.VERSIONE }}_MSIX_Store
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_MSIX_${{ inputs.pacchetto_di_prova && 'PROVA' || 'Store' }}
           path: ${{ env.PACCHETTO }}
 
       - name: Cosa farne
         shell: pwsh
         run: |
-          Write-Host "Il pacchetto e' l'artifact di questa esecuzione, NON e' allegato alla release."
-          Write-Host "Va caricato a mano su Partner Center, non firmato: lo firma lo Store."
+          if ("${{ inputs.pacchetto_di_prova }}" -eq 'true') {
+            Write-Host "PACCHETTO DI PROVA. Si installa su Windows 11 con PowerShell COME AMMINISTRATORE:"
+            Write-Host "  Add-AppxPackage -AllowUnsigned <file>.msix"
+            Write-Host "Serve l'amministratore perche' un pacchetto non firmato con contenuto eseguibile"
+            Write-Host "viene installato per tutti gli utenti. NON caricarlo su Partner Center."
+          } else {
+            Write-Host "Il pacchetto e' l'artifact di questa esecuzione, NON e' allegato alla release."
+            Write-Host "Va caricato a mano su Partner Center, non firmato: lo firma lo Store."
+            Write-Host "Non si installa a mano: per provarlo rilancia con pacchetto_di_prova attivo."
+          }

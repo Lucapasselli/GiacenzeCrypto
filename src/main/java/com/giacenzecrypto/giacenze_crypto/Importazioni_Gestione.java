@@ -1418,9 +1418,9 @@ if (voce.isJson()) {
         if (result != null && result.getActionId() != null ){
             
             if (result.getActionId().equals("generale"))
-                {Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/ExportImportCSV.pdf/download");}
+                {DocumentiAiuto.Apri(DocumentiAiuto.EXPORT_IMPORT_CSV);}
             if (result.getActionId().equals("personalizzata"))
-                {Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/CreazioneJSONperImportazioniPersonalizzate.pdf/download");}
+                {DocumentiAiuto.Apri(DocumentiAiuto.CREAZIONE_JSON_IMPORTAZIONI);}
             if (result.getActionId().equals("video"))
                 {Funzioni.ApriWeb("https://youtu.be/ZwYyV0-LbXk?si=Jb1jfk0ofNazshn3");}
         }

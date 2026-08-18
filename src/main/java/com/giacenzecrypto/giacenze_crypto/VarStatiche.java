@@ -16,7 +16,6 @@ public class VarStatiche {
 
     //NOME DEL PROGRAMMA
     static String Versione = leggiVersione();
-    static String Titolo = "Giacenze Crypto " + VarStatiche.Versione + " Beta";
 
     /** Valore dell'edizione destinata al Microsoft Store. Vedi {@link #EdizioneStore()}. */
     static final String EDIZIONE_STORE = "store";
@@ -26,6 +25,39 @@ public class VarStatiche {
      * (il default del pom) oppure {@code "store"}.
      */
     static String Edizione = leggiEdizione();
+
+    /**
+     * Titolo mostrato nella barra della finestra, sul pulsante del titolo e nel piede delle stampe.
+     * <p>Va dichiarato <b>dopo</b> {@link #Edizione}: gli inizializzatori statici corrono nell'ordine in
+     * cui sono scritti, e più in alto {@link #componiTitolo} leggerebbe un campo ancora {@code null} —
+     * senza errore, ma sempre come edizione completa.
+     */
+    static String Titolo = componiTitolo(Versione, Edizione);
+
+    /**
+     * Compone il titolo dell'applicazione. La dicitura <i>Beta</i> c'è nell'edizione completa e
+     * <b>non</b> in quella per il Microsoft Store: la policy 10.1 chiede applicazioni complete e
+     * funzionanti, e una parola che dice il contrario attira domande in certificazione senza motivo.
+     * <p>Sta in un metodo, e non nell'espressione del campo, perché il campo si calcola una volta sola
+     * al caricamento della classe e non sarebbe verificabile.
+     * @param versione la versione da mostrare
+     * @param edizione l'edizione del build, {@code null} compreso: vale come edizione completa
+     * @return il titolo completo
+     */
+    static String componiTitolo(String versione, String edizione) {
+        return "Giacenze Crypto " + versione + (EDIZIONE_STORE.equalsIgnoreCase(edizione) ? "" : " Beta");
+    }
+
+    /**
+     * Riferimento al sito del progetto per il piede delle stampe (Quadro W/RW e T/RT).
+     * <p>Nell'edizione Store è <b>vuoto</b>: quell'indirizzo è la pagina da cui l'applicazione si
+     * scarica fuori dallo Store, e in un documento fiscale che l'utente stampa e conserva non ha motivo
+     * di comparire. Vedi {@code test/Documentazione/Pubblicazione_MicrosoftStore.md} §1.6.
+     * @return l'indirizzo già preceduto da {@code " - "}, oppure stringa vuota nell'edizione Store
+     */
+    static String RiferimentoStampe() {
+        return EdizioneStore() ? "" : " - https://sourceforge.net/projects/giacenze-crypto-com";
+    }
 
     /**_Giacenzeadata
      * Legge la versione dell'applicazione da {@code version.properties}, generato da Maven

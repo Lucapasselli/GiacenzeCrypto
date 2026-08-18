@@ -82,4 +82,30 @@ public class EdizioneStoreTest {
             assertEquals(completa, g.Etichetta(), "Il gruppo " + g + " non deve dipendere dall'edizione");
         }
     }
+
+    @Test
+    public void nellEdizioneStoreIlTitoloNonDiceBeta() {
+        //policy 10.1: un'applicazione che si annuncia "Beta" invita il revisore a chiedersi se sia
+        //completa. Nell'edizione completa la dicitura resta finche' non la si toglie anche li'.
+        assertEquals("Giacenze Crypto 1.2.3",
+                VarStatiche.componiTitolo("1.2.3", VarStatiche.EDIZIONE_STORE));
+        assertEquals("Giacenze Crypto 1.2.3", VarStatiche.componiTitolo("1.2.3", "STORE"));
+    }
+
+    @Test
+    public void fuoriDallEdizioneStoreIlTitoloDiceAncoraBeta() {
+        assertEquals("Giacenze Crypto 1.2.3 Beta", VarStatiche.componiTitolo("1.2.3", "completa"));
+        //un'edizione sconosciuta o assente vale come completa, come per EdizioneStore()
+        assertEquals("Giacenze Crypto 1.2.3 Beta", VarStatiche.componiTitolo("1.2.3", null));
+        assertEquals("Giacenze Crypto 1.2.3 Beta", VarStatiche.componiTitolo("1.2.3", "qualcosaltro"));
+    }
+
+    @Test
+    public void nellEdizioneStoreIlPiedeDelleStampeNonPortaFuoriDalloStore() {
+        VarStatiche.Edizione = VarStatiche.EDIZIONE_STORE;
+        assertEquals("", VarStatiche.RiferimentoStampe());
+        VarStatiche.Edizione = "completa";
+        assertTrue(VarStatiche.RiferimentoStampe().contains("sourceforge.net"),
+                "fuori dall'edizione Store il riferimento al sito deve restare");
+    }
 }

@@ -10746,7 +10746,7 @@ if (result.isAction("delete-all")) {
     private void RW_Bottone_DocumentazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_DocumentazioneActionPerformed
         // TODO add your handling code here:
         
-        Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Opzioni%20di%20calcolo%20RW.pdf/download");
+        DocumentiAiuto.Apri(DocumentiAiuto.OPZIONI_CALCOLO_RW);
       
     }//GEN-LAST:event_RW_Bottone_DocumentazioneActionPerformed
 
@@ -10854,7 +10854,7 @@ if (result.isAction("delete-all")) {
             Stampe stampa=new Stampe(VarStatiche.getCartella_Temporanei()+"RW_"+AnnoDiCompetenza+"_"+DataOra+".pdf");           
             int anno=Integer.parseInt(AnnoDiCompetenza);
             //String piede="Stampa generata da "+this.getTitle()+"  - https://sourceforge.net/projects/giacenze-crypto-com";
-            String piede="Stampa generata da "+VarStatiche.Titolo+" - https://sourceforge.net/projects/giacenze-crypto-com                        REPORT x QUADRO W/RW Anno "+AnnoDiCompetenza;
+            String piede="Stampa generata da "+VarStatiche.Titolo+VarStatiche.RiferimentoStampe()+"                        REPORT x QUADRO W/RW Anno "+AnnoDiCompetenza;
             stampa.Piede(piede);
             stampa.ApriDocumento();
             stampa.AggiungiTestoCentrato("QUADRO W PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza,Font.BOLD,12);
@@ -11424,7 +11424,7 @@ if (result.isAction("delete-all")) {
 
     private void RW_Bottone_Documentazione1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_Documentazione1ActionPerformed
         // TODO add your handling code here:
-        Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Opzioni%20di%20calcolo%20RW.pdf/download");
+        DocumentiAiuto.Apri(DocumentiAiuto.OPZIONI_CALCOLO_RW);
     }//GEN-LAST:event_RW_Bottone_Documentazione1ActionPerformed
 
     
@@ -11643,6 +11643,15 @@ if (result.isAction("delete-all")) {
         Messaggi.SuccessMessage("Nuovo tema impostato", "Riavviare l'applicativo per la corretta applicazione del nuovo Tema.", this);
     }//GEN-LAST:event_Opzioni_Varie_Checkbox_TemaScuroActionPerformed
     private void Funzioni_NuovaVersioneDisponibile(){
+        //L'edizione Store si aggiorna dallo Store, e basta. Questo controllo interroga SourceForge e il
+        //pulsante che accende ne apre la pagina di download: e' una via di distribuzione esterna, cioe'
+        //il territorio delle policy 10.8.3 e 10.2.2 del Microsoft Store. Si esce prima ancora di aprire
+        //la connessione, cosi' non si spende nemmeno la richiesta di rete; il pulsante resta nascosto,
+        //come lo ha lasciato il costruttore, ed e' solo questo thread che potrebbe mostrarlo.
+        if (VarStatiche.EdizioneStore()) {
+            return;
+        }
+
         //Questa funzione la faccio partire in un thread separato
         Thread thread;
         thread = new Thread() {
@@ -11830,12 +11839,12 @@ if (result != null && !result.isAction("cancel")) {
 
     private void Opzioni_Varie_Bottone_DisclaimerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Bottone_DisclaimerActionPerformed
         // TODO add your handling code here:
-        Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Disclaimer.pdf/download");
+        DocumentiAiuto.Apri(DocumentiAiuto.DISCLAIMER);
     }//GEN-LAST:event_Opzioni_Varie_Bottone_DisclaimerActionPerformed
 
     private void Opzioni_Varie_Bottone_ProblemiNotiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Bottone_ProblemiNotiActionPerformed
         // TODO add your handling code here:
-        Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Avvertenze%20e%20Problemi%20Noti.pdf/download");
+        DocumentiAiuto.Apri(DocumentiAiuto.AVVERTENZE_PROBLEMI_NOTI);
     }//GEN-LAST:event_Opzioni_Varie_Bottone_ProblemiNotiActionPerformed
 
     private void Opzioni_Varie_Checkbox_LogJsonDefiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Checkbox_LogJsonDefiActionPerformed
@@ -11876,12 +11885,12 @@ if (result != null && !result.isAction("cancel")) {
 
     private void RT_Bottone_DocumentazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_DocumentazioneActionPerformed
         // TODO add your handling code here:
-        Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Calcolo%20Plusvalenze%20e%20Opzioni.pdf/download");
+        DocumentiAiuto.Apri(DocumentiAiuto.CALCOLO_PLUSVALENZE_OPZIONI);
     }//GEN-LAST:event_RT_Bottone_DocumentazioneActionPerformed
 
     private void RT_Bottone_Documentazione1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_Documentazione1ActionPerformed
         // TODO add your handling code here:
-         Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Calcolo%20Plusvalenze%20e%20Opzioni.pdf/download");
+         DocumentiAiuto.Apri(DocumentiAiuto.CALCOLO_PLUSVALENZE_OPZIONI);
     }//GEN-LAST:event_RT_Bottone_Documentazione1ActionPerformed
 
     private void Opzioni_ApiKey_Bottone_SalvaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Bottone_SalvaActionPerformed
@@ -13859,7 +13868,7 @@ if (result != null && !result.isAction("cancel")) {
 
     private void DepositiPrelievi_Bottone_DocumentazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_DocumentazioneActionPerformed
         // TODO add your handling code here:
-        Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Classificazioni%20Movimenti.pdf/download");
+        DocumentiAiuto.Apri(DocumentiAiuto.CLASSIFICAZIONI_MOVIMENTI);
     }//GEN-LAST:event_DepositiPrelievi_Bottone_DocumentazioneActionPerformed
 
     private void DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed
@@ -14358,7 +14367,7 @@ if (result != null && !result.isAction("cancel")) {
             Stampe stampa=new Stampe(VarStatiche.getCartella_Temporanei()+"RT_"+Anno+"_"+DataOra+".pdf");
             String AnnoDiCompetenza=String.valueOf(Anno);
             //String piede="Stampa generata da "+this.getTitle()+"  - https://sourceforge.net/projects/giacenze-crypto-com";
-            String piede="Stampa generata da "+VarStatiche.Titolo+" - https://sourceforge.net/projects/giacenze-crypto-com                        REPORT x QUADRO T/RT Anno "+AnnoDiCompetenza;
+            String piede="Stampa generata da "+VarStatiche.Titolo+VarStatiche.RiferimentoStampe()+"                        REPORT x QUADRO T/RT Anno "+AnnoDiCompetenza;
             stampa.Piede(piede);
             stampa.ApriDocumento();
             stampa.AggiungiTestoCentrato("QUADRO T PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza+"\n\n",Font.BOLD,12);

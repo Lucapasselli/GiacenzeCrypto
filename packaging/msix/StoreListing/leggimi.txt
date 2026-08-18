@@ -1,0 +1,30 @@
+Loghi della scheda dello Store (Store listing), NON del pacchetto.
+
+Vanno caricati a mano in Partner Center, nella sezione dei loghi della scheda; sono facoltativi.
+Non devono finire dentro l'MSIX: i loghi del pacchetto sono quelli di ..\Assets, che makeappx copia
+nel pacchetto. Questa cartella e' solo materiale per la scheda.
+
+Sono riduzioni esatte di logo.png (500x500) nella radice del progetto, la stessa immagine da cui sono
+ricavati i loghi del pacchetto: verificato che Logo150x150.png coincide pixel per pixel con
+Assets\Square150x150Logo.png. Se un giorno cambia logo.png, si rigenerano tutti con:
+
+  for s in 300 150 71; do magick logo.png -resize ${s}x${s} -strip PNG32:Logo${s}x${s}.png; done
+
+L'immagine ha gli angoli trasparenti e un quadrato nero pieno all'interno: si legge sia su sfondo
+chiaro sia su sfondo scuro, quindi non serve una variante per tema.
+
+----------------------------------------------------------------------
+LOCANDINA 9:16 (Locandina1440x2160.png e Locandina720x1080.png)
+
+Immagine promozionale, anch'essa facoltativa: e' quella che il negozio usa se decide di dare
+visibilita' al prodotto in una vetrina. Senza, semplicemente non si compare in quei posti.
+
+Si rigenera con:  python3 packaging/msix/StoreListing/genera-locandina.py
+
+E' costruita dallo script, non disegnata a mano, cosi' resta rifacibile: usa logo.png, i tre colori
+del logo (nero, oliva A8A834, grigio chiaro E7E7E7) e NotoSans, cioe' il carattere incluso
+nell'applicazione. Va caricata la 1440x2160 (la 720x1080 e' la stessa immagine ridotta, per il caso
+in cui il modulo accetti solo quella).
+
+Volutamente NON contiene: schermate del programma, marchi di terzi, il nome del sistema operativo o
+del negozio, prezzi, inviti all'azione. Solo il nome, che cosa fa e tre affermazioni vere.

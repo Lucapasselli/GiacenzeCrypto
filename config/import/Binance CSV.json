@@ -20,7 +20,8 @@
   "tolleranzaSecondiConsolidamento": 1,
   "causaliDifferite": [
   "Small Assets Exchange BNB (Spot)",
-  "Small Assets Exchange BNB"
+  "Small Assets Exchange BNB",
+  "WBETH2.0 - Redemption Unfreeze and Transfer"
   ],
   "mappaCausali": {
     "Binance Card Cashback":                          "CASHBACK",

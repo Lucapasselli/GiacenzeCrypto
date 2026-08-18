@@ -225,6 +225,9 @@ private static final long serialVersionUID = 3L;
     
     
     
+    /** Testo del suggerimento del pulsante degli errori, tolto dal pulsante finché non ce ne sono */
+    private String SuggerimentoErrori;
+
     public Principale() {
     //Salvo la versione nei log
     System.out.println("Versione attuale : "+VarStatiche.Versione);
@@ -298,6 +301,15 @@ private static final long serialVersionUID = 3L;
         //resta ferma per tutta la sua durata. Il peso della fase serve a farla ripartire nel punto giusto.
         SplashAvvio.fase(SplashAvvio.Fase.INTERFACCIA);
         initComponents();
+        //Il suggerimento del pulsante degli errori parla di errori da correggere, e non ha senso quando
+        //il pulsante è spento perché non ce ne sono. Non basta contare sul fatto che sia disabilitato:
+        //verificato su schermo virtuale, un JButton disabilitato mostra il suo tooltip esattamente come
+        //uno acceso. Il testo si legge dal .form invece di riscriverlo qui, così ne resta uno solo, e lo
+        //rimette TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa quando il pulsante si accende.
+        //Va fatto subito dopo initComponents: più avanti un caricamento potrebbe averlo già azzerato,
+        //e si memorizzerebbe null, cioè si perderebbe il suggerimento anche quando gli errori ci sono.
+        SuggerimentoErrori = Bottone_Errori.getToolTipText();
+        Bottone_Errori.setToolTipText(null);
         // Tabelle con filtri: header completo applicato subito, Tabelle_FiltroColonne non lo rieseguirà
         Tabelle.Tabelle_InizializzaHeader(TransazioniCryptoTabella);
         Tabelle.Tabelle_InizializzaHeader(DepositiPrelievi_Tabella);
@@ -1352,7 +1364,7 @@ private static final long serialVersionUID = 3L;
         Bottone_Errori.setFont(new java.awt.Font("Noto Sans", 1, 18)); // NOI18N
         Bottone_Errori.setForeground(Tabelle.rosso);
         Bottone_Errori.setText("Errori (0)");
-        Bottone_Errori.setToolTipText("Attenzione!\nSono presenti errori che se non corretti possono portare ad errori di calcolo sulle plusvalenze.\nPremere per sistemare.");
+        Bottone_Errori.setToolTipText("<html>Attenzione!<br>Sono presenti errori che se non corretti possono portare ad errori di calcolo sulle plusvalenze.<br>Premere per sistemare.</html>");
         Bottone_Errori.setEnabled(false);
         Bottone_Errori.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -16608,11 +16620,13 @@ try {
          if(err==0){
             Bottone_Errori.setEnabled(false);
             Bottone_Errori.setText("Errori (0)");
+            //niente errori, niente suggerimento: spento non vuol dire muto (vedi il costruttore)
+            Bottone_Errori.setToolTipText(null);
         }
         else{
             Bottone_Errori.setEnabled(true);
             Bottone_Errori.setText("Errori ("+err+")");
-
+            Bottone_Errori.setToolTipText(SuggerimentoErrori);
         }
       //  Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
         //Adesso aggiorno i componenti delle funzioni secondarie

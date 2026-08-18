@@ -1057,7 +1057,7 @@
                   <Connection code="Tabelle.rosso" type="code"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Errori (0)"/>
-                <Property name="toolTipText" type="java.lang.String" value="Attenzione!&#xa;Sono presenti errori che se non corretti possono portare ad errori di calcolo sulle plusvalenze.&#xa;Premere per sistemare."/>
+                <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Attenzione!&lt;br&gt;Sono presenti errori che se non corretti possono portare ad errori di calcolo sulle plusvalenze.&lt;br&gt;Premere per sistemare.&lt;/html&gt;"/>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
               <Events>

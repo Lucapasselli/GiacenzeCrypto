@@ -2,7 +2,12 @@ title: Giacenze Crypto
 description: Calcolo delle giacenze e delle plusvalenze in criptovaluta per la dichiarazione dei redditi italiana
 theme: jekyll-theme-minimal
 lang: it
-# La cartella docs/ contiene solo le pagine pubbliche del progetto (oggi l'informativa privacy).
-# Il codice non la usa in nessun modo: non finisce nel jar e non viene sincronizzata a runtime.
+# La cartella docs/ contiene le pagine pubbliche del progetto: la documentazione (documentazione/),
+# l'elenco delle novita' di ogni versione e l'informativa privacy. Il codice non la usa in nessun modo:
+# non finisce nel jar e non viene sincronizzata a runtime, ma DocumentiAiuto ne compone gli indirizzi
+# (vedi DocumentiAiutoTest, che tiene insieme le costanti e i file pubblicati).
+# I PDF accanto alle pagine sono generati da docs/strumenti/genera-pdf.sh a partire dallo stesso
+# Markdown: servono ai collegamenti delle versioni del programma fino alla 1.0.61.
 exclude:
   - README.md
+  - strumenti

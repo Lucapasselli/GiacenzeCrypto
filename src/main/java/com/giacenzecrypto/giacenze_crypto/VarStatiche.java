@@ -26,26 +26,22 @@ public class VarStatiche {
      */
     static String Edizione = leggiEdizione();
 
-    /**
-     * Titolo mostrato nella barra della finestra, sul pulsante del titolo e nel piede delle stampe.
-     * <p>Va dichiarato <b>dopo</b> {@link #Edizione}: gli inizializzatori statici corrono nell'ordine in
-     * cui sono scritti, e più in alto {@link #componiTitolo} leggerebbe un campo ancora {@code null} —
-     * senza errore, ma sempre come edizione completa.
-     */
-    static String Titolo = componiTitolo(Versione, Edizione);
+    /** Titolo mostrato nella barra della finestra, sul pulsante del titolo e nel piede delle stampe. */
+    static String Titolo = componiTitolo(Versione);
 
     /**
-     * Compone il titolo dell'applicazione. La dicitura <i>Beta</i> c'è nell'edizione completa e
-     * <b>non</b> in quella per il Microsoft Store: la policy 10.1 chiede applicazioni complete e
-     * funzionanti, e una parola che dice il contrario attira domande in certificazione senza motivo.
+     * Compone il titolo dell'applicazione.
+     * <p>Fino al 18/08/2026 il titolo portava la dicitura <i>Beta</i> nell'edizione completa e non in
+     * quella per il Microsoft Store (policy 10.1: un'applicazione che si annuncia incompleta attira
+     * domande in certificazione). Uscito il programma dalla fase beta la dicitura non c'è più da
+     * nessuna parte, e il titolo non dipende più dall'edizione.
      * <p>Sta in un metodo, e non nell'espressione del campo, perché il campo si calcola una volta sola
      * al caricamento della classe e non sarebbe verificabile.
      * @param versione la versione da mostrare
-     * @param edizione l'edizione del build, {@code null} compreso: vale come edizione completa
      * @return il titolo completo
      */
-    static String componiTitolo(String versione, String edizione) {
-        return "Giacenze Crypto " + versione + (EDIZIONE_STORE.equalsIgnoreCase(edizione) ? "" : " Beta");
+    static String componiTitolo(String versione) {
+        return "Giacenze Crypto " + versione;
     }
 
     /**

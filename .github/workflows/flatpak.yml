@@ -85,7 +85,7 @@ jobs:
           VERSIONE="${{ steps.ver.outputs.versione }}"
           # Il tag della release e' "Giacenze_Crypto_<versione>", non "v<versione>":
           # l'app cerca su SourceForge una cartella con quel nome.
-          URL="https://github.com/${{ github.repository }}/releases/download/Giacenze_Crypto_${VERSIONE}/GiacenzeCrypto_${VERSIONE}_Beta_Portable_Multipiattaforma.zip"
+          URL="https://github.com/${{ github.repository }}/releases/download/Giacenze_Crypto_${VERSIONE}/GiacenzeCrypto_${VERSIONE}_Portable_Multipiattaforma.zip"
           echo "Asset: $URL"
           # Se la release non e' ancora pubblicata il workflow deve fallire qui, che e' il punto
           # giusto: piu' avanti l'errore sarebbe un checksum che non torna.
@@ -164,7 +164,7 @@ jobs:
 
       - name: Crea il bundle .flatpak
         run: |
-          FILE="GiacenzeCrypto_${{ steps.ver.outputs.versione }}_Beta_Linux.flatpak"
+          FILE="GiacenzeCrypto_${{ steps.ver.outputs.versione }}_Linux.flatpak"
           flatpak build-bundle /tmp/repo "$FILE" "$APP_ID" \
             --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo
           ls -lh "$FILE"
@@ -172,7 +172,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: GiacenzeCrypto_${{ steps.ver.outputs.versione }}_Beta_Linux_flatpak
+          name: GiacenzeCrypto_${{ steps.ver.outputs.versione }}_Linux_flatpak
           path: ${{ env.FILE_BUNDLE }}
 
       - name: Allega il bundle alla release

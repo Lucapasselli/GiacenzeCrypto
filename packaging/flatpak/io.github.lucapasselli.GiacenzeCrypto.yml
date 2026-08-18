@@ -106,7 +106,7 @@ modules:
     sources:
       - type: archive
         # Riscritti dal workflow. strip-components toglie la cartella "GiacenzeCrypto/".
-        url: https://github.com/Lucapasselli/GiacenzeCrypto/releases/download/Giacenze_Crypto_1.0.60/GiacenzeCrypto_1.0.60_Beta_Portable_Multipiattaforma.zip
+        url: https://github.com/Lucapasselli/GiacenzeCrypto/releases/download/Giacenze_Crypto_1.0.60/GiacenzeCrypto_1.0.60_Portable_Multipiattaforma.zip
         sha256: 0000000000000000000000000000000000000000000000000000000000000000
         strip-components: 1
       - type: file

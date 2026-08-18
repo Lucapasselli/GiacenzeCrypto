@@ -166,6 +166,12 @@ public class GUI_Informazioni extends JDialog {
          .append("<b>Powered by <a href='").append(URL_ETHERSCAN).append("'>Etherscan.io</a> APIs</b>")
          .append("</p>");
 
+        h.append("<h3>Documentazione</h3>");
+        h.append("<p>I manuali e l'elenco delle novità di ogni versione si consultano dal browser: ")
+         .append("<a href='").append(DocumentiAiuto.Url("")).append("'>documentazione</a> e ")
+         .append("<a href='").append(DocumentiAiuto.Url(DocumentiAiuto.NOVITA_VERSIONI))
+         .append("'>novità delle versioni</a>.</p>");
+
         h.append("<h3>Dati e riservatezza</h3>");
         h.append("<p><b>Tutti i dati restano su questo dispositivo.</b> Movimenti, wallet, quotazioni e ")
          .append("preferenze sono salvati nei database locali della cartella di lavoro. Il programma non ")

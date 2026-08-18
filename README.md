@@ -12,16 +12,19 @@ L'obiettivo è ridurre il lavoro manuale di raccolta ed elaborazione dati che no
 ## Cosa fa
 
 - **Importazione movimenti** da:
-  - Crypto.com (file di export)
-  - Binance (API REST con firma HMAC-SHA256)
-  - wallet DeFi/on-chain: Bitcoin (xpub/ypub/zpub via mempool.space), Solana (via Helius), ed EVM chain (Ethereum, BSC, CRO, Arbitrum, Base, Berachain, Avalanche, Polygon, Monad) via Etherscan multi-chain API
+  - Crypto.com (file di export dell'app e dell'exchange)
+  - Binance (API REST con firma HMAC-SHA256, oppure i CSV esportati dal sito)
+  - OKX (API: conti Funding e Trading, Simple Earn e archivio storico trimestrale fino al 2021; oppure i CSV)
+  - wallet DeFi/on-chain: Bitcoin (xpub/ypub/zpub via mempool.space), Solana (via Helius) e una ventina di chain EVM (Ethereum, BSC, Cronos, Arbitrum, Base, Optimism, Polygon, Avalanche, Gnosis, Linea, Blast, Unichain, World Chain, Taiko, Abstract, Katana, Sonic, Mantle, Berachain, Monad) via Etherscan multi-chain API o Blockscout
+  - esportazioni di servizi di rendicontazione (CoinTracking, Tatax)
   - importazione generica da CSV, configurabile tramite descrittori JSON
 - **Classificazione automatica** dei movimenti (acquisto, vendita, conversione, trasferimento, commissioni, ecc.) con possibilità di correzione manuale
 - **Calcolo del costo fiscale con metodo LIFO** e determinazione della plusvalenza/minusvalenza per ogni cessione
 - **Recupero quotazioni storiche** (CoinGecko, Binance e altri exchange tramite CCXT/Node.js) con conversione USD→EUR e cache locale dei prezzi
 - **Generazione dei prospetti** per Quadro RT e Quadro RW, esportabili in **PDF** ed **Excel**
-- **Gestione multi-wallet e multi-anno**, con backup del database (il ripristino, al momento, va effettuato manualmente)
-- Interfaccia grafica con tema chiaro/scuro (FlatLaf)
+- **Gestione multi-wallet e multi-anno**, con backup e ripristino dell'intero archivio (movimenti, impostazioni, gruppi wallet, prezzi inseriti a mano, documenti di origine e configurazioni di importazione)
+- **Tracciabilità delle importazioni**: ogni movimento ricorda il file da cui proviene, conservato compresso e riapribile dal programma
+- Interfaccia grafica con tema chiaro/scuro (FlatLaf), con il carattere di scrittura incluso nel programma
 
 ## Requisiti
 
@@ -44,8 +47,8 @@ Argomenti opzionali utili in fase di avvio:
 --debug              # apre una finestra di log flottante
 --workdir <path/>    # cartella dati personalizzata (deve terminare con /)
 --NoJarPath          # usa ./ come percorso risorse (utile in esecuzione da IDE)
---fontSize 14         # forza la dimensione del font globale
---fontFamily Inter    # forza il font globale
+--fontSize 14              # forza la dimensione del font globale
+--fontFamily "Noto Sans"   # forza il font globale
 ```
 
 Il JAR va distribuito insieme alla cartella `Immagini/` (icone e immagini non sono incluse nel classpath).
@@ -58,7 +61,7 @@ Il dettaglio completo — cosa resta sul computer, cosa esce e verso chi — è 
 
 ## Disclaimer
 
-Questo software viene fornito "così com'è", **senza alcuna garanzia**, esplicita o implicita, di correttezza, completezza o idoneità a uno scopo particolare.
+Questo software viene fornito "così com'è", **senza alcuna garanzia**, esplicita o implicita, di correttezza, completezza o idoneità a uno scopo particolare. Il testo completo è nel [disclaimer](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/disclaimer.html).
 
 - Il programma è uno **strumento di supporto al calcolo**: non fornisce consulenza fiscale, legale o finanziaria e **non sostituisce** il parere di un commercialista o di un consulente fiscale abilitato.
 - I calcoli (plusvalenze, Quadro RT, Quadro RW) dipendono dalla correttezza e completezza dei dati importati, dalla classificazione dei movimenti e dalle quotazioni recuperate da servizi terzi (CoinGecko, Binance, Etherscan, mempool.space, Helius, ecc.), sui quali l'autore non ha alcun controllo.
@@ -69,12 +72,15 @@ L'uso dell'applicazione è a totale rischio dell'utilizzatore.
 
 ## Licenza
 
-Distribuito con licenza **MIT**. Vedere il file `pom.xml` per i dettagli.
+Distribuito con licenza **MIT**: vedere il file [`LICENSE`](LICENSE) e
+[`THIRD-PARTY-LICENSES.md`](THIRD-PARTY-LICENSES.md) per le librerie di terze parti.
 
 ## Riferimenti
 
 - **Codice sorgente**: https://github.com/Lucapasselli/GiacenzeCrypto
-- **Pacchetti compilati**: https://sourceforge.net/projects/giacenze-crypto-com/
-- **Documentazione**: https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/
+- **Pacchetti compilati**: https://github.com/Lucapasselli/GiacenzeCrypto/releases (anche su
+  [SourceForge](https://sourceforge.net/projects/giacenze-crypto-com/), nell'AUR come `giacenze-crypto-bin` e in formato flatpak)
+- **Documentazione**: https://lucapasselli.github.io/GiacenzeCrypto/documentazione/
+- **Novità delle versioni**: https://lucapasselli.github.io/GiacenzeCrypto/documentazione/changelog.html
 - **Canale YouTube**: https://www.youtube.com/@cryptofer82
 - **Gruppo Telegram**: https://t.me/+6kfy5mjov-I2ODY8

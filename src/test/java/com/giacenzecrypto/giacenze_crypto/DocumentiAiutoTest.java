@@ -19,9 +19,25 @@ public class DocumentiAiutoTest {
 
     @Test
     public void ogniDocumentoDichiaratoEPubblicato() {
+        //Le costanti nominano la pagina .html che GitHub Pages genera; nel repository c'è il .md
         for (String documento : DocumentiAiuto.TUTTI) {
-            assertTrue(new File(PUBBLICATI, documento).isFile(),
-                    "manca docs/documentazione/" + documento + ": il collegamento darebbe 404");
+            String sorgente = documento.replace(".html", ".md");
+            assertTrue(new File(PUBBLICATI, sorgente).isFile(),
+                    "manca docs/documentazione/" + sorgente + ": il collegamento darebbe 404");
+        }
+    }
+
+    @Test
+    public void iManualiRestanoDisponibiliAncheInPdf() {
+        //Le versioni del programma rilasciate fino alla 1.0.61 aprono i manuali all'indirizzo .pdf: quei file devono
+        //continuare a esistere, rigenerati dal Markdown con docs/strumenti/genera-pdf.sh
+        for (String documento : DocumentiAiuto.TUTTI) {
+            if (documento.equals(DocumentiAiuto.NOVITA_VERSIONI)) {
+                continue;//pagina nuova, non è mai stata un PDF
+            }
+            String pdf = documento.replace(".html", ".pdf");
+            assertTrue(new File(PUBBLICATI, pdf).isFile(),
+                    "manca docs/documentazione/" + pdf + ": i collegamenti delle versioni precedenti darebbero 404");
         }
     }
 
@@ -32,7 +48,7 @@ public class DocumentiAiutoTest {
         for (String documento : DocumentiAiuto.TUTTI) {
             assertEquals(documento.toLowerCase(), documento, "il nome del file deve essere minuscolo");
             assertTrue(documento.matches("[a-z0-9._-]+"), "nome non adatto a un URL: " + documento);
-            assertTrue(documento.endsWith(".pdf"), "documento non PDF: " + documento);
+            assertTrue(documento.endsWith(".html"), "il manuale non è una pagina del sito: " + documento);
         }
     }
 

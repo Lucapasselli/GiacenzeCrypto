@@ -1,0 +1,792 @@
+---
+layout: default
+title: Novità delle versioni
+---
+
+# Novità delle versioni
+
+Elenco delle modifiche introdotte dalle varie versioni di **Giacenze Crypto**, dalla più recente alla
+più vecchia.
+
+I pacchetti pronti all'uso vengono pubblicati a ogni rilascio:
+
+- **portabile multipiattaforma** (Windows, Linux e macOS; richiede un runtime Java installato, anche
+  open);
+- **portabile e installer per Windows**;
+- **portabile e pacchetto `.deb` per Linux**, più il pacchetto **AUR** per le distribuzioni derivate da
+  Arch e il **flatpak**;
+- **immagine DMG per macOS**, sia per processori Apple Silicon sia per Intel. Poiché l'applicazione non è
+  firmata, può essere necessario eseguire `xattr -cr /Applications/Giacenze_Crypto.app` perché parta.
+
+> **Aggiornare il programma** — per le versioni portabili basta sovrascrivere la cartella, dopo averne
+> fatto una copia di sicurezza. **Su macOS** la sovrascrittura della cartella comporta la perdita dei
+> dati: va aggiornato manualmente solo il contenuto. Le versioni con installer si installano sopra la
+> precedente mantenendo i dati (dalla versione 1.0.4 in poi). In ogni caso è consigliabile una copia di
+> sicurezza, che si può fare dal programma stesso con *Opzioni – Backup / Ripristino*.
+
+In caso di problemi si può chiedere supporto sul
+[gruppo Telegram](https://t.me/+6kfy5mjov-I2ODY8).
+
+## Versione 1.0.61 {#versione-1061}
+
+**Nuove implementazioni**
+
+- Il programma porta ora con sé il proprio carattere di scrittura (Noto Sans): l'interfaccia si presenta identica su Windows, Linux e Mac e su tutti i pacchetti, senza più dipendere dai font installati sul computer. Prima, quando i caratteri richiesti non erano presenti, il sistema ne sostituiva uno diverso e più largo, e i testi risultavano tagliati o i pulsanti disallineati. Di conseguenza sono state tolte dai testi dell'interfaccia le frecce, le spunte e le emoji, che un carattere di questo tipo non può disegnare.
+- La marcatura "Identifica come SCAM" nella scheda "Depositi e Prelievi" funziona ora su più righe selezionate: viene chiesta una sola conferma, che elenca anche i token con movimenti diversi da un semplice deposito o prelievo, e al termine viene mostrato un riepilogo dei token marcati e di quelli lasciati normali con il motivo (già classificati, privi di indirizzo o rete, già SCAM, con movimenti valorizzati). Selezionando una riga sola resta la procedura di prima, che è anche l'unica in grado di togliere lo stato SCAM.
+
+**Correzione di bug**
+
+- I movimenti scaricati da OKX vengono ora registrati tutti sul wallet "Principale", invece di essere divisi fra i conti "Funding" e "Trading": i giroconti fra i due conti non vengono importati (sono spostamenti interni allo stesso utente), quindi tenerli separati faceva risultare la stessa moneta spezzata su due portafogli senza alcun movimento che ne giustificasse il passaggio. Questo era anche un bug perchè poteva portare a segnalazioni di giacenze negative su okx in maniera errata. La stessa regola vale per le importazioni da file CSV di OKX. I movimenti già presenti in archivio non vengono spostati: restano sui wallet con cui erano stati importati.
+- Corretto un difetto per cui, marcando come SCAM più token in una volta sola, lo stesso token poteva essere proposto due volte.
+- Corretto un difetto per cui il primo scaricamento dell'elenco monete da CoinMarketCap riempiva il log di errori: l'elenco contiene token diversi con lo stesso simbolo e i doppioni venivano rifiutati uno per uno. Ora vengono scartati prima della scrittura tenendo il token più importante, e il conteggio mostrato al termine indica quelli effettivamente registrati.
+
+## Versione 1.0.60 {#versione-1060}
+
+**Nuove implementazioni**
+
+- Aggiunto lo scaricamento dei movimenti di OKX direttamente dalle API: si inseriscono chiave, secret e passphrase in "Opzioni" - "ApiKey" e il programma scarica i movimenti del conto Funding e del conto Trading, i rendimenti di Simple Earn (raggruppati per giornata) e, su richiesta, l'archivio storico trimestrale che risale fino al 2021. Alla prima richiesta dell'archivio viene chiesto l'anno di apertura del conto, per non interrogare OKX su trimestri sicuramente vuoti. Aggiunte anche due configurazioni di importazione (OKX_Funding e OKX_Trading) per i nuovi formati di export CSV di OKX.
+- Aggiunta la funzione "Backup / Ripristino" in "Opzioni": crea un unico archivio con movimenti, impostazioni, gruppi wallet, prezzi inseriti a mano, documenti di origine e configurazioni di importazione, e permette di ripristinarlo su un'altra installazione o dopo un problema. Prima di ogni ripristino viene creato in automatico un backup di sicurezza e, al termine, il programma ricalcola le plusvalenze e verifica che coincidano con quelle registrate nell'archivio. I prezzi di mercato scaricati si possono includere per intero oppure nel solo insieme necessario ai calcoli, molto più leggero.
+- Ogni movimento importato ricorda ora il file da cui proviene: il file viene conservato compresso e può essere riaperto dal programma. La nuova scheda "Analisi Crypto" - "Gestione Documentale" (raggiungibile anche da "Opzioni" - "Export" - "Documenti di origine") elenca i documenti importati con i movimenti che ancora vi fanno riferimento, e permette di aprirli, esportarli o eliminare quelli non più collegati a nessun movimento. Per gli scaricamenti da API e da wallet DeFi, dove un file non esiste, viene registrata la risposta grezza del server (senza le chiavi API, che vengono oscurate).
+- Aggiunto il pulsante "Filtri..." sopra la tabella dei movimenti, che raccoglie in un'unica finestra tutti i criteri di filtro e ne indica il numero attivo. Fra questi ce n'è uno nuovo: si possono vedere i soli movimenti che hanno un documento di origine, quelli che non ce l'hanno, oppure quelli provenienti da un documento preciso.
+- Le plusvalenze vengono ora ricalcolate a partire dal primo movimento realmente modificato invece che sempre dall'inizio: dopo un'importazione o una modifica l'attesa si riduce di molto. Si può tornare al ricalcolo completo togliendo la spunta in "Opzioni" - "Opzioni di Calcolo".
+- L'avvio del programma mostra ora una vera barra di avanzamento, con l'indicazione della fase in corso, al posto della scritta "Caricamento in corso".
+- Tema scuro rivisto: sfondi e testi hanno colori propri (prima restavano quelli grigi di serie della libreria grafica) e tutte le icone vengono ridisegnate in chiaro. Il cambio di tema, come già prima, richiede un riavvio per essere completo.
+- Aggiunta in "Opzioni" - "Pulizie" la nuova scheda "Compattazione database": i database, in particolare quello dei prezzi, arrivano a occupare molto più spazio dei dati che contengono e possono essere compattati senza perdere una sola riga (nell'archivio di prova 2.847 MB tornati a 565 MB). La compattazione viene eseguita anche in automatico alla chiusura del programma, ma solo quando il recupero è consistente.
+- Aggiunto il supporto a dieci nuove blockchain: OP Mainnet, Linea, Blast, Unichain, World Chain, Taiko, Abstract, Katana, Sonic e Mantle.
+- Le importazioni della rete Gnosis passano da Etherscan a Blockscout, perché dal 01/09/2026 Gnosis esce dal piano gratuito di Etherscan; il passaggio è automatico anche per chi aveva già salvato le proprie preferenze nella scheda "Preferenze Provider DeFi".
+- Il menu contestuale dei movimenti (quello che compare facendo tasto destro del mouse sulla tabella) lavora ora sulla selezione multipla: "Elimina Movimento" cancella tutte le righe selezionate e "Modifica Note" le aggiorna tutte, chiedendo se accodare il nuovo testo a quello esistente oppure sostituirlo; le voci che agiscono su un solo movimento vengono invece disattivate quando le righe selezionate sono più di una.
+- La finestra per la modifica delle note ha ora la stessa veste grafica di tutti gli altri messaggi del programma, con l'area di testo su più righe ridimensionabile.
+- Aggiunta nella scheda "RT & Analisi P&L" la casella "Non calcolare l'anno corrente", che evita di dover recuperare i prezzi attuali di tutte le monete in giacenza quando interessa solo un anno già chiuso.
+- Migliorata sensibilmente la velocità di caricamento e di aggiornamento delle tabelle: sono state riscritte le somme delle colonne, il controllo dei saldi negativi e la conversione delle date, le tabelle secondarie vengono calcolate senza bloccare la finestra e la tabella dei movimenti viene ricostruita solo quando la sua scheda è a video. La scheda "Gestione Token Scam" si apre ora in una frazione del tempo di prima.
+- Aggiunte le righe alternate colorate, che seguono il tema, anche alla tabella dei gruppi wallet e a quella dei documenti importati.
+
+**Correzione di bug**
+
+- Il pulsante "Interrompi" ferma ora davvero l'importazione da API, anche durante il recupero dei prezzi, e un errore restituito dall'exchange interrompe l'importazione invece di proseguire in silenzio con dati parziali.
+- Corretto un difetto per cui due ricalcoli delle plusvalenze avviati contemporaneamente (per esempio durante un'operazione di massa) potevano sovrascriversi a vicenda producendo risultati errati senza alcun messaggio.
+- Corretto il messaggio "Transazione eliminata" che compariva grigio e non disegnato fino al termine del ricalcolo; ora il lavoro viene svolto prima, con il puntatore di attesa.
+- Corretto un difetto per cui alcune voci del menu contestuale non venivano disattivate sulle righe che non sono movimenti.
+- Corretto un difetto per cui, tornando sulla scheda dei movimenti, venivano ricalcolate inutilmente anche le tabelle secondarie, e un altro per cui cambiando l'opzione "calcola LIFO per gruppo wallet" alcune tabelle venivano ricalcolate due volte.
+- Corretti alcuni errori che potevano presentarsi all'apertura di una richiesta di conferma priva della finestra proprietaria.
+
+## Versione 1.0.59 {#versione-1059}
+
+**Nuove implementazioni**
+
+- Aggiunta la funzione "Chiedi a IA": dal tasto destro su un movimento si prepara una domanda già compilata con i dati di quel movimento e la si apre direttamente nel chatbot preferito (ChatGPT, Claude, Perplexity, Copilot, Grok, Gemini, Le Chat, DeepSeek). Il testo viene sempre mostrato prima dell'invio e può essere modificato, e si può scegliere tra il profilo "Completo" (tutti i dati, hash e indirizzi compresi, così il chatbot può leggere la transazione sull'explorer) e il profilo "Generico" (solo causale, monete e rete, senza dati riconducibili a voi). Facoltativamente si può chiedere anche l'inquadramento fiscale italiano. L'elenco dei chatbot è modificabile nel file ChatbotIA.json che viene creato nella cartella dei dati.
+- Aggiunte due nuove voci nel menu contestuale dei movimenti: "Separa in Deposito/Prelievo", che divide un movimento che coinvolge due monete nelle due operazioni indipendenti, e "Crea movimento di scambio da Deposito/Prelievo", che è l'operazione inversa e riunisce un deposito e un prelievo non ancora classificati in un unico scambio.
+- Aggiunte in "Opzioni" - "Varie" due caselle per registrare nel log i JSON scaricati durante l'importazione dei wallet DeFi e durante il recupero dei prezzi: servono per capire cosa è successo quando qualcosa non torna (attenzione, con queste opzioni attive il log cresce molto rapidamente).
+- Gli e-money token denominati in euro (per esempio EURe) vengono ora valorizzati 1:1 con l'euro a partire dalla data di decorrenza indicata in "Opzioni" - "E-MoneyToken", senza più cercarne la quotazione su DefiLlama o sugli altri servizi di prezzo: un token che per definizione vale un euro non deve risentire di spread e illiquidità. Ne beneficiano anche le valorizzazioni di inizio e fine anno del quadro RW.
+- Nella classificazione manuale, scegliendo "CASH OUT" su un prelievo DeFi il programma propone ora di classificare allo stesso modo anche tutti gli altri prelievi non ancora classificati dello stesso tipo (stessa rete, stessa moneta, stesso contratto e stessa controparte), come già avveniva per i reward e per i trasferimenti.
+- La rimozione in blocco dello stato SCAM da più token chiede ora una sola conferma ed esegue tutto con una barra di avanzamento, invece di chiedere conferma token per token rallentando progressivamente.
+- Il programma è ora rilasciato con licenza MIT: aggiunti i file LICENSE e THIRD-PARTY-LICENSES.md con l'elenco delle licenze dei componenti di terze parti utilizzati.
+
+**Correzione di bug**
+
+- Corretto un bug che poteva rovesciare la classificazione dei movimenti sui token con molti decimali: quando la quantità veniva scritta in notazione scientifica (ad esempio 2.5E-9) il programma la interpretava come quantità in uscita anche se era positiva, trasformando un deposito in un prelievo oppure scartando del tutto il movimento con l'errore "Movimento incoerente, ci sono due monete in uscita". Il difetto riguardava sia la creazione dei movimenti sia le importazioni da exchange e da wallet DeFi. Era comunque un caso più teorico che reale.
+- Corretto un bug per cui l'importazione di un wallet DeFi si interrompeva del tutto, perdendo anche le transazioni già scaricate, quando l'explorer restituiva un token privo di nome, simbolo o decimali (tipico dei contratti di spam e degli airdrop non richiesti) oppure quando si usava Blockscout, che chiama in modo diverso il campo con l'hash delle transazioni interne.
+- Corretta una particolarità della rete Gnosis: alcune piattaforme movimentano ancora il vecchio contratto del token EURe insieme a quello nuovo e l'explorer registrava così due movimenti al posto di uno; ora il movimento sul contratto vecchio viene eliminato automaticamente.
+- Modificata l'assegnazione del prezzo quando si associa un prelievo a un deposito avvenuto molto tempo dopo (ad esempio dei token depositati in attesa di un airdrop): ora il prezzo viene preso alla data del deposito, cioè nel momento in cui l'operazione si conclude davvero, seguendo il principio di cassa; prima in alcuni casi veniva usato il prezzo della moneta uscente alla data del prelievo.
+- Corretto un bug per cui alcuni swap sulla rete Solana venivano importati come "PRELIEVO CRYPTO" invece che come "SCAMBIO CRYPTO", perché una delle due gambe dello scambio veniva scartata quando l'explorer non indicava a chi apparteneva il token account; il proprietario viene ora ricercato in due modi diversi prima di rinunciare. La correzione vale per le nuove importazioni.
+- Corretto un errore che poteva presentarsi aprendo l'explorer da un movimento privo di alcuni dati.
+
+## Versione 1.0.58 {#versione-1058}
+
+**Nuove implementazioni**
+
+- Aggiunta DefiLlama come nuova fonte per lo scaricamento dei prezzi.
+- Aggiunta rete Poligon , Monad e migliorato importazioni Solana (un grazie al contributor peppers96)
+- Aggiunto pulsante per riscaricare tutti i prezzi dalle fonti direttamente dalla finestra di modifica prezzo di un movimento.
+- Aggiunta in "Opzioni" una nuova sezione "Preferenze Provider DeFi" per scegliere, per ogni chain, quale provider usare per scaricare i movimenti (Moralis/Blockscout/Etherscan/Cronoscan/Helius), con possibilità di impostare un URL e un'ApiKey Blockscout personalizzati.
+- Aggiunto supporto alla Blockchain Gnosis Chain.
+- Aggiunta pulsante per identificazione automatica SCAM/SPAM dei depositi/prelievi non classificati tramite l'API di sicurezza GoPlusLabs, estesa anche al riconoscimento di token phishing/impersonazione senza bisogno di chiamate API.
+- Aggiunta nuova schermata "Gestione Token Scam" con l'elenco dei token marcati come SCAM/SPAM, da cui è possibile rimuovere la marcatura o eliminare in blocco i movimenti associati.
+- Aggiunta la classificazione dei movimenti relativi a prestiti DeFi (ricezione fondi, messa/sblocco collaterale, liquidazione forzata) e gestione automatica dei token di debito AAVE.
+- La finestra principale ora ricorda dimensione e stato massimizzato tra una sessione e l'altra, invece di riaprirsi sempre con le dimensioni predefinite.
+
+**Correzione di bug**
+
+- Corretto bug che nel caso si cercasse di classificare più token come scam in contemporanea il programma a volte proponeva il rigo errato
+- Corretto bug che impediva al programma in alcuni casi di fare il controllo delle giacenze CRO a fine scaricamento dati dalla cronoschain
+- Corretto bug nello scarico dei dati da cointracking, il programma teneva per buono il prezzo del csv anche se questo era a zero
+- Corretto bug per cui interrompere uno scaricamento poteva erroneamente interrompere anche un altro scaricamento aperto in sequenza.
+- Corretto bug per cui interrompere uno scaricamento di movimenti DeFi durante il recupero prezzi poteva lasciare in tabella movimenti parzialmente importati, invece di scartare l'intera sessione.
+- Corretto bug nello scaricamento delle transazioni dalla rete Cronos che poteva causare la perdita silenziosa di transazioni storiche; ora eventuali errori del server vengono segnalati con un messaggio chiaro.
+- Corretto bug per cui, modificando un movimento, se il nuovo ID calcolato coincideva per caso con quello di un altro movimento esistente il salvataggio si bloccava con l'errore "Movimento con Stesso ID"; ora viene generato automaticamente un ID alternativo.
+- Corretto il movimento sintetico WCRO->CRO generato durante la sistemazione delle giacenze CRO a fine importazione, che poteva risultare incompleto.
+- Migliorata la cache dei prezzi irrecuperabili in modo da evitare di ripetere inutilmente le stesse richieste API in futuro.
+
+## Versione 1.0.57 {#versione-1057}
+
+**Nuove implementazioni**
+
+- Aggiunto supporto alla Blockchain Bitcoin con importazione delle transazioni BTC. Per la gestione dei token BRC-20 e Runes è necessaria l'ApiKey gratuita di UniSat da inserire in "Opzioni" - "ApiKey".
+- Aggiunta ricerca dei prezzi da coinmarketcap e rimosso cryptocompare perchè diventato a pagamento.
+- Aggiunto sotto "Opzioni" - "Pulizie" una nuova tab "Pulizia PrezziKO" per eliminare i record dei prezzi non recuperabili in un periodo selezionato. (Serve per pulire l'elenco dei token con prezzi non recuperabili per poter poi ritentare lo scaricamento dei prezzi adesso che ho aggiunto alle fonti anche coinmarketcap)
+- Migliorato il motore di importazioni CSV generiche: aggiunto supporto a mappaAutoDetect nei file JSON di configurazione per il rilevamento automatico delle colonne dalle intestazioni del CSV; migliorata la gestione del fuso orario con rilevamento dal nome del file e richiesta interattiva se non specificato.
+- Aggiornati i file di configurazione JSON delle importazioni: aggiunto supporto al vecchio layout di Cointracking, aggiunto supporto alla nuova versione di Tatax, aggiornato il file di configurazione per Binance CSV.
+- Impostato all'avvio del programma lo scaricamento automatico dei file di configurazione per i CSV degli exchange in modo tale da riuscire a gestire le modifiche sui files (che regolarmente fanno gli exchange) senza constringervi a scaricare una nuova versione del programma.
+- In "Opzioni" - "E-MoneyToken" inserito la possibilità di precompilare la tabella secondo certe regole
+
+## Versione 1.0.56 {#versione-1056}
+
+**Nuove implementazioni**
+
+- Aggiunto possibilità di parametrizzare le importazioni dei csv tramite file di configurazione JSON per permettere di importare dati da quasi tutti i csv Leggere la documentazione per capire come operare.
+- Aggiunto nuove causali per le importazioni da crypto.com
+- Modificato buona parte dei messaggi pop-up informativi per renderli più visibili e chiari.
+
+**Correzione di bug**
+
+- Corretto bug sull'export della tabella del quadro RW in xlxs tramite tasto destro del mouse
+
+## Versione 1.0.55 {#versione-1055}
+
+**Nuove implementazioni**
+
+- Aggiornato programma per funzionare con le nuove limitazioni di etherscan che partono dal 01/06/2026
+- Sostituito font di sistema con font identico su tutti i sistemi operativi per evitare problemi di visualizzazione su Mac e Linux
+- Sostituito animazione iniziale con una più semplice per evitare problemi di flickering su Linux.
+
+**Correzione di bug**
+
+- Corretto bug su una movimentazione di acquisto crypto su crypto.com app
+- Corretto bug importazioni da cointracking, nella versione precedente alcuni righi non venivano importati e non veniva data nessuna segnalazione
+
+## Versione 1.0.54 {#versione-1054}
+
+**Nuove implementazioni**
+
+- Implementato importazione anche per il formato dei nuovi file scaricabili da binance
+- Inserito nuove causali per le importazione da Crypto.com APP
+
+**Correzione di bug**
+
+- Corretto una tipologia di importazione presente su Crypto.com App che veniva classificata come deposito crypto invece che come acquisto crypto obbligando ad una successiva classificazione manuale.
+
+## Versione 1.0.53 {#versione-1053}
+
+**Nuove implementazioni**
+
+**Correzione di bug**
+
+- Corretto Bug che impediva di salvare le transazioni scaricate attraverso le API di Binance.
+
+## Versione 1.0.52 {#versione-1052}
+
+**Nuove implementazioni**
+
+- Aggiornato i moduli dei quadri T/RT W/RW per il 2026 e modificato le istruzioni presenti sul PDF
+- Aggiunto pulsante sulla funzione "Giacenze a data" per confermare i valori a zero per i prodotti segnalati come "senza prezzo".
+- Modificato sotto scocca tutte le importazioni affinchè siano più semplici le implementazioni in futuro.
+
+**Correzione di bug**
+
+- Corretto Bug per cui in alcuni casi non funzionava sulla sezione del quadro RW la modifica dei prezzi di inizio anno.
+- Corretto Bug che in alcuni casi impediva il corretto caricamento della tabella in "Giacenze a data" qualora si utilizzassero ordinamenti random.
+
+## Versione 1.0.51 {#versione-1051}
+
+**Nuove implementazioni**
+
+- Nell'inserimento manuale inserito nuovo pulsante per l'assenganzione automatica del prezzo e uno per l'inserimento manuale veloce.
+- Aggiornato importazione da crypto.com exchange per adeguarsi al nuovo formato del 2026.
+
+**Correzione di bug**
+
+- Sistemato bug sull'assegnazione del prezzo nel caso di molti movimenti nello stesso secondo sulla stessa moneta.
+
+## Versione 1.0.50 {#versione-1050}
+
+**Nuove implementazioni**
+
+- Implementato l'importazione diretta dai CSV di Crypto.com Exchange
+
+**Correzione di bug**
+
+- Adeguato importazione Tatax al suo nuovo standard di file
+- Corretto errore bloccante su talune importazioni dal file csv di Binance
+
+## Versione 1.0.49 {#versione-1049}
+
+**Nuove implementazioni**
+
+- Sotto "Opzioni" -> "Opzioni di Calcolo" aggiunto possibilità di disabilitare il calcolo automatico delle plusvalenze, questo velocizza le operazioni sui dati in presenza di molti movimenti.
+- Sotto "Opzioni" -> "Opzioni Rewards" aggiunto la possibilità di considerare i cashback crypto alla stregua di quelli FIAT e tra l'altro si potrà scegliere da che anno cominciare a considerarli in questo modo. (Il costo di carico sarà quello relativo al momento del ricevimento e non verrà generata nessuna plusvalenza) Prima di questa modifica i cashback potevano essere solo caricati a costo zero o caricati alla stregua di una reward da staking.
+
+**Correzione di bug**
+
+- Corretto Bug che rallentava il caricamento della tabella in presenza di filtri attivi
+- Corretto Bug che impediva l'importazione di alcuni file da Tatax
+
+## Versione 1.0.48 {#versione-1048}
+
+**Nuove implementazioni**
+
+- Etherscan ha messo lo scaricamento di alcune chain a pagamamento (es.BSC,BASE,AVAX) e deprecato altre (es. Cronos), per ovviare al problema sono state implementate nuove API. Per BASE, BSC, AVA  verranno utilizzate le API di Moralis (dalle prove che ho fatto sono leggermente meno precise di quelle etherscan nel senso che ogni tanto potrebbero perdere qualche transazione, circa 1 ogni 5000) Per la cronoschain invece verranno utilizzate le api proprie simili a quelle di etherscan con l'unico neo che il wallet bisogna scaricarlo ogni volta per la sua interezza per cui porterà via un pò di tempo.
+- Implementata nuova funzione per la gestione dei prezzi che comporta quanto segue :
+- I prezzi vengono ora scaricati da 6 exchange contemporaneamente con la precisione al minuto.
+- Nei dettagli delle transazioni ci sarà scritta la fonte del prezzo e la sua precisione.
+- Premendo per la modifica del prezzo ora verrà mostrata una maschera dove si potrà scegliere tra vari prezzi nonchè inserirne uno personalizzato.
+- I prezzi presi da coingecko rimangono con precisione oraria perchè le api gratuite permettono solo quel tipo di richiesta.
+- Lo scaricamento dei prezzi darà più lento ma molto più preciso.
+- Il primo scarico in assoluto potrebbe durare parecchi minuti perchè viene scaricato l'ambiente per JavaScript (Indispensabile per utilizzare la nuova libreria CCXT).
+- Su alcune tabelle ora è possibile la selezione della cella per dei copia/incolla più mirati, i campi vengono inoltre ripuliti dei tag html.
+- Migliorate le prestazioni sul caricamento della tabella principale.
+
+## Versione 1.0.47 {#versione-1047}
+
+**Correzione di bug**
+
+- Eherscan ha deprecato le Api V1, il programma usava ancora quelle Api per verificare se la chiave era valida. Questo causava l'impossibilità di scaricare nuove transazioni dalle chain, sistemata la problematica.
+
+## Versione 1.0.46 {#versione-1046}
+
+**Nuove implementazioni**
+
+- Aggiunto possibilità di scegliere che le commissioni non generenino plusvalenze per attivare andare su "Opzioni" - "Opzioni di Calcolo" e biffare l'opzione "Le commissioni non generano plusvalenza"
+- Nella classificazione dei prelievi aggiunto possibilità di classificare un movimento in uscita come "Burn", utile per gli NFT. (Questo movimento non genererà plusvalenze)
+- Nella funzione "Classificazione Depositi/Prelievi" ora è possibile classificare più movimenti utilizzando la selezione multipla. (Per farlo selezionare più righi e quindi classifica movimenti, attenzione che i movimenti selezionati devono essere dello stesso tipo, es. solo depositi o solo prelievi)
+- Aggiunto il pulsante "Exchange API" nella pagina principale dove si potranno inserire gli api in sola lettura degli exchange crypto (per ora solo Binance) (dalla stessa funzione è poi possibile scaricare i movimenti) Per Binance è consigliabile usare le Api Tasse NB. E' preferibile non scaricare più di 6 mesi di storico per risultati più attendibili visto che molti exchange hanno questo limite NB 2. Su binance non è gestito per ora lo staking di SOL ed ETH.
+- Aggiunto file di log per la memorizzazione degli errori e delle operazioni fatte (il file si trova nella root del programma)
+
+**Correzione di bug**
+
+- Corretto problema che in alcuni casi impediva il corretto funzionamento dei filtri su colonna nella tabella principale.
+
+## Versione 1.0.45 {#versione-1045}
+
+**Nuove implementazioni**
+
+- Aggiunto un nuovo filtro nella tabella principale che trova i movimenti a cui manca una parte delle stack del LiFo (tipicamente mancano acquisti per coprire la transazione)
+- Aggiunto icone di Alert sui movimenti con errori da correggere, posizionando il mouse sull'icona compare la spiegazione
+- Aggiunto al pulsante degli Errori anche i casi in cui manca parte del LiFo, mancando parte dello stack infatti verrebbe calcolata una plusvalenza più alta se non vengono corretti.
+- Aggiunto Funzione "Verifica Saldi Negativi" sotto "Analisi Crypto", in questa funzione vengono elencati tutti i momenti in cui c'è stato un saldo negativo su un qualsiasi wallet. Attenzione : Questo non significa che tutti i movimenti segnalati abbiano portato ad un errore nello Stack del LiFo che ricordo non è legato al dettaglio di un singolo Wallet ma alla totalità degli stessi piuttosto che al Gruppo (dipende dalle impostazioni scelte), è opportuno lo stesso effettuare tutte le correzioni per avere la plusvalenza il più corretta possibile.
+- Aggiunto messaggio che, qualora si cercasse di stampare il quadro RT relativo ad anni precedenti il 2023, ricorda che in quegli anni c'erano regole diverse e che la stampa del quadro potrebbe non essere corretta (il quadro era diverso e anche le regole, ad esempio i proventi d Staking andavano teoricamente in RL).
+
+**Correzione di bug**
+
+- Corretto funzione per la rettifica giacenza che in taluni casi poteva portare ad un errore nella generazione dell'ID del movimento.
+- Corretto errore nella funzione "Scambio Crypto Differito", poteva capitare che i movimenti non venissero ordinati correttamente e portare ad errori visualizzabili nella nuova funzione "Verifica Saldi Negativi", per correggere basta togliere l'associazione del movimento e rifarlo, a quel punto l'ordine dei movimenti verrà creato correttamente.
+- Corretto bug che poteva portare cali di prestazioni fino al blocco del programma applicando i filtri sulle tabelle in un certo modo
+- Corretto bug che portava alla selezione errata del rigo di un paio di tabelle nel caso fossero applicati dei filtri.
+- Corretto bug che in taluni casi poteva mostrare uno stack del LiFo vuoto utilizzando la nuova funzione "Mostra LiFo Transazione"
+
+## Versione 1.0.44 {#versione-1044}
+
+**Nuove implementazioni**
+
+- Implementato visualizzazione dello stack del LiFo della transazione tramite tasto destro sulla riga della tabella selezionando "Mostra LiFo Transazione"
+- Aggiunto ulteriori causali all'import di Binance
+- Cominciato la conversione delle icone a quelle vettoriali per una più alta resa
+- Migliorato performance dei filtri sulle tabelle che su molti movimenti (>20.000) potevano in taluni casi risultare molto lenti.
+- Aggiunto pacchetti DMG per MacOS e DEB per le distribuzioni basate su Debian/Ubuntu
+
+**Correzione di bug**
+
+- Corretto bug che poteva portare alla visualizzazione dei giorni negativi sugli Exchange per cui si era selezionata l'opzione "paga bollo"
+- Corretto bug che non settava sul database al primo avvio del programma l'opzione presente in opzioni - opzioni di calcolo -> "Fino al 31-12-2022 considera tutti gli scambi crypto-crypto fiscalmente rilevanti" In sostanza da programma veniva visualizzata l'opzione spuntata ma sul database non scriveva nulla e quindi l'opzione non veniva considerata. L'opzione veniva poi scritta correttamente nel database la prima volta che ci si agiva fisicamente sopra premendoci con il mouse, da quel punto tutto poi funzionava correttamente.
+
+## Versione 1.0.43 {#versione-1043}
+
+**Nuove implementazioni**
+
+- Implementato i filtri stile Excel su alcune tabelle, tasto destro sull'intestazione della colonna per modificarli.
+- Se sulla colonna ci sono numeri sotto il titolo della colonna compare anche la somma di tutti i righi visibili.
+
+**Correzione di bug**
+
+- Corretto errore sulle importazioni da cointracking, se nel file c'erano più righi identici veniva preso solo il primo.
+- Corretto particolarità che impediva agli utenti Linux e Mac di aprire il popupMenu' sulle tabelle.
+
+## Versione 1.0.42 {#versione-1042}
+
+**Nuove implementazioni**
+
+- Aggiunto lo splashscreen in avvio del programma perché in alcuni casi poteva metterci anche molti secondi prima di far vedere la maschera principale dando quindi l'impressione di non aver avviato il programma.
+- Cambiato colore della selezione della tabella con tema scuro perché quello precedente quasi non si riusciva a leggere.
+
+**Correzione di bug**
+
+- Corretto importazione dei dust conversion di crypto.com app che potevano portare ad errori di giacenza sui CRO.
+Se non vi tornano le giacenze dei CRO di fine anno consiglio di rifare l'importazione dei file con questa versione.
+L'errore in questione poteva portare o ad errori minimi (di pochi CRO) o ad errori macroscopici (in talune circostanze spostava la virgola e portava al caricamento ad esempio di 1 milione di CRO anziché 1)
+- Sistemato importazioni del FIAT Wallet di Crypto.com, prima faceva fede sempre l'ultima importazione (ogni nuova importazione cancellava quelle vecchie), adesso, come succede nelle altre importazioni, si possono accodare le importazioni.
+
+## Versione 1.0.41 {#versione-1041}
+
+**Nuove implementazioni**
+
+- Aggiunto nel PopUpMenu la possibilità di cambiare la tipologia di Reward ricevuta.
+- Aggiunto sezione per le Donazioni qualora voleste contribuire al progetto.
+
+**Correzione di bug**
+
+- Corretto importazione EUR su Crypto.com APP CVS (Il nuovo CSV non mette più il segno meno sugli EUR in uscita)
+- Sistemato problema che portava ad avere delle giacenze iniziale errate sull'RW nel caso in cui ci fosse stata abilitata un opzione qualsiasi dalla B alla D + Opzione mostra solo giacenze fine anno se paga bollo + terza opzione sui trasferimenti.
+- Aggiunto casistiche su importazioni da cointracking.
+- Sistemato casistica particolare su importazione del CASH CSV di Crypto.com
+- Nelle stampe per il Quado W/RW ora se il valore finale o quello iniziale è molto prossimo allo zero ma non zero questo viene arrotondato per eccesso e valorizzato a 1.
+
+## Versione 1.0.40 {#versione-1040}
+
+**Nuove implementazioni**
+
+- In depositi/prelievi aggiunta nuova tabella che fa vedere i movimenti correlati (utile per vedere ad esempio i trasferimenti dove vanno o gli scambi differiti)
+- Al PopUpMenu aggiunto la funzione "Modifica Note" e "Modifica Prezzo"
+- Adesso pe piccolissime differenze è possibile classificare un movimento come trasferimento anche se la qta di prelievo sul wallet i parenza è minore di quella di deposito sul wallet i destinazione.
+- Nelle importazioni da Cointracking o Tatax ora è possibile scegliere dei nomi personalizzati per i Wallet.
+
+**Correzione di bug**
+
+- Importando i dati da Tatax i token messi in Staking vengono gestiti con un estensione es. ETH.STAKING@BINANCE, con questa nuova versione gli viene ripristinato il nome originale (es. ETH) per evitare problemi poi con i prezzi e con il LiFo.
+- Sempre negli import da Tatax i vari EARN, CASHBACK etc.. arrivano con prezzo Zero, ora il programma se vede che arrivano in questo modo gli assegna un valore.
+- Nella classificazione "Scambio Crypto differito" se il movimento di deposito non aveva prezzo anche lo scambio generato veniva valorizzato a zero ma senza segnalare la mancanza del prezzo.
+Adesso questa cosa non succede più.
+- Nelle stampe dell'RW anche per gli anni bisestili ora i giorni di detenzione vengono messi al massimo a 365 anche per gli anni bisestili, questo per uniformarsi al software dell'AdE che non consente di inserire giorni di detenzione maggiori di 365.
+
+## Versione 1.0.39 {#versione-1039}
+
+**Nuove implementazioni**
+
+- Inserito filtro x Wallet e x Token nella tabella delle transazioni e nella tabella deli depositi/prelievi
+- Aggiunto avviso in caso di disponibilità di una nuova versione software.
+- In fase di import dalla blockchain inserito richiesta per effettuare o meno la rettifica automatica delle giacenze del token di riferimento della chain a fine importazione. (Prima veniva fatto automaticamente).
+- Nella gestione della classificazione dei depositi prelievi inserito possibilità di modificare i filtri automatici sui trasferimenti.
+
+**Correzione di bug**
+
+- Corretto gestione delle FIAT diverse dall'euro in fase di importazione dal Binance Tax Report
+
+## Versione 1.0.38 {#versione-1038}
+
+**Nuove implementazioni**
+
+- Dato che attualmente i prezzi, se non presi dal CSV, vengono presi con una precisione oraria, da questa versione per gli scambi fiscalmente rilevanti verrà preso come prioritario il prezzo della stablecoin/FIAT presente nella transazione e mai quella della cripto che potrebbe essere piuttosto volatile.
+- Aggiunto Tasto "Ricalcola i prezzi delle transazioni" nella sezione "Opzioni - Varie" per permettere di ricalcolare i prezzi delle transazioni secondo le nuove regole. Prima del ricalcolo verrà mostrata una finestra in cui si potrà scegliere da che anno effettuare il ricalco. Per sicurezza verrà anche salvata una copia delle movimentazioni crypto nella cartella /Backup che rimarrà per 6 mesi. Ad ogni modo se non si salva, la modifica dei prezzi non è permanente, basta premere annulla nella schermata principale per tornare alla situazione iniziale.
+
+**Correzione di bug**
+
+- Corretto diversi problemini di visualizzazione / errori bloccanti in casi molto particolari
+- Corretto Bug che, in fase di importazione dal Binace Tax Report, impediva di valorizzare i prezzi dei prelievi.
+
+## Versione 1.0.37 {#versione-1037}
+
+**Nuove implementazioni**
+
+- Aggiunto popUpMenu su quasi tutte le tabelle del programma e su alcuni campi testo (si attiva con il tasto destro del mouse). Dal PopUp menù si potrà :
+- Copiare la selezione
+- Incollare gli appunti
+- Vedere i dettagli della transazione selezionata (comodo ad esempio sulle tabelle dove non vi sono tutti i dettagli).
+- Esportare la tabella in Excel (per permettere ulteriori elaborazioni e calcoli in autonomia).
+- Aggiunto 2 nuove causali utilizzate dal csv di Binance
+- Aggiunto la possibilità di classificare come Scam più token alla volta dalla funzione Depositi/Prelievi.
+
+**Correzione di bug**
+
+- Corretto Bug che, qualora vi fossero anni senza movimentazioni, non permetteva il cambio del prezzo sul dettaglio movimenti del quadro RT, inoltre faceva vedere a video il riferimento del prezzo errato.
+- Corretto Bug che non permetteva di associare un Wallet che all'interno del nome aveva l'apostrofo ad un Gruppo.
+
+## Versione 1.0.36 {#versione-1036}
+
+**Nuove implementazioni**
+
+- Aggiunto pulsante "Modifica Movimento" in funzione "Classifica Depositi/Prelievi"
+- Aggiunto pulsante "Duplica Movimento" in funzione "Classifica Depositi/Prelievi"
+
+**Correzione di bug**
+
+- Corretto bug che impediva di creare un movimento opposto su un wallet in Defi dalla funzione "Crea movimento opposto" in "Classifica Depositi/Prelievi"
+- Coretto bug per cui il prezzo di WETH poteva risultare errato
+- Corretto bug nella sezione RW che in caso risultasse selezionata l'opzione "il LiFo viene applicato alla totalità dei Wallet" nella sezione "Opzioni RW" poteva in taluni casi particolari portare ad un errore.
+
+## Versione 1.0.35 {#versione-1035}
+
+**Nuove implementazioni**
+
+- Aggiunto importazioni di Binance dal Financial Report NB : Importare o il Financial Report o il csv classico, mai entrambi per lo stesso periodo. Il Financial Report dovrebbe essere un po' più preciso soprattutto per quanto riguarda i prezzi.
+- Formattati alcuni campi numerici per rendere più leggibile la cifra.
+
+**Correzione di bug**
+
+- Corretto nome intestazione colonne nella sezione "RT & Analisi P&L", i nomi della colonna 2 e 3 erano invertiti.
+- Corretto bug che poteva portare al blocco del programma nel caso di doppia rettifica giacenza sulla stessa moneta.
+- Corretto Bug che poteva portare a salvare prezzi errati nella sezione giacenze a data qualora vi fossero stati inseriti prezzi personalizzati.
+- Nel pacchetto 1.0.34 avevo dimenticato di inserire le immagini del quadro T/RT e il file dei token gestiti da coincap. Questo portava all'impossibilità di recuperare alcuni prezzi nonchè l'impossibilità di stampare il quadro T/RT correttamente.
+- Sistemato Bug che mandava in blocco il programma nel caso in cui si lanciasse l'eleaborazione del quaro T/RT senza dati.
+
+## Versione 1.0.34 {#versione-1034}
+
+**Nuove implementazioni**
+
+- Aggiunto Api di Coinbase e Cryptocompare per il recupero dei prezzi
+- Aggiunto possibilità di inserire le ApiKey di Coincap (Opzioni - ApiKey)
+- Aggiunto possibilità di inserire le ApiKey di Coingecko per incrementare la velocità di acquisizione sui prezzi della DeFi (Opzioni - ApiKey) (Ad oggi quindi i prezzi delle Cripto vengono recuperati da Binance,Coinbase,Cryptocompare,Coincap(con Apikey dedicata) e Coingecko (Per la defi e solo ultimi 365gg)
+- In "RT & Analisi P&L" Aggiunto possibilità di stampare il Quadro T per i redditi 2024 (con le prossime versioni verrà aggiunto anche il quadro RT)
+
+**Correzione di bug**
+
+- Coincap essendo diventato a pagamento non permetteva più lo scaricamento dei prezzi causando errori nel recupero, aggiunto la possibilità di integrare la loro ApiKey.
+
+## Versione 1.0.33 {#versione-1033}
+
+**Nuove implementazioni**
+
+- Aggiunto PMC (Prezzo Medio di Carico) nel dettaglio della funzione "RT & Analisi P&L"
+
+**Correzione di bug**
+
+- Corretto Bug che impediva di inserire prezzi personalizzati su rete Solana
+- Corretto Bug che impediva di recuperare i prezzi salvati su rete Solana
+- Corretto qualche bug grafico
+
+## Versione 1.0.32 {#versione-1032}
+
+**Nuove implementazioni**
+
+- Aggiunto supporto alla Blockchain Solana (Sono necessarie le ApiKey di Helius da inserire su "Opzioni" - "ApiKey") (Si può creare tranquillamente la chiave api gratuita dal loro sito registrandosi)
+- Aggiunto supporto a Berachain e Avalanche
+- Da questa versione i movimenti di tutte le chain evm supportate vengo importati attraverso le api di etherscan. Sarà quindi necessario registrarsi su etherscan e generare una ApiKey (gratuita) per poter scaricare i movimenti. L'ApiKey poi andrà inserita in "Opzioni" - "ApiKey".
+- Aggiunto anno 2024 nella sezione del Quadro RW, per il momento i moduli sono però ancora quelli dell'anno passato.
+
+## Versione 1.0.31 {#versione-1031}
+
+**Nuove implementazioni**
+
+- Aggiunto ulteriori causali di Binance per le importazioni
+- Ad ogni fine importazione dalla chain  aggiunto controllo ed eventuale sistemazione giacenza sul token di riferimento della chain. Questo si rente necessario per i layer 2 in quanto le api non ritornano la parte di commissione relativa al layer 1. Fortunatamente questa parte di commissione è di circa 1 centesimo per ogni transazione quindi i movimenti correttivi saranno di piccola entità.
+- Aggiunto BTC alle chain disponibili per importazioni da tatax e cointracking.
+- Nelle Pulizie adesso è possibile impostare dei range di date entro quale cancellare i dati.
+- Nella funzione "Giacenze a Data" aggiunto segnalazione per i token senza prezzo
+- Nella funzione "Calssificazione Depositi/Prelievi" - "Classifica Movimento" ora c'è una nuova colonna con il controvalore in euro della transazione.
+
+**Correzione di bug**
+
+- Corretto erroreche poteva portare ad un blocco delle importazioni di Crypto.com
+- Corretto errore che impediva di gestire correttamente i gruppi wallet se sul nome dei wallet erano presenti degli apici
+
+## Versione 1.0.30 {#versione-1030}
+
+**Nuove implementazioni**
+
+- Compilato i pacchetti con la versione Opensource del Runtime Java (in caso di problemi sulla versione multipiattaforma scaricare il jre su questo sito https://adoptium.net/temurin/releases/)
+- in "Opzioni" - "Varie" aggiunto bottone "Disclaimer" e "Avvertenze/Problemi Noti" per raggiungere velocemente la documentazione.
+- In "Opzioni" - "Opzioni di calcolo" aggiunto la possibilità di non considerare nei calcoli per la plusvalenza i movimenti non classificati (come succedeva prima della versione 1.29)
+- In "Modifica Movimento" aggiunto tasto "Sblocca Modifiche" per poter modificare tutti i campi del movimento
+- In "Classificazione Depositi/Prelievi" aggiunto la possibilità di classificare i movimenti come "Donazione"
+- In "Analisi Crypto" "Classificazione Depositi/Prelievi" aggiunto pulsante "Identifica come SCAM" (già presente nella funzione Giacenze a data)
+
+**Correzione di bug**
+
+- Import da Wallet : Gli Explorer possono riconoscere come transazioni reali log di smartcontract (solitamente sono prelievi di token SCAM), ovviamente essendo transazioni fittizie non sono da considerare le fee. Da questa versione il programma non imputa più quelle fee al wallet per questo tipo di transazioni. Le transazioni resteranno comunque visibili per coerenza con quanto presente nell'explorer, saranno poi eventualmente da escludere da eventuali calcoli classificandole come SCAM.
+- Import da Wallet : Se per sbaglio si inviano fondi allo stesso wallet di partenza il programma prima riconosceva solo un movimento di prelievo, ora lo considera come uno scambio a vuoto. Di fatto non c'è nessun movimento di fondi se non le fee.
+- Corretto bug nelle importazioni di Binance che portava alla non classificazione di alcuni movimenti.
+- Corretto bug nelle importazioni da Tatax che portava ad un errore sui prezzi
+- Corretto bug nelle importazioni di Tatax riguardante l'orario, su file csv infatti l'orario viene riportato in UTC, adesso viene convertito nell'orario italiano.
+- Corretto bug nelle esportazioni di Tatax, ora l'orario prima di essere esportato viene convertito in UTC
+
+## Versione 1.0.29 {#versione-1029}
+
+**Nuove implementazioni**
+
+- Cambiato come il programma gestisce il calcolo per le plusvalenze dei movimenti di deposito e prelievo non categorizzati.
+Con le versioni precedenti il programma semplicemente ignorava quelle transazioni (non veniva generata nessuna plusvalenza fino a che il movimento non veniva categorizzato)
+Con la versione attuale il programma si comporta nel seguente modo :
+- Deposito non categorizzato = Deposito con Costo di Carico Zero
+- Prelievo non categorizzato = CashOut Facendo in questo modo avrò delle plusvalenze più alte fino a che non categorizzerò correttamente i movimenti ma altresì qualora dimenticassi di categorizzarli, questi sarebbero comunque conteggiati nella maniera meno vantaggiosa per il contribuente e quindi meno contestabile dal fisco.
+- Cambiato il tipo dato della colonna Plusvalenza e Valore Transazione ora sono di tipo numerico quindi ordinabili correttamente
+- In Opzioni - Varie aggiunto la possibilità di abilitare il tema scuro.
+- Implementata nuova funzione in "Analisi Crypto" - "RT & Analisi P&L" dove si potrà vedere l'analisi delle plusvalenze realizzate e non per ogni singolo anno, inoltre per ogni anno si potranno vedere le plusvalenze per ogni token e nel caso sia abilita l'opzione "Abilita Calcolo plusvalenze per gruppo Wallet" anche divise per gruppo wallet.
+Per ogni token poi ci sarà la possibilità di vedere lo stack del LiFo con i vari costi di carico in modo da poter pianificare al meglio la realizzazione delle plusvalenze future.
+- Inserito nuove casistiche riguardanti le importazioni da Binance
+- Aggiunta Blockchain BASE alla lista di quelle gestite nativamente. (Funzione Inserisci Wallet)
+- Aggiunta Blockchain ABITRUM alla lista di quelle gestite nativamente. (Funzione Inserisci Wallet)
+
+**Correzione di bug**
+
+- Corretto bug che impediva in taluni casi il recupero del prezzo
+- Corretto bug che portava ad errori sugli arrotondamenti sulle plusvalenze nel caso di scambi tra diversi wallet e qualora non fosse biffata l'opzione "Abilita Calcolo plusvalenze per gruppo wallet"
+- Sistemato un bug i un caso particolarissimo che impediva il caricamento dei dati da CDCApp
+- Corretto possibile mancata imputazione del prezzo dalla funzione automatica della modifica transazione
+- Corretto errore bloccante in importazione da Tatax
+
+## Versione 1.0.28 {#versione-1028}
+
+**Nuove implementazioni**
+
+- Quadro RW : Introdotto un ulteriore opzione sul metodo di calcolo per l'utilizzo del LiFo anche sui SubMovimenti (Vedi Documentazione).
+- Aggiunto Icone ai pulsanti per un più facile ed intuitivo utilizzo.
+- Aggiunto possibilità di importare i dati da Tatax.
+- In "Transazione Crypto" aggiunto checkbox "Vedi solo movimenti non valorizzati" che mostrerà solo i movimenti in cui il programma non è riuscito a recuperare i prezzi. In questo modo tramite il tasto "Modifica Movimento" sarà facile individuarli e andare ad assegnare un prezzo alla transazione.
+
+## Versione 1.0.27 {#versione-1027}
+
+**Nuove implementazioni**
+
+- Quadro RW/W : Adesso se si sceglie l'opzione di considerare solo le giacenze di inizio e fine anno il programma non mette di default 365 giorni di detenzione ma qualora il conto/wallet fosse stato aperto nel periodo di riferimento farà il calcolo a partire dal primo movimento del wallet alla fine dell'anno.
+- Quadro RW/W : Inserito tasto per la stampa di un report più dettagliato dei calcoli in formato Excel
+- Quadro RW/W : Nella stampa del Report in PDF aggiunto il quadro RW e numerose istruzioni
+- Riorganizzato la tabella delle opzioni sul quadro W/RW in modo che sia più chiara
+
+**Correzione di bug**
+
+- Quadro RW/W : le giacenze negative venivano segnalate ma il programma le mostrava senza il segno meno
+
+## Versione 1.0.26 {#versione-1026}
+
+**Nuove implementazioni**
+
+- Inserito nuova sezione in "Opzioni - Opzioni Rewards" dove è possibile decidere come trattare ogni tipologia di reward
+- Implementato Api di CoinCap al posto di Cryptohistory per l'assegnazione dei prezzi poichè quest'ultima non fornisce più il servizio
+- Inserito possibilità di stampare una prima bozza del quadro W
+- Inserito possibilità di calcolare i valore per il quadro W anche per gli anni precedenti al 2023 (Attenzione, vengono usate le stesse regole del 2023, potrebbe essere sbagliato)
+
+**Correzione di bug**
+
+- Sistemato bug che impediva di correggere il valore iniziale e finale di un token nella sezione RW
+- Sistemato bug che impediva di calcolare i valori con la media ponderata nel caso di classificazioni particolari
+
+## Versione 1.0.25 {#versione-1025}
+
+**Nuove implementazioni**
+
+- Una volta selezionata la data dalla Funzione giacenze a data questa viene memorizzata per i successivi accessi
+- Una volta selezionato un file da importare la path viene salvata per le successive importazioni per evitare di dover riselezionare l'intero percorso
+- Aggiunto tipologia "finance.lockup.dpos_compound_interest.crypto_wallet" a quelle supportate dalle importazioni da CDC APP
+- Aggiunto 3 nuove tipologie per le importazioni da Binance
+
+**Correzione di bug**
+
+- Corretto errore nelle importazioni dei wallet in DeFi per cui non venivano conteggiate le fee per le operazioni di deposito da Piattaforme DeFi
+- Corretto tasto Dettaglio DeFi non funzionante su rete Ethereum
+
+## Versione 1.0.24 {#versione-1024}
+
+**Nuove implementazioni**
+
+- In "Opzioni" - "Gruppi Wallet Crypto" inserita possibilità di aggiungere un Alias e indicare se è già stato pagato il bollo
+- Aggiunto le seguenti nuove opzioni di calcolo per i dati relativi al quadro W\RW su "Opzioni" - "Crypto" : 1 - Possibilità di vedere semplicemente le giacenze di inizio e fine anno 2 - Possibilità di scegliere la condizione per cui viene creato un nuovo quadro RW 3 - Per i Wallet in cui è già stato pagato il bollo aggiunta possibilità di vedere le sole giacenze di inizio e fine anno 4 - Dato possibilità di gestire diversamente le Reward 5 - Aggiunto ulteriore opzione per la gestione dei trasferimenti tra Wallet
+- Nella sezione "Analisi Crypto" - "W/RW" aggiunto le seguenti voci 1 - Totale IC Dovuto 2 - Dettaglio IC per singolo rigo RW 3 - Bottone con link a documentazione su come vengono calcolati i Qadri e spiegazioni delle varie opzioni disponibili
+- Nella schermata "Transazioni Crypto" aggiunto in fondo ulteriori dettagli sul calcolo della Plusvalenza Totale
+
+**Correzione di bug**
+
+- Correzione di vari bug che potevano portare a blocchi in determinate condizioni
+- Sistemato un errore di calcolo sul prezzo automatico nella funzione di inserimento manuale del movimento nel momento in cui si vende per Euro.
+
+## Versione 1.0.23 {#versione-1023}
+
+**Nuove implementazioni**
+
+- Aggiunto nuove opzioni di calcolo per i dati relativi al quadro W\RW su "Opzioni" - "Crypto"
+
+**Correzione di bug**
+
+- Corretto problemi su modifiche movimenti automatici
+- Aggiunto gestione sui token ibridi delle stable legate al dollaro sugli echange chiamate USD (il loro valore lo lego a quello di giornata del dollaro)
+
+## Versione 1.0.22 {#versione-1022}
+
+**Correzione di bug**
+
+- Corretto errore che impediva la creazione di movimenti manualmente
+
+## Versione 1.0.21 {#versione-1021}
+
+**Nuove implementazioni**
+
+- Aggiunto log dettagliato durante le importazioni
+
+**Correzione di bug**
+
+- Corretto errore per importazioni risaltenti a prima del 2017
+
+## Versione 1.0.20 {#versione-1020}
+
+Nota Importante : Il programma al primo avvio dovrà fare un adeguamento degli archivi che potrebbe portare via qualche minuto
+**Nuove implementazioni**
+
+- Nella Tab "Analisi Crypto" aggiunta sezione reletiva al calcolo del quadro RW secondo il metodo LIFO con media ponderata. Nota 1 - Il programma è in una prima fase beta e potrebbe contenere errori, usare per test ma non consiglio di usarla per la dichiarazione Nota 2 - Per vedere il calcolo dei giorni è opportuno correggere tutti gli errori che presenta
+- Nella Tab "Opzioni - Crypto" aggiunto le seguenti opzioni 1 - Possibilità di calcolare il quadro rw facendo un nuovo rigo per ogni operazione (attualmente il nuovo rigo viene fatto solo se avviene un operazione fiscalmente rilevante) 2 - Aggiunto la possibilità di ritenere fiscalmente rilevanti per i movimenti fino al 31-12-2022 tutti gli scambi (questo ovviamente influisce sui costi di carico del 2023 e di conseguenza sulle plusvalenze) 3 - aggiunto la possibilità di considerare tutte le reward fino al 31-12-2022 come provento a costo di carico Zero
+- In "Analisi Crypto - Giacenze a Data" inserito la possibiltà di non far vedere i token scam
+- In Opzioni - Export ora è possibile generare un file di export con i vostri dati per Tatax Nota 1 - Non verranno esportati i token contrassegnati come scam Nota 2 - Verranno generati 2 file di cui uno con la scritta defi alla fine. Quello con la scritta defi contiene le movimentazioni generate in automatico dal programma quando gli dite che un determinato movimento è un versamento/prelievo su un vault in defi.
+- Implementata importazione da OKX (E' importante caricare sia il Csv del Funding Wallet che quello del Trading altrimenti vi ritroverete con dei dati incompleti)
+
+**Correzione di bug**
+
+- Sistemato problemi in importazioni sul csv del "Crypto Wallet" e  di Binance.
+- Sistemato problemi vari che potevano portare a freeze del programma in talune circostanze.
+
+## Versione 1.0.19 {#versione-1019}
+
+**Correzione di bug**
+
+- Aggiunto ulteriori voci che prima venivano scartare nell'importazione del Fiat e del Crypto wallet di Crypto.com
+- Tolto dalle importazioni di Crypto.com tutti i movimenti di blocco e sblocco dei token per il limit order in quanto generavano un sacco di righe inutili.
+
+## Versione 1.0.18 {#versione-1018}
+
+**Nuove implementazioni**
+
+- Aggiunto ulteriore provider per la ricerca dei prezzi poichè coingeko ha limitato le richieste api gratuite agli ultimi 365 giorni
+- In Opzioni - "Gruppi Wallet Crypto" è possibile scegliere di calcolare la plusvalenza divisa per gruppi di wallet
+- In inserimento manuale ora se si seleziona una riga verranno riportate automaticamente Data, ora e Wallet per velocizzare gli inserimenti.
+- Sui movimenti inseriti manualmente è ora possibile modificare tutti i campi
+
+**Correzione di bug**
+
+- Sistemato problemi in importazioni sul csv del "Crypto Wallet" e del "Fiat Wallet" di Crypto.com
+- Sistemato blocchi in fase di importazione dalla defi (dovuti al cambio di politiche del piano gratuito di coingecko)
+
+## Versione 1.0.17 {#versione-1017}
+
+**Nuove implementazioni**
+
+- Modificato visualizzazione dettagli riga
+- In "Opzioni - Gruppi Wallet Crypto" aggiunto la possibilità di raggruppare i wallet a piacere (Questa funzione è una predisposizione per future implentazioni ma attualmente è fine a se stessa)
+- In "Opzioni - E-Money Token" aggiunto la possibilità di indicare quali monete e da quando sono E-Money Token. Questo inciderà sul calcolo delle plusvalenze,che verranno immediatamente ricalcolate, in quanto lo scambio crypto-EMT è fiscalmente rilevante.
+
+## Versione 1.0.16 {#versione-1016}
+
+**Nuove implementazioni**
+
+- Aggiunto import da rete Ethereum
+- Aggiunto tasto per l'esportazione in csv dei movimenti crypto.
+
+**Correzione di bug**
+
+- Sistemato problema per cui quando si aggiungenva un nuovo wallet CRO alla prima importazione non veniva lanciato il controllo sulle giacenze.
+
+## Versione 1.0.15 {#versione-1015}
+
+**Nuove implementazioni**
+
+- Aggiunto correzione automatica giacenze CRO sulle importazioni da cronos chain (Alcuni movimenti di CRO es. alcuni scambi da CRONOS-POS a Cronos.org o alcune fees gestite da smart contract non vengono visti dall'explorer, questo provocava errori sulle giacenze di CRO, adesso ad ogni fine importazioni vengono controllati tutti i movimenti e per ogni blocco viene richiesta la giacenza dei CRO del Wallet, poi viene in automatico creato un movimento correttivo per portare la giacenza di CRO alla quantità esatta) Per correggere i movimenti pregressi già importati basta rilanciare l'importazione dei wallet e verrà tutto gestito in automatico, l'unica pecca è che porterà via più tempo di prima.
+- Nella funzione "Classificazione Trasferimenti Crypto" aggiunto possibilità di classificare i movimenti come "Trasferimenti da e per Vault/Piattaforma di rendita" per identificare i trasferimenti verso piattaforme di rendita es. PancakeSwap,VVS,Beefy etc... Tra le altre cose nel momento in cui viene classificato il movimento in questo modo il programma identifica lo smart contract e chiede se identificare allo stesso modo tutti gli altri movimenti che interagiscono con lo stesso smartcontract, questo dovrebbe velocizzare di molto le classificazioni sui trasferimenti.
+- Nella funzione "Classificazione Trasferimenti Crypto" il pulsante assegnazione automatica ora riconosce alcuni movimenti automaticamente e li classifica in maniera corretta es. riconosce in automatico gli scambi tra WCRO e CRO e li classifica.
+
+**Correzione di bug**
+
+- Tolto pulsante che compariva nella prima pagina e che non aveva alcuna funzione
+- Sulla sezione card wallet e fiat wallet corretto sezione rimanenze nella tabella dettagli movimento (prima,solo nella sezione dettaglio movimenti, non veniva considerata la giacenza di inizio anno e le rimanenze partivano da zero)
+
+## Versione 1.0.14 {#versione-1014}
+
+**Nuove implementazioni**
+
+- Aggiunto importazione file CSV Binance Attenzione : 1 - Dai file CSV di Binance non vengono estratti gli spostamenti interni (Es. quando passate i token da SPOT a EARN) in quanto non rilevanti e perchè Binance ha cambiato diverse volte nel tempo il formato del file CSV per questi movimenti 2 - Potrebbero esserci piccole o grandi imprecisioni sui file CSV di Binance, ho riscontrato le seguenti problematiche: A - A volte sul CSV mancano alcuni movimenti di Earn sui BNB (me ne mancavano 8 in un anno anche se poi riestraendo il CSV qualche mese dopo sono ricomparsi) B - Binance ad un certo punto non mette più nel file CSV i movimenti sulle coppie che ha tolto dal suo listino (non conosco il timing però) Questo significa che potrebbero mancarvi dei trade su coppie che non esistono più.
+- Nuove implementazioni della funzione "Giacenze a Data" 1 - Migliorata la grafica sulle tabelle 2 - si può identificare un token come scam o cambiare il suo nome se arriva dalla DEFI 3 - Si può modificare il prezzo di un token ad una certa data 4 - Per i wallet in defi si può vedere la situazione attuale delle giacenze di tutti i token detenuti attraverso il relativo explorer 5 - Si possono creare dei movimenti correttivi (es. mi accorgo che di un certo token a fine anno ho una giacenza errata posso inserire dei movimenti correttivi) (Questo succede spesso con scheetcoins con tokenomics strane (es. tasse o premi su blockchain ricevibili al momento di una movimentazione))
+- Nella funzione "Classificazione Trasferimenti Crypto" aggiunto la classificazione "Scambio Differito" dove verranno associati un movimento di prelievo e uno di deposito anche differiti nel tempo (Viene usata ad esempio per classificare gli scambi attraverso bridge, scambio attraverso piattaforme con del timing o cmq scambi che richiedono del tempo per essere completati)
+
+**Correzione di bug**
+
+- Corretto bug in importazioni che cancellava le associazioni fatte sulla classificazione movimenti
+- Corretto bug dovuto ad arrotondamenti che poteva portare a costi di carico negativi (anche se di importi molto piccoli)
+- Corretto bug su importazioni da cointracking su file in lingua Italiana (Prima venivano gestiti solo quelli in inglese)
+
+## Versione 1.0.13 {#versione-1013}
+
+**Nuove implementazioni**
+
+- Sotto "Analisi Crypto" inserita nuova funzione chiamata "Giacenze a data" che permette di calcolare le giacenze delle crypto con relativo valore ad una specifica data.
+
+**Correzione di bug**
+
+- Corretti diversi bug nelle importazioni da blockchain (reimportare i wallet per applicare le correzioni sul pregresso)
+
+## Versione 1.0.12 {#versione-1012}
+
+**Nuove implementazioni**
+
+- Aggiunto importazione di wallet da rete cronoschain (no ERC1155)
+- Aggiunto possibilità di classificare un movimento di deposito come acquisto, verrà chiesto l'importo pagato in euro. (Utile per acquisti di crypto da chain o da amici in contanti o altro)
+
+**Correzione di bug**
+
+- Corretto bug su importazione di wallet da chain con più di 10000 movimenti (Qualora vi fossero sarà da rifare l'importazione per sistemare i movimenti)
+- Altri vari piccoli BugFix
+
+## Versione 1.0.11 {#versione-1011}
+
+- Corretto errata visualizzazione costi di carico sui depositi e prelievi
+- Corretto calcolo plusvalenza in caso di rimborsi
+- Altri piccoli bugfix
+
+## Versione 1.0.10 {#versione-1010}
+
+- Sistemato calcolo delle plusvalenze sugli NFT
+- Implementato importazione dati su acquisti di beni/servizi con crypto da CSV Crypto.com
+- Implementato importazioni acquisti ricorrenti e scambi crypto tra app Crypto.com da file CSV
+- Ora il bottone dettaglio DEFI si illumina e può essere premuto solamente nel caso in cui vi siano i dati
+
+## Versione 1.0.9 {#versione-109}
+
+**Nuove implementazioni**
+
+- Implementato importazioni dati dal file csv di Crypto.com che comprendono anche la nuova modalità di Staking
+- Implementato importazione e gestione degli NFT ERC721 su rete BSC
+- Implementato possibilità di aggiungere, modificare ed eliminare movimenti manualmente
+
+**Correzione di bug**
+
+- Corretto importazione dati nel caso in cui la data nel CSV di Crypto.com sia quella attuale
+- Corretto errata assegnazione di valori null al posto di blanc durante le importazioni dal SCV di Crypto.com
+- Corretto errore di importazione in rari casi nel caso di dustConversion dal file CSV di Crypto.com
+- Corretto problema sul bottone interrompi in fase di importazione dati da blockchain
+
+## Versione 1.0.8 {#versione-108}
+
+Corretto errore che impediva l'importazione del csv crypto.com app nel caso di acquisti crypto con carta
+Implementato importazione diretta da blockchain su rete BSC inserendo il numero di wallet
+(ancora non supportato importazione di scambi con NFT, a breve verrà implementata la parte relativa agli NFT ERC721)
+(per i token ERC1155 bscscan non ha ancora implementato correttamente le API , non appena lo farà saranno implementati anche quelli)
+Problema noto : Il bottone interrompi in fase di importazione dati potrebbe non funzionare (verrà corretto nella prossimaversione)
+
+Note: Per colpa delle limitazioni sulle chiamate delle Api gratuite la prima importazione del wallet potrebbe impegnare molto tempo
+
+## Versione 1.0.7 {#versione-107}
+
+Implementato importazione dati delle cripto da Crypto.com App
+Implementato importazione dati delle cripto da Cointracking.info
+Implementato classificazione dei movimenti di trasferimento tra wallet
+Implementato calcolo della plusvalenza con il metodo Lifo
+NOTE:
+- La plusvalenza viene generata solo nei seguenti casi (gli scambi Crypto-Crypto non generano plusvalenza) 1 - Cashout 2 - Cashback, reward e similari 3 - Commisioni (se esplicitate in fase di importazione)
+- Per un corretto calcolo è importante inserire tutti i movimenti da tutti i wallet ed exchange dall'inizio della detenzione
+- NFT e derivati non sono per ora implementati.
+
+## Versione 1.0.6 {#versione-106}
+
+Corretto problema per cui si analizzava un periodo senza movimenti il saldo iniziale veniva messo a zero invece che calcolarlo dai movimenti precedenti.
+Tolto filtri per importazioni dati card wallet, ora importa anche file con più campi di quelli previsti, attenzione a caricare il file corretto.
+Questo filtro è stato tolto perchè in taluni casi il file del card wallet presentava dei dati aggiuntivi e quindi non veniva importato.
+
+## Versione 1.0.5 {#versione-105}
+
+Migliorato layout di stampa
+
+## Versione 1.0.4 {#versione-104}
+
+Sistemato problema di calcolo sulla diffeenza delle date, in alcuni casi particolare veniva arrotondato per difetto e poteva influire di 1 giorno sul calcolo della giacenza media
+Sistemato problema sul cardwalle in cui non veniva mai considerata la rimanenza iniziale se imputata a mano
+Aggiunto nelle tabelle e nel pdf le rimanenza data per data
+Aggiunto logo
+
+## Versione 1.0.3 {#versione-103}
+
+Sistemato problema di calcolo sui bonifici verso la banca fatti dal FiatWallet (prima venivano erroneamente sommati invece che sottratti)
+Aggiunto pulsante per la generazione di un report in pdf sia sul Fiat Wallet che sul Card Wallet
+
+## Versione 1.0.2 {#versione-102}
+
+Sistemato problema con gestione dei movimenti anomali
+
+## Versione 1.0.1 {#versione-101}
+
+Modificato importazione movimenti, prima non venivano importati i movimenti eseguiti nel medesimo secondo benchè diversi
+Ora vengono scartati solo i movimenti con stessa ora (al secondo),causale e importo.
++
+Ora si possono importare più csv dello stesso tipo es. se ho 2 csv del fiat wallet, 1 del 2021 e 1 del 2022
+li posso importare entrambi nel programma e avrò i dati aggregati dei 2 anni.
+
+[Torna all'indice della documentazione](./)

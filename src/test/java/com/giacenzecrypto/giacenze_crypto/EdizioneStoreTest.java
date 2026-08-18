@@ -84,20 +84,15 @@ public class EdizioneStoreTest {
     }
 
     @Test
-    public void nellEdizioneStoreIlTitoloNonDiceBeta() {
-        //policy 10.1: un'applicazione che si annuncia "Beta" invita il revisore a chiedersi se sia
-        //completa. Nell'edizione completa la dicitura resta finche' non la si toglie anche li'.
-        assertEquals("Giacenze Crypto 1.2.3",
-                VarStatiche.componiTitolo("1.2.3", VarStatiche.EDIZIONE_STORE));
-        assertEquals("Giacenze Crypto 1.2.3", VarStatiche.componiTitolo("1.2.3", "STORE"));
-    }
-
-    @Test
-    public void fuoriDallEdizioneStoreIlTitoloDiceAncoraBeta() {
-        assertEquals("Giacenze Crypto 1.2.3 Beta", VarStatiche.componiTitolo("1.2.3", "completa"));
-        //un'edizione sconosciuta o assente vale come completa, come per EdizioneStore()
-        assertEquals("Giacenze Crypto 1.2.3 Beta", VarStatiche.componiTitolo("1.2.3", null));
-        assertEquals("Giacenze Crypto 1.2.3 Beta", VarStatiche.componiTitolo("1.2.3", "qualcosaltro"));
+    public void ilTitoloNonDiceBetaInNessunaEdizione() {
+        //Il programma è uscito dalla fase beta il 18/08/2026: la dicitura non c'è più in nessuna
+        //edizione, e il titolo non dipende più da quale build sia (prima la toglieva solo lo Store,
+        //per la policy 10.1). Il test resta qui perché è dove la regola era nata.
+        assertEquals("Giacenze Crypto 1.2.3", VarStatiche.componiTitolo("1.2.3"));
+        VarStatiche.Edizione = VarStatiche.EDIZIONE_STORE;
+        assertEquals("Giacenze Crypto 1.2.3", VarStatiche.componiTitolo("1.2.3"));
+        VarStatiche.Edizione = "completa";
+        assertEquals("Giacenze Crypto 1.2.3", VarStatiche.componiTitolo("1.2.3"));
     }
 
     @Test

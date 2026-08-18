@@ -1,5 +1,8 @@
+NB: questo file non viene più aggiornato. La documentazione e l'elenco delle novità di ogni versione
+si trovano su https://lucapasselli.github.io/GiacenzeCrypto/documentazione/
+
 DISCLAIMER
-Il software fornito è in versione beta ed è destinato esclusivamente a scopi di testing e valutazione. Questo programma è progettato per assistere nei calcoli legati alla dichiarazione delle Crypto-Attività, ma non garantisce l'accuratezza, la completezza o l'affidabilità dei risultati.
+Il software viene fornito così com'è, senza alcuna garanzia di accuratezza, completezza o affidabilità dei risultati. È uno strumento di supporto al calcolo per la dichiarazione delle Crypto-Attività e non sostituisce il parere di un professionista abilitato.
 L'utente utilizza questo software a proprio rischio e pericolo. Nonostante gli sforzi per identificare e correggere eventuali errori, il programma potrebbe contenere bug o fornire risultati errati.
 Il creatore e i contributori del software non sono responsabili per eventuali danni diretti, indiretti, accidentali o consequenziali derivanti dall'uso del programma, inclusi errori nei calcoli, problemi tecnici o altre discrepanze. Si raccomanda agli utenti di verificare autonomamente i risultati prodotti e di consultare un professionista qualificato prima di presentare la propria dichiarazione.
 Utilizzando questo software, l'utente accetta integralmente questi termini.

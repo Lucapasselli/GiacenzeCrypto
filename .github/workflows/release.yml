@@ -118,27 +118,27 @@ jobs:
 
       - name: Compila installer con Inno Setup
         shell: cmd
-        run: '"C:\Program Files (x86)\Inno Setup 6\iscc.exe" "installer\InnoScript.iss" /DMyAppVersion="%VERSIONE% Beta"'
+        run: '"C:\Program Files (x86)\Inno Setup 6\iscc.exe" "installer\InnoScript.iss" /DMyAppVersion="%VERSIONE%"'
 
       - name: Copia installer in out\
         shell: pwsh
         run: |
-          copy installer\Output\Giacenze_Crypto.exe out\GiacenzeCrypto_$($env:VERSIONE)_Beta_Installer_Windows.exe
+          copy installer\Output\Giacenze_Crypto.exe out\GiacenzeCrypto_$($env:VERSIONE)_Installer_Windows.exe
 
       - uses: actions/upload-artifact@v4
         with:
-          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Windows
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Portable_Windows
           path: stage/portable-windows
 
       - uses: actions/upload-artifact@v4
         with:
-          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Multipiattaforma
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Portable_Multipiattaforma
           path: stage/portable-multi
 
       - uses: actions/upload-artifact@v4
         with:
-          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Installer_Windows
-          path: out/GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Installer_Windows.exe
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Installer_Windows
+          path: out/GiacenzeCrypto_${{ env.VERSIONE }}_Installer_Windows.exe
 
   build-linux:
     runs-on: ubuntu-latest
@@ -210,16 +210,16 @@ jobs:
           # che in "create-release" verrebbe copiato tale e quale e stonerebbe fra gli altri asset.
           # Il nome del file non ha alcun valore per dpkg/apt (i metadati stanno dentro il pacchetto,
           # e --linux-package-name resta "giacenze-crypto"), quindi si può allineare al pattern comune.
-          mv out/deb/*.deb "out/deb/GiacenzeCrypto_${VERSIONE}_Beta_Deb_Linux.deb"
+          mv out/deb/*.deb "out/deb/GiacenzeCrypto_${VERSIONE}_Deb_Linux.deb"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Linux
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Portable_Linux
           path: out/linux/${{ env.PROJECT_NAME }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Deb_Linux
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Deb_Linux
           path: out/deb
 
   build-macos:
@@ -307,12 +307,12 @@ jobs:
           # nome file. Gli artifact restano distinti, ma in "create-release" i .dmg finiscono
           # entrambi in release_assets/ e il secondo sovrascrive il primo: nella release ne
           # comparirebbe uno solo. L'architettura va quindi messa nel nome del file.
-          mv out/dmg/*.dmg "out/dmg/GiacenzeCrypto_${VERSIONE}_Beta_DMG_MacOS_${{ matrix.arch }}.dmg"
+          mv out/dmg/*.dmg "out/dmg/GiacenzeCrypto_${VERSIONE}_DMG_MacOS_${{ matrix.arch }}.dmg"
 
       - name: Upload .dmg
         uses: actions/upload-artifact@v4
         with:
-          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_DMG_MacOS_${{ matrix.arch }}
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_DMG_MacOS_${{ matrix.arch }}
           path: out/dmg/*.dmg
 
   create-release:

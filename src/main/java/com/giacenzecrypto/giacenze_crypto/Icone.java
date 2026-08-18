@@ -93,6 +93,21 @@ public class Icone {
     private static boolean AdattamentoAttivo = false;
 
     /**
+     * Colore con cui va disegnato un elemento monocromatico costruito dall'applicazione, perché si
+     * legga sul tema in uso. Serve a chi disegna un'icona invece di caricarla da un file — i monogrammi
+     * di {@link LoghiImport} — e sta qui perché la conoscenza del tema resti in un punto solo.
+     * @return il colore delle icone: quasi nero sul tema chiaro, quasi bianco su quello scuro
+     */
+    static Color ColoreMonocromatico() {
+        return AdattamentoAttivo ? COLORE_ICONE_TEMA_SCURO : Color.BLACK;
+    }
+
+    /** Solo per le prove: forza lo stato del tema senza installare il Look&amp;Feel. */
+    static void ForzaTemaScuroPerProva(boolean Scuro) {
+        AdattamentoAttivo = Scuro;
+    }
+
+    /**
      * Icone PNG già ridisegnate, indicizzate per URL di origine (la descrizione impostata da
      * ImageIcon(URL)): ogni glifo viene rasterizzato una volta sola anche se compare su più pulsanti.
      */

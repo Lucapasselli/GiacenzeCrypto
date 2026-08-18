@@ -4,6 +4,7 @@ import java.io.File;
 import javax.swing.Icon;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,16 @@ public class LoghiImportTest {
     @BeforeEach
     public void riportaLaCartellaDiLavoroSullaRadiceDelProgetto() {
         VarStatiche.setWorkingDirectory(System.getProperty("user.dir") + "/");
+        LoghiImport.SvuotaCache();
+    }
+
+    private final String EdizioneOriginale = VarStatiche.Edizione;
+
+    /** L'edizione è una statica: senza ripristino i test dei monogrammi cambierebbero quelli successivi */
+    @org.junit.jupiter.api.AfterEach
+    public void ripristinaEdizioneETema() {
+        VarStatiche.Edizione = EdizioneOriginale;
+        Icone.ForzaTemaScuroPerProva(false);
         LoghiImport.SvuotaCache();
     }
 
@@ -173,5 +184,120 @@ public class LoghiImportTest {
             assertTrue(new File("config/loghi", nome + ".png").isFile(),
                     "manca il logo config/loghi/" + nome + ".png usato dalla finestra di import");
         }
+    }
+
+    //====================================================================================
+    // Monogrammi (edizione Store)
+    //====================================================================================
+
+    @Test
+    public void laSiglaDiUnaReteEIlCodiceCheLEtichettaGiaPorta() {
+        assertEquals("ARB", LoghiImport.Sigla("Arbitrum (ARB)"));
+        assertEquals("ETH", LoghiImport.Sigla("Ethereum (ETH)"));
+        //la colonna "Rete" della tabella dei wallet contiene il solo codice: deve dare lo stesso risultato
+        assertEquals("ARB", LoghiImport.Sigla("ARB"));
+        //oltre le tre lettere si abbrevia: a 19 px la quarta non si legge
+        assertEquals("GNO", LoghiImport.Sigla("Gnosis Chain (GNOSIS)"));
+    }
+
+    @Test
+    public void laSiglaDistingueINomiCheCominciamoAllaStessaManiera() {
+        //è il motivo per cui la seconda lettera non è la seconda del nome: sarebbero sei "Bi" identici
+        assertEquals("Bn", LoghiImport.Sigla("Binance"));
+        assertEquals("Bf", LoghiImport.Sigla("Bitfinex"));
+        assertEquals("Bp", LoghiImport.Sigla("Bitpanda"));
+        assertEquals("Br", LoghiImport.Sigla("Bitrue"));
+        assertEquals("Bt", LoghiImport.Sigla("Bittrex"));
+        assertEquals("Cb", LoghiImport.Sigla("Coinbase"));
+        assertEquals("Ce", LoghiImport.Sigla("CoinEx"));
+    }
+
+    @Test
+    public void unNomeGiaInFormaDiSiglaNonDiventaUnaParola() {
+        //"Ok" si leggerebbe come un nome diverso da OKX
+        assertEquals("OKX", LoghiImport.Sigla("OKX"));
+        assertEquals("MEX", LoghiImport.Sigla("MEXC"));
+    }
+
+    @Test
+    public void iNomiCompostiUsanoLeInizialiDelleParole() {
+        assertEquals("YA", LoghiImport.Sigla("Yield App"));
+        assertEquals("LL", LoghiImport.Sigla("Ledger Live"));
+        assertEquals("CE", LoghiImport.Sigla("Crypto.com Exchange"));
+    }
+
+    @Test
+    public void leVociSpecialiNonHannoSigla() {
+        //separatori e segnaposto degli elenchi: un cerchio con dentro un trattino sarebbe rumore
+        assertEquals("", LoghiImport.Sigla("----------"));
+        assertEquals("", LoghiImport.Sigla("*Nome Personalizzato*"));
+        assertEquals("", LoghiImport.Sigla(null));
+    }
+
+    @Test
+    public void nellEdizioneCompletaUnLogoMancanteRestaUnSegnaposto() {
+        VarStatiche.Edizione = "completa";
+        assertEquals(0, AlphaAngolo(LoghiImport.Dammi("voce-senza-logo", "Voce Senza Logo", 24)),
+                "il segnaposto trasparente dell'edizione completa non deve diventare un monogramma");
+        assertEquals(0, CentroOpaco(LoghiImport.Dammi("voce-senza-logo", "Voce Senza Logo", 24)));
+    }
+
+    @Test
+    public void nellEdizioneStoreUnLogoMancanteDiventaUnMonogramma() {
+        VarStatiche.Edizione = VarStatiche.EDIZIONE_STORE;
+        Icon i = LoghiImport.Dammi("voce-senza-logo", "Voce Senza Logo", 24);
+        assertEquals(0, AlphaAngolo(i), "il cerchio non deve arrivare negli angoli del quadrato");
+        assertEquals(255, CentroOpaco(i), "senza il file del logo l'edizione Store deve disegnare il cerchio");
+    }
+
+    @Test
+    public void ancheNellEdizioneStoreIlLogoPresenteVinceSulMonogramma() {
+        //un archivio ripristinato dall'edizione completa riporta config/loghi sul disco: quei file
+        //vanno disegnati, non coperti dal monogramma (Analisi_API_Terze_Parti.md §2)
+        Icon completa = LoghiImport.Dammi("binance", "Binance", 32);
+        VarStatiche.Edizione = VarStatiche.EDIZIONE_STORE;
+        assertSame(completa, LoghiImport.Dammi("binance", "Binance", 32),
+                "con il file presente le due edizioni devono restituire lo stesso logo");
+    }
+
+    @Test
+    public void ilMonogrammaSegueIlTema() {
+        VarStatiche.Edizione = VarStatiche.EDIZIONE_STORE;
+        Icone.ForzaTemaScuroPerProva(false);
+        int chiaro = Centro(LoghiImport.Dammi("voce-senza-logo", "Voce Senza Logo", 24)) & 0xFFFFFF;
+        LoghiImport.SvuotaCache();
+        Icone.ForzaTemaScuroPerProva(true);
+        int scuro = Centro(LoghiImport.Dammi("voce-senza-logo", "Voce Senza Logo", 24)) & 0xFFFFFF;
+        assertTrue(chiaro < 0x404040, "sul tema chiaro il cerchio deve essere scuro, era " + Integer.toHexString(chiaro));
+        assertTrue(scuro > 0xA0A0A0, "sul tema scuro il cerchio deve essere chiaro, era " + Integer.toHexString(scuro));
+    }
+
+    /** @return il colore del pixel al centro dell'icona */
+    private static int Centro(Icon icona) {
+        java.awt.image.BufferedImage im = new java.awt.image.BufferedImage(
+                icona.getIconWidth(), icona.getIconHeight(), java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        java.awt.Graphics2D g = im.createGraphics();
+        icona.paintIcon(null, g, 0, 0);
+        g.dispose();
+        //il centro geometrico cade dentro una lettera, che è scavata: si guarda poco sotto il bordo alto
+        return im.getRGB(icona.getIconWidth() / 2, Math.max(1, icona.getIconHeight() / 6));
+    }
+
+    /** @return 255 se il punto guardato da {@link #Centro(Icon)} è opaco, 0 se è trasparente */
+    private static int CentroOpaco(Icon icona) {
+        return (Centro(icona) >>> 24) > 127 ? 255 : 0;
+    }
+
+    @Test
+    public void ilRendererDellaComboDisegnaIlMonogramma() {
+        //è la riga passata a mano dentro RenderComboConLogo: se l'etichetta non arrivasse a Dammi, il
+        //monogramma non comparirebbe e nessuna delle prove qui sopra se ne accorgerebbe
+        VarStatiche.Edizione = VarStatiche.EDIZIONE_STORE;
+        javax.swing.JList<String> lista = new javax.swing.JList<>(new String[]{"Voce Senza Logo"});
+        LoghiImport.RenderComboConLogo r = new LoghiImport.RenderComboConLogo();
+        java.awt.Component c = r.getListCellRendererComponent(lista, "Voce Senza Logo", 0, false, false);
+        Icon i = ((javax.swing.JLabel) c).getIcon();
+        assertNotNull(i, "la voce senza logo deve ricevere comunque un'icona");
+        assertEquals(255, CentroOpaco(i), "il renderer della combo non ha disegnato il monogramma");
     }
 }

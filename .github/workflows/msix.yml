@@ -242,10 +242,16 @@ jobs:
           # Si tocca SOLO chi e' rotto davvero, cioe' chi ha una voce che non finisce esattamente a
           # fine file: le DLL del runtime non sono modificate da jpackage e la loro firma Eclipse resta.
           $radice = (Resolve-Path "out\$env:PROJECT_NAME").Path
-          $sistemati = 0
-          $esaminati  = 0
+          $esaminati = 0
+          $daSistemare = @()
+
+          # PRIMA FASE, IN SOLA LETTURA. I file dell'app-image arrivano dal JDK con l'attributo di
+          # sola lettura (il lanciatore compreso): aprirli tutti in scrittura fallisce con
+          # "Access to the path ... is denied" gia' sul primo. Qui si guarda soltanto, e si scrive
+          # dopo, sui pochi che lo meritano.
           Get-ChildItem $radice -Recurse -File -Include *.exe,*.dll,*.sys,*.ocx,*.cpl,*.scr,*.drv | ForEach-Object {
-            $fs = [System.IO.File]::Open($_.FullName, 'Open', 'ReadWrite')
+            $file = $_
+            $fs = [System.IO.File]::Open($file.FullName, 'Open', 'Read')
             try {
               $br = New-Object System.IO.BinaryReader($fs)
               if ($fs.Length -lt 0x40) { return }
@@ -272,21 +278,39 @@ jobs:
               if ($dim -eq 0) { return }
               # In un PE firmato regolarmente la tabella dei certificati e' in coda al file.
               if (([int64]$va + [int64]$dim) -eq $fs.Length) { return }
-              Write-Host "  firma stantia: $($_.FullName.Substring($radice.Length + 1)) (voce $va+$dim, file $($fs.Length))"
-              $lunghezzaPrima = $fs.Length
-              $fs.Position = $vocifirma
+              $daSistemare += [pscustomobject]@{
+                File = $file; Offset = $vocifirma; Va = $va; Dim = $dim; Lunghezza = $fs.Length
+              }
+            } finally { $fs.Dispose() }
+          }
+
+          # SECONDA FASE: si azzera la voce solo su chi e' rotto davvero. L'attributo di sola lettura
+          # si toglie e si rimette: l'app-image deve restare com'era, a parte quegli 8 byte.
+          $sistemati = 0
+          foreach ($v in $daSistemare) {
+            $file = $v.File
+            Write-Host "  firma stantia: $($file.FullName.Substring($radice.Length + 1)) (voce $($v.Va)+$($v.Dim), file $($v.Lunghezza))"
+            $eraSoloLettura = $file.IsReadOnly
+            if ($eraSoloLettura) { $file.IsReadOnly = $false }
+            $fs = [System.IO.File]::Open($file.FullName, 'Open', 'ReadWrite')
+            try {
+              $fs.Position = $v.Offset
               $fs.Write((New-Object byte[] 8), 0, 8)
               $fs.Flush()
               # Si rilegge quello che si e' appena scritto: questo passo modifica un binario che poi
-              # nessun altro controlla (un PE con la voce dei certificati azzerata si firma
-              # benissimo, quindi la verifica di firmabilita' in fondo NON intercetterebbe un
-              # lanciatore corrotto da noi). Le uniche due cose che devono valere sono che la
-              # lunghezza non sia cambiata e che gli 8 byte siano davvero a zero.
-              if ($fs.Length -ne $lunghezzaPrima) { Write-Error "Riscrittura anomala di $($_.FullName): lunghezza passata da $lunghezzaPrima a $($fs.Length)"; exit 1 }
-              $fs.Position = $vocifirma
-              if (($br.ReadUInt32() -ne 0) -or ($br.ReadUInt32() -ne 0)) { Write-Error "Azzeramento non riuscito su $($_.FullName)"; exit 1 }
+              # nessun altro controlla (un PE con la voce dei certificati azzerata si firma benissimo,
+              # quindi la verifica di firmabilita' in fondo NON intercetterebbe un lanciatore corrotto
+              # da noi). Le uniche due cose che devono valere sono che la lunghezza non sia cambiata e
+              # che gli 8 byte siano davvero a zero.
+              if ($fs.Length -ne $v.Lunghezza) { Write-Error "Riscrittura anomala di $($file.FullName): lunghezza passata da $($v.Lunghezza) a $($fs.Length)"; exit 1 }
+              $fs.Position = $v.Offset
+              $br = New-Object System.IO.BinaryReader($fs)
+              if (($br.ReadUInt32() -ne 0) -or ($br.ReadUInt32() -ne 0)) { Write-Error "Azzeramento non riuscito su $($file.FullName)"; exit 1 }
               $sistemati++
-            } finally { $fs.Dispose() }
+            } finally {
+              $fs.Dispose()
+              if ($eraSoloLettura) { $file.IsReadOnly = $true }
+            }
           }
           Write-Host "PE esaminati : $esaminati, firme stantie azzerate : $sistemati"
           if ($sistemati -eq 0) {

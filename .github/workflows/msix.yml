@@ -6,8 +6,10 @@ name: MSIX (Microsoft Store)
 #  - compila con -Dgiacenze.edizione=store : niente scaricamento dai conti exchange e niente loghi di
 #    terzi (policy 10.8.3/10.2.6 e 11.2), vedi test/Documentazione/Pubblicazione_MicrosoftStore.md;
 #  - include Node e ccxt nel pacchetto invece di lasciarli scaricare all'avvio (policy 10.2.2/10.2.3);
-#  - NON firma niente: allo Store il pacchetto lo firma Microsoft, e firmarlo da se' ci mette dentro
-#    un CN che non coincide con l'identita' di Partner Center.
+#  - il pacchetto prodotto NON e' firmato: allo Store lo firma Microsoft, e firmarlo da se' ci mette
+#    dentro un CN che non coincide con l'identita' di Partner Center. signtool compare comunque, ma
+#    solo come VERIFICA di build su una copia usa e getta (vedi l'ultimo passo e la sezione 2.8 di
+#    test/Documentazione/Pubblicazione_MicrosoftStore.md).
 #
 # Il pacchetto non viene allegato alla release pubblica: un MSIX non firmato scaricato da GitHub non
 # si installa da solo, e la sua destinazione e' Partner Center.
@@ -220,6 +222,80 @@ jobs:
             --app-version $env:VERSIONE `
             --vendor Luca
 
+      # --------------------------------------------------------------------------------------------
+      # Firme Authenticode stantie lasciate da jpackage (errore 0x800700C1 in certificazione)
+      # --------------------------------------------------------------------------------------------
+      - name: Ripulisci le firme stantie dai PE dell'app-image
+        shell: pwsh
+        run: |
+          # Temurin firma i propri binari da JDK 19 in avanti, compreso il lanciatore modello
+          # jpackageapplauncher.exe. jpackage ne sostituisce le risorse (icona, versione, nome) SENZA
+          # aggiornare la Certificates Directory del PE: il lanciatore prodotto resta con una voce di
+          # firma che punta oltre la fine del file. signtool rifiuta un PE fatto cosi' con
+          # ERROR_BAD_EXE_FORMAT (0x800700C1), e la firma dello Store e' proprio un signtool che
+          # attraversa i PE dentro il pacchetto: la sottomissione si ferma in certificazione.
+          # Vedi adoptium/adoptium-support#1305 e #1358.
+          #
+          # Si azzera la voce (VirtualAddress e Size) invece di rimuovere la firma con
+          # "signtool remove": la firma non e' piu' valida comunque, dentro l'MSIX non serve a nessuno
+          # (a firmare e' il pacchetto, non i singoli file) e cosi' non serve un signtool per farlo.
+          # Si tocca SOLO chi e' rotto davvero, cioe' chi ha una voce che non finisce esattamente a
+          # fine file: le DLL del runtime non sono modificate da jpackage e la loro firma Eclipse resta.
+          $radice = (Resolve-Path "out\$env:PROJECT_NAME").Path
+          $sistemati = 0
+          $esaminati  = 0
+          Get-ChildItem $radice -Recurse -File -Include *.exe,*.dll,*.sys,*.ocx,*.cpl,*.scr,*.drv | ForEach-Object {
+            $fs = [System.IO.File]::Open($_.FullName, 'Open', 'ReadWrite')
+            try {
+              $br = New-Object System.IO.BinaryReader($fs)
+              if ($fs.Length -lt 0x40) { return }
+              if ($br.ReadUInt16() -ne 0x5A4D) { return }              # "MZ"
+              $fs.Position = 0x3C
+              $pe = $br.ReadUInt32()
+              if (($pe + 24) -ge $fs.Length) { return }
+              $fs.Position = $pe
+              if ($br.ReadUInt32() -ne 0x00004550) { return }          # "PE\0\0"
+              $fs.Position = $pe + 24
+              $magic = $br.ReadUInt16()
+              # La base delle data directory dipende dal formato: 96 byte di optional header per PE32,
+              # 112 per PE32+. Inchiodarne uno solo corromperebbe l'altro in silenzio.
+              $off = switch ($magic) { 0x10b { 96 } 0x20b { 112 } default { $null } }
+              if ($null -eq $off) { return }
+              $esaminati++
+              $baseDD = $pe + 24 + $off
+              $fs.Position = $baseDD - 4
+              if ($br.ReadUInt32() -lt 5) { return }                   # NumberOfRvaAndSizes
+              $vocifirma = $baseDD + 4 * 8                             # data directory 4 = certificati
+              if (($vocifirma + 8) -gt $fs.Length) { return }
+              $fs.Position = $vocifirma
+              $va = $br.ReadUInt32(); $dim = $br.ReadUInt32()
+              if ($dim -eq 0) { return }
+              # In un PE firmato regolarmente la tabella dei certificati e' in coda al file.
+              if (([int64]$va + [int64]$dim) -eq $fs.Length) { return }
+              Write-Host "  firma stantia: $($_.FullName.Substring($radice.Length + 1)) (voce $va+$dim, file $($fs.Length))"
+              $lunghezzaPrima = $fs.Length
+              $fs.Position = $vocifirma
+              $fs.Write((New-Object byte[] 8), 0, 8)
+              $fs.Flush()
+              # Si rilegge quello che si e' appena scritto: questo passo modifica un binario che poi
+              # nessun altro controlla (un PE con la voce dei certificati azzerata si firma
+              # benissimo, quindi la verifica di firmabilita' in fondo NON intercetterebbe un
+              # lanciatore corrotto da noi). Le uniche due cose che devono valere sono che la
+              # lunghezza non sia cambiata e che gli 8 byte siano davvero a zero.
+              if ($fs.Length -ne $lunghezzaPrima) { Write-Error "Riscrittura anomala di $($_.FullName): lunghezza passata da $lunghezzaPrima a $($fs.Length)"; exit 1 }
+              $fs.Position = $vocifirma
+              if (($br.ReadUInt32() -ne 0) -or ($br.ReadUInt32() -ne 0)) { Write-Error "Azzeramento non riuscito su $($_.FullName)"; exit 1 }
+              $sistemati++
+            } finally { $fs.Dispose() }
+          }
+          Write-Host "PE esaminati : $esaminati, firme stantie azzerate : $sistemati"
+          if ($sistemati -eq 0) {
+            # Non e' un errore: se una versione futura del JDK correggesse il difetto qui non ci sarebbe
+            # piu' niente da fare. Ma se la certificazione dovesse fallire ancora con 0x800700C1, il
+            # colpevole e' un altro e va cercato con APPXSIP_LOG=1 (vedi il passo di verifica in fondo).
+            Write-Host "::warning::Nessuna firma stantia trovata: se lo Store rifiuta ancora con 0x800700C1 la causa e' un'altra"
+          }
+
       - name: Aggiungi manifest e icone all'app-image
         shell: pwsh
         env:
@@ -243,6 +319,7 @@ jobs:
           $manifest.Save((Join-Path $app "AppxManifest.xml"))
           Copy-Item packaging\msix\Assets $app -Recurse
           Write-Host "Identity/Publisher : $($manifest.Package.Identity.Publisher)"
+          echo "PUBLISHER=$($manifest.Package.Identity.Publisher)" >> $env:GITHUB_ENV
           Write-Host "Contenuto del pacchetto:"
           Get-ChildItem $app | Select-Object Name
 
@@ -270,6 +347,65 @@ jobs:
           if ($LASTEXITCODE -ne 0) { Write-Error "makeappx pack fallito"; exit 1 }
           Write-Host "Pacchetto creato : $msix"
           echo "PACCHETTO=$msix" >> $env:GITHUB_ENV
+
+      # --------------------------------------------------------------------------------------------
+      # Verifica che il pacchetto sia firmabile (il giro su Partner Center dura giorni)
+      # --------------------------------------------------------------------------------------------
+      - name: Verifica di firmabilita' (signtool su una copia)
+        shell: pwsh
+        # Solo per il pacchetto da Store: su quello di prova Identity/Publisher porta in coda l'OID
+        # dello spazio dei nomi non firmato, e un soggetto di certificato con un arco OID di 39 cifre
+        # non e' detto che New-SelfSignedCertificate lo accetti. Il pacchetto di prova non si carica
+        # da nessuna parte, quindi la sua firmabilita' non interessa a nessuno.
+        if: ${{ format('{0}', inputs.pacchetto_di_prova) != 'true' }}
+        run: |
+          # Il pacchetto caricato resta NON firmato: lo firma lo Store. Qui si firma una COPIA usa e
+          # getta, con un certificato autofirmato creato al volo, al solo scopo di far attraversare a
+          # signtool gli stessi PE che attraversera' la firma dello Store. E' l'unico modo di sapere
+          # PRIMA del caricamento se il pacchetto passera' quella fase: il percorso "pacchetto di
+          # prova" non lo dice, perche' Add-AppxPackage -AllowUnsigned non invoca nessun signtool.
+          #
+          # Il soggetto del certificato deve coincidere ESATTAMENTE con Identity/Publisher del
+          # manifest, altrimenti signtool si ferma prima di arrivare ai file (evento 150, 0x8007000B).
+          # APPXSIP_LOG=1 fa nominare a signtool i file con la Certificates Directory malformata.
+          $sdk = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin" -Directory -ErrorAction SilentlyContinue |
+                 Where-Object { Test-Path (Join-Path $_.FullName "x64\signtool.exe") } |
+                 Sort-Object Name -Descending | Select-Object -First 1
+          if (-not $sdk) { Write-Error "signtool.exe non trovato nel Windows SDK del runner"; exit 1 }
+          $signtool = Join-Path $sdk.FullName "x64\signtool.exe"
+
+          $copia = "$env:PACCHETTO.collaudo.msix"
+          Copy-Item $env:PACCHETTO $copia
+
+          $cert = New-SelfSignedCertificate -Type Custom -Subject "$env:PUBLISHER" `
+                    -KeyUsage DigitalSignature -FriendlyName "Collaudo Giacenze Crypto" `
+                    -CertStoreLocation "Cert:\CurrentUser\My" `
+                    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+          # NB: la variabile non si chiama $pwd, che in PowerShell e' automatica (la directory corrente).
+          $chiara = [guid]::NewGuid().ToString()
+          $segreta = ConvertTo-SecureString -String $chiara -Force -AsPlainText
+          $pfx = "collaudo.pfx"
+          Export-PfxCertificate -Cert "Cert:\CurrentUser\My\$($cert.Thumbprint)" -FilePath $pfx -Password $segreta | Out-Null
+
+          $env:APPXSIP_LOG = "1"
+          & $signtool sign /debug /fd SHA256 /f $pfx /p $chiara $copia
+          $esito = $LASTEXITCODE
+          Remove-Item Env:\APPXSIP_LOG
+
+          # Il certificato e la copia firmata non devono sopravvivere a questo passo: il pacchetto da
+          # caricare e' quello NON firmato, e una copia firmata con un CN qualsiasi su Partner Center
+          # verrebbe rifiutata.
+          # Senza -ErrorAction: una copia FIRMATA che restasse in "pacchetto\" accanto all'artifact e'
+          # esattamente cio' che non deve arrivare a Partner Center, e va saputo subito.
+          Remove-Item $copia -Force
+          Remove-Item $pfx -Force -ErrorAction SilentlyContinue
+          Remove-Item "Cert:\CurrentUser\My\$($cert.Thumbprint)" -Force -ErrorAction SilentlyContinue
+
+          if ($esito -ne 0) {
+            Write-Error "signtool non riesce a firmare il pacchetto (codice $esito). Se l'errore e' 0x800700C1 il log qui sopra nomina il file con la firma malformata."
+            exit 1
+          }
+          Write-Host "Il pacchetto e' firmabile: la fase di firma dello Store non si fermera' su un PE malformato."
 
       - uses: actions/upload-artifact@v4
         with:

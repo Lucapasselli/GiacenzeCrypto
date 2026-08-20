@@ -38,9 +38,27 @@ public class MappeCausali {
     /** Import nativo del CSV Tatax vecchio formato (voce {@code Tatax_Old}) */
     public static final String TATAX_OLD = "Tatax_Old";
 
-    /** Elenco delle mappe distribuite con il programma, usato per installare i default dal jar */
+    /**
+     * Elenco delle <b>mappe causali</b> distribuite con il programma, cioe' dei soli file con la forma
+     * {@code causale → categoria} letta da {@link #Interpreta}.
+     * <p>Non e' l'elenco dei file di {@code config/importmappe/}: quella cartella ospita anche tabelle di
+     * forma diversa, come {@link TipiOKX}, che qui non possono entrare perche' i loro valori non sono
+     * categorie interne e il loro JSON e' annidato. Per l'installazione dei default e per la verifica delle
+     * risorse del jar vale invece {@link #FILE_DI_SISTEMA}.
+     */
     static final String[] MAPPE_DI_SISTEMA = new String[]{
         BINANCE_OLD, BINANCE_FINANCIAL_REPORT, OKX, CRYPTOCOM_APP, CRYPTOCOM_EXCHANGE, TATAX_OLD
+    };
+
+    /**
+     * Tutti i file distribuiti in {@code config/importmappe/}: le mappe causali piu' le tabelle di forma
+     * diversa. E' questo l'elenco usato per estrarre dal jar i default mancanti.
+     * <p>La voce {@code <resource>} del {@code pom.xml} copre l'intera cartella con un {@code *.json}, quindi
+     * un file nuovo entra nel jar da solo: va aggiunto solo qui.
+     */
+    static final String[] FILE_DI_SISTEMA = new String[]{
+        BINANCE_OLD, BINANCE_FINANCIAL_REPORT, OKX, CRYPTOCOM_APP, CRYPTOCOM_EXCHANGE, TATAX_OLD,
+        TipiOKX.NOME
     };
 
     /** Cartella delle risorse nel jar che contiene le copie di default delle mappe */
@@ -58,14 +76,47 @@ public class MappeCausali {
      *         classificherebbe ogni movimento come sconosciuto.
      */
     public static Map<String, String> Carica(String nome) {
-        Map<String, String> mappa = LeggiDaDisco(nome);
-        if (mappa != null) {
-            return mappa;
+        return CaricaConRipiego(nome, MappeCausali::Interpreta);
+    }
+
+    /**
+     * Come interpretare il contenuto di un file di {@code config/importmappe/}.
+     * <p>Esiste perché in quella cartella non vivono solo mappe {@code causale → categoria}: {@link TipiOKX}
+     * ha un JSON annidato e una forma tutta sua, ma la <b>strada</b> per arrivarci — file su disco, ripiego
+     * sulla copia nel jar, errore se manca da entrambe le parti — deve restare una sola.
+     *
+     * @param <T> tipo della tabella prodotta
+     */
+    interface Analizzatore<T> {
+
+        /**
+         * @param contenuto testo del file
+         * @param nome nome della tabella, per i messaggi di errore
+         * @return la tabella, oppure {@code null} se il contenuto non è valido
+         */
+        T Interpreta(String contenuto, String nome);
+    }
+
+    /**
+     * Legge un file di {@code config/importmappe/} da disco e, se manca o non è valido, dalla copia inclusa
+     * nel jar.
+     * <p>Il ripiego scatta anche quando il file su disco <b>esiste ma non è valido</b>: una modifica a mano
+     * andata storta non deve rendere impossibile l'importazione finché non si ripristina il file.
+     *
+     * @param <T> tipo della tabella prodotta
+     * @param nome nome del file senza estensione
+     * @param analizzatore come interpretare il contenuto
+     * @return la tabella, oppure {@code null} se non è disponibile né su disco né nel jar
+     */
+    static <T> T CaricaConRipiego(String nome, Analizzatore<T> analizzatore) {
+        T tabella = analizzatore.Interpreta(LeggiTesto(PercorsoSuDisco(nome)), nome);
+        if (tabella != null) {
+            return tabella;
         }
-        mappa = LeggiDaJar(nome);
-        if (mappa != null) {
+        tabella = analizzatore.Interpreta(LeggiTestoDaJar(nome), nome);
+        if (tabella != null) {
             System.out.println("MappeCausali: uso la copia di default nel jar per la mappa " + nome);
-            return mappa;
+            return tabella;
         }
         LoggerGC.ScriviErrore("MappeCausali: mappa causali '" + nome + "' non disponibile, né in "
                 + VarStatiche.getCartella_ConfigImportMappe() + " né fra le risorse del programma");
@@ -91,7 +142,7 @@ public class MappeCausali {
      * una modifica dell'utente non vengono sovrascritti dalla copia (più vecchia) contenuta nel jar.
      */
     public static void InstallaDefaultSeMancanti() {
-        for (String nome : MAPPE_DI_SISTEMA) {
+        for (String nome : FILE_DI_SISTEMA) {
             try {
                 Path destinazione = Paths.get(VarStatiche.getCartella_ConfigImportMappe(), nome + ".json");
                 if (Files.exists(destinazione)) {
@@ -112,27 +163,31 @@ public class MappeCausali {
         }
     }
 
-    /** @return la mappa letta da {@code config/importmappe/<nome>.json}, oppure {@code null} se assente o non valida */
-    private static Map<String, String> LeggiDaDisco(String nome) {
+    /** @return il percorso del file in {@code config/importmappe/} */
+    private static Path PercorsoSuDisco(String nome) {
+        return Paths.get(VarStatiche.getCartella_ConfigImportMappe(), nome + ".json");
+    }
+
+    /** @return il testo del file, oppure {@code null} se assente o illeggibile */
+    private static String LeggiTesto(Path percorso) {
         try {
-            Path percorso = Paths.get(VarStatiche.getCartella_ConfigImportMappe(), nome + ".json");
             if (!Files.exists(percorso)) {
                 return null;
             }
-            return Interpreta(new String(Files.readAllBytes(percorso), StandardCharsets.UTF_8), nome);
+            return new String(Files.readAllBytes(percorso), StandardCharsets.UTF_8);
         } catch (Exception ex) {
             LoggerGC.ScriviErrore(ex);
             return null;
         }
     }
 
-    /** @return la mappa letta dalla risorsa {@code /ImportMappe/<nome>.json} del jar, oppure {@code null} */
-    private static Map<String, String> LeggiDaJar(String nome) {
+    /** @return il testo della risorsa {@code /ImportMappe/<nome>.json} del jar, oppure {@code null} */
+    private static String LeggiTestoDaJar(String nome) {
         try (InputStream in = MappeCausali.class.getResourceAsStream(RISORSA_JAR + nome + ".json")) {
             if (in == null) {
                 return null;
             }
-            return Interpreta(new String(in.readAllBytes(), StandardCharsets.UTF_8), nome);
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         } catch (Exception ex) {
             LoggerGC.ScriviErrore(ex);
             return null;
@@ -146,6 +201,9 @@ public class MappeCausali {
      * @return la mappa, oppure {@code null} se il JSON non è valido o il blocco {@code mappaCausali} è vuoto
      */
     private static Map<String, String> Interpreta(String contenuto, String nome) {
+        if (contenuto == null) {
+            return null;
+        }
         try {
             JSONObject root = new JSONObject(contenuto);
             if (!root.has("mappaCausali")) {

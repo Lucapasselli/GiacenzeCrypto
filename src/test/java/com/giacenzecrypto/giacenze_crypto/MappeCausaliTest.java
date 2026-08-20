@@ -49,7 +49,9 @@ public class MappeCausaliTest {
      */
     @Test
     public void leMappeDiDefaultSonoIncluseTraLeRisorseDelProgramma() throws Exception {
-        for (String nome : MappeCausali.MAPPE_DI_SISTEMA) {
+        //FILE_DI_SISTEMA e non MAPPE_DI_SISTEMA: in config/importmappe/ vivono anche tabelle di forma
+        //diversa dalle mappe causali (OKX_Tipi), e anche quelle devono entrare nel jar come default
+        for (String nome : MappeCausali.FILE_DI_SISTEMA) {
             try (java.io.InputStream in = MappeCausali.class.getResourceAsStream("/ImportMappe/" + nome + ".json")) {
                 assertNotNull(in, "manca la copia di default nel jar per la mappa " + nome
                         + " (controllare la sezione <resources> del pom.xml)");

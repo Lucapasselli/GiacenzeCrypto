@@ -23,7 +23,7 @@ Partiamo però dallo spiegare qual è la logica che sta dietro il calcolo del qu
 
 Le istruzioni dicono che
 
-“*Nel quadro RW devono essere riportate le consistenze degli investimenti e delle attività valorizzate all’inizio di ciascun periodo d’imposta ovvero al primo giorno di detenzione (di seguito, “valore iniziale”) e al termine dello stesso ovvero al termine del periodo di detenzione nello stesso (di seguito, “valore finale”), nonché il periodo di possesso.**“*
+“*Nel quadro RW devono essere riportate le consistenze degli investimenti e delle attività valorizzate all’inizio di ciascun periodo d’imposta ovvero al primo giorno di detenzione (di seguito, “valore iniziale”) e al termine dello stesso ovvero al termine del periodo di detenzione nello stesso (di seguito, “valore finale”), nonché il periodo di possesso.*“
 
 Il programma farà proprio questo ovvero per ogni nuovo investimento o all’inizio dell’anno aprirà un nuovo rigo RW imputando il valore iniziale mentre alla chiusura dello stesso o alla fine dell’anno chiuderà il quadro con il valore finale.
 

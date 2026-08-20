@@ -17,8 +17,8 @@ import java.util.List;
  *       gambe indipendenti (un prelievo per la moneta in uscita, un deposito per quella in entrata) ed
  *       elimina l'originale;</li>
  *   <li><b>Crea movimento di scambio da Deposito/Prelievo</b> — l'operazione inversa: fonde un deposito e
- *       un prelievo non classificati, contemporanei e sullo stesso wallet, in un unico movimento di
- *       scambio/acquisto/vendita ed elimina i due originali.</li>
+ *       un prelievo non classificati, sullo stesso wallet e distanti al più un secondo, in un unico
+ *       movimento di scambio/acquisto/vendita ed elimina i due originali.</li>
  * </ul>
  *
  * <p>Entrambe le operazioni delegano la costruzione dei nuovi movimenti a
@@ -81,7 +81,8 @@ public class Principale_Movimenti_SeparaUnisci {
     /**
      * Verifica se i movimenti selezionati possono essere fusi in un unico movimento di scambio: devono
      * essere esattamente due, uno di deposito e uno di prelievo, entrambi non ancora classificati
-     * (campo 18 vuoto e non generati automaticamente), sullo stesso wallet e contemporanei al secondo.
+     * (campo 18 vuoto e non generati automaticamente), sullo stesso wallet e distanti al più un secondo
+     * (le due gambe di uno stesso scambio non sempre vengono registrate nello stesso identico istante).
      * Le tipologie di token possono essere diverse tra loro (Crypto/FIAT/NFT in qualunque combinazione).
      * @param IDs lista degli ID attualmente selezionati in tabella, può essere {@code null}
      * @return {@code true} se la voce "Crea movimento di scambio da Deposito/Prelievo" va abilitata
@@ -127,8 +128,8 @@ public class Principale_Movimenti_SeparaUnisci {
         //Stesso wallet
         if (MovPrelievo[3] == null || !MovPrelievo[3].trim().equalsIgnoreCase(MovDeposito[3].trim())) return null;
 
-        //Stesso istante (timestamp oppure data dell'ID, entrambi al secondo)
-        if (!StessoIstante(MovPrelievo, MovDeposito)) return null;
+        //Stesso istante, con la tolleranza di un secondo
+        if (!IstantiCompatibili(MovPrelievo, MovDeposito)) return null;
 
         return new String[][]{MovPrelievo, MovDeposito};
     }
@@ -171,17 +172,47 @@ public class Principale_Movimenti_SeparaUnisci {
         return Parti[4].trim();
     }
 
+    /** Scarto massimo ammesso tra i due movimenti da fondere, in millisecondi. */
+    private static final long TOLLERANZA_ISTANTE_MS = 1000;
+
     /**
-     * Confronta due movimenti al secondo: prima sui timestamp (campo 29) se entrambi valorizzati,
-     * altrimenti sulla data contenuta nel primo segmento dell'ID (formato {@code yyyyMMddHHmmss}).
-     * @return {@code true} se i due movimenti sono contemporanei
+     * Confronta l'istante di due movimenti ammettendo uno scarto di {@link #TOLLERANZA_ISTANTE_MS}: le
+     * due gambe di uno stesso scambio non sempre arrivano registrate nello stesso identico secondo.
+     *
+     * <p>La data contenuta nell'ID viene confrontata <b>prima</b> come stringa: se il secondo è lo stesso
+     * i due movimenti sono fondibili comunque, anche se i rispettivi campi 29 divergessero di più di un
+     * secondo — allargare una tolleranza non deve far rifiutare ciò che prima veniva accettato.</p>
+     *
+     * @return {@code true} se i due movimenti possono essere considerati contemporanei
      */
-    private static boolean StessoIstante(String Movimento1[], String Movimento2[]) {
-        if (Funzioni.isBigDecimalNonZero(Movimento1[29]) && Funzioni.isBigDecimalNonZero(Movimento2[29])
-                && Movimento1[29].trim().equals(Movimento2[29].trim())) {
-            return true;
+    private static boolean IstantiCompatibili(String Movimento1[], String Movimento2[]) {
+        if (DataID(Movimento1).equals(DataID(Movimento2))) return true;
+        long Istanti[] = IstantiConfrontabili(Movimento1, Movimento2);
+        return Istanti != null && Math.abs(Istanti[0] - Istanti[1]) <= TOLLERANZA_ISTANTE_MS;
+    }
+
+    /**
+     * Estrae dai due movimenti due istanti confrontabili <b>tra loro</b>: i timestamp del campo 29 se
+     * valorizzati su entrambi, altrimenti le date contenute nel primo segmento dell'ID. Le due fonti non
+     * vengono mai mischiate, perché il campo 29 ha la precisione al millisecondo mentre la data dell'ID è
+     * troncata al secondo: confrontare l'una con l'altra produrrebbe scarti fittizi fino a un secondo,
+     * cioè esattamente la tolleranza da misurare.
+     * @return array {@code [istante1, istante2]} in millisecondi, oppure {@code null} se non ricavabili
+     */
+    private static long[] IstantiConfrontabili(String Movimento1[], String Movimento2[]) {
+        if (Funzioni.isBigDecimalNonZero(Movimento1[29]) && Funzioni.isBigDecimalNonZero(Movimento2[29])) {
+            return new long[]{new BigDecimal(Movimento1[29].trim()).longValue(),
+                              new BigDecimal(Movimento2[29].trim()).longValue()};
         }
-        return Movimento1[0].split("_")[0].equals(Movimento2[0].split("_")[0]);
+        long Istante1 = FunzioniDate.ConvertiDataIDinLong(DataID(Movimento1));
+        long Istante2 = FunzioniDate.ConvertiDataIDinLong(DataID(Movimento2));
+        if (Istante1 == 0 || Istante2 == 0) return null;
+        return new long[]{Istante1, Istante2};
+    }
+
+    /** @return il primo segmento dell'ID del movimento, cioè la sua data nel formato {@code yyyyMMddHHmmss} */
+    private static String DataID(String Movimento[]) {
+        return Movimento[0].split("_")[0];
     }
 
     // =================================================================================================
@@ -542,13 +573,16 @@ public class Principale_Movimenti_SeparaUnisci {
     // =================================================================================================
 
     /**
-     * Fonde un deposito e un prelievo non classificati, contemporanei e sullo stesso wallet, in un unico
-     * movimento di scambio; i due movimenti di partenza vengono eliminati.
+     * Fonde un deposito e un prelievo non classificati, sullo stesso wallet e distanti al più un secondo,
+     * in un unico movimento di scambio; i due movimenti di partenza vengono eliminati.
      *
      * <p>La categoria del movimento risultante (SC, AC, VC, SF...) e la relativa descrizione vengono
      * dedotte da {@link MovimentiCrypto#creaMovimento} in base al tipo delle due monete, quindi tutte le
      * combinazioni Crypto/FIAT/NFT sono gestite automaticamente. Il nuovo movimento eredita i dati del
      * prelievo (e, per i campi non valorizzati, quelli del deposito).</p>
+     *
+     * <p>La data del movimento fuso è la <b>maggiore</b> delle due: quando le due gambe non sono
+     * registrate nello stesso secondo, il momento in cui lo scambio è concluso è quello dell'ultima.</p>
      *
      * <p>Il prezzo del movimento fuso è quello della gamba prezzata; se entrambe lo sono, viene scelta
      * quella la cui moneta è più affidabile come riferimento secondo
@@ -564,7 +598,7 @@ public class Principale_Movimenti_SeparaUnisci {
         if (Coppia == null) {
             Messaggi.WarningMessage("Movimenti non fondibili",
                     "Per creare uno scambio servono esattamente due movimenti non classificati, uno di deposito e "
-                    + "uno di prelievo, sullo stesso wallet e con la stessa data/ora al secondo.", owner);
+                    + "uno di prelievo, sullo stesso wallet e distanti al massimo un secondo.", owner);
             return false;
         }
 
@@ -631,8 +665,10 @@ public class Principale_Movimenti_SeparaUnisci {
         boolean Valorizzato = GambaPrezzata != null;
         String Prezzo = Valorizzato ? PrezzoSicuro(GambaPrezzata[15]) : "0.00";
 
-        //Il movimento risultante nasce sull'ID del prelievo: la categoria finale viene ricalcolata
-        long Timestamp = FunzioniDate.ConvertiDataIDinLong(Prelievo[0].split("_")[0]);
+        //Il movimento risultante nasce sull'ID del prelievo, con la data della gamba più recente: la
+        //categoria finale viene comunque ricalcolata da creaMovimento
+        String IDBase = IDConDataPiuRecente(Prelievo, Deposito);
+        long Timestamp = FunzioniDate.ConvertiDataIDinLong(IDBase.split("_")[0]);
 
         String Scambio[] = MovimentiCrypto.creaMovimento(
                 MonetaOUT, MonetaIN,
@@ -640,7 +676,7 @@ public class Principale_Movimenti_SeparaUnisci {
                 Timestamp,
                 Prezzo, null,
                 1, 1,
-                Prelievo[0],
+                IDBase,
                 UnisciNote(Prelievo[21], Deposito[21]),
                 "M",
                 PrimoValorizzato(Prelievo[24], Deposito[24]),
@@ -687,6 +723,26 @@ public class Principale_Movimenti_SeparaUnisci {
     // =================================================================================================
     // FUNZIONI DI SUPPORTO
     // =================================================================================================
+
+    /**
+     * Compone l'ID su cui far nascere il movimento fuso: l'identificazione e i progressivi restano quelli
+     * del prelievo — da cui provengono anche tutti gli altri campi — mentre la data è la maggiore delle
+     * due, perché le due gambe possono essere registrate a un secondo di distanza e lo scambio si
+     * considera concluso con l'ultima.
+     *
+     * <p>Le date sono confrontate come <b>stringhe</b>: il formato {@code yyyyMMddHHmmss} è a larghezza
+     * fissa, quindi l'ordine lessicografico è già quello cronologico. Se una delle due non ha quella
+     * forma si resta sull'ID del prelievo, cioè sul comportamento precedente.</p>
+     *
+     * @return l'ID da passare a {@link MovimentiCrypto#creaMovimento} come ID da rispettare
+     */
+    private static String IDConDataPiuRecente(String Prelievo[], String Deposito[]) {
+        String DataPrelievo = DataID(Prelievo);
+        String DataDeposito = DataID(Deposito);
+        if (!DataPrelievo.matches("\\d{14}") || !DataDeposito.matches("\\d{14}")) return Prelievo[0];
+        if (DataDeposito.compareTo(DataPrelievo) <= 0) return Prelievo[0];
+        return DataDeposito + Prelievo[0].substring(DataPrelievo.length());
+    }
 
     /**
      * Costruisce la moneta da passare a {@link MovimentiCrypto#creaMovimento} a partire dai campi grezzi

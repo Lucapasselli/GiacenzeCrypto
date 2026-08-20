@@ -28,6 +28,12 @@ class Principale_Movimenti_SeparaUnisciTest {
     private static final String DATA = "2024-03-15 10:30";
     //Il campo 29 è il timestamp in millisecondi corrispondente alla data contenuta nell'ID
     private static final String TIMESTAMP = "1710495000000";
+    //Un secondo dopo: le due gambe di uno scambio non sempre sono registrate nello stesso istante
+    private static final String DATA_ID_1S = "20240315103001";
+    private static final String TIMESTAMP_1S = "1710495001000";
+    //Due secondi dopo, cioè oltre la tolleranza ammessa
+    private static final String DATA_ID_2S = "20240315103002";
+    private static final String TIMESTAMP_2S = "1710495002000";
 
     @BeforeEach
     void svuotaMappa() {
@@ -74,6 +80,23 @@ class Principale_Movimenti_SeparaUnisciTest {
         Importazioni.RiempiVuotiArray(v);
         MappaCryptoWallet.put(ID, v);
         return v;
+    }
+
+    /**
+     * Sposta un movimento su un altro istante, riscrivendo insieme la data dell'ID e il campo 29: il
+     * campo 29 è valorizzato dal costruttore dei movimenti di prova, quindi cambiare la sola data
+     * dell'ID lascerebbe i due movimenti contemporanei secondo il campo 29.
+     * @param Movimento movimento già inserito in mappa
+     * @param DataID nuova data dell'ID, nel formato {@code yyyyMMddHHmmss}
+     * @param Timestamp nuovo timestamp in millisecondi, corrispondente alla data
+     * @return il movimento spostato
+     */
+    private static String[] spostaSuIstante(String Movimento[], String DataID, String Timestamp) {
+        MappaCryptoWallet.remove(Movimento[0]);
+        Movimento[0] = DataID + Movimento[0].substring(DataID.length());
+        Movimento[29] = Timestamp;
+        MappaCryptoWallet.put(Movimento[0], Movimento);
+        return Movimento;
     }
 
     /** Uno scambio crypto/crypto, il caso tipico da separare. */
@@ -143,15 +166,41 @@ class Principale_Movimenti_SeparaUnisciTest {
     }
 
     @Test
+    void movimentiADistanzaDiUnSecondo_sonoUnibili() {
+        //Le due gambe di uno stesso scambio non sempre vengono registrate nello stesso identico secondo
+        movimento(DATA_ID + "_WalletTest_001_001_PC", "PRELIEVO CRYPTO",
+                "BTC", "Crypto", "-0.5", "", "", "", "20000.00");
+        String Deposito[] = spostaSuIstante(movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "8", "20000.00"), DATA_ID_1S, TIMESTAMP_1S);
+
+        assertTrue(Principale_Movimenti_SeparaUnisci.isUnibileInScambio(
+                List.of(DATA_ID + "_WalletTest_001_001_PC", Deposito[0])));
+    }
+
+    @Test
     void movimentiInIstantiDiversi_nonSonoUnibili() {
         movimento(DATA_ID + "_WalletTest_001_001_PC", "PRELIEVO CRYPTO",
                 "BTC", "Crypto", "-0.5", "", "", "", "20000.00");
-        String Deposito[] = movimento("20240315103001_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
-                "", "", "", "ETH", "Crypto", "8", "20000.00");
-        Deposito[29] = "1710495001000";
+        String Deposito[] = spostaSuIstante(movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "8", "20000.00"), DATA_ID_2S, TIMESTAMP_2S);
 
         assertFalse(Principale_Movimenti_SeparaUnisci.isUnibileInScambio(
-                List.of(DATA_ID + "_WalletTest_001_001_PC", "20240315103001_WalletTest_002_001_DC")));
+                List.of(DATA_ID + "_WalletTest_001_001_PC", Deposito[0])),
+                "oltre un secondo di distanza i due movimenti non sono più fondibili");
+    }
+
+    @Test
+    void movimentiNelloStessoSecondoConCampo29Divergente_restanoUnibili() {
+        //La data dell'ID viene confrontata per prima: se il secondo è lo stesso i due movimenti restano
+        //fondibili anche con i campi 29 incoerenti, come avveniva prima dell'introduzione della tolleranza
+        movimento(DATA_ID + "_WalletTest_001_001_PC", "PRELIEVO CRYPTO",
+                "BTC", "Crypto", "-0.5", "", "", "", "20000.00");
+        String Deposito[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "8", "20000.00");
+        Deposito[29] = TIMESTAMP_2S;
+
+        assertTrue(Principale_Movimenti_SeparaUnisci.isUnibileInScambio(
+                List.of(DATA_ID + "_WalletTest_001_001_PC", DATA_ID + "_WalletTest_002_001_DC")));
     }
 
     @Test
@@ -444,6 +493,35 @@ class Principale_Movimenti_SeparaUnisciTest {
         assertEquals("M", Scambio[22]);
         assertEquals("20000.00", Scambio[15]);
         assertEquals("SI", Scambio[32]);
+    }
+
+    @Test
+    void fusione_prendeLaDataDellaGambaPiuRecente() {
+        String Prelievo[] = movimento(DATA_ID + "_WalletTest_001_001_PC", "PRELIEVO CRYPTO",
+                "BTC", "Crypto", "-0.5", "", "", "", "20000.00");
+        String Deposito[] = spostaSuIstante(movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "8", "20000.00"), DATA_ID_1S, TIMESTAMP_1S);
+
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiFusione(Prelievo, Deposito, null));
+
+        String Scambio[] = MappaCryptoWallet.get(DATA_ID_1S + "_WalletTest_001_001_SC");
+        assertNotNull(Scambio, "lo scambio prende la data del deposito, più recente, e il resto dell'ID del prelievo");
+        assertEquals(TIMESTAMP_1S, Scambio[29]);
+        assertEquals("2024-03-15 10:30", Scambio[1]);
+    }
+
+    @Test
+    void fusione_seIlPrelievoEPiuRecenteTieneLaSuaData() {
+        String Prelievo[] = spostaSuIstante(movimento(DATA_ID + "_WalletTest_001_001_PC", "PRELIEVO CRYPTO",
+                "BTC", "Crypto", "-0.5", "", "", "", "20000.00"), DATA_ID_1S, TIMESTAMP_1S);
+        String Deposito[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "8", "20000.00");
+
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiFusione(Prelievo, Deposito, null));
+
+        String Scambio[] = MappaCryptoWallet.get(DATA_ID_1S + "_WalletTest_001_001_SC");
+        assertNotNull(Scambio, "la data più recente è quella del prelievo, che è anche l'ID di partenza");
+        assertEquals(TIMESTAMP_1S, Scambio[29]);
     }
 
     @Test

@@ -1,0 +1,38 @@
+{
+  "versione": "1.000",
+  "centralizzato": true,
+  "descrizione": "Decodifica dei codici 'type' dei bill restituiti dalle API di OKX nelle stesse etichette testuali usate dall'export CSV; e' poi OKX.json a convertire l'etichetta nella categoria interna. Un valore puo' essere una stringa (etichetta fissa) oppure un oggetto {positivo, negativo}, e in tal caso l'etichetta viene scelta dal segno di balChg. I codici non elencati restano non mappati e finiscono nel riepilogo dei movimenti sconosciuti, con il codice grezzo e il campo notes in causale. I blocchi archivioInstType/archivioSubType traducono invece le colonne del CSV dell'archivio trimestrale nel codice 'type' equivalente: instType ha la precedenza, il confronto e' senza distinzione fra maiuscole e minuscole.",
+  "trading": {
+    "1": { "positivo": "Transfer in", "negativo": "Transfer out" },
+    "2": { "positivo": "Buy", "negativo": "Sell" },
+    "12": { "positivo": "Transfer in", "negativo": "Transfer out" },
+    "30": { "positivo": "Buy", "negativo": "Sell" }
+  },
+  "funding": {
+    "1": "deposit",
+    "2": "withdrawal",
+    "48": "Received",
+    "61": "Convert",
+    "75": { "positivo": "Transfer in", "negativo": "Transfer out" },
+    "76": { "positivo": "Transfer in", "negativo": "Transfer out" },
+    "80": { "positivo": "Transfer in", "negativo": "Transfer out" },
+    "82": { "positivo": "Transfer in", "negativo": "Transfer out" },
+    "89": "Flash Deals Earnings",
+    "130": { "positivo": "Transfer in", "negativo": "Transfer out" },
+    "131": { "positivo": "Transfer in", "negativo": "Transfer out" },
+    "189": "Mystery box bonus",
+    "311": { "positivo": "Transfer in", "negativo": "Transfer out" },
+    "326": { "positivo": "Transfer in", "negativo": "Transfer out" },
+    "327": { "positivo": "Transfer in", "negativo": "Transfer out" }
+  },
+  "archivioInstType": {
+    "SPOT": "2"
+  },
+  "archivioSubType": {
+    "11": "1",
+    "12": "1",
+    "200": "12",
+    "202": "12",
+    "290": "1"
+  }
+}

@@ -1426,6 +1426,17 @@ public static Path getNodeExePath() {
             progress.setTitle("Scaricamento dei dati di "+exchangeId+" tramite API");
             progress.SetMessaggioAvanzamento("Comunicazione con OKX in corso...");
 
+            //La tabella dei codici "type" si legge PRIMA di scaricare, e la sua assenza ferma tutto: senza,
+            //ogni bill risulterebbe di tipo sconosciuto e l'importazione non porterebbe dentro nulla pur
+            //sembrando riuscita. Si carica una volta sola e si passa ai convertitori: la decodifica avviene
+            //una volta per bill, e OKX_Bills.js ne consegna fino a 50.000 per conto.
+            TipiOKX tipiOKX = TipiOKX.Carica();
+            if (tipiOKX == null) {
+                JOptionPane.showConfirmDialog(null, MappeCausali.MessaggioMappaNonDisponibile(TipiOKX.NOME),
+                        "Attenzione", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                return null;
+            }
+
             //Il dominio regionale di OKX su cui la chiave esiste viene individuato dallo script alla prima
             //esecuzione e poi ricordato: è una proprietà dell'account, non cambia da uno scaricamento all'altro.
             String hostnameOKX = DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_HOSTNAME_OKX);
@@ -1475,8 +1486,8 @@ public static Path getNodeExePath() {
             List<String[]> righe = new ArrayList<>();
             JsonArray fundingBills = json.has("okx_fundingBills") ? json.getAsJsonArray("okx_fundingBills") : new JsonArray();
             JsonArray tradingBills = json.has("okx_tradingBills") ? json.getAsJsonArray("okx_tradingBills") : new JsonArray();
-            List<String[]> rf = convertOKXBills(fundingBills, "Funding");
-            List<String[]> rt = convertOKXBills(tradingBills, "Trading");
+            List<String[]> rf = convertOKXBills(fundingBills, "Funding", tipiOKX);
+            List<String[]> rt = convertOKXBills(tradingBills, "Trading", tipiOKX);
             if (rf == null || rt == null) {   //null = interruzione richiesta dall'utente
                 JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                 return null;
@@ -1498,7 +1509,7 @@ public static Path getNodeExePath() {
             boolean archivioDaRecuperare = false;
             if (conArchivio) {
                 List<String[]> ra = ScaricaArchivioOKX(exchangeId, apiKey, secret, startDate, passphrase,
-                        hostnameOKX, progress);
+                        hostnameOKX, progress, tipiOKX);
                 if (ra == null) {
                     //null = interruzione dell'utente oppure errore dell'API: in entrambi i casi non si importa
                     //nulla, quindi nessun trimestre di questa corsa conta come fatto.
@@ -1750,6 +1761,13 @@ public static Path getNodeExePath() {
      * importo. I conteggi coincidono esattamente: 29 bill Trading {@code type=1} ↔ 29 righe
      * "Transfer in"/"Transfer out", 22 bill {@code type=12} ↔ 22 righe "Transfer" con azione vuota.
      *
+     * <p><b>La tabella non è più nel codice.</b> Dal 20/08/2026 i codici vivono in
+     * {@code config/importmappe/OKX_Tipi.json} e sono letti da {@link TipiOKX}, allineati dal repository e
+     * modificabili a mano come le mappe causali: un codice nuovo, o una classificazione da correggere, non
+     * richiede più una nuova versione del programma. Quella qui sotto è la fotografia del file di default —
+     * si aggiorna quando cambia il file, ma è il file a comandare. Resta invece nel codice il ripiego per i
+     * codici non elencati, perché è l'unico modo in cui un codice nuovo si fa vedere.
+     *
      * <table><caption>Codici riconosciuti</caption>
      * <tr><th>conto</th><th>type</th><th>riga CSV corrispondente</th><th>trattamento</th></tr>
      * <tr><td>Trading</td><td>2</td><td>Spot Buy / Spot Sell</td><td>scambio</td></tr>
@@ -1763,6 +1781,11 @@ public static Path getNodeExePath() {
      * <tr><td>Funding</td><td>131</td><td>To unified trading account</td><td>giroconto interno</td></tr>
      * <tr><td>Funding</td><td>75</td><td>Simple Earn subscription</td><td>giroconto interno</td></tr>
      * <tr><td>Funding</td><td>76</td><td>Simple Earn redemption</td><td>giroconto interno</td></tr>
+     * <tr><td>Funding</td><td>61</td><td>Convert (conversione rapida)</td><td>scambio</td></tr>
+     * <tr><td>Funding</td><td>80 / 82</td><td>Flash Deals sottoscrizione / riscatto</td><td>giroconto interno</td></tr>
+     * <tr><td>Funding</td><td>89</td><td>Flash Deals Earnings</td><td>provento</td></tr>
+     * <tr><td>Funding</td><td>189</td><td>Mystery box bonus</td><td>provento</td></tr>
+     * <tr><td>Funding</td><td>311</td><td>Transfer in from trading account</td><td>giroconto interno</td></tr>
      * <tr><td>Funding</td><td>326 / 327</td><td>Data migration out / in</td><td>giroconto interno</td></tr>
      * </table>
      *
@@ -1794,6 +1817,29 @@ public static Path getNodeExePath() {
      * <b>migrazione dei dati fra entità regionali di OKX</b>, non movimenti reali. Restano fra i giroconti
      * interni, cioè non importati, che è il trattamento corretto: le due gambe si compensano esattamente.
      *
+     * <p>Come sono stati riconosciuti gli altri codici del Funding, tutti sui dati reali:
+     * <ul>
+     * <li>{@code 61} — la conversione rapida di OKX ({@code "Convert"}), quella con cui si scambiano due
+     *     monete senza passare da un ordine di mercato. Riconosciuta il 04/08/2026: le 12 righe compaiono
+     *     sempre a coppie di segno opposto sullo stesso istante, che è esattamente ciò che il raggruppamento
+     *     per orario si aspetta da uno scambio. L'etichetta {@code "Convert"} era già una chiave della mappa
+     *     causali, usata dall'import del CSV.</li>
+     * <li>{@code 75}/{@code 76} — sottoscrizione e riscatto di Simple Earn, cioè spostamenti fra il conto
+     *     Funding e il prodotto Earn dello stesso utente. Il 75 viene dal campo {@code notes} (03/08/2026).</li>
+     * <li>{@code 80}/{@code 82} — sottoscrizione e riscatto dei "Flash Deals", che sono lo stesso meccanismo
+     *     di Simple Earn con un altro nome: il capitale esce e rientra identico (380,59095613 USDT usciti il
+     *     30/12/2022 e rientrati il 06/01/2023). È un giroconto; il rendimento arriva a parte con il 89.</li>
+     * <li>{@code 89} — il rendimento dei Flash Deals, accreditato in una moneta <b>diversa</b> da quella
+     *     investita (93,84434534 MRST a fronte di USDT vincolati). È un provento, non un giroconto, e va
+     *     trattato come gli interessi di Simple Earn.</li>
+     * <li>{@code 189} — omaggio promozionale ("mystery box"), 9127,55842556 SHIB il 31/07/2022. Entra
+     *     davvero nel wallet senza contropartita: come gli altri accrediti gratuiti vale un reward.</li>
+     * <li>{@code 311} — l'accredito che arriva dal conto Trading. <b>Non è il 130 con un altro nome</b>: le
+     *     due righe del 20/01/2024 hanno per contropartita esatta — stesso istante, stesso importo di segno
+     *     opposto — due righe {@code subType} 290 dell'archivio del conto Trading, vedi
+     *     {@link #tipoDaArchivioOKX}.</li>
+     * </ul>
+     *
      * @param tipo valore del campo {@code type} del bill
      * @param balChg variazione di saldo, usata per ricavare il verso del movimento
      * @param isTrading {@code true} se il bill viene dal conto Trading, {@code false} dal Funding
@@ -1807,6 +1853,10 @@ public static Path getNodeExePath() {
      * Come {@link #causaleBillOKX(String, String, boolean)}, ma per i codici non riconosciuti riporta anche
      * l'etichetta in chiaro che OKX espone nel campo {@code notes} del bill.
      *
+     * <p><b>Comoda ma costosa</b>: rilegge la tabella da disco a ogni chiamata. Va bene per una verifica
+     * isolata o per un test; in un ciclo sui bill si usa
+     * {@link #causaleBillOKX(TipiOKX, String, String, boolean, String)} con la tabella caricata una volta sola.
+     *
      * @param tipo valore del campo {@code type} del bill
      * @param balChg variazione di saldo, usata per ricavare il verso del movimento
      * @param isTrading {@code true} se il bill viene dal conto Trading, {@code false} dal Funding
@@ -1814,66 +1864,28 @@ public static Path getNodeExePath() {
      * @return la causale testuale, oppure {@code "OKX type <n> (<notes>)"} se il codice non è riconosciuto
      */
     static String causaleBillOKX(String tipo, String balChg, boolean isTrading, String notes) {
-        String sconosciuto = "OKX type " + tipo;
-        if (notes != null && !notes.isBlank()) sconosciuto = sconosciuto + " (" + notes.trim() + ")";
-        //Un giroconto interno è reso col verso giusto: le due etichette sono entrambe NON CONSIDERARE,
-        //ma tenerle distinte mantiene leggibile il movimento in caso di diagnostica.
-        String giroconto = Funzioni.isNegativo(balChg) ? "Transfer out" : "Transfer in";
+        return causaleBillOKX(TipiOKX.Carica(), tipo, balChg, isTrading, notes);
+    }
 
-        if (isTrading) {
-            switch (tipo) {
-                //30: uno scambio spot come il 2, registrato però con un codice diverso. Riconosciuto il
-                //20/08/2026 sui bill di un utente: le righe compaiono a coppie di segno opposto sullo
-                //stesso istante e con la stessa struttura di un ordine (SOL +0,25568649 contro EUR
-                //-18,47048151), che è esattamente ciò che il raggruppamento si aspetta da uno scambio.
-                //Il verso si ricava dal segno di balChg come per il 2. L'etichetta ufficiale OKX non è
-                //documentata pubblicamente e il campo notes arriva vuoto, quindi qui non se ne inventa
-                //una: conta il trattamento, che è quello dello scambio.
-                case "2":
-                case "30": return Funzioni.isNegativo(balChg) ? "Sell" : "Buy";
-                case "1":
-                case "12": return giroconto;
-                default:   return sconosciuto;   //non mappato: finirà tra i movimenti sconosciuti
-            }
+    /**
+     * Come {@link #causaleBillOKX(String, String, boolean, String)}, con la tabella dei codici già caricata.
+     *
+     * @param tabella tabella di decodifica, oppure {@code null}: in quel caso ogni codice risulta non
+     *                riconosciuto. Non è la via da percorrere — chi importa deve fermarsi prima, vedi
+     *                {@link TipiOKX#Carica()} — ma è il ripiego meno dannoso, perché segnala invece di tacere.
+     * @param tipo valore del campo {@code type} del bill
+     * @param balChg variazione di saldo, usata per ricavare il verso del movimento
+     * @param isTrading {@code true} se il bill viene dal conto Trading, {@code false} dal Funding
+     * @param notes campo {@code notes} del bill; può essere vuoto o {@code null}
+     * @return la causale testuale, oppure {@code "OKX type <n> (<notes>)"} se il codice non è riconosciuto
+     */
+    static String causaleBillOKX(TipiOKX tabella, String tipo, String balChg, boolean isTrading, String notes) {
+        if (tabella == null) {
+            String sconosciuto = "OKX type " + tipo;
+            if (notes != null && !notes.isBlank()) sconosciuto = sconosciuto + " (" + notes.trim() + ")";
+            return sconosciuto;
         }
-        switch (tipo) {
-            case "1":   return "deposit";
-            case "2":   return "withdrawal";
-            case "48":  return "Received";
-            //61: la conversione rapida di OKX ("Convert"), quella con cui si scambiano due monete senza
-            //passare da un ordine di mercato. Riconosciuta il 04/08/2026 sui bill reali: le 12 righe
-            //compaiono sempre a coppie di segno opposto sullo stesso istante (SHIB->USDT, MRST->USDT,
-            //USDT<->USDC), che è esattamente ciò che il raggruppamento per orario si aspetta da uno scambio.
-            //L'etichetta "Convert" è già una chiave di Ex_OKX_MappaCausali, usata dall'import del CSV.
-            case "61":  return "Convert";
-            //75/76: sottoscrizione e riscatto di Simple Earn, cioè spostamenti fra il conto Funding e il
-            //prodotto Earn dello stesso utente. Il 75 è stato riconosciuto il 03/08/2026 dal campo notes.
-            case "75":
-            case "76":
-            //80/82: sottoscrizione e riscatto dei "Flash Deals", che sono lo stesso meccanismo di Simple
-            //Earn con un altro nome. Sui dati reali il capitale esce e rientra identico (380.59095613 USDT
-            //usciti il 30/12/2022 e rientrati il 06/01/2023): è un giroconto, il rendimento arriva a parte
-            //con il codice 89.
-            case "80":
-            case "82":
-            case "130":
-            case "131":
-            //311: l'accredito che arriva dal conto Trading. Non è il 130 con un altro nome: le due righe
-            //del 20/01/2024 hanno per contropartita esatta — stesso istante, stesso importo di segno
-            //opposto — due righe subType 290 dell'archivio del conto Trading, vedi tipoDaArchivioOKX.
-            case "311":
-            //326/327: le due gambe della migrazione fra entità regionali di OKX, vedi javadoc
-            case "326":
-            case "327": return giroconto;
-            //89: il rendimento dei Flash Deals, accreditato in una moneta diversa da quella investita
-            //(93.84434534 MRST a fronte di USDT vincolati). È un provento, non un giroconto, e va trattato
-            //come gli interessi di Simple Earn.
-            case "89":  return "Flash Deals Earnings";
-            //189: omaggio promozionale ("mystery box"), 9127.55842556 SHIB il 31/07/2022. Entra davvero nel
-            //wallet senza contropartita: come gli altri accrediti gratuiti vale un reward.
-            case "189": return "Mystery box bonus";
-            default:    return sconosciuto;      //non mappato: finirà tra i movimenti sconosciuti
-        }
+        return tabella.Causale(tipo, balChg, isTrading, notes);
     }
 
     /**
@@ -1971,6 +1983,11 @@ public static Path getNodeExePath() {
      * dati</b>: i 112 {@code billId} dell'archivio 2026 Q2 sono tutti presenti anche fra i bill scaricati via
      * API, quindi per ogni riga è stato possibile leggere il {@code type} corrispondente.
      *
+     * <p>Anche questa corrispondenza sta in {@code config/importmappe/OKX_Tipi.json} (blocchi
+     * {@code archivioInstType} e {@code archivioSubType}) e non nel codice: è la stessa esigenza dei codici
+     * {@code type}, perché un {@code subType} mai visto arriva anche da qui e finisce nello stesso riepilogo
+     * dei movimenti sconosciuti.
+     *
      * <table><caption>Corrispondenza verificata il 03/08/2026, riga 290 aggiunta il 04/08/2026</caption>
      * <tr><th>instType</th><th>subType</th><th>type</th><th>significato</th></tr>
      * <tr><td>SPOT</td><td>1 / 2</td><td>2</td><td>gambe di uno scambio spot</td></tr>
@@ -2022,12 +2039,13 @@ public static Path getNodeExePath() {
      * @param passphrase passphrase di OKX
      * @param hostname dominio regionale già riconosciuto, stringa vuota se ancora ignoto
      * @param progress finestra di progresso su cui riportare l'avanzamento
+     * @param tipiOKX tabella di decodifica dei codici {@code type}, già caricata dal chiamante (vedi {@link TipiOKX})
      * @return le righe in formato intermedio a 19 campi, lista vuota se non c'è nulla da recuperare, oppure
      *         {@code null} se l'utente ha interrotto o se una richiesta è andata in errore — in quest'ultimo
      *         caso l'avviso è già stato mostrato qui, e l'intera importazione non deve essere eseguita
      */
     static List<String[]> ScaricaArchivioOKX(String exchangeId, String apiKey, String secret, long startDate,
-            String passphrase, String hostname, Download progress) {
+            String passphrase, String hostname, Download progress, TipiOKX tipiOKX) {
 
         List<String> sospesi = trimestriSospesiOKX();
         List<String> trimestri = trimestriDaChiedereOKX(startDate, System.currentTimeMillis(),
@@ -2122,7 +2140,7 @@ public static Path getNodeExePath() {
         }
 
         JsonArray archivio = json.has("okx_archivioBills") ? json.getAsJsonArray("okx_archivioBills") : new JsonArray();
-        List<String[]> righe = filtraArchivioOKXPerData(convertOKXArchivio(archivio), startDate, sospesi);
+        List<String[]> righe = filtraArchivioOKXPerData(convertOKXArchivio(archivio, tipiOKX), startDate, sospesi);
 
         if (daRitentare) {
             JOptionPane.showConfirmDialog(null,
@@ -2250,16 +2268,21 @@ public static Path getNodeExePath() {
     }
 
     static String tipoDaArchivioOKX(String instType, String subType) {
-        if (instType != null && instType.trim().equalsIgnoreCase("SPOT")) return "2";
-        if (subType == null) return "";
-        switch (subType.trim()) {
-            case "11":
-            case "12":
-            case "290": return "1";
-            case "200":
-            case "202": return "12";
-            default:    return "";
-        }
+        return tipoDaArchivioOKX(TipiOKX.Carica(), instType, subType);
+    }
+
+    /**
+     * Come {@link #tipoDaArchivioOKX(String, String)}, con la tabella dei codici già caricata: è questa la
+     * forma da usare nel ciclo sulle righe dell'archivio, la due-parametri rilegge il file a ogni chiamata.
+     *
+     * @param tabella tabella di decodifica, oppure {@code null} (ogni combinazione risulta ignota)
+     * @param instType valore della colonna {@code instType}
+     * @param subType valore della colonna {@code subType}
+     * @return il codice {@code type} corrispondente, oppure stringa vuota se la combinazione è ignota
+     */
+    static String tipoDaArchivioOKX(TipiOKX tabella, String instType, String subType) {
+        if (tabella == null) return "";
+        return tabella.TipoDaArchivio(instType, subType);
     }
 
     /**
@@ -2280,6 +2303,17 @@ public static Path getNodeExePath() {
      * @return le righe in formato intermedio a 19 campi
      */
     public static List<String[]> convertOKXArchivio(JsonArray righe) {
+        return convertOKXArchivio(righe, TipiOKX.Carica());
+    }
+
+    /**
+     * Come {@link #convertOKXArchivio(JsonArray)}, con la tabella dei codici già caricata.
+     *
+     * @param righe array JSON delle righe del CSV, oppure {@code null}
+     * @param tabella tabella di decodifica dei codici {@code type}, vedi {@link TipiOKX}
+     * @return le righe in formato intermedio a 19 campi
+     */
+    public static List<String[]> convertOKXArchivio(JsonArray righe, TipiOKX tabella) {
         if (righe == null) return new ArrayList<>();
 
         JsonArray comeBill = new JsonArray();
@@ -2289,7 +2323,7 @@ public static Path getNodeExePath() {
 
             String instType = o.has("instType") ? o.get("instType").getAsString() : "";
             String subType  = o.has("subType")  ? o.get("subType").getAsString()  : "";
-            String tipo = tipoDaArchivioOKX(instType, subType);
+            String tipo = tipoDaArchivioOKX(tabella, instType, subType);
             //Se la combinazione è ignota si conserva il subType nel codice, così il riepilogo dei movimenti
             //sconosciuti dice esattamente quale valore va decodificato.
             o.addProperty("type", tipo.isEmpty() ? "archivio subType " + subType : tipo);
@@ -2302,7 +2336,7 @@ public static Path getNodeExePath() {
             ripulisciBalChgArchivioOKX(o);
             comeBill.add(o);
         }
-        return convertOKXBills(comeBill, "Trading");
+        return convertOKXBills(comeBill, "Trading", tabella);
     }
 
     /**
@@ -2370,6 +2404,21 @@ public static Path getNodeExePath() {
     }
 
     public static List<String[]> convertOKXBills(JsonArray bills, String Wallet) {
+        return convertOKXBills(bills, Wallet, TipiOKX.Carica());
+    }
+
+    /**
+     * Come {@link #convertOKXBills(JsonArray, String)}, con la tabella dei codici già caricata: la
+     * decodifica avviene una volta per bill, e {@code OKX_Bills.js} ne consegna fino a 50.000 per conto,
+     * quindi la tabella va letta da disco una volta sola e passata qui.
+     *
+     * @param bills array JSON dei bill grezzi, oppure {@code null}
+     * @param Wallet nome del conto di provenienza, {@code "Funding"} oppure {@code "Trading"}
+     * @param tabella tabella di decodifica dei codici {@code type}, vedi {@link TipiOKX}
+     * @return le righe in formato intermedio a 19 campi (non ordinate), oppure {@code null} se l'utente ha
+     *         chiesto di interrompere
+     */
+    public static List<String[]> convertOKXBills(JsonArray bills, String Wallet, TipiOKX tabella) {
         List<String[]> lista = new ArrayList<>();
         if (bills == null) return lista;
 
@@ -2410,7 +2459,7 @@ public static Path getNodeExePath() {
             if (lordo.compareTo(BigDecimal.ZERO) == 0 && feeBD.compareTo(BigDecimal.ZERO) == 0) continue;
 
             //Causale nelle stesse etichette usate dal CSV, così la mappa causali resta una sola
-            String causale = causaleBillOKX(tipo, balChg, isTrading, notes);
+            String causale = causaleBillOKX(tabella, tipo, balChg, isTrading, notes);
 
             String DatoRiga[] = new String[19];
             DatoRiga[0]  = FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(ts));   //Timestamp

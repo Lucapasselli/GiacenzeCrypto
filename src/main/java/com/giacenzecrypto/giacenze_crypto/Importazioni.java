@@ -759,6 +759,90 @@ public class Importazioni {
     }
 
     /**
+     * Ordina cronologicamente le righe OKX in formato intermedio a 19 campi e assegna a ciascuna la
+     * categoria interna, contando le causali non riconosciute. <b>Non consolida e non scrive nulla.</b>
+     *
+     * <p>L'ordine cronologico è un prerequisito del raggruppamento: due righe dello stesso scambio devono
+     * arrivare consecutive. Il CSV si affidava all'ordinamento lessicografico della riga grezza (l'id era
+     * la prima colonna); qui l'ordinamento va fatto esplicitamente su timestamp e, a parità di timestamp,
+     * su billId numerico, che in OKX è crescente nel tempo.
+     *
+     * <p>Le causali non riconosciute (i codici numerici OKX non ancora mappati) restano <b>senza
+     * categoria</b> e vengono elencate nel riepilogo dei movimenti sconosciuti, esattamente come fa
+     * l'import da CSV: è quell'elenco a dire quali codici restano da decodificare.
+     *
+     * <p>È estratta da {@link #Ex_OKX_ImportaDaAPI} perché serve <b>anche da sola</b>: quando lo
+     * scaricamento OKX torna incompleto non si importa nulla (difetto C13), ma il resoconto delle causali
+     * sconosciute va prodotto lo stesso — vedi {@link #Ex_OKX_SoloCausaliSconosciute}. I contatori statici
+     * NON vengono azzerati qui: è il chiamante a farlo, perché è lui a sapere se sta iniziando
+     * un'importazione o proseguendone una.
+     *
+     * <p>Le righe vengono modificate <b>sul posto</b> nel campo {@code [3]}: la lista restituita è una
+     * nuova lista, ma contiene gli stessi array.
+     *
+     * @param righe righe in formato intermedio a 19 campi, in ordine qualsiasi
+     * @param Mappa_Conversione_Causali mappa causale originale → categoria interna
+     * @return le stesse righe, ordinate cronologicamente e con {@code [3]} valorizzato
+     */
+    static List<String[]> Ex_OKX_OrdinaEClassifica(List<String[]> righe, Map<String, String> Mappa_Conversione_Causali) {
+        List<String[]> righeOrdinate = new ArrayList<>(righe);
+        righeOrdinate.sort((r1, r2) -> {
+            int cmp = r1[0].compareTo(r2[0]);
+            if (cmp != 0) return cmp;
+            if (Funzioni.isNumeric(r1[14], false) && Funzioni.isNumeric(r2[14], false)) {
+                return new BigDecimal(r1[14]).compareTo(new BigDecimal(r2[14]));
+            }
+            return r1[14].compareTo(r2[14]);
+        });
+
+        for (String riga[] : righeOrdinate) {
+            String MovGenerico = Mappa_Conversione_Causali.get(riga[4]);
+            if (MovGenerico == null) {
+                movimentiSconosciuti = movimentiSconosciuti + riga[0] + " " + riga[2] + " " + riga[4] + " " + riga[5] + " " + riga[6] + "\n";
+                TrasazioniSconosciute++;
+                riga[3] = "";
+            } else {
+                riga[3] = MovGenerico;
+            }
+        }
+        return righeOrdinate;
+    }
+
+    /**
+     * Classifica le righe OKX <b>senza importarne nessuna</b> e restituisce l'esito con le sole causali
+     * non riconosciute, da mostrare nel resoconto di fine scaricamento.
+     *
+     * <p>Serve al caso dello scaricamento incompleto (difetto <b>C13</b>): lì non si scrive nulla, perché
+     * importare una parte sposterebbe in avanti la data di partenza della corsa successiva e lascerebbe un
+     * buco permanente nello storico. Uscire e basta, però, faceva perdere anche l'elenco dei codici
+     * {@code type} non ancora decodificati — che è l'unico modo in cui quei codici vengono alla luce, ed è
+     * esattamente così che è stato scoperto il {@code type} 30 del conto Trading.
+     *
+     * <p>Si ferma <b>prima</b> del consolidamento, che non serve a nessuno qui e non è gratis: è lui a
+     * scaricare i prezzi mancanti, un processo Node per quotazione.
+     *
+     * <p>Restituisce {@code null} quando non c'è niente da segnalare, così il resoconto non si apre a
+     * vuoto subito dopo l'avviso di scaricamento incompleto ({@code MostraResoconto} ignora il {@code null}).
+     *
+     * @param righe righe in formato intermedio a 19 campi, in ordine qualsiasi
+     * @param Origine exchange di provenienza, per l'intestazione del resoconto
+     * @return l'esito con le sole causali sconosciute, oppure {@code null} se non ce ne sono
+     */
+    public static Esito Ex_OKX_SoloCausaliSconosciute(List<String[]> righe, String Origine) {
+        AzzeraContatori();
+        Map<String, String> Mappa_Conversione_Causali = Ex_OKX_MappaCausali();
+        if (Mappa_Conversione_Causali == null) {
+            SegnalaMappaCausaliNonDisponibile(MappeCausali.OKX, null);
+            return Esito.daiContatori(Origine);
+        }
+        Ex_OKX_OrdinaEClassifica(righe, Mappa_Conversione_Causali);
+        if (TrasazioniSconosciute == 0) return null;
+        //Transazioni/Aggiunte/Scartate restano a zero: nessuna riga e' stata importata, ed e' proprio
+        //cio' che il resoconto deve mostrare accanto all'elenco delle sconosciute.
+        return Esito.daiContatori(Origine);
+    }
+
+    /**
      * Importa i movimenti OKX scaricati via API, già convertiti nel formato intermedio a 19 campi da
      * {@link CcxtInterop#convertOKXBills}. Riusa lo stesso raggruppamento e consolidamento dell'import
      * del CSV ({@link #Ex_OKX_RaggruppaEConsolida}), quindi la classificazione fiscale è identica sulle
@@ -777,33 +861,7 @@ public class Importazioni {
             return new int[]{0, 0};
         }
 
-        //L'ordine cronologico è un prerequisito del raggruppamento: due righe dello stesso scambio devono
-        //arrivare consecutive. Il CSV si affidava all'ordinamento lessicografico della riga grezza (l'id era
-        //la prima colonna); qui l'ordinamento va fatto esplicitamente su timestamp e, a parità di timestamp,
-        //su billId numerico, che in OKX è crescente nel tempo.
-        List<String[]> righeOrdinate = new ArrayList<>(righe);
-        righeOrdinate.sort((r1, r2) -> {
-            int cmp = r1[0].compareTo(r2[0]);
-            if (cmp != 0) return cmp;
-            if (Funzioni.isNumeric(r1[14], false) && Funzioni.isNumeric(r2[14], false)) {
-                return new BigDecimal(r1[14]).compareTo(new BigDecimal(r2[14]));
-            }
-            return r1[14].compareTo(r2[14]);
-        });
-
-        //Assegno la categoria interna e segnalo le causali non mappate, esattamente come fa l'import da CSV.
-        //Le causali non riconosciute (i codici numerici OKX non ancora mappati) restano senza categoria e
-        //vengono elencate nel riepilogo dei movimenti sconosciuti.
-        for (String riga[] : righeOrdinate) {
-            String MovGenerico = Mappa_Conversione_Causali.get(riga[4]);
-            if (MovGenerico == null) {
-                movimentiSconosciuti = movimentiSconosciuti + riga[0] + " " + riga[2] + " " + riga[4] + " " + riga[5] + " " + riga[6] + "\n";
-                TrasazioniSconosciute++;
-                riga[3] = "";
-            } else {
-                riga[3] = MovGenerico;
-            }
-        }
+        List<String[]> righeOrdinate = Ex_OKX_OrdinaEClassifica(righe, Mappa_Conversione_Causali);
 
         //I movimenti scaricati da OKX finiscono tutti sul wallet "Principale": i conti Funding e Trading
         //non sono piu' due portafogli distinti, perche' i giroconti fra l'uno e l'altro sono causali

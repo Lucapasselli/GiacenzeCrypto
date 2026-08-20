@@ -158,17 +158,25 @@ async function risolviHostname(exchange, hostnamePreferito) {
  *
  * @param chiaveAfter 'billId' oppure 'ts': cosa mettere in `after` per la pagina successiva
  */
-async function fetchBills(exchange, metodo, startTime, endTime, etichetta, chiaveAfter = 'billId') {
+async function fetchBills(exchange, metodo, startTime, endTime, etichetta, chiaveAfter = 'billId', seedAfter = undefined) {
   const out = [];
   const seenIds = new Set();
-  let after;
+  //Con seedAfter si riparte da dove una corsa precedente si e' fermata sul tetto di pagine, invece
+  //che dal movimento piu' recente: e' cio' che rende ripetibile - e non solo ripetuta - la corsa
+  //successiva. Senza, il cursore ricomincerebbe da oggi e ripercorrerebbe le stesse pagine gia'
+  //scaricate, ritrovando lo stesso tetto senza mai arrivare piu' in basso.
+  let after = seedAfter;
   let pagina = 0;
   let tsMin = Number.MAX_SAFE_INTEGER;
   let tsMax = 0;
   let completo = false;
   let paginaPrecedentePiena = false;
+  //Perche' la paginazione si e' fermata, quando non e' arrivata in fondo. Il tetto di pagine e' l'unico
+  //motivo da cui si sa come ripartire: negli altri (paginazione ferma, pagina vuota sospetta, errore)
+  //non si sa che cosa manchi, quindi non si puo' dichiarare recuperabile cio' che e' stato preso.
+  let motivo = '';
 
-  log(`${etichetta}: paginazione con after = ${chiaveAfter}`);
+  log(`${etichetta}: paginazione con after = ${chiaveAfter}${seedAfter !== undefined ? `, ripresa da ${seedAfter}` : ''}`);
 
   while (pagina < MAX_PAGINE) {
     pagina++;
@@ -188,12 +196,16 @@ async function fetchBills(exchange, metodo, startTime, endTime, etichetta, chiav
           //attese prima di dire all'utente qualcosa che si sa gia' al primo tentativo.
           const errore = `${ERRORI_CREDENZIALI[codice]} (codice OKX ${codice})`;
           log(`${etichetta}: ${errore}`);
-          return { bills: out, completo: false, errore };
+          return { bills: out, completo: false, motivo: 'credenziali', errore };
         }
         tentativo++;
         if (tentativo >= 4) {
+          //Il motivo va dichiarato SEMPRE quando non si e' completi: il chiamante Java importa lo
+          //scaricamento incompleto solo se ogni conto fermatosi ha detto 'tetto_pagine', e un motivo
+          //vuoto verrebbe letto come "questo conto sta bene". Un guasto di rete a meta' del Trading
+          //passerebbe cosi' per una corsa riuscita, perdendone la coda in silenzio.
           log(`${etichetta} errore definitivo alla pagina ${pagina}: ${e.message}`);
-          return { bills: out, completo: false };
+          return { bills: out, completo: false, motivo: 'errore' };
         }
         //Il 50011 (troppe richieste) non e' un guasto: basta rallentare. Si attende di piu' che
         //per gli altri errori, perche' rientrare subito nella finestra lo ripresenterebbe.
@@ -211,6 +223,7 @@ async function fetchBills(exchange, metodo, startTime, endTime, etichetta, chiav
       //si dichiarava "completo"). Meglio un falso allarme quando lo storico finisce esattamente
       //su un multiplo di 100 che una troncatura silenziosa.
       if (pagina > 1 && paginaPrecedentePiena) {
+        motivo = 'pagina_vuota_sospetta';
         log(`${etichetta}: pagina ${pagina} vuota subito dopo una pagina piena e senza aver raggiunto il ${new Date(startTime).toISOString()}: SCARICAMENTO CONSIDERATO INCOMPLETO (paginazione con after = ${chiaveAfter} probabilmente non interpretata dall'endpoint)`);
       } else {
         completo = true;
@@ -245,6 +258,7 @@ async function fetchBills(exchange, metodo, startTime, endTime, etichetta, chiav
     //istante. In nessuno dei due casi lo storico e' finito, quindi si esce SENZA dichiararlo
     //completo - altrimenti si torna al difetto C8 con il segno opposto.
     if (nuovi === 0) {
+      motivo = 'paginazione_ferma';
       log(`${etichetta}: pagina ${pagina} interamente gia' vista, paginazione ferma - POSSIBILI MOVIMENTI MANCANTI`);
       break;
     }
@@ -253,6 +267,7 @@ async function fetchBills(exchange, metodo, startTime, endTime, etichetta, chiav
       ? (tsPagina === Number.MAX_SAFE_INTEGER ? undefined : String(tsPagina + 1))
       : piuVecchioId;
     if (prossimoAfter === undefined || prossimoAfter === after) {
+      motivo = 'paginazione_ferma';
       log(`${etichetta}: la pagina ${pagina} non fa avanzare il cursore (after invariato) - POSSIBILI MOVIMENTI MANCANTI`);
       break;
     }
@@ -261,8 +276,41 @@ async function fetchBills(exchange, metodo, startTime, endTime, etichetta, chiav
     await sleep(PAUSA_PAGINA_MS);
   }
 
-  if (!completo && pagina >= MAX_PAGINE) {
-    log(`${etichetta}: raggiunto il limite di ${MAX_PAGINE} pagine, POSSIBILI MOVIMENTI MANCANTI`);
+  //Il tetto non e' una rete contro un ciclo infinito - a quello pensano gia' i controlli di non
+  //avanzamento qui sopra - ma un budget di TEMPO: a PAUSA_PAGINA_MS per pagina sono ~12 minuti per
+  //conto. Raggiungerlo non e' un guasto e non deve piu' essere un vicolo cieco: si dice fin dove si e'
+  //arrivati, cosi' il chiamante importa cio' che ha e riparte da qui alla corsa successiva.
+  //`after` contiene gia' il cursore della pagina che non e' stata chiesta.
+  if (!completo && pagina >= MAX_PAGINE && !motivo) {
+    motivo = 'tetto_pagine';
+    // Il tetto cade su un confine di PAGINA, non di ISTANTE: le ultime righe possono essere una parte
+    // sola di uno scambio le cui altre gambe stanno nella pagina che non e' stata chiesta. Consolidato
+    // cosi', quell'istante diventa un deposito o un prelievo con [24] = billId secco, e alla ripresa
+    // rientra come scambio vero con [24] composto: due chiavi diverse, che la deduplica non riconosce
+    // come lo stesso movimento (e' il meccanismo del difetto C12). Si scarta quindi l'istante piu'
+    // vecchio per intero e si riparte da li': quelle righe arriveranno tutte insieme alla corsa dopo.
+    // Niente spread su questi array: al tetto hanno ~50.000 elementi, e sia Math.min(...) sia
+    // push(...) sfondano il limite di argomenti di V8 invece di dare un risultato.
+    let tsTaglio = Number.MAX_SAFE_INTEGER;
+    for (const b of out) { const t = Number(b.ts); if (Number.isFinite(t) && t < tsTaglio) tsTaglio = t; }
+    const tenute = out.filter(b => Number(b.ts) > tsTaglio);
+    if (tenute.length === 0) {
+      // Un solo istante piu' largo di tutto il tetto: non e' un tetto da riprendere, e' una
+      // paginazione che non avanza. Riprendere da qui rileggerebbe all'infinito le stesse righe.
+      motivo = 'paginazione_ferma';
+      log(`${etichetta}: il limite di ${MAX_PAGINE} pagine e' stato riempito da un solo istante (${new Date(tsTaglio).toISOString()}) - POSSIBILI MOVIMENTI MANCANTI`);
+    } else {
+      const scartate = out.length - tenute.length;
+      out.length = 0;
+      for (const b of tenute) out.push(b);
+      // Il cursore si ricava dall'ultima riga TENUTA, non piu' dalla pagina: per il Funding e' il suo
+      // ts + 1 (il confronto e' stretto), per il Trading il suo billId. Cosi' l'istante scartato e'
+      // il primo che la ripresa ritrova, intero.
+      const ultima = tenute[tenute.length - 1];
+      after = (chiaveAfter === 'ts') ? String(Number(ultima.ts) + 1) : ultima.billId;
+      tsMin = Number(ultima.ts);
+      log(`${etichetta}: raggiunto il limite di ${MAX_PAGINE} pagine; scartate ${scartate} righe dell'istante ${new Date(tsTaglio).toISOString()}, che sarebbe rimasto a meta'. Il tratto piu' vecchio verra' ripreso alla prossima esecuzione (cursore ${after})`);
+    }
   }
   // Log dell'intervallo realmente recuperato: se e' piu' stretto di quello richiesto,
   // l'endpoint ha troncato lo storico e deve essere visibile.
@@ -271,13 +319,77 @@ async function fetchBills(exchange, metodo, startTime, endTime, etichetta, chiav
   } else {
     log(`${etichetta}: nessun movimento nell'intervallo richiesto`);
   }
-  return { bills: out, completo };
+  return { bills: out, completo, motivo, ripresa: motivo === 'tetto_pagine' ? after : undefined };
+}
+
+/**
+ * Legge lo stato di ripresa passato dal Java, nella forma
+ * `Funding=<after>|<limite>;Trading=<after>|<limite>`. Le voci malformate vengono ignorate: e' testo
+ * che vive in un file dell'utente, e una riga sporca non deve tradursi in una richiesta assurda a OKX.
+ */
+function leggiRiprese(arg) {
+  const mappa = {};
+  if (!arg) return mappa;
+  for (const voce of String(arg).split(';')) {
+    const eq = voce.indexOf('=');
+    if (eq <= 0) continue;
+    const conto = voce.slice(0, eq).trim();
+    const resto = voce.slice(eq + 1).trim();
+    const bar = resto.indexOf('|');
+    if (bar <= 0) continue;
+    const after = resto.slice(0, bar).trim();
+    const limite = Number(resto.slice(bar + 1).trim());
+    if (!after || !Number.isFinite(limite) || limite < 0) continue;
+    mappa[conto] = { after, limite };
+  }
+  return mappa;
+}
+
+/**
+ * Scarica un conto: la parte nuova (dal movimento piu' recente all'indietro fino a `startTime`) e, se
+ * una corsa precedente si era fermata sul tetto di pagine, anche il tratto rimasto indietro.
+ *
+ * Sono due paginazioni e non una perche' partono da due punti diversi dello stesso storico, e la
+ * seconda si tenta SOLO se la prima e' arrivata in fondo: due buchi aperti contemporaneamente non si
+ * saprebbero rappresentare con un solo cursore, e fra i due conta di piu' la parte nuova. Se e' la
+ * parte nuova a fermarsi sul tetto, il buco che si dichiara parte dal suo cursore e scende fino al
+ * limite piu' profondo fra i due: il tratto in mezzo verra' riscaricato, ma la deduplica per billId lo
+ * assorbe, ed e' l'unico modo di non lasciare scoperta nessuna porzione.
+ */
+async function scaricaConto(exchange, metodo, etichetta, chiaveAfter, startTime, endTime, ripresa) {
+  const nuovi = await fetchBills(exchange, metodo, startTime, endTime, etichetta, chiaveAfter);
+
+  if (!nuovi.completo) {
+    const limite = (nuovi.motivo === 'tetto_pagine' && ripresa)
+      ? Math.min(startTime, ripresa.limite)
+      : startTime;
+    return {
+      bills: nuovi.bills,
+      completo: false,
+      motivo: nuovi.motivo,
+      ripresa: nuovi.ripresa === undefined ? undefined : { after: String(nuovi.ripresa), limite },
+      errore: nuovi.errore
+    };
+  }
+
+  if (!ripresa) return { bills: nuovi.bills, completo: true, motivo: '', errore: nuovi.errore };
+
+  log(`${etichetta}: riprendo il tratto rimasto indietro dal cursore ${ripresa.after}, fino al ${new Date(ripresa.limite).toISOString()}`);
+  const coda = await fetchBills(exchange, metodo, ripresa.limite, endTime, etichetta + ' (recupero)', chiaveAfter, ripresa.after);
+
+  return {
+    bills: nuovi.bills.concat(coda.bills),
+    completo: coda.completo,
+    motivo: coda.motivo,
+    ripresa: coda.ripresa === undefined ? undefined : { after: String(coda.ripresa), limite: ripresa.limite },
+    errore: nuovi.errore || coda.errore
+  };
 }
 
 // ======================= MAIN =======================
 
 async function main() {
-  const [, , exchangeId, apiKey, secret, startDateArg = "0", tokensArg = "", passphrase = "", hostnameArg = ""] = process.argv;
+  const [, , exchangeId, apiKey, secret, startDateArg = "0", tokensArg = "", passphrase = "", hostnameArg = "", ripresaArg = ""] = process.argv;
 
   const endTime = Date.now();
   let startTime = Number(startDateArg);
@@ -322,16 +434,27 @@ async function main() {
   }
   exchange.hostname = risoluzione.hostname;
 
-  const funding = await fetchBills(exchange, 'privateGetAssetBillsHistory', startTimeFunding, endTime, 'Funding', 'ts')
-    .catch(e => { log(`Funding fallito: ${e.message}`); return { bills: [], completo: false }; });
+  const riprese = leggiRiprese(ripresaArg);
 
-  const trading = await fetchBills(exchange, 'privateGetAccountBillsArchive', startTimeTrading, endTime, 'Trading', 'billId')
-    .catch(e => { log(`Trading fallito: ${e.message}`); return { bills: [], completo: false }; });
+  const funding = await scaricaConto(exchange, 'privateGetAssetBillsHistory', 'Funding', 'ts', startTimeFunding, endTime, riprese['Funding'])
+    .catch(e => { log(`Funding fallito: ${e.message}`); return { bills: [], completo: false, motivo: 'errore' }; });
+
+  const trading = await scaricaConto(exchange, 'privateGetAccountBillsArchive', 'Trading', 'billId', startTimeTrading, endTime, riprese['Trading'])
+    .catch(e => { log(`Trading fallito: ${e.message}`); return { bills: [], completo: false, motivo: 'errore' }; });
+
+  //Il motivo e il punto di ripresa viaggiano per conto: e' il chiamante Java a decidere se importare
+  //(e quindi se ricordare la ripresa), perche' e' lui a sapere se le righe sono davvero finite in
+  //archivio o se un'uscita anticipata le ha buttate via.
+  const ripresa = {};
+  if (funding.ripresa) ripresa.Funding = funding.ripresa;
+  if (trading.ripresa) ripresa.Trading = trading.ripresa;
 
   const risultato = {
     okx_fundingBills: funding.bills,
     okx_tradingBills: trading.bills,
     okx_completo: funding.completo && trading.completo,
+    okx_motivo: { Funding: funding.motivo || '', Trading: trading.motivo || '' },
+    okx_ripresa: ripresa,
     okx_hostname: risoluzione.hostname
   };
   //Un errore di credenziali su uno dei due conti (tipicamente: chiave senza i permessi di lettura

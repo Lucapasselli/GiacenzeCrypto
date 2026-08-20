@@ -128,7 +128,22 @@ jobs:
         run: |
           mkdir build\Immagini
           mkdir build\Scripts
-          copy Scripts\* build\Scripts\
+          # Nel pacchetto Store entrano SOLO gli script che l'edizione Store usa davvero. Gli altri
+          # (Binance_*, OKX_*, FetchMovimenti, depositi, prelievi, rewards, earn_staking) esistono
+          # solo per interrogare un conto exchange passando chiave/segreto/passphrase: dentro un
+          # pacchetto che dichiara di non collegarsi ad alcun exchange sono una contraddizione che
+          # il revisore trova aprendo il .msix (rilievo 10.2.6 del 20/08/2026, vedi
+          # test/Documentazione/Pubblicazione_MicrosoftStore.md Parte 4).
+          # Historical_Multi_Eur.js  -> quotazioni storiche (Prezzi.RecuperaPrezziStoriciMultiEUR)
+          # check_node_path.js       -> diagnostica del Node incluso (CcxtInterop)
+          $scriptStore = @('Historical_Multi_Eur.js', 'check_node_path.js')
+          foreach ($s in $scriptStore) {
+            if (-not (Test-Path "Scripts\$s")) { Write-Error "Script atteso mancante: $s"; exit 1 }
+            copy "Scripts\$s" build\Scripts\
+          }
+          # Guardia: se un domani l'edizione Store avesse bisogno di un altro script, il fallimento
+          # sarebbe a tempo d'esecuzione e silenzioso. Qui almeno resta scritto quanti ne entrano.
+          Write-Host "Script inclusi nel pacchetto: $($scriptStore -join ', ')"
           copy Immagini\* build\Immagini\
           copy logo.png build\
           copy LICENSE build\

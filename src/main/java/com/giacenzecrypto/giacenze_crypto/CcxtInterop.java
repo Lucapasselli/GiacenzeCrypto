@@ -181,6 +181,137 @@ public class CcxtInterop {
     public static final String OPZIONE_ARCHIVIO_SOSPESI_OKX = "OKX_ArchivioTrimestriSospesi";
 
     /**
+     * Opzione di {@code personale.mv.db} che ricorda <b>dove si è fermato</b> lo scaricamento dei bill OKX
+     * quando ha raggiunto il tetto di pagine di {@code OKX_Bills.js}, così che la corsa successiva riprenda
+     * da lì invece di ripercorrere le stesse pagine.
+     *
+     * <p><b>Perché serve.</b> Il tetto (500 pagine × 100 record = 50.000 movimenti per conto) non è una rete
+     * contro un ciclo infinito — a quello pensano i controlli di non avanzamento dentro {@code fetchBills} —
+     * ma un budget di <b>tempo</b>: a {@code PAUSA_PAGINA_MS} = 1,5 s per pagina sono circa 12 minuti per
+     * conto. Da quando uno scaricamento incompleto non importa più nulla (difetto <b>C13</b>) quel tetto era
+     * diventato un vicolo cieco: non importando nulla la data di partenza non avanza, e la corsa successiva
+     * incontra esattamente lo stesso muro. 50.000 movimenti sono raggiungibili — sul conto Funding sono 15 al
+     * giorno per nove anni — e la data di partenza non è più scegliibile dall'interfaccia dal 04/08/2026.
+     *
+     * <p><b>Come se ne esce.</b> Il cursore {@code after} degli endpoint bills permette di ripartire da un
+     * punto qualsiasi dello storico, quindi lo script restituisce il cursore della pagina che non ha chiesto e
+     * qui lo si ricorda, insieme al limite inferiore ancora da coprire. Le righe recuperate <b>vengono
+     * importate</b>: fra una corsa e l'altra l'archivio ha quindi un buco in mezzo, ma è un buco <b>ricordato
+     * per nome</b> che la corsa successiva chiude — la stessa filosofia di {@link
+     * #OPZIONE_ARCHIVIO_SOSPESI_OKX}, e la ragione per cui questo non contraddice C13, che vieta i buchi che
+     * <b>nessuno</b> colmerà.
+     *
+     * <p>⚠️ <b>Si salva solo dopo che le righe sono davvero in mappa.</b> Ricordare la ripresa di uno
+     * scaricamento poi abbandonato farebbe saltare alla corsa successiva proprio il tratto mai importato, che
+     * diventerebbe irrecuperabile in silenzio: è lo stesso motivo per cui i trimestri sospesi si scrivono in
+     * fondo a {@code fetchMovimenti} e non dentro {@code ScaricaArchivioOKX}.
+     *
+     * <p>Formato: {@code Funding=<after>|<limite>;Trading=<after>|<limite>}, con le voci assenti quando il
+     * conto non ha nulla in sospeso. {@code after} è un timestamp sul Funding e un {@code billId} sul Trading
+     * (vedi il difetto <b>C8</b>): qui è tenuto come testo proprio perché non ha lo stesso significato sui due
+     * conti, e nessuno deve essere tentato di interpretarlo.
+     */
+    public static final String OPZIONE_RIPRESA_BILLS_OKX = "OKX_RipresaBills";
+
+    /**
+     * Il punto da cui riprendere lo scaricamento di un conto OKX rimasto a metà per il tetto di pagine.
+     * @param conto {@code "Funding"} oppure {@code "Trading"}
+     * @param after cursore da passare a {@code after}: timestamp sul Funding, {@code billId} sul Trading
+     * @param limite istante sotto il quale non serve scendere, millisecondi epoch
+     */
+    public record RipresaOKX(String conto, String after, long limite) {}
+
+    /**
+     * Parte pura della lettura di {@link #OPZIONE_RIPRESA_BILLS_OKX}, separata per poter essere provata
+     * senza database. Le voci malformate vengono ignorate: l'opzione è testo su un file dell'utente, e una
+     * riga sporca non deve tradursi in una richiesta assurda a OKX.
+     * @param salvato valore grezzo dell'opzione, eventualmente {@code null}
+     * @return le riprese in sospeso, per nome del conto; mappa vuota se non ce n'è nessuna
+     */
+    static Map<String, RipresaOKX> ripreseOKX(String salvato) {
+        Map<String, RipresaOKX> esito = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        if (salvato == null) return esito;
+        for (String voce : salvato.split(";")) {
+            int uguale = voce.indexOf('=');
+            if (uguale <= 0) continue;
+            String conto = voce.substring(0, uguale).trim();
+            String resto = voce.substring(uguale + 1).trim();
+            int barra = resto.indexOf('|');
+            if (barra <= 0) continue;
+            String after = resto.substring(0, barra).trim();
+            String limite = resto.substring(barra + 1).trim();
+            if (conto.isEmpty() || after.isEmpty() || !Funzioni.isNumeric(limite, false)) continue;
+            long l;
+            try { l = Long.parseLong(limite); } catch (NumberFormatException e) { continue; }
+            if (l < 0) continue;
+            esito.put(conto, new RipresaOKX(conto, after, l));
+        }
+        return esito;
+    }
+
+    /** @return le riprese nel formato dell'opzione e dell'argomento passato allo script, vedi {@link #OPZIONE_RIPRESA_BILLS_OKX} */
+    static String ripreseOKX(Map<String, RipresaOKX> riprese) {
+        if (riprese == null || riprese.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder();
+        for (RipresaOKX r : riprese.values()) {
+            if (sb.length() > 0) sb.append(';');
+            sb.append(r.conto()).append('=').append(r.after()).append('|').append(r.limite());
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Le riprese dichiarate dallo script nel campo {@code okx_ripresa} della risposta.
+     * @param json risposta di {@code OKX_Bills.js}, eventualmente {@code null}
+     * @return le riprese da ricordare; mappa vuota se lo scaricamento è arrivato in fondo
+     */
+    static Map<String, RipresaOKX> ripreseOKX(JsonObject json) {
+        Map<String, RipresaOKX> esito = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        if (json == null || !json.has("okx_ripresa") || !json.get("okx_ripresa").isJsonObject()) return esito;
+        JsonObject o = json.getAsJsonObject("okx_ripresa");
+        for (String conto : o.keySet()) {
+            if (!o.get(conto).isJsonObject()) continue;
+            JsonObject r = o.getAsJsonObject(conto);
+            if (!r.has("after") || !r.has("limite")) continue;
+            String after = r.get("after").getAsString();
+            if (after == null || after.isBlank()) continue;
+            try {
+                esito.put(conto, new RipresaOKX(conto, after.trim(), r.get("limite").getAsLong()));
+            } catch (RuntimeException e) { /* voce illeggibile: si ignora, vedi ripreseOKX(String) */ }
+        }
+        return esito;
+    }
+
+    /**
+     * {@code true} se l'unica ragione per cui lo scaricamento non è completo è il <b>tetto di pagine</b>,
+     * cioè il solo caso in cui si sa esattamente da dove ripartire e conviene quindi importare comunque.
+     *
+     * <p>Ogni altro motivo ({@code paginazione_ferma}, {@code pagina_vuota_sospetta}, {@code errore}) dice
+     * che manca <i>qualcosa</i> senza dire <i>che cosa</i>: lì vale il blocco di C13. Vale {@code false}
+     * anche quando il campo manca del tutto — una risposta prodotta da uno script più vecchio non deve
+     * essere scambiata per un tetto raggiunto.
+     *
+     * @param json risposta di {@code OKX_Bills.js}, eventualmente {@code null}
+     */
+    static boolean soloTettoPagineOKX(JsonObject json) {
+        if (json == null || !json.has("okx_motivo") || !json.get("okx_motivo").isJsonObject()) return false;
+        JsonObject motivi = json.getAsJsonObject("okx_motivo");
+        boolean almenoUno = false;
+        for (String conto : motivi.keySet()) {
+            String m = motivi.get(conto).getAsString();
+            if (m == null || m.isBlank()) continue;
+            if (!m.equals("tetto_pagine")) return false;
+            almenoUno = true;
+        }
+        return almenoUno;
+    }
+
+    /** Ricorda dove riprendere lo scaricamento dei bill, vedi {@link #OPZIONE_RIPRESA_BILLS_OKX}. */
+    static void ripreseOKX_Salva(Map<String, RipresaOKX> riprese) {
+        DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_RIPRESA_BILLS_OKX, ripreseOKX(riprese));
+    }
+
+    /**
      * Elenca i trimestri da chiedere all'archivio storico di OKX per coprire il periodo che va da
      * {@code dalTimestamp} a oggi, <b>dal più recente al più vecchio</b>.
      *
@@ -1300,7 +1431,15 @@ public static Path getNodeExePath() {
             String hostnameOKX = DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_HOSTNAME_OKX);
             if (hostnameOKX == null) hostnameOKX = "";
 
-            JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, "", "OKX_Bills", passphrase, hostnameOKX);
+            //Se una corsa precedente si e' fermata sul tetto di pagine, lo script riparte da li' invece
+            //che dal movimento piu' recente: senza, ripercorrerebbe le stesse pagine e ritroverebbe lo
+            //stesso muro senza scendere di un movimento. Vedi OPZIONE_RIPRESA_BILLS_OKX.
+            Map<String, RipresaOKX> ripreseInSospeso = ripreseOKX(DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_RIPRESA_BILLS_OKX, ""));
+            if (!ripreseInSospeso.isEmpty()) {
+                System.out.println("Scaricamento OKX: riprendo i tratti rimasti indietro -> "+ripreseOKX(ripreseInSospeso));
+            }
+
+            JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, "", "OKX_Bills", passphrase, hostnameOKX, ripreseOKX(ripreseInSospeso));
 
             if (json != null && json.has("okx_hostname")) {
                 String riconosciuto = json.get("okx_hostname").getAsString();
@@ -1454,13 +1593,49 @@ public static Path getNodeExePath() {
                 return null;
             }
 
-            //Se lo script non è riuscito a scorrere tutto lo storico richiesto è meglio saperlo prima di importare
+            //Se lo script non è riuscito a scorrere tutto lo storico richiesto NON si importa nulla.
+            //
+            //Perché si scarta tutto invece di importare quello che è arrivato: la data di partenza di
+            //ogni scaricamento è ricavata dall'ultimo movimento OKX già presente (GUI_ExchangeAPI.ScaricaExchange),
+            //quindi un'importazione parziale sposterebbe in avanti quella data e i movimenti saltati non
+            //verrebbero più richiesti da nessuno: un buco in mezzo allo storico, silenzioso e permanente.
+            //Non scrivendo nulla, invece, startDate resta dov'era e la corsa successiva ritenta la stessa
+            //finestra: l'interruzione è idempotente. È la stessa scelta già fatta il 13/08/2026 per i
+            //rendimenti Earn, che prima proseguivano lasciandoli fuori senza dirlo.
+            //
+            //okx_completo=false NON è il normale esaurirsi dello storico: le uscite regolari di fetchBills
+            //(data di partenza raggiunta, pagina non piena) dichiarano completo=true. Vale false solo per
+            //un'anomalia della paginazione o un errore dell'endpoint, ed è per questo che merita di fermare
+            //l'importazione. Il caso opposto è savings_lending_completo qui sopra, che avvisa e prosegue
+            //perché l'orizzonte di 3 mesi dei rendimenti Earn è un limite noto e non un guasto.
+            //
+            //Il resoconto delle causali non riconosciute viene prodotto lo stesso, da
+            //Ex_OKX_SoloCausaliSconosciute: è l'unico modo in cui i codici type ancora da decodificare
+            //vengono alla luce, ed è così che è stato scoperto il type 30 del conto Trading. Si ferma
+            //prima del consolidamento, che qui non servirebbe a nessuno e scaricherebbe i prezzi.
             boolean completo = !json.has("okx_completo") || json.get("okx_completo").getAsBoolean();
-            if (!completo) {
+            //Il tetto di pagine e' l'unica incompletezza da cui si sa ripartire, quindi non blocca:
+            //si importa e ci si ricorda dove si era arrivati. Vedi OPZIONE_RIPRESA_BILLS_OKX.
+            boolean tettoPagine = soloTettoPagineOKX(json);
+            if (!completo && !tettoPagine) {
+                //Come ogni altra uscita anticipata di questo blocco: i trimestri di questa corsa non
+                //contano come fatti, altrimenti resterebbero irrecuperabili.
+                if (archivioDaRecuperare) ArchivioOKXAbbandonato();
                 JOptionPane.showConfirmDialog(null,
-                        "Lo scaricamento da OKX non è stato completato interamente:\n"
-                        + "alcuni movimenti potrebbero mancare. Controlla il log.",
+                        "Lo scaricamento da OKX non è stato completato interamente.\n\n"
+                        + "Nessun movimento è stato importato: importarne solo una parte\n"
+                        + "lascerebbe un buco nello storico che non verrebbe più colmato.\n\n"
+                        + "Riprova più tardi: lo scaricamento riparte dallo stesso punto,\n"
+                        + "nulla è andato perduto. Nel log trovi dove si è fermato.",
                         "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                System.out.println("Scaricamento OKX incompleto: importazione non eseguita.");
+                //Classifica soltanto: nessuna scrittura, ma le causali sconosciute arrivano al resoconto.
+                //Con zero causali sconosciute torna null e il resoconto non si apre a vuoto.
+                Importazioni.Esito sconosciute = Importazioni.Ex_OKX_SoloCausaliSconosciute(righe, exchangeId);
+                if (sconosciute != null) {
+                    System.out.println("Causali OKX non mappate:\n"+Importazioni.movimentiSconosciuti);
+                }
+                return sconosciute;
             }
 
             Importazioni.Ex_OKX_ImportaDaAPI(righe);
@@ -1479,6 +1654,23 @@ public static Path getNodeExePath() {
             if (archivioDaRecuperare) {
                 trimestriSospesiOKX(ArchivioOKX_SospesiSeCompletata);
                 archivioOKXDaCompletare(!ArchivioOKX_SospesiSeCompletata.isEmpty());
+            }
+
+            //Stesso momento e stessa ragione dei trimestri sospesi qui sopra: la ripresa si ricorda solo
+            //ora che le righe sono in mappa. Scritta prima, un'uscita anticipata avrebbe fatto saltare alla
+            //corsa successiva proprio il tratto mai importato, che sarebbe sparito in silenzio.
+            //Una mappa vuota cancella l'opzione, ed e' cio' che chiude il buco quando lo scaricamento
+            //arriva finalmente in fondo: non serve un ramo apposta.
+            ripreseOKX_Salva(ripreseOKX(json));
+            if (!completo) {
+                System.out.println("Scaricamento OKX fermato dal tetto di pagine, riprendera' da -> "+ripreseOKX(ripreseOKX(json)));
+                JOptionPane.showConfirmDialog(null,
+                        "Lo scaricamento da OKX ha raggiunto il limite di una singola sessione.\n\n"
+                        + "I movimenti recuperati sono stati importati, ma un tratto più vecchio\n"
+                        + "manca ancora. Lancia di nuovo lo scaricamento: riprenderà dal punto\n"
+                        + "in cui si è fermato.\n\n"
+                        + "Finché lo storico non è completo i calcoli sono parziali.",
+                        "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
             }
             if (Importazioni.TrasazioniSconosciute > 0) {
                 //I codici bill di OKX non ancora mappati finiscono nel resoconto, ma restano anche a log
@@ -1561,6 +1753,7 @@ public static Path getNodeExePath() {
      * <table><caption>Codici riconosciuti</caption>
      * <tr><th>conto</th><th>type</th><th>riga CSV corrispondente</th><th>trattamento</th></tr>
      * <tr><td>Trading</td><td>2</td><td>Spot Buy / Spot Sell</td><td>scambio</td></tr>
+     * <tr><td>Trading</td><td>30</td><td>(nessuna, vedi sotto)</td><td>scambio</td></tr>
      * <tr><td>Trading</td><td>1</td><td>Transfer in / Transfer out</td><td>giroconto interno</td></tr>
      * <tr><td>Trading</td><td>12</td><td>Transfer (azione vuota, coppie +/-)</td><td>giroconto interno</td></tr>
      * <tr><td>Funding</td><td>1</td><td>Deposit</td><td>trasferimento crypto</td></tr>
@@ -1583,6 +1776,14 @@ public static Path getNodeExePath() {
      * che {@link Importazioni#Ex_OKX_MappaCausali} associa a {@code NON CONSIDERARE}: sono spostamenti fra
      * conti dello stesso utente e non vengono importati, come già si fa per Binance. Le tre righe della
      * tabella che sono giroconti verso un prodotto Earn ricadono nella stessa categoria per lo stesso motivo.
+     *
+     * <p><b>Il {@code type} 30 del conto Trading non viene dalla documentazione.</b> OKX non pubblica la
+     * tabella dei codici e nessuna fonte consultabile ne dà l'etichetta; è stato riconosciuto il 20/08/2026
+     * sui bill segnalati da un utente, dove le righe compaiono a coppie di segno opposto sullo stesso
+     * istante, una in cripto e una in EUR, con {@code ordId} valorizzato. È la forma di uno scambio spot,
+     * e come tale viene trattato: {@code Buy}/{@code Sell} dal segno di {@code balChg}, esattamente come il
+     * {@code type} 2. Non gli si attribuisce un nome ufficiale proprio perché non se ne conosce uno, e il
+     * campo {@code notes} di quei bill arriva vuoto.
      *
      * <p>{@code Received} è invece un accredito proveniente da un <b>altro</b> account OKX: è crypto che entra
      * davvero nel wallet, quindi viene trattato come un deposito e non come un giroconto.
@@ -1621,7 +1822,15 @@ public static Path getNodeExePath() {
 
         if (isTrading) {
             switch (tipo) {
-                case "2":  return Funzioni.isNegativo(balChg) ? "Sell" : "Buy";
+                //30: uno scambio spot come il 2, registrato però con un codice diverso. Riconosciuto il
+                //20/08/2026 sui bill di un utente: le righe compaiono a coppie di segno opposto sullo
+                //stesso istante e con la stessa struttura di un ordine (SOL +0,25568649 contro EUR
+                //-18,47048151), che è esattamente ciò che il raggruppamento si aspetta da uno scambio.
+                //Il verso si ricava dal segno di balChg come per il 2. L'etichetta ufficiale OKX non è
+                //documentata pubblicamente e il campo notes arriva vuoto, quindi qui non se ne inventa
+                //una: conta il trattamento, che è quello dello scambio.
+                case "2":
+                case "30": return Funzioni.isNegativo(balChg) ? "Sell" : "Buy";
                 case "1":
                 case "12": return giroconto;
                 default:   return sconosciuto;   //non mappato: finirà tra i movimenti sconosciuti
@@ -2387,9 +2596,33 @@ public static Path getNodeExePath() {
      * @return l'oggetto JSON restituito dallo script, oppure {@code null} se node/script non sono trovati o l'esecuzione fallisce
      */
     public static JsonObject fetchMovimento(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String script,String passphrase,String hostname) {
+        return fetchMovimento(exchangeId, apiKey, secret, startDate, Tokens, script, passphrase, hostname, "");
+    }
+
+    /**
+     * Come {@link #fetchMovimento(String, String, String, long, String, String, String, String)}, ma passa
+     * allo script anche il punto da cui riprendere uno scaricamento rimasto a metà.
+     * <p>Serve al solo {@code OKX_Bills.js}, che con questo cursore riparte da dove il tetto di pagine lo
+     * aveva fermato invece di ripercorrere le pagine già scaricate — vedi {@link #OPZIONE_RIPRESA_BILLS_OKX}.
+     * <p>Anche questo argomento è aggiunto <b>in coda</b>, per la stessa ragione degli altri due: tutti gli
+     * script destrutturano {@code process.argv} per posizione, e un argomento inserito in mezzo li
+     * romperebbe tutti. Gli script che non lo prevedono ricevono un argomento in più e lo ignorano.
+     * @param exchangeId identificativo CCXT dell'exchange
+     * @param apiKey API key dell'account
+     * @param secret API secret dell'account
+     * @param startDate data di inizio da cui recuperare i movimenti, millisecondi epoch
+     * @param Tokens elenco di token (separati da virgola) da passare allo script
+     * @param script nome dello script Node da eseguire (senza estensione {@code .js})
+     * @param passphrase terza credenziale (passphrase OKX); stringa vuota per gli exchange che non la prevedono
+     * @param hostname dominio da interrogare; stringa vuota per lasciare allo script il compito di individuarlo
+     * @param ripresa riprese in sospeso nel formato di {@link #OPZIONE_RIPRESA_BILLS_OKX}; stringa vuota se non ce ne sono
+     * @return l'oggetto JSON restituito dallo script, oppure {@code null} se node/script non sono trovati o l'esecuzione fallisce
+     */
+    public static JsonObject fetchMovimento(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String script,String passphrase,String hostname,String ripresa) {
     try {
         if (passphrase == null) passphrase = "";
         if (hostname == null) hostname = "";
+        if (ripresa == null) ripresa = "";
         
         
         
@@ -2412,7 +2645,7 @@ public static Path getNodeExePath() {
         ProcessBuilder builder = new ProcessBuilder(
                 nodePath.toString(),
                 scriptPath.toAbsolutePath().toString(),
-                exchangeId.toLowerCase(), apiKey, secret, String.valueOf(startDate),Tokens,passphrase,hostname
+                exchangeId.toLowerCase(), apiKey, secret, String.valueOf(startDate),Tokens,passphrase,hostname,ripresa
         );
         builder.directory(scriptPath.getParent().toFile());
         // Non reindirizziamo stderr su stdout

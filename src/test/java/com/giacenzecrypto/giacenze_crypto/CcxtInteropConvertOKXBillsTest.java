@@ -61,6 +61,84 @@ class CcxtInteropConvertOKXBillsTest {
     }
 
     /**
+     * Il {@code type} 30 del conto Trading è uno scambio spot registrato con un codice diverso dal 2:
+     * fino al 20/08/2026 restava non mappato e le sue righe venivano scartate dall'import, che così non
+     * consolidava alcuno scambio. Le due gambe arrivano come sempre a coppie di segno opposto sullo
+     * stesso istante — qui i valori reali segnalati da un utente, SOL comprato con EUR.
+     */
+    @Test
+    void ilCodice30DelTradingEUnoScambioComeIlCodice2() {
+        List<String[]> righe = CcxtInterop.convertOKXBills(bills("""
+            [{"billId":"500","ccy":"SOL","balChg":"0.25568649","type":"30","ordId":"900","ts":"1751530297000"},
+             {"billId":"501","ccy":"EUR","balChg":"-18.4704815127500573","type":"30","ordId":"900","ts":"1751530297000"}]
+            """), "Trading");
+
+        assertEquals(2, righe.size());
+        assertEquals("Buy", righe.get(0)[4]);
+        assertEquals("Sell", righe.get(1)[4]);
+        //Le due gambe condividono orario e ordine: è ciò su cui si basano raggruppamento e suddivisione
+        assertEquals(righe.get(0)[0], righe.get(1)[0]);
+        assertEquals("900", righe.get(0)[13]);
+        //Le etichette prodotte devono essere chiavi valide della mappa condivisa con l'import da CSV
+        var mappa = Importazioni.Ex_OKX_MappaCausali();
+        assertNotNull(mappa.get("Buy"));
+        assertNotNull(mappa.get("Sell"));
+    }
+
+    /**
+     * Lo scaricamento incompleto (difetto <b>C13</b>) non importa nulla, ma il resoconto delle causali
+     * non riconosciute deve essere prodotto lo stesso: è l'unico modo in cui i codici {@code type} ancora
+     * da decodificare vengono alla luce. {@code Ex_OKX_SoloCausaliSconosciute} è il percorso che lo
+     * produce, e non deve toccare i movimenti.
+     */
+    @Test
+    void loScaricamentoIncompletoProduceIlResocontoSenzaImportareNulla() {
+        List<String[]> righe = CcxtInterop.convertOKXBills(bills("""
+            [{"billId":"600","ccy":"BTC","balChg":"0.5","type":"1","ts":"1700000000000"},
+             {"billId":"601","ccy":"ETH","balChg":"1","type":"8","ts":"1700000001000"}]
+            """), "Trading");
+
+        int movimentiPrima = Principale.MappaCryptoWallet.size();
+        Importazioni.Esito E = Importazioni.Ex_OKX_SoloCausaliSconosciute(righe, "OKX");
+
+        assertNotNull(E, "con una causale non mappata il resoconto deve aprirsi");
+        assertEquals(1, E.Sconosciute);
+        assertTrue(E.MovimentiSconosciuti.contains("OKX type 8"));
+        //Nessuna riga importata: il resoconto deve dirlo, non nasconderlo
+        assertEquals(0, E.Aggiunte);
+        assertEquals(0, E.Transazioni);
+        assertEquals(0, E.Scartate);
+        assertEquals(movimentiPrima, Principale.MappaCryptoWallet.size(),
+                "la classificazione non deve scrivere nessun movimento");
+        //La riga riconosciuta resta classificata, quella ignota no: è la stessa regola dell'import completo
+        assertEquals("", righe.get(1)[3]);
+        assertFalse(righe.get(0)[3].isEmpty());
+    }
+
+    /**
+     * Senza causali sconosciute non si apre nessun resoconto: dopo l'avviso di scaricamento incompleto
+     * una finestra con tutti zeri sarebbe solo rumore. {@code MostraResoconto} ignora il {@code null}.
+     */
+    @Test
+    void senzaCausaliSconosciuteIlResocontoNonSiApre() {
+        List<String[]> righe = CcxtInterop.convertOKXBills(bills("""
+            [{"billId":"700","ccy":"BTC","balChg":"0.5","type":"1","ts":"1700000000000"}]
+            """), "Funding");
+
+        assertNull(Importazioni.Ex_OKX_SoloCausaliSconosciute(righe, "OKX"));
+    }
+
+    /**
+     * Il 30 vale solo sul conto Trading. Sul Funding i codici bassi hanno tutt'altro significato — il 2 è
+     * un prelievo, non una vendita — quindi un 30 che arrivasse di là deve restare non mappato e finire
+     * nel riepilogo dei movimenti sconosciuti invece di essere scambiato per un acquisto.
+     */
+    @Test
+    void ilCodice30NonVieneInterpretatoSulContoFunding() {
+        assertEquals("OKX type 30", CcxtInterop.causaleBillOKX("30", "0.25568649", false));
+    }
+
+    /**
      * Regressione della classe di bug <b>M7</b>: una quantità positiva molto piccola viene stampata da
      * {@code BigDecimal} in notazione scientifica ({@code 2.5E-9}) e contiene quindi un trattino. Deve
      * comunque essere riconosciuta come <b>entrata</b>, altrimenti la classificazione fiscale si inverte.
@@ -302,6 +380,74 @@ class CcxtInteropConvertOKXBillsTest {
         assertEquals(CcxtInterop.SceltaStorico.PROCEDI,
                 CcxtInterop.SceltaStoricoOKX("Binance", dueAnniFa, null).scelta());
         assertEquals(dueAnniFa, CcxtInterop.SceltaStoricoOKX("Binance", dueAnniFa, null).startDate());
+    }
+
+    /**
+     * Il tetto di pagine di {@code OKX_Bills.js} non è un guasto ma un budget di tempo (~12 minuti per
+     * conto), e da quando uno scaricamento incompleto non importa più nulla era diventato un vicolo cieco:
+     * non importando, la data di partenza non avanza e la corsa dopo trova lo stesso muro. Il cursore di
+     * ripresa è la via d'uscita — questi test coprono la parte pura, cioè come viene ricordato.
+     */
+    @Test
+    void ilCursoreDiRipresaFaAndataERitornoSenzaPerdereNulla() {
+        String salvato = "Funding=1784276517904|1471886517903;Trading=3702022358013911044|1780000000000";
+        var riprese = CcxtInterop.ripreseOKX(salvato);
+
+        assertEquals(2, riprese.size());
+        //L'after non viene interpretato: sul Funding è un timestamp, sul Trading un billId (difetto C8)
+        assertEquals("1784276517904", riprese.get("Funding").after());
+        assertEquals(1471886517903L, riprese.get("Funding").limite());
+        assertEquals("3702022358013911044", riprese.get("Trading").after());
+
+        assertEquals(salvato, CcxtInterop.ripreseOKX(riprese));
+    }
+
+    @Test
+    void unaRipresaMalformataVieneIgnorataInveceDiSporcareLaRichiesta() {
+        //L'opzione è testo su un file dell'utente: una riga sporca non deve tradursi in una richiesta
+        //assurda a OKX, e soprattutto non deve far saltare le voci buone che le stanno accanto
+        var riprese = CcxtInterop.ripreseOKX("Funding=|123;=1|2;Trading=abc|nonUnNumero;Trading=999|5;spazzatura");
+
+        assertEquals(1, riprese.size());
+        assertEquals("999", riprese.get("Trading").after());
+        assertTrue(CcxtInterop.ripreseOKX((String) null).isEmpty());
+        assertEquals("", CcxtInterop.ripreseOKX(new java.util.TreeMap<String, CcxtInterop.RipresaOKX>()));
+    }
+
+    @Test
+    void laRipresaVieneLettaDallaRispostaDelloScript() {
+        var json = com.google.gson.JsonParser.parseString("""
+            {"okx_completo":false,
+             "okx_motivo":{"Funding":"tetto_pagine","Trading":""},
+             "okx_ripresa":{"Funding":{"after":"1784276517904","limite":1471886517903}}}
+            """).getAsJsonObject();
+
+        var riprese = CcxtInterop.ripreseOKX(json);
+        assertEquals(1, riprese.size());
+        assertEquals("1784276517904", riprese.get("Funding").after());
+        //Solo il tetto: si importa comunque e si ricorda dove si era arrivati
+        assertTrue(CcxtInterop.soloTettoPagineOKX(json));
+    }
+
+    /**
+     * Il tetto è l'unica incompletezza da cui si sa ripartire. Ogni altro motivo dice che manca
+     * <i>qualcosa</i> senza dire <i>che cosa</i>, e lì deve restare il blocco di C13.
+     */
+    @Test
+    void soloIlTettoDiPagineFaImportareUnoScaricamentoIncompleto() {
+        assertFalse(CcxtInterop.soloTettoPagineOKX(com.google.gson.JsonParser.parseString("""
+            {"okx_motivo":{"Funding":"tetto_pagine","Trading":"paginazione_ferma"}}
+            """).getAsJsonObject()), "un'anomalia accanto al tetto deve continuare a bloccare");
+
+        assertFalse(CcxtInterop.soloTettoPagineOKX(com.google.gson.JsonParser.parseString("""
+            {"okx_motivo":{"Funding":"","Trading":""}}
+            """).getAsJsonObject()), "senza alcun motivo non c'è nessun tetto da riprendere");
+
+        //Una risposta di uno script più vecchio non porta il campo: non va scambiata per un tetto
+        assertFalse(CcxtInterop.soloTettoPagineOKX(com.google.gson.JsonParser.parseString(
+                "{\"okx_completo\":false}").getAsJsonObject()));
+        assertFalse(CcxtInterop.soloTettoPagineOKX(null));
+        assertTrue(CcxtInterop.ripreseOKX((com.google.gson.JsonObject) null).isEmpty());
     }
 
     @Test

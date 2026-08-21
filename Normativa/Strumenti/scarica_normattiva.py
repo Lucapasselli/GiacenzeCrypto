@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Scarica da Normattiva (portale ufficiale dello Stato italiano) il testo degli atti
+elencati in ``atti.json``, in formato Akoma Ntoso (XML strutturato ufficiale).
+
+Per ogni atto vengono scaricate una o piu' "vigenze", cioe' fotografie del testo
+a una data precisa:
+
+  * ``originario`` -> il testo come pubblicato in Gazzetta Ufficiale;
+  * ``vigente``    -> il testo coordinato con tutte le modifiche successive.
+
+Note operative (verificate sul campo, non ovvie):
+
+  * Normattiva richiede una **sessione**: la chiamata a ``/do/atto/caricaAKN``
+    risponde con una pagina di errore HTML se non e' preceduta, nella stessa
+    sessione e con lo stesso cookie, dalla risoluzione dell'URN dell'atto.
+    Per questo la sessione viene ri-innescata **prima di ogni** download.
+  * Il parametro ``dataVigenza`` (formato AAAAMMGG) e' quello che seleziona la
+    fotografia del testo; con date diverse si ottengono file diversi.
+  * La risposta valida ha ``Content-Type: text/xml`` e comincia con ``<?xml``.
+    Una risposta ``text/html`` e' sempre un errore, anche con HTTP 200.
+
+Uso:  python3 scarica_normattiva.py [id_atto ...]
+      (senza argomenti scarica tutti gli atti elencati in atti.json)
+"""
+
+import hashlib
+import http.cookiejar
+import json
+import os
+import re
+import sys
+import time
+import urllib.parse
+import urllib.request
+from datetime import date
+
+BASE = "https://www.normattiva.it"
+UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/126.0 Safari/537.36")
+PAUSA = 2.5          # secondi fra una richiesta e l'altra: il portale limita
+TIMEOUT = 180
+
+QUI = os.path.dirname(os.path.abspath(__file__))
+RADICE = os.path.dirname(QUI)
+
+
+def apri_sessione():
+    jar = http.cookiejar.CookieJar()
+    op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+    op.addheaders = [("User-Agent", UA),
+                     ("Accept-Language", "it-IT,it;q=0.9")]
+    return op
+
+
+def scarica(op, url, referer=None):
+    req = urllib.request.Request(url)
+    if referer:
+        req.add_header("Referer", referer)
+    with op.open(req, timeout=TIMEOUT) as r:
+        return r.read(), r.headers.get("Content-Type", "")
+
+
+def risolvi_urn(op, urn):
+    """Dall'URN ricava codice redazionale e data di pubblicazione in G.U."""
+    url = BASE + "/uri-res/N2Ls?" + urn
+    html, _ = scarica(op, url)
+    testo = html.decode("utf-8", "replace")
+    m = re.search(r"caricaAKN\?dataGU=(\d{8})&(?:amp;)?codiceRedaz=([A-Za-z0-9]+)", testo)
+    if not m:
+        raise RuntimeError("URN non risolto o pagina inattesa: " + urn)
+    return m.group(1), m.group(2), url
+
+
+def sha256(percorso):
+    h = hashlib.sha256()
+    with open(percorso, "rb") as f:
+        for blocco in iter(lambda: f.read(1 << 16), b""):
+            h.update(blocco)
+    return h.hexdigest()
+
+
+def main():
+    with open(os.path.join(QUI, "atti.json"), encoding="utf-8") as f:
+        atti = json.load(f)
+
+    voluti = set(sys.argv[1:])
+    oggi = date.today().strftime("%Y%m%d")
+    op = apri_sessione()
+    righe_manifest = []
+
+    for atto in atti:
+        if voluti and atto["id"] not in voluti:
+            continue
+        cartella = os.path.join(RADICE, atto.get("cartella", "Leggi/Originale"))
+        os.makedirs(cartella, exist_ok=True)
+        try:
+            dataGU, codice, urn_url = risolvi_urn(op, atto["urn"])
+        except Exception as e:                      # noqa: BLE001
+            print(f"!! {atto['id']}: {e}")
+            continue
+        print(f"== {atto['id']}  GU {dataGU} cod. {codice}")
+
+        for etichetta, quando in atto["vigenze"].items():
+            vig = oggi if quando in ("OGGI", "oggi") else quando.replace("-", "")
+            nome = f"{atto['id']}_{etichetta}.akn.xml"
+            dest = os.path.join(cartella, nome)
+            time.sleep(PAUSA)
+            # la sessione va ri-innescata prima di ogni caricaAKN
+            risolvi_urn(op, atto["urn"])
+            time.sleep(PAUSA)
+            url = (f"{BASE}/do/atto/caricaAKN?dataGU={dataGU}"
+                   f"&codiceRedaz={codice}&dataVigenza={vig}")
+            dati, tipo = scarica(op, url, referer=urn_url)
+            if "xml" not in tipo or not dati.lstrip().startswith(b"<?xml"):
+                print(f"   !! {etichetta}: risposta non XML ({tipo}, {len(dati)} byte)")
+                continue
+            with open(dest, "wb") as f:
+                f.write(dati)
+            print(f"   -> {nome}  {len(dati)} byte")
+            righe_manifest.append({
+                "file": os.path.relpath(dest, RADICE),
+                "titolo": f"{atto['titolo']} ({etichetta}, vigenza {vig})",
+                "autorita": "Normattiva - Istituto Poligrafico e Zecca dello Stato",
+                "identificativo": f"{atto['urn']} | G.U. {dataGU} cod. {codice}",
+                "url": url,
+                "scaricato_il": date.today().isoformat(),
+                "sha256": sha256(dest),
+            })
+
+    if righe_manifest:
+        # il manifest e' cumulativo: uno scarico parziale non deve cancellare la
+        # provenienza dei file scaricati nelle esecuzioni precedenti
+        percorso = os.path.join(QUI, "manifest_normattiva.json")
+        precedenti = {}
+        if os.path.exists(percorso):
+            with open(percorso, encoding="utf-8") as f:
+                precedenti = {r["file"]: r for r in json.load(f)}
+        for r in righe_manifest:
+            precedenti[r["file"]] = r
+        with open(percorso, "w", encoding="utf-8") as f:
+            json.dump(sorted(precedenti.values(), key=lambda r: r["file"]), f,
+                      ensure_ascii=False, indent=1)
+        print(f"\n{len(righe_manifest)} file scaricati; "
+              f"{len(precedenti)} registrati in Strumenti/manifest_normattiva.json")
+
+
+if __name__ == "__main__":
+    main()

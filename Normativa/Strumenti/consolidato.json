@@ -1,0 +1,426 @@
+[
+ {
+  "out": "Leggi/Consolidato/TUIR_art67_c1_lett_c-sexies_evoluzione.md",
+  "articolo": "67",
+  "eId": "art_67__para_1.__point_c-sexies",
+  "titolo": "TUIR, art. 67, comma 1, lettera c-sexies) — la fattispecie imponibile delle cripto-attivita'",
+  "premessa": "E' la lettera che rende imponibili plusvalenze e altri proventi da cripto-attivita'. Introdotta dal comma 126, lettera a), della legge di bilancio 2023; il comma 25, lettera a), della legge di bilancio 2025 ne ha soppresso la soglia di 2.000 euro a decorrere dal 1° gennaio 2025. ⚠ Sulla fotografia al 1° gennaio 2023: Normattiva porta la modifica nel corpo dell'articolo 67 solo con un consolidamento successivo (fra il 25 febbraio e il 1° marzo 2023); fino ad allora la tiene fra le modifiche annunciate nei metadati. La disposizione e' comunque in vigore dal 1° gennaio 2023.",
+  "novelle": [
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2022-12-29_197_bilancio2023_originario.akn.xml",
+    "eId": "art_1__para_126",
+    "etichetta": "Legge di bilancio 2023 (L. 197/2022), art. 1, comma 126"
+   },
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2024-12-30_207_bilancio2025_originario.akn.xml",
+    "eId": "art_1__para_25",
+    "etichetta": "Legge di bilancio 2025 (L. 207/2024), art. 1, comma 25"
+   }
+  ],
+  "fotografie": [
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2022-12-31_ante_bilancio2023.akn.xml",
+    "etichetta": "31 dicembre 2022 — prima della legge di bilancio 2023"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2023-01-01_post_bilancio2023.akn.xml",
+    "etichetta": "1° gennaio 2023 — entrata in vigore della legge di bilancio 2023 (vedi avvertenza)"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2023-03-01_corpo_aggiornato.akn.xml",
+    "etichetta": "1° marzo 2023 — prima fotografia in cui Normattiva porta la modifica nel corpo dell'articolo"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2024-12-31_ante_bilancio2025.akn.xml",
+    "etichetta": "31 dicembre 2024 — prima della legge di bilancio 2025"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2025-01-01_post_bilancio2025.akn.xml",
+    "etichetta": "1° gennaio 2025 — dopo la legge di bilancio 2025"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2026-01-01_post_bilancio2026.akn.xml",
+    "etichetta": "1° gennaio 2026 — dopo la legge di bilancio 2026"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_vigente.akn.xml",
+    "etichetta": "testo vigente alla data dello scarico"
+   }
+  ],
+  "filtro_destinazione": "1986-12-22/917/.*~art_67",
+  "cerca": {
+   "inizio": "\\(?\\(?c-sexies\\)",
+   "fine": "caratteristiche e funzioni\\)?\\)?[.;]?"
+  }
+ },
+ {
+  "out": "Leggi/Consolidato/TUIR_art68_comma_9-bis_evoluzione.md",
+  "articolo": "68",
+  "eId": "art_68__para_9-bis",
+  "titolo": "TUIR, art. 68, comma 9-bis — come si determinano plusvalenze e minusvalenze da cripto-attivita'",
+  "premessa": "Aggiunto dal comma 126, lettera b), della legge di bilancio 2023. Il comma 25, lettera b), della legge di bilancio 2025 ha soppresso il riferimento alla soglia di 2.000 euro nel riporto delle minusvalenze. ⚠ Sulla fotografia al 1° gennaio 2023: Normattiva porta la modifica nel corpo dell'articolo 67 solo con un consolidamento successivo (fra il 25 febbraio e il 1° marzo 2023); fino ad allora la tiene fra le modifiche annunciate nei metadati. La disposizione e' comunque in vigore dal 1° gennaio 2023.",
+  "novelle": [
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2022-12-29_197_bilancio2023_originario.akn.xml",
+    "eId": "art_1__para_126",
+    "etichetta": "Legge di bilancio 2023 (L. 197/2022), art. 1, comma 126"
+   },
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2024-12-30_207_bilancio2025_originario.akn.xml",
+    "eId": "art_1__para_25",
+    "etichetta": "Legge di bilancio 2025 (L. 207/2024), art. 1, comma 25"
+   }
+  ],
+  "fotografie": [
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2022-12-31_ante_bilancio2023.akn.xml",
+    "etichetta": "31 dicembre 2022 — prima della legge di bilancio 2023"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2023-01-01_post_bilancio2023.akn.xml",
+    "etichetta": "1° gennaio 2023 — entrata in vigore della legge di bilancio 2023 (vedi avvertenza)"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2023-03-01_corpo_aggiornato.akn.xml",
+    "etichetta": "1° marzo 2023 — prima fotografia in cui Normattiva porta la modifica nel corpo dell'articolo"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2024-12-31_ante_bilancio2025.akn.xml",
+    "etichetta": "31 dicembre 2024 — prima della legge di bilancio 2025"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2025-01-01_post_bilancio2025.akn.xml",
+    "etichetta": "1° gennaio 2025 — dopo la legge di bilancio 2025"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2026-01-01_post_bilancio2026.akn.xml",
+    "etichetta": "1° gennaio 2026 — dopo la legge di bilancio 2026"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_vigente.akn.xml",
+    "etichetta": "testo vigente alla data dello scarico"
+   }
+  ],
+  "filtro_destinazione": "1986-12-22/917/.*~art_68",
+  "cerca": {
+   "inizio": "\\(?\\(?9-bis\\.",
+   "fine": "senza alcuna deduzione\\)?\\)?[.;]?"
+  }
+ },
+ {
+  "out": "Leggi/Consolidato/TUIR_art110_comma_3-bis_evoluzione.md",
+  "articolo": "110",
+  "eId": "art_110__para_3-bis",
+  "titolo": "TUIR, art. 110, comma 3-bis — valutazione delle cripto-attivita' nel reddito d'impresa",
+  "premessa": "Inserito dal comma 131 della legge di bilancio 2023: le cripto-attivita' non rilevano ai fini fiscali per le oscillazioni di valore. Il comma 132 ne estende l'applicazione all'IRAP. Interpretato dalla risposta a interpello n. 78 del 20 marzo 2025. ⚠ Sulla fotografia al 1° gennaio 2023: Normattiva porta la modifica nel corpo dell'articolo 67 solo con un consolidamento successivo (fra il 25 febbraio e il 1° marzo 2023); fino ad allora la tiene fra le modifiche annunciate nei metadati. La disposizione e' comunque in vigore dal 1° gennaio 2023.",
+  "novelle": [
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2022-12-29_197_bilancio2023_originario.akn.xml",
+    "eId": "art_1__para_131",
+    "etichetta": "Legge di bilancio 2023 (L. 197/2022), art. 1, comma 131"
+   },
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2022-12-29_197_bilancio2023_originario.akn.xml",
+    "eId": "art_1__para_132",
+    "etichetta": "Legge di bilancio 2023 (L. 197/2022), art. 1, comma 132 (estensione all'IRAP)"
+   }
+  ],
+  "fotografie": [
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2022-12-31_ante_bilancio2023.akn.xml",
+    "etichetta": "31 dicembre 2022 — prima della legge di bilancio 2023"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2023-01-01_post_bilancio2023.akn.xml",
+    "etichetta": "1° gennaio 2023 — entrata in vigore della legge di bilancio 2023 (vedi avvertenza)"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2023-03-01_corpo_aggiornato.akn.xml",
+    "etichetta": "1° marzo 2023 — prima fotografia in cui Normattiva porta la modifica nel corpo dell'articolo"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2024-12-31_ante_bilancio2025.akn.xml",
+    "etichetta": "31 dicembre 2024 — prima della legge di bilancio 2025"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2025-01-01_post_bilancio2025.akn.xml",
+    "etichetta": "1° gennaio 2025 — dopo la legge di bilancio 2025"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2026-01-01_post_bilancio2026.akn.xml",
+    "etichetta": "1° gennaio 2026 — dopo la legge di bilancio 2026"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_vigente.akn.xml",
+    "etichetta": "testo vigente alla data dello scarico"
+   }
+  ],
+  "filtro_destinazione": "1986-12-22/917/.*~art_110",
+  "cerca": {
+   "inizio": "\\(?\\(?3-bis\\.",
+   "fine": "imputazione al conto economico\\)?\\)?[.;]?"
+  }
+ },
+ {
+  "out": "Leggi/Consolidato/LB2025_art1_comma_24_aliquota_evoluzione.md",
+  "articolo": "1",
+  "eId": "art_1__para_24",
+  "titolo": "Legge di bilancio 2025, art. 1, comma 24 — l'aliquota del 33 per cento e la deroga per i token di moneta elettronica in euro",
+  "premessa": "Il comma 24 fissa al 33 per cento l'aliquota sui redditi della lettera c-sexies) realizzati dal 1° gennaio 2026. Il comma 28 della legge di bilancio 2026 vi ha aggiunto in fondo i periodi che riportano al 26 per cento i token di moneta elettronica denominati in euro e che escludono il realizzo nella conversione euro/EMT.",
+  "novelle": [
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2025-12-30_199_bilancio2026_originario.akn.xml",
+    "eId": "art_1__para_28",
+    "etichetta": "Legge di bilancio 2026 (L. 199/2025), art. 1, comma 28"
+   }
+  ],
+  "fotografie": [
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2024-12-30_207_bilancio2025_originario.akn.xml",
+    "etichetta": "testo originario (1° gennaio 2025)"
+   },
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2024-12-30_207_bilancio2025_vigente.akn.xml",
+    "etichetta": "testo vigente (dopo la legge di bilancio 2026)"
+   }
+  ],
+  "filtro_destinazione": "2024-12-30/207/.*~art_1__para_24"
+ },
+ {
+  "out": "Leggi/Consolidato/DL167-1990_art2_evoluzione.md",
+  "articolo": "2",
+  "eId": "art_2",
+  "titolo": "D.L. 167/1990, art. 2 — trasferimenti attraverso soggetti non residenti, estesi alle cripto-attivita'",
+  "premessa": "Modificato dal comma 129, lettera b), della legge di bilancio 2023, insieme agli artt. 1 e 4. Nei metadati dell'atto la destinazione della modifica e' ~art_2__para_1__point_a.",
+  "novelle": [
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2022-12-29_197_bilancio2023_originario.akn.xml",
+    "eId": "art_1__para_129",
+    "etichetta": "Legge di bilancio 2023 (L. 197/2022), art. 1, comma 129"
+   }
+  ],
+  "fotografie": [
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DL_1990-06-28_167_2022-12-31_ante_bilancio2023.akn.xml",
+    "etichetta": "31 dicembre 2022 — prima della legge di bilancio 2023"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DL_1990-06-28_167_2023-01-01_post_bilancio2023.akn.xml",
+    "etichetta": "1° gennaio 2023 — dopo la legge di bilancio 2023"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DL_1990-06-28_167_vigente.akn.xml",
+    "etichetta": "testo vigente alla data dello scarico"
+   }
+  ],
+  "filtro_destinazione": "1990-06-28/167/.*~art_2(__|$)"
+ },
+ {
+  "out": "Leggi/Consolidato/DL167-1990_art4_quadro_RW_evoluzione.md",
+  "articolo": "4",
+  "eId": "art_4",
+  "titolo": "D.L. 167/1990, art. 4 — l'obbligo di dichiarazione delle attivita' estere (Quadro RW) esteso alle cripto-attivita'",
+  "premessa": "Il comma 129 della legge di bilancio 2023 ha esteso l'obbligo di monitoraggio alle cripto-attivita', indipendentemente dalla loro collocazione all'estero.",
+  "novelle": [
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2022-12-29_197_bilancio2023_originario.akn.xml",
+    "eId": "art_1__para_129",
+    "etichetta": "Legge di bilancio 2023 (L. 197/2022), art. 1, comma 129"
+   }
+  ],
+  "fotografie": [
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DL_1990-06-28_167_2022-12-31_ante_bilancio2023.akn.xml",
+    "etichetta": "31 dicembre 2022 — prima della legge di bilancio 2023"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DL_1990-06-28_167_2023-01-01_post_bilancio2023.akn.xml",
+    "etichetta": "1° gennaio 2023 — dopo la legge di bilancio 2023"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DL_1990-06-28_167_vigente.akn.xml",
+    "etichetta": "testo vigente alla data dello scarico"
+   }
+  ],
+  "filtro_destinazione": "1990-06-28/167/.*~art_4(__|$)"
+ },
+ {
+  "out": "Leggi/Consolidato/DL167-1990_art1_intermediari_evoluzione.md",
+  "articolo": "1",
+  "eId": "art_1",
+  "titolo": "D.L. 167/1990, art. 1 — trasferimenti attraverso intermediari, esteso ai prestatori di servizi in cripto-attivita'",
+  "premessa": "Modificato dal comma 129, lettera a), della legge di bilancio 2023.",
+  "novelle": [
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2022-12-29_197_bilancio2023_originario.akn.xml",
+    "eId": "art_1__para_129",
+    "etichetta": "Legge di bilancio 2023 (L. 197/2022), art. 1, comma 129"
+   }
+  ],
+  "fotografie": [
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DL_1990-06-28_167_2022-12-31_ante_bilancio2023.akn.xml",
+    "etichetta": "31 dicembre 2022 — prima della legge di bilancio 2023"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DL_1990-06-28_167_2023-01-01_post_bilancio2023.akn.xml",
+    "etichetta": "1° gennaio 2023 — dopo la legge di bilancio 2023"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DL_1990-06-28_167_vigente.akn.xml",
+    "etichetta": "testo vigente alla data dello scarico"
+   }
+  ],
+  "filtro_destinazione": "1990-06-28/167/.*~art_1(__|$)"
+ },
+ {
+  "out": "Leggi/Consolidato/DL201-2011_art19_imposta_valore_cripto_evoluzione.md",
+  "articolo": "19",
+  "eId": "art_19",
+  "titolo": "D.L. 201/2011, art. 19 — l'imposta sul valore delle cripto-attivita' (2 per mille)",
+  "premessa": "Il comma 146 della legge di bilancio 2023 ha aggiunto al comma 18 il periodo che, dal 2023, sostituisce l'imposta di bollo con un'imposta sul valore delle cripto-attivita'. I codici tributo sono nella risoluzione n. 10/E del 6 febbraio 2024.",
+  "novelle": [
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2022-12-29_197_bilancio2023_originario.akn.xml",
+    "eId": "art_1__para_146",
+    "etichetta": "Legge di bilancio 2023 (L. 197/2022), art. 1, comma 146"
+   }
+  ],
+  "fotografie": [
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DL_2011-12-06_201_2022-12-31_ante_bilancio2023.akn.xml",
+    "etichetta": "31 dicembre 2022 — prima della legge di bilancio 2023"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DL_2011-12-06_201_2023-01-01_post_bilancio2023.akn.xml",
+    "etichetta": "1° gennaio 2023 — dopo la legge di bilancio 2023"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DL_2011-12-06_201_vigente.akn.xml",
+    "etichetta": "testo vigente alla data dello scarico"
+   }
+  ],
+  "filtro_destinazione": "2011-12-06/201/.*~art_19(__|$)"
+ },
+ {
+  "out": "Leggi/Consolidato/DL201-2011_art5_ISEE_criptovalute_evoluzione.md",
+  "articolo": "5",
+  "eId": "art_5",
+  "titolo": "D.L. 201/2011, art. 5 — l'ISEE e l'ingresso delle criptovalute nel patrimonio mobiliare",
+  "premessa": "Il comma 32 della legge di bilancio 2026 ha aggiunto le giacenze in valuta all'estero, in criptovalute e le rimesse in denaro alla componente patrimoniale rilevante per l'ISEE. Il comma 33 rinvia a un decreto ministeriale che deve modificare in tal senso l'art. 5 del D.P.C.M. 159/2013: fino a quel decreto il regolamento ISEE non nomina le criptovalute.",
+  "novelle": [
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2025-12-30_199_bilancio2026_originario.akn.xml",
+    "eId": "art_1__para_32",
+    "etichetta": "Legge di bilancio 2026 (L. 199/2025), art. 1, comma 32"
+   },
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2025-12-30_199_bilancio2026_originario.akn.xml",
+    "eId": "art_1__para_33",
+    "etichetta": "Legge di bilancio 2026 (L. 199/2025), art. 1, comma 33 (decreto di attuazione)"
+   }
+  ],
+  "fotografie": [
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DL_2011-12-06_201_2023-01-01_post_bilancio2023.akn.xml",
+    "etichetta": "1° gennaio 2023 — prima della legge di bilancio 2026"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DL_2011-12-06_201_2026-01-01_post_bilancio2026.akn.xml",
+    "etichetta": "1° gennaio 2026 — dopo la legge di bilancio 2026"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DL_2011-12-06_201_vigente.akn.xml",
+    "etichetta": "testo vigente alla data dello scarico"
+   }
+  ],
+  "filtro_destinazione": "2011-12-06/201/.*~art_5(__|$)"
+ },
+ {
+  "out": "Leggi/Consolidato/DLgs461-1997_art5_evoluzione.md",
+  "articolo": "5",
+  "eId": "art_5",
+  "titolo": "D.Lgs. 461/1997, art. 5 — regime della dichiarazione, esteso alle cripto-attivita'",
+  "premessa": "Modificato dal comma 128 della legge di bilancio 2023. E' uno dei tre regimi richiamati dal comma 24 della legge di bilancio 2025 per l'applicazione dell'aliquota del 33 per cento.",
+  "novelle": [
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2022-12-29_197_bilancio2023_originario.akn.xml",
+    "eId": "art_1__para_128",
+    "etichetta": "Legge di bilancio 2023 (L. 197/2022), art. 1, comma 128"
+   }
+  ],
+  "fotografie": [
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-11-21_461_2022-12-31_ante_bilancio2023.akn.xml",
+    "etichetta": "31 dicembre 2022 — prima della legge di bilancio 2023"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-11-21_461_2023-01-01_post_bilancio2023.akn.xml",
+    "etichetta": "1° gennaio 2023 — dopo la legge di bilancio 2023"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-11-21_461_vigente.akn.xml",
+    "etichetta": "testo vigente alla data dello scarico"
+   }
+  ],
+  "filtro_destinazione": "1997-11-21/461/.*~art_5(__|$)"
+ },
+ {
+  "out": "Leggi/Consolidato/DLgs461-1997_art6_evoluzione.md",
+  "articolo": "6",
+  "eId": "art_6",
+  "titolo": "D.Lgs. 461/1997, art. 6 — regime del risparmio amministrato, esteso alle cripto-attivita'",
+  "premessa": "Modificato dal comma 128 della legge di bilancio 2023. E' uno dei tre regimi richiamati dal comma 24 della legge di bilancio 2025 per l'applicazione dell'aliquota del 33 per cento.",
+  "novelle": [
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2022-12-29_197_bilancio2023_originario.akn.xml",
+    "eId": "art_1__para_128",
+    "etichetta": "Legge di bilancio 2023 (L. 197/2022), art. 1, comma 128"
+   }
+  ],
+  "fotografie": [
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-11-21_461_2022-12-31_ante_bilancio2023.akn.xml",
+    "etichetta": "31 dicembre 2022 — prima della legge di bilancio 2023"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-11-21_461_2023-01-01_post_bilancio2023.akn.xml",
+    "etichetta": "1° gennaio 2023 — dopo la legge di bilancio 2023"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-11-21_461_vigente.akn.xml",
+    "etichetta": "testo vigente alla data dello scarico"
+   }
+  ],
+  "filtro_destinazione": "1997-11-21/461/.*~art_6(__|$)"
+ },
+ {
+  "out": "Leggi/Consolidato/DLgs461-1997_art7_evoluzione.md",
+  "articolo": "7",
+  "eId": "art_7",
+  "titolo": "D.Lgs. 461/1997, art. 7 — regime del risparmio gestito, esteso alle cripto-attivita'",
+  "premessa": "Modificato dal comma 128 della legge di bilancio 2023. E' uno dei tre regimi richiamati dal comma 24 della legge di bilancio 2025 per l'applicazione dell'aliquota del 33 per cento.",
+  "novelle": [
+   {
+    "file": "Leggi/Originale/LeggiBilancio/L_2022-12-29_197_bilancio2023_originario.akn.xml",
+    "eId": "art_1__para_128",
+    "etichetta": "Legge di bilancio 2023 (L. 197/2022), art. 1, comma 128"
+   }
+  ],
+  "fotografie": [
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-11-21_461_2022-12-31_ante_bilancio2023.akn.xml",
+    "etichetta": "31 dicembre 2022 — prima della legge di bilancio 2023"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-11-21_461_2023-01-01_post_bilancio2023.akn.xml",
+    "etichetta": "1° gennaio 2023 — dopo la legge di bilancio 2023"
+   },
+   {
+    "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-11-21_461_vigente.akn.xml",
+    "etichetta": "testo vigente alla data dello scarico"
+   }
+  ],
+  "filtro_destinazione": "1997-11-21/461/.*~art_7(__|$)"
+ }
+]

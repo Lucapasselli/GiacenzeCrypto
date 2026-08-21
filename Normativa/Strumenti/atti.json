@@ -1,0 +1,152 @@
+[
+ {
+  "id": "L_2022-12-29_197_bilancio2023",
+  "titolo": "Legge 29 dicembre 2022, n. 197 - Bilancio di previsione dello Stato per l'anno finanziario 2023 (legge di bilancio 2023)",
+  "urn": "urn:nir:stato:legge:2022-12-29;197",
+  "cartella": "Leggi/Originale/LeggiBilancio",
+  "vigenze": {
+   "originario": "2023-01-01",
+   "vigente": "OGGI"
+  }
+ },
+ {
+  "id": "L_2023-12-30_213_bilancio2024",
+  "titolo": "Legge 30 dicembre 2023, n. 213 - Bilancio di previsione dello Stato per l'anno finanziario 2024 (legge di bilancio 2024)",
+  "urn": "urn:nir:stato:legge:2023-12-30;213",
+  "cartella": "Leggi/Originale/LeggiBilancio",
+  "vigenze": {
+   "originario": "2024-01-01",
+   "vigente": "OGGI"
+  }
+ },
+ {
+  "id": "L_2024-12-30_207_bilancio2025",
+  "titolo": "Legge 30 dicembre 2024, n. 207 - Bilancio di previsione dello Stato per l'anno finanziario 2025 (legge di bilancio 2025)",
+  "urn": "urn:nir:stato:legge:2024-12-30;207",
+  "cartella": "Leggi/Originale/LeggiBilancio",
+  "vigenze": {
+   "originario": "2025-01-01",
+   "vigente": "OGGI"
+  }
+ },
+ {
+  "id": "L_2025-12-30_199_bilancio2026",
+  "titolo": "Legge 30 dicembre 2025, n. 199 - Bilancio di previsione dello Stato per l'anno finanziario 2026 (legge di bilancio 2026)",
+  "urn": "urn:nir:stato:legge:2025-12-30;199",
+  "cartella": "Leggi/Originale/LeggiBilancio",
+  "vigenze": {
+   "originario": "2026-01-01",
+   "vigente": "OGGI"
+  }
+ },
+ {
+  "id": "DPR_1986-12-22_917_TUIR",
+  "titolo": "D.P.R. 22 dicembre 1986, n. 917 - Testo unico delle imposte sui redditi (TUIR): artt. 9, 67, 68, 110 richiamati dalle leggi di bilancio",
+  "urn": "urn:nir:stato:decreto.del.presidente.della.repubblica:1986-12-22;917",
+  "cartella": "Leggi/Originale/NormeRichiamate",
+  "vigenze": {
+   "2022-12-31_ante_bilancio2023": "2022-12-31",
+   "2023-01-01_post_bilancio2023": "2023-01-01",
+   "2023-03-01_corpo_aggiornato": "2023-03-01",
+   "2024-12-31_ante_bilancio2025": "2024-12-31",
+   "2025-01-01_post_bilancio2025": "2025-01-01",
+   "2026-01-01_post_bilancio2026": "2026-01-01",
+   "vigente": "OGGI"
+  }
+ },
+ {
+  "id": "DLGS_1997-11-21_461",
+  "titolo": "D.Lgs. 21 novembre 1997, n. 461 - Riordino della disciplina dei redditi di capitale e diversi: artt. 5, 6, 7, 10 (imposta sostitutiva)",
+  "urn": "urn:nir:stato:decreto.legislativo:1997-11-21;461",
+  "cartella": "Leggi/Originale/NormeRichiamate",
+  "vigenze": {
+   "2022-12-31_ante_bilancio2023": "2022-12-31",
+   "2023-01-01_post_bilancio2023": "2023-01-01",
+   "2025-01-01_post_bilancio2025": "2025-01-01",
+   "vigente": "OGGI"
+  }
+ },
+ {
+  "id": "DL_1990-06-28_167",
+  "titolo": "D.L. 28 giugno 1990, n. 167 (conv. L. 4 agosto 1990, n. 227) - Monitoraggio fiscale: artt. 1, 4, 5 (Quadro RW)",
+  "urn": "urn:nir:stato:decreto.legge:1990-06-28;167",
+  "cartella": "Leggi/Originale/NormeRichiamate",
+  "vigenze": {
+   "2022-12-31_ante_bilancio2023": "2022-12-31",
+   "2023-01-01_post_bilancio2023": "2023-01-01",
+   "vigente": "OGGI"
+  }
+ },
+ {
+  "id": "DPR_1972-10-26_642_bollo",
+  "titolo": "D.P.R. 26 ottobre 1972, n. 642 - Disciplina dell'imposta di bollo: art. 13 della tariffa, parte prima, e nota 3-ter",
+  "urn": "urn:nir:stato:decreto.del.presidente.della.repubblica:1972-10-26;642",
+  "cartella": "Leggi/Originale/NormeRichiamate",
+  "vigenze": {
+   "2022-12-31_ante_bilancio2023": "2022-12-31",
+   "2023-01-01_post_bilancio2023": "2023-01-01",
+   "vigente": "OGGI"
+  }
+ },
+ {
+  "id": "DL_2011-12-06_201",
+  "titolo": "D.L. 6 dicembre 2011, n. 201 (conv. L. 22 dicembre 2011, n. 214) - art. 19 comma 18 (imposta sul valore delle cripto-attivita') e art. 5 (ISEE)",
+  "urn": "urn:nir:stato:decreto.legge:2011-12-06;201",
+  "cartella": "Leggi/Originale/NormeRichiamate",
+  "vigenze": {
+   "2022-12-31_ante_bilancio2023": "2022-12-31",
+   "2023-01-01_post_bilancio2023": "2023-01-01",
+   "2026-01-01_post_bilancio2026": "2026-01-01",
+   "vigente": "OGGI"
+  }
+ },
+ {
+  "id": "DPCM_2013-12-05_159_ISEE",
+  "titolo": "D.P.C.M. 5 dicembre 2013, n. 159 - Regolamento ISEE (art. 5: patrimonio mobiliare), richiamato dal comma 33 della legge di bilancio 2026",
+  "urn": "urn:nir:stato:decreto.del.presidente.del.consiglio.dei.ministri:2013-12-05;159",
+  "cartella": "Leggi/Originale/NormeRichiamate",
+  "vigenze": {
+   "2025-12-31_ante_bilancio2026": "2025-12-31",
+   "vigente": "OGGI"
+  }
+ },
+ {
+  "id": "DLGS_1997-07-09_241",
+  "titolo": "D.Lgs. 9 luglio 1997, n. 241 - Capo III (versamento unitario, modello F24): modalita' di versamento richiamate dalle imposte sostitutive di rideterminazione. Capo abrogato dal D.Lgs. 24 marzo 2025, n. 33",
+  "urn": "urn:nir:stato:decreto.legislativo:1997-07-09;241",
+  "cartella": "Leggi/Originale/NormeRichiamate",
+  "vigenze": {
+   "2023-01-01_post_bilancio2023": "2023-01-01",
+   "2025-01-01_post_bilancio2025": "2025-01-01",
+   "vigente": "OGGI"
+  }
+ },
+ {
+  "id": "DLGS_1997-12-15_446_IRAP",
+  "titolo": "D.Lgs. 15 dicembre 1997, n. 446 - IRAP, richiamato dal comma 132 della legge di bilancio 2023",
+  "urn": "urn:nir:stato:decreto.legislativo:1997-12-15;446",
+  "cartella": "Leggi/Originale/NormeRichiamate",
+  "vigenze": {
+   "vigente": "OGGI"
+  }
+ },
+ {
+  "id": "DLGS_2025-03-24_33_versamenti",
+  "titolo": "D.Lgs. 24 marzo 2025, n. 33 - Testo unico dei versamenti e della riscossione: ha abrogato il Capo III del D.Lgs. 241/1997 richiamato dalle leggi di bilancio",
+  "urn": "urn:nir:stato:decreto.legislativo:2025-03-24;33",
+  "cartella": "Leggi/Originale/NormeRichiamate",
+  "vigenze": {
+   "vigente": "OGGI"
+  }
+ },
+ {
+  "id": "DLGS_2025-12-10_194_DAC8",
+  "titolo": "D.Lgs. 10 dicembre 2025, n. 194 - Attuazione della direttiva (UE) 2023/2226 (DAC8): comunicazioni dei prestatori di servizi per le cripto-attivita'",
+  "urn": "urn:nir:stato:decreto.legislativo:2025-12-10;194",
+  "cartella": "Leggi/Originale/NormeRichiamate",
+  "vigenze": {
+   "originario": "2026-01-06",
+   "vigente": "OGGI"
+  }
+ }
+]

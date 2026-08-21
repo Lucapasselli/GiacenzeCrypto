@@ -1,0 +1,1023 @@
+<?xml version="1.0" encoding="UTF-8"?><akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" xmlns:eli="http://data.europa.eu/eli/ontology#" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:gu="http://www.gazzettaufficiale.it/eli/" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:na="http://www.normattiva.it/eli/" xmlns:nakn="http://normattiva.it/akn/vocabulary" xmlns:nrdfa="http://www.normattiva.it/rdfa/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfa="http://www.w3.org/1999/xhtml#">
+    <act name="monovigente">
+        <meta>
+            <identification source="">
+                <FRBRWork>
+                    <FRBRthis value="/akn/it/act/decreto-legge/stato/1990-06-28/167/!main"/>
+                    <FRBRuri value="/akn/it/act/decreto-legge/stato/1990-06-28/167"/>
+                    <FRBRalias name="urn:nir" value="urn:nir:stato:decreto.legge:1990-06-28;167"/>
+                    <FRBRalias name="eli" value="eli/id/1990/06/30/090G0210/CONSOLIDATED/20220622"/>
+                    <FRBRdate date="1990-06-28" name=""/>
+                    <FRBRauthor as="#author" href=""/>
+                    <preservation>
+                        <nrdfa:eli about="na:id/1990/06/30/090G0210/CONSOLIDATED/20220622" aknrelname="eli/id/1990/06/30/090G0210/CONSOLIDATED/20220622">
+                            <nrdfa:span property="rdf:type" resource="eli:LegalResource"/>
+                            <nrdfa:span content="Rilevazione a fini fiscali di taluni trasferimenti da e per l'estero di denaro, titoli e valori. " lang="it" property="eli:title" xml:lang="it"/>
+                            <nrdfa:span content="http://www.normattiva.it/eli/id/{yyyy}/{mm}/{dd}/{codiceRedazionale}/{tipoVersione}" property="eli:uri_schema"/>
+                            <nrdfa:span content="090G0210" property="eli:id_local"/>
+                            <nrdfa:span property="eli:type_document" resource="gu:tables/resource-type#DECRETO-LEGGE"/>
+                            <nrdfa:span content="1990-06-28" datatype="xsd:date" property="eli:date_document"/>
+                            <nrdfa:span property="eli:version" resource="gu:tables/versions#ORIGINAL"/>
+                        </nrdfa:eli>
+                    </preservation>
+                    <FRBRcountry value="it"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value="/akn/it/act/decreto-legge/stato/1990-06-28/167/ita@2022-06-22/!main"/>
+                    <FRBRuri value="/akn/it/act/decreto-legge/stato/1990-06-28/167/ita@2022-06-22"/>
+                    <FRBRdate date="2022-06-22" name=""/>
+                    <FRBRauthor as="#author" href=""/>
+                    <preservation>
+                        <nrdfa:eli about="na:id/1990/06/30/090G0210/CONSOLIDATED/20220622/ita">
+                            <nrdfa:span property="rdf:type" resource="eli:LegalExpression"/>
+                            <nrdfa:span property="eli:realizes" resource="na:id/1990/06/30/090G0210/CONSOLIDATED/20220622"/>
+                            <nrdfa:span property="eli:is_embodied_by" resource="na:id/1990/06/30/090G0210/CONSOLIDATED/20220622/ita/akn"/>
+                            <nrdfa:span property="eli:language" resource="http://publications.europa.eu/resource/authority/language/ITA"/>
+                            <nrdfa:span property="eli:publisher_agent" resource="http://www.ipzs.it"/>
+                        </nrdfa:eli>
+                    </preservation>
+                    <FRBRlanguage language="ita"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value="/akn/it/act/decreto-legge/stato/1990-06-28/167/ita@2022-06-22/!main.xml"/>
+                    <FRBRuri value="/akn/it/act/decreto-legge/stato/1990-06-28/167/ita@2022-06-22.xml"/>
+                    <FRBRdate date="1990-06-28" name=""/>
+                    <FRBRauthor as="#author" href=""/>
+                    <preservation>
+                        <nrdfa:eli about="na:id/1990/06/30/090G0210/CONSOLIDATED/20220622/ita/akn">
+                            <nrdfa:span property="rdf:type" resource="eli:Format"/>
+                            <nrdfa:span property="eli:format" resource="http://www.iana.org/assignments/media-types/xml"/>
+                        </nrdfa:eli>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <publication date="1990-06-30" name="" number="151" showAs=""/>
+            <lifecycle source="">
+                <eventRef date="1990-06-30" eId="eventRef_0" source="ro1"/>
+                <eventRef date="1990-08-10" eId="eventRef_1" source="rp1"/>
+                <eventRef date="1991-05-13" eId="eventRef_2" source="rp2"/>
+                <eventRef date="1991-12-31" eId="eventRef_3" source="rp3"/>
+                <eventRef date="1992-02-14" eId="eventRef_4" source="rp4"/>
+                <eventRef date="1992-09-10" eId="eventRef_5" source="rp5"/>
+                <eventRef date="1993-08-30" eId="eventRef_6" source="rp6"/>
+                <eventRef date="1996-02-10" eId="eventRef_7" source="rp7"/>
+                <eventRef date="1997-05-15" eId="eventRef_8" source="rp8"/>
+                <eventRef date="1998-01-03" eId="eventRef_9" source="rp9"/>
+                <eventRef date="1999-12-31" eId="eventRef_10" source="rp10"/>
+                <eventRef date="2001-09-26" eId="eventRef_11" source="rp11"/>
+                <eventRef date="2002-12-24" eId="eventRef_12" source="rp12"/>
+                <eventRef date="2002-12-31" eId="eventRef_13" source="rp13"/>
+                <eventRef date="2008-12-13" eId="eventRef_14" source="rp14"/>
+                <eventRef date="2009-07-01" eId="eventRef_15" source="rp15"/>
+                <eventRef date="2011-08-13" eId="eventRef_16" source="rp16"/>
+                <eventRef date="2012-03-02" eId="eventRef_17" source="rp17"/>
+                <eventRef date="2013-08-20" eId="eventRef_18" source="rp18"/>
+                <eventRef date="2014-01-29" eId="eventRef_19" source="rp19"/>
+                <eventRef date="2014-03-29" eId="eventRef_20" source="rp20"/>
+                <eventRef date="2014-04-24" eId="eventRef_21" source="rp21"/>
+                <eventRef date="2014-12-17" eId="eventRef_22" source="rp22"/>
+                <eventRef date="2014-12-31" eId="eventRef_23" source="rp23"/>
+                <eventRef date="2015-08-18" eId="eventRef_24" source="rp24"/>
+                <eventRef date="2015-09-30" eId="eventRef_25" source="rp25"/>
+                <eventRef date="2016-10-24" eId="eventRef_26" source="rp26"/>
+                <eventRef date="2017-04-24" eId="eventRef_27" source="rp27"/>
+                <eventRef date="2017-06-19" eId="eventRef_28" source="rp28"/>
+                <eventRef date="2017-08-04" eId="eventRef_29" source="rp29"/>
+                <eventRef date="2022-06-21" eId="eventRef_30" source="rp30"/>
+            </lifecycle>
+            <analysis source="">
+                <passiveModifications>
+                    <textualMod eId="pmod_0" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_1"/>
+                        <new>
+                            <nakn:text>((1. Gli intermediari bancari e finanziari di cui all'articolo 3, comma 2, gli altri operatori finanziari di cui all'articolo 3, comma 3, lettere a) e d), e gli operatori non finanziari di cui all'articolo 3, comma 5, lettera i), del decreto legislativo 21 novembre 2007, n. 231, che intervengono, anche attraverso movimentazione di conti, nei trasferimenti da o verso l'estero di mezzi di pagamento di cui all'articolo 1, comma 2, lettera s), del medesimo decreto sono tenuti a trasmettere all'Agenzia delle entrate i dati di cui all'articolo 31, comma 2, del menzionato decreto relativi alle predette operazioni, effettuate anche in valuta virtuale, di importo pari o superiore a 5.000 euro, limitatamente alle operazioni eseguite per conto o a favore di persone fisiche, enti non commerciali e di societa' semplici e associazioni equiparate ai sensi dell'articolo 5 del testo unico delle imposte sui redditi, di cui al decreto del Presidente della Repubblica 22 dicembre 1986, n. 917.))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_1" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_2"/>
+                        <new>
+                            <nakn:text>((29))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_2" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_3"/>
+                        <new>
+                            <nakn:text>((a) agli intermediari bancari e finanziari di cui all'articolo 3, comma 2, agli altri operatori finanziari di cui all'articolo 3, comma 3, lettere a) e d), e agli operatori non finanziari di cui all'articolo 3, comma 5, lettera i), del decreto legislativo 21 novembre 2007, n. 231, e successive modificazioni, di fornire evidenza, entro i limiti di carattere oggettivo stabiliti dall'articolo 1, comma 1, del presente decreto, delle operazioni intercorse con l'estero anche per masse di contribuenti e con riferimento ad uno specifico periodo temporale;))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_3" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_4"/>
+                        <new>
+                            <nakn:text>((27))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_4" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_5"/>
+                        <new>
+                            <nakn:text>((b) ai soggetti di cui all'articolo 3, commi 2, 3, 4, 5 e 6, del decreto legislativo 21 novembre 2007, n. 231, e successive modificazioni, con riferimento a specifiche operazioni con l'estero o rapporti ad esse collegate, l'identita' dei titolari effettivi rilevata in applicazione dei criteri di cui all'articolo 1, comma 2, lettera pp), e all'articolo 20 del medesimo decreto.))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_5" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_6"/>
+                        <new>
+                            <nakn:text>((27))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_6" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_7"/>
+                        <new>
+                            <nakn:text>((ARTICOLO ABROGATO DAL D.LGS. 19 NOVEMBRE 2008, N. 195))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_7" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_8"/>
+                        <new>
+                            <nakn:text>((ARTICOLO ABROGATO DAL D.LGS. 19 NOVEMBRE 2008, N. 195))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_8" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_9"/>
+                        <new>
+                            <nakn:text>((ARTICOLO ABROGATO DAL D.LGS. 19 NOVEMBRE 2008, N. 195))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_9" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_10"/>
+                        <new>
+                            <nakn:text>((siano titolari effettivi dell'investimento secondo quanto previsto dall'articolo 1, comma 2, lettera pp), e dall'articolo 20 del decreto legislativo 21 novembre 2007, n. 231, e successive modificazioni.))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_10" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_11"/>
+                        <new>
+                            <nakn:text>((27))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_11" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_12"/>
+                        <new>
+                            <nakn:text>(( (Sanzioni). ))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_12" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_13"/>
+                        <new>
+                            <nakn:text>((1. Per la violazione degli obblighi di trasmissione all'Agenzia delle entrate previsti dall'articolo 1, posti a carico degli intermediari, si applica la sanzione amministrativa pecuniaria dal 10 al 25 per cento dell'importo dell'operazione non segnalata. 
+ 2. La violazione dell'obbligo di dichiarazione previsto nell'articolo 4, comma 1, e' punita con la sanzione amministrativa pecuniaria dal 3 al 15 per cento dell'ammontare degli importi non dichiarati. La violazione di cui al periodo precedente relativa alla detenzione di investimenti all'estero ovvero di attivita' estere di natura finanziaria negli Stati o territori a regime fiscale privilegiato di cui al decreto del Ministro delle finanze 4 maggio 1999, pubblicato nella Gazzetta Ufficiale n. 107 del 10 maggio 1999, e al decreto del Ministro dell'economia e delle finanze 21 novembre 2001, pubblicato nella Gazzetta Ufficiale n. 273 del 23 novembre 2001, e' punita con la sanzione amministrativa pecuniaria dal 6 al 30 per cento dell'ammontare degli importi non dichiarati. Nel caso in cui la dichiarazione prevista dall'articolo 4, comma 1, sia presentata entro novanta giorni dal termine, si applica la sanzione di euro 258))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_13" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_14"/>
+                        <new>
+                            <nakn:text>((ARTICOLO ABROGATO DAL D.LGS 21 NOVEMBRE 1997, N. 461))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_14" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_15"/>
+                        <new>
+                            <nakn:text>((ARTICOLO ABROGATO DAL D.LGS. 19 NOVEMBRE 2008, N. 195))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_15" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_16"/>
+                        <new>
+                            <nakn:text>((La richiesta di accesso alla collaborazione volontaria rimane irrevocabile e non puo' essere presentata piu' di una volta, anche indirettamente o per interposta persona.))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_16" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_17"/>
+                        <new>
+                            <nakn:text>((5. La procedura di collaborazione volontaria puo' essere attivata fino al 30 novembre 2015. L'integrazione dell'istanza, i documenti e le informazioni di cui al comma 1, lettera a), possono essere presentati entro il 30 dicembre 2015. In deroga all'articolo 31 del decreto del Presidente della Repubblica 29 settembre 1973, n. 600, e all'articolo 40 del decreto del Presidente della Repubblica 26 ottobre 1972, n. 633, la competenza alla gestione delle istanze presentate, per la prima volta, a decorrere dal 10 novembre 2015 e all'emissione dei relativi atti, compresi quelli di accertamento e di contestazione delle violazioni, per tutte le annualita' oggetto della procedura di collaborazione volontaria, e' attribuita all'articolazione dell'Agenzia delle entrate individuata con provvedimento del direttore dell'Agenzia medesima, da emanare entro la data di entrata in vigore della presente disposizione. Per gli atti di cui al periodo precedente, impugnabili ai sensi del decreto legislativo 31 dicembre 1992, n. 546, si applicano le disposizioni in materia di competenza per territorio di cui all'articolo 4, comma 1, e in materia di legittimazione processuale dinanzi alle commissioni tributarie di cui all'articolo 10, comma 1, dello stesso decreto legislativo n. 546 del 1992, e successive modificazioni, previste per le articolazioni dell'Agenzia delle entrate ivi indicate. Al fine di assicurare la trattazione unitaria delle istanze e la data certa per la conclusione dell'intero procedimento i termini di decadenza per l'accertamento di cui all'articolo 43 del decreto del Presidente della Repubblica 29 settembre 1973, n. 600, e all'articolo 57 del decreto del Presidente della Repubblica 26 ottobre 1972, n. 633, nonche' i termini di decadenza per la notifica dell'atto di contestazione ai sensi dell'articolo 20 del decreto legislativo 18 dicembre 1997, n. 472, che scadono a decorrere dal 31 dicembre 2015, limitatamente agli imponibili, alle imposte, alle ritenute, ai contributi, alle sanzioni e agli interessi relativi alla procedura di collaborazione volontaria e per tutte le annualita' e le violazioni oggetto della procedura stessa, sono fissati, anche in deroga a quelli ordinari, al 31 dicembre 2016))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_17" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_18"/>
+                        <new>
+                            <nakn:text>((b-bis) si applicano le disposizioni in materia di prevenzione del riciclaggio e di finanziamento del terrorismo di cui al decreto legislativo 21 novembre 2007, n. 231, ad eccezione di quanto previsto dall'articolo 58, comma 6, del medesimo decreto;))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_18" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_19"/>
+                        <new>
+                            <nakn:text>((30 novembre 2015))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_19" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_20"/>
+                        <new>
+                            <nakn:text>((,o sino alla data del 30 dicembre 2015 in presenza di integrazione dell'istanza o di presentazione dei documenti e delle informazioni di cui all'articolo 5-quater, comma 1, lettera a) ))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_20" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_21"/>
+                        <new>
+                            <nakn:text>(( (Ulteriori disposizioni in materia di collaborazione volontaria). ))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_21" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_22"/>
+                        <new>
+                            <nakn:text>((1. Le modalita' di presentazione dell'istanza di collaborazione volontaria e di pagamento dei relativi debiti tributari, nonche' ogni altra modalita' applicativa della relativa procedura, sono disciplinate con provvedimento del direttore dell'Agenzia delle entrate da emanare entro trenta giorni dalla data di entrata in vigore della presente disposizione. L'Agenzia delle entrate e gli altri organi dell'Amministrazione finanziaria concordano condizioni e modalita' per lo scambio dei dati relativi alle procedure avviate e concluse.))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_22" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_23"/>
+                        <new>
+                            <nakn:text>(( (Esibizione di atti falsi e comunicazione di dati non rispondenti al vero). ))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_23" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_24"/>
+                        <new>
+                            <nakn:text>((1. L'autore della violazione di cui all'articolo 4, comma 1, che, nell'ambito della procedura di collaborazione volontaria di cui all'articolo 5-quater, esibisce o trasmette atti o documenti falsi, in tutto o in parte, ovvero fornisce dati e notizie non rispondenti al vero e' punito con la reclusione da un anno e sei mesi a sei anni. 
+ 2. L'autore della violazione di cui all'articolo 4, comma 1, deve rilasciare al professionista che lo assiste nell'ambito della procedura di collaborazione volontaria una dichiarazione sostitutiva di atto di notorieta' con la quale attesta che gli atti o documenti consegnati per l'espletamento dell'incarico non sono falsi e che i dati e notizie forniti sono rispondenti al vero))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_24" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_25"/>
+                        <new>
+                            <nakn:text>((28))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_25" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_26"/>
+                        <new>
+                            <nakn:text>(( (Tassazione presuntiva). ))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_26" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_27"/>
+                        <new>
+                            <nakn:text>((1. Per i soggetti di cui all'articolo 4, comma 1, gli investimenti esteri e le attivita' estere di natura finanziaria, trasferiti o costituiti all'estero, senza che ne risultino dichiarati i redditi effettivi, si presumono, salvo prova contraria, fruttiferi in misura pari al tasso ufficiale di riferimento vigente in Italia nel relativo periodo d'imposta, a meno che, in sede di dichiarazione dei redditi, venga specificato che si tratta di redditi la cui percezione avviene in un successivo periodo d'imposta, o sia indicato che determinate attivita' non possono essere produttive di redditi.
+La prova delle predette condizioni deve essere fornita dal contribuente entro sessanta giorni dal ricevimento della espressa richiesta notificatagli dall'ufficio delle imposte))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_27" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_28"/>
+                        <new>
+                            <nakn:text>((1. Con provvedimento del direttore dell'Agenzia delle entrate, sono stabilite particolari modalita' per l'adempimento degli obblighi, nonche' per la trasmissione delle evidenze di cui ai commi 1 e 2 dell'articolo 1 e degli altri dati e notizie di cui al presente decreto. Con gli stessi provvedimenti tali obblighi ed adempimenti possono essere limitati per specifiche categorie o causali e possono esserne variati gli importi.))</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="pmod_28" type="insertion">
+                        <source href="#"/>
+                        <destination href="#ins_29"/>
+                        <new>
+                            <nakn:text>((ARTICOLO ABROGATO DAL D.LGS. 21 NOVEMBRE 1997, N. 461))</nakn:text>
+                        </new>
+                    </textualMod>
+                </passiveModifications>
+            </analysis>
+            <references source="">
+                <original eId="ro1" href="/akn/it/act/DECRETO-LEGGE/stato/1990-06-28/167/!main" showAs=""/>
+                <passiveRef eId="rp1" href="/akn/it/act/LEGGE/stato/1990-08-04/227/!main" showAs=""/>
+                <passiveRef eId="rp2" href="/akn/it/act/DECRETO-LEGGE/stato/1991-05-13/151/!main" showAs=""/>
+                <passiveRef eId="rp3" href="/akn/it/act/LEGGE/stato/1991-12-30/413/!main" showAs=""/>
+                <passiveRef eId="rp4" href="/akn/it/act/DECRETO_LEGISLATIVO/stato/1992-01-25/83/!main" showAs=""/>
+                <passiveRef eId="rp5" href="/akn/it/act/DECRETO-LEGGE/stato/1992-09-09/372/!main" showAs=""/>
+                <passiveRef eId="rp6" href="/akn/it/act/DECRETO-LEGGE/stato/1993-08-30/331/!main" showAs=""/>
+                <passiveRef eId="rp7" href="/akn/it/act/LEGGE/stato/1996-02-06/52/!main" showAs=""/>
+                <passiveRef eId="rp8" href="/akn/it/act/DECRETO_LEGISLATIVO/stato/1997-04-30/125/!main" showAs=""/>
+                <passiveRef eId="rp9" href="/akn/it/act/DECRETO_LEGISLATIVO/stato/1997-11-21/461/!main" showAs=""/>
+                <passiveRef eId="rp10" href="/akn/it/act/DECRETO_LEGISLATIVO/stato/1999-12-23/505/!main" showAs=""/>
+                <passiveRef eId="rp11" href="/akn/it/act/DECRETO-LEGGE/stato/2001-09-25/350/!main" showAs=""/>
+                <passiveRef eId="rp12" href="/akn/it/act/DECRETO-LEGGE/stato/2002-12-24/282/!main" showAs=""/>
+                <passiveRef eId="rp13" href="/akn/it/act/LEGGE/stato/2002-12-27/289/!main" showAs=""/>
+                <passiveRef eId="rp14" href="/akn/it/act/DECRETO_LEGISLATIVO/stato/2008-11-19/195/!main" showAs=""/>
+                <passiveRef eId="rp15" href="/akn/it/act/DECRETO-LEGGE/stato/2009-07-01/78/!main" showAs=""/>
+                <passiveRef eId="rp16" href="/akn/it/act/DECRETO-LEGGE/stato/2011-08-13/138/!main" showAs=""/>
+                <passiveRef eId="rp17" href="/akn/it/act/DECRETO-LEGGE/stato/2012-03-02/16/!main" showAs=""/>
+                <passiveRef eId="rp18" href="/akn/it/act/LEGGE/stato/2013-08-06/97/!main" showAs=""/>
+                <passiveRef eId="rp19" href="/akn/it/act/DECRETO-LEGGE/stato/2014-01-28/4/!main" showAs=""/>
+                <passiveRef eId="rp20" href="/akn/it/act/LEGGE/stato/2014-03-28/50/!main" showAs=""/>
+                <passiveRef eId="rp21" href="/akn/it/act/DECRETO-LEGGE/stato/2014-04-24/66/!main" showAs=""/>
+                <passiveRef eId="rp22" href="/akn/it/act/LEGGE/stato/2014-12-15/186/!main" showAs=""/>
+                <passiveRef eId="rp23" href="/akn/it/act/DECRETO-LEGGE/stato/2014-12-31/192/!main" showAs=""/>
+                <passiveRef eId="rp24" href="/akn/it/act/DECRETO_LEGISLATIVO/stato/2015-08-05/128/!main" showAs=""/>
+                <passiveRef eId="rp25" href="/akn/it/act/DECRETO-LEGGE/stato/2015-09-30/153/!main" showAs=""/>
+                <passiveRef eId="rp26" href="/akn/it/act/DECRETO-LEGGE/stato/2016-10-22/193/!main" showAs=""/>
+                <passiveRef eId="rp27" href="/akn/it/act/DECRETO-LEGGE/stato/2017-04-24/50/!main" showAs=""/>
+                <passiveRef eId="rp28" href="/akn/it/act/DECRETO_LEGISLATIVO/stato/2017-05-25/90/!main" showAs=""/>
+                <passiveRef eId="rp29" href="" showAs=""/>
+                <passiveRef eId="rp30" href="/akn/it/act/DECRETO-LEGGE/stato/2022-06-21/73/!main" showAs=""/>
+            </references>
+            <proprietary source="">
+                <rdf:RDF>
+                    <rdf:Description rdf:about="na:id/1990/06/30/090G0210/CONSOLIDATED/20220622">
+                        <rdf:type rdf:resource="eli:LegalResource"/>
+                        <eli:title xml:lang="it">Rilevazione a fini fiscali di taluni trasferimenti da e per l'estero di denaro, titoli e valori. </eli:title>
+                        <eli:uri_schema>http://www.normattiva.it/eli/id/{yyyy}/{mm}/{dd}/{codiceRedazionale}/{tipoVersione}</eli:uri_schema>
+                        <eli:id_local>090G0210</eli:id_local>
+                        <eli:type_document rdf:resource="gu:tables/resource-type#DECRETO-LEGGE"/>
+                        <eli:date_document rdf:datatype="xsd:date">1990-06-28</eli:date_document>
+                        <eli:version rdf:resource="gu:tables/versions#ORIGINAL"/>
+                    </rdf:Description>
+                    <rdf:Description rdf:about="na:id/1990/06/30/090G0210/CONSOLIDATED/20220622/ita">
+                        <rdf:type rdf:resource="eli:LegalExpression"/>
+                        <eli:realizes rdf:resource="na:id/1990/06/30/090G0210/CONSOLIDATED/20220622"/>
+                        <eli:is_embodied_by rdf:resource="na:id/1990/06/30/090G0210/CONSOLIDATED/20220622/ita/akn"/>
+                        <eli:language rdf:resource="http://publications.europa.eu/resource/authority/language/ITA"/>
+                        <eli:publisher_agent rdf:resource="http://www.ipzs.it"/>
+                    </rdf:Description>
+                    <rdf:Description rdf:about="na:id/1990/06/30/090G0210/CONSOLIDATED/20220622/ita/akn">
+                        <rdf:type rdf:resource="eli:format"/>
+                        <eli:format rdf:resource="http://www.iana.org/assignments/media-types/xml"/>
+                    </rdf:Description>
+                </rdf:RDF>
+            </proprietary>
+        </meta>
+        <preface>
+            <p>
+                <docType>DECRETO-LEGGE</docType>
+                <docDate date="1990-06-28">28 giugno 1990</docDate>
+                <docNumber>167</docNumber>
+                <docTitle>Rilevazione a fini fiscali di taluni trasferimenti da e per l'estero di denaro, titoli e valori.
+</docTitle>
+            </p>
+            <p>
+                <authorialNote eId="atn1" placement="bottom">
+                    <p>Entrata in vigore della legge: 30-6-1990.Decreto-Legge convertito con modificazioni dalla <ref eId="content__ref_1" href="/akn/it/act/legge/stato/1990-08-04/227/!main">L. 04 agosto 1990, n. 227</ref> (in G.U. 10/08/1990, n.186).</p>
+                </authorialNote>
+            </p>
+        </preface>
+        <preamble>
+            <formula name="formulaInizialePreambolo">
+                <p>IL PRESIDENTE DELLA REPUBBLICA</p>
+            </formula>
+            <citations eId="cits_1">
+                <citation eId="cits_1__cit_1">
+                    <p>Visti gli <ref eId="ref_2" href="/akn/it/act/costituzione/stato/1947-12-27/const/!main#art_77">articoli 77</ref> e <ref eId="ref_3" href="/akn/it/act/costituzione/stato/1947-12-27/const/!main#art_87">87 della Costituzione</ref>;</p>
+                </citation>
+            </citations>
+            <p>Ritenuta la straordinaria necessita' ed urgenza di adottare disposizioni di natura fiscale, atte a consentire la possibilita' di controllo di talune operazioni finanziarie da e verso l'estero, anche in vista della predisposizione di meccanismi di cooperazione e di scambio di informazioni tra i Paesi comunitari, nonche' di talune importazioni ed esportazioni al seguito di denaro, titoli o valori per contenere l'uso del contante;</p>
+            <citations eId="cits_2">
+                <citation eId="cits_2__cit_1">
+                    <p>Vista la deliberazione del Consiglio dei Ministri, adottata nella riunione del 27 giugno 1990;</p>
+                </citation>
+            </citations>
+            <p>Sulla proposta del Presidente del Consiglio dei Ministri e dei Ministri del tesoro e delle finanze, di concerto con il Ministro dell'interno;</p>
+            <formula name="formulaFinalePreambolo">
+                <p>E M A N A il seguente decreto-legge:</p>
+            </formula>
+        </preamble>
+        <body>
+            <article eId="art_1">
+                <num>Art. 1.</num>
+                <heading>Trasferimenti attraverso intermediari bancari e finanziari e altri operatori</heading>
+                <paragraph>
+                    <content>
+                        <p>
+                            <ins eId="ins_1">((1. Gli intermediari bancari e finanziari di cui all'articolo 3, comma 2, gli altri operatori finanziari di cui all'articolo 3, comma 3, lettere a) e d), e gli operatori non finanziari di cui all'articolo 3, comma 5, lettera i), del decreto legislativo 21 novembre 2007, n. 231, che intervengono, anche attraverso movimentazione di conti, nei trasferimenti da o verso l'estero di mezzi di pagamento di cui all'articolo 1, comma 2, lettera s), del medesimo decreto sono tenuti a trasmettere all'Agenzia delle entrate i dati di cui all'articolo 31, comma 2, del menzionato decreto relativi alle predette operazioni, effettuate anche in valuta virtuale, di importo pari o superiore a 5.000 euro, limitatamente alle operazioni eseguite per conto o a favore di persone fisiche, enti non commerciali e di societa' semplici e associazioni equiparate ai sensi dell'articolo 5 del testo unico delle imposte sui redditi, di cui al decreto del Presidente della Repubblica 22 dicembre 1986, n. 917.))</ins>
+                            <ins eId="ins_2">((29))</ins>
+                        </p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_1__para_2">
+                    <num>2.</num>
+                    <content>
+                        <p>I dati relativi ai trasferimenti e alle movimentazioni oggetto di rilevazione ai sensi del comma 1 sono trasmessi all'Agenzia delle entrate con modalita' e termini stabiliti con provvedimento del direttore dell'Agenzia delle entrate, anche a disposizione della Guardia di finanza con procedure informatiche. Con il medesimo provvedimento, la trasmissione puo' essere limitata per specifiche categorie di operazioni o causali. 
+ 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph>
+                    <content>
+                        <p>---------------</p>
+                        <p>AGGIORNAMENTO (27)</p>
+                        <p>
+ Il <ref eId="4" href="/akn/it/act/decretoLegislativo/stato/2017-05-25/90/!main">D.Lgs. 25 maggio 2017, n. 90</ref> ha disposto (con l'art. 9, comma 1) che "Le disposizioni emanate dalle autorita' di vigilanza di settore, ai sensi di norme abrogate o sostituite per effetto del presente decreto, continuano a trovare applicazione fino al 31 marzo 2018". </p>
+                        <p>---------------</p>
+                        <p>AGGIORNAMENTO (29)</p>
+                        <p>
+ Il <ref eId="5" href="/akn/it/act/decretoLegge/stato/2022-06-21/73/!main">D.L. 21 giugno 2022, n. 73</ref>, ha disposto (con l'art. 16, comma 2) che la presente modifica si applica a partire dalle comunicazioni relative alle operazioni effettuate nel 2021. </p>
+                    </content>
+                </paragraph>
+            </article>
+            <article eId="art_2">
+                <num>Art. 2.</num>
+                <heading>(Trasferimenti attraverso non residenti)</heading>
+                <paragraph eId="art_2__para_1">
+                    <num>1.</num>
+                    <content>
+                        <p>Al fine di garantire la massima efficacia all'azione di controllo ai fini fiscali per la prevenzione e la repressione dei fenomeni di illecito trasferimento e detenzione di attivita' economiche e finanziarie all'estero, l'unita' speciale costituita ai sensi dell'<ref eId="content__ref_6" href="/akn/it/act/decretoLegge/stato/2009-07-01/78/!main#art_12-com3">articolo 12, comma 3, del decreto-legge 1° luglio 2009, n. 78</ref>, convertito, con modificazioni, dalla <ref eId="content__ref_7" href="/akn/it/act/legge/stato/2009-08-03/102/!main">legge 3 agosto 2009, n. 102</ref>, e i reparti speciali della Guardia di finanza, di cui all'articolo 6, comma 2, del regolamento di cui al <ref eId="content__ref_8" href="/akn/it/act/decretoDelPresidenteDellaRepubblica/stato/1999-01-29/34/!main">decreto del Presidente della Repubblica 29 gennaio 1999, n. 34</ref>, possono richiedere, in deroga ad ogni vigente disposizione di legge, previa autorizzazione, rispettivamente, del direttore centrale accertamento dell'Agenzia delle entrate ovvero del Comandante generale della Guardia di finanza o autorita' dallo stesso delegata: 
+ <ins eId="ins_3">((a) agli intermediari bancari e finanziari di cui all'articolo 3, comma 2, agli altri operatori finanziari di cui all'articolo 3, comma 3, lettere a) e d), e agli operatori non finanziari di cui all'articolo 3, comma 5, lettera i), del decreto legislativo 21 novembre 2007, n. 231, e successive modificazioni, di fornire evidenza, entro i limiti di carattere oggettivo stabiliti dall'articolo 1, comma 1, del presente decreto, delle operazioni intercorse con l'estero anche per masse di contribuenti e con riferimento ad uno specifico periodo temporale;))</ins>
+                            <ins eId="ins_4">((27))</ins>
+                            <ins eId="ins_5">((b) ai soggetti di cui all'articolo 3, commi 2, 3, 4, 5 e 6, del decreto legislativo 21 novembre 2007, n. 231, e successive modificazioni, con riferimento a specifiche operazioni con l'estero o rapporti ad esse collegate, l'identita' dei titolari effettivi rilevata in applicazione dei criteri di cui all'articolo 1, comma 2, lettera pp), e all'articolo 20 del medesimo decreto.))</ins>
+                            <ins eId="ins_6">((27))</ins>
+                        </p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_2__para_2">
+                    <num>2.</num>
+                    <content>
+                        <p>Con provvedimento congiunto del direttore dell'Agenzia delle entrate e del Comandante generale della Guardia di finanza sono stabiliti le modalita' e i termini relativi alle richieste di cui al comma 1, lettere a) e b), al fine di assicurare il necessario coordinamento e di evitare duplicazioni. 
+ 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph>
+                    <content>
+                        <p>---------------</p>
+                        <p>AGGIORNAMENTO (27)</p>
+                        <p>
+ Il <ref eId="9" href="/akn/it/act/decretoLegislativo/stato/2017-05-25/90/!main">D.Lgs. 25 maggio 2017, n. 90</ref> ha disposto (con l'art. 9, comma 1) che "Le disposizioni emanate dalle autorita' di vigilanza di settore, ai sensi di norme abrogate o sostituite per effetto del presente decreto, continuano a trovare applicazione fino al 31 marzo 2018". </p>
+                    </content>
+                </paragraph>
+            </article>
+            <article eId="art_3">
+                <num>Art. 3.</num>
+                <heading/>
+                <paragraph>
+                    <content>
+                        <p>
+                            <ins eId="ins_7">((ARTICOLO ABROGATO DAL D.LGS. 19 NOVEMBRE 2008, N. 195))</ins>
+                        </p>
+                    </content>
+                </paragraph>
+            </article>
+            <article eId="art_3-bis">
+                <num>Art. 3-bis.</num>
+                <heading/>
+                <paragraph>
+                    <content>
+                        <p>
+                            <ins eId="ins_8">((ARTICOLO ABROGATO DAL D.LGS. 19 NOVEMBRE 2008, N. 195))</ins>
+                        </p>
+                    </content>
+                </paragraph>
+            </article>
+            <article eId="art_3-ter">
+                <num>Art. 3-ter.</num>
+                <heading/>
+                <paragraph>
+                    <content>
+                        <p>
+                            <ins eId="ins_9">((ARTICOLO ABROGATO DAL D.LGS. 19 NOVEMBRE 2008, N. 195))</ins>
+                        </p>
+                    </content>
+                </paragraph>
+            </article>
+            <article eId="art_4">
+                <num>Art. 4.</num>
+                <heading>(Dichiarazione annuale per gli investimenti e le attivita')</heading>
+                <paragraph eId="art_4__para_1">
+                    <num>1.</num>
+                    <content>
+                        <p>Le persone fisiche, gli enti non commerciali e le societa' semplici ed equiparate ai sensi dell'articolo 5 del testo unico delle imposte sui redditi, di cui al <ref eId="content__ref_10" href="/akn/it/act/decretoDelPresidenteDellaRepubblica/stato/1986-12-22/917/!main">decreto del Presidente della Repubblica 22 dicembre 1986, n. 917</ref>, residenti in Italia che, nel periodo d'imposta, detengono investimenti all'estero ovvero attivita' estere di natura finanziaria, suscettibili di produrre redditi imponibili in Italia, devono indicarli nella dichiarazione annuale dei redditi. Sono altresi' tenuti agli obblighi di dichiarazione i soggetti indicati nel precedente periodo che, pur non essendo possessori diretti degli investimenti esteri e delle attivita' estere di natura finanziaria, <ins eId="ins_10">((siano titolari effettivi dell'investimento secondo quanto previsto dall'articolo 1, comma 2, lettera pp), e dall'articolo 20 del decreto legislativo 21 novembre 2007, n. 231, e successive modificazioni.))</ins>
+                            <ins eId="ins_11">((27))</ins>
+                        </p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_4__para_2">
+                    <num>2.</num>
+                    <content>
+                        <p>COMMA ABROGATO DAL <ref eId="content__ref_11" href="/akn/it/act/decretoLegge/stato/2014-04-24/66/!main">D.L. 24 APRILE 2014, N. 66</ref>, CONVERTITO CON MODIFICAZIONI DALLA <ref eId="content__ref_12" href="/akn/it/act/legge/stato/2014-06-23/89/!main">L. 23 GIUGNO 2014, N. 89</ref>. 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_4__para_3">
+                    <num>3.</num>
+                    <content>
+                        <p>Gli obblighi di indicazione nella dichiarazione dei redditi previsti nel comma 1 non sussistono per le attivita' finanziarie e patrimoniali affidate in gestione o in amministrazione agli intermediari residenti e per i contratti comunque conclusi attraverso il loro intervento, qualora i flussi finanziari e i redditi derivanti da tali attivita' e contratti siano stati assoggettati a ritenuta o imposta sostitutiva dagli intermediari stessi. Gli obblighi di indicazione nella dichiarazione dei redditi previsti nel comma 1 non sussistono altresi' per i depositi e conti correnti bancari costituiti all'estero il cui valore massimo complessivo raggiunto nel corso del periodo d'imposta non sia superiore a 15.000 euro. Gli obblighi di indicazione nella dichiarazione dei redditi previsti nel comma 1 non sussistono altresi' per gli immobili situati all'estero per i quali non siano intervenute variazioni nel corso del periodo d'imposta, fatti salvi i versamenti relativi all'imposta sul valore degli immobili situati all'estero, di cui al <ref eId="content__ref_13" href="/akn/it/act/decretoLegge/stato/2011-12-06/201/!main">decreto-legge 6 dicembre 2011, n. 201</ref>, convertito, con modificazioni, dalla <ref eId="content__ref_14" href="/akn/it/act/legge/stato/2011-12-22/214/!main">legge 22 dicembre 2011, n. 214</ref>. 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_4__para_4">
+                    <num>4.</num>
+                    <content>
+                        <p>Con provvedimento del direttore dell'Agenzia delle entrate, e' stabilito il contenuto della dichiarazione annuale prevista dal comma 1 nonche', annualmente, il controvalore in euro degli importi in valuta da dichiarare. 
+ 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph>
+                    <content>
+                        <p>-------------</p>
+                        <p>AGGIORNAMENTO (14)</p>
+                        <p>
+ Il <ref eId="15" href="/akn/it/act/decretoLegge/stato/2011-08-13/138/!main">D.L. 13 agosto 2011, n. 138</ref>, convertito con modificazioni dalla <ref eId="16" href="/akn/it/act/legge/stato/2011-09-14/148/!main">L. 14 settembre 2011, n. 148</ref>, ha disposto (con l'art. 2, comma 24) che "Le disposizioni dei commi da 13 a 23 esplicano effetto a decorrere dal 1° gennaio 2012". </p>
+                        <p>---------------</p>
+                        <p>AGGIORNAMENTO (27)</p>
+                        <p>
+ Il <ref eId="17" href="/akn/it/act/decretoLegislativo/stato/2017-05-25/90/!main">D.Lgs. 25 maggio 2017, n. 90</ref> ha disposto (con l'art. 9, comma 1) che "Le disposizioni emanate dalle autorita' di vigilanza di settore, ai sensi di norme abrogate o sostituite per effetto del presente decreto, continuano a trovare applicazione fino al 31 marzo 2018". </p>
+                    </content>
+                </paragraph>
+            </article>
+            <article eId="art_5">
+                <num>Art. 5.</num>
+                <heading>
+                    <ins eId="ins_12">(( (Sanzioni). ))</ins>
+                </heading>
+                <paragraph>
+                    <content>
+                        <p>((</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_5__para_1">
+                    <num>1.</num>
+                    <content>
+                        <p>Per la violazione degli obblighi di trasmissione all'Agenzia delle entrate previsti dall'articolo 1, posti a carico degli intermediari, si applica la sanzione amministrativa pecuniaria dal 10 al 25 per cento dell'importo dell'operazione non segnalata. 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph>
+                    <content>
+                        <p> 2. La violazione dell'obbligo di dichiarazione previsto nell'articolo 4, comma 1, e' punita con la sanzione amministrativa pecuniaria dal 3 al 15 per cento dell'ammontare degli importi non dichiarati. La violazione di cui al periodo precedente relativa alla detenzione di investimenti all'estero ovvero di attivita' estere di natura finanziaria negli Stati o territori a regime fiscale privilegiato di cui al decreto del Ministro delle finanze 4 maggio 1999, pubblicato nella Gazzetta Ufficiale n. 107 del 10 maggio 1999, e al decreto del Ministro dell'economia e delle finanze 21 novembre 2001, pubblicato nella Gazzetta Ufficiale n. 273 del 23 novembre 2001, e' punita con la sanzione amministrativa pecuniaria dal 6 al 30 per cento dell'ammontare degli importi non dichiarati. Nel caso in cui la dichiarazione prevista dall'articolo 4, comma 1, sia presentata entro novanta giorni dal termine, si applica la sanzione di euro 258))</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article eId="art_5-bis">
+                <num>Art. 5-bis.</num>
+                <heading/>
+                <paragraph>
+                    <content>
+                        <p>
+                            <ins eId="ins_14">((ARTICOLO ABROGATO DAL D.LGS 21 NOVEMBRE 1997, N. 461))</ins>
+                        </p>
+                    </content>
+                </paragraph>
+            </article>
+            <article eId="art_5-ter">
+                <num>Art. 5-ter.</num>
+                <heading/>
+                <paragraph>
+                    <content>
+                        <p>
+                            <ins eId="ins_15">((ARTICOLO ABROGATO DAL D.LGS. 19 NOVEMBRE 2008, N. 195))</ins>
+                        </p>
+                    </content>
+                </paragraph>
+            </article>
+            <article eId="art_5-quater">
+                <num>Art. 5-quater.</num>
+                <heading> (Collaborazione volontaria).</heading>
+                <paragraph eId="art_5-quater__para_1">
+                    <num>1.</num>
+                    <list>
+                        <intro eId="art_5-quater__para_1__intro_1">
+                            <p>L'autore della violazione degli obblighi di dichiarazione di cui all'articolo 4, comma 1, commessa fino al 30 settembre 2014, puo' avvalersi della procedura di collaborazione volontaria di cui al presente articolo per l'emersione delle attivita' finanziarie e patrimoniali costituite o detenute fuori del territorio dello Stato, per la definizione delle sanzioni per le eventuali violazioni di tali obblighi e per la definizione dell'accertamento mediante adesione ai contenuti dell'invito al contraddittorio di cui alla lettera b) per le violazioni in materia di imposte sui redditi e relative addizionali, di imposte sostitutive, di imposta regionale sulle attivita' produttive e di imposta sul valore aggiunto, nonche' per le eventuali violazioni relative alla dichiarazione dei sostituti d'imposta. A tal fine deve: 
+ </p>
+                        </intro>
+                        <point eId="art_5-quater__para_1.__point_a">
+                            <num>a)</num>
+                            <content>
+                                <p>indicare spontaneamente all'Amministrazione finanziaria, mediante la presentazione di apposita richiesta, tutti gli investimenti e tutte le attivita' di natura finanziaria costituiti o detenuti all'estero, anche indirettamente o per interposta persona, fornendo i relativi documenti e le informazioni per la determinazione dei redditi che servirono per costituirli o acquistarli, nonche' dei redditi che derivano dalla loro dismissione o utilizzazione a qualunque titolo, unitamente ai documenti e alle informazioni per la determinazione degli eventuali maggiori imponibili agli effetti delle imposte sui redditi e relative addizionali, delle imposte sostitutive, dell'imposta regionale sulle attivita' produttive, dei contributi previdenziali, dell'imposta sul valore aggiunto e delle ritenute, non connessi con le attivita' costituite o detenute all'estero, relativamente a tutti i periodi d'imposta per i quali, alla data di presentazione della richiesta, non sono scaduti i termini per l'accertamento o la contestazione della violazione degli obblighi di dichiarazione di cui all'articolo 4, comma 1; 
+</p>
+                            </content>
+                        </point>
+                        <point eId="art_5-quater__para_1.__point_b">
+                            <num>b)</num>
+                            <content>
+                                <p>versare le somme dovute in base all'invito di cui all'<ref eId="content__ref_18" href="/akn/it/act/decretoLegislativo/stato/1997-06-19/218/!main#art_5-com1">articolo 5, comma 1, del decreto legislativo 19 giugno 1997, n. 218</ref>, e successive modificazioni, entro il quindicesimo giorno antecedente la data fissata per la comparizione e secondo le ulteriori modalita' indicate nel comma 1-bis del medesimo articolo per l'adesione ai contenuti dell'invito, ovvero le somme dovute in base all'accertamento con adesione entro venti giorni dalla redazione dell'atto, oltre alle somme dovute in base all'atto di contestazione o al provvedimento di irrogazione delle sanzioni per la violazione degli obblighi di dichiarazione di cui all'articolo 4, comma 1, del presente decreto entro il termine per la proposizione del ricorso, ai sensi dell'<ref eId="content__ref_19" href="/akn/it/act/decretoLegislativo/stato/1997-12-18/472/!main#art_16">articolo 16 del decreto legislativo 18 dicembre 1997, n. 472</ref>, e successive modificazioni, senza avvalersi della compensazione prevista dall'<ref eId="content__ref_20" href="/akn/it/act/decretoLegislativo/stato/1997-07-09/241/!main#art_17">articolo 17 del decreto legislativo 9 luglio 1997, n. 241</ref>, e successive modificazioni. Il versamento puo' essere eseguito in unica soluzione ovvero essere ripartito, su richiesta dell'autore della violazione, in tre rate mensili di pari importo. Il pagamento della prima rata deve essere effettuato nei termini e con le modalita' di cui alla presente lettera. Il mancato pagamento di una delle rate comporta il venir meno degli effetti della procedura. 
+</p>
+                            </content>
+                        </point>
+                    </list>
+                </paragraph>
+                <paragraph eId="art_5-quater__para_2">
+                    <num>2.</num>
+                    <content>
+                        <p>La collaborazione volontaria non e' ammessa se la richiesta e' presentata dopo che l'autore della violazione degli obblighi di dichiarazione di cui all'articolo 4, comma 1, abbia avuto formale conoscenza di accessi, ispezioni, verifiche o dell'inizio di qualunque attivita' di accertamento amministrativo o di procedimenti penali, per violazione di norme tributarie, relativi all'ambito oggettivo di applicazione della procedura di collaborazione volontaria indicato al comma 1 del presente articolo. La preclusione opera anche nelle ipotesi in cui la formale conoscenza delle circostanze di cui al primo periodo e' stata acquisita da soggetti solidalmente obbligati in via tributaria o da soggetti concorrenti nel reato. <ins eId="ins_16">((La richiesta di accesso alla collaborazione volontaria rimane irrevocabile e non puo' essere presentata piu' di una volta, anche indirettamente o per interposta persona.))</ins>
+                        </p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_5-quater__para_3">
+                    <num>3.</num>
+                    <content>
+                        <p>Entro trenta giorni dalla data di esecuzione dei versamenti indicati al comma 1, lettera b), l'Agenzia delle entrate comunica all'autorita' giudiziaria competente la conclusione della procedura di collaborazione volontaria, per l'utilizzo dell'informazione ai fini di quanto stabilito all'articolo 5-quinquies, comma 1, lettere a) e b). 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_5-quater__para_4">
+                    <num>4.</num>
+                    <content>
+                        <p>Ai soli fini della procedura di collaborazione volontaria, per la determinazione dei periodi d'imposta per i quali non sono scaduti i termini di accertamento e i termini di cui all'<ref eId="content__ref_21" href="/akn/it/act/decretoLegislativo/stato/1997-12-18/472/!main#art_20">articolo 20 del decreto legislativo 18 dicembre 1997, n. 472</ref>, e successive modificazioni, non si applica il raddoppio dei termini di cui all'<ref eId="content__ref_22" href="/akn/it/act/decretoLegge/stato/2009-07-01/78/!main#art_12-com2bis">articolo 12, commi 2-bis</ref> e <ref eId="content__ref_23" href="/akn/it/act/decretoLegge/stato/2009-07-01/78/!main#art_12-com2ter">2-ter, del decreto-legge 1º luglio 2009, n. 78</ref>, convertito, con modificazioni, dalla <ref eId="content__ref_24" href="/akn/it/act/legge/stato/2009-08-03/102/!main">legge 3 agosto 2009, n. 102</ref>, qualora ricorrano congiuntamente le condizioni previste dall'articolo 5-quinquies, commi 4, primo periodo, lettera c), 5 e 7 del presente decreto. 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph>
+                    <content>
+                        <p>((5. La procedura di collaborazione volontaria puo' essere attivata fino al 30 novembre 2015. L'integrazione dell'istanza, i documenti e le informazioni di cui al comma 1, lettera a), possono essere presentati entro il 30 dicembre 2015. In deroga all'<ref eId="content__ref_25" href="/akn/it/act/decretoDelPresidenteDellaRepubblica/stato/1973-09-29/600/!main#art_31">articolo 31 del decreto del Presidente della Repubblica 29 settembre 1973, n. 600</ref>, e all'<ref eId="content__ref_26" href="/akn/it/act/decretoDelPresidenteDellaRepubblica/stato/1972-10-26/633/!main#art_40">articolo 40 del decreto del Presidente della Repubblica 26 ottobre 1972, n. 633</ref>, la competenza alla gestione delle istanze presentate, per la prima volta, a decorrere dal 10 novembre 2015 e all'emissione dei relativi atti, compresi quelli di accertamento e di contestazione delle violazioni, per tutte le annualita' oggetto della procedura di collaborazione volontaria, e' attribuita all'articolazione dell'Agenzia delle entrate individuata con provvedimento del direttore dell'Agenzia medesima, da emanare entro la data di entrata in vigore della presente disposizione. Per gli atti di cui al periodo precedente, impugnabili ai sensi del <ref eId="content__ref_27" href="/akn/it/act/decretoLegislativo/stato/1992-12-31/546/!main">decreto legislativo 31 dicembre 1992, n. 546</ref>, si applicano le disposizioni in materia di competenza per territorio di cui all'articolo 4, comma 1, e in materia di legittimazione processuale dinanzi alle commissioni tributarie di cui all'articolo 10, comma 1, dello stesso <ref eId="content__ref_28" href="/akn/it/act/decretoLegislativo/stato/1992/546/!main">decreto legislativo n. 546 del 1992</ref>, e successive modificazioni, previste per le articolazioni dell'Agenzia delle entrate ivi indicate. Al fine di assicurare la trattazione unitaria delle istanze e la data certa per la conclusione dell'intero procedimento i termini di decadenza per l'accertamento di cui all'<ref eId="content__ref_29" href="/akn/it/act/decretoDelPresidenteDellaRepubblica/stato/1973-09-29/600/!main#art_43">articolo 43 del decreto del Presidente della Repubblica 29 settembre 1973, n. 600</ref>, e all'<ref eId="content__ref_30" href="/akn/it/act/decretoDelPresidenteDellaRepubblica/stato/1972-10-26/633/!main#art_57">articolo 57 del decreto del Presidente della Repubblica 26 ottobre 1972, n. 633</ref>, nonche' i termini di decadenza per la notifica dell'atto di contestazione ai sensi dell'<ref eId="content__ref_31" href="/akn/it/act/decretoLegislativo/stato/1997-12-18/472/!main#art_20">articolo 20 del decreto legislativo 18 dicembre 1997, n. 472</ref>, che scadono a decorrere dal 31 dicembre 2015, limitatamente agli imponibili, alle imposte, alle ritenute, ai contributi, alle sanzioni e agli interessi relativi alla procedura di collaborazione volontaria e per tutte le annualita' e le violazioni oggetto della procedura stessa, sono fissati, anche in deroga a quelli ordinari, al 31 dicembre 2016))</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_5-quater__para_6">
+                    <num>6.</num>
+                    <content>
+                        <p>Per i residenti nel comune di Campione d'Italia, gia' esonerati dalla compilazione del modulo RW in relazione alle disponibilita' detenute presso istituti elvetici derivanti da redditi di lavoro, da trattamenti pensionistici nonche' da altre attivita' lavorative svolte direttamente in Svizzera da soggetti residenti nel suddetto comune, il direttore dell'Agenzia delle entrate adotta, con proprio provvedimento, entro novanta giorni dalla data di entrata in vigore della presente disposizione, specifiche disposizioni relative agli imponibili riferibili alle attivita' costituite o detenute in Svizzera in considerazione della particolare collocazione geografica del comune medesimo. 
+</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article eId="art_5-quinquies">
+                <num>Art. 5-quinquies.</num>
+                <heading> (Effetti della procedura di collaborazione volontaria).</heading>
+                <paragraph eId="art_5-quinquies__para_1">
+                    <num>1.</num>
+                    <list>
+                        <intro eId="art_5-quinquies__para_1__intro_1">
+                            <p>Nei confronti di colui che presta la collaborazione volontaria ai sensi dell'articolo 5-quater: 
+ </p>
+                        </intro>
+                        <point eId="art_5-quinquies__para_1.__point_a">
+                            <num>a)</num>
+                            <content>
+                                <p>e' esclusa la punibilita' per i delitti di cui agli <ref eId="content__ref_32" href="/akn/it/act/decretoLegislativo/stato/2000-03-10/74/!main#art_2">articoli 2</ref>, <ref eId="content__ref_33" href="/akn/it/act/decretoLegislativo/stato/2000-03-10/74/!main#art_3">3</ref>, <ref eId="content__ref_34" href="/akn/it/act/decretoLegislativo/stato/2000-03-10/74/!main#art_4">4</ref>, <ref eId="content__ref_35" href="/akn/it/act/decretoLegislativo/stato/2000-03-10/74/!main#art_5">5</ref>, <ref eId="content__ref_36" href="/akn/it/act/decretoLegislativo/stato/2000-03-10/74/!main#art_10bis">10-bis</ref> e <ref eId="content__ref_37" href="/akn/it/act/decretoLegislativo/stato/2000-03-10/74/!main#art_10ter">10-ter del decreto legislativo 10 marzo 2000, n. 74</ref>, e successive modificazioni; 
+</p>
+                            </content>
+                        </point>
+                        <point eId="art_5-quinquies__para_1.__point_b">
+                            <num>b)</num>
+                            <content>
+                                <p>e' altresi' esclusa la punibilita' delle condotte previste dagli <ref eId="content__ref_38" href="/akn/it/act/regioDecreto/stato/1930-10-19/1398/!main#art_648bis">articoli 648-bis</ref> e <ref eId="content__ref_39" href="/akn/it/act/regioDecreto/stato/1930-10-19/1398/!main#art_648ter">648-ter del codice penale</ref>, commesse in relazione ai delitti di cui alla lettera a) del presente comma; 
+</p>
+                            </content>
+                        </point>
+                    </list>
+                </paragraph>
+                <paragraph eId="art_5-quinquies__para_2">
+                    <num>2.</num>
+                    <content>
+                        <p>Le disposizioni del comma 1 si applicano limitatamente alle condotte relative agli imponibili, alle imposte e alle ritenute oggetto della collaborazione volontaria. (23) 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_5-quinquies__para_3">
+                    <num>3.</num>
+                    <content>
+                        <p>Limitatamente alle attivita' oggetto di collaborazione volontaria, le condotte previste dall'articolo 648-ter.1 del <ref eId="content__ref_41" href="/akn/it/act/regioDecreto/stato/1930-10-19/1398/!main">codice penale</ref> non sono punibili se commesse in relazione ai delitti di cui al comma 1, lettera a), del presente articolo sino alla data del <ins eId="ins_19">((30 novembre 2015))</ins>, entro la quale puo' essere attivata la procedura di collaborazione volontaria <ins eId="ins_20">((,o sino alla data del 30 dicembre 2015 in presenza di integrazione dell'istanza o di presentazione dei documenti e delle informazioni di cui all'articolo 5-quater, comma 1, lettera a) ))</ins>. 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_5-quinquies__para_4">
+                    <num>4.</num>
+                    <list>
+                        <intro eId="art_5-quinquies__para_4__intro_1">
+                            <p>Le sanzioni di cui all'articolo 5, comma 2, del presente decreto sono determinate, ai sensi dell'<ref eId="content__ref_42" href="/akn/it/act/decretoLegislativo/stato/1997-12-18/472/!main#art_7-com4">articolo 7, comma 4, del decreto legislativo 18 dicembre 1997, n. 472</ref>, in misura pari alla meta' del minimo edittale: </p>
+                        </intro>
+                        <point eId="art_5-quinquies__para_4.__point_a">
+                            <num>a)</num>
+                            <content>
+                                <p>se le attivita' vengono trasferite in Italia o in Stati membri dell'Unione europea o in Stati aderenti all'Accordo sullo Spazio economico europeo che consentono un effettivo scambio di informazioni con l'Italia, inclusi nella lista di cui al decreto del Ministro delle finanze 4 settembre 1996, e successive modificazioni, pubblicato nella Gazzetta Ufficiale n. 220 del 19 settembre 1996; ovvero</p>
+                            </content>
+                        </point>
+                        <point eId="art_5-quinquies__para_4.__point_b">
+                            <num>b)</num>
+                            <content>
+                                <p>se le attivita' trasferite in Italia o nei predetti Stati erano o sono ivi detenute; ovvero</p>
+                            </content>
+                        </point>
+                        <point eId="art_5-quinquies__para_4.__point_c">
+                            <num>c)</num>
+                            <content>
+                                <p>se l'autore delle violazioni di cui all'articolo 5-quater, comma 1, fermo restando l'obbligo di eseguire gli adempimenti ivi previsti, rilascia all'intermediario finanziario estero presso cui le attivita' sono detenute l'autorizzazione a trasmettere alle autorita' finanziarie italiane richiedenti tutti i dati concernenti le attivita' oggetto di collaborazione volontaria e allega copia di tale autorizzazione, controfirmata dall'intermediario finanziario estero, alla richiesta di collaborazione volontaria. Nei casi diversi da quelli di cui al primo periodo, la sanzione e' determinata nella misura del minimo edittale, ridotto di un quarto. Nei confronti del contribuente che si avvale della procedura di collaborazione volontaria, la misura minima delle sanzioni per le violazioni in materia di imposte sui redditi e relative addizionali, di imposte sostitutive, di imposta regionale sulle attivita' produttive, di imposta sul valore aggiunto e di ritenute e' fissata al minimo edittale, ridotto di un quarto. 
+</p>
+                            </content>
+                        </point>
+                    </list>
+                </paragraph>
+                <paragraph eId="art_5-quinquies__para_5">
+                    <num>5.</num>
+                    <content>
+                        <p>Nei casi di cui alle lettere a), b) e c) del primo periodo del comma 4, qualora l'autore della violazione trasferisca, successivamente alla presentazione della richiesta, le attivita' oggetto di collaborazione volontaria presso un altro intermediario localizzato fuori dell'Italia o di uno degli Stati di cui alla citata lettera a), l'autore della violazione e' obbligato a rilasciare, entro trenta giorni dalla data del trasferimento delle attivita', l'autorizzazione di cui alla lettera c) del primo periodo del comma 4 all'intermediario presso cui le attivita' sono state trasferite e a trasmettere, entro sessanta giorni dalla data del trasferimento delle attivita', tale autorizzazione alle autorita' finanziarie italiane, pena l'applicazione di una sanzione pari alla meta' della sanzione prevista dal primo periodo del comma 4. 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_5-quinquies__para_6">
+                    <num>6.</num>
+                    <content>
+                        <p>Il procedimento di irrogazione delle sanzioni per la violazione degli obblighi di dichiarazione di cui all'articolo 4, comma 1, del presente decreto e' definito ai sensi dell'<ref eId="content__ref_43" href="/akn/it/act/decretoLegislativo/stato/1997-12-18/472/!main#art_16">articolo 16 del decreto legislativo 18 dicembre 1997, n. 472</ref>, e successive modificazioni. Il confronto previsto all'<ref eId="content__ref_44" href="/akn/it/act/decretoLegislativo/stato/1997/472/!main#art_16-com3">articolo 16, comma 3, del decreto legislativo n. 472 del 1997</ref>, e successive modificazioni, e' operato tra il terzo della sanzione indicata nell'atto e il terzo della somma dei minimi edittali previsti per le violazioni piu' gravi o, se piu' favorevole, il terzo della somma delle sanzioni piu' gravi determinate ai sensi del comma 4, primo e secondo periodo, del presente articolo. 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_5-quinquies__para_7">
+                    <num>7.</num>
+                    <content>
+                        <p>Ai soli fini della procedura di collaborazione volontaria, la misura della sanzione minima prevista per le violazioni dell'obbligo di dichiarazione di cui all'articolo 4, comma 1, indicata nell'articolo 5, comma 2, secondo periodo, nei casi di detenzione di investimenti all'estero ovvero di attivita' estere di natura finanziaria negli Stati o territori a regime fiscale privilegiato di cui al decreto del Ministro dell'economia e delle finanze 4 maggio 1999, pubblicato nella Gazzetta Ufficiale n. 107 del 10 maggio 1999, e al decreto del Ministro dell'economia e delle finanze 21 novembre 2001, pubblicato nella Gazzetta Ufficiale n. 273 del 23 novembre 2001, e' fissata al 3 per cento dell'ammontare degli importi non dichiarati se le attivita' oggetto della collaborazione volontaria erano o sono detenute in Stati che stipulino con l'Italia, entro sessanta giorni dalla data di entrata in vigore della presente disposizione, accordi che consentano un effettivo scambio di informazioni ai sensi dell'articolo 26 del modello di Convenzione contro le doppie imposizioni predisposto dall'Organizzazione per la cooperazione e lo sviluppo economico, anche su elementi riconducibili al periodo intercorrente tra la data della stipulazione e quella di entrata in vigore dell'accordo. Al ricorrere della condizione di cui al primo periodo non si applica il raddoppio delle sanzioni di cui all'articolo 12, comma 2, secondo periodo, del <ref eId="content__ref_45" href="/akn/it/act/decretoLegge/stato/2009-07-01/78/!main">decreto-legge 1º luglio 2009, n. 78</ref>, convertito, con modificazioni, dalla <ref eId="content__ref_46" href="/akn/it/act/legge/stato/2009-08-03/102/!main">legge 3 agosto 2009, n. 102</ref>. 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_5-quinquies__para_8">
+                    <num>8.</num>
+                    <content>
+                        <p>Su istanza del contribuente, da formulare nella richiesta di cui all'articolo 5-quater, comma 1, lettera a), l'ufficio, in luogo della determinazione analitica dei rendimenti, calcola gli stessi applicando la misura percentuale del 5 per cento al valore complessivo della loro consistenza alla fine dell'anno e determina l'ammontare corrispondente all'imposta da versare utilizzando l'aliquota del 27 per cento. Tale istanza puo' essere presentata solo nei casi in cui la media delle consistenze di tali attivita' finanziarie risultanti al termine di ciascun periodo d'imposta oggetto della collaborazione volontaria non ecceda il valore di 2 milioni di euro. 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_5-quinquies__para_9">
+                    <num>9.</num>
+                    <content>
+                        <p>Ai soli fini della procedura di collaborazione volontaria, la disponibilita' delle attivita' finanziarie e patrimoniali oggetto di emersione si considera, salva prova contraria, ripartita, per ciascun periodo d'imposta, in quote eguali tra tutti coloro che al termine degli stessi ne avevano la disponibilita'. 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_5-quinquies__para_10">
+                    <num>10.</num>
+                    <content>
+                        <p>Se il contribuente destinatario dell'invito di cui all'<ref eId="content__ref_47" href="/akn/it/act/decretoLegislativo/stato/1997-06-19/218/!main#art_5-com1">articolo 5, comma 1, del decreto legislativo 19 giugno 1997, n. 218</ref>, e successive modificazioni, o che abbia sottoscritto l'accertamento con adesione e destinatario dell'atto di contestazione non versa le somme dovute nei termini previsti dall'articolo 5-quater, comma 1, lettera b), la procedura di collaborazione volontaria non si perfeziona e non si producono gli effetti di cui ai commi 1, 4, 6 e 7 del presente articolo. L'Agenzia delle entrate notifica, anche in deroga ai termini di cui all'<ref eId="content__ref_48" href="/akn/it/act/decretoDelPresidenteDellaRepubblica/stato/1973-09-29/600/!main#art_43">articolo 43 del decreto del Presidente della Repubblica 29 settembre 1973, n. 600</ref>, e successive modificazioni, all'<ref eId="content__ref_49" href="/akn/it/act/decretoDelPresidenteDellaRepubblica/stato/1972-10-26/633/!main#art_57">articolo 57 del decreto del Presidente della Repubblica 26 ottobre 1972, n. 633</ref>, e successive modificazioni, e all'<ref eId="content__ref_50" href="/akn/it/act/decretoLegislativo/stato/1997-12-18/472/!main#art_20-com1">articolo 20, comma 1, del decreto legislativo 18 dicembre 1997, n. 472</ref>, e successive modificazioni, un avviso di accertamento e un nuovo atto di contestazione con la rideterminazione della sanzione entro il 31 dicembre dell'anno successivo a quello di notificazione dell'invito di cui al predetto <ref eId="content__ref_51" href="/akn/it/act/decretoLegislativo/stato/1997/218/!main#art_5-com1">articolo 5, comma 1, del decreto legislativo n. 218 del 1997</ref>, e successive modificazioni, o a quello di redazione dell'atto di adesione o di notificazione dell'atto di contestazione. 
+ 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph>
+                    <content>
+                        <p>-------------</p>
+                        <p>AGGIORNAMENTO (21)</p>
+                        <p>
+ La <ref eId="52" href="/akn/it/act/legge/stato/2014-12-15/186/!main">L. 15 dicembre 2014, n. 186</ref> ha disposto (con l'art. 1, comma 5) che "L'esclusione della punibilita' e la diminuzione della pena previste dall'<ref eId="53" href="/akn/it/act/decretoLegge/stato/1990-06-28/167/!main#art_5quinquies-com1">articolo 5-quinquies, comma 1, del decreto-legge 28 giugno 1990, n. 167</ref>, convertito, con modificazioni, dalla <ref eId="54" href="/akn/it/act/legge/stato/1990-08-04/227/!main">legge 4 agosto 1990, n. 227</ref>, introdotto dal comma 1 del presente articolo, operano nei confronti di tutti coloro che hanno commesso o concorso a commettere i delitti ivi indicati". </p>
+                        <p>-------------</p>
+                        <p>AGGIORNAMENTO (23)</p>
+                        <p>
+ Il <ref eId="55" href="/akn/it/act/decretoLegislativo/stato/2015-08-05/128/!main">D.Lgs. 5 agosto 2015, n. 128</ref> ha disposto (con l'art. 2, comma 4) che ai fini della causa di non punibilita' di cui ai commi 1 e 2 del presente articolo si considerano oggetto della procedura di collaborazione volontaria anche gli imponibili, le imposte e le ritenute correlati alle attivita' dichiarate nell'ambito di tale procedura per i quali e' scaduto il termine per l'accertamento. </p>
+                    </content>
+                </paragraph>
+            </article>
+            <article eId="art_5-sexies">
+                <num>Art. 5-sexies.</num>
+                <heading>
+                    <ins eId="ins_21">(( (Ulteriori disposizioni in materia di collaborazione volontaria). ))</ins>
+                </heading>
+                <paragraph>
+                    <content>
+                        <p>((</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_5-sexies__para_1">
+                    <num>1.</num>
+                    <content>
+                        <p>Le modalita' di presentazione dell'istanza di collaborazione volontaria e di pagamento dei relativi debiti tributari, nonche' ogni altra modalita' applicativa della relativa procedura, sono disciplinate con provvedimento del direttore dell'Agenzia delle entrate da emanare entro trenta giorni dalla data di entrata in vigore della presente disposizione. L'Agenzia delle entrate e gli altri organi dell'Amministrazione finanziaria concordano condizioni e modalita' per lo scambio dei dati relativi alle procedure avviate e concluse.</p>
+                    </content>
+                </paragraph>
+                <paragraph>
+                    <content>
+                        <p>))</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article eId="art_5-septies">
+                <num>Art. 5-septies.</num>
+                <heading>
+                    <ins eId="ins_23">(( (Esibizione di atti falsi e comunicazione di dati non rispondenti al vero). ))</ins>
+                </heading>
+                <paragraph>
+                    <content>
+                        <p>((</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_5-septies__para_1">
+                    <num>1.</num>
+                    <content>
+                        <p>L'autore della violazione di cui all'articolo 4, comma 1, che, nell'ambito della procedura di collaborazione volontaria di cui all'articolo 5-quater, esibisce o trasmette atti o documenti falsi, in tutto o in parte, ovvero fornisce dati e notizie non rispondenti al vero e' punito con la reclusione da un anno e sei mesi a sei anni. 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph>
+                    <content>
+                        <p> 2. L'autore della violazione di cui all'articolo 4, comma 1, deve rilasciare al professionista che lo assiste nell'ambito della procedura di collaborazione volontaria una dichiarazione sostitutiva di atto di notorieta' con la quale attesta che gli atti o documenti consegnati per l'espletamento dell'incarico non sono falsi e che i dati e notizie forniti sono rispondenti al vero))</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article eId="art_5-octies">
+                <num>Art. 5-octies.</num>
+                <heading> (Riapertura dei termini della collaborazione volontaria).</heading>
+                <paragraph eId="art_5-octies__para_1">
+                    <num>1.</num>
+                    <list>
+                        <intro eId="art_5-octies__para_1__intro_1">
+                            <p>Dalla data di entrata in vigore del presente articolo sino al 31 luglio 2017 e' possibile avvalersi della procedura di collaborazione volontaria di cui agli articoli da 5-quater a 5-septies a condizione che il soggetto che presenta l'istanza non l'abbia gia' presentata in precedenza, anche per interposta persona, e ferme restando le cause ostative previste dall'articolo 5-quater, comma 2. Resta impregiudicata la facolta' di presentare l'istanza se, in precedenza, e' stata gia' presentata, entro il 30 novembre 2015, ai soli fini di cui all'<ref eId="content__ref_56" href="/akn/it/act/legge/stato/2014-12-15/186/!main#art_1-com2">articolo 1, commi da 2</ref> <ref eId="content__ref_57" href="/akn/it/act/legge/stato/2014-12-15/186/!main#art_1-com5">a 5, della legge 15 dicembre 2014, n. 186</ref>. L'integrazione dell'istanza, i documenti e le informazioni di cui all'articolo 5-quater, comma 1, lettera a), possono essere presentati entro il 30 settembre 2017. Alle istanze presentate secondo le modalita' stabilite con provvedimento del direttore dell'Agenzia delle entrate, si applicano gli articoli da 5-quater a 5-septies del presente decreto, l'<ref eId="content__ref_58" href="/akn/it/act/legge/stato/2014-12-15/186/!main#art_1-com2">articolo 1, commi da 2</ref> <ref eId="content__ref_59" href="/akn/it/act/legge/stato/2014-12-15/186/!main#art_1-com5">a 5 della legge 15 dicembre 2014, n. 186</ref>, e successive modificazioni, e l'<ref eId="content__ref_60" href="/akn/it/act/decretoLegge/stato/2015-09-30/153/!main#art_2-com2-letb">articolo 2, comma 2, lettere b)</ref> e <ref eId="content__ref_61" href="/akn/it/act/decretoLegge/stato/2015-09-30/153/!main#art_2-com2-letbbis">b-bis) del decreto-legge 30 settembre 2015, n. 153</ref>, convertito, con modificazioni, dalla <ref eId="content__ref_62" href="/akn/it/act/legge/stato/2015-11-20/187/!main">legge 20 novembre 2015, n. 187</ref>, in quanto compatibili e con le seguenti modificazioni: 
+ </p>
+                        </intro>
+                        <point eId="art_5-octies__para_1.__point_a">
+                            <num>a)</num>
+                            <content>
+                                <p>le violazioni sanabili sono quelle commesse fino al 30 settembre 2016; 
+</p>
+                            </content>
+                        </point>
+                        <point eId="art_5-octies__para_1.__point_a-bis">
+                            <num>a-bis)</num>
+                            <content>
+                                <p>se alla formazione del reddito complessivo concorrono redditi prodotti all'estero di cui all'articolo 6, comma 1, lettere c) e d), del testo unico delle imposte sui redditi, di cui al <ref eId="content__ref_63" href="/akn/it/act/decretoDelPresidenteDellaRepubblica/stato/1986-12-22/917/!main">decreto del Presidente della Repubblica 22 dicembre 1986, n. 917</ref>, non si applica l'articolo 165, comma 8, del medesimo testo unico; (26) 
+</p>
+                            </content>
+                        </point>
+                        <point eId="art_5-octies__para_1.__point_b">
+                            <num>b)</num>
+                            <content>
+                                <p>anche in deroga all'<ref eId="content__ref_64" href="/akn/it/act/legge/stato/2000-07-27/212/!main#art_3-com1">articolo 3, comma 1, della legge 27 luglio 2000, n. 212</ref>, e successive modificazioni, i termini di cui all'<ref eId="content__ref_65" href="/akn/it/act/decretoDelPresidenteDellaRepubblica/stato/1973-09-29/600/!main#art_43">articolo 43 del decreto del Presidente della Repubblica 29 settembre 1973, n. 600</ref>, e successive modificazioni, all'<ref eId="content__ref_66" href="/akn/it/act/decretoDelPresidenteDellaRepubblica/stato/1972-10-26/633/!main#art_57">articolo 57 del decreto del Presidente della Repubblica 26 ottobre 1972, n. 633</ref>, e successive modificazioni, e all'<ref eId="content__ref_67" href="/akn/it/act/decretoLegislativo/stato/1997-12-18/472/!main#art_20-com1">articolo 20, comma 1, del decreto legislativo 18 dicembre 1997, n. 472</ref>, e successive modificazioni, che scadono a decorrere dal 1° gennaio 2015, sono fissati al 31 dicembre 2018 per le sole attivita' oggetto di collaborazione volontaria ai sensi del presente articolo, limitatamente agli imponibili, alle imposte, alle ritenute, ai contributi, alle sanzioni e agli interessi relativi alla procedura di collaborazione volontaria e per tutte le annualita' e le violazioni oggetto della procedura stessa, e al 30 giugno 2017 per le istanze presentate per la prima volta ai sensi dell'articolo 5-quater, comma 5; non si applica l'ultimo periodo del comma 5 del predetto articolo 5-quater; 
+</p>
+                            </content>
+                        </point>
+                        <point eId="art_5-octies__para_1.__point_c">
+                            <num>c)</num>
+                            <content>
+                                <p>per le sole attivita' oggetto di collaborazione volontaria ai sensi del presente articolo, nonche' per le imposte di cui all'<ref eId="content__ref_68" href="/akn/it/act/decretoLegge/stato/2011-12-06/201/!main#art_19-com13">articolo 19, commi 13</ref> e <ref eId="content__ref_69" href="/akn/it/act/decretoLegge/stato/2011-12-06/201/!main#art_19-com18">18, del decreto-legge 6 dicembre 2011, n. 201</ref>, convertito, con modificazioni, dalla <ref eId="content__ref_70" href="/akn/it/act/legge/stato/2011-12-22/214/!main">legge 22 dicembre 2011, n. 214</ref>, gli interessati sono esonerati dalla presentazione delle dichiarazioni di cui all'articolo 4 del presente decreto per il 2016 e per la frazione del periodo d'imposta antecedente la data di presentazione dell'istanza, nonche', per quelle suscettibili di generare redditi soggetti a ritenuta alla fonte a titolo d'imposta o ad imposta sostitutiva delle imposte sui redditi, e per i redditi derivanti dall'investimento in azioni o quote di fondi comuni di investimento non conformi alla <ref eId="content__ref_71" href="/akn/it/act/direttivaUe/eu/2009/65/!main">direttiva 2009/65/CE del Parlamento europeo e del Consiglio, del 13 luglio 2009</ref>, per i quali e' versata l'IRPEF con l'aliquota massima oltre alla addizionale regionale e comunale, dalla indicazione dei redditi nella relativa dichiarazione, a condizione che le stesse informazioni siano analiticamente illustrate nella relazione di accompagnamento; in tal caso provvedono spontaneamente al versamento in unica soluzione, entro il 30 settembre 2017, di quanto dovuto a titolo di imposte, interessi e, ove applicabili, sanzioni ridotte corrispondenti alle misure stabilite dall'<ref eId="content__ref_72" href="/akn/it/act/decretoLegislativo/stato/1997-12-18/472/!main#art_13">articolo 13 del decreto legislativo 18 dicembre 1997, n. 472</ref>, e successive modificazioni, per il 2016 e per la frazione del periodo d'imposta antecedente la data di presentazione dell'istanza; 
+</p>
+                            </content>
+                        </point>
+                        <point eId="art_5-octies__para_1.__point_d">
+                            <num>d)</num>
+                            <content>
+                                <p>limitatamente alle attivita' oggetto di collaborazione volontaria di cui al presente articolo, le condotte previste dall'articolo 648-ter.1 del <ref eId="content__ref_73" href="/akn/it/act/regioDecreto/stato/1930-10-19/1398/!main">codice penale</ref> non sono punibili se commesse in relazione ai delitti previsti dal presente decreto all'articolo 5-quinquies, comma 1, lettera a), sino alla data del versamento della prima o unica rata, secondo quanto previsto alle lettere e) e f); 
+</p>
+                            </content>
+                        </point>
+                        <point eId="art_5-octies__para_1.__point_e">
+                            <num>e)</num>
+                            <content>
+                                <p>gli autori delle violazioni possono provvedere spontaneamente al versamento in unica soluzione di quanto dovuto a titolo di imposte, ritenute, contributi, interessi e sanzioni in base all'istanza, entro il 30 settembre 2017, senza avvalersi della compensazione prevista dall'<ref eId="content__ref_74" href="/akn/it/act/decretoLegislativo/stato/1997-07-09/241/!main#art_17">articolo 17 del decreto legislativo 9 luglio 1997, n. 241</ref>, e successive modificazioni; il versamento puo' essere ripartito in tre rate mensili di pari importo ed in tal caso il pagamento della prima rata deve essere effettuato entro il 30 settembre 2017. Il versamento delle somme dovute nei termini e con le modalita' di cui al periodo precedente comporta i medesimi effetti degli articoli 5-quater e 5-quinquies del presente decreto anche per l'ammontare delle sanzioni da versare per le violazioni dell'obbligo di dichiarazione di cui all'articolo 4, comma 1 e per le violazioni in materia di imposte sui redditi e relative addizionali, imposte sostitutive, imposta regionale sulle attivita' produttive, imposta sul valore degli immobili all'estero, imposta sul valore delle attivita' finanziarie all'estero e imposta sul valore aggiunto, anche in deroga all'<ref eId="content__ref_75" href="/akn/it/act/decretoLegislativo/stato/1997-12-18/472/!main#art_3">articolo 3 del decreto legislativo 18 dicembre 1997, n. 472</ref>. Ai fini della determinazione delle sanzioni dovute, si applicano le disposizioni dell'<ref eId="content__ref_76" href="/akn/it/act/decretoLegislativo/stato/1997-12-18/472/!main#art_12-com1">articolo 12, commi 1</ref> e <ref eId="content__ref_77" href="/akn/it/act/decretoLegislativo/stato/1997-12-18/472/!main#art_12-com5">5, del decreto legislativo 18 dicembre 1997, n. 472</ref>, per le violazioni di cui all'articolo 4, comma 1, del presente decreto e le disposizioni dell'articolo 12, comma 8, del medesimo decreto legislativo, per le violazioni in materia di imposte, nonche' le riduzioni delle misure sanzionatorie previste dall'<ref eId="content__ref_78" href="/akn/it/act/decretoLegislativo/stato/1997-06-19/218/!main#art_5-com1bis">articolo 5, comma 1-bis, del decreto legislativo 19 giugno 1997, n. 218</ref>, nel testo vigente alla data del 30 dicembre 2014, e dall'<ref eId="content__ref_79" href="/akn/it/act/decretoLegislativo/stato/1997/472/!main#art_16-com3">articolo 16, comma 3, del decreto legislativo n. 472 del 1997</ref>. Gli effetti di cui agli articoli 5-quater e 5-quinquies del presente decreto decorrono dal momento del versamento di quanto dovuto in unica soluzione o della terza rata; in tali casi l'Agenzia delle entrate comunica l'avvenuto perfezionamento della procedura di collaborazione volontaria con le modalita' di notifica tramite posta elettronica certificata previste nell'<ref eId="content__ref_80" href="/akn/it/act/legge/stato/2015-12-28/208/!main#art_1-com133">articolo 1, comma 133, della legge 28 dicembre 2015, n. 208</ref>; 
+</p>
+                            </content>
+                        </point>
+                        <point eId="art_5-octies__para_1.__point_f">
+                            <num>f)</num>
+                            <content>
+                                <p>se gli autori delle violazioni non provvedono spontaneamente al versamento delle somme dovute entro il termine di cui alla lettera e) o qualora il versamento delle somme dovute risulti insufficiente, l'Agenzia, ai soli fini della procedura di collaborazione volontaria di cui al presente articolo e limitatamente agli imponibili, alle imposte, alle ritenute, ai contributi, alle sanzioni e agli interessi relativi alla procedura e per tutte le annualita' e le violazioni oggetto della stessa, puo' applicare, fino al 31 dicembre 2018, le disposizioni di cui all'<ref eId="content__ref_81" href="/akn/it/act/decretoLegislativo/stato/1997-06-19/218/!main#art_5-com1bis">articolo 5, commi da 1-bis</ref> <ref eId="content__ref_82" href="/akn/it/act/decretoLegislativo/stato/1997-06-19/218/!main#art_5-com1quinquies">a 1-quinquies del decreto legislativo 19 giugno 1997, n. 218</ref>, nel testo vigente alla data del 30 dicembre 2014 e l'autore della violazione puo' versare le somme dovute in base all'invito di cui all'<ref eId="content__ref_83" href="/akn/it/act/decretoLegislativo/stato/1997-06-19/218/!main#art_5-com1">articolo 5, comma 1, del decreto legislativo 19 giugno 1997, n. 218</ref>, e successive modificazioni, entro il quindicesimo giorno antecedente la data fissata per la comparizione, secondo le ulteriori modalita' indicate nel comma 1-bis del medesimo articolo per l'adesione ai contenuti dell'invito, ovvero le somme dovute in base all'accertamento con adesione entro venti giorni dalla redazione dell'atto, oltre alle somme dovute in base all'atto di contestazione o al provvedimento di irrogazione delle sanzioni per la violazione degli obblighi di dichiarazione di cui all'articolo 4, comma 1, del presente decreto entro il termine per la proposizione del ricorso, ai sensi dell'<ref eId="content__ref_84" href="/akn/it/act/decretoLegislativo/stato/1997-12-18/472/!main#art_16">articolo 16 del decreto legislativo 18 dicembre 1997, n. 472</ref>, e successive modificazioni, senza avvalersi della compensazione prevista dall'<ref eId="content__ref_85" href="/akn/it/act/decretoLegislativo/stato/1997-07-09/241/!main#art_17">articolo 17 del decreto legislativo 9 luglio 1997, n. 241</ref>, e successive modificazioni. Il mancato pagamento di una delle rate comporta il venir meno degli effetti della procedura. Ai soli fini della procedura di collaborazione volontaria di cui al presente articolo, per tutti gli atti che per legge devono essere notificati al contribuente si applicano, in deroga ad ogni altra disposizione di legge, le modalita' di notifica tramite posta elettronica certificata previste nell'<ref eId="content__ref_86" href="/akn/it/act/legge/stato/2015-12-28/208/!main#art_1-com133">articolo 1, comma 133, della legge 28 dicembre 2015, n. 208</ref>. Con esclusivo riguardo alla notifica tramite posta elettronica certificata effettuata ai sensi del periodo precedente, e' esclusa la ripetizione delle spese di notifica prevista dall'<ref eId="content__ref_87" href="/akn/it/act/legge/stato/1976-05-10/249/!main#art_4-com2">articolo 4, secondo comma, della legge 10 maggio 1976, n. 249</ref>, e successive modificazioni; 
+</p>
+                            </content>
+                        </point>
+                        <point eId="art_5-octies__para_1.__point_g">
+                            <num>g)</num>
+                            <content>
+                                <p>nelle ipotesi di cui alla lettera f) del presente comma: 
+ 1) se gli autori delle violazioni non provvedono spontaneamente al versamento delle somme dovute entro il termine del 30 settembre 2017, in deroga all'articolo 5-quinquies, comma 4, le sanzioni di cui all'articolo 5, comma 2, sono determinate in misura pari al 60 per cento del minimo edittale qualora ricorrano le ipotesi previste dalle lettere a), b) o c) del citato comma 4 dell'articolo 5-quinquies e sono determinate in misura pari all'85 per cento del minimo edittale negli altri casi; la medesima misura dell'85 per cento del minimo edittale si applica anche alle violazioni in materia di imposte sui redditi e relative addizionali, di imposte sostitutive, di imposta regionale sulle attivita' produttive, di imposta sul valore degli immobili all'estero, di imposta sul valore delle attivita' finanziarie all'estero, di imposta sul valore aggiunto e di ritenute; 
+ 2) se gli autori delle violazioni provvedono spontaneamente al versamento delle somme dovute in misura insufficiente: 1.1) per una frazione superiore al 10 per cento delle somme da versare se tali somme sono afferenti ai soli redditi soggetti a ritenuta alla fonte a titolo d'imposta o ad imposta sostitutiva delle imposte sui redditi e alle sanzioni, incluse quelle sulle attivita' suscettibili di generare tali redditi, o 1.2) per una frazione superiore al 30 per cento delle somme da versare negli altri casi, fermo restando il versamento effettuato, l'Agenzia, secondo le procedure previste dalla lettera f) del presente comma, provvede al recupero delle somme ancora dovute, calcolate ai sensi della lettera e), maggiorando le somme da versare del 10 per cento. L'importo delle somme da versare, calcolato a seguito della maggiorazione di cui al periodo precedente, compreso quanto gia' versato, non puo' essere comunque superiore a quello determinato ai sensi del numero 1) della presente lettera; 
+ 3) se gli autori delle violazioni provvedono spontaneamente al versamento delle somme dovute in misura insufficiente: 1.1) per una frazione inferiore o uguale al 10 per cento delle somme da versare se tali somme sono afferenti ai soli redditi soggetti a ritenuta alla fonte a titolo d'imposta o ad imposta sostitutiva delle imposte sui redditi e alle sanzioni, incluse quelle sulle attivita' suscettibili di generare tali redditi, o 1.2) per una frazione inferiore o uguale al 30 per cento delle somme da versare negli altri casi, fermo restando il versamento effettuato, l'Agenzia, secondo le procedure previste dalla lettera f) del presente comma, provvede al recupero delle somme ancora dovute, calcolate ai sensi della lettera e), maggiorando le somme da versare del 3 per cento. L'importo delle somme da versare, calcolato a seguito della maggiorazione di cui al periodo precedente, compreso quanto gia' versato, non puo' essere comunque superiore a quello determinato ai sensi del numero 1) della presente lettera; 
+ 4) se gli autori delle violazioni provvedono spontaneamente al versamento delle somme dovute in misura superiore alle somme da versare, l'eccedenza puo' essere richiesta a rimborso o utilizzata in compensazione; 
+</p>
+                            </content>
+                        </point>
+                        <point eId="art_5-octies__para_1.__point_h">
+                            <num>h)</num>
+                            <content>
+                                <p>la misura della sanzione minima fissata dall'articolo 5-quinquies, comma 7, prevista per le violazioni dell'obbligo di dichiarazione di cui all'articolo 4, comma 1, indicata nell'articolo 5, comma 2, secondo periodo, nei casi di detenzione di investimenti all'estero ovvero di attivita' estere di natura finanziaria negli Stati o territori a regime fiscale privilegiato di cui al decreto del Ministro dell'economia e delle finanze 4 maggio 1999, pubblicato nella Gazzetta Ufficiale n. 107 del 10 maggio 1999, e al decreto del Ministro dell'economia e delle finanze 21 novembre 2001, pubblicato nella Gazzetta Ufficiale n. 273 del 23 novembre 2001, opera altresi' se e' entrato in vigore prima del presente articolo un accordo che consente un effettivo scambio di informazioni ai sensi dell'articolo 26 del modello di convenzione contro le doppie imposizioni predisposto dall'Organizzazione per la cooperazione e lo sviluppo economico (OCSE), ovvero se e' entrato in vigore prima del presente articolo un accordo conforme al modello di accordo per lo scambio di informazioni elaborato nel 2002 dall'OCSE e denominato Tax Information Exchange Agreement (TIEA); 
+</p>
+                            </content>
+                        </point>
+                        <point eId="art_5-octies__para_1.__point_i">
+                            <num>i)</num>
+                            <content>
+                                <p>chiunque fraudolentemente si avvale della procedura di cui agli articoli da 5-quater a 5-septies al fine di far emergere attivita' finanziarie e patrimoniali o denaro contante provenienti da reati diversi da quelli di cui all'articolo 5-quinquies, comma 1, lettera a), e' punito con la medesima sanzione prevista per il reato di cui all'articolo 5-septies. Resta ferma l'applicabilita' degli articoli 648-bis, 648-ter, 648-ter.1 del <ref eId="content__ref_88" href="/akn/it/act/regioDecreto/stato/1930-10-19/1398/!main#art_12quinquies">codice penale e dell'articolo 12-quinquies</ref> del <ref eId="content__ref_89" href="/akn/it/act/decretoLegge/stato/1992-06-08/306/!main">decreto-legge 8 giugno 1992, n. 306</ref>, convertito, con modificazioni, dalla <ref eId="content__ref_90" href="/akn/it/act/legge/stato/1992-08-07/356/!main">legge 7 agosto 1992, n. 356</ref>, e successive modificazioni. 
+</p>
+                            </content>
+                        </point>
+                    </list>
+                </paragraph>
+                <paragraph eId="art_5-octies__para_2">
+                    <num>2.</num>
+                    <content>
+                        <p>Al ricorrere della condizione di cui al comma 1, lettera h), non si applica il raddoppio delle sanzioni di cui all'articolo 12, comma 2, secondo periodo, del <ref eId="content__ref_91" href="/akn/it/act/decretoLegge/stato/2009-07-01/78/!main">decreto-legge 1° luglio 2009, n. 78</ref>, convertito, con modificazioni, dalla <ref eId="content__ref_92" href="/akn/it/act/legge/stato/2009-08-03/102/!main">legge 3 agosto 2009, n. 102</ref> e, se ricorrono congiuntamente anche le condizioni previste dall'articolo 5-quinquies, commi 4 e 5, del presente decreto, non opera il raddoppio dei termini di cui all'<ref eId="content__ref_93" href="/akn/it/act/decretoLegge/stato/2009-07-01/78/!main#art_12-com2bis">articolo 12, commi 2-bis</ref> e <ref eId="content__ref_94" href="/akn/it/act/decretoLegge/stato/2009-07-01/78/!main#art_12-com2ter">2-ter, del decreto-legge 1° luglio 2009, n. 78</ref>, convertito, con modificazioni, dalla <ref eId="content__ref_95" href="/akn/it/act/legge/stato/2009-08-03/102/!main">legge 3 agosto 2009, n. 102</ref>. 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_5-octies__para_3">
+                    <num>3.</num>
+                    <list>
+                        <intro eId="art_5-octies__para_3__intro_1">
+                            <p>Possono avvalersi della procedura di collaborazione volontaria prevista dalle disposizioni di cui ai commi 1 e 2 per sanare le violazioni degli obblighi di dichiarazione ai fini delle imposte sui redditi e relative addizionali, delle imposte sostitutive delle imposte sui redditi, dell'imposta regionale sulle attivita' produttive e dell'imposta sul valore aggiunto, nonche' le violazioni relative alla dichiarazione dei sostituti d'imposta, commesse sino al 30 settembre 2016, anche contribuenti diversi da quelli indicati nell'articolo 4, comma 1, del presente decreto e i contribuenti destinatari degli obblighi dichiarativi ivi previsti che vi abbiano adempiuto correttamente. Si applicano le disposizioni di cui all'articolo 1, commi da 2 a 5, della citata <ref eId="content__ref_96" href="/akn/it/act/legge/stato/2014/186/!main">legge n. 186 del 2014</ref>.
+Resta impregiudicata la facolta' di presentare l'istanza se, in precedenza, e' stata gia' presentata, entro il 30 novembre 2015, ai soli fini di cui agli articoli da 5-quater a 5-septies del presente decreto. Se la collaborazione volontaria ha ad oggetto contanti o valori al portatore , si presume, salva prova contraria, che essi siano derivati da redditi conseguiti, in quote costanti, a seguito di violazione degli obblighi di dichiarazione ai fini delle imposte sui redditi e relative addizionali, delle imposte sostitutive delle imposte sui redditi, dell'imposta regionale sulle attivita' produttive e dell'imposta sul valore aggiunto, nonche' di violazioni relative alla dichiarazione dei sostituti di imposta, commesse nell'anno 2015 e nei quattro periodi d'imposta precedenti, e i contribuenti: 
+ </p>
+                        </intro>
+                        <point eId="art_5-octies__para_3.__point_a">
+                            <num>a)</num>
+                            <content>
+                                <p>rilasciano unitamente alla presentazione dell'istanza una dichiarazione in cui attestano che l'origine di tali valori non deriva da condotte costituenti reati diversi da quelli previsti dall'articolo 5-quinquies, comma 1, lettere a) e b); 
+</p>
+                            </content>
+                        </point>
+                        <point eId="art_5-octies__para_3.__point_b">
+                            <num>b)</num>
+                            <content>
+                                <p>provvedono, entro la data di presentazione della relazione e dei documenti allegati, all'apertura e all'inventario in presenza di un notaio, che ne accerti il contenuto all'interno di un apposito verbale, di eventuali cassette di sicurezza nelle quali i valori oggetto di collaborazione volontaria sono custoditi; 
+</p>
+                            </content>
+                        </point>
+                        <point eId="art_5-octies__para_3.__point_c">
+                            <num>c)</num>
+                            <content>
+                                <p>provvedono, entro la data di presentazione della relazione e dei documenti allegati, al versamento dei contanti e al deposito dei valori al portatore presso intermediari finanziari, a cio' abilitati, in un rapporto vincolato fino alla conclusione della procedura. Per i professionisti e intermediari che assistono i contribuenti nell'ambito della procedura di collaborazione volontaria, restano fermi gli obblighi prescritti per finalita' di prevenzione del riciclaggio e di finanziamento del terrorismo di cui al <ref eId="content__ref_97" href="/akn/it/act/decretoLegislativo/stato/2007-11-21/231/!main">decreto legislativo 21 novembre 2007, n. 231</ref> e successive modificazioni. A tal fine, in occasione degli adempimenti previsti per l'adeguata verifica della clientela, i contribuenti dichiarano modalita' e circostanze di acquisizione dei contanti e valori al portatore oggetto della procedura. 
+ <ins eId="ins_25">((28))</ins>
+                                </p>
+                            </content>
+                        </point>
+                    </list>
+                </paragraph>
+                <paragraph>
+                    <content>
+                        <p>-------------</p>
+                        <p>AGGIORNAMENTO (26)</p>
+                        <p>
+ Il <ref eId="98" href="/akn/it/act/decretoLegge/stato/2017-04-24/50/!main">D.L. 24 aprile 2017, n. 50</ref>, convertito con modificazioni dalla <ref eId="99" href="/akn/it/act/legge/stato/2017-06-21/96/!main">L. 21 giugno 2017, n. 96</ref>, ha disposto (con l'art. 1-ter, comma 2) che "La disposizione di cui al comma 1, lettera a), del presente articolo si applica anche agli atti emanati ai sensi dell'<ref eId="100" href="/akn/it/act/decretoLegge/stato/1990-06-28/167/!main#art_5quater-com1-letb">articolo 5-quater, comma 1, lettera b), del decreto-legge 28 giugno 1990, n. 167</ref>, convertito, con modificazioni, dalla <ref eId="101" href="/akn/it/act/legge/stato/1990-08-04/227/!main">legge 4 agosto 1990, n. 227</ref>, non ancora definiti alla data di entrata in vigore della disposizione medesima. In ogni caso non si fa luogo al rimborso delle imposte gia' pagate". </p>
+                        <p>-------------</p>
+                        <p>AGGIORNAMENTO (28)</p>
+                        <p>
+ Il D.P.C.M. 28 luglio 2017, (in G.U. 04/08/2017, n. 181), ha disposto (con l'art. 1, comma 1) che "Il termine del 31 luglio 2017, entro il quale e' possibile avvalersi della riapertura della procedura di collaborazione volontaria disposta dall' <ref eId="102" href="/akn/it/act/decretoLegge/stato/1990-06-28/167/!main#art_5octies">art. 5-octies del decreto-legge 28 giugno 1990, n. 167</ref>, convertito, con modificazioni, dalla <ref eId="103" href="/akn/it/act/legge/stato/1990-08-04/227/!main">legge 4 agosto 1990, n. 227</ref>, e' prorogato al 30 settembre 2017". </p>
+                    </content>
+                </paragraph>
+            </article>
+            <article eId="art_6">
+                <num>Art. 6.</num>
+                <heading>
+                    <ins eId="ins_26">(( (Tassazione presuntiva). ))</ins>
+                </heading>
+                <paragraph>
+                    <content>
+                        <p>
+                            <ins eId="ins_27">((1. Per i soggetti di cui all'articolo 4, comma 1, gli investimenti esteri e le attivita' estere di natura finanziaria, trasferiti o costituiti all'estero, senza che ne risultino dichiarati i redditi effettivi, si presumono, salvo prova contraria, fruttiferi in misura pari al tasso ufficiale di riferimento vigente in Italia nel relativo periodo d'imposta, a meno che, in sede di dichiarazione dei redditi, venga specificato che si tratta di redditi la cui percezione avviene in un successivo periodo d'imposta, o sia indicato che determinate attivita' non possono essere produttive di redditi.
+La prova delle predette condizioni deve essere fornita dal contribuente entro sessanta giorni dal ricevimento della espressa richiesta notificatagli dall'ufficio delle imposte))</ins>
+                        </p>
+                    </content>
+                </paragraph>
+            </article>
+            <article eId="art_7">
+                <num>Art. 7.</num>
+                <heading> Criteri e modalita' di applicazione</heading>
+                <paragraph>
+                    <content>
+                        <p>((</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_7__para_1">
+                    <num>1.</num>
+                    <content>
+                        <p>Con provvedimento del direttore dell'Agenzia delle entrate, sono stabilite particolari modalita' per l'adempimento degli obblighi, nonche' per la trasmissione delle evidenze di cui ai commi 1 e 2 dell'articolo 1 e degli altri dati e notizie di cui al presente decreto. Con gli stessi provvedimenti tali obblighi ed adempimenti possono essere limitati per specifiche categorie o causali e possono esserne variati gli importi.</p>
+                    </content>
+                </paragraph>
+                <paragraph>
+                    <content>
+                        <p>))</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_7__para_1-bis">
+                    <num>1-bis.</num>
+                    <content>
+                        <p>L'amministrazione finanziaria procede, anche sulla base di criteri selettivi adottati per i controlli annuali, a verifiche nei confronti delle persone fisiche, degli enti non commerciali e delle societa' semplici e associazioni equiparate ai sensi dell'articolo 5 del testo unico delle imposte sui redditi, approvato con <ref eId="content__ref_104" href="/akn/it/act/decretoDelPresidenteDellaRepubblica/stato/1986-12-22/917/!main">decreto del Presidente della Repubblica 22 dicembre 1986, n. 917</ref>. 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_7__para_1-ter">
+                    <num>1-ter.</num>
+                    <content>
+                        <p>Per l'inosservanza degli obblighi stabiliti dai decreti emanati ai sensi del comma 1, del presente articolo, si applicano le sanzioni di cui all'<ref eId="content__ref_105" href="/akn/it/act/decretoDelPresidenteDellaRepubblica/stato/1973-09-29/605/!main#art_13-com8">articolo 13, comma 8, del decreto del Presidente della Repubblica 29 settembre 1973, n. 605</ref>. 
+</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article eId="art_8">
+                <num>Art. 8.</num>
+                <heading/>
+                <paragraph>
+                    <content>
+                        <p>
+                            <ins eId="ins_29">((ARTICOLO ABROGATO DAL D.LGS. 21 NOVEMBRE 1997, N. 461))</ins>
+                        </p>
+                    </content>
+                </paragraph>
+            </article>
+            <article eId="art_9">
+                <num>Art. 9.</num>
+                <heading> Entrata in vigore</heading>
+                <paragraph eId="art_9__para_1">
+                    <num>1.</num>
+                    <content>
+                        <p>Il presente decreto entra in vigore il giorno stesso della sua pubblicazione nella Gazzetta Ufficiale della Repubblica italiana e sara' presentato alle Camere per la conversione in legge. 
+ </p>
+                    </content>
+                </paragraph>
+            </article>
+        </body>
+        <conclusions>
+            <formula name="formulaFinaleConclusioni">
+                <p>Il presente decreto, munito del sigillo dello Stato, sara' inserito nella Raccolta ufficiale degli atti normativi della Repubblica italiana. E' fatto obbligo a chiunque spetti di osservarlo e di farlo osservare. </p>
+            </formula>
+            <p> Dato a Roma, addi' 28 giugno 1990 </p>
+            <p>COSSIGA ANDREOTTI, Presidente del Consiglio dei Ministri CARLI, Ministro del tesoro FORMICA, Ministro delle finanze GAVA, Ministro dell'interno Visto, il Guardasigilli: VASSALLI</p>
+        </conclusions>
+    </act>
+</akomaNtoso>

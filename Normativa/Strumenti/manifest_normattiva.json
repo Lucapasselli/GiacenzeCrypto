@@ -6,7 +6,9 @@
   "identificativo": "urn:nir:stato:legge:2022-12-29;197 | G.U. 20221229 cod. 22G00211",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20221229&codiceRedaz=22G00211&dataVigenza=20230101",
   "scaricato_il": "2026-08-21",
-  "sha256": "97da3c1ff9f0760e1df7007f581e5bffb5a9c95b5999f4ded18b70cecadf4377"
+  "sha256": "97da3c1ff9f0760e1df7007f581e5bffb5a9c95b5999f4ded18b70cecadf4377",
+  "data_documento": "2023-01-01",
+  "argomenti": "plusvalenze, quadro RW, quadro RT, imposta di bollo, imposta sul valore delle cripto-attivita', rideterminazione valore, regolarizzazione, reddito d'impresa"
  },
  {
   "file": "Leggi/Originale/LeggiBilancio/L_2022-12-29_197_bilancio2023_vigente.akn.xml",
@@ -15,7 +17,9 @@
   "identificativo": "urn:nir:stato:legge:2022-12-29;197 | G.U. 20221229 cod. 22G00211",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20221229&codiceRedaz=22G00211&dataVigenza=20260821",
   "scaricato_il": "2026-08-21",
-  "sha256": "3b3aba3b2bd79a80fcd5168a9c87e64458bb56877e6a5a4d9db17301cc27bf3e"
+  "sha256": "3b3aba3b2bd79a80fcd5168a9c87e64458bb56877e6a5a4d9db17301cc27bf3e",
+  "data_documento": "2026-08-21",
+  "argomenti": "plusvalenze, quadro RW, quadro RT, imposta di bollo, imposta sul valore delle cripto-attivita', rideterminazione valore, regolarizzazione, reddito d'impresa"
  },
  {
   "file": "Leggi/Originale/LeggiBilancio/L_2023-12-30_213_bilancio2024_originario.akn.xml",
@@ -24,7 +28,9 @@
   "identificativo": "urn:nir:stato:legge:2023-12-30;213 | G.U. 20231230 cod. 23G00223",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20231230&codiceRedaz=23G00223&dataVigenza=20240101",
   "scaricato_il": "2026-08-21",
-  "sha256": "fbc6874905b65111c5fbbe1ecc4dab5d2b185f0c09a7e1bf5e2c45edb0b1ee4a"
+  "sha256": "fbc6874905b65111c5fbbe1ecc4dab5d2b185f0c09a7e1bf5e2c45edb0b1ee4a",
+  "data_documento": "2024-01-01",
+  "argomenti": ""
  },
  {
   "file": "Leggi/Originale/LeggiBilancio/L_2023-12-30_213_bilancio2024_vigente.akn.xml",
@@ -33,7 +39,9 @@
   "identificativo": "urn:nir:stato:legge:2023-12-30;213 | G.U. 20231230 cod. 23G00223",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20231230&codiceRedaz=23G00223&dataVigenza=20260821",
   "scaricato_il": "2026-08-21",
-  "sha256": "9532f44d6c273a7586494908db35c5c439090a5f408f0e953ef2bdf4cd1b39e3"
+  "sha256": "9532f44d6c273a7586494908db35c5c439090a5f408f0e953ef2bdf4cd1b39e3",
+  "data_documento": "2026-08-21",
+  "argomenti": ""
  },
  {
   "file": "Leggi/Originale/LeggiBilancio/L_2024-12-30_207_bilancio2025_originario.akn.xml",
@@ -42,7 +50,9 @@
   "identificativo": "urn:nir:stato:legge:2024-12-30;207 | G.U. 20241231 cod. 24G00229",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20241231&codiceRedaz=24G00229&dataVigenza=20250101",
   "scaricato_il": "2026-08-21",
-  "sha256": "bc6037a80271f803e62856ef9cfdae2498a2f854f057fcc860e568fd48de5f2c"
+  "sha256": "bc6037a80271f803e62856ef9cfdae2498a2f854f057fcc860e568fd48de5f2c",
+  "data_documento": "2025-01-01",
+  "argomenti": "aliquota, plusvalenze, rideterminazione valore"
  },
  {
   "file": "Leggi/Originale/LeggiBilancio/L_2024-12-30_207_bilancio2025_vigente.akn.xml",
@@ -51,7 +61,9 @@
   "identificativo": "urn:nir:stato:legge:2024-12-30;207 | G.U. 20241231 cod. 24G00229",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20241231&codiceRedaz=24G00229&dataVigenza=20260821",
   "scaricato_il": "2026-08-21",
-  "sha256": "2872fa065aa914b8ec0891d2d0f45bdaa78cce2567f56fd2d3b0a3201a24a8b4"
+  "sha256": "2872fa065aa914b8ec0891d2d0f45bdaa78cce2567f56fd2d3b0a3201a24a8b4",
+  "data_documento": "2026-08-21",
+  "argomenti": "aliquota, plusvalenze, rideterminazione valore"
  },
  {
   "file": "Leggi/Originale/LeggiBilancio/L_2025-12-30_199_bilancio2026_originario.akn.xml",
@@ -60,7 +72,9 @@
   "identificativo": "urn:nir:stato:legge:2025-12-30;199 | G.U. 20251230 cod. 25G00212",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20251230&codiceRedaz=25G00212&dataVigenza=20260101",
   "scaricato_il": "2026-08-21",
-  "sha256": "9cd47c7a1608350bd9f8de0acac705397e14032a8bcb414bb82b26ddb3ab33ea"
+  "sha256": "9cd47c7a1608350bd9f8de0acac705397e14032a8bcb414bb82b26ddb3ab33ea",
+  "data_documento": "2026-01-01",
+  "argomenti": "aliquota, e-money token, ISEE"
  },
  {
   "file": "Leggi/Originale/LeggiBilancio/L_2025-12-30_199_bilancio2026_vigente.akn.xml",
@@ -69,7 +83,9 @@
   "identificativo": "urn:nir:stato:legge:2025-12-30;199 | G.U. 20251230 cod. 25G00212",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20251230&codiceRedaz=25G00212&dataVigenza=20260821",
   "scaricato_il": "2026-08-21",
-  "sha256": "6d9ad5861ff1c64b3ee0a0fa1d512ee5a1a3168f5c729dcf745b68626d0e51ba"
+  "sha256": "6d9ad5861ff1c64b3ee0a0fa1d512ee5a1a3168f5c729dcf745b68626d0e51ba",
+  "data_documento": "2026-08-21",
+  "argomenti": "aliquota, e-money token, ISEE"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-07-09_241_2023-01-01_post_bilancio2023.akn.xml",
@@ -78,7 +94,9 @@
   "identificativo": "urn:nir:stato:decreto.legislativo:1997-07-09;241 | G.U. 19970728 cod. 097G0277",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19970728&codiceRedaz=097G0277&dataVigenza=20230101",
   "scaricato_il": "2026-08-21",
-  "sha256": "5c307446c6d0420b28d29d3dd2d53b9619907b488180aa491fa95b3a03adfb1c"
+  "sha256": "5c307446c6d0420b28d29d3dd2d53b9619907b488180aa491fa95b3a03adfb1c",
+  "data_documento": "2023-01-01",
+  "argomenti": "codici tributo"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-07-09_241_2025-01-01_post_bilancio2025.akn.xml",
@@ -87,7 +105,9 @@
   "identificativo": "urn:nir:stato:decreto.legislativo:1997-07-09;241 | G.U. 19970728 cod. 097G0277",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19970728&codiceRedaz=097G0277&dataVigenza=20250101",
   "scaricato_il": "2026-08-21",
-  "sha256": "ef540fbbb9c53c1e19ee1f59cfd7c47215412f95dc0047844014f3efc58fadec"
+  "sha256": "ef540fbbb9c53c1e19ee1f59cfd7c47215412f95dc0047844014f3efc58fadec",
+  "data_documento": "2025-01-01",
+  "argomenti": "codici tributo"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-07-09_241_vigente.akn.xml",
@@ -96,7 +116,9 @@
   "identificativo": "urn:nir:stato:decreto.legislativo:1997-07-09;241 | G.U. 19970728 cod. 097G0277",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19970728&codiceRedaz=097G0277&dataVigenza=20260821",
   "scaricato_il": "2026-08-21",
-  "sha256": "e89c8dff010a03b21622395f2265bdf83f983bec42d846e05969453da5864b54"
+  "sha256": "e89c8dff010a03b21622395f2265bdf83f983bec42d846e05969453da5864b54",
+  "data_documento": "2026-08-21",
+  "argomenti": "codici tributo"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-11-21_461_2022-12-31_ante_bilancio2023.akn.xml",
@@ -105,7 +127,9 @@
   "identificativo": "urn:nir:stato:decreto.legislativo:1997-11-21;461 | G.U. 19980103 cod. 097G0497",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19980103&codiceRedaz=097G0497&dataVigenza=20221231",
   "scaricato_il": "2026-08-21",
-  "sha256": "bc7794b8b39d9a5d7b1517436dc491dd326a442de3efcaacf2c07feeb6329385"
+  "sha256": "bc7794b8b39d9a5d7b1517436dc491dd326a442de3efcaacf2c07feeb6329385",
+  "data_documento": "2022-12-31",
+  "argomenti": "plusvalenze, regime dichiarativo, risparmio amministrato, risparmio gestito"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-11-21_461_2023-01-01_post_bilancio2023.akn.xml",
@@ -114,7 +138,9 @@
   "identificativo": "urn:nir:stato:decreto.legislativo:1997-11-21;461 | G.U. 19980103 cod. 097G0497",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19980103&codiceRedaz=097G0497&dataVigenza=20230101",
   "scaricato_il": "2026-08-21",
-  "sha256": "2b638bbc5ea8f8b8975afbbd2f5f02920e93ed2e07c357553fa5cad2bc034762"
+  "sha256": "2b638bbc5ea8f8b8975afbbd2f5f02920e93ed2e07c357553fa5cad2bc034762",
+  "data_documento": "2023-01-01",
+  "argomenti": "plusvalenze, regime dichiarativo, risparmio amministrato, risparmio gestito"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-11-21_461_2025-01-01_post_bilancio2025.akn.xml",
@@ -123,7 +149,9 @@
   "identificativo": "urn:nir:stato:decreto.legislativo:1997-11-21;461 | G.U. 19980103 cod. 097G0497",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19980103&codiceRedaz=097G0497&dataVigenza=20250101",
   "scaricato_il": "2026-08-21",
-  "sha256": "2b638bbc5ea8f8b8975afbbd2f5f02920e93ed2e07c357553fa5cad2bc034762"
+  "sha256": "2b638bbc5ea8f8b8975afbbd2f5f02920e93ed2e07c357553fa5cad2bc034762",
+  "data_documento": "2025-01-01",
+  "argomenti": "plusvalenze, regime dichiarativo, risparmio amministrato, risparmio gestito"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-11-21_461_vigente.akn.xml",
@@ -132,7 +160,9 @@
   "identificativo": "urn:nir:stato:decreto.legislativo:1997-11-21;461 | G.U. 19980103 cod. 097G0497",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19980103&codiceRedaz=097G0497&dataVigenza=20260821",
   "scaricato_il": "2026-08-21",
-  "sha256": "2b638bbc5ea8f8b8975afbbd2f5f02920e93ed2e07c357553fa5cad2bc034762"
+  "sha256": "2b638bbc5ea8f8b8975afbbd2f5f02920e93ed2e07c357553fa5cad2bc034762",
+  "data_documento": "2026-08-21",
+  "argomenti": "plusvalenze, regime dichiarativo, risparmio amministrato, risparmio gestito"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-12-15_446_IRAP_vigente.akn.xml",
@@ -141,7 +171,9 @@
   "identificativo": "urn:nir:stato:decreto.legislativo:1997-12-15;446 | G.U. 19971223 cod. 097G0478",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19971223&codiceRedaz=097G0478&dataVigenza=20260821",
   "scaricato_il": "2026-08-21",
-  "sha256": "14c547787df4329286e2ea11e8b27cfb1129dd1d0f13a8ebe04f37bd87c6b555"
+  "sha256": "14c547787df4329286e2ea11e8b27cfb1129dd1d0f13a8ebe04f37bd87c6b555",
+  "data_documento": "2026-08-21",
+  "argomenti": "IRAP, reddito d'impresa"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_2025-03-24_33_versamenti_vigente.akn.xml",
@@ -150,7 +182,9 @@
   "identificativo": "urn:nir:stato:decreto.legislativo:2025-03-24;33 | G.U. 20250326 cod. 25G00044",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20250326&codiceRedaz=25G00044&dataVigenza=20260821",
   "scaricato_il": "2026-08-21",
-  "sha256": "0d4e0dce756739cb095b7cbecac4f2f47f355b64ada62c97cc613db66a26a210"
+  "sha256": "0d4e0dce756739cb095b7cbecac4f2f47f355b64ada62c97cc613db66a26a210",
+  "data_documento": "2026-08-21",
+  "argomenti": ""
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_2025-12-10_194_DAC8_originario.akn.xml",
@@ -159,7 +193,9 @@
   "identificativo": "urn:nir:stato:decreto.legislativo:2025-12-10;194 | G.U. 20251222 cod. 25G00201",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20251222&codiceRedaz=25G00201&dataVigenza=20260106",
   "scaricato_il": "2026-08-21",
-  "sha256": "9ca53c5993fa4e1b2c5fb9ddd83417eea9ca899475d4048129c52574b0d85dea"
+  "sha256": "9ca53c5993fa4e1b2c5fb9ddd83417eea9ca899475d4048129c52574b0d85dea",
+  "data_documento": "2026-01-06",
+  "argomenti": "DAC8"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_2025-12-10_194_DAC8_vigente.akn.xml",
@@ -168,7 +204,9 @@
   "identificativo": "urn:nir:stato:decreto.legislativo:2025-12-10;194 | G.U. 20251222 cod. 25G00201",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20251222&codiceRedaz=25G00201&dataVigenza=20260821",
   "scaricato_il": "2026-08-21",
-  "sha256": "9ca53c5993fa4e1b2c5fb9ddd83417eea9ca899475d4048129c52574b0d85dea"
+  "sha256": "9ca53c5993fa4e1b2c5fb9ddd83417eea9ca899475d4048129c52574b0d85dea",
+  "data_documento": "2026-08-21",
+  "argomenti": "DAC8"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DL_1990-06-28_167_2022-12-31_ante_bilancio2023.akn.xml",
@@ -177,7 +215,9 @@
   "identificativo": "urn:nir:stato:decreto.legge:1990-06-28;167 | G.U. 19900630 cod. 090G0210",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19900630&codiceRedaz=090G0210&dataVigenza=20221231",
   "scaricato_il": "2026-08-21",
-  "sha256": "189046e666d85b9ce850c83eb511765e1900dddaa781f0c597ad4cf35838f12d"
+  "sha256": "189046e666d85b9ce850c83eb511765e1900dddaa781f0c597ad4cf35838f12d",
+  "data_documento": "2022-12-31",
+  "argomenti": "quadro RW, monitoraggio fiscale"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DL_1990-06-28_167_2023-01-01_post_bilancio2023.akn.xml",
@@ -186,7 +226,9 @@
   "identificativo": "urn:nir:stato:decreto.legge:1990-06-28;167 | G.U. 19900630 cod. 090G0210",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19900630&codiceRedaz=090G0210&dataVigenza=20230101",
   "scaricato_il": "2026-08-21",
-  "sha256": "868c7fd74c941fe0da5e48c5a6a35f26faa8ec745d47332788caf688214fd322"
+  "sha256": "868c7fd74c941fe0da5e48c5a6a35f26faa8ec745d47332788caf688214fd322",
+  "data_documento": "2023-01-01",
+  "argomenti": "quadro RW, monitoraggio fiscale"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DL_1990-06-28_167_vigente.akn.xml",
@@ -195,7 +237,9 @@
   "identificativo": "urn:nir:stato:decreto.legge:1990-06-28;167 | G.U. 19900630 cod. 090G0210",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19900630&codiceRedaz=090G0210&dataVigenza=20260821",
   "scaricato_il": "2026-08-21",
-  "sha256": "7c11af16da4f9eb46271a67e84e8f90a5921d3ca9f199fe316b721bdd7609851"
+  "sha256": "7c11af16da4f9eb46271a67e84e8f90a5921d3ca9f199fe316b721bdd7609851",
+  "data_documento": "2026-08-21",
+  "argomenti": "quadro RW, monitoraggio fiscale"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DL_2011-12-06_201_2022-12-31_ante_bilancio2023.akn.xml",
@@ -204,7 +248,9 @@
   "identificativo": "urn:nir:stato:decreto.legge:2011-12-06;201 | G.U. 20111206 cod. 011G0247",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20111206&codiceRedaz=011G0247&dataVigenza=20221231",
   "scaricato_il": "2026-08-21",
-  "sha256": "ca9ca48cc9cc4fb1533aa18200facebb231d85661244251b74c60a200f844522"
+  "sha256": "ca9ca48cc9cc4fb1533aa18200facebb231d85661244251b74c60a200f844522",
+  "data_documento": "2022-12-31",
+  "argomenti": "imposta sul valore delle cripto-attivita', ISEE"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DL_2011-12-06_201_2023-01-01_post_bilancio2023.akn.xml",
@@ -213,7 +259,9 @@
   "identificativo": "urn:nir:stato:decreto.legge:2011-12-06;201 | G.U. 20111206 cod. 011G0247",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20111206&codiceRedaz=011G0247&dataVigenza=20230101",
   "scaricato_il": "2026-08-21",
-  "sha256": "d2b9ace1c43309847ef080c46a01bbeb8634bce4b92c13aa477f70450fc11c0f"
+  "sha256": "d2b9ace1c43309847ef080c46a01bbeb8634bce4b92c13aa477f70450fc11c0f",
+  "data_documento": "2023-01-01",
+  "argomenti": "imposta sul valore delle cripto-attivita', ISEE"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DL_2011-12-06_201_2026-01-01_post_bilancio2026.akn.xml",
@@ -222,7 +270,9 @@
   "identificativo": "urn:nir:stato:decreto.legge:2011-12-06;201 | G.U. 20111206 cod. 011G0247",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20111206&codiceRedaz=011G0247&dataVigenza=20260101",
   "scaricato_il": "2026-08-21",
-  "sha256": "3ff06d2d5cfaf91fe5a5f737c6e5a789c20791ba6f17c52f6c142f6b7b591a31"
+  "sha256": "3ff06d2d5cfaf91fe5a5f737c6e5a789c20791ba6f17c52f6c142f6b7b591a31",
+  "data_documento": "2026-01-01",
+  "argomenti": "imposta sul valore delle cripto-attivita', ISEE"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DL_2011-12-06_201_vigente.akn.xml",
@@ -231,7 +281,9 @@
   "identificativo": "urn:nir:stato:decreto.legge:2011-12-06;201 | G.U. 20111206 cod. 011G0247",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20111206&codiceRedaz=011G0247&dataVigenza=20260821",
   "scaricato_il": "2026-08-21",
-  "sha256": "b81ddf5fe04d051d10d8d604a44fa6580989f3ce538c080a68c906a76dd07c13"
+  "sha256": "b81ddf5fe04d051d10d8d604a44fa6580989f3ce538c080a68c906a76dd07c13",
+  "data_documento": "2026-08-21",
+  "argomenti": "imposta sul valore delle cripto-attivita', ISEE"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPCM_2013-12-05_159_ISEE_2025-12-31_ante_bilancio2026.akn.xml",
@@ -240,7 +292,9 @@
   "identificativo": "urn:nir:stato:decreto.del.presidente.del.consiglio.dei.ministri:2013-12-05;159 | G.U. 20140124 cod. 14G00009",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20140124&codiceRedaz=14G00009&dataVigenza=20251231",
   "scaricato_il": "2026-08-21",
-  "sha256": "38fff39248b308629298b96b6e7f7712bd648adea018a0378e2a3fc91e149995"
+  "sha256": "38fff39248b308629298b96b6e7f7712bd648adea018a0378e2a3fc91e149995",
+  "data_documento": "2025-12-31",
+  "argomenti": "ISEE"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPCM_2013-12-05_159_ISEE_vigente.akn.xml",
@@ -249,7 +303,9 @@
   "identificativo": "urn:nir:stato:decreto.del.presidente.del.consiglio.dei.ministri:2013-12-05;159 | G.U. 20140124 cod. 14G00009",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20140124&codiceRedaz=14G00009&dataVigenza=20260821",
   "scaricato_il": "2026-08-21",
-  "sha256": "b93ab3027b0d6678fb013f84e1f41eec95a711476c759c0b58ecb85dcdfc03d4"
+  "sha256": "b93ab3027b0d6678fb013f84e1f41eec95a711476c759c0b58ecb85dcdfc03d4",
+  "data_documento": "2026-08-21",
+  "argomenti": "ISEE"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1972-10-26_642_bollo_2022-12-31_ante_bilancio2023.akn.xml",
@@ -258,7 +314,9 @@
   "identificativo": "urn:nir:stato:decreto.del.presidente.della.repubblica:1972-10-26;642 | G.U. 19721111 cod. 072U0642",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19721111&codiceRedaz=072U0642&dataVigenza=20221231",
   "scaricato_il": "2026-08-21",
-  "sha256": "ec13c3fe284d87898fec0686d31c2ee14e8a55b3d6e075dc0a356b1b80636e17"
+  "sha256": "ec13c3fe284d87898fec0686d31c2ee14e8a55b3d6e075dc0a356b1b80636e17",
+  "data_documento": "2022-12-31",
+  "argomenti": "imposta di bollo"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1972-10-26_642_bollo_2023-01-01_post_bilancio2023.akn.xml",
@@ -267,7 +325,9 @@
   "identificativo": "urn:nir:stato:decreto.del.presidente.della.repubblica:1972-10-26;642 | G.U. 19721111 cod. 072U0642",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19721111&codiceRedaz=072U0642&dataVigenza=20230101",
   "scaricato_il": "2026-08-21",
-  "sha256": "be0dd515f517a1ccab49a6c6f3398d75f7b7385fc58adad190d6da278c06c92f"
+  "sha256": "be0dd515f517a1ccab49a6c6f3398d75f7b7385fc58adad190d6da278c06c92f",
+  "data_documento": "2023-01-01",
+  "argomenti": "imposta di bollo"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1972-10-26_642_bollo_vigente.akn.xml",
@@ -276,7 +336,9 @@
   "identificativo": "urn:nir:stato:decreto.del.presidente.della.repubblica:1972-10-26;642 | G.U. 19721111 cod. 072U0642",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19721111&codiceRedaz=072U0642&dataVigenza=20260821",
   "scaricato_il": "2026-08-21",
-  "sha256": "69c8b718c0d3db178531a610d79c4e91cbf5f3ef4d1f4cac72bbe9d8886af638"
+  "sha256": "69c8b718c0d3db178531a610d79c4e91cbf5f3ef4d1f4cac72bbe9d8886af638",
+  "data_documento": "2026-08-21",
+  "argomenti": "imposta di bollo"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2022-12-31_ante_bilancio2023.akn.xml",
@@ -285,7 +347,9 @@
   "identificativo": "urn:nir:stato:decreto.del.presidente.della.repubblica:1986-12-22;917 | G.U. 19861231 cod. 086U0917",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19861231&codiceRedaz=086U0917&dataVigenza=20221231",
   "scaricato_il": "2026-08-21",
-  "sha256": "ff6a8cd649fb8d8828e7d2fb53c3bd906a29f0f38324dc464a103108b5dc702e"
+  "sha256": "ff6a8cd649fb8d8828e7d2fb53c3bd906a29f0f38324dc464a103108b5dc702e",
+  "data_documento": "2022-12-31",
+  "argomenti": "plusvalenze, aliquota, reddito d'impresa, rideterminazione valore"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2023-01-01_post_bilancio2023.akn.xml",
@@ -294,7 +358,9 @@
   "identificativo": "urn:nir:stato:decreto.del.presidente.della.repubblica:1986-12-22;917 | G.U. 19861231 cod. 086U0917",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19861231&codiceRedaz=086U0917&dataVigenza=20230101",
   "scaricato_il": "2026-08-21",
-  "sha256": "b2a13dbc8bcc6597cea81d0b57bd19d7e23e4587a0d6f89b0b932aeb528de877"
+  "sha256": "b2a13dbc8bcc6597cea81d0b57bd19d7e23e4587a0d6f89b0b932aeb528de877",
+  "data_documento": "2023-01-01",
+  "argomenti": "plusvalenze, aliquota, reddito d'impresa, rideterminazione valore"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2023-03-01_corpo_aggiornato.akn.xml",
@@ -303,7 +369,9 @@
   "identificativo": "urn:nir:stato:decreto.del.presidente.della.repubblica:1986-12-22;917 | G.U. 19861231 cod. 086U0917",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19861231&codiceRedaz=086U0917&dataVigenza=20230301",
   "scaricato_il": "2026-08-21",
-  "sha256": "a67b79d6aa6118fbb344b00ccaa9633b799fc67e1e71ee354ba4583eac281a62"
+  "sha256": "a67b79d6aa6118fbb344b00ccaa9633b799fc67e1e71ee354ba4583eac281a62",
+  "data_documento": "2023-03-01",
+  "argomenti": "plusvalenze, aliquota, reddito d'impresa, rideterminazione valore"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2024-12-31_ante_bilancio2025.akn.xml",
@@ -312,7 +380,9 @@
   "identificativo": "urn:nir:stato:decreto.del.presidente.della.repubblica:1986-12-22;917 | G.U. 19861231 cod. 086U0917",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19861231&codiceRedaz=086U0917&dataVigenza=20241231",
   "scaricato_il": "2026-08-21",
-  "sha256": "00b0de88c84ce92cd30ab76245051d361de6721109be6fe62035afbf65146836"
+  "sha256": "00b0de88c84ce92cd30ab76245051d361de6721109be6fe62035afbf65146836",
+  "data_documento": "2024-12-31",
+  "argomenti": "plusvalenze, aliquota, reddito d'impresa, rideterminazione valore"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2025-01-01_post_bilancio2025.akn.xml",
@@ -321,7 +391,9 @@
   "identificativo": "urn:nir:stato:decreto.del.presidente.della.repubblica:1986-12-22;917 | G.U. 19861231 cod. 086U0917",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19861231&codiceRedaz=086U0917&dataVigenza=20250101",
   "scaricato_il": "2026-08-21",
-  "sha256": "d0d12cc1849b9349eb3eab30b365b69b7e8f5286038054bc1fb09a7917c0360d"
+  "sha256": "d0d12cc1849b9349eb3eab30b365b69b7e8f5286038054bc1fb09a7917c0360d",
+  "data_documento": "2025-01-01",
+  "argomenti": "plusvalenze, aliquota, reddito d'impresa, rideterminazione valore"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2026-01-01_post_bilancio2026.akn.xml",
@@ -330,7 +402,9 @@
   "identificativo": "urn:nir:stato:decreto.del.presidente.della.repubblica:1986-12-22;917 | G.U. 19861231 cod. 086U0917",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19861231&codiceRedaz=086U0917&dataVigenza=20260101",
   "scaricato_il": "2026-08-21",
-  "sha256": "5c1dda4aedfbfa8f480f0a29fe600add028ced42d01cff58b3508383ca068608"
+  "sha256": "5c1dda4aedfbfa8f480f0a29fe600add028ced42d01cff58b3508383ca068608",
+  "data_documento": "2026-01-01",
+  "argomenti": "plusvalenze, aliquota, reddito d'impresa, rideterminazione valore"
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_vigente.akn.xml",
@@ -339,6 +413,8 @@
   "identificativo": "urn:nir:stato:decreto.del.presidente.della.repubblica:1986-12-22;917 | G.U. 19861231 cod. 086U0917",
   "url": "https://www.normattiva.it/do/atto/caricaAKN?dataGU=19861231&codiceRedaz=086U0917&dataVigenza=20260821",
   "scaricato_il": "2026-08-21",
-  "sha256": "722a9966994233c33a6e7f7d43b66d7d9f41dda175739fb667b8d82be4e92ee7"
+  "sha256": "722a9966994233c33a6e7f7d43b66d7d9f41dda175739fb667b8d82be4e92ee7",
+  "data_documento": "2026-08-21",
+  "argomenti": "plusvalenze, aliquota, reddito d'impresa, rideterminazione valore"
  }
 ]

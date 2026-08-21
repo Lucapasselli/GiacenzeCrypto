@@ -4,6 +4,8 @@
   "titolo": "Decreto interdipartimentale n. 3 del 2 marzo 2026 - approvazione del modello tipo della Dichiarazione Sostitutiva Unica (DSU), dell'attestazione e delle relative istruzioni per la compilazione",
   "autorita": "Ministero del lavoro e delle politiche sociali di concerto con il Ministero dell'economia e delle finanze",
   "identificativo": "D.M. 2 marzo 2026, n. 3",
+  "data_documento": "2026-03-02",
+  "argomenti": "ISEE",
   "url": "https://www.lavoro.gov.it/documenti-e-norme/normativa/decreto-n-3-del-02032026",
   "scaricato_il": "2026-08-21",
   "sha256": "455c8bfdbbc47b4d36849ad2475f63cc4af53d2f001b40c6e9e6559da07d6e58"
@@ -13,6 +15,8 @@
   "titolo": "Dichiarazione Sostitutiva Unica (D.P.C.M. 159/2013) - Istruzioni per la compilazione",
   "autorita": "Ministero del lavoro e delle politiche sociali",
   "identificativo": "Istruzioni alla compilazione della DSU, modello approvato con D.M. 2 marzo 2026, n. 3",
+  "data_documento": "2026-03-02",
+  "argomenti": "ISEE, istruzioni compilazione",
   "url": "https://www.lavoro.gov.it/strumenti-e-servizi/Modulistica/Documents/ISEE/Istruzioni-alla-compilazione.pdf",
   "scaricato_il": "2026-08-21",
   "sha256": "c4a7ed3679f1509e15ff14cfed12329dce1200d8ee8ac99d4007ff28ce510a4a"
@@ -22,6 +26,8 @@
   "titolo": "Modello di Dichiarazione Sostitutiva Unica - DSU integrale",
   "autorita": "Ministero del lavoro e delle politiche sociali",
   "identificativo": "Modello DSU integrale in vigore",
+  "data_documento": "2026-03-02",
+  "argomenti": "ISEE",
   "url": "https://www.lavoro.gov.it/strumenti-e-servizi/Modulistica/Documents/ISEE/ISEE-DSU-Integrale.pdf",
   "scaricato_il": "2026-08-21",
   "sha256": "c3414ec19b2cbfb22e8e8244366f2f22b12d6c9123b89779575b475600bc33f8"
@@ -31,6 +37,8 @@
   "titolo": "Modello di Dichiarazione Sostitutiva Unica - DSU mini",
   "autorita": "Ministero del lavoro e delle politiche sociali",
   "identificativo": "Modello DSU mini in vigore",
+  "data_documento": "2026-03-02",
+  "argomenti": "ISEE",
   "url": "https://www.lavoro.gov.it/strumenti-e-servizi/Modulistica/Documents/ISEE/ISEE-DSU-Mini.pdf",
   "scaricato_il": "2026-08-21",
   "sha256": "9a91eac602449884f8e9027f6bfe00b82b7edbbcfa7dbbe03753e38c37b00dc6"

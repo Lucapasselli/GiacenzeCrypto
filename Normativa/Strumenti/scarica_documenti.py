@@ -14,6 +14,15 @@ Il file JSON e' una lista di oggetti con questi campi:
   url         indirizzo da cui scaricarlo
   accept      (facoltativo) header Accept, per i repository che negoziano il formato
   lingua      (facoltativo) header Accept-Language, per quelli che negoziano la lingua
+  data        (facoltativo) data del documento, ISO AAAA-MM-GG. Assente quando il
+              giorno esatto non e' ricostruibile (es. le istruzioni annuali dei
+              modelli dichiarativi, note solo per anno) - resta vuota, non va
+              indovinata.
+  argomenti   (facoltativo) elenco di etichette tematiche (es. ["plusvalenze",
+              "quadro RW"]), per capire di cosa tratta un documento senza aprirlo.
+              Classificazione per argomento, non interpretazione del contenuto
+              normativo: usa un vocabolario ristretto e riusato fra le voci,
+              invece di testo libero per ognuna.
 
 Il campo ``url`` delle pagine dell'Agenzia delle entrate contiene spesso un
 parametro ``?t=<numero>`` che serve solo a evitare la cache del browser: viene
@@ -87,6 +96,8 @@ def main():
             "titolo": v["titolo"],
             "autorita": v.get("autorita", ""),
             "identificativo": v.get("identificativo", ""),
+            "data_documento": v.get("data", ""),
+            "argomenti": ", ".join(v.get("argomenti", [])),
             "url": v["url"].split("?t=")[0],
             "scaricato_il": date.today().isoformat(),
             "sha256": sha256(dest) if os.path.exists(dest) else "",

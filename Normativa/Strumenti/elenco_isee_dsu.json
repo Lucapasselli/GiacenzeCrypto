@@ -5,7 +5,11 @@
   "autorita": "Ministero del lavoro e delle politiche sociali di concerto con il Ministero dell'economia e delle finanze",
   "titolo": "Decreto interdipartimentale n. 3 del 2 marzo 2026 - approvazione del modello tipo della Dichiarazione Sostitutiva Unica (DSU), dell'attestazione e delle relative istruzioni per la compilazione",
   "identificativo": "D.M. 2 marzo 2026, n. 3",
-  "url": "https://www.lavoro.gov.it/documenti-e-norme/normativa/decreto-n-3-del-02032026"
+  "url": "https://www.lavoro.gov.it/documenti-e-norme/normativa/decreto-n-3-del-02032026",
+  "data": "2026-03-02",
+  "argomenti": [
+   "ISEE"
+  ]
  },
  {
   "nome": "DSU_istruzioni_per_la_compilazione.pdf",
@@ -13,7 +17,12 @@
   "autorita": "Ministero del lavoro e delle politiche sociali",
   "titolo": "Dichiarazione Sostitutiva Unica (D.P.C.M. 159/2013) - Istruzioni per la compilazione",
   "identificativo": "Istruzioni alla compilazione della DSU, modello approvato con D.M. 2 marzo 2026, n. 3",
-  "url": "https://www.lavoro.gov.it/strumenti-e-servizi/Modulistica/Documents/ISEE/Istruzioni-alla-compilazione.pdf"
+  "url": "https://www.lavoro.gov.it/strumenti-e-servizi/Modulistica/Documents/ISEE/Istruzioni-alla-compilazione.pdf",
+  "data": "2026-03-02",
+  "argomenti": [
+   "ISEE",
+   "istruzioni compilazione"
+  ]
  },
  {
   "nome": "DSU_modello_integrale.pdf",
@@ -21,7 +30,11 @@
   "autorita": "Ministero del lavoro e delle politiche sociali",
   "titolo": "Modello di Dichiarazione Sostitutiva Unica - DSU integrale",
   "identificativo": "Modello DSU integrale in vigore",
-  "url": "https://www.lavoro.gov.it/strumenti-e-servizi/Modulistica/Documents/ISEE/ISEE-DSU-Integrale.pdf"
+  "url": "https://www.lavoro.gov.it/strumenti-e-servizi/Modulistica/Documents/ISEE/ISEE-DSU-Integrale.pdf",
+  "data": "2026-03-02",
+  "argomenti": [
+   "ISEE"
+  ]
  },
  {
   "nome": "DSU_modello_mini.pdf",
@@ -29,6 +42,10 @@
   "autorita": "Ministero del lavoro e delle politiche sociali",
   "titolo": "Modello di Dichiarazione Sostitutiva Unica - DSU mini",
   "identificativo": "Modello DSU mini in vigore",
-  "url": "https://www.lavoro.gov.it/strumenti-e-servizi/Modulistica/Documents/ISEE/ISEE-DSU-Mini.pdf"
+  "url": "https://www.lavoro.gov.it/strumenti-e-servizi/Modulistica/Documents/ISEE/ISEE-DSU-Mini.pdf",
+  "data": "2026-03-02",
+  "argomenti": [
+   "ISEE"
+  ]
  }
 ]

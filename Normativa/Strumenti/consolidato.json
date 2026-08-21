@@ -51,7 +51,10 @@
   "cerca": {
    "inizio": "\\(?\\(?c-sexies\\)",
    "fine": "caratteristiche e funzioni\\)?\\)?[.;]?"
-  }
+  },
+  "argomenti": [
+   "plusvalenze"
+  ]
  },
  {
   "out": "Leggi/Consolidato/TUIR_art68_comma_9-bis_evoluzione.md",
@@ -105,7 +108,11 @@
   "cerca": {
    "inizio": "\\(?\\(?9-bis\\.",
    "fine": "senza alcuna deduzione\\)?\\)?[.;]?"
-  }
+  },
+  "argomenti": [
+   "plusvalenze",
+   "minusvalenze"
+  ]
  },
  {
   "out": "Leggi/Consolidato/TUIR_art110_comma_3-bis_evoluzione.md",
@@ -159,7 +166,10 @@
   "cerca": {
    "inizio": "\\(?\\(?3-bis\\.",
    "fine": "imputazione al conto economico\\)?\\)?[.;]?"
-  }
+  },
+  "argomenti": [
+   "reddito d'impresa"
+  ]
  },
  {
   "out": "Leggi/Consolidato/LB2025_art1_comma_24_aliquota_evoluzione.md",
@@ -184,7 +194,11 @@
     "etichetta": "testo vigente (dopo la legge di bilancio 2026)"
    }
   ],
-  "filtro_destinazione": "2024-12-30/207/.*~art_1__para_24"
+  "filtro_destinazione": "2024-12-30/207/.*~art_1__para_24",
+  "argomenti": [
+   "aliquota",
+   "e-money token"
+  ]
  },
  {
   "out": "Leggi/Consolidato/DL167-1990_art2_evoluzione.md",
@@ -213,7 +227,10 @@
     "etichetta": "testo vigente alla data dello scarico"
    }
   ],
-  "filtro_destinazione": "1990-06-28/167/.*~art_2(__|$)"
+  "filtro_destinazione": "1990-06-28/167/.*~art_2(__|$)",
+  "argomenti": [
+   "monitoraggio fiscale"
+  ]
  },
  {
   "out": "Leggi/Consolidato/DL167-1990_art4_quadro_RW_evoluzione.md",
@@ -242,7 +259,10 @@
     "etichetta": "testo vigente alla data dello scarico"
    }
   ],
-  "filtro_destinazione": "1990-06-28/167/.*~art_4(__|$)"
+  "filtro_destinazione": "1990-06-28/167/.*~art_4(__|$)",
+  "argomenti": [
+   "quadro RW"
+  ]
  },
  {
   "out": "Leggi/Consolidato/DL167-1990_art1_intermediari_evoluzione.md",
@@ -271,7 +291,10 @@
     "etichetta": "testo vigente alla data dello scarico"
    }
   ],
-  "filtro_destinazione": "1990-06-28/167/.*~art_1(__|$)"
+  "filtro_destinazione": "1990-06-28/167/.*~art_1(__|$)",
+  "argomenti": [
+   "monitoraggio fiscale"
+  ]
  },
  {
   "out": "Leggi/Consolidato/DL201-2011_art19_imposta_valore_cripto_evoluzione.md",
@@ -300,7 +323,10 @@
     "etichetta": "testo vigente alla data dello scarico"
    }
   ],
-  "filtro_destinazione": "2011-12-06/201/.*~art_19(__|$)"
+  "filtro_destinazione": "2011-12-06/201/.*~art_19(__|$)",
+  "argomenti": [
+   "imposta sul valore delle cripto-attivita'"
+  ]
  },
  {
   "out": "Leggi/Consolidato/DL201-2011_art5_ISEE_criptovalute_evoluzione.md",
@@ -334,7 +360,10 @@
     "etichetta": "testo vigente alla data dello scarico"
    }
   ],
-  "filtro_destinazione": "2011-12-06/201/.*~art_5(__|$)"
+  "filtro_destinazione": "2011-12-06/201/.*~art_5(__|$)",
+  "argomenti": [
+   "ISEE"
+  ]
  },
  {
   "out": "Leggi/Consolidato/DLgs461-1997_art5_evoluzione.md",
@@ -363,7 +392,10 @@
     "etichetta": "testo vigente alla data dello scarico"
    }
   ],
-  "filtro_destinazione": "1997-11-21/461/.*~art_5(__|$)"
+  "filtro_destinazione": "1997-11-21/461/.*~art_5(__|$)",
+  "argomenti": [
+   "regime dichiarativo"
+  ]
  },
  {
   "out": "Leggi/Consolidato/DLgs461-1997_art6_evoluzione.md",
@@ -392,7 +424,10 @@
     "etichetta": "testo vigente alla data dello scarico"
    }
   ],
-  "filtro_destinazione": "1997-11-21/461/.*~art_6(__|$)"
+  "filtro_destinazione": "1997-11-21/461/.*~art_6(__|$)",
+  "argomenti": [
+   "risparmio amministrato"
+  ]
  },
  {
   "out": "Leggi/Consolidato/DLgs461-1997_art7_evoluzione.md",
@@ -421,6 +456,9 @@
     "etichetta": "testo vigente alla data dello scarico"
    }
   ],
-  "filtro_destinazione": "1997-11-21/461/.*~art_7(__|$)"
+  "filtro_destinazione": "1997-11-21/461/.*~art_7(__|$)",
+  "argomenti": [
+   "risparmio gestito"
+  ]
  }
 ]

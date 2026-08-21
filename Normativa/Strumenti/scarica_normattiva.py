@@ -21,6 +21,11 @@ Note operative (verificate sul campo, non ovvie):
   * La risposta valida ha ``Content-Type: text/xml`` e comincia con ``<?xml``.
     Una risposta ``text/html`` e' sempre un errore, anche con HTTP 200.
 
+Ogni riga di manifest scrive anche ``data_documento`` (la data della vigenza appena
+scaricata, non la data di scarico: per una fotografia e' proprio quella la data che la
+distingue dalle altre) e ``argomenti`` (etichette tematiche, lette dal campo opzionale
+``argomenti`` di ``atti.json`` e valide per tutte le vigenze dello stesso atto).
+
 Uso:  python3 scarica_normattiva.py [id_atto ...]
       (senza argomenti scarica tutti gli atti elencati in atti.json)
 """
@@ -124,6 +129,11 @@ def main():
                 "titolo": f"{atto['titolo']} ({etichetta}, vigenza {vig})",
                 "autorita": "Normattiva - Istituto Poligrafico e Zecca dello Stato",
                 "identificativo": f"{atto['urn']} | G.U. {dataGU} cod. {codice}",
+                # vig e' gia' la data che la vigenza scaricata rappresenta (AAAAMMGG,
+                # con "OGGI" gia' risolto sopra): e' il dato giusto per filtrare
+                # nell'app, non la data di scarico.
+                "data_documento": f"{vig[0:4]}-{vig[4:6]}-{vig[6:8]}",
+                "argomenti": ", ".join(atto.get("argomenti", [])),
                 "url": url,
                 "scaricato_il": date.today().isoformat(),
                 "sha256": sha256(dest),

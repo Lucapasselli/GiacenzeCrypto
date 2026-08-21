@@ -5,7 +5,17 @@
   "articolo": "1",
   "commi": "126-147",
   "titolo": "Legge di bilancio 2023 (L. 29 dicembre 2022, n. 197) — art. 1, commi da 126 a 147 — testo originario",
-  "nota": "e' il testo come pubblicato in Gazzetta Ufficiale, in vigore dal 1° gennaio 2023. I commi da 126 a 147 sono l'intero blocco dedicato alle cripto-attivita': lo conferma l'oggetto della circolare 30/E del 27 ottobre 2023."
+  "nota": "e' il testo come pubblicato in Gazzetta Ufficiale, in vigore dal 1° gennaio 2023. I commi da 126 a 147 sono l'intero blocco dedicato alle cripto-attivita': lo conferma l'oggetto della circolare 30/E del 27 ottobre 2023.",
+  "argomenti": [
+   "plusvalenze",
+   "quadro RW",
+   "quadro RT",
+   "imposta di bollo",
+   "imposta sul valore delle cripto-attivita'",
+   "rideterminazione valore",
+   "regolarizzazione",
+   "reddito d'impresa"
+  ]
  },
  {
   "file": "Leggi/Originale/LeggiBilancio/L_2022-12-29_197_bilancio2023_vigente.akn.xml",
@@ -13,7 +23,17 @@
   "articolo": "1",
   "commi": "126-147",
   "titolo": "Legge di bilancio 2023 (L. 29 dicembre 2022, n. 197) — art. 1, commi da 126 a 147 — testo vigente",
-  "nota": "stesso blocco di commi nella versione coordinata con le modifiche successive. Il confronto con il testo originario mostra cosa e' cambiato dopo il 2023."
+  "nota": "stesso blocco di commi nella versione coordinata con le modifiche successive. Il confronto con il testo originario mostra cosa e' cambiato dopo il 2023.",
+  "argomenti": [
+   "plusvalenze",
+   "quadro RW",
+   "quadro RT",
+   "imposta di bollo",
+   "imposta sul valore delle cripto-attivita'",
+   "rideterminazione valore",
+   "regolarizzazione",
+   "reddito d'impresa"
+  ]
  },
  {
   "file": "Leggi/Originale/LeggiBilancio/L_2023-12-30_213_bilancio2024_originario.akn.xml",
@@ -21,7 +41,8 @@
   "articolo": "1",
   "commi": "504",
   "titolo": "Legge di bilancio 2024 (L. 30 dicembre 2023, n. 213) — art. 1, comma 504",
-  "nota": "la legge di bilancio 2024 NON contiene disposizioni sulle cripto-attivita'. Il comma 504 e' riportato solo perche' e' l'unica disposizione della legge che nomina la moneta elettronica, ma riguarda i servizi di pagamento e gli sportelli bancari, non le cripto-attivita'. Si veda la nota LB2024_nessuna_disposizione_cripto.md."
+  "nota": "la legge di bilancio 2024 NON contiene disposizioni sulle cripto-attivita'. Il comma 504 e' riportato solo perche' e' l'unica disposizione della legge che nomina la moneta elettronica, ma riguarda i servizi di pagamento e gli sportelli bancari, non le cripto-attivita'. Si veda la nota LB2024_nessuna_disposizione_cripto.md.",
+  "argomenti": []
  },
  {
   "file": "Leggi/Originale/LeggiBilancio/L_2024-12-30_207_bilancio2025_originario.akn.xml",
@@ -29,7 +50,12 @@
   "articolo": "1",
   "commi": "23-29",
   "titolo": "Legge di bilancio 2025 (L. 30 dicembre 2024, n. 207) — art. 1, commi da 23 a 29 — testo originario",
-  "nota": "comma 23: aliquota generale del 26 per cento. Comma 24: aliquota del 33 per cento sui redditi della lettera c-sexies) realizzati dal 1° gennaio 2026. Comma 25: soppressione della soglia di 2.000 euro. Commi da 26 a 29: rideterminazione del valore delle cripto-attivita' possedute al 1° gennaio 2025 con imposta sostitutiva del 18 per cento."
+  "nota": "comma 23: aliquota generale del 26 per cento. Comma 24: aliquota del 33 per cento sui redditi della lettera c-sexies) realizzati dal 1° gennaio 2026. Comma 25: soppressione della soglia di 2.000 euro. Commi da 26 a 29: rideterminazione del valore delle cripto-attivita' possedute al 1° gennaio 2025 con imposta sostitutiva del 18 per cento.",
+  "argomenti": [
+   "aliquota",
+   "plusvalenze",
+   "rideterminazione valore"
+  ]
  },
  {
   "file": "Leggi/Originale/LeggiBilancio/L_2024-12-30_207_bilancio2025_vigente.akn.xml",
@@ -37,7 +63,12 @@
   "articolo": "1",
   "commi": "23-29",
   "titolo": "Legge di bilancio 2025 (L. 30 dicembre 2024, n. 207) — art. 1, commi da 23 a 29 — testo vigente",
-  "nota": "nel testo vigente il comma 24 e' quello modificato dal comma 28 della legge di bilancio 2026, che vi ha aggiunto in fondo i periodi sui token di moneta elettronica denominati in euro."
+  "nota": "nel testo vigente il comma 24 e' quello modificato dal comma 28 della legge di bilancio 2026, che vi ha aggiunto in fondo i periodi sui token di moneta elettronica denominati in euro.",
+  "argomenti": [
+   "aliquota",
+   "plusvalenze",
+   "rideterminazione valore"
+  ]
  },
  {
   "file": "Leggi/Originale/LeggiBilancio/L_2025-12-30_199_bilancio2026_originario.akn.xml",
@@ -45,195 +76,323 @@
   "articolo": "1",
   "commi": "28,32,33,34",
   "titolo": "Legge di bilancio 2026 (L. 30 dicembre 2025, n. 199) — art. 1, commi 28 e da 32 a 34 — testo originario",
-  "nota": "comma 28: aliquota del 26 per cento, in luogo del 33 per cento, per i token di moneta elettronica denominati in euro, e irrilevanza della conversione euro/EMT. Commi da 32 a 34: inserimento delle giacenze in criptovalute nel patrimonio mobiliare rilevante ai fini ISEE (DSU)."
+  "nota": "comma 28: aliquota del 26 per cento, in luogo del 33 per cento, per i token di moneta elettronica denominati in euro, e irrilevanza della conversione euro/EMT. Commi da 32 a 34: inserimento delle giacenze in criptovalute nel patrimonio mobiliare rilevante ai fini ISEE (DSU).",
+  "argomenti": [
+   "aliquota",
+   "e-money token",
+   "ISEE"
+  ]
  },
  {
   "file": "Leggi/Originale/LeggiBilancio/L_2025-12-30_199_bilancio2026_vigente.akn.xml",
   "out": "Leggi/Estratti/LeggiBilancio/LB2026_L199-2025_commi_28_32-34_vigente.md",
   "articolo": "1",
   "commi": "28,32,33,34",
-  "titolo": "Legge di bilancio 2026 (L. 30 dicembre 2025, n. 199) — art. 1, commi 28 e da 32 a 34 — testo vigente"
+  "titolo": "Legge di bilancio 2026 (L. 30 dicembre 2025, n. 199) — art. 1, commi 28 e da 32 a 34 — testo vigente",
+  "argomenti": [
+   "aliquota",
+   "e-money token",
+   "ISEE"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-11-21_461_2022-12-31_ante_bilancio2023.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DLgs461-1997_artt_5_6_7_10_2022-12-31_ante_bilancio2023.md",
   "articoli": "5,6,7,10",
   "titolo": "D.Lgs. 21 novembre 1997, n. 461 — artt. 5, 6, 7, 10 — 31 dicembre 2022, prima della legge di bilancio 2023",
-  "nota": "art. 5: regime dichiarativo. Art. 6: regime del risparmio amministrato. Art. 7: regime del risparmio gestito. Sono i tre regimi richiamati dal comma 24 della legge di bilancio 2025 per l'aliquota del 33 per cento."
+  "nota": "art. 5: regime dichiarativo. Art. 6: regime del risparmio amministrato. Art. 7: regime del risparmio gestito. Sono i tre regimi richiamati dal comma 24 della legge di bilancio 2025 per l'aliquota del 33 per cento.",
+  "argomenti": [
+   "regime dichiarativo",
+   "risparmio amministrato",
+   "risparmio gestito",
+   "plusvalenze"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-11-21_461_2023-01-01_post_bilancio2023.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DLgs461-1997_artt_5_6_7_10_2023-01-01_post_bilancio2023.md",
   "articoli": "5,6,7,10",
   "titolo": "D.Lgs. 21 novembre 1997, n. 461 — artt. 5, 6, 7, 10 — 1° gennaio 2023, dopo la legge di bilancio 2023",
-  "nota": "art. 5: regime dichiarativo. Art. 6: regime del risparmio amministrato. Art. 7: regime del risparmio gestito. Sono i tre regimi richiamati dal comma 24 della legge di bilancio 2025 per l'aliquota del 33 per cento."
+  "nota": "art. 5: regime dichiarativo. Art. 6: regime del risparmio amministrato. Art. 7: regime del risparmio gestito. Sono i tre regimi richiamati dal comma 24 della legge di bilancio 2025 per l'aliquota del 33 per cento.",
+  "argomenti": [
+   "regime dichiarativo",
+   "risparmio amministrato",
+   "risparmio gestito",
+   "plusvalenze"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-11-21_461_2025-01-01_post_bilancio2025.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DLgs461-1997_artt_5_6_7_10_2025-01-01_post_bilancio2025.md",
   "articoli": "5,6,7,10",
   "titolo": "D.Lgs. 21 novembre 1997, n. 461 — artt. 5, 6, 7, 10 — 1° gennaio 2025",
-  "nota": "art. 5: regime dichiarativo. Art. 6: regime del risparmio amministrato. Art. 7: regime del risparmio gestito. Sono i tre regimi richiamati dal comma 24 della legge di bilancio 2025 per l'aliquota del 33 per cento."
+  "nota": "art. 5: regime dichiarativo. Art. 6: regime del risparmio amministrato. Art. 7: regime del risparmio gestito. Sono i tre regimi richiamati dal comma 24 della legge di bilancio 2025 per l'aliquota del 33 per cento.",
+  "argomenti": [
+   "regime dichiarativo",
+   "risparmio amministrato",
+   "risparmio gestito",
+   "plusvalenze"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-11-21_461_vigente.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DLgs461-1997_artt_5_6_7_10_vigente.md",
   "articoli": "5,6,7,10",
   "titolo": "D.Lgs. 21 novembre 1997, n. 461 — artt. 5, 6, 7, 10 — testo vigente alla data dello scarico",
-  "nota": "art. 5: regime dichiarativo. Art. 6: regime del risparmio amministrato. Art. 7: regime del risparmio gestito. Sono i tre regimi richiamati dal comma 24 della legge di bilancio 2025 per l'aliquota del 33 per cento."
+  "nota": "art. 5: regime dichiarativo. Art. 6: regime del risparmio amministrato. Art. 7: regime del risparmio gestito. Sono i tre regimi richiamati dal comma 24 della legge di bilancio 2025 per l'aliquota del 33 per cento.",
+  "argomenti": [
+   "regime dichiarativo",
+   "risparmio amministrato",
+   "risparmio gestito",
+   "plusvalenze"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DL_1990-06-28_167_2022-12-31_ante_bilancio2023.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DL167-1990_artt_1_2_4_5_2022-12-31_ante_bilancio2023.md",
   "articoli": "1,2,4,5",
   "titolo": "D.L. 28 giugno 1990, n. 167 (conv. L. 227/1990) — artt. 1, 2, 4, 5 — 31 dicembre 2022, prima della legge di bilancio 2023",
-  "nota": "art. 4: obbligo di indicazione nella dichiarazione dei redditi delle attivita' detenute all'estero, cioe' il Quadro RW. Il comma 129 della legge di bilancio 2023 vi ha inserito le cripto-attivita'. L'art. 2 (trasferimenti attraverso non residenti) e' incluso perche' anch'esso modificato dal comma 129, lettera b)."
+  "nota": "art. 4: obbligo di indicazione nella dichiarazione dei redditi delle attivita' detenute all'estero, cioe' il Quadro RW. Il comma 129 della legge di bilancio 2023 vi ha inserito le cripto-attivita'. L'art. 2 (trasferimenti attraverso non residenti) e' incluso perche' anch'esso modificato dal comma 129, lettera b).",
+  "argomenti": [
+   "quadro RW",
+   "monitoraggio fiscale"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1972-10-26_642_bollo_2022-12-31_ante_bilancio2023.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DPR642-1972_bollo_art_13_2022-12-31_ante_bilancio2023.md",
   "articoli": "13",
   "titolo": "D.P.R. 26 ottobre 1972, n. 642 — art. 13 — 31 dicembre 2022, prima della legge di bilancio 2023",
-  "nota": "i commi 144 e 145 della legge di bilancio 2023 modificano l'art. 13 della TARIFFA allegata al decreto e la relativa nota 3-ter, non l'art. 13 del corpo del decreto. La tariffa e' resa da Normattiva come tabella di testo: per una lettura agevole si veda il PDF ufficiale del decreto."
+  "nota": "i commi 144 e 145 della legge di bilancio 2023 modificano l'art. 13 della TARIFFA allegata al decreto e la relativa nota 3-ter, non l'art. 13 del corpo del decreto. La tariffa e' resa da Normattiva come tabella di testo: per una lettura agevole si veda il PDF ufficiale del decreto.",
+  "argomenti": [
+   "imposta di bollo"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DL_1990-06-28_167_2023-01-01_post_bilancio2023.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DL167-1990_artt_1_2_4_5_2023-01-01_post_bilancio2023.md",
   "articoli": "1,2,4,5",
   "titolo": "D.L. 28 giugno 1990, n. 167 (conv. L. 227/1990) — artt. 1, 2, 4, 5 — 1° gennaio 2023, dopo la legge di bilancio 2023",
-  "nota": "art. 4: obbligo di indicazione nella dichiarazione dei redditi delle attivita' detenute all'estero, cioe' il Quadro RW. Il comma 129 della legge di bilancio 2023 vi ha inserito le cripto-attivita'. L'art. 2 (trasferimenti attraverso non residenti) e' incluso perche' anch'esso modificato dal comma 129, lettera b)."
+  "nota": "art. 4: obbligo di indicazione nella dichiarazione dei redditi delle attivita' detenute all'estero, cioe' il Quadro RW. Il comma 129 della legge di bilancio 2023 vi ha inserito le cripto-attivita'. L'art. 2 (trasferimenti attraverso non residenti) e' incluso perche' anch'esso modificato dal comma 129, lettera b).",
+  "argomenti": [
+   "quadro RW",
+   "monitoraggio fiscale"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1972-10-26_642_bollo_2023-01-01_post_bilancio2023.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DPR642-1972_bollo_art_13_2023-01-01_post_bilancio2023.md",
   "articoli": "13",
   "titolo": "D.P.R. 26 ottobre 1972, n. 642 — art. 13 — 1° gennaio 2023, dopo la legge di bilancio 2023",
-  "nota": "i commi 144 e 145 della legge di bilancio 2023 modificano l'art. 13 della TARIFFA allegata al decreto e la relativa nota 3-ter, non l'art. 13 del corpo del decreto. La tariffa e' resa da Normattiva come tabella di testo: per una lettura agevole si veda il PDF ufficiale del decreto."
+  "nota": "i commi 144 e 145 della legge di bilancio 2023 modificano l'art. 13 della TARIFFA allegata al decreto e la relativa nota 3-ter, non l'art. 13 del corpo del decreto. La tariffa e' resa da Normattiva come tabella di testo: per una lettura agevole si veda il PDF ufficiale del decreto.",
+  "argomenti": [
+   "imposta di bollo"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DL_1990-06-28_167_vigente.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DL167-1990_artt_1_2_4_5_vigente.md",
   "articoli": "1,2,4,5",
   "titolo": "D.L. 28 giugno 1990, n. 167 (conv. L. 227/1990) — artt. 1, 2, 4, 5 — testo vigente alla data dello scarico",
-  "nota": "art. 4: obbligo di indicazione nella dichiarazione dei redditi delle attivita' detenute all'estero, cioe' il Quadro RW. Il comma 129 della legge di bilancio 2023 vi ha inserito le cripto-attivita'. L'art. 2 (trasferimenti attraverso non residenti) e' incluso perche' anch'esso modificato dal comma 129, lettera b)."
+  "nota": "art. 4: obbligo di indicazione nella dichiarazione dei redditi delle attivita' detenute all'estero, cioe' il Quadro RW. Il comma 129 della legge di bilancio 2023 vi ha inserito le cripto-attivita'. L'art. 2 (trasferimenti attraverso non residenti) e' incluso perche' anch'esso modificato dal comma 129, lettera b).",
+  "argomenti": [
+   "quadro RW",
+   "monitoraggio fiscale"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1972-10-26_642_bollo_vigente.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DPR642-1972_bollo_art_13_vigente.md",
   "articoli": "13",
   "titolo": "D.P.R. 26 ottobre 1972, n. 642 — art. 13 — testo vigente alla data dello scarico",
-  "nota": "i commi 144 e 145 della legge di bilancio 2023 modificano l'art. 13 della TARIFFA allegata al decreto e la relativa nota 3-ter, non l'art. 13 del corpo del decreto. La tariffa e' resa da Normattiva come tabella di testo: per una lettura agevole si veda il PDF ufficiale del decreto."
+  "nota": "i commi 144 e 145 della legge di bilancio 2023 modificano l'art. 13 della TARIFFA allegata al decreto e la relativa nota 3-ter, non l'art. 13 del corpo del decreto. La tariffa e' resa da Normattiva come tabella di testo: per una lettura agevole si veda il PDF ufficiale del decreto.",
+  "argomenti": [
+   "imposta di bollo"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DL_2011-12-06_201_2022-12-31_ante_bilancio2023.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DL201-2011_artt_5_19_2022-12-31_ante_bilancio2023.md",
   "articoli": "5,19",
   "titolo": "D.L. 6 dicembre 2011, n. 201 (conv. L. 214/2011) — artt. 5 e 19 — 31 dicembre 2022, prima della legge di bilancio 2023",
-  "nota": "art. 19, comma 18: imposta sul valore delle cripto-attivita' (2 per mille), introdotta dal comma 146 della legge di bilancio 2023. Art. 5: indicatore della situazione economica equivalente (ISEE), modificato dal comma 32 della legge di bilancio 2026."
+  "nota": "art. 19, comma 18: imposta sul valore delle cripto-attivita' (2 per mille), introdotta dal comma 146 della legge di bilancio 2023. Art. 5: indicatore della situazione economica equivalente (ISEE), modificato dal comma 32 della legge di bilancio 2026.",
+  "argomenti": [
+   "ISEE",
+   "imposta sul valore delle cripto-attivita'"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DL_2011-12-06_201_2023-01-01_post_bilancio2023.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DL201-2011_artt_5_19_2023-01-01_post_bilancio2023.md",
   "articoli": "5,19",
   "titolo": "D.L. 6 dicembre 2011, n. 201 (conv. L. 214/2011) — artt. 5 e 19 — 1° gennaio 2023, dopo la legge di bilancio 2023",
-  "nota": "art. 19, comma 18: imposta sul valore delle cripto-attivita' (2 per mille), introdotta dal comma 146 della legge di bilancio 2023. Art. 5: indicatore della situazione economica equivalente (ISEE), modificato dal comma 32 della legge di bilancio 2026."
+  "nota": "art. 19, comma 18: imposta sul valore delle cripto-attivita' (2 per mille), introdotta dal comma 146 della legge di bilancio 2023. Art. 5: indicatore della situazione economica equivalente (ISEE), modificato dal comma 32 della legge di bilancio 2026.",
+  "argomenti": [
+   "ISEE",
+   "imposta sul valore delle cripto-attivita'"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DL_2011-12-06_201_2026-01-01_post_bilancio2026.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DL201-2011_artt_5_19_2026-01-01_post_bilancio2026.md",
   "articoli": "5,19",
   "titolo": "D.L. 6 dicembre 2011, n. 201 (conv. L. 214/2011) — artt. 5 e 19 — 1° gennaio 2026, dopo la legge di bilancio 2026",
-  "nota": "art. 19, comma 18: imposta sul valore delle cripto-attivita' (2 per mille), introdotta dal comma 146 della legge di bilancio 2023. Art. 5: indicatore della situazione economica equivalente (ISEE), modificato dal comma 32 della legge di bilancio 2026."
+  "nota": "art. 19, comma 18: imposta sul valore delle cripto-attivita' (2 per mille), introdotta dal comma 146 della legge di bilancio 2023. Art. 5: indicatore della situazione economica equivalente (ISEE), modificato dal comma 32 della legge di bilancio 2026.",
+  "argomenti": [
+   "ISEE",
+   "imposta sul valore delle cripto-attivita'"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DL_2011-12-06_201_vigente.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DL201-2011_artt_5_19_vigente.md",
   "articoli": "5,19",
   "titolo": "D.L. 6 dicembre 2011, n. 201 (conv. L. 214/2011) — artt. 5 e 19 — testo vigente alla data dello scarico",
-  "nota": "art. 19, comma 18: imposta sul valore delle cripto-attivita' (2 per mille), introdotta dal comma 146 della legge di bilancio 2023. Art. 5: indicatore della situazione economica equivalente (ISEE), modificato dal comma 32 della legge di bilancio 2026."
+  "nota": "art. 19, comma 18: imposta sul valore delle cripto-attivita' (2 per mille), introdotta dal comma 146 della legge di bilancio 2023. Art. 5: indicatore della situazione economica equivalente (ISEE), modificato dal comma 32 della legge di bilancio 2026.",
+  "argomenti": [
+   "ISEE",
+   "imposta sul valore delle cripto-attivita'"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPCM_2013-12-05_159_ISEE_2025-12-31_ante_bilancio2026.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DPCM159-2013_ISEE_artt_4_5_2025-12-31_ante_bilancio2026.md",
   "articoli": "4,5",
   "titolo": "D.P.C.M. 5 dicembre 2013, n. 159 — artt. 4 e 5 (regolamento ISEE) — 31 dicembre 2025, prima della legge di bilancio 2026",
-  "nota": "art. 5: patrimonio mobiliare. E' l'articolo che il comma 33 della legge di bilancio 2026 impone di modificare per farvi rientrare le giacenze in criptovalute."
+  "nota": "art. 5: patrimonio mobiliare. E' l'articolo che il comma 33 della legge di bilancio 2026 impone di modificare per farvi rientrare le giacenze in criptovalute.",
+  "argomenti": [
+   "ISEE"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPCM_2013-12-05_159_ISEE_vigente.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DPCM159-2013_ISEE_artt_4_5_vigente.md",
   "articoli": "4,5",
   "titolo": "D.P.C.M. 5 dicembre 2013, n. 159 — artt. 4 e 5 (regolamento ISEE) — testo vigente alla data dello scarico",
-  "nota": "art. 5: patrimonio mobiliare. E' l'articolo che il comma 33 della legge di bilancio 2026 impone di modificare per farvi rientrare le giacenze in criptovalute."
+  "nota": "art. 5: patrimonio mobiliare. E' l'articolo che il comma 33 della legge di bilancio 2026 impone di modificare per farvi rientrare le giacenze in criptovalute.",
+  "argomenti": [
+   "ISEE"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-07-09_241_2023-01-01_post_bilancio2023.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DLgs241-1997_capo_III_artt_17-21_2023-01-01_post_bilancio2023.md",
   "articoli": "17,17-bis,18,19,20,21",
   "titolo": "D.Lgs. 9 luglio 1997, n. 241 — Capo III, artt. da 17 a 21 (versamento unitario e compensazione) — 1° gennaio 2023",
-  "nota": "e' il testo in vigore quando il comma 134 della legge di bilancio 2023 vi rinviava per il versamento dell'imposta sostitutiva del 14 per cento entro il 15 novembre 2023."
+  "nota": "e' il testo in vigore quando il comma 134 della legge di bilancio 2023 vi rinviava per il versamento dell'imposta sostitutiva del 14 per cento entro il 15 novembre 2023.",
+  "argomenti": [
+   "codici tributo"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-07-09_241_2025-01-01_post_bilancio2025.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DLgs241-1997_capo_III_artt_17-21_2025-01-01_post_bilancio2025.md",
   "articoli": "17,17-bis,18,19,20,21",
   "titolo": "D.Lgs. 9 luglio 1997, n. 241 — Capo III, artt. da 17 a 21 (versamento unitario e compensazione) — 1° gennaio 2025",
-  "nota": "e' il testo in vigore quando il comma 27 della legge di bilancio 2025 vi rinviava per il versamento dell'imposta sostitutiva del 18 per cento entro il 30 novembre 2025."
+  "nota": "e' il testo in vigore quando il comma 27 della legge di bilancio 2025 vi rinviava per il versamento dell'imposta sostitutiva del 18 per cento entro il 30 novembre 2025.",
+  "argomenti": [
+   "codici tributo"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DLGS_1997-07-09_241_vigente.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/DLgs241-1997_capo_III_artt_17-21_vigente.md",
   "articoli": "17,17-bis,18,19,20,21",
   "titolo": "D.Lgs. 9 luglio 1997, n. 241 — Capo III, artt. da 17 a 21 (versamento unitario e compensazione) — testo vigente alla data dello scarico",
-  "nota": "ATTENZIONE: gli articoli del Capo III risultano abrogati dal D.Lgs. 24 marzo 2025, n. 33, che ha trasfuso la disciplina del versamento unitario nel testo unico dei versamenti e della riscossione. Il testo applicabile alle scadenze del 2023 e del 2025 e' quello delle due fotografie precedenti."
+  "nota": "ATTENZIONE: gli articoli del Capo III risultano abrogati dal D.Lgs. 24 marzo 2025, n. 33, che ha trasfuso la disciplina del versamento unitario nel testo unico dei versamenti e della riscossione. Il testo applicabile alle scadenze del 2023 e del 2025 e' quello delle due fotografie precedenti.",
+  "argomenti": [
+   "codici tributo"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2022-12-31_ante_bilancio2023.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/TUIR_artt_9_67_68_110_2022-12-31_ante_bilancio2023.md",
   "articoli": "9,67,68,110",
   "titolo": "TUIR (D.P.R. 22 dicembre 1986, n. 917) — artt. 9, 67, 68, 110 — 31 dicembre 2022, prima della legge di bilancio 2023",
-  "nota": "art. 67, comma 1, lettera c-sexies): fattispecie imponibile. Art. 68, comma 9-bis: determinazione di plusvalenze e minusvalenze. Art. 9: valore normale. Art. 110, comma 3-bis: valutazione delle cripto-attivita' nel reddito d'impresa."
+  "nota": "art. 67, comma 1, lettera c-sexies): fattispecie imponibile. Art. 68, comma 9-bis: determinazione di plusvalenze e minusvalenze. Art. 9: valore normale. Art. 110, comma 3-bis: valutazione delle cripto-attivita' nel reddito d'impresa.",
+  "argomenti": [
+   "plusvalenze",
+   "aliquota",
+   "reddito d'impresa",
+   "rideterminazione valore"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2023-01-01_post_bilancio2023.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/TUIR_artt_9_67_68_110_2023-01-01_post_bilancio2023.md",
   "articoli": "9,67,68,110",
   "titolo": "TUIR (D.P.R. 22 dicembre 1986, n. 917) — artt. 9, 67, 68, 110 — 1° gennaio 2023, entrata in vigore della legge di bilancio 2023",
-  "nota": "art. 67, comma 1, lettera c-sexies): fattispecie imponibile. Art. 68, comma 9-bis: determinazione di plusvalenze e minusvalenze. Art. 9: valore normale. Art. 110, comma 3-bis: valutazione delle cripto-attivita' nel reddito d'impresa. ATTENZIONE: nella fotografia al 1° gennaio 2023 il corpo dell'articolo 67 non riporta ancora la lettera c-sexies), pur essendo in vigore da quel giorno: Normattiva la tiene per qualche settimana fra le modifiche annunciate nei metadati e la porta nel testo solo con un consolidamento successivo, collocato fra il 25 febbraio e il 1° marzo 2023. Per il testo dell'articolo 67 come modificato dalla legge di bilancio 2023 usare la fotografia al 1° marzo 2023. Gli articoli 68 e 110 sono invece aggiornati gia' al 1° gennaio 2023."
+  "nota": "art. 67, comma 1, lettera c-sexies): fattispecie imponibile. Art. 68, comma 9-bis: determinazione di plusvalenze e minusvalenze. Art. 9: valore normale. Art. 110, comma 3-bis: valutazione delle cripto-attivita' nel reddito d'impresa. ATTENZIONE: nella fotografia al 1° gennaio 2023 il corpo dell'articolo 67 non riporta ancora la lettera c-sexies), pur essendo in vigore da quel giorno: Normattiva la tiene per qualche settimana fra le modifiche annunciate nei metadati e la porta nel testo solo con un consolidamento successivo, collocato fra il 25 febbraio e il 1° marzo 2023. Per il testo dell'articolo 67 come modificato dalla legge di bilancio 2023 usare la fotografia al 1° marzo 2023. Gli articoli 68 e 110 sono invece aggiornati gia' al 1° gennaio 2023.",
+  "argomenti": [
+   "plusvalenze",
+   "aliquota",
+   "reddito d'impresa",
+   "rideterminazione valore"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2023-03-01_corpo_aggiornato.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/TUIR_artt_9_67_68_110_2023-03-01_corpo_aggiornato.md",
   "articoli": "9,67,68,110",
   "titolo": "TUIR (D.P.R. 22 dicembre 1986, n. 917) — artt. 9, 67, 68, 110 — 1° marzo 2023, prima fotografia con l'articolo 67 gia' aggiornato",
-  "nota": "art. 67, comma 1, lettera c-sexies): fattispecie imponibile. Art. 68, comma 9-bis: determinazione di plusvalenze e minusvalenze. Art. 9: valore normale. Art. 110, comma 3-bis: valutazione delle cripto-attivita' nel reddito d'impresa. ATTENZIONE: nella fotografia al 1° gennaio 2023 il corpo dell'articolo 67 non riporta ancora la lettera c-sexies), pur essendo in vigore da quel giorno: Normattiva la tiene per qualche settimana fra le modifiche annunciate nei metadati e la porta nel testo solo con un consolidamento successivo, collocato fra il 25 febbraio e il 1° marzo 2023. Per il testo dell'articolo 67 come modificato dalla legge di bilancio 2023 usare la fotografia al 1° marzo 2023. Gli articoli 68 e 110 sono invece aggiornati gia' al 1° gennaio 2023."
+  "nota": "art. 67, comma 1, lettera c-sexies): fattispecie imponibile. Art. 68, comma 9-bis: determinazione di plusvalenze e minusvalenze. Art. 9: valore normale. Art. 110, comma 3-bis: valutazione delle cripto-attivita' nel reddito d'impresa. ATTENZIONE: nella fotografia al 1° gennaio 2023 il corpo dell'articolo 67 non riporta ancora la lettera c-sexies), pur essendo in vigore da quel giorno: Normattiva la tiene per qualche settimana fra le modifiche annunciate nei metadati e la porta nel testo solo con un consolidamento successivo, collocato fra il 25 febbraio e il 1° marzo 2023. Per il testo dell'articolo 67 come modificato dalla legge di bilancio 2023 usare la fotografia al 1° marzo 2023. Gli articoli 68 e 110 sono invece aggiornati gia' al 1° gennaio 2023.",
+  "argomenti": [
+   "plusvalenze",
+   "aliquota",
+   "reddito d'impresa",
+   "rideterminazione valore"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2024-12-31_ante_bilancio2025.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/TUIR_artt_9_67_68_110_2024-12-31_ante_bilancio2025.md",
   "articoli": "9,67,68,110",
   "titolo": "TUIR (D.P.R. 22 dicembre 1986, n. 917) — artt. 9, 67, 68, 110 — 31 dicembre 2024, prima della legge di bilancio 2025",
-  "nota": "art. 67, comma 1, lettera c-sexies): fattispecie imponibile. Art. 68, comma 9-bis: determinazione di plusvalenze e minusvalenze. Art. 9: valore normale. Art. 110, comma 3-bis: valutazione delle cripto-attivita' nel reddito d'impresa."
+  "nota": "art. 67, comma 1, lettera c-sexies): fattispecie imponibile. Art. 68, comma 9-bis: determinazione di plusvalenze e minusvalenze. Art. 9: valore normale. Art. 110, comma 3-bis: valutazione delle cripto-attivita' nel reddito d'impresa.",
+  "argomenti": [
+   "plusvalenze",
+   "aliquota",
+   "reddito d'impresa",
+   "rideterminazione valore"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2025-01-01_post_bilancio2025.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/TUIR_artt_9_67_68_110_2025-01-01_post_bilancio2025.md",
   "articoli": "9,67,68,110",
   "titolo": "TUIR (D.P.R. 22 dicembre 1986, n. 917) — artt. 9, 67, 68, 110 — 1° gennaio 2025, dopo la legge di bilancio 2025",
-  "nota": "art. 67, comma 1, lettera c-sexies): fattispecie imponibile. Art. 68, comma 9-bis: determinazione di plusvalenze e minusvalenze. Art. 9: valore normale. Art. 110, comma 3-bis: valutazione delle cripto-attivita' nel reddito d'impresa."
+  "nota": "art. 67, comma 1, lettera c-sexies): fattispecie imponibile. Art. 68, comma 9-bis: determinazione di plusvalenze e minusvalenze. Art. 9: valore normale. Art. 110, comma 3-bis: valutazione delle cripto-attivita' nel reddito d'impresa.",
+  "argomenti": [
+   "plusvalenze",
+   "aliquota",
+   "reddito d'impresa",
+   "rideterminazione valore"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_2026-01-01_post_bilancio2026.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/TUIR_artt_9_67_68_110_2026-01-01_post_bilancio2026.md",
   "articoli": "9,67,68,110",
   "titolo": "TUIR (D.P.R. 22 dicembre 1986, n. 917) — artt. 9, 67, 68, 110 — 1° gennaio 2026, dopo la legge di bilancio 2026",
-  "nota": "art. 67, comma 1, lettera c-sexies): fattispecie imponibile. Art. 68, comma 9-bis: determinazione di plusvalenze e minusvalenze. Art. 9: valore normale. Art. 110, comma 3-bis: valutazione delle cripto-attivita' nel reddito d'impresa."
+  "nota": "art. 67, comma 1, lettera c-sexies): fattispecie imponibile. Art. 68, comma 9-bis: determinazione di plusvalenze e minusvalenze. Art. 9: valore normale. Art. 110, comma 3-bis: valutazione delle cripto-attivita' nel reddito d'impresa.",
+  "argomenti": [
+   "plusvalenze",
+   "aliquota",
+   "reddito d'impresa",
+   "rideterminazione valore"
+  ]
  },
  {
   "file": "Leggi/Originale/NormeRichiamate/DPR_1986-12-22_917_TUIR_vigente.akn.xml",
   "out": "Leggi/Estratti/NormeRichiamate/TUIR_artt_9_67_68_110_vigente.md",
   "articoli": "9,67,68,110",
   "titolo": "TUIR (D.P.R. 22 dicembre 1986, n. 917) — artt. 9, 67, 68, 110 — testo vigente alla data dello scarico",
-  "nota": "art. 67, comma 1, lettera c-sexies): fattispecie imponibile. Art. 68, comma 9-bis: determinazione di plusvalenze e minusvalenze. Art. 9: valore normale. Art. 110, comma 3-bis: valutazione delle cripto-attivita' nel reddito d'impresa."
+  "nota": "art. 67, comma 1, lettera c-sexies): fattispecie imponibile. Art. 68, comma 9-bis: determinazione di plusvalenze e minusvalenze. Art. 9: valore normale. Art. 110, comma 3-bis: valutazione delle cripto-attivita' nel reddito d'impresa.",
+  "argomenti": [
+   "plusvalenze",
+   "aliquota",
+   "reddito d'impresa",
+   "rideterminazione valore"
+  ]
  }
 ]

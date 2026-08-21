@@ -273,4 +273,15 @@ public class VarStatiche {
     public static String getFile_ChatbotIA() {
         return getWorkingDirectory() + "ChatbotIA.json";
     }
+
+    /**
+     * @return il percorso della cartella {@code Normativa/} nella directory di lavoro, lo specchio locale
+     *         dell'omonima cartella del repository (leggi, prassi, istruzioni dichiarazioni, ISEE/DSU),
+     *         scaricato su richiesta dal tab "Normative". Non esiste su un'installazione nuova finché
+     *         l'utente non lo scarica: a differenza di {@code ImportConfig/} non c'è un contenuto minimo
+     *         da creare in automatico, perché senza rete non c'è nulla da mostrare.
+     */
+    public static String getCartella_Normativa() {
+        return getWorkingDirectory() + "Normativa/";
+    }
 }

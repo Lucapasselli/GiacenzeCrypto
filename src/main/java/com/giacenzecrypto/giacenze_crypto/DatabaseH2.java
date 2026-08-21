@@ -186,6 +186,16 @@ public class DatabaseH2 {
                 stmtGoPlus.execute("ALTER TABLE GOPLUSSECURITY ADD COLUMN IF NOT EXISTS is_open_source VARCHAR(5)");
             }
 
+            //Cache del testo estratto dai documenti di Normativa/ (PDF/XML/Markdown), per la ricerca a testo
+            //libero del tab "Normative". Sta nel database principale e non in quello personale perché è una
+            //cache ricostruibile in ogni momento dai file stessi, non dato dell'utente - come GESTITICOINGECKO
+            //e le altre tabelle di questo blocco. Chiave di validità: lo sha256 di fonti.csv (Percorso è il
+            //path relativo sotto Normativa/); uno sha diverso da quello salvato dice che il file è cambiato
+            //(es. dopo un aggiornamento da GitHub) e il testo va ri-estratto.
+            createTableSQL = "CREATE TABLE IF NOT EXISTS NORMATIVA_TESTO (Percorso VARCHAR(500) PRIMARY KEY, "
+                    + "Sha256 VARCHAR(64), Testo CLOB)";
+            EseguiDDL(connection, createTableSQL);
+
             //Nell'edizione Store la tabella non viene nemmeno creata: quella build non scarica i movimenti
             //dai conti exchange e non ha quindi nessuna credenziale da conservare. "Non ci sono chiavi API"
             //e "la tabella c'è ma è vuota" non sono la stessa affermazione, ed è la prima che va sostenuta
@@ -2101,7 +2111,78 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         }
     }
 
-    
+    /**
+     * Legge dalla cache {@code NORMATIVA_TESTO} lo sha256 salvato per un documento di
+     * {@code Normativa/}, senza portare in memoria il testo estratto (che può pesare quanto il
+     * documento stesso). Usato per decidere se l'estrazione è ancora valida: se lo sha atteso
+     * (quello di {@code fonti.csv}) è diverso da questo, il file è cambiato e va ri-estratto.
+     *
+     * @param Percorso percorso relativo del documento sotto {@code Normativa/}
+     * @return lo sha256 salvato, o {@code null} se il documento non è (ancora) in cache
+     */
+    public static String NormativaTesto_LeggiSha(String Percorso) {
+        String Risultato = null;
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT Sha256 FROM NORMATIVA_TESTO WHERE Percorso = ?")) {
+            ps.setString(1, Percorso);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Risultato = rs.getString("Sha256");
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return Risultato;
+    }
+
+    /**
+     * Legge il testo cachato di un documento di {@code Normativa/}, indipendentemente dallo sha
+     * salvato: chi chiama ha già deciso (con {@link #NormativaTesto_LeggiSha(String)}) che la
+     * cache è valida.
+     *
+     * @param Percorso percorso relativo del documento sotto {@code Normativa/}
+     * @return il testo estratto, o {@code null} se il documento non è in cache
+     */
+    public static String NormativaTesto_Leggi(String Percorso) {
+        String Risultato = null;
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT Testo FROM NORMATIVA_TESTO WHERE Percorso = ?")) {
+            ps.setString(1, Percorso);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Risultato = rs.getString("Testo");
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return Risultato;
+    }
+
+    /**
+     * Inserisce o aggiorna in cache il testo estratto di un documento di {@code Normativa/}.
+     *
+     * @param Percorso percorso relativo del documento sotto {@code Normativa/}
+     * @param Sha256 sha256 del documento al momento dell'estrazione (da {@code fonti.csv})
+     * @param Testo testo estratto
+     */
+    public static void NormativaTesto_Scrivi(String Percorso, String Sha256, String Testo) {
+        try (PreparedStatement ps = connection.prepareStatement("""
+                MERGE INTO NORMATIVA_TESTO (Percorso, Sha256, Testo)
+                KEY (Percorso)
+                VALUES (?, ?, ?)
+                """)) {
+            ps.setString(1, Percorso);
+            ps.setString(2, Sha256);
+            ps.setString(3, Testo);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+
      /**
      * Inserisce o aggiorna un'opzione nella tabella OPZIONI personali
      *

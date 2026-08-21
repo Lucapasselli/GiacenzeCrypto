@@ -7,7 +7,11 @@
   "autorita": "Unione europea - Ufficio delle pubblicazioni",
   "url": "https://publications.europa.eu/resource/celex/32023R1114",
   "accept": "application/pdf",
-  "lingua": "it"
+  "lingua": "it",
+  "data": "2023-06-09",
+  "argomenti": [
+   "MiCA"
+  ]
  },
  {
   "nome": "Dir_UE_2023-2226_DAC8_scambio_informazioni_cripto-attivita.pdf",
@@ -17,6 +21,10 @@
   "autorita": "Unione europea - Ufficio delle pubblicazioni",
   "url": "https://publications.europa.eu/resource/celex/32023L2226",
   "accept": "application/pdf",
-  "lingua": "it"
+  "lingua": "it",
+  "data": "2023-10-17",
+  "argomenti": [
+   "DAC8"
+  ]
  }
 ]

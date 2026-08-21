@@ -866,6 +866,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_ProviderDefi_Bottone_Annulla = new javax.swing.JButton();
         Opzioni_ProviderDefi_Bottone_Ripristina = new javax.swing.JButton();
         Opzioni_Backup_Pannello = new javax.swing.JPanel();
+        Normativa = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -1522,13 +1523,14 @@ private static final long serialVersionUID = 3L;
                         .addComponent(jSeparator10, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel27))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(TransazioniCrypto_Label_Filtro)
-                    .addComponent(TransazioniCrypto_Bottone_Filtri)
-                    .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri)
-                    .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label)
-                    .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(TransazioniCryptoFiltro_Text, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(TransazioniCryptoFiltro_Text, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(TransazioniCrypto_Label_Filtro)
+                        .addComponent(TransazioniCrypto_Bottone_Filtri)
+                        .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri)
+                        .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label)
+                        .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(5, 5, 5)
                 .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
@@ -2428,7 +2430,6 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        GiacenzeaData_Bottone_GiacenzeExplorer.setFont(new java.awt.Font("Noto Sans", 0, 13)); // NOI18N
         GiacenzeaData_Bottone_GiacenzeExplorer.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Wallet.png"))); // NOI18N
         GiacenzeaData_Bottone_GiacenzeExplorer.setText("<html> Vedi situazione <br> Wallet ad Oggi </html>");
         GiacenzeaData_Bottone_GiacenzeExplorer.setEnabled(false);
@@ -5657,6 +5658,25 @@ private static final long serialVersionUID = 3L;
 
         CDC.addTab("Opzioni", Opzioni);
 
+        Normativa.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                NormativaComponentShown(evt);
+            }
+        });
+
+        javax.swing.GroupLayout NormativaLayout = new javax.swing.GroupLayout(Normativa);
+        Normativa.setLayout(NormativaLayout);
+        NormativaLayout.setHorizontalGroup(
+            NormativaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 1465, Short.MAX_VALUE)
+        );
+        NormativaLayout.setVerticalGroup(
+            NormativaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 856, Short.MAX_VALUE)
+        );
+
+        CDC.addTab("Normative", Normativa);
+
         jLabel1.setText("Seleziona data inizio e fine per i calcoli ->");
 
         jLabel2.setText("Data Inizio :");
@@ -8285,6 +8305,24 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
         GestioneDocumentaleDaAggiornare = false;
     }//GEN-LAST:event_GestioneDocumentaleComponentShown
+
+    /**
+     * Il pannello del tab "Normative", creato alla prima apertura.
+     * <p>A differenza di {@link #GestioneDocumentale_Pannello} non serve un flag "da aggiornare":
+     * nulla al di fuori del pannello stesso scrive dentro {@code Normativa/}, l'aggiornamento parte
+     * solo dal suo pulsante "Aggiorna da GitHub" e si ricarica da sé.
+     */
+    private GUI_Normativa_Pannello Normativa_Pannello = null;
+
+    private void NormativaComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_NormativaComponentShown
+        if (Normativa_Pannello == null) {
+            Normativa_Pannello = new GUI_Normativa_Pannello();
+            Normativa.setLayout(new java.awt.BorderLayout());
+            Normativa.add(Normativa_Pannello, java.awt.BorderLayout.CENTER);
+            Normativa.revalidate();
+            Normativa.repaint();
+        }
+    }//GEN-LAST:event_NormativaComponentShown
 
     /**
      * Il pannello di backup montato nel sotto-tab di Opzioni, creato alla prima apertura.
@@ -17183,6 +17221,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JMenuItem MenuItem_ModificaReward;
     private javax.swing.JMenuItem MenuItem_SeparaMovimento;
     private javax.swing.JMenuItem MenuItem_UnisciMovimenti;
+    private javax.swing.JPanel Normativa;
     private javax.swing.JPanel Opzioni;
     private javax.swing.JCheckBox OpzioniRewards_CashBackComeFIAT;
     private javax.swing.JComboBox<String> OpzioniRewards_CashBackComeFIAT_ComboBox;

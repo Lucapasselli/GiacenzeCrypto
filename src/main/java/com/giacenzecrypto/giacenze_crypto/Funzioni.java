@@ -4034,6 +4034,135 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
                 + RADICE_CONFIG_REPO + "/" + codificaSegmentoUrl(sottoCartellaRepo) + "/" + codificaSegmentoUrl(nomeFile);
     }
 
+    /**
+     * Esito di {@link #AggiornamentoNormativaDaRepository()}.
+     * @param aggiornati path relativi dei file scaricati perché mancanti o con sha diverso da quello remoto
+     * @param cancellati path relativi dei file locali rimossi perché non più presenti nell'albero remoto
+     * @param riuscito {@code false} se l'albero remoto non è stato raggiungibile (nessun file toccato)
+     */
+    public record RisultatoNormativa(List<String> aggiornati, List<String> cancellati, boolean riuscito) {}
+
+    /**
+     * Allinea {@link VarStatiche#getCartella_Normativa()} al contenuto di {@code Normativa/} nel
+     * repository GitHub del progetto, con la stessa tecnica di
+     * {@link #AggiornamentoConfigDaRepositoryUnicaChiamata(List)}: un'unica chiamata all'albero git
+     * ({@code git/trees/{branch}:Normativa?recursive=1}), confronto sullo sha blob, download da
+     * {@code raw.githubusercontent.com} (non consuma quota API) per i soli file mancanti o cambiati.
+     * <p>Due differenze rispetto a {@code config/}, entrambe volute:
+     * <ul>
+     * <li>nessun vincolo di profondità — {@code Normativa/} è annidata su più livelli (es.
+     *     {@code Leggi/Originale/LeggiBilancio/...}) e {@link #allineaFileConfig} accetta già un
+     *     {@code name} con degli slash, quindi è riusato così com'è, senza bisogno di adattarlo;</li>
+     * <li>nessun flag {@code "centralizzato"} da rispettare — l'intera cartella locale è uno specchio
+     *     1:1 del repository, senza file propri dell'utente, quindi un file assente dall'albero remoto
+     *     va sempre cancellato ({@link #cancellaOrfaniNormativa}). Ma solo quando l'albero remoto non è
+     *     vuoto: un errore di rete o una risposta troncata non deve svuotare l'archivio.</li>
+     * </ul>
+     * @return il riepilogo dell'operazione
+     */
+    public static RisultatoNormativa AggiornamentoNormativaDaRepository() {
+        String cartellaLocale = VarStatiche.getCartella_Normativa();
+        List<String> aggiornati = new ArrayList<>();
+        List<String> cancellati = new ArrayList<>();
+
+        String apiUrl = "https://api.github.com/repos/" + REPO_GITHUB + "/git/trees/"
+                + BRANCH_GITHUB + ":Normativa?recursive=1";
+        OkHttpClient client = HTTP_CLIENT;
+        Request request = new Request.Builder()
+                .url(apiUrl)
+                .header("User-Agent", "GiacenzeCrypto")
+                .header("Accept", "application/vnd.github.v3+json")
+                .build();
+
+        // path relativo (con gli slash) -> sha blob
+        Map<String, String> remoti = new TreeMap<>();
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                System.out.println("AggiornamentoNormativa: risposta API GitHub non valida, codice " + response.code());
+                return new RisultatoNormativa(aggiornati, cancellati, false);
+            }
+            JsonObject albero = JsonParser.parseString(response.body().string()).getAsJsonObject();
+            if (albero.has("truncated") && albero.get("truncated").getAsBoolean()) {
+                System.out.println("AggiornamentoNormativa: albero GitHub troncato, aggiornamento annullato");
+                return new RisultatoNormativa(aggiornati, cancellati, false);
+            }
+            for (JsonElement el : albero.getAsJsonArray("tree")) {
+                JsonObject nodo = el.getAsJsonObject();
+                if (!"blob".equals(nodo.get("type").getAsString())) continue;
+                remoti.put(nodo.get("path").getAsString(), nodo.get("sha").getAsString());
+            }
+        } catch (Exception e) {
+            System.out.println("AggiornamentoNormativa: errore nella lettura dell'albero GitHub - " + e.getMessage());
+            LoggerGC.ScriviErrore(e);
+            return new RisultatoNormativa(aggiornati, cancellati, false);
+        }
+
+        if (remoti.isEmpty()) {
+            System.out.println("AggiornamentoNormativa: albero remoto vuoto, aggiornamento annullato");
+            return new RisultatoNormativa(aggiornati, cancellati, false);
+        }
+
+        for (Map.Entry<String, String> e : remoti.entrySet()) {
+            String pathRelativo = e.getKey();
+            try {
+                if (allineaFileConfig(client, "Normativa", cartellaLocale, pathRelativo, e.getValue(),
+                        urlRawGitHubNormativa(pathRelativo))) {
+                    aggiornati.add(pathRelativo);
+                }
+            } catch (Exception ex) {
+                System.out.println("AggiornamentoNormativa: errore su " + pathRelativo + " - " + ex.getMessage());
+                LoggerGC.ScriviErrore(ex);
+            }
+        }
+
+        cancellati.addAll(cancellaOrfaniNormativa(cartellaLocale, remoti.keySet()));
+
+        return new RisultatoNormativa(aggiornati, cancellati, true);
+    }
+
+    /** @return l'URL raw del file sotto Normativa/, con ogni segmento del path codificato singolarmente. */
+    private static String urlRawGitHubNormativa(String pathRelativo) {
+        StringBuilder sb = new StringBuilder(
+                "https://raw.githubusercontent.com/" + REPO_GITHUB + "/" + BRANCH_GITHUB + "/Normativa");
+        for (String segmento : pathRelativo.split("/")) {
+            sb.append("/").append(codificaSegmentoUrl(segmento));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Cancella dalla cartella locale, ricorsivamente, i file che non compaiono più nell'albero remoto.
+     * A differenza di {@link #cancellaConfigOrfani}: nessun vincolo {@code "centralizzato"} (l'intera
+     * cartella è uno specchio del repository, non un mix di file centralizzati e dell'utente) e ricorre
+     * nelle sottocartelle ({@code Normativa/} è annidata su più livelli, {@code config/} no).
+     * Da chiamare solo con un elenco remoto non vuoto - lo garantisce già {@link #AggiornamentoNormativaDaRepository()}.
+     * <p>Non {@code private}: la logica di cancellazione degli orfani è testata direttamente, senza rete
+     * (vedi {@code FunzioniNormativaTest}), sul modello dei package-private raggiunti dai test del progetto.
+     * @return i path relativi dei file cancellati
+     */
+    static List<String> cancellaOrfaniNormativa(String cartellaLocale, Set<String> pathRemoti) {
+        List<String> cancellati = new ArrayList<>();
+        Path radice = Paths.get(cartellaLocale);
+        if (!Files.isDirectory(radice)) return cancellati;
+        try (Stream<Path> stream = Files.walk(radice)) {
+            stream.filter(Files::isRegularFile).forEach(p -> {
+                String relativo = radice.relativize(p).toString().replace(File.separatorChar, '/');
+                if (!pathRemoti.contains(relativo)) {
+                    try {
+                        Files.delete(p);
+                        cancellati.add(relativo);
+                        System.out.println("AggiornamentoNormativa: rimosso file non più nel repository: " + relativo);
+                    } catch (IOException ex) {
+                        System.out.println("AggiornamentoNormativa: impossibile cancellare " + relativo + " - " + ex.getMessage());
+                    }
+                }
+            });
+        } catch (IOException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return cancellati;
+    }
+
     private static String codificaSegmentoUrl(String segmento) {
         try {
             return java.net.URLEncoder.encode(segmento, java.nio.charset.StandardCharsets.UTF_8.name()).replace("+", "%20");

@@ -7,7 +7,17 @@
   "vigenze": {
    "originario": "2023-01-01",
    "vigente": "OGGI"
-  }
+  },
+  "argomenti": [
+   "plusvalenze",
+   "quadro RW",
+   "quadro RT",
+   "imposta di bollo",
+   "imposta sul valore delle cripto-attivita'",
+   "rideterminazione valore",
+   "regolarizzazione",
+   "reddito d'impresa"
+  ]
  },
  {
   "id": "L_2023-12-30_213_bilancio2024",
@@ -17,7 +27,8 @@
   "vigenze": {
    "originario": "2024-01-01",
    "vigente": "OGGI"
-  }
+  },
+  "argomenti": []
  },
  {
   "id": "L_2024-12-30_207_bilancio2025",
@@ -27,7 +38,12 @@
   "vigenze": {
    "originario": "2025-01-01",
    "vigente": "OGGI"
-  }
+  },
+  "argomenti": [
+   "aliquota",
+   "plusvalenze",
+   "rideterminazione valore"
+  ]
  },
  {
   "id": "L_2025-12-30_199_bilancio2026",
@@ -37,7 +53,12 @@
   "vigenze": {
    "originario": "2026-01-01",
    "vigente": "OGGI"
-  }
+  },
+  "argomenti": [
+   "aliquota",
+   "e-money token",
+   "ISEE"
+  ]
  },
  {
   "id": "DPR_1986-12-22_917_TUIR",
@@ -52,7 +73,13 @@
    "2025-01-01_post_bilancio2025": "2025-01-01",
    "2026-01-01_post_bilancio2026": "2026-01-01",
    "vigente": "OGGI"
-  }
+  },
+  "argomenti": [
+   "plusvalenze",
+   "aliquota",
+   "reddito d'impresa",
+   "rideterminazione valore"
+  ]
  },
  {
   "id": "DLGS_1997-11-21_461",
@@ -64,7 +91,13 @@
    "2023-01-01_post_bilancio2023": "2023-01-01",
    "2025-01-01_post_bilancio2025": "2025-01-01",
    "vigente": "OGGI"
-  }
+  },
+  "argomenti": [
+   "plusvalenze",
+   "regime dichiarativo",
+   "risparmio amministrato",
+   "risparmio gestito"
+  ]
  },
  {
   "id": "DL_1990-06-28_167",
@@ -75,7 +108,11 @@
    "2022-12-31_ante_bilancio2023": "2022-12-31",
    "2023-01-01_post_bilancio2023": "2023-01-01",
    "vigente": "OGGI"
-  }
+  },
+  "argomenti": [
+   "quadro RW",
+   "monitoraggio fiscale"
+  ]
  },
  {
   "id": "DPR_1972-10-26_642_bollo",
@@ -86,7 +123,10 @@
    "2022-12-31_ante_bilancio2023": "2022-12-31",
    "2023-01-01_post_bilancio2023": "2023-01-01",
    "vigente": "OGGI"
-  }
+  },
+  "argomenti": [
+   "imposta di bollo"
+  ]
  },
  {
   "id": "DL_2011-12-06_201",
@@ -98,7 +138,11 @@
    "2023-01-01_post_bilancio2023": "2023-01-01",
    "2026-01-01_post_bilancio2026": "2026-01-01",
    "vigente": "OGGI"
-  }
+  },
+  "argomenti": [
+   "imposta sul valore delle cripto-attivita'",
+   "ISEE"
+  ]
  },
  {
   "id": "DPCM_2013-12-05_159_ISEE",
@@ -108,7 +152,10 @@
   "vigenze": {
    "2025-12-31_ante_bilancio2026": "2025-12-31",
    "vigente": "OGGI"
-  }
+  },
+  "argomenti": [
+   "ISEE"
+  ]
  },
  {
   "id": "DLGS_1997-07-09_241",
@@ -119,7 +166,10 @@
    "2023-01-01_post_bilancio2023": "2023-01-01",
    "2025-01-01_post_bilancio2025": "2025-01-01",
    "vigente": "OGGI"
-  }
+  },
+  "argomenti": [
+   "codici tributo"
+  ]
  },
  {
   "id": "DLGS_1997-12-15_446_IRAP",
@@ -128,7 +178,11 @@
   "cartella": "Leggi/Originale/NormeRichiamate",
   "vigenze": {
    "vigente": "OGGI"
-  }
+  },
+  "argomenti": [
+   "IRAP",
+   "reddito d'impresa"
+  ]
  },
  {
   "id": "DLGS_2025-03-24_33_versamenti",
@@ -137,7 +191,8 @@
   "cartella": "Leggi/Originale/NormeRichiamate",
   "vigenze": {
    "vigente": "OGGI"
-  }
+  },
+  "argomenti": []
  },
  {
   "id": "DLGS_2025-12-10_194_DAC8",
@@ -147,6 +202,9 @@
   "vigenze": {
    "originario": "2026-01-06",
    "vigente": "OGGI"
-  }
+  },
+  "argomenti": [
+   "DAC8"
+  ]
  }
 ]

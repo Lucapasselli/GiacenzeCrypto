@@ -201,8 +201,12 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
                 }
 
                 if (!ricerca.isEmpty()) {
-                    boolean titoloMatch = d.titolo().toLowerCase(Locale.ITALIAN).contains(ricerca);
-                    if (!titoloMatch) {
+                    //l'identificativo porta il numero/data ufficiali ("Circolare n. 30/E del 27
+                    //ottobre 2023"), spesso il modo più naturale con cui si cerca un documento e
+                    //quasi mai ripetuto nel titolo
+                    boolean metadatiMatch = d.titolo().toLowerCase(Locale.ITALIAN).contains(ricerca)
+                            || d.identificativo().toLowerCase(Locale.ITALIAN).contains(ricerca);
+                    if (!metadatiMatch) {
                         if (!cercaTesto) {
                             return false;
                         }

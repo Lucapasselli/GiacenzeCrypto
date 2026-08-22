@@ -26,6 +26,11 @@ on:
         # Come per AUR, la prima volta conviene provarlo a mano con flatpak.yml in "solo_prova"
         # (vedi test/Documentazione/Pubblicazione_Flatpak.md). Attivalo dopo.
         default: false
+      bozza:
+        description: "Crea la release come bozza (draft): resta invisibile al pubblico finche' non la pubblichi a mano da GitHub, cosi' puoi scaricare e provare gli asset con calma"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -371,13 +376,19 @@ jobs:
           tag_name: Giacenze_Crypto_${{ env.VERSIONE }}
           name: Giacenze_Crypto_${{ env.VERSIONE }}
           files: release_assets/*
+          # Una bozza non e' visibile al pubblico e non genera l'evento "release: published",
+          # quindi ne' l'integrazione GitHub->SourceForge ne' un eventuale controllo aggiornamenti
+          # dell'app la vedono finche' non viene pubblicata a mano dall'interfaccia GitHub.
+          draft: ${{ inputs.bozza }}
 
   # L'aggiornamento di AUR e' richiamato qui e non con "on: release", perche' una release
   # creata col GITHUB_TOKEN di default non innesca altri workflow. Resta comunque lanciabile
   # da solo (workflow_dispatch di aur.yml) senza ricostruire e ripubblicare gli asset.
   aggiorna-aur:
     needs: create-release
-    if: ${{ inputs.pubblica_su_aur }}
+    # In bozza la release non e' scaricabile pubblicamente: aur.yml fallirebbe al download
+    # dell'asset, quindi il job va saltato invece che lasciato fallire.
+    if: ${{ inputs.pubblica_su_aur && !inputs.bozza }}
     uses: ./.github/workflows/aur.yml
     with:
       # Ripubblicare la stessa versione produce un asset con checksum diverso (il JAR non e'
@@ -389,6 +400,8 @@ jobs:
   # l'applicazione, riusa l'asset "Portable Multipiattaforma" appena pubblicato.
   aggiorna-flatpak:
     needs: create-release
-    if: ${{ inputs.pubblica_flatpak }}
+    # Stesso motivo di aggiorna-aur: in bozza il download dell'asset dalla release fallirebbe
+    # comunque (e' voluto in flatpak.yml), meglio saltare il job che lasciarlo fallire.
+    if: ${{ inputs.pubblica_flatpak && !inputs.bozza }}
     uses: ./.github/workflows/flatpak.yml
     secrets: inherit

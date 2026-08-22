@@ -180,7 +180,7 @@ async function fetchAllConversions(exchange, startTime, endTime) {
 async function main() {
     try {
         const args = process.argv.slice(2);
-        if (args.length !== 5) {
+        if (args.length < 5) {
             logError('Uso: node script.js exchangeId apiKey secret startDate');
             process.exit(1);
         }

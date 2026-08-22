@@ -223,7 +223,7 @@ async function fetchAllTrades(exchange, startTime, endTime, tokenArray) {
 async function main() {
     try {
         const args = process.argv.slice(2);
-        if (args.length !== 5) {
+        if (args.length < 5) {
             logError('Uso: node script.js exchangeId apiKey secret startDate tokenArray');
             process.exit(1);
         }

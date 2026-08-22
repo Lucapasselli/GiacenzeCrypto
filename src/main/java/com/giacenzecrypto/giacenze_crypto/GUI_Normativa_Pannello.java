@@ -54,6 +54,11 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
 
         Icone.AdattaIconeAlTema(this);
 
+        //Senza questa proprietà l'HTMLEditorKit usa il proprio font/colore di default invece di
+        //quelli che il tema assegna al componente: il pannello dettaglio finirebbe stonato
+        //rispetto al resto della UI (font diverso, colori non coerenti col tema chiaro/scuro).
+        TextPane_Dettaglio.putClientProperty(javax.swing.JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+
         //Le due date scelte dal calendario non passano da un renderer che le ridipinge a ogni paint
         //(sono i selettori fissi della barra filtri, non una cella di tabella): il testo va reso
         //leggibile una volta sola, qui, sullo sfondo che il tema scuro darebbe altrimenti nero su nero.
@@ -242,56 +247,53 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
         DocumentoNormativa d = DocumentoSelezionato();
         Bottone_Apri.setEnabled(d != null);
         Bottone_ApriFonte.setEnabled(Principale_Normativa.UrlApribile(d));
-        TextArea_Dettaglio.getHighlighter().removeAllHighlights();
 
         if (d == null) {
-            TextArea_Dettaglio.setText("");
+            TextPane_Dettaglio.setText("");
             return;
         }
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("Autorità: ").append(d.autorita()).append('\n');
+        StringBuilder html = new StringBuilder("<html><body>");
+        html.append("<b>Autorità:</b> ").append(Html(d.autorita())).append("<br>");
         if (!d.identificativo().isBlank()) {
-            sb.append("Identificativo: ").append(d.identificativo()).append('\n');
+            html.append("<b>Identificativo:</b> ").append(Html(d.identificativo())).append("<br>");
         }
         if (d.dataDocumento() != null) {
-            sb.append("Data: ").append(d.dataDocumento().format(FORMATO_DATA)).append('\n');
+            html.append("<b>Data:</b> ").append(d.dataDocumento().format(FORMATO_DATA)).append("<br>");
         }
         if (!d.argomenti().isEmpty()) {
-            sb.append("Argomenti: ").append(String.join(", ", d.argomenti())).append('\n');
+            html.append("<b>Argomenti:</b> ").append(Html(String.join(", ", d.argomenti()))).append("<br>");
         }
         if (Principale_Normativa.UrlApribile(d)) {
-            sb.append("Fonte: ").append(d.url()).append('\n');
+            html.append("<b>Fonte:</b> ").append(Html(d.url())).append("<br>");
         }
 
-        int inizioMatch = -1, fineMatch = -1;
         String ricerca = TextField_Ricerca.getText().trim();
         if (CheckBox_CercaTesto.isSelected() && !ricerca.isEmpty()) {
             EstrattoTesto e = Estratto(TestiCache.get(d.percorso()), ricerca);
             if (e != null) {
-                sb.append("\nCorrispondenza nel testo:\n");
-                int base = sb.length() + 1; //+1: il carattere "…" davanti all'estratto
-                sb.append('…').append(e.testo()).append('…');
-                inizioMatch = base + e.inizioMatch();
-                fineMatch = base + e.fineMatch();
-            }
-        }
-
-        TextArea_Dettaglio.setText(sb.toString());
-        TextArea_Dettaglio.setCaretPosition(0);
-
-        if (inizioMatch >= 0) {
-            try {
                 //Il colore di selezione del componente è già quello che il tema (chiaro o
                 //scuro) assegna per evidenziare del testo: riusarlo evita di scegliere a mano
                 //un colore che non si adatti a entrambi i temi.
-                TextArea_Dettaglio.getHighlighter().addHighlight(inizioMatch, fineMatch,
-                        new javax.swing.text.DefaultHighlighter.DefaultHighlightPainter(
-                                TextArea_Dettaglio.getSelectionColor()));
-            } catch (javax.swing.text.BadLocationException ex) {
-                LoggerGC.ScriviErrore(ex);
+                String colore = String.format("#%06x", TextPane_Dettaglio.getSelectionColor().getRGB() & 0xFFFFFF);
+                html.append("<br><b>Corrispondenza nel testo:</b><br>…")
+                        .append(Html(e.testo().substring(0, e.inizioMatch())))
+                        .append("<span style=\"background-color:").append(colore).append(";\">")
+                        .append(Html(e.testo().substring(e.inizioMatch(), e.fineMatch())))
+                        .append("</span>")
+                        .append(Html(e.testo().substring(e.fineMatch())))
+                        .append('…');
             }
         }
+        html.append("</body></html>");
+
+        TextPane_Dettaglio.setText(html.toString());
+        TextPane_Dettaglio.setCaretPosition(0);
+    }
+
+    /** @return {@code testo} con i caratteri speciali dell'HTML sostituiti dalle rispettive entità */
+    private static String Html(String testo) {
+        return testo.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
     /** Contesto attorno a un'occorrenza cercata, con la posizione del match per evidenziarlo. */
@@ -375,7 +377,7 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
     private void initComponents() {
 
         Label_Categoria = new javax.swing.JLabel();
-        ComboBox_Categoria = new javax.swing.JComboBox<>();
+        ComboBox_Categoria = new javax.swing.JComboBox();
         Label_Dal = new javax.swing.JLabel();
         DataChooser_Dal = new com.toedter.calendar.JDateChooser();
         Label_Al = new javax.swing.JLabel();
@@ -388,7 +390,7 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
         Tabella = new javax.swing.JTable();
         Label_Stato = new javax.swing.JLabel();
         ScrollPane_Dettaglio = new javax.swing.JScrollPane();
-        TextArea_Dettaglio = new javax.swing.JTextArea();
+        TextPane_Dettaglio = new javax.swing.JTextPane();
         Bottone_Apri = new javax.swing.JButton();
         Bottone_ApriFonte = new javax.swing.JButton();
 
@@ -421,7 +423,6 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
             }
         });
 
-        Tabella.setAutoCreateRowSorter(false);
         Tabella.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -430,23 +431,26 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
                 "Titolo", "Categoria", "Autorità", "Identificativo", "Tipo", "Data"
             }
         ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+            };
             boolean[] canEdit = new boolean [] {
                 false, false, false, false, false, false
             };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
-        Tabella.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         ScrollPane_Tabella.setViewportView(Tabella);
 
-        TextArea_Dettaglio.setEditable(false);
-        TextArea_Dettaglio.setColumns(20);
-        TextArea_Dettaglio.setLineWrap(true);
-        TextArea_Dettaglio.setRows(5);
-        TextArea_Dettaglio.setWrapStyleWord(true);
-        ScrollPane_Dettaglio.setViewportView(TextArea_Dettaglio);
+        TextPane_Dettaglio.setEditable(false);
+        TextPane_Dettaglio.setContentType("text/html");
+        ScrollPane_Dettaglio.setViewportView(TextPane_Dettaglio);
 
         Bottone_Apri.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Documento.png"))); // NOI18N
         Bottone_Apri.setText("Apri una copia");
@@ -493,7 +497,7 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_Aggiorna))
                     .addComponent(ScrollPane_Tabella, javax.swing.GroupLayout.DEFAULT_SIZE, 1160, Short.MAX_VALUE)
-                    .addComponent(Label_Stato)
+                    .addComponent(Label_Stato, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(ScrollPane_Dettaglio, javax.swing.GroupLayout.DEFAULT_SIZE, 1160, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(Bottone_Apri, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -507,12 +511,12 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Label_Categoria)
-                    .addComponent(ComboBox_Categoria, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ComboBox_Categoria, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Label_Dal)
-                    .addComponent(DataChooser_Dal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(DataChooser_Dal, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Label_Al)
-                    .addComponent(DataChooser_Al, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(TextField_Ricerca, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(DataChooser_Al, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(TextField_Ricerca, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(CheckBox_CercaTesto)
                     .addComponent(Bottone_AzzeraFiltri)
                     .addComponent(Bottone_Aggiorna))
@@ -521,7 +525,7 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Label_Stato)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ScrollPane_Dettaglio, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(ScrollPane_Dettaglio, javax.swing.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Bottone_Apri, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -537,7 +541,7 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
     private javax.swing.JButton Bottone_ApriFonte;
     private javax.swing.JButton Bottone_AzzeraFiltri;
     private javax.swing.JCheckBox CheckBox_CercaTesto;
-    private javax.swing.JComboBox<String> ComboBox_Categoria;
+    private javax.swing.JComboBox ComboBox_Categoria;
     private com.toedter.calendar.JDateChooser DataChooser_Al;
     private com.toedter.calendar.JDateChooser DataChooser_Dal;
     private javax.swing.JLabel Label_Al;
@@ -547,7 +551,7 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
     private javax.swing.JScrollPane ScrollPane_Dettaglio;
     private javax.swing.JScrollPane ScrollPane_Tabella;
     private javax.swing.JTable Tabella;
-    private javax.swing.JTextArea TextArea_Dettaglio;
     private javax.swing.JTextField TextField_Ricerca;
+    private javax.swing.JTextPane TextPane_Dettaglio;
     // End of variables declaration//GEN-END:variables
 }

@@ -56,7 +56,7 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="Label_Categoria" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="ComboBox_Categoria" alignment="3" min="-2" pref="26" max="-2" attributes="0"/>
@@ -69,18 +69,18 @@
                   <Component id="Bottone_AzzeraFiltri" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="Bottone_Aggiorna" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="ScrollPane_Tabella" pref="380" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="Label_Stato" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="ScrollPane_Dettaglio" min="-2" pref="110" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="ScrollPane_Dettaglio" pref="110" max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="Bottone_Apri" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
                   <Component id="Bottone_ApriFonte" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -157,13 +157,11 @@
       <SubComponents>
         <Component class="javax.swing.JTable" name="Tabella">
           <Properties>
-            <Property name="autoCreateRowSorter" type="boolean" value="false"/>
-            <Property name="autoResizeMode" type="int" value="0"/>
             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
               <Table columnCount="6" rowCount="0">
                 <Column editable="false" title="Titolo" type="java.lang.String"/>
                 <Column editable="false" title="Categoria" type="java.lang.String"/>
-                <Column editable="false" title="Autorità" type="java.lang.String"/>
+                <Column editable="false" title="Autorit&#xe0;" type="java.lang.String"/>
                 <Column editable="false" title="Identificativo" type="java.lang.String"/>
                 <Column editable="false" title="Tipo" type="java.lang.String"/>
                 <Column editable="false" title="Data" type="java.lang.String"/>
@@ -182,13 +180,10 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JTextArea" name="TextArea_Dettaglio">
+        <Component class="javax.swing.JTextPane" name="TextPane_Dettaglio">
           <Properties>
-            <Property name="columns" type="int" value="20"/>
             <Property name="editable" type="boolean" value="false"/>
-            <Property name="lineWrap" type="boolean" value="true"/>
-            <Property name="rows" type="int" value="5"/>
-            <Property name="wrapStyleWord" type="boolean" value="true"/>
+            <Property name="contentType" type="java.lang.String" value="text/html"/>
           </Properties>
         </Component>
       </SubComponents>

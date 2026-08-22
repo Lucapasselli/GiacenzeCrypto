@@ -138,9 +138,17 @@ def main():
             # in cui e' stata presa la fotografia (verificato: e' cosi' che e' stata segnalata
             # la confusione). Vuota, come per le altre date non ricostruibili.
             data_documento = "" if quando in ("OGGI", "oggi") else f"{vig[0:4]}-{vig[4:6]}-{vig[6:8]}"
+            # Stesso ragionamento del commento sopra, applicato al titolo: scrivere "vigenza
+            # 20260821" nel titolo di un testo "vigente" e' la stessa bugia travestita da
+            # promemoria - e il titolo e' la colonna che l'utente legge per prima nella
+            # tabella, quindi ci e' cascato anche svuotando solo data_documento (bug
+            # segnalato: troppi documenti con "data di ieri", ma nel titolo, non nella
+            # colonna Data). Per le fotografie a data fissa la vigenza resta nel titolo:
+            # li' e' un dato vero, non un travestimento della data di scarico.
+            etichetta_titolo = f"({etichetta})" if quando in ("OGGI", "oggi") else f"({etichetta}, vigenza {vig})"
             righe_manifest.append({
                 "file": os.path.relpath(dest, RADICE),
-                "titolo": f"{atto['titolo']} ({etichetta}, vigenza {vig})",
+                "titolo": f"{atto['titolo']} {etichetta_titolo}",
                 "autorita": "Normattiva - Istituto Poligrafico e Zecca dello Stato",
                 "identificativo": f"{atto['urn']} | G.U. {dataGU} cod. {codice}",
                 "data_documento": data_documento,

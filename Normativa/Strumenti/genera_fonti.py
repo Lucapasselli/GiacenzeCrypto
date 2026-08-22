@@ -27,7 +27,9 @@ Due colonne in piu' rispetto ai campi scritti a mano nelle configurazioni:
 
   data_documento  data ISO (AAAA-MM-GG) del documento, quando ricostruibile.
                   Per gli ufficiali viene dai manifest (per Normattiva e' la data
-                  della vigenza scaricata, non la data di scarico). Per gli
+                  della vigenza scaricata, non la data di scarico - vuota per
+                  "vigente", che non ha una data propria: e' un "come e' oggi"
+                  che cambia a ogni scarico, non un dato del documento). Per gli
                   estratti si eredita dal file ufficiale di origine - un estratto
                   non ha una data propria. Per i consolidati si prende la piu'
                   recente fra le leggi che hanno modificato la disposizione (le

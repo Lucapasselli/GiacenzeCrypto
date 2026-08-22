@@ -22,9 +22,14 @@ Note operative (verificate sul campo, non ovvie):
     Una risposta ``text/html`` e' sempre un errore, anche con HTTP 200.
 
 Ogni riga di manifest scrive anche ``data_documento`` (la data della vigenza appena
-scaricata, non la data di scarico: per una fotografia e' proprio quella la data che la
-distingue dalle altre) e ``argomenti`` (etichette tematiche, lette dal campo opzionale
-``argomenti`` di ``atti.json`` e valide per tutte le vigenze dello stesso atto).
+scaricata, non la data di scarico: per una fotografia a data fissa e' proprio quella la
+data che la distingue dalle altre - vuota per "vigente", che non ha una data propria: e'
+un "come e' oggi" che cambia a ogni scarico, non un dato del documento) e ``argomenti``
+(etichette tematiche, lette dal campo opzionale ``argomenti`` di ``atti.json`` e valide
+per tutte le vigenze dello stesso atto). Scrive anche ``url``, ma come pagina pubblica
+dell'atto (apribile in un browser), non come indirizzo di scarico: l'indirizzo
+``caricaAKN`` usato per scaricare l'XML richiede la sessione aperta da ``risolvi_urn``
+e risponde con una pagina di errore, non con il testo, se aperto a freddo.
 
 Uso:  python3 scarica_normattiva.py [id_atto ...]
       (senza argomenti scarica tutti gli atti elencati in atti.json)
@@ -124,17 +129,31 @@ def main():
             with open(dest, "wb") as f:
                 f.write(dati)
             print(f"   -> {nome}  {len(dati)} byte")
+            # "vig" e' la data che la vigenza scaricata rappresenta per le fotografie a data
+            # fissa (es. "2023-01-01_post_bilancio2023") - quella e' proprio la data del
+            # documento. Per "vigente" (quando == OGGI) "vig" e' invece la data di *scarico*
+            # travestita da vigenza: un testo "come e' oggi" non ha una data propria, e
+            # scriverla in data_documento produrrebbe una data che cambia a ogni scarico e
+            # che l'utente legge come "la data di questo documento" mentre e' solo il giorno
+            # in cui e' stata presa la fotografia (verificato: e' cosi' che e' stata segnalata
+            # la confusione). Vuota, come per le altre date non ricostruibili.
+            data_documento = "" if quando in ("OGGI", "oggi") else f"{vig[0:4]}-{vig[4:6]}-{vig[6:8]}"
             righe_manifest.append({
                 "file": os.path.relpath(dest, RADICE),
                 "titolo": f"{atto['titolo']} ({etichetta}, vigenza {vig})",
                 "autorita": "Normattiva - Istituto Poligrafico e Zecca dello Stato",
                 "identificativo": f"{atto['urn']} | G.U. {dataGU} cod. {codice}",
-                # vig e' gia' la data che la vigenza scaricata rappresenta (AAAAMMGG,
-                # con "OGGI" gia' risolto sopra): e' il dato giusto per filtrare
-                # nell'app, non la data di scarico.
-                "data_documento": f"{vig[0:4]}-{vig[4:6]}-{vig[6:8]}",
+                "data_documento": data_documento,
                 "argomenti": ", ".join(atto.get("argomenti", [])),
-                "url": url,
+                # "url" e' pensato per essere aperto in un browser (confronto col testo
+                # ufficiale), non per essere ri-scaricato da uno script: "url" sopra
+                # (caricaAKN) risponde 200 ma con una pagina di errore HTML se non e'
+                # preceduta, nella stessa sessione, dalla risoluzione dell'urn (vedi il
+                # docstring del modulo) - verificato che un browser che apre quel link a
+                # freddo vede "Normattiva - Errore". "urn_url" e' invece la pagina pubblica
+                # dell'atto (lo stesso indirizzo che risolve la citazione dell'URN) e funziona
+                # sempre, aperta cosi' com'e'.
+                "url": urn_url,
                 "scaricato_il": date.today().isoformat(),
                 "sha256": sha256(dest),
             })

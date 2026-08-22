@@ -217,7 +217,12 @@ public class Principale_Normativa {
 
     // ------------------------------------------------------------------ apertura file/url
 
-    /** Apre una copia del documento con l'applicazione predefinita del sistema. */
+    /**
+     * Apre una copia del documento con l'applicazione predefinita del sistema. Un XML Akoma Ntoso
+     * non è leggibile da una persona (è markup strutturato, non testo formattato): viene prima
+     * convertito in un file di testo semplice in {@code Temporanei/}, sul modello di
+     * {@link DocumentiFonte#EstraiPerApertura}, ed è quella copia ad essere aperta.
+     */
     public static void ApriCopia(DocumentoNormativa d, Window owner) {
         if (d == null) {
             return;
@@ -228,11 +233,52 @@ public class Principale_Normativa {
                     "Il file non è (più) presente sul disco: prova ad aggiornare l'archivio da GitHub.", owner);
             return;
         }
+        File daAprire = file;
+        if (d.percorso().toLowerCase(Locale.ROOT).endsWith(".xml")) {
+            File leggibile = PreparaXmlLeggibile(d, file);
+            if (leggibile != null) {
+                daAprire = leggibile;
+            }
+        }
         try {
-            Desktop.getDesktop().open(file);
+            Desktop.getDesktop().open(daAprire);
         } catch (Exception ex) {
             LoggerGC.ScriviErrore(ex);
             Messaggi.WarningMessage("Impossibile aprire il file", ex.getMessage(), owner);
+        }
+    }
+
+    /**
+     * Converte l'XML in un file di testo semplice in {@code Temporanei/}, con qualche riga di
+     * intestazione (titolo/identificativo/autorità) e il testo del documento formattato un
+     * paragrafo per riga - non un semplice svuotamento dei tag, che produrrebbe un unico blocco
+     * senza interruzioni. Copia di comodo: {@code Temporanei/} è svuotata automaticamente.
+     *
+     * @return il file di testo, {@code null} se la conversione fallisce (in quel caso si apre l'XML originale)
+     */
+    private static File PreparaXmlLeggibile(DocumentoNormativa d, File xml) {
+        try {
+            String testo = EstraiXmlLeggibile(xml);
+            File cartella = new File(VarStatiche.getCartella_Temporanei());
+            if (!cartella.exists()) {
+                cartella.mkdirs();
+            }
+            String nomeBase = xml.getName().replaceFirst("(?i)\\.xml$", "");
+            File out = new File(cartella, nomeBase + ".txt");
+            StringBuilder sb = new StringBuilder();
+            sb.append(d.titolo()).append('\n');
+            if (!d.identificativo().isBlank()) {
+                sb.append(d.identificativo()).append('\n');
+            }
+            if (!d.autorita().isBlank()) {
+                sb.append(d.autorita()).append('\n');
+            }
+            sb.append('\n').append(testo);
+            Files.writeString(out.toPath(), sb.toString(), StandardCharsets.UTF_8);
+            return out;
+        } catch (Exception ex) {
+            LoggerGC.ScriviErrore(ex);
+            return null;
         }
     }
 
@@ -355,6 +401,42 @@ public class Principale_Normativa {
         NodeList figli = nodo.getChildNodes();
         for (int i = 0; i < figli.getLength(); i++) {
             RaccogliTesto(figli.item(i), sb);
+        }
+    }
+
+    /**
+     * Come {@link #EstraiXml}, ma per la lettura umana invece che per la ricerca: un a capo dopo
+     * ogni elemento invece di un unico paragrafo continuo, così i commi/lettere/punti dell'Akoma
+     * Ntoso restano su righe separate senza dover conoscere i nomi dei tag (l'euristica è "un
+     * elemento, una riga", non specifica di Akoma Ntoso). Verificata leggibile su un vero atto:
+     * i numeri di comma e le lettere (a), b)...) escono ciascuno sulla propria riga.
+     */
+    private static String EstraiXmlLeggibile(File file) throws Exception {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        Document doc = dbf.newDocumentBuilder().parse(file);
+        StringBuilder sb = new StringBuilder();
+        RaccogliTestoLeggibile(doc, sb);
+        String testo = sb.toString()
+                .replaceAll("[ \\t]+\\n", "\n")
+                .replaceAll("\\n{3,}", "\n\n");
+        return testo.strip();
+    }
+
+    private static void RaccogliTestoLeggibile(Node nodo, StringBuilder sb) {
+        if (nodo.getNodeType() == Node.TEXT_NODE) {
+            String v = nodo.getNodeValue();
+            if (v != null && !v.isBlank()) {
+                sb.append(v.trim()).append(' ');
+            }
+            return;
+        }
+        NodeList figli = nodo.getChildNodes();
+        for (int i = 0; i < figli.getLength(); i++) {
+            RaccogliTestoLeggibile(figli.item(i), sb);
+        }
+        if (nodo.getNodeType() == Node.ELEMENT_NODE) {
+            sb.append('\n');
         }
     }
 }

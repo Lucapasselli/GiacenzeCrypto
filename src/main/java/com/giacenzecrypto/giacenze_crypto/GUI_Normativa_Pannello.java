@@ -242,6 +242,7 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
         DocumentoNormativa d = DocumentoSelezionato();
         Bottone_Apri.setEnabled(d != null);
         Bottone_ApriFonte.setEnabled(Principale_Normativa.UrlApribile(d));
+        TextArea_Dettaglio.getHighlighter().removeAllHighlights();
 
         if (d == null) {
             TextArea_Dettaglio.setText("");
@@ -249,30 +250,58 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append(d.autorita()).append('\n');
-        sb.append(d.identificativo()).append('\n');
+        sb.append("Autorità: ").append(d.autorita()).append('\n');
+        if (!d.identificativo().isBlank()) {
+            sb.append("Identificativo: ").append(d.identificativo()).append('\n');
+        }
         if (d.dataDocumento() != null) {
             sb.append("Data: ").append(d.dataDocumento().format(FORMATO_DATA)).append('\n');
         }
         if (!d.argomenti().isEmpty()) {
             sb.append("Argomenti: ").append(String.join(", ", d.argomenti())).append('\n');
         }
-        sb.append(Principale_Normativa.UrlApribile(d) ? d.url() : "").append('\n');
+        if (Principale_Normativa.UrlApribile(d)) {
+            sb.append("Fonte: ").append(d.url()).append('\n');
+        }
 
+        int inizioMatch = -1, fineMatch = -1;
         String ricerca = TextField_Ricerca.getText().trim();
         if (CheckBox_CercaTesto.isSelected() && !ricerca.isEmpty()) {
-            String estratto = Estratto(TestiCache.get(d.percorso()), ricerca);
-            if (estratto != null) {
-                sb.append("\n…").append(estratto).append("…");
+            EstrattoTesto e = Estratto(TestiCache.get(d.percorso()), ricerca);
+            if (e != null) {
+                sb.append("\nCorrispondenza nel testo:\n");
+                int base = sb.length() + 1; //+1: il carattere "…" davanti all'estratto
+                sb.append('…').append(e.testo()).append('…');
+                inizioMatch = base + e.inizioMatch();
+                fineMatch = base + e.fineMatch();
             }
         }
 
         TextArea_Dettaglio.setText(sb.toString());
         TextArea_Dettaglio.setCaretPosition(0);
+
+        if (inizioMatch >= 0) {
+            try {
+                //Il colore di selezione del componente è già quello che il tema (chiaro o
+                //scuro) assegna per evidenziare del testo: riusarlo evita di scegliere a mano
+                //un colore che non si adatti a entrambi i temi.
+                TextArea_Dettaglio.getHighlighter().addHighlight(inizioMatch, fineMatch,
+                        new javax.swing.text.DefaultHighlighter.DefaultHighlightPainter(
+                                TextArea_Dettaglio.getSelectionColor()));
+            } catch (javax.swing.text.BadLocationException ex) {
+                LoggerGC.ScriviErrore(ex);
+            }
+        }
     }
 
-    /** @return un breve contesto attorno alla prima occorrenza di {@code ricerca} in {@code testo}, o {@code null} */
-    private static String Estratto(String testo, String ricerca) {
+    /** Contesto attorno a un'occorrenza cercata, con la posizione del match per evidenziarlo. */
+    private record EstrattoTesto(String testo, int inizioMatch, int fineMatch) {}
+
+    /** Caratteri di contesto mostrati prima e dopo il termine cercato nel pannello dettaglio. */
+    private static final int CONTESTO_ESTRATTO = 200;
+
+    /** @return il contesto attorno alla prima occorrenza di {@code ricerca} in {@code testo}, o {@code null} */
+    private static EstrattoTesto Estratto(String testo, String ricerca) {
         if (testo == null || testo.isBlank()) {
             return null;
         }
@@ -280,9 +309,23 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
         if (pos < 0) {
             return null;
         }
-        int inizio = Math.max(0, pos - 80);
-        int fine = Math.min(testo.length(), pos + ricerca.length() + 80);
-        return testo.substring(inizio, fine).replaceAll("\\s+", " ").trim();
+        int inizio = Math.max(0, pos - CONTESTO_ESTRATTO);
+        int fine = Math.min(testo.length(), pos + ricerca.length() + CONTESTO_ESTRATTO);
+
+        //Gli spazi (a-capo compresi) vanno ridotti a uno solo perché il testo estratto da PDF/XML
+        //non è formattato, ma la sostituzione sposta le posizioni: si ricompatta "prima" e "dopo"
+        //separatamente e si lascia intero il termine trovato, così la posizione del match nel
+        //risultato si ricava per somma delle lunghezze invece di doverla indovinare.
+        String prima = testo.substring(inizio, pos).replaceAll("\\s+", " ");
+        String match = testo.substring(pos, pos + ricerca.length());
+        String dopo = testo.substring(pos + ricerca.length(), fine).replaceAll("\\s+", " ");
+        String risultato = prima + match + dopo;
+        String risultatoStrip = risultato.strip();
+        int tagliatiInizio = risultato.length() - risultato.stripLeading().length();
+
+        int inizioMatch = prima.length() - tagliatiInizio;
+        int fineMatch = inizioMatch + match.length();
+        return new EstrattoTesto(risultatoStrip, inizioMatch, fineMatch);
     }
 
     private void AdattaLarghezzaColonne() {

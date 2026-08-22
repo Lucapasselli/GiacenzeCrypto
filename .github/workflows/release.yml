@@ -36,7 +36,44 @@ permissions:
   contents: write
 
 jobs:
+  # Verifica non appena parte il workflow, prima di costruire qualunque pacchetto, che "bozza"
+  # non stia per collidere con una release gia' pubblicata sullo stesso tag. Il caso concreto
+  # che l'ha fatta scoprire: si rilancia il workflow con "bozza" spuntata senza aver alzato la
+  # versione in pom.xml, quindi il tag "Giacenze_Crypto_<versione>" e' quello di una release
+  # GIA' pubblicata la settimana prima. softprops/action-gh-release trova quella release
+  # esistente e la aggiorna, ma un "draft: true" su una release gia' pubblicata non la
+  # ripristina in bozza in modo affidabile (verificato: gli asset restano quelli della
+  # pubblicazione precedente, invariati) - il risultato e' che quanto costruito in questa corsa
+  # resta comunque associato a una release pubblica gia' sincronizzata altrove (SourceForge),
+  # l'esatto contrario di quello che "bozza" promette. Meglio fermarsi qui con un errore chiaro
+  # che scoprirlo a valle con pacchetti gia' pubblicati.
+  verifica-bozza:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.bozza }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Controlla che il tag di questa versione non sia gia' una release pubblicata
+        run: |
+          VERSION=$(grep -m1 -oP '(?<=<version>)[^<]+' pom.xml)
+          if [ -z "$VERSION" ]; then
+            echo "Versione non trovata nel pom.xml" >&2
+            exit 1
+          fi
+          TAG="Giacenze_Crypto_${VERSION}"
+          # L'endpoint "releases/tags/<tag>" di GitHub non trova mai le bozze (per progetto):
+          # una risposta 200 qui significa quindi sempre una release gia' pubblicata, mai una
+          # bozza precedente - il caso che vogliamo bloccare, e solo quello.
+          HTTP_STATUS=$(curl -s -o /tmp/release.json -w "%{http_code}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG")
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "::error::La release $TAG e' gia' pubblicata (non e' una bozza): ripartire con \"bozza\" attiva sulla stessa versione non la trasforma in bozza. Alza la versione in pom.xml prima di lanciare una release di prova."
+            exit 1
+          fi
+
   build-windows:
+    needs: verifica-bozza
+    if: ${{ !cancelled() && !failure() }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -146,6 +183,8 @@ jobs:
           path: out/GiacenzeCrypto_${{ env.VERSIONE }}_Installer_Windows.exe
 
   build-linux:
+    needs: verifica-bozza
+    if: ${{ !cancelled() && !failure() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -228,6 +267,8 @@ jobs:
           path: out/deb
 
   build-macos:
+    needs: verifica-bozza
+    if: ${{ !cancelled() && !failure() }}
     strategy:
       matrix:
         include:

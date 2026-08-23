@@ -19,9 +19,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -249,37 +253,87 @@ public class Principale_Normativa {
     }
 
     /**
-     * Converte l'XML in un file di testo semplice in {@code Temporanei/}, con qualche riga di
-     * intestazione (titolo/identificativo/autorità) e il testo del documento formattato un
-     * paragrafo per riga - non un semplice svuotamento dei tag, che produrrebbe un unico blocco
-     * senza interruzioni. Copia di comodo: {@code Temporanei/} è svuotata automaticamente.
+     * Converte l'XML in una pagina HTML autosufficiente in {@code Temporanei/} (nessun link a
+     * risorse esterne: l'installazione locale non ha lo {@code stile.css} del sito), con
+     * l'intestazione del documento (titolo/identificativo/autorità) e il corpo reso leggibile da
+     * {@link #EstraiXmlLeggibile}. {@code Desktop.getDesktop().open()} la apre con il browser
+     * predefinito del sistema, che è l'associazione normale per {@code .html}. Copia di comodo:
+     * {@code Temporanei/} è svuotata automaticamente.
      *
-     * @return il file di testo, {@code null} se la conversione fallisce (in quel caso si apre l'XML originale)
+     * @return il file HTML, {@code null} se la conversione fallisce (in quel caso si apre l'XML originale)
      */
     private static File PreparaXmlLeggibile(DocumentoNormativa d, File xml) {
         try {
-            String testo = EstraiXmlLeggibile(xml);
+            String corpo = EstraiXmlLeggibile(xml);
             File cartella = new File(VarStatiche.getCartella_Temporanei());
             if (!cartella.exists()) {
                 cartella.mkdirs();
             }
             String nomeBase = xml.getName().replaceFirst("(?i)\\.xml$", "");
-            File out = new File(cartella, nomeBase + ".txt");
-            StringBuilder sb = new StringBuilder();
-            sb.append(d.titolo()).append('\n');
-            if (!d.identificativo().isBlank()) {
-                sb.append(d.identificativo()).append('\n');
-            }
-            if (!d.autorita().isBlank()) {
-                sb.append(d.autorita()).append('\n');
-            }
-            sb.append('\n').append(testo);
-            Files.writeString(out.toPath(), sb.toString(), StandardCharsets.UTF_8);
+            File out = new File(cartella, nomeBase + ".html");
+            Files.writeString(out.toPath(), ComponiPaginaLeggibile(d, corpo), StandardCharsets.UTF_8);
             return out;
         } catch (Exception ex) {
             LoggerGC.ScriviErrore(ex);
             return null;
         }
+    }
+
+    /**
+     * Pagina HTML autosufficiente per {@link #PreparaXmlLeggibile}: stile inline (nessun file
+     * esterno), sul modello di {@code Sito/strumenti/genera_indice_normativa.py:scrivi_pagina_leggibile}
+     * ma con colori fissi invece delle variabili del tema del sito, che qui non esiste.
+     */
+    private static String ComponiPaginaLeggibile(DocumentoNormativa d, String corpoHtml) {
+        return """
+                <!DOCTYPE html>
+                <html lang="it">
+                <head>
+                <meta charset="UTF-8">
+                <title>%s — Giacenze Crypto</title>
+                <style>
+                  body { margin:0; font-family:"Segoe UI","Noto Sans",Arial,sans-serif; background:#ffffff; color:#1a1a1a; }
+                  .pagina-leggibile { max-width:760px; margin:0 auto; padding:40px 24px 80px; }
+                  .pagina-leggibile h1 { font-size:1.5rem; margin:0 0 10px; }
+                  .pagina-leggibile .meta-doc { color:#5a5a52; font-size:0.9rem; margin:0 0 6px; }
+                  .pagina-leggibile .avviso-conversione { background:#f7f7f2; border:1px solid #ddd; border-left:4px solid #8a8a1f; border-radius:6px; padding:14px 18px; font-size:0.85rem; color:#5a5a52; margin:20px 0 28px; }
+                  .corpo-testo { font-size:0.98rem; line-height:1.7; }
+                  .corpo-testo p { margin:0 0 14px; }
+                  .intestazione-atto { margin-bottom:32px; padding-bottom:20px; border-bottom:1px solid #ddd; }
+                  .intestazione-atto .tipo-atto { margin:0 0 6px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; font-size:0.85rem; color:#6b6b16; }
+                  .intestazione-atto .titolo-atto { margin:0; font-size:1.1rem; color:#5a5a52; font-style:italic; }
+                  .formula-preambolo { text-align:center; font-style:italic; color:#5a5a52; margin:0 0 10px; }
+                  .titolo-struttura { font-size:1.25rem; color:#6b6b16; margin:36px 0 16px; padding-bottom:8px; border-bottom:2px solid #ddd; }
+                  .articolo { margin:28px 0; padding-top:20px; border-top:1px solid #ddd; }
+                  .articolo:first-child { border-top:none; padding-top:0; }
+                  .titolo-articolo { font-size:1.05rem; margin:0 0 14px; font-weight:700; }
+                  .comma { display:flex; gap:10px; margin:0 0 12px; align-items:baseline; }
+                  .comma .numero-comma { flex:0 0 auto; font-weight:700; color:#6b6b16; font-size:0.88rem; min-width:1.6em; }
+                  .comma > *:not(.numero-comma) { flex:1 1 auto; min-width:0; }
+                  .comma p { margin:0 0 8px; }
+                  .comma p:last-child { margin-bottom:0; }
+                  .elenco-normativo { margin:8px 0 12px 1.8em; }
+                  .punto-elenco { display:flex; gap:10px; margin:0 0 8px; align-items:baseline; }
+                  .punto-elenco .numero-punto { flex:0 0 auto; font-weight:700; color:#5a5a52; min-width:1.6em; }
+                  .punto-elenco p { margin:0; }
+                  .nota-atto { font-size:0.85rem; color:#5a5a52; background:#f7f7f2; border-left:3px solid #ddd; padding:10px 14px; margin:0 0 20px; }
+                </style>
+                </head>
+                <body>
+                <div class="pagina-leggibile">
+                  <h1>%s</h1>
+                  <p class="meta-doc">%s</p>
+                  <p class="meta-doc">%s</p>
+                  <div class="avviso-conversione">Versione resa leggibile dal documento XML originale (struttura di
+                  articoli e commi ricostruita dai tag) — a scopo di consultazione, non sostituisce il testo ufficiale.</div>
+                  <div class="corpo-testo">%s</div>
+                </div>
+                </body>
+                </html>
+                """.formatted(EscapeHtml(d.titolo()), EscapeHtml(d.titolo()),
+                EscapeHtml(d.autorita() == null ? "" : d.autorita()),
+                EscapeHtml(d.identificativo() == null ? "" : d.identificativo()),
+                corpoHtml);
     }
 
     /** @return {@code true} se {@link DocumentoNormativa#url()} è un indirizzo apribile in browser */
@@ -405,22 +459,40 @@ public class Principale_Normativa {
     }
 
     /**
-     * Come {@link #EstraiXml}, ma per la lettura umana invece che per la ricerca: un a capo dopo
-     * ogni elemento invece di un unico paragrafo continuo, così i commi/lettere/punti dell'Akoma
-     * Ntoso restano su righe separate senza dover conoscere i nomi dei tag (l'euristica è "un
-     * elemento, una riga", non specifica di Akoma Ntoso). Verificata leggibile su un vero atto:
-     * i numeri di comma e le lettere (a), b)...) escono ciascuno sulla propria riga.
+     * Come {@link #EstraiXml}, ma per la lettura umana invece che per la ricerca: usa la struttura
+     * reale del documento (docType/docTitle nell'intestazione, capitoli e articoli come titoli, i
+     * commi come paragrafi numerati — {@link #RenderNodo}), sul modello di
+     * {@code Sito/strumenti/genera_indice_normativa.py:_render_nodo}, la cui logica questo metodo
+     * riporta 1:1 sul DOM di Java. Se il render strutturato non produce nulla (variante di schema
+     * non prevista) ripiega su {@link #RaccogliTestoLeggibile}, l'euristica "un elemento, una riga"
+     * che non richiede capire lo schema — verificata leggibile su un vero atto.
+     *
+     * @return un frammento HTML (non un documento completo): lo compone {@link #ComponiPaginaLeggibile}
      */
-    private static String EstraiXmlLeggibile(File file) throws Exception {
+    static String EstraiXmlLeggibile(File file) throws Exception {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
         Document doc = dbf.newDocumentBuilder().parse(file);
+
+        String strutturato = RenderNodo(doc.getDocumentElement());
+        if (strutturato != null && !strutturato.isBlank()) {
+            return strutturato;
+        }
+
         StringBuilder sb = new StringBuilder();
         RaccogliTestoLeggibile(doc, sb);
         String testo = sb.toString()
                 .replaceAll("[ \\t]+\\n", "\n")
-                .replaceAll("\\n{3,}", "\n\n");
-        return testo.strip();
+                .replaceAll("\\n{3,}", "\n\n")
+                .strip();
+        StringBuilder fallback = new StringBuilder();
+        for (String riga : testo.split("\n")) {
+            String r = riga.strip();
+            if (!r.isEmpty()) {
+                fallback.append("<p>").append(EscapeHtml(r)).append("</p>");
+            }
+        }
+        return fallback.toString();
     }
 
     private static void RaccogliTestoLeggibile(Node nodo, StringBuilder sb) {
@@ -438,5 +510,194 @@ public class Principale_Normativa {
         if (nodo.getNodeType() == Node.ELEMENT_NODE) {
             sb.append('\n');
         }
+    }
+
+    // ------------------------------------------------------------------ XML -> HTML strutturato
+
+    private static final Set<String> TAG_CONTENITORE = Set.of("akomaNtoso", "act", "bill", "doc");
+    private static final Set<String> TAG_STRUTTURA = Set.of("part", "book", "title", "chapter", "section", "subsection");
+    private static final Set<String> ESCLUDI_NUM = Set.of("num");
+    private static final Set<String> ESCLUDI_NUM_HEADING = Set.of("num", "heading");
+
+    /**
+     * Traduce ricorsivamente un elemento Akoma Ntoso in HTML, un tag alla volta — porto Java di
+     * {@code _render_nodo} in {@code genera_indice_normativa.py}, tenuto in sincronia con quello
+     * per struttura e nomi di classe CSS. I file del repository non usano un prefisso di
+     * namespace sugli elementi (verificato: {@code <article>}, non {@code <akn:article>}), quindi
+     * {@link Element#getTagName()} è già il nome locale e non serve un parser namespace-aware.
+     *
+     * <p>{@code meta} è escluso deliberatamente: contiene lo storico delle modifiche (fino a
+     * centinaia di KB su un testo come il TUIR) e non porterebbe nulla di leggibile prima del
+     * titolo vero.
+     */
+    static String RenderNodo(Element el) {
+        String tag = el.getTagName();
+
+        if ("meta".equals(tag)) {
+            return "";
+        }
+        if (TAG_CONTENITORE.contains(tag)) {
+            return RenderFigli(el, Set.of());
+        }
+        if ("preface".equals(tag)) {
+            String numero = TestoDiretto(FiglioDiretto(el, "docNumber"));
+            String etichetta = Stream.of(
+                            TestoDiretto(FiglioDiretto(el, "docType")),
+                            TestoDiretto(FiglioDiretto(el, "docDate")),
+                            numero.isEmpty() ? "" : "n. " + numero)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.joining(" "));
+            String titolo = TestoCompleto(FiglioDiretto(el, "docTitle"));
+            StringBuilder out = new StringBuilder("<div class=\"intestazione-atto\">");
+            if (!etichetta.isEmpty()) {
+                out.append("<p class=\"tipo-atto\">").append(EscapeHtml(etichetta)).append("</p>");
+            }
+            if (!titolo.isEmpty()) {
+                out.append("<p class=\"titolo-atto\">").append(EscapeHtml(titolo)).append("</p>");
+            }
+            out.append("</div>");
+            NodeList note = el.getElementsByTagName("authorialNote");
+            for (int i = 0; i < note.getLength(); i++) {
+                out.append(RenderNodo((Element) note.item(i)));
+            }
+            return out.toString();
+        }
+        if ("preamble".equals(tag)) {
+            StringBuilder out = new StringBuilder();
+            NodeList formule = el.getElementsByTagName("formula");
+            for (int i = 0; i < formule.getLength(); i++) {
+                String t = TestoCompleto((Element) formule.item(i));
+                if (!t.isEmpty()) {
+                    out.append("<p class=\"formula-preambolo\">").append(EscapeHtml(t)).append("</p>");
+                }
+            }
+            return out.toString();
+        }
+        if ("body".equals(tag) || "intro".equals(tag) || "content".equals(tag)) {
+            return RenderFigli(el, Set.of());
+        }
+        if (TAG_STRUTTURA.contains(tag)) {
+            String num = TestoDiretto(FiglioDiretto(el, "num"));
+            String heading = TestoCompleto(FiglioDiretto(el, "heading"));
+            String titolo = Stream.of(num, heading).filter(s -> !s.isEmpty()).collect(Collectors.joining(" — "));
+            String intestazione = titolo.isEmpty() ? "" : "<h2 class=\"titolo-struttura\">" + EscapeHtml(titolo) + "</h2>";
+            return intestazione + RenderFigli(el, ESCLUDI_NUM_HEADING);
+        }
+        if ("article".equals(tag)) {
+            String num = TestoDiretto(FiglioDiretto(el, "num"));
+            String heading = TestoCompleto(FiglioDiretto(el, "heading"));
+            String titolo = Stream.of(num, heading).filter(s -> !s.isEmpty()).collect(Collectors.joining(" "));
+            StringBuilder out = new StringBuilder("<div class=\"articolo\">");
+            if (!titolo.isEmpty()) {
+                out.append("<h3 class=\"titolo-articolo\">").append(EscapeHtml(titolo)).append("</h3>");
+            }
+            out.append(RenderFigli(el, ESCLUDI_NUM_HEADING));
+            out.append("</div>");
+            return out.toString();
+        }
+        if ("paragraph".equals(tag) || "alinea".equals(tag)) {
+            String num = TestoDiretto(FiglioDiretto(el, "num"));
+            String corpo = RenderFigli(el, ESCLUDI_NUM);
+            if (corpo.isBlank()) {
+                return "";
+            }
+            String prefisso = num.isEmpty() ? "" : "<span class=\"numero-comma\">" + EscapeHtml(num) + "</span>";
+            return "<div class=\"comma\">" + prefisso + corpo + "</div>";
+        }
+        if ("point".equals(tag)) {
+            String num = TestoDiretto(FiglioDiretto(el, "num"));
+            String corpo = RenderFigli(el, ESCLUDI_NUM);
+            if (corpo.isBlank()) {
+                return "";
+            }
+            String prefisso = num.isEmpty() ? "" : "<span class=\"numero-punto\">" + EscapeHtml(num) + "</span>";
+            return "<div class=\"punto-elenco\">" + prefisso + corpo + "</div>";
+        }
+        if ("list".equals(tag)) {
+            return "<div class=\"elenco-normativo\">" + RenderFigli(el, Set.of()) + "</div>";
+        }
+        if ("authorialNote".equals(tag)) {
+            String t = TestoCompleto(el);
+            return t.isEmpty() ? "" : "<p class=\"nota-atto\">" + EscapeHtml(t) + "</p>";
+        }
+        if ("p".equals(tag)) {
+            String t = TestoCompleto(el);
+            return t.isEmpty() ? "" : "<p>" + EscapeHtml(t) + "</p>";
+        }
+        if ("num".equals(tag) || "heading".equals(tag)) {
+            return ""; // gestiti dal genitore; se raggiunti qui non c'è niente da fare
+        }
+        // Tag non censiti sopra (varianti non ancora viste): si scende comunque nei figli, così il
+        // testo non sparisce mai — solo la formattazione speciale manca finché non si aggiunge un caso.
+        return RenderFigli(el, Set.of());
+    }
+
+    private static String RenderFigli(Element el, Set<String> escludi) {
+        StringBuilder sb = new StringBuilder();
+        NodeList figli = el.getChildNodes();
+        for (int i = 0; i < figli.getLength(); i++) {
+            Node n = figli.item(i);
+            if (n.getNodeType() == Node.ELEMENT_NODE) {
+                Element f = (Element) n;
+                if (!escludi.contains(f.getTagName())) {
+                    sb.append(RenderNodo(f));
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    /** Primo figlio diretto con questo nome, altrimenti il primo discendente — come {@code el.find()}/{@code .//} in Python. */
+    private static Element FiglioDiretto(Element el, String nome) {
+        if (el == null) {
+            return null;
+        }
+        NodeList figli = el.getChildNodes();
+        for (int i = 0; i < figli.getLength(); i++) {
+            Node n = figli.item(i);
+            if (n.getNodeType() == Node.ELEMENT_NODE && nome.equals(((Element) n).getTagName())) {
+                return (Element) n;
+            }
+        }
+        NodeList discendenti = el.getElementsByTagName(nome);
+        return discendenti.getLength() > 0 ? (Element) discendenti.item(0) : null;
+    }
+
+    /** Solo il testo dei nodi di testo diretti (non dei discendenti), spazi collassati. */
+    private static String TestoDiretto(Element el) {
+        if (el == null) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        NodeList figli = el.getChildNodes();
+        for (int i = 0; i < figli.getLength(); i++) {
+            Node n = figli.item(i);
+            if (n.getNodeType() == Node.TEXT_NODE) {
+                String v = n.getNodeValue();
+                if (v != null && !v.isBlank()) {
+                    sb.append(v.trim()).append(' ');
+                }
+            }
+        }
+        return sb.toString().strip();
+    }
+
+    /** Tutto il testo del sottoalbero (equivalente a {@code el.itertext()}), spazi collassati. */
+    private static String TestoCompleto(Element el) {
+        if (el == null) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        RaccogliTesto(el, sb);
+        return sb.toString().strip();
+    }
+
+    /** Neutralizza i caratteri che romperebbero il markup HTML generato. */
+    private static String EscapeHtml(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\"", "&quot;").replace("'", "&#39;");
     }
 }

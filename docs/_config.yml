@@ -1,7 +1,11 @@
 title: Giacenze Crypto
 description: Calcolo delle giacenze e delle plusvalenze in criptovaluta per la dichiarazione dei redditi italiana
-theme: jekyll-theme-minimal
+baseurl: "/GiacenzeCrypto"
 lang: it
+# Layout proprio in _layouts/default.html (stesso stile del sito su VPS,
+# assets/css/stile.css copiato da Sito/assets/css/stile.css) invece del tema
+# jekyll-theme-minimal usato in precedenza — rimosso il 2026-08-23 insieme
+# alla riga "theme:", che a questo punto sarebbe inerte.
 # La cartella docs/ contiene le pagine pubbliche del progetto: la documentazione (documentazione/),
 # l'elenco delle novita' di ogni versione e l'informativa privacy. Il codice non la usa in nessun modo:
 # non finisce nel jar e non viene sincronizzata a runtime, ma DocumentiAiuto ne compone gli indirizzi

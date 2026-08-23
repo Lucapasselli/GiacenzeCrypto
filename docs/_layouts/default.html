@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: 'it' }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page.title | default: site.title }} — {{ site.title }}</title>
+{% if page.description %}<meta name="description" content="{{ page.description }}">{% endif %}
+<link rel="icon" type="image/png" sizes="32x32" href="{{ '/assets/img/favicon-32.png' | relative_url }}">
+<link rel="apple-touch-icon" href="{{ '/assets/img/favicon-180.png' | relative_url }}">
+<script>try{var t=localStorage.getItem("gc-tema");if(t==="chiaro"||t==="scuro")document.documentElement.setAttribute("data-tema",t);}catch(e){}</script>
+<link rel="stylesheet" href="{{ '/assets/css/stile.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/css/prosa.css' | relative_url }}">
+</head>
+<body>
+
+<header class="intestazione">
+  <div class="contenitore">
+    <a class="marchio" href="{{ '/' | relative_url }}">
+      <img src="{{ '/assets/img/logo.png' | relative_url }}" alt="">
+      {{ site.title }}
+    </a>
+    <nav class="principale">
+      <a href="{{ '/' | relative_url }}">Home</a>
+      <a href="{{ '/documentazione/' | relative_url }}">Documentazione</a>
+      <a href="{{ '/documentazione/changelog.html' | relative_url }}">Novità</a>
+      <a href="{{ '/privacy/' | relative_url }}">Privacy</a>
+      <a href="https://github.com/Lucapasselli/GiacenzeCrypto">GitHub</a>
+      <button class="selettore-tema" type="button" aria-label="Cambia tema chiaro/scuro" title="Cambia tema">
+        <span class="icona-chiaro">☀</span><span class="icona-scuro">☾</span>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main class="prosa">
+  <div class="contenitore-prosa">
+    {{ content }}
+  </div>
+</main>
+
+<footer class="piede">
+  <div class="contenitore">
+    <span>© <span id="anno-corrente"></span> {{ site.title }} — distribuito con licenza MIT</span>
+    <div class="link-piede">
+      <a href="{{ '/' | relative_url }}">Home</a>
+      <a href="{{ '/documentazione/' | relative_url }}">Documentazione</a>
+      <a href="{{ '/privacy/' | relative_url }}">Privacy</a>
+      <a href="https://github.com/Lucapasselli/GiacenzeCrypto">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+<script>document.getElementById('anno-corrente').textContent = new Date().getFullYear();</script>
+<script src="{{ '/assets/js/tema.js' | relative_url }}"></script>
+</body>
+</html>

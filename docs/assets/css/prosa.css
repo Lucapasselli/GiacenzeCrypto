@@ -1,0 +1,130 @@
+/* Stili aggiuntivi per il contenuto Markdown delle pagine di documentazione
+   (docs/), sopra la stessa base (assets/css/stile.css) del sito pubblico su
+   VPS. La base copre variabili di colore, header, footer, tema chiaro/scuro
+   e pulsanti — qui solo cio' che serve alla prosa lunga: titoli, elenchi,
+   tabelle, codice, citazioni. */
+
+main.prosa {
+  padding: 40px 0 80px;
+}
+.prosa .contenitore-prosa {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.prosa h1 {
+  font-size: 2rem;
+  margin: 0 0 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--bordo);
+}
+.prosa h2 {
+  font-size: 1.4rem;
+  color: var(--accento-forte);
+  margin: 40px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--bordo);
+}
+.prosa h3 {
+  font-size: 1.15rem;
+  margin: 28px 0 12px;
+}
+.prosa h4 {
+  font-size: 1rem;
+  margin: 22px 0 10px;
+}
+.prosa h2:target,
+.prosa h3:target,
+.prosa h4:target {
+  scroll-margin-top: 80px;
+}
+
+.prosa p { margin: 0 0 16px; }
+
+.prosa ul, .prosa ol {
+  margin: 0 0 16px;
+  padding-left: 1.4em;
+}
+.prosa li { margin: 0 0 8px; }
+.prosa li:last-child { margin-bottom: 0; }
+.prosa li > ul, .prosa li > ol { margin-top: 8px; }
+
+.prosa strong { color: var(--testo); }
+
+.prosa a { text-underline-offset: 2px; }
+
+.prosa hr {
+  border: none;
+  border-top: 1px solid var(--bordo);
+  margin: 32px 0;
+}
+
+.prosa blockquote {
+  margin: 0 0 16px;
+  padding: 4px 18px;
+  border-left: 3px solid var(--accento);
+  color: var(--testo-attenuato);
+  font-style: italic;
+}
+.prosa blockquote p:last-child { margin-bottom: 0; }
+
+.prosa code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.88em;
+  background: var(--bg-elevata);
+  border: 1px solid var(--bordo);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+.prosa pre {
+  background: var(--bg-elevata);
+  border: 1px solid var(--bordo);
+  border-radius: var(--raggio);
+  padding: 16px 18px;
+  overflow-x: auto;
+  margin: 0 0 20px;
+}
+.prosa pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.85em;
+  line-height: 1.6;
+}
+
+.prosa table {
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 20px;
+  font-size: 0.92rem;
+}
+.prosa th, .prosa td {
+  border: 1px solid var(--bordo);
+  padding: 8px 12px;
+  text-align: left;
+}
+.prosa th {
+  background: var(--bg-elevata);
+  font-weight: 700;
+}
+.prosa tr:nth-child(even) td { background: var(--bg-elevata); }
+
+.prosa img {
+  border-radius: var(--raggio);
+  border: 1px solid var(--bordo);
+  margin: 8px 0 20px;
+}
+
+.prosa .avviso-pagina {
+  background: var(--bg-elevata);
+  border: 1px solid var(--bordo);
+  border-left: 4px solid var(--accento);
+  border-radius: var(--raggio);
+  padding: 14px 18px;
+  font-size: 0.9rem;
+  color: var(--testo-attenuato);
+  margin-bottom: 28px;
+}

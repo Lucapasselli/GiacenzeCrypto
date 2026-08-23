@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Normative crypto — Giacenze Crypto</title>
+<meta name="description" content="Archivio consultabile di leggi, prassi dell'Agenzia delle entrate e istruzioni ufficiali sulla fiscalità delle cripto-attività in Italia, con ricerca full-text.">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/img/favicon-32.png">
+<link rel="apple-touch-icon" href="../assets/img/favicon-180.png">
+<script>try{var t=localStorage.getItem("gc-tema");if(t==="chiaro"||t==="scuro")document.documentElement.setAttribute("data-tema",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/css/stile.css">
+</head>
+<body>
+
+<header class="intestazione">
+  <div class="contenitore">
+    <a class="marchio" href="../index.html">
+      <img src="../assets/img/logo.png" alt="">
+      Giacenze Crypto
+    </a>
+    <nav class="principale">
+      <a href="../index.html#funzionalita">Funzionalità</a>
+      <a href="index.html" class="attivo">Normative</a>
+      <a href="https://lucapasselli.github.io/GiacenzeCrypto/documentazione/">Documentazione</a>
+      <a href="../index.html#download">Download</a>
+      <a href="https://github.com/Lucapasselli/GiacenzeCrypto">GitHub</a>
+      <button class="selettore-tema" type="button" aria-label="Cambia tema chiaro/scuro" title="Cambia tema">
+        <span class="icona-chiaro">☀</span><span class="icona-scuro">☾</span>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<div class="intestazione-pagina contenitore">
+  <h1>Normative sulla fiscalità delle cripto-attività</h1>
+  <p>Leggi di bilancio, prassi dell'Agenzia delle entrate, istruzioni ai modelli dichiarativi e
+    modulistica ISEE/DSU — solo fonti ufficiali, con estremi e link alla fonte originale.</p>
+</div>
+
+<div class="contenitore" style="padding-bottom: 72px;">
+
+  <div class="pannello-ricerca">
+    <div class="riga-ricerca">
+      <input id="campo-ricerca" type="search" placeholder="Cerca, es. «token di moneta elettronica» oppure «730+2023»…" autocomplete="off">
+      <select id="filtro-categoria">
+        <option value="">Tutte le categorie</option>
+      </select>
+      <select id="filtro-anno">
+        <option value="">Tutti gli anni</option>
+      </select>
+    </div>
+    <p class="suggerimento-ricerca">Il testo digitato è cercato così com'è, come un'unica frase. Usa «+» per richiedere più frasi/parole insieme, es. «730+2023» trova i documenti che contengono entrambe.</p>
+  </div>
+
+  <p class="stato-ricerca" id="stato-ricerca">Caricamento archivio…</p>
+  <div class="elenco-risultati" id="elenco-risultati"></div>
+
+  <p class="avviso-fonte">
+    Archivio a scopo informativo, non sostituisce la consultazione delle fonti ufficiali né la
+    consulenza di un professionista abilitato. Ogni scheda riporta la fonte originale quando
+    disponibile.
+  </p>
+</div>
+
+<footer class="piede">
+  <div class="contenitore">
+    <span>© <span id="anno-corrente"></span> Giacenze Crypto — distribuito con licenza MIT</span>
+    <div class="link-piede">
+      <a href="../index.html">Home</a>
+      <a href="https://lucapasselli.github.io/GiacenzeCrypto/privacy/">Privacy</a>
+      <a href="https://github.com/Lucapasselli/GiacenzeCrypto">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+<script>document.getElementById('anno-corrente').textContent = new Date().getFullYear();</script>
+<script src="../assets/js/tema.js"></script>
+<script src="../assets/js/ricerca-normative.js"></script>
+</body>
+</html>

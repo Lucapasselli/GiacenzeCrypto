@@ -63,7 +63,7 @@ public class Prezzi {
     static Map<String, String> MappaConversioneSwapTransIDCoins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     
     //di seguito le coppie prioritarie ovvero quelle che hanno precedneza all'atto della ricerca dei prezzi rispetto alle altre
-    static String[] SimboliPrioritari=new String []{"EURI","USDT","USDC","BUSD","USDE","DAI","TUSD","BTC",
+    static String[] SimboliPrioritari=new String []{"EURI","EURC","EURCV","EUROe","EURQ","EURR","EURe","USDT","USDC","BUSD","USDE","DAI","TUSD","BTC",
         "ETH","BNB","SOL","LTC","ADA","XRP","XLM","PAX","TRX","ATOM","POL","CRO","MON"};
 
     

@@ -1,0 +1,20 @@
+{
+  "name": "giacenzecrypto-servizio-prezzi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cache pull-through dei prezzi storici per Giacenze Crypto (Fase 1 del piano VPS)",
+  "main": "server.js",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/**/*.test.js",
+    "manutenzione": "node strumenti/manutenzioneBuchi.js"
+  },
+  "dependencies": {
+    "ccxt": "^4.5.75",
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.6.2"
+  }
+}

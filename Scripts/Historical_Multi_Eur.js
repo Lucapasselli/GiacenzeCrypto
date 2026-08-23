@@ -1,5 +1,4 @@
 //#!/usr/bin/env node
-const ccxt = require('ccxt');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -122,8 +121,103 @@ async function fetchHistorical(ex, symbol, timeframe, since, until, limit = 1000
     return all_ohlcv.filter(c => c[0] <= until);
 }
 
+/**
+ * Interroga in parallelo gli exchange indicati e ne fonde i prezzi in EUR di `baseSymbol` nella
+ * finestra [since, until]. Corpo di `main()` estratto così com'era (stesso algoritmo, stesso
+ * comportamento) per essere riusabile anche da `ServizioPrezzi/` (Fase 1, VPS) senza duplicare la
+ * logica di scelta della coppia/conversione — vedi CLAUDE.md e
+ * `test/Documentazione/Analisi_VPS_Prezzi_Sito.md`. `ccxtLib` è iniettato invece di essere
+ * richiesto qui: `ccxt` viene caricato solo dentro `main()` (unico punto che ne aveva bisogno
+ * prima del refactor), così un `require()` di questo file per le sole funzioni esportate non
+ * tocca mai il modulo `ccxt` — evita che `ServizioPrezzi/`, che ha una propria installazione di
+ * ccxt in `ServizioPrezzi/node_modules`, debba dipendere dalla risoluzione dei moduli di
+ * `Scripts/` (cartelle diverse, non annidate).
+ */
+async function cercaPrezziStorici({ ccxtLib, exchangeIds, baseSymbol, timeframe, since, until }) {
+    const results = {};
+
+    async function safe_fetch(exchange_id) {
+        try {
+            if (!ccxtLib[exchange_id.toLowerCase()]) {
+                return [exchange_id, []];
+            }
+            const ex = new ccxtLib[exchange_id.toLowerCase()]();
+
+            const pairInfo = await findBestPair(ex, baseSymbol);
+            if (!pairInfo) return [exchange_id, []];
+
+            // OHLCV principale (es. BTC/USDT o BTC/EUR)
+            const baseData = await fetchHistorical(ex, pairInfo.pair, timeframe, since, until);
+
+            let finalData = baseData;
+
+            // Conversione se serve (es. BTC/USDT -> BTC/EUR usando EUR/USDT)
+            if (pairInfo.needsConversion) {
+                const convData = await fetchHistorical(ex, pairInfo.conversionPair, timeframe, since, until);
+
+                // Creo una mappa timestamp -> conversion rate
+                const convMap = {};
+                for (const c of convData) {
+                    convMap[c[0]] = c[4]; // chiusura
+                }
+
+                finalData = baseData.map(c => {
+                    const [ts, o, h, l, close, v] = c;
+                    const conv = convMap[ts];
+                    if (!conv) return null;
+
+                    // Se conversionPair è EUR/USDT → prezzo BTC/EUR = (BTC/USDT) / (EUR/USDT)
+                    // Se conversionPair è USDT/EUR → prezzo BTC/EUR = (BTC/USDT) * (USDT/EUR)
+                    let factor = 1;
+                    if (pairInfo.conversionPair.startsWith("EUR/")) {
+                        factor = 1 / conv;
+                    } else if (pairInfo.conversionPair.startsWith("USD/EUR")
+                            || pairInfo.conversionPair.startsWith("USDT/EUR")
+                            || pairInfo.conversionPair.startsWith("USDC/EUR")) {
+                        factor = conv;
+                    }
+
+                    return [ts, o * factor, h * factor, l * factor, close * factor, v];
+                }).filter(Boolean);
+            }
+
+            return [exchange_id, finalData];
+        } catch {
+            return [exchange_id, []];
+        }
+    }
+
+    // Fetch parallelo
+    const promises = exchangeIds.map(ex_id => safe_fetch(ex_id));
+    const fetched = await Promise.all(promises);
+
+    for (const [ex_id, ohlcv_data] of fetched) {
+        if (ohlcv_data.length) {
+            results[ex_id] = ohlcv_data;
+        }
+    }
+
+    // Combino risultati
+    const combined = {};
+    for (const ex_id in results) {
+        for (const entry of results[ex_id]) {
+            const [ts, o] = entry;
+            if (!combined[ts]) combined[ts] = {};
+            combined[ts][ex_id] = o;
+        }
+    }
+
+    const sorted_timestamps = Object.keys(combined).map(Number).sort((a, b) => a - b);
+    return sorted_timestamps.map(ts => ({
+        timestamp: ts,
+        prices: combined[ts],
+    }));
+}
+
 async function main() {
     try {
+        const ccxt = require('ccxt');
+
         // Parametri CLI
         const args = process.argv.slice(2);
         const params = {};
@@ -142,85 +236,14 @@ async function main() {
         const since = params.since ? parseInt(params.since) : new ccxt.binance().parse8601("2024-01-01T00:00:00Z");
         const until = params.until ? parseInt(params.until) : new ccxt.binance().milliseconds();
 
-        const results = {};
-
-        async function safe_fetch(exchange_id) {
-            try {
-                if (!ccxt[exchange_id.toLowerCase()]) {
-                    return [exchange_id, []];
-                }
-                const ex = new ccxt[exchange_id.toLowerCase()]();
-
-                const pairInfo = await findBestPair(ex, baseSymbol);
-                if (!pairInfo) return [exchange_id, []];
-
-                // OHLCV principale (es. BTC/USDT o BTC/EUR)
-                const baseData = await fetchHistorical(ex, pairInfo.pair, timeframe, since, until);
-
-                let finalData = baseData;
-
-                // Conversione se serve (es. BTC/USDT -> BTC/EUR usando EUR/USDT)
-                if (pairInfo.needsConversion) {
-                    const convData = await fetchHistorical(ex, pairInfo.conversionPair, timeframe, since, until);
-
-                    // Creo una mappa timestamp -> conversion rate
-                    const convMap = {};
-                    for (const c of convData) {
-                        convMap[c[0]] = c[4]; // chiusura
-                    }
-
-                    finalData = baseData.map(c => {
-                        const [ts, o, h, l, close, v] = c;
-                        const conv = convMap[ts];
-                        if (!conv) return null;
-
-                        // Se conversionPair è EUR/USDT → prezzo BTC/EUR = (BTC/USDT) / (EUR/USDT)
-                        // Se conversionPair è USDT/EUR → prezzo BTC/EUR = (BTC/USDT) * (USDT/EUR)
-                        let factor = 1;
-                        if (pairInfo.conversionPair.startsWith("EUR/")) {
-                            factor = 1 / conv;
-                        } else if (pairInfo.conversionPair.startsWith("USD/EUR") 
-                                || pairInfo.conversionPair.startsWith("USDT/EUR") 
-                                || pairInfo.conversionPair.startsWith("USDC/EUR")) {
-                            factor = conv;
-                        }
-
-                        return [ts, o * factor, h * factor, l * factor, close * factor, v];
-                    }).filter(Boolean);
-                }
-
-                return [exchange_id, finalData];
-            } catch {
-                return [exchange_id, []];
-            }
-        }
-
-        // Fetch parallelo
-        const promises = exchanges.map(ex_id => safe_fetch(ex_id));
-        const fetched = await Promise.all(promises);
-
-        for (const [ex_id, ohlcv_data] of fetched) {
-            if (ohlcv_data.length) {
-                results[ex_id] = ohlcv_data;
-            }
-        }
-
-        // Combino risultati
-        const combined = {};
-        for (const ex_id in results) {
-            for (const entry of results[ex_id]) {
-                const [ts, o] = entry;
-                if (!combined[ts]) combined[ts] = {};
-                combined[ts][ex_id] = o;
-            }
-        }
-
-
-        const sorted_timestamps = Object.keys(combined).map(Number).sort((a, b) => a - b);
-        const output = sorted_timestamps.map(ts => ({
-            timestamp: ts,
-            prices: combined[ts],
-        }));
+        const output = await cercaPrezziStorici({
+            ccxtLib: ccxt,
+            exchangeIds: exchanges,
+            baseSymbol,
+            timeframe,
+            since,
+            until,
+        });
 
         console.log(JSON.stringify(output, null, 2));
     } catch (err) {
@@ -229,4 +252,8 @@ async function main() {
     }
 }
 
-main();
+module.exports = { findBestPair, fetchHistorical, getMarketsSymbols, cercaPrezziStorici };
+
+if (require.main === module) {
+    main();
+}

@@ -121,30 +121,21 @@ async function fetchHistorical(ex, symbol, timeframe, since, until, limit = 1000
     return all_ohlcv.filter(c => c[0] <= until);
 }
 
-/**
- * Interroga in parallelo gli exchange indicati e ne fonde i prezzi in EUR di `baseSymbol` nella
- * finestra [since, until]. Corpo di `main()` estratto così com'era (stesso algoritmo, stesso
- * comportamento) per essere riusabile anche da `ServizioPrezzi/` (Fase 1, VPS) senza duplicare la
- * logica di scelta della coppia/conversione — vedi CLAUDE.md e
- * `test/Documentazione/Analisi_VPS_Prezzi_Sito.md`. `ccxtLib` è iniettato invece di essere
- * richiesto qui: `ccxt` viene caricato solo dentro `main()` (unico punto che ne aveva bisogno
- * prima del refactor), così un `require()` di questo file per le sole funzioni esportate non
- * tocca mai il modulo `ccxt` — evita che `ServizioPrezzi/`, che ha una propria installazione di
- * ccxt in `ServizioPrezzi/node_modules`, debba dipendere dalla risoluzione dei moduli di
- * `Scripts/` (cartelle diverse, non annidate).
- */
-async function cercaPrezziStorici({ ccxtLib, exchangeIds, baseSymbol, timeframe, since, until }) {
+/** Implementazione condivisa da `cercaPrezziStorici` e `cercaPrezziStoriciConEsito` (sotto): fa il
+ * lavoro vero, la seconda espone anche quali exchange sono falliti con un errore vero. */
+async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, since, until }) {
     const results = {};
+    const falliti = [];
 
     async function safe_fetch(exchange_id) {
         try {
             if (!ccxtLib[exchange_id.toLowerCase()]) {
-                return [exchange_id, []];
+                return [exchange_id, [], null];
             }
             const ex = new ccxtLib[exchange_id.toLowerCase()]();
 
             const pairInfo = await findBestPair(ex, baseSymbol);
-            if (!pairInfo) return [exchange_id, []];
+            if (!pairInfo) return [exchange_id, [], null];
 
             // OHLCV principale (es. BTC/USDT o BTC/EUR)
             const baseData = await fetchHistorical(ex, pairInfo.pair, timeframe, since, until);
@@ -181,17 +172,21 @@ async function cercaPrezziStorici({ ccxtLib, exchangeIds, baseSymbol, timeframe,
                 }).filter(Boolean);
             }
 
-            return [exchange_id, finalData];
-        } catch {
-            return [exchange_id, []];
+            return [exchange_id, finalData, null];
+        } catch (err) {
+            // Un errore vero (rate limit, manutenzione, rete, ...) è diverso da "l'exchange non ha
+            // questa coppia" (gestito sopra con un `return` pulito, non un'eccezione): qui va
+            // segnalato come fallito, non confuso con "nessun dato" — vedi Analisi_VPS_Prezzi_Sito.md,
+            // "Esclusioni: exchange falliti vs nessun dato".
+            return [exchange_id, [], (err && err.message) || 'errore sconosciuto'];
         }
     }
 
     // Fetch parallelo
-    const promises = exchangeIds.map(ex_id => safe_fetch(ex_id));
-    const fetched = await Promise.all(promises);
+    const fetched = await Promise.all(exchangeIds.map(ex_id => safe_fetch(ex_id)));
 
-    for (const [ex_id, ohlcv_data] of fetched) {
+    for (const [ex_id, ohlcv_data, errore] of fetched) {
+        if (errore) falliti.push(ex_id);
         if (ohlcv_data.length) {
             results[ex_id] = ohlcv_data;
         }
@@ -208,10 +203,41 @@ async function cercaPrezziStorici({ ccxtLib, exchangeIds, baseSymbol, timeframe,
     }
 
     const sorted_timestamps = Object.keys(combined).map(Number).sort((a, b) => a - b);
-    return sorted_timestamps.map(ts => ({
+    const punti = sorted_timestamps.map(ts => ({
         timestamp: ts,
         prices: combined[ts],
     }));
+
+    return { punti, falliti };
+}
+
+/**
+ * Interroga in parallelo gli exchange indicati e ne fonde i prezzi in EUR di `baseSymbol` nella
+ * finestra [since, until]. Corpo di `main()` estratto così com'era (stesso algoritmo, stesso
+ * comportamento) per essere riusabile anche da `ServizioPrezzi/` (Fase 1, VPS) senza duplicare la
+ * logica di scelta della coppia/conversione — vedi CLAUDE.md e
+ * `test/Documentazione/Analisi_VPS_Prezzi_Sito.md`. `ccxtLib` è iniettato invece di essere
+ * richiesto qui: `ccxt` viene caricato solo dentro `main()` (unico punto che ne aveva bisogno
+ * prima del refactor), così un `require()` di questo file per le sole funzioni esportate non
+ * tocca mai il modulo `ccxt` — evita che `ServizioPrezzi/`, che ha una propria installazione di
+ * ccxt in `ServizioPrezzi/node_modules`, debba dipendere dalla risoluzione dei moduli di
+ * `Scripts/` (cartelle diverse, non annidate).
+ *
+ * Restituisce solo l'array di punti (contratto invariato: lo consuma anche il CLI di questo file
+ * e, in futuro, il client Java via `Prezzi.java`). Chi ha bisogno di sapere quali exchange sono
+ * falliti (non "nessun dato", un errore vero) usa `cercaPrezziStoriciConEsito`.
+ */
+async function cercaPrezziStorici(args) {
+    const { punti } = await eseguiRicerca(args);
+    return punti;
+}
+
+/** Come `cercaPrezziStorici`, ma espone anche `falliti` (gli id degli exchange il cui fetch ha
+ * lanciato un errore in questa chiamata, distinto da "nessun dato trovato"). Usato dal servizio
+ * prezzi per non confondere un blip transitorio con un'assenza di prezzo confermata — vedi
+ * `ServizioPrezzi/src/esclusioni.js` e `Analisi_VPS_Prezzi_Sito.md`. */
+async function cercaPrezziStoriciConEsito(args) {
+    return eseguiRicerca(args);
 }
 
 async function main() {
@@ -252,7 +278,7 @@ async function main() {
     }
 }
 
-module.exports = { findBestPair, fetchHistorical, getMarketsSymbols, cercaPrezziStorici };
+module.exports = { findBestPair, fetchHistorical, getMarketsSymbols, cercaPrezziStorici, cercaPrezziStoriciConEsito };
 
 if (require.main === module) {
     main();

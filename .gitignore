@@ -29,6 +29,10 @@ dependency-reduced-pom.xml
 buildNumber.properties
 
 .mvn/timing.properties
-Sito/normative/dati/
-ServizioPrezzi/node_modules/
-ServizioPrezzi/data/
+
+# Infrastruttura della VPS (sito pubblico e servizio prezzi Fase 1): non sono codice del client
+# desktop, vivono qui solo come sorgente locale prima del deploy — vedi
+# test/Documentazione/Analisi_VPS_Prezzi_Sito.md. Scripts/ NON va qui: è usato anche dal client
+# desktop (CcxtInterop.java/Prezzi.java), oltre che da ServizioPrezzi/.
+/Sito/
+/ServizioPrezzi/

@@ -1,6 +1,0 @@
-{
-    "_commento": "Lista scelta dall'utente il 2026-08-24 (9 monete). Modificabile a mano, ricaricata a ogni richiesta — non serve un riavvio del servizio.",
-    "coinAbilitate": ["BTC", "ETH", "DAI", "USDC", "USDT", "SOL", "CRO", "XRP", "BNB"],
-    "exchange": ["binance", "cryptocom", "bybit", "okx", "coinbase", "bitstamp", "kucoin"],
-    "semaforoConcorrenza": 3
-}

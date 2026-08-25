@@ -217,7 +217,9 @@ public class Stampe {
                             (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
                             <b>T45</b> \u2013 <u>Eccedenza d'imposta sostitutiva risultante dalla precedente dichiarazione non compensata</u> <br>
                             Indicare l’eccedenza d’imposta sostitutiva risultante dalla precedente dichiarazione fino a concorrenza dell’imposta sostitutiva.<br>
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>""";
+                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
+                            <br><b>Versamento tramite F24</b> – L’imposta sostitutiva sulle plusvalenze da cripto-attività (26%) si versa con modello F24, sezione “Erario”, codice tributo <b>1715</b> (“Imposta sostitutiva su plusvalenze e altri proventi realizzati mediante rimborso o cessione a titolo oneroso, permuta o detenzione di cripto-attività – art. 1, comma 126, L. 197/2022 - Regime dichiarativo”, Risoluzione Agenzia delle Entrate n. 36/E del 26/06/2023), indicando come “anno di riferimento” l’anno d’imposta nel formato AAAA. Per questo codice non risulta istituito un acconto: il versamento avviene in un’unica soluzione, con le stesse scadenze del saldo IRPEF.<br> Per chi presenta il 730 con sostituto d’imposta, l’imposta sostitutiva risultante dal prospetto di liquidazione (Mod. 730-3) viene normalmente trattenuta direttamente in busta paga o rata di pensione, con le stesse modalità del saldo Irpef: il versamento F24 personale con questo codice serve solo a chi presenta il 730 <u>senza sostituto</u> o deve regolarizzare autonomamente un importo non trattenuto correttamente.<br>
+                            </font></html>""";
     
     }
     
@@ -267,6 +269,7 @@ public class Stampe {
            
            
            
+                            <br><b>Versamento tramite F24</b> – L’imposta sostitutiva sulle plusvalenze da cripto-attività (26%) si versa con modello F24, sezione “Erario”, codice tributo <b>1715</b> (“Imposta sostitutiva su plusvalenze e altri proventi realizzati mediante rimborso o cessione a titolo oneroso, permuta o detenzione di cripto-attività – art. 1, comma 126, L. 197/2022 - Regime dichiarativo”, Risoluzione Agenzia delle Entrate n. 36/E del 26/06/2023), indicando come “anno di riferimento” l’anno d’imposta nel formato AAAA. Per questo codice non risulta istituito un acconto: il versamento avviene in un’unica soluzione, con le stesse scadenze del saldo IRPEF.<br> Per chi presenta il 730 con sostituto d’imposta, l’imposta sostitutiva risultante dal prospetto di liquidazione (Mod. 730-3) viene normalmente trattenuta direttamente in busta paga o rata di pensione, con le stesse modalità del saldo Irpef: il versamento F24 personale con questo codice serve solo a chi presenta il 730 <u>senza sostituto</u> o deve regolarizzare autonomamente un importo non trattenuto correttamente.<br>
            """;
 
     }
@@ -301,7 +304,9 @@ public class Stampe {
                             (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
                             <b>RT45</b> \u2013 <u>Eccedenza d'imposta sostitutiva risultante dalla precedente dichiarazione non compensata</u> <br>
                             Indicare l’eccedenza d’imposta sostitutiva risultante dalla precedente dichiarazione fino a concorrenza dell’importo indicato nel rigo RT89.<br>
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>""";
+                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
+                            <br><b>Versamento tramite F24</b> – L’imposta sostitutiva sulle plusvalenze da cripto-attività (26%) si versa con modello F24, sezione “Erario”, codice tributo <b>1715</b> (“Imposta sostitutiva su plusvalenze e altri proventi realizzati mediante rimborso o cessione a titolo oneroso, permuta o detenzione di cripto-attività – art. 1, comma 126, L. 197/2022 - Regime dichiarativo”, Risoluzione Agenzia delle Entrate n. 36/E del 26/06/2023), indicando come “anno di riferimento” l’anno d’imposta nel formato AAAA. Per questo codice non risulta istituito un acconto: il versamento avviene in un’unica soluzione, con le stesse scadenze del saldo IRPEF.<br>
+                            </font></html>""";
 
     }
         
@@ -376,6 +381,7 @@ public class Stampe {
                             (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
                                  
                
+                            <br><b>Versamento tramite F24</b> – L’imposta sostitutiva sulle plusvalenze da cripto-attività (26%) si versa con modello F24, sezione “Erario”, codice tributo <b>1715</b> (“Imposta sostitutiva su plusvalenze e altri proventi realizzati mediante rimborso o cessione a titolo oneroso, permuta o detenzione di cripto-attività – art. 1, comma 126, L. 197/2022 - Regime dichiarativo”, Risoluzione Agenzia delle Entrate n. 36/E del 26/06/2023), indicando come “anno di riferimento” l’anno d’imposta nel formato AAAA. Per questo codice non risulta istituito un acconto: il versamento avviene in un’unica soluzione, con le stesse scadenze del saldo IRPEF.<br>
                """;
 
     }

@@ -10960,13 +10960,19 @@ if (result.isAction("delete-all")) {
                             Per la compilazione seguire le seguenti istruzioni : <br><br>
                             
                             <b>SEZIONE IV</b> - Versamenti e residui Imposta cripto-attività <br> <br>
-                            <b>Colonna 2</b> → \u2013 <u>Eccedenza dichiarazione precedente cripto-attività</u> \u2013
+                            <b>Colonna 2</b> → – <u>Eccedenza dichiarazione precedente cripto-attività</u> –
                                 riportare l’eventuale credito dell’imposta sul valore delle cripto-attività possedute all’estero che risulta dalla dichiarazione relativa ai redditi 2024, indicato nella colonna 7 del rigo 301 (o nella colonna 7 del rigo 351 per il coniuge dichiarante) del modello 730-3 2025 o nella colonna 5 del rigo RX27 del Mod. REDDITI PF 2025. <br><br>
-                            <b>Colonna 3</b> → \u2013 <u>Eccedenza compensata modello F24 cripto-attività</u> \u2013 
+                            <b>Colonna 3</b> → – <u>Eccedenza compensata modello F24 cripto-attività</u> –
                                 indicare l’importo dell’eccedenza dell’imposta sulle cripto-attività eventualmente compensata utilizzando il modello F24. <br><br>
-                            <b>Colonna 4</b> → \u2013 <u>Acconti versati</u> \u2013 
+                            <b>Colonna 4</b> → – <u>Acconti versati</u> –
                                 indicare l’ammontare complessivo degli importi versati con il modello F24 indicando i codici tributo 1728 (primo acconto) e 1729 (secondo acconto) e l’anno 2025. <br><br>
-                          
+                            Il rigo W8 si ferma alla colonna 4: a differenza del rigo RW8 del Modello Redditi PF, qui non c’è
+                            un calcolo di debito/credito a carico del contribuente. Per chi presenta il 730 con sostituto
+                            d’imposta, l’eventuale saldo dell’imposta sulle cripto-attività risultante dal prospetto di
+                            liquidazione (Mod. 730-3) viene trattenuto direttamente in busta paga o rata di pensione, con le
+                            stesse modalità del saldo Irpef – nessun versamento F24 personale è normalmente richiesto. Il
+                            codice tributo <b>1727</b> serve solo a chi presenta il 730 <u>senza sostituto</u> (versamento diretto tramite
+                            F24) o a chi deve regolarizzare autonomamente un importo non trattenuto correttamente.<br>
                             </font></html>""";
                     stampa.AggiungiHtml(testo); 
                     
@@ -14472,47 +14478,6 @@ if (result != null && !result.isAction("cancel")) {
                         stampa.AggiungiRT2025p2(PdfRT2025p2, Vendite, Costo, Errore,AnnoDiCompetenza);
                     }
                     
-                    /*
-                    //STAMPO LE NOTE DI COMPILAZIONE DEL QUADRO RW
-                    stampa.NuovaPagina();
-                    stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO RW\n\n", Font.BOLD, 12);
-                 // String testo;
-                    testo = """
-                            <html><font size="2" face="Courier New,Courier, mono" >
-                            <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
-                            sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
-                            
-                            Le impostazioni sottostanti sono quelle utilizzate nella maggioranza dei casi, si consiglia di
-                            verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
-                            
-                            <b>Colonna 1</b> → \u2013 <u>TITOLO DI POSSESSO</u> \u2013 <b>Propriet\u00e0 (1)</b><br>
-                            <b>Colonna 3</b> → \u2013 <u>CODICE INDIVIDUAZIONE BENE</u> \u2013 <b>Cripto-attivit\u00e0 (21)</b><br>
-                            <b>Colonna 4</b> → \u2013 <u>CODICE STATO ESTERO</u> \u2013 <b>Vuoto</b><br>
-                            <b>Colonna 5</b> → \u2013 <u>QUOTA DI POSSESSO</u> \u2013 <b>(100)</b> (se non cointestate)<br>
-                            <b>Colonna 6</b> → \u2013 <u>CRITERIO DETERMINAZIONE VALORE</u> \u2013 <b>Valore di mercato (1)</b><br>
-                            <b>Colonna 7</b> → \u2013 <u>VALORE INIZIALE</u> \u2013 Valore all'inizio del periodo d'imposta o al primo giorno di detenzione dell'investimento.<br>
-                            <b>Colonna 8</b> → \u2013 <u>VALORE FINALE</u> \u2013 Valore al termine del periodo d\u2019imposta ovvero al termine del periodo di detenzione dell'attivit\u00e0.<br>
-                            <b>Colonna 10</b> \u2013 <u>GIORNI IC</u> \u2013 Numero giorni di detenzione per l'imposta sul valore delle cripto-attivit\u00e0.<br>
-                            <b>Colonna 14</b> \u2013 <u>CODICE</u> \u2013 Deve essere indicato un codice per indicare la compilazione di uno o
-                            pi\u00f9 quadri reddituali conseguenti al cespite indicato oggetto di monitoraggio, ovvero se il bene \u00e8 infruttifero, 
-                            in particolare, indicare:<br>
-                            → → - (Codice 1) x Compilazione Quadro RL &emsp;<br>
-                            → → - (Codice 2) x Compilazione Quadro RM &emsp;<br>
-                            → → - (Codice 3) x Compilazione Quadro RT &emsp;<br>
-                            → → - (Codice 4) x Compilazione contemporanea di due o tre Quadri tra RL, RM e RT<br>
-                            → → - (Codice 5) Nel caso in cui i redditi relativi ai prodotti finanziari verranno percepiti in un successivo
-                            periodo d\u2019imposta ovvero se i predetti prodotti finanziari sono infruttiferi. In questo caso
-                            \u00e8 opportuno che gli interessati acquisiscano dagli intermediari esteri documenti o
-                            attestazioni da cui risulti tale circostanza<br>
-                            <b>Colonna 16</b> \u2013 <u>SOLO MONITORAGGIO</u> \u2013 Da selezionare in caso si faccia solo monitoraggio (es. quando l'intermediario paga il bollo)<br>
-                            <b>Colonna 33</b> \u2013 <u>IC</u> \u2013 E’ l’imposta di competenza (2x1000) calcolata rapportando il valore finale di colonna 8 a quota e giorni di possesso.<br>                           
-                            <b>Colonna 34</b> \u2013 <u>IC DOVUTA</u> \u2013 E’ l’imposta da versare che corrisponde all’importo di "Colonna 33" meno "Colonna 12".<br>
-                            <b>RW8</b> \u2013 <u>IMPOSTA CRIPTO-ATTIVITA'</u> \u2013 Deve essere compilato per determinare l’imposta sul valore
-                            delle cripto-attività. Nel caso in cui siano utilizzati più moduli va compilato esclusivamente il
-                            rigo RW8 del primo modulo indicando in esso il totale di tutti i righi compilati.<br>                            
-                            </font></html>""";
-                    stampa.AggiungiHtml(testo);       
-                    */
                     //Adesso creo un booleano che mi dica se per quest'anno posso considerare il cashback alla stregua di quello fiat
                     //Quindi deve essere selezionato il campo apposito e la data specificata deve essere uguale o inferiore all'anno di competenza
                     boolean CashbackComeFiatselezionato=OpzioniRewards_CashBackComeFIAT.isSelected();

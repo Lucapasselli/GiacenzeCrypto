@@ -101,6 +101,9 @@ public class GeneraLoghi {
         PIATTAFORMA_CHAIN.put("Sonic (SONIC)", "sonic");
         PIATTAFORMA_CHAIN.put("Mantle (MANTLE)", "mantle");
         PIATTAFORMA_CHAIN.put("Optimism (OP)", "optimistic-ethereum");
+        PIATTAFORMA_CHAIN.put("HyperEVM (HYPEREVM)", "hyperevm");
+        PIATTAFORMA_CHAIN.put("Ink (INK)", "ink");
+        PIATTAFORMA_CHAIN.put("Robinhood Chain (ROBINHOOD)", "robinhood");
 
         MONETA_CHAIN.put("Bitcoin (BTC)", "bitcoin");
         MONETA_CHAIN.put("Cardano (ADA)", "cardano");

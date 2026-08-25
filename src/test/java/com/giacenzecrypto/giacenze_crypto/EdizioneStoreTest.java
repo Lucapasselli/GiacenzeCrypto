@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
  * {@code -Dgiacenze.edizione=store}.
  *
  * <p>Quella edizione rinuncia allo scaricamento dei movimenti dai conti exchange e ai loghi di terzi
- * (vedi {@link VarStatiche#EdizioneStore()} e {@code test/Documentazione/Pubblicazione_MicrosoftStore.md}).
+ * (vedi {@link VarStatiche#EdizioneStore()} e {@code nocommit/Documentazione/Pubblicazione_MicrosoftStore.md}).
  * Buona parte degli interruttori sta dentro Swing o dentro la creazione del database e non è verificabile
  * qui; quello che si può fissare — e che conta, perché è testo che il revisore legge — è che l'edizione
  * Store <b>non annunci</b> chiavi API di exchange che non possiede.

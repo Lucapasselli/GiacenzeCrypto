@@ -60,7 +60,7 @@ public class CcxtInterop {
      * pacchetto <b>MSIX</b> per il Microsoft Store non ha lo stesso comodo: impostare una variabile
      * d'ambiente da li' richiederebbe l'estensione {@code desktop6:windows.environmentVariables}, e
      * scaricare Node a runtime e' proprio cio' che quel canale non gradisce (policy 10.2.2 e 10.2.3,
-     * vedi {@code test/Documentazione/Pubblicazione_MicrosoftStore.md}). Percio' vale anche una
+     * vedi {@code nocommit/Documentazione/Pubblicazione_MicrosoftStore.md}). Percio' vale anche una
      * cartella {@code node/} <b>accanto alle risorse</b>, cioe' dove gia' stanno {@code Scripts/} e
      * {@code Immagini/}: un pacchetto che include Node non deve fare altro che metterlo li'.
      *

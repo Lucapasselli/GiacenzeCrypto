@@ -14,7 +14,7 @@
         <!-- Edizione con cui costruire il jar, scritta in version.properties dal resource filtering e
              letta da VarStatiche.EdizioneStore(). "completa" è tutto il programma; "store" toglie lo
              scaricamento dai conti exchange e i loghi di terzi, che il Microsoft Store non consente a un
-             account Individual (vedi test/Documentazione/Pubblicazione_MicrosoftStore.md).
+             account Individual (vedi nocommit/Documentazione/Pubblicazione_MicrosoftStore.md).
              Build per lo Store:  mvn clean package -DskipTests -Dgiacenze.edizione=store  -->
         <giacenze.edizione>completa</giacenze.edizione>
     </properties>

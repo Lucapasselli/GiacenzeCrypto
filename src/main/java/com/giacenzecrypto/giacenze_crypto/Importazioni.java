@@ -5973,6 +5973,11 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
         //OP è fuori dal piano gratuito di Etherscan V2; l'istanza pubblica Blockscout risponde a tutte
         //e 5 le azioni usate dall'import, quindi la chain è utilizzabile senza chiave a pagamento
         if (Rete.equalsIgnoreCase("OP")) return "BLOCKSCOUT";
+        //Ink non è affatto su Etherscan V2 (a differenza di OP/GNOSIS, che ci sono ma a pagamento):
+        //qui BLOCKSCOUT è l'unico provider possibile, non solo il default (vedi
+        //Principale.Opzioni_ProviderDefi_OpzioniPerChain, che per questo non offre ETHERSCAN per INK)
+        if (Rete.equalsIgnoreCase("INK")) return "BLOCKSCOUT";
+        if (Rete.equalsIgnoreCase("ROBINHOOD")) return "BLOCKSCOUT"; //stesso caso di Ink, vedi sopra
         if (Rete.equalsIgnoreCase("BSC") || Rete.equalsIgnoreCase("BASE") || Rete.equalsIgnoreCase("AVAX")) return "MORALIS";
         if (Rete.equalsIgnoreCase("SOL")) return "HELIUS";
         if (Rete.equalsIgnoreCase("BTC")) return "BITCOIN";
@@ -6001,7 +6006,7 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
     /**
      * URL base dell'istanza Blockscout da usare per una chain: quello personalizzato
      * salvato dall'utente se presente, altrimenti un'istanza pubblica verificata
-     * (solo ETH/ARB/BASE/POL/CRO/GNOSIS/OP). Per le altre chain (es. BSC/AVAX/BERA/MONAD)
+     * (solo ETH/ARB/BASE/POL/CRO/GNOSIS/OP/INK/ROBINHOOD). Per le altre chain (es. BSC/AVAX/BERA/MONAD)
      * ritorna null: l'utente deve compilare l'URL personalizzato nella tabella
      * "Preferenze Provider DeFi" prima di poter usare Blockscout su quella chain.
      */
@@ -6015,6 +6020,8 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
         if (Rete.equalsIgnoreCase("CRO")) return "https://explorer-api.cronos.org/mainnet/api/v2";
         if (Rete.equalsIgnoreCase("GNOSIS")) return "https://gnosis.blockscout.com/api";
         if (Rete.equalsIgnoreCase("OP")) return "https://optimism.blockscout.com/api";
+        if (Rete.equalsIgnoreCase("INK")) return "https://explorer.inkonchain.com/api";
+        if (Rete.equalsIgnoreCase("ROBINHOOD")) return "https://robinhoodchain.blockscout.com/api";
         return null;
     }
 

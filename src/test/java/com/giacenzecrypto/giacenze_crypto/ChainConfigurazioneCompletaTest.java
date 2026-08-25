@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
  * <b>tutti</b> i punti che servono a farla funzionare davvero.
  *
  * <p>Aggiungere una chain non è una modifica sola: sono dieci punti sparsi in sei file, elencati in
- * {@code test/Documentazione/Analisi_Chain_Aggiungibili.md}. Quattro di questi <b>non danno nessun
+ * {@code nocommit/Documentazione/Analisi_Chain_Aggiungibili.md}. Quattro di questi <b>non danno nessun
  * errore</b> se dimenticati — la chain scarica, sembra funzionare, e sbaglia in un angolo:
  *
  * <ul>

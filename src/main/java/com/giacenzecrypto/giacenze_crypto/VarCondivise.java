@@ -54,7 +54,7 @@ public class VarCondivise {
         String[] MONAD = new String[]{"https://api.etherscan.io/v2/api?chainid=143", "", "MON", "monad", "monad"};
         String[] BTC = new String[]{"https://mempool.space/api", "", "BTC", "bitcoin", "bitcoin"};
         String[] GNOSIS = new String[]{"https://api.etherscan.io/v2/api?chainid=100", "", "XDAI", "xdai", "xdai"};
-        //Chain L2 con ETH come moneta di gas: nessuna moneta nuova da prezzare, vedi test/Documentazione/Analisi_Chain_Aggiungibili.md
+        //Chain L2 con ETH come moneta di gas: nessuna moneta nuova da prezzare, vedi nocommit/Documentazione/Analisi_Chain_Aggiungibili.md
         String[] LINEA = new String[]{"https://api.etherscan.io/v2/api?chainid=59144", "", "ETH", "linea", "linea"};
         String[] BLAST = new String[]{"https://api.etherscan.io/v2/api?chainid=81457", "", "ETH", "blast", "blast"};
         String[] UNICHAIN = new String[]{"https://api.etherscan.io/v2/api?chainid=130", "", "ETH", "unichain", "unichain"};
@@ -70,6 +70,21 @@ public class VarCondivise {
         //(DeFi_ProviderDefault). Qui resta comunque l'endpoint Etherscan, come per GNOSIS: chi ha una
         //chiave a pagamento può riportare la chain su ETHERSCAN dalle preferenze e continua a funzionare
         String[] OP = new String[]{"https://api.etherscan.io/v2/api?chainid=10", "", "ETH", "optimistic-ethereum", "optimism"};
+        //Gas token HYPE confermato da tre fonti indipendenti (25/08/2026): documentazione ufficiale
+        //Hyperliquid ("HYPE is the native gas token on the HyperEVM"), hyperevmscan.io (bilanci in HYPE)
+        //e CoinGecko asset_platforms (native_coin_id "hyperliquid"). NON è deducibile da chainid.network:
+        //lì il chainid 999 collide con Wanchain Testnet (WAN), vedi Analisi_Chain_Aggiungibili.md §8.
+        String[] HYPEREVM = new String[]{"https://api.etherscan.io/v2/api?chainid=999", "", "HYPE", "hyperevm", "hyperliquid"};
+        //Ink NON è su Etherscan V2 (né piano gratuito né a pagamento, verificato su chainlist e su
+        //docs.etherscan.io/supported-chains): [0] resta vuoto apposta, non c'è nessun endpoint Etherscan
+        //da preservare come per OP/GNOSIS. Il provider è sempre BLOCKSCOUT sul suo explorer ufficiale
+        //(DeFi_ProviderDefault, Opzioni_ProviderDefi_OpzioniPerChain in Principale.java).
+        String[] INK = new String[]{"", "", "ETH", "ink", "ink"};
+        //Robinhood Chain: L2 su stack Arbitrum, mainnet dal 01/07/2026, NON su Etherscan V2 (stesso
+        //caso di Ink: [0] vuoto apposta, nessun endpoint da preservare). Gas token ETH confermato senza
+        //discrepanze da chainid.network e da native_coin_id di CoinGecko. A differenza di HyperEVM/Ink,
+        //GoPlus la supporta (vedi Principale.GOPLUS_CHAIN_ID): unica delle tre con il 10° punto compilato.
+        String[] ROBINHOOD = new String[]{"", "", "ETH", "robinhood", "robinhood"};
         Principale.Mappa_ChainExplorer.put("CRO", CRO);
         Principale.Mappa_ChainExplorer.put("BSC", BSC);
         Principale.Mappa_ChainExplorer.put("ETH", ETH);
@@ -92,6 +107,9 @@ public class VarCondivise {
         Principale.Mappa_ChainExplorer.put("SONIC", SONIC);
         Principale.Mappa_ChainExplorer.put("MANTLE", MANTLE);
         Principale.Mappa_ChainExplorer.put("OP", OP);
+        Principale.Mappa_ChainExplorer.put("HYPEREVM", HYPEREVM);
+        Principale.Mappa_ChainExplorer.put("INK", INK);
+        Principale.Mappa_ChainExplorer.put("ROBINHOOD", ROBINHOOD);
         Principale.Mappa_AddressRete_Nome.put("0x66e428c3f67a68878562e79A0234c1F83c208770_CRO", "USDT");
         Principale.Mappa_AddressRete_Nome.put("0x55d398326f99059fF775485246999027B3197955_BSC", "USDT");
         Principale.Mappa_AddressRete_Nome.put("0xc21223249CA28397B4B6541dfFaEcC539BfF0c59_CRO", "USDC");
@@ -146,6 +164,9 @@ public class VarCondivise {
         Principale.MappaRetiSupportate.put("SONIC", "");
         Principale.MappaRetiSupportate.put("MANTLE", "");
         Principale.MappaRetiSupportate.put("OP", "");
+        Principale.MappaRetiSupportate.put("HYPEREVM", "");
+        Principale.MappaRetiSupportate.put("INK", "");
+        Principale.MappaRetiSupportate.put("ROBINHOOD", "");
         Principale.MappaRetiSupportate.put("TRX", "");
         Principale.MappaRetiSupportate.put("SOL", "");
         Principale.MappaRetiSupportate.put("XLM", "");

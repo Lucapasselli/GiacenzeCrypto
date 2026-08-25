@@ -69,6 +69,74 @@ resta pero' l'endpoint Etherscan: quel campo viene letto SOLO dal ramo ETHERSCAN
 scriverci l'URL Blockscout impedirebbe di tornare su Etherscan a chi ha la chiave a
 pagamento. Stessa configurazione di GNOSIS.
 
+Aggiunta il 25/08/2026: HyperEVM (codice HYPEREVM, chainid 999), sul piano gratuito di
+Etherscan V2 (verificato con una richiesta reale senza chiave: risponde "Missing/Invalid
+API Key", non "invalid chainid", quindi la chain e' riconosciuta). GOPLUS_CHAIN_ID (punto
+10) NON compilato: 999 non e' fra i supported_chains di GoPlus, verificato in diretta.
+
+Nota sul gas token HYPE: NON e' deducibile da chainid.network, che per il chainid 999
+restituisce tuttora "Wanchain Testnet" (WAN) - collisione gia' segnalata il 10/08/2026 in
+Analisi_Chain_Aggiungibili.md e mai risolta. HYPE e' stato confermato il 25/08/2026 da tre
+fonti indipendenti e concordanti: la documentazione ufficiale Hyperliquid ("HYPE is the
+native gas token on the HyperEVM"), hyperevmscan.io (bilanci mostrati in HYPE) e il campo
+"native_coin_id":"hyperliquid" della voce "hyperevm" in CoinGecko /asset_platforms. Prima
+di fidarsi di un simbolo di gas per una chain nuova, controllare sempre se chainid.network
+e' davvero la fonte giusta per quel chainid: puo' collidere con un altro network.
+
+Logo: config/loghi/hyperevm-hyperevm.png scaricato singolarmente da CoinGecko
+/asset_platforms (stessa fonte e stesso trattamento di GeneraLoghi.ScaricaChain, redimensionato
+a 128px), non rilanciando l'intero GeneraLoghi per non toccare gli altri loghi gia' committati.
+
+Aggiunta il 25/08/2026: Ink (codice INK, chainid 57073). A differenza di tutte le altre chain
+di questo elenco, Ink NON e' su Etherscan V2 (ne' piano gratuito ne' a pagamento: assente sia
+da chainlist che da docs.etherscan.io/supported-chains). Ha pero' un Blockscout ufficiale su
+https://explorer.inkonchain.com, verificato in diretta su tutte e 5 le azioni dell'import.
+Conseguenze sulla ricetta standard:
+- [0] in Mappa_ChainExplorer resta vuoto ("") apposta: non c'e' nessun endpoint Etherscan da
+  preservare come per OP/GNOSIS (quelle due sono su Etherscan, solo a pagamento).
+- DeFi_ProviderDefault("INK") e DeFi_ProviderBlockscoutUrl("INK") sono OBBLIGATORI, non
+  facoltativi come per le altre chain Blockscout-default: senza il secondo il provider di
+  default punterebbe a un URL Blockscout inesistente (null).
+- Principale.Opzioni_ProviderDefi_OpzioniPerChain("INK") ritorna solo {"BLOCKSCOUT"} (come
+  SOL/BTC): offrire anche "ETHERSCAN" nella tendina "Preferenze Provider DeFi" punterebbe al
+  campo [0] vuoto. E' un punto NUOVO rispetto ai 10 della ricetta, specifico delle chain senza
+  alcuna presenza su Etherscan - se se ne aggiunge un'altra in futuro, controllarlo di nuovo.
+- UrlExplorerTx/ApriMovimentiWallet/ApriSituazioneWallet puntano direttamente a
+  explorer.inkonchain.com (l'unico explorer ufficiale, non un sito "-scan" a parte come per
+  OP/GNOSIS): /tx/ e /address/ sono garantiti dallo standard EIP-3091 dichiarato dalla chain,
+  i parametri di tab (?tab=token_transfers&token=..., ?tab=tokens) seguono la convenzione nota
+  dell'interfaccia Blockscout v2 ma il routing e' lato client e non e' verificabile via fetch
+  automatico: se qualche link non porta al tab giusto, verificarlo a mano.
+
+Gas token ETH, nessuna discrepanza fra chainid.network e CoinGecko. CoinGecko HA una piattaforma
+"ink" (chain_identifier 57073, verificato con 40 monete reali gia' elencate su quella piattaforma
+in /coins/list?include_platform=true il 25/08/2026): una prima verifica via fetch web riassunta
+aveva erroneamente concluso il contrario (elenco di 464 piattaforme troncato dal riassunto) -
+per un'assenza da un elenco grande, scaricare e cercare per esteso, non fidarsi del riassunto.
+
+Logo: config/loghi/ink-ink.png, stessa fonte e stesso trattamento di HyperEVM sopra.
+
+Aggiunta il 25/08/2026: Robinhood Chain (codice ROBINHOOD, chainid 4663). L2 su stack
+Arbitrum, mainnet dal 01/07/2026. Stesso caso di Ink sopra (NON su Etherscan V2, verificato
+con una richiesta reale: risposta "Missing or unsupported chainid parameter", diversa da
+quella di una chain riconosciuta ma senza chiave) e stessa gestione: [0] vuoto, provider
+BLOCKSCOUT obbligato su https://robinhoodchain.blockscout.com/api,
+Opzioni_ProviderDefi_OpzioniPerChain limitata a {"BLOCKSCOUT"}, link "apri nel browser" sulla
+convenzione Blockscout (/tx/, /address/?tab=...).
+
+Un punto la distingue da HyperEVM e Ink: **GoPlus la supporta** (id "4663" nei suoi
+supported_chains, verificato), quindi qui il 10° punto della ricetta (Principale.
+GOPLUS_CHAIN_ID) va compilato, non saltato.
+
+Gas token ETH, nessuna discrepanza (chainid.network e native_coin_id di CoinGecko concordano).
+CoinGecko ha una piattaforma dedicata ("robinhood", chain_identifier 4663). DefiLlama: slug
+"robinhood" confermato con una query di prezzo reale su un token WETH realmente in circolazione
+sulla chain (letto dal suo stesso Blockscout), non per tentativi sul nome - gli slug ovvi con
+trattino/underscore ("robinhood-chain", "robinhood_chain") NON funzionano, e' proprio "robinhood"
+come la piattaforma CoinGecko.
+
+Logo: config/loghi/robinhood-chain-robinhood.png, stessa fonte delle altre due sopra.
+
 L'analisi di quali chain siano aggiungibili a costo zero con il piano gratuito, con tutte
 le colonne verificate contro le API, e' in test/Documentazione/Analisi_Chain_Aggiungibili.md.
 
@@ -106,6 +174,8 @@ Cronos Mainnet 25
 Fraxtal Mainnet 252
 
 Gnosis 100
+
+HyperEVM Mainnet 999
 
 Linea Mainnet 59144
 

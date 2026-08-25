@@ -10,7 +10,7 @@
 
   La Version invece la sostituisce il workflow a ogni build: MSIX vuole quattro parti numeriche senza
   zeri iniziali e lo Store pretende che la quarta sia 0, quindi la 1.0.58.03 del pom non e' un numero
-  valido. Vedi test/Documentazione/Pubblicazione_MicrosoftStore.md.
+  valido. Vedi nocommit/Documentazione/Pubblicazione_MicrosoftStore.md.
 
   Il pacchetto NON va firmato: allo Store lo firma Microsoft, e firmarlo da se' ci mette dentro il CN
   del proprio certificato, che poi non coincide con l'identita' di Partner Center.

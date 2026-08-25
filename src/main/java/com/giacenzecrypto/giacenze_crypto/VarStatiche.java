@@ -48,7 +48,7 @@ public class VarStatiche {
      * Riferimento al sito del progetto per il piede delle stampe (Quadro W/RW e T/RT).
      * <p>Nell'edizione Store è <b>vuoto</b>: quell'indirizzo è la pagina da cui l'applicazione si
      * scarica fuori dallo Store, e in un documento fiscale che l'utente stampa e conserva non ha motivo
-     * di comparire. Vedi {@code test/Documentazione/Pubblicazione_MicrosoftStore.md} §1.6.
+     * di comparire. Vedi {@code nocommit/Documentazione/Pubblicazione_MicrosoftStore.md} §1.6.
      * @return l'indirizzo già preceduto da {@code " - "}, oppure stringa vuota nell'edizione Store
      */
     static String RiferimentoStampe() {
@@ -102,7 +102,7 @@ public class VarStatiche {
 
     /**
      * L'edizione destinata al Microsoft Store rinuncia a due cose, entrambe per motivi di policy e non
-     * di funzionalità (vedi {@code test/Documentazione/Pubblicazione_MicrosoftStore.md}):
+     * di funzionalità (vedi {@code nocommit/Documentazione/Pubblicazione_MicrosoftStore.md}):
      * <ul>
      * <li>lo <b>scaricamento dei movimenti dai conti exchange</b>, perché l'accesso a un exchange e la
      *     conservazione di chiavi API sono "financial information" e imporrebbero un account Company

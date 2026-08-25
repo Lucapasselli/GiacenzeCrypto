@@ -179,7 +179,7 @@ public class Principale_Backup {
      *
      * <p>Non ricarica niente : al ritorno tocca al chiamante rileggere i movimenti, invalidare le cache
      * del motore incrementale e rifare i calcoli. La sequenza è documentata in
-     * {@code test/Documentazione/Analisi_Backup_Ripristino.md} §7.4 e sta in {@code Principale} perché
+     * {@code nocommit/Documentazione/Analisi_Backup_Ripristino.md} §7.4 e sta in {@code Principale} perché
      * la funzione che ricarica {@code MappaCryptoWallet} è privata di quella classe.
      *
      * @param Zip archivio selezionato nella tabella

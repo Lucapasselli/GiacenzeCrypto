@@ -1,15 +1,76 @@
 # Giacenze Crypto
 
-**Giacenze Crypto** è un'applicazione desktop Java (Swing) pensata per aiutare chi detiene criptovalute a preparare i dati necessari alla **dichiarazione fiscale italiana**.
+**Giacenze Crypto** è un programma gratuito per Windows, Linux e macOS che aiuta chi possiede criptovalute a preparare i dati per la **dichiarazione dei redditi in Italia**.
 
-Il programma importa i movimenti da exchange e wallet, recupera le quotazioni storiche delle valute e calcola in automatico:
+Importa automaticamente i movimenti da exchange e wallet, recupera le quotazioni storiche e calcola:
 
-- **Quadro RT** — plusvalenze e minusvalenze da cessione/permuta di cripto-attività;
-- **Quadro RW** — valore delle disponibilità detenute all'estero (wallet e conti su exchange) al 31/12 di ogni anno.
+- **Quadro RT** — le plusvalenze e minusvalenze da vendite/scambi di cripto-attività;
+- **Quadro RW** — il valore delle disponibilità detenute all'estero (wallet e conti su exchange) al 31/12 di ogni anno.
 
-L'obiettivo è ridurre il lavoro manuale di raccolta ed elaborazione dati che normalmente precede la compilazione della dichiarazione, non sostituire la consulenza di un commercialista.
+Serve a ridurre il lavoro manuale di raccolta ed elaborazione dei dati che di solito precede la dichiarazione: **non sostituisce** la consulenza di un commercialista.
 
-## Cosa fa
+## Sito web
+
+👉 **[giacenzecrypto.it](https://giacenzecrypto.it)** — presentazione del programma e un motore di ricerca sulla normativa fiscale italiana in materia di cripto-attività (leggi, prassi dell'Agenzia delle entrate, istruzioni ai modelli dichiarativi).
+
+## Come installarlo
+
+Non serve installare Java separatamente: tutti i pacchetti elencati qui sotto lo includono già.
+Tutti si scaricano dalla pagina delle **[release su GitHub](https://github.com/Lucapasselli/GiacenzeCrypto/releases/latest)** (in alternativa, gli stessi file sono anche su [SourceForge](https://sourceforge.net/projects/giacenze-crypto-com/)).
+
+### Windows
+
+- **Consigliato** — scarica il file `..._Installer_Windows.exe`, avvialo e segui la procedura guidata: crea l'icona sul desktop e nel menu Start come qualunque altro programma. Non servono i permessi di amministratore.
+- **Versione portatile** (senza installazione, ad esempio per tenerla su una chiavetta USB) — scarica `..._Portable_Windows.zip`, estrai la cartella e avvia `Giacenze_Crypto.exe` al suo interno.
+
+### Linux
+
+- **Debian, Ubuntu e derivate** — scarica il file `..._Deb_Linux.deb` e installalo con il gestore pacchetti del sistema (doppio clic, oppure da terminale: `sudo dpkg -i GiacenzeCrypto_*_Deb_Linux.deb`).
+- **Flatpak** (qualunque distribuzione) — scarica il file `.flatpak` e installalo con `flatpak install --user GiacenzeCrypto_*.flatpak`.
+- **Versione portatile**, senza installazione — scarica `..._Portable_Linux.zip`, estrai la cartella e avvia `Giacenze_Crypto` al suo interno.
+
+### macOS
+
+Scarica il file `.dmg` per il tuo Mac — `..._MacOS_AppleSilicon.dmg` per i Mac con chip Apple (M1/M2/M3/…), `..._MacOS_Intel.dmg` per i Mac più vecchi con processore Intel — aprilo e trascina l'icona nella cartella Applicazioni.
+
+### Un'alternativa per chi ha già Java installato
+
+Se preferisci non usare nessuno dei pacchetti sopra, esiste anche un pacchetto `..._Portable_Multipiattaforma.zip`: funziona su qualsiasi sistema operativo, ma **richiede Java 21 (o più recente) già installato** sul computer — a differenza di tutti i pacchetti elencati sopra, che non ne hanno bisogno. Si estrae la cartella e si avvia con `java -jar Giacenze_Crypto.jar` da terminale.
+
+## Come aggiornarlo
+
+Il programma stesso avvisa quando è disponibile una nuova versione, con un pulsante ben visibile che porta direttamente alla pagina di scaricamento — non serve controllare manualmente.
+
+- **Installer Windows**: scarica ed esegui il nuovo installer come la prima volta; sostituisce automaticamente la versione precedente e i tuoi dati restano intatti.
+- **.deb**: installa il nuovo file allo stesso modo del precedente; anche qui i dati non vengono toccati.
+- **AUR**: si aggiorna insieme al resto del sistema con il normale comando di aggiornamento pacchetti (es. `yay -Syu`).
+- **Flatpak**: `flatpak update`.
+- **macOS**: scarica il nuovo `.dmg` e trascina di nuovo l'icona in Applicazioni, sovrascrivendo quella precedente.
+- **Versioni portatili** (Windows/Linux): scarica la nuova cartella al posto della vecchia. Per sicurezza, prima di farlo conviene usare la funzione di **backup integrata nel programma** (menu Opzioni) per salvare una copia dei propri dati, così è sempre possibile ripristinarli dopo l'aggiornamento.
+
+## Dati e privacy
+
+L'applicazione lavora **in locale**: i movimenti, i wallet e le quotazioni scaricate vengono salvati sul tuo computer, nella cartella dati del programma. Le uniche chiamate di rete sono quelle necessarie a importare i movimenti (API degli exchange/wallet) e a recuperare le quotazioni storiche.
+
+Il dettaglio completo — cosa resta sul computer, cosa esce e verso chi — è nell'[informativa sulla privacy](https://lucapasselli.github.io/GiacenzeCrypto/privacy/) (sorgente in `docs/privacy/`).
+
+## Disclaimer
+
+Questo software viene fornito "così com'è", **senza alcuna garanzia**, esplicita o implicita, di correttezza, completezza o idoneità a uno scopo particolare. Il testo completo è nel [disclaimer](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/disclaimer.html).
+
+- Il programma è uno **strumento di supporto al calcolo**: non fornisce consulenza fiscale, legale o finanziaria e **non sostituisce** il parere di un commercialista o di un consulente fiscale abilitato.
+- I calcoli (plusvalenze, Quadro RT, Quadro RW) dipendono dalla correttezza e completezza dei dati importati, dalla classificazione dei movimenti e dalle quotazioni recuperate da servizi terzi (CoinGecko, Binance, Etherscan, mempool.space, Helius, ecc.), sui quali l'autore non ha alcun controllo.
+- È responsabilità dell'utente **verificare l'esattezza** dei dati e dei risultati prodotti prima di utilizzarli per qualsiasi adempimento fiscale.
+- L'autore e i contributori del progetto **non si assumono alcuna responsabilità** per errori, omissioni, danni diretti o indiretti derivanti dall'uso di questo software, incluse eventuali sanzioni, accertamenti o perdite economiche.
+
+L'uso dell'applicazione è a totale rischio dell'utilizzatore.
+
+## Licenza
+
+Distribuito con licenza **MIT**: vedere il file [`LICENSE`](LICENSE) e
+[`THIRD-PARTY-LICENSES.md`](THIRD-PARTY-LICENSES.md) per le librerie di terze parti.
+
+## Cosa fa (dettaglio tecnico)
 
 - **Importazione movimenti** da:
   - Crypto.com (file di export dell'app e dell'exchange)
@@ -26,12 +87,11 @@ L'obiettivo è ridurre il lavoro manuale di raccolta ed elaborazione dati che no
 - **Tracciabilità delle importazioni**: ogni movimento ricorda il file da cui proviene, conservato compresso e riapribile dal programma
 - Interfaccia grafica con tema chiaro/scuro (FlatLaf), con il carattere di scrittura incluso nel programma
 
-## Requisiti
+## Per chi vuole compilarlo dal codice sorgente
 
-- Java 21 (JRE/JDK)
-- Sistema operativo desktop (Windows, Linux, macOS)
+Questa sezione è per sviluppatori: chi vuole solo usare il programma può ignorarla e seguire "Come installarlo" più sopra.
 
-## Avvio
+Requisiti: Java 21 (JDK) e Maven.
 
 ```bash
 # Compilazione (produce target/Giacenze_Crypto-<versione>-jar-with-dependencies.jar)
@@ -53,30 +113,9 @@ Argomenti opzionali utili in fase di avvio:
 
 Il JAR va distribuito insieme alla cartella `Immagini/` (icone e immagini non sono incluse nel classpath).
 
-## Dati e privacy
-
-L'applicazione lavora **in locale**: i movimenti, i wallet e le quotazioni scaricate vengono salvati in database H2 all'interno della cartella di lavoro (`database.mv.db`, `personale.mv.db`, `prezzi.mv.db`, ecc.). Le uniche chiamate di rete sono quelle necessarie a importare i movimenti (API degli exchange/wallet) e a recuperare le quotazioni storiche.
-
-Il dettaglio completo — cosa resta sul computer, cosa esce e verso chi — è nell'[informativa sulla privacy](https://lucapasselli.github.io/GiacenzeCrypto/privacy/) (sorgente in `docs/privacy/`).
-
-## Disclaimer
-
-Questo software viene fornito "così com'è", **senza alcuna garanzia**, esplicita o implicita, di correttezza, completezza o idoneità a uno scopo particolare. Il testo completo è nel [disclaimer](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/disclaimer.html).
-
-- Il programma è uno **strumento di supporto al calcolo**: non fornisce consulenza fiscale, legale o finanziaria e **non sostituisce** il parere di un commercialista o di un consulente fiscale abilitato.
-- I calcoli (plusvalenze, Quadro RT, Quadro RW) dipendono dalla correttezza e completezza dei dati importati, dalla classificazione dei movimenti e dalle quotazioni recuperate da servizi terzi (CoinGecko, Binance, Etherscan, mempool.space, Helius, ecc.), sui quali l'autore non ha alcun controllo.
-- È responsabilità dell'utente **verificare l'esattezza** dei dati e dei risultati prodotti prima di utilizzarli per qualsiasi adempimento fiscale.
-- L'autore e i contributori del progetto **non si assumono alcuna responsabilità** per errori, omissioni, danni diretti o indiretti derivanti dall'uso di questo software, incluse eventuali sanzioni, accertamenti o perdite economiche.
-
-L'uso dell'applicazione è a totale rischio dell'utilizzatore.
-
-## Licenza
-
-Distribuito con licenza **MIT**: vedere il file [`LICENSE`](LICENSE) e
-[`THIRD-PARTY-LICENSES.md`](THIRD-PARTY-LICENSES.md) per le librerie di terze parti.
-
 ## Riferimenti
 
+- **Sito web**: https://giacenzecrypto.it
 - **Codice sorgente**: https://github.com/Lucapasselli/GiacenzeCrypto
 - **Pacchetti compilati**: https://github.com/Lucapasselli/GiacenzeCrypto/releases (anche su
   [SourceForge](https://sourceforge.net/projects/giacenze-crypto-com/), nell'AUR come `giacenze-crypto-bin` e in formato flatpak)

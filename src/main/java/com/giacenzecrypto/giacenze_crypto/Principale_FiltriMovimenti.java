@@ -7,7 +7,7 @@ package com.giacenzecrypto.giacenze_crypto;
  * quindi richiedono di ricostruirla quando cambiano. Non vanno confusi con i filtri <b>di riga</b>
  * ({@code Tabelle.tableFilters} e il campo di ricerca), che agiscono su un modello già costruito e sono
  * ricomposti a ogni caricamento da {@code Tabelle_FiltroColonne}. La distinzione è raccontata per esteso in
- * {@code test/Documentazione/Analisi_Filtri_Movimenti.md}.
+ * {@code nocommit/Documentazione/Analisi_Filtri_Movimenti.md}.
  *
  * <p>Fino al 2026-08-13 questi sette criteri erano un {@code if} a sette condizioni dentro
  * {@code Principale.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa}, letti direttamente dalle

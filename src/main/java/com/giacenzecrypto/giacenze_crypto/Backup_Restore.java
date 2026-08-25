@@ -56,7 +56,7 @@ import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
  *
  * L'elenco non è "tutto quello che c'è": è stato ricavato censendo che cosa i motori fiscali leggono
  * davvero. Tre conseguenze non ovvie, documentate per esteso in
- * {@code test/Documentazione/Analisi_Backup_Ripristino.md} :
+ * {@code nocommit/Documentazione/Analisi_Backup_Ripristino.md} :
  *
  * <ul>
  *   <li><b>Il DB prezzi non serve tutto.</b> {@code Calcoli_PlusvalenzeNew} non richiama {@code Prezzi}

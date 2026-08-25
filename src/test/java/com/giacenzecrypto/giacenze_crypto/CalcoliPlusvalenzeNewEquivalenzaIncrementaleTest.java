@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Verifica di EQUIVALENZA fra la passata unica di {@link Calcoli_PlusvalenzeNew#AggiornaPlusvalenze()}
  * e una ripartenza da checkpoint, cioè il presupposto del ricalcolo incrementale descritto in
- * {@code test/Documentazione/Analisi_Ricalcolo_Incrementale_Plusvalenze.md} (paragrafo 7).
+ * {@code nocommit/Documentazione/Analisi_Ricalcolo_Incrementale_Plusvalenze.md} (paragrafo 7).
  *
  * <p>Il motore incrementale non esiste ancora: qui si verifica il <b>meccanismo</b> su cui si
  * baserà, usando {@link Calcoli_PlusvalenzeNew#ElaboraMovimento} (estratto apposta) per

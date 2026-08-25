@@ -4,12 +4,12 @@ name: MSIX (Microsoft Store)
 #
 # Tre cose che lo distinguono dagli altri job di release, tutte volute:
 #  - compila con -Dgiacenze.edizione=store : niente scaricamento dai conti exchange e niente loghi di
-#    terzi (policy 10.8.3/10.2.6 e 11.2), vedi test/Documentazione/Pubblicazione_MicrosoftStore.md;
+#    terzi (policy 10.8.3/10.2.6 e 11.2), vedi nocommit/Documentazione/Pubblicazione_MicrosoftStore.md;
 #  - include Node e ccxt nel pacchetto invece di lasciarli scaricare all'avvio (policy 10.2.2/10.2.3);
 #  - il pacchetto prodotto NON e' firmato: allo Store lo firma Microsoft, e firmarlo da se' ci mette
 #    dentro un CN che non coincide con l'identita' di Partner Center. signtool compare comunque, ma
 #    solo come VERIFICA di build su una copia usa e getta (vedi l'ultimo passo e la sezione 2.8 di
-#    test/Documentazione/Pubblicazione_MicrosoftStore.md).
+#    nocommit/Documentazione/Pubblicazione_MicrosoftStore.md).
 #
 # Il pacchetto non viene allegato alla release pubblica: un MSIX non firmato scaricato da GitHub non
 # si installa da solo, e la sua destinazione e' Partner Center.
@@ -133,7 +133,7 @@ jobs:
           # solo per interrogare un conto exchange passando chiave/segreto/passphrase: dentro un
           # pacchetto che dichiara di non collegarsi ad alcun exchange sono una contraddizione che
           # il revisore trova aprendo il .msix (rilievo 10.2.6 del 20/08/2026, vedi
-          # test/Documentazione/Pubblicazione_MicrosoftStore.md Parte 4).
+          # nocommit/Documentazione/Pubblicazione_MicrosoftStore.md Parte 4).
           # Historical_Multi_Eur.js  -> quotazioni storiche (Prezzi.RecuperaPrezziStoriciMultiEUR)
           # check_node_path.js       -> diagnostica del Node incluso (CcxtInterop)
           $scriptStore = @('Historical_Multi_Eur.js', 'check_node_path.js')

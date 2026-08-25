@@ -103,7 +103,7 @@ public final class SplashAvvio {
     /**
      * Le fasi dell'avvio, <b>in ordine di esecuzione</b>, con la loro etichetta e il peso di default in
      * millisecondi. I pesi di default vengono da una misura su un archivio da ~102.000 movimenti (vedi
-     * {@code test/Documentazione/Analisi_Performance_Caricamento.md}); dal secondo avvio in poi contano
+     * {@code nocommit/Documentazione/Analisi_Performance_Caricamento.md}); dal secondo avvio in poi contano
      * invece i tempi reali dell'avvio precedente, letti da {@code avvio.tempi.db}.
      */
     public enum Fase {

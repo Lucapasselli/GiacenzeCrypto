@@ -1,6 +1,7 @@
 /Backup/
 /Temporanei/
 /test/
+/nocommit/
 *.db
 *.backup
 
@@ -36,3 +37,7 @@ buildNumber.properties
 # desktop (CcxtInterop.java/Prezzi.java), oltre che da ServizioPrezzi/.
 /Sito/
 /ServizioPrezzi/
+
+# Chiave applicativa del servizio prezzi remoto, letta a runtime da ServizioPrezziClient: mai in
+# git, per lo stesso motivo per cui non e' nel repository sulla VPS. Vedi ServizioPrezzi_ApiKey.txt.example.
+/src/main/resources/ServizioPrezzi_ApiKey.txt

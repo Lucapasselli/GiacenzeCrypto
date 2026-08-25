@@ -11721,7 +11721,7 @@ if (result.isAction("delete-all")) {
             public void run() {
                 //I loghi di exchange e blockchain vengono da CoinGecko e dalle favicon dei siti: sono
                 //immagini di terzi, e l'edizione Store non li distribuisce (policy 11.2 e termini
-                //CoinGecko, vedi test/Documentazione/Analisi_API_Terze_Parti.md). Non serve altro:
+                //CoinGecko, vedi nocommit/Documentazione/Analisi_API_Terze_Parti.md). Non serve altro:
                 //LoghiImport restituisce null sul file mancante e le liste di importazione restano
                 //testuali. È l'unica via con cui i loghi arrivano all'utente — nel jar non ci sono.
                 boolean Store = VarStatiche.EdizioneStore();
@@ -12135,6 +12135,11 @@ if (result != null && !result.isAction("cancel")) {
         if (rete.equalsIgnoreCase("BTC")) return new String[]{"BITCOIN"};
         if (rete.equalsIgnoreCase("BSC") || rete.equalsIgnoreCase("BASE") || rete.equalsIgnoreCase("AVAX")) return new String[]{"MORALIS", "BLOCKSCOUT"};
         if (rete.equalsIgnoreCase("CRO")) return new String[]{"BLOCKSCOUT", "CRONOSCAN"};
+        //Ink non è mai stata su Etherscan (nemmeno a pagamento, a differenza di OP/GNOSIS): offrire
+        //ETHERSCAN qui punterebbe a Mappa_ChainExplorer.get("INK")[0], lasciato vuoto apposta perché
+        //non esiste nessun endpoint da preservare
+        if (rete.equalsIgnoreCase("INK")) return new String[]{"BLOCKSCOUT"};
+        if (rete.equalsIgnoreCase("ROBINHOOD")) return new String[]{"BLOCKSCOUT"}; //stesso caso di INK
         return new String[]{"ETHERSCAN", "BLOCKSCOUT"};
     }
 
@@ -13694,7 +13699,8 @@ if (result != null && !result.isAction("cancel")) {
             Map.entry("ABSTRACT", "2741"),
             Map.entry("SONIC", "146"),
             Map.entry("MANTLE", "5000"),
-            Map.entry("OP", "10")
+            Map.entry("OP", "10"),
+            Map.entry("ROBINHOOD", "4663")
     );
 
     /**

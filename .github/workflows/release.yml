@@ -13,7 +13,7 @@ on:
         type: boolean
         required: false
         # Volutamente disattivato: la prima pubblicazione va fatta a mano con aur.yml in
-        # "solo_prova" (vedi test/Documentazione/Pubblicazione_AUR.md). Attivalo dopo.
+        # "solo_prova" (vedi nocommit/Documentazione/Pubblicazione_AUR.md). Attivalo dopo.
         default: false
       pkgrel_aur:
         description: "pkgrel del pacchetto AUR (alzalo se ripubblichi la stessa versione)"
@@ -24,7 +24,7 @@ on:
         type: boolean
         required: false
         # Come per AUR, la prima volta conviene provarlo a mano con flatpak.yml in "solo_prova"
-        # (vedi test/Documentazione/Pubblicazione_Flatpak.md). Attivalo dopo.
+        # (vedi nocommit/Documentazione/Pubblicazione_Flatpak.md). Attivalo dopo.
         default: false
       bozza:
         description: "Crea la release come bozza (draft): resta invisibile al pubblico finche' non la pubblichi a mano da GitHub, cosi' puoi scaricare e provare gli asset con calma"
@@ -77,6 +77,12 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Scrivi la chiave del servizio prezzi
+        env:
+          PREZZI_API_KEY: ${{ secrets.PREZZI_API_KEY }}
+        shell: bash
+        run: echo "$PREZZI_API_KEY" > src/main/resources/ServizioPrezzi_ApiKey.txt
 
       - name: Setup JDK
         uses: actions/setup-java@v4
@@ -189,6 +195,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Scrivi la chiave del servizio prezzi
+        env:
+          PREZZI_API_KEY: ${{ secrets.PREZZI_API_KEY }}
+        run: echo "$PREZZI_API_KEY" > src/main/resources/ServizioPrezzi_ApiKey.txt
+
       - name: Setup JDK
         uses: actions/setup-java@v4
         with:
@@ -279,6 +290,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Scrivi la chiave del servizio prezzi
+        env:
+          PREZZI_API_KEY: ${{ secrets.PREZZI_API_KEY }}
+        run: echo "$PREZZI_API_KEY" > src/main/resources/ServizioPrezzi_ApiKey.txt
 
       - name: Setup JDK
         uses: actions/setup-java@v4

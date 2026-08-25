@@ -526,7 +526,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
  * <p>
  * <b>L'unico stato che attraversa i movimenti è {@code MappaGrWallet_CryptoStack}</b>, creato qui
  * e passato a {@code ElaboraMovimento}: è il presupposto del ricalcolo incrementale (vedi
- * {@code test/Documentazione/Analisi_Ricalcolo_Incrementale_Plusvalenze.md}), perché è l'unica
+ * {@code nocommit/Documentazione/Analisi_Ricalcolo_Incrementale_Plusvalenze.md}), perché è l'unica
  * cosa che andrà salvata nei checkpoint per poter ripartire da metà storico.
  * <p>
  * Il metodo è {@code synchronized} (voce M6 di Analisi_Bug_Criticita.md): è invocato sia
@@ -794,7 +794,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
      * L'estrazione non e' cosmetica: rende esplicito che l'unico stato che attraversa i movimenti e'
      * {@code MappaGrWallet_CryptoStack}, e che tutto il resto e' o dentro la riga o dentro
      * {@link OpzioniRicalcolo}. E' il presupposto del ricalcolo incrementale descritto in
-     * {@code test/Documentazione/Analisi_Ricalcolo_Incrementale_Plusvalenze.md}, dove lo stesso
+     * {@code nocommit/Documentazione/Analisi_Ricalcolo_Incrementale_Plusvalenze.md}, dove lo stesso
      * metodo verra' invocato a partire da un checkpoint invece che dal primo movimento.
      *
      * @param v riga del movimento, formato {@code String[45]} di {@code Principale.MappaCryptoWallet}
@@ -1245,7 +1245,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
      * movimento</b>: cambiarne uno cambia il risultato di tutto lo storico senza che nessun
      * movimento risulti modificato. Chi aggiunge qui una nuova opzione deve tenerne conto nel
      * ricalcolo incrementale (paragrafo 6 di
-     * {@code test/Documentazione/Analisi_Ricalcolo_Incrementale_Plusvalenze.md}), dove questo
+     * {@code nocommit/Documentazione/Analisi_Ricalcolo_Incrementale_Plusvalenze.md}), dove questo
      * elenco e' quello che decide quando il ricalcolo deve tornare completo.
      */
     static final class OpzioniRicalcolo {

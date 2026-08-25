@@ -80,7 +80,7 @@ public class LoghiImport {
      * un'installazione Store può ritrovarsi i file addosso, perché {@code Backup_Restore.CartelleConfig()}
      * comprende {@code config/loghi} e il ripristino di un archivio prodotto dall'edizione completa li
      * riporta sul disco — comportamento voluto, documentato in
-     * {@code test/Documentazione/Analisi_API_Terze_Parti.md} §2.
+     * {@code nocommit/Documentazione/Analisi_API_Terze_Parti.md} §2.
      * @param nomeLogo nome del file senza estensione, già in forma di slug; può essere {@code null}
      * @param etichetta nome della voce come compare a video ({@code "Bitpanda"}, {@code "Arbitrum (ARB)"},
      *        {@code "ARB"}); può essere {@code null}, e allora non si disegna nessun monogramma
@@ -159,7 +159,7 @@ public class LoghiImport {
     // Monogrammi — l'alternativa ai loghi per l'edizione Store
     //
     // L'edizione destinata al Microsoft Store non distribuisce config/loghi (vedi
-    // test/Documentazione/Analisi_API_Terze_Parti.md §2): i loghi degli exchange e delle catene sono
+    // nocommit/Documentazione/Analisi_API_Terze_Parti.md §2): i loghi degli exchange e delle catene sono
     // marchi altrui, e ridisegnarli non cambierebbe nulla, perché il marchio non è il file ma il segno.
     // Al loro posto si disegna una sigla dentro un cerchio: non è di nessuno, segue il tema, e copre
     // tutte le voci — comprese quelle che verranno aggiunte domani, senza generare niente.

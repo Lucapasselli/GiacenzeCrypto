@@ -32,7 +32,7 @@ import javax.swing.event.HyperlinkEvent;
  *     che non sia strettamente personale, e un'applicazione distribuita non lo è.</li>
  * </ul>
  * Il ragionamento completo, fornitore per fornitore, sta in
- * {@code test/Documentazione/Analisi_API_Terze_Parti.md}.
+ * {@code nocommit/Documentazione/Analisi_API_Terze_Parti.md}.
  *
  * <p><b>Perché non c'è un {@code .form}</b>: il contenuto è generato — dipende dalla versione e
  * dall'edizione (vedi {@link VarStatiche#EdizioneStore()}), e nell'edizione Store non deve nominare lo

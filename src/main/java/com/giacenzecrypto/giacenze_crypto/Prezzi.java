@@ -57,6 +57,7 @@ import okhttp3.Response;
 public class Prezzi {
     //A5: client OkHttp condiviso invece di uno nuovo per chiamata (evita di accumulare connection pool/dispatcher inutilizzati)
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
+
     //static Map<String, String> MappaWallets = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneUSDEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 //    static Map<String, String> MappaCoppieBinance = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -1087,9 +1088,13 @@ public class Prezzi {
         if (!Funzioni.CeConnessioneInternet()) return null;
         
         
-          //Se non ho neanche i prezzi all'ora provo a scaricarli
+          //Se non ho neanche i prezzi all'ora provo a scaricarli: prima dal servizio prezzi
+          //remoto (solo per le monete che copre, con fallback silenzioso se non risponde in modo
+          //autorevole — vedi ServizioPrezziClient), altrimenti come sempre in locale via CCXT.
           //System.out.println("mi mancano i prezzi di "+Crypto+" - "+Address+" - "+Rete+" - "+Exchange+" - "+Datalong+" - Qta: "+Qta);
-          RecuperaPrezziDaCCXT(Crypto, Datalong);
+          if (!ServizioPrezziClient.tentaRecupero(Crypto, Datalong)) {
+              RecuperaPrezziDaCCXT(Crypto, Datalong);
+          }
           risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Fonte, Rete, Address,5,qta);
           if (risultato!=null){
             return risultato;
@@ -3319,6 +3324,62 @@ public static void RecuperaGiacenzeDaCCXT(String Exchange,String APIKey,String A
  * @param Symbol simbolo della crypto da quotare
  * @param timestamp data/ora di riferimento in millisecondi epoch
  */
+/**
+ * Scrive in {@code PrezziNew} i punti prezzo di un array JSON nella forma
+ * {@code [{ "timestamp": ..., "prices": { "exchange": prezzo, ... } }, ...]} — la stessa emessa
+ * da {@code Scripts/Historical_Multi_Eur.js} in locale (vedi sotto, {@link #RecuperaPrezziDaCCXT})
+ * e dal campo {@code punti} della risposta {@code /v1/prezzo} del servizio prezzi remoto (stessa
+ * logica, vedi {@link ServizioPrezziClient} e nocommit/Documentazione/API_ServizioPrezzi.md):
+ * condividere questo metodo, invece di duplicarlo, è quello che garantisce che lo stesso
+ * movimento non prenda un valore diverso a seconda che risponda il server o il recupero locale.
+ * {@code Rete}/{@code Address} restano vuoti: questi sono i prezzi "puri" per simbolo, non quelli
+ * per indirizzo/rete (vedi {@link #CambioAddressEUR}).
+ */
+public static void ScriviPuntiPrezzoInCache(String symbol, JsonArray punti) {
+    String mergeSql = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo,rete,address) KEY (timestamp, exchange, symbol,rete,address) VALUES (?, ?, ?, ?, ?, ?)";
+    try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(mergeSql)) {
+
+        for (JsonElement el : punti) {
+            if (!el.isJsonObject()) continue;
+            JsonObject obj = el.getAsJsonObject();
+
+            if (!obj.has("timestamp")) continue;
+            long ts = obj.get("timestamp").getAsLong();
+
+            JsonObject pricesObj = obj.has("prices") && obj.get("prices").isJsonObject()
+                    ? obj.getAsJsonObject("prices")
+                    : null;
+            if (pricesObj == null) continue;
+
+            for (Map.Entry<String, JsonElement> entry : pricesObj.entrySet()) {
+                String exchange = entry.getKey();
+                JsonElement valEl = entry.getValue();
+                if (valEl == null || valEl.isJsonNull()) continue;
+
+                double value;
+                try {
+                    value = valEl.getAsDouble();
+                } catch (Exception ex) {
+                    // valore non numerico: skip
+                    continue;
+                }
+
+                ps.setLong(1, ts);
+                ps.setString(2, exchange);
+                ps.setString(3, symbol);
+                ps.setDouble(4, value);
+                ps.setString(5, "");//Rete
+                ps.setString(6, "");//Address
+                ps.addBatch();
+            }
+        }
+        ps.executeBatch();
+    } catch (SQLException ex) {
+        //Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+        LoggerGC.ScriviErrore(ex);
+    }
+}
+
 public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
 
         
@@ -3428,49 +3489,8 @@ public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
                  }
                  JsonArray rootArr = rootEl.getAsJsonArray();
 
-                 String mergeSql = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo,rete,address) KEY (timestamp, exchange, symbol,rete,address) VALUES (?, ?, ?, ?, ?, ?)";
-                 try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(mergeSql)) {
-                     
-                     for (JsonElement el : rootArr) {
-                         if (!el.isJsonObject()) continue;
-                         JsonObject obj = el.getAsJsonObject();
-                         
-                         if (!obj.has("timestamp")) continue;
-                         long ts = obj.get("timestamp").getAsLong();
-                         
-                         JsonObject pricesObj = obj.has("prices") && obj.get("prices").isJsonObject()
-                                 ? obj.getAsJsonObject("prices")
-                                 : null;
-                         if (pricesObj == null) continue;
-                         
-                         for (Map.Entry<String, JsonElement> entry : pricesObj.entrySet()) {
-                             String exchange = entry.getKey();
-                             JsonElement valEl = entry.getValue();
-                             if (valEl == null || valEl.isJsonNull()) continue;
-                             
-                             double value;
-                             try {
-                                 value = valEl.getAsDouble();
-                             } catch (Exception ex) {
-                                 // valore non numerico: skip
-                                 continue;
-                             }
-                             
-                             ps.setLong(1, ts);
-                             ps.setString(2, exchange);
-                             ps.setString(3, Symbol);
-                             ps.setDouble(4, value);
-                             ps.setString(5, "");//Rete
-                             ps.setString(6, "");//Address
-                             ps.addBatch();
-                         }
-                     }
-                     ps.executeBatch();
-                 } catch (SQLException ex) {
-                     //Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-                     LoggerGC.ScriviErrore(ex);
-                 }
-                 
+                 ScriviPuntiPrezzoInCache(Symbol, rootArr);
+
                  //Se arrivo qua lo script è andato a buon fine quindi aggiungo il range richiesto alla lista di quelli già utilizzati pr la moneta
                  //in modo da non richiederlo più volte nell'arco della sessione nel caso in cui non trovi il prezzo
                  managerRichieste.addRange(Symbol, Since, Until);

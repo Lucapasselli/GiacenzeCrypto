@@ -80,6 +80,9 @@ public class Funzioni_WalletDeFi {
         if (Rete.equalsIgnoreCase("SONIC")) return "https://sonicscan.org/tx/" + Hash;
         if (Rete.equalsIgnoreCase("MANTLE")) return "https://mantlescan.xyz/tx/" + Hash;
         if (Rete.equalsIgnoreCase("OP")) return "https://optimistic.etherscan.io/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("HYPEREVM")) return "https://hyperevmscan.io/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("INK")) return "https://explorer.inkonchain.com/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("ROBINHOOD")) return "https://robinhoodchain.blockscout.com/tx/" + Hash;
 
         return null;
     }
@@ -158,6 +161,20 @@ public class Funzioni_WalletDeFi {
                         else if(Rete.equalsIgnoreCase("OP")){
                            Funzioni.ApriWeb("https://optimistic.etherscan.io/token/"+Address +"?a="+ Wallet);
                         }
+                        else if(Rete.equalsIgnoreCase("HYPEREVM")){
+                           Funzioni.ApriWeb("https://hyperevmscan.io/token/"+Address +"?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("INK")){
+                           //Ink ha solo un explorer Blockscout (nessun sito "-scan" della famiglia
+                           //Etherscan, a differenza di GNOSIS/OP): l'URL segue quindi la convenzione
+                           //Blockscout (tab sull'indirizzo, filtrato per token), non quella "?a=" usata
+                           //sopra per le chain Etherscan-compatibili
+                           Funzioni.ApriWeb("https://explorer.inkonchain.com/address/"+Wallet+"?tab=token_transfers&token="+Address);
+                        }
+                        else if(Rete.equalsIgnoreCase("ROBINHOOD")){
+                           //Stesso caso di Ink: solo Blockscout, nessun sito "-scan" a parte
+                           Funzioni.ApriWeb("https://robinhoodchain.blockscout.com/address/"+Wallet+"?tab=token_transfers&token="+Address);
+                        }
 
 
      }
@@ -235,6 +252,17 @@ public class Funzioni_WalletDeFi {
                         else if(Rete.equalsIgnoreCase("OP")){
                            Funzioni.ApriWeb("https://optimistic.etherscan.io/tokenholdings?a="+ Wallet);
                         }
+                        else if(Rete.equalsIgnoreCase("HYPEREVM")){
+                           Funzioni.ApriWeb("https://hyperevmscan.io/tokenholdings?a="+ Wallet);
+                        }
+                        else if(Rete.equalsIgnoreCase("INK")){
+                           //Blockscout non ha una route "tokenholdings" globale come Etherscan: la
+                           //tendina token è un tab della pagina indirizzo, vedi nota in ApriMovimentiWallet
+                           Funzioni.ApriWeb("https://explorer.inkonchain.com/address/"+Wallet+"?tab=tokens");
+                        }
+                        else if(Rete.equalsIgnoreCase("ROBINHOOD")){
+                           Funzioni.ApriWeb("https://robinhoodchain.blockscout.com/address/"+Wallet+"?tab=tokens");
+                        }
                     }
 
      }
@@ -250,7 +278,7 @@ public class Funzioni_WalletDeFi {
      public static boolean isValidDefiWallet(String wallet) {
         //Questa funzione serve per sapere se una stringa wallet presente nella colonna wallet es 0x3423432aff4545 (ETH)
         //può essere considerata un wallet valido, si controllerà quindi l'indirizzo e se la rete è supportata
-        String RetiSupportate="||BSC||CRO||BASE||ARB||ETH||SOL||BERA||AVAX||POL||MONAD||BTC||GNOSIS||LINEA||BLAST||UNICHAIN||WORLD||TAIKO||ABSTRACT||KATANA||SONIC||MANTLE||OP||";
+        String RetiSupportate="||BSC||CRO||BASE||ARB||ETH||SOL||BERA||AVAX||POL||MONAD||BTC||GNOSIS||LINEA||BLAST||UNICHAIN||WORLD||TAIKO||ABSTRACT||KATANA||SONIC||MANTLE||OP||HYPEREVM||INK||ROBINHOOD||";
         String sWallet[]=wallet.split("\\(");
         String address;
         String Rete;

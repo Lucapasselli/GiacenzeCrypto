@@ -1045,6 +1045,7 @@ public class Prezzi {
         //Come prima cosa cerco nei nuovi personalizzati        
         risultato=DammiPrezzoDaDatabasePersonale(Crypto,Datalong,Fonte,Rete,Address,60,qta);        
         if (risultato!=null){
+           //System.out.println("RisultatoDBPersonalizzati:"+risultato);
             return risultato;
         }
         
@@ -1062,16 +1063,19 @@ public class Prezzi {
             risultato.prezzoUnitario=new BigDecimal(PrezzoUnitario);
             risultato.Qta=new BigDecimal(Qta);
             risultato.Moneta=Crypto;
+          // System.out.println("RisultatoDBOld:"+risultato);
             return risultato;
         }
         }
         //Se non ho i prezzi all'ora (mantenuti per non variare i prezzi delle vecchie valorizzazioni, verifico se ho prezzi precisi
-        risultato=DammiPrezzoDaDatabase(Crypto,Datalong,Fonte,Rete,Address,60,qta);
+        //Utilizzo i prezzi con precisione di 5 minuti, ormai i prezzi all'ora non li consiero più attendibili qui
+        risultato=DammiPrezzoDaDatabase(Crypto,Datalong,Fonte,Rete,Address,5,qta);
         if (risultato!=null){
+            //System.out.println("RisultatoDB60minuti:"+risultato);
             return risultato;
         }
         
-        
+       // System.out.println("tutti i prezzi scartati");
         
         //Adesso verifico se è un token in cui è risaputo che non c'è prezzo in quel caso ritorno null
         if (PrezzoIrrecuperabileDaDB_Leggi(Crypto,Datalong,Rete,Address)) 
@@ -1091,11 +1095,32 @@ public class Prezzi {
           //Se non ho neanche i prezzi all'ora provo a scaricarli: prima dal servizio prezzi
           //remoto (solo per le monete che copre, con fallback silenzioso se non risponde in modo
           //autorevole — vedi ServizioPrezziClient), altrimenti come sempre in locale via CCXT.
-          //System.out.println("mi mancano i prezzi di "+Crypto+" - "+Address+" - "+Rete+" - "+Exchange+" - "+Datalong+" - Qta: "+Qta);
-          if (!ServizioPrezziClient.tentaRecupero(Crypto, Datalong)) {
+          //Il servizio remoto risponde con UNA sola fonte, salvata in locale come "GC" (vedi
+          //ServizioPrezziClient.CODICE_FONTE, mostrata come "giacenzecrypto.it" in InfoPrezzo):
+          //se il chiamante ha chiesto una fonte specifica (Fonte non vuota, es. un gruppo wallet
+          //con un exchange preferito) non ha senso interrogarlo, andrebbe comunque ignorato da
+          //DammiPrezzoDaDatabase, quindi si va dritti su CCXT.
+          //Se invece Fonte è vuota si interroga il servizio remoto, ma "true" da tentaRecupero
+          //copre anche l'esito "assenza confermata" (il servizio copre solo ~20 monete on-chain):
+          //non basta a dire che il prezzo è stato trovato, va verificato sulla cache locale. Se
+          //non c'è ancora, si ripiega comunque su CCXT — mai bloccarsi sulla sola risposta remota.
+          //System.out.println("mi mancano i prezzi di "+Crypto+" - "+Address+" - "+Rete+" - "+Datalong+" - Qta: "+Qta);
+          if (!Fonte.isBlank()) {
               RecuperaPrezziDaCCXT(Crypto, Datalong);
+          } else {
+              ServizioPrezziClient.tentaRecupero(Crypto, Datalong);
+              if (DammiPrezzoDaDatabase(Crypto, Datalong, Fonte, Rete, Address,5,qta)==null) {
+                  RecuperaPrezziDaCCXT(Crypto, Datalong);
+              }
           }
           risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Fonte, Rete, Address,5,qta);
+          if (risultato!=null){
+            return risultato;
+          }
+          
+          //adesso controllo se ho prezzi con precisione a 60 minuti visto che dalla fonti precise non ho nulla
+          //se non li ho allora scarico da coinmarketcap
+          risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Fonte, Rete, Address,60,qta);
           if (risultato!=null){
             return risultato;
           }
@@ -3587,7 +3612,12 @@ public static class InfoPrezzo {
     
     public InfoPrezzo(BigDecimal prezzo, String exchange, long timestamp, BigDecimal prezzoQta, BigDecimal Qta,String Moneta) {
         this.prezzoUnitario = prezzo;
-        this.Fonte = exchange;
+        // Il servizio prezzi condiviso scrive un codice breve in PrezziNew.exchange (vedi
+        // ServizioPrezziClient.CODICE_FONTE) invece del nome per esteso, per non ripeterlo su
+        // ogni riga di una cache che può crescere a milioni di righe (vedi CLAUDE.md). Questo
+        // costruttore è l'unico punto in cui l'exchange salvato diventa la Fonte mostrata
+        // all'utente, quindi è anche l'unico punto in cui va tradotto per esteso.
+        this.Fonte = ServizioPrezziClient.CODICE_FONTE.equals(exchange) ? ServizioPrezziClient.NOME_FONTE : exchange;
         this.timestamp = timestamp;
         this.prezzoQta = prezzoQta;
         this.Qta = Qta;

@@ -20,6 +20,9 @@ Ogni proprietà ha un valore predefinito. Se non la inserisci nel JSON, viene us
 ```json
 {
 "nomeExchange": "...",
+"fontePrezzoPreferita": "",
+"fornitore": "...",
+"estrazione": "...",
 "nomeWallet": "...",
 "testing": false,
 "separatore": ",",
@@ -61,6 +64,23 @@ Nome dell'exchange o della piattaforma sorgente. Se lasciato vuoto, il programma
 
 ```json
 "nomeExchange": "Binance"
+```
+
+### `fontePrezzoPreferita` {#fonteprezzopreferita}
+
+**Tipo:** stringa | **Default:** "" (nessuna preferenza)
+
+Exchange da preferire, fra quelli già scaricati, quando si cerca il prezzo di un movimento importato da
+questa configurazione — lo stesso id usato da CCXT, minuscolo (`"binance"`, `"okx"`, `"cryptocom"`,
+`"bybit"`, `"coinbase"`, `"bitstamp"`, `"kucoin"`). Non limita da chi si scarica: tutti gli exchange
+configurati vengono comunque interrogati al momento del download dei prezzi; questo campo sceglie solo
+quale dei prezzi già in cache usare quando più di uno è disponibile per lo stesso movimento. Si applica
+solo ai movimenti che non hanno già un prezzo o un controvalore nel CSV stesso (colonne `prezzo` e
+`valoreEuro` entrambe assenti/vuote), e solo al momento dell'import — le rivalorizzazioni fiscali
+successive non lo consultano.
+
+```json
+"fontePrezzoPreferita": "binance"
 ```
 
 ### `nomeWallet` {#nomewallet}
@@ -138,13 +158,17 @@ Quante righe iniziali del CSV vanno saltate prima dei dati. Se il CSV non ha int
 
 Quale riga (indice 1-based) contiene i nomi delle colonne. Usata solo se autoDetectColonne è true.
 
-autoDetectColonne e mappaAutoDetect **autoDetectColonne** | **Tipo:** booleano | **Default:** false
+### `autoDetectColonne` {#autodetectcolonne}
+
+**Tipo:** booleano | **Default:** false
 
 Se true, legge i nomi delle colonne dalla riga di intestazione e assegna automaticamente gli indici tramite mappaAutoDetect.
 
-**mappaAutoDetect** | **Tipo:** oggetto chiave-valore
+### `mappaAutoDetect` {#mappaautodetect}
 
-Mappa il nome dell'intestazione CSV al nome del campo logico. Valori validi: data, causale, moneta, quantita, segno, valoreEuro, prezzo, monetaFee, quantitaFee, idTransazione, wallet.
+**Tipo:** oggetto chiave-valore
+
+Mappa il nome dell'intestazione CSV al nome del campo logico. Valori validi: data, causale, moneta, quantita, segno, valoreEuro, monetaFee, quantitaFee, idTransazione, idGruppo, wallet. (`prezzo`, `monetaUscita`, `quantitaUscita`, `causale2`, `causale3` non sono riconosciuti dall'auto-detect: vanno indicati a mano in `colonne` se servono.)
 
 ```json
 "autoDetectColonne": true,
@@ -334,9 +358,8 @@ Tipologie interne che devono essere trattate come movimenti singoli anche se con
 "causaliChiuse": [
 "DEPOSITO-CRYPTO","PRELIEVO-CRYPTO",
 "STAKING REWARDS","CASHBACK","COMMISSIONI"
-```
-
 ]
+```
 
 ## 5. Gestione del segno {#5-gestione-del-segno}
 
@@ -664,6 +687,8 @@ JSON:
 - Se le intestazioni CSV variano di versione in versione, usa autoDetectColonne con mappaAutoDetect.
 
 - Se il tipo di operazione è su più colonne, usa causale2/causale3 con separatoreCausale.
+
+- Se il CSV non riporta né prezzo né controvalore e vuoi che venga usato il prezzo di un exchange specifico fra quelli già scaricati, compila fontePrezzoPreferita.
 
 ## Dove mettere il file {#dove-mettere-il-file}
 

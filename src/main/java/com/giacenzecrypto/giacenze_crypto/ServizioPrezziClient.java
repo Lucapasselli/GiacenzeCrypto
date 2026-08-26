@@ -5,8 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -16,77 +15,71 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * Client per il servizio prezzi remoto (cache pull-through condivisa fra tutte le installazioni,
- * vedi nocommit/Documentazione/API_ServizioPrezzi.md e Analisi_VPS_Prezzi_Sito.md). Fase 1,
- * pensata come **puramente additiva**: {@link Prezzi#CambioXXXEUR} lo interroga PRIMA del
- * recupero locale via CCXT ({@link Prezzi#RecuperaPrezziDaCCXT}); se il servizio risponde con un
- * esito autorevole (prezzi trovati o assenza confermata), i punti vengono scritti nella stessa
- * cache locale (tabella {@code PrezziNew}, tramite {@link Prezzi#ScriviPuntiPrezzoInCache}) e il
- * recupero locale viene saltato. In ogni altro caso — servizio irraggiungibile, occupato, moneta
- * fuori dalla lista che copre, interruttore di sessione attivo — si ripiega
- * **silenziosamente** sul meccanismo locale, identico a prima: l'app non deve mai bloccarsi o
- * comportarsi diversamente se la VPS è irraggiungibile.
+ * Client per il servizio prezzi remoto (cache condivisa fra tutte le installazioni, prezzi letti
+ * direttamente dallo stato delle pool DEX on-chain — vedi
+ * nocommit/Documentazione/API_ServizioPrezzi.md e Analisi_VPS_Prezzi_Sito.md, "Fase 1-bis").
+ * Pensato come **puramente additivo**: {@link Prezzi#CambioXXXEUR} lo interroga PRIMA del
+ * recupero locale via CCXT ({@link Prezzi#RecuperaPrezziDaCCXT}), e solo quando non è stata
+ * richiesta una fonte specifica ({@code Fonte} vuota); se il servizio trova il prezzo, i punti —
+ * già in **EUR** (il server converte lato suo, con il cambio EUR/USD letto anch'esso on-chain da
+ * una pool EURC/USDC, più preciso del cambio giornaliero di Banca d'Italia — vedi
+ * Analisi_VPS_Prezzi_Sito.md, "Fase 1-ter") — vengono scritti nella stessa cache locale (tabella
+ * {@code PrezziNew}, tramite {@link Prezzi#ScriviPuntiPrezzoInCache}) e il recupero locale viene
+ * saltato. In ogni altro caso — servizio irraggiungibile, occupato, moneta fuori dalla lista che
+ * copre, interruttore di sessione attivo, opzione disattivata, **oppure esito "assenza
+ * confermata"** (il servizio copre solo poche decine di monete on-chain: non trovarcela non
+ * significa che CCXT non la trovi altrove) — si ripiega comunque sul recupero locale via CCXT,
+ * identico a prima: l'app non deve mai perdere un prezzo solo perché la cache remota non lo ha.
  *
- * Nessuna lista delle monete coperte è tenuta qui: {@code config/monete.json} vive solo sul
- * server (può cambiare senza redeploy del client) e la risposta {@code 400 "moneta non gestita"}
- * viene semplicemente ricordata per sessione, così da non richiedere in rete due volte lo stesso
- * simbolo non coperto — niente elenco duplicato da tenere allineato a mano.
+ * Nessuna lista delle monete coperte è tenuta **fissa** qui: {@code config/pool_onchain.json} vive
+ * solo sul server (può cambiare senza redeploy del client). {@link #tentaRecupero} interroga però
+ * {@code GET /v1/monete} una volta per sessione (vedi {@link #moneteEsposte()}) per sapere quali
+ * simboli sono davvero esposti prima di provare {@code /v1/prezzo} — evita un round-trip a vuoto
+ * per ogni moneta non coperta, invece di scoprirlo un simbolo alla volta dal primo {@code 400}
+ * come accadeva prima. Se quella chiamata fallisce (servizio giù, rete assente) non succede
+ * nulla di diverso da prima: si ripiega sulla scoperta reattiva via {@code 400}, ricordata in
+ * {@link #SIMBOLI_NON_SUPPORTATI} esattamente come oggi — nessun elenco duplicato da tenere
+ * allineato a mano, solo una richiesta in meno quando il servizio risponde.
  */
 public class ServizioPrezziClient {
 
     /**
-     * Interruttore temporaneo — non l'interruttore di sessione, quello si riapre da solo dopo un
-     * riavvio. Questo resta finché non lo si rimette a {@code false} a mano. Attivato il
-     * 2026-08-25 su richiesta esplicita dell'utente: alcuni degli exchange configurati non hanno
-     * ancora i termini contrattuali verificati (vedi Analisi_VPS_Prezzi_Sito.md, "Vincoli
-     * contrattuali degli exchange sui Market Data") e nel frattempo il client deve tornare a
-     * comportarsi esattamente come prima di questa integrazione — nessuna chiamata al servizio
-     * remoto, in nessun caso. Sovrascrivibile per i test con la proprietà di sistema
-     * {@code prezzi.servizio.abilitato=true}.
+     * Chiave dell'opzione persistita (tabella {@code OPZIONI} di {@code personale.mv.db}) che
+     * abilita il servizio — casella in Opzioni, letta da {@link Principale#AggiornaSpunte()} e
+     * scritta dal relativo {@code ActionListener}. <b>Disattivata di default</b> ("NO" se
+     * l'opzione non è mai stata scritta, vedi {@link #abilitato()}) — riportata a opt-in il
+     * 2026-08-26 su richiesta dell'utente, per fare altri test prima di riattivarla di default;
+     * era stata attivata di default lo stesso giorno. Quando abilitata, i prezzi arrivano dallo
+     * stato delle pool DEX letto direttamente on-chain (vedi Analisi_VPS_Prezzi_Sito.md),
+     * verificato in produzione e reso trasparente/verificabile da {@code GET /v1/monete} (monete
+     * gestite, da quando ci sono dati, quali pool le alimentano). Sovrascrivibile per i test con
+     * la proprietà di sistema {@code prezzi.servizio.abilitato}.
      */
-    private static final boolean ABILITATO_DI_DEFAULT = false;
+    public static final String OPZIONE_ABILITATO = "ServizioPrezziOnchain_Abilitato";
+
+    /** Valore di default di {@link #OPZIONE_ABILITATO} quando l'opzione non è mai stata scritta. */
+    public static final String OPZIONE_ABILITATO_DEFAULT = "NO";
+
+    /**
+     * Codice breve scritto in {@code PrezziNew.exchange} per i prezzi arrivati da questo servizio,
+     * al posto del nome interno che il server usa lato suo ({@code "onchain"}, vedi
+     * {@link #rinominaFonte}): la cache locale può accumulare milioni di righe (vedi CLAUDE.md,
+     * manutenzione del DB prezzi) e non ha senso ripetere un nome lungo su ognuna. Il nome per
+     * esteso, mostrato all'utente, è {@link #NOME_FONTE} — tradotto una sola volta, alla lettura,
+     * in {@link Prezzi.InfoPrezzo#InfoPrezzo(java.math.BigDecimal, String, long, java.math.BigDecimal, java.math.BigDecimal, String)}.
+     */
+    public static final String CODICE_FONTE = "GC";
+
+    /** Nome per esteso di {@link #CODICE_FONTE}, mostrato all'utente al posto del codice breve. */
+    public static final String NOME_FONTE = "giacenzecrypto.it";
 
     private static boolean abilitato() {
         String override = System.getProperty("prezzi.servizio.abilitato");
-        return override != null ? Boolean.parseBoolean(override) : ABILITATO_DI_DEFAULT;
+        if (override != null) return Boolean.parseBoolean(override);
+        return "SI".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_ABILITATO, OPZIONE_ABILITATO_DEFAULT));
     }
 
     private static final String URL_BASE = "https://giacenzecrypto.it/v1/";
-
-    /**
-     * Nome della risorsa sul classpath che contiene la chiave applicativa anti-abuso del servizio
-     * prezzi (non un vero segreto in senso stretto: viaggia comunque dentro il programma
-     * distribuito ed è estraibile — vedi Analisi_VPS_Prezzi_Sito.md, "API key applicativa"). Il
-     * <b>valore non sta nel codice sorgente</b>: il file {@code src/main/resources/ServizioPrezzi_ApiKey.txt}
-     * è deliberatamente ignorato da git (vedi {@code .gitignore}) e va popolato a mano, una riga,
-     * solo sulla macchina che produce una build da distribuire — la procedura per recuperare il
-     * valore reale è nella documentazione interna del progetto, non pubblica. Senza quel file il
-     * servizio remoto resta semplicemente sempre inattivo: nessun malfunzionamento, solo fallback
-     * locale su ogni chiamata (vedi {@link #apiKey()}).
-     */
-    private static final String RISORSA_API_KEY = "/ServizioPrezzi_ApiKey.txt";
-
-    /** Legge la chiave dalla risorsa sul classpath, {@code null} se assente/vuota. */
-    private static String chiaveDaRisorsa() {
-        try (InputStream in = ServizioPrezziClient.class.getResourceAsStream(RISORSA_API_KEY)) {
-            if (in == null) return null;
-            String valore = new String(in.readAllBytes(), StandardCharsets.UTF_8).trim();
-            return valore.isEmpty() ? null : valore;
-        } catch (IOException ex) {
-            return null;
-        }
-    }
-
-    /** Sovrascrivibile per sviluppo/test (es. contro un'istanza locale del servizio). */
-    private static String apiKey() {
-        // Una proprietà impostata ma vuota forza "nessuna chiave", indipendentemente da cosa c'è
-        // sul classpath — è quello che serve ai test per simulare "nessuna chiave configurata" a
-        // prescindere dal fatto che chi esegue la build abbia già creato in locale il proprio
-        // ServizioPrezzi_ApiKey.txt reale (vedi ServizioPrezziClientTest).
-        String override = System.getProperty("prezzi.servizio.apikey");
-        if (override != null) return override.isEmpty() ? null : override;
-        return chiaveDaRisorsa();
-    }
 
     /** Sovrascrivibile per sviluppo/test (es. {@code http://127.0.0.1:4173/v1/}). */
     private static String urlBase() {
@@ -118,31 +111,95 @@ public class ServizioPrezziClient {
     private static final AtomicInteger FALLIMENTI_CONSECUTIVI = new AtomicInteger(0);
     private static volatile boolean sessioneInterrotta = false;
 
+    /**
+     * Cache, per l'intera sessione, dei simboli con {@code esposta:true} in {@code GET /v1/monete}
+     * — {@code null} finché non è stata tentata una prima volta o se quel tentativo è fallito (in
+     * quel caso {@link #moneteEsposte()} non filtra nulla: si ripiega sulla scoperta reattiva via
+     * {@code 400} di {@link #SIMBOLI_NON_SUPPORTATI}, esattamente come prima che questo metodo
+     * esistesse). Non è mai ritentata nella stessa sessione anche se fallisce, per lo stesso motivo
+     * per cui {@link #SIMBOLI_NON_SUPPORTATI} non lo è: un servizio giù resta giù per un po'.
+     */
+    private static volatile Set<String> moneteEsposteCache;
+    private static volatile boolean moneteEsposteTentato = false;
+    private static final Object LOCK_MONETE_ESPOSTE = new Object();
+
     private ServizioPrezziClient() {
+    }
+
+    /** @return i simboli esposti secondo l'ultima {@code GET /v1/monete} riuscita in questa sessione, o {@code null} se non è mai riuscita. */
+    private static Set<String> moneteEsposte() {
+        if (moneteEsposteTentato) return moneteEsposteCache;
+        synchronized (LOCK_MONETE_ESPOSTE) {
+            if (moneteEsposteTentato) return moneteEsposteCache;
+            moneteEsposteCache = recuperaMoneteEsposte();
+            moneteEsposteTentato = true;
+        }
+        return moneteEsposteCache;
+    }
+
+    /**
+     * Interroga {@code GET /v1/monete} una volta e ne estrae i soli simboli con {@code esposta:true}
+     * (gli unici che {@code /v1/prezzo} può davvero risolvere, vedi {@code monetaAbilitata} lato
+     * server). Nessun'eccezione visibile: qualunque problema (rete, JSON inatteso, campo mancante)
+     * fa tornare {@code null}, trattato da {@link #moneteEsposte()} come "non so", non come "nessuna
+     * moneta esposta" — un {@code null} non filtra, un insieme vuoto filtrerebbe tutto per errore.
+     */
+    private static Set<String> recuperaMoneteEsposte() {
+        Request richiesta = new Request.Builder().url(urlBase() + "monete").get().build();
+        try (Response risposta = HTTP_CLIENT.newCall(richiesta).execute()) {
+            if (!risposta.isSuccessful()) return null;
+            String corpo = risposta.body() != null ? risposta.body().string() : "";
+            JsonElement root = JsonParser.parseString(corpo);
+            if (!root.isJsonObject()) return null;
+            JsonElement moneteEl = root.getAsJsonObject().get("monete");
+            if (moneteEl == null || !moneteEl.isJsonArray()) return null;
+
+            Set<String> risultato = new HashSet<>();
+            for (JsonElement el : moneteEl.getAsJsonArray()) {
+                if (!el.isJsonObject()) continue;
+                JsonObject m = el.getAsJsonObject();
+                if (!m.has("symbol") || !m.has("esposta")) continue;
+                if (m.get("esposta").getAsBoolean()) {
+                    risultato.add(m.get("symbol").getAsString().toUpperCase());
+                }
+            }
+            return risultato;
+        } catch (IOException ex) {
+            return null;
+        }
     }
 
     /**
      * Prova a risolvere il prezzo di {@code symbol} al tempo {@code timestampMs} tramite il
      * servizio remoto. Se ottiene un esito autorevole (prezzi trovati o assenza confermata),
-     * scrive i punti nella cache locale e ritorna {@code true}: il chiamante non deve fare altro.
-     * Ritorna {@code false} in ogni altro caso — irraggiungibile, occupato/parziale, moneta non
-     * gestita, interruttore di sessione attivo — e il chiamante deve procedere esattamente come
-     * se il servizio non esistesse.
+     * scrive i punti nella cache locale (un batch vuoto per l'assenza confermata non scrive
+     * nulla) e ritorna {@code true}. Ritorna {@code false} in ogni altro caso — irraggiungibile,
+     * occupato/parziale, moneta non gestita, interruttore di sessione attivo. In entrambi i casi
+     * il valore di ritorno non basta al chiamante per sapere se il prezzo è stato trovato: un
+     * {@code true} copre anche l'assenza confermata, quindi {@link Prezzi#CambioXXXEUR} verifica
+     * sempre la cache locale dopo la chiamata e ripiega su CCXT se il prezzo non c'è ancora.
      */
     public static boolean tentaRecupero(String symbol, long timestampMs) {
         if (!abilitato()) return false;
         if (sessioneInterrotta) return false;
-        String chiave = apiKey();
-        // Nessuna chiave configurata (build senza src/main/resources/ServizioPrezzi_ApiKey.txt,
-        // es. una build da sorgente non ufficiale): il servizio remoto è sempre e comunque
-        // inattivo, niente da guadagnare interrogandolo — zero chiamate di rete inutili.
-        if (chiave == null) return false;
         String simbolo = symbol.toUpperCase();
         if (SIMBOLI_NON_SUPPORTATI.contains(simbolo)) return false;
 
+        // Filtro proattivo da GET /v1/monete (una volta per sessione, vedi moneteEsposte()): se
+        // sappiamo già che il simbolo non è esposto risparmiamo l'intero round-trip su /prezzo,
+        // anziché scoprirlo solo al primo 400. Se non lo sappiamo (mai riuscito a leggerlo, o
+        // lettura fallita) non filtriamo nulla: si prova comunque, esattamente come prima.
+        Set<String> esposte = moneteEsposte();
+        if (esposte != null && !esposte.contains(simbolo)) {
+            SIMBOLI_NON_SUPPORTATI.add(simbolo);
+            return false;
+        }
+
+        // Nessuna chiave applicativa: il servizio è protetto solo dal rate limit per IP lato
+        // server (vedi Analisi_VPS_Prezzi_Sito.md) — una chiave qui non aggiungeva altro, dato
+        // che sarebbe comunque distribuita dentro il programma ed estraibile.
         Request richiesta = new Request.Builder()
                 .url(urlBase() + "prezzo?symbol=" + simbolo + "&timestamp=" + timestampMs)
-                .header("X-Api-Key", chiave)
                 .get()
                 .build();
 
@@ -161,8 +218,8 @@ public class ServizioPrezziClient {
                 return false;
             }
             if (!risposta.isSuccessful()) {
-                // 401 (chiave sbagliata/non ancora impostata), 429 (rate limit), 500: mai
-                // un'eccezione visibile, solo un log leggero e il fallback.
+                // 429 (rate limit per IP), 500: mai un'eccezione visibile, solo un log leggero
+                // e il fallback.
                 System.err.println("Servizio prezzi: risposta " + risposta.code() + " per " + simbolo);
                 registraFallimento();
                 return false;
@@ -184,10 +241,13 @@ public class ServizioPrezziClient {
             JsonArray punti = obj.has("punti") && obj.get("punti").isJsonArray()
                     ? obj.getAsJsonArray("punti")
                     : new JsonArray();
+            // Il servizio remoto converte già in EUR lato server (cambio EUR/USD letto dalla
+            // stessa pool on-chain EURC/USDC, vedi Analisi_VPS_Prezzi_Sito.md, "Fase 1-ter") —
+            // qui non serve nessuna conversione, esattamente come il vecchio percorso CCXT.
             // "punti: []" è una risposta valida e definitiva (assenza di prezzo confermata): si
             // scrive comunque (un batch vuoto non fa nulla) e si ritorna true, senza che il
             // chiamante debba distinguere i due casi.
-            Prezzi.ScriviPuntiPrezzoInCache(simbolo, punti);
+            Prezzi.ScriviPuntiPrezzoInCache(simbolo, rinominaFonte(punti));
             FALLIMENTI_CONSECUTIVI.set(0);
             // Un semplice System.out arriva già dove serve, senza dover passare una finestra
             // Download attraverso Prezzi.CambioXXXEUR: LoggerGC lo scrive su GiacenzeCrypto.log,
@@ -200,7 +260,7 @@ public class ServizioPrezziClient {
             } else {
                 System.out.println("Servizio prezzi condiviso (giacenzecrypto.it): nessun prezzo di " + simbolo
                         + " in data " + FunzioniDate.ConvertiDatadaLongAlSecondo(timestampMs)
-                        + " (assenza confermata dal server, non verrà ricercato anche in locale).");
+                        + " (assenza confermata dal server, verrà comunque ricercato anche in locale).");
             }
             return true;
 
@@ -211,6 +271,35 @@ public class ServizioPrezziClient {
         }
     }
 
+    /**
+     * Rinomina la fonte di ogni punto in {@link #CODICE_FONTE}, scartando il nome interno che il
+     * server usa lato suo ({@code "onchain"} oggi — vedi API_ServizioPrezzi.md). Il servizio
+     * risponde sempre con un'unica fonte per punto, quindi il nome originale non serve a niente:
+     * si prende il (solo) valore presente, se c'è. Un punto senza prezzo ({@code "prices": {}},
+     * assenza confermata) resta senza prezzo, non un errore.
+     */
+    private static JsonArray rinominaFonte(JsonArray punti) {
+        JsonArray risultato = new JsonArray();
+        for (JsonElement el : punti) {
+            if (!el.isJsonObject()) continue;
+            JsonObject obj = el.getAsJsonObject();
+            JsonObject nuovoPunto = new JsonObject();
+            if (obj.has("timestamp")) nuovoPunto.add("timestamp", obj.get("timestamp"));
+
+            JsonObject prices = obj.has("prices") && obj.get("prices").isJsonObject()
+                    ? obj.getAsJsonObject("prices")
+                    : null;
+            JsonObject nuovePrezzi = new JsonObject();
+            if (prices != null && prices.size() > 0) {
+                JsonElement valore = prices.entrySet().iterator().next().getValue();
+                nuovePrezzi.add(CODICE_FONTE, valore);
+            }
+            nuovoPunto.add("prices", nuovePrezzi);
+            risultato.add(nuovoPunto);
+        }
+        return risultato;
+    }
+
     private static void registraFallimento() {
         if (FALLIMENTI_CONSECUTIVI.incrementAndGet() >= SOGLIA_INTERRUZIONE_SESSIONE && !sessioneInterrotta) {
             sessioneInterrotta = true;
@@ -219,10 +308,12 @@ public class ServizioPrezziClient {
         }
     }
 
-    /** Solo per i test: azzera lo stato di sessione (interruttore, fallimenti, simboli non supportati). */
+    /** Solo per i test: azzera lo stato di sessione (interruttore, fallimenti, simboli non supportati, cache di /v1/monete). */
     static void ReimpostaStatoSessione_PerTest() {
         SIMBOLI_NON_SUPPORTATI.clear();
         FALLIMENTI_CONSECUTIVI.set(0);
         sessioneInterrotta = false;
+        moneteEsposteCache = null;
+        moneteEsposteTentato = false;
     }
 }

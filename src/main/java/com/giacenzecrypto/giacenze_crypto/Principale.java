@@ -616,6 +616,8 @@ private static final long serialVersionUID = 3L;
         GiacenzeaData_Label_Aggiornare = new javax.swing.JLabel();
         GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative = new javax.swing.JCheckBox();
         GiacenzeaData_Bottone_ConfermaPrezzoZero = new javax.swing.JButton();
+        Dichiarazioni = new javax.swing.JPanel();
+        Dichiarazioni_TabbedPane = new javax.swing.JTabbedPane();
         RW = new javax.swing.JPanel();
         RW_Anno_ComboBox = new javax.swing.JComboBox<>();
         jLabel4 = new javax.swing.JLabel();
@@ -776,6 +778,7 @@ private static final long serialVersionUID = 3L;
         Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni = new javax.swing.JCheckBox();
         Opzioni_GruppoWallet_CheckBox_PlusManuali = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale = new javax.swing.JCheckBox();
+        Prezzi_Opzioni_CheckBox_ServizioOnchain = new javax.swing.JCheckBox();
         Opzioni_RW_Pannello = new javax.swing.JPanel();
         RW_Opzioni_CheckBox_LiFoComplessivo = new javax.swing.JCheckBox();
         RW_Opzioni_CheckBox_StakingZero = new javax.swing.JCheckBox();
@@ -2996,8 +2999,6 @@ private static final long serialVersionUID = 3L;
                 .addContainerGap())
         );
 
-        AnalisiCrypto.addTab("RW/W (Met.LIFO vers. di test)", RW);
-
         RT_Tabella_Principale.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -3257,8 +3258,6 @@ private static final long serialVersionUID = 3L;
                 .addComponent(jTabbedPane1)
                 .addContainerGap())
         );
-
-        AnalisiCrypto.addTab("RT & Analisi P&L", RT);
 
         GestioneTokenScam.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -4067,6 +4066,52 @@ private static final long serialVersionUID = 3L;
 
         CDC.addTab("Fiat Wallet Crypto.com", CDC_FiatWallet_Pannello);
 
+        Normativa.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                NormativaComponentShown(evt);
+            }
+        });
+
+        javax.swing.GroupLayout NormativaLayout = new javax.swing.GroupLayout(Normativa);
+        Normativa.setLayout(NormativaLayout);
+        NormativaLayout.setHorizontalGroup(
+            NormativaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 1465, Short.MAX_VALUE)
+        );
+        NormativaLayout.setVerticalGroup(
+            NormativaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 856, Short.MAX_VALUE)
+        );
+
+        Dichiarazioni.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                DichiarazioniComponentShown(evt);
+            }
+        });
+
+        Dichiarazioni_TabbedPane.setTabPlacement(javax.swing.JTabbedPane.LEFT);
+        Dichiarazioni_TabbedPane.addTab("RW/W (Met.LIFO vers. di test)", RW);
+        Dichiarazioni_TabbedPane.addTab("RT & Analisi P&L", RT);
+        Dichiarazioni_TabbedPane.addTab("Normative", Normativa);
+
+        javax.swing.GroupLayout DichiarazioniLayout = new javax.swing.GroupLayout(Dichiarazioni);
+        Dichiarazioni.setLayout(DichiarazioniLayout);
+        DichiarazioniLayout.setHorizontalGroup(
+            DichiarazioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(DichiarazioniLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Dichiarazioni_TabbedPane)
+                .addContainerGap())
+        );
+        DichiarazioniLayout.setVerticalGroup(
+            DichiarazioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DichiarazioniLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Dichiarazioni_TabbedPane))
+        );
+
+        CDC.addTab("Dichiarazioni", Dichiarazioni);
+
         Opzioni.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
                 OpzioniComponentShown(evt);
@@ -4523,6 +4568,13 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Prezzi_Opzioni_CheckBox_ServizioOnchain.setText("<html><b>Prezzi condivisi on-chain (giacenzecrypto.it) : </b>Prova a recuperare i prezzi da una cache condivisa, letta direttamente dallo stato delle pool DEX (nessun dato dagli exchange), prima dello scaricamento locale<br>(Attivo di default: monete gestite, dati disponibili e pool usate sono elencati e verificabili su giacenzecrypto.it/v1/monete)</html>");
+        Prezzi_Opzioni_CheckBox_ServizioOnchain.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Prezzi_Opzioni_CheckBox_ServizioOnchainActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_Calcolo_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Calcolo_Pannello);
         Opzioni_Calcolo_Pannello.setLayout(Opzioni_Calcolo_PannelloLayout);
         Opzioni_Calcolo_PannelloLayout.setHorizontalGroup(
@@ -4547,7 +4599,8 @@ private static final long serialVersionUID = 3L;
                                         .addComponent(RT_Bottone_Documentazione1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                     .addComponent(Plusvalenze_Opzioni_NonConsiderareMovimentiNC, javax.swing.GroupLayout.PREFERRED_SIZE, 877, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Opzioni_GruppoWallet_CheckBox_PlusManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(Prezzi_Opzioni_CheckBox_ServizioOnchain, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
@@ -4562,6 +4615,8 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Opzioni_GruppoWallet_CheckBox_PlusManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Prezzi_Opzioni_CheckBox_ServizioOnchain, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -5658,25 +5713,6 @@ private static final long serialVersionUID = 3L;
 
         CDC.addTab("Opzioni", Opzioni);
 
-        Normativa.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentShown(java.awt.event.ComponentEvent evt) {
-                NormativaComponentShown(evt);
-            }
-        });
-
-        javax.swing.GroupLayout NormativaLayout = new javax.swing.GroupLayout(Normativa);
-        Normativa.setLayout(NormativaLayout);
-        NormativaLayout.setHorizontalGroup(
-            NormativaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1465, Short.MAX_VALUE)
-        );
-        NormativaLayout.setVerticalGroup(
-            NormativaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 856, Short.MAX_VALUE)
-        );
-
-        CDC.addTab("Normative", Normativa);
-
         jLabel1.setText("Seleziona data inizio e fine per i calcoli ->");
 
         jLabel2.setText("Data Inizio :");
@@ -6025,6 +6061,10 @@ private void SettaIcone(){
         //Ricalcolo incrementale: attivo salvo esplicito "NO", come lo legge Calcoli_PlusvalenzeNew
         Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale.setSelected(
                 !DatabaseH2.Pers_Opzioni_Leggi(Calcoli_PlusvalenzeNew.OPZIONE_INCREMENTALE, "SI").equalsIgnoreCase("NO"));
+
+        //Servizio prezzi on-chain: disattivo salvo esplicito "SI" (vedi ServizioPrezziClient.OPZIONE_ABILITATO_DEFAULT)
+        Prezzi_Opzioni_CheckBox_ServizioOnchain.setSelected(
+                "SI".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(ServizioPrezziClient.OPZIONE_ABILITATO, ServizioPrezziClient.OPZIONE_ABILITATO_DEFAULT)));
 
         String Plusvalenze_NoPlusvalenzeCommissioni=DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_NoPlusvalenzeCommissioni");
         if(Plusvalenze_NoPlusvalenzeCommissioni==null)
@@ -8282,6 +8322,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
     }//GEN-LAST:event_Analisi_CryptoComponentShown
 
+    private void DichiarazioniComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_DichiarazioniComponentShown
+        //Stesso motivo di Analisi_CryptoComponentShown: componentShown del tab interno (qui "Normative",
+        //l'unico dei tre con un pannello creato pigramente) non scatta tornando su "Dichiarazioni" se
+        //era già quello selezionato.
+        if (Dichiarazioni_TabbedPane.getSelectedComponent() == Normativa) {
+            NormativaComponentShown(evt);
+        }
+    }//GEN-LAST:event_DichiarazioniComponentShown
+
     /**
      * Il pannello della gestione documentale montato nel tab, creato alla prima apertura.
      * <p>Non si costruisce insieme alla finestra perché il suo costruttore legge già il registro e conta i
@@ -10317,9 +10366,12 @@ if (result.isAction("delete-all")) {
             //Punto 2
             if (Errore.toLowerCase().contains("giacenza negativa")) {
                 try {
-                    Messaggi.InfoMessage("Passaggio ad altra funzione", 
+                    Messaggi.InfoMessage("Passaggio ad altra funzione",
                             "Si verrà ora reindirizzati alla funzione GiacenzeaData<br>Sistemare le giacenze negative per correggere l'RW", this);
                     //Punto 2a
+                    //RW ora vive nel tab "Dichiarazioni", GiacenzeaData nel tab "Analisi Crypto": serve
+                    //anche lo switch a livello CDC, non solo quello interno ad AnalisiCrypto.
+                    CDC.setSelectedComponent(Analisi_Crypto);
                     AnalisiCrypto.setSelectedComponent(GiacenzeaData);
                     //Punto 2b
                     String DataFineRW=RW_Anno_ComboBox.getSelectedItem().toString()+"-12-31";
@@ -10421,9 +10473,12 @@ if (result.isAction("delete-all")) {
         try {
             // TODO add your handling code here:
             int rigaselezionata=Tabelle.Funzioni_getRigaSelezionata(RW_Tabella_Dettagli);
-            Messaggi.InfoMessage("Passaggio ad altra funzione", 
+            Messaggi.InfoMessage("Passaggio ad altra funzione",
                             "Si verrà ora reindirizzati alla funzione GiacenzeaData<br>Identificare i token SCAM per correggere l'RW.", this);
             //Punto 2a
+            //RW ora vive nel tab "Dichiarazioni", GiacenzeaData nel tab "Analisi Crypto": serve
+            //anche lo switch a livello CDC, non solo quello interno ad AnalisiCrypto.
+            CDC.setSelectedComponent(Analisi_Crypto);
             AnalisiCrypto.setSelectedComponent(GiacenzeaData);
             //Punto 2b
             String DataFineRW=RW_Anno_ComboBox.getSelectedItem().toString()+"-12-31";
@@ -11812,6 +11867,9 @@ if (result != null && !result.isAction("cancel")) {
         try {
                     Messaggi.InfoMessage("Giacenze negative","Si verrà ora reindirizzati alla funzione GiacenzeaData<br>Sistemare le giacenze negative per correggere l'RT", this);
                     //Punto 2a
+                    //RT ora vive nel tab "Dichiarazioni", GiacenzeaData nel tab "Analisi Crypto": serve
+                    //anche lo switch a livello CDC, non solo quello interno ad AnalisiCrypto.
+                    CDC.setSelectedComponent(Analisi_Crypto);
                     AnalisiCrypto.setSelectedComponent(GiacenzeaData);
                     //Punto 2b
                     int rigaselezionataDettaglio=Tabelle.Funzioni_getRigaSelezionata(RT_Tabella_DettaglioMonete);
@@ -12861,6 +12919,11 @@ if (result != null && !result.isAction("cancel")) {
         Funzioni_AggiornaTutto();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementaleActionPerformed
+
+    private void Prezzi_Opzioni_CheckBox_ServizioOnchainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Prezzi_Opzioni_CheckBox_ServizioOnchainActionPerformed
+        DatabaseH2.Pers_Opzioni_Scrivi(ServizioPrezziClient.OPZIONE_ABILITATO,
+                Prezzi_Opzioni_CheckBox_ServizioOnchain.isSelected() ? "SI" : "NO");
+    }//GEN-LAST:event_Prezzi_Opzioni_CheckBox_ServizioOnchainActionPerformed
 
     private void Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed
         // TODO add your handling code here:
@@ -17136,6 +17199,8 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel DepositiPrelievi_Label_FiltroWallet;
     private javax.swing.JTable DepositiPrelievi_Tabella;
     private javax.swing.JTable DepositiPrelievi_TabellaCorrelati;
+    private javax.swing.JPanel Dichiarazioni;
+    private javax.swing.JTabbedPane Dichiarazioni_TabbedPane;
     private javax.swing.JButton Donazioni_Bottone1;
     private javax.swing.JButton Donazioni_Bottone2;
     private javax.swing.JPanel GestioneDocumentale;
@@ -17284,6 +17349,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_NonConsiderareMovimentiNC;
+    private javax.swing.JCheckBox Prezzi_Opzioni_CheckBox_ServizioOnchain;
     private javax.swing.JPopupMenu PopupMenu;
     private javax.swing.JPanel RT;
     private javax.swing.JButton RT_Bottone_Calcola;

@@ -155,25 +155,30 @@
                           </Group>
                       </Group>
                   </Group>
-                  <Component id="MonetaUscitaAddress_Label" alignment="0" min="-2" pref="85" max="-2" attributes="0"/>
-                  <Component id="MonetaUscita_Label" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Component id="MonetaUscitaTipo_ComboBox" alignment="0" max="32767" attributes="0"/>
-                          <Component id="MonetaUscita_ComboBox" alignment="0" max="32767" attributes="0"/>
-                          <Component id="MonetaUscitaQuantita_Label" alignment="0" pref="376" max="32767" attributes="0"/>
-                          <Component id="MonetaUscitaQuantita_TextField" alignment="0" max="32767" attributes="0"/>
-                          <Component id="MonetaUscitaAddress_TextField" alignment="0" max="32767" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="Freccia3_Label" min="-2" max="-2" attributes="0"/>
-                          <Component id="Freccia2_Label" min="-2" max="-2" attributes="0"/>
-                          <Component id="Freccia1_Label" min="-2" max="-2" attributes="0"/>
-                          <Component id="Freccia3_Label1" min="-2" max="-2" attributes="0"/>
+                          <Component id="MonetaUscita_Label" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                  <Component id="MonetaUscitaTipo_ComboBox" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="MonetaUscita_ComboBox" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="MonetaUscitaQuantita_Label" alignment="0" pref="376" max="32767" attributes="0"/>
+                                  <Component id="MonetaUscitaQuantita_TextField" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="MonetaUscitaAddress_TextField" alignment="0" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="Freccia3_Label" min="-2" max="-2" attributes="0"/>
+                                  <Component id="Freccia2_Label" min="-2" max="-2" attributes="0"/>
+                                  <Component id="Freccia1_Label" min="-2" max="-2" attributes="0"/>
+                                  <Component id="Freccia3_Label1" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Component id="jSeparator4" alignment="0" min="-2" pref="865" max="-2" attributes="0"/>
+                          <Component id="MonetaUscitaAddress_Label" alignment="0" min="-2" pref="115" max="-2" attributes="0"/>
                       </Group>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="jSeparator4" alignment="0" min="-2" pref="865" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>

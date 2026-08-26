@@ -772,6 +772,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
                 Prezzi.RecuperaTassidiCambiodaAddress_Coingecko(FunzioniDate.ConvertiDatadaLong(data), address, rete, moneta);
                 Prezzi.RecuperaTassidiCambiodaAddress_DefiLlama(FunzioniDate.ConvertiDatadaLong(data), address, rete, moneta);
             }
+            ServizioPrezziClient.tentaRecupero(moneta, data);
             Prezzi.RecuperaPrezziDaCCXT(moneta, data);
             Prezzi.RecuperaPrezziDaCoinMarketCap(moneta, data);
         }
@@ -792,6 +793,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
                 Prezzi.RecuperaTassidiCambiodaAddress_Coingecko(FunzioniDate.ConvertiDatadaLong(data), address, rete, nomeMoneta);
                 Prezzi.RecuperaTassidiCambiodaAddress_DefiLlama(FunzioniDate.ConvertiDatadaLong(data), address, rete, nomeMoneta);
             }
+            ServizioPrezziClient.tentaRecupero(nomeMoneta, data);
             Prezzi.RecuperaPrezziDaCCXT(nomeMoneta, data);
             Prezzi.RecuperaPrezziDaCoinMarketCap(nomeMoneta, data);
         }

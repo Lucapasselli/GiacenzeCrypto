@@ -530,7 +530,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 
             Prezzi.InfoPrezzo ip = null;
             if (valEuro.isBlank() && prezzoUn.isBlank()) {
-                ip = Prezzi.DammiPrezzoInfoTransazione(mon, null, dataLong, null, "");
+                ip = Prezzi.DammiPrezzoInfoTransazione(mon, null, dataLong, null, cfg.fontePrezzoPreferita);
             }
             if (ip != null) {
                 mon.SetPrezzo(ip.prezzoQta != null ? ip.prezzoQta.toPlainString() : "0");
@@ -1009,6 +1009,17 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 
         public String nomeExchange = "";
         /**
+         * Exchange da preferire quando si cerca il prezzo di un movimento importato da questa
+         * configurazione (colonna {@code exchange} di {@code PrezziNew} - stesso id usato da CCXT,
+         * minuscolo: {@code "binance"}, {@code "okx"}...). Tutti e 7 gli exchange configurati vengono
+         * comunque interrogati allo scaricamento ({@code Prezzi.RecuperaPrezziDaCCXT}): questo campo
+         * sceglie solo quale dei prezzi già scaricati usare quando più di uno è disponibile, non
+         * limita da chi si scarica. Vuoto (default) = nessuna preferenza, comportamento di sempre.
+         * Vale solo al momento dell'import (vedi ImportazioneGenerica.consolidaGruppo): le rivalorizzazioni
+         * fiscali successive (Calcoli_RT/Calcoli_RW) non lo consultano.
+         */
+        public String fontePrezzoPreferita = "";
+        /**
          * Exchange o fornitore dei dati sotto cui raggruppare questa configurazione nella finestra di
          * import: è la voce della prima combo, e il suo slug è anche il nome del file del logo in
          * {@code config/loghi/}.
@@ -1133,6 +1144,9 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 
             if (root.has("nomeExchange")) {
                 cfg.nomeExchange = root.getString("nomeExchange");
+            }
+            if (root.has("fontePrezzoPreferita")) {
+                cfg.fontePrezzoPreferita = root.getString("fontePrezzoPreferita");
             }
             if (root.has("fornitore")) {
                 cfg.fornitore = root.getString("fornitore");

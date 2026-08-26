@@ -43,9 +43,7 @@ Il programma stesso avvisa quando è disponibile una nuova versione, con un puls
 
 - **Installer Windows**: scarica ed esegui il nuovo installer come la prima volta; sostituisce automaticamente la versione precedente e i tuoi dati restano intatti.
 - **.deb**: installa il nuovo file allo stesso modo del precedente; anche qui i dati non vengono toccati.
-- **AUR**: si aggiorna insieme al resto del sistema con il normale comando di aggiornamento pacchetti (es. `yay -Syu`).
-- **Flatpak**: `flatpak update`.
-- **macOS**: scarica il nuovo `.dmg` e trascina di nuovo l'icona in Applicazioni, sovrascrivendo quella precedente.
+- **macOS**: scarica il nuovo `.dmg` e trascina di nuovo l'icona in Applicazioni, sovrascrivendo quella precedente. (Siccome l'app non è firmata può richiedere l'esecuzione di questo comando "xattr -cr /Applications/Giacenze_Crypto.app" affinchè l'app parta)
 - **Versioni portatili** (Windows/Linux): scarica la nuova cartella al posto della vecchia. Per sicurezza, prima di farlo conviene usare la funzione di **backup integrata nel programma** (menu Opzioni) per salvare una copia dei propri dati, così è sempre possibile ripristinarli dopo l'aggiornamento.
 
 ## Dati e privacy
@@ -118,8 +116,9 @@ Il JAR va distribuito insieme alla cartella `Immagini/` (icone e immagini non so
 - **Sito web**: https://giacenzecrypto.it
 - **Codice sorgente**: https://github.com/Lucapasselli/GiacenzeCrypto
 - **Pacchetti compilati**: https://github.com/Lucapasselli/GiacenzeCrypto/releases (anche su
-  [SourceForge](https://sourceforge.net/projects/giacenze-crypto-com/), nell'AUR come `giacenze-crypto-bin` e in formato flatpak)
+  [SourceForge](https://sourceforge.net/projects/giacenze-crypto-com/)
 - **Documentazione**: https://lucapasselli.github.io/GiacenzeCrypto/documentazione/
 - **Novità delle versioni**: https://lucapasselli.github.io/GiacenzeCrypto/documentazione/changelog.html
 - **Canale YouTube**: https://www.youtube.com/@cryptofer82
 - **Gruppo Telegram**: https://t.me/+6kfy5mjov-I2ODY8
+- **Changelog Completo**: https://lucapasselli.github.io/GiacenzeCrypto/documentazione/changelog.html

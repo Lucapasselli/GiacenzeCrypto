@@ -1,7 +1,0 @@
-Questo file, senza l'estensione ".example", deve contenere UNA sola riga: la chiave
-applicativa del servizio prezzi remoto (vedi ServizioPrezziClient.java). Il file reale
-(ServizioPrezzi_ApiKey.txt) è ignorato da git — va creato solo in locale, solo sulla
-macchina che produce una build ufficiale da distribuire, con il valore recuperato dalla
-configurazione del servizio (procedura nella documentazione interna del progetto, non
-pubblica). Senza quel file il client funziona comunque: il servizio remoto resta inattivo
-e ogni prezzo viene recuperato come oggi, in locale.

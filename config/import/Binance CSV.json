@@ -1,6 +1,7 @@
 {
-  "versione": "1.001",
+  "versione": "1.002",
   "centralizzato":true,
+  "fontePrezzoPreferita": "binance",
   "nomeExchange": "Binance",
   "estrazione": "CSV",
   "nomeWallet": "Principale",

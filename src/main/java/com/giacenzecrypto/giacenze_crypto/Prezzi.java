@@ -2649,6 +2649,11 @@ symbol=symbol.toUpperCase();
         }
         
         //A2 - Prezzo da database prezzi
+        //L'exchange e' confrontato case-insensitive (ILIKE senza wildcard = uguaglianza case-insensitive):
+        //gli id salvati in PrezziNew sono sempre minuscoli (quelli di CCXT), ma i chiamanti passano fonti
+        //scritte in vari modi (es. "nomeExchange" di un ImportConfig, spesso maiuscolo). Con un confronto
+        //case-sensitive una fonte come "OKX" non trova mai "okx" e la preferenza fallisce in silenzio,
+        //ripiegando sulla ricerca su tutti gli exchange piu' sotto.
         baseQuery = """
         SELECT prezzo, exchange, timestamp
         FROM PrezziNew
@@ -2656,7 +2661,7 @@ symbol=symbol.toUpperCase();
           AND timestamp BETWEEN ? AND ?
           AND (rete = ? OR ? = '')
           AND (address = ? OR ? = '')
-          AND (exchange = ? OR ? = '')
+          AND (exchange ILIKE ? OR ? = '')
         ORDER BY ABS(timestamp - ?) ASC
         LIMIT 1
     """;

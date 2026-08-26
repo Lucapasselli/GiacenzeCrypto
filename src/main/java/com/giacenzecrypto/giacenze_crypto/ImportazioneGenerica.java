@@ -579,6 +579,17 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             mFee.InserisciValori(fee[0], "-" + fee[1], "", "");
             mFee.AssegnaTipoAuto();
 
+            // Stesso recupero prezzo dello scambio principale (righe piu' sopra): senza questo, creaMovimento
+            // non trova ne' un Prezzo ne' un InfoPrezzo gia' assegnati sulla moneta e ripiega sul proprio
+            // calcolo interno usando "Wallet" (qui cfg.nomeExchange) come fonte - che e' il nome exchange
+            // cosi' com'e' scritto nel JSON (spesso maiuscolo, es. "OKX"), non fontePrezzoPreferita. La
+            // commissione finiva cosi' su una fonte diversa da quella dello scambio a cui appartiene.
+            Prezzi.InfoPrezzo ipFee = Prezzi.DammiPrezzoInfoTransazione(mFee, null, dataFeeLong, null, cfg.fontePrezzoPreferita);
+            if (ipFee != null) {
+                mFee.SetPrezzo(ipFee.prezzoQta != null ? ipFee.prezzoQta.toPlainString() : "0");
+                mFee.InfoPrezzo = ipFee;
+            }
+
             String[] rtFee = MovimentiCrypto.creaMovimento(
                     mFee, null,
                     cfg.nomeExchange, walletPrincipale,

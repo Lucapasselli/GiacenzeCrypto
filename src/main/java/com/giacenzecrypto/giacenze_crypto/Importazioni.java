@@ -2361,12 +2361,29 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                 movimentoConvertito=null;
                                 movimento="FORMATO DATA ERRATO : "+movimento;
                             }
-                            else 
-                            {    
+                            else
+                            {
                                 Datalong=FunzioniDate.ConvertiDatainLongSecondo(data);
                              //   String inputValue = "2012-08-15T22:56:02.038Z";
+
+                                // Se il CSV non fornisce un controvalore EUR/USD (blocco sopra), il prezzo
+                                // arriverebbe a creaMovimento null e questo ricadrebbe sul proprio calcolo
+                                // interno usando "Crypto.com App" (il Wallet passato piu' sotto, letterale in
+                                // ogni ramo di questa funzione) come fonte - stringa che non trova mai
+                                // l'exchange "cryptocom" nella cache prezzi. Calcolando qui il prezzo con la
+                                // fonte esplicita, valoreEuro/FontePrezzo (gia' passati a ogni creaMovimento
+                                // di questa funzione) portano la preferenza corretta senza toccare il Wallet.
+                                if (valoreEuro == null) {
+                                    Prezzi.InfoPrezzo ipCdc = Prezzi.DammiPrezzoInfoTransazione(M1, M2, Datalong, null, "cryptocom");
+                                    if (ipCdc != null) {
+                                        valoreEuro = ipCdc.prezzoQta.toPlainString();
+                                        FontePrezzo = ipCdc.Fonte;
+                                        M1.setFontePrezzo(FontePrezzo);
+                                        M2.setFontePrezzo(FontePrezzo);
+                                    }
+                                }
                             }
-                            
+
                            // System.out.println(movimentoSplittato[9]);
                            if (movimentoConvertito==null)
                                 {
@@ -3820,8 +3837,11 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
             Datalong = FunzioniDate.ConvertiDatainLongSecondo(data);
 
             //La parte del prezzo va sempre messa nel caso in cui ci siano scambi tipo dust conversion
-            //altrimenti il sistema non riesce a calcolare le percentuali per la divisione degli scambi
-            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, Datalong, null, "");
+            //altrimenti il sistema non riesce a calcolare le percentuali per la divisione degli scambi.
+            //Fonte "okx" esplicita: condivisa fra l'import CSV storico e quello via API (entrambi passano
+            //da questa funzione), cosi' un prezzo gia' scaricato da OKX per lo stesso istante non viene
+            //scartato a favore di un altro exchange scelto per caso dalla ricerca senza preferenza.
+            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, Datalong, null, "okx");
             if (IP == null) {
                 Mon.SetPrezzo("0");
             } else {

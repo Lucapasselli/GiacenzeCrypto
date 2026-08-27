@@ -28,4 +28,4 @@ I nomi dei file sono minuscoli e senza spazi perché sono indirizzi: l'applicazi
 `DocumentiAiuto`, e uno spazio andrebbe codificato a mano in ogni chiamata. Le pagine sono la fonte
 autorevole; i PDF vengono rigenerati dalle stesse pagine con `docs/strumenti/genera-pdf.sh`.
 
-[Torna alla pagina principale](../)
+[Torna al sito principale](https://giacenzecrypto.it/)

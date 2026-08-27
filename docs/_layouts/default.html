@@ -13,17 +13,22 @@
 </head>
 <body>
 
+<!-- Barra di navigazione condivisa con il sito principale (giacenzecrypto.it): stesse voci, stessi
+     indirizzi assoluti. Solo la documentazione e la privacy sono ospitate qui su GitHub Pages;
+     ogni altra voce torna al sito principale, così il passaggio fra i due è trasparente. -->
 <header class="intestazione">
   <div class="contenitore">
-    <a class="marchio" href="{{ '/' | relative_url }}">
+    <a class="marchio" href="https://giacenzecrypto.it/">
       <img src="{{ '/assets/img/logo.png' | relative_url }}" alt="">
       {{ site.title }}
     </a>
     <nav class="principale">
-      <a href="{{ '/' | relative_url }}">Home</a>
-      <a href="{{ '/documentazione/' | relative_url }}">Documentazione</a>
-      <a href="{{ '/documentazione/changelog.html' | relative_url }}">Novità</a>
-      <a href="{{ '/privacy/' | relative_url }}">Privacy</a>
+      <a href="https://giacenzecrypto.it/#funzionalita">Funzionalità</a>
+      <a href="https://giacenzecrypto.it/normative/">Normative</a>
+      <a href="https://giacenzecrypto.it/api/">API prezzi</a>
+      <a href="https://lucapasselli.github.io/GiacenzeCrypto/documentazione/"{% if page.url contains '/documentazione/' %} class="attivo"{% endif %}>Documentazione</a>
+      <a href="https://giacenzecrypto.it/#download">Download</a>
+      <a href="https://giacenzecrypto.it/#donazioni">Donazioni</a>
       <a href="https://github.com/Lucapasselli/GiacenzeCrypto">GitHub</a>
       <button class="selettore-tema" type="button" aria-label="Cambia tema chiaro/scuro" title="Cambia tema">
         <span class="icona-chiaro">☀</span><span class="icona-scuro">☾</span>
@@ -42,9 +47,11 @@
   <div class="contenitore">
     <span>© <span id="anno-corrente"></span> {{ site.title }} — distribuito con licenza MIT</span>
     <div class="link-piede">
-      <a href="{{ '/' | relative_url }}">Home</a>
-      <a href="{{ '/documentazione/' | relative_url }}">Documentazione</a>
-      <a href="{{ '/privacy/' | relative_url }}">Privacy</a>
+      <a href="https://giacenzecrypto.it/">Home</a>
+      <a href="https://giacenzecrypto.it/normative/">Normative</a>
+      <a href="https://lucapasselli.github.io/GiacenzeCrypto/documentazione/">Documentazione</a>
+      <a href="https://lucapasselli.github.io/GiacenzeCrypto/privacy/">Privacy</a>
+      <a href="https://lucapasselli.github.io/GiacenzeCrypto/documentazione/disclaimer.html">Disclaimer</a>
       <a href="https://github.com/Lucapasselli/GiacenzeCrypto">GitHub</a>
     </div>
   </div>

@@ -107,6 +107,15 @@ public class DatabaseH2 {
                         "address VARCHAR(255) NOT NULL, " +
                         "PRIMARY KEY (timestamp, symbol, rete, address)" +
                         ")");
+
+            //Giorni (yyyyMMdd, fuso Europe/Rome) per cui le quotazioni dei 7 exchange CCXT sono
+            //gia' state scaricate per intero: marcatore persistente usato da Prezzi.CambioXXXEUR
+            //per non rilanciare Node a ogni richiesta. Il giorno corrente non viene mai scritto.
+            EseguiDDL(connectionPrezzi, "CREATE TABLE IF NOT EXISTS PrezziGiorniCCXT (" +
+                        "symbol VARCHAR(100) NOT NULL, " +
+                        "giorno INT NOT NULL, " +
+                        "PRIMARY KEY (symbol, giorno)" +
+                        ")");
             
             EseguiDDL(connectionPersonale, "CREATE TABLE IF NOT EXISTS PrezziNew (" +
                         "timestamp BIGINT NOT NULL, " +

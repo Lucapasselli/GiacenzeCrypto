@@ -985,19 +985,48 @@ public class Prezzi {
     }*/
     
       /**
-       * Recupera il prezzo in EUR di una moneta per simbolo, delegando ad {@link #CambioAddressEUR} se
-       * l'indirizzo di contratto fornito è valido per la rete, altrimenti cercando prima nel database dei
-       * prezzi personalizzati, poi (se {@code includiVecchi}) nella cache oraria storica, poi nel database
-       * dei prezzi esatti e infine, se necessario, richiedendo nuove quotazioni via {@link #RecuperaPrezziDaCCXT}.
-       * Ritorna {@code null} per date future, precedenti al 2017, o per token già noti come irrecuperabili.
+       * Recupera il prezzo in EUR di una moneta <b>per simbolo</b>. Se l'indirizzo di contratto è valido
+       * per la rete delega interamente a {@link #CambioAddressEUR}. Ritorna {@code null} per date future
+       * o precedenti al 2017.
+       * <p>
+       * Ordine di ricerca/recupero (si ferma al primo esito utile):
+       * <ol>
+       *   <li>prezzi personalizzati ({@link #DammiPrezzoDaDatabasePersonale}, tolleranza 60 min): un
+       *       prezzo inserito a mano o la preferenza di un gruppo wallet vince su tutto;</li>
+       *   <li>vecchia cache oraria, solo se {@code includiVecchi};</li>
+       *   <li>cache dei prezzi esatti ({@link #DammiPrezzoDaDatabase}, ±5 min). Qui si ritorna subito
+       *       <b>solo se la fonte è uno dei 7 exchange CCXT</b> ({@link #fonteEDaExchangeCCXT}): è la
+       *       "scorciatoia" — per questo istante gli exchange sono già stati scaricati (di norma da una
+       *       corsa precedente su un movimento vicino), quindi la giornata non va riscaricata. Se invece
+       *       il prezzo viene da una <b>fonte di ripiego</b> (CoinMarketCap, {@code GC}/giacenzecrypto.it,
+       *       vecchio DB orario) — scritto a suo tempo da un'altra valorizzazione, non perché gli exchange
+       *       siano stati interrogati per questo movimento — lo si tiene solo da parte come {@code ripiego}
+       *       e si prosegue;</li>
+       *   <li>token noto come irrecuperabile ({@code PrezziKO}), INTERROMPI premuto o assenza di rete:
+       *       si esce restituendo l'eventuale {@code ripiego} (mai {@code null} se un ripiego c'è);</li>
+       *   <li>servizio prezzi remoto ({@link ServizioPrezziClient#tentaRecupero}), solo se {@code Fonte}
+       *       è vuota;</li>
+       *   <li>scaricamento dagli exchange dell'<b>intera giornata</b> (fuso Europe/Rome) via
+       *       {@link #RecuperaPrezziDaCCXTGiornata}, <b>una sola volta per coppia (moneta, giorno)</b>:
+       *       il marcatore persistente {@code PrezziGiorniCCXT} (letto da {@link #GiornoCCXT_Leggi},
+       *       scritto da {@link #GiornoCCXT_Scrivi}) evita che le corse successive rilancino Node. Il
+       *       giorno corrente non viene mai marcato; il marcatore si scrive solo dopo un download
+       *       riuscito, mai sulla scorciatoia;</li>
+       *   <li>rilettura della cache a ±5 min e poi ±60 min;</li>
+       *   <li>se a questo punto esiste un {@code ripiego} lo si restituisce;</li>
+       *   <li>ultimo tentativo: {@link #RecuperaPrezziDaCoinMarketCap} (precisione oraria); se anche
+       *       così non si trova nulla il token/data viene marcato in {@code PrezziKO}.</li>
+       * </ol>
        * @param Crypto simbolo della moneta
        * @param Qta quantità, come stringa decimale
        * @param Datalong data/ora del movimento in millisecondi epoch
        * @param Address indirizzo di contratto del token (usato solo se valido per la rete indicata)
        * @param Rete identificativo della blockchain/rete
-       * @param Fonte fonte prezzo da preferire nella ricerca nel database personale
+       * @param Fonte fonte prezzo da preferire nella ricerca nel database personale; se non vuota
+       *              disabilita l'interrogazione del servizio prezzi remoto
        * @param includiVecchi se {@code true} include nella ricerca anche la vecchia cache dei prezzi orari
-       * @return l'{@link InfoPrezzo} trovato, oppure {@code null} se il prezzo non è recuperabile
+       * @return l'{@link InfoPrezzo} trovato (anche una fonte di ripiego, se gli exchange non danno di
+       *         meglio), oppure {@code null} se il prezzo non è recuperabile
        */
       public static InfoPrezzo CambioXXXEUR(String Crypto, String Qta, long Datalong,String Address,String Rete,String Fonte,boolean includiVecchi) {
          
@@ -1067,19 +1096,27 @@ public class Prezzi {
             return risultato;
         }
         }
-        //Se non ho i prezzi all'ora (mantenuti per non variare i prezzi delle vecchie valorizzazioni, verifico se ho prezzi precisi
-        //Utilizzo i prezzi con precisione di 5 minuti, ormai i prezzi all'ora non li consiero più attendibili qui
+        //Prezzi precisi (5 min) gia' in cache.
+        //ATTENZIONE: qui NON si ritorna subito qualunque cosa si trovi. Se il prezzo viene da uno dei
+        //7 exchange CCXT lo si restituisce (e' la "scorciatoia": per questo istante gli exchange sono
+        //gia' stati scaricati, tipicamente da una corsa precedente su un movimento vicino, quindi non
+        //si riscarica la giornata). Se invece viene da una FONTE DI RIPIEGO (CoinMarketCap,
+        //giacenzecrypto.it/GC, vecchio DB orario) lo si tiene solo da parte come "ripiego": quel
+        //prezzo esiste perche' lo ha scritto un'altra valorizzazione (es. RW), non perche' gli
+        //exchange siano stati interrogati per questo movimento — quindi si prova comunque a scaricare
+        //la giornata dagli exchange piu' sotto.
         risultato=DammiPrezzoDaDatabase(Crypto,Datalong,Fonte,Rete,Address,5,qta);
-        if (risultato!=null){
-            //System.out.println("RisultatoDB60minuti:"+risultato);
+        if (risultato!=null && fonteEDaExchangeCCXT(risultato.Fonte)){
             return risultato;
         }
-        
+        InfoPrezzo ripiego = risultato;//prezzo di ripiego gia' in cache (CMC/GC/Old), oppure null
+
        // System.out.println("tutti i prezzi scartati");
-        
-        //Adesso verifico se è un token in cui è risaputo che non c'è prezzo in quel caso ritorno null
-        if (PrezzoIrrecuperabileDaDB_Leggi(Crypto,Datalong,Rete,Address)) 
-            return null;
+
+        //Token noto senza prezzo: restituisco l'eventuale ripiego (un movimento che oggi prende
+        //CoinMarketCap non deve restare senza prezzo solo perche' ora esiste questo controllo).
+        if (PrezzoIrrecuperabileDaDB_Leggi(Crypto,Datalong,Rete,Address))
+            return ripiego;
         //INTERROMPI premuto: si esce PRIMA della fase di rete, e soprattutto prima di
         //PrezzoIrrecuperabileDaDB_Scrivi qui sotto. Registrare "prezzo non recuperabile" per un prezzo che
         //non e' stato nemmeno cercato lo renderebbe irrecuperabile anche alle corse oneste successive.
@@ -1087,44 +1124,54 @@ public class Prezzi {
         //un processo Node e qualche secondo, ed e' quello che rendeva un'importazione interrotta lunga
         //ancora minuti. Interruzione.Richiesta() e' false fuori da un'operazione aperta, quindi qui non
         //puo' spegnere in silenzio gli scaricamenti che non nascono da un'importazione.
-        if (Interruzione.Richiesta()) return null;
-        //Se non c'è connessione internet mi fermo qua e ritorno null
-        if (!Funzioni.CeConnessioneInternet()) return null;
-        
-        
-          //Se non ho neanche i prezzi all'ora provo a scaricarli: prima dal servizio prezzi
-          //remoto (solo per le monete che copre, con fallback silenzioso se non risponde in modo
-          //autorevole — vedi ServizioPrezziClient), altrimenti come sempre in locale via CCXT.
-          //Il servizio remoto risponde con UNA sola fonte, salvata in locale come "GC" (vedi
-          //ServizioPrezziClient.CODICE_FONTE, mostrata come "giacenzecrypto.it" in InfoPrezzo):
-          //se il chiamante ha chiesto una fonte specifica (Fonte non vuota, es. un gruppo wallet
-          //con un exchange preferito) non ha senso interrogarlo, andrebbe comunque ignorato da
-          //DammiPrezzoDaDatabase, quindi si va dritti su CCXT.
-          //Se invece Fonte è vuota si interroga il servizio remoto, ma "true" da tentaRecupero
-          //copre anche l'esito "assenza confermata" (il servizio copre solo ~20 monete on-chain):
-          //non basta a dire che il prezzo è stato trovato, va verificato sulla cache locale. Se
-          //non c'è ancora, si ripiega comunque su CCXT — mai bloccarsi sulla sola risposta remota.
-          //System.out.println("mi mancano i prezzi di "+Crypto+" - "+Address+" - "+Rete+" - "+Datalong+" - Qta: "+Qta);
-          if (!Fonte.isBlank()) {
-              RecuperaPrezziDaCCXT(Crypto, Datalong);
-          } else {
+        if (Interruzione.Richiesta()) return ripiego;
+        //Se non c'è connessione internet mi fermo qua e restituisco l'eventuale ripiego
+        if (!Funzioni.CeConnessioneInternet()) return ripiego;
+
+
+          //Servizio prezzi remoto (solo Fonte vuota): copre ~20 monete on-chain, risponde con UNA
+          //sola fonte (salvata come "GC", mostrata "giacenzecrypto.it") e in EUR. "true" da
+          //tentaRecupero copre anche l'esito "assenza confermata", quindi non basta: il risultato
+          //verra' comunque verificato in cache piu' sotto. Se e' stata chiesta una fonte specifica
+          //(gruppo wallet con exchange preferito) non ha senso interrogarlo.
+          if (Fonte.isBlank()) {
               ServizioPrezziClient.tentaRecupero(Crypto, Datalong);
-              if (DammiPrezzoDaDatabase(Crypto, Datalong, Fonte, Rete, Address,5,qta)==null) {
-                  RecuperaPrezziDaCCXT(Crypto, Datalong);
+          }
+
+          //Prezzi dagli exchange: si scarica l'INTERA GIORNATA (fuso Europe/Rome), una sola volta
+          //per coppia (moneta, giorno). Il marcatore persistente PrezziGiorniCCXT tiene traccia dei
+          //giorni gia' scaricati, cosi' le corse successive (re-import, ricalcolo incrementale) non
+          //rilanciano Node. Il GIORNO CORRENTE non viene mai marcato — continuano ad arrivare prezzi
+          //nuovi — quindi li' si riscarica ogni sessione (il dedup di sessione di managerRichieste
+          //evita comunque i doppioni entro la stessa sessione).
+          long inizioGiorno = FunzioniDate.InizioGiornoRoma(Datalong);
+          long fineGiorno = FunzioniDate.InizioGiornoRoma(inizioGiorno + 90000000L) - 1;//+25h -> mezzanotte giorno dopo (DST-safe)
+          int giornoGG = FunzioniDate.GiornoIntGG(Datalong);
+          long adessoMs = System.currentTimeMillis();
+          boolean giornoCorrente = adessoMs >= inizioGiorno && adessoMs <= fineGiorno;
+          if (!GiornoCCXT_Leggi(Crypto, giornoGG)) {
+              boolean okGiornata = RecuperaPrezziDaCCXTGiornata(Crypto, inizioGiorno, Math.min(fineGiorno, adessoMs));
+              if (okGiornata && !giornoCorrente) {
+                  GiornoCCXT_Scrivi(Crypto, giornoGG);
               }
           }
           risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Fonte, Rete, Address,5,qta);
           if (risultato!=null){
             return risultato;
           }
-          
-          //adesso controllo se ho prezzi con precisione a 60 minuti visto che dalla fonti precise non ho nulla
-          //se non li ho allora scarico da coinmarketcap
+
+          //adesso controllo se ho prezzi con precisione a 60 minuti visto che dalle fonti precise non ho nulla
           risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Fonte, Rete, Address,60,qta);
           if (risultato!=null){
             return risultato;
           }
-          
+
+          //Se ho un ripiego gia' in cache (CoinMarketCap/GC scritti da una valorizzazione precedente)
+          //lo uso: gli exchange per questa giornata non hanno dato nulla di piu' preciso.
+          if (ripiego!=null){
+            return ripiego;
+          }
+
           //Se non trovo i prezzi dagli exchange uso CoinMarketCap come ultimo fallback (precisione oraria)
           RecuperaPrezziDaCoinMarketCap(Crypto, Datalong);
           //Cerco il risultato nei 60 minuti in questo caso
@@ -3410,147 +3457,211 @@ public static void ScriviPuntiPrezzoInCache(String symbol, JsonArray punti) {
     }
 }
 
-public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
+/** Id CCXT dei 7 exchange interrogati da {@code Historical_Multi_Eur.js}, sorgente unica: la
+ *  stringa e il set derivano l'una dall'altro per non poter divergere (un exchange aggiunto qui
+ *  viene anche riconosciuto da {@link #fonteEDaExchangeCCXT} come non-ripiego). */
+static final String EXCHANGES_CCXT = "binance,cryptocom,bybit,okx,coinbase,bitstamp,kucoin";
+static final java.util.Set<String> EXCHANGE_CCXT =
+        java.util.Set.of(EXCHANGES_CCXT.split(","));
 
-        
-         try {
-             Symbol=Symbol.toUpperCase();
-             
-             //long timestampAttuale = System.currentTimeMillis();
-             //Voglio reperire sempre almeno 1h di dati per cui prendo 1h prima e 1h dopo
-             long Since=timestamp-7200000;//2h prima
-             long Until=timestamp+21600000;//6h dopo
-             long Adesso = System.currentTimeMillis();
-             if (Until>Adesso)Until=Adesso;
-             if (Since>Adesso)return;
-             
-             //se ho già fatto questa richiesta in questa sessione termino immediatamente il ciclo
-             //per questa richiesta visto che la precisione è di 60 minuti mi basta che vi siano i 60 minuti prima e quelli dopo quindi
-             long SinceVerifica=timestamp-300000;
-             long UntilVerifica=timestamp+300000;
-             if (UntilVerifica>Adesso)UntilVerifica=Adesso;
-             if (SinceVerifica>Adesso)SinceVerifica=Adesso-300000;
-             if(managerRichieste.isAlreadyRequested(Symbol, SinceVerifica, UntilVerifica))return;
-             TimeUnit.SECONDS.sleep(1);
-             //Lista degli exchange a cui richiedere il prezzo della cripto
-             String exchanges="binance,cryptocom,bybit,okx,coinbase,bitstamp,kucoin";
-             
-             Path nodePath = CcxtInterop.getNodeExePath();
-             Path scriptPath = Paths.get(VarStatiche.getPathRisorse()
-                     + "Scripts/"
-                             + "Historical_Multi_Eur"
-                             + ".js");
-             
-             CcxtInterop.ensureNodeInstalled();
-             CcxtInterop.installCcxt();
-             if (!Files.exists(nodePath)) {
-                 System.err.println("Errore: node non trovato a " + nodePath.toAbsolutePath());
-                 return;
-             }
-             if (!Files.exists(scriptPath)) {
-                 System.err.println("Errore: script JS non trovato a " + scriptPath.toAbsolutePath());
-                 return;
-             }
-             
-             System.out.println("Scarico Prezzi di "+Symbol+" in data "+FunzioniDate.ConvertiDatadaLongAlSecondo(timestamp));
-             // Parametri CLI da passare allo script
-             List<String> command = new ArrayList<>();
-             command.add(nodePath.toString());
-             command.add(scriptPath.toAbsolutePath().toString());
-             command.add("--since");
-             command.add(String.valueOf(Since));
-             command.add("--until");
-             command.add(String.valueOf(Until));
-             command.add("--exchanges");
-             command.add(exchanges);
-             command.add("--symbol");
-             command.add(Symbol);
-             command.add("--timeframe");
-             command.add("1m");
-             
-             
-             ProcessBuilder pb = new ProcessBuilder(command);
-             
-             pb.directory(scriptPath.getParent().toFile());
-             Path nodeModulesPath = CcxtInterop.NODE_DIR.resolve("node_modules").toAbsolutePath();
-             Map<String, String> env = pb.environment();
-             // Aggiungi node_modules a NODE_PATH (se esiste già, concatena)
-             String existingNodePath = env.get("NODE_PATH");
-             String newNodePath = nodeModulesPath.toString();
-             if (existingNodePath != null && !existingNodePath.isEmpty()) {
-                 newNodePath += File.pathSeparator + existingNodePath;
-             }
-             env.put("NODE_PATH", newNodePath);
-             pb.redirectErrorStream(true); // unisce stdout + stderr
-             
-             try {
-                 pb.redirectErrorStream(false);
-                 Process process = pb.start();
-                 
-                 // Leggi l'output dello script (JSON stampato da console.log)
-                 StringBuilder output = new StringBuilder();
-                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                         BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-                     String line;
-                     while ((line = reader.readLine()) != null) {
-                         output.append(line).append("\n");
-                     }
-                     while ((line = errReader.readLine()) != null) System.out.println("[NODE] " + line);
-                 }
-                 
-                 // Attendi che il processo finisca
-                 int exitCode = process.waitFor();
-                 //System.out.println("Exit code: " + exitCode);
-                 if (exitCode != 0) {
-                     System.err.println("Script Node fallito. Exit code: " + exitCode);
-                     System.err.println(output);
-                     return;
-                 }
-                 
-                 // Parse JSON con Gson in modo sicuro (manteniamo precisione per i long)
-                 // Gson gson = new Gson();
-                 if (VarCondivise.LogJsonPrezzi) {
-                     System.out.println(output.toString());
-                 }
-                 JsonElement rootEl = JsonParser.parseString(output.toString());
-                 if (!rootEl.isJsonArray()) {
-                     System.err.println("Output non è un array JSON valido.");
-                     return;
-                 }
-                 JsonArray rootArr = rootEl.getAsJsonArray();
+/**
+ * @param fonte valore {@code exchange} di una riga di {@code PrezziNew} (o {@link InfoPrezzo#Fonte})
+ * @return {@code true} se è uno dei 7 exchange scaricati via CCXT, {@code false} per le fonti di
+ *         ripiego (CoinMarketCap, {@code GC}/giacenzecrypto.it, vecchio DB orario, banca d'Italia…)
+ */
+static boolean fonteEDaExchangeCCXT(String fonte) {
+    return fonte != null && EXCHANGE_CCXT.contains(fonte.trim().toLowerCase());
+}
 
-                 ScriviPuntiPrezzoInCache(Symbol, rootArr);
+/**
+ * @return {@code true} se in {@code PrezziGiorniCCXT} è registrato che le quotazioni dei 7 exchange
+ *         per {@code symbol} nel giorno {@code giorno} ({@code yyyyMMdd}, Europe/Rome) sono già state
+ *         scaricate per intero
+ */
+static boolean GiornoCCXT_Leggi(String symbol, int giorno) {
+    String sql = "SELECT 1 FROM PrezziGiorniCCXT WHERE symbol = ? AND giorno = ?";
+    try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(sql)) {
+        ps.setString(1, symbol == null ? "" : symbol.toUpperCase());
+        ps.setInt(2, giorno);
+        try (ResultSet rs = ps.executeQuery()) {
+            return rs.next();
+        }
+    } catch (SQLException ex) {
+        LoggerGC.ScriviErrore(ex);
+        return false;
+    }
+}
 
-                 //Se arrivo qua lo script è andato a buon fine quindi aggiungo il range richiesto alla lista di quelli già utilizzati pr la moneta
-                 //in modo da non richiederlo più volte nell'arco della sessione nel caso in cui non trovi il prezzo
-                 managerRichieste.addRange(Symbol, Since, Until);
-                 
-                 // Query di test: mostra i primi 50 record
-                 /*    System.out.println("=== Sample from H2 (timestamp | exchange | symbol | prezzo) ===");
-                 try (Statement st = DatabaseH2.connectionPrezzi.createStatement();
-                 ResultSet rs = st.executeQuery(
-                 "SELECT timestamp, exchange, symbol, prezzo FROM PrezziNew ORDER BY timestamp LIMIT 50")) {
-                 
-                 while (rs.next()) {
-                 long ts = rs.getLong("timestamp");
-                 String ex = rs.getString("exchange");
-                 String sym = rs.getString("symbol");
-                 double v = rs.getDouble("prezzo");
-                 System.out.printf("%d | %s | %s = %.6f%n", ts, ex, sym, v);
-                 }
-                 }*/
-                 //}
-                 
-             } catch (IOException | InterruptedException e) {
-                 LoggerGC.ScriviErrore(e);
-             }
-             
-             
-         } catch (IOException | InterruptedException ex) {
-            LoggerGC.ScriviErrore(ex);
+/**
+ * Registra in {@code PrezziGiorniCCXT} che il giorno {@code giorno} ({@code yyyyMMdd}, Europe/Rome)
+ * di {@code symbol} è stato scaricato per intero dai 7 exchange. Da chiamare <b>solo</b> dopo un
+ * download andato a buon fine e <b>mai</b> per il giorno corrente (arrivano ancora prezzi nuovi).
+ */
+static void GiornoCCXT_Scrivi(String symbol, int giorno) {
+    String sql = "MERGE INTO PrezziGiorniCCXT (symbol, giorno) KEY (symbol, giorno) VALUES (?, ?)";
+    try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(sql)) {
+        ps.setString(1, symbol == null ? "" : symbol.toUpperCase());
+        ps.setInt(2, giorno);
+        ps.executeUpdate();
+    } catch (SQLException ex) {
+        LoggerGC.ScriviErrore(ex);
+    }
+}
+
+/**
+ * Lancia lo script Node {@code Historical_Multi_Eur.js} (tramite CCXT, installato/verificato con
+ * {@link CcxtInterop}) per recuperare quotazioni minuto-per-minuto di {@code Symbol} da 7 exchange
+ * (binance, cryptocom, bybit, okx, coinbase, bitstamp, kucoin) nella finestra 2h prima / 6h dopo il
+ * timestamp indicato, salvandone i risultati in {@code PrezziNew}. Delega a
+ * {@link #RecuperaPrezziDaCCXTRange}.
+ * @param Symbol simbolo della crypto da quotare
+ * @param timestamp data/ora di riferimento in millisecondi epoch
+ */
+public static void RecuperaPrezziDaCCXT(String Symbol, long timestamp) {
+    RecuperaPrezziDaCCXTRange(Symbol, timestamp - 7200000, timestamp + 21600000,
+            timestamp - 300000, timestamp + 300000, Symbol.toUpperCase());
+}
+
+/**
+ * Scarica dai 7 exchange CCXT le quotazioni EUR di {@code Symbol} per l'<b>intera giornata</b>
+ * {@code [inizioGiorno, fineGiorno]} (millisecondi epoch). Chiamata una sola volta per coppia
+ * (moneta, giorno) da {@link #CambioXXXEUR}, che poi marca il giorno in {@code PrezziGiorniCCXT}
+ * quando questa ritorna {@code true} e il giorno non è quello corrente.
+ * @return {@code true} se lo script è stato eseguito con successo (o la giornata risultava già
+ *         coperta in questa sessione), {@code false} su errore / script fallito / intervallo non valido
+ */
+static boolean RecuperaPrezziDaCCXTGiornata(String Symbol, long inizioGiorno, long fineGiorno) {
+    return RecuperaPrezziDaCCXTRange(Symbol, inizioGiorno, fineGiorno,
+            inizioGiorno, fineGiorno, "GG_" + Symbol.toUpperCase());
+}
+
+/**
+ * Corpo condiviso dello scaricamento prezzi via {@code Historical_Multi_Eur.js}: interroga i 7
+ * exchange nell'intervallo {@code [Since, Until]} (millisecondi epoch, {@code Until} viene limitato
+ * ad "adesso") e salva i punti in {@code PrezziNew} tramite {@link #ScriviPuntiPrezzoInCache}.
+ * <p>{@code chiaveSessione} è la chiave con cui {@link #managerRichieste} registra ed interroga le
+ * richieste già fatte in questa sessione: {@code Symbol} per le finestre brevi, {@code "GG_"+Symbol}
+ * per le giornate intere, così le due non si deduplicano a vicenda (una finestra ±8h non deve far
+ * credere che l'intera giornata sia stata scaricata).
+ * @return {@code true} se lo script è uscito 0 con output JSON valido, oppure se la richiesta era
+ *         già coperta in sessione; {@code false} altrimenti
+ */
+static boolean RecuperaPrezziDaCCXTRange(String Symbol, long Since, long Until,
+        long SinceVerifica, long UntilVerifica, String chiaveSessione) {
+
+    try {
+        Symbol = Symbol.toUpperCase();
+
+        long Adesso = System.currentTimeMillis();
+        if (Until > Adesso) Until = Adesso;
+        if (Since > Adesso) return false;
+        if (UntilVerifica > Adesso) UntilVerifica = Adesso;
+        if (SinceVerifica > Adesso) SinceVerifica = Adesso - 300000;
+
+        //se questa stessa richiesta (o una che la copre) è già stata fatta in sessione, non la ripeto
+        if (managerRichieste.isAlreadyRequested(chiaveSessione, SinceVerifica, UntilVerifica)) return true;
+        TimeUnit.SECONDS.sleep(1);
+
+        //Lista degli exchange a cui richiedere il prezzo della cripto
+        String exchanges = EXCHANGES_CCXT;
+
+        Path nodePath = CcxtInterop.getNodeExePath();
+        Path scriptPath = Paths.get(VarStatiche.getPathRisorse()
+                + "Scripts/"
+                + "Historical_Multi_Eur"
+                + ".js");
+
+        CcxtInterop.ensureNodeInstalled();
+        CcxtInterop.installCcxt();
+        if (!Files.exists(nodePath)) {
+            System.err.println("Errore: node non trovato a " + nodePath.toAbsolutePath());
+            return false;
+        }
+        if (!Files.exists(scriptPath)) {
+            System.err.println("Errore: script JS non trovato a " + scriptPath.toAbsolutePath());
+            return false;
         }
 
+        System.out.println("Scarico Prezzi di " + Symbol + " da "
+                + FunzioniDate.ConvertiDatadaLongAlSecondo(Since) + " a "
+                + FunzioniDate.ConvertiDatadaLongAlSecondo(Until));
+        // Parametri CLI da passare allo script
+        List<String> command = new ArrayList<>();
+        command.add(nodePath.toString());
+        command.add(scriptPath.toAbsolutePath().toString());
+        command.add("--since");
+        command.add(String.valueOf(Since));
+        command.add("--until");
+        command.add(String.valueOf(Until));
+        command.add("--exchanges");
+        command.add(exchanges);
+        command.add("--symbol");
+        command.add(Symbol);
+        command.add("--timeframe");
+        command.add("1m");
 
+        ProcessBuilder pb = new ProcessBuilder(command);
+
+        pb.directory(scriptPath.getParent().toFile());
+        Path nodeModulesPath = CcxtInterop.NODE_DIR.resolve("node_modules").toAbsolutePath();
+        Map<String, String> env = pb.environment();
+        // Aggiungi node_modules a NODE_PATH (se esiste già, concatena)
+        String existingNodePath = env.get("NODE_PATH");
+        String newNodePath = nodeModulesPath.toString();
+        if (existingNodePath != null && !existingNodePath.isEmpty()) {
+            newNodePath += File.pathSeparator + existingNodePath;
+        }
+        env.put("NODE_PATH", newNodePath);
+        pb.redirectErrorStream(true); // unisce stdout + stderr
+
+        try {
+            pb.redirectErrorStream(false);
+            Process process = pb.start();
+
+            // Leggi l'output dello script (JSON stampato da console.log)
+            StringBuilder output = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append("\n");
+                }
+                while ((line = errReader.readLine()) != null) System.out.println("[NODE] " + line);
+            }
+
+            // Attendi che il processo finisca
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                System.err.println("Script Node fallito. Exit code: " + exitCode);
+                System.err.println(output);
+                return false;
+            }
+
+            if (VarCondivise.LogJsonPrezzi) {
+                System.out.println(output.toString());
+            }
+            JsonElement rootEl = JsonParser.parseString(output.toString());
+            if (!rootEl.isJsonArray()) {
+                System.err.println("Output non è un array JSON valido.");
+                return false;
+            }
+            JsonArray rootArr = rootEl.getAsJsonArray();
+
+            ScriviPuntiPrezzoInCache(Symbol, rootArr);
+
+            //Script andato a buon fine: registro il range come già richiesto in questa sessione
+            managerRichieste.addRange(chiaveSessione, Since, Until);
+            return true;
+
+        } catch (IOException | InterruptedException e) {
+            LoggerGC.ScriviErrore(e);
+            return false;
+        }
+
+    } catch (IOException | InterruptedException ex) {
+        LoggerGC.ScriviErrore(ex);
+        return false;
+    }
 }
 
 

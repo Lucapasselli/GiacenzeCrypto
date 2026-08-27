@@ -51,6 +51,29 @@ public class FunzioniDate {
     private static final ThreadLocal<SimpleDateFormat> SDF_DATA_SECONDO = formattatoreRoma("yyyy-MM-dd HH:mm:ss");
     private static final ThreadLocal<SimpleDateFormat> SDF_DATA_ORA = formattatoreRoma("yyyy-MM-dd HH");
     private static final ThreadLocal<SimpleDateFormat> SDF_DATA_ID = formattatoreRoma("yyyyMMddHHmmss");
+    private static final ThreadLocal<SimpleDateFormat> SDF_DATA_GIORNO = formattatoreRoma("yyyyMMdd");
+
+    /**
+     * @param Data1 data/ora in millisecondi epoch
+     * @return il giorno di calendario di {@code Data1} come intero {@code yyyyMMdd}, fuso Europe/Rome
+     */
+    public static int GiornoIntGG(long Data1) {
+        return Integer.parseInt(SDF_DATA_GIORNO.get().format(new Date(Data1)));
+    }
+
+    /**
+     * @param Data1 data/ora in millisecondi epoch
+     * @return i millisecondi epoch della mezzanotte (Europe/Rome) che apre il giorno di {@code Data1}
+     */
+    public static long InizioGiornoRoma(long Data1) {
+        SimpleDateFormat f = SDF_DATA.get();
+        try {
+            return f.parse(f.format(new Date(Data1))).getTime();
+        } catch (ParseException ex) {
+            //format e parse usano lo stesso pattern: non dovrebbe mai accadere
+            return Data1;
+        }
+    }
 
     /**
      * Crea il contenitore per thread di un {@link SimpleDateFormat} sul fuso Europe/Rome.

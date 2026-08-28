@@ -1256,12 +1256,90 @@ public static JTable ColoraTabellaRTPrincipale(final JTable table) {
     // Configura il renderer per i tipi più comuni
     table.setDefaultRenderer(Object.class, renderer);
     table.setDefaultRenderer(Double.class, renderer);
-    
+
 
     // Restituisci la tabella
     return table;
-}    
-      
+}
+
+/**
+ * Renderer per la tabella pivot "Dettagli x Tipologia" del quadro RT: alterna lo sfondo delle righe in
+ * base al tema, allinea a destra e colora in verde/rosso le celle numeriche (colonne &gt;= {@code primaColonnaNumerica})
+ * secondo il segno del {@link BigDecimal} — usando {@code signum()} e non un test testuale sul "-", per non
+ * sbagliare colore sui valori in notazione scientifica (bug M7). La riga dei totali (colonna 0 uguale a
+ * {@code etichettaTotale}) è resa in grassetto. Celle {@code null} sono gestite senza NPE.
+ *
+ * @param table la tabella a cui applicare il renderer
+ * @param primaColonnaNumerica indice della prima colonna che contiene valori numerici da colorare
+ * @param etichettaTotale testo della colonna 0 che identifica la riga dei totali (in grassetto)
+ * @return la stessa tabella passata, con il renderer applicato
+ */
+public static JTable ColoraTabellaPlusvalenzeMensili(final JTable table, int primaColonnaNumerica, String etichettaTotale) {
+    DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                       boolean hasFocus, int row, int col) {
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+            Color bg;
+            Color fore;
+            if (Principale.tema.equalsIgnoreCase("Scuro")) {
+                bg = (row % 2 == 0 ? grigio : grigioScuro);
+                fore = Color.lightGray;
+            } else {
+                bg = (row % 2 == 0 ? grigioChiaro : bianco);
+                fore = table.getForeground();
+            }
+
+            boolean numerica = col >= primaColonnaNumerica;
+            setHorizontalAlignment(numerica ? SwingConstants.RIGHT : SwingConstants.LEFT);
+
+            boolean rigaTotale = false;
+            Object c0 = table.getValueAt(row, 0);
+            if (c0 != null && etichettaTotale != null && etichettaTotale.equals(c0.toString())) {
+                rigaTotale = true;
+            }
+            setFont(rigaTotale ? table.getFont().deriveFont(java.awt.Font.BOLD) : table.getFont());
+
+            if (isSelected) {
+                c.setBackground(table.getSelectionBackground());
+                setForeground(table.getSelectionForeground());
+                return c;
+            }
+            c.setBackground(bg);
+
+            int segno = 0;
+            if (value instanceof BigDecimal) {
+                segno = ((BigDecimal) value).signum();
+            } else if (numerica && value != null && Funzioni_isNumericLocale(value.toString())) {
+                segno = new BigDecimal(value.toString().trim()).signum();
+            }
+            if (numerica && segno < 0) {
+                setForeground(rosso);
+            } else if (numerica && segno > 0) {
+                setForeground(verdeScuro);
+            } else {
+                setForeground(fore);
+            }
+            return c;
+        }
+    };
+    table.setDefaultRenderer(Object.class, renderer);
+    table.setDefaultRenderer(Double.class, renderer);
+    table.setDefaultRenderer(BigDecimal.class, renderer);
+    return table;
+}
+
+/** @return {@code true} se {@code s} è un numero interpretabile da {@link BigDecimal}. */
+private static boolean Funzioni_isNumericLocale(String s) {
+    if (s == null || s.isBlank()) return false;
+    try {
+        new BigDecimal(s.trim());
+        return true;
+    } catch (NumberFormatException ex) {
+        return false;
+    }
+}
+
 
 
 /**

@@ -425,7 +425,11 @@ public class Principale_Normativa {
 
     private static String EstraiPdf(File file) throws IOException {
         StringBuilder sb = new StringBuilder();
-        try (PdfReader reader = new PdfReader(file.getAbsolutePath())) {
+        //Si legge il PDF in memoria e si passa il byte[] a PdfReader: la variante che prende un
+        //percorso apre il file con memory-mapping, e su Windows la mappa non viene rilasciata
+        //subito alla close() - il file resta bloccato ("utilizzato da un altro processo") finché
+        //non passa il GC, il che faceva fallire la pulizia della @TempDir di Principale_NormativaTest.
+        try (PdfReader reader = new PdfReader(Files.readAllBytes(file.toPath()))) {
             PdfTextExtractor extractor = new PdfTextExtractor(reader);
             for (int pagina = 1; pagina <= reader.getNumberOfPages(); pagina++) {
                 sb.append(extractor.getTextFromPage(pagina)).append('\n');

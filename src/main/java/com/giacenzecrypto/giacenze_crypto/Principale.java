@@ -204,6 +204,9 @@ private static final long serialVersionUID = 3L;
     
     public transient Calcoli_RT.AnalisiPlus APlus;
     public static String tema;
+    //Grafico della scheda "Dettagli x Tipologia" del quadro RT: istanziato dopo initComponents e
+    //aggiunto a RT_Pannello_GraficoTipologia (contenitore disegnato dal GUI Builder).
+    private transient RT_GraficoPlusvalenze RT_GraficoTipologia;
     
     public int NumErroriMovSconosciuti=0;
     public int NumErroriMovNoPrezzo=0;
@@ -317,6 +320,13 @@ private static final long serialVersionUID = 3L;
         Tabelle.Tabelle_InizializzaHeader(RW_Tabella_Dettagli);
         Tabelle.Tabelle_InizializzaHeader(RT_Tabella_DettaglioMonete);
         Tabelle.Tabelle_InizializzaHeader(RT_Tabella_LiFo);
+        Tabelle.Tabelle_InizializzaHeader(RT_Tabella_TipologiaMovimenti);
+        //Scheda "Dettagli x Tipologia" del quadro RT: header in stile programma sulla pivot e grafico
+        //agganciato al contenitore disegnato dal GUI Builder (codice dopo initComponents, non rigenerato).
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(RT_Tabella_Tipologie);
+        RT_GraficoTipologia = new RT_GraficoPlusvalenze();
+        RT_Pannello_GraficoTipologia.setLayout(new java.awt.BorderLayout());
+        RT_Pannello_GraficoTipologia.add(RT_GraficoTipologia, java.awt.BorderLayout.CENTER);
         Tabelle.Tabelle_InizializzaHeader(CDC_CardWallet_Tabella1);
         Tabelle.Tabelle_InizializzaHeader(CDC_CardWallet_Tabella2);
         Tabelle.Tabelle_InizializzaHeader(CDC_FiatWallet_Tabella1);
@@ -616,51 +626,6 @@ private static final long serialVersionUID = 3L;
         GiacenzeaData_Label_Aggiornare = new javax.swing.JLabel();
         GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative = new javax.swing.JCheckBox();
         GiacenzeaData_Bottone_ConfermaPrezzoZero = new javax.swing.JButton();
-        Dichiarazioni = new javax.swing.JPanel();
-        Dichiarazioni_TabbedPane = new javax.swing.JTabbedPane();
-        RW = new javax.swing.JPanel();
-        RW_Anno_ComboBox = new javax.swing.JComboBox<>();
-        jLabel4 = new javax.swing.JLabel();
-        jScrollPane7 = new javax.swing.JScrollPane();
-        RW_Tabella = new javax.swing.JTable();
-        jScrollPane8 = new javax.swing.JScrollPane();
-        RW_Tabella_Dettagli = new javax.swing.JTable();
-        RW_Bottone_Calcola = new javax.swing.JButton();
-        jScrollPane9 = new javax.swing.JScrollPane();
-        RW_Tabella_DettaglioMovimenti = new javax.swing.JTable();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        RW_Bottone_CorreggiErrore = new javax.swing.JButton();
-        RW_Bottone_IdentificaScam = new javax.swing.JButton();
-        RW_Bottone_ModificaVFinale = new javax.swing.JButton();
-        RW_Bottone_ModificaVIniziale = new javax.swing.JButton();
-        RW_CheckBox_VediSoloErrori = new javax.swing.JCheckBox();
-        RW_Label_SegnalaErrori = new javax.swing.JLabel();
-        jLabel13 = new javax.swing.JLabel();
-        RW_Text_IC = new javax.swing.JTextField();
-        RW_Bottone_Documentazione = new javax.swing.JButton();
-        RW_Bottone_Stampa = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        RW_Label_SegnalaRicalcolo = new javax.swing.JLabel();
-        RT = new javax.swing.JPanel();
-        jScrollPane11 = new javax.swing.JScrollPane();
-        RT_Tabella_Principale = new javax.swing.JTable();
-        RT_Bottone_Calcola = new javax.swing.JButton();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
-        jPanel1 = new javax.swing.JPanel();
-        jScrollPane12 = new javax.swing.JScrollPane();
-        RT_Tabella_DettaglioMonete = new javax.swing.JTable();
-        jScrollPane13 = new javax.swing.JScrollPane();
-        RT_Tabella_LiFo = new javax.swing.JTable();
-        jLabel17 = new javax.swing.JLabel();
-        RT_Bottone_ModificaPrezzo = new javax.swing.JButton();
-        RT_Bottone_ModificaGiacenza = new javax.swing.JButton();
-        RT_Label_Avviso = new javax.swing.JLabel();
-        RT_Bottone_Documentazione = new javax.swing.JButton();
-        RT_Bottone_Stampa = new javax.swing.JButton();
-        RT_Bottone_CorreggiErrori = new javax.swing.JButton();
-        RT_CheckBox_EscludiAnnoCorrente = new javax.swing.JCheckBox();
         GestioneTokenScam = new javax.swing.JPanel();
         GestioneTokenScam_ScrollPane = new javax.swing.JScrollPane();
         GestioneTokenScam_Tabella = new javax.swing.JTable();
@@ -729,6 +694,58 @@ private static final long serialVersionUID = 3L;
         CDC_FiatWallet_Tabella3 = new javax.swing.JTable();
         CDC_FiatWallet_Label_Tabella3 = new javax.swing.JLabel();
         CDC_FiatWallet_Bottone_StampaRapporto = new javax.swing.JButton();
+        Dichiarazioni = new javax.swing.JPanel();
+        Dichiarazioni_TabbedPane = new javax.swing.JTabbedPane();
+        RW = new javax.swing.JPanel();
+        RW_Anno_ComboBox = new javax.swing.JComboBox<>();
+        jLabel4 = new javax.swing.JLabel();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        RW_Tabella = new javax.swing.JTable();
+        jScrollPane8 = new javax.swing.JScrollPane();
+        RW_Tabella_Dettagli = new javax.swing.JTable();
+        RW_Bottone_Calcola = new javax.swing.JButton();
+        jScrollPane9 = new javax.swing.JScrollPane();
+        RW_Tabella_DettaglioMovimenti = new javax.swing.JTable();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        RW_Bottone_CorreggiErrore = new javax.swing.JButton();
+        RW_Bottone_IdentificaScam = new javax.swing.JButton();
+        RW_Bottone_ModificaVFinale = new javax.swing.JButton();
+        RW_Bottone_ModificaVIniziale = new javax.swing.JButton();
+        RW_CheckBox_VediSoloErrori = new javax.swing.JCheckBox();
+        RW_Label_SegnalaErrori = new javax.swing.JLabel();
+        jLabel13 = new javax.swing.JLabel();
+        RW_Text_IC = new javax.swing.JTextField();
+        RW_Bottone_Documentazione = new javax.swing.JButton();
+        RW_Bottone_Stampa = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+        RW_Label_SegnalaRicalcolo = new javax.swing.JLabel();
+        RT = new javax.swing.JPanel();
+        jScrollPane11 = new javax.swing.JScrollPane();
+        RT_Tabella_Principale = new javax.swing.JTable();
+        RT_Bottone_Calcola = new javax.swing.JButton();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        RT_PannelloToken = new javax.swing.JPanel();
+        jScrollPane12 = new javax.swing.JScrollPane();
+        RT_Tabella_DettaglioMonete = new javax.swing.JTable();
+        jScrollPane13 = new javax.swing.JScrollPane();
+        RT_Tabella_LiFo = new javax.swing.JTable();
+        jLabel17 = new javax.swing.JLabel();
+        RT_Bottone_ModificaPrezzo = new javax.swing.JButton();
+        RT_Bottone_ModificaGiacenza = new javax.swing.JButton();
+        RT_PannelloTipologie = new javax.swing.JPanel();
+        jScrollPaneTipologie = new javax.swing.JScrollPane();
+        RT_Tabella_Tipologie = new javax.swing.JTable();
+        jScrollPaneTipologiaMov = new javax.swing.JScrollPane();
+        RT_Tabella_TipologiaMovimenti = new javax.swing.JTable();
+        RT_Pannello_GraficoTipologia = new javax.swing.JPanel();
+        RT_Label_Avviso = new javax.swing.JLabel();
+        RT_Bottone_Documentazione = new javax.swing.JButton();
+        RT_Bottone_Stampa = new javax.swing.JButton();
+        RT_Bottone_CorreggiErrori = new javax.swing.JButton();
+        RT_CheckBox_EscludiAnnoCorrente = new javax.swing.JCheckBox();
+        Normativa = new javax.swing.JPanel();
         Opzioni = new javax.swing.JPanel();
         Opzioni_TabbedPane = new javax.swing.JTabbedPane();
         Opzioni_GruppoWallet_Pannello = new javax.swing.JPanel();
@@ -869,7 +886,6 @@ private static final long serialVersionUID = 3L;
         Opzioni_ProviderDefi_Bottone_Annulla = new javax.swing.JButton();
         Opzioni_ProviderDefi_Bottone_Ripristina = new javax.swing.JButton();
         Opzioni_Backup_Pannello = new javax.swing.JPanel();
-        Normativa = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -1068,6 +1084,11 @@ private static final long serialVersionUID = 3L;
             }
         });
         TransazioniCryptoTabella.setName("TabellaMovimentiCrypto"); // NOI18N
+        TransazioniCryptoTabella.addHierarchyListener(new java.awt.event.HierarchyListener() {
+            public void hierarchyChanged(java.awt.event.HierarchyEvent evt) {
+                TransazioniCryptoTabellaHierarchyChanged(evt);
+            }
+        });
         TransazioniCryptoTabella.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 TransazioniCryptoTabellaMouseReleased(evt);
@@ -1076,11 +1097,6 @@ private static final long serialVersionUID = 3L;
         TransazioniCryptoTabella.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 TransazioniCryptoTabellaKeyReleased(evt);
-            }
-        });
-        TransazioniCryptoTabella.addHierarchyListener(new java.awt.event.HierarchyListener() {
-            public void hierarchyChanged(java.awt.event.HierarchyEvent evt) {
-                TransazioniCryptoTabellaHierarchyChanged(evt);
             }
         });
         TransazioniCrypto_ScrollPane.setViewportView(TransazioniCryptoTabella);
@@ -1535,7 +1551,7 @@ private static final long serialVersionUID = 3L;
                         .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label)
                         .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(5, 5, 5)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1561,7 +1577,7 @@ private static final long serialVersionUID = 3L;
                             .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
                         .addComponent(Bottone_Errori, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(TransazioniCrypto_Bottone_AggiorbaVersione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(TransazioniCrypto_TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addGap(13, 13, 13))
@@ -2643,622 +2659,6 @@ private static final long serialVersionUID = 3L;
 
         AnalisiCrypto.addTab("Giacenze a Data", GiacenzeaData);
 
-        RW_Anno_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025" }));
-        RW_Anno_ComboBox.setMinimumSize(new java.awt.Dimension(72, 31));
-        RW_Anno_ComboBox.setPreferredSize(new java.awt.Dimension(72, 31));
-        RW_Anno_ComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                RW_Anno_ComboBoxItemStateChanged(evt);
-            }
-        });
-
-        jLabel4.setText("Anno :");
-
-        RW_Tabella.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "RW", "Val. Iniziale", "Val. Finale", "Giorni di Detenzione", "Errori", "IC Dovuta", "null", "Bollo Pagato"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        RW_Tabella.setName("RW_Tabella"); // NOI18N
-        RW_Tabella.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                RW_TabellaMouseReleased(evt);
-            }
-        });
-        RW_Tabella.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                RW_TabellaKeyReleased(evt);
-            }
-        });
-        jScrollPane7.setViewportView(RW_Tabella);
-        if (RW_Tabella.getColumnModel().getColumnCount() > 0) {
-            RW_Tabella.getColumnModel().getColumn(5).setMinWidth(75);
-            RW_Tabella.getColumnModel().getColumn(5).setPreferredWidth(75);
-            RW_Tabella.getColumnModel().getColumn(5).setMaxWidth(75);
-            RW_Tabella.getColumnModel().getColumn(6).setMinWidth(0);
-            RW_Tabella.getColumnModel().getColumn(6).setPreferredWidth(0);
-            RW_Tabella.getColumnModel().getColumn(6).setMaxWidth(0);
-            RW_Tabella.getColumnModel().getColumn(7).setMinWidth(75);
-            RW_Tabella.getColumnModel().getColumn(7).setPreferredWidth(75);
-            RW_Tabella.getColumnModel().getColumn(7).setMaxWidth(75);
-        }
-
-        RW_Tabella_Dettagli.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Anno", "Gr. Inizio", "<html>Mon. <br>Inizio</html>", "Qta Inizio", "Data Inizio", "Val. Inizio", "Gr. Fine", "<html>Mon. <br>Fine</html>", "Qta Fine", "Data Fine", "Val. Finale", "Giorni", "Causale", "IDApertura", "IDChiusura", "Errore / Avvisi", "IDMovimentati"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        RW_Tabella_Dettagli.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                RW_Tabella_DettagliMouseReleased(evt);
-            }
-        });
-        RW_Tabella_Dettagli.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                RW_Tabella_DettagliKeyReleased(evt);
-            }
-        });
-        jScrollPane8.setViewportView(RW_Tabella_Dettagli);
-        if (RW_Tabella_Dettagli.getColumnModel().getColumnCount() > 0) {
-            RW_Tabella_Dettagli.getColumnModel().getColumn(0).setMinWidth(40);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(0).setPreferredWidth(40);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(0).setMaxWidth(40);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setMinWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setPreferredWidth(65);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setMaxWidth(150);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(2).setMinWidth(60);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(2).setPreferredWidth(60);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(2).setMaxWidth(150);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(3).setMinWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(3).setPreferredWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(3).setMaxWidth(150);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMinWidth(110);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(4).setPreferredWidth(110);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMaxWidth(120);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(5).setMinWidth(50);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(5).setPreferredWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(5).setMaxWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMinWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setPreferredWidth(65);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMaxWidth(150);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMinWidth(60);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setPreferredWidth(60);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMaxWidth(150);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMinWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(8).setPreferredWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMaxWidth(150);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(9).setMinWidth(110);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(9).setPreferredWidth(110);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(9).setMaxWidth(120);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMinWidth(50);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(10).setPreferredWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMaxWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(11).setMinWidth(25);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(11).setPreferredWidth(50);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(11).setMaxWidth(50);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(12).setMinWidth(25);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(12).setPreferredWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(12).setMaxWidth(200);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(13).setMinWidth(0);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(13).setPreferredWidth(0);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(13).setMaxWidth(0);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(14).setMinWidth(0);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(14).setPreferredWidth(0);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(14).setMaxWidth(0);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(16).setMinWidth(0);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(16).setPreferredWidth(0);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(16).setMaxWidth(0);
-        }
-        RW_Tabella_Dettagli.getTableHeader().setPreferredSize(new Dimension(RW_Tabella_Dettagli.getColumnModel().getTotalColumnWidth(), 64));
-
-        RW_Bottone_Calcola.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Calcolatrice.png"))); // NOI18N
-        RW_Bottone_Calcola.setText("Calcola");
-        RW_Bottone_Calcola.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RW_Bottone_CalcolaActionPerformed(evt);
-            }
-        });
-
-        RW_Tabella_DettaglioMovimenti.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Data", "Wallet", "Tipo Movimento", "Mon.Uscita/Fine Anno", "Mon.Entrata/Iniz.Anno", "Valore", "ID Transazione"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        RW_Tabella_DettaglioMovimenti.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                RW_Tabella_DettaglioMovimentiMouseReleased(evt);
-            }
-        });
-        jScrollPane9.setViewportView(RW_Tabella_DettaglioMovimenti);
-        if (RW_Tabella_DettaglioMovimenti.getColumnModel().getColumnCount() > 0) {
-            RW_Tabella_DettaglioMovimenti.getColumnModel().getColumn(5).setMinWidth(100);
-            RW_Tabella_DettaglioMovimenti.getColumnModel().getColumn(5).setPreferredWidth(100);
-            RW_Tabella_DettaglioMovimenti.getColumnModel().getColumn(5).setMaxWidth(100);
-        }
-
-        jLabel5.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
-        jLabel5.setText("Dettaglio RW");
-
-        jLabel6.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
-        jLabel6.setText("Movimenti dell'anno coinvolti");
-
-        jLabel7.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
-        jLabel7.setText("Quadro RW");
-
-        RW_Bottone_CorreggiErrore.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Attenzione.png"))); // NOI18N
-        RW_Bottone_CorreggiErrore.setText("Corrreggi Errore");
-        RW_Bottone_CorreggiErrore.setEnabled(false);
-        RW_Bottone_CorreggiErrore.setMaximumSize(new java.awt.Dimension(114, 27));
-        RW_Bottone_CorreggiErrore.setMinimumSize(new java.awt.Dimension(114, 27));
-        RW_Bottone_CorreggiErrore.setPreferredSize(new java.awt.Dimension(114, 27));
-        RW_Bottone_CorreggiErrore.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RW_Bottone_CorreggiErroreActionPerformed(evt);
-            }
-        });
-
-        RW_Bottone_IdentificaScam.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Banana.png"))); // NOI18N
-        RW_Bottone_IdentificaScam.setText("Identifica come SCAM");
-        RW_Bottone_IdentificaScam.setEnabled(false);
-        RW_Bottone_IdentificaScam.setMaximumSize(new java.awt.Dimension(147, 27));
-        RW_Bottone_IdentificaScam.setMinimumSize(new java.awt.Dimension(147, 27));
-        RW_Bottone_IdentificaScam.setPreferredSize(new java.awt.Dimension(147, 27));
-        RW_Bottone_IdentificaScam.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RW_Bottone_IdentificaScamActionPerformed(evt);
-            }
-        });
-
-        RW_Bottone_ModificaVFinale.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
-        RW_Bottone_ModificaVFinale.setText("Modifica Valore Finale");
-        RW_Bottone_ModificaVFinale.setMaximumSize(new java.awt.Dimension(147, 27));
-        RW_Bottone_ModificaVFinale.setMinimumSize(new java.awt.Dimension(147, 27));
-        RW_Bottone_ModificaVFinale.setPreferredSize(new java.awt.Dimension(147, 27));
-        RW_Bottone_ModificaVFinale.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RW_Bottone_ModificaVFinaleActionPerformed(evt);
-            }
-        });
-
-        RW_Bottone_ModificaVIniziale.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
-        RW_Bottone_ModificaVIniziale.setText("Modifica Valore Iniziale");
-        RW_Bottone_ModificaVIniziale.setMaximumSize(new java.awt.Dimension(152, 27));
-        RW_Bottone_ModificaVIniziale.setMinimumSize(new java.awt.Dimension(152, 27));
-        RW_Bottone_ModificaVIniziale.setPreferredSize(new java.awt.Dimension(152, 27));
-        RW_Bottone_ModificaVIniziale.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RW_Bottone_ModificaVInizialeActionPerformed(evt);
-            }
-        });
-
-        RW_CheckBox_VediSoloErrori.setText("Vedi solo movimenti con errori");
-        RW_CheckBox_VediSoloErrori.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RW_CheckBox_VediSoloErroriActionPerformed(evt);
-            }
-        });
-
-        RW_Label_SegnalaErrori.setFont(new java.awt.Font("Noto Sans", 1, 15)); // NOI18N
-        RW_Label_SegnalaErrori.setForeground(Tabelle.rosso);
-
-        jLabel13.setText("IC Dovuta Totale : ");
-
-        RW_Text_IC.setEditable(false);
-        RW_Text_IC.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
-        RW_Text_IC.setMinimumSize(new java.awt.Dimension(64, 31));
-        RW_Text_IC.setPreferredSize(new java.awt.Dimension(64, 31));
-
-        RW_Bottone_Documentazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
-        RW_Bottone_Documentazione.setText("Vedi Documentazione");
-        RW_Bottone_Documentazione.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RW_Bottone_DocumentazioneActionPerformed(evt);
-            }
-        });
-
-        RW_Bottone_Stampa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_PDF.png"))); // NOI18N
-        RW_Bottone_Stampa.setText("Stampa Report PDF");
-        RW_Bottone_Stampa.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RW_Bottone_StampaActionPerformed(evt);
-            }
-        });
-
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
-        jButton2.setText("Crea Excel con i Dettagli");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-
-        RW_Label_SegnalaRicalcolo.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
-        RW_Label_SegnalaRicalcolo.setForeground(Tabelle.rosso);
-        RW_Label_SegnalaRicalcolo.setText("Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere \"Calcola\" per aggiornare.");
-
-        javax.swing.GroupLayout RWLayout = new javax.swing.GroupLayout(RW);
-        RW.setLayout(RWLayout);
-        RWLayout.setHorizontalGroup(
-            RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(RWLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane7)
-                    .addGroup(RWLayout.createSequentialGroup()
-                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(RW_Bottone_ModificaVIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(RW_Bottone_ModificaVFinale, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(RW_Bottone_IdentificaScam, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(RW_Bottone_CorreggiErrore, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane8)
-                    .addGroup(RWLayout.createSequentialGroup()
-                        .addComponent(jLabel13)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(RW_Text_IC, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(RW_Label_SegnalaRicalcolo, javax.swing.GroupLayout.PREFERRED_SIZE, 765, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(RW_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane9)))
-            .addGroup(RWLayout.createSequentialGroup()
-                .addGap(7, 7, 7)
-                .addComponent(jLabel5)
-                .addGap(18, 18, 18)
-                .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.PREFERRED_SIZE, 750, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 374, Short.MAX_VALUE)
-                .addComponent(RW_CheckBox_VediSoloErrori))
-            .addGroup(RWLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(RW_Bottone_Documentazione)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(RW_Bottone_Stampa, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton2))
-        );
-        RWLayout.setVerticalGroup(
-            RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(RWLayout.createSequentialGroup()
-                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel13)
-                        .addComponent(RW_Text_IC, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(RW_Bottone_Calcola)
-                        .addComponent(jLabel4))
-                    .addComponent(RW_Label_SegnalaRicalcolo, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel7)
-                    .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jButton2)
-                        .addComponent(RW_Bottone_Stampa)
-                        .addComponent(RW_Bottone_Documentazione)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel5)
-                    .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(RW_CheckBox_VediSoloErrori))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(RW_Bottone_CorreggiErrore, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(RW_Bottone_IdentificaScam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(RW_Bottone_ModificaVFinale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(RW_Bottone_ModificaVIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        RT_Tabella_Principale.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Anno", "Totale dei Costi o Valori di Acquisto", "Totale dei Corrispettivi", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Valore di Fine Anno", "Errori"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        RT_Tabella_Principale.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                RT_Tabella_PrincipaleMouseReleased(evt);
-            }
-        });
-        RT_Tabella_Principale.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                RT_Tabella_PrincipaleKeyReleased(evt);
-            }
-        });
-        jScrollPane11.setViewportView(RT_Tabella_Principale);
-        if (RT_Tabella_Principale.getColumnModel().getColumnCount() > 0) {
-            RT_Tabella_Principale.getColumnModel().getColumn(0).setMinWidth(100);
-            RT_Tabella_Principale.getColumnModel().getColumn(0).setPreferredWidth(100);
-            RT_Tabella_Principale.getColumnModel().getColumn(0).setMaxWidth(100);
-        }
-
-        RT_Bottone_Calcola.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Calcolatrice.png"))); // NOI18N
-        RT_Bottone_Calcola.setText("Calcola");
-        RT_Bottone_Calcola.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RT_Bottone_CalcolaActionPerformed(evt);
-            }
-        });
-
-        RT_Tabella_DettaglioMonete.setAutoCreateRowSorter(true);
-        RT_Tabella_DettaglioMonete.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Wallet", "Moneta", "Tipo", "<html>Valore Movimenti<br>Rilevanti</html>", "<html>Costo Carico<br>Movimenti Rilevanti</html>", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Giacenze Rimanenti", "Valore Rimanenze", "PMC", "Errori", "AddressMoneta", "ReteMoneta"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        RT_Tabella_DettaglioMonete.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                RT_Tabella_DettaglioMoneteMouseReleased(evt);
-            }
-        });
-        RT_Tabella_DettaglioMonete.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                RT_Tabella_DettaglioMoneteKeyReleased(evt);
-            }
-        });
-        jScrollPane12.setViewportView(RT_Tabella_DettaglioMonete);
-        if (RT_Tabella_DettaglioMonete.getColumnModel().getColumnCount() > 0) {
-            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(2).setMinWidth(100);
-            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(2).setPreferredWidth(100);
-            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(2).setMaxWidth(100);
-            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(11).setMinWidth(0);
-            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(11).setPreferredWidth(0);
-            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(11).setMaxWidth(0);
-            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(12).setMinWidth(0);
-            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(12).setPreferredWidth(0);
-            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(12).setMaxWidth(0);
-        }
-        RT_Tabella_DettaglioMonete.getTableHeader().setPreferredSize(new Dimension(RT_Tabella_DettaglioMonete.getColumnModel().getTotalColumnWidth(), 64));
-
-        RT_Tabella_LiFo.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Data ultimo acquisto", "Moneta", "Wallet", "Qta", "Costo di Carico", "Prz Attuale / Fine Anno", "Plusvalenza Latente", "Qta Progressiva", "Plus Latente Progressiva", "ID"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        RT_Tabella_LiFo.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                RT_Tabella_LiFoMouseReleased(evt);
-            }
-        });
-        jScrollPane13.setViewportView(RT_Tabella_LiFo);
-        if (RT_Tabella_LiFo.getColumnModel().getColumnCount() > 0) {
-            RT_Tabella_LiFo.getColumnModel().getColumn(9).setMinWidth(0);
-            RT_Tabella_LiFo.getColumnModel().getColumn(9).setPreferredWidth(0);
-            RT_Tabella_LiFo.getColumnModel().getColumn(9).setMaxWidth(0);
-        }
-
-        jLabel17.setText("Dettaglio del LiFo sulle rimanenze");
-
-        RT_Bottone_ModificaPrezzo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
-        RT_Bottone_ModificaPrezzo.setText("Modifica Prezzo di Fine Anno");
-        RT_Bottone_ModificaPrezzo.setEnabled(false);
-        RT_Bottone_ModificaPrezzo.setMaximumSize(new java.awt.Dimension(152, 27));
-        RT_Bottone_ModificaPrezzo.setMinimumSize(new java.awt.Dimension(152, 27));
-        RT_Bottone_ModificaPrezzo.setPreferredSize(new java.awt.Dimension(152, 27));
-        RT_Bottone_ModificaPrezzo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RT_Bottone_ModificaPrezzoActionPerformed(evt);
-            }
-        });
-
-        RT_Bottone_ModificaGiacenza.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Numeri.png"))); // NOI18N
-        RT_Bottone_ModificaGiacenza.setText("Modifica Giacenza");
-        RT_Bottone_ModificaGiacenza.setEnabled(false);
-        RT_Bottone_ModificaGiacenza.setMaximumSize(new java.awt.Dimension(152, 27));
-        RT_Bottone_ModificaGiacenza.setMinimumSize(new java.awt.Dimension(152, 27));
-        RT_Bottone_ModificaGiacenza.setPreferredSize(new java.awt.Dimension(152, 27));
-        RT_Bottone_ModificaGiacenza.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RT_Bottone_ModificaGiacenzaActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane12)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 1121, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(RT_Bottone_ModificaPrezzo, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(RT_Bottone_ModificaGiacenza, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(RT_Bottone_ModificaPrezzo, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(RT_Bottone_ModificaGiacenza, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-
-        jTabbedPane1.addTab("Dettagli Anno", jPanel1);
-
-        RT_Label_Avviso.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
-        RT_Label_Avviso.setForeground(Tabelle.rosso);
-        RT_Label_Avviso.setText("Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere \"Calcola\" per aggiornare.");
-
-        RT_Bottone_Documentazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
-        RT_Bottone_Documentazione.setText("Vedi Documentazione sulle Plusvalenze");
-        RT_Bottone_Documentazione.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RT_Bottone_DocumentazioneActionPerformed(evt);
-            }
-        });
-
-        RT_Bottone_Stampa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_PDF.png"))); // NOI18N
-        RT_Bottone_Stampa.setText("Stampa Report PDF (periodo selezionato)");
-        RT_Bottone_Stampa.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RT_Bottone_StampaActionPerformed(evt);
-            }
-        });
-
-        RT_Bottone_CorreggiErrori.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Attenzione.png"))); // NOI18N
-        RT_Bottone_CorreggiErrori.setText("Correggi Errori");
-        RT_Bottone_CorreggiErrori.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RT_Bottone_CorreggiErroriActionPerformed(evt);
-            }
-        });
-
-        RT_CheckBox_EscludiAnnoCorrente.setText("Non calcolare l'anno corrente");
-        RT_CheckBox_EscludiAnnoCorrente.setToolTipText("Esclude l'anno in corso dal calcolo: evita il recupero dei prezzi attuali di tutte le monete in giacenza, che è la parte più lenta dell'elaborazione.");
-        RT_CheckBox_EscludiAnnoCorrente.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RT_CheckBox_EscludiAnnoCorrenteActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout RTLayout = new javax.swing.GroupLayout(RT);
-        RT.setLayout(RTLayout);
-        RTLayout.setHorizontalGroup(
-            RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(RTLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane11)
-                    .addComponent(jTabbedPane1)
-                    .addGroup(RTLayout.createSequentialGroup()
-                        .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(RT_Bottone_Documentazione, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(RT_Bottone_Stampa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(RT_Label_Avviso, javax.swing.GroupLayout.PREFERRED_SIZE, 795, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(RT_CheckBox_EscludiAnnoCorrente))
-                        .addGap(18, 18, 18)
-                        .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(RT_Bottone_CorreggiErrori, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)))))
-        );
-        RTLayout.setVerticalGroup(
-            RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(RTLayout.createSequentialGroup()
-                .addGap(1, 1, 1)
-                .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(RT_Label_Avviso, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(RT_Bottone_Documentazione))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(RT_Bottone_Stampa, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(RT_Bottone_CorreggiErrori)
-                    .addComponent(RT_CheckBox_EscludiAnnoCorrente))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1)
-                .addContainerGap())
-        );
-
         GestioneTokenScam.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
                 GestioneTokenScamComponentShown(evt);
@@ -4066,6 +3466,732 @@ private static final long serialVersionUID = 3L;
 
         CDC.addTab("Fiat Wallet Crypto.com", CDC_FiatWallet_Pannello);
 
+        Dichiarazioni.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                DichiarazioniComponentShown(evt);
+            }
+        });
+
+        Dichiarazioni_TabbedPane.setTabPlacement(javax.swing.JTabbedPane.LEFT);
+
+        RW_Anno_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025" }));
+        RW_Anno_ComboBox.setMinimumSize(new java.awt.Dimension(72, 31));
+        RW_Anno_ComboBox.setPreferredSize(new java.awt.Dimension(72, 31));
+        RW_Anno_ComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                RW_Anno_ComboBoxItemStateChanged(evt);
+            }
+        });
+
+        jLabel4.setText("Anno :");
+
+        RW_Tabella.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "RW", "Val. Iniziale", "Val. Finale", "Giorni di Detenzione", "Errori", "IC Dovuta", "null", "Bollo Pagato"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        RW_Tabella.setName("RW_Tabella"); // NOI18N
+        RW_Tabella.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                RW_TabellaMouseReleased(evt);
+            }
+        });
+        RW_Tabella.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                RW_TabellaKeyReleased(evt);
+            }
+        });
+        jScrollPane7.setViewportView(RW_Tabella);
+        if (RW_Tabella.getColumnModel().getColumnCount() > 0) {
+            RW_Tabella.getColumnModel().getColumn(5).setMinWidth(75);
+            RW_Tabella.getColumnModel().getColumn(5).setPreferredWidth(75);
+            RW_Tabella.getColumnModel().getColumn(5).setMaxWidth(75);
+            RW_Tabella.getColumnModel().getColumn(6).setMinWidth(0);
+            RW_Tabella.getColumnModel().getColumn(6).setPreferredWidth(0);
+            RW_Tabella.getColumnModel().getColumn(6).setMaxWidth(0);
+            RW_Tabella.getColumnModel().getColumn(7).setMinWidth(75);
+            RW_Tabella.getColumnModel().getColumn(7).setPreferredWidth(75);
+            RW_Tabella.getColumnModel().getColumn(7).setMaxWidth(75);
+        }
+
+        RW_Tabella_Dettagli.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Anno", "Gr. Inizio", "<html>Mon. <br>Inizio</html>", "Qta Inizio", "Data Inizio", "Val. Inizio", "Gr. Fine", "<html>Mon. <br>Fine</html>", "Qta Fine", "Data Fine", "Val. Finale", "Giorni", "Causale", "IDApertura", "IDChiusura", "Errore / Avvisi", "IDMovimentati"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        RW_Tabella_Dettagli.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                RW_Tabella_DettagliMouseReleased(evt);
+            }
+        });
+        RW_Tabella_Dettagli.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                RW_Tabella_DettagliKeyReleased(evt);
+            }
+        });
+        jScrollPane8.setViewportView(RW_Tabella_Dettagli);
+        if (RW_Tabella_Dettagli.getColumnModel().getColumnCount() > 0) {
+            RW_Tabella_Dettagli.getColumnModel().getColumn(0).setMinWidth(40);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(0).setPreferredWidth(40);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(0).setMaxWidth(40);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setPreferredWidth(65);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setMaxWidth(150);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(2).setMinWidth(60);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(2).setPreferredWidth(60);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(2).setMaxWidth(150);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(3).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(3).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(3).setMaxWidth(150);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMinWidth(110);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(4).setPreferredWidth(110);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMaxWidth(120);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(5).setMinWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(5).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(5).setMaxWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setPreferredWidth(65);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMaxWidth(150);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMinWidth(60);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setPreferredWidth(60);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMaxWidth(150);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(8).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMaxWidth(150);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(9).setMinWidth(110);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(9).setPreferredWidth(110);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(9).setMaxWidth(120);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMinWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(10).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMaxWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(11).setMinWidth(25);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(11).setPreferredWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(11).setMaxWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(12).setMinWidth(25);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(12).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(12).setMaxWidth(200);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(13).setMinWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(13).setPreferredWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(13).setMaxWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(14).setMinWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(14).setPreferredWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(14).setMaxWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(16).setMinWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(16).setPreferredWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(16).setMaxWidth(0);
+        }
+        RW_Tabella_Dettagli.getTableHeader().setPreferredSize(new Dimension(RW_Tabella_Dettagli.getColumnModel().getTotalColumnWidth(), 64));
+
+        RW_Bottone_Calcola.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Calcolatrice.png"))); // NOI18N
+        RW_Bottone_Calcola.setText("Calcola");
+        RW_Bottone_Calcola.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Bottone_CalcolaActionPerformed(evt);
+            }
+        });
+
+        RW_Tabella_DettaglioMovimenti.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Data", "Wallet", "Tipo Movimento", "Mon.Uscita/Fine Anno", "Mon.Entrata/Iniz.Anno", "Valore", "ID Transazione"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        RW_Tabella_DettaglioMovimenti.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                RW_Tabella_DettaglioMovimentiMouseReleased(evt);
+            }
+        });
+        jScrollPane9.setViewportView(RW_Tabella_DettaglioMovimenti);
+        if (RW_Tabella_DettaglioMovimenti.getColumnModel().getColumnCount() > 0) {
+            RW_Tabella_DettaglioMovimenti.getColumnModel().getColumn(5).setMinWidth(100);
+            RW_Tabella_DettaglioMovimenti.getColumnModel().getColumn(5).setPreferredWidth(100);
+            RW_Tabella_DettaglioMovimenti.getColumnModel().getColumn(5).setMaxWidth(100);
+        }
+
+        jLabel5.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
+        jLabel5.setText("Dettaglio RW");
+
+        jLabel6.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
+        jLabel6.setText("Movimenti dell'anno coinvolti");
+
+        jLabel7.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
+        jLabel7.setText("Quadro RW");
+
+        RW_Bottone_CorreggiErrore.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Attenzione.png"))); // NOI18N
+        RW_Bottone_CorreggiErrore.setText("Corrreggi Errore");
+        RW_Bottone_CorreggiErrore.setEnabled(false);
+        RW_Bottone_CorreggiErrore.setMaximumSize(new java.awt.Dimension(114, 27));
+        RW_Bottone_CorreggiErrore.setMinimumSize(new java.awt.Dimension(114, 27));
+        RW_Bottone_CorreggiErrore.setPreferredSize(new java.awt.Dimension(114, 27));
+        RW_Bottone_CorreggiErrore.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Bottone_CorreggiErroreActionPerformed(evt);
+            }
+        });
+
+        RW_Bottone_IdentificaScam.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Banana.png"))); // NOI18N
+        RW_Bottone_IdentificaScam.setText("Identifica come SCAM");
+        RW_Bottone_IdentificaScam.setEnabled(false);
+        RW_Bottone_IdentificaScam.setMaximumSize(new java.awt.Dimension(147, 27));
+        RW_Bottone_IdentificaScam.setMinimumSize(new java.awt.Dimension(147, 27));
+        RW_Bottone_IdentificaScam.setPreferredSize(new java.awt.Dimension(147, 27));
+        RW_Bottone_IdentificaScam.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Bottone_IdentificaScamActionPerformed(evt);
+            }
+        });
+
+        RW_Bottone_ModificaVFinale.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
+        RW_Bottone_ModificaVFinale.setText("Modifica Valore Finale");
+        RW_Bottone_ModificaVFinale.setMaximumSize(new java.awt.Dimension(147, 27));
+        RW_Bottone_ModificaVFinale.setMinimumSize(new java.awt.Dimension(147, 27));
+        RW_Bottone_ModificaVFinale.setPreferredSize(new java.awt.Dimension(147, 27));
+        RW_Bottone_ModificaVFinale.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Bottone_ModificaVFinaleActionPerformed(evt);
+            }
+        });
+
+        RW_Bottone_ModificaVIniziale.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
+        RW_Bottone_ModificaVIniziale.setText("Modifica Valore Iniziale");
+        RW_Bottone_ModificaVIniziale.setMaximumSize(new java.awt.Dimension(152, 27));
+        RW_Bottone_ModificaVIniziale.setMinimumSize(new java.awt.Dimension(152, 27));
+        RW_Bottone_ModificaVIniziale.setPreferredSize(new java.awt.Dimension(152, 27));
+        RW_Bottone_ModificaVIniziale.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Bottone_ModificaVInizialeActionPerformed(evt);
+            }
+        });
+
+        RW_CheckBox_VediSoloErrori.setText("Vedi solo movimenti con errori");
+        RW_CheckBox_VediSoloErrori.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_CheckBox_VediSoloErroriActionPerformed(evt);
+            }
+        });
+
+        RW_Label_SegnalaErrori.setFont(new java.awt.Font("Noto Sans", 1, 15)); // NOI18N
+        RW_Label_SegnalaErrori.setForeground(Tabelle.rosso);
+
+        jLabel13.setText("IC Dovuta Totale : ");
+
+        RW_Text_IC.setEditable(false);
+        RW_Text_IC.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
+        RW_Text_IC.setMinimumSize(new java.awt.Dimension(64, 31));
+        RW_Text_IC.setPreferredSize(new java.awt.Dimension(64, 31));
+
+        RW_Bottone_Documentazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
+        RW_Bottone_Documentazione.setText("Vedi Documentazione");
+        RW_Bottone_Documentazione.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Bottone_DocumentazioneActionPerformed(evt);
+            }
+        });
+
+        RW_Bottone_Stampa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_PDF.png"))); // NOI18N
+        RW_Bottone_Stampa.setText("Stampa Report PDF");
+        RW_Bottone_Stampa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Bottone_StampaActionPerformed(evt);
+            }
+        });
+
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
+        jButton2.setText("Crea Excel con i Dettagli");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        RW_Label_SegnalaRicalcolo.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
+        RW_Label_SegnalaRicalcolo.setForeground(Tabelle.rosso);
+        RW_Label_SegnalaRicalcolo.setText("Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere \"Calcola\" per aggiornare.");
+
+        javax.swing.GroupLayout RWLayout = new javax.swing.GroupLayout(RW);
+        RW.setLayout(RWLayout);
+        RWLayout.setHorizontalGroup(
+            RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(RWLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane7)
+                    .addGroup(RWLayout.createSequentialGroup()
+                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(RW_Bottone_ModificaVIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(RW_Bottone_ModificaVFinale, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(RW_Bottone_IdentificaScam, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(RW_Bottone_CorreggiErrore, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane8)
+                    .addGroup(RWLayout.createSequentialGroup()
+                        .addComponent(jLabel13)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(RW_Text_IC, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(RW_Label_SegnalaRicalcolo, javax.swing.GroupLayout.PREFERRED_SIZE, 765, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(RW_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane9)))
+            .addGroup(RWLayout.createSequentialGroup()
+                .addGap(7, 7, 7)
+                .addComponent(jLabel5)
+                .addGap(18, 18, 18)
+                .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.PREFERRED_SIZE, 750, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 374, Short.MAX_VALUE)
+                .addComponent(RW_CheckBox_VediSoloErrori))
+            .addGroup(RWLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(RW_Bottone_Documentazione)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(RW_Bottone_Stampa, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton2))
+        );
+        RWLayout.setVerticalGroup(
+            RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(RWLayout.createSequentialGroup()
+                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel13)
+                        .addComponent(RW_Text_IC, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(RW_Bottone_Calcola)
+                        .addComponent(jLabel4))
+                    .addComponent(RW_Label_SegnalaRicalcolo, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel7)
+                    .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jButton2)
+                        .addComponent(RW_Bottone_Stampa)
+                        .addComponent(RW_Bottone_Documentazione)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel5)
+                    .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(RW_CheckBox_VediSoloErrori))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(RW_Bottone_CorreggiErrore, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(RW_Bottone_IdentificaScam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(RW_Bottone_ModificaVFinale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(RW_Bottone_ModificaVIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        Dichiarazioni_TabbedPane.addTab("RW/W (Met.LIFO vers. di test)", RW);
+
+        RT_Tabella_Principale.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Anno", "Totale dei Costi o Valori di Acquisto", "Totale dei Corrispettivi", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Valore di Fine Anno", "Errori"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        RT_Tabella_Principale.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                RT_Tabella_PrincipaleMouseReleased(evt);
+            }
+        });
+        RT_Tabella_Principale.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                RT_Tabella_PrincipaleKeyReleased(evt);
+            }
+        });
+        jScrollPane11.setViewportView(RT_Tabella_Principale);
+        if (RT_Tabella_Principale.getColumnModel().getColumnCount() > 0) {
+            RT_Tabella_Principale.getColumnModel().getColumn(0).setMinWidth(100);
+            RT_Tabella_Principale.getColumnModel().getColumn(0).setPreferredWidth(100);
+            RT_Tabella_Principale.getColumnModel().getColumn(0).setMaxWidth(100);
+        }
+
+        RT_Bottone_Calcola.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Calcolatrice.png"))); // NOI18N
+        RT_Bottone_Calcola.setText("Calcola");
+        RT_Bottone_Calcola.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RT_Bottone_CalcolaActionPerformed(evt);
+            }
+        });
+
+        RT_Tabella_DettaglioMonete.setAutoCreateRowSorter(true);
+        RT_Tabella_DettaglioMonete.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Wallet", "Moneta", "Tipo", "<html>Valore Movimenti<br>Rilevanti</html>", "<html>Costo Carico<br>Movimenti Rilevanti</html>", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Giacenze Rimanenti", "Valore Rimanenze", "PMC", "Errori", "AddressMoneta", "ReteMoneta"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, false, false, false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        RT_Tabella_DettaglioMonete.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                RT_Tabella_DettaglioMoneteMouseReleased(evt);
+            }
+        });
+        RT_Tabella_DettaglioMonete.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                RT_Tabella_DettaglioMoneteKeyReleased(evt);
+            }
+        });
+        jScrollPane12.setViewportView(RT_Tabella_DettaglioMonete);
+        if (RT_Tabella_DettaglioMonete.getColumnModel().getColumnCount() > 0) {
+            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(2).setMinWidth(100);
+            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(2).setPreferredWidth(100);
+            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(2).setMaxWidth(100);
+            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(11).setMinWidth(0);
+            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(11).setPreferredWidth(0);
+            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(11).setMaxWidth(0);
+            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(12).setMinWidth(0);
+            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(12).setPreferredWidth(0);
+            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(12).setMaxWidth(0);
+        }
+        RT_Tabella_DettaglioMonete.getTableHeader().setPreferredSize(new Dimension(RT_Tabella_DettaglioMonete.getColumnModel().getTotalColumnWidth(), 64));
+
+        RT_Tabella_LiFo.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Data ultimo acquisto", "Moneta", "Wallet", "Qta", "Costo di Carico", "Prz Attuale / Fine Anno", "Plusvalenza Latente", "Qta Progressiva", "Plus Latente Progressiva", "ID"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        RT_Tabella_LiFo.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                RT_Tabella_LiFoMouseReleased(evt);
+            }
+        });
+        jScrollPane13.setViewportView(RT_Tabella_LiFo);
+        if (RT_Tabella_LiFo.getColumnModel().getColumnCount() > 0) {
+            RT_Tabella_LiFo.getColumnModel().getColumn(9).setMinWidth(0);
+            RT_Tabella_LiFo.getColumnModel().getColumn(9).setPreferredWidth(0);
+            RT_Tabella_LiFo.getColumnModel().getColumn(9).setMaxWidth(0);
+        }
+
+        jLabel17.setText("Dettaglio del LiFo sulle rimanenze");
+
+        RT_Bottone_ModificaPrezzo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
+        RT_Bottone_ModificaPrezzo.setText("Modifica Prezzo di Fine Anno");
+        RT_Bottone_ModificaPrezzo.setEnabled(false);
+        RT_Bottone_ModificaPrezzo.setMaximumSize(new java.awt.Dimension(152, 27));
+        RT_Bottone_ModificaPrezzo.setMinimumSize(new java.awt.Dimension(152, 27));
+        RT_Bottone_ModificaPrezzo.setPreferredSize(new java.awt.Dimension(152, 27));
+        RT_Bottone_ModificaPrezzo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RT_Bottone_ModificaPrezzoActionPerformed(evt);
+            }
+        });
+
+        RT_Bottone_ModificaGiacenza.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Numeri.png"))); // NOI18N
+        RT_Bottone_ModificaGiacenza.setText("Modifica Giacenza");
+        RT_Bottone_ModificaGiacenza.setEnabled(false);
+        RT_Bottone_ModificaGiacenza.setMaximumSize(new java.awt.Dimension(152, 27));
+        RT_Bottone_ModificaGiacenza.setMinimumSize(new java.awt.Dimension(152, 27));
+        RT_Bottone_ModificaGiacenza.setPreferredSize(new java.awt.Dimension(152, 27));
+        RT_Bottone_ModificaGiacenza.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RT_Bottone_ModificaGiacenzaActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout RT_PannelloTokenLayout = new javax.swing.GroupLayout(RT_PannelloToken);
+        RT_PannelloToken.setLayout(RT_PannelloTokenLayout);
+        RT_PannelloTokenLayout.setHorizontalGroup(
+            RT_PannelloTokenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane12)
+            .addGroup(RT_PannelloTokenLayout.createSequentialGroup()
+                .addGroup(RT_PannelloTokenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(RT_PannelloTokenLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(RT_PannelloTokenLayout.createSequentialGroup()
+                        .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 1121, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                .addGroup(RT_PannelloTokenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(RT_Bottone_ModificaPrezzo, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(RT_Bottone_ModificaGiacenza, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)))
+        );
+        RT_PannelloTokenLayout.setVerticalGroup(
+            RT_PannelloTokenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(RT_PannelloTokenLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(RT_PannelloTokenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(RT_PannelloTokenLayout.createSequentialGroup()
+                        .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE))
+                    .addGroup(RT_PannelloTokenLayout.createSequentialGroup()
+                        .addComponent(RT_Bottone_ModificaPrezzo, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(RT_Bottone_ModificaGiacenza, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+
+        jTabbedPane1.addTab("Dettagli x Token", RT_PannelloToken);
+
+        RT_Tabella_Tipologie.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Tipologia", "Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic", "Totale"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        RT_Tabella_Tipologie.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                RT_Tabella_TipologieMouseReleased(evt);
+            }
+        });
+        RT_Tabella_Tipologie.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                RT_Tabella_TipologieKeyReleased(evt);
+            }
+        });
+        jScrollPaneTipologie.setViewportView(RT_Tabella_Tipologie);
+
+        RT_Tabella_TipologiaMovimenti.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Data e Ora", "Tipologia", "Sottotipo", "Wallet", "Moneta Uscita", "Qta Uscita", "Moneta Entrata", "Qta Entrata", "Corrispettivo", "Costo di Carico", "Plusvalenza", "ID"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        RT_Tabella_TipologiaMovimenti.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                RT_Tabella_TipologiaMovimentiMouseReleased(evt);
+            }
+        });
+        jScrollPaneTipologiaMov.setViewportView(RT_Tabella_TipologiaMovimenti);
+        if (RT_Tabella_TipologiaMovimenti.getColumnModel().getColumnCount() > 0) {
+            RT_Tabella_TipologiaMovimenti.getColumnModel().getColumn(11).setMinWidth(0);
+            RT_Tabella_TipologiaMovimenti.getColumnModel().getColumn(11).setPreferredWidth(0);
+            RT_Tabella_TipologiaMovimenti.getColumnModel().getColumn(11).setMaxWidth(0);
+        }
+        RT_Tabella_TipologiaMovimenti.getTableHeader().setPreferredSize(new Dimension(RT_Tabella_TipologiaMovimenti.getColumnModel().getTotalColumnWidth(), 40));
+
+        RT_Pannello_GraficoTipologia.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        javax.swing.GroupLayout RT_Pannello_GraficoTipologiaLayout = new javax.swing.GroupLayout(RT_Pannello_GraficoTipologia);
+        RT_Pannello_GraficoTipologia.setLayout(RT_Pannello_GraficoTipologiaLayout);
+        RT_Pannello_GraficoTipologiaLayout.setHorizontalGroup(
+            RT_Pannello_GraficoTipologiaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 536, Short.MAX_VALUE)
+        );
+        RT_Pannello_GraficoTipologiaLayout.setVerticalGroup(
+            RT_Pannello_GraficoTipologiaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 320, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout RT_PannelloTipologieLayout = new javax.swing.GroupLayout(RT_PannelloTipologie);
+        RT_PannelloTipologie.setLayout(RT_PannelloTipologieLayout);
+        RT_PannelloTipologieLayout.setHorizontalGroup(
+            RT_PannelloTipologieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(RT_PannelloTipologieLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(RT_PannelloTipologieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPaneTipologie, javax.swing.GroupLayout.DEFAULT_SIZE, 1450, Short.MAX_VALUE)
+                    .addGroup(RT_PannelloTipologieLayout.createSequentialGroup()
+                        .addComponent(jScrollPaneTipologiaMov, javax.swing.GroupLayout.DEFAULT_SIZE, 880, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(RT_Pannello_GraficoTipologia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        RT_PannelloTipologieLayout.setVerticalGroup(
+            RT_PannelloTipologieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(RT_PannelloTipologieLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPaneTipologie, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(RT_PannelloTipologieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPaneTipologiaMov, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                    .addComponent(RT_Pannello_GraficoTipologia, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+
+        jTabbedPane1.addTab("Dettagli x Tipologia", RT_PannelloTipologie);
+
+        RT_Label_Avviso.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
+        RT_Label_Avviso.setForeground(Tabelle.rosso);
+        RT_Label_Avviso.setText("Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere \"Calcola\" per aggiornare.");
+
+        RT_Bottone_Documentazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
+        RT_Bottone_Documentazione.setText("Vedi Documentazione sulle Plusvalenze");
+        RT_Bottone_Documentazione.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RT_Bottone_DocumentazioneActionPerformed(evt);
+            }
+        });
+
+        RT_Bottone_Stampa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_PDF.png"))); // NOI18N
+        RT_Bottone_Stampa.setText("Stampa Report PDF (periodo selezionato)");
+        RT_Bottone_Stampa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RT_Bottone_StampaActionPerformed(evt);
+            }
+        });
+
+        RT_Bottone_CorreggiErrori.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Attenzione.png"))); // NOI18N
+        RT_Bottone_CorreggiErrori.setText("Correggi Errori");
+        RT_Bottone_CorreggiErrori.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RT_Bottone_CorreggiErroriActionPerformed(evt);
+            }
+        });
+
+        RT_CheckBox_EscludiAnnoCorrente.setText("Non calcolare l'anno corrente");
+        RT_CheckBox_EscludiAnnoCorrente.setToolTipText("Esclude l'anno in corso dal calcolo: evita il recupero dei prezzi attuali di tutte le monete in giacenza, che è la parte più lenta dell'elaborazione.");
+        RT_CheckBox_EscludiAnnoCorrente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RT_CheckBox_EscludiAnnoCorrenteActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout RTLayout = new javax.swing.GroupLayout(RT);
+        RT.setLayout(RTLayout);
+        RTLayout.setHorizontalGroup(
+            RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(RTLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane11)
+                    .addComponent(jTabbedPane1)
+                    .addGroup(RTLayout.createSequentialGroup()
+                        .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(RT_Bottone_Documentazione, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(RT_Bottone_Stampa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(RT_Label_Avviso, javax.swing.GroupLayout.PREFERRED_SIZE, 795, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(RT_CheckBox_EscludiAnnoCorrente))
+                        .addGap(18, 18, 18)
+                        .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(RT_Bottone_CorreggiErrori, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)))))
+        );
+        RTLayout.setVerticalGroup(
+            RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(RTLayout.createSequentialGroup()
+                .addGap(1, 1, 1)
+                .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(RT_Label_Avviso, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(RT_Bottone_Documentazione))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(RT_Bottone_Stampa, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(RT_Bottone_CorreggiErrori)
+                    .addComponent(RT_CheckBox_EscludiAnnoCorrente))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jTabbedPane1)
+                .addContainerGap())
+        );
+
+        Dichiarazioni_TabbedPane.addTab("RT & Analisi P&L", RT);
+
         Normativa.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
                 NormativaComponentShown(evt);
@@ -4083,15 +4209,6 @@ private static final long serialVersionUID = 3L;
             .addGap(0, 856, Short.MAX_VALUE)
         );
 
-        Dichiarazioni.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentShown(java.awt.event.ComponentEvent evt) {
-                DichiarazioniComponentShown(evt);
-            }
-        });
-
-        Dichiarazioni_TabbedPane.setTabPlacement(javax.swing.JTabbedPane.LEFT);
-        Dichiarazioni_TabbedPane.addTab("RW/W (Met.LIFO vers. di test)", RW);
-        Dichiarazioni_TabbedPane.addTab("RT & Analisi P&L", RT);
         Dichiarazioni_TabbedPane.addTab("Normative", Normativa);
 
         javax.swing.GroupLayout DichiarazioniLayout = new javax.swing.GroupLayout(Dichiarazioni);
@@ -11548,6 +11665,12 @@ if (result.isAction("delete-all")) {
         Tabelle.Funzioni_PulisciTabella(ModelloTabella3);
         Tabelle.ColoraTabellaSemplice(RT_Tabella_LiFo);
           //  Tabelle.ColoraTabellaSempliceDouble(RT_Tabella_DettaglioMonete);
+        //Scheda "Dettagli x Tipologia": svuoto pivot, elenco movimenti e grafico, altrimenti resterebbero
+        //visibili i numeri del calcolo precedente (dati fiscali silenziosamente obsoleti).
+        Tabelle.Funzioni_PulisciTabella((DefaultTableModel) RT_Tabella_Tipologie.getModel());
+        Tabelle.Funzioni_PulisciTabella((DefaultTableModel) RT_Tabella_TipologiaMovimenti.getModel());
+        RT_DatiTipologie = null;
+        if (RT_GraficoTipologia != null) RT_GraficoTipologia.pulisci();
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
 
@@ -11657,20 +11780,100 @@ if (result.isAction("delete-all")) {
                 while (it.hasNext()){
                     ModelloTabella3.addRow(it.next());
                 }
-                
+
             }
         }
     }
-    
+
+    //Dati aggregati della scheda "Dettagli x Tipologia" per l'anno correntemente selezionato: prodotti da
+    //RT_CompilaTabellaTipologie e riusati da RT_CompilaTabellaTipologiaMovimenti per aggiornare il grafico.
+    private transient Principale_RT_Tipologie.DatiTipologie RT_DatiTipologie;
+
+    /**
+     * Riempie la pivot "plusvalenza per tipologia di movimento e per mese" della scheda RT
+     * "Dettagli x Tipologia" per l'anno selezionato nella tabella principale del quadro RT.
+     * Delega l'aggregazione a {@link Principale_RT_Tipologie}; il refresh delle tabelle e del
+     * grafico resta qui.
+     */
+    private void RT_CompilaTabellaTipologie() {
+        DefaultTableModel modello = (DefaultTableModel) RT_Tabella_Tipologie.getModel();
+        Tabelle.Funzioni_PulisciTabella(modello);
+        Tabelle.Funzioni_PulisciTabella((DefaultTableModel) RT_Tabella_TipologiaMovimenti.getModel());
+        RT_DatiTipologie = null;
+        if (RT_GraficoTipologia != null) RT_GraficoTipologia.pulisci();
+
+        int riga = RT_Tabella_Principale.getSelectedRow();
+        if (riga < 0) {
+            Tabelle.ColoraTabellaPlusvalenzeMensili(RT_Tabella_Tipologie, 1, Principale_RT_Tipologie.RIGA_TOTALE);
+            return;
+        }
+        String anno = RT_Tabella_Principale.getModel().getValueAt(riga, 0).toString().trim();
+        RT_DatiTipologie = Principale_RT_Tipologie.Calcola(anno);
+        Principale_RT_Tipologie.PopolaTabella(modello, RT_DatiTipologie);
+        Tabelle.ColoraTabellaPlusvalenzeMensili(RT_Tabella_Tipologie, 1, Principale_RT_Tipologie.RIGA_TOTALE);
+        Tabelle.updateRowHeights(RT_Tabella_Tipologie);
+    }
+
+    /**
+     * In base alla riga selezionata nella pivot delle tipologie, riempie l'elenco dei movimenti
+     * rilevanti di quella tipologia (per l'anno selezionato) e aggiorna il grafico con la serie
+     * mensile della tipologia evidenziata e quella della plusvalenza totale mese per mese.
+     */
+    private void RT_CompilaTabellaTipologiaMovimenti() {
+        DefaultTableModel modello = (DefaultTableModel) RT_Tabella_TipologiaMovimenti.getModel();
+        Tabelle.Funzioni_PulisciTabella(modello);
+        Tabelle.ColoraTabellaSemplice(RT_Tabella_TipologiaMovimenti);
+
+        if (RT_DatiTipologie == null) return;
+        int riga = Tabelle.Funzioni_getRigaSelezionata(RT_Tabella_Tipologie);
+        if (riga < 0) {
+            if (RT_GraficoTipologia != null) RT_GraficoTipologia.pulisci();
+            return;
+        }
+        String tipologia = RT_Tabella_Tipologie.getModel().getValueAt(riga, 0).toString();
+        if (Principale_RT_Tipologie.RIGA_TOTALE.equals(tipologia)) {
+            //Sulla riga dei totali mostro solo la serie totale, senza elenco movimenti
+            if (RT_GraficoTipologia != null) {
+                RT_GraficoTipologia.impostaDati("Totale", RT_DatiTipologie.totaleMensile, RT_DatiTipologie.totaleMensile);
+            }
+            return;
+        }
+        Principale_RT_Tipologie.PopolaMovimenti(modello, RT_DatiTipologie.anno, tipologia);
+        Tabelle.ColoraTabellaSemplice(RT_Tabella_TipologiaMovimenti);
+        Tabelle.Tabelle_FiltroColonne(RT_Tabella_TipologiaMovimenti, null, popup);
+        Tabelle.updateRowHeights(RT_Tabella_TipologiaMovimenti);
+        if (RT_GraficoTipologia != null) {
+            RT_GraficoTipologia.impostaDati(tipologia, RT_DatiTipologie.serie(tipologia), RT_DatiTipologie.totaleMensile);
+        }
+    }
+
+    private void RT_Tabella_TipologieMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RT_Tabella_TipologieMouseReleased
+        //La pivot non ha righe-movimento: -1 => le voci relative al movimento restano disabilitate
+        //(stesso comportamento di RT_Tabella_Principale e RT_Tabella_DettaglioMonete).
+        Funzioni_RichiamaPopUpdaTabella(RT_Tabella_Tipologie, evt, -1);
+        this.RT_CompilaTabellaTipologiaMovimenti();
+    }//GEN-LAST:event_RT_Tabella_TipologieMouseReleased
+
+    private void RT_Tabella_TipologiaMovimentiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RT_Tabella_TipologiaMovimentiMouseReleased
+        //Colonna 11 = ID movimento (nascosta): il popup si aggancia al movimento cliccato.
+        Funzioni_RichiamaPopUpdaTabella(RT_Tabella_TipologiaMovimenti, evt, 11);
+    }//GEN-LAST:event_RT_Tabella_TipologiaMovimentiMouseReleased
+
+    private void RT_Tabella_TipologieKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_RT_Tabella_TipologieKeyReleased
+        this.RT_CompilaTabellaTipologiaMovimenti();
+    }//GEN-LAST:event_RT_Tabella_TipologieKeyReleased
+
     private void RT_Tabella_PrincipaleKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_RT_Tabella_PrincipaleKeyReleased
         // TODO add your handling code here:
         this.RT_CompilaTabellaDettagli();
+        this.RT_CompilaTabellaTipologie();
     }//GEN-LAST:event_RT_Tabella_PrincipaleKeyReleased
 
     private void RT_Tabella_PrincipaleMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RT_Tabella_PrincipaleMouseReleased
         // TODO add your handling code here:
         Funzioni_RichiamaPopUpdaTabella(RT_Tabella_Principale,evt,-1);
         this.RT_CompilaTabellaDettagli();
+        this.RT_CompilaTabellaTipologie();
         //Funzione che apre il popupmenu se premuto il tasto destro
     }//GEN-LAST:event_RT_Tabella_PrincipaleMouseReleased
 
@@ -17349,8 +17552,8 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_NonConsiderareMovimentiNC;
-    private javax.swing.JCheckBox Prezzi_Opzioni_CheckBox_ServizioOnchain;
     private javax.swing.JPopupMenu PopupMenu;
+    private javax.swing.JCheckBox Prezzi_Opzioni_CheckBox_ServizioOnchain;
     private javax.swing.JPanel RT;
     private javax.swing.JButton RT_Bottone_Calcola;
     private javax.swing.JButton RT_Bottone_CorreggiErrori;
@@ -17361,9 +17564,14 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JButton RT_Bottone_Stampa;
     private javax.swing.JCheckBox RT_CheckBox_EscludiAnnoCorrente;
     private javax.swing.JLabel RT_Label_Avviso;
+    private javax.swing.JPanel RT_PannelloTipologie;
+    private javax.swing.JPanel RT_PannelloToken;
+    private javax.swing.JPanel RT_Pannello_GraficoTipologia;
     private javax.swing.JTable RT_Tabella_DettaglioMonete;
     private javax.swing.JTable RT_Tabella_LiFo;
     private javax.swing.JTable RT_Tabella_Principale;
+    private javax.swing.JTable RT_Tabella_TipologiaMovimenti;
+    private javax.swing.JTable RT_Tabella_Tipologie;
     private javax.swing.JPanel RW;
     private javax.swing.JComboBox<String> RW_Anno_ComboBox;
     private javax.swing.JButton RW_Bottone_Calcola;
@@ -17464,7 +17672,6 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane10;
     private javax.swing.JScrollPane jScrollPane11;
@@ -17480,6 +17687,8 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JScrollPane jScrollPane9;
+    private javax.swing.JScrollPane jScrollPaneTipologiaMov;
+    private javax.swing.JScrollPane jScrollPaneTipologie;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator10;
     private javax.swing.JSeparator jSeparator11;

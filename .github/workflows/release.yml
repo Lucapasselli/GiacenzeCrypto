@@ -379,6 +379,13 @@ jobs:
 
   create-release:
     needs: [build-windows, build-linux, build-macos]
+    # Stesso motivo del guard sui job di build: "verifica-bozza" gira solo con "bozza" spuntata,
+    # quindi nella release normale (bozza NON spuntata) resta "skipped". Senza un "if" esplicito
+    # GitHub propaga quello "skipped" lungo la catena dei needs anche a "create-release" - che
+    # dipende dai build, non da "verifica-bozza", ma eredita comunque lo stato saltato. Risultato
+    # paradossale: la release si crea solo quando spunti "bozza". Il guard qui la fa girare
+    # ogni volta che i build sono andati a buon fine, e la salta se un build e' fallito/annullato.
+    if: ${{ !cancelled() && !failure() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

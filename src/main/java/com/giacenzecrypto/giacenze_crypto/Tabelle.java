@@ -69,6 +69,10 @@ public class Tabelle {
     static Color verde=new Color (145, 255, 143);
     static Color rosso=new Color(255, 80, 80);
     static Color rossoChiaro=new Color(255, 130, 130);
+    //Rosso del pulsante "Elimina" dei dialog (AppDialog: UiTheme.error, #D33A2C, identico in tema
+    //chiaro e scuro). Usato come sfondo del bottone "Elimina Movimento", con testo bianco: sul
+    //rosso pieno il testo scuro non è leggibile.
+    static Color rossoElimina=new Color(211, 58, 44);
     //Colore di selezione delle righe: lo stesso blu dei pulsanti primari dei dialog (AppDialog:
     //accent #3478F6 nel tema chiaro, #4A90E2 nello scuro). Due sfumature vicine per riga pari/dispari,
     //così la selezione multipla non risulta piatta ma alternata come le righe normali. Testo bianco.

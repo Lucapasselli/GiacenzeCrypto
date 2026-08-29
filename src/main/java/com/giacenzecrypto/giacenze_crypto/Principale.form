@@ -919,11 +919,11 @@
             </Component>
             <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_MovimentoElimina">
               <Properties>
-                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="66" green="66" red="ff" type="rgb"/>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="Tabelle.rossoElimina" type="code"/>
                 </Property>
                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="33" green="33" red="33" type="rgb"/>
+                  <Color blue="ff" green="ff" red="ff" type="rgb"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/Images/24_Cestino.png"/>
@@ -1061,7 +1061,7 @@
                   <Font name="Noto Sans" size="18" style="1"/>
                 </Property>
                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="new Color(255,102,102)" type="code"/>
+                  <Connection code="Tabelle.rossoElimina" type="code"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Errori (0)"/>
                 <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Attenzione!&lt;br&gt;Sono presenti errori che se non corretti possono portare ad errori di calcolo sulle plusvalenze.&lt;br&gt;Premere per sistemare.&lt;/html&gt;"/>

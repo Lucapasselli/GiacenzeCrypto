@@ -166,12 +166,12 @@ public class Giacenze_Crypto {
                     Tabelle.rosso = new Color(255, 133, 133);
                     Tabelle.Rosso = "FFA07A";
                     Tabelle.Verde = "9ACD32";
-                    ImpostaColoriSelezioneTabelle(Tabelle.selezioneScura, new Color(232, 232, 232));
+                    ImpostaColoriSelezione(Tabelle.selezioneScura, Color.WHITE);
                 } else {
                     UIManager.setLookAndFeel(new FlatLightLaf());
                     Tabelle.verdeScuro = new Color(27, 94, 32);
                     Tabelle.rosso = new Color(198, 40, 40);
-                    ImpostaColoriSelezioneTabelle(Tabelle.selezione, Color.BLACK);
+                    ImpostaColoriSelezione(Tabelle.selezione, Color.WHITE);
                 }
                 //Le icone dell'applicazione sono nere: sullo sfondo scuro vanno ridisegnate in chiaro
                 Icone.InizializzaTema(Principale.tema.equalsIgnoreCase("Scuro"));
@@ -247,17 +247,24 @@ public class Giacenze_Crypto {
     }
 
     /**
-     * Imposta i colori di selezione delle tabelle a livello di Look&amp;Feel, così che valgano anche
-     * per le tabelle senza renderer personalizzato. I renderer di {@link Tabelle} usano comunque
-     * {@link Tabelle#SfondoSelezione(int)} per lo sfondo (che alterna riga pari/dispari); qui conta
-     * soprattutto il <em>foreground</em>, che il {@code super} dei renderer legge da qui.
+     * Imposta i colori di selezione (il blu accent dei dialog) a livello di Look&amp;Feel per
+     * tabelle, liste e combobox, così da avere un'unica evidenziazione coerente in tutta l'interfaccia.
+     * Per le tabelle vale anche su quelle senza renderer personalizzato; i renderer di {@link Tabelle}
+     * usano comunque {@link Tabelle#SfondoSelezione(int)} per lo sfondo (che alterna riga pari/dispari),
+     * quindi qui per loro conta soprattutto il <em>foreground</em>, che il {@code super} legge da qui.
      * Le varianti {@code selectionInactive*} evitano che una tabella non a fuoco sbiadisca la selezione.
      */
-    private static void ImpostaColoriSelezioneTabelle(Color sfondo, Color testo) {
+    private static void ImpostaColoriSelezione(Color sfondo, Color testo) {
         UIManager.put("Table.selectionBackground", sfondo);
         UIManager.put("Table.selectionForeground", testo);
         UIManager.put("Table.selectionInactiveBackground", sfondo);
         UIManager.put("Table.selectionInactiveForeground", testo);
+        UIManager.put("List.selectionBackground", sfondo);
+        UIManager.put("List.selectionForeground", testo);
+        UIManager.put("List.selectionInactiveBackground", sfondo);
+        UIManager.put("List.selectionInactiveForeground", testo);
+        UIManager.put("ComboBox.selectionBackground", sfondo);
+        UIManager.put("ComboBox.selectionForeground", testo);
     }
 
     private static String getHomeUtente() {

@@ -1329,6 +1329,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        TransazioniCrypto_Bottone_MovimentoElimina.setBackground(new java.awt.Color(255, 102, 102));
         TransazioniCrypto_Bottone_MovimentoElimina.setForeground(new java.awt.Color(51, 51, 51));
         TransazioniCrypto_Bottone_MovimentoElimina.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Cestino.png"))); // NOI18N
         TransazioniCrypto_Bottone_MovimentoElimina.setText("<html><center><b>Elimina Movimento</b></html>");
@@ -1414,7 +1415,7 @@ private static final long serialVersionUID = 3L;
         });
 
         Bottone_Errori.setFont(new java.awt.Font("Noto Sans", 1, 18)); // NOI18N
-        Bottone_Errori.setForeground(Tabelle.rosso);
+        Bottone_Errori.setForeground(new Color(255,102,102));
         Bottone_Errori.setText("Errori (0)");
         Bottone_Errori.setToolTipText("<html>Attenzione!<br>Sono presenti errori che se non corretti possono portare ad errori di calcolo sulle plusvalenze.<br>Premere per sistemare.</html>");
         Bottone_Errori.setEnabled(false);
@@ -1713,7 +1714,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        DepositiPrelievi_Bottone_AssegnazioneManuale.setBackground(new java.awt.Color(204, 255, 204));
+        DepositiPrelievi_Bottone_AssegnazioneManuale.setBackground(new Color(198, 198, 108));
         DepositiPrelievi_Bottone_AssegnazioneManuale.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         DepositiPrelievi_Bottone_AssegnazioneManuale.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Classifica.png"))); // NOI18N
         DepositiPrelievi_Bottone_AssegnazioneManuale.setText("<html><h2>Classifica Movimento</h2></html>");

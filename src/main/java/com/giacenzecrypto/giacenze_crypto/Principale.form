@@ -919,6 +919,9 @@
             </Component>
             <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_MovimentoElimina">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="66" green="66" red="ff" type="rgb"/>
+                </Property>
                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="33" green="33" red="33" type="rgb"/>
                 </Property>
@@ -1058,7 +1061,7 @@
                   <Font name="Noto Sans" size="18" style="1"/>
                 </Property>
                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="Tabelle.rosso" type="code"/>
+                  <Connection code="new Color(255,102,102)" type="code"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Errori (0)"/>
                 <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Attenzione!&lt;br&gt;Sono presenti errori che se non corretti possono portare ad errori di calcolo sulle plusvalenze.&lt;br&gt;Premere per sistemare.&lt;/html&gt;"/>
@@ -1448,8 +1451,8 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="DepositiPrelievi_Bottone_AssegnazioneManuale">
                       <Properties>
-                        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                          <Color blue="cc" green="ff" red="cc" type="rgb"/>
+                        <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="new Color(198, 198, 108)" type="code"/>
                         </Property>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                           <Font name="Noto Sans" size="12" style="1"/>

@@ -68,14 +68,14 @@ public class Tabelle {
     static Color verdeScuro=new Color (145, 255, 143);
     static Color verde=new Color (145, 255, 143);
     static Color rosso=new Color(255, 80, 80);
-    static Color rossoChiaro=new Color(255, 160, 160);
-    //Colore di selezione delle righe, in tinta col logo (#A8A834, un verde oliva). Due sfumature
-    //vicine per riga pari/dispari, così la selezione multipla non risulta piatta ma alternata come
-    //le righe normali. Nel tema scuro un oliva più cupo, con testo chiaro; nel chiaro testo nero.
-    static Color selezione        = new Color(181, 181, 74);   // #B5B54A  chiaro, riga pari (oliva del logo schiarito)
-    static Color selezioneAlt     = new Color(198, 198, 108);  // #C6C66C  chiaro, riga dispari
-    static Color selezioneScura   = new Color(92, 92, 30);     //          scuro, riga pari
-    static Color selezioneScuraAlt= new Color(116, 116, 44);   //          scuro, riga dispari
+    static Color rossoChiaro=new Color(255, 130, 130);
+    //Colore di selezione delle righe: lo stesso blu dei pulsanti primari dei dialog (AppDialog:
+    //accent #3478F6 nel tema chiaro, #4A90E2 nello scuro). Due sfumature vicine per riga pari/dispari,
+    //così la selezione multipla non risulta piatta ma alternata come le righe normali. Testo bianco.
+    static Color selezione        = new Color(52, 120, 246);   // #3478F6  chiaro, riga pari (accent dei dialog)
+    static Color selezioneAlt     = new Color(78, 138, 247);   // #4E8AF7  chiaro, riga dispari
+    static Color selezioneScura   = new Color(74, 144, 226);   // #4A90E2  scuro, riga pari (accent dei dialog)
+    static Color selezioneScuraAlt= new Color(92, 156, 232);   // #5C9CE8  scuro, riga dispari
     //Evidenziatore "filtri attivi" sulla tabella movimenti: ambra scuro, leggibile con testo bianco
     //sia in tema chiaro sia in tema scuro (riempie lo sfondo di label/pulsante, non e' un foreground).
     static Color ambra=new Color(198, 128, 0);
@@ -483,7 +483,7 @@ public class Tabelle {
                 JLabel label = new JLabel();
                     label.setOpaque(true);
                     label.setBackground(bg2);
-                    label.setForeground(Color.black);
+                    label.setForeground(Color.WHITE);
                     label.setText(value.toString());
                     if (table.getModel().getValueAt(modelRow, 10)!=null)GiacWallet=table.getModel().getValueAt(modelRow, 10).toString();
                     if (table.getModel().getValueAt(modelRow, 11)!=null)GiacGruppo=table.getModel().getValueAt(modelRow, 11).toString();
@@ -662,7 +662,7 @@ public static Color SfondoRigaAlternata(int row) {
 }
 
 /**
- * Colore di sfondo di una riga <em>selezionata</em>: verde oliva in tinta col logo, alternato
+ * Colore di sfondo di una riga <em>selezionata</em>: il blu accent dei dialog, alternato
  * riga pari/dispari come {@link #SfondoRigaAlternata(int)}, così una selezione multipla non
  * risulta una banda piatta. Usato da tutti i renderer di questa classe al posto di
  * {@code Tabelle.SfondoSelezione(row)}; il foreground di selezione (nero nel tema chiaro,

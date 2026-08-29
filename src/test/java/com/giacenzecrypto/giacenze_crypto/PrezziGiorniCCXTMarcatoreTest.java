@@ -68,7 +68,7 @@ class PrezziGiorniCCXTMarcatoreTest {
     }
 
     @Test
-    void fonteEDaExchangeCCXT_riconosceI7ExchangeENonLeFontiDiRipiego() {
+    void fonteEDaExchangeCCXT_riconosceGliExchangeCCXTENonLeFontiDiRipiego() {
         for (String ex : Prezzi.EXCHANGES_CCXT.split(",")) {
             assertTrue(Prezzi.fonteEDaExchangeCCXT(ex), ex + " deve contare come exchange CCXT");
             assertTrue(Prezzi.fonteEDaExchangeCCXT(ex.toUpperCase()), ex + " (maiuscolo) idem");

@@ -553,6 +553,7 @@ private static final long serialVersionUID = 3L;
         Bottone_Errori = new javax.swing.JButton();
         TransazioniCrypto_Bottone_Filtri = new javax.swing.JButton();
         TransazioniCrypto_Bottone_AzzeraFiltri = new javax.swing.JButton();
+        TransazioniCrypto_Bottone_Colonne = new javax.swing.JButton();
         TransazioniCrypto_Bottone_AggiorbaVersione = new javax.swing.JButton();
         jSeparator9 = new javax.swing.JSeparator();
         jLabel27 = new javax.swing.JLabel();
@@ -1065,7 +1066,7 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "<html><center>ID<br>Transazione</html>", "<html><center>Data e Ora</html>", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico C.A. Uscente</html>", "<html><center>Nuovo<br>Costo di Carico<br>in EURO</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "DeFi - Blocco Transazione", "DeFi - Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "DeFi - Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento con Plusvalenza", "Rete", "null", "null", "null", "Errori", "null"
+                "<html><center>ID<br>Transazione</html>", "<html><center>Data e Ora</html>", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico<br>Moneta Uscente</html>", "<html><center>Costo di Carico<br>Moneta Entrante</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "Blocco Transazione", "Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento con Plusvalenza", "Rete", "null", "null", "null", "Errori", "null"
             }
         ) {
             Class[] types = new Class [] {
@@ -1409,6 +1410,15 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        TransazioniCrypto_Bottone_Colonne.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
+        TransazioniCrypto_Bottone_Colonne.setText("Colonne...");
+        TransazioniCrypto_Bottone_Colonne.setToolTipText("Scegli quali colonne mostrare nella tabella dei movimenti");
+        TransazioniCrypto_Bottone_Colonne.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TransazioniCrypto_Bottone_ColonneActionPerformed(evt);
+            }
+        });
+
         TransazioniCrypto_Bottone_AggiorbaVersione.setForeground(Tabelle.rosso);
         TransazioniCrypto_Bottone_AggiorbaVersione.setText("<html><center><b>E' DISPONIBILE UNA NUOVA VERSIONE DI<br>\nGIACENZE CRYPTO.<br>\nPREMERE QUI PER SCARICARE.</b></html>");
         TransazioniCrypto_Bottone_AggiorbaVersione.addActionListener(new java.awt.event.ActionListener() {
@@ -1494,6 +1504,8 @@ private static final long serialVersionUID = 3L;
                                 .addComponent(TransazioniCrypto_Bottone_Filtri, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(TransazioniCrypto_Bottone_Colonne, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1548,10 +1560,11 @@ private static final long serialVersionUID = 3L;
                         .addComponent(TransazioniCrypto_Label_Filtro)
                         .addComponent(TransazioniCrypto_Bottone_Filtri)
                         .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri)
+                        .addComponent(TransazioniCrypto_Bottone_Colonne)
                         .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label)
                         .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(5, 5, 5)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -6355,6 +6368,19 @@ private void SettaIcone(){
         Opzioni_ApiKey_UniSat_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat")));
         Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Blockscout")));
 
+        //Layout colonne personalizzato della tabella movimenti (preferenza utente, personale.mv.db).
+        //Va dopo TransazioniCrypto_Funzioni_NascondiColonneTabellaCrypto() del costruttore: applica()
+        //riparte comunque dal default e poi sovrappone le scelte salvate. Valore assente o di schema
+        //diverso -> resta il default.
+        try {
+            String jsonLayoutColonne = DatabaseH2.Pers_Opzioni_Leggi(LayoutColonneMovimenti.OPZIONE);
+            LayoutColonneMovimenti layoutColonne = LayoutColonneMovimenti.fromJson(jsonLayoutColonne);
+            if (layoutColonne != null) {
+                LayoutColonneMovimenti.applica(TransazioniCryptoTabella, layoutColonne);
+            }
+        } catch (Exception eLayoutColonne) {
+            System.out.println("AggiornaSpunte: layout colonne movimenti non applicato : " + eLayoutColonne.getMessage());
+        }
 
       //  System.out.println(RW_Opzioni_RilenvanteScambiFIAT.isSelected());
     }
@@ -6413,72 +6439,16 @@ private void SettaIcone(){
     
     
     /**
-     * Nasconde dalla tabella delle transazioni crypto le colonne tecniche/di dettaglio non
-     * destinate alla visualizzazione diretta (indici interni, campi ausiliari), lasciando visibili
-     * solo le colonne di interesse per l'utente.
+     * Porta la tabella dei movimenti al suo layout di colonne <b>predefinito</b>: l'insieme e
+     * l'ordine storici (solo le colonne di interesse per l'utente, quelle tecniche/ausiliarie
+     * nascoste). Delega a {@link LayoutColonneMovimenti#applica}, che ora è anche la base su cui
+     * {@code AggiornaSpunte()} sovrappone l'eventuale layout personalizzato salvato in
+     * {@code personale.mv.db}. Chiamata una volta in costruzione, e da "Ripristina predefinito".
      */
     public void TransazioniCrypto_Funzioni_NascondiColonneTabellaCrypto(){
-       // this.CDC.remove(this.TransazioniCrypto);
-        //per nascondere devo farlo al contrario
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(34));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(33));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(32));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(31));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(30));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(29));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(28));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(27));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(26));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(25));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(24));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(23));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(22));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(21));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(20));
-       // TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(19));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(18));
-        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(17));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(16));
-        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(15));        
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(14));
-        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(13));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(12));        
-        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(11));
-        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(10));        
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(9));
-        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(8));        
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(7));
-        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(6));
-        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(5));
-        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(4));
-        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(3));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(2));
-        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(1));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(0));
-        //Elenco Colonne
-        /*
-        0 - TrasID -> es. 202112031045_Binance_ScambioCryptoCrypto
-        1 - Numero di movimenti che compongono la transazione -> es- 1 di 3 (ovvero questa transazione è composta da 3 movimenti e questo è il primo movimento)
-        2 - Exchange/Wallet -> es. Crypto.com
-        3 - Data e ora -> es. 2021/12/03 10:45
-        4 - Tipo Movimento -> es. Scambio Crypto/Crypto
-        5 - Causale originale -> Causale originale come da CSV (es. Crypto_exchange)
-        6 - Uscita/Entrata -> es. Uscita
-        7 - Moneta -> es. CRO oppure ETH oppure EUR
-        8 - Tipo Moneta -> es. Crypto oppure FIAT
-        9 - Quantità -> es. 10
-        10 - Valore di Mercato transazione (come da csv) -> es. 10 USD
-        11 - Valore di Mercato Transazione in EURO -> es. 9
-        12 - Valore di Mercato unitario in EUR (singolo pezzo) -> es 0,9
-        13 - Prezzo di Carico Totale Transazione in EUR -> es. 8
-        14 - Prezzo di Carico in EUR (Unitario) -> es. 0,8
-        15 - Plusvalenza in EUR della Transazione -> es 3
-        16 - Riferimento x Trasferimenti -> Se è un traferimento si mette il riferimento al wallet/ transaziojne che l'ha generato es. 202112031045_Crypto.com_TraferimentoCrypto
-        17 - Note -> Eventuali note sulla transazione o sulla singola parte della transazione.
-        
-        */
+        LayoutColonneMovimenti.applica(TransazioniCryptoTabella, null);
     }
-    
+
 
     
     
@@ -10720,6 +10690,15 @@ if (result.isAction("delete-all")) {
             DatabaseH2.Opzioni_Scrivi("Finestra_Altezza", String.valueOf(getHeight()));
         }
 
+        //Layout colonne della tabella movimenti: preferenza utente -> personale.mv.db. Prima della
+        //compattazione, che chiude i database.
+        try {
+            DatabaseH2.Pers_Opzioni_Scrivi(LayoutColonneMovimenti.OPZIONE,
+                    LayoutColonneMovimenti.daTabella(TransazioniCryptoTabella).toJson());
+        } catch (Exception eLayoutColonne) {
+            System.out.println("formWindowClosing: salvataggio layout colonne movimenti fallito : " + eLayoutColonne.getMessage());
+        }
+
         //Dopo le Opzioni_Scrivi: la compattazione chiude i database, e quelle ci scrivono ancora
         Principale_Opzioni_Pulizie.CompattaSeConviene(this);
 
@@ -14339,6 +14318,37 @@ if (result != null && !result.isAction("cancel")) {
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa();
     }//GEN-LAST:event_TransazioniCrypto_Bottone_AzzeraFiltriActionPerformed
 
+    /**
+     * Apre il dialogo di scelta delle colonne della tabella movimenti, poi applica e salva il
+     * risultato. Non ricarica le righe: i dati non cambiano, cambia solo il {@code TableColumnModel}.
+     * Vedi {@link LayoutColonneMovimenti}.
+     */
+    private void TransazioniCrypto_Bottone_ColonneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_ColonneActionPerformed
+        GUI_ColonneMovimenti dlg = new GUI_ColonneMovimenti(this, TransazioniCryptoTabella);
+        dlg.setLocationRelativeTo(this);
+        dlg.setVisible(true);
+
+        if (dlg.isAnnullato()) {
+            return;
+        }
+        if (dlg.isRipristino()) {
+            LayoutColonneMovimenti.applica(TransazioniCryptoTabella, null);
+            DatabaseH2.Pers_Opzioni_CancellaOpzione(LayoutColonneMovimenti.OPZIONE);
+        } else {
+            LayoutColonneMovimenti risultato = dlg.getRisultato();
+            LayoutColonneMovimenti.applica(TransazioniCryptoTabella, risultato);
+            DatabaseH2.Pers_Opzioni_Scrivi(LayoutColonneMovimenti.OPZIONE, risultato.toJson());
+        }
+
+        TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(
+                TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 100));
+        Tabelle.Tabelle_getSommeColonne(TransazioniCryptoTabella);
+        TransazioniCryptoTabella.getTableHeader().revalidate();
+        TransazioniCryptoTabella.getTableHeader().repaint();
+        TransazioniCryptoTabella.revalidate();
+        TransazioniCryptoTabella.repaint();
+    }//GEN-LAST:event_TransazioniCrypto_Bottone_ColonneActionPerformed
+
     private void TransazioniCrypto_Bottone_FiltriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_FiltriActionPerformed
         long dataInizio = Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale);
         long dataFine = Funzioni_Date_ConvertiDatainLong(CDC_DataFinale);
@@ -16475,7 +16485,28 @@ try {
                             }
                             //se trovo donazioni classificate con DAC le converto in DDO (serve per il passaggio dalla versione 1.0.51 a 1.0.52)
                             if (splittata[18].equals("DAC - Donazione"))splittata[18]="DDO - Donazione";
-                                
+
+                            //Pulizia del campo [29] (timestamp epoch del movimento): deve essere numerico.
+                            //Due bug storici lo hanno inquinato: la colonna Remark del CSV Binance versata da
+                            //campiExtra "29" ("Binance Earn", "Withdraw fee is included", vuoto...) e le vecchie
+                            //righe DeFi che vi scrivevano la data in ISO-8601. Lo si ricostruisce dalla stringa
+                            //ISO quando c'è (istante esatto), altrimenti dal prefisso yyyyMMddHHmmss dell'ID.
+                            if (!Funzioni.isNumeric(splittata[29], false)) {
+                                long ms = 0;
+                                if (splittata[29] != null && splittata[29].trim().matches("\\d{4}-\\d{2}-\\d{2}T.*")) {
+                                    ms = FunzioniDate.ConvertiISO8601toMillis(splittata[29].trim());
+                                }
+                                if (ms == 0 && splittata[0] != null && splittata[0].length() >= 14) {
+                                    ms = FunzioniDate.ConvertiDataIDinLong(splittata[0].substring(0, 14));
+                                }
+                                if (ms > 0) {
+                                    splittata[29] = String.valueOf(ms);
+                                } else {
+                                    System.out.println("Pulizia campo 29: timestamp non ricostruibile per il movimento " + splittata[0]);
+                                    splittata[29] = "";
+                                }
+                            }
+
                             
                             //questo serve solo per eliminare i null che erano finiti per sbaglio
                             //dopo un errore di programmazione
@@ -17619,6 +17650,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JButton TransazioniCrypto_Bottone_AggiorbaVersione;
     private javax.swing.JButton TransazioniCrypto_Bottone_Annulla;
     private javax.swing.JButton TransazioniCrypto_Bottone_AzzeraFiltri;
+    private javax.swing.JButton TransazioniCrypto_Bottone_Colonne;
     private javax.swing.JButton TransazioniCrypto_Bottone_DettaglioDefi;
     private javax.swing.JButton TransazioniCrypto_Bottone_ExchangeAPI;
     private javax.swing.JButton TransazioniCrypto_Bottone_Filtri;

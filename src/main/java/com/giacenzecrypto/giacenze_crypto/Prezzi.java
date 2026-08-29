@@ -3395,7 +3395,7 @@ public static void RecuperaGiacenzeDaCCXT(String Exchange,String APIKey,String A
 /**
  * Lancia lo script Node {@code Historical_Multi_Eur.js} (tramite CCXT, installato/verificato tramite
  * {@link CcxtInterop}) per recuperare quotazioni minuto-per-minuto di un simbolo da più exchange
- * (binance, cryptocom, bybit, okx, coinbase, bitstamp, kucoin) in una finestra di 2h prima/6h dopo il
+ * (binance, cryptocom, bybit, okx, coinbase, bitstamp, kucoin, bitget) in una finestra di 2h prima/6h dopo il
  * timestamp richiesto, e ne salva i risultati nella tabella {@code PrezziNew}. Evita richieste duplicate
  * nella stessa sessione tramite {@link #managerRichieste}; non fa nulla se il timestamp è nel futuro.
  * @param Symbol simbolo della crypto da quotare
@@ -3457,16 +3457,16 @@ public static void ScriviPuntiPrezzoInCache(String symbol, JsonArray punti) {
     }
 }
 
-/** Id CCXT dei 7 exchange interrogati da {@code Historical_Multi_Eur.js}, sorgente unica: la
+/** Id CCXT degli exchange interrogati da {@code Historical_Multi_Eur.js}, sorgente unica: la
  *  stringa e il set derivano l'una dall'altro per non poter divergere (un exchange aggiunto qui
- *  viene anche riconosciuto da {@link #fonteEDaExchangeCCXT} come non-ripiego). */
-static final String EXCHANGES_CCXT = "binance,cryptocom,bybit,okx,coinbase,bitstamp,kucoin";
+ *  viene anche riconosciuto da {@link #fonteEDaExchangeCCXT} come non-ripiego); bitget aggiunto per l'import del suo CSV, molti token sono listati solo li'. Lo script salta in silenzio un id che CCXT non conosce, quindi inerte se non supportato. */
+static final String EXCHANGES_CCXT = "binance,cryptocom,bybit,okx,coinbase,bitstamp,kucoin,bitget";
 static final java.util.Set<String> EXCHANGE_CCXT =
         java.util.Set.of(EXCHANGES_CCXT.split(","));
 
 /**
  * @param fonte valore {@code exchange} di una riga di {@code PrezziNew} (o {@link InfoPrezzo#Fonte})
- * @return {@code true} se è uno dei 7 exchange scaricati via CCXT, {@code false} per le fonti di
+ * @return {@code true} se è uno degli exchange scaricati via CCXT, {@code false} per le fonti di
  *         ripiego (CoinMarketCap, {@code GC}/giacenzecrypto.it, vecchio DB orario, banca d'Italia…)
  */
 static boolean fonteEDaExchangeCCXT(String fonte) {
@@ -3510,8 +3510,8 @@ static void GiornoCCXT_Scrivi(String symbol, int giorno) {
 
 /**
  * Lancia lo script Node {@code Historical_Multi_Eur.js} (tramite CCXT, installato/verificato con
- * {@link CcxtInterop}) per recuperare quotazioni minuto-per-minuto di {@code Symbol} da 7 exchange
- * (binance, cryptocom, bybit, okx, coinbase, bitstamp, kucoin) nella finestra 2h prima / 6h dopo il
+ * {@link CcxtInterop}) per recuperare quotazioni minuto-per-minuto di {@code Symbol} dagli exchange
+ * (binance, cryptocom, bybit, okx, coinbase, bitstamp, kucoin, bitget) nella finestra 2h prima / 6h dopo il
  * timestamp indicato, salvandone i risultati in {@code PrezziNew}. Delega a
  * {@link #RecuperaPrezziDaCCXTRange}.
  * @param Symbol simbolo della crypto da quotare

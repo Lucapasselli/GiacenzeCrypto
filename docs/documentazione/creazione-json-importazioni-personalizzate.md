@@ -37,7 +37,10 @@ Ogni proprietà ha un valore predefinito. Se non la inserisci nel JSON, viene us
 "tolleranzaSecondiConsolidamento": 2,
 "causaliDifferite": [],
 "colonne": { ... },
+"raggruppamentoPerCausale": { ... },
+"colonneControvalore": { ... },
 "mappaCausali": { ... },
+"causalePerNota": [ ... ],
 "causaliChiuse": [ ... ],
 "causaliUscita": [ ... ],
 "causaliEntrata": [ ... ],
@@ -235,6 +238,7 @@ Mappa i campi logici agli indici numerici delle colonne del CSV, contando da 0. 
 "wallet": -1,
 "monetaUscita": -1,
 "quantitaUscita":-1,
+"note": -1,
 "causale2": -1,
 "causale3": -1
 }
@@ -268,6 +272,7 @@ Quindi: "data": 0, "causale": 1, "moneta": 2 e così via.
 | wallet | Nome del wallet, se variabile riga per riga. |
 | monetaUscita | Moneta in uscita (CSV con entrata e uscita sulla stessa riga). |
 | quantitaUscita | Quantita in uscita (CSV con entrata e uscita sulla stessa riga). |
+| note | Colonna di testo libero da riportare nel campo Note del movimento. Serve anche a `causalePerNota` (vedi sezione 4). |
 
 ### Causale composita {#causale-composita}
 
@@ -322,6 +327,28 @@ export intercalano le gambe di ordini diversi.
 "colonne": { "idTransazione": 0, "idGruppo": 1 }
 ```
 
+### `raggruppamentoPerCausale` {#raggruppamentopercausale}
+
+**Tipo:** oggetto causale CSV → indice colonna | **Default:** {} (nessun override)
+
+Sovrascrive la colonna di raggruppamento **solo per le causali elencate**. Serve quando le gambe di uno
+stesso movimento condividono una colonna diversa da `idGruppo`/`idTransazione` e i loro timestamp non
+sono identici.
+
+Caso reale (Coinbase): le due gambe di un `Convert` hanno la stessa identica stringa nella colonna
+`note` (`"Converted 22 ALEPH to 4.68065032 ZETA"`) ma sull'export a volte cadono a 1-2 secondi di
+distanza; raggruppando sul timestamp esatto verrebbero spezzate in un deposito e un prelievo separati.
+Raggruppando sulla colonna `note` (indice 10) si ricompongono. Va abbinato a `consolidaRigheStessaData`
++ `causaliDifferite` + una `tolleranzaSecondiConsolidamento` sufficiente. Una gamba con valore diverso
+in quella colonna apre comunque un gruppo nuovo, quindi movimenti distinti non si mescolano.
+
+```json
+"raggruppamentoPerCausale": { "Convert": 10 },
+"consolidaRigheStessaData": true,
+"tolleranzaSecondiConsolidamento": 60,
+"causaliDifferite": ["Convert"]
+```
+
 ## 4. Mappatura delle causali {#4-mappatura-delle-causali}
 
 ### `mappaCausali` {#mappacausali}
@@ -346,6 +373,35 @@ Per ignorare righe senza contarle come scarti, mappa su "IGNORA":
 
 ```json
 "mappaCausali": { "Internal Transfer": "IGNORA" }
+```
+
+### `causalePerNota` {#causalepernota}
+
+**Tipo:** array di regole `{ causale, notaContiene, tipo }` | **Default:** [] (nessuna regola)
+
+Riclassifica una riga in base al **testo libero della colonna `note`**, quando la causale del CSV da
+sola non basta a distinguere la natura del movimento. Richiede che `colonne.note` sia impostata.
+
+Ogni regola:
+
+| Campo | Obbligatorio | Descrizione |
+|---|---|---|
+| `causale` | no | Causale CSV che la riga deve avere. Se omessa, la regola vale per qualsiasi causale. |
+| `notaContiene` | sì | Sottostringa cercata nella colonna `note` (confronto **case-insensitive**). |
+| `tipo` | sì | Tipologia interna da assegnare (le stesse usabili in `mappaCausali`: `EARN`, `REWARD`, `AIRDROP`, `STAKING REWARDS`, `COMMISSIONI`, ...). |
+
+Le regole si valutano **in ordine: vince la prima che combacia**. Se nessuna regola combacia si usa la
+normale `mappaCausali`.
+
+Caso reale (Coinbase): i premi arrivano tutti come causale `Receive` e si riconoscono solo dalla nota.
+
+```json
+"colonne": { "note": 10 },
+"causalePerNota": [
+  { "causale": "Receive", "notaContiene": "from Coinbase Earn",     "tipo": "EARN" },
+  { "causale": "Receive", "notaContiene": "from Coinbase Referral", "tipo": "REWARD" },
+  { "causale": "Receive", "notaContiene": "airdrop",                "tipo": "AIRDROP" }
+]
 ```
 
 ### `causaliChiuse` {#causalichiuse}
@@ -471,6 +527,39 @@ Esempio: entrata 500 USDC e fee 1 USDC. Con true: movimento principale 501 USDC 
 
 ```json
 "ricostruisciLordoSeFeeSuMonetaEntrata": true
+```
+
+### `colonneControvalore` {#colonnecontrovalore}
+
+**Tipo:** oggetto | **Default:** assente
+
+Per gli export in cui la colonna del totale **comprende sia la commissione sia lo spread** (tipico di
+Coinbase retail: `Total (inclusive of fees and/or spread)`). Per le cripto-attività la **commissione
+non è deducibile** dal costo di carico (art. 68 c. 9-bis TUIR), ma lo **spread sì** — non è una
+commissione. Con questo blocco, per le sole causali indicate, il controvalore usato come costo di
+carico diventa **`totale − commissione`** (lo spread resta dentro), invece della colonna `valoreEuro`.
+
+| Campo | Descrizione |
+|---|---|
+| `totale` | Indice colonna del totale comprensivo di commissione e spread. |
+| `commissione` | Indice colonna della commissione. Conta solo se è un importo **positivo** (alcune righe dust contengono un rapporto di spread con segno: viene ignorato). |
+| `valuta` | Indice colonna con la valuta di `totale`/`commissione` (es. la colonna "Price Currency" = `EUR`). Usata per la gamba FIAT sintetica e per il movimento commissione. |
+| `causali` | Causali CSV per cui applicare il ricalcolo `totale − commissione`. |
+| `causaliConMovimentoCommissione` | Sottoinsieme di `causali`: righe che portano la **sola gamba crypto in entrata**. Per queste viene **sintetizzata la gamba FIAT in uscita** di importo `totale − commissione` (l'operazione diventa un vero acquisto FIAT→crypto invece di un semplice deposito) e la commissione esce come **movimento `COMMISSIONI` a sé** nella valuta indicata. |
+
+Per le causali in `causali` ma **non** in `causaliConMovimentoCommissione` (es. gli scambi
+crypto/crypto, dove le monete sono già nette e la commissione è espressa solo in euro) viene corretto
+solo il controvalore, senza movimento commissione aggiuntivo.
+
+```json
+"colonne": { "valoreEuro": 7 },
+"colonneControvalore": {
+  "totale": 8,
+  "commissione": 9,
+  "valuta": 5,
+  "causali": ["Buy", "Convert"],
+  "causaliConMovimentoCommissione": ["Buy"]
+}
 ```
 
 ## 8. Pulizia e normalizzazione nomi moneta {#8-pulizia-e-normalizzazione-nomi-moneta}
@@ -681,6 +770,12 @@ JSON:
 - Se i nomi moneta contengono suffissi, compila rimuoviDaNomeMoneta.
 
 - Se ci sono commissioni, mappa monetaFee e quantitaFee; se la quantità è già comprensiva della fee abilita il flag ricostruisciLordo appropriato.
+
+- Se la colonna del totale include commissione **e** spread (Coinbase), usa colonneControvalore per scorporare la sola commissione dal costo di carico.
+
+- Se la natura del movimento è scritta solo nel testo libero di una colonna (es. "from Coinbase Earn"), mappa colonne.note e aggiungi le regole in causalePerNota.
+
+- Se le gambe di uno stesso movimento condividono una colonna diversa da idGruppo ma non il timestamp esatto, usa raggruppamentoPerCausale.
 
 - Se alcuni movimenti devono andare su wallet separati, compila walletPerCausale.
 

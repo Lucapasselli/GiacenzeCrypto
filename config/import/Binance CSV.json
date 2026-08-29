@@ -1,5 +1,5 @@
 {
-  "versione": "1.002",
+  "versione": "1.003",
   "centralizzato":true,
   "fontePrezzoPreferita": "binance",
   "nomeExchange": "Binance",
@@ -131,7 +131,7 @@
   "rimuoviDaNomeMoneta": [],
   "campiExtra": {
     "7": 3,
-    "29": 6
+    "21": 6
   },
   "walletPerCausale": {}
 }

@@ -160,77 +160,27 @@ public class ImportazioneGenerica {
             return false;
         }
 
+        // Pre-consolidamento per (giorno, moneta) delle causali indicate (micro-interessi Bitget & c.)
+        righe = consolidaCausaliPerGiorno(righe, cfg);
+
         if (progressb != null) {
             progressb.SetMassimo(righe.size());
             progressb.SetAvanzamento(0);
         }
 
         List<String[]> listaCompleta = new ArrayList<>();
-        List<String[]> gruppoCorrente = new ArrayList<>();
         List<String[]> movimentiDifferiti = new ArrayList<>();
 
-        String idGruppoCorrente = null;
-        long tsUltimaRigaGruppo = -1;
-
-        for (int i = 0; i < righe.size(); i++) {
-            if (progressb != null) {
-                progressb.SetAvanzamento(i + 1);
-            }
+        int righeFatte = 0;
+        for (List<String[]> gruppo : raggruppaRighe(righe, cfg)) {
             if (progressb != null && progressb.FineThread) {
                 return false;
             }
-
-            String[] riga = righe.get(i);
-
-            //Si raggruppa sulla colonna dedicata quando c'è, altrimenti sull'identificativo, come sempre
-            int colonnaGruppo = cfg.colonnaRaggruppamento();
-            boolean usaIDTransazione = colonnaGruppo >= 0;
-
-            String idCorrente = usaIDTransazione
-                    ? safe(riga, colonnaGruppo)
-                    : "";
-
-            String dataCsvCorrente = safe(riga, cfg.colonnaData);
-            long tsCorrente = cfg.convertiDataInMillis(dataCsvCorrente);
-
-            if (gruppoCorrente.isEmpty()) {
-                gruppoCorrente.add(riga);
-                idGruppoCorrente = idCorrente;
-                tsUltimaRigaGruppo = tsCorrente;
-                continue;
+            listaCompleta.addAll(consolidaGruppo(gruppo, cfg, movimentiDifferiti));
+            righeFatte += gruppo.size();
+            if (progressb != null) {
+                progressb.SetAvanzamento(righeFatte);
             }
-
-            String causaleCorrente = cfg.getCausaleCSV(riga);
-            String[] ultimaRigaGruppo = gruppoCorrente.get(gruppoCorrente.size() - 1);
-            String causaleUltima = cfg.getCausaleCSV(ultimaRigaGruppo);
-
-            boolean usaDifferitaGlobale = cfg.causaliDifferite.isEmpty();
-            boolean coinvolgeDifferita = usaDifferitaGlobale
-                    || cfg.causaliDifferite.contains(causaleCorrente)
-                    || cfg.causaliDifferite.contains(causaleUltima);
-            long tolleranzaMs = coinvolgeDifferita ? cfg.tolleranzaSecondiConsolidamento * 1000L : 0L;
-
-
-            boolean stessoID = !usaIDTransazione
-                    || (!idCorrente.isBlank() && idCorrente.equals(idGruppoCorrente));
-
-            //vedo se è dentro la tolleranza solamente se consolidastessariga è true
-            boolean entroTolleranza = cfg.consolidaRigheStessaData && Math.abs(tsCorrente - tsUltimaRigaGruppo) <= tolleranzaMs;
-
-            if (stessoID && entroTolleranza) {
-                gruppoCorrente.add(riga);
-                tsUltimaRigaGruppo = tsCorrente;
-            } else {
-                listaCompleta.addAll(consolidaGruppo(gruppoCorrente, cfg, movimentiDifferiti));
-                gruppoCorrente = new ArrayList<>();
-                gruppoCorrente.add(riga);
-                idGruppoCorrente = idCorrente;
-                tsUltimaRigaGruppo = tsCorrente;
-            }
-        }
-
-        if (!gruppoCorrente.isEmpty()) {
-            listaCompleta.addAll(consolidaGruppo(gruppoCorrente, cfg, movimentiDifferiti));
         }
 
         if (!movimentiDifferiti.isEmpty()) {
@@ -377,6 +327,130 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
     return null; // assente o vuoto → l'utente dovrà scegliere
 }
 
+    /**
+     * Somma per {@code (giorno, moneta)} le righe le cui causali CSV sono elencate in
+     * {@code cfg.causaliConsolidaPerGiorno}, restituendo una sola riga sintetica per bucket (data e
+     * altre colonne dalla prima riga del giorno, quantità sostituita dalla somma). Le righe non
+     * interessate passano invariate. Il risultato è riordinato per data. Se la lista di causali è
+     * vuota la lista in ingresso è restituita così com'è.
+     *
+     * <p>Il giorno è quello di {@code normalizzaData}, cioè nel fuso di sistema: lo stesso file
+     * consolidato su macchine con fuso diverso può spostare un accredito a cavallo di mezzanotte in
+     * un giorno diverso. Accettabile per micro-interessi; irrilevante lontano dalla mezzanotte.</p>
+     */
+    static List<String[]> consolidaCausaliPerGiorno(List<String[]> righe, ConfigurazioneImport cfg) {
+        if (cfg.causaliConsolidaPerGiorno.isEmpty()) return righe;
+
+        List<String[]> out = new ArrayList<>();
+        java.util.LinkedHashMap<String, String[]> template = new java.util.LinkedHashMap<>();
+        java.util.HashMap<String, BigDecimal> somma = new java.util.HashMap<>();
+
+        for (String[] riga : righe) {
+            String causaleCSV = cfg.getCausaleCSV(riga);
+            if (!cfg.causaliConsolidaPerGiorno.contains(causaleCSV)) {
+                out.add(riga);
+                continue;
+            }
+            String dataNorm = cfg.normalizzaData(safe(riga, cfg.colonnaData));
+            String qtaStr = normalizzaNumero(safe(riga, cfg.colonnaQuantita));
+            if (dataNorm == null || dataNorm.length() < 10
+                    || qtaStr.isBlank() || !Funzioni.isNumeric(qtaStr, false)) {
+                out.add(riga); // non consolidabile: lasciata singola
+                continue;
+            }
+            String chiave = dataNorm.substring(0, 10) + "|" + cfg.normalizzaMoneta(safe(riga, cfg.colonnaMoneta));
+            BigDecimal acc = somma.get(chiave);
+            if (acc == null) {
+                somma.put(chiave, new BigDecimal(qtaStr));
+                template.put(chiave, riga.clone());
+            } else {
+                somma.put(chiave, acc.add(new BigDecimal(qtaStr)));
+            }
+        }
+
+        for (java.util.Map.Entry<String, String[]> e : template.entrySet()) {
+            String[] r = e.getValue();
+            if (cfg.colonnaQuantita >= 0 && cfg.colonnaQuantita < r.length) {
+                r[cfg.colonnaQuantita] = somma.get(e.getKey()).stripTrailingZeros().toPlainString();
+            }
+            // La riga sintetica somma le quantità del giorno ma eredita le altre colonne dalla prima
+            // riga: la fee di quella riga sarebbe attribuita all'intero accredito giornaliero, quindi
+            // la azzero.
+            if (cfg.colonnaQuantitaFee >= 0 && cfg.colonnaQuantitaFee < r.length) {
+                r[cfg.colonnaQuantitaFee] = "0";
+            }
+            out.add(r);
+        }
+
+        out.sort((a, b) -> Long.compare(
+                cfg.convertiDataInMillis(safe(a, cfg.colonnaData)),
+                cfg.convertiDataInMillis(safe(b, cfg.colonnaData))));
+        return out;
+    }
+
+    /**
+     * Raggruppa le righe <b>già ordinate per data</b> in blocchi di righe correlate (le gambe di uno
+     * stesso movimento). Due righe consecutive finiscono nello stesso gruppo quando:
+     * <ul>
+     *   <li>condividono il valore della colonna di raggruppamento
+     *       ({@link ConfigurazioneImport#colonnaRaggruppamento(String)}, che
+     *       {@code raggruppamentoPerCausale} può sovrascrivere per singola causale — es. Coinbase
+     *       {@code Convert} raggruppa sulla colonna Notes invece che sul timestamp), e</li>
+     *   <li>se {@code consolidaRigheStessaData} è attivo, cadono entro
+     *       {@code tolleranzaSecondiConsolidamento} l'una dall'altra; la finestra &gt; 0 vale solo per
+     *       le causali in {@code causaliDifferite} (o per tutte, se la lista è vuota).</li>
+     * </ul>
+     * Il raggruppamento è su righe <b>consecutive</b>: le gambe di un movimento devono restare
+     * adiacenti nello stream ordinato. Una gamba con chiave diversa apre sempre un gruppo nuovo, quindi
+     * movimenti distinti non si mescolano anche quando sono vicini nel tempo.
+     */
+    static List<List<String[]>> raggruppaRighe(List<String[]> righe, ConfigurazioneImport cfg) {
+        List<List<String[]>> gruppi = new ArrayList<>();
+        List<String[]> gruppoCorrente = new ArrayList<>();
+        String idGruppoCorrente = null;
+        long tsUltimaRigaGruppo = -1;
+
+        for (String[] riga : righe) {
+            String causaleCorrente = cfg.getCausaleCSV(riga);
+            int colonnaGruppo = cfg.colonnaRaggruppamento(causaleCorrente);
+            boolean usaIDTransazione = colonnaGruppo >= 0;
+            String idCorrente = usaIDTransazione ? safe(riga, colonnaGruppo) : "";
+            long tsCorrente = cfg.convertiDataInMillis(safe(riga, cfg.colonnaData));
+
+            if (gruppoCorrente.isEmpty()) {
+                gruppoCorrente.add(riga);
+                idGruppoCorrente = idCorrente;
+                tsUltimaRigaGruppo = tsCorrente;
+                continue;
+            }
+
+            String causaleUltima = cfg.getCausaleCSV(gruppoCorrente.get(gruppoCorrente.size() - 1));
+            boolean usaDifferitaGlobale = cfg.causaliDifferite.isEmpty();
+            boolean coinvolgeDifferita = usaDifferitaGlobale
+                    || cfg.causaliDifferite.contains(causaleCorrente)
+                    || cfg.causaliDifferite.contains(causaleUltima);
+            long tolleranzaMs = coinvolgeDifferita ? cfg.tolleranzaSecondiConsolidamento * 1000L : 0L;
+
+            boolean stessoID = !usaIDTransazione
+                    || (!idCorrente.isBlank() && idCorrente.equals(idGruppoCorrente));
+            boolean entroTolleranza = cfg.consolidaRigheStessaData
+                    && Math.abs(tsCorrente - tsUltimaRigaGruppo) <= tolleranzaMs;
+
+            if (stessoID && entroTolleranza) {
+                gruppoCorrente.add(riga);
+                tsUltimaRigaGruppo = tsCorrente;
+            } else {
+                gruppi.add(gruppoCorrente);
+                gruppoCorrente = new ArrayList<>();
+                gruppoCorrente.add(riga);
+                idGruppoCorrente = idCorrente;
+                tsUltimaRigaGruppo = tsCorrente;
+            }
+        }
+        if (!gruppoCorrente.isEmpty()) gruppi.add(gruppoCorrente);
+        return gruppi;
+    }
+
     // -------------------------------------------------------------------------
     // PUNTO 2 – consolidaGruppo RISCRITTO
     // -------------------------------------------------------------------------
@@ -416,7 +490,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
      * successivamente
      * @return lista dei movimenti finali costruiti a partire dal gruppo
      */
-    private static List<String[]> consolidaGruppo(List<String[]> gruppo,
+    static List<String[]> consolidaGruppo(List<String[]> gruppo,
             ConfigurazioneImport cfg, List<String[]> differiti) {
 
         List<String[]> risultato = new ArrayList<>();
@@ -437,6 +511,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         String dataRawDiGruppo = null;
         String walletPrincipale = null;
         String walletID = null;
+        String noteDiGruppo = "";
         boolean haMovimentiDefi = false;
 
         // Commissioni incontrate nel gruppo, emesse in coda: {moneta, qta assoluta, causale CSV, id originale}
@@ -444,7 +519,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 
         for (String[] riga : gruppo) {
             String causaleCSV = cfg.getCausaleCSV(riga);
-            String tipoMovimento = cfg.convertiCausale(causaleCSV);
+            String tipoMovimento = cfg.tipoMovimentoPerRiga(riga);
 
             if (tipoMovimento == null || tipoMovimento.isBlank()) {
                 scarta("CAUSALE SCONOSCIUTA: " + causaleCSV, Arrays.toString(riga));
@@ -468,6 +543,8 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 
                 String exchange = cfg.nomeExchange != null ? cfg.nomeExchange : "Exchange Generico";
                 walletID = exchange + "." + safe(riga, cfg.colonnaIDTransazione);
+
+                if (cfg.colonnaNote >= 0) noteDiGruppo = safe(riga, cfg.colonnaNote);
             }
 
             // Se la causale è in movimentoChiuso => tratto come movimento singolo
@@ -523,8 +600,13 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                     causaleCSV, idOrig});
             }
 
-            // Recupero prezzo se disponibile
-            String valEuro = normalizzaNumero(safe(riga, cfg.colonnaValoreEuro));
+            // Recupero prezzo se disponibile. Per le causali con controvalore "al netto della sola
+            // commissione" (Coinbase 'Convert') il costo di carico della gamba e' Total - commissione,
+            // non il Subtotal: lo spread resta nel costo di carico, la commissione (solo in euro, le
+            // monete sono gia' nette) no. Nessun movimento COMMISSIONI separato per queste.
+            String controvaloreNettoLeg = controvaloreAlNetto(riga, cfg);
+            String valEuro = controvaloreNettoLeg != null ? controvaloreNettoLeg
+                    : normalizzaNumero(safe(riga, cfg.colonnaValoreEuro));
             String prezzoUn = normalizzaNumero(safe(riga, cfg.colonnaPrezzo));
             long dataLong = cfg.convertiDataInMillis(dataRawDiGruppo);
 
@@ -561,6 +643,16 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             List<String[]> movScambio = Importazioni.RitornaScambi(
                     scambio, dataDiGruppo, cfg.nomeExchange, null);
             if (movScambio != null) {
+                // RitornaScambi non riceve la nota: la riporto qui nel campo [21] (le due gambe di un
+                // Convert condividono la stessa identica stringa Notes).
+                if (cfg.colonnaNote >= 0 && !noteDiGruppo.isBlank()) {
+                    String notaNorm = MovimentiCrypto.normalizzaNome(noteDiGruppo);
+                    for (String[] m : movScambio) {
+                        if (m != null && m.length > 21 && (m[21] == null || m[21].isBlank())) {
+                            m[21] = notaNorm;
+                        }
+                    }
+                }
                 risultato.addAll(movScambio);
             }
         }
@@ -704,7 +796,43 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         m.AssegnaTipoAuto();
     }
 
-    private static List<String[]> costruisciMovimenti(String[] riga, String tipoForzato, ConfigurazioneImport cfg) {
+    /**
+     * Importo (>= 0) della commissione della riga, nella valuta di controvalore. Un valore assente, non
+     * numerico o non positivo vale 0: in alcune righe dust di Coinbase la colonna 'Fees and/or Spread'
+     * porta un rapporto di spread con segno, non un importo di commissione.
+     */
+    static BigDecimal commissioneControvalore(String[] riga, ConfigurazioneImport cfg) {
+        if (cfg.colControvaloreCommissione < 0) return BigDecimal.ZERO;
+        String f = normalizzaNumero(safe(riga, cfg.colControvaloreCommissione));
+        if (f.isBlank() || !Funzioni.isNumeric(f, false)) return BigDecimal.ZERO;
+        BigDecimal v = new BigDecimal(f);
+        return v.signum() > 0 ? v : BigDecimal.ZERO;
+    }
+
+    /**
+     * Controvalore in euro "al netto della sola commissione" per la riga: {@code |Total| - commissione},
+     * dove {@code Total} e' la colonna comprensiva di commissione e spread. È l'<b>unico</b> punto in cui
+     * vive la formula, condivisa da {@link #costruisciMovimenti} (righe singole, es. Coinbase 'Buy') e
+     * {@link #consolidaGruppo} (gruppi multi-riga, es. Coinbase 'Convert'), così la stessa causale non
+     * puo' avere un costo di carico diverso a seconda del formato della riga.
+     *
+     * <p>Lo spread resta nel costo di carico: per le cripto-attivita' non e' deducibile la commissione
+     * (art. 68 c.9-bis TUIR, circ. 30/E del 27/10/23), ma lo spread non e' una commissione.
+     *
+     * @return la stringa {@code BigDecimal} del controvalore, oppure {@code null} se la riga non e' fra
+     *         quelle in {@code causaliControvaloreNetto} o manca la colonna del totale.
+     */
+    static String controvaloreAlNetto(String[] riga, ConfigurazioneImport cfg) {
+        if (cfg.colControvaloreTotale < 0 || cfg.causaliControvaloreNetto.isEmpty()) return null;
+        String causale = cfg.getCausaleCSV(riga);
+        if (causale == null || !cfg.causaliControvaloreNetto.contains(causale.trim())) return null;
+        String tot = normalizzaNumero(safe(riga, cfg.colControvaloreTotale));
+        if (tot.isBlank() || !Funzioni.isNumeric(tot, false)) return null;
+        BigDecimal netto = new BigDecimal(tot).abs().subtract(commissioneControvalore(riga, cfg));
+        return netto.stripTrailingZeros().toPlainString();
+    }
+
+    static List<String[]> costruisciMovimenti(String[] riga, String tipoForzato, ConfigurazioneImport cfg) {
     try {
         List<String[]> risultato = new ArrayList<>();
 
@@ -733,7 +861,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             wallet = walletOverride;
         }
 
-        String tipoMovimento = tipoForzato != null ? tipoForzato : cfg.convertiCausale(causaleCSV);
+        String tipoMovimento = tipoForzato != null ? tipoForzato : cfg.tipoMovimentoPerRiga(riga);
         if (tipoMovimento == null || tipoMovimento.isBlank()) {
             scarta("CAUSALE SCONOSCIUTA: " + causaleCSV, Arrays.toString(riga));
             return null;
@@ -772,10 +900,12 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 
         Moneta mOUT = null;
         Moneta mIN = null;
+        BigDecimal qtaPrimaria = null;
 
         // Lato principale letto da moneta/quantita
         if (!qtaStr.isBlank() && Funzioni.isNumeric(qtaStr, false)) {
             BigDecimal qta = new BigDecimal(qtaStr);
+            qtaPrimaria = qta;
             if (qta.compareTo(BigDecimal.ZERO) < 0) {
                 mOUT = new Moneta();
                 mOUT.InserisciValori(moneta, qta.stripTrailingZeros().toPlainString(), "", "");
@@ -794,7 +924,29 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 
             if (!qtaOut.isBlank() && Funzioni.isNumeric(qtaOut, false)) {
                 BigDecimal qOut = new BigDecimal(qtaOut);
-                if (qOut.compareTo(BigDecimal.ZERO) > 0) {
+
+                // Formato "gamba doppia con segno sull'uscita": la riga ha SEMPRE due colonne moneta,
+                // ma sono le due gambe di UNO scambio solo quando le monete differiscono. Quando la
+                // moneta di uscita coincide con quella principale (export tipo Nexo: 'Interest',
+                // 'Top up', 'Withdrawal', term deposit… ripetono la stessa moneta su Input e Output),
+                // la riga e' un movimento a gamba singola: il verso lo da il segno della colonna di
+                // uscita (l'unica che lo porta), l'importo lo da la colonna principale (che e' quello
+                // effettivo: su 'Top up' Input e Output differiscono di poco per via della fee di rete).
+                // Senza questo, un accredito di interessi 'NEXO -> NEXO' diventerebbe un finto scambio.
+                boolean stessaMoneta = !monOut.isBlank() && monOut.equalsIgnoreCase(moneta);
+
+                if (cfg.gambaDoppiaConSegnoSuUscita && stessaMoneta) {
+                    mOUT = null;
+                    mIN = null;
+                    BigDecimal importo = (qtaPrimaria != null ? qtaPrimaria : qOut).abs();
+                    if (qOut.signum() != 0 && importo.signum() != 0) {
+                        Moneta m = new Moneta();
+                        String q = (qOut.signum() < 0 ? importo.negate() : importo).stripTrailingZeros().toPlainString();
+                        m.InserisciValori(monOut, q, "", "");
+                        m.AssegnaTipoAuto();
+                        if (qOut.signum() < 0) mOUT = m; else mIN = m;
+                    }
+                } else if (qOut.compareTo(BigDecimal.ZERO) > 0) {
                     mOUT = new Moneta();
                     mOUT.InserisciValori(monOut, "-" + qOut.stripTrailingZeros().toPlainString(), "", "");
                     mOUT.AssegnaTipoAuto();
@@ -806,7 +958,33 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             }
         }
 
-        String prezzoMov = !valoreEuro.isBlank() ? valoreEuro : prezzo;
+        // Controvalore "al netto della sola commissione" (Coinbase Buy): il Total del CSV comprende
+        // commissione + spread; il costo di carico e' Total - commissione (lo spread resta). Per le
+        // causali in causaliControvaloreConCommissione la riga porta la sola gamba crypto in entrata:
+        // si sintetizza la gamba FIAT in uscita di quell'importo, così l'acquisto diventa un vero
+        // scambio FIAT->crypto (categoria AC invece di deposito crypto), e la commissione esce come
+        // movimento COMMISSIONI a se'.
+        String controvaloreNetto = controvaloreAlNetto(riga, cfg);
+        String valutaControv = "";
+        BigDecimal commControv = BigDecimal.ZERO;
+        boolean causaleConCommissione = controvaloreNetto != null
+                && cfg.causaliControvaloreConCommissione.contains(causaleCSV.trim());
+        if (controvaloreNetto != null) {
+            valutaControv = cfg.colControvaloreValuta >= 0
+                    ? cfg.normalizzaMoneta(safe(riga, cfg.colControvaloreValuta)) : "EUR";
+            commControv = commissioneControvalore(riga, cfg);
+            if (causaleConCommissione && mOUT == null && mIN != null && !valutaControv.isBlank()) {
+                mOUT = new Moneta();
+                mOUT.InserisciValori(valutaControv, "-" + controvaloreNetto, "", "");
+                mOUT.AssegnaTipoAuto();
+            }
+        }
+
+        String prezzoMov = controvaloreNetto != null ? controvaloreNetto
+                : (!valoreEuro.isBlank() ? valoreEuro : prezzo);
+
+        // Nota da riportare nel campo [21] del movimento
+        String nota = cfg.colonnaNote >= 0 ? safe(riga, cfg.colonnaNote) : null;
 
         // Fee: sempre trattata come valore assoluto positivo di lavoro
         boolean haFee = !qtaFee.isBlank()
@@ -824,7 +1002,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         // Movimento principale
         String[] rt = MovimentiCrypto.creaMovimento(
                 mOUT, mIN, exchange, wallet, dataLong,
-                prezzoMov, "CSV", 1, 1, null, null, "A",
+                prezzoMov, "CSV", 1, 1, null, nota, "A",
                 idTrans, tipoMovimento, exchange
         );
 
@@ -840,9 +1018,20 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 try {
                     int campoMov = Integer.parseInt(e.getKey());
                     int colCsv = e.getValue();
-                    if (campoMov >= 0 && campoMov < rt.length) {
-                        rt[campoMov] = safe(riga, colCsv);
+                    if (campoMov < 0 || campoMov >= rt.length) {
+                        continue;
                     }
+                    String valore = safe(riga, colCsv);
+                    // Il campo [29] è il timestamp epoch del movimento, già valorizzato da
+                    // creaMovimento. Un campiExtra che vi versa una colonna di testo (era il caso
+                    // di "Binance CSV.json" con "29": 6 -> colonna Remark: "Binance Earn", ecc.)
+                    // ne distrugge il timestamp. Qui si rifiuta sempre una scrittura non numerica
+                    // su [29] e si mantiene il valore calcolato.
+                    if (campoMov == 29 && !Funzioni.isNumeric(valore, false)) {
+                        LoggerGC.ScriviErrore("campiExtra: ignorata scrittura non numerica sul campo 29 (timestamp): \"" + valore + "\"");
+                        continue;
+                    }
+                    rt[campoMov] = valore;
                 } catch (Exception ex) {
                     LoggerGC.ScriviErrore(ex);
                 }
@@ -884,6 +1073,26 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             }
         }
 
+        // Movimento COMMISSIONI in valuta di controvalore (Coinbase Buy: commissione in EUR, gia'
+        // esclusa dal costo di carico da controvaloreAlNetto). Non emesso se la commissione non e' un
+        // importo positivo.
+        if (causaleConCommissione && commControv.signum() > 0 && !valutaControv.isBlank()) {
+            Moneta mComm = new Moneta();
+            mComm.InserisciValori(valutaControv, "-" + commControv.stripTrailingZeros().toPlainString(), "", "");
+            mComm.AssegnaTipoAuto();
+
+            String[] rtComm = MovimentiCrypto.creaMovimento(
+                    mComm, null, exchange, wallet, dataLong,
+                    null, "CSV", 1, 1, null, nota, "A",
+                    idTrans, "COMMISSIONI", exchange
+            );
+            if (rtComm != null) {
+                if (rtComm.length > 7) rtComm[7] = causaleCSV;
+                if (rtComm.length > 39) rtComm[39] = "D";
+                risultato.add(rtComm);
+            }
+        }
+
         return risultato.isEmpty() ? null : risultato;
 
     } catch (Exception ex) {
@@ -920,11 +1129,16 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
      * <p>
      * Il metodo:</p>
      * <ul>
-     * <li>rimuove spazi superflui;</li>
+     * <li>rimuove spazi superflui (compreso lo spazio unificatore {@code U+00A0});</li>
+     * <li>rimuove il simbolo di valuta anteposto o posposto ({@code € $ £ ¥}), come
+     * negli export Coinbase ({@code €0.05019}, {@code -€1.48341}) e Nexo ({@code $1059.55}):
+     * il segno meno resta dov'è, quindi {@code -€1.48} diventa {@code -1.48};</li>
      * <li>converte la virgola decimale in punto;</li>
      * <li>trasforma la notazione scientifica in formato decimale espanso
      * tramite {@link BigDecimal#toPlainString()}.</li>
      * </ul>
+     * <p>Non gestisce il separatore delle migliaia: gli export trattati usano il punto
+     * come separatore decimale e nessun raggruppamento.</p>
      *
      * <p>
      * L'ultimo punto è importante per evitare problemi nei casi in cui il CSV
@@ -942,7 +1156,9 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         if (s.isBlank()) {
             return "";
         }
-        s = s.replace(" ", "").replace(",", ".");
+        s = s.replace(" ", "").replace(" ", "")
+             .replace("€", "").replace("$", "").replace("£", "").replace("¥", "")
+             .replace(",", ".");
 
         // Converti notazione scientifica (es. 9.4E-7, 1.2e+3) in decimale piano
         try {
@@ -1047,6 +1263,12 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
          * nella prima combo. Se vuoto si usa il nome del file di configurazione.
          */
         public String estrazione = "";
+        /**
+         * Testo libero che descrive le caratteristiche di questo import (da dove si scarica il file,
+         * cosa copre, limiti noti). Non incide sull'importazione: viene mostrato come tooltip sulla
+         * voce corrispondente nella finestra {@code Importazioni_Gestione}. Vuoto = nessun tooltip.
+         */
+        public String descrizione = "";
         public String nomeWallet = "Principale";
         public String separatore = ",";
         public String encoding = "UTF-8";
@@ -1077,10 +1299,78 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         //ImportConfig/ non cambiano comportamento.
         public int colonnaIDGruppo = -1;
         public int colonnaWallet = -1;
+        //Colonna del CSV da riportare nel campo Note del movimento ([21]).
+        public int colonnaNote = -1;
+
+        //Raggruppamento specifico per causale CSV: sovrascrive colonnaRaggruppamento() per le sole
+        //causali elencate. Serve quando due gambe dello stesso movimento condividono una colonna
+        //(es. Coinbase 'Convert': stessa stringa Notes) ma NON il timestamp esatto, per cui il
+        //raggruppo di default le spezzerebbe. Le altre causali non cambiano comportamento.
+        public Map<String, Integer> raggruppamentoPerCausale = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+        //--- Controvalore "al netto della sola commissione" (Coinbase Buy/Convert) ---------------------
+        //Il costo di carico per queste causali NON e' una colonna diretta ma [colControvaloreTotale] -
+        //[colControvaloreCommissione]: il Total del CSV comprende commissione E spread; per le cripto la
+        //commissione non e' deducibile (art. 68 c.9-bis TUIR) ma lo spread si', quindi lo spread resta.
+        //La commissione conta solo se importo positivo (in alcune righe dust e' un rapporto con segno).
+        public int colControvaloreTotale = -1;
+        public int colControvaloreCommissione = -1;
+        public int colControvaloreValuta = -1;   // valuta della gamba FIAT sintetica e del movimento COMMISSIONI
+        public Set<String> causaliControvaloreNetto = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        //Sottoinsieme di causaliControvaloreNetto: la riga porta la sola gamba crypto in entrata, quindi
+        //oltre a correggere il controvalore si sintetizza la gamba FIAT in uscita (l'acquisto diventa un
+        //vero scambio FIAT->crypto) e la commissione esce come movimento COMMISSIONI a se'.
+        public Set<String> causaliControvaloreConCommissione = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+
+        //--- Classificazione in base al testo libero della colonna note ------------------------------
+        //Alcuni export mettono la natura del movimento solo nelle note: Coinbase scrive un premio
+        //"Coinbase Earn" come 'Receive' con nota "Received X TOK from Coinbase Earn", indistinguibile
+        //da un vero trasferimento se non dal testo. Ogni regola: se la causale CSV combacia (o è
+        //assente) e la colonna note contiene la sottostringa, il tipo interno diventa quello indicato.
+        public List<RegolaCausaleNota> causalePerNota = new ArrayList<>();
+
+        /** Regola "se la nota contiene X (e la causale CSV è Y) allora il tipo è Z". */
+        public static final class RegolaCausaleNota {
+            public final String causale;      // null = qualsiasi causale
+            public final String notaContiene; // già in minuscolo, confronto case-insensitive
+            public final String tipo;
+            public RegolaCausaleNota(String causale, String notaContiene, String tipo) {
+                this.causale = (causale == null || causale.isBlank()) ? null : causale.trim();
+                this.notaContiene = notaContiene == null ? "" : notaContiene.toLowerCase();
+                this.tipo = tipo;
+            }
+        }
+
+        /**
+         * Tipo interno del movimento per la riga: se una regola di {@code causalePerNota} corrisponde
+         * (causale CSV giusta e colonna note contenente la sottostringa) restituisce il tipo della
+         * regola, altrimenti la normale {@link #convertiCausale(String)} della causale CSV.
+         */
+        public String tipoMovimentoPerRiga(String[] riga) {
+            String causaleCSV = getCausaleCSV(riga);
+            if (!causalePerNota.isEmpty() && colonnaNote >= 0) {
+                String nota = safe(riga, colonnaNote).toLowerCase();
+                if (!nota.isEmpty()) {
+                    for (RegolaCausaleNota r : causalePerNota) {
+                        if (!r.notaContiene.isEmpty() && nota.contains(r.notaContiene)
+                                && (r.causale == null || r.causale.equalsIgnoreCase(causaleCSV.trim()))) {
+                            return r.tipo;
+                        }
+                    }
+                }
+            }
+            return convertiCausale(causaleCSV);
+        }
 
         /** @return la colonna da usare per decidere se due righe appartengono allo stesso movimento */
         public int colonnaRaggruppamento() {
             return colonnaIDGruppo >= 0 ? colonnaIDGruppo : colonnaIDTransazione;
+        }
+
+        /** @return la colonna di raggruppamento per la causale CSV data, o quella di default se non ha override */
+        public int colonnaRaggruppamento(String causaleCSV) {
+            Integer c = causaleCSV == null ? null : raggruppamentoPerCausale.get(causaleCSV.trim());
+            return c != null ? c : colonnaRaggruppamento();
         }
         public int colonnaMonetaUscita  = -1;
         public int colonnaQuantitaUscita = -1;
@@ -1090,6 +1380,20 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         // false = genera solo il rigo commissione, non tocca la quantità principale
         public boolean ricostruisciLordoSeFeeSuMonetaUscita  = false;  // default: non ricostruisce il lordo su mOUT
         public boolean ricostruisciLordoSeFeeSuMonetaEntrata = false;  // default: non ricostruisce il lordo su mIN
+
+        // Export in cui OGNI riga ha due colonne moneta (moneta/quantita + monetaUscita/quantitaUscita)
+        // ma sono le due gambe di uno scambio SOLO quando le monete differiscono; quando coincidono la
+        // riga e' un movimento a gamba singola e il verso sta nel segno della colonna di uscita.
+        // Tipico dell'export Nexo (Input Currency/Amount + Output Currency/Amount): 'Exchange' ha monete
+        // diverse, 'Interest'/'Top up'/'Withdrawal'/term deposit ripetono la stessa moneta.
+        public boolean gambaDoppiaConSegnoSuUscita = false;
+
+        // Causali (valore CSV) le cui righe vengono sommate per (giorno, moneta) in un unico movimento
+        // PRIMA del raggruppamento. Serve per gli export che accreditano micro-interessi molte volte al
+        // giorno (Bitget: 28k righe 'Interest'): senza, l'archivio si gonfia di decine di migliaia di
+        // movimenti EARN minuscoli. La riga sintetica eredita data (primo accredito del giorno) e le
+        // altre colonne dalla prima riga del gruppo, con la sola quantita' sostituita dalla somma.
+        public Set<String> causaliConsolidaPerGiorno = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
         public boolean consolidaRigheStessaData = false;
         public long tolleranzaSecondiConsolidamento = 2;
@@ -1165,6 +1469,9 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             if (root.has("estrazione")) {
                 cfg.estrazione = root.getString("estrazione");
             }
+            if (root.has("descrizione")) {
+                cfg.descrizione = root.getString("descrizione");
+            }
             if (root.has("nomeWallet")) {
                 cfg.nomeWallet = root.getString("nomeWallet");
             }
@@ -1210,6 +1517,12 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             }
             if (root.has("ricostruisciLordoSeFeeSuMonetaEntrata"))
                 cfg.ricostruisciLordoSeFeeSuMonetaEntrata = root.getBoolean("ricostruisciLordoSeFeeSuMonetaEntrata");
+            if (root.has("gambaDoppiaConSegnoSuUscita"))
+                cfg.gambaDoppiaConSegnoSuUscita = root.getBoolean("gambaDoppiaConSegnoSuUscita");
+            if (root.has("causaliConsolidaPerGiorno")) {
+                JSONArray arr = root.getJSONArray("causaliConsolidaPerGiorno");
+                for (int i = 0; i < arr.length(); i++) cfg.causaliConsolidaPerGiorno.add(arr.getString(i));
+            }
 
             if (root.has("colonne")) {
                 JSONObject col = root.getJSONObject("colonne");
@@ -1253,6 +1566,38 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 }
                 if (col.has("causale2")) cfg.colonnaCausale2 = col.getInt("causale2");
                 if (col.has("causale3")) cfg.colonnaCausale3 = col.getInt("causale3");
+                if (col.has("note")) cfg.colonnaNote = col.getInt("note");
+            }
+
+            if (root.has("raggruppamentoPerCausale")) {
+                JSONObject rp = root.getJSONObject("raggruppamentoPerCausale");
+                for (String k : rp.keySet()) cfg.raggruppamentoPerCausale.put(k, rp.getInt(k));
+            }
+
+            if (root.has("causalePerNota")) {
+                JSONArray arr = root.getJSONArray("causalePerNota");
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject o = arr.getJSONObject(i);
+                    cfg.causalePerNota.add(new ConfigurazioneImport.RegolaCausaleNota(
+                            o.has("causale") ? o.getString("causale") : null,
+                            o.optString("notaContiene", ""),
+                            o.getString("tipo")));
+                }
+            }
+
+            if (root.has("colonneControvalore")) {
+                JSONObject cv = root.getJSONObject("colonneControvalore");
+                if (cv.has("totale"))      cfg.colControvaloreTotale      = cv.getInt("totale");
+                if (cv.has("commissione")) cfg.colControvaloreCommissione = cv.getInt("commissione");
+                if (cv.has("valuta"))      cfg.colControvaloreValuta      = cv.getInt("valuta");
+                if (cv.has("causali")) {
+                    JSONArray a = cv.getJSONArray("causali");
+                    for (int i = 0; i < a.length(); i++) cfg.causaliControvaloreNetto.add(a.getString(i));
+                }
+                if (cv.has("causaliConMovimentoCommissione")) {
+                    JSONArray a = cv.getJSONArray("causaliConMovimentoCommissione");
+                    for (int i = 0; i < a.length(); i++) cfg.causaliControvaloreConCommissione.add(a.getString(i));
+                }
             }
 
             if (root.has("mappaCausali")) {

@@ -135,22 +135,22 @@ public class Tabelle {
                     setBackground(table.getSelectionBackground());
                 }
             
-                else if (col==3 && 
+                else if (table.convertColumnIndexToModel(col)==5 &&
                         (value.toString().toLowerCase().equals("deposito crypto")||value.toString().toLowerCase().equals("deposito nft"))) {
                     setBackground(bg);
                     setForeground(verdeScuro);
                 } 
-                else if (col==3 && 
+                else if (table.convertColumnIndexToModel(col)==5 &&
                         (value.toString().toLowerCase().equals("prelievo crypto")||value.toString().toLowerCase().equals("prelievo nft"))) {
                     setBackground(bg);
                     setForeground(rosso);
                 } 
-                else if (value!=null && col==11 && value.toString().trim().contains("-")) {
+                else if (value!=null && table.convertColumnIndexToModel(col)==19 && value.toString().trim().contains("-")) {
                   //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
                     c.setBackground(bg);
                     setForeground(rosso);
                 } 
-                else if (value!=null && col==11 && !value.toString().trim().equalsIgnoreCase("0.00")) {
+                else if (value!=null && table.convertColumnIndexToModel(col)==19 && !value.toString().trim().equalsIgnoreCase("0.00")) {
                   //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
                     c.setBackground(bg);
                     setForeground(verdeScuro);
@@ -167,7 +167,7 @@ public class Tabelle {
             
 
                 // Inserisci icona in colonna 2 se contiene "negativa"
-                if (table.getName()!=null&&col==3 &&table.getName().equals("TabellaMovimentiCrypto")&&
+                if (table.getName()!=null&&table.convertColumnIndexToModel(col)==5 &&table.getName().equals("TabellaMovimentiCrypto")&&
                         (value.toString().toLowerCase().equals("deposito crypto")
                         ||value.toString().toLowerCase().equals("prelievo crypto")
                         ||value.toString().toLowerCase().equals("deposito nft")
@@ -188,9 +188,9 @@ public class Tabelle {
                         return label;
                     }
                 }
-                else if ((col == 11 && !table.getModel().getValueAt(modelRow, 38).toString().isBlank())//Manca parte del LiFo
+                else if ((table.convertColumnIndexToModel(col) == 19 && !table.getModel().getValueAt(modelRow, 38).toString().isBlank())//Manca parte del LiFo
                         ||                     
-                    (table.getModel().getColumnCount()>32 && col==9&& table.getModel().getValueAt(modelRow, 32).toString().toUpperCase().contains("NO"))//Transazione senza prezzo
+                    (table.getModel().getColumnCount()>32 && table.convertColumnIndexToModel(col)==15&& table.getModel().getValueAt(modelRow, 32).toString().toUpperCase().contains("NO"))//Transazione senza prezzo
                         ) 
                 {
                     boolean SCAMUscita=Funzioni.isSCAM(table.getModel().getValueAt(modelRow, 8).toString());

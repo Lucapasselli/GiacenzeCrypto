@@ -410,6 +410,16 @@ public class LoghiImport {
      * font si può cambiare all'avvio con {@code --fontSize}. Le voci senza logo ricevono un segnaposto
      * trasparente della stessa dimensione, che tiene i nomi incolonnati.
      */
+    /**
+     * Una voce di combo che porta con sé un testo da mostrare come tooltip: {@link RenderComboConLogo}
+     * lo applica alla riga. Serve a {@code Importazioni_Gestione.VoceImport} per esporre la
+     * {@code descrizione} del file di import senza che il renderer condiviso ne conosca la classe.
+     */
+    public interface VoceConTooltip {
+        /** @return il testo del tooltip, {@code null} o vuoto per nessun tooltip */
+        String tooltip();
+    }
+
     public static class RenderComboConLogo extends javax.swing.DefaultListCellRenderer {
 
         private static final long serialVersionUID = 1L;
@@ -419,6 +429,13 @@ public class LoghiImport {
                 int indice, boolean selezionato, boolean conFuoco) {
 
             super.getListCellRendererComponent(lista, valore, indice, selezionato, conFuoco);
+
+            if (valore instanceof VoceConTooltip v) {
+                String t = v.tooltip();
+                setToolTipText(t != null && !t.isBlank() ? t : null);
+            } else {
+                setToolTipText(null);
+            }
 
             String nomeLogo = null;
             if (valore instanceof String nome && !isVoceSpeciale(nome)) {

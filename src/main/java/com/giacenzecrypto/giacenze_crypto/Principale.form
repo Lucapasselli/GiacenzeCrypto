@@ -353,6 +353,8 @@
                                       <Component id="TransazioniCrypto_Bottone_Filtri" min="-2" pref="150" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="TransazioniCrypto_Bottone_AzzeraFiltri" min="-2" pref="150" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="TransazioniCrypto_Bottone_Colonne" min="-2" pref="150" max="-2" attributes="0"/>
                                       <EmptySpace max="32767" attributes="0"/>
                                       <Component id="TransazioniCrypto_RicalcolaPlusvalenze_Label" min="-2" pref="293" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
@@ -417,12 +419,13 @@
                               <Component id="TransazioniCrypto_Label_Filtro" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="TransazioniCrypto_Bottone_Filtri" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="TransazioniCrypto_Bottone_AzzeraFiltri" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="TransazioniCrypto_Bottone_Colonne" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="TransazioniCrypto_RicalcolaPlusvalenze_Label" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="TransazioniCrypto_RicalcolaPlusvalenze_Bottone" alignment="3" min="-2" pref="35" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                      <Component id="TransazioniCrypto_ScrollPane" pref="438" max="32767" attributes="0"/>
+                      <Component id="TransazioniCrypto_ScrollPane" pref="530" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="TransazioniCrypto_Label_Plusvalenza" min="-2" pref="31" max="-2" attributes="0"/>
@@ -491,21 +494,21 @@
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Qta&lt;br&gt;Acq./Ric.&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore &lt;br&gt;transazione&lt;br&gt;come da CSV&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore&lt;br&gt;transazione&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Double"/>
-                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Costo di Carico C.A. Uscente&lt;/html&gt;" type="java.lang.Object"/>
-                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Nuovo&lt;br&gt;Costo di Carico&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Costo di Carico&lt;br&gt;Moneta Uscente&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Costo di Carico&lt;br&gt;Moneta Entrante&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;&lt;html&gt;&lt;center&gt;Tipo Trasferimento&lt;/html&gt;&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Plusvalenza&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Double"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Riferimento&lt;br&gt;Trasferimento&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="Note" type="java.lang.Object"/>
                         <Column editable="false" title="Auto" type="java.lang.Object"/>
-                        <Column editable="false" title="DeFi - Blocco Transazione" type="java.lang.Object"/>
-                        <Column editable="false" title="DeFi - Hash Transazione" type="java.lang.Object"/>
+                        <Column editable="false" title="Blocco Transazione" type="java.lang.Object"/>
+                        <Column editable="false" title="Hash Transazione" type="java.lang.Object"/>
                         <Column editable="false" title="DeFi - Nome Token Uscito" type="java.lang.Object"/>
                         <Column editable="false" title="DeFi - Address Token Uscita" type="java.lang.Object"/>
                         <Column editable="false" title="DeFi - Nome Token Entrato" type="java.lang.Object"/>
                         <Column editable="false" title="DeFi - Address Token Entrato" type="java.lang.Object"/>
                         <Column editable="false" title="Timestamp" type="java.lang.Object"/>
-                        <Column editable="false" title="DeFi - Address Controparte" type="java.lang.Object"/>
+                        <Column editable="false" title="Address Controparte" type="java.lang.Object"/>
                         <Column editable="false" title="Data Fine Trasferimento" type="java.lang.Object"/>
                         <Column editable="false" title="Movimento Valorizzato" type="java.lang.Object"/>
                         <Column editable="false" title="Movimento con Plusvalenza" type="java.lang.Object"/>
@@ -1087,6 +1090,18 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_AzzeraFiltriActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_Colonne">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/Images/24_Tabella.png"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Colonne..."/>
+                <Property name="toolTipText" type="java.lang.String" value="Scegli quali colonne mostrare nella tabella dei movimenti"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_ColonneActionPerformed"/>
               </Events>
             </Component>
             <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_AggiorbaVersione">

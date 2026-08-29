@@ -141,7 +141,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
      * <p>Le due famiglie convivono nello stesso elenco ordinato alfabeticamente, senza più il prefisso
      * {@code [JSON]} che le distingueva a vista: la distinzione ora è nei campi, non nel testo.
      */
-    static final class VoceImport {
+    static final class VoceImport implements LoghiImport.VoceConTooltip {
 
         /** Exchange o fornitore dei dati: è la voce della prima combo e raggruppa le estrazioni */
         final String fornitore;
@@ -151,12 +151,25 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         final String idNativo;
         /** File di configurazione JSON, {@code null} per gli import nativi */
         final java.io.File fileJson;
+        /** Testo del campo {@code descrizione} del JSON, mostrato come tooltip sulla voce; può essere vuoto */
+        final String descrizione;
 
         VoceImport(String fornitore, String estrazione, String idNativo, java.io.File fileJson) {
+            this(fornitore, estrazione, idNativo, fileJson, null);
+        }
+
+        VoceImport(String fornitore, String estrazione, String idNativo, java.io.File fileJson, String descrizione) {
             this.fornitore = fornitore;
             this.estrazione = estrazione;
             this.idNativo = idNativo;
             this.fileJson = fileJson;
+            this.descrizione = descrizione == null ? "" : descrizione.trim();
+        }
+
+        /** @return la descrizione da mostrare come tooltip, {@code null} se assente */
+        @Override
+        public String tooltip() {
+            return descrizione.isBlank() ? null : descrizione;
         }
 
         /** @return {@code true} se la voce è una configurazione JSON */
@@ -194,6 +207,26 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         ComboBox_Exchanges.setModel(new DefaultComboBoxModel<>(new String[]{" - nessuno -"}));
         ComboBox_Exchanges.setRenderer(new LoghiImport.RenderComboConLogo());
         popolaComboTipoFile();
+    }
+
+    /**
+     * Registra la {@code JList} interna del popup di una combo con il {@link javax.swing.ToolTipManager},
+     * così {@code JList.getToolTipText(MouseEvent)} interroga il renderer riga per riga e il tooltip
+     * impostato da {@link LoghiImport.RenderComboConLogo} compare passando il mouse sulle voci a tendina.
+     * <p>Chiamata dopo ogni {@code setModel}: {@code ToolTipManager.registerComponent} è idempotente
+     * (rimuove i propri listener prima di riaggiungerli) e a modello sostituito la {@code JList} del
+     * popup potrebbe non essere la stessa. Chiamarla qui, non nel costruttore, evita anche di forzare
+     * la creazione del popup prima che la finestra sia realizzata.
+     */
+    private static void registraTooltipTendina(javax.swing.JComboBox<?> combo) {
+        try {
+            Object popup = combo.getUI().getAccessibleChild(combo, 0);
+            if (popup instanceof javax.swing.plaf.basic.BasicComboPopup bcp) {
+                javax.swing.ToolTipManager.sharedInstance().registerComponent(bcp.getList());
+            }
+        } catch (Exception ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
     }
 
     
@@ -285,6 +318,7 @@ private void raccogliEstrazioni() {
             //una sola estrazione, che è come si comportano le configurazioni scritte dall'utente
             String fornitore = daNomeFile != null ? daNomeFile : nomeBase;
             String estrazione = nomeBase;
+            String descrizione = null;
 
             try {
                 ImportazioneGenerica.ConfigurazioneImport cfg =
@@ -306,11 +340,13 @@ private void raccogliEstrazioni() {
                     estrazione = estrazione + " (In fase di test, utilizzo consapevole)";
                 }
 
+                descrizione = cfg.descrizione;
+
             } catch (Exception ex) {
                 LoggerGC.ScriviErrore(ex);
             }
 
-            aggiungiEstrazione(new VoceImport(fornitore, estrazione, null, f));
+            aggiungiEstrazione(new VoceImport(fornitore, estrazione, null, f, descrizione));
         }
     } catch (Exception ex) {
         LoggerGC.ScriviErrore(ex);
@@ -349,6 +385,7 @@ private void popolaComboTipoFile() {
         ComboBox_TipoFile.addItemListener(l);
     }
     ComboBox_TipoFile.setRenderer(new LoghiImport.RenderComboConLogo());
+    registraTooltipTendina(ComboBox_TipoFile);
 
     popolaComboTipoEstrazione();
 }
@@ -372,6 +409,9 @@ private void popolaComboTipoEstrazione() {
     for (java.awt.event.ItemListener l : listeners) {
         ComboBox_TipoEstrazione.addItemListener(l);
     }
+    //Fa comparire il tooltip della descrizione anche sulle righe della tendina (non solo sulla combo
+    //chiusa): la JList del popup può cambiare a modello sostituito, registerComponent è idempotente
+    registraTooltipTendina(ComboBox_TipoEstrazione);
 
     boolean daScegliere = elenco.size() > 1;
     ComboBox_TipoEstrazione.setEnabled(daScegliere);
@@ -593,6 +633,13 @@ private VoceImport voceSelezionata() {
      */
     private void aggiornaStatoPerVoceSelezionata() {
         VoceImport voceSelezionata = voceSelezionata();
+
+        //Descrizione dell'import come tooltip: sulla combo delle estrazioni (chiusa e a tendina, via
+        //renderer) e anche su quella dei fornitori, che resta sempre abilitata quando l'estrazione è
+        //unica e la sua combo è disattivata.
+        String tip = voceSelezionata != null ? voceSelezionata.tooltip() : null;
+        ComboBox_TipoEstrazione.setToolTipText(tip);
+        ComboBox_TipoFile.setToolTipText(tip);
 
         if (voceSelezionata == null) {
             disabilitaCampiImport();

@@ -166,10 +166,12 @@ public class Giacenze_Crypto {
                     Tabelle.rosso = new Color(255, 133, 133);
                     Tabelle.Rosso = "FFA07A";
                     Tabelle.Verde = "9ACD32";
+                    ImpostaColoriSelezioneTabelle(Tabelle.selezioneScura, new Color(232, 232, 232));
                 } else {
                     UIManager.setLookAndFeel(new FlatLightLaf());
-                    Tabelle.verdeScuro = new Color(23, 114, 69);
-                    Tabelle.rosso = new Color(255, 100, 100);
+                    Tabelle.verdeScuro = new Color(27, 94, 32);
+                    Tabelle.rosso = new Color(198, 40, 40);
+                    ImpostaColoriSelezioneTabelle(Tabelle.selezione, Color.BLACK);
                 }
                 //Le icone dell'applicazione sono nere: sullo sfondo scuro vanno ridisegnate in chiaro
                 Icone.InizializzaTema(Principale.tema.equalsIgnoreCase("Scuro"));
@@ -242,6 +244,20 @@ public class Giacenze_Crypto {
 
         UIManager.put("defaultFont", new FontUIResource(uiFont));
         System.out.println("Font globale impostato: " + uiFont.getFontName() + " size=" + size);
+    }
+
+    /**
+     * Imposta i colori di selezione delle tabelle a livello di Look&amp;Feel, così che valgano anche
+     * per le tabelle senza renderer personalizzato. I renderer di {@link Tabelle} usano comunque
+     * {@link Tabelle#SfondoSelezione(int)} per lo sfondo (che alterna riga pari/dispari); qui conta
+     * soprattutto il <em>foreground</em>, che il {@code super} dei renderer legge da qui.
+     * Le varianti {@code selectionInactive*} evitano che una tabella non a fuoco sbiadisca la selezione.
+     */
+    private static void ImpostaColoriSelezioneTabelle(Color sfondo, Color testo) {
+        UIManager.put("Table.selectionBackground", sfondo);
+        UIManager.put("Table.selectionForeground", testo);
+        UIManager.put("Table.selectionInactiveBackground", sfondo);
+        UIManager.put("Table.selectionInactiveForeground", testo);
     }
 
     private static String getHomeUtente() {

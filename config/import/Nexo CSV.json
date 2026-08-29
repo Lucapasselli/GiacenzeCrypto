@@ -1,0 +1,70 @@
+{
+  "_commento": "Nexo - export CSV delle transazioni. Colonne: 0=Transaction 1=Type 2=Input Currency 3=Input Amount 4=Output Currency 5=Output Amount 6=USD Equivalent 7=Details 8=Date / Time (UTC). Ogni riga porta SEMPRE due monete (Input e Output): sono le due gambe di uno scambio solo per 'Exchange' (e la conversione EUR<->EURX); per tutto il resto Input e Output sono la stessa moneta e la riga e' un movimento a gamba singola.",
+  "_commentoGambaDoppia": "'gambaDoppiaConSegnoSuUscita': quando la moneta di Input coincide con quella di Output la riga viene resa a gamba singola prendendo il verso dal segno di 'Input Amount' (col 3), l'unica colonna che in questo export lo porta ('Output Amount' e' sempre positivo). Cosi' un 'Interest' NEXO->NEXO resta un accredito e non diventa un finto scambio a saldo zero; un 'Withdrawal' LTC->LTC resta un'uscita. Per 'Exchange' (monete diverse) restano invece due gambe: entrata = Output, uscita = Input. L'importo si prende da 'Output Amount' (col 5), tranne quando e' 0: alcuni 'Top up Crypto' promozionali di Nexo mettono l'importo solo su 'Input Amount' e lasciano Output a 0.",
+  "_commentoValuta": "Il controvalore nel file e' in USD ('USD Equivalent'), non in EUR: la colonna NON e' mappata, il prezzo storico in EUR lo recupera l'app (come per Binance). 'rinominaMonete' EURX->EUR: EURX e' il token euro di Nexo, cosi' 'Deposit To Exchange' (EUR->EURX) collassa a un semplice deposito di EUR. EURX infatti non è una crypto ma una rappresentazione dell'euro di Nexo",
+  "_commentoData": "'Date / Time (UTC)' -> pattern 'yyyy-MM-dd HH:mm:ss', fuso UTC come dichiara l'intestazione.",
+  "_commentoNote": "'note': 7 -> la colonna Details finisce nel campo note del movimento (per i 'Top up' esterni e' l'hash della transazione on-chain). 'causalePerNota': i 'Top up Crypto' il cui Details indica un premio promozionale ('Campaign Rewards', 'Welcome Bonus', 'Cash-back Promo') sono reddito, non un semplice deposito: vengono riclassificati come REWARD/CASHBACK (categoria RW) invece che come deposito cripto a costo di carico pari al valore di mercato.",
+  "versione": "1.001",
+  "centralizzato": true,
+  "nomeExchange": "Nexo",
+  "estrazione": "CSV (ATTENZION : in fase ALFA)",
+  "descrizione": "<html><div style='width:380px'>Nexo &ndash; export CSV delle transazioni. Interessi (anche a termine) come EARN, <i>Exchange</i> come scambio cripto&ndash;cripto, il cashback 0,5% come CASHBACK, top&ndash;up e prelievi come trasferimento cripto. Il controvalore &egrave; ricavato in euro dall'app (nel file &egrave; in USD). I movimenti tra Savings, Term e Pro Wallet sono interni e non vengono importati.</div></html>",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 1,
+  "rigaIntestazione": 1,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
+  "fuso": "UTC",
+  "colonne": {
+    "idTransazione": 0,
+    "data": 8,
+    "causale": 1,
+    "moneta": 4,
+    "quantita": 5,
+    "monetaUscita": 2,
+    "quantitaUscita": 3,
+    "note": 7
+  },
+  "gambaDoppiaConSegnoSuUscita": true,
+  "consolidaRigheStessaData": false,
+  "tolleranzaSecondiConsolidamento": 0,
+  "causaliDifferite": [],
+  "_commentoCausali": "Nexo Savings e Nexo Pro sono trattati come lo stesso wallet 'Principale': i 'Transfer From/To Pro Wallet' e i term deposit (Locking/Unlocking) sono giroconti interni -> IGNORA. 'Exchange Deposited On' e' la riga gemella di 'Deposit To Exchange' (stesso EUR->EURX, stesso istante) -> IGNORA per non contare due volte. 'Exchange Cashback' e' il rimborso 0,5% sullo swap -> CASHBACK. 'Fixed Term Interest' e 'Interest' -> EARN. 'Top up Crypto'/'Withdrawal' -> deposito/prelievo cripto, MA un 'Top up Crypto' con Details promozionale ('Campaign Rewards', 'Welcome Bonus', 'Cash-back Promo') e' un premio -> REWARD/CASHBACK (vedi 'causalePerNota').",
+  "mappaCausali": {
+    "Interest":                 "EARN",
+    "Fixed Term Interest":      "EARN",
+    "Referral Bonus":           "REWARD",
+    "Exchange Cashback":        "CASHBACK",
+    "Exchange":                 "SCAMBIO CRYPTO-CRYPTO",
+    "Top up Crypto":            "TRASFERIMENTO-CRYPTO",
+    "Withdrawal":               "TRASFERIMENTO-CRYPTO",
+    "Deposit To Exchange":      "DEPOSITO FIAT",
+    "Exchange Deposited On":    "IGNORA",
+    "Locking Term Deposit":     "IGNORA",
+    "Unlocking Term Deposit":   "IGNORA",
+    "Transfer From Pro Wallet": "IGNORA",
+    "Transfer To Pro Wallet":   "IGNORA"
+  },
+  "causalePerNota": [
+    { "causale": "Top up Crypto", "notaContiene": "Campaign Rewards", "tipo": "REWARD" },
+    { "causale": "Top up Crypto", "notaContiene": "Welcome Bonus",    "tipo": "REWARD" },
+    { "causale": "Top up Crypto", "notaContiene": "Cash-back Promo",   "tipo": "CASHBACK" }
+  ],
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": [
+    "EARN",
+    "REWARD",
+    "CASHBACK",
+    "TRASFERIMENTO-CRYPTO",
+    "DEPOSITO FIAT"
+  ],
+  "rinominaMonete": {
+    "EURX": "EUR"
+  },
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

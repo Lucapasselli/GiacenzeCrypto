@@ -69,6 +69,16 @@ public class Tabelle {
     static Color verde=new Color (145, 255, 143);
     static Color rosso=new Color(255, 80, 80);
     static Color rossoChiaro=new Color(255, 160, 160);
+    //Colore di selezione delle righe, in tinta col logo (#A8A834, un verde oliva). Due sfumature
+    //vicine per riga pari/dispari, così la selezione multipla non risulta piatta ma alternata come
+    //le righe normali. Nel tema scuro un oliva più cupo, con testo chiaro; nel chiaro testo nero.
+    static Color selezione        = new Color(181, 181, 74);   // #B5B54A  chiaro, riga pari (oliva del logo schiarito)
+    static Color selezioneAlt     = new Color(198, 198, 108);  // #C6C66C  chiaro, riga dispari
+    static Color selezioneScura   = new Color(92, 92, 30);     //          scuro, riga pari
+    static Color selezioneScuraAlt= new Color(116, 116, 44);   //          scuro, riga dispari
+    //Evidenziatore "filtri attivi" sulla tabella movimenti: ambra scuro, leggibile con testo bianco
+    //sia in tema chiaro sia in tema scuro (riempie lo sfondo di label/pulsante, non e' un foreground).
+    static Color ambra=new Color(198, 128, 0);
     static Color bianco=new Color(255, 255, 255);
     static Color grigioChiaro=new Color(245, 245, 245);
     //Righe pari/dispari del tema scuro. Erano 70,70,70 e grigioScuro (64,64,64): 6 livelli
@@ -119,32 +129,67 @@ public class Tabelle {
         if (table.getRowSorter()!=null){
             modelRow = table.getRowSorter().convertRowIndexToModel(row);
         }
-        Color bg; 
+        Color bg;
         Color fore;
+        //rosso/verdeScuro sono gia' impostati per tema all'avvio (Giacenze_Crypto.main): nel tema
+        //chiaro sono le varianti sature e scure (#C62828 / #1B5E20) leggibili su bianco.
         if (Principale.tema.equalsIgnoreCase("Scuro")){
             bg= (row % 2 == 0  ? grigio : grigioScuro);
             fore=Color.lightGray;
         }
-            else 
+            else
         {
             bg= (row % 2 == 0  ? grigioChiaro : bianco);
             fore=Color.BLACK;
         }
+
+        //Colorazione moneta/qta per direzione. La stessa renderer serve due tabelle con colonne diverse:
+        // - "TabellaMovimentiCrypto" (movimenti): colonne di modello 8/10 = moneta/qta uscente -> rosso,
+        //   11/13 = moneta/qta entrante -> verde. Una riga di scambio le ha entrambe.
+        // - "DepositiPrelievi": una sola gamba per riga; la direzione la da la descrizione del tipo in
+        //   colonna di modello 3 ("PRELIEVO ..." / "DEPOSITO ..."), e si colorano tipo+moneta+qta (3/4/5).
+        //   Regressione 2026-08-28: passando i gate da indice di vista a indice di modello, il verde/rosso
+        //   dei depositi/prelievi in questa tabella era sparito (indice 5 la' e' la Qta, non il tipo).
+        String nomeTab = table.getName();
+        boolean tabMovimenti = "TabellaMovimentiCrypto".equals(nomeTab);
+        boolean tabDepPrel   = "DepositiPrelievi".equals(nomeTab);
+        int mCol = table.convertColumnIndexToModel(col);
+        int dirDP = 0; // -1 uscita, +1 entrata, 0 non determinata
+        if (tabDepPrel) {
+            Object tv = table.getModel().getValueAt(modelRow, 3);
+            String tipoDP = tv == null ? "" : tv.toString().trim().toUpperCase();
+            if (tipoDP.startsWith("PRELIEVO")) dirDP = -1;
+            else if (tipoDP.startsWith("DEPOSITO")) dirDP = 1;
+        }
+
             if (isSelected) {
 
-                    setBackground(table.getSelectionBackground());
+                    setBackground(Tabelle.SfondoSelezione(row));
                 }
-            
-                else if (table.convertColumnIndexToModel(col)==5 &&
+
+                else if (tabMovimenti && (mCol == 8 || mCol == 10) && value != null && !value.toString().isBlank()) {
+                    c.setBackground(bg);
+                    setForeground(rosso);
+                }
+                else if (tabMovimenti && (mCol == 11 || mCol == 13) && value != null && !value.toString().isBlank()) {
+                    c.setBackground(bg);
+                    setForeground(verdeScuro);
+                }
+                else if (tabDepPrel && dirDP != 0 && (mCol == 3 || mCol == 4 || mCol == 5)) {
+                    c.setBackground(bg);
+                    setForeground(dirDP < 0 ? rosso : verdeScuro);
+                }
+
+                else if (!tabMovimenti && table.convertColumnIndexToModel(col)==5 &&
                         (value.toString().toLowerCase().equals("deposito crypto")||value.toString().toLowerCase().equals("deposito nft"))) {
                     setBackground(bg);
                     setForeground(verdeScuro);
-                } 
-                else if (table.convertColumnIndexToModel(col)==5 &&
+                }
+                else if (!tabMovimenti && table.convertColumnIndexToModel(col)==5 &&
                         (value.toString().toLowerCase().equals("prelievo crypto")||value.toString().toLowerCase().equals("prelievo nft"))) {
                     setBackground(bg);
                     setForeground(rosso);
-                } 
+                }
                 else if (value!=null && table.convertColumnIndexToModel(col)==19 && value.toString().trim().contains("-")) {
                   //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
                     c.setBackground(bg);
@@ -319,7 +364,7 @@ public class Tabelle {
  
             if (isSelected) {
 
-                    c.setBackground(table.getSelectionBackground());
+                    c.setBackground(Tabelle.SfondoSelezione(row));
 
                 }
                 else if (table.getModel()!=null&&table.getModel().getColumnCount()>3 && table.getModel()!=null &&table.getModel().getValueAt(table.getRowSorter().convertRowIndexToModel(row), 4).toString().contains("-")) {
@@ -400,17 +445,17 @@ public class Tabelle {
             if(col==12){if (table.getModel().getValueAt(modelRow, 12)!=null)GiacTotale=table.getModel().getValueAt(modelRow, 12).toString();}*/
             if (isSelected&&col!=7) {
 
-                    c.setBackground(table.getSelectionBackground());
+                    c.setBackground(Tabelle.SfondoSelezione(row));
                     //c.revalidate();
                 }
             else if (isSelected&&col==7&& value.toString().toLowerCase().contains("-")) {
 
-                    c.setBackground(table.getSelectionBackground());
+                    c.setBackground(Tabelle.SfondoSelezione(row));
                     c.setForeground(rosso);
                 }
             else if (isSelected&&col==7) {
 
-                    c.setBackground(table.getSelectionBackground());
+                    c.setBackground(Tabelle.SfondoSelezione(row));
                 }
             else if (col==7 && !value.toString().toLowerCase().contains("-")) {
                 JLabel label = new JLabel();
@@ -577,7 +622,7 @@ public class Tabelle {
  
             if (isSelected) {
 
-                    c.setBackground(table.getSelectionBackground());
+                    c.setBackground(Tabelle.SfondoSelezione(row));
                     c.revalidate();
                 }
                  
@@ -616,6 +661,20 @@ public static Color SfondoRigaAlternata(int row) {
     return (row % 2 == 0 ? grigioChiaro : bianco);
 }
 
+/**
+ * Colore di sfondo di una riga <em>selezionata</em>: verde oliva in tinta col logo, alternato
+ * riga pari/dispari come {@link #SfondoRigaAlternata(int)}, così una selezione multipla non
+ * risulta una banda piatta. Usato da tutti i renderer di questa classe al posto di
+ * {@code Tabelle.SfondoSelezione(row)}; il foreground di selezione (nero nel tema chiaro,
+ * chiaro nello scuro) è impostato via {@code UIManager} all'avvio.
+ * @param row indice di riga <em>di vista</em>
+ */
+public static Color SfondoSelezione(int row) {
+    boolean scuro = Principale.tema != null && Principale.tema.equalsIgnoreCase("Scuro");
+    if (scuro) return (row % 2 == 0 ? selezioneScura : selezioneScuraAlt);
+    return (row % 2 == 0 ? selezione : selezioneAlt);
+}
+
 public static JTable ColoraTabellaSemplice(final JTable table) {
     // Definizione dei colori
   //  final Color grigioChiaro = new Color(240, 240, 240); // Colore grigio chiaro
@@ -648,7 +707,7 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
 
             // Imposta il colore di sfondo alternato
           /*  if (isSelected) {
-                c.setBackground(table.getSelectionBackground());
+                c.setBackground(Tabelle.SfondoSelezione(row));
                // c.setForeground(table.getSelectionForeground());
             } else {
                 c.setBackground(bg);
@@ -656,23 +715,23 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
            // if (table.getCellSelectionEnabled()) {
               /*  if (table.isRowSelected(row)) {
                     // tutta la riga selezionata
-                    c.setBackground(table.getSelectionBackground());
+                    c.setBackground(Tabelle.SfondoSelezione(row));
                 }else {
                     c.setBackground(bg);
                 }*/
                 if (table.isCellSelected(row, col)) {
                     // la cella selezionata deve prevalere
-                    c.setBackground(table.getSelectionBackground());
+                    c.setBackground(Tabelle.SfondoSelezione(row));
                 }else if (table.isRowSelected(row)) {
                     // tutta la riga selezionata
-                    c.setBackground(table.getSelectionBackground().brighter());
+                    c.setBackground(Tabelle.SfondoSelezione(row).brighter());
                 }else {
                     c.setBackground(bg);
                 }
          /*   } else {
                 // selezione classica per righe
                 if (isSelected) {
-                    c.setBackground(table.getSelectionBackground());
+                    c.setBackground(Tabelle.SfondoSelezione(row));
                 } else {
                     c.setBackground(bg);
                 }
@@ -700,8 +759,8 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
             Color bg;
             if (Principale.tema.equalsIgnoreCase("Scuro")) bg = (row % 2 == 0 ? grigio : grigioScuro);
             else bg = (row % 2 == 0 ? grigioChiaro : bianco);
-            if (table.isCellSelected(row, col)) spunta.setBackground(table.getSelectionBackground());
-            else if (table.isRowSelected(row)) spunta.setBackground(table.getSelectionBackground().brighter());
+            if (table.isCellSelected(row, col)) spunta.setBackground(Tabelle.SfondoSelezione(row));
+            else if (table.isRowSelected(row)) spunta.setBackground(Tabelle.SfondoSelezione(row).brighter());
             else spunta.setBackground(bg);
             return spunta;
         }
@@ -826,7 +885,7 @@ public static void GUI_ModificaPrezzo_ColoraTabelle(
             }
 
             if (isSelected) {
-                c.setBackground(table.getSelectionBackground());
+                c.setBackground(Tabelle.SfondoSelezione(row));
                 c.setForeground(table.getSelectionForeground());
             } else {
                 c.setBackground(bg);
@@ -988,7 +1047,7 @@ public static JTable ColoraTabellaLiFoTransazione(final JTable table) {
         }
             // Imposta il colore di sfondo alternato
             if (isSelected) {
-                c.setBackground(table.getSelectionBackground());
+                c.setBackground(Tabelle.SfondoSelezione(row));
                // c.setForeground(table.getSelectionForeground());
             }
           /*  else if (table.getName().equalsIgnoreCase("Uscita") && table.getModel().getValueAt(modelRow, 2).toString().contains("negativa")) {
@@ -1098,7 +1157,7 @@ public static JTable ColoraTabellaSempliceVerdeRosso(final JTable table,int[] Co
 
             // Imposta il colore di sfondo alternato
             if (isSelected) {
-                c.setBackground(table.getSelectionBackground());
+                c.setBackground(Tabelle.SfondoSelezione(row));
             } else if (contiene(ColRosso, col) &&
                 value != null) {
 
@@ -1177,7 +1236,7 @@ public static JTable ColoraTabellaRTDettaglio(final JTable table) {
 
             // Imposta il colore di sfondo alternato
             if (isSelected) {
-                c.setBackground(table.getSelectionBackground());
+                c.setBackground(Tabelle.SfondoSelezione(row));
                // c.setForeground(table.getSelectionForeground());
             } 
             else if (col==7 && value.toString().toLowerCase().contains("-")) {
@@ -1238,7 +1297,7 @@ public static JTable ColoraTabellaRTPrincipale(final JTable table) {
 
             // Imposta il colore di sfondo alternato
             if (isSelected) {
-                c.setBackground(table.getSelectionBackground());
+                c.setBackground(Tabelle.SfondoSelezione(row));
             } 
             else if (col==3 && value.toString().toLowerCase().contains("-")) {
                     setForeground(rosso);
@@ -1301,7 +1360,7 @@ public static JTable ColoraTabellaPlusvalenzeMensili(final JTable table, int pri
             setFont(rigaTotale ? table.getFont().deriveFont(java.awt.Font.BOLD) : table.getFont());
 
             if (isSelected) {
-                c.setBackground(table.getSelectionBackground());
+                c.setBackground(Tabelle.SfondoSelezione(row));
                 setForeground(table.getSelectionForeground());
                 return c;
             }
@@ -1407,7 +1466,7 @@ public static int[] Funzioni_getRigheSelezionate(JTable table) {
  
             if (isSelected) {
 
-                    c.setBackground(table.getSelectionBackground());
+                    c.setBackground(Tabelle.SfondoSelezione(row));
                     c.revalidate();
                 }else if (table.getModel().getColumnCount()>1 && table.getModel().getValueAt(row, 2).toString().toLowerCase().contains("error")) {
                     setForeground(rosso);

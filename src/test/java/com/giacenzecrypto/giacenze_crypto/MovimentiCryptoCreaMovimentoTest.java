@@ -35,6 +35,19 @@ class MovimentiCryptoCreaMovimentoTest {
     }
 
     /**
+     * @param Simbolo simbolo della moneta FIAT
+     * @param Qta quantità, con il segno che ne determina la direzione
+     * @return la moneta di tipo FIAT corrispondente
+     */
+    private static Moneta fiat(String Simbolo, String Qta) {
+        Moneta Mon = new Moneta();
+        Mon.Moneta = Simbolo;
+        Mon.Tipo = "FIAT";
+        Mon.Qta = Qta;
+        return Mon;
+    }
+
+    /**
      * @param Mon1 prima moneta passata a creaMovimento
      * @param Mon2 seconda moneta passata a creaMovimento
      * @return il movimento generato
@@ -108,5 +121,38 @@ class MovimentiCryptoCreaMovimentoTest {
     void quantitaZeroScrittaComeNegativa_vieneIgnorata() {
         //"-0" è numericamente zero: la moneta non è valida e non entra né in uscita né in entrata
         assertNull(crea(moneta("BTC", "-0"), null));
+    }
+
+    @Test
+    void depositoFiatPuro_haNm1Zero_eOrdinaPrimaDegliAltriMovimentiDelloStessoSecondo() {
+        //A parità di secondo e di wallet l'ordinamento di MappaCryptoWallet (TreeMap sull'ID) cade sul
+        //codice categoria: "AC" < "DF", quindi un acquisto Nexo fatto con euro appena depositati veniva
+        //memorizzato PRIMA del deposito, con una giacenza fiat momentaneamente negativa. Il deposito fiat
+        //puro deve ora avere nm1 = "000" e precedere l'acquisto dello stesso istante.
+        String Deposito[] = MovimentiCrypto.creaMovimento(null, fiat("EUR", "50"), "Nexo", "Principale",
+                TIMESTAMP, "50.00", null, 1, 1, null, "", "A", "", null, "Nexo");
+        String Acquisto[] = MovimentiCrypto.creaMovimento(fiat("EUR", "-50"), moneta("USDT", "53"), "Nexo",
+                "Principale", TIMESTAMP, "50.00", null, 1, 1, null, "", "A", "", null, "Nexo");
+
+        assertNotNull(Deposito);
+        assertNotNull(Acquisto);
+        assertEquals("DF", Deposito[0].split("_")[4]);
+        assertEquals("AC", Acquisto[0].split("_")[4]);
+        assertEquals("000", Deposito[0].split("_")[2], "il deposito fiat puro deve avere nm1 = 000");
+        assertEquals("001", Acquisto[0].split("_")[2], "gli altri movimenti restano a nm1 = 001");
+        assertTrue(String.CASE_INSENSITIVE_ORDER.compare(Deposito[0], Acquisto[0]) < 0,
+                "l'ID del deposito fiat deve ordinarsi prima di quello dell'acquisto dello stesso secondo");
+    }
+
+    @Test
+    void venditaCryptoPerFiat_nonToccata_nm1Uno() {
+        //La forzatura di nm1 riguarda solo la categoria "DF": una vendita di cripto per euro (uscita
+        //cripto + entrata fiat, categoria "VC") non deve essere spostata.
+        String Mov[] = MovimentiCrypto.creaMovimento(moneta("USDT", "-53"), fiat("EUR", "50"), "Nexo",
+                "Principale", TIMESTAMP, "50.00", null, 1, 1, null, "", "A", "", null, "Nexo");
+
+        assertNotNull(Mov);
+        assertEquals("VC", Mov[0].split("_")[4]);
+        assertEquals("001", Mov[0].split("_")[2]);
     }
 }

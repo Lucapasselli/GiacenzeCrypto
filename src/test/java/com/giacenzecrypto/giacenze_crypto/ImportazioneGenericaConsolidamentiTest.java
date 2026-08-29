@@ -89,6 +89,61 @@ class ImportazioneGenericaConsolidamentiTest {
     }
 
     @Test
+    void topUp_conOutputAmountZero_prendeLImportoDallInput_nonScartato() {
+        // Bug reale: il 'Top up Crypto' promozionale 'Campaign Rewards' di Nexo (10/07/2024) porta
+        // Input Amount 45.06797732 e Output Amount 0.00000000 (l'unica riga del file cosi'). Prendendo
+        // l'importo solo dalla colonna principale (Output = 0) il movimento veniva scartato con "qta=0".
+        List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
+                rigaNexo("Top up Crypto", "NEXO", "45.06797732", "NEXO", "0.00000000"), null,
+                cfgNexoCon("Top up Crypto", "TRASFERIMENTO-CRYPTO"));
+
+        assertNotNull(movs);
+        assertFalse(movs.isEmpty(), "con Output = 0 la riga non deve essere scartata");
+        String[] mov = movs.get(0);
+        assertEquals("NEXO", mov[11], "Input positivo -> gamba in entrata");
+        assertEquals("", mov[8], "nessuna gamba in uscita");
+        assertEquals("45.06797732", mov[13], "l'importo si prende dall'Input quando l'Output e' 0");
+    }
+
+    // ----- causalePerNota: 'Top up Crypto' promozionale riclassificato da deposito a premio ---------
+
+    @Test
+    void topUpPromozionale_notaCampaignRewards_diventaReward_nonDepositoCrypto() {
+        ConfigurazioneImport cfg = cfgNexoCon("Top up Crypto", "TRASFERIMENTO-CRYPTO");
+        cfg.colonnaNote = 7;
+        cfg.causalePerNota.add(new ConfigurazioneImport.RegolaCausaleNota(
+                "Top up Crypto", "Campaign Rewards", "REWARD"));
+
+        String[] riga = {"NXT1", "Top up Crypto", "NEXO", "45.06797732", "NEXO", "0.00000000",
+                "48.11", "approved / Campaign Rewards", "2024-07-10 14:37:43"};
+
+        String[] mov = ImportazioneGenerica.costruisciMovimenti(riga, null, cfg).get(0);
+
+        assertNotNull(mov);
+        assertEquals("REWARD", mov[5], "campo 5");
+        assertEquals("RW", mov[0].split("_")[4], "categoria RW, non DC");
+        assertEquals("NEXO", mov[11]);
+        assertEquals("45.06797732", mov[13]);
+    }
+
+    @Test
+    void topUpNormale_notaConHashDiTransazione_restaDepositoCrypto() {
+        ConfigurazioneImport cfg = cfgNexoCon("Top up Crypto", "TRASFERIMENTO-CRYPTO");
+        cfg.colonnaNote = 7;
+        cfg.causalePerNota.add(new ConfigurazioneImport.RegolaCausaleNota(
+                "Top up Crypto", "Campaign Rewards", "REWARD"));
+
+        String[] riga = {"NXT2", "Top up Crypto", "USDT", "97.87620900", "USDT", "97.87620937",
+                "97.89", "approved / 0x070cdd2b57f593890282a29f6085cca1b96b8dddf0b2d736c82d9587ec523c61",
+                "2024-01-01 00:00:00"};
+
+        String[] mov = ImportazioneGenerica.costruisciMovimenti(riga, null, cfg).get(0);
+
+        assertEquals("DEPOSITO CRYPTO", mov[5], "un Top up con hash on-chain resta un deposito");
+        assertEquals("DC", mov[0].split("_")[4]);
+    }
+
+    @Test
     void exchange_moneteDiverse_restaUnoScambioADueGambe() {
         String[] mov = ImportazioneGenerica.costruisciMovimenti(
                 rigaNexo("Exchange", "USDT", "-1.8", "BTC", "0.00001806"), null, cfgNexo()).get(0);

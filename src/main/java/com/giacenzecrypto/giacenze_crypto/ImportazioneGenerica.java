@@ -932,13 +932,16 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 // la riga e' un movimento a gamba singola: il verso lo da il segno della colonna di
                 // uscita (l'unica che lo porta), l'importo lo da la colonna principale (che e' quello
                 // effettivo: su 'Top up' Input e Output differiscono di poco per via della fee di rete).
+                // Eccezione: alcuni 'Top up Crypto' promozionali di Nexo ('Campaign Rewards') mettono
+                // l'importo solo su Input e lasciano Output a 0 — se la principale e' zero (o assente) si
+                // ripiega su quella di uscita, altrimenti la riga verrebbe scartata con qta=0.
                 // Senza questo, un accredito di interessi 'NEXO -> NEXO' diventerebbe un finto scambio.
                 boolean stessaMoneta = !monOut.isBlank() && monOut.equalsIgnoreCase(moneta);
 
                 if (cfg.gambaDoppiaConSegnoSuUscita && stessaMoneta) {
                     mOUT = null;
                     mIN = null;
-                    BigDecimal importo = (qtaPrimaria != null ? qtaPrimaria : qOut).abs();
+                    BigDecimal importo = (qtaPrimaria != null && qtaPrimaria.signum() != 0 ? qtaPrimaria : qOut).abs();
                     if (qOut.signum() != 0 && importo.signum() != 0) {
                         Moneta m = new Moneta();
                         String q = (qOut.signum() < 0 ? importo.negate() : importo).stripTrailingZeros().toPlainString();

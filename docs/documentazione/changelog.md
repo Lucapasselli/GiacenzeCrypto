@@ -27,6 +27,33 @@ I pacchetti pronti all'uso vengono pubblicati a ogni rilascio:
 In caso di problemi si può chiedere supporto sul
 [gruppo Telegram](https://t.me/+6kfy5mjov-I2ODY8).
 
+## Versione 1.0.62 {#versione-1062}
+
+**Nuove implementazioni**
+
+- Nuova scheda di primo livello **"Dichiarazioni"**, subito prima di "Opzioni", che raccoglie in un unico posto i quadri **RW** (giacenze / Quadro W-RW) e **RT** (plusvalenze / Quadro T-RT) — prima erano dentro "Analisi Crypto" — insieme alla nuova sezione "Normative".
+- Aggiunta la sezione **"Normative"**: un archivio consultabile dei documenti fiscali ufficiali sulle cripto-attività (leggi di bilancio dal 2023, circolari, risoluzioni e risposte dell'Agenzia delle Entrate, istruzioni dei modelli Redditi PF e 730, modulistica ISEE/DSU e le norme europee MiCA/DAC8). Si può filtrare per categoria, data e testo (ricerca nel contenuto dei documenti, non solo nei titoli), vedere il dettaglio di ogni fonte e aprire la copia locale o la pagina ufficiale. L'archivio si scarica e si aggiorna da GitHub con il pulsante "Aggiorna da GitHub".
+- Aggiunta nel quadro RT la scheda **"Dettagli x Tipologia"**: per l'anno selezionato mostra le plusvalenze suddivise per tipologia di movimento e per mese, con l'elenco dei movimenti di ciascuna tipologia e un grafico dell'andamento mensile.
+- La **tabella dei movimenti è ora personalizzabile**: il nuovo pulsante "Colonne..." apre una finestra da cui scegliere quali colonne mostrare, mentre l'ordine e la larghezza si regolano trascinando le intestazioni. La disposizione scelta viene ricordata tra una sessione e l'altra e si può riportare a quella predefinita.
+- Nuova finestra **"Informazioni"**, che si apre facendo clic sul titolo in alto: elenca le fonti dei dati e le relative attribuzioni ("Powered by CoinGecko", "Powered by Etherscan.io APIs" e le altre), ricorda che i dati restano sul dispositivo e che il programma non gestisce seed phrase o chiavi private, e riporta le licenze dei componenti di terze parti.
+- Aggiunte l'importazione da **Coinbase** (formato dell'app "retail") e da **Coinbase Pro / GDAX**, più configurazioni di importazione pronte per **Nexo** e **Bitget**. Il motore di importazione da CSV generico è stato ampliato: rimozione automatica dei simboli di valuta (€, $, £, ¥) dagli importi, righe con la stessa moneta in entrata e in uscita trattate come un movimento a gamba singola, consolidamento giornaliero dei micro-interessi, riclassificazione di una riga in base al testo della colonna note (per riconoscere per esempio i premi "Coinbase Earn", i referral e gli airdrop che arrivano tutti come semplici accrediti), controvalore degli acquisti calcolato al netto della sola commissione, e un testo descrittivo che compare come suggerimento sulle voci di importazione.
+- Scaricamento da **OKX** più solido: i codici delle causali OKX sono stati spostati in un file aggiornabile senza cambiare versione del programma (come già le altre mappe di importazione), è stato riconosciuto un nuovo tipo di scambio a pronti, e uno scaricamento che raggiunge il tetto massimo di pagine può ora essere ripreso dal punto esatto alla richiesta successiva, invece di ripartire da zero.
+- Aggiunto un **servizio prezzi condiviso**, facoltativo e **disattivato in modo predefinito** (casella in "Opzioni" - "Opzioni di Calcolo"): quando attivo, i prezzi vengono richiesti a un servizio che li ricava direttamente dallo stato delle pool on-chain, senza usare dati di mercato di terzi. Il cambio euro/dollaro applicato a questi prezzi è più preciso, perché letto anch'esso da una pool on-chain al minuto invece che dal cambio giornaliero della Banca d'Italia. Anche il pulsante "Riscarica tutti i prezzi dalle fonti" interroga questo servizio quando è abilitato.
+- Aggiunto il supporto a tre nuove blockchain: **HyperEVM**, **Ink** e **Robinhood Chain**.
+- Quando un deposito di denaro (fiat) avviene nello stesso istante di un acquisto fatto con quel denaro, il deposito viene ora registrato **prima** dell'acquisto: non si vede più una giacenza in euro momentaneamente negativa. Vale per i movimenti importati d'ora in avanti.
+- I manuali sono ora **pagine web** sul sito del progetto, aggiornate e con la stessa veste grafica del sito; i PDF restano comunque disponibili. Il programma è **uscito dalla fase beta**: il titolo della finestra non riporta più la dicitura "Beta".
+
+**Correzione di bug**
+
+- Corretto un difetto per cui lo **scaricamento di Binance dalle API non funzionava più**: gli script di importazione rifiutavano la richiesta e l'operazione si interrompeva subito.
+- Uno **scaricamento OKX incompleto** importava comunque la parte già arrivata: siccome la data di partenza si ricava dall'ultimo movimento importato, questo spostava la data in avanti e lasciava un buco permanente nello storico. Ora, se lo scaricamento non è completo, non viene importato nulla e la richiesta successiva riparte esattamente dallo stesso punto.
+- Corretto un difetto per cui la **finestra principale poteva aprirsi più grande dello schermo** (dimensioni salvate da un monitor più grande, o ripristinate da un backup fatto su un'altra macchina), con bordi e pulsanti fuori dall'area visibile e la finestra non più ridimensionabile con il mouse. Ora la dimensione viene adattata allo schermo e la finestra parte massimizzata.
+- La colonna "Timestamp" dei movimenti poteva contenere del testo non numerico proveniente da una colonna dell'export di Binance; ora quel valore viene sempre mantenuto corretto e i movimenti già in archivio vengono sistemati automaticamente al primo avvio.
+- La voce "Crea movimento di scambio da Deposito/Prelievo" funziona ora anche quando il deposito e il prelievo sono registrati con un secondo di differenza, e non solo quando cadono nello stesso identico istante; il movimento riunito prende la data della gamba più recente.
+- Rimossa la fonte prezzi **CryptoCompare**, il cui livello gratuito è stato chiuso il 21/05/2026: le richieste rispondevano solo con un errore di chiave mancante.
+- Il suggerimento del pulsante "Errori" non compare più quando il conteggio è a zero, e quando compare torna a disporsi su tre righe come previsto.
+- Nel tema scuro il pannello di dettaglio della sezione "Normative" restava con lo sfondo bianco.
+
 ## Versione 1.0.61 {#versione-1061}
 
 **Nuove implementazioni**

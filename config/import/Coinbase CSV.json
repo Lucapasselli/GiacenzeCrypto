@@ -1,0 +1,90 @@
+{
+  "_commento": "Coinbase (conto retail) - export 'Transactions' scaricato da coinbase.com (Impostazioni > Estratto conto / Reports). Le prime 3 righe del file NON sono dati: 1='Transactions', 2='User,<nome>,<uuid>', 3=intestazione vera. Da riga 4 in poi 13 colonne: 0=ID 1=Timestamp 2=Transaction Type 3=Asset 4=Quantity Transacted 5=Price Currency 6=Price at Transaction 7=Subtotal 8=Total (inclusive of fees and/or spread) 9=Fees and/or Spread 10=Notes 11=Sender Address 12=Recipient Address.",
+  "_commentoData": "Il timestamp e' 'yyyy-MM-dd HH:mm:ss UTC' con il letterale ' UTC' in coda: parseDataRaw usa DateTimeFormatter e il suffisso NON rientra nella regex che toglie gli offset ' +00:00', quindi va messo nel pattern come letterale o ogni riga fallirebbe con 'DATA NON PARSABILE'. 'fuso':'UTC' converte poi al fuso di sistema.",
+  "_commentoImporti": "Tutti gli importi in euro nel file hanno il prefisso '€' (e il meno PRIMA del simbolo: '-€1,48'). normalizzaNumero toglie i simboli di valuta € $ £ ¥ mantenendo il segno, quindi le colonne euro sono usabili direttamente. Il file usa il punto come separatore decimale e nessun separatore delle migliaia. NOTA: nella colonna 9 (Fees and/or Spread) le righe 'Convert' scrivono il numero SENZA '€' mentre tutte le altre causali lo scrivono con '€' - normalizzaNumero gestisce comunque entrambi i casi.",
+  "versione": "1.004",
+  "centralizzato": true,
+  "fontePrezzoPreferita": "coinbase",
+  "nomeExchange": "Coinbase",
+  "estrazione": "CSV (ATTENZIONE : in fase ALFA)",
+  "descrizione": "<html><div style='width:380px'>Coinbase (conto retail) &ndash; export <b>Transactions</b> da coinbase.com (Impostazioni &rarr; Estratti conto / Report). Copre tutta la cronologia del conto retail: invii, ricezioni, conversioni, acquisti, staking, learning reward. I trasferimenti verso/da Coinbase Pro&nbsp;/&nbsp;GDAX sono trattati come giroconti interni allo stesso wallet e non entrano in giacenza da qui.</div></html>",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 3,
+  "rigaIntestazione": 3,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd HH:mm:ss 'UTC'",
+  "fuso": "UTC",
+  "_commentoColonne": "'valoreEuro' punta al Subtotal (7) ed e' il default per tutte le causali per cui NON e' attivo il ricalcolo del controvalore (vedi 'colonneControvalore'): trasferimenti, staking, reward, dust. Per queste il Subtotal e' gia' il controvalore corretto (per un trasferimento Subtotal = Total - fee di rete). 'note' (10) finisce nel campo Note del movimento ([21]).",
+  "_commentoControvalore": "Per Buy e Convert il costo di carico NON e' il Subtotal (7) ma [Total (8)] - [Fees and/or Spread (9)]: il Total comprende commissione E spread; per le cripto-attivita' la commissione non e' deducibile (art. 68 c.9-bis TUIR, circ. 30/E del 27/10/23), ma lo spread NON e' una commissione e resta nel costo di carico. La commissione (col 9) e' considerata solo se importo positivo (in alcune righe dust e' un rapporto di spread con segno). Per le causali in 'causaliConMovimentoCommissione' (solo Buy) la riga del CSV porta la sola gamba crypto in entrata: si sintetizza la gamba FIAT in uscita di importo Total-Fee (l'acquisto diventa un vero scambio EUR->crypto, categoria AC invece di deposito crypto) e la commissione esce come movimento COMMISSIONI a se' in EUR. Per Convert le monete sono gia' nette e la commissione e' espressa solo in euro: nessun movimento COMMISSIONI, si corregge solo il controvalore delle due gambe. NOTA sull'effetto reale per i Convert: il controvalore ricalcolato alimenta il prezzo per gamba passato a RitornaScambi, ma il campo [15] del movimento consolidato lo sceglie DammiMonetaPrioritaria (di norma la gamba in USCITA, che qui ha sempre commissione 0, quindi Total-Fee = Subtotal). Il ricalcolo incide su [15] solo quando la gamba in ENTRATA e' prioritaria (stablecoin/EUR/cripto ad alta capitalizzazione). E per uno scambio cripto/cripto omogeneo post-2023 il motore LIFO (Tipologia 1) non legge nemmeno [15]: costo di carico trasferito dalla moneta ceduta, plusvalenza 0. Il ricalcolo Total-Fee sui Convert e' quindi corretto in ingresso ma rilevante di fatto solo per gli scambi con token EMoney (Tipologia 2) e per i Convert pre-2023 con l'opzione 'scambi rilevanti pre-2023' attiva.",
+  "colonneControvalore": {
+    "totale": 8,
+    "commissione": 9,
+    "valuta": 5,
+    "causali": ["Buy", "Convert"],
+    "causaliConMovimentoCommissione": ["Buy"]
+  },
+  "_commentoFee": "Le colonne 'monetaFee'/'quantitaFee' NON sono mappate: il formato della col 9 e' incoerente fra le causali e il meccanismo generico di scorporo fee non e' adatto. La gestione della commissione avviene tramite 'colonneControvalore' (vedi sopra), solo per Buy.",
+  "_commentoIdentificativi": "'idTransazione' (0 = ID) e' l'identita' della riga: finisce in [24]. Per i Convert l'ID del CSV cambia a ogni ri-scaricamento, ma la deduplica dei CSV generici lavora sulla chiave logica (giorno+exchange+monete+quantita'), non su [24], quindi il ri-scaricamento non genera doppioni comunque. 'idGruppo' (1 = Timestamp) e' la colonna di raggruppamento di default. 'raggruppamentoPerCausale' la sovrascrive per 'Convert' con la colonna Notes (10): le due gambe di una conversione condividono la stessa identica stringa Notes ('Converted X A to Y B') ma sull'export reale a volte cadono a 1-2 secondi di distanza, quindi il raggruppo su timestamp esatto le spezzerebbe in un deposito e un prelievo separati. Con la colonna Notes + 'causaliDifferite':['Convert'] + tolleranza 60s le gambe giuste si ricompongono e non si mescolano (una gamba con Notes diverso apre sempre un gruppo nuovo). Assunzione residua: le due gambe devono restare adiacenti nello stream ordinato per data - vero sul conto retail Coinbase, dove le conversioni avvengono in raffiche isolate senza altre transazioni in mezzo.",
+  "colonne": {
+    "idTransazione": 0,
+    "idGruppo": 1,
+    "data": 1,
+    "causale": 2,
+    "moneta": 3,
+    "quantita": 4,
+    "valoreEuro": 7,
+    "note": 10
+  },
+  "raggruppamentoPerCausale": {
+    "Convert": 10
+  },
+  "consolidaRigheStessaData": true,
+  "tolleranzaSecondiConsolidamento": 60,
+  "causaliDifferite": ["Convert"],
+  "_commentoCausalePerNota": "Alcuni movimenti a reddito arrivano nel file come 'Receive' e si distinguono da un normale trasferimento SOLO dal testo della colonna Notes. Le regole sotto riclassificano quelle righe in base a causale CSV = 'Receive' + una sottostringa di Notes (confronto case-insensitive), la prima regola che combacia vince: 'from Coinbase Earn' (premi Coinbase Earn vecchio stile, prima che diventassero 'Learning Reward') -> EARN; 'from Coinbase Referral' (bonus invito) -> REWARD; 'airdrop' (es. 'from Flare Airdrop') -> AIRDROP. Tutte danno categoria RW (reddito che entra nel LIFO al valore di mercato), cambia solo l'etichetta campo5. Le altre 'Receive' restano trasferimenti crypto. NON coperti di proposito: 'from Coinbase' secco (ambiguo) e i trasferimenti P2P/spam ('from <nome>', 'from Free ETH Spinner', ...).",
+  "causalePerNota": [
+    { "causale": "Receive", "notaContiene": "from Coinbase Earn",     "tipo": "EARN" },
+    { "causale": "Receive", "notaContiene": "from Coinbase Referral", "tipo": "REWARD" },
+    { "causale": "Receive", "notaContiene": "airdrop",                "tipo": "AIRDROP" }
+  ],
+  "_commentoCausali": "La 'Quantity Transacted' (4) e' gia' col segno (negativa in uscita), quindi il verso di ogni gamba si legge da li senza 'causaliUscita'/'causaliEntrata'. Coinbase Pro / GDAX e' considerato lo STESSO wallet 'Principale' di Coinbase retail: i giroconti fra i due conti ('Pro Deposit/Withdrawal', 'Exchange Deposit/Withdrawal') sono quindi movimenti interni allo stesso wallet e vanno in IGNORA - i relativi trade su GDAX si importano a parte, sullo stesso wallet, dallo statement 'account.csv' di Coinbase Pro. Nota: il periodo Coinbase Pro 2019-2022 non ha uno statement, quindi li' resta scoperto il costo di carico delle cripto rientrate. 'Retail Unstaking/Staking Transfer' sono coppie +/- della stessa moneta sullo stesso secondo (spostamenti da/verso lo staking Coinbase): interni, IGNORA. 'Deposit' nel file e' sempre EUR da conto bancario -> DEPOSITO FIAT (i depositi di cripto sono 'Receive').",
+  "mappaCausali": {
+    "Receive":                   "TRASFERIMENTO-CRYPTO",
+    "Send":                      "TRASFERIMENTO-CRYPTO",
+    "Convert":                   "SCAMBIO CRYPTO-CRYPTO",
+    "Buy":                       "ACQUISTO CRYPTO",
+    "Deposit":                   "DEPOSITO FIAT",
+    "Learning Reward":           "REWARD",
+    "Staking Income":            "STAKING REWARDS",
+    "Retail Simple Dust":        "VENDITA CRYPTO",
+    "Pro Deposit":               "IGNORA",
+    "Pro Withdrawal":            "IGNORA",
+    "Exchange Deposit":          "IGNORA",
+    "Exchange Withdrawal":       "IGNORA",
+    "Retail Unstaking Transfer": "IGNORA",
+    "Retail Staking Transfer":   "IGNORA"
+  },
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": [
+    "TRASFERIMENTO-CRYPTO",
+    "ACQUISTO CRYPTO",
+    "VENDITA CRYPTO",
+    "DEPOSITO FIAT",
+    "REWARD",
+    "EARN",
+    "AIRDROP",
+    "STAKING REWARDS",
+    "COMMISSIONI"
+  ],
+  "_commentoRinomina": "ZETACHAIN e' il vecchio ticker Coinbase per ZETA (ZetaChain): nel file compaiono entrambi, e un Convert del 15/09/2025 li usa tutti e due a 22 secondi di distanza - senza unificarli lo stack LIFO si spezza in due monete diverse. CGLD e' il ticker Coinbase per CELO, gia' scritto 'CELO' nell'archivio esistente. RNDR->RENDER non e' incluso: nel file compare solo 'RNDR', nessun conflitto interno.",
+  "rinominaMonete": {
+    "ZETACHAIN": "ZETA",
+    "CGLD": "CELO"
+  },
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

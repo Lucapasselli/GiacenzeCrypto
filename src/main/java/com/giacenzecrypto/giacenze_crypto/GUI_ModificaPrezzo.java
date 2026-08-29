@@ -351,7 +351,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
             }
 
             if (match) c.setBackground(Color.YELLOW);
-            else if (isSelected) c.setBackground(table.getSelectionBackground());
+            else if (isSelected) c.setBackground(Tabelle.SfondoSelezione(row));
             else c.setBackground(Color.WHITE);
 
             return c;

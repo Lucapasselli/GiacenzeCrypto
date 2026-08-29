@@ -310,7 +310,18 @@ private static Map<String, String[]> creaMappaTipologie() {
         //Questo fa si che il numero sia formato da almeno 2 caratteri in modo che possa giorstrare la numerazione fino a 99 movimenti nello stesso secondo
         String nm1=String.format("%03d", numMovimento);
         String nm2=String.format("%03d", numMovimento2);
-        
+
+        //A parità di secondo e di wallet l'ordinamento di MappaCryptoWallet (TreeMap sull'ID, case-insensitive)
+        //cade sul codice categoria in coda all'ID, e "AC" < "DF": un deposito fiat e l'acquisto fatto con quel
+        //denaro nello stesso istante (tipico degli acquisti Nexo) entravano invertiti, con una giacenza fiat
+        //momentaneamente negativa. Portando nm1 a "000" per il solo deposito fiat "puro" (nessuna moneta in
+        //uscita) il deposito torna a precedere ogni altro movimento dello stesso secondo. Non tocca la deduplica
+        //del re-import (F_buildKeyMovimento usa solo la parte data dell'ID) né i ricalcoli (nm1 non è mai letto),
+        //e l'univocità resta garantita da getIDUnivoco, che incrementa nm2.
+        if (Tipologie[0].equals("DF") && MOut.isBlank()) {
+            nm1 = "000";
+        }
+
         RT2[0] = DataID + "_" + IdentificazioneID + "_" + nm1 + "_" + nm2 + "_" + Tipologie[0];
         if (IDMovimento != null) {
             //Nel caso in cui prendo l'id passato recupero però sempre il codice tipologia reale

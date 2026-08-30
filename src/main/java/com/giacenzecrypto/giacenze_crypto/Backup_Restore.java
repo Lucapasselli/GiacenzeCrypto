@@ -327,6 +327,11 @@ public class Backup_Restore {
         t.add(new Tabella("EMONEY", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
         t.add(new Tabella("GIACENZEBLOCKCHAIN", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
         t.add(new Tabella("EXCHANGETOKENS", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
+        //Config quadro RW dei gruppi wallet (2026-08-30) : anagrafica exchange (stato estero / P.IVA),
+        //riferimento estero per gruppo, periodi di detenzione. Dati dell'utente, ancora non usati dal calcolo.
+        t.add(new Tabella("EXCHANGE_ANAGRAFICA", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
+        t.add(new Tabella("GRUPPO_RIFERIMENTO_ESTERO", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
+        t.add(new Tabella("GRUPPO_PERIODO_RW", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
         //Il registro dei documenti sta nel gruppo dei movimenti: il campo [41] di ogni movimento ne
         //referenzia l'Id, separarli lascerebbe quei riferimenti appesi
         t.add(new Tabella("DOCUMENTIFONTE", DB.PERSONALE, Gruppo.MOVIMENTI));

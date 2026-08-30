@@ -5549,6 +5549,12 @@
                                   <Component id="jScrollPane1" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="Opzioni_GruppoWallet_Bottone_Rinomina" min="-2" pref="210" max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <Component id="Opzioni_GruppoWallet_Bottone_RiferimentoEstero" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="Opzioni_GruppoWallet_Bottone_Periodi" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="Opzioni_GruppoWallet_Bottone_AnagraficaExchange" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
@@ -5562,7 +5568,12 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Opzioni_GruppoWallet_ScrollTabella" pref="680" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_GruppoWallet_Bottone_Rinomina" min="-2" pref="50" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="Opzioni_GruppoWallet_Bottone_Rinomina" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_GruppoWallet_Bottone_RiferimentoEstero" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_GruppoWallet_Bottone_Periodi" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_GruppoWallet_Bottone_AnagraficaExchange" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                              </Group>
                               <EmptySpace min="-2" pref="64" max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -5660,6 +5671,42 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_GruppoWallet_Bottone_RinominaActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="Opzioni_GruppoWallet_Bottone_RiferimentoEstero">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/Images/24_Modifica.png"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Riferimento estero..."/>
+                        <Property name="toolTipText" type="java.lang.String" value="Stato estero e identificativo fiscale del gruppo wallet selezionato (quadro W/RW)"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_GruppoWallet_Bottone_RiferimentoEsteroActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="Opzioni_GruppoWallet_Bottone_Periodi">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/Images/24_Modifica.png"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Periodi di detenzione..."/>
+                        <Property name="toolTipText" type="java.lang.String" value="Periodi di detenzione (righi CRYPTO / FIAT) del gruppo wallet selezionato"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_GruppoWallet_Bottone_PeriodiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="Opzioni_GruppoWallet_Bottone_AnagraficaExchange">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/Images/24_Modifica.png"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Anagrafica exchange..."/>
+                        <Property name="toolTipText" type="java.lang.String" value="Stato estero e identificativo fiscale degli exchange (condivisi tra i gruppi)"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_GruppoWallet_Bottone_AnagraficaExchangeActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

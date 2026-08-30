@@ -270,7 +270,55 @@ public class DatabaseH2 {
             
             createTableSQL = "CREATE TABLE IF NOT EXISTS OPZIONI (Opzione VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
             EseguiDDL(connectionPersonale, createTableSQL);
-            
+
+            //--- Quadro RW : riferimento estero dei gruppi wallet e periodi di detenzione (2026-08-30) ---
+            //Tre tabelle di SOLI DATI DELL'UTENTE (gruppo GRUPPI_WALLET nel backup). Nessuna è ancora
+            //letta da Calcoli_RW.AggiornaRWFR : per ora la GUI le compila e basta, la logica di calcolo
+            //(righi multipli per periodo, valori campo 7/8 manuali) arriverà in una fase successiva.
+
+            //Anagrafica exchange : stato estero (quadro W/RW, colonna 4) e identificativo fiscale / P.IVA
+            //o equivalente (servirà per l'ISEE). Popolata dall'utente ; il seed sotto mette SOLO l'elenco
+            //dei nomi noti, senza alcun dato fiscale.
+            createTableSQL = "CREATE TABLE IF NOT EXISTS EXCHANGE_ANAGRAFICA ("
+                    + "ExchangeId VARCHAR(64) PRIMARY KEY, "
+                    + "Nome VARCHAR(255), "
+                    + "StatoEstero VARCHAR(3), "
+                    + "IdentificativoFiscale VARCHAR(255), "
+                    + "Note VARCHAR(1000), "
+                    + "Fonte VARCHAR(500), "
+                    + "DataAggiornamento VARCHAR(20))";
+            EseguiDDL(connectionPersonale, createTableSQL);
+
+            //Riferimento estero per gruppo wallet : o uno stato + P.IVA inseriti a mano, o un exchange di
+            //EXCHANGE_ANAGRAFICA da cui ricavarli.
+            createTableSQL = "CREATE TABLE IF NOT EXISTS GRUPPO_RIFERIMENTO_ESTERO ("
+                    + "Gruppo VARCHAR(255) PRIMARY KEY, "
+                    + "Modalita VARCHAR(20), "
+                    + "StatoEstero VARCHAR(3), "
+                    + "IdentificativoFiscale VARCHAR(255), "
+                    + "ExchangeId VARCHAR(64))";
+            EseguiDDL(connectionPersonale, createTableSQL);
+
+            //Periodi di detenzione per gruppo wallet, distinti per rigo CRYPTO e rigo FIAT. Chiave
+            //sintetica a colonna singola (idioma WALLET_RETE / EXCHANGE_TOKEN : U_ScriviRecord accetta una
+            //sola primaryKeyColumn). Gruppo / TipoRigo / Progressivo restano anche come colonne interrogabili.
+            createTableSQL = "CREATE TABLE IF NOT EXISTS GRUPPO_PERIODO_RW ("
+                    + "Gruppo_Tipo_Prog VARCHAR(300) PRIMARY KEY, "
+                    + "Gruppo VARCHAR(255), "
+                    + "TipoRigo VARCHAR(10), "
+                    + "Progressivo INT, "
+                    + "DataInizio VARCHAR(20), "
+                    + "DataFine VARCHAR(20), "
+                    + "ValoreInizialeManuale VARCHAR(40), "
+                    + "NotaValoreIniziale VARCHAR(1000), "
+                    + "ValoreFinaleManuale VARCHAR(40), "
+                    + "NotaValoreFinale VARCHAR(1000), "
+                    + "ModalitaCalcoloIniziale VARCHAR(30), "
+                    + "ModalitaCalcoloFinale VARCHAR(30))";
+            EseguiDDL(connectionPersonale, createTableSQL);
+
+            Pers_ExchangeAnagrafica_SeedElencoNomi();
+
             successo=true;
             
 
@@ -879,8 +927,306 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
     values.put("Alias", Alias);
     values.put("Pagabollo", Pagabollo);
     U_ScriviRecord("GRUPPO_ALIAS", values, "Gruppo",connectionPersonale);
-       
+
 }
+
+    // ============================================================================
+    //  Quadro RW - riferimento estero dei gruppi wallet e periodi di detenzione
+    //  (2026-08-30) Tre tabelle di dati dell'utente, ancora NON lette dal motore RW
+    //  (Calcoli_RW.AggiornaRWFR) : per ora le compila solo la GUI.
+    // ============================================================================
+
+    /**
+     * @param ExchangeId id normalizzato dell'exchange (es. {@code "binance"})
+     * @return {@code [ExchangeId, Nome, StatoEstero, IdentificativoFiscale, Note, Fonte, DataAggiornamento]};
+     *         tutti {@code null} se {@code ExchangeId} non è in {@code EXCHANGE_ANAGRAFICA}
+     */
+    public static String[] Pers_ExchangeAnagrafica_Leggi(String ExchangeId) {
+        String[] r = new String[7];
+        if (ExchangeId == null || ExchangeId.isBlank()) {
+            throw new IllegalArgumentException("ExchangeId non può essere nullo o vuoto.");
+        }
+        try {
+            String sql = "SELECT ExchangeId,Nome,StatoEstero,IdentificativoFiscale,Note,Fonte,DataAggiornamento "
+                    + "FROM EXCHANGE_ANAGRAFICA WHERE ExchangeId = ?";
+            try (PreparedStatement ps = connectionPersonale.prepareStatement(sql)) {
+                ps.setString(1, ExchangeId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        r[0] = rs.getString("ExchangeId");
+                        r[1] = rs.getString("Nome");
+                        r[2] = rs.getString("StatoEstero");
+                        r[3] = rs.getString("IdentificativoFiscale");
+                        r[4] = rs.getString("Note");
+                        r[5] = rs.getString("Fonte");
+                        r[6] = rs.getString("DataAggiornamento");
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return r;
+    }
+
+    /** Tutta l'anagrafica exchange, chiave = {@code ExchangeId}; valori come {@link #Pers_ExchangeAnagrafica_Leggi}. */
+    public static Map<String, String[]> Pers_ExchangeAnagrafica_LeggiTabella() {
+        Map<String, String[]> m = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        try {
+            String sql = "SELECT ExchangeId,Nome,StatoEstero,IdentificativoFiscale,Note,Fonte,DataAggiornamento "
+                    + "FROM EXCHANGE_ANAGRAFICA";
+            try (PreparedStatement ps = connectionPersonale.prepareStatement(sql);
+                    ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String[] r = {
+                        rs.getString("ExchangeId"), rs.getString("Nome"), rs.getString("StatoEstero"),
+                        rs.getString("IdentificativoFiscale"), rs.getString("Note"),
+                        rs.getString("Fonte"), rs.getString("DataAggiornamento")
+                    };
+                    m.put(r[0], r);
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return m;
+    }
+
+    public static void Pers_ExchangeAnagrafica_Scrivi(String ExchangeId, String Nome, String StatoEstero,
+            String IdentificativoFiscale, String Note, String Fonte, String DataAggiornamento) {
+        if (ExchangeId == null || ExchangeId.isBlank()) {
+            throw new IllegalArgumentException("ExchangeId non può essere nullo o vuoto.");
+        }
+        Map<String, Object> v = new HashMap<>();
+        v.put("ExchangeId", ExchangeId.trim());
+        v.put("Nome", Nome);
+        v.put("StatoEstero", StatoEstero);
+        v.put("IdentificativoFiscale", IdentificativoFiscale);
+        v.put("Note", Note);
+        v.put("Fonte", Fonte);
+        v.put("DataAggiornamento", DataAggiornamento);
+        U_ScriviRecord("EXCHANGE_ANAGRAFICA", v, "ExchangeId", connectionPersonale);
+    }
+
+    public static void Pers_ExchangeAnagrafica_Cancella(String ExchangeId) {
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(
+                "DELETE FROM EXCHANGE_ANAGRAFICA WHERE ExchangeId = ?")) {
+            ps.setString(1, ExchangeId);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+    /**
+     * Seed una-tantum : solo l'elenco degli exchange noti (id + nome), NESSUN dato fiscale (stato,
+     * P.IVA) - quelli li inserisce l'utente. Guardato dall'opzione {@code EXCHANGE_ANAGRAFICA_SEED}
+     * così un elemento cancellato dall'utente non ricompare.
+     */
+    static void Pers_ExchangeAnagrafica_SeedElencoNomi() {
+        if ("SI".equals(Pers_Opzioni_Leggi("EXCHANGE_ANAGRAFICA_SEED"))) {
+            return;
+        }
+        String[][] noti = {
+            {"binance", "Binance"}, {"coinbase", "Coinbase"}, {"kraken", "Kraken"},
+            {"cryptocom", "Crypto.com"}, {"okx", "OKX"}, {"bitpanda", "Bitpanda"},
+            {"bitget", "Bitget"}, {"kucoin", "KuCoin"}, {"bybit", "Bybit"},
+            {"revolut", "Revolut"}, {"nexo", "Nexo"}, {"bitstamp", "Bitstamp"},
+            {"gemini", "Gemini"}, {"bitfinex", "Bitfinex"}
+        };
+        for (String[] e : noti) {
+            if (Pers_ExchangeAnagrafica_Leggi(e[0])[0] == null) {
+                Pers_ExchangeAnagrafica_Scrivi(e[0], e[1], null, null, null, null, null);
+            }
+        }
+        Pers_Opzioni_Scrivi("EXCHANGE_ANAGRAFICA_SEED", "SI");
+    }
+
+    // ---- GRUPPO_RIFERIMENTO_ESTERO ----
+
+    /** @return {@code [Gruppo, Modalita, StatoEstero, IdentificativoFiscale, ExchangeId]}; tutti {@code null} se assente. */
+    public static String[] Pers_GruppoRiferimento_Leggi(String Gruppo) {
+        String[] r = new String[5];
+        if (Gruppo == null || Gruppo.isBlank()) {
+            throw new IllegalArgumentException("Gruppo non può essere nullo o vuoto.");
+        }
+        try {
+            String sql = "SELECT Gruppo,Modalita,StatoEstero,IdentificativoFiscale,ExchangeId "
+                    + "FROM GRUPPO_RIFERIMENTO_ESTERO WHERE Gruppo = ?";
+            try (PreparedStatement ps = connectionPersonale.prepareStatement(sql)) {
+                ps.setString(1, Gruppo);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        r[0] = rs.getString("Gruppo");
+                        r[1] = rs.getString("Modalita");
+                        r[2] = rs.getString("StatoEstero");
+                        r[3] = rs.getString("IdentificativoFiscale");
+                        r[4] = rs.getString("ExchangeId");
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return r;
+    }
+
+    public static Map<String, String[]> Pers_GruppoRiferimento_LeggiTabella() {
+        Map<String, String[]> m = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        try {
+            String sql = "SELECT Gruppo,Modalita,StatoEstero,IdentificativoFiscale,ExchangeId FROM GRUPPO_RIFERIMENTO_ESTERO";
+            try (PreparedStatement ps = connectionPersonale.prepareStatement(sql);
+                    ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String[] r = {
+                        rs.getString("Gruppo"), rs.getString("Modalita"), rs.getString("StatoEstero"),
+                        rs.getString("IdentificativoFiscale"), rs.getString("ExchangeId")
+                    };
+                    m.put(r[0], r);
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return m;
+    }
+
+    public static void Pers_GruppoRiferimento_Scrivi(String Gruppo, String Modalita, String StatoEstero,
+            String IdentificativoFiscale, String ExchangeId) {
+        if (Gruppo == null || Gruppo.isBlank()) {
+            throw new IllegalArgumentException("Gruppo non può essere nullo o vuoto.");
+        }
+        Map<String, Object> v = new HashMap<>();
+        v.put("Gruppo", Gruppo);
+        v.put("Modalita", Modalita);
+        v.put("StatoEstero", StatoEstero);
+        v.put("IdentificativoFiscale", IdentificativoFiscale);
+        v.put("ExchangeId", ExchangeId);
+        U_ScriviRecord("GRUPPO_RIFERIMENTO_ESTERO", v, "Gruppo", connectionPersonale);
+    }
+
+    public static void Pers_GruppoRiferimento_Cancella(String Gruppo) {
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(
+                "DELETE FROM GRUPPO_RIFERIMENTO_ESTERO WHERE Gruppo = ?")) {
+            ps.setString(1, Gruppo);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+    // ---- GRUPPO_PERIODO_RW ----
+
+    private static String chiavePeriodoRW(String Gruppo, String TipoRigo, int Progressivo) {
+        return Gruppo + "_" + TipoRigo + "_" + Progressivo;
+    }
+
+    /**
+     * Periodi di detenzione di un gruppo, ordinati per {@code TipoRigo} poi {@code Progressivo}.
+     * Ogni riga : {@code [Gruppo_Tipo_Prog, Gruppo, TipoRigo, Progressivo, DataInizio, DataFine,
+     * ValoreInizialeManuale, NotaValoreIniziale, ValoreFinaleManuale, NotaValoreFinale,
+     * ModalitaCalcoloIniziale, ModalitaCalcoloFinale]}.
+     */
+    public static List<String[]> Pers_GruppoPeriodoRW_LeggiGruppo(String Gruppo) {
+        List<String[]> out = new ArrayList<>();
+        if (Gruppo == null || Gruppo.isBlank()) {
+            throw new IllegalArgumentException("Gruppo non può essere nullo o vuoto.");
+        }
+        try {
+            String sql = "SELECT Gruppo_Tipo_Prog,Gruppo,TipoRigo,Progressivo,DataInizio,DataFine,"
+                    + "ValoreInizialeManuale,NotaValoreIniziale,ValoreFinaleManuale,NotaValoreFinale,"
+                    + "ModalitaCalcoloIniziale,ModalitaCalcoloFinale FROM GRUPPO_PERIODO_RW WHERE Gruppo = ? "
+                    + "ORDER BY TipoRigo, Progressivo";
+            try (PreparedStatement ps = connectionPersonale.prepareStatement(sql)) {
+                ps.setString(1, Gruppo);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        out.add(rigaPeriodoRW(rs));
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return out;
+    }
+
+    public static Map<String, List<String[]>> Pers_GruppoPeriodoRW_LeggiTabella() {
+        Map<String, List<String[]>> m = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        try {
+            String sql = "SELECT Gruppo_Tipo_Prog,Gruppo,TipoRigo,Progressivo,DataInizio,DataFine,"
+                    + "ValoreInizialeManuale,NotaValoreIniziale,ValoreFinaleManuale,NotaValoreFinale,"
+                    + "ModalitaCalcoloIniziale,ModalitaCalcoloFinale FROM GRUPPO_PERIODO_RW "
+                    + "ORDER BY Gruppo, TipoRigo, Progressivo";
+            try (PreparedStatement ps = connectionPersonale.prepareStatement(sql);
+                    ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String[] r = rigaPeriodoRW(rs);
+                    m.computeIfAbsent(r[1], k -> new ArrayList<>()).add(r);
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return m;
+    }
+
+    private static String[] rigaPeriodoRW(ResultSet rs) throws SQLException {
+        return new String[] {
+            rs.getString("Gruppo_Tipo_Prog"), rs.getString("Gruppo"), rs.getString("TipoRigo"),
+            String.valueOf(rs.getInt("Progressivo")), rs.getString("DataInizio"), rs.getString("DataFine"),
+            rs.getString("ValoreInizialeManuale"), rs.getString("NotaValoreIniziale"),
+            rs.getString("ValoreFinaleManuale"), rs.getString("NotaValoreFinale"),
+            rs.getString("ModalitaCalcoloIniziale"), rs.getString("ModalitaCalcoloFinale")
+        };
+    }
+
+    public static void Pers_GruppoPeriodoRW_Scrivi(String Gruppo, String TipoRigo, int Progressivo,
+            String DataInizio, String DataFine, String ValoreInizialeManuale, String NotaValoreIniziale,
+            String ValoreFinaleManuale, String NotaValoreFinale,
+            String ModalitaCalcoloIniziale, String ModalitaCalcoloFinale) {
+        if (Gruppo == null || Gruppo.isBlank()) {
+            throw new IllegalArgumentException("Gruppo non può essere nullo o vuoto.");
+        }
+        if (TipoRigo == null || TipoRigo.isBlank()) {
+            throw new IllegalArgumentException("TipoRigo non può essere nullo o vuoto.");
+        }
+        Map<String, Object> v = new HashMap<>();
+        v.put("Gruppo_Tipo_Prog", chiavePeriodoRW(Gruppo, TipoRigo, Progressivo));
+        v.put("Gruppo", Gruppo);
+        v.put("TipoRigo", TipoRigo);
+        v.put("Progressivo", Progressivo);
+        v.put("DataInizio", DataInizio);
+        v.put("DataFine", DataFine);
+        v.put("ValoreInizialeManuale", ValoreInizialeManuale);
+        v.put("NotaValoreIniziale", NotaValoreIniziale);
+        v.put("ValoreFinaleManuale", ValoreFinaleManuale);
+        v.put("NotaValoreFinale", NotaValoreFinale);
+        v.put("ModalitaCalcoloIniziale", ModalitaCalcoloIniziale);
+        v.put("ModalitaCalcoloFinale", ModalitaCalcoloFinale);
+        U_ScriviRecord("GRUPPO_PERIODO_RW", v, "Gruppo_Tipo_Prog", connectionPersonale);
+    }
+
+    public static void Pers_GruppoPeriodoRW_Cancella(String Gruppo, String TipoRigo, int Progressivo) {
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(
+                "DELETE FROM GRUPPO_PERIODO_RW WHERE Gruppo_Tipo_Prog = ?")) {
+            ps.setString(1, chiavePeriodoRW(Gruppo, TipoRigo, Progressivo));
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+    /** Cancella tutti i periodi di un gruppo (pattern GUI "salva tutto" : delete + reinsert). */
+    public static void Pers_GruppoPeriodoRW_CancellaGruppo(String Gruppo) {
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(
+                "DELETE FROM GRUPPO_PERIODO_RW WHERE Gruppo = ?")) {
+            ps.setString(1, Gruppo);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
 
     
     

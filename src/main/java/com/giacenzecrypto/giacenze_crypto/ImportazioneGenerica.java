@@ -972,11 +972,30 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         BigDecimal commControv = BigDecimal.ZERO;
         boolean causaleConCommissione = controvaloreNetto != null
                 && cfg.causaliControvaloreConCommissione.contains(causaleCSV.trim());
+
+        // Acquisto pagato con strumento ESTERNO al saldo dell'exchange (carta, Apple/Google Pay,
+        // bonifico diretto): riconosciuto dall'assenza, nella nota, di ogni marcatore di
+        // "pagamento dal saldo" (es. Coinbase "using EUR Wallet"). Per queste righe NON si
+        // sintetizza la gamba FIAT in uscita ne' il movimento COMMISSIONI: sotto, il movimento
+        // viene marcato campo5/campo18 come "DAC - Acquisto Crypto" e il motore lo carica a costo
+        // pieno (Total - fee) senza movimentare euro. Nota vuota => comportamento invariato.
+        boolean pagamentoEsterno = false;
+        if (causaleConCommissione && !cfg.noteAcquistoDaSaldo.isEmpty()) {
+            String noteLower = (cfg.colonnaNote >= 0 ? safe(riga, cfg.colonnaNote) : "").toLowerCase();
+            if (!noteLower.isBlank()) {
+                boolean daSaldo = false;
+                for (String s : cfg.noteAcquistoDaSaldo) {
+                    if (!s.isBlank() && noteLower.contains(s.toLowerCase())) { daSaldo = true; break; }
+                }
+                pagamentoEsterno = !daSaldo;
+            }
+        }
+
         if (controvaloreNetto != null) {
             valutaControv = cfg.colControvaloreValuta >= 0
                     ? cfg.normalizzaMoneta(safe(riga, cfg.colControvaloreValuta)) : "EUR";
             commControv = commissioneControvalore(riga, cfg);
-            if (causaleConCommissione && mOUT == null && mIN != null && !valutaControv.isBlank()) {
+            if (causaleConCommissione && !pagamentoEsterno && mOUT == null && mIN != null && !valutaControv.isBlank()) {
                 mOUT = new Moneta();
                 mOUT.InserisciValori(valutaControv, "-" + controvaloreNetto, "", "");
                 mOUT.AssegnaTipoAuto();
@@ -1015,6 +1034,14 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             }
             if (rt.length > 39) {
                 rt[39] = "D";
+            }
+            // Acquisto con pagamento esterno al saldo: stesso stato che imposterebbe la
+            // classificazione manuale "ACQUISTO CRYPTO (tramite contanti/servizi esterni)" -
+            // il motore lo carica a costo pieno (campo [15] = Total - fee, gia' impostato sopra),
+            // plusvalenza 0, nessun euro movimentato.
+            if (pagamentoEsterno && rt.length > 18) {
+                rt[5] = "ACQUISTO CRYPTO";
+                rt[18] = "DAC - Acquisto Crypto";
             }
 
             for (Map.Entry<String, Integer> e : cfg.campiExtra.entrySet()) {
@@ -1078,8 +1105,8 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 
         // Movimento COMMISSIONI in valuta di controvalore (Coinbase Buy: commissione in EUR, gia'
         // esclusa dal costo di carico da controvaloreAlNetto). Non emesso se la commissione non e' un
-        // importo positivo.
-        if (causaleConCommissione && commControv.signum() > 0 && !valutaControv.isBlank()) {
+        // importo positivo, o se l'acquisto e' stato pagato con strumento esterno al saldo.
+        if (causaleConCommissione && !pagamentoEsterno && commControv.signum() > 0 && !valutaControv.isBlank()) {
             Moneta mComm = new Moneta();
             mComm.InserisciValori(valutaControv, "-" + commControv.stripTrailingZeros().toPlainString(), "", "");
             mComm.AssegnaTipoAuto();
@@ -1324,6 +1351,15 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         //oltre a correggere il controvalore si sintetizza la gamba FIAT in uscita (l'acquisto diventa un
         //vero scambio FIAT->crypto) e la commissione esce come movimento COMMISSIONI a se'.
         public Set<String> causaliControvaloreConCommissione = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        //Marcatori (sottostringa, case-insensitive) che nella colonna note indicano un acquisto pagato
+        //DAL SALDO dell'exchange (es. Coinbase: "using EUR Wallet"). Vale solo per le causali in
+        //causaliControvaloreConCommissione. Se la nota NON e' vuota e non contiene nessuno di questi
+        //marcatori, l'acquisto e' stato pagato con uno strumento ESTERNO al saldo (carta, Apple/Google
+        //Pay, bonifico diretto): in quel caso NON si sintetizza la gamba FIAT in uscita ne' il
+        //movimento COMMISSIONI, e il movimento resta un solo deposito crypto marcato campo5="ACQUISTO
+        //CRYPTO" / campo18="DAC - Acquisto Crypto" (il motore lo carica a costo pieno = Total - fee,
+        //senza movimentare euro). Lista vuota = disattivato: ogni Buy sintetizza la gamba FIAT come prima.
+        public List<String> noteAcquistoDaSaldo = new ArrayList<>();
 
         //--- Classificazione in base al testo libero della colonna note ------------------------------
         //Alcuni export mettono la natura del movimento solo nelle note: Coinbase scrive un premio
@@ -1600,6 +1636,10 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 if (cv.has("causaliConMovimentoCommissione")) {
                     JSONArray a = cv.getJSONArray("causaliConMovimentoCommissione");
                     for (int i = 0; i < a.length(); i++) cfg.causaliControvaloreConCommissione.add(a.getString(i));
+                }
+                if (cv.has("noteAcquistoDaSaldo")) {
+                    JSONArray a = cv.getJSONArray("noteAcquistoDaSaldo");
+                    for (int i = 0; i < a.length(); i++) cfg.noteAcquistoDaSaldo.add(a.getString(i));
                 }
             }
 

@@ -67,6 +67,7 @@ class ImportazioneGenericaCoinbaseTest {
         cfg.causaliChiuse.add("TRASFERIMENTO-CRYPTO");
         cfg.causaliChiuse.add("ACQUISTO CRYPTO");
         cfg.causaliChiuse.add("COMMISSIONI");
+        cfg.noteAcquistoDaSaldo.add("EUR Wallet");
         return cfg;
     }
 
@@ -134,6 +135,64 @@ class ImportazioneGenericaCoinbaseTest {
         assertEquals("EUR", comm[8], "commissione pagata in EUR");
         assertEquals(0, new BigDecimal("0.0769563498").compareTo(new BigDecimal(comm[10]).abs()));
         assertEquals(note, comm[21]);
+    }
+
+    // ---- config reale ---------------------------------------------------------------------------
+
+    @Test
+    void configReale_dichiaraNoteAcquistoDaSaldo() throws Exception {
+        var c = ConfigurazioneImport.carica("config/import/Coinbase CSV.json");
+        assertTrue(c.noteAcquistoDaSaldo.contains("EUR Wallet"),
+                "il marcatore di pagamento dal saldo deve essere dichiarato nel JSON reale");
+        assertTrue(c.causaliControvaloreConCommissione.contains("Buy"));
+    }
+
+    // ---- Buy pagato con carta / strumento esterno al saldo ---------------------------------------
+
+    @Test
+    void buyConCarta_nessunaGambaEuro_nessunaCommissione_campo18DAC() {
+        String note = "Bought 0.05769095 LTC for 10 EUR using MasterCard ********0198";
+        List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
+                riga("5aa573f20562f604ce1817ff", "2018-03-11 18:22:42 UTC", "Buy", "LTC", "0.05769095",
+                        "EUR", "€155.67", "€8.98075", "€10.00", "0.0292498135", note),
+                null, cfg());
+
+        assertNotNull(movs);
+        assertEquals(1, movs.size(), "un solo deposito: niente gamba EUR sintetica, niente COMMISSIONI");
+        String[] m = movs.get(0);
+        assertEquals("", m[8], "nessuna moneta in uscita: gli euro non si muovono");
+        assertEquals("LTC", m[11], "gamba crypto in entrata");
+        assertEquals("0.05769095", m[13], "quantita crypto invariata");
+        assertEquals("ACQUISTO CRYPTO", m[5]);
+        assertEquals("DAC - Acquisto Crypto", m[18], "stesso marcatore della classificazione manuale");
+        assertEquals("9.97", m[15], "costo di carico = Total - commissione (10,00 - 0,0292498135), arrotondato");
+        assertEquals(note, m[21]);
+    }
+
+    @Test
+    void buyDaSaldoEuro_restaScambioEuroCryptoConCommissione() {
+        // regressione: con 'noteAcquistoDaSaldo' attivo, un Buy 'using EUR Wallet' NON cambia
+        String note = "Bought 0.01274947 ETH for 10 EUR using EUR Wallet";
+        List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
+                riga("5a81c37875d25e0001762bfd", "2018-02-12 16:40:24 UTC", "Buy", "ETH", "0.01274947",
+                        "EUR", "€700.66", "€8.93304", "€10.00", "0.0769563498", note),
+                null, cfg());
+
+        assertNotNull(movs);
+        assertEquals(2, movs.size(), "scambio EUR->ETH + movimento COMMISSIONI, come prima");
+        assertEquals("EUR", movs.get(0)[8], "gamba FIAT in uscita ancora sintetizzata");
+        assertTrue(movs.get(0)[0].endsWith("_AC"));
+        assertEquals("", movs.get(0)[18], "nessun marcatore DAC per un acquisto dal saldo");
+    }
+
+    @Test
+    void buyNotaVuota_comportamentoInvariato_gambaEuroSintetizzata() {
+        List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
+                riga("x", "2018-03-11 18:22:42 UTC", "Buy", "LTC", "0.05769095",
+                        "EUR", "€155.67", "€8.98075", "€10.00", "0.0292498135", ""),
+                null, cfg());
+        assertNotNull(movs);
+        assertEquals(2, movs.size(), "nota vuota: non si puo' concludere 'esterno' -> resta scambio + COMMISSIONI");
     }
 
     // ---- Send: nessuna commissione in euro, controvalore dal Subtotal -----------------------------

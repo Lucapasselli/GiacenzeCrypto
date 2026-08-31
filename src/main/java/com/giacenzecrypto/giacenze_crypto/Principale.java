@@ -4357,6 +4357,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_GruppoWallet_Bottone_RiferimentoEstero.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
         Opzioni_GruppoWallet_Bottone_RiferimentoEstero.setText("Riferimento estero...");
         Opzioni_GruppoWallet_Bottone_RiferimentoEstero.setToolTipText("Stato estero e identificativo fiscale del gruppo wallet selezionato (quadro W/RW)");
+        Opzioni_GruppoWallet_Bottone_RiferimentoEstero.setEnabled(false);
         Opzioni_GruppoWallet_Bottone_RiferimentoEstero.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_GruppoWallet_Bottone_RiferimentoEsteroActionPerformed(evt);
@@ -4366,6 +4367,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_GruppoWallet_Bottone_Periodi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
         Opzioni_GruppoWallet_Bottone_Periodi.setText("Periodi di detenzione...");
         Opzioni_GruppoWallet_Bottone_Periodi.setToolTipText("Periodi di detenzione (righi CRYPTO / FIAT) del gruppo wallet selezionato");
+        Opzioni_GruppoWallet_Bottone_Periodi.setEnabled(false);
         Opzioni_GruppoWallet_Bottone_Periodi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_GruppoWallet_Bottone_PeriodiActionPerformed(evt);
@@ -4375,6 +4377,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_GruppoWallet_Bottone_AnagraficaExchange.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
         Opzioni_GruppoWallet_Bottone_AnagraficaExchange.setText("Anagrafica exchange...");
         Opzioni_GruppoWallet_Bottone_AnagraficaExchange.setToolTipText("Stato estero e identificativo fiscale degli exchange (condivisi tra i gruppi)");
+        Opzioni_GruppoWallet_Bottone_AnagraficaExchange.setEnabled(false);
         Opzioni_GruppoWallet_Bottone_AnagraficaExchange.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_GruppoWallet_Bottone_AnagraficaExchangeActionPerformed(evt);
@@ -4392,7 +4395,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(jScrollPane1)
                     .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
                         .addComponent(Opzioni_GruppoWallet_Bottone_Rinomina, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(Opzioni_GruppoWallet_Bottone_RiferimentoEstero)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Opzioni_GruppoWallet_Bottone_Periodi)
@@ -8256,6 +8259,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     }
                     if (IDPrelievo!=null && IDDeposito!=null)
                         {
+                    //Eccezione: un prelievo di "Coinbase" con nota "Sent ... to ..." non va abbinato
+                    //a un deposito di "Coinbase Pro" (il giroconto retail -> Pro resta da classificare a mano)
+                    if (DepositiPrelievi_EccezioneCoinbaseSentTo(IDPrelievo,IDDeposito)){
+                        continue;
+                    }
                     GUI_ClassificazioneMovimento.CreaMovimentiTrasferimentosuWalletProprio(IDPrelievo,IDDeposito);
                     numeromodifiche++;
                     break;
@@ -8400,6 +8408,26 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             Messaggi.InfoMessage("Nessuna coppia trovata", "Non sono state trovare nuove coppie di transazioni da abbinare automaticamente", this);
         }
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }
+
+    /**
+     * Eccezione all'accoppiamento automatico depositi/prelievi (FASE 1).
+     * <p>Un prelievo dell'exchange "Coinbase" la cui nota ({@code [21]}) contiene sia
+     * {@code "sent "} sia {@code " to "} (confronto case-insensitive) non deve essere abbinato
+     * in automatico a un deposito dell'exchange "Coinbase Pro": quel giroconto retail -> Pro va
+     * lasciato alla classificazione manuale.
+     *
+     * @return {@code true} se la coppia ricade nell'eccezione e l'abbinamento va saltato
+     */
+    private boolean DepositiPrelievi_EccezioneCoinbaseSentTo(String IDPrelievo, String IDDeposito){
+        String[] prelievo = MappaCryptoWallet.get(IDPrelievo);
+        String[] deposito = MappaCryptoWallet.get(IDDeposito);
+        if (prelievo == null || deposito == null) return false;
+        String note = (prelievo[21] == null ? "" : prelievo[21]).toLowerCase();
+        return "Coinbase".equalsIgnoreCase(prelievo[3].trim())
+                && "Coinbase Pro".equalsIgnoreCase(deposito[3].trim())
+                && note.contains("sent ")
+                && note.contains(" to ");
     }
 
     /**
@@ -12871,7 +12899,15 @@ if (result != null && !result.isAction("cancel")) {
         // TODO add your handling code here:
         if (PopUp_IDTrans != null) {
 
-            GUI_ClassificazioneMovimento mod = new GUI_ClassificazioneMovimento(PopUp_IDTrans);
+            //Passo tutta la selezione, non solo la prima riga: la voce di menu deve comportarsi come il
+            //pulsante "Classifica Movimento", che usa il costruttore a Set. PopUp_IDTransSelezionati contiene
+            //solo gli ID che sono davvero movimenti, presi dalle righe selezionate. Il ripiego su PopUp_IDTrans
+            //copre la tabella che aprisse questo popup senza riempire la lista (stesso schema di Elimina Movimento).
+            GUI_ClassificazioneMovimento mod;
+            if (PopUp_IDTransSelezionati.isEmpty())
+                mod = new GUI_ClassificazioneMovimento(PopUp_IDTrans);
+            else
+                mod = new GUI_ClassificazioneMovimento(new HashSet<>(PopUp_IDTransSelezionati));
             mod.setLocationRelativeTo(PopUp_Component);
             mod.setVisible(true);
 

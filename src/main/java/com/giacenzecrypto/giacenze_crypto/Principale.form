@@ -5680,6 +5680,7 @@
                         </Property>
                         <Property name="text" type="java.lang.String" value="Riferimento estero..."/>
                         <Property name="toolTipText" type="java.lang.String" value="Stato estero e identificativo fiscale del gruppo wallet selezionato (quadro W/RW)"/>
+                        <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_GruppoWallet_Bottone_RiferimentoEsteroActionPerformed"/>
@@ -5692,6 +5693,7 @@
                         </Property>
                         <Property name="text" type="java.lang.String" value="Periodi di detenzione..."/>
                         <Property name="toolTipText" type="java.lang.String" value="Periodi di detenzione (righi CRYPTO / FIAT) del gruppo wallet selezionato"/>
+                        <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_GruppoWallet_Bottone_PeriodiActionPerformed"/>
@@ -5704,6 +5706,7 @@
                         </Property>
                         <Property name="text" type="java.lang.String" value="Anagrafica exchange..."/>
                         <Property name="toolTipText" type="java.lang.String" value="Stato estero e identificativo fiscale degli exchange (condivisi tra i gruppi)"/>
+                        <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_GruppoWallet_Bottone_AnagraficaExchangeActionPerformed"/>

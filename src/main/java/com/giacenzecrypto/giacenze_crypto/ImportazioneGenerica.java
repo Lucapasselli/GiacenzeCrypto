@@ -1035,13 +1035,18 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             if (rt.length > 39) {
                 rt[39] = "D";
             }
-            // Acquisto con pagamento esterno al saldo: stesso stato che imposterebbe la
-            // classificazione manuale "ACQUISTO CRYPTO (tramite contanti/servizi esterni)" -
-            // il motore lo carica a costo pieno (campo [15] = Total - fee, gia' impostato sopra),
-            // plusvalenza 0, nessun euro movimentato.
-            if (pagamentoEsterno && rt.length > 18) {
-                rt[5] = "ACQUISTO CRYPTO";
-                rt[18] = "DAC - Acquisto Crypto";
+            // Acquisto con pagamento esterno al saldo: stessa forma gia' prodotta dall'import
+            // Crypto.com App (Importazioni.java, "Forzo il fatto che sia un acquisto crypto") -
+            // la categoria nell'ID passa da _DC a _AC e campo5 diventa "ACQUISTO CRYPTO", campo18
+            // resta vuoto. Il motore instrada su TipoID.equals("AC"): carico a costo pieno
+            // campo[15] (= Total - fee, gia' impostato sopra), plusvalenza 0, nessun euro movimentato.
+            if (pagamentoEsterno) {
+                String[] parts = rt[0].split("_");
+                if (parts.length == 5 && parts[4].equals("DC")) {
+                    parts[4] = "AC";
+                    rt[0] = String.join("_", parts);
+                    rt[5] = "ACQUISTO CRYPTO";
+                }
             }
 
             for (Map.Entry<String, Integer> e : cfg.campiExtra.entrySet()) {

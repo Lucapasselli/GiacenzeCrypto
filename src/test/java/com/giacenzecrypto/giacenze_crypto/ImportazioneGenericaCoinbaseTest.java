@@ -158,13 +158,14 @@ class ImportazioneGenericaCoinbaseTest {
                 null, cfg());
 
         assertNotNull(movs);
-        assertEquals(1, movs.size(), "un solo deposito: niente gamba EUR sintetica, niente COMMISSIONI");
+        assertEquals(1, movs.size(), "un solo movimento: niente gamba EUR sintetica, niente COMMISSIONI");
         String[] m = movs.get(0);
         assertEquals("", m[8], "nessuna moneta in uscita: gli euro non si muovono");
         assertEquals("LTC", m[11], "gamba crypto in entrata");
         assertEquals("0.05769095", m[13], "quantita crypto invariata");
+        assertTrue(m[0].endsWith("_AC"), "categoria forzata ad ACQUISTO CRYPTO nell'ID: " + m[0]);
         assertEquals("ACQUISTO CRYPTO", m[5]);
-        assertEquals("DAC - Acquisto Crypto", m[18], "stesso marcatore della classificazione manuale");
+        assertEquals("", m[18], "campo18 vuoto: il motore instrada su TipoID=AC, non serve il marcatore DAC");
         assertEquals("9.97", m[15], "costo di carico = Total - commissione (10,00 - 0,0292498135), arrotondato");
         assertEquals(note, m[21]);
     }

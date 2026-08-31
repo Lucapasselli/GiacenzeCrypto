@@ -27,6 +27,20 @@ I pacchetti pronti all'uso vengono pubblicati a ogni rilascio:
 In caso di problemi si può chiedere supporto sul
 [gruppo Telegram](https://t.me/+6kfy5mjov-I2ODY8).
 
+## Versione 1.0.63 {#versione-1063}
+
+**Nuove implementazioni**
+
+- L'importazione da **Coinbase Pro / GDAX** è stata rivista. I movimenti di questo exchange vengono ora registrati su un wallet distinto ("Coinbase Pro"), separato da quello di Coinbase "retail", così le due storie non si mescolano. I versamenti e i prelievi in euro sono classificati come depositi/prelievi FIAT, quelli in cripto come depositi/prelievi cripto; i giroconti tra Coinbase e Coinbase Pro arrivano come trasferimenti cripto da abbinare a mano con "Classifica Movimento".
+- La voce **"Classifica Movimento" del menu contestuale** (tasto destro sulla tabella dei movimenti) lavora ora sulla selezione multipla, esattamente come il pulsante omonimo: si possono selezionare più righe e classificarle in un'unica finestra.
+- L'evidenziazione blu della riga selezionata si estende ora anche agli **elenchi e ai menu a tendina**, per un aspetto uniforme in tutta l'interfaccia.
+
+**Correzione di bug**
+
+- **Coinbase – acquisti pagati con carta.** Un acquisto di cripto pagato con carta, Apple/Google Pay o bonifico, cioè non con il saldo in euro dell'exchange, generava un'uscita di euro fittizia e un movimento di commissioni separato. Ora questi acquisti vengono caricati al costo pieno effettivamente sostenuto, con plusvalenza zero e senza movimentare euro, come già avviene per l'app di Crypto.com. Gli acquisti pagati con il saldo in euro ("using EUR Wallet") restano invariati.
+- **Coinbase – giroconti verso Coinbase Pro.** Un prelievo da Coinbase con nota del tipo "Sent … to …" non viene più abbinato automaticamente a un deposito su Coinbase Pro: quel trasferimento resta da classificare a mano, evitando accoppiamenti errati.
+- Il pulsante **"Elimina Movimento"** aveva il testo scuro su sfondo rosso pieno, poco leggibile: ora il testo è bianco.
+
 ## Versione 1.0.62 {#versione-1062}
 
 **Nuove implementazioni**

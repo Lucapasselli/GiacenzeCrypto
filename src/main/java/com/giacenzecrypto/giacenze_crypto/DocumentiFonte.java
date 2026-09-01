@@ -60,6 +60,18 @@ public class DocumentiFonte {
     private static final Map<Integer, Writer> SessioniAperte = new HashMap<>();
 
     /**
+     * Descrizione leggibile dell'ultima importazione avviata ({@code "Crypto.com App CSV"},
+     * {@code "OKX CSV (formato storico)"}, il nome del file di configurazione per i CSV generici,
+     * …) e nome del file da cui proveniva. Serve a {@link Importazioni_Resoconto} per il pulsante
+     * "Invia segnalazione": dai soli righi d'errore non si capirebbe a quale import si riferiscono.
+     * Volutamente <b>non</b> riazzerati in un {@code finally} (a differenza di
+     * {@link Importazioni#DocumentoFonteCorrente}): il resoconto viene aperto subito dopo
+     * l'import e ne legge il valore alla costruzione, non all'invio.
+     */
+    public static volatile String UltimaDescrizioneImport = "";
+    public static volatile String UltimoFileImport = "";
+
+    /**
      * Esito di una registrazione.
      *
      * <p>Il flag {@link #Nuovo} non è decorativo: distingue il documento appena creato da uno riconosciuto per
@@ -224,6 +236,8 @@ public class DocumentiFonte {
      */
     public static boolean EseguiImportDaFile(File Origine, String Tipo, String DescrizioneOrigine,
             java.util.function.BooleanSupplier Importazione) {
+        UltimaDescrizioneImport = DescrizioneOrigine == null ? "" : DescrizioneOrigine;
+        UltimoFileImport = Origine == null ? "" : Origine.getName();
         Registrazione R = Registra(Origine, Tipo, DescrizioneOrigine);
         int aggiunte;
         Importazioni.DocumentoFonteCorrente = R.Id;
@@ -274,6 +288,8 @@ public class DocumentiFonte {
      * @return l'id del documento, {@code 0} se la sessione non si è potuta aprire
      */
     public static int ApriSessione(String DescrizioneOrigine) {
+        UltimaDescrizioneImport = Funzioni.noData(DescrizioneOrigine) ? "" : DescrizioneOrigine;
+        UltimoFileImport = "";
         try {
             int Id = ProssimoId();
             if (Id <= 0) {

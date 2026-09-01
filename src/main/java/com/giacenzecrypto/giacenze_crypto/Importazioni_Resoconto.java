@@ -28,6 +28,18 @@ private static final long serialVersionUID = 8L;
         int TrasazioniScartate=0;
         String movimentiSconosciuti="";*/
     
+    // Contesto dell'importazione appena eseguita, per il pulsante "Invia segnalazione errori":
+    // dai soli righi d'errore (movimenti sconosciuti) non si capirebbe a quale import si
+    // riferiscono. Catturati alla costruzione perché il resoconto viene aperto subito dopo
+    // l'import (vedi DocumentiFonte.UltimaDescrizioneImport).
+    private String contestoDescrizione = "";
+    private String contestoFile = "";
+    private int cTotali;
+    private int cAggiunte;
+    private int cScartate;
+    private int cSconosciute;
+    private String movimentiSconosciuti = "";
+
     public Importazioni_Resoconto() {
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
@@ -37,6 +49,13 @@ private static final long serialVersionUID = 8L;
         jScrollPane2.setVisible(false);
         TextPane_Attenzione.setVisible(false);
         TextPane_Errori.setVisible(false);
+
+        //Il vecchio pulsante "Copia errori negli appunti" diventa l'invio diretto della segnalazione
+        //(il .form resta invariato: qui si cambia solo l'etichetta e, nell'handler, il comportamento).
+        Bottone_CopiaAppunti.setText("Invia segnalazione errori");
+
+        contestoDescrizione = DocumentiFonte.UltimaDescrizioneImport == null ? "" : DocumentiFonte.UltimaDescrizioneImport;
+        contestoFile = DocumentiFonte.UltimoFileImport == null ? "" : DocumentiFonte.UltimoFileImport;
     }
 
     /**
@@ -48,6 +67,9 @@ private static final long serialVersionUID = 8L;
     public void ImpostaValori(Importazioni.Esito E) {
         if (!E.Origine.isBlank()) {
             Label_Titolo.setText("RESOCONTO IMPORTAZIONE - " + E.Origine.toUpperCase());
+            //L'origine dell'esito (scaricamento API di più exchange sommati) è più precisa della
+            //descrizione dell'ultimo documento: la si preferisce quando c'è.
+            contestoDescrizione = E.Origine;
         }
         ImpostaValori(E.Transazioni, E.Aggiunte, E.Scartate, E.Sconosciute, E.MovimentiSconosciuti);
     }
@@ -68,6 +90,11 @@ private static final long serialVersionUID = 8L;
         this.Text_TransImportate.setText(String.valueOf(TAggiunte));
         this.Text_TransScartate.setText(String.valueOf(TScartate));
         this.Text_TransSconosciute.setText(String.valueOf(TSconosciute));
+        this.cTotali = T;
+        this.cAggiunte = TAggiunte;
+        this.cScartate = TScartate;
+        this.cSconosciute = TSconosciute;
+        this.movimentiSconosciuti = movScon == null ? "" : movScon;
         if (TSconosciute==0) Text_TransSconosciute.setForeground(Color.BLACK); else Text_TransSconosciute.setForeground(Color.RED);
         if (TScartate==0) this.Text_TransScartate.setForeground(Color.BLACK); else Text_TransScartate.setForeground(Color.RED);
         if (!movScon.trim().equalsIgnoreCase("")){
@@ -77,7 +104,13 @@ private static final long serialVersionUID = 8L;
             this.TextPane_Attenzione.setVisible(true);
             this.TextPane_Errori.setVisible(true);
             this.TextPane_Errori.setText(movScon);
-          //  this.
+            //Il riquadro d'avviso non manda più a una mail: c'è il pulsante "Invia segnalazione errori".
+            this.TextPane_Attenzione.setText("<html><body><p style=\"margin-top:0\">"
+                    + "<b><center>ATTENZIONE: alcune transazioni non sono state importate.</b><br><br>"
+                    + "<center>I movimenti elencati qui sotto non sono riconosciuti dall'import del programma.<br>"
+                    + "<center>Premi il pulsante <b>Invia segnalazione errori</b> per mandarli all'autore:"
+                    + " verranno spediti solo queste righe, il tipo di importazione e la versione del programma."
+                    + "</p></body></html>");
         }
         pack();
               
@@ -233,12 +266,71 @@ private static final long serialVersionUID = 8L;
     }//GEN-LAST:event_Bottone_OkActionPerformed
 
     private void Bottone_CopiaAppuntiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_CopiaAppuntiActionPerformed
-        // TODO add your handling code here:
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        StringSelection stringSelection = new StringSelection(this.TextPane_Errori.getText());
-        clipboard.setContents(stringSelection, null);
-        
+        final String corpo = TextPane_Errori.getText();
+        if (corpo == null || corpo.isBlank()) {
+            return;
+        }
+        String tipo = contestoDescrizione.isBlank() ? "(sconosciuto)" : contestoDescrizione;
+
+        AppDialog.DialogResult r = AppDialog.builder(this)
+                .windowTitle("Invia segnalazione errori")
+                .bodyTitle("Inviare la segnalazione?")
+                .showTitleInBody(false)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message("Verranno inviati all'autore: le righe dei movimenti sconosciuti mostrate qui sopra, "
+                        + "il tipo di importazione (<b>" + escapeHtml(tipo) + "</b>) e la versione del programma. "
+                        + "Nessun altro dato.")
+                .details("Il servizio conserva la segnalazione al massimo 30 giorni, solo per la diagnosi.")
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY).build())
+                .action(AppDialog.DialogAction.builder("send", "Invia")
+                        .role(AppDialog.ActionRole.PRIMARY).build())
+                .showDialog();
+        if (r == null || !r.isAction("send")) {
+            return;
+        }
+
+        SegnalazioniClient.DescrittoreImport d = new SegnalazioniClient.DescrittoreImport(
+                contestoDescrizione, contestoFile, cTotali, cAggiunte, cScartate, cSconosciute);
+
+        Download dow = new Download();
+        dow.NascondiInterrompi();
+        dow.MostraProgressAttesa("Invio segnalazione", "Invio in corso...");
+        dow.SetLabel("Invio in corso, attendere...");
+        dow.setLocationRelativeTo(this);
+
+        final SegnalazioniClient.Esito[] esito = new SegnalazioniClient.Esito[1];
+        Thread t = new Thread(() -> {
+            try {
+                esito[0] = SegnalazioniClient.inviaErroreImport(corpo, d);
+            } catch (RuntimeException ex) {
+                LoggerGC.ScriviErrore(ex);
+                esito[0] = new SegnalazioniClient.Esito(false, 0, "Errore imprevisto: " + ex.getMessage());
+            } finally {
+                dow.ChiudiFinestra();
+            }
+        });
+        t.start();
+        dow.setVisible(true);
+
+        SegnalazioniClient.Esito e = esito[0];
+        if (e != null && e.ok()) {
+            Messaggi.SuccessMessage("Inviata", e.messaggio(), this);
+            Bottone_CopiaAppunti.setEnabled(false);
+        } else {
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents(new StringSelection(corpo), null);
+            Messaggi.WarningMessage("Invio non riuscito",
+                    (e != null ? e.messaggio() : "Nessuna risposta dal servizio.")
+                    + " Gli errori sono stati copiati negli appunti: puoi incollarli in una mail all'autore.",
+                    this);
+        }
     }//GEN-LAST:event_Bottone_CopiaAppuntiActionPerformed
+
+    private static String escapeHtml(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
 
     /**
      * @param args the command line arguments

@@ -853,6 +853,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_Varie_RicalcolaPrezzi = new javax.swing.JButton();
         Opzioni_Varie_Checkbox_LogJsonDefi = new javax.swing.JCheckBox();
         Opzioni_Varie_Checkbox_LogJsonPrezzi = new javax.swing.JCheckBox();
+        Opzioni_Varie_Bottone_InviaLog = new javax.swing.JButton();
         Opzioni_Pulizie = new javax.swing.JPanel();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         Opzioni_CardWallet_Pannello = new javax.swing.JPanel();
@@ -5083,6 +5084,14 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Opzioni_Varie_Bottone_InviaLog.setText("Invia log all'autore per una segnalazione...");
+        Opzioni_Varie_Bottone_InviaLog.setToolTipText("Apre una finestra in cui rivedere e modificare i log anonimizzati prima di inviarli all'autore per la diagnosi di un problema.");
+        Opzioni_Varie_Bottone_InviaLog.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Varie_Bottone_InviaLogActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_VarieLayout = new javax.swing.GroupLayout(Opzioni_Varie);
         Opzioni_Varie.setLayout(Opzioni_VarieLayout);
         Opzioni_VarieLayout.setHorizontalGroup(
@@ -5095,7 +5104,8 @@ private static final long serialVersionUID = 3L;
                         .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(Opzioni_Varie_Checkbox_LogJsonDefi)
-                    .addComponent(Opzioni_Varie_Checkbox_LogJsonPrezzi))
+                    .addComponent(Opzioni_Varie_Checkbox_LogJsonPrezzi)
+                    .addComponent(Opzioni_Varie_Bottone_InviaLog, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         Opzioni_VarieLayout.setVerticalGroup(
@@ -5111,6 +5121,8 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Opzioni_Varie_Checkbox_LogJsonDefi)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_Varie_Checkbox_LogJsonPrezzi)
+                .addGap(18, 18, 18)
+                .addComponent(Opzioni_Varie_Bottone_InviaLog, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -12260,6 +12272,10 @@ if (result != null && !result.isAction("cancel")) {
         DocumentiAiuto.Apri(DocumentiAiuto.AVVERTENZE_PROBLEMI_NOTI);
     }//GEN-LAST:event_Opzioni_Varie_Bottone_ProblemiNotiActionPerformed
 
+    private void Opzioni_Varie_Bottone_InviaLogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Bottone_InviaLogActionPerformed
+        GUI_InviaLog.Mostra(this);
+    }//GEN-LAST:event_Opzioni_Varie_Bottone_InviaLogActionPerformed
+
     private void Opzioni_Varie_Checkbox_LogJsonDefiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Checkbox_LogJsonDefiActionPerformed
         //Abilita/disabilita la stampa nel log dei JSON scaricati durante l'importazione dei wallet DeFi.
         VarCondivise.LogJsonDefi = Opzioni_Varie_Checkbox_LogJsonDefi.isSelected();
@@ -17786,6 +17802,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_LogJsonDefi;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_LogJsonPrezzi;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_TemaScuro;
+    private javax.swing.JButton Opzioni_Varie_Bottone_InviaLog;
     private javax.swing.JButton Opzioni_Varie_RicalcolaPrezzi;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero;

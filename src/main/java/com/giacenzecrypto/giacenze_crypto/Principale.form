@@ -6664,6 +6664,7 @@
                                   </Group>
                                   <Component id="Opzioni_Varie_Checkbox_LogJsonDefi" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="Opzioni_Varie_Checkbox_LogJsonPrezzi" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_Varie_Bottone_InviaLog" alignment="0" min="-2" pref="260" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
@@ -6682,6 +6683,8 @@
                               <Component id="Opzioni_Varie_Checkbox_LogJsonDefi" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Opzioni_Varie_Checkbox_LogJsonPrezzi" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+                              <Component id="Opzioni_Varie_Bottone_InviaLog" min="-2" pref="40" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
@@ -6728,6 +6731,15 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Checkbox_LogJsonPrezziActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="Opzioni_Varie_Bottone_InviaLog">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Invia log all'autore per una segnalazione..."/>
+                        <Property name="toolTipText" type="java.lang.String" value="Apre una finestra in cui rivedere e modificare i log anonimizzati prima di inviarli all'autore per la diagnosi di un problema."/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Bottone_InviaLogActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

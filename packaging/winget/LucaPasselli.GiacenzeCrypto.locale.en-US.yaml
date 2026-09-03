@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.12.0.schema.json
+
+PackageIdentifier: LucaPasselli.GiacenzeCrypto
+PackageVersion: 1.0.63
+PackageLocale: en-US
+Publisher: Luca Passelli
+PublisherUrl: https://giacenzecrypto.it
+PublisherSupportUrl: https://github.com/Lucapasselli/GiacenzeCrypto/issues
+Author: Luca Passelli
+PackageName: Giacenze Crypto
+PackageUrl: https://github.com/Lucapasselli/GiacenzeCrypto
+License: MIT
+LicenseUrl: https://github.com/Lucapasselli/GiacenzeCrypto/blob/master/LICENSE
+Copyright: Copyright (c) 2026 Luca Passelli
+ShortDescription: Desktop application for Italian cryptocurrency tax reporting.
+Description: |-
+  Giacenze Crypto is a Java desktop application for Italian crypto tax reporting.
+  It tracks cryptocurrency movements across exchanges, DeFi platforms and blockchain
+  wallets, calculates capital gains (plusvalenze) with the LIFO method, and produces
+  the figures for the Italian tax return: Quadro RW (foreign-asset / wealth declaration)
+  and Quadro RT (capital gains).
+Moniker: giacenze-crypto
+Tags:
+- accounting
+- capital-gains
+- crypto
+- cryptocurrency
+- finance
+- italy
+- lifo
+- plusvalenze
+- tax
+- taxes
+ReleaseNotesUrl: https://github.com/Lucapasselli/GiacenzeCrypto/releases/tag/Giacenze_Crypto_1.0.63
+ManifestType: defaultLocale
+ManifestVersion: 1.12.0

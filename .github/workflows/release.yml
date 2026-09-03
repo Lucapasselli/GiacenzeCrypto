@@ -26,6 +26,14 @@ on:
         # Come per AUR, la prima volta conviene provarlo a mano con flatpak.yml in "solo_prova"
         # (vedi nocommit/Documentazione/Pubblicazione_Flatpak.md). Attivalo dopo.
         default: false
+      pubblica_winget:
+        description: "Apri la PR di aggiornamento su winget-pkgs a fine release"
+        type: boolean
+        required: false
+        # La primissima submission a winget-pkgs va fatta a mano (vedi
+        # nocommit/Documentazione/Pubblicazione_Winget.md): microsoft/winget-releaser richiede
+        # che il pacchetto esista gia'. Attivalo dopo che la prima PR e' stata mergiata.
+        default: false
       bozza:
         description: "Crea la release come bozza (draft): resta invisibile al pubblico finche' non la pubblichi a mano da GitHub, cosi' puoi scaricare e provare gli asset con calma"
         type: boolean
@@ -468,4 +476,15 @@ jobs:
     # comunque (e' voluto in flatpak.yml), meglio saltare il job che lasciarlo fallire.
     if: ${{ inputs.pubblica_flatpak && !inputs.bozza }}
     uses: ./.github/workflows/flatpak.yml
+    secrets: inherit
+
+  # Stesso motivo di aggiorna-aur. Apre la PR di aggiornamento su microsoft/winget-pkgs
+  # riusando l'asset "Installer_Windows.exe" appena pubblicato. Richiede il secret
+  # WINGET_TOKEN e che il pacchetto esista gia' su winget-pkgs (prima submission a mano).
+  aggiorna-winget:
+    needs: create-release
+    # In bozza l'asset non e' scaricabile pubblicamente: la validazione di winget-pkgs
+    # fallirebbe con Error-Installer-Availability, quindi il job va saltato.
+    if: ${{ inputs.pubblica_winget && !inputs.bozza }}
+    uses: ./.github/workflows/winget.yml
     secrets: inherit

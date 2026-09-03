@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.locale.1.12.0.schema.json
+
+PackageIdentifier: LucaPasselli.GiacenzeCrypto
+PackageVersion: 1.0.63
+PackageLocale: it-IT
+Publisher: Luca Passelli
+PublisherUrl: https://giacenzecrypto.it
+PublisherSupportUrl: https://github.com/Lucapasselli/GiacenzeCrypto/issues
+Author: Luca Passelli
+PackageName: Giacenze Crypto
+PackageUrl: https://github.com/Lucapasselli/GiacenzeCrypto
+License: MIT
+LicenseUrl: https://github.com/Lucapasselli/GiacenzeCrypto/blob/master/LICENSE
+Copyright: Copyright (c) 2026 Luca Passelli
+ShortDescription: Applicazione desktop per la fiscalità italiana delle cripto-attività.
+Description: |-
+  Giacenze Crypto è un'applicazione desktop Java per la dichiarazione fiscale italiana
+  delle cripto-attività. Traccia i movimenti su exchange, piattaforme DeFi e wallet
+  on-chain, calcola le plusvalenze con il metodo LIFO e produce i dati per i quadri
+  della dichiarazione dei redditi: Quadro RW (patrimonio) e Quadro RT (plusvalenze).
+Tags:
+- cripto
+- criptovalute
+- dichiarazione
+- fiscalita
+- lifo
+- plusvalenze
+- quadro-rt
+- quadro-rw
+ReleaseNotesUrl: https://github.com/Lucapasselli/GiacenzeCrypto/releases/tag/Giacenze_Crypto_1.0.63
+ManifestType: locale
+ManifestVersion: 1.12.0

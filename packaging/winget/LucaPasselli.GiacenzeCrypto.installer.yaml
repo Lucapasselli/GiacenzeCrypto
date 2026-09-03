@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.12.0.schema.json
+
+PackageIdentifier: LucaPasselli.GiacenzeCrypto
+PackageVersion: 1.0.63
+InstallerType: inno
+InstallModes:
+- interactive
+- silent
+- silentWithProgress
+UpgradeBehavior: install
+# L'installer Inno e' generato da .github/workflows/release.yml (jpackage app-image ->
+# installer/InnoScript.iss). AppId Inno = {B80B628D-FA70-40DB-9527-0B5768294F53}
+# (le due graffe iniziali nello script .iss sono l'escape di una graffa letterale), quindi
+# la chiave di disinstallazione e' <AppId>_is1. PrivilegesRequired=lowest -> installazione
+# per-utente, da cui Scope: user. Se AppId cambia nello script .iss, aggiorna ProductCode qui.
+AppsAndFeaturesEntries:
+- DisplayName: Giacenze_Crypto
+  Publisher: Luca Passelli
+  DisplayVersion: 1.0.63
+  ProductCode: '{B80B628D-FA70-40DB-9527-0B5768294F53}_is1'
+  InstallerType: inno
+Installers:
+- Architecture: x64
+  Scope: user
+  InstallerUrl: https://github.com/Lucapasselli/GiacenzeCrypto/releases/download/Giacenze_Crypto_1.0.63/GiacenzeCrypto_1.0.63_Installer_Windows.exe
+  InstallerSha256: 12F1085472F5A5B40A6E74ED6398F9E38474F5F30AA3DA62D26D219AFE142D87
+ManifestType: installer
+ManifestVersion: 1.12.0

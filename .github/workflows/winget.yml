@@ -1,0 +1,89 @@
+name: Winget
+
+# Apre/aggiorna la PR di aggiornamento del pacchetto "LucaPasselli.GiacenzeCrypto" su
+# microsoft/winget-pkgs. NON ricompila niente e NON tocca la release GitHub: l'azione
+# microsoft/winget-releaser legge l'asset .exe gia' pubblicato nella release, ne calcola
+# lo SHA256 e apre la pull request sul repo winget-pkgs a partire dal manifest gia' presente.
+#
+# ┌─ PREREQUISITI ──────────────────────────────────────────────────────────────────────┐
+# │ 1. Il pacchetto deve GIA' esistere su winget-pkgs: la primissima submission va fatta │
+# │    a mano (vedi nocommit/Documentazione/Pubblicazione_Winget.md). Finche' non e'     │
+# │    mergiata, questo workflow non ha un manifest da cui partire e fallisce.           │
+# │ 2. Secret di repo WINGET_TOKEN = Personal Access Token "classic" con scope           │
+# │    public_repo (il GITHUB_TOKEN di default non puo' forkare/PR su un altro repo).    │
+# └────────────────────────────────────────────────────────────────────────────────────┘
+#
+# Come aur.yml / flatpak.yml: lanciabile da solo (workflow_dispatch) o richiamato in coda a
+# release.yml (workflow_call). L'evento "release: published" non e' utilizzabile perche' una
+# release creata col GITHUB_TOKEN di default non innesca altri workflow.
+
+on:
+  workflow_dispatch:
+    inputs:
+      versione:
+        description: "Versione da pubblicare (vuoto = quella di pom.xml)"
+        required: false
+        default: ''
+      solo_prova:
+        description: "Salta l'apertura della PR (verifica solo che versione e secret ci siano)"
+        type: boolean
+        required: false
+        default: false
+  workflow_call:
+    inputs:
+      versione:
+        type: string
+        required: false
+        default: ''
+      solo_prova:
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  pubblica:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determina la versione
+        id: ver
+        run: |
+          VERSIONE="${{ inputs.versione }}"
+          if [ -z "$VERSIONE" ]; then
+            # Il namespace Maven cambia fra le versioni del POM: si seleziona per nome locale.
+            VERSIONE=$(xmllint --xpath \
+              "/*[local-name()='project']/*[local-name()='version']/text()" pom.xml)
+          fi
+          if [ -z "$VERSIONE" ]; then
+            echo "Versione non determinabile" >&2
+            exit 1
+          fi
+          echo "Versione: $VERSIONE"
+          echo "versione=$VERSIONE" >> "$GITHUB_OUTPUT"
+
+      - name: Verifica il secret
+        id: chiave
+        env:
+          WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+        run: |
+          if [ -z "$WINGET_TOKEN" ]; then
+            echo "::warning::Secret WINGET_TOKEN assente: apertura PR saltata."
+            echo "presente=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "presente=si" >> "$GITHUB_OUTPUT"
+          fi
+
+      # release-tag e' passato per esteso: microsoft/winget-releaser deriva la versione dal
+      # tag togliendo una "v" iniziale, e "Giacenze_Crypto_<versione>" non e' interpretabile
+      # in quel modo. Il formato del tag e' vincolato (mirror SourceForge + controllo
+      # aggiornamenti dell'app), quindi si passano sia version che release-tag espliciti.
+      - name: Aggiorna winget-pkgs
+        if: ${{ steps.chiave.outputs.presente == 'si' && !inputs.solo_prova }}
+        uses: microsoft/winget-releaser@v2
+        with:
+          identifier: LucaPasselli.GiacenzeCrypto
+          version: ${{ steps.ver.outputs.versione }}
+          release-tag: Giacenze_Crypto_${{ steps.ver.outputs.versione }}
+          installers-regex: 'Installer_Windows\.exe$'
+          token: ${{ secrets.WINGET_TOKEN }}

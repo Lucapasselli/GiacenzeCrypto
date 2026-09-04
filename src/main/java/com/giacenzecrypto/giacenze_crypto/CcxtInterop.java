@@ -34,6 +34,22 @@ public class CcxtInterop {
     public static final String NODE_VERSION = "v24.7.0";
 
     /**
+     * Versione di CCXT pinnata, sullo stesso principio di {@link #NODE_VERSION}: {@link #installCcxt()}
+     * la confronta con quella effettivamente presente in {@code node_modules/ccxt/package.json} e
+     * reinstalla se non coincidono, invece di limitarsi a verificare che la cartella esista.
+     * <p>
+     * Prima di questa costante un {@code npm install ccxt} (senza versione) veniva eseguito una sola
+     * volta, alla primissima importazione via API su ogni installazione: chi aveva scaricato l'app
+     * mesi prima restava agganciato per sempre a quella versione. Un utente segnalò il 2026-09-03 lo
+     * scaricamento OKX bloccato su "Funding errore ... : exchange[metodo] is not a function" per
+     * {@code privateGetAssetBillsHistory} — l'endpoint {@code asset/bills-history} introdotto in CCXT
+     * dopo la sua installazione, quindi assente. Con il vecchio Trading (`privateGetAccountBillsArchive`)
+     * funzionante, un utente del genere non ha modo di capire da solo che a mancare e' una libreria mai
+     * vista: da qui il pin, aggiornato a mano quando serve (bug **C14**).
+     */
+    public static final String CCXT_VERSION = "4.5.77";
+
+    /**
      * Radice di una distribuzione Node.js <b>fornita dal pacchetto</b> invece che scaricata dall'app,
      * individuata da {@link #LeggiNodeEsterno()} per variabile d'ambiente ({@code GIACENZE_NODE_HOME},
      * la via del flatpak) oppure per posizione (una cartella {@code node/} accanto alle risorse, la via
@@ -448,15 +464,18 @@ public class CcxtInterop {
     
     
     /**
-     * Installa la libreria Node.js CCXT (se non già presente in {@code node_modules}) tramite {@code npm install},
-     * usando la distribuzione Node.js gestita da {@link #getNodeExePath()}.
+     * Installa (o aggiorna a {@link #CCXT_VERSION}) la libreria Node.js CCXT in {@code node_modules}
+     * tramite {@code npm install}, usando la distribuzione Node.js gestita da {@link #getNodeExePath()}.
      * @throws IOException in caso di errore di avvio/lettura del processo npm
      * @throws InterruptedException se il thread viene interrotto durante l'attesa del processo
      * @throws RuntimeException se {@code npm install} termina con un codice di uscita diverso da zero
      */
     public static void installCcxt() throws IOException, InterruptedException {
-        
-        
+
+        // CCXT fornito dal pacchetto (flatpak/MSIX), in una cartella di sola lettura: nessun controllo
+        // di versione qui, la responsabilita' e' del manifest di build - vedi NODE_ESTERNO.
+        if (NODE_ESTERNO != null) return;
+
         Path nodePath = getNodeExePath();
        // System.out.println("nodePath="+nodePath);
 
@@ -468,22 +487,25 @@ public class CcxtInterop {
             // Se siamo su Windows, node.exe sta direttamente in base dir, altrimenti sotto bin
             nodeBaseDir = nodeBaseDir.getParent();
         }      */
-        
+
     Path nodeModulesDir = NODE_DIR.resolve("node_modules");
     //Path nodeModulesDir = nodeBaseDir.resolve("node_modules").toAbsolutePath();
     Path ccxtDir = nodeModulesDir.resolve("ccxt");
 
-    if (Files.exists(ccxtDir) && Files.isDirectory(ccxtDir)) {
+    String versioneInstallata = versioneCcxtInstallata(ccxtDir);
+    if (Files.exists(ccxtDir) && Files.isDirectory(ccxtDir) && CCXT_VERSION.equals(versioneInstallata)) {
         //System.out.println("CCXT già installato in: " + ccxtDir);
         return;
-    }    
-    
+    }
+
     Path npmPath = getNpmPath();
     System.out.println("npmPath="+npmPath);
-    
 
-    System.out.println("Installo ccxt...");
-    ProcessBuilder builder = new ProcessBuilder(npmPath.toString(), "install", "ccxt");
+
+    System.out.println(versioneInstallata == null
+            ? "Installo ccxt " + CCXT_VERSION + "..."
+            : "Aggiorno ccxt da " + versioneInstallata + " a " + CCXT_VERSION + "...");
+    ProcessBuilder builder = new ProcessBuilder(npmPath.toString(), "install", "ccxt@" + CCXT_VERSION);
     System.out.println(VarStatiche.getWorkingDirectory() + "tools/node");
     builder.directory(NODE_DIR.toFile());
     //builder.directory(nodeModulesDir.toFile());
@@ -496,6 +518,7 @@ public class CcxtInterop {
     // Inserisci la directory che contiene node.exe nel PATH
     String currentPath = env.get("PATH");
     env.put("PATH", nodePath.getParent().toAbsolutePath().toString() + File.pathSeparator + currentPath);
+    isolaConfigNpm(env);
 
     Process process = builder.start();
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -507,8 +530,42 @@ public class CcxtInterop {
 
     int exitCode = process.waitFor();
     if (exitCode != 0) throw new RuntimeException("npm install ccxt fallito");
-    System.out.println("ccxt installato con successo");
+    System.out.println("ccxt " + CCXT_VERSION + " installato con successo");
 }
+
+    /**
+     * Legge la versione installata in {@code <ccxtDir>/package.json} ({@code "version": "x.y.z"}), o
+     * {@code null} se la cartella non esiste o il file non e' leggibile/parsabile — in entrambi i casi
+     * {@link #installCcxt()} tratta la situazione come "da (re)installare", mai come un errore.
+     */
+    /**
+     * Isola l'esecuzione di {@code npm install} dalla configurazione della macchina, puntando
+     * {@code userconfig}/{@code globalconfig} a un file che non esiste — npm si comporta come se non
+     * trovasse ulteriore configurazione (comportamento documentato, nessun errore) invece di leggere
+     * l'{@code .npmrc} utente/globale reale. Senza questo, un valore lasciato li' da un altro strumento
+     * del tutto estraneo a quest'app puo' finire nei log dell'utente come un warning incomprensibile —
+     * osservato il 2026-09-04: {@code npm warn Unknown user config "allow-scripts"}, una chiave che
+     * questa applicazione non imposta mai. L'installazione di ccxt e' interna e deterministica (vedi
+     * {@link #CCXT_VERSION}) e non deve dipendere da configurazioni npm messe li' per altri scopi.
+     */
+    private static void isolaConfigNpm(Map<String, String> env) {
+        String segnaposto = NODE_DIR.resolve("npmrc-vuoto.ini").toString();
+        env.put("npm_config_userconfig", segnaposto);
+        env.put("npm_config_globalconfig", segnaposto);
+    }
+
+    private static String versioneCcxtInstallata(Path ccxtDir) {
+        Path packageJson = ccxtDir.resolve("package.json");
+        if (!Files.exists(packageJson)) return null;
+        try {
+            String contenuto = Files.readString(packageJson, StandardCharsets.UTF_8);
+            java.util.regex.Matcher m = java.util.regex.Pattern
+                    .compile("\"version\"\\s*:\\s*\"([^\"]+)\"").matcher(contenuto);
+            return m.find() ? m.group(1) : null;
+        } catch (IOException e) {
+            return null;
+        }
+    }
 
  /**
   * Come {@link #installCcxt}, ma generico per un qualsiasi modulo npm indicato per nome.
@@ -549,6 +606,7 @@ public class CcxtInterop {
     // Inserisci la directory che contiene node.exe nel PATH
     String currentPath = env.get("PATH");
     env.put("PATH", nodePath.getParent().toAbsolutePath().toString() + File.pathSeparator + currentPath);
+    isolaConfigNpm(env);
 
     Process process = builder.start();
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));

@@ -1,4 +1,6 @@
-// npm i ccxt@latest
+// La versione di ccxt e' pinnata e gestita da CcxtInterop.installCcxt() (CCXT_VERSION), non va
+// installata/aggiornata a mano qui: un endpoint nuovo (es. asset/bills-history sotto) manca su
+// un'installazione vecchia con "exchange[metodo] is not a function" - vedi bug C14.
 //
 // Scarica i "bills" (movimenti contabili) di OKX, che sono l'equivalente API dell'export CSV
 // gestito da Importazioni.Ex_OKX_Importa: ogni riga e' una variazione di saldo su una moneta.

@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -3283,7 +3284,8 @@ public static void RecuperaGiacenzeDaCCXT(String Exchange,String APIKey,String A
              try {
                  pb.redirectErrorStream(false);
                  Process process = pb.start();
-                 
+                 AtomicBoolean scadutoPerTimeout = CcxtInterop.avviaWatchdogTimeout(process, CcxtInterop.TIMEOUT_SCRIPT_PREZZI_MINUTI);
+
                  // Legge l'output dello script (JSON stampato da console.log)
                  StringBuilder output = new StringBuilder();
                  try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -3294,10 +3296,15 @@ public static void RecuperaGiacenzeDaCCXT(String Exchange,String APIKey,String A
                      }
                      while ((line = errReader.readLine()) != null) System.out.println("[NODE] " + line);
                  }
-                 
+
                  // Attende che il processo finisca
                  int exitCode = process.waitFor();
                  //System.out.println("Exit code: " + exitCode);
+                 if (scadutoPerTimeout.get()) {
+                     System.err.println("Script Node interrotto: nessuna risposta entro "
+                             + CcxtInterop.TIMEOUT_SCRIPT_PREZZI_MINUTI + " minuti (probabile problema di connessione)");
+                     return;
+                 }
                  if (exitCode != 0) {
                      System.err.println("Script Node fallito. Exit code: " + exitCode);
                      System.err.println(output);
@@ -3617,6 +3624,7 @@ static boolean RecuperaPrezziDaCCXTRange(String Symbol, long Since, long Until,
         try {
             pb.redirectErrorStream(false);
             Process process = pb.start();
+            AtomicBoolean scadutoPerTimeout = CcxtInterop.avviaWatchdogTimeout(process, CcxtInterop.TIMEOUT_SCRIPT_PREZZI_MINUTI);
 
             // Leggi l'output dello script (JSON stampato da console.log)
             StringBuilder output = new StringBuilder();
@@ -3631,6 +3639,11 @@ static boolean RecuperaPrezziDaCCXTRange(String Symbol, long Since, long Until,
 
             // Attendi che il processo finisca
             int exitCode = process.waitFor();
+            if (scadutoPerTimeout.get()) {
+                System.err.println("Script Node interrotto: nessuna risposta entro "
+                        + CcxtInterop.TIMEOUT_SCRIPT_PREZZI_MINUTI + " minuti (probabile problema di connessione)");
+                return false;
+            }
             if (exitCode != 0) {
                 System.err.println("Script Node fallito. Exit code: " + exitCode);
                 System.err.println(output);

@@ -21,6 +21,9 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.*;
@@ -521,6 +524,7 @@ public class CcxtInterop {
     isolaConfigNpm(env);
 
     Process process = builder.start();
+    AtomicBoolean scadutoPerTimeout = avviaWatchdogTimeout(process, TIMEOUT_NPM_INSTALL_MINUTI);
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
          BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
         String line;
@@ -529,6 +533,9 @@ public class CcxtInterop {
     }
 
     int exitCode = process.waitFor();
+    if (scadutoPerTimeout.get())
+        throw new RuntimeException("npm install ccxt interrotto: nessuna risposta entro "
+                + TIMEOUT_NPM_INSTALL_MINUTI + " minuti (probabile problema di connessione)");
     if (exitCode != 0) throw new RuntimeException("npm install ccxt fallito");
     System.out.println("ccxt " + CCXT_VERSION + " installato con successo");
 }
@@ -559,6 +566,116 @@ public class CcxtInterop {
     private static void isolaConfigNpm(Map<String, String> env) {
         env.put("npm_config_userconfig", NODE_DIR.resolve("npmrc-vuoto-user.ini").toString());
         env.put("npm_config_globalconfig", NODE_DIR.resolve("npmrc-vuoto-global.ini").toString());
+    }
+
+    /**
+     * Limite di tempo per {@code npm install}: oltre questo, {@link #avviaWatchdogTimeout} forza la
+     * terminazione del processo invece di lasciarlo appeso a tempo indeterminato.
+     */
+    private static final long TIMEOUT_NPM_INSTALL_MINUTI = 3;
+
+    /**
+     * Limite di tempo per gli script Node di {@code Prezzi.java} (scaricamento prezzi/giacenze da CCXT):
+     * operazioni delimitate (un simbolo, un intervallo, un exchange) che in condizioni normali finiscono
+     * in secondi — il margine è ampio solo per non disturbare una rete semplicemente lenta.
+     */
+    public static final long TIMEOUT_SCRIPT_PREZZI_MINUTI = 5;
+
+    /**
+     * Limite di **inattività** (non di durata totale) per {@link #fetchMovimento}: gli script che vi
+     * passano (Binance_Trades, OKX_Bills, OKX_Earn, FetchMovimenti, ...) possono legittimamente durare
+     * ore su un account con molto storico, ma restano quasi sempre entro pochi secondi/decine di secondi
+     * senza scrivere nulla — ogni retry, backoff o pagina e' preceduto da una riga di log (verificato su
+     * {@code Binance_Trades.js}: ogni tentativo fallito logga prima di riprovare, il rate-limit backoff
+     * arriva al massimo a 60s; su {@code OKX_Bills.js}: ogni errore logga prima di un'attesa di al più
+     * 18s). Un timeout sulla durata *totale* del processo (come per {@code npm install}) ucciderebbe uno
+     * scaricamento legittimo di ore; un timeout sull'*inattività* lo lascia proseguire indefinitamente
+     * finché continua a produrre output, e interviene solo quando smette del tutto — il sintomo di una
+     * singola chiamata di rete rimasta appesa senza mai fallire né rispondere.
+     */
+    public static final long TIMEOUT_INATTIVITA_FETCH_MOVIMENTO_MINUTI = 10;
+
+    /**
+     * Avvia un thread "cane da guardia" che forza la terminazione di {@code process} (via
+     * {@link Process#destroyForcibly()}) se non e' ancora terminato dopo {@code timeoutMinuti} minuti,
+     * e restituisce un flag che diventa {@code true} solo in quel caso.
+     * <p>
+     * Senza questo limite {@code process.waitFor()} e le letture bloccanti su stdout/stderr restano
+     * appese indefinitamente se la connessione cade a meta' di {@code npm install} — osservato il
+     * 2026-09-05: un calo di rete di ~30s ha bloccato l'intera GUI per oltre 4 minuti, perche' questa
+     * chiamata avviene dentro la finestra di attesa indeterministica di {@code Download} (vedi
+     * {@code MostraProgressAttesa}), che nasconde deliberatamente il pulsante "Interrompi" trattandosi
+     * di un'operazione di durata sconosciuta — quindi l'utente non aveva alcun modo di intervenire e ha
+     * dovuto terminare il processo dall'esterno. Distruggere il processo chiude i suoi stream, cosa che
+     * sblocca anche le {@code readLine()} in corso sul chiamante (tornano a EOF invece di restare ferme).
+     * Il thread e' demone: non deve impedire la chiusura della JVM se il processo termina da solo prima
+     * dello scadere del timeout.
+     */
+    public static AtomicBoolean avviaWatchdogTimeout(Process process, long timeoutMinuti) {
+        AtomicBoolean scaduto = new AtomicBoolean(false);
+        Thread watchdog = new Thread(() -> {
+            try {
+                if (!process.waitFor(timeoutMinuti, TimeUnit.MINUTES) && process.isAlive()) {
+                    System.err.println("[watchdog] nessuna risposta entro " + timeoutMinuti
+                            + " minuti, termino il processo");
+                    scaduto.set(true);
+                    uccidiConDiscendenti(process);
+                }
+            } catch (InterruptedException ignored) {
+            }
+        }, "npm-watchdog");
+        watchdog.setDaemon(true);
+        watchdog.start();
+        return scaduto;
+    }
+
+    /**
+     * Termina {@code process} e, ricorsivamente, ogni suo discendente ({@link Process#descendants()}).
+     * <p>
+     * {@link Process#destroyForcibly()} termina solo il processo diretto: se questo ha a sua volta
+     * lanciato un figlio (una shell che esegue un comando, un sotto-processo avviato da npm), quel figlio
+     * eredita gli stessi file descriptor di stdout/stderr e li tiene aperti anche dopo la morte del
+     * padre — le {@code readLine()} del chiamante restano bloccate fino a quando **il figlio** termina
+     * da solo, vanificando lo scopo del watchdog. Verificato con un processo di test: un {@code sh -c
+     * "sleep 5; ..."} ucciso senza uccidere anche {@code sleep} teneva la pipe aperta per l'intera durata
+     * del figlio (~5s) nonostante il watchdog scattasse dopo 1s; uccidendo anche i discendenti la pipe si
+     * chiude regolarmente entro il timeout previsto.
+     */
+    private static void uccidiConDiscendenti(Process process) {
+        process.descendants().forEach(ProcessHandle::destroyForcibly);
+        process.destroyForcibly();
+    }
+
+    /**
+     * Come {@link #avviaWatchdogTimeout}, ma basato sull'**inattività** invece che sulla durata totale:
+     * termina {@code process} solo se non arriva più alcun output (né su stdout né su stderr) per
+     * {@code timeoutMinuti} minuti consecutivi, non se il processo dura a lungo mentre continua a
+     * produrne. Il chiamante deve aggiornare {@code ultimaAttivita} (con {@code System.currentTimeMillis()})
+     * ad ogni riga letta da **entrambi** gli stream — aggiornarlo da uno solo dei due farebbe scadere il
+     * timeout mentre il processo lavora normalmente ma scrive soprattutto sull'altro stream.
+     */
+    public static AtomicBoolean avviaWatchdogInattivita(Process process, long timeoutMinuti, AtomicLong ultimaAttivita) {
+        AtomicBoolean scaduto = new AtomicBoolean(false);
+        long timeoutMillis = TimeUnit.MINUTES.toMillis(timeoutMinuti);
+        Thread watchdog = new Thread(() -> {
+            try {
+                while (process.isAlive()) {
+                    long inattivoDa = System.currentTimeMillis() - ultimaAttivita.get();
+                    if (inattivoDa >= timeoutMillis) {
+                        System.err.println("[watchdog] nessun output da " + timeoutMinuti
+                                + " minuti, termino il processo");
+                        scaduto.set(true);
+                        uccidiConDiscendenti(process);
+                        return;
+                    }
+                    Thread.sleep(Math.min(15_000, timeoutMillis - inattivoDa + 100));
+                }
+            } catch (InterruptedException ignored) {
+            }
+        }, "script-watchdog");
+        watchdog.setDaemon(true);
+        watchdog.start();
+        return scaduto;
     }
 
     private static String versioneCcxtInstallata(Path ccxtDir) {
@@ -616,6 +733,7 @@ public class CcxtInterop {
     isolaConfigNpm(env);
 
     Process process = builder.start();
+    AtomicBoolean scadutoPerTimeout = avviaWatchdogTimeout(process, TIMEOUT_NPM_INSTALL_MINUTI);
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
          BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
         String line;
@@ -624,9 +742,12 @@ public class CcxtInterop {
     }
 
     int exitCode = process.waitFor();
+    if (scadutoPerTimeout.get())
+        throw new RuntimeException("npm install " + Modulo + " interrotto: nessuna risposta entro "
+                + TIMEOUT_NPM_INSTALL_MINUTI + " minuti (probabile problema di connessione)");
     if (exitCode != 0) throw new RuntimeException("npm install "+Modulo+" fallito");
     System.out.println(Modulo+" installato con successo");
-}    
+}
     
     
     /** @return il percorso dell'eseguibile {@code npm} della distribuzione Node.js gestita da questa classe */
@@ -2789,6 +2910,11 @@ public static Path getNodeExePath() {
         System.out.println("newNodePath : "+newNodePath);
 
         Process process = builder.start();
+        // Aggiornata da entrambi i thread di lettura: uno script sano che scrive soprattutto su uno dei
+        // due stream (qui, quasi sempre stderr) non deve risultare "inattivo" solo perché l'altro tace.
+        AtomicLong ultimaAttivita = new AtomicLong(System.currentTimeMillis());
+        AtomicBoolean scadutoPerTimeout = avviaWatchdogInattivita(
+                process, TIMEOUT_INATTIVITA_FETCH_MOVIMENTO_MINUTI, ultimaAttivita);
 
         // Thread per log (stderr)
         new Thread(() -> {
@@ -2796,6 +2922,7 @@ public static Path getNodeExePath() {
                     new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8))) {
                 String logLine;
                 while ((logLine = logReader.readLine()) != null) {
+                    ultimaAttivita.set(System.currentTimeMillis());
                     if(Principale.InterrompiCiclo)
                     {
                         System.out.println("Premuto tasto INTERROMPI, blocco l'esecuzione dello script");
@@ -2815,11 +2942,17 @@ public static Path getNodeExePath() {
                 new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
             String jsonLine;
             while ((jsonLine = jsonReader.readLine()) != null) {
+                ultimaAttivita.set(System.currentTimeMillis());
                 output.append(jsonLine);
             }
         }
 
         int exitCode = process.waitFor();
+        if (scadutoPerTimeout.get()) {
+            System.err.println("Errore: script " + script + " interrotto, nessun output da "
+                    + TIMEOUT_INATTIVITA_FETCH_MOVIMENTO_MINUTI + " minuti (probabile problema di connessione)");
+            return null;
+        }
         if (exitCode != 0) {
             System.err.println("Errore: processo Node.js terminato con codice " + exitCode);
             return null;

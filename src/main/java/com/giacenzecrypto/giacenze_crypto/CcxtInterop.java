@@ -540,18 +540,25 @@ public class CcxtInterop {
      */
     /**
      * Isola l'esecuzione di {@code npm install} dalla configurazione della macchina, puntando
-     * {@code userconfig}/{@code globalconfig} a un file che non esiste — npm si comporta come se non
+     * {@code userconfig}/{@code globalconfig} a due file che non esistono — npm si comporta come se non
      * trovasse ulteriore configurazione (comportamento documentato, nessun errore) invece di leggere
      * l'{@code .npmrc} utente/globale reale. Senza questo, un valore lasciato li' da un altro strumento
      * del tutto estraneo a quest'app puo' finire nei log dell'utente come un warning incomprensibile —
      * osservato il 2026-09-04: {@code npm warn Unknown user config "allow-scripts"}, una chiave che
      * questa applicazione non imposta mai. L'installazione di ccxt e' interna e deterministica (vedi
      * {@link #CCXT_VERSION}) e non deve dipendere da configurazioni npm messe li' per altri scopi.
+     * <p>
+     * I due placeholder devono essere **file distinti**, non lo stesso percorso riusato per entrambi i
+     * ruoli: l'npm bundlato con Node {@code v24.7.0} rifiuta di caricare lo stesso file sotto due ruoli
+     * diversi ("user" e "global"), fallendo con {@code Error: double-loading config "..." as "global",
+     * previously loaded as "user"} — osservato il 2026-09-05, indipendentemente dal fatto che il file
+     * esista o meno. La vecchia versione con un solo {@code segnaposto} condiviso funzionava con npm
+     * bundlati in Node precedenti; questo controllo e' una regressione di npm su cui il codice faceva
+     * affidamento, non un problema di permessi.
      */
     private static void isolaConfigNpm(Map<String, String> env) {
-        String segnaposto = NODE_DIR.resolve("npmrc-vuoto.ini").toString();
-        env.put("npm_config_userconfig", segnaposto);
-        env.put("npm_config_globalconfig", segnaposto);
+        env.put("npm_config_userconfig", NODE_DIR.resolve("npmrc-vuoto-user.ini").toString());
+        env.put("npm_config_globalconfig", NODE_DIR.resolve("npmrc-vuoto-global.ini").toString());
     }
 
     private static String versioneCcxtInstallata(Path ccxtDir) {

@@ -1087,6 +1087,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo","NO").equals("SI")) LiFoComplessivo=true;
         
         Principale.Mappa_RW_ListeXGruppoWallet.clear();
+        Principale.Mappa_RW_ListeXGruppoWallet_Fiat.clear();
         Principale.Mappa_RW_GiacenzeInizioPeriodo.clear();
         Principale.Mappa_RW_GiacenzeFinePeriodo.clear();
         VarCondivise.RW_MappaInfoPrezzo.clear();
@@ -1879,7 +1880,12 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 }
         
         SistemaErroriInListe(Principale.Mappa_RW_ListeXGruppoWallet);
-        
+
+        // Parte FIAT (valuta estera presso intermediario estero) : righi tenuti in una mappa a parte,
+        // il path CRYPTO qui sopra non è toccato. Opzione RW_FiatInRW, DISATTIVA di default.
+        if (DatabaseH2.Pers_Opzioni_Leggi("RW_FiatInRW", "NO").equalsIgnoreCase("SI")) {
+            Calcoli_RW_Fiat.generaRighiFiat(AnnoRif);
+        }
     }
     
     

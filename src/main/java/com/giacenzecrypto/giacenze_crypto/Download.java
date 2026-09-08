@@ -56,6 +56,21 @@ public transient Thread thread;
  */
 public boolean FineThread = false;
 
+/**
+ * {@code true} quando la chiusura in arrivo è quella <b>programmatica di fine lavoro</b> (il proprietario
+ * dell'operazione chiama {@link #ChiudiFineLavoro()} dopo che il worker è tornato), non un "Interrompi"
+ * dell'utente né la X della finestra.
+ * <p>
+ * In quel caso {@code formWindowClosed} <b>non deve</b> accendere {@link Principale#InterrompiCiclo} né
+ * {@link Interruzione#Chiedi()}: l'evento {@code windowClosed} può arrivare in coda sull'EDT con un certo
+ * ritardo — dopo che il ciclo "scarica da tutti gli exchange" ha già avviato l'operazione successiva e ha
+ * già fatto {@link Interruzione#Apri()} — e in quella finestra {@code Chiedi()} resta appiccicoso fino al
+ * successivo {@code Chiudi()} ad annidamento 0, facendo abortire per finta l'exchange dopo. È lo stesso
+ * problema per cui {@link #FineThread} è un campo di istanza; qui riguarda i due flag <b>statici</b> scritti
+ * nello stesso handler, che quella soluzione non copriva.
+ */
+public transient boolean chiusuraDiFineLavoro = false;
+
 /** Se {@code true}, i pannelli di log non vengono collegati allo stdout/stderr. */
 public boolean nascondiLog = false;
 
@@ -186,6 +201,19 @@ private Timer timer = new Timer(1000, new ActionListener() {
         }
         Principale.InterrompiCiclo = false;
         return this.FineThread;
+    }
+
+    /**
+     * Chiude il dialogo segnalando che è la chiusura <b>di fine lavoro</b>, non un'interruzione: da usare
+     * al posto di {@link #dispose()} nel {@code done()} del worker che possiede l'operazione.
+     * <p>
+     * A differenza di {@code dispose()} nudo, {@code formWindowClosed} non accenderà
+     * {@link Principale#InterrompiCiclo} / {@link Interruzione#Chiedi()} — vedi {@link #chiusuraDiFineLavoro}.
+     * La pulizia dei pannelli di log resta invariata.
+     */
+    public void ChiudiFineLavoro() {
+        this.chiusuraDiFineLavoro = true;
+        this.dispose();
     }
 
     /**
@@ -403,11 +431,14 @@ private Timer timer = new Timer(1000, new ActionListener() {
     }// </editor-fold>//GEN-END:initComponents
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        Principale.InterrompiCiclo = true;
-        //Chiudere la finestra vale come "interrompi". Chiedi() non e' appiccicoso: vale solo dentro
-        //l'operazione aperta dal proprietario, che la chiude subito dopo questa dispose, quindi la
-        //chiusura normale di fine lavoro non lascia nulla acceso per l'operazione successiva.
-        Interruzione.Chiedi();
+        //Chiudere la finestra a mano (X o "Interrompi") vale come "interrompi". La chiusura programmatica di
+        //fine lavoro (ChiudiFineLavoro, dal done() del worker) NO: l'evento windowClosed puo' arrivare in
+        //coda sull'EDT in ritardo, dopo che il ciclo "tutti gli exchange" ha gia' avviato — e Interruzione.Apri()
+        //— l'operazione successiva, e Chiedi() la farebbe abortire per finta. Vedi chiusuraDiFineLavoro.
+        if (!chiusuraDiFineLavoro) {
+            Principale.InterrompiCiclo = true;
+            Interruzione.Chiedi();
+        }
         this.FineThread = true;
         LoggerGC.disableTextPaneOut();
         LoggerGC.disableTextPaneErr();

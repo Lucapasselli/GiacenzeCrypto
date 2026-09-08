@@ -4280,7 +4280,7 @@
                         <Component class="javax.swing.JTable" name="RW_Tabella">
                           <Properties>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                              <Table columnCount="8" rowCount="0">
+                              <Table columnCount="10" rowCount="0">
                                 <Column editable="false" title="RW" type="java.lang.Object"/>
                                 <Column editable="false" title="Val. Iniziale" type="java.lang.Object"/>
                                 <Column editable="false" title="Val. Finale" type="java.lang.Object"/>
@@ -4289,6 +4289,8 @@
                                 <Column editable="false" title="IC Dovuta" type="java.lang.Object"/>
                                 <Column editable="false" title="null" type="java.lang.Object"/>
                                 <Column editable="false" title="Bollo Pagato" type="java.lang.Object"/>
+                                <Column editable="false" title="Natura" type="java.lang.Object"/>
+                                <Column editable="false" title="Stato estero" type="java.lang.Object"/>
                               </Table>
                             </Property>
                             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -4333,6 +4335,16 @@
                                   <Editor/>
                                   <Renderer/>
                                 </Column>
+                                <Column maxWidth="70" minWidth="70" prefWidth="70" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="90" minWidth="90" prefWidth="90" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
                               </TableColumnModel>
                             </Property>
                             <Property name="name" type="java.lang.String" value="RW_Tabella" noResource="true"/>
@@ -4357,7 +4369,7 @@
                         <Component class="javax.swing.JTable" name="RW_Tabella_Dettagli">
                           <Properties>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                              <Table columnCount="17" rowCount="0">
+                              <Table columnCount="18" rowCount="0">
                                 <Column editable="false" title="Anno" type="java.lang.Object"/>
                                 <Column editable="false" title="Gr. Inizio" type="java.lang.Object"/>
                                 <Column editable="false" title="&lt;html&gt;Mon. &lt;br&gt;Inizio&lt;/html&gt;" type="java.lang.Object"/>
@@ -4375,6 +4387,7 @@
                                 <Column editable="false" title="IDChiusura" type="java.lang.Object"/>
                                 <Column editable="false" title="Errore / Avvisi" type="java.lang.Object"/>
                                 <Column editable="false" title="IDMovimentati" type="java.lang.Object"/>
+                                <Column editable="false" title="Stato estero" type="java.lang.Object"/>
                               </Table>
                             </Property>
                             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -4460,6 +4473,11 @@
                                   <Renderer/>
                                 </Column>
                                 <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="120" minWidth="60" prefWidth="90" resizable="true">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>
@@ -5547,6 +5565,7 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="Opzioni_GruppoWallet_ScrollTabella" pref="1448" max="32767" attributes="0"/>
                                   <Component id="jScrollPane1" max="32767" attributes="0"/>
+                                  <Component id="Opzioni_GruppoWallet_ScrollInfo" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="Opzioni_GruppoWallet_Bottone_Rinomina" min="-2" pref="210" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -5555,6 +5574,8 @@
                                       <Component id="Opzioni_GruppoWallet_Bottone_Periodi" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="Opzioni_GruppoWallet_Bottone_AnagraficaExchange" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="Opzioni_GruppoWallet_Bottone_RaggruppaExchange" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
@@ -5566,15 +5587,18 @@
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="jScrollPane1" min="-2" pref="52" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_GruppoWallet_ScrollTabella" pref="680" max="32767" attributes="0"/>
+                              <Component id="Opzioni_GruppoWallet_ScrollTabella" pref="300" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Opzioni_GruppoWallet_ScrollInfo" min="-2" pref="380" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="Opzioni_GruppoWallet_Bottone_Rinomina" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
                                   <Component id="Opzioni_GruppoWallet_Bottone_RiferimentoEstero" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
                                   <Component id="Opzioni_GruppoWallet_Bottone_Periodi" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
                                   <Component id="Opzioni_GruppoWallet_Bottone_AnagraficaExchange" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_GruppoWallet_Bottone_RaggruppaExchange" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" pref="64" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -5591,15 +5615,21 @@
                           <Properties>
                             <Property name="autoCreateRowSorter" type="boolean" value="true"/>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                              <Table columnCount="4" rowCount="0">
+                              <Table columnCount="5" rowCount="0">
                                 <Column editable="false" title="Nome Wallet" type="java.lang.Object"/>
                                 <Column editable="true" title="Gruppo Wallet" type="java.lang.Object"/>
                                 <Column editable="false" title="Alias" type="java.lang.Object"/>
                                 <Column editable="false" title="Bollo Pagato dall&apos; Intermediario" type="java.lang.Boolean"/>
+                                <Column editable="false" title="Origine" type="java.lang.Object"/>
                               </Table>
                             </Property>
                             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                               <TableColumnModel selectionModel="0">
+                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
                                 <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
                                   <Title/>
                                   <Editor/>
@@ -5706,12 +5736,35 @@
                         </Property>
                         <Property name="text" type="java.lang.String" value="Anagrafica exchange..."/>
                         <Property name="toolTipText" type="java.lang.String" value="Stato estero e identificativo fiscale degli exchange (condivisi tra i gruppi)"/>
-                        <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_GruppoWallet_Bottone_AnagraficaExchangeActionPerformed"/>
                       </Events>
                     </Component>
+                    <Component class="javax.swing.JButton" name="Opzioni_GruppoWallet_Bottone_RaggruppaExchange">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/Images/24_Modifica.png"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Raggruppa exchange noti..."/>
+                        <Property name="toolTipText" type="java.lang.String" value="Assegna i wallet degli exchange riconosciuti ai gruppi preconfigurati (Wallet 101...) - cambia la suddivisione dei righi RW"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_GruppoWallet_Bottone_RaggruppaExchangeActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Container class="javax.swing.JScrollPane" name="Opzioni_GruppoWallet_ScrollInfo">
+                      <Properties>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="null"/>
+                        </Property>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+                      </AuxValues>
+
+                      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                    </Container>
                   </SubComponents>
                 </Container>
                 <Container class="javax.swing.JPanel" name="Opzioni_Emoney_Pannello">
@@ -6394,6 +6447,7 @@
                                               <EmptySpace min="-2" pref="49" max="-2" attributes="0"/>
                                               <Group type="103" groupAlignment="0" attributes="0">
                                                   <Component id="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="RW_Opzioni_CheckBox_FiatInRW" min="-2" max="-2" attributes="0"/>
                                                   <Component id="RW_Opzioni_CheckBox_StakingZero" alignment="0" min="-2" pref="902" max="-2" attributes="0"/>
                                                   <Component id="RW_Opzioni_CheckBox_LiFoSubMovimenti" alignment="0" min="-2" pref="841" max="-2" attributes="0"/>
                                                   <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" alignment="0" min="-2" pref="938" max="-2" attributes="0"/>
@@ -6438,6 +6492,8 @@
                               <Component id="RW_Opzioni_CheckBox_StakingZero" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_CheckBox_FiatInRW" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_CheckBox_LiFoSubMovimenti" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -6537,6 +6593,15 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBolloActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_FiatInRW">
+                      <Properties>
+                        <Property name="selected" type="boolean" value="false"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Includi nel Quadro W/RW anche la &lt;b&gt;valuta estera (FIAT)&lt;/b&gt; detenuta presso intermediari esteri (codice bene 14, solo monitoraggio)&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_FiatInRWActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JRadioButton" name="RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo">

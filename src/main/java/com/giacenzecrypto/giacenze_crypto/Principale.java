@@ -53,6 +53,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -128,6 +129,10 @@ private static final long serialVersionUID = 3L;
     static Map<String, String[]> Mappa_ChainExplorer = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa delle chain per la defi
     static Map<String, String> Mappa_AddressRete_Nome = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa che converte gli address di una rete in nome moneta per binance, serve per l'acquisizione dei prezzi in maniera più precisa
     static public Map<String, List<String[]>> Mappa_RW_ListeXGruppoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    /** Righi FIAT del quadro W/RW (valuta estera presso intermediario estero), tenuti separati da
+     *  {@link #Mappa_RW_ListeXGruppoWallet} perché il path CRYPTO resti immutato. Popolata da
+     *  {@code Calcoli_RW_Fiat.generaRighiFiat} in coda a {@code Calcoli_RW.AggiornaRWFR} (Fase 3). */
+    static public Map<String, List<String[]>> Mappa_RW_ListeXGruppoWallet_Fiat = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, List<Moneta>> Mappa_RW_GiacenzeInizioPeriodo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, List<Moneta>> Mappa_RW_GiacenzeFinePeriodo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static List<String> DepositiPrelieviDaCategorizzare;//viene salvata la lista degli id dei depositi e prelievi ancora da categorizzare
@@ -242,6 +247,26 @@ private static final long serialVersionUID = 3L;
     
     /** Testo del suggerimento del pulsante degli errori, tolto dal pulsante finché non ce ne sono */
     private String SuggerimentoErrori;
+
+    /**
+     * Gruppi wallet i cui periodi di detenzione non concordano sul bollo : per quelle righe il toggle
+     * "Bollo Pagato dall'Intermediario" (colonna 3 di {@code Opzioni_GruppoWallet_Tabella}) va bloccato.
+     * Ricalcolata da {@code Opzioni_GruppoWallet_CaricaGruppiWallet}, letta dal renderer di colonna 3
+     * (che così non interroga il DB a ogni repaint).
+     */
+    private final java.util.Set<String> Opzioni_GruppoWallet_BolloMisto = new java.util.HashSet<>();
+
+    /**
+     * Sezione "Info su Gruppo Wallet selezionato" sotto la tabella exchange↔gruppo : tre tabelle di
+     * sola lettura (wallet associati con date primo/ultimo movimento, dati fiscali del gruppo, periodi
+     * di detenzione) riempite da {@code Opzioni_GruppoWallet_AggiornaInfoGruppo} alla selezione di una
+     * riga. Costruite a mano dopo {@code initComponents()} e messe come viewport di
+     * {@code Opzioni_GruppoWallet_ScrollInfo}.
+     */
+    private javax.swing.JLabel Opzioni_GruppoWallet_InfoLabel;
+    private javax.swing.JTable Opzioni_GruppoWallet_InfoTabellaWallet;
+    private javax.swing.JTable Opzioni_GruppoWallet_InfoTabellaFiscali;
+    private javax.swing.JTable Opzioni_GruppoWallet_InfoTabellaPeriodi;
 
     public Principale() {
     //Salvo la versione nei log
@@ -375,6 +400,21 @@ private static final long serialVersionUID = 3L;
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(RT_Tabella_Principale);
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Opzioni_GruppoWallet_Tabella);
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Opzioni_Emoney_Tabella);
+        //Config W/RW per gruppo (Fase 2): i pulsanti "Riferimento estero..." / "Periodi di detenzione..."
+        //agiscono sulla riga selezionata, quindi restano spenti finché non c'è una selezione. La colonna 3
+        //"Bollo Pagato dall'Intermediario" ha un renderer proprio che la disabilita, con tooltip, quando i
+        //periodi del gruppo non concordano sul bollo (vedi Opzioni_GruppoWallet_BolloMisto).
+        Opzioni_GruppoWallet_Tabella.getColumnModel().getColumn(3).setCellRenderer(new Opzioni_GruppoWallet_BolloRenderer());
+        Opzioni_GruppoWallet_CostruisciContenutoInfo();
+        Opzioni_GruppoWallet_Tabella.getSelectionModel().addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) {
+                return;
+            }
+            boolean sel = Opzioni_GruppoWallet_Tabella.getSelectedRow() >= 0;
+            Opzioni_GruppoWallet_Bottone_RiferimentoEstero.setEnabled(sel);
+            Opzioni_GruppoWallet_Bottone_Periodi.setEnabled(sel);
+            Opzioni_GruppoWallet_AggiornaInfoGruppo();
+        });
       //  OverrideTabellaCrypto();
         SettaIcone();
         //Il popup dei movimenti non è figlio di nessun contenitore finché non viene mostrato, quindi
@@ -787,6 +827,8 @@ private static final long serialVersionUID = 3L;
         Opzioni_GruppoWallet_Bottone_RiferimentoEstero = new javax.swing.JButton();
         Opzioni_GruppoWallet_Bottone_Periodi = new javax.swing.JButton();
         Opzioni_GruppoWallet_Bottone_AnagraficaExchange = new javax.swing.JButton();
+        Opzioni_GruppoWallet_Bottone_RaggruppaExchange = new javax.swing.JButton();
+        Opzioni_GruppoWallet_ScrollInfo = new javax.swing.JScrollPane();
         Opzioni_Emoney_Pannello = new javax.swing.JPanel();
         Opzioni_Emoney_ScrollPane = new javax.swing.JScrollPane();
         Opzioni_Emoney_Tabella = new javax.swing.JTable();
@@ -839,6 +881,7 @@ private static final long serialVersionUID = 3L;
         jLabel14 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
         RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo = new javax.swing.JCheckBox();
+        RW_Opzioni_CheckBox_FiatInRW = new javax.swing.JCheckBox();
         RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo = new javax.swing.JRadioButton();
         RW_Opzioni_Radio_TrasferimentiNonConteggiati = new javax.swing.JRadioButton();
         RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine = new javax.swing.JRadioButton();
@@ -3541,11 +3584,11 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "RW", "Val. Iniziale", "Val. Finale", "Giorni di Detenzione", "Errori", "IC Dovuta", "null", "Bollo Pagato"
+                "RW", "Val. Iniziale", "Val. Finale", "Giorni di Detenzione", "Errori", "IC Dovuta", "null", "Bollo Pagato", "Natura", "Stato estero"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -3574,6 +3617,12 @@ private static final long serialVersionUID = 3L;
             RW_Tabella.getColumnModel().getColumn(7).setMinWidth(75);
             RW_Tabella.getColumnModel().getColumn(7).setPreferredWidth(75);
             RW_Tabella.getColumnModel().getColumn(7).setMaxWidth(75);
+            RW_Tabella.getColumnModel().getColumn(8).setMinWidth(70);
+            RW_Tabella.getColumnModel().getColumn(8).setPreferredWidth(70);
+            RW_Tabella.getColumnModel().getColumn(8).setMaxWidth(70);
+            RW_Tabella.getColumnModel().getColumn(9).setMinWidth(90);
+            RW_Tabella.getColumnModel().getColumn(9).setPreferredWidth(90);
+            RW_Tabella.getColumnModel().getColumn(9).setMaxWidth(90);
         }
 
         RW_Tabella_Dettagli.setModel(new javax.swing.table.DefaultTableModel(
@@ -3581,11 +3630,11 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Anno", "Gr. Inizio", "<html>Mon. <br>Inizio</html>", "Qta Inizio", "Data Inizio", "Val. Inizio", "Gr. Fine", "<html>Mon. <br>Fine</html>", "Qta Fine", "Data Fine", "Val. Finale", "Giorni", "Causale", "IDApertura", "IDChiusura", "Errore / Avvisi", "IDMovimentati"
+                "Anno", "Gr. Inizio", "<html>Mon. <br>Inizio</html>", "Qta Inizio", "Data Inizio", "Val. Inizio", "Gr. Fine", "<html>Mon. <br>Fine</html>", "Qta Fine", "Data Fine", "Val. Finale", "Giorni", "Causale", "IDApertura", "IDChiusura", "Errore / Avvisi", "IDMovimentati", "Stato estero"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -3652,6 +3701,9 @@ private static final long serialVersionUID = 3L;
             RW_Tabella_Dettagli.getColumnModel().getColumn(16).setMinWidth(0);
             RW_Tabella_Dettagli.getColumnModel().getColumn(16).setPreferredWidth(0);
             RW_Tabella_Dettagli.getColumnModel().getColumn(16).setMaxWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(17).setMinWidth(60);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(17).setPreferredWidth(90);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(17).setMaxWidth(120);
         }
         RW_Tabella_Dettagli.getTableHeader().setPreferredSize(new Dimension(RW_Tabella_Dettagli.getColumnModel().getTotalColumnWidth(), 64));
 
@@ -4294,14 +4346,14 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Nome Wallet", "Gruppo Wallet", "Alias", "Bollo Pagato dall' Intermediario"
+                "Nome Wallet", "Gruppo Wallet", "Alias", "Bollo Pagato dall' Intermediario", "Origine"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Boolean.class
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Boolean.class, java.lang.Object.class
             };
             boolean[] canEdit = new boolean [] {
-                false, true, false, false
+                false, true, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -4378,12 +4430,22 @@ private static final long serialVersionUID = 3L;
         Opzioni_GruppoWallet_Bottone_AnagraficaExchange.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
         Opzioni_GruppoWallet_Bottone_AnagraficaExchange.setText("Anagrafica exchange...");
         Opzioni_GruppoWallet_Bottone_AnagraficaExchange.setToolTipText("Stato estero e identificativo fiscale degli exchange (condivisi tra i gruppi)");
-        Opzioni_GruppoWallet_Bottone_AnagraficaExchange.setEnabled(false);
         Opzioni_GruppoWallet_Bottone_AnagraficaExchange.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_GruppoWallet_Bottone_AnagraficaExchangeActionPerformed(evt);
             }
         });
+
+        Opzioni_GruppoWallet_Bottone_RaggruppaExchange.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
+        Opzioni_GruppoWallet_Bottone_RaggruppaExchange.setText("Raggruppa exchange noti...");
+        Opzioni_GruppoWallet_Bottone_RaggruppaExchange.setToolTipText("Assegna i wallet degli exchange riconosciuti ai gruppi preconfigurati (Wallet 101...) - cambia la suddivisione dei righi RW");
+        Opzioni_GruppoWallet_Bottone_RaggruppaExchange.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_GruppoWallet_Bottone_RaggruppaExchangeActionPerformed(evt);
+            }
+        });
+
+        Opzioni_GruppoWallet_ScrollInfo.setBorder(null);
 
         javax.swing.GroupLayout Opzioni_GruppoWallet_PannelloLayout = new javax.swing.GroupLayout(Opzioni_GruppoWallet_Pannello);
         Opzioni_GruppoWallet_Pannello.setLayout(Opzioni_GruppoWallet_PannelloLayout);
@@ -4394,6 +4456,7 @@ private static final long serialVersionUID = 3L;
                 .addGroup(Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 1448, Short.MAX_VALUE)
                     .addComponent(jScrollPane1)
+                    .addComponent(Opzioni_GruppoWallet_ScrollInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 1448, Short.MAX_VALUE)
                     .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
                         .addComponent(Opzioni_GruppoWallet_Bottone_Rinomina, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -4402,6 +4465,8 @@ private static final long serialVersionUID = 3L;
                         .addComponent(Opzioni_GruppoWallet_Bottone_Periodi)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Opzioni_GruppoWallet_Bottone_AnagraficaExchange)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Opzioni_GruppoWallet_Bottone_RaggruppaExchange)
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
         Opzioni_GruppoWallet_PannelloLayout.setVerticalGroup(
@@ -4409,14 +4474,17 @@ private static final long serialVersionUID = 3L;
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 680, Short.MAX_VALUE)
+                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_GruppoWallet_ScrollInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_GruppoWallet_Bottone_Rinomina, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_GruppoWallet_Bottone_RiferimentoEstero, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_GruppoWallet_Bottone_Periodi, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Opzioni_GruppoWallet_Bottone_AnagraficaExchange, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(64, 64, 64))
+                    .addComponent(Opzioni_GruppoWallet_Bottone_AnagraficaExchange, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_GruppoWallet_Bottone_RaggruppaExchange, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(20, 20, 20))
         );
 
         Opzioni_TabbedPane.addTab("Gruppi Wallet Crypto", Opzioni_GruppoWallet_Pannello);
@@ -4902,6 +4970,13 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        RW_Opzioni_CheckBox_FiatInRW.setText("<html>Includi nel Quadro W/RW anche la <b>valuta estera (FIAT)</b> detenuta presso intermediari esteri (codice bene 14, solo monitoraggio)</html>");
+        RW_Opzioni_CheckBox_FiatInRW.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Opzioni_CheckBox_FiatInRWActionPerformed(evt);
+            }
+        });
+
         RW_Trasferimenti.add(RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo);
         RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo.setSelected(true);
         RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo.setText("<html>Ogni trasferimento chiude il periodo di possesso della Cripto-Attività sul Wallet di origine e apre un nuovo periodo per la stessa Cripto-Attività sul Wallet di destinazione.</html>");
@@ -4969,6 +5044,7 @@ private static final long serialVersionUID = 3L;
                                 .addGap(49, 49, 49)
                                 .addGroup(Opzioni_RW_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(RW_Opzioni_CheckBox_FiatInRW, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(RW_Opzioni_CheckBox_StakingZero, javax.swing.GroupLayout.PREFERRED_SIZE, 902, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(RW_Opzioni_CheckBox_LiFoSubMovimenti, javax.swing.GroupLayout.PREFERRED_SIZE, 841, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(RW_Opzioni_CheckBox_LiFoComplessivo, javax.swing.GroupLayout.PREFERRED_SIZE, 938, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -5004,6 +5080,8 @@ private static final long serialVersionUID = 3L;
                 .addComponent(RW_Opzioni_CheckBox_StakingZero, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(RW_Opzioni_CheckBox_FiatInRW, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_CheckBox_LiFoSubMovimenti, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -6392,6 +6470,12 @@ private void SettaIcone(){
         if(RW_MostraGiacenzeSePagaBollo!=null && RW_MostraGiacenzeSePagaBollo.equalsIgnoreCase("SI")){
             this.RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.setSelected(true);
         }else DatabaseH2.Pers_Opzioni_Scrivi("RW_MostraGiacenzeSePagaBollo","SI");
+
+        //Parte FIAT del quadro W/RW : DISATTIVA di default (codice bene 14, solo monitoraggio).
+        String RW_FiatInRW=DatabaseH2.Pers_Opzioni_Leggi("RW_FiatInRW");
+        if(RW_FiatInRW!=null && RW_FiatInRW.equalsIgnoreCase("SI")){
+            this.RW_Opzioni_CheckBox_FiatInRW.setSelected(true);
+        }else DatabaseH2.Pers_Opzioni_Scrivi("RW_FiatInRW","NO");
         
         String RW_LiFoComplessivo=DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo"); 
         if(RW_LiFoComplessivo!=null && RW_LiFoComplessivo.equalsIgnoreCase("SI")){
@@ -7889,6 +7973,159 @@ private void SettaIcone(){
         }
     }
     
+    /**
+     * Renderer della colonna 3 ("Bollo Pagato dall'Intermediario") della tabella "Gruppi Wallet".
+     * Disegna la spunta come il renderer booleano di {@link Tabelle}, ma per i gruppi in
+     * {@link #Opzioni_GruppoWallet_BolloMisto} (periodi con bollo non uniforme) la mostra disabilitata
+     * e con un tooltip che elenca lo stato del bollo periodo per periodo.
+     */
+    private class Opzioni_GruppoWallet_BolloRenderer extends javax.swing.JCheckBox implements javax.swing.table.TableCellRenderer {
+
+        Opzioni_GruppoWallet_BolloRenderer() {
+            setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+            setOpaque(true);
+        }
+
+        @Override
+        public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int col) {
+            setSelected(value instanceof Boolean && (Boolean) value);
+            setForeground(table.getForeground());
+            if (table.isCellSelected(row, col)) {
+                setBackground(Tabelle.SfondoSelezione(row));
+            } else if (table.isRowSelected(row)) {
+                setBackground(Tabelle.SfondoSelezione(row).brighter());
+            } else {
+                setBackground(Tabelle.SfondoRigaAlternata(row));
+            }
+            String gruppo = null;
+            Object g = table.getModel().getValueAt(table.convertRowIndexToModel(row), 1);
+            if (g != null) {
+                gruppo = g.toString().split("\\(")[0].trim();
+            }
+            boolean misto = gruppo != null && Opzioni_GruppoWallet_BolloMisto.contains(gruppo);
+            setEnabled(!misto);
+            setToolTipText(misto
+                    ? Principale_GruppiWalletRW.descriviBolloPeriodi(gruppo)
+                    : "Clic per indicare se l'intermediario ha gia' assolto l'imposta di bollo per questo gruppo");
+            return this;
+        }
+    }
+
+    /**
+     * Costruisce a mano il contenuto della sezione "Info su Gruppo Wallet selezionato" e lo mette come
+     * viewport di {@code Opzioni_GruppoWallet_ScrollInfo}. Layout: tabella "wallet del gruppo" e tabella
+     * "dati fiscali" affiancate in alto, tabella "periodi di detenzione" a larghezza piena sotto.
+     * La sezione parte nascosta: la mostra {@link #Opzioni_GruppoWallet_AggiornaInfoGruppo()} alla
+     * selezione di una riga.
+     */
+    private void Opzioni_GruppoWallet_CostruisciContenutoInfo() {
+        Opzioni_GruppoWallet_InfoLabel = new javax.swing.JLabel("Info su Gruppo Wallet selezionato");
+        Opzioni_GruppoWallet_InfoLabel.setFont(Opzioni_GruppoWallet_InfoLabel.getFont().deriveFont(java.awt.Font.BOLD, 15f));
+
+        Opzioni_GruppoWallet_InfoTabellaWallet = Opzioni_GruppoWallet_NuovaTabellaInfo(
+                new String[]{"Wallet / exchange", "Movimenti", "Primo movimento", "Ultimo movimento"});
+        Opzioni_GruppoWallet_InfoTabellaFiscali = Opzioni_GruppoWallet_NuovaTabellaInfo(
+                new String[]{"Campo", "Valore"});
+        Opzioni_GruppoWallet_InfoTabellaPeriodi = Opzioni_GruppoWallet_NuovaTabellaInfo(
+                new String[]{"Tipo", "Progr.", "Data inizio", "Data fine", "Val. iniziale", "Val. finale",
+                    "Calcolo iniziale", "Calcolo finale", "Bollo", "Origine"});
+
+        javax.swing.JPanel affiancate = new javax.swing.JPanel(new java.awt.GridLayout(1, 2, 12, 0));
+        affiancate.add(Opzioni_GruppoWallet_RiquadroInfo("Exchange / wallet del gruppo", Opzioni_GruppoWallet_InfoTabellaWallet, 170));
+        affiancate.add(Opzioni_GruppoWallet_RiquadroInfo("Dati fiscali del gruppo", Opzioni_GruppoWallet_InfoTabellaFiscali, 170));
+
+        javax.swing.JPanel contenuto = new javax.swing.JPanel();
+        contenuto.setLayout(new javax.swing.BoxLayout(contenuto, javax.swing.BoxLayout.Y_AXIS));
+        contenuto.setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 6, 6, 6));
+        Opzioni_GruppoWallet_InfoLabel.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        affiancate.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        contenuto.add(Opzioni_GruppoWallet_InfoLabel);
+        contenuto.add(javax.swing.Box.createVerticalStrut(6));
+        contenuto.add(affiancate);
+        contenuto.add(javax.swing.Box.createVerticalStrut(10));
+        javax.swing.JPanel riquadroPeriodi = Opzioni_GruppoWallet_RiquadroInfo(
+                "Periodi di detenzione", Opzioni_GruppoWallet_InfoTabellaPeriodi, 130);
+        riquadroPeriodi.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        contenuto.add(riquadroPeriodi);
+
+        Opzioni_GruppoWallet_ScrollInfo.setViewportView(contenuto);
+        Opzioni_GruppoWallet_ScrollInfo.setVisible(false);
+    }
+
+    /** Una tabella di sola lettura per la sezione info (header in grassetto, righe alternate). */
+    private javax.swing.JTable Opzioni_GruppoWallet_NuovaTabellaInfo(String[] colonne) {
+        javax.swing.JTable t = new javax.swing.JTable(new DefaultTableModel(new Object[0][colonne.length], colonne) {
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
+        });
+        t.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
+        t.getTableHeader().setReorderingAllowed(false);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(t);
+        return t;
+    }
+
+    /** Riquadro con titolo in alto e la tabella (in uno scroll) al centro; altezza preferita fissa. */
+    private javax.swing.JPanel Opzioni_GruppoWallet_RiquadroInfo(String titolo, javax.swing.JTable tabella, int altezza) {
+        javax.swing.JPanel p = new javax.swing.JPanel(new java.awt.BorderLayout(0, 3));
+        javax.swing.JLabel l = new javax.swing.JLabel(titolo);
+        l.setFont(l.getFont().deriveFont(java.awt.Font.BOLD));
+        p.add(l, java.awt.BorderLayout.NORTH);
+        javax.swing.JScrollPane sp = new javax.swing.JScrollPane(tabella);
+        sp.setPreferredSize(new java.awt.Dimension(200, altezza));
+        p.add(sp, java.awt.BorderLayout.CENTER);
+        return p;
+    }
+
+    /**
+     * Riempie le tre tabelle della sezione info con i dati del gruppo della riga selezionata e mostra
+     * la sezione. Nessuna selezione (o riga senza gruppo) → sezione nascosta.
+     */
+    private void Opzioni_GruppoWallet_AggiornaInfoGruppo() {
+        int riga = Opzioni_GruppoWallet_Tabella.getSelectedRow();
+        if (riga < 0) {
+            Opzioni_GruppoWallet_NascondiInfoGruppo();
+            return;
+        }
+        int rm = Opzioni_GruppoWallet_Tabella.getRowSorter() != null
+                ? Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(riga) : riga;
+        Object g = Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rm, 1);
+        if (g == null) {
+            Opzioni_GruppoWallet_NascondiInfoGruppo();
+            return;
+        }
+        String gruppo = g.toString().split("\\(")[0].trim();
+        Opzioni_GruppoWallet_InfoLabel.setText("Info su Gruppo Wallet selezionato — "
+                + Principale_GruppiWalletRW.etichettaGruppo(gruppo));
+        Opzioni_GruppoWallet_RiempiTabellaInfo(Opzioni_GruppoWallet_InfoTabellaWallet,
+                Principale_GruppiWalletRW.infoWalletDelGruppo(gruppo));
+        Opzioni_GruppoWallet_RiempiTabellaInfo(Opzioni_GruppoWallet_InfoTabellaFiscali,
+                Principale_GruppiWalletRW.datiFiscaliGruppo(gruppo));
+        Opzioni_GruppoWallet_RiempiTabellaInfo(Opzioni_GruppoWallet_InfoTabellaPeriodi,
+                Principale_GruppiWalletRW.periodiPerVista(gruppo));
+        Opzioni_GruppoWallet_ScrollInfo.setVisible(true);
+        Opzioni_GruppoWallet_Pannello.revalidate();
+        Opzioni_GruppoWallet_Pannello.repaint();
+    }
+
+    private void Opzioni_GruppoWallet_NascondiInfoGruppo() {
+        if (Opzioni_GruppoWallet_ScrollInfo.isVisible()) {
+            Opzioni_GruppoWallet_ScrollInfo.setVisible(false);
+            Opzioni_GruppoWallet_Pannello.revalidate();
+            Opzioni_GruppoWallet_Pannello.repaint();
+        }
+    }
+
+    private static void Opzioni_GruppoWallet_RiempiTabellaInfo(javax.swing.JTable t, java.util.List<String[]> righe) {
+        DefaultTableModel m = (DefaultTableModel) t.getModel();
+        m.setRowCount(0);
+        for (String[] r : righe) {
+            m.addRow(r);
+        }
+    }
+
     private void Opzioni_GruppoWallet_CaricaGruppiWallet(){
         DefaultTableModel GruppoWallet_ModelloTabella = (DefaultTableModel) this.Opzioni_GruppoWallet_Tabella.getModel();
         Tabelle.Funzioni_PulisciTabella(GruppoWallet_ModelloTabella);
@@ -7900,11 +8137,15 @@ private void SettaIcone(){
         // Wallet 99 sempre primo nella lista
         String[] w99 = Mappa_GruppiAlias.get("Wallet 99");
         if (w99 != null) {
-            comboBox.addItem(w99[0] + " ( " + w99[1] + " )");
+            comboBox.addItem(Principale_GruppiWalletRW.etichettaComboGruppo(w99[0], w99[1]));
         }
-        for (String[] Item : Mappa_GruppiAlias.values()) {
+        //Ordine numerico dei nomi "Wallet <n>": senza, l'ordine stringa di Pers_GruppoAlias_LeggiTabella
+        //infila Wallet 101..114 fra Wallet 10 e Wallet 11.
+        List<String[]> gruppiOrdinati = new ArrayList<>(Mappa_GruppiAlias.values());
+        gruppiOrdinati.sort(Comparator.comparing((String[] g) -> g[0], Principale_GruppiWalletRW.ORDINE_GRUPPO));
+        for (String[] Item : gruppiOrdinati) {
             if (!Item[0].equalsIgnoreCase("Wallet 99")) {
-                comboBox.addItem(Item[0] + " ( " + Item[1] + " )");
+                comboBox.addItem(Principale_GruppiWalletRW.etichettaComboGruppo(Item[0], Item[1]));
             }
         }
  
@@ -7913,20 +8154,41 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
 TableColumn testColumn2 = Opzioni_GruppoWallet_Tabella.getColumnModel().getColumn(3);
 testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         
+        Opzioni_GruppoWallet_BolloMisto.clear();
+        //statoBolloPeriodi() interroga GRUPPO_PERIODO_RW: più wallet condividono lo stesso gruppo,
+        //quindi memorizzo l'esito per gruppo per non rifare la stessa query a ogni riga.
+        Map<String, String> statoBolloPerGruppo = new HashMap<>();
         for (String a: Mappa_Wallet.keySet()){
-            Object rigaTabella[]=new Object[4];
+            Object rigaTabella[]=new Object[5];
             rigaTabella[0]=a;
             String Gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(a,true);
             String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
-            rigaTabella[1]=Gruppo+" ( "+Valori[1]+" )";
+            rigaTabella[1]=Principale_GruppiWalletRW.etichettaComboGruppo(Gruppo, Valori[1]);
             rigaTabella[2]=Valori[1];
-            boolean PagaBollo=false;
-            if (Valori[2].equals("S"))PagaBollo=true;
+            rigaTabella[4]=Principale_GruppiWalletRW.descrizioneOrigineGruppo(Gruppo);
+            //Se il gruppo ha periodi di detenzione, il bollo si legge da lì: uniforme -> quel valore,
+            //misto -> cella bloccata (il renderer di colonna 3 usa Opzioni_GruppoWallet_BolloMisto).
+            String statoBollo = statoBolloPerGruppo.computeIfAbsent(Gruppo,
+                    Principale_GruppiWalletRW::statoBolloPeriodi);
+            boolean PagaBollo;
+            if (Principale_GruppiWalletRW.BOLLO_STATO_TUTTI_SI.equals(statoBollo)) {
+                PagaBollo = true;
+            } else if (Principale_GruppiWalletRW.BOLLO_STATO_TUTTI_NO.equals(statoBollo)) {
+                PagaBollo = false;
+            } else {
+                PagaBollo = Valori[2].equals("S");
+                if (Principale_GruppiWalletRW.BOLLO_STATO_MISTI.equals(statoBollo)) {
+                    Opzioni_GruppoWallet_BolloMisto.add(Gruppo);
+                }
+            }
             rigaTabella[3]=PagaBollo;
             GruppoWallet_ModelloTabella.addRow(rigaTabella);
         }
+        //La tabella è stata ricostruita: la selezione (e quindi la sezione "Info su Gruppo Wallet
+        //selezionato") va persa/riallineata.
+        Opzioni_GruppoWallet_AggiornaInfoGruppo();
     }
-    
+
     /**
      * Registra il wallet del movimento passato in {@code Mappa_Wallet} e aggiunge il suo dettaglio
      * (sotto-wallet/indirizzo) alla lista associata in {@code Mappa_Wallets_e_Dettagli}, creandola
@@ -7986,6 +8248,85 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     
     
     /**
+     * Associa gli exchange visti per la prima volta al rispettivo gruppo wallet preconfigurato
+     * (Wallet 101..): marcatore persistente + priorità alle scelte dell'utente, vedi
+     * {@link Principale_GruppiWalletRW#autoAssociaGruppiPreconfigurati}. Da chiamare <b>prima</b> del
+     * ricalcolo delle plusvalenze, così il primo import di un exchange noto usa già il gruppo giusto.
+     *
+     * <p>Il {@code congelaPreesistentiSeNecessario()} iniziale fa sì che su un archivio <b>esistente</b>
+     * questo metodo non sposti mai nulla da solo (i righi del quadro RW cambierebbero senza che l'utente
+     * l'abbia chiesto) : agisce solo sugli exchange che compaiono per la prima volta dopo l'aggiornamento
+     * e sugli archivi nuovi. Il raggruppamento del pregresso si fa a mano dal pulsante "Raggruppa exchange
+     * noti…" in <i>Opzioni → Gruppi Wallet</i>.</p>
+     */
+    private void AutoAssociaGruppiPreconfiguratiExchange() {
+        Principale_GruppiWalletRW.congelaPreesistentiSeNecessario();
+        java.util.Set<String> sorgenti = new java.util.HashSet<>();
+        for (String[] v : MappaCryptoWallet.values()) {
+            if (v != null && v.length > 3 && v[3] != null && !v[3].isBlank()) {
+                sorgenti.add(v[3].trim());
+            }
+        }
+        Principale_GruppiWalletRW.autoAssociaGruppiPreconfigurati(sorgenti);
+    }
+
+    /**
+     * Handler del pulsante "Raggruppa exchange noti…" (<i>Opzioni → Gruppi Wallet</i>) : su richiesta
+     * esplicita dell'utente assegna i wallet degli exchange riconosciuti ai gruppi preconfigurati
+     * ({@code Wallet 101..}), anche sul pregresso che {@link #AutoAssociaGruppiPreconfiguratiExchange()}
+     * lascia deliberatamente fermo. Non tocca i wallet che l'utente ha già messo in un gruppo suo.
+     */
+    private void Opzioni_GruppoWallet_RaggruppaExchangeNoti() {
+        java.util.Set<String> sorgenti = new java.util.HashSet<>();
+        for (String[] v : MappaCryptoWallet.values()) {
+            if (v != null && v.length > 3 && v[3] != null && !v[3].isBlank()) {
+                sorgenti.add(v[3].trim());
+            }
+        }
+        int candidati = 0;
+        for (String s : sorgenti) {
+            if (!Principale_GruppiWalletRW.exchangeIdDaSorgente(s).isEmpty()) {
+                candidati++;
+            }
+        }
+        if (candidati == 0) {
+            Messaggi.InfoMessage("Nessun exchange noto",
+                    "Non ci sono movimenti di exchange riconosciuti (Binance, Coinbase, Kraken, …) da raggruppare.", this);
+            return;
+        }
+        int scelta = JOptionPane.showConfirmDialog(this,
+                "<html><div style='width: 460px'>Assegno i wallet degli exchange riconosciuti ai rispettivi gruppi "
+                + "preconfigurati (<b>Wallet 101…</b>), utili al quadro RW.<br><br>"
+                + "Vengono spostati solo i wallet ancora \"da classificare\" (Wallet 99) : quelli che hai già "
+                + "messo in un gruppo tuo restano dove sono.<br><br>"
+                + "<b>Questo cambia la suddivisione dei righi del quadro RW</b> : se hai già presentato una "
+                + "dichiarazione per un anno, il ricalcolo di quell'anno non coinciderà più con quanto presentato. "
+                + "Procedere?</div></html>",
+                "Raggruppa i wallet degli exchange noti", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (scelta != JOptionPane.YES_OPTION) {
+            return;
+        }
+        java.util.List<String[]> spostati = Principale_GruppiWalletRW.raggruppaWalletExchangeNoti(sorgenti);
+        if (spostati.isEmpty()) {
+            Messaggi.InfoMessage("Niente da spostare",
+                    "I wallet degli exchange riconosciuti sono già associati a un gruppo : non ho spostato nulla.", this);
+            return;
+        }
+        StringBuilder sb = new StringBuilder("<html>Wallet spostati nei gruppi preconfigurati:<br>");
+        for (String[] m : spostati) {
+            sb.append("&nbsp;&nbsp;<b>").append(m[0]).append("</b> nel gruppo ")
+                    .append(Principale_GruppiWalletRW.etichettaGruppo(m[1])).append("<br>");
+        }
+        sb.append("<br>Ricontrolla il quadro RW.</html>");
+        AccendiLabelRicalcolo();
+        if (!Opzioni_GruppoWallet_CheckBox_PlusManuali.isSelected()) {
+            Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        }
+        Opzioni_GruppoWallet_CaricaGruppiWallet();
+        Messaggi.InfoMessage("Wallet raggruppati", sb.toString(), this);
+    }
+
+    /**
      * Ricalcola e aggiorna l'intera vista principale dopo una modifica ai movimenti: segnala che la
      * tabella RT/Giacenze va ricalcolata, marca i dati come da salvare, ricalcola le plusvalenze
      * (a meno che l'utente non abbia scelto il calcolo manuale) e ricarica la tabella delle
@@ -7995,10 +8336,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         //Se selezionato Situazione Import Crypto lo aggiorno
        System.out.println("Aggiorna Tutto");
        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-           
-        //Emetto messaggio di ricalcolo sulla tabella RT se già compilata e 
+
+        //Emetto messaggio di ricalcolo sulla tabella RT se già compilata e
        //Segnalo che la tabella Gestione Token Scam va ricaricata alla prossima apertura del tab
         AccendiLabelRicalcolo();
+        //Primo import/inserimento di un exchange noto -> associazione al gruppo wallet preconfigurato
+        AutoAssociaGruppiPreconfiguratiExchange();
         //RW_RicalcolaRWseEsiste();//Questo non aggiorna nulla ma avvisa di aggiornare, è l'equivalente delle riga sopra ma per l'RW
         if(GiacenzeaData_Tabella.getRowCount()>0)GiacenzeaData_Label_Aggiornare.setVisible(true);
         TransazioniCrypto_DaSalvare = true;
@@ -9824,6 +10167,9 @@ GiacenzeaData_CompilaTabellaToken(true);
                 if (Valori[2].equals("S"))PagaBollo=true;
                 Opzioni_GruppoWallet_Tabella.getModel().setValueAt(Valori[1], rigaselezionata, 2);
                 Opzioni_GruppoWallet_Tabella.getModel().setValueAt(PagaBollo, rigaselezionata, 3);
+                //Anche la colonna "Origine" (col 4) del nuovo gruppo va riallineata sulla riga.
+                Opzioni_GruppoWallet_Tabella.getModel().setValueAt(
+                        Principale_GruppiWalletRW.descrizioneOrigineGruppo(Gruppo), rigaselezionata, 4);
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 //1 - Scrivo il nuovo gruppo nel dabase
                 DatabaseH2.Pers_GruppoWallet_Scrivi(Wallet, Gruppo);
@@ -9833,6 +10179,11 @@ GiacenzeaData_CompilaTabellaToken(true);
                 Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
                 //4 - Ricarico la tabella crypt
                 TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa();
+                //5 - La riga selezionata ora appartiene a un altro gruppo : le tre tabelle della sezione
+                //    "Info su Gruppo Wallet selezionato" (wallet del gruppo, dati fiscali, periodi di
+                //    detenzione) vanno riallineate. Il ListSelectionListener non basta : la selezione
+                //    non è cambiata, è cambiato solo il valore della cella "Gruppo Wallet".
+                Opzioni_GruppoWallet_AggiornaInfoGruppo();
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
         }
@@ -10251,14 +10602,21 @@ if (result.isAction("delete-all")) {
                     }
 
                 }
+                //Parte FIAT : aggiunge a MappaWallerQuadro un rigo per ogni tratto di detenzione in valuta
+                //(chiave "Wallet NN|FIAT|<prog>"). Non tocca i righi CRYPTO gia' calcolati.
+                RW_CalcolaRW_ParteFiat(MappaWallerQuadro);
+
                 String ICtot = "0";
+                //Blocco 1 : righi CRYPTO - aggregazione per media ponderata + totale IC.
                 for (String[] RWx : MappaWallerQuadro.values()) {
+                    if ("FIAT".equalsIgnoreCase(RWx[8])) continue;
                     //Rinomino i Wallet seguendo l'Alias
-                    //System.out.println(RWx[0]);
                     String Gruppo = "Wallet " + RWx[0].split(" ")[0].trim();
                     String Valori[] = DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
-                    //System.out.println(Gruppo+" - "+Valori[1]+" - "+Valori[2]);
                     RWx[0] = RWx[0].split(" ")[0].trim() + " ( " + Valori[1] + " )";
+                    //Chiave di sintesi : "Wallet NN|CRYPTO|" (il progressivo periodo serve solo al FIAT).
+                    //Sostituisce i vecchi reverse-lookup basati su RWx[0].split(" ").
+                    RWx[6] = Gruppo + "|CRYPTO|";
                     String PagaBollo = "NO";
                     if (Valori[2].equalsIgnoreCase("S")) {
                         RWx[5] = "0.00";
@@ -10267,6 +10625,12 @@ if (result.isAction("delete-all")) {
                         ICtot = new BigDecimal(ICtot).add(new BigDecimal(RWx[5])).toPlainString();
                     }
                     RWx[7] = PagaBollo;
+                    ModelloTabella.addRow(RWx);
+                }
+                //Blocco 2 : righi FIAT (valuta estera presso intermediario estero) - solo monitoraggio, niente IC.
+                for (String[] RWx : MappaWallerQuadro.values()) {
+                    if (!"FIAT".equalsIgnoreCase(RWx[8])) continue;
+                    RWx[7] = "NO";
                     ModelloTabella.addRow(RWx);
                 }
                 RW_Text_IC.setText(ICtot);
@@ -10283,10 +10647,21 @@ if (result.isAction("delete-all")) {
         //Adesso Calcolo la media ponderata e genero gli RW dalla lista appena creata
     }
     
+    /** Natura ("CRYPTO" / "FIAT") della riga i-esima di {@code RW_Tabella} ; "CRYPTO" se la colonna non c'e' o e' vuota. */
+    private String RW_FiatNaturaRiga(int riga){
+        try {
+            Object v = RW_Tabella.getModel().getValueAt(riga, 8);
+            String s = v == null ? "" : v.toString().trim();
+            return s.isEmpty() ? "CRYPTO" : s;
+        } catch (RuntimeException e) {
+            return "CRYPTO";
+        }
+    }
+
     private String[] RW_Funzione_RitornaRWQuadro(Map<String, String[]> MappaWallerQuadro,String GruppoWallet){
        // System.out.println("--"+GruppoWallet);
-              String RW1[] = new String[8];
-              if (MappaWallerQuadro.get(GruppoWallet)==null){//se la mappa è nulla la popolo per la prima volta                  
+              String RW1[] = new String[10];
+              if (MappaWallerQuadro.get(GruppoWallet)==null){//se la mappa è nulla la popolo per la prima volta
                         if(GruppoWallet.split(" ").length>1)
                             RW1[0] = GruppoWallet.split(" ")[1] + " (" + GruppoWallet + ")";
                         else
@@ -10296,15 +10671,55 @@ if (result.isAction("delete-all")) {
                         RW1[3] = "0.00";//gg di Detenzione
                         RW1[4] = "";    //Errori
                         RW1[5] = "0.00";//IC Calcolata
-                        RW1[6] = "0.00";//gg*valore+gg2*valore2+.....
+                        RW1[6] = "0.00";//gg*valore+gg2*valore2+..... (poi sovrascritto con la chiave di sintesi gruppo|natura|prog)
                         RW1[7] = "NO";
+                        RW1[8] = "CRYPTO";//Natura del rigo : CRYPTO (default) o FIAT
+                        RW1[9] = "";      //Codice Stato estero (solo righi FIAT)
                         MappaWallerQuadro.put(GruppoWallet, RW1);
                     }else{//altrimenti recupero i dati vecchi e li aggiorno
                         RW1=MappaWallerQuadro.get(GruppoWallet);
                     }
               return RW1;
     }
-    
+
+    /**
+     * Aggiunge a {@code MappaWallerQuadro} un rigo di sintesi per ogni tratto di detenzione FIAT
+     * (mappa {@link #Mappa_RW_ListeXGruppoWallet_Fiat}, popolata da
+     * {@code Calcoli_RW_Fiat.generaRighiFiat} dentro {@code AggiornaRWFR}). Un rigo per gruppo/periodo :
+     * giorni = lunghezza del tratto (nessuna media ponderata), IC soppressa (colonna 5 = "0.00"),
+     * natura = "FIAT", codice Stato estero in colonna 9. Chiave di sintesi : "Wallet NN|FIAT|&lt;prog&gt;".
+     */
+    private void RW_CalcolaRW_ParteFiat(Map<String, String[]> MappaWallerQuadro){
+        if (Mappa_RW_ListeXGruppoWallet_Fiat == null || Mappa_RW_ListeXGruppoWallet_Fiat.isEmpty()) return;
+        String anno = RW_Anno_ComboBox.getSelectedItem().toString();
+        for (Map.Entry<String, List<String[]>> voce : Mappa_RW_ListeXGruppoWallet_Fiat.entrySet()) {
+            String gruppo = voce.getKey();                                   // "Wallet NN"
+            String num = gruppo.contains(" ") ? gruppo.substring(gruppo.indexOf(' ') + 1).trim() : gruppo;
+            String[] alias = DatabaseH2.Pers_GruppoAlias_Leggi(gruppo);
+            int prog = 0;
+            for (String[] d : voce.getValue()) {
+                String di = d[4] != null && d[4].length() >= 10 ? d[4].substring(0, 10) : String.valueOf(d[4]);
+                String df = d[9] != null && d[9].length() >= 10 ? d[9].substring(0, 10) : String.valueOf(d[9]);
+                boolean annoIntero = di.equals(anno + "-01-01") && df.equals(anno + "-12-31");
+                String etichetta = num + " ( " + alias[1] + " )";
+                if (!annoIntero) etichetta = etichetta + " [" + di + " / " + df + "]";
+                String[] RWx = new String[10];
+                RWx[0] = etichetta;
+                RWx[1] = d[5];                                               // valore iniziale
+                RWx[2] = d[10];                                              // valore finale
+                RWx[3] = d[11];                                              // giorni = lunghezza del tratto
+                RWx[4] = d[15] != null && d[15].toLowerCase().contains("error") ? "ERRORI" : "";
+                RWx[5] = "0.00";                                             // IC soppressa (solo monitoraggio)
+                RWx[6] = gruppo + "|FIAT|" + String.format("%03d", prog);
+                RWx[7] = "NO";                                               // il FIAT ignora il bollo
+                RWx[8] = "FIAT";
+                RWx[9] = d[Calcoli_RW_Fiat.FIAT_COL_STATO_ESTERO] == null ? "" : d[Calcoli_RW_Fiat.FIAT_COL_STATO_ESTERO];
+                MappaWallerQuadro.put(RWx[6], RWx);
+                prog++;
+            }
+        }
+    }
+
     private void RW_CompilaTabellaDettagli(){
         Map<String, String[]> Mappa_Gruppo_Alias =DatabaseH2.Pers_GruppoAlias_LeggiTabella();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -10324,24 +10739,36 @@ if (result.isAction("delete-all")) {
             else
                 this.RW_Label_SegnalaErrori.setText("");   
             
-            String Gruppo = "Wallet "+RW_Tabella.getModel().getValueAt(rigaselezionata, 0).toString().split(" ")[0].trim();
+            //La chiave di sintesi in colonna 6 ("gruppo|natura|prog") e' la fonte primaria del gruppo;
+            //fallback allo storico split di RWx[0] se la riga non la porta (righi vecchi / diagnostica).
+            Object chiaveObj = RW_Tabella.getModel().getValueAt(rigaselezionata, 6);
+            String chiaveSintesi = chiaveObj == null ? "" : chiaveObj.toString();
+            String NaturaRiga = RW_FiatNaturaRiga(rigaselezionata);
+            String Gruppo = chiaveSintesi.contains("|")
+                    ? chiaveSintesi.substring(0, chiaveSintesi.indexOf('|'))
+                    : "Wallet "+RW_Tabella.getModel().getValueAt(rigaselezionata, 0).toString().split(" ")[0].trim();
            // Gruppo =
             //System.out.println(Gruppo);
-            for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(Gruppo)) {
-                
-                
-                
-                if (Mappa_Gruppo_Alias.get(lista[1])!=null)lista[1]=lista[1].split(" ")[1].trim()+" ( "+Mappa_Gruppo_Alias.get(lista[1])[1]+" )";
-                if (Mappa_Gruppo_Alias.get(lista[6])!=null)lista[6]=lista[6].split(" ")[1].trim()+" ( "+Mappa_Gruppo_Alias.get(lista[6])[1]+" )";
+            List<String[]> RigheDettaglio = "FIAT".equalsIgnoreCase(NaturaRiga)
+                    ? Mappa_RW_ListeXGruppoWallet_Fiat.get(Gruppo)
+                    : Mappa_RW_ListeXGruppoWallet.get(Gruppo);
+            if (RigheDettaglio == null) RigheDettaglio = new java.util.ArrayList<>();
+            for (String[] lista : RigheDettaglio) {
+                //I righi CRYPTO vengono da liste ricostruite a ogni ricalcolo, i righi FIAT vivono nella
+                //mappa Mappa_RW_ListeXGruppoWallet_Fiat e verrebbero corrotti da una seconda selezione
+                //(lo split verrebbe rieseguito su una stringa gia' aliasata) : per il FIAT lavoro su copia.
+                String[] riga = "FIAT".equalsIgnoreCase(NaturaRiga) ? lista.clone() : lista;
+                if (Mappa_Gruppo_Alias.get(riga[1])!=null)riga[1]=riga[1].split(" ")[1].trim()+" ( "+Mappa_Gruppo_Alias.get(riga[1])[1]+" )";
+                if (Mappa_Gruppo_Alias.get(riga[6])!=null)riga[6]=riga[6].split(" ")[1].trim()+" ( "+Mappa_Gruppo_Alias.get(riga[6])[1]+" )";
                 if (RW_CheckBox_VediSoloErrori.isSelected())
                     {
-                        if(lista[15].toLowerCase().contains("errore")) ModelloTabella.addRow(lista);
+                        if(riga[15].toLowerCase().contains("errore")) ModelloTabella.addRow(riga);
                     }
-                else 
+                else
                     {
-                    ModelloTabella.addRow(lista);
+                    ModelloTabella.addRow(riga);
                     }
-                    
+
             }
           //  ModelloTabella.addRow(Mappa_RW_ListeXGruppoWallet);
             
@@ -10357,6 +10784,23 @@ if (result.isAction("delete-all")) {
             DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
             Tabelle.Funzioni_PulisciTabella(ModelloTabella3);
             int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(RW_Tabella_Dettagli);
+            //I righi FIAT (causale "Periodo FIAT") non hanno movimenti di apertura/chiusura : sono periodi
+            //valorizzati a saldo. Mostro un'unica riga informativa e non provo a risalire agli ID.
+            if ("Periodo FIAT".equalsIgnoreCase(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 12).toString().trim())) {
+                RW_Bottone_CorreggiErrore.setEnabled(false);
+                RW_Bottone_IdentificaScam.setEnabled(false);
+                String Mov[] = new String[7];
+                Mov[0] = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 4).toString();
+                Mov[1] = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
+                Mov[2] = "Periodo FIAT (valuta estera) - solo monitoraggio";
+                Mov[3] = "";
+                Mov[4] = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString();
+                Mov[5] = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString();
+                Mov[6] = "";
+                ModelloTabella3.addRow(Mov);
+                Tabelle.updateRowHeights(RW_Tabella_DettaglioMovimenti);
+                return;
+            }
             String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 15).toString();
             String MonetaTabIni = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString().trim();
             String MonetaTabFin = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 7).toString().trim();
@@ -10923,13 +11367,23 @@ if (result.isAction("delete-all")) {
     private void Opzioni_GruppoWallet_Bottone_PeriodiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_Bottone_PeriodiActionPerformed
         String gruppo = Opzioni_GruppoWallet_GruppoSelezionato();
         if (gruppo != null && !gruppo.isBlank()) {
-            new GUI_PeriodiDetenzioneRW(gruppo).setVisible(true);
+            GUI_PeriodiDetenzioneRW d = new GUI_PeriodiDetenzioneRW(gruppo);
+            d.setVisible(true); // APPLICATION_MODAL : ritorna alla chiusura
+            if (d.salvato) {
+                // il bollo per periodo cambia lo stato di colonna 3 : ricarico la tabella
+                AccendiLabelRicalcolo();
+                Opzioni_GruppoWallet_CaricaGruppiWallet();
+            }
         }
     }//GEN-LAST:event_Opzioni_GruppoWallet_Bottone_PeriodiActionPerformed
 
     private void Opzioni_GruppoWallet_Bottone_AnagraficaExchangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_Bottone_AnagraficaExchangeActionPerformed
         new GUI_AnagraficaExchange().setVisible(true);
     }//GEN-LAST:event_Opzioni_GruppoWallet_Bottone_AnagraficaExchangeActionPerformed
+
+    private void Opzioni_GruppoWallet_Bottone_RaggruppaExchangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_Bottone_RaggruppaExchangeActionPerformed
+        Opzioni_GruppoWallet_RaggruppaExchangeNoti();
+    }//GEN-LAST:event_Opzioni_GruppoWallet_Bottone_RaggruppaExchangeActionPerformed
 
 
 
@@ -10958,9 +11412,17 @@ if (result.isAction("delete-all")) {
             int colonna = Opzioni_GruppoWallet_Tabella.getSelectedColumn();
            
             if (colonna == 3) {
-                boolean PagaBollo = !(boolean) Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 3);               
+                if (Principale_GruppiWalletRW.periodiBolloIncoerenti(Gruppo)) {
+                    Messaggi.InfoMessage("Bollo gestito per periodo",
+                            "Il gruppo \"" + Gruppo + "\" ha periodi di detenzione con impostazione del bollo "
+                            + "non uniforme. Modificalo dal pulsante \"Periodi di detenzione...\".", this);
+                    return;
+                }
+                boolean PagaBollo = !(boolean) Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 3);
                 //Adesso devo scrivere nel database i dati corretti
-                DatabaseH2.Pers_GruppoAlias_Scrivi(Valori[0], Valori[1], PagaBollo); 
+                DatabaseH2.Pers_GruppoAlias_Scrivi(Valori[0], Valori[1], PagaBollo);
+                //Se il gruppo ha periodi (finora concordi), li tengo allineati al nuovo valore
+                Principale_GruppiWalletRW.propagaBolloAiPeriodi(Gruppo, PagaBollo);
                 AccendiLabelRicalcolo();
                 //Aggiorno la tabella
                 Opzioni_GruppoWallet_CaricaGruppiWallet();
@@ -11072,6 +11534,15 @@ if (result.isAction("delete-all")) {
         Funzioni_AggiornaTutto();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_RW_Opzioni_CheckBox_MostraGiacenzeSePagaBolloActionPerformed
+
+    private void RW_Opzioni_CheckBox_FiatInRWActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_FiatInRWActionPerformed
+        // Attiva/disattiva la parte FIAT del quadro W/RW (righi valuta estera presso intermediario estero,
+        // codice bene 14, solo monitoraggio). Letta da Calcoli_RW.AggiornaRWFR.
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        DatabaseH2.Pers_Opzioni_Scrivi("RW_FiatInRW", RW_Opzioni_CheckBox_FiatInRW.isSelected() ? "SI" : "NO");
+        Funzioni_AggiornaTutto();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_RW_Opzioni_CheckBox_FiatInRWActionPerformed
 
     private void RW_Bottone_DocumentazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_DocumentazioneActionPerformed
         // TODO add your handling code here:
@@ -11197,12 +11668,16 @@ if (result.isAction("delete-all")) {
             
             //Stampa Quadro W
             int righeQuadroStampate=0;
+            int totRigheW=0;//righi CRYPTO effettivamente emessi nel Quadro W (per la numerazione FIAT, fase F5)
             int foglio=1;
             stampa.AggiungiTesto("FOGLIO "+foglio,Font.BOLD,10);
             for (int i=0;i<numeroRighe;i++){
+                //I righi FIAT (valuta estera) hanno una stampa dedicata (fase F5) : per ora non entrano
+                //nel Quadro W cripto ne' nel Quadro RW cripto (eviterei di emetterli con codice bene 21).
+                if ("FIAT".equalsIgnoreCase(RW_FiatNaturaRiga(i))) continue;
                 String NomeGruppo=RW_Tabella.getModel().getValueAt(i, 0).toString().split("\\(")[1].split("\\)")[0].trim();
                 String ValIniziale=RW_Tabella.getModel().getValueAt(i, 1).toString();
-                if(ValIniziale.contains("0.")) ValIniziale=new BigDecimal(ValIniziale).setScale(0, RoundingMode.UP).toPlainString();           
+                if(ValIniziale.contains("0.")) ValIniziale=new BigDecimal(ValIniziale).setScale(0, RoundingMode.UP).toPlainString();
                 else ValIniziale=new BigDecimal(ValIniziale).setScale(0, RoundingMode.HALF_UP).toPlainString();
                 String ValFinale=RW_Tabella.getModel().getValueAt(i, 2).toString();
                 if(ValFinale.contains("0."))ValFinale=new BigDecimal(ValFinale).setScale(0, RoundingMode.UP).toPlainString();
@@ -11228,7 +11703,8 @@ if (result.isAction("delete-all")) {
                         righeQuadroStampate = righeQuadroStampate - 5;
                     }
                     righeQuadroStampate++;
-                    stampa.AggiungiHtml("<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>"+NomeGruppo+"</b>" + Errore+"</html>"); 
+                    totRigheW++;
+                    stampa.AggiungiHtml("<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>"+NomeGruppo+"</b>" + Errore+"</html>");
                     if (PagaBollo.equalsIgnoreCase("SI")&&
                             (RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.isSelected()||
                             RW_Opzioni_RilevanteSoloValoriIniFin.isSelected()))GG="";
@@ -11313,9 +11789,11 @@ if (result.isAction("delete-all")) {
            // stampa.AggiungiTesto("FOGLIO 1",Font.BOLD,10);
            // stampa.AggiungiTesto("\n",Font.NORMAL,10);
             righeQuadroStampate=0;
+            int totRigheRW=0;//righi CRYPTO effettivamente emessi nel Quadro RW (per la numerazione FIAT, fase F5)
             //boolean stampatoRW8=false;
             String ICTotale="0";
             for (int i = 0; i < numeroRighe; i++) {
+                if ("FIAT".equalsIgnoreCase(RW_FiatNaturaRiga(i))) continue;//il FIAT e' solo monitoraggio : niente IC
                 BigDecimal ICriga=new BigDecimal(RW_Tabella.getModel().getValueAt(i, 5).toString()).setScale(0, RoundingMode.HALF_UP);
                 ICTotale=new BigDecimal(ICTotale).add(ICriga).toPlainString();
             }
@@ -11329,6 +11807,7 @@ if (result.isAction("delete-all")) {
                     String Messaggi[] = new String[5];
                     boolean mancaStampa=false;
                     for (int i = 0; i < numeroRighe; i++) {
+                        if ("FIAT".equalsIgnoreCase(RW_FiatNaturaRiga(i))) continue;//stampa FIAT dedicata : fase F5
                         String NomeGruppo = RW_Tabella.getModel().getValueAt(i, 0).toString().split("\\(")[1].split("\\)")[0].trim();
                         String ValIniziale = RW_Tabella.getModel().getValueAt(i, 1).toString();
                         ValIniziale = new BigDecimal(ValIniziale).setScale(0, RoundingMode.HALF_UP).toPlainString();
@@ -11391,6 +11870,7 @@ if (result.isAction("delete-all")) {
                             Exchange[righeQuadroStampate]=NomeGruppo;
                             Messaggi[righeQuadroStampate]=Errore;
                             righeQuadroStampate++;
+                            totRigheRW++;
                             
                             //stampa.AggiungiTesto("\n",Font.NORMAL,10);
 
@@ -11612,15 +12092,137 @@ if (result.isAction("delete-all")) {
                 stampa.AggiungiHtml(testo);
             }
 
+            // ===================== PARTE FIAT (valuta estera presso intermediario estero) =====================
+            // Blocco a se', dopo i righi CRYPTO (punto 17). Codice individuazione bene 14, codice Stato estero
+            // in colonna 4, colonna 16 "SOLO MONITORAGGIO" barrata, colonna 14 e IC vuote (v1 = solo
+            // monitoraggio). Numerazione W/RW che prosegue da quella cripto (punto 21).
+            RW_StampaParteFiat(stampa, anno, AnnoDiCompetenza, numeroRighe, totRigheW, totRigheRW);
+
             stampa.ScriviPDF();
-            
+
         } catch (FileNotFoundException ex) {
             LoggerGC.ScriviErrore(ex);
         }
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
-    
-    
+
+    /**
+     * Stampa il blocco FIAT del report Quadro W/RW : i righi con Natura=FIAT di {@code RW_Tabella},
+     * dopo i righi CRYPTO (punto 17). Codice individuazione bene "14", codice Stato estero in colonna 4,
+     * colonna 16 ("solo monitoraggio") barrata, colonna 14 e IC lasciate vuote (v1 = solo monitoraggio).
+     * La numerazione W/RW prosegue da quella cripto (punto 21). Nessun output se non ci sono righi FIAT
+     * con valore diverso da zero.
+     */
+    private void RW_StampaParteFiat(Stampe stampa, int anno, String AnnoDiCompetenza, int numeroRighe,
+                                    int nCryptoW, int nCryptoRW) {
+        // nCryptoW / nCryptoRW : righi CRYPTO realmente emessi nei due quadri, contati dai cicli CRYPTO e
+        // non ricalcolati qui : l'arrotondamento del Quadro W (UP sui valori "0.xx") e quello del Quadro
+        // RW (HALF_UP) non coincidono, quindi un ricalcolo locale sfaserebbe la numerazione dei righi FIAT.
+        java.util.List<Integer> fiat = new java.util.ArrayList<>();
+        for (int i = 0; i < numeroRighe; i++) {
+            if (!"FIAT".equalsIgnoreCase(RW_FiatNaturaRiga(i))) continue;
+            String vi = RW_Tabella.getModel().getValueAt(i, 1).toString();
+            String vf = RW_Tabella.getModel().getValueAt(i, 2).toString();
+            boolean zero = new BigDecimal(vi).setScale(0, RoundingMode.HALF_UP).signum() == 0
+                        && new BigDecimal(vf).setScale(0, RoundingMode.HALF_UP).signum() == 0;
+            if (!zero) fiat.add(i);
+        }
+        if (fiat.isEmpty()) return;
+
+        String imgW = VarStatiche.getPathImmagini() + "QuadroW_2023.png";
+        String imgWTit = VarStatiche.getPathImmagini() + "QuadroW_2023_Titolo.png";
+        String immagineRW = VarStatiche.getPathImmagini() + "QuadroRW_2023.jpg";
+        if (anno == 2024) immagineRW = VarStatiche.getPathImmagini() + "QuadroRW_2024.jpg";
+        String pdfRW = VarStatiche.getPathImmagini() + "QuadroRW_2025.pdf";
+
+        // ---------- Quadro W FIAT ----------
+        stampa.NuovaPagina();
+        stampa.AggiungiTestoCentrato("QUADRO W - VALUTA ESTERA (FIAT) PRESSO INTERMEDIARIO ESTERO - ANNO " + AnnoDiCompetenza, Font.BOLD, 12);
+        int nW = nCryptoW;
+        int foglioW = (nCryptoW == 0 ? 1 : (nCryptoW + 4) / 5) + 1;   // foglio nuovo, dopo quelli cripto
+        int suFoglioW = 0;                // righi FIAT gia' su questo foglio (parte da una pagina nuova)
+        stampa.AggiungiTesto("FOGLIO " + foglioW, Font.BOLD, 10);
+        boolean primoW = true;
+        for (int idx : fiat) {
+            if (suFoglioW == 5) {
+                stampa.NuovaPagina();
+                foglioW++;
+                suFoglioW = 0;
+                stampa.AggiungiTesto("FOGLIO " + foglioW, Font.BOLD, 10);
+            }
+            String nome = RW_Tabella.getModel().getValueAt(idx, 0).toString();
+            String vi = new BigDecimal(RW_Tabella.getModel().getValueAt(idx, 1).toString()).setScale(0, RoundingMode.HALF_UP).toPlainString();
+            String vf = new BigDecimal(RW_Tabella.getModel().getValueAt(idx, 2).toString()).setScale(0, RoundingMode.HALF_UP).toPlainString();
+            if (vf.equals("0") && !vi.equals("0")) vf = "1";
+            String gg = RW_Tabella.getModel().getValueAt(idx, 3).toString();
+            if (new BigDecimal(gg).compareTo(new BigDecimal("365")) >= 0) gg = "365.00";
+            gg = new BigDecimal(gg).setScale(0, RoundingMode.HALF_UP).toPlainString();
+            String stato = RW_Tabella.getModel().getValueAt(idx, 9) == null ? "" : RW_Tabella.getModel().getValueAt(idx, 9).toString().trim();
+            nW++;
+            suFoglioW++;
+            stampa.AggiungiHtml("<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>" + nome + "</b> - valuta estera (solo monitoraggio)</html>");
+            stampa.AggiungiQuadroW(primoW ? imgWTit : imgW, String.valueOf(nW), vi, vf, gg, "14", stato, true);
+            primoW = false;
+        }
+
+        // ---------- Quadro RW FIAT ----------
+        stampa.NuovaPagina();
+        int fogliCrypto = nCryptoRW == 0 ? 1 : (nCryptoRW + 4) / 5;
+        int foglioRW = fogliCrypto + 1;   // sempre > 1 : il rigo RW8 (totale IC) non va ristampato sul FIAT
+        int nRW = nCryptoRW;
+        String[] vIni = new String[5], vFin = new String[5], gg5 = new String[5], ic5 = new String[5],
+                 wal5 = new String[5], note5 = new String[5], cb5 = new String[5], se5 = new String[5];
+        int slot = 0;
+        for (int idx : fiat) {
+            String vi = new BigDecimal(RW_Tabella.getModel().getValueAt(idx, 1).toString()).setScale(0, RoundingMode.HALF_UP).toPlainString();
+            String vf = new BigDecimal(RW_Tabella.getModel().getValueAt(idx, 2).toString()).setScale(0, RoundingMode.HALF_UP).toPlainString();
+            String gg = RW_Tabella.getModel().getValueAt(idx, 3).toString();
+            if (new BigDecimal(gg).compareTo(new BigDecimal("365")) >= 0) gg = "365.00";
+            gg = new BigDecimal(gg).setScale(0, RoundingMode.HALF_UP).toPlainString();
+            String raw = RW_Tabella.getModel().getValueAt(idx, 0).toString();
+            String nome = raw.contains("(") ? raw.split("\\(")[1].split("\\)")[0].trim() : raw;
+            String stato = RW_Tabella.getModel().getValueAt(idx, 9) == null ? "" : RW_Tabella.getModel().getValueAt(idx, 9).toString().trim();
+            vIni[slot] = vi; vFin[slot] = vf; gg5[slot] = gg; ic5[slot] = "0";
+            wal5[slot] = nome + " - valuta estera"; note5[slot] = ""; cb5[slot] = "14"; se5[slot] = stato;
+            slot++;
+            nRW++;
+            if (slot == 5) {
+                if (anno >= 2025) stampa.AggiungiQuadroRW2025(pdfRW, String.valueOf(nRW), vIni, vFin, gg5, ic5, wal5, note5, foglioRW, "0", cb5, se5);
+                else stampa.AggiungiQuadroRW(immagineRW, String.valueOf(nRW), vIni, vFin, gg5, ic5, wal5, note5, foglioRW, "0", cb5, se5);
+                vIni = new String[5]; vFin = new String[5]; gg5 = new String[5]; ic5 = new String[5];
+                wal5 = new String[5]; note5 = new String[5]; cb5 = new String[5]; se5 = new String[5];
+                slot = 0;
+                foglioRW++;
+                stampa.NuovaPagina();
+            }
+        }
+        if (slot > 0) {
+            if (anno >= 2025) stampa.AggiungiQuadroRW2025(pdfRW, String.valueOf(nRW), vIni, vFin, gg5, ic5, wal5, note5, foglioRW, "0", cb5, se5);
+            else stampa.AggiungiQuadroRW(immagineRW, String.valueOf(nRW), vIni, vFin, gg5, ic5, wal5, note5, foglioRW, "0", cb5, se5);
+        }
+
+        // ---------- Nota di compilazione FIAT ----------
+        stampa.NuovaPagina();
+        stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE - VALUTA ESTERA (FIAT)\n\n", Font.BOLD, 12);
+        stampa.AggiungiHtml("""
+                <html><font size="2" face="Courier New,Courier, mono" >
+                <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno sempre valenza informativa e
+                meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
+                I righi seguenti riguardano la <b>valuta estera</b> (euro e valute estere) detenuta presso
+                intermediari esteri, da monitorare nel Quadro W/RW come "altre attivita' estere di natura
+                finanziaria - valute estere - depositi e conti correnti bancari costituiti all'estero".<br><br>
+                <b>Colonna 3</b> - CODICE INDIVIDUAZIONE BENE - <b>14</b><br>
+                <b>Colonna 4</b> - CODICE STATO ESTERO - lo Stato estero dell'intermediario (se configurato nei
+                periodi del gruppo wallet, altrimenti da inserire a mano)<br>
+                <b>Colonna 7 / 8</b> - VALORE INIZIALE / FINALE - controvalore in euro della giacenza a inizio e
+                fine periodo (cambio di riferimento Banca d'Italia)<br>
+                <b>Colonna 14</b> - lasciata vuota<br>
+                <b>Colonna 16</b> - SOLO MONITORAGGIO - <b>barrata</b> : in questa versione il programma non
+                calcola l'IVAFE sulla valuta estera, che va eventualmente determinata e versata a parte.<br>
+                </font></html>""");
+    }
+
+
     private void RW_Bottone_StampaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_StampaActionPerformed
         // TODO add your handling code here:
         //Come prima cosa rielaboro il quadro per essee sicuro che sia tutto aggiornato
@@ -16689,6 +17291,10 @@ try {
                 }
 
 
+        //Primo avvio con movimenti di un exchange noto -> associazione al gruppo wallet preconfigurato,
+        //prima del calcolo così le plusvalenze/RW usano subito il gruppo giusto.
+        AutoAssociaGruppiPreconfiguratiExchange();
+
         SplashAvvio.fase(SplashAvvio.Fase.PLUSVALENZE);
         Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
 
@@ -17769,12 +18375,14 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JComboBox<String> Opzioni_Export_Wallets_Combobox;
     private javax.swing.JPanel Opzioni_FiatWallet_Pannello;
     private javax.swing.JButton Opzioni_GruppoWallet_Bottone_AnagraficaExchange;
+    private javax.swing.JButton Opzioni_GruppoWallet_Bottone_RaggruppaExchange;
     private javax.swing.JButton Opzioni_GruppoWallet_Bottone_Periodi;
     private javax.swing.JButton Opzioni_GruppoWallet_Bottone_RiferimentoEstero;
     private javax.swing.JButton Opzioni_GruppoWallet_Bottone_Rinomina;
     private javax.swing.JCheckBox Opzioni_GruppoWallet_CheckBox_PlusManuali;
     private javax.swing.JCheckBox Opzioni_GruppoWallet_CheckBox_PlusXWallet;
     private javax.swing.JPanel Opzioni_GruppoWallet_Pannello;
+    private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollInfo;
     private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollTabella;
     private javax.swing.JTable Opzioni_GruppoWallet_Tabella;
     private javax.swing.JLabel Opzioni_Label_StatoCompattazione;
@@ -17844,6 +18452,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel RW_Label_SegnalaRicalcolo;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_LiFoComplessivo;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_LiFoSubMovimenti;
+    private javax.swing.JCheckBox RW_Opzioni_CheckBox_FiatInRW;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_StakingZero;
     private javax.swing.JRadioButton RW_Opzioni_Radio_TrasferimentiNonConteggiati;

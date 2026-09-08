@@ -10,45 +10,42 @@ import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_BOLLO;
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_CHIAVE_DEFAULT;
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_DATA_FINE;
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_DATA_INIZIO;
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_MOD_FINALE;
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_MOD_INIZIALE;
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_NOTA_FINALE;
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_NOTA_INIZIALE;
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_ORIGINE;
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_PROGRESSIVO;
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_TIPO;
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_VAL_FINALE;
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_VAL_INIZIALE;
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.MODALITA_FINALE;
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.MODALITA_INIZIALE;
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.TIPO_CRYPTO;
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.TIPO_FIAT;
+import static com.giacenzecrypto.giacenze_crypto.Principale_PeriodiExchange.COL_CHIAVE_DEFAULT;
+import static com.giacenzecrypto.giacenze_crypto.Principale_PeriodiExchange.COL_DATA_FINE;
+import static com.giacenzecrypto.giacenze_crypto.Principale_PeriodiExchange.COL_DATA_INIZIO;
+import static com.giacenzecrypto.giacenze_crypto.Principale_PeriodiExchange.COL_FONTE;
+import static com.giacenzecrypto.giacenze_crypto.Principale_PeriodiExchange.COL_IDENT;
+import static com.giacenzecrypto.giacenze_crypto.Principale_PeriodiExchange.COL_NOME;
+import static com.giacenzecrypto.giacenze_crypto.Principale_PeriodiExchange.COL_NOTE;
+import static com.giacenzecrypto.giacenze_crypto.Principale_PeriodiExchange.COL_ORIGINE;
+import static com.giacenzecrypto.giacenze_crypto.Principale_PeriodiExchange.COL_PROGRESSIVO;
+import static com.giacenzecrypto.giacenze_crypto.Principale_PeriodiExchange.COL_STATO;
 
 /**
- * Periodi di detenzione di un gruppo wallet per il quadro W/RW ({@code GRUPPO_PERIODO_RW}) : righi
- * CRYPTO / FIAT con date, valori campo 7-8 a mano e modalità di calcolo. Colonna <b>Origine</b>
- * (Predefinito / Modificato / Manuale).
+ * Periodi fiscali di un exchange ({@code EXCHANGE_PERIODO}) : un rigo per ogni entità legale / Stato
+ * estero nel tempo. Colonna <b>Origine</b> (Predefinito / Modificato / Manuale).
  *
- * <p>Tabella di sola lettura (colonne molte e larghe : scroll orizzontale). Si aggiunge / modifica
- * una riga dal dialogo {@link GUI_ModificaPeriodoDetenzione}. "Ripristina riga / tutti al default"
- * riportano ai valori di {@code RW_Predefiniti.json}. Il modello di verità è {@link #righe}.</p>
+ * <p>La tabella è di sola lettura ; si aggiunge / modifica una riga dal dialogo
+ * {@link GUI_ModificaPeriodoExchange} (date da calendario). "Ripristina riga / tutti al default"
+ * riportano ai valori di {@code RW_Predefiniti.json}. Il modello di verità è la lista {@link #righe} ;
+ * la {@code Tabella} è solo la vista, ricostruita dopo ogni operazione.</p>
  */
-public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
+public class GUI_PeriodiExchange extends javax.swing.JDialog {
 
     private static final long serialVersionUID = 1L;
 
-    private final String gruppo;
+    private final String exchangeId;
     private final List<String[]> righe = new ArrayList<>();
 
     /** {@code true} se l'utente ha salvato almeno una volta. */
     public boolean salvato = false;
 
-    public GUI_PeriodiDetenzioneRW(String gruppo) {
-        this.gruppo = gruppo;
+    public GUI_PeriodiExchange(String exchangeId) {
+        this(exchangeId, exchangeId);
+    }
+
+    public GUI_PeriodiExchange(String exchangeId, String nomeExchange) {
+        this.exchangeId = exchangeId;
         try {
             setIconImage(new ImageIcon(VarStatiche.getPathRisorse() + "logo.png").getImage());
         } catch (RuntimeException ignore) {
@@ -61,32 +58,29 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
         Tabella.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         Tabella.setShowGrid(false); // niente righe fra celle : come le altre tabelle dell'app (default FlatLaf)
         Tabella.setPreferredScrollableViewportSize(new java.awt.Dimension(900, 260));
-        int[] larghezze = {60, 45, 90, 90, 90, 190, 90, 190, 190, 190, 90, 110};
+        int[] larghezze = {50, 90, 90, 190, 80, 150, 300, 240, 110};
         for (int i = 0; i < larghezze.length && i < Tabella.getColumnModel().getColumnCount(); i++) {
             Tabella.getColumnModel().getColumn(i).setPreferredWidth(larghezze[i]);
         }
-        Tabella.getColumnModel().getColumn(COL_NOTA_INIZIALE).setCellRenderer(new Tabelle.WrapCellRenderer());
-        Tabella.getColumnModel().getColumn(COL_NOTA_FINALE).setCellRenderer(new Tabelle.WrapCellRenderer());
-        Tabella.getColumnModel().getColumn(COL_MOD_INIZIALE).setCellRenderer(new Tabelle.WrapCellRenderer());
-        Tabella.getColumnModel().getColumn(COL_MOD_FINALE).setCellRenderer(new Tabelle.WrapCellRenderer());
+        Tabella.getColumnModel().getColumn(COL_NOME).setCellRenderer(new Tabelle.WrapCellRenderer());
+        Tabella.getColumnModel().getColumn(COL_NOTE).setCellRenderer(new Tabelle.WrapCellRenderer());
+        Tabella.getColumnModel().getColumn(COL_FONTE).setCellRenderer(new Tabelle.WrapCellRenderer());
         Tabelle.TooltipHeaderColonne(Tabella,
-                "CRYPTO o FIAT : il periodo vale per le cripto-attività o per la valuta estera",
-                "Numero d'ordine del periodo per quel tipo",
-                "Inizio del periodo (vuoto = dal primo movimento del gruppo)",
-                "Fine del periodo (vuoto = periodo ancora aperto)",
-                "Valore di inizio periodo forzato a mano (prevale sul calcolo automatico)",
-                "Nota che spiega il valore iniziale inserito a mano",
-                "Valore di fine periodo forzato a mano (prevale sul calcolo automatico)",
-                "Nota che spiega il valore finale inserito a mano",
-                "Come stimare la giacenza all'inizio del periodo",
-                "Come stimare la giacenza alla fine del periodo",
-                "Solo righi CRYPTO : in questo periodo l'intermediario ha già assolto l'imposta di bollo",
+                "Numero d'ordine del periodo (cronologico)",
+                "Inizio validità di questa entità / Stato (vuoto = da sempre)",
+                "Fine validità (vuoto = periodo ancora in corso)",
+                "Denominazione legale dell'operatore in questo periodo",
+                "Codice dello Stato estero — Tabella 10 delle istruzioni Redditi PF",
+                "P.IVA o numero di registro imprese (max 15 caratteri, limite modulo FC.1 ISEE)",
+                "Note libere (es. riferimenti dell'autorizzazione, LEI)",
+                "Da dove viene il dato (fonte ufficiale)",
                 "Provenienza della riga : Predefinito / Modificato / Manuale");
 
-        String etichetta = Principale_GruppiWalletRW.etichettaGruppo(gruppo);
-        setTitle("Periodi di detenzione — " + etichetta);
-        Label_Titolo.setText("Periodi di detenzione del gruppo \"" + etichetta + "\"");
+        String etichetta = nomeExchange == null || nomeExchange.isBlank() ? exchangeId : nomeExchange;
+        setTitle("Periodi fiscali — " + etichetta);
+        Label_Titolo.setText("Periodi fiscali dell'exchange \"" + etichetta + "\" (" + exchangeId + ")");
 
+        // L'altezza-riga dipende dalla larghezza reale delle colonne, nota solo a finestra disegnata.
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowOpened(java.awt.event.WindowEvent e) {
@@ -94,7 +88,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
             }
         });
 
-        righe.addAll(Principale_GruppiWalletRW.caricaPeriodi(gruppo));
+        righe.addAll(Principale_PeriodiExchange.caricaPeriodi(exchangeId));
         ricostruisciVista();
         setLocationRelativeTo(null);
     }
@@ -103,14 +97,10 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
         DefaultTableModel m = (DefaultTableModel) Tabella.getModel();
         m.setRowCount(0);
         for (String[] r : righe) {
-            String tipo = v(r, COL_TIPO);
             m.addRow(new Object[]{
-                tipo, v(r, COL_PROGRESSIVO), v(r, COL_DATA_INIZIO), v(r, COL_DATA_FINE),
-                v(r, COL_VAL_INIZIALE), v(r, COL_NOTA_INIZIALE), v(r, COL_VAL_FINALE), v(r, COL_NOTA_FINALE),
-                Principale_GruppiWalletRW.etichettaModalita(v(r, COL_MOD_INIZIALE), MODALITA_INIZIALE),
-                Principale_GruppiWalletRW.etichettaModalita(v(r, COL_MOD_FINALE), MODALITA_FINALE),
-                TIPO_FIAT.equals(tipo) ? "n/d" : v(r, COL_BOLLO),
-                Principale_GruppiWalletRW.descrizioneOrigineRiga(v(r, COL_ORIGINE), v(r, COL_CHIAVE_DEFAULT))});
+                v(r, COL_PROGRESSIVO), v(r, COL_DATA_INIZIO), v(r, COL_DATA_FINE), v(r, COL_NOME),
+                v(r, COL_STATO), v(r, COL_IDENT), v(r, COL_NOTE), v(r, COL_FONTE),
+                Principale_PeriodiExchange.descrizioneOrigineRiga(v(r, COL_ORIGINE), v(r, COL_CHIAVE_DEFAULT))});
         }
         Tabelle.AdattaAltezzaRighe(Tabella, 24);
     }
@@ -154,21 +144,21 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
         Bottone_Chiudi = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Periodi di detenzione");
+        setTitle("Periodi fiscali dell'exchange");
         setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
 
-        Label_Titolo.setText("Periodi di detenzione");
+        Label_Titolo.setText("Periodi fiscali dell'exchange");
 
         Label_Info.setText("<html><div style='width: 900px'>"
-                + "<b>A cosa serve.</b> Come il gruppo ha detenuto crypto e valuta estera nel tempo, "
-                + "ai fini del Quadro W/RW. Un rigo per periodo, separato per CRYPTO e FIAT : serve "
-                + "quando un conto viene chiuso e poi riaperto, o quando cambia il regime del bollo."
+                + "<b>A cosa serve.</b> La successione delle entità legali / Stati esteri sotto cui "
+                + "l'exchange ha operato nel tempo: ogni migrazione MiCA (cambio di Paese o P.IVA) è "
+                + "un rigo diverso nel Quadro W/RW e nell'ISEE."
                 + "<br><b>Colonne</b>"
                 + "<ul style='margin-top:2px; margin-bottom:2px'>"
-                + "<li><b>Data inizio</b> vuota = dal primo movimento del gruppo; <b>Data fine</b> vuota = periodo ancora aperto</li>"
-                + "<li><b>Val. iniziale</b> / <b>Val. finale</b> a mano = forzano quel valore al posto del calcolo automatico (il motivo va nella nota accanto)</li>"
-                + "<li><b>Calcolo iniziale</b> / <b>finale</b> = come stimare la giacenza al bordo del periodo</li>"
-                + "<li><b>Bollo exchange</b> (solo righi CRYPTO) = in quel periodo l'intermediario ha già assolto l'imposta di bollo</li>"
+                + "<li><b>Data inizio</b> / <b>Data fine</b> vuote = \"da sempre\" / \"ancora in corso\"</li>"
+                + "<li><b>Nome entità</b> = denominazione legale dell'operatore in quel periodo</li>"
+                + "<li><b>Stato estero</b> = codice della Tabella 10 delle istruzioni Redditi PF (si sceglie da un elenco nel dialogo)</li>"
+                + "<li><b>Identificativo fiscale</b> = P.IVA o n. registro imprese (max 15 caratteri, limite del modulo FC.1 ISEE)</li>"
                 + "<li><b>Origine</b> = \"Predefinito\" (dal programma) / \"Modificato\" / \"Manuale\"</li>"
                 + "</ul>"
                 + "<b>Pulsanti.</b> \"Aggiungi\" e \"Modifica\" aprono un dialogo con il calendario per "
@@ -181,11 +171,11 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
 
             },
             new String [] {
-                "Tipo", "Progr.", "Data inizio", "Data fine", "Val. iniziale", "Nota iniziale", "Val. finale", "Nota finale", "Calcolo iniziale", "Calcolo finale", "Bollo exchange", "Origine"
+                "Progr.", "Data inizio", "Data fine", "Nome entita'", "Stato estero", "Identificativo fiscale", "Note", "Fonte", "Origine"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -196,7 +186,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
 
         Bottone_Aggiungi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Nuovo.png"))); // NOI18N
         Bottone_Aggiungi.setText("Aggiungi...");
-        Bottone_Aggiungi.setToolTipText("Aggiunge un nuovo periodo di detenzione (CRYPTO o FIAT)");
+        Bottone_Aggiungi.setToolTipText("Aggiunge un nuovo periodo fiscale (entita' / Stato estero)");
         Bottone_Aggiungi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Bottone_AggiungiActionPerformed(evt);
@@ -303,9 +293,8 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void Bottone_AggiungiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AggiungiActionPerformed
-        int prog = Principale_GruppiWalletRW.prossimoProgressivo(righe, TIPO_CRYPTO);
-        GUI_ModificaPeriodoDetenzione d = new GUI_ModificaPeriodoDetenzione(this, null, prog,
-                Principale_GruppiWalletRW.bolloDefaultGruppo(gruppo));
+        int prog = Principale_PeriodiExchange.prossimoProgressivo(righe);
+        GUI_ModificaPeriodoExchange d = new GUI_ModificaPeriodoExchange(this, null, prog);
         d.setVisible(true);
         if (d.confermato) {
             righe.add(d.risultato);
@@ -320,8 +309,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
             Messaggi.WarningMessage("Nessuna selezione", "Seleziona prima un periodo.", this);
             return;
         }
-        GUI_ModificaPeriodoDetenzione d = new GUI_ModificaPeriodoDetenzione(this, righe.get(i), 0,
-                Principale_GruppiWalletRW.bolloDefaultGruppo(gruppo));
+        GUI_ModificaPeriodoExchange d = new GUI_ModificaPeriodoExchange(this, righe.get(i), 0);
         d.setVisible(true);
         if (d.confermato) {
             righe.set(i, d.risultato);
@@ -343,7 +331,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
             Messaggi.WarningMessage("Nessuna selezione", "Seleziona prima un periodo.", this);
             return;
         }
-        if (Principale_GruppiWalletRW.ripristinaRigaAlDefault(gruppo, righe, i)) {
+        if (Principale_PeriodiExchange.ripristinaRigaAlDefault(exchangeId, righe, i)) {
             ricostruisciVista();
         } else {
             Messaggi.InfoMessage("Nessun default", "Questo periodo non ha un corrispondente nei dati "
@@ -353,13 +341,13 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
 
     private void Bottone_RipristinaTuttiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_RipristinaTuttiActionPerformed
         int scelta = JOptionPane.showConfirmDialog(this,
-                "Rimuovere le personalizzazioni e riportare tutti i periodi di detenzione di questo\n"
-                + "gruppo ai valori predefiniti del programma?", "Ripristina tutti al default",
+                "Rimuovere le personalizzazioni e riportare tutti i periodi fiscali di questo exchange\n"
+                + "ai valori predefiniti del programma?", "Ripristina tutti al default",
                 JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (scelta != JOptionPane.YES_OPTION) {
             return;
         }
-        List<String[]> def = Principale_GruppiWalletRW.ripristinaTuttiAlDefault(gruppo);
+        List<String[]> def = Principale_PeriodiExchange.ripristinaTuttiAlDefault(exchangeId);
         if (def == null) {
             Messaggi.WarningMessage("Dati predefiniti non disponibili",
                     "Non è stato possibile leggere RW_Predefiniti.json.", this);
@@ -371,28 +359,21 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
     }//GEN-LAST:event_Bottone_RipristinaTuttiActionPerformed
 
     private void Bottone_SalvaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_SalvaActionPerformed
-        List<String> errori = Principale_GruppiWalletRW.salvaPeriodi(gruppo, righe);
+        List<String> errori = Principale_PeriodiExchange.salvaPeriodi(exchangeId, righe);
         if (!errori.isEmpty()) {
             Messaggi.WarningMessage("Dati non validi", String.join("\n", errori), this);
             return;
         }
         salvato = true;
-        // Se i periodi CRYPTO concordano sul bollo, allineo il flag per-gruppo (toggle tabella "Gruppi Wallet").
-        String stato = Principale_GruppiWalletRW.statoBolloPeriodi(gruppo);
-        if (Principale_GruppiWalletRW.BOLLO_STATO_TUTTI_SI.equals(stato)) {
-            Principale_GruppiWalletRW.allineaBolloGruppo(gruppo, true);
-        } else if (Principale_GruppiWalletRW.BOLLO_STATO_TUTTI_NO.equals(stato)) {
-            Principale_GruppiWalletRW.allineaBolloGruppo(gruppo, false);
-        }
         righe.clear();
-        righe.addAll(Principale_GruppiWalletRW.caricaPeriodi(gruppo));
+        righe.addAll(Principale_PeriodiExchange.caricaPeriodi(exchangeId));
         ricostruisciVista();
-        List<String> avvisi = Principale_GruppiWalletRW.avvisiPeriodi(righe);
+        List<String> avvisi = Principale_PeriodiExchange.avvisiPeriodi(righe);
         if (avvisi.isEmpty()) {
-            Messaggi.InfoMessage("Salvato", "Periodi di detenzione salvati.", this);
+            Messaggi.InfoMessage("Salvato", "Periodi fiscali salvati.", this);
         } else {
             Messaggi.InfoMessage("Salvato (con avvisi)",
-                    "Periodi di detenzione salvati.\n\nAvvisi (non bloccanti) :\n- " + String.join("\n- ", avvisi), this);
+                    "Periodi fiscali salvati.\n\nAvvisi (non bloccanti) :\n- " + String.join("\n- ", avvisi), this);
         }
     }//GEN-LAST:event_Bottone_SalvaActionPerformed
 

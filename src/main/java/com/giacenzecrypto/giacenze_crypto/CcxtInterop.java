@@ -1307,7 +1307,9 @@ public static Path getNodeExePath() {
         /** Chiude la finestra di progresso e ripristina il cursore normale al termine dell'operazione. */
         @Override
         protected void done() {
-        progress.dispose();
+        //ChiudiFineLavoro e non dispose(): la chiusura di fine lavoro non deve lasciare acceso INTERROMPI
+        //per l'exchange successivo del ciclo "scarica da tutti". Vedi Download.chiusuraDiFineLavoro.
+        progress.ChiudiFineLavoro();
         c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
         };
@@ -1506,7 +1508,7 @@ public static Path getNodeExePath() {
                 //Interrompo la funzione se ho premuto interrompi o se ho degli errori bloccanti sulla funzione
                 if (Principale.InterrompiCiclo||progress.ErroriNodeJS())
                 {
-                    JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                    JOptionPane.showConfirmDialog(null, "Scaricamento da "+exchangeId+" interrotto prima della fine.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                     return null;
                 }
                 j++;
@@ -1586,7 +1588,7 @@ public static Path getNodeExePath() {
             lista.addAll(getListaMovimento(json, exchangeId));
             if (Principale.InterrompiCiclo||progress.ErroriNodeJS())
                 {
-                    JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                    JOptionPane.showConfirmDialog(null, "Scaricamento da "+exchangeId+" interrotto prima della fine.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                     return null;
                 }
 
@@ -1653,7 +1655,7 @@ public static Path getNodeExePath() {
             }
 
             if (Principale.InterrompiCiclo||progress.ErroriNodeJS()) {
-                JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                JOptionPane.showConfirmDialog(null, "Scaricamento da "+exchangeId+" interrotto prima della fine.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                 return null;
             }
             if (json == null) {
@@ -1675,7 +1677,7 @@ public static Path getNodeExePath() {
             List<String[]> rf = convertOKXBills(fundingBills, "Funding", tipiOKX);
             List<String[]> rt = convertOKXBills(tradingBills, "Trading", tipiOKX);
             if (rf == null || rt == null) {   //null = interruzione richiesta dall'utente
-                JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                JOptionPane.showConfirmDialog(null, "Scaricamento da "+exchangeId+" interrotto prima della fine.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                 return null;
             }
             righe.addAll(rf);
@@ -1703,7 +1705,7 @@ public static Path getNodeExePath() {
                     //L'avviso specifico dell'errore l'ha gia' mostrato ScaricaArchivioOKX: qui si parla solo
                     //del caso interruzione, altrimenti l'utente vedrebbe due finestre di seguito.
                     if (Principale.InterrompiCiclo) {
-                        JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                        JOptionPane.showConfirmDialog(null, "Scaricamento da "+exchangeId+" interrotto prima della fine.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                     }
                     return null;
                 }
@@ -1742,7 +1744,7 @@ public static Path getNodeExePath() {
             //INTERROMPI deve fermare tutto, non solo lo script in corso.
             if (Principale.InterrompiCiclo || progress.ErroriNodeJS()) {
                 if (archivioDaRecuperare) ArchivioOKXAbbandonato();
-                JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                JOptionPane.showConfirmDialog(null, "Scaricamento da "+exchangeId+" interrotto prima della fine.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                 return null;
             }
             //Un errore dell'API sui rendimenti ferma l'importazione come tutte le altre chiamate dello stesso
@@ -1764,7 +1766,7 @@ public static Path getNodeExePath() {
                 List<String[]> re = convertOKXEarn(jsonEarn.getAsJsonArray("savings_lending"));
                 if (re == null) {
                     if (archivioDaRecuperare) ArchivioOKXAbbandonato();
-                    JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                    JOptionPane.showConfirmDialog(null, "Scaricamento da "+exchangeId+" interrotto prima della fine.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                     return null;
                 }
                 righe.addAll(re);
@@ -1786,7 +1788,7 @@ public static Path getNodeExePath() {
             //poi l'importazione scrive, e dietro le scritture parte lo scaricamento dei prezzi.
             if (Principale.InterrompiCiclo || progress.ErroriNodeJS()) {
                 if (archivioDaRecuperare) ArchivioOKXAbbandonato();
-                JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                JOptionPane.showConfirmDialog(null, "Scaricamento da "+exchangeId+" interrotto prima della fine.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                 return null;
             }
 
@@ -1836,14 +1838,26 @@ public static Path getNodeExePath() {
             }
 
             Importazioni.Ex_OKX_ImportaDaAPI(righe);
+            //Esito reale dei contatori appena valorizzati da Ex_OKX_ImportaDaAPI: va catturato QUI perche'
+            //serve anche sul ramo di interruzione qui sotto, non solo sull'uscita riuscita in fondo.
+            Importazioni.Esito esitoOKX = Importazioni.Esito.daiContatori(exchangeId);
 
             //Il consolidamento fa da solo la parte piu' lunga dell'importazione — scarica i prezzi mancanti,
-            //un processo Node per quotazione — quindi INTERROMPI puo' arrivare li' dentro. In quel caso
-            //Ex_OKX_ImportaDaAPI esce senza scrivere nulla e qui si chiude come per ogni altra interruzione.
+            //un processo Node per quotazione — quindi INTERROMPI puo' arrivare li' dentro. Non si torna piu'
+            //null secco:
+            //  - se dei movimenti erano gia' stati scritti (Aggiunte>0), l'import NON e' stato annullato —
+            //    [41] e' gia' timbrato — e restituire null farebbe scartare da fetchMovimenti il documento
+            //    NDJSON a cui quei movimenti puntano (ChiudiRegistrazione con Aggiunte=0 -> Annulla, orfano);
+            //  - se non e' stato scritto nulla ma la classificazione aveva gia' trovato codici type ignoti
+            //    (Sconosciute>0, la guardia interna di Ex_OKX_ImportaDaAPI scatta dopo Ex_OKX_OrdinaEClassifica),
+            //    quei codici vanno comunque nel resoconto, stessa logica del ramo Ex_OKX_SoloCausaliSconosciute.
+            //Solo quando non c'e' nulla da riportare (0 e 0) si torna null e il resoconto non si apre a vuoto.
+            //In uno scaricamento "tutti gli exchange" un'interruzione spuria fra un exchange e l'altro
+            //nascondeva del tutto questo esito (era l'unico modo di vedere il type 328).
             if (Interruzione.Richiesta()) {
                 if (archivioDaRecuperare) ArchivioOKXAbbandonato();
-                JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                return null;
+                JOptionPane.showConfirmDialog(null, "Scaricamento da "+exchangeId+" interrotto prima della fine.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                return (esitoOKX.Aggiunte > 0 || esitoOKX.Sconosciute > 0) ? esitoOKX : null;
             }
             //I movimenti dell'archivio sono ora in mappa: solo adesso i trimestri arrivati possono
             //smettere di essere sospesi. Scriverlo prima avrebbe dichiarato "fatto" un trimestre le cui
@@ -1973,6 +1987,7 @@ public static Path getNodeExePath() {
      * <tr><td>Funding</td><td>189</td><td>Mystery box bonus</td><td>provento</td></tr>
      * <tr><td>Funding</td><td>311</td><td>Transfer in from trading account</td><td>giroconto interno</td></tr>
      * <tr><td>Funding</td><td>326 / 327</td><td>Data migration out / in</td><td>giroconto interno</td></tr>
+     * <tr><td>Funding</td><td>328</td><td>Staking earnings</td><td>provento</td></tr>
      * </table>
      *
      * <p>Dal 03/08/2026 la tabella non è più ricavata solo per confronto con il CSV: l'endpoint
@@ -2024,6 +2039,11 @@ public static Path getNodeExePath() {
      *     due righe del 20/01/2024 hanno per contropartita esatta — stesso istante, stesso importo di segno
      *     opposto — due righe {@code subType} 290 dell'archivio del conto Trading, vedi
      *     {@link #tipoDaArchivioOKX}.</li>
+     * <li>{@code 328} — il rendimento dello staking on-chain (SOL, ETH, …): un accredito senza contropartita,
+     *     con il campo {@code notes} valorizzato a {@code "<moneta> Staking earnings"} (segnalato il
+     *     07/09/2026 da uno scaricamento reale). È un provento come il 89: entra nel wallet senza che nulla
+     *     esca. L'etichetta emessa è {@code "Staking earnings"} — fissa, senza il prefisso della moneta, che
+     *     varia — e {@code OKX.json} la porta a {@code REWARD}.</li>
      * </ul>
      *
      * @param tipo valore del campo {@code type} del bill

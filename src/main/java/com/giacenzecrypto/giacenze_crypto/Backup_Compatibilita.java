@@ -91,6 +91,7 @@ public class Backup_Compatibilita {
             Map.entry("personale/GIACENZEBLOCKCHAIN", new String[]{"WALLET_BLOCCO"}),
             Map.entry("personale/EXCHANGETOKENS", new String[]{"EXCHANGE_TOKEN"}),
             Map.entry("personale/EXCHANGE_ANAGRAFICA", new String[]{"EXCHANGEID"}),
+            Map.entry("personale/EXCHANGE_PERIODO", new String[]{"EXCHANGEID_PROGRESSIVO"}),
             Map.entry("personale/GRUPPO_RIFERIMENTO_ESTERO", new String[]{"GRUPPO"}),
             Map.entry("personale/GRUPPO_PERIODO_RW", new String[]{"GRUPPO_TIPO_PROG"}),
             Map.entry("personale/DOCUMENTIFONTE", new String[]{"ID"}),

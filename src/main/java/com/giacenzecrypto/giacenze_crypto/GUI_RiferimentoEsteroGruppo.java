@@ -35,8 +35,9 @@ public class GUI_RiferimentoEsteroGruppo extends javax.swing.JDialog {
         bg.add(Radio_Stato);
         bg.add(Radio_Exchange);
 
-        setTitle("Riferimento estero — " + gruppo);
-        Label_Titolo.setText("Riferimento estero del gruppo \"" + gruppo + "\"");
+        String etichetta = Principale_GruppiWalletRW.etichettaGruppo(gruppo);
+        setTitle("Riferimento estero — " + etichetta);
+        Label_Titolo.setText("Riferimento estero del gruppo \"" + etichetta + "\"");
 
         popolaCombo();
         caricaValoriCorrenti();
@@ -48,8 +49,10 @@ public class GUI_RiferimentoEsteroGruppo extends javax.swing.JDialog {
         ComboBox_Exchange.removeAllItems();
         for (String[] r : DatabaseH2.Pers_ExchangeAnagrafica_LeggiTabella().values()) {
             String nome = r[1] != null && !r[1].isBlank() ? r[1] : r[0];
-            String stato = r[2] != null && !r[2].isBlank() ? r[2] : "—";
-            ComboBox_Exchange.addItem(r[0] + "   ·   " + nome + "  (stato " + stato + ")");
+            // Il marcatore va DOPO "   ·   " (idDaItem() prende solo il prefisso prima di quel separatore).
+            String origine = Principale_GruppiWalletRW.exchangeEPredefinito(r[0]) ? " [predefinito]" : "";
+            // stato / identificativo vivono nei periodi (EXCHANGE_PERIODO), non più nell'anagrafica
+            ComboBox_Exchange.addItem(r[0] + "   ·   " + nome + origine + "  (" + Principale_PeriodiExchange.descriviCorrente(r[0]) + ")");
         }
         if (selezionato != null) {
             ComboBox_Exchange.setSelectedItem(selezionato);

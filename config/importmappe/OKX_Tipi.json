@@ -1,7 +1,7 @@
 {
-  "versione": "1.000",
+  "versione": "1.001",
   "centralizzato": true,
-  "descrizione": "Decodifica dei codici 'type' dei bill restituiti dalle API di OKX nelle stesse etichette testuali usate dall'export CSV; e' poi OKX.json a convertire l'etichetta nella categoria interna. Un valore puo' essere una stringa (etichetta fissa) oppure un oggetto {positivo, negativo}, e in tal caso l'etichetta viene scelta dal segno di balChg. I codici non elencati restano non mappati e finiscono nel riepilogo dei movimenti sconosciuti, con il codice grezzo e il campo notes in causale. I blocchi archivioInstType/archivioSubType traducono invece le colonne del CSV dell'archivio trimestrale nel codice 'type' equivalente: instType ha la precedenza, il confronto e' senza distinzione fra maiuscole e minuscole.",
+  "descrizione": "Decodifica dei codici 'type' dei bill restituiti dalle API di OKX nelle stesse etichette testuali usate dall'export CSV; e' poi OKX.json a convertire l'etichetta nella categoria interna. Un valore puo' essere una stringa (etichetta fissa) oppure un oggetto {positivo, negativo}, e in tal caso l'etichetta viene scelta dal segno di balChg. I codici non elencati restano non mappati e finiscono nel riepilogo dei movimenti sconosciuti, con il codice grezzo e il campo notes in causale. I blocchi archivioInstType/archivioSubType traducono invece le colonne del CSV dell'archivio trimestrale nel codice 'type' equivalente: instType ha la precedenza, il confronto e' senza distinzione fra maiuscole e minuscole. v1.001: aggiunto il codice funding 328 (rendimenti da staking on-chain, es. 'SOL Staking earnings' nel campo notes) come 'Staking earnings' -> REWARD.",
   "trading": {
     "1": { "positivo": "Transfer in", "negativo": "Transfer out" },
     "2": { "positivo": "Buy", "negativo": "Sell" },
@@ -23,7 +23,8 @@
     "189": "Mystery box bonus",
     "311": { "positivo": "Transfer in", "negativo": "Transfer out" },
     "326": { "positivo": "Transfer in", "negativo": "Transfer out" },
-    "327": { "positivo": "Transfer in", "negativo": "Transfer out" }
+    "327": { "positivo": "Transfer in", "negativo": "Transfer out" },
+    "328": "Staking earnings"
   },
   "archivioInstType": {
     "SPOT": "2"

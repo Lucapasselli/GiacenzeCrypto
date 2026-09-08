@@ -7,26 +7,41 @@ package com.giacenzecrypto.giacenze_crypto;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.swing.ImageIcon;
-import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
- * Anagrafica degli exchange : per ognuno, stato estero (quadro W/RW) e identificativo
- * fiscale / P.IVA o equivalente (ISEE futura), piu' note / fonte / data aggiornamento.
+ * Anagrafica degli exchange : elenco {@code id} + {@code Nome} + colonna <b>Origine</b>
+ * (Predefinito / Manuale). Stato estero e identificativo fiscale si impostano per <b>periodo</b>
+ * ({@link GUI_PeriodiExchange}).
  *
- * <p>CRUD diretto sulla tabella {@code EXCHANGE_ANAGRAFICA} di {@code personale.mv.db}
- * (API {@code DatabaseH2.Pers_ExchangeAnagrafica_*}, Fase 1). Nessun dato fiscale viene
- * pre-compilato : lo inserisce l'utente da fonte ufficiale.</p>
+ * <p>Le celle non sono editabili : si aggiunge / modifica una riga dal dialogo dedicato
+ * {@link GUI_ModificaExchange}. CRUD su {@code EXCHANGE_ANAGRAFICA}
+ * (API {@code DatabaseH2.Pers_ExchangeAnagrafica_*}).</p>
  */
 public class GUI_AnagraficaExchange extends javax.swing.JDialog {
 
     private static final long serialVersionUID = 1L;
 
     public GUI_AnagraficaExchange() {
-        ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse() + "logo.png");
-        this.setIconImage(icon.getImage());
+        try {
+            setIconImage(new ImageIcon(VarStatiche.getPathRisorse() + "logo.png").getImage());
+        } catch (RuntimeException ignore) {
+        }
         initComponents();
+        // Stile di default delle tabelle dell'applicazione (righe alternate a tema, header in grassetto).
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella);
+        Tabelle.ColoraTabellaSemplice(Tabella);
+        Tabella.setShowGrid(false); // niente righe fra celle : come le altre tabelle dell'app (default FlatLaf)
+        Tabelle.TooltipHeaderColonne(Tabella,
+                "Identificativo breve dell'exchange (chiave, non modificabile)",
+                "Nome commerciale mostrato nelle liste e nei menù",
+                "Provenienza : Predefinito (dal programma) / Manuale / Predefinito (mod.)");
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowOpened(java.awt.event.WindowEvent e) {
+                Tabelle.AdattaAltezzaRighe(Tabella, 22);
+            }
+        });
         caricaTabella();
         setLocationRelativeTo(null);
     }
@@ -36,8 +51,21 @@ public class GUI_AnagraficaExchange extends javax.swing.JDialog {
         DefaultTableModel m = (DefaultTableModel) Tabella.getModel();
         m.setRowCount(0);
         for (String[] r : DatabaseH2.Pers_ExchangeAnagrafica_LeggiTabella().values()) {
-            m.addRow(new Object[]{r[0], vuotoSeNull(r[1]), vuotoSeNull(r[2]), vuotoSeNull(r[3]),
-                vuotoSeNull(r[4]), vuotoSeNull(r[5]), vuotoSeNull(r[6])});
+            // r : [id, nome, stato, ident, note, fonte, dataAggiornamento, origine]
+            m.addRow(new Object[]{r[0], vuotoSeNull(r[1]),
+                Principale_GruppiWalletRW.descrizioneOrigineExchange(r[0], r.length > 7 ? r[7] : null)});
+        }
+        Tabelle.AdattaAltezzaRighe(Tabella, 22);
+    }
+
+    private void selezionaId(String id) {
+        DefaultTableModel m = (DefaultTableModel) Tabella.getModel();
+        for (int i = 0; i < m.getRowCount(); i++) {
+            if (id.equalsIgnoreCase(cella(m.getValueAt(i, 0)))) {
+                int v = Tabella.convertRowIndexToView(i);
+                Tabella.setRowSelectionInterval(v, v);
+                return;
+            }
         }
     }
 
@@ -62,7 +90,9 @@ public class GUI_AnagraficaExchange extends javax.swing.JDialog {
         Tabella = new javax.swing.JTable();
         Label_Info = new javax.swing.JLabel();
         Bottone_Aggiungi = new javax.swing.JButton();
+        Bottone_Modifica = new javax.swing.JButton();
         Bottone_Rimuovi = new javax.swing.JButton();
+        Bottone_PeriodiFiscali = new javax.swing.JButton();
         Bottone_Salva = new javax.swing.JButton();
         Bottone_Chiudi = new javax.swing.JButton();
 
@@ -75,11 +105,11 @@ public class GUI_AnagraficaExchange extends javax.swing.JDialog {
 
             },
             new String [] {
-                "Exchange (id)", "Nome", "Stato estero", "Identificativo fiscale", "Note", "Fonte", "Aggiornato"
+                "Exchange (id)", "Nome", "Origine"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, true, true, true, true, true, true
+                false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -88,13 +118,32 @@ public class GUI_AnagraficaExchange extends javax.swing.JDialog {
         });
         jScrollPane1.setViewportView(Tabella);
 
-        Label_Info.setText("Stato estero e identificativo fiscale degli exchange. Lo stato serve al quadro W/RW, l'identificativo fiscale servira' all'ISEE. Compila solo cio' che ti risulta da fonte ufficiale.");
+        Label_Info.setText("<html><div style='width: 720px'>"
+                + "<b>Cos'è.</b> L'elenco degli exchange usati, con la sola <b>etichetta</b> (id + nome). "
+                + "<b>Stato estero</b> e <b>P.IVA</b> non stanno qui : si impostano per <b>periodo</b> con "
+                + "\"Periodi fiscali...\", perché un exchange cambia entità legale e Paese nel tempo (MiCA)."
+                + "<br><b>Origine</b>"
+                + "<ul style='margin-top:2px; margin-bottom:2px'>"
+                + "<li><b>Predefinito</b> = fornito dal programma</li>"
+                + "<li><b>Manuale</b> = aggiunto da te</li>"
+                + "<li><b>Predefinito (mod.)</b> = predefinito, con il nome cambiato da te</li>"
+                + "</ul></div></html>");
 
         Bottone_Aggiungi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Nuovo.png"))); // NOI18N
-        Bottone_Aggiungi.setText("Aggiungi");
+        Bottone_Aggiungi.setText("Aggiungi...");
+        Bottone_Aggiungi.setToolTipText("Aggiunge un nuovo exchange all'elenco");
         Bottone_Aggiungi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Bottone_AggiungiActionPerformed(evt);
+            }
+        });
+
+        Bottone_Modifica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
+        Bottone_Modifica.setText("Modifica...");
+        Bottone_Modifica.setToolTipText("Cambia il nome dell'exchange selezionato");
+        Bottone_Modifica.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_ModificaActionPerformed(evt);
             }
         });
 
@@ -103,6 +152,15 @@ public class GUI_AnagraficaExchange extends javax.swing.JDialog {
         Bottone_Rimuovi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Bottone_RimuoviActionPerformed(evt);
+            }
+        });
+
+        Bottone_PeriodiFiscali.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
+        Bottone_PeriodiFiscali.setText("Periodi fiscali...");
+        Bottone_PeriodiFiscali.setToolTipText("Stato estero e identificativo fiscale per periodo dell'exchange selezionato");
+        Bottone_PeriodiFiscali.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_PeriodiFiscaliActionPerformed(evt);
             }
         });
 
@@ -130,12 +188,16 @@ public class GUI_AnagraficaExchange extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Label_Info, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 700, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(Bottone_Aggiungi)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Bottone_Modifica)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_Rimuovi)
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Bottone_PeriodiFiscali)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(Bottone_Salva)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_Chiudi)))
@@ -147,11 +209,13 @@ public class GUI_AnagraficaExchange extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(Label_Info)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Bottone_Aggiungi)
+                    .addComponent(Bottone_Modifica)
                     .addComponent(Bottone_Rimuovi)
+                    .addComponent(Bottone_PeriodiFiscali)
                     .addComponent(Bottone_Salva)
                     .addComponent(Bottone_Chiudi))
                 .addContainerGap())
@@ -161,42 +225,70 @@ public class GUI_AnagraficaExchange extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void Bottone_AggiungiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AggiungiActionPerformed
-        String id = JOptionPane.showInputDialog(this,
-                "Identificativo breve dell'exchange (es. \"binance\") :", "Nuovo exchange",
-                JOptionPane.PLAIN_MESSAGE);
-        if (id == null) {
-            return;
-        }
-        id = id.trim().toLowerCase();
-        if (id.isEmpty()) {
-            Messaggi.WarningMessage("Campo non valido", "L'identificativo non puo' essere vuoto.", this);
+        GUI_ModificaExchange d = new GUI_ModificaExchange(this, null, null);
+        d.setVisible(true);
+        if (!d.confermato) {
             return;
         }
         DefaultTableModel m = (DefaultTableModel) Tabella.getModel();
         for (int i = 0; i < m.getRowCount(); i++) {
-            if (id.equalsIgnoreCase(cella(m.getValueAt(i, 0)))) {
-                Messaggi.WarningMessage("Gia' presente", "L'exchange \"" + id + "\" e' gia' in elenco.", this);
+            if (d.idRisultato.equalsIgnoreCase(cella(m.getValueAt(i, 0)))) {
+                Messaggi.WarningMessage("Già presente", "L'exchange \"" + d.idRisultato + "\" è già in elenco.", this);
                 return;
             }
         }
-        m.addRow(new Object[]{id, "", "", "", "", "", ""});
-        int r = m.getRowCount() - 1;
-        Tabella.setRowSelectionInterval(r, r);
-        Tabella.scrollRectToVisible(Tabella.getCellRect(r, 0, true));
+        DatabaseH2.Pers_ExchangeAnagrafica_ScriviNome(d.idRisultato, d.nomeRisultato,
+                Principale_GruppiWalletRW.ORIGINE_UTENTE);
+        caricaTabella();
+        selezionaId(d.idRisultato);
     }//GEN-LAST:event_Bottone_AggiungiActionPerformed
+
+    private void Bottone_ModificaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ModificaActionPerformed
+        int riga = Tabella.getSelectedRow();
+        if (riga < 0) {
+            Messaggi.WarningMessage("Nessuna selezione", "Seleziona prima un exchange dall'elenco.", this);
+            return;
+        }
+        int rm = Tabella.convertRowIndexToModel(riga);
+        DefaultTableModel m = (DefaultTableModel) Tabella.getModel();
+        String id = cella(m.getValueAt(rm, 0));
+        GUI_ModificaExchange d = new GUI_ModificaExchange(this, id, cella(m.getValueAt(rm, 1)));
+        d.setVisible(true);
+        if (!d.confermato) {
+            return;
+        }
+        DatabaseH2.Pers_ExchangeAnagrafica_ScriviNome(id, d.nomeRisultato, Principale_GruppiWalletRW.ORIGINE_UTENTE);
+        caricaTabella();
+        selezionaId(id);
+    }//GEN-LAST:event_Bottone_ModificaActionPerformed
 
     private void Bottone_RimuoviActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_RimuoviActionPerformed
         int riga = Tabella.getSelectedRow();
         if (riga < 0) {
             return;
         }
-        int rigaModello = Tabella.convertRowIndexToModel(riga);
-        ((DefaultTableModel) Tabella.getModel()).removeRow(rigaModello);
+        int rm = Tabella.convertRowIndexToModel(riga);
+        ((DefaultTableModel) Tabella.getModel()).removeRow(rm);
     }//GEN-LAST:event_Bottone_RimuoviActionPerformed
+
+    private void Bottone_PeriodiFiscaliActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_PeriodiFiscaliActionPerformed
+        int riga = Tabella.getSelectedRow();
+        if (riga < 0) {
+            Messaggi.WarningMessage("Nessuna selezione", "Seleziona prima un exchange dall'elenco.", this);
+            return;
+        }
+        int rm = Tabella.convertRowIndexToModel(riga);
+        DefaultTableModel m = (DefaultTableModel) Tabella.getModel();
+        String id = cella(m.getValueAt(rm, 0));
+        if (id.isEmpty()) {
+            return;
+        }
+        GUI_PeriodiExchange d = new GUI_PeriodiExchange(id, cella(m.getValueAt(rm, 1)));
+        d.setVisible(true);
+    }//GEN-LAST:event_Bottone_PeriodiFiscaliActionPerformed
 
     private void Bottone_SalvaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_SalvaActionPerformed
         DefaultTableModel m = (DefaultTableModel) Tabella.getModel();
-
         Set<String> idInTabella = new LinkedHashSet<>();
         for (int i = 0; i < m.getRowCount(); i++) {
             String id = cella(m.getValueAt(i, 0)).toLowerCase();
@@ -204,12 +296,8 @@ public class GUI_AnagraficaExchange extends javax.swing.JDialog {
                 continue;
             }
             idInTabella.add(id);
-            DatabaseH2.Pers_ExchangeAnagrafica_Scrivi(id,
-                    nz(cella(m.getValueAt(i, 1))), nz(cella(m.getValueAt(i, 2))),
-                    nz(cella(m.getValueAt(i, 3))), nz(cella(m.getValueAt(i, 4))),
-                    nz(cella(m.getValueAt(i, 5))), nz(cella(m.getValueAt(i, 6))));
+            DatabaseH2.Pers_ExchangeAnagrafica_ScriviNome(id, cella(m.getValueAt(i, 1)));
         }
-        // righe tolte dalla tabella : le cancello anche dal database
         for (String id : DatabaseH2.Pers_ExchangeAnagrafica_LeggiTabella().keySet()) {
             if (!idInTabella.contains(id.toLowerCase())) {
                 DatabaseH2.Pers_ExchangeAnagrafica_Cancella(id);
@@ -223,13 +311,11 @@ public class GUI_AnagraficaExchange extends javax.swing.JDialog {
         dispose();
     }//GEN-LAST:event_Bottone_ChiudiActionPerformed
 
-    private static String nz(String s) {
-        return s == null || s.isEmpty() ? null : s;
-    }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Aggiungi;
     private javax.swing.JButton Bottone_Chiudi;
+    private javax.swing.JButton Bottone_Modifica;
+    private javax.swing.JButton Bottone_PeriodiFiscali;
     private javax.swing.JButton Bottone_Rimuovi;
     private javax.swing.JButton Bottone_Salva;
     private javax.swing.JLabel Label_Info;

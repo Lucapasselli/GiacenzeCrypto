@@ -15,7 +15,8 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Smoke test di {@link GUI_AnagraficaExchange}: il dialog si costruisce (coerenza
  * {@code .form} / {@code initComponents()}), la tabella si popola dal seed di
- * {@code EXCHANGE_ANAGRAFICA} e ha le 7 colonne attese. Saltato se headless.
+ * {@code EXCHANGE_ANAGRAFICA} e ha le 2 colonne attese (id + nome; i dati fiscali
+ * sono passati ai periodi). Saltato se headless.
  */
 class GUI_AnagraficaExchangeTest {
 
@@ -50,11 +51,13 @@ class GUI_AnagraficaExchangeTest {
                 }
             }
             assertNotNull(m, "la JTable del dialog non è stata trovata");
-            assertEquals(7, m.getColumnCount());
+            assertEquals(3, m.getColumnCount());
+            assertEquals("Origine", m.getColumnName(2));
             assertEquals(DatabaseH2.Pers_ExchangeAnagrafica_LeggiTabella().size(), m.getRowCount());
             assertTrue(m.getRowCount() >= 10, "il seed dei nomi noti deve essere visibile");
+            // Ora l'editing passa dal dialogo dedicato : nessuna cella è editabile in tabella.
             assertFalse(m.isCellEditable(0, 0), "la colonna id non è editabile");
-            assertTrue(m.isCellEditable(0, 2), "la colonna stato estero è editabile");
+            assertFalse(m.isCellEditable(0, 1), "il nome si modifica dal dialogo, non in cella");
         } finally {
             SwingUtilities.invokeAndWait(d[0]::dispose);
         }

@@ -58,7 +58,7 @@ public class MappeCausali {
      */
     static final String[] FILE_DI_SISTEMA = new String[]{
         BINANCE_OLD, BINANCE_FINANCIAL_REPORT, OKX, CRYPTOCOM_APP, CRYPTOCOM_EXCHANGE, TATAX_OLD,
-        TipiOKX.NOME
+        TipiOKX.NOME, DatiPredefinitiRW.NOME
     };
 
     /** Cartella delle risorse nel jar che contiene le copie di default delle mappe */

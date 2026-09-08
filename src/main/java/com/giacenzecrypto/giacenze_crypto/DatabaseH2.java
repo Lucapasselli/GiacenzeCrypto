@@ -241,6 +241,11 @@ public class DatabaseH2 {
             //NomeGruppoOriginale è il Campo Univoco e sarà Wallet 01, Wallet 02, Wallet 03 etc....
             createTableSQL = "CREATE TABLE IF NOT EXISTS GRUPPO_ALIAS  (Gruppo VARCHAR(255) PRIMARY KEY, Alias VARCHAR(255), PagaBollo VARCHAR(25))";
             EseguiDDL(connectionPersonale, createTableSQL);
+            //Provenienza (2026-09-08): va aggiunta PRIMA della prima Pers_GruppoAlias_Leggi qui sotto,
+            //altrimenti la SELECT con la colonna Origine fallisce sui DB creati prima di questa feature.
+            try (Statement stAlias = connectionPersonale.createStatement()) {
+                stAlias.execute("ALTER TABLE GRUPPO_ALIAS ADD COLUMN IF NOT EXISTS Origine VARCHAR(10)");
+            }
             if (Pers_GruppoAlias_Leggi("Wallet 01")[0] == null) {
                 for (int i = 1; i < 41; i++) {
                     String gruppo;
@@ -276,9 +281,12 @@ public class DatabaseH2 {
             //letta da Calcoli_RW.AggiornaRWFR : per ora la GUI le compila e basta, la logica di calcolo
             //(righi multipli per periodo, valori campo 7/8 manuali) arriverà in una fase successiva.
 
-            //Anagrafica exchange : stato estero (quadro W/RW, colonna 4) e identificativo fiscale / P.IVA
-            //o equivalente (servirà per l'ISEE). Popolata dall'utente ; il seed sotto mette SOLO l'elenco
-            //dei nomi noti, senza alcun dato fiscale.
+            //Anagrafica exchange : id + nome (marchio). Dal 2026-09-06 i dati fiscali (stato estero per
+            //il quadro W/RW, identificativo/P.IVA per l'ISEE) NON stanno più qui ma in EXCHANGE_PERIODO,
+            //perché un exchange cambia entità/Stato nel tempo (MiCA) e ogni cambio genera un nuovo rigo
+            //RW e ISEE. Le colonne StatoEstero/IdentificativoFiscale/Note/Fonte/DataAggiornamento restano
+            //nello schema come LEGACY NON LETTE (il travaso sotto le riversa in EXCHANGE_PERIODO una volta;
+            //non si fa DROP per non perdere eventuali correzioni fatte a mano prima del travaso).
             createTableSQL = "CREATE TABLE IF NOT EXISTS EXCHANGE_ANAGRAFICA ("
                     + "ExchangeId VARCHAR(64) PRIMARY KEY, "
                     + "Nome VARCHAR(255), "
@@ -287,6 +295,22 @@ public class DatabaseH2 {
                     + "Note VARCHAR(1000), "
                     + "Fonte VARCHAR(500), "
                     + "DataAggiornamento VARCHAR(20))";
+            EseguiDDL(connectionPersonale, createTableSQL);
+
+            //Periodi dell'anagrafica exchange : per ogni exchange, una riga per ogni entità legale / Stato
+            //estero nel tempo. Chiave sintetica a colonna singola (idioma GRUPPO_PERIODO_RW). Data vuota =
+            //aperta (inizio "da sempre" / fine "tuttora").
+            createTableSQL = "CREATE TABLE IF NOT EXISTS EXCHANGE_PERIODO ("
+                    + "ExchangeId_Progressivo VARCHAR(300) PRIMARY KEY, "
+                    + "ExchangeId VARCHAR(64), "
+                    + "Progressivo INT, "
+                    + "DataInizio VARCHAR(20), "
+                    + "DataFine VARCHAR(20), "
+                    + "Nome VARCHAR(255), "
+                    + "StatoEstero VARCHAR(3), "
+                    + "IdentificativoFiscale VARCHAR(255), "
+                    + "Note VARCHAR(1000), "
+                    + "Fonte VARCHAR(500))";
             EseguiDDL(connectionPersonale, createTableSQL);
 
             //Riferimento estero per gruppo wallet : o uno stato + P.IVA inseriti a mano, o un exchange di
@@ -314,10 +338,35 @@ public class DatabaseH2 {
                     + "ValoreFinaleManuale VARCHAR(40), "
                     + "NotaValoreFinale VARCHAR(1000), "
                     + "ModalitaCalcoloIniziale VARCHAR(30), "
-                    + "ModalitaCalcoloFinale VARCHAR(30))";
+                    + "ModalitaCalcoloFinale VARCHAR(30), "
+                    + "PagaBolloPeriodo VARCHAR(2))";
             EseguiDDL(connectionPersonale, createTableSQL);
+            //Migrazione: "SI"/"NO" del bollo per singolo periodo, aggiunto dopo la Fase 1 (i DB creati
+            //allora hanno la tabella senza questa colonna).
+            try (Statement stmtPeriodo = connectionPersonale.createStatement()) {
+                stmtPeriodo.execute("ALTER TABLE GRUPPO_PERIODO_RW ADD COLUMN IF NOT EXISTS PagaBolloPeriodo VARCHAR(2)");
+            }
 
-            Pers_ExchangeAnagrafica_SeedElencoNomi();
+            //Provenienza delle righe RW (2026-09-08): Origine = SISTEMA (seminata da RW_Predefiniti.json e
+            //mai piu' toccata) / UTENTE (creata o modificata a mano). NULL sui DB pre-esistenti = trattato
+            //come UTENTE dal reconcile (conservativo). ChiaveDefault = identita' stabile della riga di
+            //default fra un aggiornamento del JSON e l'altro. Vedi DatiPredefinitiRW / Pers_RW_SeminaERiconcilia.
+            try (Statement st = connectionPersonale.createStatement()) {
+                st.execute("ALTER TABLE EXCHANGE_ANAGRAFICA ADD COLUMN IF NOT EXISTS Origine VARCHAR(10)");
+                st.execute("ALTER TABLE EXCHANGE_PERIODO ADD COLUMN IF NOT EXISTS Origine VARCHAR(10)");
+                st.execute("ALTER TABLE EXCHANGE_PERIODO ADD COLUMN IF NOT EXISTS ChiaveDefault VARCHAR(64)");
+                // GRUPPO_ALIAS.Origine è già aggiunta sopra (serve prima del seed dei Wallet 01..40)
+                st.execute("ALTER TABLE GRUPPO_PERIODO_RW ADD COLUMN IF NOT EXISTS Origine VARCHAR(10)");
+                st.execute("ALTER TABLE GRUPPO_PERIODO_RW ADD COLUMN IF NOT EXISTS ChiaveDefault VARCHAR(64)");
+            }
+
+            //I dati predefiniti (elenco exchange, periodi fiscali, gruppi Wallet 101..114 e i loro periodi
+            //di detenzione) vivono in config/importmappe/RW_Predefiniti.json e si riversano qui toccando
+            //SOLO le righe Origine=SISTEMA. Sostituisce i vecchi seed hardcoded (Pers_ExchangeAnagrafica_SeedElencoNomi
+            /// Pers_GruppoWallet_SeedPreconfigurati / Pers_ExchangePeriodo_SeedDatiFiscali).
+            Pers_ExchangePeriodo_TravasoDaAnagrafica();
+            Principale_GruppiWalletRW.Pers_RW_SeminaERiconcilia();
+            PrezziPersonalizzati_MigraSymbolMaiuscolo();
 
             successo=true;
             
@@ -458,6 +507,15 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         // --- Determino modalità ---
         boolean perNome = (isEmpty(Address) || isEmpty(Rete)) && !isEmpty(Moneta);
         boolean perAddress = (!isEmpty(Address) || !isEmpty(Rete));
+
+        //Il simbolo in PrezziNew (ricerca "per nome") e' per convenzione SEMPRE maiuscolo: tutte le fonti
+        //prezzo lo normalizzano cosi' (CoinMarketCap: RecuperaPrezziDaCoinMarketCap; CCXT:
+        //RecuperaPrezziDaCCXTRange) e tutti i lettori confrontano dopo symbol.toUpperCase(). Questa
+        //funzione era l'unica a scriverlo verbatim: un prezzo personalizzato su un token/NFT dal nome
+        //non maiuscolo (tipico degli NFT inseriti a mano, es. "OWP (indirizzo)") veniva salvato ma mai
+        //riletto. Si normalizza solo la chiave di PrezziNew; le DELETE legacy qui sopra restano sul
+        //nome originale (quel percorso confronta a case invariato da entrambi i lati).
+        String MonetaKey = isEmpty(Moneta) ? Moneta : Moneta.toUpperCase();
         
         //CANCELLO i vecchi valori se esistono nel vecchio database XXXEUR     
         String cancellaXXXEUR = """
@@ -514,7 +572,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
             del.setLong(1, Timestamp);
             del.setString(2, "%" + Gruppo + "%");
             if (perNome) {
-                del.setString(3, Moneta);
+                del.setString(3, MonetaKey);
             } else {
                 del.setString(3, Rete);
                 del.setString(4, Address);
@@ -525,7 +583,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
             del.setLong(1, timestampDaCancellare);
             del.setString(2, "%" + Gruppo + "%");
             if (perNome) {
-                del.setString(3, Moneta);
+                del.setString(3, MonetaKey);
             } else {
                 del.setString(3, Rete);
                 del.setString(4, Address);
@@ -545,7 +603,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
             if (perNome) {
                 ps.setLong(1, Timestamp);
                 ps.setString(2, Fonte);
-                ps.setString(3, Moneta);
+                ps.setString(3, MonetaKey);
                 ps.setDouble(4, ValoreUnitario);
                 ps.setString(5, "");
                 ps.setString(6, "");
@@ -859,19 +917,71 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         }
         return Risultato;
     }
-        
+
+    /** Rimuove l'associazione wallet→gruppo (se presente) da {@code WALLETGRUPPO} e dalla cache in memoria. */
+    public static void Pers_GruppoWallet_Cancella(String Wallet) {
+        if (Wallet == null || Wallet.isEmpty()) {
+            throw new IllegalArgumentException("Wallet non può essere nullo o vuoto.");
+        }
+        try (PreparedStatement ps = connectionPersonale.prepareStatement("DELETE FROM WALLETGRUPPO WHERE Wallet = ?")) {
+            ps.setString(1, Wallet);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        Mappa_Wallet_Gruppo.remove(Wallet);
+    }
+
+    /** Nomi wallet ({@code v[3]}) associati al gruppo indicato, ordinati (case-insensitive). */
+    public static List<String> Pers_GruppoWallet_WalletDelGruppo(String Gruppo) {
+        List<String> out = new ArrayList<>();
+        if (Gruppo == null || Gruppo.isBlank()) {
+            return out;
+        }
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(
+                "SELECT Wallet FROM WALLETGRUPPO WHERE Gruppo = ? ORDER BY LOWER(Wallet)")) {
+            ps.setString(1, Gruppo);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    out.add(rs.getString(1));
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return out;
+    }
+
+    /**
+     * Tutti i nomi wallet (campo {@code v[3]} del movimento) che hanno già un'associazione di gruppo
+     * in {@code WALLETGRUPPO}. Usato dal congelamento del pregresso dell'auto-associazione ai gruppi
+     * preconfigurati ({@code Principale_GruppiWalletRW.congelaPreesistentiSeNecessario}).
+     */
+    public static List<String> Pers_GruppoWallet_LeggiTuttiIWallet() {
+        List<String> out = new ArrayList<>();
+        try (PreparedStatement ps = connectionPersonale.prepareStatement("SELECT Wallet FROM WALLETGRUPPO");
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                out.add(rs.getString(1));
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return out;
+    }
+
     /**
      *
      * @param Gruppo
      * @return
      */
     public static String[] Pers_GruppoAlias_Leggi(String Gruppo) {
-        String[] Risultato = new String[3];
+        String[] Risultato = new String[4];
         if (Gruppo == null || Gruppo.isEmpty()) {
             throw new IllegalArgumentException("Gruppo non pu\u00f2 essere nullo o vuoto.");
         }
         try {
-            String checkIfExistsSQL = "SELECT Gruppo,Alias,PagaBollo FROM GRUPPO_ALIAS WHERE Gruppo = ?";
+            String checkIfExistsSQL = "SELECT Gruppo,Alias,PagaBollo,Origine FROM GRUPPO_ALIAS WHERE Gruppo = ?";
             try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL)) {
                 checkStatement.setString(1, Gruppo);
                 try (ResultSet resultSet = checkStatement.executeQuery()) {
@@ -879,6 +989,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
                         Risultato[0] = resultSet.getString("Gruppo");
                         Risultato[1] = resultSet.getString("Alias");
                         Risultato[2] = resultSet.getString("PagaBollo");
+                        Risultato[3] = resultSet.getString("Origine");
                     }
                 }
             }
@@ -895,14 +1006,15 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
     public static Map<String, String[]> Pers_GruppoAlias_LeggiTabella() {
         Map<String, String[]> Mappa_GruppiAlias = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         try {
-            String checkIfExistsSQL = "SELECT Gruppo, Alias, PagaBollo FROM GRUPPO_ALIAS";
-            try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL); 
+            String checkIfExistsSQL = "SELECT Gruppo, Alias, PagaBollo, Origine FROM GRUPPO_ALIAS";
+            try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
                     ResultSet resultSet = checkStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    String[] Risultato = new String[3];
+                    String[] Risultato = new String[4];
                     Risultato[0] = resultSet.getString("Gruppo");
                     Risultato[1] = resultSet.getString("Alias");
                     Risultato[2] = resultSet.getString("PagaBollo");
+                    Risultato[3] = resultSet.getString("Origine");
                     Mappa_GruppiAlias.put(Risultato[0], Risultato);
                 }
             }
@@ -920,15 +1032,26 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
      * @param PagaBollo
      */
     public static void Pers_GruppoAlias_Scrivi(String Gruppo, String Alias, boolean PagaBollo) {
-    String Pagabollo = PagaBollo ? "S" : "N";
-       
-    Map<String, Object> values = new HashMap<>();
-    values.put("Gruppo", Gruppo);
-    values.put("Alias", Alias);
-    values.put("Pagabollo", Pagabollo);
-    U_ScriviRecord("GRUPPO_ALIAS", values, "Gruppo",connectionPersonale);
+        Pers_GruppoAlias_Scrivi(Gruppo, Alias, PagaBollo, null);
+    }
 
-}
+    /**
+     * @param Origine {@code "SISTEMA"} / {@code "UTENTE"} / {@code null}. Se {@code null} la colonna
+     *        {@code Origine} non viene toccata (MERGE : le colonne non elencate restano com'erano),
+     *        cosi' i chiamanti legacy non azzerano il marcatore.
+     */
+    public static void Pers_GruppoAlias_Scrivi(String Gruppo, String Alias, boolean PagaBollo, String Origine) {
+        String Pagabollo = PagaBollo ? "S" : "N";
+
+        Map<String, Object> values = new HashMap<>();
+        values.put("Gruppo", Gruppo);
+        values.put("Alias", Alias);
+        values.put("Pagabollo", Pagabollo);
+        if (Origine != null) {
+            values.put("Origine", Origine);
+        }
+        U_ScriviRecord("GRUPPO_ALIAS", values, "Gruppo", connectionPersonale);
+    }
 
     // ============================================================================
     //  Quadro RW - riferimento estero dei gruppi wallet e periodi di detenzione
@@ -942,12 +1065,12 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
      *         tutti {@code null} se {@code ExchangeId} non è in {@code EXCHANGE_ANAGRAFICA}
      */
     public static String[] Pers_ExchangeAnagrafica_Leggi(String ExchangeId) {
-        String[] r = new String[7];
+        String[] r = new String[8];
         if (ExchangeId == null || ExchangeId.isBlank()) {
             throw new IllegalArgumentException("ExchangeId non può essere nullo o vuoto.");
         }
         try {
-            String sql = "SELECT ExchangeId,Nome,StatoEstero,IdentificativoFiscale,Note,Fonte,DataAggiornamento "
+            String sql = "SELECT ExchangeId,Nome,StatoEstero,IdentificativoFiscale,Note,Fonte,DataAggiornamento,Origine "
                     + "FROM EXCHANGE_ANAGRAFICA WHERE ExchangeId = ?";
             try (PreparedStatement ps = connectionPersonale.prepareStatement(sql)) {
                 ps.setString(1, ExchangeId);
@@ -960,6 +1083,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
                         r[4] = rs.getString("Note");
                         r[5] = rs.getString("Fonte");
                         r[6] = rs.getString("DataAggiornamento");
+                        r[7] = rs.getString("Origine");
                     }
                 }
             }
@@ -973,7 +1097,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
     public static Map<String, String[]> Pers_ExchangeAnagrafica_LeggiTabella() {
         Map<String, String[]> m = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         try {
-            String sql = "SELECT ExchangeId,Nome,StatoEstero,IdentificativoFiscale,Note,Fonte,DataAggiornamento "
+            String sql = "SELECT ExchangeId,Nome,StatoEstero,IdentificativoFiscale,Note,Fonte,DataAggiornamento,Origine "
                     + "FROM EXCHANGE_ANAGRAFICA";
             try (PreparedStatement ps = connectionPersonale.prepareStatement(sql);
                     ResultSet rs = ps.executeQuery()) {
@@ -981,7 +1105,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
                     String[] r = {
                         rs.getString("ExchangeId"), rs.getString("Nome"), rs.getString("StatoEstero"),
                         rs.getString("IdentificativoFiscale"), rs.getString("Note"),
-                        rs.getString("Fonte"), rs.getString("DataAggiornamento")
+                        rs.getString("Fonte"), rs.getString("DataAggiornamento"), rs.getString("Origine")
                     };
                     m.put(r[0], r);
                 }
@@ -1008,6 +1132,31 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         U_ScriviRecord("EXCHANGE_ANAGRAFICA", v, "ExchangeId", connectionPersonale);
     }
 
+    /**
+     * Scrive/aggiorna solo {@code ExchangeId} + {@code Nome} senza toccare le colonne fiscali legacy
+     * (che dal 2026-09-06 non sono più usate : i dati fiscali vivono in {@code EXCHANGE_PERIODO}).
+     */
+    public static void Pers_ExchangeAnagrafica_ScriviNome(String ExchangeId, String Nome) {
+        Pers_ExchangeAnagrafica_ScriviNome(ExchangeId, Nome, null);
+    }
+
+    /**
+     * @param Origine {@code "SISTEMA"} / {@code "UTENTE"} / {@code null} (colonna non toccata).
+     */
+    public static void Pers_ExchangeAnagrafica_ScriviNome(String ExchangeId, String Nome, String Origine) {
+        if (ExchangeId == null || ExchangeId.isBlank()) {
+            throw new IllegalArgumentException("ExchangeId non può essere nullo o vuoto.");
+        }
+        Map<String, Object> v = new HashMap<>();
+        v.put("ExchangeId", ExchangeId.trim());
+        v.put("Nome", Nome);
+        if (Origine != null) {
+            v.put("Origine", Origine);
+        }
+        U_ScriviRecord("EXCHANGE_ANAGRAFICA", v, "ExchangeId", connectionPersonale);
+    }
+
+    /** Cancella l'exchange dall'anagrafica e, a cascata, tutti i suoi periodi fiscali. */
     public static void Pers_ExchangeAnagrafica_Cancella(String ExchangeId) {
         try (PreparedStatement ps = connectionPersonale.prepareStatement(
                 "DELETE FROM EXCHANGE_ANAGRAFICA WHERE ExchangeId = ?")) {
@@ -1016,7 +1165,24 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         } catch (SQLException ex) {
             LoggerGC.ScriviErrore(ex);
         }
+        Pers_ExchangePeriodo_CancellaExchange(ExchangeId);
     }
+
+    /**
+     * Exchange noti : {@code {id normalizzato, nome visualizzato}}. Ordine <b>stabile</b> : guida sia il
+     * seed dei nomi in {@code EXCHANGE_ANAGRAFICA} sia i gruppi wallet preconfigurati
+     * (indice 0 → {@code "Wallet " + GRUPPO_PRECONF_BASE}, indice 1 → il successivo, ...).
+     */
+    static final String[][] EXCHANGE_NOTI = {
+        {"binance", "Binance"}, {"coinbase", "Coinbase"}, {"kraken", "Kraken"},
+        {"cryptocom", "Crypto.com"}, {"okx", "OKX"}, {"bitpanda", "Bitpanda"},
+        {"bitget", "Bitget"}, {"kucoin", "KuCoin"}, {"bybit", "Bybit"},
+        {"revolut", "Revolut"}, {"nexo", "Nexo"}, {"bitstamp", "Bitstamp"},
+        {"gemini", "Gemini"}, {"bitfinex", "Bitfinex"}
+    };
+
+    /** Numero del primo gruppo wallet preconfigurato : {@code "Wallet 101"} ↔ {@code EXCHANGE_NOTI[0]}. */
+    static final int GRUPPO_PRECONF_BASE = 101;
 
     /**
      * Seed una-tantum : solo l'elenco degli exchange noti (id + nome), NESSUN dato fiscale (stato,
@@ -1027,19 +1193,285 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         if ("SI".equals(Pers_Opzioni_Leggi("EXCHANGE_ANAGRAFICA_SEED"))) {
             return;
         }
-        String[][] noti = {
-            {"binance", "Binance"}, {"coinbase", "Coinbase"}, {"kraken", "Kraken"},
-            {"cryptocom", "Crypto.com"}, {"okx", "OKX"}, {"bitpanda", "Bitpanda"},
-            {"bitget", "Bitget"}, {"kucoin", "KuCoin"}, {"bybit", "Bybit"},
-            {"revolut", "Revolut"}, {"nexo", "Nexo"}, {"bitstamp", "Bitstamp"},
-            {"gemini", "Gemini"}, {"bitfinex", "Bitfinex"}
-        };
-        for (String[] e : noti) {
+        for (String[] e : EXCHANGE_NOTI) {
             if (Pers_ExchangeAnagrafica_Leggi(e[0])[0] == null) {
                 Pers_ExchangeAnagrafica_Scrivi(e[0], e[1], null, null, null, null, null);
             }
         }
         Pers_Opzioni_Scrivi("EXCHANGE_ANAGRAFICA_SEED", "SI");
+    }
+
+    /**
+     * Seed una-tantum dei <b>gruppi wallet preconfigurati</b> (da {@code "Wallet 101"} in poi), uno per
+     * ogni exchange di {@link #EXCHANGE_NOTI} : alias = nome dell'exchange, riferimento estero =
+     * quell'exchange (i periodi fiscali si ereditano da {@code EXCHANGE_PERIODO}).
+     *
+     * <p>L'associazione wallet→gruppo <b>non</b> si scrive qui : la fa
+     * {@code Principale_GruppiWalletRW.autoAssociaGruppiPreconfigurati} quando l'exchange compare per la
+     * prima volta in un movimento. Guardia {@code GRUPPO_WALLET_PRECONF_SEED} ; non ricrea un gruppo che
+     * l'utente ha cancellato e non sovrascrive un riferimento estero già impostato.</p>
+     */
+    static void Pers_GruppoWallet_SeedPreconfigurati() {
+        if ("SI".equals(Pers_Opzioni_Leggi("GRUPPO_WALLET_PRECONF_SEED"))) {
+            return;
+        }
+        for (int i = 0; i < EXCHANGE_NOTI.length; i++) {
+            String gruppo = "Wallet " + (GRUPPO_PRECONF_BASE + i);
+            if (Pers_GruppoAlias_Leggi(gruppo)[0] == null) {
+                Pers_GruppoAlias_Scrivi(gruppo, EXCHANGE_NOTI[i][1], false);
+            }
+            if (Pers_GruppoRiferimento_Leggi(gruppo)[0] == null) {
+                Pers_GruppoRiferimento_Scrivi(gruppo, "EXCHANGE", null, null, EXCHANGE_NOTI[i][0]);
+            }
+        }
+        Pers_Opzioni_Scrivi("GRUPPO_WALLET_PRECONF_SEED", "SI");
+    }
+
+    // ---- EXCHANGE_PERIODO : periodi fiscali dell'exchange (una riga per entità legale / Stato nel tempo) ----
+
+    private static String chiaveExchangePeriodo(String ExchangeId, int Progressivo) {
+        return ExchangeId + "_" + Progressivo;
+    }
+
+    /**
+     * Periodi fiscali di un exchange, ordinati per {@code Progressivo}. Ogni riga :
+     * {@code [ExchangeId_Progressivo, ExchangeId, Progressivo, DataInizio, DataFine, Nome, StatoEstero,
+     * IdentificativoFiscale, Note, Fonte]}. Data vuota = periodo aperto (inizio "da sempre" / fine "tuttora").
+     */
+    public static List<String[]> Pers_ExchangePeriodo_LeggiExchange(String ExchangeId) {
+        List<String[]> out = new ArrayList<>();
+        if (ExchangeId == null || ExchangeId.isBlank()) {
+            throw new IllegalArgumentException("ExchangeId non può essere nullo o vuoto.");
+        }
+        try {
+            String sql = "SELECT ExchangeId_Progressivo,ExchangeId,Progressivo,DataInizio,DataFine,Nome,"
+                    + "StatoEstero,IdentificativoFiscale,Note,Fonte,Origine,ChiaveDefault FROM EXCHANGE_PERIODO WHERE ExchangeId = ? "
+                    + "ORDER BY Progressivo";
+            try (PreparedStatement ps = connectionPersonale.prepareStatement(sql)) {
+                ps.setString(1, ExchangeId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        out.add(rigaExchangePeriodo(rs));
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return out;
+    }
+
+    /** Tutti i periodi fiscali, chiave = {@code ExchangeId}; valori come {@link #Pers_ExchangePeriodo_LeggiExchange}. */
+    public static Map<String, List<String[]>> Pers_ExchangePeriodo_LeggiTabella() {
+        Map<String, List<String[]>> m = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        try {
+            String sql = "SELECT ExchangeId_Progressivo,ExchangeId,Progressivo,DataInizio,DataFine,Nome,"
+                    + "StatoEstero,IdentificativoFiscale,Note,Fonte,Origine,ChiaveDefault FROM EXCHANGE_PERIODO ORDER BY ExchangeId, Progressivo";
+            try (PreparedStatement ps = connectionPersonale.prepareStatement(sql);
+                    ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String[] r = rigaExchangePeriodo(rs);
+                    m.computeIfAbsent(r[1], k -> new ArrayList<>()).add(r);
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return m;
+    }
+
+    private static String[] rigaExchangePeriodo(ResultSet rs) throws SQLException {
+        return new String[] {
+            rs.getString("ExchangeId_Progressivo"), rs.getString("ExchangeId"),
+            String.valueOf(rs.getInt("Progressivo")), rs.getString("DataInizio"), rs.getString("DataFine"),
+            rs.getString("Nome"), rs.getString("StatoEstero"), rs.getString("IdentificativoFiscale"),
+            rs.getString("Note"), rs.getString("Fonte"), rs.getString("Origine"), rs.getString("ChiaveDefault")
+        };
+    }
+
+    public static void Pers_ExchangePeriodo_Scrivi(String ExchangeId, int Progressivo, String DataInizio,
+            String DataFine, String Nome, String StatoEstero, String IdentificativoFiscale, String Note,
+            String Fonte) {
+        Pers_ExchangePeriodo_Scrivi(ExchangeId, Progressivo, DataInizio, DataFine, Nome, StatoEstero,
+                IdentificativoFiscale, Note, Fonte, null, null);
+    }
+
+    /**
+     * @param Origine {@code "SISTEMA"} / {@code "UTENTE"} / {@code null} (colonna non toccata)
+     * @param ChiaveDefault identita' stabile della riga di default in {@code RW_Predefiniti.json},
+     *        {@code null} = colonna non toccata (usare {@code ""} per azzerarla di proposito)
+     */
+    public static void Pers_ExchangePeriodo_Scrivi(String ExchangeId, int Progressivo, String DataInizio,
+            String DataFine, String Nome, String StatoEstero, String IdentificativoFiscale, String Note,
+            String Fonte, String Origine, String ChiaveDefault) {
+        if (ExchangeId == null || ExchangeId.isBlank()) {
+            throw new IllegalArgumentException("ExchangeId non può essere nullo o vuoto.");
+        }
+        Map<String, Object> v = new HashMap<>();
+        v.put("ExchangeId_Progressivo", chiaveExchangePeriodo(ExchangeId.trim(), Progressivo));
+        v.put("ExchangeId", ExchangeId.trim());
+        v.put("Progressivo", Progressivo);
+        v.put("DataInizio", DataInizio);
+        v.put("DataFine", DataFine);
+        v.put("Nome", Nome);
+        v.put("StatoEstero", StatoEstero);
+        v.put("IdentificativoFiscale", IdentificativoFiscale);
+        v.put("Note", Note);
+        v.put("Fonte", Fonte);
+        if (Origine != null) {
+            v.put("Origine", Origine);
+        }
+        if (ChiaveDefault != null) {
+            v.put("ChiaveDefault", ChiaveDefault);
+        }
+        U_ScriviRecord("EXCHANGE_PERIODO", v, "ExchangeId_Progressivo", connectionPersonale);
+    }
+
+    public static void Pers_ExchangePeriodo_Cancella(String ExchangeId, int Progressivo) {
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(
+                "DELETE FROM EXCHANGE_PERIODO WHERE ExchangeId_Progressivo = ?")) {
+            ps.setString(1, chiaveExchangePeriodo(ExchangeId, Progressivo));
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+    /** Cancella tutti i periodi di un exchange (pattern GUI "salva tutto" : delete + reinsert). */
+    public static void Pers_ExchangePeriodo_CancellaExchange(String ExchangeId) {
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(
+                "DELETE FROM EXCHANGE_PERIODO WHERE ExchangeId = ?")) {
+            ps.setString(1, ExchangeId);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+    /** {@code true} se l'exchange ha almeno un periodo in {@code EXCHANGE_PERIODO}. */
+    public static boolean Pers_ExchangePeriodo_HaPeriodi(String ExchangeId) {
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(
+                "SELECT 1 FROM EXCHANGE_PERIODO WHERE ExchangeId = ?")) {
+            ps.setString(1, ExchangeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+            return false;
+        }
+    }
+
+    /**
+     * Travaso una-tantum dei dati fiscali storici da {@code EXCHANGE_ANAGRAFICA} (colonne legacy
+     * {@code StatoEstero/IdentificativoFiscale/Note/Fonte}) a un primo periodo di {@code EXCHANGE_PERIODO}.
+     *
+     * <p>Riguarda solo chi aveva già compilato i dati fiscali nell'anagrafica (a mano o col vecchio seed).
+     * <b>Idempotente</b> : guardia {@code EXCHANGE_PERIODO_TRAVASO} + salta ogni exchange che ha già dei
+     * periodi, così una ri-esecuzione non duplica né sovrascrive periodi corretti a mano. Le <b>date del
+     * periodo restano vuote</b> : il travaso non sa da quando quei dati erano validi, sarà l'utente a
+     * spezzare il periodo con le date reali. Le colonne legacy dell'anagrafica NON vengono cancellate.</p>
+     */
+    static void Pers_ExchangePeriodo_TravasoDaAnagrafica() {
+        if ("SI".equals(Pers_Opzioni_Leggi("EXCHANGE_PERIODO_TRAVASO"))) {
+            return;
+        }
+        for (String[] a : Pers_ExchangeAnagrafica_LeggiTabella().values()) {
+            String id = a[0];
+            boolean haDatiFiscali = !vuoto(a[2]) || !vuoto(a[3]) || !vuoto(a[4]) || !vuoto(a[5]);
+            if (!haDatiFiscali || Pers_ExchangePeriodo_HaPeriodi(id)) {
+                continue;
+            }
+            String note = a[4];
+            if (!vuoto(a[6])) {
+                note = (vuoto(note) ? "" : note + " ") + "(dati anagrafica al " + a[6] + ")";
+            }
+            Pers_ExchangePeriodo_Scrivi(id, 1, null, null, a[1], a[2], a[3], note, a[5]);
+        }
+        Pers_Opzioni_Scrivi("EXCHANGE_PERIODO_TRAVASO", "SI");
+    }
+
+    /**
+     * Seed dei periodi fiscali degli exchange con entità UE autorizzata MiCA - ricerca del 2026-09-06,
+     * vedi {@code nocommit/Documentazione/Anagrafica_Exchange_ISEE.md}. Sostituisce il vecchio
+     * {@code Pers_ExchangeAnagrafica_SeedDatiFiscali} : i dati fiscali ora vivono nei periodi.
+     *
+     * <p>Crea <b>un solo periodo</b> per exchange (l'entità corrente), con {@code DataInizio} = data di
+     * autorizzazione CASP quando nota (default indicativo, sempre modificabile a mano). Lo storico delle
+     * entità precedenti (Coinbase Irlanda, Kraken UK, Bitstamp UK, ecc.) è nel §6 del .md : lo aggiunge
+     * l'utente come periodi anteriori.</p>
+     * <ul>
+     *   <li>guardia <i>versionata</i> {@code EXCHANGE_PERIODO_SEED_FISCALE} : bump della costante per ridiffondere;</li>
+     *   <li>salta gli exchange cancellati dall'anagrafica e quelli che hanno già dei periodi (travaso o utente);</li>
+     *   <li>{@code IdentificativoFiscale} = P.IVA verificata su VIES solo per Coinbase e Bitpanda, altrimenti
+     *       numero di registro imprese (ripiego) o vuoto (Gemini/Revolut/KuCoin).</li>
+     * </ul>
+     */
+    static void Pers_ExchangePeriodo_SeedDatiFiscali() {
+        final String VERSIONE = "2026-09-06";
+        if (VERSIONE.equals(Pers_Opzioni_Leggi("EXCHANGE_PERIODO_SEED_FISCALE"))) {
+            return;
+        }
+        // {ExchangeId, DataInizio (ISO, "" se ignota), StatoEstero, IdentificativoFiscale ("" se non reperito), Note, Fonte}
+        String[][] dati = {
+            {"coinbase", "2025-06-20", "092", "LU36476644",
+                "Coinbase Luxembourg S.A. - RCS Lussemburgo B292147; CASP CSSF N00000004 dal 20/06/2025. "
+                + "Entità SEE precedente : Coinbase Europe Ltd (Irlanda 040, reg. 675475), da inserire come "
+                + "periodo anteriore. P.IVA verificata su VIES.",
+                "VIES + coinbase.com/impressum + AMF white list"},
+            {"bitpanda", "2025-04-09", "008", "ATU78580117",
+                "Bitpanda GmbH - Firmenbuch FN 423018k (FN 569240v citato nell'autorizzazione FMA, da "
+                + "confermare); LEI 5493007WZ7IFULIL8G21; CASP FMA (Austria) dal 09/04/2025. P.IVA verificata su VIES.",
+                "VIES + FMA Austria (granting-of-authorisation-bitpanda-gmbh)"},
+            {"kraken", "2025-06-25", "040", "711781",
+                "Payward Europe Solutions Limited (Irlanda) - n. registro imprese CRO 711781 (P.IVA IE non "
+                + "reperita da fonte pubblica); CASP Central Bank of Ireland rif. C468360 dal 25/06/2025. "
+                + "Entità precedente : Payward Ltd (Regno Unito 031) fino a ~gennaio 2021 (Brexit).",
+                "Central Bank of Ireland (registers) + AMF white list"},
+            {"cryptocom", "2025-01-27", "105", "C88392",
+                "Foris DAX MT Limited (Malta) - n. registro imprese C 88392 (P.IVA MT non reperita); "
+                + "LEI 2549005CVR5HH70FDO07; CASP MFSA dal 27/01/2025. Ex denominazione \"MCO Malta DAX Limited\".",
+                "MFSA / ESMA CASP register + OpenCorporates MT"},
+            {"okx", "2025-01-27", "105", "C88193",
+                "OKX Europe Limited (ex OKCoin Europe Ltd, stesso reg. C88193, Malta) - P.IVA MT non reperita; "
+                + "LEI 54930069NLWEIGLHXU42; licenza MFSA OEUR-24352, CASP dal 27/01/2025.",
+                "MFSA + okx.com (okcoin-europe-ltd-conflicts-of-interest-disclosure)"},
+            {"bybit", "2025-05-28", "008", "636180i",
+                "Bybit EU GmbH (Austria) - Firmenbuch FN 636180i (P.IVA AT non reperita); CASP FMA dal "
+                + "28/05/2025. Entità globale precedente : Bybit Fintech Limited (Isole Vergini Britanniche 249 / Dubai).",
+                "FMA Austria + CoinDesk"},
+            {"bitstamp", "", "092", "B196856",
+                "Bitstamp Europe S.A. (Lussemburgo) - RCS B196856 (P.IVA LU non reperita); "
+                + "LEI 549300XIBGTJ0PLIEO72; CASP CSSF N00000003 (istituto di pagamento Z00000012). Gruppo Robinhood. "
+                + "Entità precedente : Bitstamp Ltd (Regno Unito 031) fino a ~2020.",
+                "CSSF + AMF white list + NorthData"},
+            {"gemini", "", "105", "",
+                "Gemini Intergalactic EU Ltd (Malta) - n. registro imprese e P.IVA da reperire sul registro "
+                + "MFSA / Registro Imprese Malta; CASP MFSA (agosto 2025). Capogruppo USA : Gemini Trust Company LLC (New York 069).",
+                "MFSA + gemini.com/blog + AMF white list"},
+            {"revolut", "", "101", "",
+                "Revolut Digital Assets Europe Ltd (RDAEL, Cipro, ex RT Digital Securities Cyprus Ltd HE430310) - "
+                + "n. registro e P.IVA da reperire sul registro CY; licenza CASP CySEC 001/2025. "
+                + "E-money tramite Revolut Bank UAB (Lituania 259).",
+                "CySEC + help.revolut.com"},
+            {"kucoin", "2025-11-27", "008", "",
+                "KuCoin EU Exchange GmbH (Austria) - Firmenbuch e P.IVA da reperire; CASP FMA dal 27/11/2025. "
+                + "Operatore globale precedente : Peken Global Limited (Seychelles 189 / Turks e Caicos 210).",
+                "FMA Austria + CoinDesk"},
+        };
+        for (String[] d : dati) {
+            String[] ana = Pers_ExchangeAnagrafica_Leggi(d[0]);
+            if (ana[0] == null || Pers_ExchangePeriodo_HaPeriodi(d[0])) {
+                continue; // cancellato dall'utente, oppure già travasato / modificato
+            }
+            Pers_ExchangePeriodo_Scrivi(d[0], 1, vuoto(d[1]) ? null : d[1], null,
+                    ana[1], d[2], vuoto(d[3]) ? null : d[3], d[4], d[5]);
+        }
+        Pers_Opzioni_Scrivi("EXCHANGE_PERIODO_SEED_FISCALE", VERSIONE);
+    }
+
+    private static boolean vuoto(String s) {
+        return s == null || s.isBlank();
     }
 
     // ---- GRUPPO_RIFERIMENTO_ESTERO ----
@@ -1125,7 +1557,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
      * Periodi di detenzione di un gruppo, ordinati per {@code TipoRigo} poi {@code Progressivo}.
      * Ogni riga : {@code [Gruppo_Tipo_Prog, Gruppo, TipoRigo, Progressivo, DataInizio, DataFine,
      * ValoreInizialeManuale, NotaValoreIniziale, ValoreFinaleManuale, NotaValoreFinale,
-     * ModalitaCalcoloIniziale, ModalitaCalcoloFinale]}.
+     * ModalitaCalcoloIniziale, ModalitaCalcoloFinale, PagaBolloPeriodo]}.
      */
     public static List<String[]> Pers_GruppoPeriodoRW_LeggiGruppo(String Gruppo) {
         List<String[]> out = new ArrayList<>();
@@ -1135,7 +1567,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         try {
             String sql = "SELECT Gruppo_Tipo_Prog,Gruppo,TipoRigo,Progressivo,DataInizio,DataFine,"
                     + "ValoreInizialeManuale,NotaValoreIniziale,ValoreFinaleManuale,NotaValoreFinale,"
-                    + "ModalitaCalcoloIniziale,ModalitaCalcoloFinale FROM GRUPPO_PERIODO_RW WHERE Gruppo = ? "
+                    + "ModalitaCalcoloIniziale,ModalitaCalcoloFinale,PagaBolloPeriodo,Origine,ChiaveDefault FROM GRUPPO_PERIODO_RW WHERE Gruppo = ? "
                     + "ORDER BY TipoRigo, Progressivo";
             try (PreparedStatement ps = connectionPersonale.prepareStatement(sql)) {
                 ps.setString(1, Gruppo);
@@ -1156,7 +1588,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         try {
             String sql = "SELECT Gruppo_Tipo_Prog,Gruppo,TipoRigo,Progressivo,DataInizio,DataFine,"
                     + "ValoreInizialeManuale,NotaValoreIniziale,ValoreFinaleManuale,NotaValoreFinale,"
-                    + "ModalitaCalcoloIniziale,ModalitaCalcoloFinale FROM GRUPPO_PERIODO_RW "
+                    + "ModalitaCalcoloIniziale,ModalitaCalcoloFinale,PagaBolloPeriodo,Origine,ChiaveDefault FROM GRUPPO_PERIODO_RW "
                     + "ORDER BY Gruppo, TipoRigo, Progressivo";
             try (PreparedStatement ps = connectionPersonale.prepareStatement(sql);
                     ResultSet rs = ps.executeQuery()) {
@@ -1177,14 +1609,30 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
             String.valueOf(rs.getInt("Progressivo")), rs.getString("DataInizio"), rs.getString("DataFine"),
             rs.getString("ValoreInizialeManuale"), rs.getString("NotaValoreIniziale"),
             rs.getString("ValoreFinaleManuale"), rs.getString("NotaValoreFinale"),
-            rs.getString("ModalitaCalcoloIniziale"), rs.getString("ModalitaCalcoloFinale")
+            rs.getString("ModalitaCalcoloIniziale"), rs.getString("ModalitaCalcoloFinale"),
+            rs.getString("PagaBolloPeriodo"), rs.getString("Origine"), rs.getString("ChiaveDefault")
         };
     }
 
     public static void Pers_GruppoPeriodoRW_Scrivi(String Gruppo, String TipoRigo, int Progressivo,
             String DataInizio, String DataFine, String ValoreInizialeManuale, String NotaValoreIniziale,
             String ValoreFinaleManuale, String NotaValoreFinale,
-            String ModalitaCalcoloIniziale, String ModalitaCalcoloFinale) {
+            String ModalitaCalcoloIniziale, String ModalitaCalcoloFinale, String PagaBolloPeriodo) {
+        Pers_GruppoPeriodoRW_Scrivi(Gruppo, TipoRigo, Progressivo, DataInizio, DataFine, ValoreInizialeManuale,
+                NotaValoreIniziale, ValoreFinaleManuale, NotaValoreFinale, ModalitaCalcoloIniziale,
+                ModalitaCalcoloFinale, PagaBolloPeriodo, null, null);
+    }
+
+    /**
+     * @param Origine {@code "SISTEMA"} / {@code "UTENTE"} / {@code null} (colonna non toccata)
+     * @param ChiaveDefault identita' stabile della riga di default in {@code RW_Predefiniti.json},
+     *        {@code null} = colonna non toccata
+     */
+    public static void Pers_GruppoPeriodoRW_Scrivi(String Gruppo, String TipoRigo, int Progressivo,
+            String DataInizio, String DataFine, String ValoreInizialeManuale, String NotaValoreIniziale,
+            String ValoreFinaleManuale, String NotaValoreFinale,
+            String ModalitaCalcoloIniziale, String ModalitaCalcoloFinale, String PagaBolloPeriodo,
+            String Origine, String ChiaveDefault) {
         if (Gruppo == null || Gruppo.isBlank()) {
             throw new IllegalArgumentException("Gruppo non può essere nullo o vuoto.");
         }
@@ -1204,6 +1652,13 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         v.put("NotaValoreFinale", NotaValoreFinale);
         v.put("ModalitaCalcoloIniziale", ModalitaCalcoloIniziale);
         v.put("ModalitaCalcoloFinale", ModalitaCalcoloFinale);
+        v.put("PagaBolloPeriodo", PagaBolloPeriodo);
+        if (Origine != null) {
+            v.put("Origine", Origine);
+        }
+        if (ChiaveDefault != null) {
+            v.put("ChiaveDefault", ChiaveDefault);
+        }
         U_ScriviRecord("GRUPPO_PERIODO_RW", v, "Gruppo_Tipo_Prog", connectionPersonale);
     }
 
@@ -2667,6 +3122,68 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
                 LoggerGC.logInfo("Preferenza provider DeFi di GNOSIS spostata su Blockscout: Etherscan non sarà più gratuito per questa chain dal 01/09/2026.");
             }
             Opzioni_Scrivi(OPZIONE, VALORE);
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+    /**
+     * Migrazione una tantum: porta a MAIUSCOLO il campo {@code symbol} dei prezzi personalizzati
+     * salvati "per nome" (righe di {@code PrezziNew} su {@code connectionPersonale} con
+     * {@code rete=''} e {@code address=''}).
+     * <p>
+     * In {@code PrezziNew} il simbolo per la ricerca per nome è per convenzione sempre maiuscolo:
+     * tutte le fonti prezzo lo normalizzano (CoinMarketCap, CCXT) e tutti i lettori confrontano
+     * dopo {@code symbol.toUpperCase()}. {@link #InserisciPrezzoPresonalizzato} era l'unica a
+     * scriverlo verbatim, quindi un prezzo personalizzato su un token/NFT dal nome non maiuscolo
+     * (tipico degli NFT inseriti a mano, es. {@code "OWP (indirizzo)"}) veniva salvato ma mai
+     * riletto. Il writer è stato corretto; questa migrazione recupera le righe già presenti.
+     * <p>
+     * Si usa MERGE+DELETE riga per riga (non un {@code UPDATE ... SET symbol=UPPER(symbol)}) per
+     * non violare la chiave primaria {@code (timestamp, exchange, symbol, rete, address)} nel caso
+     * raro in cui, per lo stesso istante/exchange, esista già la variante maiuscola.
+     */
+    private static void PrezziPersonalizzati_MigraSymbolMaiuscolo() {
+        //Il flag sta in personale.mv.db (Pers_Opzioni_*), accanto ai dati che migra: se si ripristina
+        //un personale.mv.db da backup su un database.mv.db piu' recente, la migrazione riparte.
+        final String OPZIONE = "MigrazionePrezziPersonalizzati_SymbolMaiuscolo";
+        final String VALORE = "SI";
+        try {
+            if (VALORE.equals(Pers_Opzioni_Leggi(OPZIONE))) {
+                return;
+            }
+            java.util.List<Object[]> daMigrare = new java.util.ArrayList<>();
+            String select = "SELECT timestamp, exchange, symbol, prezzo FROM PrezziNew "
+                    + "WHERE rete = '' AND address = '' AND symbol <> UPPER(symbol)";
+            try (PreparedStatement ps = connectionPersonale.prepareStatement(select);
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    daMigrare.add(new Object[]{rs.getLong(1), rs.getString(2), rs.getString(3), rs.getDouble(4)});
+                }
+            }
+            if (!daMigrare.isEmpty()) {
+                String merge = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo, rete, address) "
+                        + "KEY (timestamp, exchange, symbol, rete, address) VALUES (?, ?, ?, ?, '', '')";
+                String del = "DELETE FROM PrezziNew WHERE timestamp = ? AND exchange = ? AND symbol = ? "
+                        + "AND rete = '' AND address = ''";
+                try (PreparedStatement psM = connectionPersonale.prepareStatement(merge);
+                     PreparedStatement psD = connectionPersonale.prepareStatement(del)) {
+                    for (Object[] r : daMigrare) {
+                        psM.setLong(1, (Long) r[0]);
+                        psM.setString(2, (String) r[1]);
+                        psM.setString(3, ((String) r[2]).toUpperCase());
+                        psM.setDouble(4, (Double) r[3]);
+                        psM.executeUpdate();
+                        psD.setLong(1, (Long) r[0]);
+                        psD.setString(2, (String) r[1]);
+                        psD.setString(3, (String) r[2]);
+                        psD.executeUpdate();
+                    }
+                }
+                LoggerGC.logInfo("Prezzi personalizzati: normalizzati a maiuscolo " + daMigrare.size()
+                        + " simboli salvati per nome (prima non venivano riletti).");
+            }
+            Pers_Opzioni_Scrivi(OPZIONE, VALORE);
         } catch (SQLException ex) {
             LoggerGC.ScriviErrore(ex);
         }

@@ -31,11 +31,15 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="Label_Info" alignment="0" max="32767" attributes="0"/>
-                  <Component id="jScrollPane1" alignment="0" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" alignment="0" pref="700" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="Bottone_Aggiungi" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Modifica" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="Bottone_Rimuovi" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_PeriodiFiscali" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       <Component id="Bottone_Salva" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -52,11 +56,13 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="Label_Info" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jScrollPane1" pref="380" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" pref="360" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="Bottone_Aggiungi" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="Bottone_Modifica" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="Bottone_Rimuovi" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="Bottone_PeriodiFiscali" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="Bottone_Salva" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="Bottone_Chiudi" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -66,6 +72,11 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
+    <Component class="javax.swing.JLabel" name="Label_Info">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;div style='width: 720px'&gt;&lt;b&gt;Cos'è.&lt;/b&gt; L'elenco degli exchange usati, con la sola &lt;b&gt;etichetta&lt;/b&gt; (id + nome). &lt;b&gt;Stato estero&lt;/b&gt; e &lt;b&gt;P.IVA&lt;/b&gt; non stanno qui : si impostano per &lt;b&gt;periodo&lt;/b&gt; con &quot;Periodi fiscali...&quot;, perché un exchange cambia entità legale e Paese nel tempo (MiCA).&lt;br&gt;&lt;b&gt;Origine&lt;/b&gt;&lt;ul style='margin-top:2px; margin-bottom:2px'&gt;&lt;li&gt;&lt;b&gt;Predefinito&lt;/b&gt; = fornito dal programma&lt;/li&gt;&lt;li&gt;&lt;b&gt;Manuale&lt;/b&gt; = aggiunto da te&lt;/li&gt;&lt;li&gt;&lt;b&gt;Predefinito (mod.)&lt;/b&gt; = predefinito, con il nome cambiato da te&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/html&gt;"/>
+      </Properties>
+    </Component>
     <Container class="javax.swing.JScrollPane" name="jScrollPane1">
       <AuxValues>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
@@ -76,34 +87,38 @@
         <Component class="javax.swing.JTable" name="Tabella">
           <Properties>
             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-              <Table columnCount="7" rowCount="0">
+              <Table columnCount="3" rowCount="0">
                 <Column editable="false" title="Exchange (id)" type="java.lang.Object"/>
-                <Column editable="true" title="Nome" type="java.lang.Object"/>
-                <Column editable="true" title="Stato estero" type="java.lang.Object"/>
-                <Column editable="true" title="Identificativo fiscale" type="java.lang.Object"/>
-                <Column editable="true" title="Note" type="java.lang.Object"/>
-                <Column editable="true" title="Fonte" type="java.lang.Object"/>
-                <Column editable="true" title="Aggiornato" type="java.lang.Object"/>
+                <Column editable="false" title="Nome" type="java.lang.Object"/>
+                <Column editable="false" title="Origine" type="java.lang.Object"/>
               </Table>
             </Property>
           </Properties>
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JLabel" name="Label_Info">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Stato estero e identificativo fiscale degli exchange. Lo stato serve al quadro W/RW, l&apos;identificativo fiscale servira&apos; all&apos;ISEE. Compila solo cio&apos; che ti risulta da fonte ufficiale."/>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JButton" name="Bottone_Aggiungi">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/Images/24_Nuovo.png"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Aggiungi"/>
+        <Property name="text" type="java.lang.String" value="Aggiungi..."/>
+        <Property name="toolTipText" type="java.lang.String" value="Aggiunge un nuovo exchange all'elenco"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_AggiungiActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Modifica">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Modifica.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Modifica..."/>
+        <Property name="toolTipText" type="java.lang.String" value="Cambia il nome dell'exchange selezionato"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_ModificaActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JButton" name="Bottone_Rimuovi">
@@ -115,6 +130,18 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_RimuoviActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_PeriodiFiscali">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Modifica.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Periodi fiscali..."/>
+        <Property name="toolTipText" type="java.lang.String" value="Stato estero e identificativo fiscale per periodo dell'exchange selezionato"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_PeriodiFiscaliActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JButton" name="Bottone_Salva">

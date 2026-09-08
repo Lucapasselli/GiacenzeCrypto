@@ -330,6 +330,7 @@ public class Backup_Restore {
         //Config quadro RW dei gruppi wallet (2026-08-30) : anagrafica exchange (stato estero / P.IVA),
         //riferimento estero per gruppo, periodi di detenzione. Dati dell'utente, ancora non usati dal calcolo.
         t.add(new Tabella("EXCHANGE_ANAGRAFICA", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
+        t.add(new Tabella("EXCHANGE_PERIODO", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
         t.add(new Tabella("GRUPPO_RIFERIMENTO_ESTERO", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
         t.add(new Tabella("GRUPPO_PERIODO_RW", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
         //Il registro dei documenti sta nel gruppo dei movimenti: il campo [41] di ogni movimento ne

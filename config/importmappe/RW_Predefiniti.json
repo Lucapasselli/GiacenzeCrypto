@@ -1,0 +1,82 @@
+{
+  "_commento": "Dati predefiniti del quadro W/RW per gruppo wallet: elenco exchange noti, periodi fiscali degli exchange (entita' legale / Stato estero MiCA), gruppi wallet preconfigurati e i loro periodi di detenzione. Caricato all'avvio come le mappe causali (copia nel jar sotto /ImportMappe/, sync da repo in config/importmappe/, vedi DatiPredefinitiRW). Il reconcile all'avvio tocca SOLO le righe con Origine SISTEMA: le righe inserite o modificate a mano (Origine UTENTE, o NULL sui DB pre-esistenti) non vengono mai toccate. La 'chiave' di ogni periodo e' la sua identita' stabile fra un aggiornamento e l'altro.",
+  "versione": "2026-09-08",
+  "exchange": [
+    { "id": "binance", "nome": "Binance", "gruppo": "Wallet 101", "periodiFiscali": [] },
+    { "id": "coinbase", "nome": "Coinbase", "gruppo": "Wallet 102", "periodiFiscali": [
+      { "chiave": "coinbase-mica", "progressivo": 1, "dataInizio": "2025-06-20", "dataFine": "",
+        "nome": "Coinbase", "statoEstero": "092", "identificativoFiscale": "LU36476644",
+        "note": "Coinbase Luxembourg S.A. - RCS Lussemburgo B292147; CASP CSSF N00000004 dal 20/06/2025. Entita' SEE precedente : Coinbase Europe Ltd (Irlanda 040, reg. 675475), da inserire come periodo anteriore. P.IVA verificata su VIES.",
+        "fonte": "VIES + coinbase.com/impressum + AMF white list" }
+    ] },
+    { "id": "kraken", "nome": "Kraken", "gruppo": "Wallet 103", "periodiFiscali": [
+      { "chiave": "kraken-mica", "progressivo": 1, "dataInizio": "2025-06-25", "dataFine": "",
+        "nome": "Kraken", "statoEstero": "040", "identificativoFiscale": "711781",
+        "note": "Payward Europe Solutions Limited (Irlanda) - n. registro imprese CRO 711781 (P.IVA IE non reperita da fonte pubblica); CASP Central Bank of Ireland rif. C468360 dal 25/06/2025. Entita' precedente : Payward Ltd (Regno Unito 031) fino a ~gennaio 2021 (Brexit).",
+        "fonte": "Central Bank of Ireland (registers) + AMF white list" }
+    ] },
+    { "id": "cryptocom", "nome": "Crypto.com", "gruppo": "Wallet 104", "periodiFiscali": [
+      { "chiave": "cryptocom-mica", "progressivo": 1, "dataInizio": "2025-01-27", "dataFine": "",
+        "nome": "Crypto.com", "statoEstero": "105", "identificativoFiscale": "C88392",
+        "note": "Foris DAX MT Limited (Malta) - n. registro imprese C 88392 (P.IVA MT non reperita); LEI 2549005CVR5HH70FDO07; CASP MFSA dal 27/01/2025. Ex denominazione \"MCO Malta DAX Limited\".",
+        "fonte": "MFSA / ESMA CASP register + OpenCorporates MT" }
+    ] },
+    { "id": "okx", "nome": "OKX", "gruppo": "Wallet 105", "periodiFiscali": [
+      { "chiave": "okx-mica", "progressivo": 1, "dataInizio": "2025-01-27", "dataFine": "",
+        "nome": "OKX", "statoEstero": "105", "identificativoFiscale": "C88193",
+        "note": "OKX Europe Limited (ex OKCoin Europe Ltd, stesso reg. C88193, Malta) - P.IVA MT non reperita; LEI 54930069NLWEIGLHXU42; licenza MFSA OEUR-24352, CASP dal 27/01/2025.",
+        "fonte": "MFSA + okx.com (okcoin-europe-ltd-conflicts-of-interest-disclosure)" }
+    ] },
+    { "id": "bitpanda", "nome": "Bitpanda", "gruppo": "Wallet 106", "periodiFiscali": [
+      { "chiave": "bitpanda-mica", "progressivo": 1, "dataInizio": "2025-04-09", "dataFine": "",
+        "nome": "Bitpanda", "statoEstero": "008", "identificativoFiscale": "ATU78580117",
+        "note": "Bitpanda GmbH - Firmenbuch FN 423018k (FN 569240v citato nell'autorizzazione FMA, da confermare); LEI 5493007WZ7IFULIL8G21; CASP FMA (Austria) dal 09/04/2025. P.IVA verificata su VIES.",
+        "fonte": "VIES + FMA Austria (granting-of-authorisation-bitpanda-gmbh)" }
+    ] },
+    { "id": "bitget", "nome": "Bitget", "gruppo": "Wallet 107", "periodiFiscali": [] },
+    { "id": "kucoin", "nome": "KuCoin", "gruppo": "Wallet 108", "periodiFiscali": [
+      { "chiave": "kucoin-mica", "progressivo": 1, "dataInizio": "2025-11-27", "dataFine": "",
+        "nome": "KuCoin", "statoEstero": "008", "identificativoFiscale": "",
+        "note": "KuCoin EU Exchange GmbH (Austria) - Firmenbuch e P.IVA da reperire; CASP FMA dal 27/11/2025. Operatore globale precedente : Peken Global Limited (Seychelles 189 / Turks e Caicos 210).",
+        "fonte": "FMA Austria + CoinDesk" }
+    ] },
+    { "id": "bybit", "nome": "Bybit", "gruppo": "Wallet 109", "periodiFiscali": [
+      { "chiave": "bybit-mica", "progressivo": 1, "dataInizio": "2025-05-28", "dataFine": "",
+        "nome": "Bybit", "statoEstero": "008", "identificativoFiscale": "636180i",
+        "note": "Bybit EU GmbH (Austria) - Firmenbuch FN 636180i (P.IVA AT non reperita); CASP FMA dal 28/05/2025. Entita' globale precedente : Bybit Fintech Limited (Isole Vergini Britanniche 249 / Dubai).",
+        "fonte": "FMA Austria + CoinDesk" }
+    ] },
+    { "id": "revolut", "nome": "Revolut", "gruppo": "Wallet 110", "periodiFiscali": [
+      { "chiave": "revolut-mica", "progressivo": 1, "dataInizio": "", "dataFine": "",
+        "nome": "Revolut", "statoEstero": "101", "identificativoFiscale": "",
+        "note": "Revolut Digital Assets Europe Ltd (RDAEL, Cipro, ex RT Digital Securities Cyprus Ltd HE430310) - n. registro e P.IVA da reperire sul registro CY; licenza CASP CySEC 001/2025. E-money tramite Revolut Bank UAB (Lituania 259).",
+        "fonte": "CySEC + help.revolut.com" }
+    ] },
+    { "id": "nexo", "nome": "Nexo", "gruppo": "Wallet 111", "periodiFiscali": [] },
+    { "id": "bitstamp", "nome": "Bitstamp", "gruppo": "Wallet 112", "periodiFiscali": [
+      { "chiave": "bitstamp-mica", "progressivo": 1, "dataInizio": "", "dataFine": "",
+        "nome": "Bitstamp", "statoEstero": "092", "identificativoFiscale": "B196856",
+        "note": "Bitstamp Europe S.A. (Lussemburgo) - RCS B196856 (P.IVA LU non reperita); LEI 549300XIBGTJ0PLIEO72; CASP CSSF N00000003 (istituto di pagamento Z00000012). Gruppo Robinhood. Entita' precedente : Bitstamp Ltd (Regno Unito 031) fino a ~2020.",
+        "fonte": "CSSF + AMF white list + NorthData" }
+    ] },
+    { "id": "gemini", "nome": "Gemini", "gruppo": "Wallet 113", "periodiFiscali": [
+      { "chiave": "gemini-mica", "progressivo": 1, "dataInizio": "", "dataFine": "",
+        "nome": "Gemini", "statoEstero": "105", "identificativoFiscale": "",
+        "note": "Gemini Intergalactic EU Ltd (Malta) - n. registro imprese e P.IVA da reperire sul registro MFSA / Registro Imprese Malta; CASP MFSA (agosto 2025). Capogruppo USA : Gemini Trust Company LLC (New York 069).",
+        "fonte": "MFSA + gemini.com/blog + AMF white list" }
+    ] },
+    { "id": "bitfinex", "nome": "Bitfinex", "gruppo": "Wallet 114", "periodiFiscali": [] }
+  ],
+  "periodiDetenzioneGruppi": [
+    { "gruppo": "Wallet 101", "periodi": [
+      { "chiave": "binance-crypto-bollo", "tipo": "CRYPTO", "progressivo": 1,
+        "dataInizio": "", "dataFine": "2026-06-30",
+        "valIniziale": "", "notaIniziale": "", "valFinale": "", "notaFinale": "",
+        "calcoloIniziale": "", "calcoloFinale": "", "bollo": "SI" },
+      { "chiave": "binance-crypto-nobollo", "tipo": "CRYPTO", "progressivo": 2,
+        "dataInizio": "2026-07-01", "dataFine": "",
+        "valIniziale": "", "notaIniziale": "", "valFinale": "", "notaFinale": "",
+        "calcoloIniziale": "", "calcoloFinale": "", "bollo": "NO" }
+    ] }
+  ]
+}

@@ -110,8 +110,22 @@ public class Stampe {
      * @param Giorni giorni di detenzione ai fini IVAFE; se vuoto o tra parentesi, marca la riga come "solo monitoraggio"
      */
     public void AggiungiQuadroW(String Immagine,String NumeroQuadro,String ValoreIniziale,String ValoreFinale,String Giorni) {
+        AggiungiQuadroW(Immagine, NumeroQuadro, ValoreIniziale, ValoreFinale, Giorni, "21", "", false);
+    }
+
+    /**
+     * Variante del rigo Quadro W con codice individuazione bene, codice Stato estero e "solo monitoraggio"
+     * espliciti : usata dalla parte FIAT (valuta estera presso intermediario estero, codice bene 14).
+     * Con {@code CodiceBene="21"}, {@code StatoEstero=""} e {@code SoloMonitoraggio=false} riproduce il
+     * comportamento cripto.
+     * @param CodiceBene codice colonna 3 ("21" cripto, "14" valuta estera)
+     * @param StatoEstero codice Stato estero (colonna 4) ; se vuoto la colonna resta vuota
+     * @param SoloMonitoraggio se {@code true} : colonna 16 sempre barrata e colonna 14 (codice) lasciata vuota
+     */
+    public void AggiungiQuadroW(String Immagine,String NumeroQuadro,String ValoreIniziale,String ValoreFinale,String Giorni,
+                String CodiceBene,String StatoEstero,boolean SoloMonitoraggio) {
           try {
-              
+
 
 // String Errore="Attenzione per questo wallet ci sono degli errori da correggere!";
               com.lowagie.text.Image image01 = com.lowagie.text.Image.getInstance(Immagine);
@@ -124,14 +138,18 @@ public class Stampe {
              doc.add(image01);
              float psosizioneVeriticale=writer.getVerticalPosition(false);
             // Paragraph par = new Paragraph("155",FontFactory.getFont(FontFactory.COURIER,6, Font.NORMAL));
-             Font font = new Font(Font.HELVETICA, 6, Font.BOLD); 
+             Font font = new Font(Font.HELVETICA, 6, Font.BOLD);
              //Numero Quadro
              setPara(writer.getDirectContent(), new Phrase("W"+NumeroQuadro,font), doc.leftMargin(), psosizioneVeriticale+45);
-             font = new Font(Font.HELVETICA, 8, Font.NORMAL); 
+             font = new Font(Font.HELVETICA, 8, Font.NORMAL);
              //Codice Possesso
              setPara(writer.getDirectContent(), new Phrase("1",font), 40+doc.leftMargin(), psosizioneVeriticale+75);
-             //Codice Individuazione Bene
-             setPara(writer.getDirectContent(), new Phrase("21",font), 140+doc.leftMargin(), psosizioneVeriticale+75);
+             //Codice Individuazione Bene (col 3)
+             setPara(writer.getDirectContent(), new Phrase(CodiceBene,font), 140+doc.leftMargin(), psosizioneVeriticale+75);
+             //Codice Stato Estero (col 4) - solo per i righi FIAT ; x approssimativa, da tarare sul modulo reale
+             if (StatoEstero!=null && !StatoEstero.isBlank()){
+                setPara(writer.getDirectContent(), new Phrase(StatoEstero,font), 190+doc.leftMargin(), psosizioneVeriticale+75);
+             }
              //Quota di Possesso
              setPara(writer.getDirectContent(), new Phrase("100,00",font), 245+doc.leftMargin(), psosizioneVeriticale+75);
              //Criterio Determinazione Valore
@@ -142,14 +160,16 @@ public class Stampe {
              setPara(writer.getDirectContent(), new Phrase(ValoreFinale+",00",font), 460+doc.leftMargin(), psosizioneVeriticale+75);
              //Giorni IVAFE
              setPara(writer.getDirectContent(), new Phrase(Giorni,font), 130+doc.leftMargin(), psosizioneVeriticale+40);
-             //Codice 14
-             setPara(writer.getDirectContent(), new Phrase("vedi",font), 420+doc.leftMargin(), psosizioneVeriticale+45);
-             setPara(writer.getDirectContent(), new Phrase("note",font), 420+doc.leftMargin(), psosizioneVeriticale+38);
-             //Solo Monitoraggio
-             if (Giorni.isBlank()||Giorni.contains("(")){
+             //Codice 14 (col 14) : non compilato sui righi solo-monitoraggio (FIAT)
+             if (!SoloMonitoraggio){
+                setPara(writer.getDirectContent(), new Phrase("vedi",font), 420+doc.leftMargin(), psosizioneVeriticale+45);
+                setPara(writer.getDirectContent(), new Phrase("note",font), 420+doc.leftMargin(), psosizioneVeriticale+38);
+             }
+             //Solo Monitoraggio (col 16)
+             if (SoloMonitoraggio||Giorni.isBlank()||Giorni.contains("(")){
                 setPara(writer.getDirectContent(), new Phrase("X",font), 505+doc.leftMargin(), psosizioneVeriticale+40);
              }
-             
+
              //Font font = new Font(Font.HELVETICA, 6, Font.NORMAL);       
              //HeaderFooter footer = new HeaderFooter(new Phrase("155",font), false);
              
@@ -396,6 +416,27 @@ public class Stampe {
                 String Note[],
                 int foglio,
                 String ICTot) {
+        AggiungiQuadroRW(Immagine, NumeroQuadro, ValoriIniziali, ValoriFinali, Giorni, IC, Wallet, Note, foglio, ICTot, null, null);
+    }
+
+    /**
+     * Variante del foglio Quadro RW con codice individuazione bene e codice Stato estero per rigo :
+     * usata dalla parte FIAT. Un rigo con {@code CodiceBene[i]="14"} e' trattato come "solo monitoraggio"
+     * (colonna 16 barrata, colonna 14 e IC lasciate vuote). {@code CodiceBene}/{@code StatoEstero} a
+     * {@code null} (o {@code null} per il singolo indice) = comportamento cripto (codice "21").
+     */
+    public void AggiungiQuadroRW(String Immagine,
+                String NumeroQuadro,
+                String ValoriIniziali[],
+                String ValoriFinali[],
+                String Giorni[],
+                String IC[],
+                String Wallet[],
+                String Note[],
+                int foglio,
+                String ICTot,
+                String CodiceBene[],
+                String StatoEstero[]) {
           try {
               ICTot=Funzioni.formattaBigDecimal(new BigDecimal(ICTot),false);
 
@@ -428,6 +469,10 @@ public class Stampe {
                    // font = new Font(Font.HELVETICA, 8, Font.NORMAL);
                    ValoriIniziali[i]=Funzioni.formattaBigDecimal(new BigDecimal(ValoriIniziali[i]),false);
                         ValoriFinali[i]=Funzioni.formattaBigDecimal(new BigDecimal(ValoriFinali[i]),false);
+                    //Codice individuazione bene / Stato estero per rigo : "14" = valuta estera FIAT (solo monitoraggio)
+                    String cb=(CodiceBene!=null && CodiceBene[i]!=null)?CodiceBene[i]:"21";
+                    String se=(StatoEstero!=null && StatoEstero[i]!=null)?StatoEstero[i]:"";
+                    boolean monit="14".equals(cb);
                     if (i==0){
                         //Wallet e Note
                         font = new Font(Font.HELVETICA, 10, Font.BOLD);
@@ -436,8 +481,10 @@ public class Stampe {
                         setPara(writer.getDirectContent(), new Phrase(Note[i],font), 5+doc.leftMargin(), psosizioneVeriticale+510);
                         //Codice Possesso
                         setPara(writer.getDirectContent(), new Phrase("1",font), 142+doc.leftMargin(), psosizioneVeriticale+540);
-                        //Codice Individuazione Bene
-                        setPara(writer.getDirectContent(), new Phrase("21",font), 220+doc.leftMargin(), psosizioneVeriticale+540);
+                        //Codice Individuazione Bene (col 3)
+                        setPara(writer.getDirectContent(), new Phrase(cb,font), 220+doc.leftMargin(), psosizioneVeriticale+540);
+                        //Codice Stato Estero (col 4) - solo FIAT ; x approssimativa, da tarare sul modulo reale
+                        if (!se.isBlank()) setPara(writer.getDirectContent(), new Phrase(se,font), 252+doc.leftMargin(), psosizioneVeriticale+540);
                         //Quota di Possesso
                         setPara(writer.getDirectContent(), new Phrase("100,00",font), 285+doc.leftMargin(), psosizioneVeriticale+540);
                         //Criterio Determinazione Valore
@@ -448,16 +495,18 @@ public class Stampe {
                         setPara(writer.getDirectContent(), new Phrase(ValoriFinali[i],font), 460+doc.leftMargin(), psosizioneVeriticale+540);
                         //Giorni IVAFE
                         setPara(writer.getDirectContent(), new Phrase(Giorni[i],font), 210+doc.leftMargin(), psosizioneVeriticale+508);
-                        //Codice 14
-                        setPara(writer.getDirectContent(), new Phrase("vedi",font), 425+doc.leftMargin(), psosizioneVeriticale+513);
-                        setPara(writer.getDirectContent(), new Phrase("note",font), 425+doc.leftMargin(), psosizioneVeriticale+506);
-                        //Solo Monitoraggio
-                        if (Giorni[i].isBlank()||Giorni[i].contains("(")){
+                        //Codice 14 (col 14) : non compilato sui righi FIAT (solo monitoraggio)
+                        if (!monit){
+                            setPara(writer.getDirectContent(), new Phrase("vedi",font), 425+doc.leftMargin(), psosizioneVeriticale+513);
+                            setPara(writer.getDirectContent(), new Phrase("note",font), 425+doc.leftMargin(), psosizioneVeriticale+506);
+                        }
+                        //Solo Monitoraggio (col 16)
+                        if (monit||Giorni[i].isBlank()||Giorni[i].contains("(")){
                             setPara(writer.getDirectContent(), new Phrase("X",font), 496+doc.leftMargin(), psosizioneVeriticale+508);
                         }else{
                         //IC
                             setPara(writer.getDirectContent(), new Phrase(IC[i], font), 410 + doc.leftMargin(), psosizioneVeriticale + 445);
-                            setPara(writer.getDirectContent(), new Phrase(IC[i], font), 475 + doc.leftMargin(), psosizioneVeriticale + 445); 
+                            setPara(writer.getDirectContent(), new Phrase(IC[i], font), 475 + doc.leftMargin(), psosizioneVeriticale + 445);
                         }
                     }else{
                         //Wallet e Note
@@ -467,8 +516,10 @@ public class Stampe {
                         setPara(writer.getDirectContent(), new Phrase(Note[i],font), 5+doc.leftMargin(), psosizioneVeriticale+395-(i-1)*84);
                         //Codice Possesso
                         setPara(writer.getDirectContent(), new Phrase("1",font), 142+doc.leftMargin(), psosizioneVeriticale+425-(i-1)*84);
-                        //Codice Individuazione Bene
-                        setPara(writer.getDirectContent(), new Phrase("21",font), 220+doc.leftMargin(), psosizioneVeriticale+425-(i-1)*84);
+                        //Codice Individuazione Bene (col 3)
+                        setPara(writer.getDirectContent(), new Phrase(cb,font), 220+doc.leftMargin(), psosizioneVeriticale+425-(i-1)*84);
+                        //Codice Stato Estero (col 4) - solo FIAT ; x approssimativa
+                        if (!se.isBlank()) setPara(writer.getDirectContent(), new Phrase(se,font), 252+doc.leftMargin(), psosizioneVeriticale+425-(i-1)*84);
                         //Quota di Possesso
                         setPara(writer.getDirectContent(), new Phrase("100,00",font), 285+doc.leftMargin(), psosizioneVeriticale+425-(i-1)*84);
                         //Criterio Determinazione Valore
@@ -479,16 +530,18 @@ public class Stampe {
                         setPara(writer.getDirectContent(), new Phrase(ValoriFinali[i],font), 460+doc.leftMargin(), psosizioneVeriticale+425-(i-1)*84);
                         //Giorni IVAFE
                         setPara(writer.getDirectContent(), new Phrase(Giorni[i],font), 210+doc.leftMargin(), psosizioneVeriticale+404-(i-1)*84);
-                        //Codice 14
-                        setPara(writer.getDirectContent(), new Phrase("vedi",font), 425+doc.leftMargin(), psosizioneVeriticale+409-(i-1)*84);
-                        setPara(writer.getDirectContent(), new Phrase("note",font), 425+doc.leftMargin(), psosizioneVeriticale+402-(i-1)*84);
-                        //Solo Monitoraggio
-                        if (Giorni[i].isBlank()||Giorni[i].contains("(")){
+                        //Codice 14 (col 14) : non compilato sui righi FIAT (solo monitoraggio)
+                        if (!monit){
+                            setPara(writer.getDirectContent(), new Phrase("vedi",font), 425+doc.leftMargin(), psosizioneVeriticale+409-(i-1)*84);
+                            setPara(writer.getDirectContent(), new Phrase("note",font), 425+doc.leftMargin(), psosizioneVeriticale+402-(i-1)*84);
+                        }
+                        //Solo Monitoraggio (col 16)
+                        if (monit||Giorni[i].isBlank()||Giorni[i].contains("(")){
                             setPara(writer.getDirectContent(), new Phrase("X",font), 496+doc.leftMargin(), psosizioneVeriticale+404-(i-1)*84);
                         }else{
                         //IC
                             setPara(writer.getDirectContent(), new Phrase(IC[i], font), 410 + doc.leftMargin(), psosizioneVeriticale +360-(i-1)*84);
-                            setPara(writer.getDirectContent(), new Phrase(IC[i], font), 475 + doc.leftMargin(), psosizioneVeriticale +360-(i-1)*84); 
+                            setPara(writer.getDirectContent(), new Phrase(IC[i], font), 475 + doc.leftMargin(), psosizioneVeriticale +360-(i-1)*84);
                         }
                     }
                     //setPara(writer.getDirectContent(), new Phrase("1",font), 140+doc.leftMargin(), psosizioneVeriticale+630-i*100);
@@ -526,6 +579,22 @@ public class Stampe {
             String Note[],
             int foglio,
             String ICTot) {
+        AggiungiQuadroRW2025(FilePdf, NumeroQuadro, ValoriIniziali, ValoriFinali, Giorni, IC, Wallet, Note, foglio, ICTot, null, null);
+    }
+
+    /** Variante 2025 con codice individuazione bene / Stato estero per rigo (parte FIAT, codice "14" = solo monitoraggio). */
+    public void AggiungiQuadroRW2025(String FilePdf,
+            String NumeroQuadro,
+            String ValoriIniziali[],
+            String ValoriFinali[],
+            String Giorni[],
+            String IC[],
+            String Wallet[],
+            String Note[],
+            int foglio,
+            String ICTot,
+            String CodiceBene[],
+            String StatoEstero[]) {
     try {
         ICTot = Funzioni.formattaBigDecimal(new BigDecimal(ICTot), false);
 
@@ -593,6 +662,10 @@ public class Stampe {
                 ValoriFinali[i]   = Funzioni.formattaBigDecimal(
                         new BigDecimal(ValoriFinali[i]), false);
 
+                String cbene = (CodiceBene != null && CodiceBene[i] != null) ? CodiceBene[i] : "21";
+                String sest = (StatoEstero != null && StatoEstero[i] != null) ? StatoEstero[i] : "";
+                boolean monit = "14".equals(cbene);
+
                 if (i == 0) {
                     font = new Font(Font.HELVETICA, 10, Font.BOLD);
                     setPara(writer.getDirectContent(), new Phrase(Wallet[i], font),
@@ -602,8 +675,10 @@ public class Stampe {
                             -15 + doc.leftMargin(), psosizioneVeriticale + 536);
                     setPara(writer.getDirectContent(), new Phrase("1", font),
                             125 + doc.leftMargin(), psosizioneVeriticale + 566);
-                    setPara(writer.getDirectContent(), new Phrase("21", font),
+                    setPara(writer.getDirectContent(), new Phrase(cbene, font),
                             203 + doc.leftMargin(), psosizioneVeriticale + 566);
+                    if (!sest.isBlank()) setPara(writer.getDirectContent(), new Phrase(sest, font),
+                            235 + doc.leftMargin(), psosizioneVeriticale + 566);
                     setPara(writer.getDirectContent(), new Phrase("100,00", font),
                             268 + doc.leftMargin(), psosizioneVeriticale + 566);
                     setPara(writer.getDirectContent(), new Phrase("1", font),
@@ -614,11 +689,13 @@ public class Stampe {
                             443 + doc.leftMargin(), psosizioneVeriticale + 566);
                     setPara(writer.getDirectContent(), new Phrase(Giorni[i], font),
                             191 + doc.leftMargin(), psosizioneVeriticale + 534);
-                    setPara(writer.getDirectContent(), new Phrase("vedi", font),
-                            407 + doc.leftMargin(), psosizioneVeriticale + 539);
-                    setPara(writer.getDirectContent(), new Phrase("note", font),
-                            407 + doc.leftMargin(), psosizioneVeriticale + 532);
-                    if (Giorni[i].isBlank() || Giorni[i].contains("(")) {
+                    if (!monit) {
+                        setPara(writer.getDirectContent(), new Phrase("vedi", font),
+                                407 + doc.leftMargin(), psosizioneVeriticale + 539);
+                        setPara(writer.getDirectContent(), new Phrase("note", font),
+                                407 + doc.leftMargin(), psosizioneVeriticale + 532);
+                    }
+                    if (monit || Giorni[i].isBlank() || Giorni[i].contains("(")) {
                         setPara(writer.getDirectContent(), new Phrase("X", font),
                                 480 + doc.leftMargin(), psosizioneVeriticale + 531);
                     } else {
@@ -636,8 +713,10 @@ public class Stampe {
                             -15 + doc.leftMargin(), psosizioneVeriticale + 421 - (i - 1) * 84);
                     setPara(writer.getDirectContent(), new Phrase("1", font),
                             125 + doc.leftMargin(), psosizioneVeriticale + 451 - (i - 1) * 84);
-                    setPara(writer.getDirectContent(), new Phrase("21", font),
+                    setPara(writer.getDirectContent(), new Phrase(cbene, font),
                             203 + doc.leftMargin(), psosizioneVeriticale + 451 - (i - 1) * 84);
+                    if (!sest.isBlank()) setPara(writer.getDirectContent(), new Phrase(sest, font),
+                            235 + doc.leftMargin(), psosizioneVeriticale + 451 - (i - 1) * 84);
                     setPara(writer.getDirectContent(), new Phrase("100,00", font),
                             268 + doc.leftMargin(), psosizioneVeriticale + 451 - (i - 1) * 84);
                     setPara(writer.getDirectContent(), new Phrase("1", font),
@@ -648,11 +727,13 @@ public class Stampe {
                             443 + doc.leftMargin(), psosizioneVeriticale + 451 - (i - 1) * 84);
                     setPara(writer.getDirectContent(), new Phrase(Giorni[i], font),
                             191 + doc.leftMargin(), psosizioneVeriticale + 430 - (i - 1) * 84);
-                    setPara(writer.getDirectContent(), new Phrase("vedi", font),
-                            408 + doc.leftMargin(), psosizioneVeriticale + 435 - (i - 1) * 84);
-                    setPara(writer.getDirectContent(), new Phrase("note", font),
-                            408 + doc.leftMargin(), psosizioneVeriticale + 428 - (i - 1) * 84);
-                    if (Giorni[i].isBlank() || Giorni[i].contains("(")) {
+                    if (!monit) {
+                        setPara(writer.getDirectContent(), new Phrase("vedi", font),
+                                408 + doc.leftMargin(), psosizioneVeriticale + 435 - (i - 1) * 84);
+                        setPara(writer.getDirectContent(), new Phrase("note", font),
+                                408 + doc.leftMargin(), psosizioneVeriticale + 428 - (i - 1) * 84);
+                    }
+                    if (monit || Giorni[i].isBlank() || Giorni[i].contains("(")) {
                         setPara(writer.getDirectContent(), new Phrase("X", font),
                                 480 + doc.leftMargin(), psosizioneVeriticale + 427 - (i - 1) * 84);
                     } else {

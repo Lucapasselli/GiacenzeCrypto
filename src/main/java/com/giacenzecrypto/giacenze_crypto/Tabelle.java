@@ -661,7 +661,7 @@ public class Tabelle {
  * @return lo sfondo da usare per quella riga quando non è selezionata
  */
 public static Color SfondoRigaAlternata(int row) {
-    if (Principale.tema.equalsIgnoreCase("Scuro")) return (row % 2 == 0 ? grigio : grigioScuro);
+    if (Principale.tema != null && Principale.tema.equalsIgnoreCase("Scuro")) return (row % 2 == 0 ? grigio : grigioScuro);
     return (row % 2 == 0 ? grigioChiaro : bianco);
 }
 
@@ -696,9 +696,9 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
                                                        int col) {
             // Ottieni il componente standard per la cella
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-                    Color bg; 
+                    Color bg;
        // Color fore;
-        if (Principale.tema.equalsIgnoreCase("Scuro")){
+        if (Principale.tema != null && Principale.tema.equalsIgnoreCase("Scuro")){
             bg= (row % 2 == 0  ? grigio : grigioScuro);
             //fore=Color.lightGray;
         }
@@ -761,7 +761,7 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
             spunta.setSelected(value instanceof Boolean && (Boolean) value);
             spunta.setForeground(table.getForeground());
             Color bg;
-            if (Principale.tema.equalsIgnoreCase("Scuro")) bg = (row % 2 == 0 ? grigio : grigioScuro);
+            if (Principale.tema != null && Principale.tema.equalsIgnoreCase("Scuro")) bg = (row % 2 == 0 ? grigio : grigioScuro);
             else bg = (row % 2 == 0 ? grigioChiaro : bianco);
             if (table.isCellSelected(row, col)) spunta.setBackground(Tabelle.SfondoSelezione(row));
             else if (table.isRowSelected(row)) spunta.setBackground(Tabelle.SfondoSelezione(row).brighter());
@@ -2071,6 +2071,115 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
        // modello.setRowCount(0);
     }
      
+    /**
+     * Adatta l'altezza di <b>ogni</b> riga al contenuto : per ogni riga prende l'altezza preferita
+     * massima fra le sue celle (interrogando i renderer effettivi) e la impone con
+     * {@code setRowHeight(riga, h)}. Da richiamare dopo ogni ricostruzione del modello.
+     *
+     * <p>Va d'accordo con {@link WrapCellRenderer} : quel renderer manda a capo il testo lungo e
+     * dichiara un'altezza preferita coerente con la larghezza <i>attuale</i> della colonna, quindi
+     * l'altezza calcolata qui segue il testo mandato a capo.</p>
+     *
+     * @param table la tabella da sistemare (nessun effetto se {@code null} o senza righe)
+     * @param altezzaMin altezza minima di riga in pixel (per non comprimere le righe corte)
+     */
+    public static void AdattaAltezzaRighe(JTable table, int altezzaMin) {
+        if (table == null) {
+            return;
+        }
+        int spazio = table.getIntercellSpacing() != null ? table.getIntercellSpacing().width : 0;
+        for (int riga = 0; riga < table.getRowCount(); riga++) {
+            int h = altezzaMin;
+            for (int col = 0; col < table.getColumnCount(); col++) {
+                TableCellRenderer r = table.getCellRenderer(riga, col);
+                Component c = table.prepareRenderer(r, riga, col);
+                // La larghezza a cui la cella viene davvero disegnata è quella della colonna meno lo
+                // spazio fra celle : misurare qui a quella stessa larghezza dà l'altezza reale del
+                // testo mandato a capo (vedi WrapCellRenderer).
+                int larghezza = Math.max(10, table.getColumnModel().getColumn(col).getWidth() - spazio);
+                c.setSize(larghezza, Short.MAX_VALUE);
+                h = Math.max(h, c.getPreferredSize().height);
+            }
+            if (table.getRowHeight(riga) != h) {
+                table.setRowHeight(riga, h);
+            }
+        }
+    }
+
+    /** {@link #AdattaAltezzaRighe(JTable, int)} con altezza minima pari a quella corrente della tabella. */
+    public static void AdattaAltezzaRighe(JTable table) {
+        AdattaAltezzaRighe(table, table == null ? 16 : table.getRowHeight());
+    }
+
+    /**
+     * Mostra un tooltip diverso su ciascuna intestazione di colonna : {@code tooltip[i]} è il testo
+     * per la colonna <i>di modello</i> {@code i} ({@code null} o assente = nessun tooltip). Si
+     * appoggia a un {@code MouseMotionListener} sull'header, quindi convive con qualunque renderer
+     * dell'header già installato (es. {@link #Tabelle_ApplicaHeaderBoldCentrato}).
+     */
+    public static void TooltipHeaderColonne(JTable table, String... tooltip) {
+        if (table == null || table.getTableHeader() == null || tooltip == null) {
+            return;
+        }
+        final JTableHeader header = table.getTableHeader();
+        header.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                int vc = header.columnAtPoint(e.getPoint());
+                if (vc < 0) {
+                    header.setToolTipText(null);
+                    return;
+                }
+                int mc = table.convertColumnIndexToModel(vc);
+                header.setToolTipText(mc >= 0 && mc < tooltip.length ? tooltip[mc] : null);
+            }
+        });
+    }
+
+    /**
+     * Renderer che manda a capo il testo lungo invece di troncarlo. Usa un {@link javax.swing.JTextArea}
+     * con {@code lineWrap} attivo : va a capo alla larghezza <b>reale</b> della cella, non a una
+     * larghezza stimata da un {@code <div style='width'>} HTML (che, se sbagliata anche di poco,
+     * tagliava le righe — difetto osservato sulla colonna "Note"). Solo una piccola imbottitura
+     * interna, così il testo non tocca il bordo della cella ; nessuna riga di separazione (il layout
+     * resta quello standard delle altre tabelle). Da assegnare alle colonne di testo lungo prima di
+     * {@link #AdattaAltezzaRighe(JTable, int)}.
+     */
+    public static class WrapCellRenderer extends javax.swing.JTextArea implements TableCellRenderer {
+
+        private static final long serialVersionUID = 1L;
+
+        private static final javax.swing.border.Border BORDO =
+                javax.swing.BorderFactory.createEmptyBorder(2, 5, 2, 5);
+
+        public WrapCellRenderer() {
+            setLineWrap(true);
+            setWrapStyleWord(true);
+            setOpaque(true);
+            setEditable(false);
+            setFocusable(false);
+            setBorder(BORDO);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                boolean hasFocus, int row, int column) {
+            setFont(table.getFont());
+            setText(value == null ? "" : value.toString());
+            // Stesso motivo a righe alternate / colore di selezione delle altre colonne
+            // (vedi Tabelle.ColoraTabellaSemplice), così la colonna non stona.
+            if (table.isCellSelected(row, column)) {
+                setBackground(SfondoSelezione(row));
+            } else if (table.isRowSelected(row)) {
+                setBackground(SfondoSelezione(row).brighter());
+            } else {
+                setBackground(SfondoRigaAlternata(row));
+            }
+            setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
+            return this;
+        }
+    }
+
     public static class OptionEntry {
     public final String value;
     public boolean selected;

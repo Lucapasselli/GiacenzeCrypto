@@ -411,7 +411,6 @@ private static final long serialVersionUID = 3L;
                 return;
             }
             boolean sel = Opzioni_GruppoWallet_Tabella.getSelectedRow() >= 0;
-            Opzioni_GruppoWallet_Bottone_RiferimentoEstero.setEnabled(sel);
             Opzioni_GruppoWallet_Bottone_Periodi.setEnabled(sel);
             Opzioni_GruppoWallet_AggiornaInfoGruppo();
         });
@@ -824,9 +823,7 @@ private static final long serialVersionUID = 3L;
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
         Opzioni_GruppoWallet_Bottone_Rinomina = new javax.swing.JButton();
-        Opzioni_GruppoWallet_Bottone_RiferimentoEstero = new javax.swing.JButton();
         Opzioni_GruppoWallet_Bottone_Periodi = new javax.swing.JButton();
-        Opzioni_GruppoWallet_Bottone_AnagraficaExchange = new javax.swing.JButton();
         Opzioni_GruppoWallet_Bottone_RaggruppaExchange = new javax.swing.JButton();
         Opzioni_GruppoWallet_ScrollInfo = new javax.swing.JScrollPane();
         Opzioni_Emoney_Pannello = new javax.swing.JPanel();
@@ -4407,32 +4404,13 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        Opzioni_GruppoWallet_Bottone_RiferimentoEstero.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
-        Opzioni_GruppoWallet_Bottone_RiferimentoEstero.setText("Riferimento estero...");
-        Opzioni_GruppoWallet_Bottone_RiferimentoEstero.setToolTipText("Stato estero e identificativo fiscale del gruppo wallet selezionato (quadro W/RW)");
-        Opzioni_GruppoWallet_Bottone_RiferimentoEstero.setEnabled(false);
-        Opzioni_GruppoWallet_Bottone_RiferimentoEstero.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Opzioni_GruppoWallet_Bottone_RiferimentoEsteroActionPerformed(evt);
-            }
-        });
-
         Opzioni_GruppoWallet_Bottone_Periodi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
-        Opzioni_GruppoWallet_Bottone_Periodi.setText("Periodi di detenzione...");
-        Opzioni_GruppoWallet_Bottone_Periodi.setToolTipText("Periodi di detenzione (righi CRYPTO / FIAT) del gruppo wallet selezionato");
+        Opzioni_GruppoWallet_Bottone_Periodi.setText("Periodi di detenzione e dati fiscali...");
+        Opzioni_GruppoWallet_Bottone_Periodi.setToolTipText("Periodi di detenzione (righi CRYPTO / FIAT) del gruppo selezionato, con Stato estero e identificativo fiscale sui righi FIAT");
         Opzioni_GruppoWallet_Bottone_Periodi.setEnabled(false);
         Opzioni_GruppoWallet_Bottone_Periodi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_GruppoWallet_Bottone_PeriodiActionPerformed(evt);
-            }
-        });
-
-        Opzioni_GruppoWallet_Bottone_AnagraficaExchange.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
-        Opzioni_GruppoWallet_Bottone_AnagraficaExchange.setText("Anagrafica exchange...");
-        Opzioni_GruppoWallet_Bottone_AnagraficaExchange.setToolTipText("Stato estero e identificativo fiscale degli exchange (condivisi tra i gruppi)");
-        Opzioni_GruppoWallet_Bottone_AnagraficaExchange.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Opzioni_GruppoWallet_Bottone_AnagraficaExchangeActionPerformed(evt);
             }
         });
 
@@ -4460,11 +4438,7 @@ private static final long serialVersionUID = 3L;
                     .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
                         .addComponent(Opzioni_GruppoWallet_Bottone_Rinomina, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(Opzioni_GruppoWallet_Bottone_RiferimentoEstero)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Opzioni_GruppoWallet_Bottone_Periodi)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Opzioni_GruppoWallet_Bottone_AnagraficaExchange)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Opzioni_GruppoWallet_Bottone_RaggruppaExchange)
                         .addGap(0, 0, Short.MAX_VALUE))))
@@ -4480,9 +4454,7 @@ private static final long serialVersionUID = 3L;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_GruppoWallet_Bottone_Rinomina, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Opzioni_GruppoWallet_Bottone_RiferimentoEstero, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_GruppoWallet_Bottone_Periodi, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Opzioni_GruppoWallet_Bottone_AnagraficaExchange, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_GruppoWallet_Bottone_RaggruppaExchange, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(20, 20, 20))
         );
@@ -8028,8 +8000,9 @@ private void SettaIcone(){
         Opzioni_GruppoWallet_InfoTabellaFiscali = Opzioni_GruppoWallet_NuovaTabellaInfo(
                 new String[]{"Campo", "Valore"});
         Opzioni_GruppoWallet_InfoTabellaPeriodi = Opzioni_GruppoWallet_NuovaTabellaInfo(
-                new String[]{"Tipo", "Progr.", "Data inizio", "Data fine", "Val. iniziale", "Val. finale",
-                    "Calcolo iniziale", "Calcolo finale", "Bollo", "Origine"});
+                new String[]{"Tipo", "Progr.", "Data inizio", "Data fine",
+                    "Calcolo iniziale", "Calcolo finale", "Stato estero", "Ident. fiscale",
+                    "Ident. ISEE", "Bollo", "Origine"});
 
         javax.swing.JPanel affiancate = new javax.swing.JPanel(new java.awt.GridLayout(1, 2, 12, 0));
         affiancate.add(Opzioni_GruppoWallet_RiquadroInfo("Exchange / wallet del gruppo", Opzioni_GruppoWallet_InfoTabellaWallet, 170));
@@ -11357,13 +11330,6 @@ if (result.isAction("delete-all")) {
         return v == null ? null : v.toString().split("\\(")[0].trim();
     }
 
-    private void Opzioni_GruppoWallet_Bottone_RiferimentoEsteroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_Bottone_RiferimentoEsteroActionPerformed
-        String gruppo = Opzioni_GruppoWallet_GruppoSelezionato();
-        if (gruppo != null && !gruppo.isBlank()) {
-            new GUI_RiferimentoEsteroGruppo(gruppo).setVisible(true);
-        }
-    }//GEN-LAST:event_Opzioni_GruppoWallet_Bottone_RiferimentoEsteroActionPerformed
-
     private void Opzioni_GruppoWallet_Bottone_PeriodiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_Bottone_PeriodiActionPerformed
         String gruppo = Opzioni_GruppoWallet_GruppoSelezionato();
         if (gruppo != null && !gruppo.isBlank()) {
@@ -11376,10 +11342,6 @@ if (result.isAction("delete-all")) {
             }
         }
     }//GEN-LAST:event_Opzioni_GruppoWallet_Bottone_PeriodiActionPerformed
-
-    private void Opzioni_GruppoWallet_Bottone_AnagraficaExchangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_Bottone_AnagraficaExchangeActionPerformed
-        new GUI_AnagraficaExchange().setVisible(true);
-    }//GEN-LAST:event_Opzioni_GruppoWallet_Bottone_AnagraficaExchangeActionPerformed
 
     private void Opzioni_GruppoWallet_Bottone_RaggruppaExchangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_Bottone_RaggruppaExchangeActionPerformed
         Opzioni_GruppoWallet_RaggruppaExchangeNoti();
@@ -18374,10 +18336,8 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JButton Opzioni_Export_Tatax_Bottone;
     private javax.swing.JComboBox<String> Opzioni_Export_Wallets_Combobox;
     private javax.swing.JPanel Opzioni_FiatWallet_Pannello;
-    private javax.swing.JButton Opzioni_GruppoWallet_Bottone_AnagraficaExchange;
     private javax.swing.JButton Opzioni_GruppoWallet_Bottone_RaggruppaExchange;
     private javax.swing.JButton Opzioni_GruppoWallet_Bottone_Periodi;
-    private javax.swing.JButton Opzioni_GruppoWallet_Bottone_RiferimentoEstero;
     private javax.swing.JButton Opzioni_GruppoWallet_Bottone_Rinomina;
     private javax.swing.JCheckBox Opzioni_GruppoWallet_CheckBox_PlusManuali;
     private javax.swing.JCheckBox Opzioni_GruppoWallet_CheckBox_PlusXWallet;

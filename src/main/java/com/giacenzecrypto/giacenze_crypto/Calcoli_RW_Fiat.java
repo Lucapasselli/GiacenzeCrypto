@@ -34,8 +34,8 @@ import java.util.TreeSet;
  * <ul>
  *   <li><b>F1</b> {@link #saldiFiatPerValuta} / {@link #gambeFiatGiorno} / {@link #haMovimentiFiat} :
  *       saldo FIAT per valuta di un gruppo a una certa data e gambe FIAT di una giornata.</li>
- *   <li><b>F2</b> {@link #intervalliFiat} : i tratti di detenzione dell'anno, tagliati da
- *       {@code EXCHANGE_PERIODO} e dai periodi {@code GRUPPO_PERIODO_RW} FIAT.</li>
+ *   <li><b>F2</b> {@link #intervalliFiat} : i tratti di detenzione dell'anno, tagliati dai periodi
+ *       {@code GRUPPO_PERIODO_RW} di tipo FIAT (che dal 2026-09-09 portano anche i dati fiscali).</li>
  *   <li><b>F3</b> {@link #generaRighiFiat} : un rigo per tratto con valore ≠ 0.</li>
  * </ul>
  *
@@ -213,7 +213,7 @@ public final class Calcoli_RW_Fiat {
     }
 
     // =======================================================================
-    // F2 : intervalli di detenzione FIAT (tagli da EXCHANGE_PERIODO + GRUPPO_PERIODO_RW)
+    // F2 : intervalli di detenzione FIAT (tagli dai soli periodi FIAT di GRUPPO_PERIODO_RW)
     // =======================================================================
 
     /** Colonne di una riga di {@link #intervalliFiat}. */
@@ -226,24 +226,22 @@ public final class Calcoli_RW_Fiat {
     /**
      * Spezza l'anno di riferimento nei tratti di detenzione FIAT di un gruppo wallet.
      *
-     * <p>Le <b>date di taglio</b> interne all'anno vengono da due sorgenti :
-     * <ul>
-     *   <li>i periodi {@code EXCHANGE_PERIODO} dell'exchange di riferimento — <b>solo</b> se il
-     *       gruppo è in modalità {@code EXCHANGE} (in modalità {@code STATO} lo Stato è fisso) ;</li>
-     *   <li>i periodi {@code GRUPPO_PERIODO_RW} di tipo {@code FIAT} del gruppo.</li>
-     * </ul>
-     * Ogni {@code DataInizio} dentro l'anno apre un tratto ; ogni {@code DataFine} ne chiude uno. Un
-     * periodo FIAT con <b>entrambe</b> le date vuote copre tutto l'anno e porta le sue modalità /
-     * valori manuali agli estremi (1° gennaio e 31 dicembre) ; i periodi datati vincono sulle loro
-     * finestre.</p>
+     * <p>Le <b>date di taglio</b> interne all'anno vengono da una sorgente sola : le finestre
+     * <i>effettive</i> dei periodi {@code GRUPPO_PERIODO_RW} di tipo {@code FIAT} del gruppo (vedi
+     * {@link Principale_GruppiWalletRW#finestreEffettive}, che deduce l'inizio mancante dalla fine del
+     * periodo precedente). Fino al 2026-09-08 c'era una seconda sorgente — i periodi fiscali
+     * dell'exchange di riferimento — e il tratto nasceva dall'incrocio delle due ; ora un cambio di
+     * Stato estero <i>è</i> un periodo FIAT in più, quindi il taglio è già qui.</p>
      *
-     * <p>Per ogni tratto : {@code IV_STATO} = {@link Principale_GruppiWalletRW#statoEsteroEffettivo}
-     * alla data di inizio ; {@code IV_MOD_INIZIALE} / {@code IV_VAL_INIZIALE_MAN} presi dal periodo
-     * FIAT il cui {@code DataInizio} coincide con l'inizio del tratto (confine definito dall'utente),
-     * assenti sui tagli da cambio Stato o al 1° gennaio (F3 userà la giacenza pura) ;
-     * {@code IV_MOD_FINALE} / {@code IV_VAL_FINALE_MAN} idem dal periodo il cui {@code DataFine}
-     * coincide con la fine del tratto. Un periodo manuale spezzato da un cambio Stato mantiene le
-     * modalità iniziali sul primo tratto e quelle finali sull'ultimo, col taglio interno "nudo".</p>
+     * <p>Ogni inizio di finestra dentro l'anno apre un tratto ; ogni fine ne chiude uno. Per ogni
+     * tratto : {@code IV_STATO} è lo Stato estero del periodo che lo copre ({@code ""} se nessuno lo
+     * copre — un gruppo senza righi FIAT non ha Stato, ed è un caso legittimo) ;
+     * {@code IV_MOD_INIZIALE} / {@code IV_VAL_INIZIALE_MAN} vengono dal periodo il cui inizio effettivo
+     * coincide con l'inizio del tratto (confine definito dall'utente), e al 1° gennaio dal periodo che
+     * parte "dal primo movimento" ; {@code IV_MOD_FINALE} / {@code IV_VAL_FINALE_MAN} idem dal periodo
+     * la cui fine coincide con la fine del tratto, e al 31 dicembre dal periodo ancora aperto. Un
+     * periodo spezzato più avanti mantiene le modalità iniziali sul primo tratto e quelle finali
+     * sull'ultimo, col taglio interno "nudo".</p>
      *
      * <p><b>Non</b> guarda i movimenti : senza tagli torna un solo tratto sull'intero anno.</p>
      *
@@ -264,28 +262,17 @@ public final class Calcoli_RW_Fiat {
             return out;
         }
 
-        List<String[]> periodiFiat = new ArrayList<>();
-        for (String[] r : Principale_GruppiWalletRW.caricaPeriodi(gruppo)) {
-            if (Principale_GruppiWalletRW.TIPO_FIAT.equals(trim(r[Principale_GruppiWalletRW.COL_TIPO]))) {
-                periodiFiat.add(r);
-            }
-        }
-
-        List<String[]> periodiExchange = new ArrayList<>();
-        String[] rif = DatabaseH2.Pers_GruppoRiferimento_Leggi(gruppo);
-        if (rif != null && Principale_GruppiWalletRW.RIFERIMENTO_EXCHANGE.equals(rif[1])
-                && rif[4] != null && !rif[4].isBlank()) {
-            periodiExchange = Principale_PeriodiExchange.caricaPeriodi(rif[4].trim());
-        }
+        List<Principale_GruppiWalletRW.Finestra> finestre = Principale_GruppiWalletRW.finestreEffettive(
+                Principale_GruppiWalletRW.caricaPeriodi(gruppo), Principale_GruppiWalletRW.TIPO_FIAT);
 
         TreeSet<LocalDate> tagli = new TreeSet<>();
-        for (String[] r : periodiFiat) {
-            aggiungiTagli(tagli, r[Principale_GruppiWalletRW.COL_DATA_INIZIO],
-                    r[Principale_GruppiWalletRW.COL_DATA_FINE], annoInizio, annoFine);
-        }
-        for (String[] r : periodiExchange) {
-            aggiungiTagli(tagli, r[Principale_PeriodiExchange.COL_DATA_INIZIO],
-                    r[Principale_PeriodiExchange.COL_DATA_FINE], annoInizio, annoFine);
+        for (Principale_GruppiWalletRW.Finestra f : finestre) {
+            if (f.inizio != null && f.inizio.isAfter(annoInizio) && !f.inizio.isAfter(annoFine)) {
+                tagli.add(f.inizio);
+            }
+            if (f.fine != null && !f.fine.isBefore(annoInizio) && f.fine.isBefore(annoFine)) {
+                tagli.add(f.fine.plusDays(1));
+            }
         }
 
         List<LocalDate> inizi = new ArrayList<>();
@@ -299,17 +286,19 @@ public final class Calcoli_RW_Fiat {
             Arrays.fill(iv, "");
             iv[IV_DATA_INIZIO] = di.toString();
             iv[IV_DATA_FINE] = df.toString();
-            iv[IV_STATO] = Principale_GruppiWalletRW.statoEsteroEffettivo(gruppo, di);
 
-            String[] pIni = periodoConBordo(periodiFiat, Principale_GruppiWalletRW.COL_DATA_INIZIO,
-                    di, di.equals(annoInizio));
+            Principale_GruppiWalletRW.Finestra copre = finestraCheCopre(finestre, di);
+            if (copre != null) {
+                iv[IV_STATO] = trim(copre.riga[Principale_GruppiWalletRW.COL_STATO_ESTERO]);
+            }
+
+            String[] pIni = periodoConInizio(finestre, di, di.equals(annoInizio));
             if (pIni != null) {
                 iv[IV_MOD_INIZIALE] = trim(pIni[Principale_GruppiWalletRW.COL_MOD_INIZIALE]);
                 iv[IV_VAL_INIZIALE_MAN] = trim(pIni[Principale_GruppiWalletRW.COL_VAL_INIZIALE]);
                 iv[IV_NOTA_INIZIALE] = trim(pIni[Principale_GruppiWalletRW.COL_NOTA_INIZIALE]);
             }
-            String[] pFin = periodoConBordo(periodiFiat, Principale_GruppiWalletRW.COL_DATA_FINE,
-                    df, df.equals(annoFine));
+            String[] pFin = periodoConFine(finestre, df, df.equals(annoFine));
             if (pFin != null) {
                 iv[IV_MOD_FINALE] = trim(pFin[Principale_GruppiWalletRW.COL_MOD_FINALE]);
                 iv[IV_VAL_FINALE_MAN] = trim(pFin[Principale_GruppiWalletRW.COL_VAL_FINALE]);
@@ -320,40 +309,63 @@ public final class Calcoli_RW_Fiat {
         return out;
     }
 
-    /**
-     * Aggiunge a {@code tagli} l'inizio di un periodo (se cade dentro {@code (annoInizio, annoFine]})
-     * e il giorno successivo alla sua fine (se cade dentro {@code [annoInizio, annoFine)}).
-     */
-    private static void aggiungiTagli(TreeSet<LocalDate> tagli, String inizioStr, String fineStr,
-            LocalDate annoInizio, LocalDate annoFine) {
-        LocalDate di = parseData(inizioStr);
-        if (di != null && di.isAfter(annoInizio) && !di.isAfter(annoFine)) {
-            tagli.add(di);
+    /** La prima finestra che copre la data, o {@code null}. */
+    private static Principale_GruppiWalletRW.Finestra finestraCheCopre(
+            List<Principale_GruppiWalletRW.Finestra> finestre, LocalDate data) {
+        for (Principale_GruppiWalletRW.Finestra f : finestre) {
+            if (f.copre(data)) {
+                return f;
+            }
         }
-        LocalDate df = parseData(fineStr);
-        if (df != null && !df.isBefore(annoInizio) && df.isBefore(annoFine)) {
-            tagli.add(df.plusDays(1));
-        }
+        return null;
     }
 
     /**
-     * Il periodo FIAT il cui bordo (inizio o fine, secondo {@code col}) coincide con {@code data} —
-     * cioè un confine definito dall'utente. Se {@code ammettiAperto} e nessuno coincide, ripiega sul
-     * periodo FIAT interamente aperto (entrambe le date vuote), che porta modalità / valori manuali
-     * agli estremi dell'anno.
+     * Il periodo FIAT il cui inizio effettivo coincide con {@code data}, cioè un confine definito
+     * dall'utente. Se {@code ammettiAperto} (siamo al 1° gennaio) e nessuno coincide, ripiega sul
+     * periodo che parte "dal primo movimento" (inizio effettivo nullo) <b>e che copre quella data</b>,
+     * il quale porta modalità e valore manuale all'inizio dell'anno. Un periodo che il 1° gennaio è
+     * semplicemente <i>in corso</i> non ripiega : la sua modalità descrive come valutare l'<i>apertura</i>
+     * del periodo, e applicarla a metà cambierebbe la valutazione al confine d'anno.
+     *
+     * <p>⚠️ Il {@code copre(data)} sul ripiego non è ridondante : un periodo con inizio indefinito ma
+     * <b>già chiuso</b> (la riga "vecchia entità legale", chiusa il giorno prima del cambio di Stato
+     * estero) resta il primo della lista ordinata, e senza quel controllo porterebbe le sue modalità e i
+     * suoi valori manuali negli anni <i>successivi</i> alla propria chiusura.</p>
      */
-    private static String[] periodoConBordo(List<String[]> periodiFiat, int col, LocalDate data, boolean ammettiAperto) {
-        for (String[] r : periodiFiat) {
-            LocalDate bordo = parseData(r[col]);
-            if (bordo != null && bordo.equals(data)) {
-                return r;
+    private static String[] periodoConInizio(List<Principale_GruppiWalletRW.Finestra> finestre,
+            LocalDate data, boolean ammettiAperto) {
+        for (Principale_GruppiWalletRW.Finestra f : finestre) {
+            if (f.inizio != null && f.inizio.equals(data)) {
+                return f.riga;
             }
         }
         if (ammettiAperto) {
-            for (String[] r : periodiFiat) {
-                if (parseData(r[Principale_GruppiWalletRW.COL_DATA_INIZIO]) == null
-                        && parseData(r[Principale_GruppiWalletRW.COL_DATA_FINE]) == null) {
-                    return r;
+            for (Principale_GruppiWalletRW.Finestra f : finestre) {
+                if (f.inizio == null && f.copre(data)) {
+                    return f.riga;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Simmetrico di {@link #periodoConInizio} sulla fine del tratto ; il ripiego è il periodo ancora
+     * aperto <b>che copre quella data</b> (stessa avvertenza : un periodo aperto ma cominciato dopo non
+     * deve portare la sua modalità alla fine di un anno precedente).
+     */
+    private static String[] periodoConFine(List<Principale_GruppiWalletRW.Finestra> finestre,
+            LocalDate data, boolean ammettiAperto) {
+        for (Principale_GruppiWalletRW.Finestra f : finestre) {
+            if (f.fine != null && f.fine.equals(data)) {
+                return f.riga;
+            }
+        }
+        if (ammettiAperto) {
+            for (Principale_GruppiWalletRW.Finestra f : finestre) {
+                if (f.fine == null && f.copre(data)) {
+                    return f.riga;
                 }
             }
         }
@@ -474,9 +486,9 @@ public final class Calcoli_RW_Fiat {
      *
      * <p>Valore iniziale del tratto : il valore manuale del periodo FIAT se impostato ; altrimenti,
      * su un confine definito dall'utente, la modalità di calcolo (residuo + primo apporto / somma
-     * apporti della giornata) ; altrimenti la <b>giacenza pura</b> a inizio giornata (residuo). Valore
-     * finale : simmetrico (giacenza pura a fine giornata, oppure {@code Sfin + ultima uscita /
-     * + somma uscite}). Il primo tratto parte dalla data del primo movimento del gruppo se questo
+     * apporti della giornata) ; altrimenti — ed è il default {@code SOLO_RESIDUO} — la giacenza a
+     * inizio giornata. Valore finale : simmetrico (giacenza a fine giornata, oppure {@code Sfin +
+     * ultima uscita / + somma uscite}). Il primo tratto parte dalla data del primo movimento del gruppo se questo
      * cade nell'anno (apertura infra-anno). Un valore negativo è portato a zero con un avviso ; un
      * tratto con valore iniziale e finale <i>genuinamente</i> nulli non produce rigo.</p>
      *
@@ -563,8 +575,8 @@ public final class Calcoli_RW_Fiat {
         }
         BigDecimal residuo = saldoEUR(gambe, di.toString(), false, di.toString(), cambio, avvisi);
         String mod = trim(iv[IV_MOD_INIZIALE]);
-        if (mod.isEmpty()) {
-            return residuo; // giacenza pura
+        if (Principale_GruppiWalletRW.soloResiduo(mod)) {
+            return residuo; // giacenza a inizio giornata, e basta
         }
         return residuo.add(apportiGiornoEUR(gambe, di.toString(), mod, cambio, avvisi));
     }
@@ -577,8 +589,8 @@ public final class Calcoli_RW_Fiat {
         }
         BigDecimal sfin = saldoEUR(gambe, df.toString(), true, df.toString(), cambio, avvisi);
         String mod = trim(iv[IV_MOD_FINALE]);
-        if (mod.isEmpty()) {
-            return sfin; // giacenza pura
+        if (Principale_GruppiWalletRW.soloResiduo(mod)) {
+            return sfin; // giacenza a fine giornata, e basta
         }
         return sfin.add(usciteGiornoEUR(gambe, df.toString(), mod, cambio, avvisi));
     }

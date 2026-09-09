@@ -57,16 +57,31 @@ class Calcoli_RW_FiatTest {
         try (Statement st = DatabaseH2.connectionPersonale.createStatement()) {
             st.execute("DELETE FROM WALLETGRUPPO");
             st.execute("DELETE FROM GRUPPO_PERIODO_RW");
-            st.execute("DELETE FROM GRUPPO_RIFERIMENTO_ESTERO");
-            st.execute("DELETE FROM EXCHANGE_PERIODO");
         }
         progressivo = 0;
     }
 
-    /** riga GUI di GRUPPO_PERIODO_RW a 11 colonne, tipo FIAT. */
+    /** riga GUI di GRUPPO_PERIODO_RW, tipo FIAT, senza dati fiscali. */
     private static String[] periodoFiat(String prog, String di, String df,
             String valIni, String valFin, String modIni, String modFin) {
-        return new String[] {"FIAT", prog, di, df, valIni, "", valFin, "", modIni, modFin, ""};
+        return periodoFiat(prog, di, df, valIni, valFin, modIni, modFin, "");
+    }
+
+    /** riga GUI completa di GRUPPO_PERIODO_RW, tipo FIAT, con lo Stato estero del periodo. */
+    private static String[] periodoFiat(String prog, String di, String df,
+            String valIni, String valFin, String modIni, String modFin, String statoEstero) {
+        String[] r = new String[Principale_GruppiWalletRW.COLONNE_PERIODO];
+        java.util.Arrays.fill(r, "");
+        r[Principale_GruppiWalletRW.COL_TIPO] = "FIAT";
+        r[Principale_GruppiWalletRW.COL_PROGRESSIVO] = prog;
+        r[Principale_GruppiWalletRW.COL_DATA_INIZIO] = di;
+        r[Principale_GruppiWalletRW.COL_DATA_FINE] = df;
+        r[Principale_GruppiWalletRW.COL_VAL_INIZIALE] = valIni;
+        r[Principale_GruppiWalletRW.COL_VAL_FINALE] = valFin;
+        r[Principale_GruppiWalletRW.COL_MOD_INIZIALE] = modIni;
+        r[Principale_GruppiWalletRW.COL_MOD_FINALE] = modFin;
+        r[Principale_GruppiWalletRW.COL_STATO_ESTERO] = statoEstero;
+        return r;
     }
 
     private static String iv(List<String[]> intervalli, int riga, int col) {
@@ -274,21 +289,21 @@ class Calcoli_RW_FiatTest {
     }
 
     @Test
-    void intervalliFiat_modalitaStato_statoFissoTuttoLAnno() {
-        DatabaseH2.Pers_GruppoRiferimento_Scrivi("Wallet 01",
-                Principale_GruppiWalletRW.RIFERIMENTO_STATO, "092", "LU123", null);
+    void intervalliFiat_unicoPeriodoSenzaDate_statoFissoTuttoLAnno() {
+        Principale_GruppiWalletRW.salvaPeriodi("Wallet 01", Arrays.<String[]>asList(
+                periodoFiat("1", "", "", "", "", "", "", "092")));
         List<String[]> iv = Calcoli_RW_Fiat.intervalliFiat("Wallet 01", "2024");
         assertEquals(1, iv.size());
         assertEquals("092", iv(iv, 0, Calcoli_RW_Fiat.IV_STATO));
     }
 
     @Test
-    void intervalliFiat_cambioStatoExchange_spezzaInDueConLoStatoGiusto() {
-        DatabaseH2.Pers_GruppoRiferimento_Scrivi("Wallet 01",
-                Principale_GruppiWalletRW.RIFERIMENTO_EXCHANGE, null, null, "kraken");
-        Principale_PeriodiExchange.salvaPeriodi("kraken", Arrays.asList(
-                new String[] {"1", "", "2024-05-31", "Payward Ltd", "040", "", "", ""},
-                new String[] {"2", "2024-06-01", "", "Payward Europe", "092", "", "", ""}));
+    void intervalliFiat_cambioStatoEstero_spezzaInDueConLoStatoGiusto() {
+        // la coppia che nasce da un cambio di Stato estero : una riga chiusa il giorno prima e una
+        // aperta da lì in avanti. La prima non ha data di inizio -> parte dal primo movimento.
+        Principale_GruppiWalletRW.salvaPeriodi("Wallet 01", Arrays.<String[]>asList(
+                periodoFiat("1", "", "2024-05-31", "", "", "", "", "040"),
+                periodoFiat("2", "2024-06-01", "", "", "", "", "", "092")));
 
         List<String[]> iv = Calcoli_RW_Fiat.intervalliFiat("Wallet 01", "2024");
         assertEquals(2, iv.size());
@@ -298,9 +313,24 @@ class Calcoli_RW_FiatTest {
         assertEquals("2024-06-01", iv(iv, 1, Calcoli_RW_Fiat.IV_DATA_INIZIO));
         assertEquals("2024-12-31", iv(iv, 1, Calcoli_RW_Fiat.IV_DATA_FINE));
         assertEquals("092", iv(iv, 1, Calcoli_RW_Fiat.IV_STATO));
-        // nessun confine utente : niente modalità
+        // i due periodi non hanno modalità impostate
         assertEquals("", iv(iv, 0, Calcoli_RW_Fiat.IV_MOD_FINALE));
         assertEquals("", iv(iv, 1, Calcoli_RW_Fiat.IV_MOD_INIZIALE));
+    }
+
+    @Test
+    void intervalliFiat_secondoPeriodoSenzaDate_partOndaFineDelPrecedentePiuUno() {
+        // riga 2 senza NESSUNA data : l'inizio si deduce dalla fine della riga 1 (+1 giorno)
+        Principale_GruppiWalletRW.salvaPeriodi("Wallet 01", Arrays.<String[]>asList(
+                periodoFiat("1", "", "2024-05-31", "", "", "", "", "040"),
+                periodoFiat("2", "", "", "", "", "", "", "092")));
+
+        List<String[]> iv = Calcoli_RW_Fiat.intervalliFiat("Wallet 01", "2024");
+        assertEquals(2, iv.size());
+        assertEquals("2024-05-31", iv(iv, 0, Calcoli_RW_Fiat.IV_DATA_FINE));
+        assertEquals("040", iv(iv, 0, Calcoli_RW_Fiat.IV_STATO));
+        assertEquals("2024-06-01", iv(iv, 1, Calcoli_RW_Fiat.IV_DATA_INIZIO));
+        assertEquals("092", iv(iv, 1, Calcoli_RW_Fiat.IV_STATO));
     }
 
     @Test
@@ -325,28 +355,28 @@ class Calcoli_RW_FiatTest {
     }
 
     @Test
-    void intervalliFiat_periodoManualeSpezzatoDaCambioStato_modIniSulPrimoModFinSullUltimo() {
-        DatabaseH2.Pers_GruppoRiferimento_Scrivi("Wallet 06",
-                Principale_GruppiWalletRW.RIFERIMENTO_EXCHANGE, null, null, "kraken");
-        Principale_PeriodiExchange.salvaPeriodi("kraken", Arrays.asList(
-                new String[] {"1", "", "2024-05-31", "A", "040", "", "", ""},
-                new String[] {"2", "2024-06-01", "", "B", "092", "", "", ""}));
+    void intervalliFiat_trattiScopertiFraDuePeriodi_senzaStatoESenzaModalita() {
+        // buco volontario fra i due periodi (conto chiuso e riaperto) : il tratto in mezzo esiste
+        // lo stesso — l'anno va comunque coperto — ma non ha né Stato né modalità.
         Principale_GruppiWalletRW.salvaPeriodi("Wallet 06", Arrays.<String[]>asList(
-                periodoFiat("1", "2024-03-01", "2024-08-31", "", "",
+                periodoFiat("1", "2024-03-01", "2024-05-31", "", "",
                         Principale_GruppiWalletRW.MOD_INIZIALE_SOMMA_APPORTI,
-                        Principale_GruppiWalletRW.MOD_FINALE_SOMMA_USCITE)));
+                        Principale_GruppiWalletRW.MOD_FINALE_SOMMA_USCITE, "040"),
+                periodoFiat("2", "2024-09-01", "", "", "", "", "", "092")));
 
         List<String[]> iv = Calcoli_RW_Fiat.intervalliFiat("Wallet 06", "2024");
-        // tagli: 2024-03-01 (periodo FIAT), 2024-06-01 (cambio stato), 2024-09-01 (fine periodo FIAT)
+        // tagli : 2024-03-01, 2024-06-01 (fine del primo + 1), 2024-09-01
         assertEquals(4, iv.size());
+        assertEquals("", iv(iv, 0, Calcoli_RW_Fiat.IV_STATO), "prima del primo periodo : nessuno Stato");
         assertEquals("2024-03-01", iv(iv, 1, Calcoli_RW_Fiat.IV_DATA_INIZIO));
+        assertEquals("040", iv(iv, 1, Calcoli_RW_Fiat.IV_STATO));
         assertEquals(Principale_GruppiWalletRW.MOD_INIZIALE_SOMMA_APPORTI, iv(iv, 1, Calcoli_RW_Fiat.IV_MOD_INIZIALE));
-        assertEquals("", iv(iv, 1, Calcoli_RW_Fiat.IV_MOD_FINALE), "il taglio interno non è un confine utente");
+        assertEquals(Principale_GruppiWalletRW.MOD_FINALE_SOMMA_USCITE, iv(iv, 1, Calcoli_RW_Fiat.IV_MOD_FINALE));
         assertEquals("2024-06-01", iv(iv, 2, Calcoli_RW_Fiat.IV_DATA_INIZIO));
-        assertEquals("", iv(iv, 2, Calcoli_RW_Fiat.IV_MOD_INIZIALE), "il taglio interno non è un confine utente");
-        assertEquals("2024-08-31", iv(iv, 2, Calcoli_RW_Fiat.IV_DATA_FINE));
-        assertEquals(Principale_GruppiWalletRW.MOD_FINALE_SOMMA_USCITE, iv(iv, 2, Calcoli_RW_Fiat.IV_MOD_FINALE));
+        assertEquals("", iv(iv, 2, Calcoli_RW_Fiat.IV_STATO), "tratto scoperto");
+        assertEquals("", iv(iv, 2, Calcoli_RW_Fiat.IV_MOD_INIZIALE));
         assertEquals("2024-09-01", iv(iv, 3, Calcoli_RW_Fiat.IV_DATA_INIZIO));
+        assertEquals("092", iv(iv, 3, Calcoli_RW_Fiat.IV_STATO));
     }
 
     @Test
@@ -361,6 +391,25 @@ class Calcoli_RW_FiatTest {
         assertEquals(Principale_GruppiWalletRW.MOD_INIZIALE_SOMMA_APPORTI, iv(iv, 0, Calcoli_RW_Fiat.IV_MOD_INIZIALE));
         assertEquals("100.00", iv(iv, 0, Calcoli_RW_Fiat.IV_VAL_INIZIALE_MAN));
         assertEquals(Principale_GruppiWalletRW.MOD_FINALE_ULTIMA_USCITA, iv(iv, 0, Calcoli_RW_Fiat.IV_MOD_FINALE));
+    }
+
+    @Test
+    void intervalliFiat_annoSuccessivoAlCambioStato_prendeLoStatoELeModalitaDelPeriodoInCorso() {
+        // La coppia da cambio di Stato estero, guardata l'anno DOPO : nessun taglio cade nell'anno, un
+        // solo tratto. Il periodo chiuso (inizio indefinito, primo nell'ordinamento) non deve portare
+        // né il proprio Stato né la propria modalità iniziale a un anno in cui era già finito.
+        Principale_GruppiWalletRW.salvaPeriodi("Wallet 06", Arrays.<String[]>asList(
+                periodoFiat("1", "", "2024-05-31", "1500.00", "",
+                        Principale_GruppiWalletRW.MOD_INIZIALE_SOMMA_APPORTI, "", "040"),
+                periodoFiat("2", "2024-06-01", "", "", "", "", "", "092")));
+
+        List<String[]> iv = Calcoli_RW_Fiat.intervalliFiat("Wallet 06", "2025");
+        assertEquals(1, iv.size());
+        assertEquals("092", iv(iv, 0, Calcoli_RW_Fiat.IV_STATO));
+        assertEquals("", iv(iv, 0, Calcoli_RW_Fiat.IV_MOD_INIZIALE),
+                "la modalità del periodo già chiuso non deve arrivare all'anno successivo");
+        assertEquals("", iv(iv, 0, Calcoli_RW_Fiat.IV_VAL_INIZIALE_MAN),
+                "il valore manuale del periodo già chiuso non deve arrivare all'anno successivo");
     }
 
     @Test
@@ -427,13 +476,11 @@ class Calcoli_RW_FiatTest {
     }
 
     @Test
-    void generaRighiFiat_cambioStatoExchange_dueRighiConStatoDiverso() {
+    void generaRighiFiat_cambioStatoEstero_dueRighiConStatoDiverso() {
         DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
-        DatabaseH2.Pers_GruppoRiferimento_Scrivi("Wallet 01",
-                Principale_GruppiWalletRW.RIFERIMENTO_EXCHANGE, null, null, "kraken");
-        Principale_PeriodiExchange.salvaPeriodi("kraken", Arrays.asList(
-                new String[] {"1", "", "2024-05-31", "Payward Ltd", "040", "", "", ""},
-                new String[] {"2", "2024-06-01", "", "Payward Europe", "092", "", "", ""}));
+        Principale_GruppiWalletRW.salvaPeriodi("Wallet 01", Arrays.<String[]>asList(
+                periodoFiat("1", "", "2024-05-31", "", "", "", "", "040"),
+                periodoFiat("2", "2024-06-01", "", "", "", "", "", "092")));
         mov("2023-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "2000");
 
         Calcoli_RW_Fiat.generaRighiFiat("2024", SOLO_EUR);

@@ -18,22 +18,27 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Logica operativa della configurazione del quadro W/RW per i gruppi wallet:
- * riferimento estero del gruppo (stato / P.IVA o exchange) e periodi di detenzione
- * (righi CRYPTO / FIAT, valori campo 7-8 manuali, modalità di calcolo).
+ * Logica operativa dei <b>periodi di detenzione</b> di un gruppo wallet per il quadro W/RW : righi
+ * CRYPTO / FIAT con date, modalità di calcolo del valore agli estremi e — sui soli righi FIAT — i
+ * dati fiscali dell'intermediario (Stato estero, identificativo, note, fonte, alias ISEE).
  *
  * <p>Companion di {@code Principale} nello stile di {@link Principale_GiacenzeaData}:
  * metodi {@code public static}, nessun campo Swing, nessun riferimento a {@code Principale}.
- * Persistenza via {@code DatabaseH2.Pers_ExchangeAnagrafica_* / Pers_GruppoRiferimento_* /
- * Pers_GruppoPeriodoRW_*} (Fase 1).</p>
+ * Persistenza via {@code DatabaseH2.Pers_GruppoPeriodoRW_*}.</p>
  *
- * <p><b>Stato.</b> Il riferimento estero e i periodi CRYPTO non sono ancora letti da
- * {@code Calcoli_RW.AggiornaRWFR}. I periodi <b>FIAT</b> sono invece consumati da
- * {@link Calcoli_RW_Fiat} (parte FIAT del quadro W/RW, Fase 3). La validazione di
- * {@link #validaPeriodi(List)} è strutturale <i>più</i> semantica sulle
- * <b>sovrapposizioni</b> (errore bloccante : le finestre di detenzione dello stesso rigo non
- * possono accavallarsi) ; i <b>buchi</b> sono ammessi (conto chiuso e poi riaperto) e vengono
- * solo segnalati da {@link #avvisiPeriodi(List)}, senza bloccare il salvataggio.</p>
+ * <p><b>Una tabella sola (2026-09-09).</b> Fino al 2026-09-08 i dati fiscali stavano in due tabelle a
+ * parte — {@code EXCHANGE_ANAGRAFICA}/{@code EXCHANGE_PERIODO}, con {@code GRUPPO_RIFERIMENTO_ESTERO}
+ * a collegare il gruppo al suo exchange — e il tratto di detenzione nasceva dall'<i>incrocio</i> fra
+ * quei periodi e questi. Ora un cambio di Stato estero è semplicemente un periodo FIAT in più, come
+ * lo è un cambio di regime del bollo per i righi CRYPTO : il taglio è uno solo e viene da qui.
+ * Un gruppo senza righi FIAT non ha Stato estero, e va bene così.</p>
+ *
+ * <p><b>Stato.</b> I periodi CRYPTO non sono ancora letti da {@code Calcoli_RW.AggiornaRWFR} ; i
+ * periodi <b>FIAT</b> sono consumati da {@link Calcoli_RW_Fiat}. La validazione di
+ * {@link #validaPeriodi(List)} è strutturale <i>più</i> semantica sulle <b>sovrapposizioni</b>
+ * (errore bloccante : le finestre di detenzione dello stesso rigo non possono accavallarsi) ; i
+ * <b>buchi</b> sono ammessi (conto chiuso e poi riaperto) e vengono solo segnalati da
+ * {@link #avvisiPeriodi(List)}, senza bloccare il salvataggio.</p>
  */
 public class Principale_GruppiWalletRW {
 
@@ -45,46 +50,66 @@ public class Principale_GruppiWalletRW {
     public static final String TIPO_CRYPTO = "CRYPTO";
     public static final String TIPO_FIAT = "FIAT";
 
+    /**
+     * Valore agli estremi del periodo = <b>solo il residuo</b> : la giacenza a inizio giornata per il
+     * valore iniziale, quella a fine giornata per il valore finale. È il default, ed è anche ciò che
+     * significa una modalità <b>vuota</b> : le righe scritte prima che questo codice esistesse si
+     * comportano già così, quindi i motori accettano entrambi ({@link #soloResiduo(String)}) e la GUI
+     * scrive sempre il codice esplicito.
+     */
+    public static final String MOD_SOLO_RESIDUO = "SOLO_RESIDUO";
     public static final String MOD_INIZIALE_PRIMO_APPORTO = "PRIMO_APPORTO";
     public static final String MOD_INIZIALE_SOMMA_APPORTI = "SOMMA_APPORTI_GIORNO";
     public static final String MOD_FINALE_ULTIMA_USCITA = "ULTIMA_USCITA";
     public static final String MOD_FINALE_SOMMA_USCITE = "SOMMA_USCITE_GIORNO";
 
-    public static final String RIFERIMENTO_STATO = "STATO";
-    public static final String RIFERIMENTO_EXCHANGE = "EXCHANGE";
-
     /** Bollo pagato dall'intermediario/exchange nel singolo periodo. */
     public static final String BOLLO_SI = "SI";
     public static final String BOLLO_NO = "NO";
 
+    /**
+     * Lunghezza massima dell'identificativo di un operatore finanziario estero nel modulo FC.1 della
+     * DSU/ISEE ({@code E} + 15). Vale sia per l'identificativo fiscale sia per l'alias ISEE.
+     */
+    public static final int MAX_IDENT_ISEE = 15;
+
     /** Etichette leggibili per le combo della GUI, nell'ordine {codice, etichetta}. */
     public static final String[][] MODALITA_INIZIALE = {
-        {"", "(automatico / non impostato)"},
+        {MOD_SOLO_RESIDUO, "Solo residuo (giacenza a inizio giornata)"},
         {MOD_INIZIALE_PRIMO_APPORTO, "Primo apporto della giornata + residuo"},
         {MOD_INIZIALE_SOMMA_APPORTI, "Somma degli apporti della giornata + residuo"},
     };
     public static final String[][] MODALITA_FINALE = {
-        {"", "(automatico / non impostato)"},
+        {MOD_SOLO_RESIDUO, "Solo residuo (giacenza a fine giornata)"},
         {MOD_FINALE_ULTIMA_USCITA, "Ultima uscita della giornata + residuo"},
         {MOD_FINALE_SOMMA_USCITE, "Somma delle uscite della giornata + residuo"},
     };
 
-    private static final DateTimeFormatter ISO = DateTimeFormatter.ISO_LOCAL_DATE;
+    /** {@code true} se la modalità di calcolo vale "solo residuo" : il codice esplicito o il vuoto. */
+    public static boolean soloResiduo(String modalita) {
+        String m = trim(modalita);
+        return m.isEmpty() || MOD_SOLO_RESIDUO.equals(m);
+    }
 
-    // --- riferimento estero del gruppo -------------------------------------
+    private static final DateTimeFormatter ISO = DateTimeFormatter.ISO_LOCAL_DATE;
 
     /**
      * Riga della GUI "periodi" : {@code [TipoRigo, Progressivo, DataInizio, DataFine,
      * ValoreInizialeManuale, NotaValoreIniziale, ValoreFinaleManuale, NotaValoreFinale,
-     * ModalitaCalcoloIniziale, ModalitaCalcoloFinale, PagaBolloPeriodo, Origine, ChiaveDefault]} —
-     * 13 colonne, senza chiave sintetica né gruppo. {@link #COL_ORIGINE} / {@link #COL_CHIAVE_DEFAULT}
-     * sono in coda apposta : i motori RW leggono i periodi per indice ({@code COL_*}) e nessuno di
-     * quegli indici si è spostato.
+     * ModalitaCalcoloIniziale, ModalitaCalcoloFinale, PagaBolloPeriodo, Origine, ChiaveDefault,
+     * StatoEstero, IdentificativoFiscale, NoteFiscali, FonteFiscale, IdentificativoISEE]} —
+     * 18 colonne, senza chiave sintetica né gruppo. I motori RW leggono i periodi per indice
+     * ({@code COL_*}) : le colonne nuove vanno <b>sempre in coda</b>, mai inserite in mezzo.
+     *
+     * <p>Le cinque colonne fiscali finali hanno senso <b>solo sui righi FIAT</b> ; sui righi CRYPTO
+     * {@link #salvaPeriodi} le scrive vuote, come già fa col bollo all'inverso.</p>
      */
     public static final int COL_TIPO = 0, COL_PROGRESSIVO = 1, COL_DATA_INIZIO = 2, COL_DATA_FINE = 3,
             COL_VAL_INIZIALE = 4, COL_NOTA_INIZIALE = 5, COL_VAL_FINALE = 6, COL_NOTA_FINALE = 7,
-            COL_MOD_INIZIALE = 8, COL_MOD_FINALE = 9, COL_BOLLO = 10, COL_ORIGINE = 11, COL_CHIAVE_DEFAULT = 12;
-    public static final int COLONNE_PERIODO = 13;
+            COL_MOD_INIZIALE = 8, COL_MOD_FINALE = 9, COL_BOLLO = 10, COL_ORIGINE = 11, COL_CHIAVE_DEFAULT = 12,
+            COL_STATO_ESTERO = 13, COL_IDENT_FISCALE = 14, COL_NOTE_FISCALI = 15, COL_FONTE_FISCALE = 16,
+            COL_IDENT_ISEE = 17;
+    public static final int COLONNE_PERIODO = 18;
 
     /** Provenienza di una riga : seminata da {@code RW_Predefiniti.json} e mai più toccata. */
     public static final String ORIGINE_SISTEMA = "SISTEMA";
@@ -142,139 +167,189 @@ public class Principale_GruppiWalletRW {
     }
 
     /**
-     * Testo di sintesi del riferimento estero di un gruppo, per la colonna della tabella
-     * "Gruppi Wallet". Non lancia mai : su dati incoerenti torna una dicitura neutra.
+     * Testo di sintesi dei dati fiscali di un gruppo, per la colonna della tabella "Gruppi Wallet" :
+     * Stato estero e identificativo del periodo FIAT valido <i>oggi</i>. Non lancia mai : su dati
+     * incoerenti torna una dicitura neutra.
      */
     public static String descriviRiferimento(String gruppo) {
         if (gruppo == null || gruppo.isBlank()) {
             return "";
         }
-        String[] r = DatabaseH2.Pers_GruppoRiferimento_Leggi(gruppo);
-        if (r[0] == null || r[1] == null || r[1].isBlank()) {
+        String[] p = periodoFiatAllaData(gruppo, null);
+        if (p == null) {
             return "— non impostato";
         }
-        if (RIFERIMENTO_EXCHANGE.equals(r[1])) {
-            String exId = r[4];
-            if (exId == null || exId.isBlank()) {
-                return "exchange (da scegliere)";
-            }
-            String[] ex = DatabaseH2.Pers_ExchangeAnagrafica_Leggi(exId);
-            String nome = ex[1] != null && !ex[1].isBlank() ? ex[1] : exId;
-            // Stato / identificativo non stanno più nell'anagrafica ma nei periodi (EXCHANGE_PERIODO).
-            return "exchange : " + nome + " (" + Principale_PeriodiExchange.descriviCorrente(exId) + ")";
+        String stato = trim(p[COL_STATO_ESTERO]);
+        String ident = trim(p[COL_IDENT_FISCALE]);
+        if (stato.isEmpty() && ident.isEmpty()) {
+            return "periodo FIAT senza dati fiscali";
         }
-        // STATO manuale
-        String stato = r[2] != null && !r[2].isBlank() ? r[2] : "?";
-        String piva = r[3] != null && !r[3].isBlank() ? " · " + r[3] : "";
-        return "stato " + stato + piva;
+        return "stato " + (stato.isEmpty() ? "?" : StatiEsteri.etichetta(stato))
+                + (ident.isEmpty() ? "" : " · " + ident);
     }
 
-    /** Stato estero effettivo del gruppo (risolve STATO vs EXCHANGE, periodo <i>corrente</i> dell'exchange). {@code ""} se non impostato. */
+    /** Stato estero del gruppo secondo il periodo FIAT valido <i>oggi</i>. {@code ""} se non impostato. */
     public static String statoEsteroEffettivo(String gruppo) {
         return statoEsteroEffettivo(gruppo, null);
     }
 
     /**
-     * Stato estero effettivo del gruppo a una certa data (per l'exchange risolve il periodo di
-     * {@code EXCHANGE_PERIODO} valido a quella data). {@code data == null} = periodo corrente.
-     * {@code ""} se non impostato / nessun periodo copre la data.
+     * Stato estero del gruppo a una certa data, letto dal periodo <b>FIAT</b> che la copre.
+     * {@code data == null} = oggi. {@code ""} se nessun periodo copre la data o non lo valorizza.
      */
     public static String statoEsteroEffettivo(String gruppo, LocalDate data) {
-        String[] r = DatabaseH2.Pers_GruppoRiferimento_Leggi(gruppo);
-        if (r[1] == null) {
-            return "";
-        }
-        if (RIFERIMENTO_EXCHANGE.equals(r[1]) && r[4] != null && !r[4].isBlank()) {
-            return data == null
-                    ? Principale_PeriodiExchange.statoEsteroCorrente(r[4])
-                    : Principale_PeriodiExchange.statoEsteroAllaData(r[4], data);
-        }
-        return r[2] == null ? "" : r[2];
+        String[] p = periodoFiatAllaData(gruppo, data);
+        return p == null ? "" : trim(p[COL_STATO_ESTERO]);
     }
 
-    /** Identificativo fiscale / P.IVA effettivo del gruppo (per l'ISEE futura), periodo <i>corrente</i>. {@code ""} se non impostato. */
+    /** Identificativo fiscale / P.IVA del gruppo secondo il periodo FIAT valido <i>oggi</i>. */
     public static String identificativoFiscaleEffettivo(String gruppo) {
         return identificativoFiscaleEffettivo(gruppo, null);
     }
 
-    /**
-     * Identificativo fiscale effettivo del gruppo a una certa data (per l'exchange risolve il periodo
-     * di {@code EXCHANGE_PERIODO} valido a quella data). {@code data == null} = periodo corrente.
-     */
+    /** Identificativo fiscale del gruppo a una certa data ({@code null} = oggi), dal periodo FIAT che la copre. */
     public static String identificativoFiscaleEffettivo(String gruppo, LocalDate data) {
-        String[] r = DatabaseH2.Pers_GruppoRiferimento_Leggi(gruppo);
-        if (r[1] == null) {
-            return "";
-        }
-        if (RIFERIMENTO_EXCHANGE.equals(r[1]) && r[4] != null && !r[4].isBlank()) {
-            return data == null
-                    ? Principale_PeriodiExchange.identificativoCorrente(r[4])
-                    : Principale_PeriodiExchange.identificativoAllaData(r[4], data);
-        }
-        return r[3] == null ? "" : r[3];
+        String[] p = periodoFiatAllaData(gruppo, data);
+        return p == null ? "" : trim(p[COL_IDENT_FISCALE]);
+    }
+
+    /** Alias ISEE (modulo FC.1 della DSU) del gruppo a una certa data ({@code null} = oggi). */
+    public static String identificativoIseeEffettivo(String gruppo, LocalDate data) {
+        String[] p = periodoFiatAllaData(gruppo, data);
+        return p == null ? "" : trim(p[COL_IDENT_ISEE]);
     }
 
     /**
-     * Salva il riferimento estero di un gruppo.
-     *
-     * @return lista di errori ({@code isEmpty()} = salvato). Non scrive nulla se ci sono errori.
+     * Il periodo <b>FIAT</b> del gruppo che copre {@code data} ({@code null} = oggi), secondo le
+     * finestre <i>effettive</i> di {@link #finestreEffettive(List, String)}. {@code null} se il gruppo
+     * non ha periodi FIAT o nessuno copre la data — che è il caso normale, non un errore : un gruppo
+     * senza righi FIAT semplicemente non ha Stato estero.
      */
-    public static List<String> salvaRiferimento(String gruppo, String modalita, String statoEstero,
-            String identificativoFiscale, String exchangeId) {
-        List<String> errori = new ArrayList<>();
+    public static String[] periodoFiatAllaData(String gruppo, LocalDate data) {
         if (gruppo == null || gruppo.isBlank()) {
-            errori.add("Gruppo non indicato.");
-            return errori;
+            return null;
         }
-        boolean stato = RIFERIMENTO_STATO.equals(modalita);
-        boolean exchange = RIFERIMENTO_EXCHANGE.equals(modalita);
-        if (!stato && !exchange) {
-            errori.add("Modalità non valida : usare \"" + RIFERIMENTO_STATO + "\" o \"" + RIFERIMENTO_EXCHANGE + "\".");
-            return errori;
-        }
-        if (stato) {
-            String s = statoEstero == null ? "" : statoEstero.trim();
-            if (s.isEmpty()) {
-                errori.add("Con modalità \"stato\" il codice dello Stato estero è obbligatorio.");
-            } else if (s.length() > 3) {
-                errori.add("Il codice dello Stato estero è al massimo di 3 caratteri (tabella \"Elenco Paesi\" del modello Redditi).");
+        LocalDate d = data == null ? LocalDate.now() : data;
+        for (Finestra f : finestreEffettive(caricaPeriodi(gruppo), TIPO_FIAT)) {
+            if (f.copre(d)) {
+                return f.riga;
             }
         }
-        if (exchange) {
-            String e = exchangeId == null ? "" : exchangeId.trim();
-            if (e.isEmpty()) {
-                errori.add("Con modalità \"exchange\" occorre scegliere un exchange.");
-            } else if (DatabaseH2.Pers_ExchangeAnagrafica_Leggi(e)[0] == null) {
-                errori.add("L'exchange \"" + e + "\" non è nell'anagrafica.");
-            }
-        }
-        if (!errori.isEmpty()) {
-            return errori;
-        }
-        DatabaseH2.Pers_GruppoRiferimento_Scrivi(gruppo, modalita,
-                stato ? nz(statoEstero) : null,
-                stato ? nz(identificativoFiscale) : null,
-                exchange ? nz(exchangeId) : null);
-        return errori;
-    }
-
-    public static void cancellaRiferimento(String gruppo) {
-        DatabaseH2.Pers_GruppoRiferimento_Cancella(gruppo);
+        return null;
     }
 
     // --- periodi di detenzione -------------------------------------------
 
-    /** I periodi del gruppo in forma GUI (10 colonne, vedi {@link #COLONNE_PERIODO}), ordinati per tipo/progressivo. */
+    /** I periodi del gruppo in forma GUI ({@link #COLONNE_PERIODO} colonne), ordinati per tipo/progressivo. */
     public static List<String[]> caricaPeriodi(String gruppo) {
         List<String[]> out = new ArrayList<>();
         for (String[] db : DatabaseH2.Pers_GruppoPeriodoRW_LeggiGruppo(gruppo)) {
             // db : [Gruppo_Tipo_Prog, Gruppo, TipoRigo, Progressivo, DataInizio, DataFine,
             //       ValIniManuale, NotaIni, ValFinManuale, NotaFin, ModIni, ModFin, PagaBolloPeriodo,
-            //       Origine, ChiaveDefault]
+            //       Origine, ChiaveDefault, StatoEstero, IdentFiscale, NoteFiscali, FonteFiscale, IdentISEE]
             out.add(new String[] {
-                db[2], db[3], db[4], db[5], db[6], db[7], db[8], db[9], db[10], db[11], db[12], db[13], db[14]
+                db[2], db[3], db[4], db[5], db[6], db[7], db[8], db[9], db[10], db[11], db[12], db[13], db[14],
+                db[15], db[16], db[17], db[18], db[19]
             });
         }
+        return out;
+    }
+
+    // --- finestre effettive (date dedotte) --------------------------------
+
+    /**
+     * Un periodo con le sue date <b>effettive</b>, cioè quelle che valgono davvero dopo aver dedotto
+     * ciò che l'utente ha lasciato in bianco. {@code inizio == null} = "dal primo movimento del
+     * gruppo" ; {@code fine == null} = "ancora aperto".
+     */
+    public static final class Finestra {
+
+        /** La riga di origine, in forma GUI ({@link #COLONNE_PERIODO} colonne). */
+        public final String[] riga;
+        /** Inizio effettivo, o {@code null} = dal primo movimento del gruppo. */
+        public final LocalDate inizio;
+        /** Fine effettiva, o {@code null} = periodo ancora aperto. */
+        public final LocalDate fine;
+        /** {@code true} se {@link #inizio} è stato dedotto dalla fine del periodo precedente. */
+        public final boolean inizioDedotto;
+
+        Finestra(String[] riga, LocalDate inizio, LocalDate fine, boolean inizioDedotto) {
+            this.riga = riga;
+            this.inizio = inizio;
+            this.fine = fine;
+            this.inizioDedotto = inizioDedotto;
+        }
+
+        /** {@code true} se la data cade dentro la finestra (estremi aperti = infinito da quel lato). */
+        public boolean copre(LocalDate d) {
+            return d != null && (inizio == null || !d.isBefore(inizio)) && (fine == null || !d.isAfter(fine));
+        }
+    }
+
+    /**
+     * Le finestre effettive dei periodi di un tipo, ordinate per inizio (le finestre che partono "dal
+     * primo movimento" per prime).
+     *
+     * <p><b>La regola sulla data di inizio mancante.</b> Un periodo senza {@code DataInizio} non parte
+     * più necessariamente dal primo movimento del gruppo : se fra gli <i>altri</i> periodi dello stesso
+     * tipo ce n'è uno che finisce prima, il periodo comincia il giorno dopo quella fine. "Prima" vuol
+     * dire prima della propria {@code DataFine} quando c'è ; se non c'è nemmeno quella — la riga
+     * legittima con <b>entrambe</b> le date vuote, cioè "il periodo in corso, la cui fine non è ancora
+     * definita" — si prende la fine più avanzata fra tutte le altre. Solo quando non esiste nessuna
+     * {@code DataFine} a cui agganciarsi l'inizio resta {@code null}, e allora sì che vuol dire "dal
+     * primo movimento". Entrambi i rami servono : è la coppia di righe che nasce da un cambio di Stato
+     * estero (una chiusa il giorno prima, l'altra aperta da lì in avanti e senza fine).</p>
+     *
+     * @param righe righe in forma GUI ({@link #COLONNE_PERIODO} colonne) ; {@code null} ammesso
+     * @param tipo  {@link #TIPO_CRYPTO} o {@link #TIPO_FIAT}
+     */
+    public static List<Finestra> finestreEffettive(List<String[]> righe, String tipo) {
+        List<String[]> delTipo = new ArrayList<>();
+        if (righe != null) {
+            for (String[] r : righe) {
+                if (r != null && r.length > COL_DATA_FINE && trim(r[COL_TIPO]).equals(trim(tipo))) {
+                    delTipo.add(r);
+                }
+            }
+        }
+        List<Finestra> out = new ArrayList<>();
+        for (String[] r : delTipo) {
+            LocalDate fine = parseData(r[COL_DATA_FINE]);
+            LocalDate inizio = parseData(r[COL_DATA_INIZIO]);
+            boolean dedotto = false;
+            if (inizio == null) {
+                LocalDate precedente = null;
+                for (String[] altro : delTipo) {
+                    if (altro == r) {
+                        continue;
+                    }
+                    LocalDate f = parseData(altro[COL_DATA_FINE]);
+                    if (f == null || (fine != null && !f.isBefore(fine))) {
+                        continue;
+                    }
+                    if (precedente == null || f.isAfter(precedente)) {
+                        precedente = f;
+                    }
+                }
+                if (precedente != null) {
+                    inizio = precedente.plusDays(1);
+                    dedotto = true;
+                }
+            }
+            out.add(new Finestra(r, inizio, fine, dedotto));
+        }
+        out.sort((a, b) -> {
+            if (a.inizio == null && b.inizio == null) {
+                return 0;
+            }
+            if (a.inizio == null) {
+                return -1;
+            }
+            if (b.inizio == null) {
+                return 1;
+            }
+            return a.inizio.compareTo(b.inizio);
+        });
         return out;
     }
 
@@ -285,10 +360,12 @@ public class Principale_GruppiWalletRW {
      *   <li>progressivo intero >= 1, unico per (tipo)</li>
      *   <li>date, se valorizzate, in formato {@code yyyy-MM-dd} valido</li>
      *   <li>data inizio <= data fine quando entrambe presenti</li>
-     *   <li>modalità di calcolo ∈ valori ammessi (o vuota)</li>
-     *   <li>i periodi <b>datati</b> dello <b>stesso tipo</b> non si sovrappongono (finestre che si
-     *       intersecano = errore). Un periodo con entrambe le date vuote è un fallback e non è in
-     *       conflitto con i periodi datati ; averne più d'uno per tipo è solo un avviso.</li>
+     *   <li>modalità di calcolo ∈ valori ammessi (o vuota = solo residuo)</li>
+     *   <li>codice Stato estero al massimo 3 caratteri ; identificativo fiscale e alias ISEE al
+     *       massimo {@value #MAX_IDENT_ISEE} caratteri (limite del modulo FC.1 della DSU)</li>
+     *   <li>le finestre <b>effettive</b> (vedi {@link #finestreEffettive}) dello <b>stesso tipo</b> non
+     *       si sovrappongono. Un periodo la cui finestra resta aperta da entrambi i lati è un fallback
+     *       e non è in conflitto con gli altri ; averne più d'uno per tipo è solo un avviso.</li>
      * </ul>
      * I controlli semantici girano solo se quelli strutturali non hanno prodotto errori. I
      * <b>buchi</b> fra periodi e i periodi senza date in eccesso non sono errori (vedi
@@ -355,6 +432,20 @@ public class Principale_GruppiWalletRW {
                     errori.add(et + "valore bollo non riconosciuto (\"" + bollo + "\"), atteso " + BOLLO_SI + " o " + BOLLO_NO + ".");
                 }
             }
+            // I dati fiscali riguardano solo il rigo FIAT ; sui righi CRYPTO salvaPeriodi li azzera.
+            if (TIPO_FIAT.equals(tipo)) {
+                if (campo(r, COL_STATO_ESTERO).length() > 3) {
+                    errori.add(et + "il codice dello Stato estero è al massimo di 3 caratteri (tabella \"Elenco Paesi\" del modello Redditi).");
+                }
+                if (campo(r, COL_IDENT_FISCALE).length() > MAX_IDENT_ISEE) {
+                    errori.add(et + "l'identificativo fiscale è al massimo di " + MAX_IDENT_ISEE
+                            + " caratteri (limite del modulo FC.1 della DSU/ISEE).");
+                }
+                if (campo(r, COL_IDENT_ISEE).length() > MAX_IDENT_ISEE) {
+                    errori.add(et + "l'identificativo ISEE è al massimo di " + MAX_IDENT_ISEE
+                            + " caratteri (limite del modulo FC.1 della DSU/ISEE).");
+                }
+            }
         }
         // Semantico : solo se la struttura è valida (altrimenti le date potrebbero non essere parsabili).
         if (errori.isEmpty()) {
@@ -364,10 +455,15 @@ public class Principale_GruppiWalletRW {
     }
 
     /**
-     * Buchi di copertura fra periodi datati consecutivi dello stesso tipo : sono <b>ammessi</b>
-     * (un conto può essere chiuso e poi riaperto più avanti) e vanno solo segnalati all'utente,
-     * <b>senza</b> bloccare il salvataggio. Se per un tipo esiste un periodo interamente aperto
-     * (entrambe le date vuote) che fa da copertura, non si segnala nulla.
+     * Buchi di copertura fra le finestre effettive di periodi consecutivi dello stesso tipo : sono
+     * <b>ammessi</b> (un conto può essere chiuso e poi riaperto) e vanno solo segnalati all'utente,
+     * <b>senza</b> bloccare il salvataggio. Se per un tipo esiste una finestra aperta da entrambi i
+     * lati che fa da copertura, non si segnala nulla.
+     *
+     * <p>Da quando l'inizio mancante si deduce dalla fine del periodo precedente
+     * ({@link #finestreEffettive}), la coppia "una riga chiusa al giorno prima + una riga senza date"
+     * non produce più nessun buco : è esattamente la configurazione che nasce da un cambio di Stato
+     * estero, e adesso è contigua per costruzione.</p>
      *
      * @param righe righe in forma GUI ({@link #COLONNE_PERIODO} colonne)
      * @return elenco avvisi ({@code isEmpty()} = nessun buco)
@@ -377,46 +473,36 @@ public class Principale_GruppiWalletRW {
         if (righe == null) {
             return avvisi;
         }
-        Map<String, List<String[]>> perTipo = new java.util.LinkedHashMap<>();
-        for (String[] r : righe) {
-            if (r == null || r.length <= COL_DATA_FINE) {
+        for (String tipo : new String[] {TIPO_CRYPTO, TIPO_FIAT}) {
+            List<Finestra> finestre = finestreEffettive(righe, tipo);
+            if (finestre.isEmpty()) {
                 continue;
             }
-            perTipo.computeIfAbsent(trim(r[COL_TIPO]), k -> new ArrayList<>()).add(r);
-        }
-        for (Map.Entry<String, List<String[]>> e : perTipo.entrySet()) {
             int aperti = 0;
-            for (String[] r : e.getValue()) {
-                if (parseData(r[COL_DATA_INIZIO]) == null && parseData(r[COL_DATA_FINE]) == null) {
+            for (Finestra f : finestre) {
+                if (f.inizio == null && f.fine == null) {
                     aperti++;
                 }
             }
             if (aperti > 1) {
-                avvisi.add("Più di un periodo " + e.getKey() + " senza date : per la generazione dei "
+                avvisi.add("Più di un periodo " + tipo + " senza date : per la generazione dei "
                         + "righi conterà solo quello con progressivo più basso, dai una finestra agli altri.");
             }
-            avvisi.addAll(buchiPeriodi(e.getKey(), e.getValue(), COL_DATA_INIZIO, COL_DATA_FINE));
+            avvisi.addAll(buchiPeriodi(tipo, finestre));
         }
         return avvisi;
     }
 
-    /** Coppie di periodi <b>datati</b> dello stesso tipo con finestre che si intersecano. */
+    /** Coppie di periodi dello stesso tipo con finestre <b>effettive</b> che si intersecano. */
     private static List<String> sovrapposizioniPeriodi(List<String[]> righe) {
         List<String> errori = new ArrayList<>();
-        Map<String, List<String[]>> perTipo = new java.util.LinkedHashMap<>();
-        for (String[] r : righe) {
-            if (r == null || r.length <= COL_DATA_FINE) {
-                continue;
-            }
-            perTipo.computeIfAbsent(trim(r[COL_TIPO]), k -> new ArrayList<>()).add(r);
-        }
-        for (Map.Entry<String, List<String[]>> e : perTipo.entrySet()) {
-            List<String[]> g = e.getValue();
+        for (String tipo : new String[] {TIPO_CRYPTO, TIPO_FIAT}) {
+            List<Finestra> g = finestreEffettive(righe, tipo);
             for (int i = 0; i < g.size(); i++) {
                 for (int j = i + 1; j < g.size(); j++) {
-                    if (finestreSovrapposte(g.get(i), g.get(j), COL_DATA_INIZIO, COL_DATA_FINE)) {
-                        errori.add("I periodi " + e.getKey() + " " + trim(g.get(i)[COL_PROGRESSIVO])
-                                + " e " + trim(g.get(j)[COL_PROGRESSIVO]) + " si sovrappongono : le finestre "
+                    if (finestreSovrapposte(g.get(i), g.get(j))) {
+                        errori.add("I periodi " + tipo + " " + trim(g.get(i).riga[COL_PROGRESSIVO])
+                                + " e " + trim(g.get(j).riga[COL_PROGRESSIVO]) + " si sovrappongono : le finestre "
                                 + "di detenzione dello stesso rigo non possono accavallarsi.");
                     }
                 }
@@ -428,44 +514,41 @@ public class Principale_GruppiWalletRW {
     // --- algebra sugli intervalli (semantica dei periodi aperti : data vuota = -inf / +inf) ------
 
     /**
-     * {@code true} se le finestre temporali di <b>due periodi datati</b> si intersecano. Un periodo
-     * con entrambe le date vuote è un fallback e non entra mai in conflitto (i periodi datati vincono
-     * sulle loro finestre) : più periodi interamente aperti dello stesso tipo sono solo un avviso
-     * ({@link #avvisiPeriodi(List)}), non un errore, perché il flusso "bollo per periodo" ne crea di
-     * legittimi prima che l'utente li dati.
+     * {@code true} se due finestre effettive si intersecano. Una finestra aperta da <b>entrambi</b> i
+     * lati (nessuna data propria e nessuna fine precedente da cui dedurre l'inizio) è un fallback e non
+     * entra mai in conflitto : più periodi così dello stesso tipo sono solo un avviso
+     * ({@link #avvisiPeriodi(List)}), non un errore — è la forma che ha un gruppo appena creato, prima
+     * che l'utente dia una finestra a qualcosa.
      */
-    static boolean finestreSovrapposte(String[] a, String[] b, int colInizio, int colFine) {
-        java.time.LocalDate iA = parseData(a[colInizio]), fA = parseData(a[colFine]);
-        java.time.LocalDate iB = parseData(b[colInizio]), fB = parseData(b[colFine]);
-        if ((iA == null && fA == null) || (iB == null && fB == null)) {
+    static boolean finestreSovrapposte(Finestra a, Finestra b) {
+        if ((a.inizio == null && a.fine == null) || (b.inizio == null && b.fine == null)) {
             return false;
         }
-        java.time.LocalDate i1 = iA == null ? java.time.LocalDate.MIN : iA;
-        java.time.LocalDate f1 = fA == null ? java.time.LocalDate.MAX : fA;
-        java.time.LocalDate i2 = iB == null ? java.time.LocalDate.MIN : iB;
-        java.time.LocalDate f2 = fB == null ? java.time.LocalDate.MAX : fB;
+        LocalDate i1 = a.inizio == null ? LocalDate.MIN : a.inizio;
+        LocalDate f1 = a.fine == null ? LocalDate.MAX : a.fine;
+        LocalDate i2 = b.inizio == null ? LocalDate.MIN : b.inizio;
+        LocalDate f2 = b.fine == null ? LocalDate.MAX : b.fine;
         return !i1.isAfter(f2) && !i2.isAfter(f1);
     }
 
-    /** Buchi fra le finestre di un insieme di periodi (ordinate per inizio). Vuoto se un periodo è interamente aperto. */
-    static List<String> buchiPeriodi(String etichetta, List<String[]> righe, int colInizio, int colFine) {
+    /** Buchi fra le finestre effettive (già ordinate per inizio). Vuoto se una finestra è aperta da entrambi i lati. */
+    static List<String> buchiPeriodi(String etichetta, List<Finestra> finestre) {
         List<String> avvisi = new ArrayList<>();
-        List<java.time.LocalDate[]> range = new ArrayList<>();
-        for (String[] r : righe) {
-            java.time.LocalDate i = parseData(r[colInizio]), f = parseData(r[colFine]);
-            if (i == null && f == null) {
+        List<LocalDate[]> range = new ArrayList<>();
+        for (Finestra f : finestre) {
+            if (f.inizio == null && f.fine == null) {
                 return avvisi; // fallback interamente aperto : copre ogni buco
             }
-            range.add(new java.time.LocalDate[] {
-                i == null ? java.time.LocalDate.MIN : i,
-                f == null ? java.time.LocalDate.MAX : f
+            range.add(new LocalDate[] {
+                f.inizio == null ? LocalDate.MIN : f.inizio,
+                f.fine == null ? LocalDate.MAX : f.fine
             });
         }
         range.sort(Comparator.comparing(x -> x[0]));
         for (int k = 1; k < range.size(); k++) {
-            java.time.LocalDate finePrec = range.get(k - 1)[1];
-            java.time.LocalDate inizioSucc = range.get(k)[0];
-            if (!finePrec.equals(java.time.LocalDate.MAX) && !inizioSucc.equals(java.time.LocalDate.MIN)
+            LocalDate finePrec = range.get(k - 1)[1];
+            LocalDate inizioSucc = range.get(k)[0];
+            if (!finePrec.equals(LocalDate.MAX) && !inizioSucc.equals(LocalDate.MIN)
                     && finePrec.plusDays(1).isBefore(inizioSucc)) {
                 avvisi.add("Periodo " + etichetta + " scoperto fra " + finePrec.plusDays(1) + " e "
                         + inizioSucc.minusDays(1) + " (conto chiuso e poi riaperto? verificare le date).");
@@ -501,20 +584,27 @@ public class Principale_GruppiWalletRW {
         DatabaseH2.Pers_GruppoPeriodoRW_CancellaGruppo(gruppo);
         if (righe != null) {
             for (String[] r : righe) {
+                String tipo = trim(r[COL_TIPO]);
+                boolean fiat = TIPO_FIAT.equals(tipo);
                 // bollo scritto solo per il rigo CRYPTO : sul rigo FIAT non è dovuto -> sempre null
-                String bollo = TIPO_CRYPTO.equals(trim(r[COL_TIPO]))
-                        ? (r.length > COL_BOLLO ? r[COL_BOLLO] : null) : null;
-                // Provenienza : chi non la porta (chiamate legacy con array a 11 col) lascia NULL = UTENTE.
+                String bollo = fiat ? null : (r.length > COL_BOLLO ? r[COL_BOLLO] : null);
+                // Provenienza : chi non la porta (chiamate legacy con array corti) lascia NULL = UTENTE.
                 String origine = r.length > COL_ORIGINE ? nz(r[COL_ORIGINE]) : null;
                 String chiaveDefault = r.length > COL_CHIAVE_DEFAULT ? r[COL_CHIAVE_DEFAULT] : null;
                 DatabaseH2.Pers_GruppoPeriodoRW_Scrivi(gruppo,
-                        trim(r[COL_TIPO]),
+                        tipo,
                         Integer.parseInt(trim(r[COL_PROGRESSIVO])),
                         nz(r[COL_DATA_INIZIO]), nz(r[COL_DATA_FINE]),
                         nz(r[COL_VAL_INIZIALE]), nz(r[COL_NOTA_INIZIALE]),
                         nz(r[COL_VAL_FINALE]), nz(r[COL_NOTA_FINALE]),
                         nz(r[COL_MOD_INIZIALE]), nz(r[COL_MOD_FINALE]),
-                        nz(bollo), origine, chiaveDefault == null ? null : chiaveDefault.trim());
+                        nz(bollo), origine, chiaveDefault == null ? null : chiaveDefault.trim(),
+                        // i dati fiscali esistono solo sul rigo FIAT
+                        fiat ? nz(campo(r, COL_STATO_ESTERO)) : null,
+                        fiat ? nz(campo(r, COL_IDENT_FISCALE)) : null,
+                        fiat ? nz(campo(r, COL_NOTE_FISCALI)) : null,
+                        fiat ? nz(campo(r, COL_FONTE_FISCALE)) : null,
+                        fiat ? nz(campo(r, COL_IDENT_ISEE)) : null);
             }
         }
         return errori;
@@ -661,7 +751,7 @@ public class Principale_GruppiWalletRW {
      */
     private static final String OPZIONE_AUTOGRUPPO_INIZIALIZZATO = "EXCHANGE_AUTOGRUPPO_INIZIALIZZATO";
 
-    /** Nome sorgente del movimento (campo {@code [3]}) normalizzato → id exchange di {@code EXCHANGE_ANAGRAFICA}. */
+    /** Nome sorgente del movimento (campo {@code [3]}) normalizzato → id exchange di {@link DatabaseH2#EXCHANGE_NOTI}. */
     private static final Map<String, String> SORGENTE_A_EXCHANGE = creaMappaSorgenti();
 
     private static Map<String, String> creaMappaSorgenti() {
@@ -881,6 +971,11 @@ public class Principale_GruppiWalletRW {
         return s == null ? "" : s.trim();
     }
 
+    /** Il campo {@code i} della riga, già {@code trim}ato, tollerante alle righe più corte. */
+    private static String campo(String[] r, int i) {
+        return r != null && i >= 0 && i < r.length ? trim(r[i]) : "";
+    }
+
     private static String nz(String s) {
         String t = trim(s);
         return t.isEmpty() ? null : t;
@@ -957,9 +1052,8 @@ public class Principale_GruppiWalletRW {
     }
 
     /**
-     * Righe chiave/valore per la tabella "Dati fiscali del gruppo" : alias, modalità del riferimento
-     * estero, exchange di riferimento, stato estero e identificativo fiscale <i>correnti</i>, stato del
-     * bollo.
+     * Righe chiave/valore per la tabella "Dati fiscali del gruppo" : alias, Stato estero e
+     * identificativo fiscale <i>correnti</i> (dal periodo FIAT valido oggi), alias ISEE, stato del bollo.
      */
     public static List<String[]> datiFiscaliGruppo(String gruppo) {
         List<String[]> out = new ArrayList<>();
@@ -969,29 +1063,18 @@ public class Principale_GruppiWalletRW {
         String[] alias = DatabaseH2.Pers_GruppoAlias_Leggi(gruppo);
         out.add(new String[] {"Alias", alias != null ? sv(alias[1]) : ""});
 
-        String[] r = DatabaseH2.Pers_GruppoRiferimento_Leggi(gruppo);
-        String mod = r != null ? r[1] : null;
-        if (mod == null) {
-            out.add(new String[] {"Riferimento estero", "— non impostato"});
-        } else if (RIFERIMENTO_EXCHANGE.equals(mod)) {
-            String exId = sv(r[4]);
-            String nome = exId;
-            if (!exId.isEmpty()) {
-                String[] a = DatabaseH2.Pers_ExchangeAnagrafica_Leggi(exId);
-                if (a != null && a[1] != null && !a[1].isBlank()) {
-                    nome = a[1];
-                }
-            }
-            out.add(new String[] {"Riferimento estero", "Exchange di riferimento"});
-            out.add(new String[] {"Exchange", exId.isEmpty() ? "—" : nome + " (" + exId + ")"});
-            if (!exId.isEmpty()) {
-                out.add(new String[] {"Periodo corrente exchange", Principale_PeriodiExchange.descriviCorrente(exId)});
-            }
+        String[] p = periodoFiatAllaData(gruppo, null);
+        if (p == null) {
+            out.add(new String[] {"Periodo FIAT corrente", "— nessuno (il gruppo non ha Stato estero)"});
         } else {
-            out.add(new String[] {"Riferimento estero", "Stato inserito a mano"});
+            out.add(new String[] {"Periodo FIAT corrente", descriviFinestra(p)});
+            String stato = campo(p, COL_STATO_ESTERO);
+            out.add(new String[] {"Stato estero (corrente)",
+                stato.isEmpty() ? "—" : StatiEsteri.etichetta(stato)});
+            out.add(new String[] {"Identificativo fiscale (corrente)", nzVuoto(campo(p, COL_IDENT_FISCALE))});
+            out.add(new String[] {"Identificativo ISEE (corrente)", nzVuoto(campo(p, COL_IDENT_ISEE))});
+            out.add(new String[] {"Fonte", nzVuoto(campo(p, COL_FONTE_FISCALE))});
         }
-        out.add(new String[] {"Stato estero (corrente)", nzVuoto(statoEsteroEffettivo(gruppo))});
-        out.add(new String[] {"Identificativo fiscale (corrente)", nzVuoto(identificativoFiscaleEffettivo(gruppo))});
 
         String stato = statoBolloPeriodi(gruppo);
         String bollo;
@@ -1008,25 +1091,46 @@ public class Principale_GruppiWalletRW {
         return out;
     }
 
+    /** {@code "dal 2025-06-20"} / {@code "fino al 2025-06-19"} / {@code "dal ... al ..."} / {@code "sempre"}. */
+    private static String descriviFinestra(String[] r) {
+        String di = campo(r, COL_DATA_INIZIO);
+        String df = campo(r, COL_DATA_FINE);
+        if (di.isEmpty() && df.isEmpty()) {
+            return "n. " + campo(r, COL_PROGRESSIVO) + " (senza date)";
+        }
+        if (di.isEmpty()) {
+            return "n. " + campo(r, COL_PROGRESSIVO) + " (fino al " + df + ")";
+        }
+        if (df.isEmpty()) {
+            return "n. " + campo(r, COL_PROGRESSIVO) + " (dal " + di + ")";
+        }
+        return "n. " + campo(r, COL_PROGRESSIVO) + " (dal " + di + " al " + df + ")";
+    }
+
     private static String nzVuoto(String s) {
         return s == null || s.isBlank() ? "—" : s.trim();
     }
 
     /**
      * Righe per la tabella "Periodi di detenzione" (sottoinsieme leggibile delle colonne di
-     * {@link #caricaPeriodi}) : {@code [tipo, progr, dataInizio, dataFine, valIniziale, valFinale,
-     * calcoloIniziale, calcoloFinale, bollo, origine]}.
+     * {@link #caricaPeriodi}) : {@code [tipo, progr, dataInizio, dataFine, calcoloIniziale,
+     * calcoloFinale, statoEstero, identFiscale, identISEE, bollo, origine]}. I valori iniziale/finale a
+     * mano non ci sono più : restano nel DB ma non si mostrano (vedi {@link #COL_VAL_INIZIALE}).
      */
     public static List<String[]> periodiPerVista(String gruppo) {
         List<String[]> out = new ArrayList<>();
         for (String[] r : caricaPeriodi(gruppo)) {
             String tipo = sv(r[COL_TIPO]);
+            boolean fiat = TIPO_FIAT.equals(tipo);
+            String stato = campo(r, COL_STATO_ESTERO);
             out.add(new String[] {
                 tipo, sv(r[COL_PROGRESSIVO]), sv(r[COL_DATA_INIZIO]), sv(r[COL_DATA_FINE]),
-                sv(r[COL_VAL_INIZIALE]), sv(r[COL_VAL_FINALE]),
                 etichettaModalita(r[COL_MOD_INIZIALE], MODALITA_INIZIALE),
                 etichettaModalita(r[COL_MOD_FINALE], MODALITA_FINALE),
-                TIPO_CRYPTO.equals(tipo) ? (r.length > COL_BOLLO ? sv(r[COL_BOLLO]) : "") : "n/d",
+                fiat ? (stato.isEmpty() ? "" : StatiEsteri.etichetta(stato)) : "n/d",
+                fiat ? campo(r, COL_IDENT_FISCALE) : "n/d",
+                fiat ? campo(r, COL_IDENT_ISEE) : "n/d",
+                fiat ? "n/d" : (r.length > COL_BOLLO ? sv(r[COL_BOLLO]) : ""),
                 descrizioneOrigineRiga(r.length > COL_ORIGINE ? r[COL_ORIGINE] : null,
                         r.length > COL_CHIAVE_DEFAULT ? r[COL_CHIAVE_DEFAULT] : null)
             });
@@ -1042,28 +1146,6 @@ public class Principale_GruppiWalletRW {
             return "Predefinito";
         }
         return chiaveDefault != null && !chiaveDefault.isBlank() ? "Modificato" : "Manuale";
-    }
-
-    /** {@code true} se l'id exchange è uno dei {@link DatabaseH2#EXCHANGE_NOTI}. */
-    public static boolean exchangeEPredefinito(String exchangeId) {
-        if (exchangeId == null) {
-            return false;
-        }
-        String id = exchangeId.trim();
-        for (String[] e : DatabaseH2.EXCHANGE_NOTI) {
-            if (e[0].equalsIgnoreCase(id)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /** Provenienza di un exchange dell'anagrafica per la colonna "Origine". {@code null} = seme pregresso, non "modificato". */
-    public static String descrizioneOrigineExchange(String exchangeId, String origine) {
-        if (!exchangeEPredefinito(exchangeId)) {
-            return "Manuale";
-        }
-        return ORIGINE_UTENTE.equals(origine) ? "Predefinito (mod.)" : "Predefinito";
     }
 
     /** {@code true} se il nome gruppo è uno dei preconfigurati {@code Wallet 101..}{@code (101 + numero exchange noti - 1)}. */
@@ -1117,7 +1199,7 @@ public class Principale_GruppiWalletRW {
         }
         try {
             for (DatiPredefinitiRW.ExchangePredef ex : p.exchange()) {
-                riconciliaExchange(ex);
+                riconciliaGruppoExchange(ex);
             }
             for (DatiPredefinitiRW.GruppoPeriodiPredef g : p.periodiDetenzioneGruppi()) {
                 riconciliaPeriodiDetenzione(g);
@@ -1128,71 +1210,31 @@ public class Principale_GruppiWalletRW {
         }
     }
 
-    private static void riconciliaExchange(DatiPredefinitiRW.ExchangePredef ex) {
-        // 1. anagrafica : creo se assente, aggiorno il nome se SISTEMA, lascio se UTENTE/NULL
-        String[] ana = DatabaseH2.Pers_ExchangeAnagrafica_Leggi(ex.id);
-        if (ana[0] == null || ORIGINE_SISTEMA.equals(ana.length > 7 ? ana[7] : null)) {
-            DatabaseH2.Pers_ExchangeAnagrafica_ScriviNome(ex.id, ex.nome, ORIGINE_SISTEMA);
+    /**
+     * Semina il gruppo wallet preconfigurato di un exchange noto ({@code "Wallet 101"} ↔ Binance, ...) :
+     * lo crea se non c'è e ne allinea l'alias, ma <b>solo</b> se la riga è nuova o {@code SISTEMA}.
+     * I periodi di quel gruppo — righi FIAT con i dati fiscali compresi — arrivano dal blocco
+     * {@code periodiDetenzioneGruppi}, in cui {@link DatiPredefinitiRW} riversa anche i
+     * {@code periodiFiscali} scritti sotto l'exchange.
+     */
+    private static void riconciliaGruppoExchange(DatiPredefinitiRW.ExchangePredef ex) {
+        if (ex.gruppo == null || ex.gruppo.isBlank()) {
+            return;
         }
-
-        // 2. gruppo wallet preconfigurato : solo se nuovo o già SISTEMA
-        if (ex.gruppo != null && !ex.gruppo.isBlank()) {
-            String[] alias = DatabaseH2.Pers_GruppoAlias_Leggi(ex.gruppo);
-            boolean nuovo = alias[0] == null;
-            boolean sistema = ORIGINE_SISTEMA.equals(alias.length > 3 ? alias[3] : null);
-            if (nuovo || sistema) {
-                boolean pagaBollo = "S".equals(alias.length > 2 ? alias[2] : null);
-                DatabaseH2.Pers_GruppoAlias_Scrivi(ex.gruppo, ex.nome, nuovo ? false : pagaBollo, ORIGINE_SISTEMA);
-                if (DatabaseH2.Pers_GruppoRiferimento_Leggi(ex.gruppo)[0] == null) {
-                    DatabaseH2.Pers_GruppoRiferimento_Scrivi(ex.gruppo, RIFERIMENTO_EXCHANGE, null, null, ex.id);
-                }
-            }
-        }
-
-        // 3. periodi fiscali dell'exchange, per ChiaveDefault
-        List<String[]> esistenti = DatabaseH2.Pers_ExchangePeriodo_LeggiExchange(ex.id);
-        // riga : [0]key [1]exid [2]prog [3]di [4]df [5]nome [6]stato [7]ident [8]note [9]fonte [10]origine [11]chiaveDefault
-        boolean vuoto = esistenti.isEmpty();
-        boolean gestita = vuoto || esistenti.stream().anyMatch(r -> ORIGINE_SISTEMA.equals(cd(r, 10)));
-        Map<String, String[]> perChiave = new HashMap<>();
-        Set<Integer> progUsati = new HashSet<>();
-        for (String[] r : esistenti) {
-            progUsati.add(intOrZero(r[2]));
-            if (r[11] != null && !r[11].isBlank()) {
-                perChiave.put(r[11], r);
-            }
-        }
-        Set<String> chiaviJson = new HashSet<>();
-        for (DatiPredefinitiRW.PeriodoFiscalePredef pf : ex.periodiFiscali) {
-            chiaviJson.add(pf.chiave);
-            String[] r = perChiave.get(pf.chiave);
-            if (r == null) {
-                if (!gestita) {
-                    continue; // set di periodi tutto dell'utente : non lo invado
-                }
-                int prog = vuoto ? pf.progressivo : prossimoLibero(progUsati);
-                progUsati.add(prog);
-                DatabaseH2.Pers_ExchangePeriodo_Scrivi(ex.id, prog, nn(pf.dataInizio), nn(pf.dataFine),
-                        nn(pf.nome), nn(pf.statoEstero), nn(pf.identificativoFiscale), nn(pf.note),
-                        nn(pf.fonte), ORIGINE_SISTEMA, pf.chiave);
-            } else if (ORIGINE_SISTEMA.equals(cd(r, 10))) {
-                DatabaseH2.Pers_ExchangePeriodo_Scrivi(ex.id, intOrZero(r[2]), nn(pf.dataInizio), nn(pf.dataFine),
-                        nn(pf.nome), nn(pf.statoEstero), nn(pf.identificativoFiscale), nn(pf.note),
-                        nn(pf.fonte), ORIGINE_SISTEMA, pf.chiave);
-            }
-        }
-        for (String[] r : esistenti) {
-            if (ORIGINE_SISTEMA.equals(cd(r, 10)) && r[11] != null && !r[11].isBlank()
-                    && !chiaviJson.contains(r[11])) {
-                DatabaseH2.Pers_ExchangePeriodo_Cancella(ex.id, intOrZero(r[2]));
-            }
+        String[] alias = DatabaseH2.Pers_GruppoAlias_Leggi(ex.gruppo);
+        boolean nuovo = alias[0] == null;
+        boolean sistema = ORIGINE_SISTEMA.equals(alias.length > 3 ? alias[3] : null);
+        if (nuovo || sistema) {
+            boolean pagaBollo = "S".equals(alias.length > 2 ? alias[2] : null);
+            DatabaseH2.Pers_GruppoAlias_Scrivi(ex.gruppo, ex.nome, nuovo ? false : pagaBollo, ORIGINE_SISTEMA);
         }
     }
 
     private static void riconciliaPeriodiDetenzione(DatiPredefinitiRW.GruppoPeriodiPredef g) {
         List<String[]> esistenti = DatabaseH2.Pers_GruppoPeriodoRW_LeggiGruppo(g.gruppo);
         // riga : [0]key [1]gruppo [2]tipo [3]prog [4]di [5]df [6]valI [7]notaI [8]valF [9]notaF
-        //        [10]modI [11]modF [12]bollo [13]origine [14]chiaveDefault
+        //        [10]modI [11]modF [12]bollo [13]origine [14]chiaveDefault [15]stato [16]ident
+        //        [17]noteFisc [18]fonteFisc [19]identISEE
         boolean vuoto = esistenti.isEmpty();
         boolean gestita = vuoto || esistenti.stream().anyMatch(r -> ORIGINE_SISTEMA.equals(cd(r, 13)));
         Map<String, String[]> perChiave = new HashMap<>();
@@ -1227,12 +1269,20 @@ public class Principale_GruppiWalletRW {
         }
     }
 
+    /**
+     * Scrive una riga predefinita. L'<b>identificativo ISEE non viene mai passato</b> ({@code null} =
+     * colonna non toccata) : è il campo che l'utente compila a mano anche sulle righe che arrivano dal
+     * programma, e un aggiornamento dei predefiniti non deve cancellarglielo.
+     */
     private static void scriviPeriodoDetPredef(String gruppo, String tipo, int prog,
             DatiPredefinitiRW.PeriodoDetPredef pd) {
-        String bollo = TIPO_CRYPTO.equals(tipo) ? nn(pd.bollo) : null;
+        boolean fiat = TIPO_FIAT.equals(tipo);
         DatabaseH2.Pers_GruppoPeriodoRW_Scrivi(gruppo, tipo, prog, nn(pd.dataInizio), nn(pd.dataFine),
                 nn(pd.valIniziale), nn(pd.notaIniziale), nn(pd.valFinale), nn(pd.notaFinale),
-                nn(pd.calcoloIniziale), nn(pd.calcoloFinale), bollo, ORIGINE_SISTEMA, pd.chiave);
+                nn(pd.calcoloIniziale), nn(pd.calcoloFinale), fiat ? null : nn(pd.bollo),
+                ORIGINE_SISTEMA, pd.chiave,
+                fiat ? nn(pd.statoEstero) : null, fiat ? nn(pd.identificativoFiscale) : null,
+                fiat ? nn(pd.note) : null, fiat ? nn(pd.fonte) : null, null);
     }
 
     // --- pulsanti "Ripristina al default" (lavorano sulla lista in memoria della GUI) -----
@@ -1295,7 +1345,9 @@ public class Principale_GruppiWalletRW {
     }
 
     private static String[] rigaDaPredef(DatiPredefinitiRW.PeriodoDetPredef pd, String progressivo) {
+        boolean fiat = TIPO_FIAT.equals(pd.tipo);
         String[] r = new String[COLONNE_PERIODO];
+        java.util.Arrays.fill(r, "");
         r[COL_TIPO] = pd.tipo;
         r[COL_PROGRESSIVO] = progressivo == null || progressivo.isBlank() ? String.valueOf(pd.progressivo) : progressivo;
         r[COL_DATA_INIZIO] = sv(pd.dataInizio);
@@ -1306,9 +1358,16 @@ public class Principale_GruppiWalletRW {
         r[COL_NOTA_FINALE] = sv(pd.notaFinale);
         r[COL_MOD_INIZIALE] = sv(pd.calcoloIniziale);
         r[COL_MOD_FINALE] = sv(pd.calcoloFinale);
-        r[COL_BOLLO] = TIPO_CRYPTO.equals(pd.tipo) ? sv(pd.bollo) : "";
+        r[COL_BOLLO] = fiat ? "" : sv(pd.bollo);
         r[COL_ORIGINE] = ORIGINE_SISTEMA;
         r[COL_CHIAVE_DEFAULT] = sv(pd.chiave);
+        r[COL_STATO_ESTERO] = fiat ? sv(pd.statoEstero) : "";
+        r[COL_IDENT_FISCALE] = fiat ? sv(pd.identificativoFiscale) : "";
+        r[COL_NOTE_FISCALI] = fiat ? sv(pd.note) : "";
+        r[COL_FONTE_FISCALE] = fiat ? sv(pd.fonte) : "";
+        // L'identificativo ISEE non ha un default : è sempre inserito a mano. Il "ripristina al
+        // default" lo azzera come qualsiasi altro campo non predefinito.
+        r[COL_IDENT_ISEE] = "";
         return r;
     }
 

@@ -13,9 +13,14 @@ import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_D
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_DATA_INIZIO;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_MOD_FINALE;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_MOD_INIZIALE;
+import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_FONTE_FISCALE;
+import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_IDENT_FISCALE;
+import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_IDENT_ISEE;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_NOTA_FINALE;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_NOTA_INIZIALE;
+import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_NOTE_FISCALI;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_ORIGINE;
+import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_STATO_ESTERO;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_PROGRESSIVO;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_TIPO;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_VAL_FINALE;
@@ -31,12 +36,19 @@ import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.TIPO_
  * ({@code GRUPPO_PERIODO_RW}). Sostituisce l'editing in cella di {@link GUI_PeriodiDetenzioneRW}.
  * La riga prodotta ({@link #risultato}, {@link Principale_GruppiWalletRW#COLONNE_PERIODO} colonne)
  * ha {@code Origine = UTENTE}; le colonne "Calcolo" contengono i <b>codici</b>, non le etichette.
+ *
+ * <p>I campi abilitati dipendono dal tipo : il bollo solo su CRYPTO, i dati fiscali (Stato estero,
+ * identificativo, alias ISEE, note, fonte) solo su FIAT — vedi {@link #aggiornaAbilitazioni()}. I
+ * valori iniziale/finale a mano non si modificano più da qui (2026-09-09) : la riga esistente li
+ * <b>conserva</b>, così una riga che li aveva non li perde passando dal dialogo.</p>
  */
 public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
 
     private static final long serialVersionUID = 1L;
 
     private final String chiaveDefault;
+    /** Valori campo 7/8 a mano : non più modificabili qui, ma conservati (vedi javadoc di classe). */
+    private final String valIniziale, notaIniziale, valFinale, notaFinale;
 
     public boolean confermato = false;
     public String[] risultato;
@@ -60,16 +72,26 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         Combo_ModFin.setModel(new javax.swing.DefaultComboBoxModel<>(etichette(MODALITA_FINALE)));
         Combo_Bollo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[]{
             Principale_GruppiWalletRW.BOLLO_NO, Principale_GruppiWalletRW.BOLLO_SI}));
+        String statoCorrente = nuovo ? "" : val(rigaEsistente, COL_STATO_ESTERO);
+        for (String voce : StatiEsteri.etichetteCombo(statoCorrente)) {
+            Combo_Stato.addItem(voce);
+        }
+        Combo_Stato.setSelectedItem(StatiEsteri.etichetta(statoCorrente));
 
         String tipo = nuovo ? TIPO_CRYPTO : val(rigaEsistente, COL_TIPO);
         Combo_Tipo.setSelectedItem(TIPO_FIAT.equals(tipo) ? TIPO_FIAT : TIPO_CRYPTO);
         Campo_Prog.setText(nuovo ? String.valueOf(progressivoProposto) : val(rigaEsistente, COL_PROGRESSIVO));
         RwDialoghi.impostaData(Data_Inizio, nuovo ? "" : val(rigaEsistente, COL_DATA_INIZIO));
         RwDialoghi.impostaData(Data_Fine, nuovo ? "" : val(rigaEsistente, COL_DATA_FINE));
-        Campo_ValIni.setText(nuovo ? "" : val(rigaEsistente, COL_VAL_INIZIALE));
-        Campo_NotaIni.setText(nuovo ? "" : val(rigaEsistente, COL_NOTA_INIZIALE));
-        Campo_ValFin.setText(nuovo ? "" : val(rigaEsistente, COL_VAL_FINALE));
-        Campo_NotaFin.setText(nuovo ? "" : val(rigaEsistente, COL_NOTA_FINALE));
+        Campo_Ident.setText(nuovo ? "" : val(rigaEsistente, COL_IDENT_FISCALE));
+        Campo_Isee.setText(nuovo ? "" : val(rigaEsistente, COL_IDENT_ISEE));
+        Campo_Note.setText(nuovo ? "" : val(rigaEsistente, COL_NOTE_FISCALI));
+        Campo_Fonte.setText(nuovo ? "" : val(rigaEsistente, COL_FONTE_FISCALE));
+        // Non si modificano più da qui, ma non si perdono : li riporto tali e quali nel risultato.
+        this.valIniziale = nuovo ? "" : val(rigaEsistente, COL_VAL_INIZIALE);
+        this.notaIniziale = nuovo ? "" : val(rigaEsistente, COL_NOTA_INIZIALE);
+        this.valFinale = nuovo ? "" : val(rigaEsistente, COL_VAL_FINALE);
+        this.notaFinale = nuovo ? "" : val(rigaEsistente, COL_NOTA_FINALE);
         Combo_ModIni.setSelectedItem(Principale_GruppiWalletRW.etichettaModalita(
                 nuovo ? "" : val(rigaEsistente, COL_MOD_INIZIALE), MODALITA_INIZIALE));
         Combo_ModFin.setSelectedItem(Principale_GruppiWalletRW.etichettaModalita(
@@ -79,14 +101,21 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
                 ? Principale_GruppiWalletRW.BOLLO_SI : Principale_GruppiWalletRW.BOLLO_NO);
         this.chiaveDefault = nuovo ? "" : val(rigaEsistente, COL_CHIAVE_DEFAULT);
 
-        aggiornaAbilitazioneBollo();
+        aggiornaAbilitazioni();
         getRootPane().setDefaultButton(Bottone_Ok);
         pack();
         setLocationRelativeTo(owner);
     }
 
-    private void aggiornaAbilitazioneBollo() {
-        Combo_Bollo.setEnabled(!TIPO_FIAT.equals(Combo_Tipo.getSelectedItem()));
+    /** Bollo solo sui righi CRYPTO, dati fiscali solo sui righi FIAT. */
+    private void aggiornaAbilitazioni() {
+        boolean fiat = TIPO_FIAT.equals(Combo_Tipo.getSelectedItem());
+        Combo_Bollo.setEnabled(!fiat);
+        Combo_Stato.setEnabled(fiat);
+        Campo_Ident.setEnabled(fiat);
+        Campo_Isee.setEnabled(fiat);
+        Campo_Note.setEnabled(fiat);
+        Campo_Fonte.setEnabled(fiat);
     }
 
     private static String[] etichette(String[][] tabella) {
@@ -120,22 +149,24 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         Data_Inizio = new com.toedter.calendar.JDateChooser();
         Label_DataFine = new javax.swing.JLabel();
         Data_Fine = new com.toedter.calendar.JDateChooser();
-        Label_ValIni = new javax.swing.JLabel();
-        Campo_ValIni = new javax.swing.JTextField();
-        Label_NotaIni = new javax.swing.JLabel();
-        Scroll_NotaIni = new javax.swing.JScrollPane();
-        Campo_NotaIni = new javax.swing.JTextArea();
-        Label_ValFin = new javax.swing.JLabel();
-        Campo_ValFin = new javax.swing.JTextField();
-        Label_NotaFin = new javax.swing.JLabel();
-        Scroll_NotaFin = new javax.swing.JScrollPane();
-        Campo_NotaFin = new javax.swing.JTextArea();
         Label_ModIni = new javax.swing.JLabel();
         Combo_ModIni = new javax.swing.JComboBox();
         Label_ModFin = new javax.swing.JLabel();
         Combo_ModFin = new javax.swing.JComboBox();
         Label_Bollo = new javax.swing.JLabel();
         Combo_Bollo = new javax.swing.JComboBox();
+        Label_Stato = new javax.swing.JLabel();
+        Combo_Stato = new javax.swing.JComboBox();
+        Label_Ident = new javax.swing.JLabel();
+        Campo_Ident = new javax.swing.JTextField();
+        Label_Isee = new javax.swing.JLabel();
+        Campo_Isee = new javax.swing.JTextField();
+        Label_Note = new javax.swing.JLabel();
+        Scroll_Note = new javax.swing.JScrollPane();
+        Campo_Note = new javax.swing.JTextArea();
+        Label_Fonte = new javax.swing.JLabel();
+        Scroll_Fonte = new javax.swing.JScrollPane();
+        Campo_Fonte = new javax.swing.JTextArea();
         Pannello_Pulsanti = new javax.swing.JPanel();
         Bottone_Ok = new javax.swing.JButton();
         Bottone_Annulla = new javax.swing.JButton();
@@ -185,13 +216,14 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         Pannello_Campi.add(Campo_Prog, gridBagConstraints);
 
-        Label_DataInizio.setText("Data inizio (vuota = dedotta dal primo movimento) :");
+        Label_DataInizio.setText("Data inizio (vuota = dedotta) :");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
         Pannello_Campi.add(Label_DataInizio, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -200,13 +232,14 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         Pannello_Campi.add(Data_Inizio, gridBagConstraints);
 
-        Label_DataFine.setText("Data fine (solo se il conto e' chiuso) :");
+        Label_DataFine.setText("Data fine (vuota = periodo aperto) :");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
         Pannello_Campi.add(Label_DataFine, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -215,96 +248,17 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         Pannello_Campi.add(Data_Fine, gridBagConstraints);
 
-        Label_ValIni.setText("Valore iniziale a mano :");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
-        Pannello_Campi.add(Label_ValIni, gridBagConstraints);
-
-        Campo_ValIni.setColumns(16);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        Pannello_Campi.add(Campo_ValIni, gridBagConstraints);
-
-        Label_NotaIni.setText("Nota valore iniziale :");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
-        Pannello_Campi.add(Label_NotaIni, gridBagConstraints);
-
-        Campo_NotaIni.setColumns(28);
-        Campo_NotaIni.setLineWrap(true);
-        Campo_NotaIni.setRows(2);
-        Campo_NotaIni.setWrapStyleWord(true);
-        Scroll_NotaIni.setViewportView(Campo_NotaIni);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        Pannello_Campi.add(Scroll_NotaIni, gridBagConstraints);
-
-        Label_ValFin.setText("Valore finale a mano :");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
-        Pannello_Campi.add(Label_ValFin, gridBagConstraints);
-
-        Campo_ValFin.setColumns(16);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        Pannello_Campi.add(Campo_ValFin, gridBagConstraints);
-
-        Label_NotaFin.setText("Nota valore finale :");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
-        Pannello_Campi.add(Label_NotaFin, gridBagConstraints);
-
-        Campo_NotaFin.setColumns(28);
-        Campo_NotaFin.setLineWrap(true);
-        Campo_NotaFin.setRows(2);
-        Campo_NotaFin.setWrapStyleWord(true);
-        Scroll_NotaFin.setViewportView(Campo_NotaFin);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        Pannello_Campi.add(Scroll_NotaFin, gridBagConstraints);
-
         Label_ModIni.setText("Calcolo iniziale :");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
         Pannello_Campi.add(Label_ModIni, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
@@ -313,13 +267,14 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         Label_ModFin.setText("Calcolo finale :");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
         Pannello_Campi.add(Label_ModFin, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
@@ -328,16 +283,114 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         Label_Bollo.setText("Bollo exchange (solo CRYPTO) :");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
         Pannello_Campi.add(Label_Bollo, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        Pannello_Campi.add(Combo_Bollo, gridBagConstraints);
+
+        Label_Stato.setText("Stato estero (solo FIAT) :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
+        Pannello_Campi.add(Label_Stato, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        Pannello_Campi.add(Combo_Stato, gridBagConstraints);
+
+        Label_Ident.setText("Identificativo fiscale (solo FIAT) :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
+        Pannello_Campi.add(Label_Ident, gridBagConstraints);
+
+        Campo_Ident.setColumns(20);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        Pannello_Campi.add(Campo_Ident, gridBagConstraints);
+
+        Label_Isee.setText("Identificativo ISEE (solo FIAT) :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
+        Pannello_Campi.add(Label_Isee, gridBagConstraints);
+
+        Campo_Isee.setColumns(20);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        Pannello_Campi.add(Campo_Isee, gridBagConstraints);
+
+        Label_Note.setText("Note (solo FIAT) :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
+        Pannello_Campi.add(Label_Note, gridBagConstraints);
+
+        Campo_Note.setColumns(28);
+        Campo_Note.setLineWrap(true);
+        Campo_Note.setRows(2);
+        Campo_Note.setWrapStyleWord(true);
+        Scroll_Note.setViewportView(Campo_Note);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 10;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        Pannello_Campi.add(Combo_Bollo, gridBagConstraints);
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        Pannello_Campi.add(Scroll_Note, gridBagConstraints);
+
+        Label_Fonte.setText("Fonte (solo FIAT) :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
+        Pannello_Campi.add(Label_Fonte, gridBagConstraints);
+
+        Campo_Fonte.setColumns(28);
+        Campo_Fonte.setLineWrap(true);
+        Campo_Fonte.setRows(2);
+        Campo_Fonte.setWrapStyleWord(true);
+        Scroll_Fonte.setViewportView(Campo_Fonte);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 0);
+        Pannello_Campi.add(Scroll_Fonte, gridBagConstraints);
 
         getContentPane().add(Pannello_Campi, java.awt.BorderLayout.CENTER);
 
@@ -368,28 +421,34 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void Combo_TipoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Combo_TipoActionPerformed
-        aggiornaAbilitazioneBollo();
+        aggiornaAbilitazioni();
     }//GEN-LAST:event_Combo_TipoActionPerformed
 
     private void Bottone_OkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_OkActionPerformed
         String tipo = TIPO_FIAT.equals(Combo_Tipo.getSelectedItem()) ? TIPO_FIAT : TIPO_CRYPTO;
+        boolean fiat = TIPO_FIAT.equals(tipo);
         String[] r = new String[COLONNE_PERIODO];
         java.util.Arrays.fill(r, "");
         r[COL_TIPO] = tipo;
         r[COL_PROGRESSIVO] = Campo_Prog.getText().trim();
         r[COL_DATA_INIZIO] = RwDialoghi.leggiData(Data_Inizio);
         r[COL_DATA_FINE] = RwDialoghi.leggiData(Data_Fine);
-        r[COL_VAL_INIZIALE] = Campo_ValIni.getText().trim();
-        r[COL_NOTA_INIZIALE] = Campo_NotaIni.getText().trim();
-        r[COL_VAL_FINALE] = Campo_ValFin.getText().trim();
-        r[COL_NOTA_FINALE] = Campo_NotaFin.getText().trim();
+        r[COL_VAL_INIZIALE] = valIniziale;
+        r[COL_NOTA_INIZIALE] = notaIniziale;
+        r[COL_VAL_FINALE] = valFinale;
+        r[COL_NOTA_FINALE] = notaFinale;
         r[COL_MOD_INIZIALE] = Principale_GruppiWalletRW.codiceModalita(
                 String.valueOf(Combo_ModIni.getSelectedItem()), MODALITA_INIZIALE);
         r[COL_MOD_FINALE] = Principale_GruppiWalletRW.codiceModalita(
                 String.valueOf(Combo_ModFin.getSelectedItem()), MODALITA_FINALE);
-        r[COL_BOLLO] = TIPO_CRYPTO.equals(tipo) ? String.valueOf(Combo_Bollo.getSelectedItem()) : "";
+        r[COL_BOLLO] = fiat ? "" : String.valueOf(Combo_Bollo.getSelectedItem());
         r[COL_ORIGINE] = ORIGINE_UTENTE;
         r[COL_CHIAVE_DEFAULT] = chiaveDefault == null ? "" : chiaveDefault;
+        r[COL_STATO_ESTERO] = fiat ? StatiEsteri.codiceDaEtichetta(String.valueOf(Combo_Stato.getSelectedItem())) : "";
+        r[COL_IDENT_FISCALE] = fiat ? Campo_Ident.getText().trim() : "";
+        r[COL_IDENT_ISEE] = fiat ? Campo_Isee.getText().trim() : "";
+        r[COL_NOTE_FISCALI] = fiat ? Campo_Note.getText().trim() : "";
+        r[COL_FONTE_FISCALE] = fiat ? Campo_Fonte.getText().trim() : "";
 
         List<String> errori = Principale_GruppiWalletRW.validaPeriodi(java.util.Collections.singletonList(r));
         if (!errori.isEmpty()) {
@@ -408,31 +467,33 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Annulla;
     private javax.swing.JButton Bottone_Ok;
-    private javax.swing.JTextArea Campo_NotaFin;
-    private javax.swing.JTextArea Campo_NotaIni;
+    private javax.swing.JTextField Campo_Ident;
+    private javax.swing.JTextField Campo_Isee;
+    private javax.swing.JTextArea Campo_Fonte;
+    private javax.swing.JTextArea Campo_Note;
     private javax.swing.JTextField Campo_Prog;
-    private javax.swing.JTextField Campo_ValFin;
-    private javax.swing.JTextField Campo_ValIni;
     private javax.swing.JComboBox Combo_Bollo;
     private javax.swing.JComboBox Combo_ModFin;
     private javax.swing.JComboBox Combo_ModIni;
+    private javax.swing.JComboBox Combo_Stato;
     private javax.swing.JComboBox Combo_Tipo;
     private com.toedter.calendar.JDateChooser Data_Fine;
     private com.toedter.calendar.JDateChooser Data_Inizio;
     private javax.swing.JLabel Label_Bollo;
     private javax.swing.JLabel Label_DataFine;
     private javax.swing.JLabel Label_DataInizio;
+    private javax.swing.JLabel Label_Fonte;
+    private javax.swing.JLabel Label_Ident;
+    private javax.swing.JLabel Label_Isee;
     private javax.swing.JLabel Label_ModFin;
     private javax.swing.JLabel Label_ModIni;
-    private javax.swing.JLabel Label_NotaFin;
-    private javax.swing.JLabel Label_NotaIni;
+    private javax.swing.JLabel Label_Note;
     private javax.swing.JLabel Label_Prog;
+    private javax.swing.JLabel Label_Stato;
     private javax.swing.JLabel Label_Tipo;
-    private javax.swing.JLabel Label_ValFin;
-    private javax.swing.JLabel Label_ValIni;
     private javax.swing.JPanel Pannello_Campi;
     private javax.swing.JPanel Pannello_Pulsanti;
-    private javax.swing.JScrollPane Scroll_NotaFin;
-    private javax.swing.JScrollPane Scroll_NotaIni;
+    private javax.swing.JScrollPane Scroll_Fonte;
+    private javax.swing.JScrollPane Scroll_Note;
     // End of variables declaration//GEN-END:variables
 }

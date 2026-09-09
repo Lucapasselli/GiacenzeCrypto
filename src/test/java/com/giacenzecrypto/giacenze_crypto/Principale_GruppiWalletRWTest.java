@@ -37,14 +37,8 @@ class Principale_GruppiWalletRWTest {
 
     @BeforeEach
     void pulisce() {
-        for (String g : new ArrayList<>(DatabaseH2.Pers_GruppoRiferimento_LeggiTabella().keySet())) {
-            DatabaseH2.Pers_GruppoRiferimento_Cancella(g);
-        }
         for (String g : new ArrayList<>(DatabaseH2.Pers_GruppoPeriodoRW_LeggiTabella().keySet())) {
             DatabaseH2.Pers_GruppoPeriodoRW_CancellaGruppo(g);
-        }
-        for (String id : new ArrayList<>(DatabaseH2.Pers_ExchangePeriodo_LeggiTabella().keySet())) {
-            DatabaseH2.Pers_ExchangePeriodo_CancellaExchange(id);
         }
         for (String w : new ArrayList<>(DatabaseH2.Pers_GruppoWallet_LeggiTuttiIWallet())) {
             DatabaseH2.Pers_GruppoWallet_Cancella(w);
@@ -184,11 +178,22 @@ class Principale_GruppiWalletRWTest {
     }
 
     @Test
-    void avvisiPeriodi_periodoApertoCopreIBuchi() {
-        assertTrue(Principale_GruppiWalletRW.avvisiPeriodi(lista(
+    void avvisiPeriodi_periodoSenzaDateAccantoADatati_nonCopreIBuchi() {
+        // Da quando l'inizio mancante si deduce (finestreEffettive), una riga senza date NON è più un
+        // "fallback che copre tutto" : parte dal giorno dopo l'ultima fine, qui il 2025-01-01. Il buco
+        // fra i due periodi datati resta quindi segnalato.
+        List<String> avv = Principale_GruppiWalletRW.avvisiPeriodi(lista(
                 riga("FIAT", "1", "", "", "", "", "", "", "", ""),
                 riga("FIAT", "2", "2024-01-01", "2024-03-31", "", "", "", "", "", ""),
-                riga("FIAT", "3", "2024-07-01", "2024-12-31", "", "", "", "", "", ""))).isEmpty());
+                riga("FIAT", "3", "2024-07-01", "2024-12-31", "", "", "", "", "", "")));
+        assertEquals(1, avv.size(), avv.toString());
+        assertTrue(avv.get(0).contains("2024-04-01"), avv.toString());
+    }
+
+    @Test
+    void avvisiPeriodi_unicoPeriodoSenzaDate_copreTutto() {
+        assertTrue(Principale_GruppiWalletRW.avvisiPeriodi(lista(
+                riga("FIAT", "1", "", "", "", "", "", "", "", ""))).isEmpty());
     }
 
     @Test
@@ -202,29 +207,30 @@ class Principale_GruppiWalletRWTest {
         assertEquals(1, Principale_GruppiWalletRW.prossimoProgressivo(new ArrayList<>(), "FIAT"));
     }
 
-    // ---------------- riferimento estero ----------------
+    // ---------------- dati fiscali sul rigo FIAT ----------------
 
-    @Test
-    void salvaRiferimento_statoSenzaCodice_erroreENonScrive() {
-        List<String> err = Principale_GruppiWalletRW.salvaRiferimento(
-                "Wallet 01", Principale_GruppiWalletRW.RIFERIMENTO_STATO, "", "", null);
-        assertFalse(err.isEmpty());
-        assertNull(DatabaseH2.Pers_GruppoRiferimento_Leggi("Wallet 01")[1]);
+    /** riga FIAT con i dati fiscali (Stato estero + identificativo). */
+    private static String[] rigaF(String prog, String di, String df, String stato, String ident) {
+        String[] r = riga("FIAT", prog, di, df, "", "", "", "", "", "");
+        String[] full = new String[Principale_GruppiWalletRW.COLONNE_PERIODO];
+        java.util.Arrays.fill(full, "");
+        System.arraycopy(r, 0, full, 0, r.length);
+        full[Principale_GruppiWalletRW.COL_STATO_ESTERO] = stato;
+        full[Principale_GruppiWalletRW.COL_IDENT_FISCALE] = ident;
+        return full;
     }
 
     @Test
-    void salvaRiferimento_exchangeInesistente_errore() {
-        List<String> err = Principale_GruppiWalletRW.salvaRiferimento(
-                "Wallet 01", Principale_GruppiWalletRW.RIFERIMENTO_EXCHANGE, null, null, "nonesiste");
-        assertFalse(err.isEmpty());
-        assertTrue(err.get(0).contains("anagrafica"));
+    void statoEsteroEffettivo_senzaPeriodiFiat_vuoto() {
+        assertEquals("", Principale_GruppiWalletRW.statoEsteroEffettivo("Wallet 40"));
+        assertEquals("", Principale_GruppiWalletRW.identificativoFiscaleEffettivo("Wallet 40"));
+        assertEquals("— non impostato", Principale_GruppiWalletRW.descriviRiferimento("Wallet 40"));
     }
 
     @Test
-    void salvaRiferimento_statoOk_riletturaEDescrizione() {
-        List<String> err = Principale_GruppiWalletRW.salvaRiferimento(
-                "Wallet 02", Principale_GruppiWalletRW.RIFERIMENTO_STATO, "092", "LU12345678", null);
-        assertTrue(err.isEmpty(), err::toString);
+    void statoEsteroEffettivo_periodoFiatAperto_valeSempre() {
+        assertTrue(Principale_GruppiWalletRW.salvaPeriodi("Wallet 02",
+                lista(rigaF("1", "", "", "092", "LU12345678"))).isEmpty());
 
         assertEquals("092", Principale_GruppiWalletRW.statoEsteroEffettivo("Wallet 02"));
         assertEquals("LU12345678", Principale_GruppiWalletRW.identificativoFiscaleEffettivo("Wallet 02"));
@@ -232,39 +238,88 @@ class Principale_GruppiWalletRWTest {
     }
 
     @Test
-    void salvaRiferimento_exchangeOk_statoEPivaDerivatiDaiPeriodiDellExchange() {
-        DatabaseH2.Pers_ExchangeAnagrafica_ScriviNome("coinbase", "Coinbase");
-        DatabaseH2.Pers_ExchangePeriodo_CancellaExchange("coinbase");
-        DatabaseH2.Pers_ExchangePeriodo_Scrivi("coinbase", 1, "", "", "Coinbase Luxembourg S.A.",
-                "092", "LU99999999", null, null);
-
-        List<String> err = Principale_GruppiWalletRW.salvaRiferimento(
-                "Wallet 03", Principale_GruppiWalletRW.RIFERIMENTO_EXCHANGE, null, null, "coinbase");
-        assertTrue(err.isEmpty(), err::toString);
-
-        assertEquals("092", Principale_GruppiWalletRW.statoEsteroEffettivo("Wallet 03"));
-        assertEquals("LU99999999", Principale_GruppiWalletRW.identificativoFiscaleEffettivo("Wallet 03"));
-        assertTrue(Principale_GruppiWalletRW.descriviRiferimento("Wallet 03").contains("Coinbase"));
-    }
-
-    @Test
-    void statoEsteroEffettivo_exchangeConPiuPeriodi_risolvePerData() {
-        DatabaseH2.Pers_ExchangeAnagrafica_ScriviNome("kraken", "Kraken");
-        DatabaseH2.Pers_ExchangePeriodo_CancellaExchange("kraken");
-        DatabaseH2.Pers_ExchangePeriodo_Scrivi("kraken", 1, "", "2021-01-31", "Payward Ltd", "031", null, null, null);
-        DatabaseH2.Pers_ExchangePeriodo_Scrivi("kraken", 2, "2021-02-01", "", "Payward Europe Solutions Ltd", "040", "711781", null, null);
-
-        Principale_GruppiWalletRW.salvaRiferimento(
-                "Wallet 04", Principale_GruppiWalletRW.RIFERIMENTO_EXCHANGE, null, null, "kraken");
+    void statoEsteroEffettivo_duePeriodiFiat_risolvePerData() {
+        assertTrue(Principale_GruppiWalletRW.salvaPeriodi("Wallet 04", lista(
+                rigaF("1", "", "2021-01-31", "031", ""),
+                rigaF("2", "2021-02-01", "", "040", "711781"))).isEmpty());
 
         assertEquals("031", Principale_GruppiWalletRW.statoEsteroEffettivo("Wallet 04", java.time.LocalDate.of(2020, 6, 1)));
         assertEquals("040", Principale_GruppiWalletRW.statoEsteroEffettivo("Wallet 04", java.time.LocalDate.of(2022, 6, 1)));
         assertEquals("040", Principale_GruppiWalletRW.statoEsteroEffettivo("Wallet 04")); // periodo corrente
+        assertEquals("711781", Principale_GruppiWalletRW.identificativoFiscaleEffettivo("Wallet 04"));
     }
 
     @Test
-    void descriviRiferimento_gruppoSenzaConfig_nonImpostato() {
-        assertEquals("— non impostato", Principale_GruppiWalletRW.descriviRiferimento("Wallet 40"));
+    void datiFiscali_soloSulRigoFiat_ilRigoCryptoNonLiMemorizza() {
+        String[] crypto = rigaF("1", "", "", "092", "LU12345678");
+        crypto[Principale_GruppiWalletRW.COL_TIPO] = "CRYPTO";
+        assertTrue(Principale_GruppiWalletRW.salvaPeriodi("Wallet 05", lista(crypto)).isEmpty());
+
+        String[] out = Principale_GruppiWalletRW.caricaPeriodi("Wallet 05").get(0);
+        assertNull(out[Principale_GruppiWalletRW.COL_STATO_ESTERO]);
+        assertNull(out[Principale_GruppiWalletRW.COL_IDENT_FISCALE]);
+    }
+
+    @Test
+    void validaPeriodi_identificativiTroppoLunghi_segnalati() {
+        String[] r = rigaF("1", "", "", "092", "0123456789ABCDEF"); // 16 caratteri
+        assertFalse(Principale_GruppiWalletRW.validaPeriodi(lista(r)).isEmpty());
+
+        String[] r2 = rigaF("1", "", "", "0921", "");               // stato di 4 caratteri
+        assertFalse(Principale_GruppiWalletRW.validaPeriodi(lista(r2)).isEmpty());
+
+        String[] r3 = rigaF("1", "", "", "092", "");
+        r3[Principale_GruppiWalletRW.COL_IDENT_ISEE] = "0123456789ABCDEF";
+        assertFalse(Principale_GruppiWalletRW.validaPeriodi(lista(r3)).isEmpty());
+    }
+
+    // ---------------- finestre effettive (date dedotte) ----------------
+
+    @Test
+    void finestreEffettive_inizioVuoto_partOndaFineDelPeriodoPrecedente() {
+        List<Principale_GruppiWalletRW.Finestra> f = Principale_GruppiWalletRW.finestreEffettive(lista(
+                riga("FIAT", "1", "", "2025-06-19", "", "", "", "", "", ""),
+                riga("FIAT", "2", "", "", "", "", "", "", "", "")), "FIAT");
+
+        assertEquals(2, f.size());
+        // la riga 1 non ha nessuna fine precedente a cui agganciarsi : parte dal primo movimento
+        assertNull(f.get(0).inizio);
+        assertEquals(java.time.LocalDate.of(2025, 6, 19), f.get(0).fine);
+        // la riga 2 non ha date : l'inizio si deduce dalla fine della riga 1
+        assertEquals(java.time.LocalDate.of(2025, 6, 20), f.get(1).inizio);
+        assertTrue(f.get(1).inizioDedotto);
+        assertNull(f.get(1).fine);
+    }
+
+    @Test
+    void finestreEffettive_inizioVuotoConFinePropria_prendeLaFinePrecedentePiuVicina() {
+        List<Principale_GruppiWalletRW.Finestra> f = Principale_GruppiWalletRW.finestreEffettive(lista(
+                riga("FIAT", "1", "", "2020-12-31", "", "", "", "", "", ""),
+                riga("FIAT", "2", "", "2023-12-31", "", "", "", "", "", ""),
+                riga("FIAT", "3", "", "2025-12-31", "", "", "", "", "", "")), "FIAT");
+
+        assertEquals(3, f.size());
+        assertNull(f.get(0).inizio);
+        assertEquals(java.time.LocalDate.of(2021, 1, 1), f.get(1).inizio);
+        assertEquals(java.time.LocalDate.of(2024, 1, 1), f.get(2).inizio);
+    }
+
+    @Test
+    void finestreEffettive_soloIlTipoRichiesto_eLaFineDiUnAltroTipoNonInfluisce() {
+        List<Principale_GruppiWalletRW.Finestra> f = Principale_GruppiWalletRW.finestreEffettive(lista(
+                riga("CRYPTO", "1", "", "2025-06-19", "", "", "", "", "", ""),
+                riga("FIAT", "1", "", "", "", "", "", "", "", "")), "FIAT");
+
+        assertEquals(1, f.size());
+        assertNull(f.get(0).inizio, "la fine di un rigo CRYPTO non deve dedurre l'inizio di un rigo FIAT");
+    }
+
+    @Test
+    void validaPeriodi_coppiaDaCambioStato_nonSiSovrappone() {
+        // (vuoto -> 19/06) + (senza date, dedotto dal 20/06) : contigui, non sovrapposti
+        assertTrue(Principale_GruppiWalletRW.validaPeriodi(lista(
+                riga("FIAT", "1", "", "2025-06-19", "", "", "", "", "", ""),
+                riga("FIAT", "2", "", "", "", "", "", "", "", ""))).isEmpty());
     }
 
     // ---------------- periodi : salva / carica ----------------
@@ -290,13 +345,16 @@ class Principale_GruppiWalletRWTest {
 
         List<String[]> out = Principale_GruppiWalletRW.caricaPeriodi("Wallet 06");
         assertEquals(3, out.size());
-        // ordinamento tipo poi progressivo ; colonne in coda = bollo periodo / Origine / ChiaveDefault (non impostati -> null)
-        assertArrayEquals(new String[]{"CRYPTO", "1", "2023-01-01", "2023-05-31", null, null, null, null, null, null, null, null, null}, out.get(0));
-        assertArrayEquals(new String[]{"CRYPTO", "2", "2023-09-01", null, null, null, null, null, null, null, null, null, null}, out.get(1));
+        // ordinamento tipo poi progressivo ; colonne in coda = bollo / Origine / ChiaveDefault / dati fiscali (non impostati -> null)
+        assertArrayEquals(new String[]{"CRYPTO", "1", "2023-01-01", "2023-05-31", null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null}, out.get(0));
+        assertArrayEquals(new String[]{"CRYPTO", "2", "2023-09-01", null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null}, out.get(1));
         assertArrayEquals(new String[]{"FIAT", "1", "2023-01-01", "2023-12-31", "1500.00", "estratto conto",
                 "0.00", "conto svuotato",
                 Principale_GruppiWalletRW.MOD_INIZIALE_PRIMO_APPORTO,
-                Principale_GruppiWalletRW.MOD_FINALE_ULTIMA_USCITA, null, null, null}, out.get(2));
+                Principale_GruppiWalletRW.MOD_FINALE_ULTIMA_USCITA,
+                null, null, null, null, null, null, null, null}, out.get(2));
     }
 
     @Test
@@ -638,46 +696,47 @@ class Principale_GruppiWalletRWTest {
     }
 
     @Test
-    void datiFiscaliGruppo_modalitaExchangeEBollo() {
+    void datiFiscaliGruppo_periodoFiatCorrenteEBollo() {
         DatabaseH2.Pers_GruppoAlias_Scrivi("Wallet 102", "Coinbase", false);
-        DatabaseH2.Pers_GruppoRiferimento_Scrivi("Wallet 102", "EXCHANGE", null, null, "coinbase");
-        DatabaseH2.Pers_ExchangeAnagrafica_Scrivi("coinbase", "Coinbase", null, null, null, null, null);
+        assertTrue(Principale_GruppiWalletRW.salvaPeriodi("Wallet 102",
+                lista(rigaF("1", "", "", "092", "LU36476644"))).isEmpty());
 
-        List<String[]> d = Principale_GruppiWalletRW.datiFiscaliGruppo("Wallet 102");
         // chiave -> valore, per comodità
         java.util.Map<String, String> m = new java.util.HashMap<>();
-        for (String[] r : d) {
+        for (String[] r : Principale_GruppiWalletRW.datiFiscaliGruppo("Wallet 102")) {
             m.put(r[0], r[1]);
         }
         assertEquals("Coinbase", m.get("Alias"));
-        assertEquals("Exchange di riferimento", m.get("Riferimento estero"));
-        assertTrue(m.get("Exchange").startsWith("Coinbase (coinbase)"));
+        assertTrue(m.get("Stato estero (corrente)").contains("092"), m.toString());
+        assertEquals("LU36476644", m.get("Identificativo fiscale (corrente)"));
         assertEquals("NO", m.get("Bollo pagato dall'intermediario"));
     }
 
     @Test
-    void datiFiscaliGruppo_senzaRiferimento_nonImpostato() {
+    void datiFiscaliGruppo_senzaPeriodiFiat_nessunoStato() {
         DatabaseH2.Pers_GruppoAlias_Scrivi("Wallet 09", "Mio gruppo", true);
-        List<String[]> d = Principale_GruppiWalletRW.datiFiscaliGruppo("Wallet 09");
         java.util.Map<String, String> m = new java.util.HashMap<>();
-        for (String[] r : d) {
+        for (String[] r : Principale_GruppiWalletRW.datiFiscaliGruppo("Wallet 09")) {
             m.put(r[0], r[1]);
         }
-        assertEquals("— non impostato", m.get("Riferimento estero"));
+        assertTrue(m.get("Periodo FIAT corrente").startsWith("— nessuno"), m.toString());
         assertEquals("SI", m.get("Bollo pagato dall'intermediario")); // dal flag per-gruppo
     }
 
     @Test
-    void periodiPerVista_sottoinsiemeColonne_bolloSoloCrypto() {
+    void periodiPerVista_sottoinsiemeColonne_bolloSoloCryptoDatiFiscaliSoloFiat() {
         Principale_GruppiWalletRW.salvaPeriodi("Wallet 102", java.util.List.of(
                 rigaB(Principale_GruppiWalletRW.TIPO_CRYPTO, "1", "2025-01-01", "", Principale_GruppiWalletRW.BOLLO_SI),
-                rigaB(Principale_GruppiWalletRW.TIPO_FIAT, "1", "2025-01-01", "", "")));
+                rigaF("1", "2025-01-01", "", "092", "LU36476644")));
         List<String[]> v = Principale_GruppiWalletRW.periodiPerVista("Wallet 102");
         assertEquals(2, v.size());
-        assertEquals(10, v.get(0).length);
+        assertEquals(11, v.get(0).length);
         assertEquals(Principale_GruppiWalletRW.TIPO_CRYPTO, v.get(0)[0]);
-        assertEquals("SI", v.get(0)[8]);
-        assertEquals("n/d", v.get(1)[8], "sul rigo FIAT il bollo è n/d");
+        assertEquals("n/d", v.get(0)[6], "sul rigo CRYPTO lo Stato estero è n/d");
+        assertEquals("SI", v.get(0)[9]);
+        assertTrue(v.get(1)[6].contains("092"));
+        assertEquals("LU36476644", v.get(1)[7]);
+        assertEquals("n/d", v.get(1)[9], "sul rigo FIAT il bollo è n/d");
     }
 
     private static String nz(String s) {

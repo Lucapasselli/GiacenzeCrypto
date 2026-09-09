@@ -3,7 +3,9 @@ package com.giacenzecrypto.giacenze_crypto;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -17,6 +19,12 @@ import org.json.JSONObject;
  * aggiungere una finestra di bollo significava una nuova release. Ora sono un file, allineato dal
  * repository come le mappe causali (vedi {@link MappeCausali}) e modificabile a mano
  * nell'installazione dell'utente.</p>
+ *
+ * <p><b>Due posti nel file, una sola destinazione.</b> I {@code periodiFiscali} scritti sotto un
+ * exchange sono <b>righi FIAT del suo gruppo wallet</b> ({@code gruppo}) : {@link #Interpreta} li
+ * fonde con il blocco {@code periodiDetenzioneGruppi} e {@link #periodiDetenzioneGruppi()} li
+ * restituisce insieme. Stanno sotto l'exchange solo perche' e' li' che si leggono accanto al resto
+ * dei suoi dati ; dal 2026-09-09 non esiste piu' nessuna tabella dei periodi dell'exchange.</p>
  *
  * <p><b>Il reconcile tocca solo le righe {@code SISTEMA}.</b> {@link Principale_GruppiWalletRW}
  * riversa questo file nelle tabelle {@code personale.mv.db} all'avvio ({@code Pers_RW_SeminaERiconcilia})
@@ -35,40 +43,17 @@ public class DatiPredefinitiRW {
     /** Nome del file in {@code config/importmappe/}, senza estensione. */
     public static final String NOME = "RW_Predefiniti";
 
-    /** Un exchange noto : id + nome + gruppo wallet preconfigurato + periodi fiscali. */
+    /** Un exchange noto : id + nome + gruppo wallet preconfigurato. */
     public static final class ExchangePredef {
 
         public final String id;
         public final String nome;
         public final String gruppo;
-        public final List<PeriodoFiscalePredef> periodiFiscali;
 
-        ExchangePredef(String id, String nome, String gruppo, List<PeriodoFiscalePredef> periodiFiscali) {
+        ExchangePredef(String id, String nome, String gruppo) {
             this.id = id;
             this.nome = nome;
             this.gruppo = gruppo;
-            this.periodiFiscali = periodiFiscali;
-        }
-    }
-
-    /** Un periodo fiscale predefinito di un exchange ({@code EXCHANGE_PERIODO}). */
-    public static final class PeriodoFiscalePredef {
-
-        public final String chiave;
-        public final int progressivo;
-        public final String dataInizio, dataFine, nome, statoEstero, identificativoFiscale, note, fonte;
-
-        PeriodoFiscalePredef(String chiave, int progressivo, String dataInizio, String dataFine, String nome,
-                String statoEstero, String identificativoFiscale, String note, String fonte) {
-            this.chiave = chiave;
-            this.progressivo = progressivo;
-            this.dataInizio = dataInizio;
-            this.dataFine = dataFine;
-            this.nome = nome;
-            this.statoEstero = statoEstero;
-            this.identificativoFiscale = identificativoFiscale;
-            this.note = note;
-            this.fonte = fonte;
         }
     }
 
@@ -84,17 +69,24 @@ public class DatiPredefinitiRW {
         }
     }
 
-    /** Un periodo di detenzione predefinito ({@code GRUPPO_PERIODO_RW}). */
+    /**
+     * Un periodo di detenzione predefinito ({@code GRUPPO_PERIODO_RW}). I campi fiscali
+     * ({@code statoEstero}, {@code identificativoFiscale}, {@code note}, {@code fonte}) valgono solo
+     * sui righi {@code FIAT}. L'identificativo ISEE non c'e' e non ci deve essere : e' sempre inserito
+     * a mano, anche sulle righe che arrivano dal programma.
+     */
     public static final class PeriodoDetPredef {
 
         public final String chiave, tipo;
         public final int progressivo;
         public final String dataInizio, dataFine, valIniziale, notaIniziale, valFinale, notaFinale,
-                calcoloIniziale, calcoloFinale, bollo;
+                calcoloIniziale, calcoloFinale, bollo,
+                statoEstero, identificativoFiscale, note, fonte;
 
         PeriodoDetPredef(String chiave, String tipo, int progressivo, String dataInizio, String dataFine,
                 String valIniziale, String notaIniziale, String valFinale, String notaFinale,
-                String calcoloIniziale, String calcoloFinale, String bollo) {
+                String calcoloIniziale, String calcoloFinale, String bollo,
+                String statoEstero, String identificativoFiscale, String note, String fonte) {
             this.chiave = chiave;
             this.tipo = tipo;
             this.progressivo = progressivo;
@@ -107,6 +99,10 @@ public class DatiPredefinitiRW {
             this.calcoloIniziale = calcoloIniziale;
             this.calcoloFinale = calcoloFinale;
             this.bollo = bollo;
+            this.statoEstero = statoEstero;
+            this.identificativoFiscale = identificativoFiscale;
+            this.note = note;
+            this.fonte = fonte;
         }
     }
 
@@ -174,6 +170,12 @@ public class DatiPredefinitiRW {
             JSONObject root = new JSONObject(contenuto);
             String versione = root.optString("versione", "");
 
+            // I periodi di detenzione, per gruppo. Si riempiono da due punti del file : il blocco
+            // "periodiDetenzioneGruppi" e i "periodiFiscali" scritti sotto ogni exchange, che sono
+            // righi FIAT del gruppo preconfigurato di quell'exchange - stanno li' perche' e' li' che
+            // si leggono insieme al resto dei suoi dati, non perche' siano un'altra cosa.
+            Map<String, List<PeriodoDetPredef>> perGruppo = new LinkedHashMap<>();
+
             List<ExchangePredef> exchange = new ArrayList<>();
             JSONArray exArr = root.optJSONArray("exchange");
             if (exArr != null) {
@@ -184,26 +186,24 @@ public class DatiPredefinitiRW {
                         LoggerGC.ScriviErrore("DatiPredefinitiRW: exchange senza id in " + nome + ", lo ignoro");
                         continue;
                     }
-                    List<PeriodoFiscalePredef> pf = new ArrayList<>();
+                    String gruppo = ex.optString("gruppo", "").trim();
                     JSONArray pfArr = ex.optJSONArray("periodiFiscali");
-                    if (pfArr != null) {
+                    if (pfArr != null && !gruppo.isEmpty()) {
+                        List<PeriodoDetPredef> periodi =
+                                perGruppo.computeIfAbsent(gruppo, k -> new ArrayList<>());
                         for (int j = 0; j < pfArr.length(); j++) {
                             JSONObject p = pfArr.getJSONObject(j);
-                            pf.add(new PeriodoFiscalePredef(
-                                    p.optString("chiave", id + "-" + p.optInt("progressivo", j + 1)),
-                                    p.optInt("progressivo", j + 1),
-                                    p.optString("dataInizio", ""), p.optString("dataFine", ""),
-                                    p.optString("nome", ex.optString("nome", id)),
-                                    p.optString("statoEstero", ""), p.optString("identificativoFiscale", ""),
-                                    p.optString("note", ""), p.optString("fonte", "")));
+                            periodi.add(periodoDet(p, "FIAT",
+                                    id + "-fiat-" + p.optInt("progressivo", j + 1), j));
                         }
+                    } else if (pfArr != null) {
+                        LoggerGC.ScriviErrore("DatiPredefinitiRW: l'exchange " + id + " ha periodiFiscali "
+                                + "ma nessun gruppo wallet in " + nome + ", li ignoro");
                     }
-                    exchange.add(new ExchangePredef(id, ex.optString("nome", id),
-                            ex.optString("gruppo", "").trim(), pf));
+                    exchange.add(new ExchangePredef(id, ex.optString("nome", id), gruppo));
                 }
             }
 
-            List<GruppoPeriodiPredef> gruppi = new ArrayList<>();
             JSONArray gArr = root.optJSONArray("periodiDetenzioneGruppi");
             if (gArr != null) {
                 for (int i = 0; i < gArr.length(); i++) {
@@ -212,24 +212,22 @@ public class DatiPredefinitiRW {
                     if (gruppo.isEmpty()) {
                         continue;
                     }
-                    List<PeriodoDetPredef> periodi = new ArrayList<>();
+                    List<PeriodoDetPredef> periodi =
+                            perGruppo.computeIfAbsent(gruppo, k -> new ArrayList<>());
                     JSONArray pArr = g.optJSONArray("periodi");
                     if (pArr != null) {
                         for (int j = 0; j < pArr.length(); j++) {
                             JSONObject p = pArr.getJSONObject(j);
-                            periodi.add(new PeriodoDetPredef(
-                                    p.optString("chiave", gruppo + "-" + p.optString("tipo", "CRYPTO") + "-" + j),
-                                    p.optString("tipo", "CRYPTO").trim(),
-                                    p.optInt("progressivo", j + 1),
-                                    p.optString("dataInizio", ""), p.optString("dataFine", ""),
-                                    p.optString("valIniziale", ""), p.optString("notaIniziale", ""),
-                                    p.optString("valFinale", ""), p.optString("notaFinale", ""),
-                                    p.optString("calcoloIniziale", ""), p.optString("calcoloFinale", ""),
-                                    p.optString("bollo", "")));
+                            String tipo = p.optString("tipo", "CRYPTO").trim();
+                            periodi.add(periodoDet(p, tipo, gruppo + "-" + tipo + "-" + j, j));
                         }
                     }
-                    gruppi.add(new GruppoPeriodiPredef(gruppo, periodi));
                 }
+            }
+
+            List<GruppoPeriodiPredef> gruppi = new ArrayList<>();
+            for (Map.Entry<String, List<PeriodoDetPredef>> e : perGruppo.entrySet()) {
+                gruppi.add(new GruppoPeriodiPredef(e.getKey(), e.getValue()));
             }
 
             if (exchange.isEmpty()) {
@@ -241,6 +239,21 @@ public class DatiPredefinitiRW {
             LoggerGC.ScriviErrore(ex);
             return null;
         }
+    }
+
+    /** Un periodo di detenzione letto da un oggetto JSON, con {@code tipo} e chiave di ripiego imposti dal chiamante. */
+    private static PeriodoDetPredef periodoDet(JSONObject p, String tipo, String chiaveDiRipiego, int indice) {
+        return new PeriodoDetPredef(
+                p.optString("chiave", chiaveDiRipiego),
+                tipo,
+                p.optInt("progressivo", indice + 1),
+                p.optString("dataInizio", ""), p.optString("dataFine", ""),
+                p.optString("valIniziale", ""), p.optString("notaIniziale", ""),
+                p.optString("valFinale", ""), p.optString("notaFinale", ""),
+                p.optString("calcoloIniziale", ""), p.optString("calcoloFinale", ""),
+                p.optString("bollo", ""),
+                p.optString("statoEstero", ""), p.optString("identificativoFiscale", ""),
+                p.optString("note", ""), p.optString("fonte", ""));
     }
 
     private static String sha256(String s) {

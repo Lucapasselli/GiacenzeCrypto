@@ -51,11 +51,8 @@ class DatiPredefinitiRWTest {
     }
 
     @Test
-    void reconcile_haSeminatoLAnagraficaComeSistema() {
+    void reconcile_haSeminatoIGruppiComeSistema() {
         // Il reconcile è già girato in CreaoCollegaDatabase().
-        String[] binance = DatabaseH2.Pers_ExchangeAnagrafica_Leggi("binance");
-        assertEquals("binance", binance[0]);
-        assertEquals(Principale_GruppiWalletRW.ORIGINE_SISTEMA, binance[7]);
         assertEquals(Principale_GruppiWalletRW.ORIGINE_SISTEMA,
                 DatabaseH2.Pers_GruppoAlias_Leggi("Wallet 101")[3]);
         // periodi di detenzione Binance predefiniti (bollo fino al 30/06/2026, poi NO)
@@ -66,15 +63,39 @@ class DatiPredefinitiRWTest {
     }
 
     @Test
+    void reconcile_iPeriodiFiscaliDellExchangeDiventanoRighiFiatDelSuoGruppo() {
+        // Coinbase : due righi FIAT sul suo gruppo, con i dati fiscali delle due entità legali
+        List<String[]> per = DatabaseH2.Pers_GruppoPeriodoRW_LeggiGruppo("Wallet 102");
+        assertEquals(2, per.size());
+        for (String[] r : per) {
+            assertEquals("FIAT", r[2]);
+        }
+        // ordinati per progressivo : prima l'entità irlandese, poi quella lussemburghese
+        assertEquals("2025-06-19", per.get(0)[5]);
+        assertEquals("040", per.get(0)[15]);
+        assertEquals("2025-06-20", per.get(1)[4]);
+        assertEquals("092", per.get(1)[15]);
+        assertEquals("LU36476644", per.get(1)[16]);
+        assertEquals(Principale_GruppiWalletRW.MOD_SOLO_RESIDUO, per.get(1)[10]);
+        assertNull(per.get(1)[19], "l'identificativo ISEE non si semina mai");
+    }
+
+    @Test
     void reconcile_nonToccaUnaRigaUtente() {
-        // marco Coinbase come personalizzato, poi forzo un nuovo giro di reconcile
-        DatabaseH2.Pers_ExchangeAnagrafica_ScriviNome("coinbase", "Coinbase (mio nome)",
-                Principale_GruppiWalletRW.ORIGINE_UTENTE);
+        // marco il periodo di Kraken come personalizzato, poi forzo un nuovo giro di reconcile.
+        // Kraken e non Coinbase apposta : così questo test non tocca il gruppo su cui lavora
+        // reconcile_iPeriodiFiscaliDellExchangeDiventanoRighiFiatDelSuoGruppo, qualunque sia
+        // l'ordine con cui JUnit esegue i metodi.
+        DatabaseH2.Pers_GruppoPeriodoRW_Scrivi("Wallet 103", "FIAT", 1, "2025-06-25", null,
+                null, null, null, null, "SOLO_RESIDUO", "SOLO_RESIDUO", null,
+                Principale_GruppiWalletRW.ORIGINE_UTENTE, "kraken-mica",
+                "040", "P.IVA mia", "nota mia", "fonte mia", "E-mio-ISEE");
         DatabaseH2.Pers_Opzioni_Scrivi(Principale_GruppiWalletRW.OPZIONE_HASH_PREDEFINITI, "hash-vecchio");
         Principale_GruppiWalletRW.Pers_RW_SeminaERiconcilia();
 
-        assertEquals("Coinbase (mio nome)", DatabaseH2.Pers_ExchangeAnagrafica_Leggi("coinbase")[1],
-                "una riga UTENTE non deve essere sovrascritta dal reconcile");
+        String[] r = DatabaseH2.Pers_GruppoPeriodoRW_LeggiGruppo("Wallet 103").get(0);
+        assertEquals("P.IVA mia", r[16], "una riga UTENTE non deve essere sovrascritta dal reconcile");
+        assertEquals("E-mio-ISEE", r[19]);
         // e l'hash è stato riscritto a quello corrente
         assertEquals(DatiPredefinitiRW.Carica().hash(),
                 DatabaseH2.Pers_Opzioni_Leggi(Principale_GruppiWalletRW.OPZIONE_HASH_PREDEFINITI));

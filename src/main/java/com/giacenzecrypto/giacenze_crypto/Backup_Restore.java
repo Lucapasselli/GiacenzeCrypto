@@ -327,11 +327,11 @@ public class Backup_Restore {
         t.add(new Tabella("EMONEY", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
         t.add(new Tabella("GIACENZEBLOCKCHAIN", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
         t.add(new Tabella("EXCHANGETOKENS", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
-        //Config quadro RW dei gruppi wallet (2026-08-30) : anagrafica exchange (stato estero / P.IVA),
-        //riferimento estero per gruppo, periodi di detenzione. Dati dell'utente, ancora non usati dal calcolo.
-        t.add(new Tabella("EXCHANGE_ANAGRAFICA", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
-        t.add(new Tabella("EXCHANGE_PERIODO", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
-        t.add(new Tabella("GRUPPO_RIFERIMENTO_ESTERO", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
+        //Config quadro RW dei gruppi wallet : periodi di detenzione CRYPTO/FIAT, con i dati fiscali
+        //(Stato estero, identificativo, note, fonte) sui righi FIAT. Dati dell'utente. Le tabelle
+        //EXCHANGE_ANAGRAFICA / EXCHANGE_PERIODO / GRUPPO_RIFERIMENTO_ESTERO, che stavano qui fino al
+        //2026-09-08, non esistono più : un archivio prodotto allora le contiene ancora e il ripristino
+        //le ignora da solo, per lo stesso motivo spiegato sopra per i registri GESTITI*.
         t.add(new Tabella("GRUPPO_PERIODO_RW", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
         //Il registro dei documenti sta nel gruppo dei movimenti: il campo [41] di ogni movimento ne
         //referenzia l'Id, separarli lascerebbe quei riferimenti appesi

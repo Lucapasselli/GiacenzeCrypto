@@ -14,9 +14,8 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Smoke test dei due dialoghi per-gruppo della Fase 2 ({@link GUI_RiferimentoEsteroGruppo},
- * {@link GUI_PeriodiDetenzioneRW}): si costruiscono (coerenza {@code .form} /
- * {@code initComponents()}) e ricaricano i dati del gruppo. Saltato se headless.
+ * Smoke test di {@link GUI_PeriodiDetenzioneRW} : si costruisce (coerenza {@code .form} /
+ * {@code initComponents()}) e ricarica i periodi del gruppo. Saltato se headless.
  */
 class GUI_GruppoRWDialoghiTest {
 
@@ -38,25 +37,10 @@ class GUI_GruppoRWDialoghiTest {
     }
 
     @Test
-    void riferimentoEsteroGruppo_siCostruisceECaricaIValoriCorrenti() throws Exception {
-        DatabaseH2.Pers_GruppoRiferimento_Scrivi("Wallet 01",
-                Principale_GruppiWalletRW.RIFERIMENTO_STATO, "092", "LU12345678", null);
-
-        GUI_RiferimentoEsteroGruppo[] d = new GUI_RiferimentoEsteroGruppo[1];
-        SwingUtilities.invokeAndWait(() -> d[0] = new GUI_RiferimentoEsteroGruppo("Wallet 01"));
-        try {
-            assertFalse(d[0].salvato);
-            assertTrue(d[0].getTitle().contains("Wallet 01"));
-        } finally {
-            SwingUtilities.invokeAndWait(d[0]::dispose);
-        }
-    }
-
-    @Test
     void periodiDetenzioneRW_siCostruisceECaricaIPeriodi() throws Exception {
         Principale_GruppiWalletRW.salvaPeriodi("Wallet 02", java.util.Arrays.asList(
-                new String[]{"FIAT", "1", "2024-01-01", "2024-12-31", "", "", "", "", "", ""},
-                new String[]{"CRYPTO", "1", "", "", "", "", "", "", "", ""}));
+                riga("FIAT", "1", "2024-01-01", "2024-12-31"),
+                riga("CRYPTO", "1", "", "")));
 
         GUI_PeriodiDetenzioneRW[] d = new GUI_PeriodiDetenzioneRW[1];
         SwingUtilities.invokeAndWait(() -> d[0] = new GUI_PeriodiDetenzioneRW("Wallet 02"));
@@ -68,11 +52,40 @@ class GUI_GruppoRWDialoghiTest {
                 }
             }
             assertNotNull(m);
-            assertEquals(12, m.getColumnCount());
+            assertEquals(13, m.getColumnCount());
             assertEquals(2, m.getRowCount(), "i due periodi salvati devono comparire");
         } finally {
             SwingUtilities.invokeAndWait(d[0]::dispose);
         }
+    }
+
+    @Test
+    void modificaPeriodoDetenzione_siCostruisceECaricaLaRiga() throws Exception {
+        String[] fiat = riga("FIAT", "2", "2025-06-20", "");
+        fiat[Principale_GruppiWalletRW.COL_STATO_ESTERO] = "092";
+        fiat[Principale_GruppiWalletRW.COL_IDENT_FISCALE] = "LU36476644";
+        fiat[Principale_GruppiWalletRW.COL_IDENT_ISEE] = "E12345";
+        fiat[Principale_GruppiWalletRW.COL_MOD_INIZIALE] = Principale_GruppiWalletRW.MOD_SOLO_RESIDUO;
+
+        GUI_ModificaPeriodoDetenzione[] d = new GUI_ModificaPeriodoDetenzione[1];
+        SwingUtilities.invokeAndWait(() -> d[0] = new GUI_ModificaPeriodoDetenzione(null, fiat, 0,
+                Principale_GruppiWalletRW.BOLLO_NO));
+        try {
+            assertFalse(d[0].confermato);
+            assertTrue(d[0].getTitle().toLowerCase().contains("periodo"));
+        } finally {
+            SwingUtilities.invokeAndWait(d[0]::dispose);
+        }
+    }
+
+    private static String[] riga(String tipo, String prog, String di, String df) {
+        String[] r = new String[Principale_GruppiWalletRW.COLONNE_PERIODO];
+        java.util.Arrays.fill(r, "");
+        r[Principale_GruppiWalletRW.COL_TIPO] = tipo;
+        r[Principale_GruppiWalletRW.COL_PROGRESSIVO] = prog;
+        r[Principale_GruppiWalletRW.COL_DATA_INIZIO] = di;
+        r[Principale_GruppiWalletRW.COL_DATA_FINE] = df;
+        return r;
     }
 
     private static java.util.List<java.awt.Component> figli(java.awt.Container root) {

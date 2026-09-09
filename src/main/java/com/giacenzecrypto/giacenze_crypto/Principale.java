@@ -118,7 +118,8 @@ private static final long serialVersionUID = 3L;
     
     
     
-    static Map<String, String> Mappa_EMoney = new TreeMap<>();//Mapa dei token considerati emoney, deve essere case sensitive perchè in alcuni casi dei token si differenziano solo dalle minuscole o maiuscole
+    static Map<String, String> Mappa_EMoney = new TreeMap<>();//Mappa (simbolo token -> data decorrenza) dei token considerati e-money. Il confronto e' case-insensitive di default (vedi Funzioni.DataDecorrenzaEmoney); i singoli token si possono marcare case sensitive in Mappa_EMoney_CaseSensitive
+    static Map<String, String> Mappa_EMoney_CaseSensitive = new TreeMap<>();//Simbolo token -> "SI"/"NO": "SI" = riconosci il token solo con capitalizzazione identica (raro: due token distinti che differiscono solo per maiuscole/minuscole). Chiave allineata a Mappa_EMoney
     
     static Map<String, String> Mappa_RichiesteAPIGiaEffettuate = new TreeMap<>();
     static Map<String, List<String>> Mappa_Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -4467,11 +4468,11 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "<html><center><h2>Token</h2></html>", "<html><center><h2>Data Inizio classificazione<br>come E-Money Token</h2></html>"
+                "<html><center><h2>Token</h2></html>", "<html><center><h2>Data Inizio classificazione<br>come E-Money Token</h2></html>", "<html><center><h2>Case<br>sensitive</h2></html>"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false
+                false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -7931,12 +7932,13 @@ private void SettaIcone(){
         //testColumn.setCellEditor(new JDateChooser());
         for (String a: Mappa_EMoney.keySet()){
             try {
-                Object rigaTabella[]=new Object[2];
+                Object rigaTabella[]=new Object[3];
                 rigaTabella[0]=a;
                 String Data=Mappa_EMoney.get(a);
                 SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
                 Date d = f.parse(Data);
                 rigaTabella[1]=d;
+                rigaTabella[2]="SI".equalsIgnoreCase(Mappa_EMoney_CaseSensitive.get(a)) ? "SI" : "NO";
                 Emoney_ModelloTabella.addRow(rigaTabella);
                 // System.out.println(a);
             } catch (ParseException ex) {
@@ -10045,6 +10047,26 @@ GiacenzeaData_CompilaTabellaToken(true);
                 }
                 //System.out.println(JDialog_Ritorno);
             }
+            //Colonna 2 : marcatura "case sensitive". Un clic sulla cella la commuta SI<->NO.
+            //Il default e' NO (confronto case-insensitive) : SI serve solo quando esiste un altro
+            //token, non e-money, che differisce da questo solo per maiuscole/minuscole.
+            else if(Opzioni_Emoney_Tabella.getSelectedColumn()==2 && Opzioni_Emoney_Tabella.getSelectedRow()>=0){
+                int riga=Opzioni_Emoney_Tabella.getSelectedRow();
+                String token=Opzioni_Emoney_Tabella.getModel().getValueAt(riga, 0).toString();
+                String attuale=String.valueOf(Opzioni_Emoney_Tabella.getModel().getValueAt(riga, 2));
+                String nuovo="SI".equalsIgnoreCase(attuale) ? "NO" : "SI";
+                String dataToken=Mappa_EMoney.get(token);
+                if(dataToken!=null){
+                    DatabaseH2.Pers_Emoney_Scrivi(token, dataToken, nuovo);
+                    Opzioni_Emoney_Tabella.getModel().setValueAt(nuovo, riga, 2);
+                    //Cambiare la marcatura allarga o restringe i simboli riconosciuti come e-money :
+                    //come per lo spostamento di data, i movimenti passati vanno rielaborati.
+                    this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+                    TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa();
+                    this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                }
+            }
     }//GEN-LAST:event_Opzioni_Emoney_TabellaMouseClicked
 
     private void Opzioni_Emoney_Bottone_RimuoviActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_Bottone_RimuoviActionPerformed
@@ -11961,7 +11983,8 @@ if (result.isAction("delete-all")) {
                             for (String a : Mappa_EMoney.keySet()) {
                                     i++;
                                     String Data = Mappa_EMoney.get(a);
-                                    testo = testo+"→ → - <b>"+a+"</b> dal "+Data+"<br>";  //NON-A-VIDEO: questo testo finisce nel PDF, non nell'interfaccia
+                                    String cs = "SI".equalsIgnoreCase(Mappa_EMoney_CaseSensitive.get(a)) ? " (case sensitive)" : "";
+                                    testo = testo+"→ → - <b>"+a+"</b> dal "+Data+cs+"<br>";  //NON-A-VIDEO: questo testo finisce nel PDF, non nell'interfaccia
                             }
                             if (i==0)testo = testo+"→ → - Nessun token è stato scelto come appartenente alla cateoria degli E-Money Token<br>";  //NON-A-VIDEO: questo testo finisce nel PDF, non nell'interfaccia
                         }

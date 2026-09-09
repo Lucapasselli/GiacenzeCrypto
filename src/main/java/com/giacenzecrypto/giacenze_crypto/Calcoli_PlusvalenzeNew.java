@@ -1324,10 +1324,12 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 h = Mescola(h, e.getKey());
                 h = Mescola(h, e.getValue());
             }
-            //Token EMoney: spostare la data di un token riclassifica movimenti passati
+            //Token EMoney: spostare la data di un token (o cambiarne la marcatura case sensitive,
+            //che allarga/restringe i simboli riconosciuti) riclassifica movimenti passati
             for (Map.Entry<String, String> e : Principale.Mappa_EMoney.entrySet()) {
                 h = Mescola(h, e.getKey());
                 h = Mescola(h, e.getValue());
+                h = Mescola(h, Principale.Mappa_EMoney_CaseSensitive.get(e.getKey()));
             }
             return h;
         }

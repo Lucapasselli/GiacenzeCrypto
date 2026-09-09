@@ -3182,6 +3182,35 @@ return MappaLista;
     
     
     /**
+     * Data di decorrenza e-money registrata per {@code Token} in {@link Principale#Mappa_EMoney},
+     * oppure {@code null} se il token non e' un e-money token.
+     * <p>Il confronto e' <b>case-insensitive per impostazione predefinita</b>: un token indicato
+     * nella tabella EMONEY come {@code "EURe"} viene riconosciuto anche se nei movimenti compare
+     * come {@code "EURE"} o {@code "eure"}. La corrispondenza esatta (stessa capitalizzazione)
+     * ha comunque la precedenza. Un token marcato <i>case sensitive</i>
+     * ({@link Principale#Mappa_EMoney_CaseSensitive} = {@code "SI"}) viene riconosciuto solo con
+     * la capitalizzazione identica: serve per i rari casi in cui due token distinti differiscono
+     * unicamente per maiuscole/minuscole e solo uno e' e-money.
+     *
+     * @param Token simbolo del token cercato
+     * @return la data di decorrenza (formato {@code yyyy-MM-dd}), o {@code null}
+     */
+    public static String DataDecorrenzaEmoney(String Token) {
+        if (Token == null) return null;
+        //1 - corrispondenza esatta: vale sempre, anche per i token case sensitive
+        String esatta = Principale.Mappa_EMoney.get(Token);
+        if (esatta != null) return esatta;
+        //2 - corrispondenza case-insensitive: solo sui token NON marcati case sensitive
+        for (java.util.Map.Entry<String, String> e : Principale.Mappa_EMoney.entrySet()) {
+            if (e.getKey().equalsIgnoreCase(Token)
+                    && !"SI".equalsIgnoreCase(Principale.Mappa_EMoney_CaseSensitive.get(e.getKey()))) {
+                return e.getValue();
+            }
+        }
+        return null;
+    }
+
+    /**
      * Restituisce il tipo effettivo di un token alla data indicata: se il token è classificato come
      * {@code "Crypto"} ma è presente in {@link Principale#Mappa_EMoney} con una data di conversione a e-money
      * anteriore o uguale alla data dello scambio, il tipo restituito diventa {@code "EMoney"}.
@@ -3192,7 +3221,7 @@ return MappaLista;
      */
     public static String RitornaTipoCrypto(String Token,String Data,String Tipologia) {
        String Tipo=Tipologia;
-       String DataEmoney=Principale.Mappa_EMoney.get(Token);
+       String DataEmoney=DataDecorrenzaEmoney(Token);
        if(Tipologia.equalsIgnoreCase("Crypto")&&DataEmoney!=null){
            long dataemoney=FunzioniDate.ConvertiDatainLong(DataEmoney);
            long datascambio=FunzioniDate.ConvertiDatainLong(Data);

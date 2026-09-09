@@ -24,12 +24,14 @@ class PrezziEmoneyEuroTest {
     @BeforeEach
     void setUp() {
         Principale.Mappa_EMoney.clear();
+        Principale.Mappa_EMoney_CaseSensitive.clear();
         Principale.Mappa_EMoney.put("EURe", "2024-01-01");
     }
 
     @AfterEach
     void tearDown() {
         Principale.Mappa_EMoney.clear();
+        Principale.Mappa_EMoney_CaseSensitive.clear();
     }
 
     private static Moneta moneta(String simbolo, String qta) {
@@ -80,6 +82,36 @@ class PrezziEmoneyEuroTest {
         assertEquals("EURO", IP.Fonte);
         assertEquals("EURe", IP.Moneta);
         assertEquals(0, new BigDecimal("60").compareTo(IP.prezzoQta));
+    }
+
+    @Test
+    void emoneyEuro_simboloConCasingDiverso_matchCaseInsensitivePredefinito() {
+        //Tabella EMONEY con "EURe", movimento con "EURE": di default il confronto e' case-insensitive,
+        //quindi il token va comunque valorizzato 1:1 con l'euro (bug: prima restava senza prezzo).
+        Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(moneta("EURE", "10"), null, DATA_2024_06_01, null, "");
+
+        assertNotNull(IP);
+        assertEquals("EURO", IP.Fonte);
+        assertEquals(0, new BigDecimal("10").compareTo(IP.prezzoQta));
+    }
+
+    @Test
+    void resolver_confrontoPredefinitoCaseInsensitive() {
+        assertEquals("EMoney", Funzioni.RitornaTipoCrypto("EURE", "2024-06-01", "Crypto"));
+        assertEquals("EMoney", Funzioni.RitornaTipoCrypto("eure", "2024-06-01", "Crypto"));
+        assertEquals("EMoney", Funzioni.RitornaTipoCrypto("EURe", "2024-06-01", "Crypto"));
+        //Stessa risposta dal motore RW, che ora delega a Funzioni
+        assertEquals("EMoney", Calcoli_RW.RitornaTipoCrypto("EURE", "2024-06-01", "Crypto"));
+    }
+
+    @Test
+    void resolver_tokenMarcatoCaseSensitive_soloMatchEsatto() {
+        Principale.Mappa_EMoney_CaseSensitive.put("EURe", "SI");
+        //Capitalizzazione diversa: NON e' e-money, resta Crypto
+        assertEquals("Crypto", Funzioni.RitornaTipoCrypto("EURE", "2024-06-01", "Crypto"));
+        assertEquals("Crypto", Funzioni.RitornaTipoCrypto("eure", "2024-06-01", "Crypto"));
+        //Capitalizzazione identica: e-money
+        assertEquals("EMoney", Funzioni.RitornaTipoCrypto("EURe", "2024-06-01", "Crypto"));
     }
 
     @Test

@@ -43,14 +43,9 @@ public class Calcoli_RW {
         * @return "EMoney" se il token era già classificato e-money a quella data, altrimenti {@code Tipologia} invariata
         */
        public static String RitornaTipoCrypto(String Token,String Data,String Tipologia) {
-       String Tipo=Tipologia;
-       String DataEmoney=Principale.Mappa_EMoney.get(Token);
-       if(Tipologia.equalsIgnoreCase("Crypto")&&DataEmoney!=null){
-           long dataemoney=FunzioniDate.ConvertiDatainLong(DataEmoney);
-           long datascambio=FunzioniDate.ConvertiDatainLong(Data);
-           if (datascambio>=dataemoney) Tipo="EMoney";
-       }
-       return Tipo;
+       //Stessa identica regola di Funzioni.RitornaTipoCrypto (match e-money case-insensitive
+       //con eccezione per i token marcati case sensitive): si delega per non farle divergere.
+       return Funzioni.RitornaTipoCrypto(Token, Data, Tipologia);
    }
        
     /**

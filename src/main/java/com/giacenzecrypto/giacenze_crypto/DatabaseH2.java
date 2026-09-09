@@ -272,7 +272,12 @@ public class DatabaseH2 {
             
             createTableSQL = "CREATE TABLE IF NOT EXISTS EMONEY  (Moneta VARCHAR(255) PRIMARY KEY, Data VARCHAR(255))";
             EseguiDDL(connectionPersonale, createTableSQL);
-            
+            //Colonna aggiunta dopo: "SI" = il token va riconosciuto solo con la capitalizzazione
+            //identica; qualunque altro valore (compreso NULL sui DB creati prima) = confronto
+            //case-insensitive, che e' il default. CREATE TABLE IF NOT EXISTS non tocca le tabelle
+            //gia' esistenti, quindi serve l'ALTER esplicito (idempotente).
+            EseguiDDL(connectionPersonale, "ALTER TABLE EMONEY ADD COLUMN IF NOT EXISTS CaseSensitive VARCHAR(3) DEFAULT 'NO'");
+
             createTableSQL = "CREATE TABLE IF NOT EXISTS OPZIONI (Opzione VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
             EseguiDDL(connectionPersonale, createTableSQL);
 
@@ -613,6 +618,26 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
  * @throws IllegalArgumentException Se `Moneta` è nullo o vuoto, o se `Data` è nullo.
  */
        public static void Pers_Emoney_Scrivi(String Moneta, String Data) {
+        if (Moneta == null || Moneta.isEmpty()) {
+            throw new IllegalArgumentException("Moneta non può essere nullo o vuoto.");
+        }
+        //Conserva la marcatura case sensitive gia' presente per il token: MERGE elenca le colonne,
+        //e una colonna omessa verrebbe riportata a NULL. La mappa in memoria e' la fonte del valore
+        //corrente (allineata al DB da Pers_Emoney_PopolaMappaEmoney all'avvio e da qui in poi).
+        String caseSensitiveCorrente = Principale.Mappa_EMoney_CaseSensitive.getOrDefault(Moneta, "NO");
+        Pers_Emoney_Scrivi(Moneta, Data, caseSensitiveCorrente);
+    }
+
+    /**
+     * Come {@link #Pers_Emoney_Scrivi(String, String)}, impostando esplicitamente se il token va
+     * riconosciuto solo con la capitalizzazione identica.
+     *
+     * @param Moneta simbolo del token e-money (non nullo/vuoto)
+     * @param Data data di decorrenza (non nulla)
+     * @param CaseSensitive {@code "SI"} per il confronto case sensitive, qualsiasi altro valore per
+     *                       il confronto case-insensitive predefinito
+     */
+    public static void Pers_Emoney_Scrivi(String Moneta, String Data, String CaseSensitive) {
         // Validazione degli input
         if (Moneta == null || Moneta.isEmpty()) {
             throw new IllegalArgumentException("Moneta non può essere nullo o vuoto.");
@@ -620,20 +645,23 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         if (Data == null) {
             throw new IllegalArgumentException("Data non può essere nullo.");
         }
-        //B5: un solo MERGE INTO al posto di SELECT COUNT + UPDATE/INSERT. EMONEY ha due sole
-        //colonne ed entrambe sono elencate qui: le colonne omesse resterebbero a NULL.
+        String cs = "SI".equalsIgnoreCase(CaseSensitive == null ? "" : CaseSensitive.trim()) ? "SI" : "NO";
+        //B5: un solo MERGE INTO al posto di SELECT COUNT + UPDATE/INSERT. Tutte le colonne di EMONEY
+        //sono elencate qui: una colonna omessa verrebbe riportata a NULL dal MERGE.
         Map<String, Object> values = new HashMap<>();
         values.put("Moneta", Moneta);
         values.put("Data", Data);
+        values.put("CaseSensitive", cs);
         if (!U_ScriviRecord("EMONEY", values, "Moneta", connectionPersonale)) {
             //La SQLException è già stata registrata da U_ScriviRecord. Si continua a sollevare
             //un'eccezione, come faceva la versione precedente: se la scrittura fallisce la mappa
             //in memoria NON va aggiornata, altrimenti divergerebbe dal database senza alcun segnale.
             throw new RuntimeException("Errore durante il salvataggio della moneta EMoney " + Moneta);
         }
-        //Se aggiungo una riga al DB la aggiungo anche alla mappa di riferimento
+        //Se aggiungo una riga al DB la aggiungo anche alle mappe di riferimento
         //Lavorare con le mappe risulta infatti + veloce del DB e uso quella come base per le ricerche
         Principale.Mappa_EMoney.put(Moneta, Data);
+        Principale.Mappa_EMoney_CaseSensitive.put(Moneta, cs);
     }
         
         /**
@@ -654,6 +682,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
                     System.out.println("DatabaseH2.Pers_Emoney_Cancella - Nessuna riga eliminate per Moneta: "+Moneta);
                 } else {
                     Principale.Mappa_EMoney.remove(Moneta);
+                    Principale.Mappa_EMoney_CaseSensitive.remove(Moneta);
                 }
             }
         } catch (SQLException ex) {
@@ -786,6 +815,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         public static void Pers_Emoney_PopolaMappaEmoney() {
 
         Principale.Mappa_EMoney.clear();
+        Principale.Mappa_EMoney_CaseSensitive.clear();
         try {
             // Connessione al database
             String checkIfExistsSQL = "SELECT * FROM EMONEY";
@@ -795,7 +825,11 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
                 while (resultSet.next()) {
                     String Moneta = resultSet.getString("Moneta");
                     String Data = resultSet.getString("Data");
+                    //Colonna aggiunta dopo: NULL sui DB piu' vecchi = "NO" (case-insensitive, il default).
+                    String CaseSensitive = resultSet.getString("CaseSensitive");
                     Principale.Mappa_EMoney.put(Moneta, Data);
+                    Principale.Mappa_EMoney_CaseSensitive.put(Moneta,
+                            "SI".equalsIgnoreCase(CaseSensitive == null ? "" : CaseSensitive.trim()) ? "SI" : "NO");
                     //System.out.println(Moneta);
                 }
             }

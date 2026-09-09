@@ -223,7 +223,6 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
         Pannello_Campi.add(Label_DataInizio, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -239,7 +238,6 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
         Pannello_Campi.add(Label_DataFine, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -255,7 +253,6 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
         Pannello_Campi.add(Label_ModIni, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -271,7 +268,6 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
         Pannello_Campi.add(Label_ModFin, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -287,7 +283,6 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
         Pannello_Campi.add(Label_Bollo, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -303,7 +298,6 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
         Pannello_Campi.add(Label_Stato, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
@@ -389,7 +383,6 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 0);
         Pannello_Campi.add(Scroll_Fonte, gridBagConstraints);
 
         getContentPane().add(Pannello_Campi, java.awt.BorderLayout.CENTER);
@@ -467,9 +460,9 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Annulla;
     private javax.swing.JButton Bottone_Ok;
+    private javax.swing.JTextArea Campo_Fonte;
     private javax.swing.JTextField Campo_Ident;
     private javax.swing.JTextField Campo_Isee;
-    private javax.swing.JTextArea Campo_Fonte;
     private javax.swing.JTextArea Campo_Note;
     private javax.swing.JTextField Campo_Prog;
     private javax.swing.JComboBox Combo_Bollo;

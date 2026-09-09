@@ -4406,7 +4406,7 @@ private static final long serialVersionUID = 3L;
         });
 
         Opzioni_GruppoWallet_Bottone_Periodi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
-        Opzioni_GruppoWallet_Bottone_Periodi.setText("Periodi di detenzione e dati fiscali...");
+        Opzioni_GruppoWallet_Bottone_Periodi.setText("Periodi di detenzione e dati fiscali");
         Opzioni_GruppoWallet_Bottone_Periodi.setToolTipText("Periodi di detenzione (righi CRYPTO / FIAT) del gruppo selezionato, con Stato estero e identificativo fiscale sui righi FIAT");
         Opzioni_GruppoWallet_Bottone_Periodi.setEnabled(false);
         Opzioni_GruppoWallet_Bottone_Periodi.addActionListener(new java.awt.event.ActionListener() {
@@ -4416,7 +4416,7 @@ private static final long serialVersionUID = 3L;
         });
 
         Opzioni_GruppoWallet_Bottone_RaggruppaExchange.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
-        Opzioni_GruppoWallet_Bottone_RaggruppaExchange.setText("Raggruppa exchange noti...");
+        Opzioni_GruppoWallet_Bottone_RaggruppaExchange.setText("Raggruppa exchange noti");
         Opzioni_GruppoWallet_Bottone_RaggruppaExchange.setToolTipText("Assegna i wallet degli exchange riconosciuti ai gruppi preconfigurati (Wallet 101...) - cambia la suddivisione dei righi RW");
         Opzioni_GruppoWallet_Bottone_RaggruppaExchange.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -4435,7 +4435,7 @@ private static final long serialVersionUID = 3L;
                 .addGroup(Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 1448, Short.MAX_VALUE)
                     .addComponent(jScrollPane1)
-                    .addComponent(Opzioni_GruppoWallet_ScrollInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 1448, Short.MAX_VALUE)
+                    .addComponent(Opzioni_GruppoWallet_ScrollInfo)
                     .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
                         .addComponent(Opzioni_GruppoWallet_Bottone_Rinomina, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -4449,9 +4449,9 @@ private static final long serialVersionUID = 3L;
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_GruppoWallet_ScrollInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(Opzioni_GruppoWallet_ScrollInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_GruppoWallet_Bottone_Rinomina, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -4468,7 +4468,7 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "<html><center><h2>Token</h2></html>", "<html><center><h2>Data Inizio classificazione<br>come E-Money Token</h2></html>", "<html><center><h2>Case<br>sensitive</h2></html>"
+                "<html><center><h2>Token</h2></html>", "<html><center><h2>Data Inizio<br>E-Money Token</h2></html>", "<html><center><h2>Case<br>sensitive</h2></html>"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -4491,6 +4491,11 @@ private static final long serialVersionUID = 3L;
         });
         Opzioni_Emoney_ScrollPane.setViewportView(Opzioni_Emoney_Tabella);
         Opzioni_Emoney_Tabella.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        if (Opzioni_Emoney_Tabella.getColumnModel().getColumnCount() > 0) {
+            Opzioni_Emoney_Tabella.getColumnModel().getColumn(2).setMinWidth(100);
+            Opzioni_Emoney_Tabella.getColumnModel().getColumn(2).setPreferredWidth(100);
+            Opzioni_Emoney_Tabella.getColumnModel().getColumn(2).setMaxWidth(100);
+        }
         Opzioni_Emoney_Tabella.getTableHeader().setPreferredSize(new Dimension(Opzioni_Emoney_Tabella.getColumnModel().getTotalColumnWidth(), 90));
 
         jScrollPane5.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
@@ -18359,8 +18364,8 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JButton Opzioni_Export_Tatax_Bottone;
     private javax.swing.JComboBox<String> Opzioni_Export_Wallets_Combobox;
     private javax.swing.JPanel Opzioni_FiatWallet_Pannello;
-    private javax.swing.JButton Opzioni_GruppoWallet_Bottone_RaggruppaExchange;
     private javax.swing.JButton Opzioni_GruppoWallet_Bottone_Periodi;
+    private javax.swing.JButton Opzioni_GruppoWallet_Bottone_RaggruppaExchange;
     private javax.swing.JButton Opzioni_GruppoWallet_Bottone_Rinomina;
     private javax.swing.JCheckBox Opzioni_GruppoWallet_CheckBox_PlusManuali;
     private javax.swing.JCheckBox Opzioni_GruppoWallet_CheckBox_PlusXWallet;
@@ -18389,11 +18394,11 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JPanel Opzioni_Temi;
     private javax.swing.JPanel Opzioni_Varie;
     private javax.swing.JButton Opzioni_Varie_Bottone_Disclaimer;
+    private javax.swing.JButton Opzioni_Varie_Bottone_InviaLog;
     private javax.swing.JButton Opzioni_Varie_Bottone_ProblemiNoti;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_LogJsonDefi;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_LogJsonPrezzi;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_TemaScuro;
-    private javax.swing.JButton Opzioni_Varie_Bottone_InviaLog;
     private javax.swing.JButton Opzioni_Varie_RicalcolaPrezzi;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero;
@@ -18433,9 +18438,9 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JCheckBox RW_CheckBox_VediSoloErrori;
     private javax.swing.JLabel RW_Label_SegnalaErrori;
     private javax.swing.JLabel RW_Label_SegnalaRicalcolo;
+    private javax.swing.JCheckBox RW_Opzioni_CheckBox_FiatInRW;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_LiFoComplessivo;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_LiFoSubMovimenti;
-    private javax.swing.JCheckBox RW_Opzioni_CheckBox_FiatInRW;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_StakingZero;
     private javax.swing.JRadioButton RW_Opzioni_Radio_TrasferimentiNonConteggiati;

@@ -32,18 +32,18 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="Label_Titolo" alignment="0" max="32767" attributes="0"/>
                   <Component id="Label_Info" alignment="0" max="32767" attributes="0"/>
-                  <Component id="jScrollPane1" alignment="0" pref="900" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="Bottone_Aggiungi" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="Bottone_Modifica" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="Bottone_Rimuovi" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="Bottone_RipristinaRiga" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="Bottone_RipristinaTutti" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="Bottone_Salva" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="Bottone_Chiudi" min="-2" max="-2" attributes="0"/>
@@ -61,7 +61,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="Label_Info" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jScrollPane1" pref="320" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" pref="244" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="Bottone_Aggiungi" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -80,12 +80,16 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="Label_Titolo">
       <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Segoe UI" size="16" style="1"/>
+        </Property>
+        <Property name="horizontalAlignment" type="int" value="0"/>
         <Property name="text" type="java.lang.String" value="Periodi di detenzione"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="Label_Info">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;div style='width: 900px'&gt;&lt;b&gt;A cosa serve.&lt;/b&gt; Come il gruppo ha detenuto crypto e valuta estera nel tempo, ai fini del Quadro W/RW. Un rigo per periodo, separato per CRYPTO e FIAT : serve quando un conto viene chiuso e poi riaperto, o quando cambia il regime del bollo.&lt;br&gt;&lt;b&gt;Colonne&lt;/b&gt;&lt;ul style='margin-top:2px; margin-bottom:2px'&gt;&lt;li&gt;&lt;b&gt;Data inizio&lt;/b&gt; vuota = dal primo movimento del gruppo; &lt;b&gt;Data fine&lt;/b&gt; vuota = periodo ancora aperto&lt;/li&gt;&lt;li&gt;&lt;b&gt;Val. iniziale&lt;/b&gt; / &lt;b&gt;Val. finale&lt;/b&gt; a mano = forzano quel valore al posto del calcolo automatico (il motivo va nella nota accanto)&lt;/li&gt;&lt;li&gt;&lt;b&gt;Calcolo iniziale&lt;/b&gt; / &lt;b&gt;finale&lt;/b&gt; = come stimare la giacenza al bordo del periodo&lt;/li&gt;&lt;li&gt;&lt;b&gt;Bollo exchange&lt;/b&gt; (solo righi CRYPTO) = in quel periodo l'intermediario ha già assolto l'imposta di bollo&lt;/li&gt;&lt;li&gt;&lt;b&gt;Origine&lt;/b&gt; = &quot;Predefinito&quot; (dal programma) / &quot;Modificato&quot; / &quot;Manuale&quot;&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Pulsanti.&lt;/b&gt; &quot;Aggiungi&quot; e &quot;Modifica&quot; aprono un dialogo con il calendario per le date; &quot;Ripristina riga&quot; e &quot;Ripristina tutto&quot; riportano ai valori predefiniti. Colonne larghe: scorri la tabella in orizzontale.&lt;/div&gt;&lt;/html&gt;"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;div style=&apos;width:840px&apos;&gt;&lt;b&gt;A cosa serve.&lt;/b&gt; Mostra come il gruppo ha detenuto crypto e valuta estera nel tempo, ai fini del Quadro&amp;nbsp;W/RW. &lt;br&gt;&#xa;Genera un rigo per periodo, separato per CRYPTO e FIAT : serve quando un conto viene chiuso e poi riaperto, o quando cambia il regime del bollo.&lt;br&gt;&lt;br&gt;&#xa;&lt;b&gt;Colonne : &lt;/b&gt;&#xa;&lt;ul style=&apos;margin:3px 10 3px 10&apos;&gt;&#xa;&lt;li&gt;&lt;b&gt;Data inizio&lt;/b&gt; vuota = dal primo movimento del gruppo&amp;nbsp;&amp;nbsp;&amp;#8226;&amp;nbsp;&amp;nbsp;&lt;b&gt;Data fine&lt;/b&gt; vuota = periodo ancora aperto&lt;/li&gt;&#xa;&lt;li&gt;&lt;b&gt;Calcolo iniziale&lt;/b&gt; / &lt;b&gt;finale&lt;/b&gt; = come stimare la giacenza al bordo del periodo&lt;/li&gt;&#xa;&lt;li&gt;&lt;b&gt;Bollo exchange&lt;/b&gt; (solo righi CRYPTO) = in quel periodo l&apos;intermediario ha gi&#xe0; assolto l&apos;imposta di bollo&lt;/li&gt;&#xa;&lt;li&gt;&lt;b&gt;Origine&lt;/b&gt; = &amp;quot;Predefinito&amp;quot; (dal programma) / &amp;quot;Modificato&amp;quot; / &amp;quot;Manuale&amp;quot;&lt;/li&gt;&#xa;&lt;/ul&gt;&#xa;&lt;br&gt;&lt;b&gt;Pulsanti :&lt;/b&gt;&#xa;&lt;ul style=&apos;margin:3px 10 3px 10&apos;&gt;&#xa;&lt;li&gt;&lt;b&gt;Aggiungi&lt;/b&gt; e &lt;b&gt;Modifica&lt;/b&gt; aprono un dialogo per inserire o modificare i dati.&lt;/li&gt;&#xa;&lt;li&gt;&lt;b&gt;Ripristina riga&lt;/b&gt; e &lt;b&gt;Ripristina tutto&lt;/b&gt; riportano ai valori predefiniti.&lt;/li&gt;&#xa;&lt;br&gt;&lt;center&gt;&lt;font color=&apos;#8A8A8A&apos;&gt;Le colonne sono molte e larghe: scorri la tabella in orizzontale.&lt;/font&gt;&lt;/div&gt;&lt;/html&gt;&#xa;&lt;/ul&gt;"/>
       </Properties>
     </Component>
     <Container class="javax.swing.JScrollPane" name="jScrollPane1">
@@ -114,6 +118,7 @@
                 <Column editable="false" title="Origine" type="java.lang.Object"/>
               </Table>
             </Property>
+            <Property name="autoResizeMode" type="int" value="1"/>
           </Properties>
         </Component>
       </SubComponents>
@@ -123,7 +128,7 @@
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/Images/24_Nuovo.png"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Aggiungi..."/>
+        <Property name="text" type="java.lang.String" value="Aggiungi"/>
         <Property name="toolTipText" type="java.lang.String" value="Aggiunge un nuovo periodo di detenzione (CRYPTO o FIAT)"/>
       </Properties>
       <Events>
@@ -135,7 +140,7 @@
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/Images/24_Modifica.png"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Modifica..."/>
+        <Property name="text" type="java.lang.String" value="Modifica"/>
         <Property name="toolTipText" type="java.lang.String" value="Modifica il periodo selezionato nel dialogo dedicato (con calendario)"/>
       </Properties>
       <Events>
@@ -155,6 +160,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="Bottone_RipristinaRiga">
       <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Annulla.png"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Ripristina riga"/>
         <Property name="toolTipText" type="java.lang.String" value="Riporta la riga selezionata ai valori predefiniti del programma"/>
       </Properties>
@@ -164,6 +172,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="Bottone_RipristinaTutti">
       <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Annulla.png"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Ripristina tutto"/>
         <Property name="toolTipText" type="java.lang.String" value="Scarta le personalizzazioni e riapplica i valori predefiniti del programma"/>
       </Properties>

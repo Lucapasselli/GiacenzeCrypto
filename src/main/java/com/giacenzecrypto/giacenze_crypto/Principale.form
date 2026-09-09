@@ -5582,11 +5582,11 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="jScrollPane1" min="-2" pref="52" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_GruppoWallet_ScrollTabella" pref="300" max="32767" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_GruppoWallet_ScrollInfo" min="-2" pref="380" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="Opzioni_GruppoWallet_ScrollTabella" pref="339" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="Opzioni_GruppoWallet_ScrollInfo" pref="470" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="Opzioni_GruppoWallet_Bottone_Rinomina" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
                                   <Component id="Opzioni_GruppoWallet_Bottone_Periodi" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
@@ -5702,7 +5702,7 @@
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/Images/24_Modifica.png"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="Periodi di detenzione e dati fiscali..."/>
+                        <Property name="text" type="java.lang.String" value="Periodi di detenzione e dati fiscali"/>
                         <Property name="toolTipText" type="java.lang.String" value="Periodi di detenzione (righi CRYPTO / FIAT) del gruppo selezionato, con Stato estero e identificativo fiscale sui righi FIAT"/>
                         <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
@@ -5715,7 +5715,7 @@
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/Images/24_Modifica.png"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="Raggruppa exchange noti..."/>
+                        <Property name="text" type="java.lang.String" value="Raggruppa exchange noti"/>
                         <Property name="toolTipText" type="java.lang.String" value="Assegna i wallet degli exchange riconosciuti ai gruppi preconfigurati (Wallet 101...) - cambia la suddivisione dei righi RW"/>
                       </Properties>
                       <Events>
@@ -5806,7 +5806,7 @@
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                               <Table columnCount="3" rowCount="0">
                                 <Column editable="false" title="&lt;html&gt;&lt;center&gt;&lt;h2&gt;Token&lt;/h2&gt;&lt;/html&gt;" type="java.lang.Object"/>
-                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;&lt;h2&gt;Data Inizio classificazione&lt;br&gt;come E-Money Token&lt;/h2&gt;&lt;/html&gt;" type="java.lang.Object"/>
+                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;&lt;h2&gt;Data Inizio&lt;br&gt;E-Money Token&lt;/h2&gt;&lt;/html&gt;" type="java.lang.Object"/>
                                 <Column editable="false" title="&lt;html&gt;&lt;center&gt;&lt;h2&gt;Case&lt;br&gt;sensitive&lt;/h2&gt;&lt;/html&gt;" type="java.lang.Object"/>
                               </Table>
                             </Property>
@@ -5822,7 +5822,7 @@
                                   <Editor/>
                                   <Renderer/>
                                 </Column>
-                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                <Column maxWidth="100" minWidth="100" prefWidth="100" resizable="true">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>
@@ -6572,7 +6572,6 @@
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_FiatInRW">
                       <Properties>
-                        <Property name="selected" type="boolean" value="false"/>
                         <Property name="text" type="java.lang.String" value="&lt;html&gt;Includi nel Quadro W/RW anche la &lt;b&gt;valuta estera (FIAT)&lt;/b&gt; detenuta presso intermediari esteri (codice bene 14, solo monitoraggio)&lt;/html&gt;"/>
                       </Properties>
                       <Events>
@@ -6775,8 +6774,8 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="Opzioni_Varie_Bottone_InviaLog">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Invia log all'autore per una segnalazione..."/>
-                        <Property name="toolTipText" type="java.lang.String" value="Apre una finestra in cui rivedere e modificare i log anonimizzati prima di inviarli all'autore per la diagnosi di un problema."/>
+                        <Property name="text" type="java.lang.String" value="Invia log all&apos;autore per una segnalazione..."/>
+                        <Property name="toolTipText" type="java.lang.String" value="Apre una finestra in cui rivedere e modificare i log anonimizzati prima di inviarli all&apos;autore per la diagnosi di un problema."/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Bottone_InviaLogActionPerformed"/>

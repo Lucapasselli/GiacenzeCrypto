@@ -100,6 +100,18 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
         String etichetta = Principale_GruppiWalletRW.etichettaGruppo(gruppo);
         setTitle("Periodi di detenzione — " + etichetta);
         Label_Titolo.setText("Periodi di detenzione del gruppo \"" + etichetta + "\"");
+        Label_Titolo.setFont(Label_Titolo.getFont().deriveFont(java.awt.Font.BOLD,
+                Label_Titolo.getFont().getSize2D() + 2f));
+
+        // Label_Info come riquadro informativo (callout con banda laterale) invece di testo nudo.
+        // Sfondo chiaro proprio + testo scuro esplicito: leggibile anche col tema scuro (cfr. Icone).
+        Label_Info.setOpaque(true);
+        Label_Info.setBackground(new java.awt.Color(0xF3, 0xF6, 0xFA));
+        Label_Info.setForeground(new java.awt.Color(0x2B, 0x2B, 0x2B));
+        Label_Info.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        Label_Info.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createMatteBorder(0, 4, 0, 0, new java.awt.Color(0x5B, 0x8D, 0xEF)),
+                javax.swing.BorderFactory.createEmptyBorder(12, 14, 12, 14)));
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
@@ -177,32 +189,11 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
         setTitle("Periodi di detenzione");
         setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
 
+        Label_Titolo.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
+        Label_Titolo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         Label_Titolo.setText("Periodi di detenzione");
 
-        Label_Info.setText("<html><div style='width: 900px'>"
-                + "<b>A cosa serve.</b> Come il gruppo ha detenuto crypto e valuta estera nel tempo, "
-                + "ai fini del Quadro W/RW. Un rigo per periodo, separato per CRYPTO e FIAT : serve "
-                + "quando un conto viene chiuso e poi riaperto, quando cambia il regime del bollo, o "
-                + "quando l'intermediario cambia Stato estero (allora si spezza il rigo FIAT)."
-                + "<br><b>Colonne</b>"
-                + "<ul style='margin-top:2px; margin-bottom:2px'>"
-                + "<li><b>Data inizio</b> vuota = dedotta : il giorno dopo la fine del periodo precedente, "
-                + "oppure — se non ce n'è uno — dal primo movimento del gruppo. <b>Data fine</b> vuota = "
-                + "periodo ancora aperto. Sono ammesse entrambe vuote</li>"
-                + "<li><b>Calcolo iniziale</b> / <b>finale</b> = come stimare la giacenza al bordo del periodo; "
-                + "\"Solo residuo\" (il default) = la giacenza a inizio / fine giornata, e basta</li>"
-                + "<li><b>Stato estero</b>, <b>Identificativo fiscale</b>, <b>Note</b>, <b>Fonte</b> (solo righi FIAT) "
-                + "= l'intermediario presso cui era detenuta la valuta in quel periodo</li>"
-                + "<li><b>Identificativo ISEE</b> (solo righi FIAT) = per il modulo FC.1 della DSU; va sempre "
-                + "inserito a mano, anche sulle righe che arrivano dal programma, e un aggiornamento dei "
-                + "predefiniti non lo cancella</li>"
-                + "<li><b>Bollo exchange</b> (solo righi CRYPTO) = in quel periodo l'intermediario ha già assolto l'imposta di bollo</li>"
-                + "<li><b>Origine</b> = \"Predefinito\" (dal programma) / \"Modificato\" / \"Manuale\"</li>"
-                + "</ul>"
-                + "<b>Pulsanti.</b> \"Aggiungi\" e \"Modifica\" aprono un dialogo con il calendario per "
-                + "le date; \"Ripristina riga\" e \"Ripristina tutto\" riportano ai valori predefiniti. "
-                + "Colonne larghe: scorri la tabella in orizzontale."
-                + "</div></html>");
+        Label_Info.setText("<html><div style='width:840px'><b>A cosa serve.</b> Mostra come il gruppo ha detenuto crypto e valuta estera nel tempo, ai fini del Quadro&nbsp;W/RW. <br>\nGenera un rigo per periodo, separato per CRYPTO e FIAT : serve quando un conto viene chiuso e poi riaperto, o quando cambia il regime del bollo.<br><br>\n<b>Colonne : </b>\n<ul style='margin:3px 10 3px 10'>\n<li><b>Data inizio</b> vuota = dal primo movimento del gruppo&nbsp;&nbsp;&#8226;&nbsp;&nbsp;<b>Data fine</b> vuota = periodo ancora aperto</li>\n<li><b>Calcolo iniziale</b> / <b>finale</b> = come stimare la giacenza al bordo del periodo</li>\n<li><b>Bollo exchange</b> (solo righi CRYPTO) = in quel periodo l'intermediario ha già assolto l'imposta di bollo</li>\n<li><b>Origine</b> = &quot;Predefinito&quot; (dal programma) / &quot;Modificato&quot; / &quot;Manuale&quot;</li>\n</ul>\n<br><b>Pulsanti :</b>\n<ul style='margin:3px 10 3px 10'>\n<li><b>Aggiungi</b> e <b>Modifica</b> aprono un dialogo per inserire o modificare i dati.</li>\n<li><b>Ripristina riga</b> e <b>Ripristina tutto</b> riportano ai valori predefiniti.</li>\n<br><center><font color='#8A8A8A'>Le colonne sono molte e larghe: scorri la tabella in orizzontale.</font></div></html>\n</ul>");
 
         Tabella.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -220,10 +211,11 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
                 return canEdit [columnIndex];
             }
         });
+        Tabella.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
         jScrollPane1.setViewportView(Tabella);
 
         Bottone_Aggiungi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Nuovo.png"))); // NOI18N
-        Bottone_Aggiungi.setText("Aggiungi...");
+        Bottone_Aggiungi.setText("Aggiungi");
         Bottone_Aggiungi.setToolTipText("Aggiunge un nuovo periodo di detenzione (CRYPTO o FIAT)");
         Bottone_Aggiungi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -232,7 +224,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
         });
 
         Bottone_Modifica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
-        Bottone_Modifica.setText("Modifica...");
+        Bottone_Modifica.setText("Modifica");
         Bottone_Modifica.setToolTipText("Modifica il periodo selezionato nel dialogo dedicato (con calendario)");
         Bottone_Modifica.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -248,6 +240,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
             }
         });
 
+        Bottone_RipristinaRiga.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Annulla.png"))); // NOI18N
         Bottone_RipristinaRiga.setText("Ripristina riga");
         Bottone_RipristinaRiga.setToolTipText("Riporta la riga selezionata ai valori predefiniti del programma");
         Bottone_RipristinaRiga.addActionListener(new java.awt.event.ActionListener() {
@@ -256,6 +249,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
             }
         });
 
+        Bottone_RipristinaTutti.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Annulla.png"))); // NOI18N
         Bottone_RipristinaTutti.setText("Ripristina tutto");
         Bottone_RipristinaTutti.setToolTipText("Scarta le personalizzazioni e riapplica i valori predefiniti del programma");
         Bottone_RipristinaTutti.addActionListener(new java.awt.event.ActionListener() {
@@ -288,15 +282,15 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Label_Titolo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(Label_Info, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 900, Short.MAX_VALUE)
+                    .addComponent(Label_Info)
+                    .addComponent(jScrollPane1)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(Bottone_Aggiungi)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_Modifica)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_Rimuovi)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGap(18, 18, 18)
                         .addComponent(Bottone_RipristinaRiga)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_RipristinaTutti)
@@ -312,9 +306,9 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(Label_Titolo)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Label_Info)
+                .addComponent(Label_Info, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Bottone_Aggiungi)
@@ -438,7 +432,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
     private javax.swing.JButton Bottone_Salva;
     private javax.swing.JLabel Label_Info;
     private javax.swing.JLabel Label_Titolo;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable Tabella;
+    private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 }

@@ -629,7 +629,11 @@ private static final long serialVersionUID = 9L;
 
     private void CreaMappeXComboBox(){
       //          Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-                Lista_FIAT.add("EUR");
+                //dedup con Set: contains() su ArrayList era O(M) per movimento
+                java.util.Set<String> setCrypto = new java.util.HashSet<>();
+                java.util.Set<String> setNFT    = new java.util.HashSet<>();
+                java.util.Set<String> setFIAT   = new java.util.HashSet<>();
+                setFIAT.add("EUR");
           for (String[] v : MappaCryptoWallet.values()) {
               //PARTE 1: Recupero Wallet e dettagli del wallet
     /*          String WalletTemp=v[3];
@@ -651,31 +655,29 @@ private static final long serialVersionUID = 9L;
               String TipoEntrata=v[12];
               String MonetaEntrata=v[11];
               //qui elenco le monete in uscita
-              if (TipoUscita.equalsIgnoreCase("Crypto")){                 
-                  if(!Lista_Cryptovalute.contains(MonetaUscita))Lista_Cryptovalute.add(MonetaUscita);
-                 // Mappa_Cryptovalute.put(MonetaUscita, MonetaUscita);
+              if (TipoUscita.equalsIgnoreCase("Crypto")){
+                  setCrypto.add(MonetaUscita);
               }else if (TipoUscita.equalsIgnoreCase("NFT")){
-                  if(!Lista_NFT.contains(MonetaUscita))Lista_NFT.add(MonetaUscita);
-                //  Mappa_NFT.put(MonetaUscita, MonetaUscita);
+                  setNFT.add(MonetaUscita);
               }else if (TipoUscita.equalsIgnoreCase("FIAT")){
-                  if(!Lista_FIAT.contains(MonetaUscita))Lista_FIAT.add(MonetaUscita);
-                 // Mappa_FIAT.put(MonetaUscita, MonetaUscita);
+                  setFIAT.add(MonetaUscita);
               }
               //qui quelle in entrata mettendole ovviamente nella stessa mappa chemi servirà solo per avere poi l'elenco
               if (TipoEntrata.equalsIgnoreCase("Crypto")){
-                  if(!Lista_Cryptovalute.contains(MonetaEntrata))Lista_Cryptovalute.add(MonetaEntrata);
-                //  Mappa_Cryptovalute.put(MonetaEntrata, MonetaEntrata);
+                  setCrypto.add(MonetaEntrata);
               }else if (TipoEntrata.equalsIgnoreCase("NFT")){
-                  if(!Lista_NFT.contains(MonetaEntrata))Lista_NFT.add(MonetaEntrata);
-                //  Mappa_NFT.put(MonetaEntrata, MonetaEntrata);
+                  setNFT.add(MonetaEntrata);
               }else if (TipoEntrata.equalsIgnoreCase("FIAT")){
-                  if(!Lista_FIAT.contains(MonetaEntrata))Lista_FIAT.add(MonetaEntrata);
-                //  Mappa_FIAT.put(MonetaEntrata, MonetaEntrata);
+                  setFIAT.add(MonetaEntrata);
               }
-              Collections.sort(Lista_Cryptovalute);
-              Collections.sort(Lista_NFT);
-              Collections.sort(Lista_FIAT);
           }
+          //un solo sort a fine ciclo: prima era 3*N ordinamenti dentro il for
+          Lista_Cryptovalute = new ArrayList<>(setCrypto);
+          Lista_NFT          = new ArrayList<>(setNFT);
+          Lista_FIAT         = new ArrayList<>(setFIAT);
+          Collections.sort(Lista_Cryptovalute);
+          Collections.sort(Lista_NFT);
+          Collections.sort(Lista_FIAT);
     }
     
  

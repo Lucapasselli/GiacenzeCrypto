@@ -71,9 +71,9 @@ public class DatiPredefinitiRW {
 
     /**
      * Un periodo di detenzione predefinito ({@code GRUPPO_PERIODO_RW}). I campi fiscali
-     * ({@code statoEstero}, {@code identificativoFiscale}, {@code note}, {@code fonte}) valgono solo
-     * sui righi {@code FIAT}. L'identificativo ISEE non c'e' e non ci deve essere : e' sempre inserito
-     * a mano, anche sulle righe che arrivano dal programma.
+     * ({@code statoEstero}, {@code identificativoFiscale}, {@code note}, {@code fonte},
+     * {@code contoCorrente}) valgono solo sui righi {@code FIAT}. L'identificativo ISEE non c'e' e non
+     * ci deve essere : e' sempre inserito a mano, anche sulle righe che arrivano dal programma.
      */
     public static final class PeriodoDetPredef {
 
@@ -81,12 +81,13 @@ public class DatiPredefinitiRW {
         public final int progressivo;
         public final String dataInizio, dataFine, valIniziale, notaIniziale, valFinale, notaFinale,
                 calcoloIniziale, calcoloFinale, bollo,
-                statoEstero, identificativoFiscale, note, fonte;
+                statoEstero, identificativoFiscale, note, fonte, contoCorrente;
 
         PeriodoDetPredef(String chiave, String tipo, int progressivo, String dataInizio, String dataFine,
                 String valIniziale, String notaIniziale, String valFinale, String notaFinale,
                 String calcoloIniziale, String calcoloFinale, String bollo,
-                String statoEstero, String identificativoFiscale, String note, String fonte) {
+                String statoEstero, String identificativoFiscale, String note, String fonte,
+                String contoCorrente) {
             this.chiave = chiave;
             this.tipo = tipo;
             this.progressivo = progressivo;
@@ -103,6 +104,7 @@ public class DatiPredefinitiRW {
             this.identificativoFiscale = identificativoFiscale;
             this.note = note;
             this.fonte = fonte;
+            this.contoCorrente = contoCorrente;
         }
     }
 
@@ -253,7 +255,7 @@ public class DatiPredefinitiRW {
                 p.optString("calcoloIniziale", ""), p.optString("calcoloFinale", ""),
                 p.optString("bollo", ""),
                 p.optString("statoEstero", ""), p.optString("identificativoFiscale", ""),
-                p.optString("note", ""), p.optString("fonte", ""));
+                p.optString("note", ""), p.optString("fonte", ""), p.optString("contoCorrente", ""));
     }
 
     private static String sha256(String s) {

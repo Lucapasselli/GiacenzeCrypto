@@ -89,7 +89,7 @@ class DatiPredefinitiRWTest {
         DatabaseH2.Pers_GruppoPeriodoRW_Scrivi("Wallet 103", "FIAT", 1, "2025-06-25", null,
                 null, null, null, null, "SOLO_RESIDUO", "SOLO_RESIDUO", null,
                 Principale_GruppiWalletRW.ORIGINE_UTENTE, "kraken-mica",
-                "040", "P.IVA mia", "nota mia", "fonte mia", "E-mio-ISEE");
+                "040", "P.IVA mia", "nota mia", "fonte mia", "E-mio-ISEE", "SI");
         DatabaseH2.Pers_Opzioni_Scrivi(Principale_GruppiWalletRW.OPZIONE_HASH_PREDEFINITI, "hash-vecchio");
         Principale_GruppiWalletRW.Pers_RW_SeminaERiconcilia();
 

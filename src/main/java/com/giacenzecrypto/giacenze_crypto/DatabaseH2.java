@@ -334,6 +334,10 @@ public class DatabaseH2 {
                 st.execute("ALTER TABLE GRUPPO_PERIODO_RW ADD COLUMN IF NOT EXISTS NoteFiscali VARCHAR(1000)");
                 st.execute("ALTER TABLE GRUPPO_PERIODO_RW ADD COLUMN IF NOT EXISTS FonteFiscale VARCHAR(500)");
                 st.execute("ALTER TABLE GRUPPO_PERIODO_RW ADD COLUMN IF NOT EXISTS IdentificativoISEE VARCHAR(255)");
+                // EContoCorrente (2026-09-10) : "SI"/"NO" sul rigo FIAT = l'intermediario estero e' una
+                // banca e il conto in valuta e' un vero conto corrente estero (codice individuazione bene 1,
+                // IVAFE in misura fissa 34,20 €). Calcolo in Calcoli_RW_Fiat.applicaContoCorrente.
+                st.execute("ALTER TABLE GRUPPO_PERIODO_RW ADD COLUMN IF NOT EXISTS EContoCorrente VARCHAR(2)");
             }
 
             //I dati predefiniti (gruppi Wallet 101..114 e i loro periodi di detenzione, righi FIAT con i
@@ -1090,15 +1094,15 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
             "Gruppo_Tipo_Prog,Gruppo,TipoRigo,Progressivo,DataInizio,DataFine,"
             + "ValoreInizialeManuale,NotaValoreIniziale,ValoreFinaleManuale,NotaValoreFinale,"
             + "ModalitaCalcoloIniziale,ModalitaCalcoloFinale,PagaBolloPeriodo,Origine,ChiaveDefault,"
-            + "StatoEstero,IdentificativoFiscale,NoteFiscali,FonteFiscale,IdentificativoISEE";
+            + "StatoEstero,IdentificativoFiscale,NoteFiscali,FonteFiscale,IdentificativoISEE,EContoCorrente";
 
     /**
      * Periodi di detenzione di un gruppo, ordinati per {@code TipoRigo} poi {@code Progressivo}.
      * Ogni riga : {@code [Gruppo_Tipo_Prog, Gruppo, TipoRigo, Progressivo, DataInizio, DataFine,
      * ValoreInizialeManuale, NotaValoreIniziale, ValoreFinaleManuale, NotaValoreFinale,
      * ModalitaCalcoloIniziale, ModalitaCalcoloFinale, PagaBolloPeriodo, Origine, ChiaveDefault,
-     * StatoEstero, IdentificativoFiscale, NoteFiscali, FonteFiscale, IdentificativoISEE]} — gli
-     * ultimi cinque campi valgono solo sui righi {@code FIAT}.
+     * StatoEstero, IdentificativoFiscale, NoteFiscali, FonteFiscale, IdentificativoISEE,
+     * EContoCorrente]} — gli ultimi sei campi valgono solo sui righi {@code FIAT}.
      */
     public static List<String[]> Pers_GruppoPeriodoRW_LeggiGruppo(String Gruppo) {
         List<String[]> out = new ArrayList<>();
@@ -1149,7 +1153,8 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
             rs.getString("ModalitaCalcoloIniziale"), rs.getString("ModalitaCalcoloFinale"),
             rs.getString("PagaBolloPeriodo"), rs.getString("Origine"), rs.getString("ChiaveDefault"),
             rs.getString("StatoEstero"), rs.getString("IdentificativoFiscale"),
-            rs.getString("NoteFiscali"), rs.getString("FonteFiscale"), rs.getString("IdentificativoISEE")
+            rs.getString("NoteFiscali"), rs.getString("FonteFiscale"), rs.getString("IdentificativoISEE"),
+            rs.getString("EContoCorrente")
         };
     }
 
@@ -1159,7 +1164,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
             String ModalitaCalcoloIniziale, String ModalitaCalcoloFinale, String PagaBolloPeriodo) {
         Pers_GruppoPeriodoRW_Scrivi(Gruppo, TipoRigo, Progressivo, DataInizio, DataFine, ValoreInizialeManuale,
                 NotaValoreIniziale, ValoreFinaleManuale, NotaValoreFinale, ModalitaCalcoloIniziale,
-                ModalitaCalcoloFinale, PagaBolloPeriodo, null, null, null, null, null, null, null);
+                ModalitaCalcoloFinale, PagaBolloPeriodo, null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -1178,7 +1183,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
             String ModalitaCalcoloIniziale, String ModalitaCalcoloFinale, String PagaBolloPeriodo,
             String Origine, String ChiaveDefault,
             String StatoEstero, String IdentificativoFiscale, String NoteFiscali, String FonteFiscale,
-            String IdentificativoISEE) {
+            String IdentificativoISEE, String EContoCorrente) {
         if (Gruppo == null || Gruppo.isBlank()) {
             throw new IllegalArgumentException("Gruppo non può essere nullo o vuoto.");
         }
@@ -1203,6 +1208,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         v.put("IdentificativoFiscale", IdentificativoFiscale);
         v.put("NoteFiscali", NoteFiscali);
         v.put("FonteFiscale", FonteFiscale);
+        v.put("EContoCorrente", EContoCorrente);
         if (Origine != null) {
             v.put("Origine", Origine);
         }

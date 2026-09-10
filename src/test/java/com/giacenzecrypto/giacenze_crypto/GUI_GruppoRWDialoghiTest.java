@@ -52,7 +52,7 @@ class GUI_GruppoRWDialoghiTest {
                 }
             }
             assertNotNull(m);
-            assertEquals(13, m.getColumnCount());
+            assertEquals(14, m.getColumnCount());
             assertEquals(2, m.getRowCount(), "i due periodi salvati devono comparire");
         } finally {
             SwingUtilities.invokeAndWait(d[0]::dispose);

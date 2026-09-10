@@ -116,7 +116,24 @@ public final class StatiEsteri {
     /** Voce vuota in testa alla combo (nessuno Stato indicato). */
     public static final String VOCE_VUOTA = "(nessuno)";
 
+    /**
+     * Valore sentinella per "conto detenuto in Italia". L'Italia <b>non</b> ha un codice nella
+     * Tabella 10 "Elenco Paesi e Territori esteri" (verificato sulle istruzioni Redditi PF 2026 :
+     * 085 = Sri Lanka, 087 = Albania, nessun 086), perché il quadro RW monitora le sole attività
+     * <i>estere</i>. Qui è una voce speciale del campo Stato estero : quando è selezionata, la parte
+     * FIAT del quadro W/RW per quel periodo non va compilata — {@code Calcoli_RW_Fiat.generaRighiFiat}
+     * non emette righi per i tratti che ricadono in un periodo con questo valore. È
+     * l'ISO&#8209;3166 alpha&#8209;2 {@code "IT"} : due lettere, non confondibile con un codice a
+     * 3 cifre della Tabella 10 e sta nella colonna {@code StatoEstero VARCHAR(3)} del DB.
+     */
+    public static final String CODICE_ITALIA = "IT";
+
     private static final String SEP = "  —  "; // " — "
+
+    /** {@code true} se il codice è il valore sentinella {@link #CODICE_ITALIA} ("conto in Italia"). */
+    public static boolean isItalia(String codice) {
+        return CODICE_ITALIA.equals(codice == null ? "" : codice.trim());
+    }
 
     /** Denominazione del codice, o {@code ""} se non in tabella. */
     public static String nome(String codice) {
@@ -124,6 +141,9 @@ public final class StatiEsteri {
             return "";
         }
         String c = codice.trim();
+        if (isItalia(c)) {
+            return "conto in Italia (nessun rigo RW valuta)";
+        }
         for (String[] r : ELENCO) {
             if (r[0].equals(c)) {
                 return r[1];
@@ -168,6 +188,7 @@ public final class StatiEsteri {
         ordinato.sort((a, b) -> a[1].compareToIgnoreCase(b[1]));
         List<String> voci = new ArrayList<>();
         voci.add(VOCE_VUOTA);
+        voci.add(CODICE_ITALIA + SEP + nome(CODICE_ITALIA)); // voce speciale : conto in Italia
         for (String[] r : ordinato) {
             voci.add(r[0] + SEP + r[1]);
         }

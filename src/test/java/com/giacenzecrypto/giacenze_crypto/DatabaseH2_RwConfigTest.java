@@ -64,7 +64,7 @@ class DatabaseH2_RwConfigTest {
                         "VALOREINIZIALEMANUALE", "NOTAVALOREINIZIALE", "VALOREFINALEMANUALE", "NOTAVALOREFINALE",
                         "MODALITACALCOLOINIZIALE", "MODALITACALCOLOFINALE", "PAGABOLLOPERIODO", "ORIGINE",
                         "CHIAVEDEFAULT", "STATOESTERO", "IDENTIFICATIVOFISCALE", "NOTEFISCALI", "FONTEFISCALE",
-                        "IDENTIFICATIVOISEE"),
+                        "IDENTIFICATIVOISEE", "ECONTOCORRENTE"),
                 colonne("GRUPPO_PERIODO_RW"));
     }
 
@@ -96,7 +96,7 @@ class DatabaseH2_RwConfigTest {
         DatabaseH2.Pers_GruppoPeriodoRW_Scrivi("Wallet 05", "FIAT", 1,
                 "2024-01-01", "2024-06-30", "1500.00", "saldo da estratto conto",
                 "0.00", "conto svuotato", "PRIMO_APPORTO", "ULTIMA_USCITA", "SI",
-                "UTENTE", "chiave-x", "092", "LU36476644", "nota fiscale", "VIES", "E12345");
+                "UTENTE", "chiave-x", "092", "LU36476644", "nota fiscale", "VIES", "E12345", "SI");
 
         List<String[]> righe = DatabaseH2.Pers_GruppoPeriodoRW_LeggiGruppo("Wallet 05");
         assertEquals(1, righe.size());
@@ -104,23 +104,24 @@ class DatabaseH2_RwConfigTest {
                 "Wallet 05_FIAT_1", "Wallet 05", "FIAT", "1", "2024-01-01", "2024-06-30",
                 "1500.00", "saldo da estratto conto", "0.00", "conto svuotato",
                 "PRIMO_APPORTO", "ULTIMA_USCITA", "SI", "UTENTE", "chiave-x",
-                "092", "LU36476644", "nota fiscale", "VIES", "E12345"}, righe.get(0));
+                "092", "LU36476644", "nota fiscale", "VIES", "E12345", "SI"}, righe.get(0));
     }
 
     @Test
     void gruppoPeriodoRW_identificativoIseeNull_lasciaLaColonnaIntatta() {
         DatabaseH2.Pers_GruppoPeriodoRW_Scrivi("Wallet 05", "FIAT", 1, null, null, null, null, null, null,
                 "SOLO_RESIDUO", "SOLO_RESIDUO", null, "SISTEMA", "coinbase-mica",
-                "092", "LU36476644", "prima nota", "prima fonte", "E-a-mano");
+                "092", "LU36476644", "prima nota", "prima fonte", "E-a-mano", "NO");
 
         // giro di reconcile dei predefiniti : riscrive tutto tranne l'identificativo ISEE
         DatabaseH2.Pers_GruppoPeriodoRW_Scrivi("Wallet 05", "FIAT", 1, "2025-06-20", null, null, null, null, null,
                 "SOLO_RESIDUO", "SOLO_RESIDUO", null, "SISTEMA", "coinbase-mica",
-                "092", "LU36476644", "nota aggiornata", "fonte aggiornata", null);
+                "092", "LU36476644", "nota aggiornata", "fonte aggiornata", null, "SI");
 
         String[] r = DatabaseH2.Pers_GruppoPeriodoRW_LeggiGruppo("Wallet 05").get(0);
         assertEquals("nota aggiornata", r[17]);
         assertEquals("E-a-mano", r[19], "l'identificativo ISEE non deve essere toccato dal reconcile");
+        assertEquals("SI", r[20], "il campo \"è conto corrente\" segue il reconcile come gli altri dati fiscali");
     }
 
     @Test

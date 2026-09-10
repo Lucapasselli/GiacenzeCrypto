@@ -43,13 +43,25 @@ class StatiEsteriTest {
     }
 
     @Test
-    void etichetteCombo_primaVoceVuota_eValoreLegacyAggiunto() {
+    void etichetteCombo_primaVoceVuota_poiItalia_eValoreLegacyAggiunto() {
         String[] senzaLegacy = StatiEsteri.etichetteCombo("");
         assertEquals(StatiEsteri.VOCE_VUOTA, senzaLegacy[0]);
-        assertEquals(StatiEsteri.ELENCO.length + 1, senzaLegacy.length);
+        assertTrue(senzaLegacy[1].startsWith(StatiEsteri.CODICE_ITALIA), "la 2a voce e' l'Italia");
+        assertEquals(StatiEsteri.ELENCO.length + 2, senzaLegacy.length); // vuota + Italia + elenco
 
         String[] conLegacy = StatiEsteri.etichetteCombo("999");
-        assertEquals(StatiEsteri.ELENCO.length + 2, conLegacy.length);
+        assertEquals(StatiEsteri.ELENCO.length + 3, conLegacy.length);
         assertEquals("999 (non in elenco)", conLegacy[conLegacy.length - 1]);
+    }
+
+    @Test
+    void italia_sentinella_roundTripEIsItalia() {
+        assertTrue(StatiEsteri.isItalia(StatiEsteri.CODICE_ITALIA));
+        assertTrue(StatiEsteri.isItalia(" " + StatiEsteri.CODICE_ITALIA + " "));
+        assertFalse(StatiEsteri.isItalia("040"));
+        assertFalse(StatiEsteri.isItalia(""));
+        // la voce Italia sopravvive al giro etichetta -> codice
+        assertEquals(StatiEsteri.CODICE_ITALIA,
+                StatiEsteri.codiceDaEtichetta(StatiEsteri.etichetta(StatiEsteri.CODICE_ITALIA)));
     }
 }

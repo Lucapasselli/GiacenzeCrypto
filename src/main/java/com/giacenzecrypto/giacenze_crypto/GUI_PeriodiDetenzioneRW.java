@@ -14,6 +14,7 @@ import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_B
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_CHIAVE_DEFAULT;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_DATA_FINE;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_DATA_INIZIO;
+import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_E_CONTO_CORRENTE;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_MOD_FINALE;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_MOD_INIZIALE;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_FONTE_FISCALE;
@@ -53,7 +54,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
      */
     private static final int V_TIPO = 0, V_PROG = 1, V_DATA_INIZIO = 2, V_DATA_FINE = 3,
             V_MOD_INIZIALE = 4, V_MOD_FINALE = 5, V_STATO = 6, V_IDENT = 7, V_ISEE = 8,
-            V_NOTE = 9, V_FONTE = 10, V_BOLLO = 11, V_ORIGINE = 12;
+            V_NOTE = 9, V_FONTE = 10, V_CONTO_CORRENTE = 11, V_BOLLO = 12, V_ORIGINE = 13;
 
     private final String gruppo;
     private final List<String[]> righe = new ArrayList<>();
@@ -75,7 +76,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
         Tabella.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         Tabella.setShowGrid(false); // niente righe fra celle : come le altre tabelle dell'app (default FlatLaf)
         Tabella.setPreferredScrollableViewportSize(new java.awt.Dimension(900, 260));
-        int[] larghezze = {60, 45, 90, 90, 190, 190, 150, 130, 130, 260, 200, 90, 110};
+        int[] larghezze = {60, 45, 90, 90, 190, 190, 150, 130, 130, 260, 200, 110, 90, 110};
         for (int i = 0; i < larghezze.length && i < Tabella.getColumnModel().getColumnCount(); i++) {
             Tabella.getColumnModel().getColumn(i).setPreferredWidth(larghezze[i]);
         }
@@ -94,6 +95,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
                 "Solo righi FIAT : identificativo per il modulo FC.1 della DSU/ISEE, sempre da inserire a mano",
                 "Solo righi FIAT : nota sull'entità legale dell'intermediario",
                 "Solo righi FIAT : da dove viene il dato fiscale",
+                "Solo righi FIAT : SI se l'intermediario estero è una banca e il conto valuta è un vero conto corrente estero (codice bene 1, IVAFE in misura fissa 34,20 € sul valore medio di giacenza)",
                 "Solo righi CRYPTO : in questo periodo l'intermediario ha già assolto l'imposta di bollo",
                 "Provenienza della riga : Predefinito / Modificato / Manuale");
 
@@ -141,6 +143,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
                 fiat ? v(r, COL_IDENT_ISEE) : "n/d",
                 fiat ? v(r, COL_NOTE_FISCALI) : "n/d",
                 fiat ? v(r, COL_FONTE_FISCALE) : "n/d",
+                fiat ? (v(r, COL_E_CONTO_CORRENTE).isEmpty() ? Principale_GruppiWalletRW.CONTO_CORRENTE_NO : v(r, COL_E_CONTO_CORRENTE)) : "n/d",
                 fiat ? "n/d" : v(r, COL_BOLLO),
                 Principale_GruppiWalletRW.descrizioneOrigineRiga(v(r, COL_ORIGINE), v(r, COL_CHIAVE_DEFAULT))});
         }
@@ -189,7 +192,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
         setTitle("Periodi di detenzione");
         setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
 
-        Label_Titolo.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
+        Label_Titolo.setFont(new java.awt.Font("Noto Sans", 1, 16)); // NOI18N
         Label_Titolo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         Label_Titolo.setText("Periodi di detenzione");
 
@@ -200,11 +203,11 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
 
             },
             new String [] {
-                "Tipo", "Progr.", "Data inizio", "Data fine", "Calcolo iniziale", "Calcolo finale", "Stato estero", "Identificativo fiscale", "Identificativo ISEE", "Note", "Fonte", "Bollo exchange", "Origine"
+                "Tipo", "Progr.", "Data inizio", "Data fine", "Calcolo iniziale", "Calcolo finale", "Stato estero", "Identificativo fiscale", "Identificativo ISEE", "Note", "Fonte", "Conto corrente", "Bollo exchange", "Origine"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {

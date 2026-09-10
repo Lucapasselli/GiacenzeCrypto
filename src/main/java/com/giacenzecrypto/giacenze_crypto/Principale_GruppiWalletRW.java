@@ -68,6 +68,17 @@ public class Principale_GruppiWalletRW {
     public static final String BOLLO_NO = "NO";
 
     /**
+     * "È conto corrente" del rigo FIAT : {@code SI} = l'intermediario estero è una banca e il conto in
+     * valuta è un vero conto corrente / deposito bancario estero (codice individuazione bene 1, IVAFE in
+     * misura fissa, valore medio di giacenza — vedi le istruzioni Redditi PF, colonna 3 del quadro RW).
+     * {@code NO}/vuoto = altra attività estera di natura finanziaria (codice bene 14). Il calcolo è in
+     * {@code Calcoli_RW_Fiat.applicaContoCorrente} (IVAFE fissa 34,20 € pro quota/giorni, esente sotto
+     * 5.000 € di giacenza media, soglia per gruppo wallet).
+     */
+    public static final String CONTO_CORRENTE_SI = "SI";
+    public static final String CONTO_CORRENTE_NO = "NO";
+
+    /**
      * Lunghezza massima dell'identificativo di un operatore finanziario estero nel modulo FC.1 della
      * DSU/ISEE ({@code E} + 15). Vale sia per l'identificativo fiscale sia per l'alias ISEE.
      */
@@ -97,19 +108,20 @@ public class Principale_GruppiWalletRW {
      * Riga della GUI "periodi" : {@code [TipoRigo, Progressivo, DataInizio, DataFine,
      * ValoreInizialeManuale, NotaValoreIniziale, ValoreFinaleManuale, NotaValoreFinale,
      * ModalitaCalcoloIniziale, ModalitaCalcoloFinale, PagaBolloPeriodo, Origine, ChiaveDefault,
-     * StatoEstero, IdentificativoFiscale, NoteFiscali, FonteFiscale, IdentificativoISEE]} —
-     * 18 colonne, senza chiave sintetica né gruppo. I motori RW leggono i periodi per indice
-     * ({@code COL_*}) : le colonne nuove vanno <b>sempre in coda</b>, mai inserite in mezzo.
+     * StatoEstero, IdentificativoFiscale, NoteFiscali, FonteFiscale, IdentificativoISEE,
+     * EContoCorrente]} — 19 colonne, senza chiave sintetica né gruppo. I motori RW leggono i periodi
+     * per indice ({@code COL_*}) : le colonne nuove vanno <b>sempre in coda</b>, mai inserite in mezzo.
      *
-     * <p>Le cinque colonne fiscali finali hanno senso <b>solo sui righi FIAT</b> ; sui righi CRYPTO
-     * {@link #salvaPeriodi} le scrive vuote, come già fa col bollo all'inverso.</p>
+     * <p>Le sei colonne fiscali finali (Stato estero → EContoCorrente) hanno senso <b>solo sui righi
+     * FIAT</b> ; sui righi CRYPTO {@link #salvaPeriodi} le scrive vuote, come già fa col bollo
+     * all'inverso.</p>
      */
     public static final int COL_TIPO = 0, COL_PROGRESSIVO = 1, COL_DATA_INIZIO = 2, COL_DATA_FINE = 3,
             COL_VAL_INIZIALE = 4, COL_NOTA_INIZIALE = 5, COL_VAL_FINALE = 6, COL_NOTA_FINALE = 7,
             COL_MOD_INIZIALE = 8, COL_MOD_FINALE = 9, COL_BOLLO = 10, COL_ORIGINE = 11, COL_CHIAVE_DEFAULT = 12,
             COL_STATO_ESTERO = 13, COL_IDENT_FISCALE = 14, COL_NOTE_FISCALI = 15, COL_FONTE_FISCALE = 16,
-            COL_IDENT_ISEE = 17;
-    public static final int COLONNE_PERIODO = 18;
+            COL_IDENT_ISEE = 17, COL_E_CONTO_CORRENTE = 18;
+    public static final int COLONNE_PERIODO = 19;
 
     /** Provenienza di una riga : seminata da {@code RW_Predefiniti.json} e mai più toccata. */
     public static final String ORIGINE_SISTEMA = "SISTEMA";
@@ -246,10 +258,11 @@ public class Principale_GruppiWalletRW {
         for (String[] db : DatabaseH2.Pers_GruppoPeriodoRW_LeggiGruppo(gruppo)) {
             // db : [Gruppo_Tipo_Prog, Gruppo, TipoRigo, Progressivo, DataInizio, DataFine,
             //       ValIniManuale, NotaIni, ValFinManuale, NotaFin, ModIni, ModFin, PagaBolloPeriodo,
-            //       Origine, ChiaveDefault, StatoEstero, IdentFiscale, NoteFiscali, FonteFiscale, IdentISEE]
+            //       Origine, ChiaveDefault, StatoEstero, IdentFiscale, NoteFiscali, FonteFiscale, IdentISEE,
+            //       EContoCorrente]
             out.add(new String[] {
                 db[2], db[3], db[4], db[5], db[6], db[7], db[8], db[9], db[10], db[11], db[12], db[13], db[14],
-                db[15], db[16], db[17], db[18], db[19]
+                db[15], db[16], db[17], db[18], db[19], db[20]
             });
         }
         return out;
@@ -434,8 +447,15 @@ public class Principale_GruppiWalletRW {
             }
             // I dati fiscali riguardano solo il rigo FIAT ; sui righi CRYPTO salvaPeriodi li azzera.
             if (TIPO_FIAT.equals(tipo)) {
+                // Il codice Stato è al massimo di 3 caratteri : ci stanno i codici a 3 cifre della
+                // Tabella 10 e la sentinella "IT" (conto in Italia, vedi StatiEsteri.CODICE_ITALIA).
                 if (campo(r, COL_STATO_ESTERO).length() > 3) {
                     errori.add(et + "il codice dello Stato estero è al massimo di 3 caratteri (tabella \"Elenco Paesi\" del modello Redditi).");
+                }
+                String contoCorrente = campo(r, COL_E_CONTO_CORRENTE);
+                if (!contoCorrente.isEmpty() && !CONTO_CORRENTE_SI.equals(contoCorrente) && !CONTO_CORRENTE_NO.equals(contoCorrente)) {
+                    errori.add(et + "valore \"è conto corrente\" non riconosciuto (\"" + contoCorrente + "\"), atteso "
+                            + CONTO_CORRENTE_SI + " o " + CONTO_CORRENTE_NO + ".");
                 }
                 if (campo(r, COL_IDENT_FISCALE).length() > MAX_IDENT_ISEE) {
                     errori.add(et + "l'identificativo fiscale è al massimo di " + MAX_IDENT_ISEE
@@ -604,7 +624,8 @@ public class Principale_GruppiWalletRW {
                         fiat ? nz(campo(r, COL_IDENT_FISCALE)) : null,
                         fiat ? nz(campo(r, COL_NOTE_FISCALI)) : null,
                         fiat ? nz(campo(r, COL_FONTE_FISCALE)) : null,
-                        fiat ? nz(campo(r, COL_IDENT_ISEE)) : null);
+                        fiat ? nz(campo(r, COL_IDENT_ISEE)) : null,
+                        fiat ? nz(campo(r, COL_E_CONTO_CORRENTE)) : null);
             }
         }
         return errori;
@@ -1234,7 +1255,7 @@ public class Principale_GruppiWalletRW {
         List<String[]> esistenti = DatabaseH2.Pers_GruppoPeriodoRW_LeggiGruppo(g.gruppo);
         // riga : [0]key [1]gruppo [2]tipo [3]prog [4]di [5]df [6]valI [7]notaI [8]valF [9]notaF
         //        [10]modI [11]modF [12]bollo [13]origine [14]chiaveDefault [15]stato [16]ident
-        //        [17]noteFisc [18]fonteFisc [19]identISEE
+        //        [17]noteFisc [18]fonteFisc [19]identISEE [20]eContoCorrente
         boolean vuoto = esistenti.isEmpty();
         boolean gestita = vuoto || esistenti.stream().anyMatch(r -> ORIGINE_SISTEMA.equals(cd(r, 13)));
         Map<String, String[]> perChiave = new HashMap<>();
@@ -1282,7 +1303,8 @@ public class Principale_GruppiWalletRW {
                 nn(pd.calcoloIniziale), nn(pd.calcoloFinale), fiat ? null : nn(pd.bollo),
                 ORIGINE_SISTEMA, pd.chiave,
                 fiat ? nn(pd.statoEstero) : null, fiat ? nn(pd.identificativoFiscale) : null,
-                fiat ? nn(pd.note) : null, fiat ? nn(pd.fonte) : null, null);
+                fiat ? nn(pd.note) : null, fiat ? nn(pd.fonte) : null, null,
+                fiat ? nn(pd.contoCorrente) : null);
     }
 
     // --- pulsanti "Ripristina al default" (lavorano sulla lista in memoria della GUI) -----
@@ -1365,6 +1387,7 @@ public class Principale_GruppiWalletRW {
         r[COL_IDENT_FISCALE] = fiat ? sv(pd.identificativoFiscale) : "";
         r[COL_NOTE_FISCALI] = fiat ? sv(pd.note) : "";
         r[COL_FONTE_FISCALE] = fiat ? sv(pd.fonte) : "";
+        r[COL_E_CONTO_CORRENTE] = fiat ? sv(pd.contoCorrente) : "";
         // L'identificativo ISEE non ha un default : è sempre inserito a mano. Il "ripristina al
         // default" lo azzera come qualsiasi altro campo non predefinito.
         r[COL_IDENT_ISEE] = "";

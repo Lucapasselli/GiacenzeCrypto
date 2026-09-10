@@ -6,7 +6,9 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.Year;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -220,8 +222,10 @@ public final class Calcoli_RW_Fiat {
     public static final int IV_DATA_INIZIO = 0, IV_DATA_FINE = 1, IV_STATO = 2,
             IV_MOD_INIZIALE = 3, IV_MOD_FINALE = 4,
             IV_VAL_INIZIALE_MAN = 5, IV_VAL_FINALE_MAN = 6,
-            IV_NOTA_INIZIALE = 7, IV_NOTA_FINALE = 8;
-    public static final int IV_COLONNE = 9;
+            IV_NOTA_INIZIALE = 7, IV_NOTA_FINALE = 8,
+            /** "SI"/"NO"/"" — è conto corrente estero : consumato da {@link #applicaContoCorrente} (codice bene 1, IVAFE fissa). */
+            IV_E_CONTO_CORRENTE = 9;
+    public static final int IV_COLONNE = 10;
 
     /**
      * Spezza l'anno di riferimento nei tratti di detenzione FIAT di un gruppo wallet.
@@ -290,6 +294,7 @@ public final class Calcoli_RW_Fiat {
             Principale_GruppiWalletRW.Finestra copre = finestraCheCopre(finestre, di);
             if (copre != null) {
                 iv[IV_STATO] = trim(copre.riga[Principale_GruppiWalletRW.COL_STATO_ESTERO]);
+                iv[IV_E_CONTO_CORRENTE] = trim(copre.riga[Principale_GruppiWalletRW.COL_E_CONTO_CORRENTE]);
             }
 
             String[] pIni = periodoConInizio(finestre, di, di.equals(annoInizio));
@@ -436,10 +441,35 @@ public final class Calcoli_RW_Fiat {
     // F3 : generazione dei righi FIAT (mappa separata Mappa_RW_ListeXGruppoWallet_Fiat)
     // =======================================================================
 
-    /** Colonna extra di un rigo FIAT rispetto al {@code String[17]} del rigo CRYPTO : codice Stato estero. */
+    /**
+     * Colonne extra di un rigo FIAT rispetto al {@code String[17]} del rigo CRYPTO. Le prime 17 hanno
+     * lo stesso significato del rigo CRYPTO; {@code [10]} resta il valore <b>finale</b> reale del tratto
+     * (per il dettaglio a video), {@code [11]} i giorni del tratto. Le colonne dalla 18 in poi servono
+     * al <b>conto corrente estero</b> ({@code EContoCorrente = SI} sul periodo) : sono vuote / "14" /
+     * "NO" per gli altri righi FIAT.
+     */
     public static final int FIAT_COL_STATO_ESTERO = 17;
-    /** Lunghezza di un rigo FIAT ({@code String[18]}). Le prime 17 colonne hanno lo stesso significato del rigo CRYPTO. */
-    public static final int FIAT_COLONNE = 18;
+    /** Codice individuazione bene (colonna 3 del quadro RW) : "1" per il conto corrente, "14" per le altre attività estere. */
+    public static final int FIAT_COL_CODICE_BENE = 18;
+    /** Valore medio di giacenza in EUR sull'intero anno di vita del conto (colonna 8 del quadro RW per il conto corrente). "" per gli altri righi. */
+    public static final int FIAT_COL_VALORE_MEDIO = 19;
+    /** IVAFE dovuta in EUR (misura fissa 34,20 € pro quota/giorni). "0.00" se non dovuta (esenzione ≤ 5.000 €) o rigo non conto corrente. */
+    public static final int FIAT_COL_IVAFE = 20;
+    /** "SI" se il rigo assolve i soli obblighi di monitoraggio (colonna 16 barrata), "NO" se è dovuta l'IVAFE. */
+    public static final int FIAT_COL_SOLO_MONITORAGGIO = 21;
+    /** Valore massimo raggiunto in EUR nell'anno di vita del conto (soglia di monitoraggio 15.000 €). "" per gli altri righi. */
+    public static final int FIAT_COL_VALORE_MASSIMO = 22;
+    /** Lunghezza di un rigo FIAT ({@code String[23]}). */
+    public static final int FIAT_COLONNE = 23;
+
+    /** Codice individuazione bene per un vero conto corrente / deposito bancario estero. */
+    public static final String CODICE_BENE_CONTO_CORRENTE = "1";
+    /** IVAFE in misura fissa per i conti correnti e libretti di risparmio (istruzioni Redditi PF 2026, colonna 29 del quadro RW). */
+    static final BigDecimal IVAFE_CONTO_CORRENTE_FISSA = new BigDecimal("34.20");
+    /** Sotto (o pari a) questo valore medio di giacenza l'IVAFE sul conto corrente non è dovuta. */
+    static final BigDecimal SOGLIA_ESENZIONE_IVAFE = new BigDecimal("5000");
+    /** Sotto (o pari a) questo valore massimo non c'è nemmeno obbligo di monitoraggio (rigo comunque prodotto, con avviso). */
+    static final BigDecimal SOGLIA_MONITORAGGIO_CONTO = new BigDecimal("15000");
 
     /**
      * Controvalore in EUR di un importo in una valuta a una certa data. Iniettabile per i test :
@@ -484,6 +514,10 @@ public final class Calcoli_RW_Fiat {
      * per ogni gruppo wallet con movimenti FIAT, un rigo {@code String[18]} per ogni tratto di
      * {@link #intervalliFiat(String, String)} il cui valore iniziale o finale non è nullo.
      *
+     * <p>I tratti che ricadono in un periodo FIAT il cui Stato estero è il valore sentinella
+     * {@link StatiEsteri#CODICE_ITALIA} ("conto in Italia") <b>non producono rigo</b> : il quadro W/RW
+     * monitora le sole attività estere.</p>
+     *
      * <p>Valore iniziale del tratto : il valore manuale del periodo FIAT se impostato ; altrimenti,
      * su un confine definito dall'utente, la modalità di calcolo (residuo + primo apporto / somma
      * apporti della giornata) ; altrimenti — ed è il default {@code SOLO_RESIDUO} — la giacenza a
@@ -516,11 +550,21 @@ public final class Calcoli_RW_Fiat {
             LocalDate aperturaGruppo = dataAperturaGruppo(primoMovXGruppo.get(gruppo), anno);
 
             List<String[]> righe = new ArrayList<>();
+            List<List<String>> avvisiRighe = new ArrayList<>();   // parallelo a righe, per la fase conto corrente
+            List<int[]> rangeCC = new ArrayList<>();              // [epochDay di, epochDay df] dei tratti conto corrente
+            List<Integer> idxCC = new ArrayList<>();              // indici in righe dei tratti conto corrente
             for (int i = 0; i < intervalli.size(); i++) {
                 String[] iv = intervalli.get(i);
                 LocalDate di = parseData(iv[IV_DATA_INIZIO]);
                 LocalDate df = parseData(iv[IV_DATA_FINE]);
                 if (di == null || df == null) {
+                    continue;
+                }
+                // Conto detenuto in Italia : nessun obbligo di monitoraggio, la parte FIAT del quadro
+                // W/RW per questo tratto non va compilata. Il tratto resta comunque nei tagli di
+                // intervalliFiat (continuità dell'algebra degli intervalli), qui semplicemente non
+                // produce rigo.
+                if (StatiEsteri.isItalia(trim(iv[IV_STATO]))) {
                     continue;
                 }
                 boolean aperturaInfraAnno = i == 0 && aperturaGruppo != null && aperturaGruppo.isAfter(di);
@@ -535,10 +579,15 @@ public final class Calcoli_RW_Fiat {
                 BigDecimal valIni = valoreIniziale(gambe, iv, di, aperturaInfraAnno, cambio, avvisi);
                 BigDecimal valFin = valoreFinale(gambe, iv, df, cambio, avvisi);
 
+                boolean contoCorrente = Principale_GruppiWalletRW.CONTO_CORRENTE_SI.equals(trim(iv[IV_E_CONTO_CORRENTE]));
                 boolean negativo = valIni.signum() < 0 || valFin.signum() < 0;
                 // Salto il tratto solo se i due estremi sono GENUINAMENTE nulli (punto 14) : un saldo
                 // negativo viene invece portato a zero ma il rigo resta, con l'avviso.
-                if (!negativo && valIni.signum() == 0 && valFin.signum() == 0) {
+                // Eccezione : per un vero conto corrente estero la misura che conta e' la giacenza
+                // MEDIA sull'anno di vita, non i due estremi : un conto aperto e svuotato dentro l'anno
+                // ha entrambi gli estremi a zero ma puo' comunque dovere l'IVAFE. Il rigo passa e ci
+                // pensa applicaContoCorrente() a decidere media, massimo e imposta.
+                if (!negativo && valIni.signum() == 0 && valFin.signum() == 0 && !contoCorrente) {
                     continue;
                 }
                 if (negativo) {
@@ -554,7 +603,14 @@ public final class Calcoli_RW_Fiat {
                 int giorni = FunzioniDate.DifferenzaDate(di.toString(), df.toString()) + 1;
                 righe.add(rigaFiat(anno, gruppo, di, df, valIni, valFin, giorni,
                         trim(iv[IV_STATO]), etichettaValute(gambe, df), avvisi));
+                avvisiRighe.add(avvisi);
+                if (contoCorrente) {
+                    idxCC.add(righe.size() - 1);
+                    rangeCC.add(new int[] {(int) di.toEpochDay(), (int) df.toEpochDay()});
+                }
             }
+            // Fase conto corrente estero : valore medio / massimo sull'anno di vita del conto, IVAFE fissa.
+            applicaContoCorrente(anno, gambe, righe, avvisiRighe, rangeCC, idxCC, cambio);
             if (!righe.isEmpty()) {
                 Principale.Mappa_RW_ListeXGruppoWallet_Fiat.put(gruppo, righe);
             }
@@ -677,10 +733,141 @@ public final class Calcoli_RW_Fiat {
         r[12] = CAUSALE_PERIODO;              // causale
         r[13] = "";                           // ID movimento apertura (nessuno : è un periodo)
         r[14] = "";                           // ID movimento chiusura
-        r[15] = avvisi.isEmpty() ? "" : "Avviso (" + String.join("; ", new LinkedHashSet<>(avvisi)) + ")";
+        r[15] = componiAvvisi(avvisi);
         r[16] = "";                           // lista ID coinvolti
         r[FIAT_COL_STATO_ESTERO] = statoEstero == null ? "" : statoEstero;
+        // Default : altra attività estera di natura finanziaria, solo monitoraggio, niente IVAFE.
+        // applicaContoCorrente() riscrive queste colonne sui tratti con EContoCorrente = SI.
+        r[FIAT_COL_CODICE_BENE] = CODICE_BENE_FIAT;
+        r[FIAT_COL_VALORE_MEDIO] = "";
+        r[FIAT_COL_IVAFE] = "0.00";
+        r[FIAT_COL_SOLO_MONITORAGGIO] = "SI";
+        r[FIAT_COL_VALORE_MASSIMO] = "";
         return r;
+    }
+
+    /** Testo della colonna avvisi ({@code [15]}) da una lista di messaggi (deduplicati, ordine di inserimento). */
+    private static String componiAvvisi(List<String> avvisi) {
+        return avvisi.isEmpty() ? "" : "Avviso (" + String.join("; ", new LinkedHashSet<>(avvisi)) + ")";
+    }
+
+    /**
+     * Fase <b>conto corrente estero</b>. Per un gruppo con almeno un tratto {@code EContoCorrente = SI}
+     * nell'anno : calcola il <b>valore medio</b> e il <b>valore massimo</b> (EUR) della giacenza
+     * sull'intero periodo di vita del conto nell'anno, poi riscrive i righi conto corrente con codice
+     * individuazione bene {@value #CODICE_BENE_CONTO_CORRENTE}, la giacenza media in
+     * {@link #FIAT_COL_VALORE_MEDIO} e — se dovuta — l'IVAFE in {@link #FIAT_COL_IVAFE}.
+     *
+     * <p>IVAFE in <b>misura fissa</b> {@link #IVAFE_CONTO_CORRENTE_FISSA} € rapportata alla quota
+     * (100 %) e al periodo di possesso ({@code giorni tratto / giorni dell'anno}). Non dovuta se il
+     * valore medio ≤ {@link #SOGLIA_ESENZIONE_IVAFE} € : la soglia si confronta col valore medio del
+     * conto <b>sulla sua vita</b> (i giorni prorata solo l'imposta, non la soglia — è la lettura
+     * dell'esempio delle istruzioni Redditi PF 2026). La verifica è sul <b>singolo gruppo wallet</b> :
+     * il programma non gestisce due conti presso lo stesso intermediario. Se non dovuta ma il valore
+     * massimo &gt; {@link #SOGLIA_MONITORAGGIO_CONTO} € resta l'obbligo di monitoraggio ; sotto quella
+     * soglia il rigo è prodotto comunque, con avviso.</p>
+     *
+     * <p>La conversione in EUR è lineare a data fissa (l'ultimo giorno di vita del conto), quindi si
+     * ricava <b>un tasso per valuta</b> con una sola chiamata e non una conversione per giorno.</p>
+     */
+    private static void applicaContoCorrente(String anno, List<GambaFiat> gambe, List<String[]> righe,
+            List<List<String>> avvisiRighe, List<int[]> rangeCC, List<Integer> idxCC, ControvaloreEUR cambio) {
+        if (idxCC.isEmpty()) {
+            return;
+        }
+        // Giorni di vita del conto nell'anno = unione dei giorni dei tratti conto corrente.
+        TreeSet<LocalDate> giorniVita = new TreeSet<>();
+        LocalDate ultimoGiorno = null;
+        for (int[] r : rangeCC) {
+            LocalDate a = LocalDate.ofEpochDay(r[0]);
+            LocalDate b = LocalDate.ofEpochDay(r[1]);
+            for (LocalDate g = a; !g.isAfter(b); g = g.plusDays(1)) {
+                giorniVita.add(g);
+            }
+            if (ultimoGiorno == null || b.isAfter(ultimoGiorno)) {
+                ultimoGiorno = b;
+            }
+        }
+        String dataCambio = ultimoGiorno.toString();
+
+        List<String> avvisiComuni = new ArrayList<>();
+        Map<String, BigDecimal> tasso = new HashMap<>();
+        List<GambaFiat> ordinate = new ArrayList<>(gambe);
+        ordinate.sort(Comparator.comparing(g -> g.giorno));
+
+        int gi = 0;
+        Map<String, BigDecimal> saldo = new HashMap<>();
+        BigDecimal somma = BigDecimal.ZERO;
+        BigDecimal massimo = BigDecimal.ZERO;
+        int n = 0;
+        for (LocalDate g : giorniVita) {
+            String gs = g.toString();
+            while (gi < ordinate.size() && ordinate.get(gi).giorno.compareTo(gs) <= 0) {
+                GambaFiat gf = ordinate.get(gi++);
+                saldo.merge(gf.valuta, gf.importo, BigDecimal::add);
+            }
+            BigDecimal totGiorno = BigDecimal.ZERO;
+            for (Map.Entry<String, BigDecimal> e : saldo.entrySet()) {
+                if (e.getValue().signum() == 0) {
+                    continue;
+                }
+                BigDecimal t = tasso.computeIfAbsent(e.getKey(), v -> tassoEUR(v, dataCambio, cambio, avvisiComuni));
+                totGiorno = totGiorno.add(t.multiply(e.getValue()));
+            }
+            if (totGiorno.signum() < 0) {
+                totGiorno = BigDecimal.ZERO; // conto in rosso : 0 ai fini della giacenza
+            }
+            somma = somma.add(totGiorno);
+            if (totGiorno.compareTo(massimo) > 0) {
+                massimo = totGiorno;
+            }
+            n++;
+        }
+        BigDecimal valoreMedio = n > 0
+                ? somma.divide(BigDecimal.valueOf(n), 2, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO;
+        massimo = massimo.setScale(2, RoundingMode.HALF_UP);
+        boolean dovuta = valoreMedio.compareTo(SOGLIA_ESENZIONE_IVAFE) > 0;
+        int giorniAnno = Year.of(Integer.parseInt(anno)).length();
+
+        for (int idx : idxCC) {
+            String[] r = righe.get(idx);
+            List<String> av = avvisiRighe.get(idx);
+            av.addAll(avvisiComuni);
+            r[FIAT_COL_CODICE_BENE] = CODICE_BENE_CONTO_CORRENTE;
+            r[FIAT_COL_VALORE_MEDIO] = valoreMedio.toPlainString();
+            r[FIAT_COL_VALORE_MASSIMO] = massimo.toPlainString();
+            if (dovuta) {
+                int gg = Integer.parseInt(r[11]);
+                BigDecimal ivafe = IVAFE_CONTO_CORRENTE_FISSA
+                        .multiply(BigDecimal.valueOf(gg))
+                        .divide(BigDecimal.valueOf(giorniAnno), 2, RoundingMode.HALF_UP);
+                r[FIAT_COL_IVAFE] = ivafe.toPlainString();
+                r[FIAT_COL_SOLO_MONITORAGGIO] = "NO";
+                av.add("conto corrente : IVAFE " + ivafe.toPlainString() + " EUR (34,20 x " + gg + "/" + giorniAnno + ")");
+            } else {
+                r[FIAT_COL_IVAFE] = "0.00";
+                r[FIAT_COL_SOLO_MONITORAGGIO] = "SI";
+                if (massimo.compareTo(SOGLIA_MONITORAGGIO_CONTO) <= 0) {
+                    av.add("conto corrente sotto la soglia di monitoraggio (valore massimo "
+                            + massimo.toPlainString() + " EUR <= 15.000) : rigo prodotto per completezza");
+                } else {
+                    av.add("conto corrente : IVAFE non dovuta (valore medio " + valoreMedio.toPlainString()
+                            + " EUR <= 5.000), resta l'obbligo di monitoraggio (valore massimo > 15.000 EUR)");
+                }
+            }
+            r[15] = componiAvvisi(av);
+        }
+    }
+
+    /** Tasso EUR di una valuta a data fissa (conversione lineare) : {@code cambio.eur(valuta, 1, data)}. {@code 0} se non convertibile. */
+    private static BigDecimal tassoEUR(String valuta, String dataIso, ControvaloreEUR cambio, List<String> avvisi) {
+        BigDecimal t = cambio.eur(valuta, BigDecimal.ONE, dataIso);
+        if (t == null) {
+            avvisi.add("valuta " + trim(valuta).toUpperCase() + " non convertita in EUR");
+            return BigDecimal.ZERO;
+        }
+        return t;
     }
 
     /** Codici valuta presenti nel saldo FIAT del gruppo alla data, uniti da "+" (fallback "EUR"). */

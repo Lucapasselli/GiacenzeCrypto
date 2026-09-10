@@ -10686,8 +10686,15 @@ if (result.isAction("delete-all")) {
      * Aggiunge a {@code MappaWallerQuadro} un rigo di sintesi per ogni tratto di detenzione FIAT
      * (mappa {@link #Mappa_RW_ListeXGruppoWallet_Fiat}, popolata da
      * {@code Calcoli_RW_Fiat.generaRighiFiat} dentro {@code AggiornaRWFR}). Un rigo per gruppo/periodo :
-     * giorni = lunghezza del tratto (nessuna media ponderata), IC soppressa (colonna 5 = "0.00"),
-     * natura = "FIAT", codice Stato estero in colonna 9. Chiave di sintesi : "Wallet NN|FIAT|&lt;prog&gt;".
+     * giorni = lunghezza del tratto (nessuna media ponderata), natura = "FIAT", codice Stato estero in
+     * colonna 9. Chiave di sintesi : "Wallet NN|FIAT|&lt;prog&gt;".
+     *
+     * <p>Per le "altre attività estere di natura finanziaria" (codice bene 14) la colonna 5 ("IC Dovuta")
+     * resta "0.00" (solo monitoraggio). Per i <b>veri conti correnti esteri</b> (codice bene 1) la
+     * colonna 5 porta l'<b>IVAFE</b> calcolata da {@code Calcoli_RW_Fiat} e la colonna 2 ("Val. Finale")
+     * porta il <b>valore medio di giacenza</b> — non il saldo puntuale a fine tratto, che resta
+     * nella riga della mappa FIAT ({@code [10]}) per il dettaglio a video. L'IVAFE dei conti correnti
+     * <b>non entra</b> in {@code RW_Text_IC} : il totalizzatore CRYPTO salta le righe con natura FIAT.</p>
      */
     private void RW_CalcolaRW_ParteFiat(Map<String, String[]> MappaWallerQuadro){
         if (Mappa_RW_ListeXGruppoWallet_Fiat == null || Mappa_RW_ListeXGruppoWallet_Fiat.isEmpty()) return;
@@ -10703,13 +10710,28 @@ if (result.isAction("delete-all")) {
                 boolean annoIntero = di.equals(anno + "-01-01") && df.equals(anno + "-12-31");
                 String etichetta = num + " ( " + alias[1] + " )";
                 if (!annoIntero) etichetta = etichetta + " [" + di + " / " + df + "]";
+                boolean contoCorrente = Calcoli_RW_Fiat.CODICE_BENE_CONTO_CORRENTE.equals(
+                        d[Calcoli_RW_Fiat.FIAT_COL_CODICE_BENE]);
+                //Conto corrente : colonna 8 del quadro RW = valore MEDIO di giacenza (d[19]), non il
+                //saldo puntuale a fine tratto (d[10], che resta nella riga della mappa per il dettaglio).
+                String valFinaleColonna = contoCorrente
+                        && d[Calcoli_RW_Fiat.FIAT_COL_VALORE_MEDIO] != null
+                        && !d[Calcoli_RW_Fiat.FIAT_COL_VALORE_MEDIO].isBlank()
+                        ? d[Calcoli_RW_Fiat.FIAT_COL_VALORE_MEDIO] : d[10];
                 String[] RWx = new String[10];
                 RWx[0] = etichetta;
-                RWx[1] = d[5];                                               // valore iniziale
-                RWx[2] = d[10];                                              // valore finale
+                //Punto 1 : a video i totali FIAT seguono la stessa regola delle crypto (2 decimali),
+                //niente coda di decimali non significativi dalla conversione in EUR.
+                RWx[1] = new BigDecimal(d[5]).setScale(2, RoundingMode.HALF_UP).toPlainString();   // valore iniziale
+                RWx[2] = new BigDecimal(valFinaleColonna).setScale(2, RoundingMode.HALF_UP).toPlainString();  // valore finale / medio (conto corrente)
                 RWx[3] = d[11];                                              // giorni = lunghezza del tratto
                 RWx[4] = d[15] != null && d[15].toLowerCase().contains("error") ? "ERRORI" : "";
-                RWx[5] = "0.00";                                             // IC soppressa (solo monitoraggio)
+                //IVAFE del conto corrente (misura fissa) in colonna 5 ; per le altre attività estere
+                //resta "0.00" (solo monitoraggio). In entrambi i casi NON entra in RW_Text_IC : il
+                //totalizzatore CRYPTO salta le righe con RWx[8] == "FIAT".
+                RWx[5] = contoCorrente
+                        ? new BigDecimal(d[Calcoli_RW_Fiat.FIAT_COL_IVAFE]).setScale(2, RoundingMode.HALF_UP).toPlainString()
+                        : "0.00";
                 RWx[6] = gruppo + "|FIAT|" + String.format("%03d", prog);
                 RWx[7] = "NO";                                               // il FIAT ignora il bollo
                 RWx[8] = "FIAT";
@@ -11641,24 +11663,94 @@ if (result.isAction("delete-all")) {
             LocalDateTime now = LocalDateTime.now();
             String DataOra=now.format(formatter);
             String AnnoDiCompetenza=RW_Anno_ComboBox.getSelectedItem().toString();
-            Stampe stampa=new Stampe(VarStatiche.getCartella_Temporanei()+"RW_"+AnnoDiCompetenza+"_"+DataOra+".pdf");           
             int anno=Integer.parseInt(AnnoDiCompetenza);
+
+            //Punto 5 : si stampa un solo quadro per volta. Chiedo all'utente quale.
+            //La scelta va fatta PRIMA di creare Stampe : il costruttore apre gia' il file di output,
+            //e un annullamento successivo lascerebbe un PDF vuoto in Temporanei.
+            AppDialog.DialogResult sceltaQuadro = AppDialog.builder(this)
+                    .windowTitle("Stampa quadro W/RW")
+                    .bodyTitle("Quale quadro vuoi stampare?")
+                    .showTitleInBody(true)
+                    .theme()
+                    .type(AppDialog.DialogType.INFO)
+                    .message("Il report contiene un solo quadro per volta, con le relative note e la relativa parte FIAT.")
+                    .details("""
+                    - Quadro W : per chi presenta il Modello 730.
+                    - Quadro RW : per chi presenta il Modello Redditi Persone Fisiche.
+                    """)
+                    .action(AppDialog.DialogAction.builder("annulla", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("quadro-rw", "Quadro RW")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("quadro-w", "Quadro W")
+                            .role(AppDialog.ActionRole.PRIMARY)
+                            .build())
+                    .showDialog();
+            if (sceltaQuadro == null || sceltaQuadro.isAction("annulla")) {
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                return;
+            }
+            boolean stampaW = sceltaQuadro.isAction("quadro-w");
+
+            //Punto 4 : avviso se la parte FIAT e' inclusa ma manca il codice Stato estero su qualche rigo.
+            if (RW_Opzioni_CheckBox_FiatInRW.isSelected()) {
+                java.util.List<String> fiatSenzaStato = new java.util.ArrayList<>();
+                int nrFiat = RW_Tabella.getModel().getRowCount();
+                for (int i = 0; i < nrFiat; i++) {
+                    if (!"FIAT".equalsIgnoreCase(RW_FiatNaturaRiga(i))) continue;
+                    String vinz = RW_Tabella.getModel().getValueAt(i, 1).toString();
+                    String vfnz = RW_Tabella.getModel().getValueAt(i, 2).toString();
+                    boolean zero = new BigDecimal(vinz).setScale(0, RoundingMode.HALF_UP).signum() == 0
+                                && new BigDecimal(vfnz).setScale(0, RoundingMode.HALF_UP).signum() == 0;
+                    if (zero) continue;
+                    Object st = RW_Tabella.getModel().getValueAt(i, 9);
+                    if (st == null || st.toString().trim().isEmpty())
+                        fiatSenzaStato.add(RW_Tabella.getModel().getValueAt(i, 0).toString());
+                }
+                if (!fiatSenzaStato.isEmpty()) {
+                    AppDialog.DialogResult avvisoStato = AppDialog.builder(this)
+                            .windowTitle("Stato estero mancante")
+                            .bodyTitle("Parte FIAT senza Stato estero")
+                            .showTitleInBody(true)
+                            .theme()
+                            .type(AppDialog.DialogType.WARNING)
+                            .message("Per alcuni gruppi wallet la parte FIAT non ha il codice Stato estero impostato.")
+                            .details("Gruppi interessati:\n\n" + String.join("\n", fiatSenzaStato)
+                                    + "\n\nLo Stato estero si imposta nei periodi di detenzione del gruppo wallet.\n"
+                                    + "Nel report i righi interessati sono comunque evidenziati.")
+                            .action(AppDialog.DialogAction.builder("annulla", "Annulla")
+                                    .role(AppDialog.ActionRole.SECONDARY)
+                                    .build())
+                            .action(AppDialog.DialogAction.builder("continua", "Stampa comunque")
+                                    .role(AppDialog.ActionRole.PRIMARY)
+                                    .build())
+                            .showDialog();
+                    if (avvisoStato == null || !avvisoStato.isAction("continua")) {
+                        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                        return;
+                    }
+                }
+            }
+
+            Stampe stampa=new Stampe(VarStatiche.getCartella_Temporanei()+"RW_"+AnnoDiCompetenza+"_"+DataOra+".pdf");
+            String quadroScelto = stampaW ? "QUADRO W" : "QUADRO RW";
             //String piede="Stampa generata da "+this.getTitle()+"  - https://sourceforge.net/projects/giacenze-crypto-com";
-            String piede="Stampa generata da "+VarStatiche.Titolo+VarStatiche.RiferimentoStampe()+"                        REPORT x QUADRO W/RW Anno "+AnnoDiCompetenza;
+            String piede="Stampa generata da "+VarStatiche.Titolo+VarStatiche.RiferimentoStampe()+"                        REPORT x "+quadroScelto+" Anno "+AnnoDiCompetenza;
             stampa.Piede(piede);
             stampa.ApriDocumento();
-            stampa.AggiungiTestoCentrato("QUADRO W PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza,Font.BOLD,12);
-           // stampa.AggiungiTesto("TABELLA TOTALI\n",Font.UNDERLINE,12);
-           // stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            //List<String[]> tabella1=Funzioni_Tabelle_ListaTabella(RW_Tabella);
-            //String Titoli1[]=new String[]{"RW","Valore Iniziale","Valore Finale","Giorni di detenzione","Errori","IC Dovuta","Bollo Pagato"};
-            //stampa.AggiungiTabella(Titoli1,tabella1);
+            stampa.AggiungiTestoCentrato(quadroScelto+" PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza,Font.BOLD,12);
             int numeroRighe=RW_Tabella.getModel().getRowCount();
-            
+
             //Stampa Quadro W
             int righeQuadroStampate=0;
             int totRigheW=0;//righi CRYPTO effettivamente emessi nel Quadro W (per la numerazione FIAT, fase F5)
+            int totRigheRW=0;//righi CRYPTO effettivamente emessi nel Quadro RW (per la numerazione FIAT, fase F5)
             int foglio=1;
+            String testo="";
+          if (stampaW) {
             stampa.AggiungiTesto("FOGLIO "+foglio,Font.BOLD,10);
             for (int i=0;i<numeroRighe;i++){
                 //I righi FIAT (valuta estera) hanno una stampa dedicata (fase F5) : per ora non entrano
@@ -11708,8 +11800,7 @@ if (result.isAction("delete-all")) {
             
                     stampa.NuovaPagina();
                     stampa.AggiungiTestoCentrato("NOTE RELATIVE AL RIGO W8 \n\n", Font.BOLD, 12);
-                    String testo;
-                                        
+
                                         testo = """
                             <html><font size="2" face="Courier New,Courier, mono" >
                             <b>ATTENZIONE :</b> <u>La parte relativa al rigo W8 va compilata a mano prendendo i valori dalle dichiarazioni precedenti.</u><br>
@@ -11764,10 +11855,9 @@ if (result.isAction("delete-all")) {
                             attestazioni da cui risulti tale circostanza<br>
                             <b>Colonna 16</b> \u2013 <u>SOLO MONITORAGGIO</u> \u2013 Da selezionare in caso si faccia solo monitoraggio (es. quando l'intermediario paga il bollo)</font></html>""";
                     stampa.AggiungiHtml(testo);
+          } // fine if (stampaW) : blocco Quadro W (punto 5)
 
-                    stampa.NuovaPagina();
-                    
-                    
+          if (!stampaW) {
                                 //Stampa Quadro RW
             String immagineRW=VarStatiche.getPathImmagini()+"QuadroRW_2023.jpg";
             if (anno==2024)immagineRW=VarStatiche.getPathImmagini()+"QuadroRW_2024.jpg";
@@ -11778,7 +11868,6 @@ if (result.isAction("delete-all")) {
            // stampa.AggiungiTesto("FOGLIO 1",Font.BOLD,10);
            // stampa.AggiungiTesto("\n",Font.NORMAL,10);
             righeQuadroStampate=0;
-            int totRigheRW=0;//righi CRYPTO effettivamente emessi nel Quadro RW (per la numerazione FIAT, fase F5)
             //boolean stampatoRW8=false;
             String ICTotale="0";
             for (int i = 0; i < numeroRighe; i++) {
@@ -11945,7 +12034,9 @@ if (result.isAction("delete-all")) {
                             delle cripto-attività. Nel caso in cui siano utilizzati più moduli va compilato esclusivamente il
                             rigo RW8 del primo modulo indicando in esso il totale di tutti i righi compilati.<br>                            
                             </font></html>""";
-                    stampa.AggiungiHtml(testo);       
+                    stampa.AggiungiHtml(testo);
+          } // fine if (!stampaW) : blocco Quadro RW (punto 5)
+
                     stampa.NuovaPagina();
 
                     stampa.AggiungiTestoCentrato("OPZIONI SCELTE PER IL CALCOLO DEL QUADRO W/RW\n\n", Font.BOLD, 12);
@@ -12086,7 +12177,7 @@ if (result.isAction("delete-all")) {
             // Blocco a se', dopo i righi CRYPTO (punto 17). Codice individuazione bene 14, codice Stato estero
             // in colonna 4, colonna 16 "SOLO MONITORAGGIO" barrata, colonna 14 e IC vuote (v1 = solo
             // monitoraggio). Numerazione W/RW che prosegue da quella cripto (punto 21).
-            RW_StampaParteFiat(stampa, anno, AnnoDiCompetenza, numeroRighe, totRigheW, totRigheRW);
+            RW_StampaParteFiat(stampa, anno, AnnoDiCompetenza, numeroRighe, totRigheW, totRigheRW, stampaW);
 
             stampa.ScriviPDF();
 
@@ -12104,7 +12195,7 @@ if (result.isAction("delete-all")) {
      * con valore diverso da zero.
      */
     private void RW_StampaParteFiat(Stampe stampa, int anno, String AnnoDiCompetenza, int numeroRighe,
-                                    int nCryptoW, int nCryptoRW) {
+                                    int nCryptoW, int nCryptoRW, boolean stampaW) {
         // nCryptoW / nCryptoRW : righi CRYPTO realmente emessi nei due quadri, contati dai cicli CRYPTO e
         // non ricalcolati qui : l'arrotondamento del Quadro W (UP sui valori "0.xx") e quello del Quadro
         // RW (HALF_UP) non coincidono, quindi un ricalcolo locale sfaserebbe la numerazione dei righi FIAT.
@@ -12119,6 +12210,31 @@ if (result.isAction("delete-all")) {
         }
         if (fiat.isEmpty()) return;
 
+        //IVAFE totale dei veri conti correnti esteri (codice bene 1) : NON e' totalizzata in RW6,
+        //va riportata a mano. La calcolo qui una volta per la nota di compilazione.
+        BigDecimal totIvafeContiCorrenti = BigDecimal.ZERO;
+        boolean contoCorrentePresente = false;
+        //Righi FIAT il cui dettaglio nella mappa non si e' potuto risolvere (RW_FiatRigaMappa == null) :
+        //la stampa li tratta come codice bene 14 / solo monitoraggio, ma la tabella di sintesi a video
+        //potrebbe gia' mostrarne l'IVAFE (RW_CalcolaRW_ParteFiat legge la mappa direttamente). Li
+        //elenco nella nota di compilazione perche' la discordanza non passi in silenzio.
+        java.util.List<String> lookupFalliti = new java.util.ArrayList<>();
+        for (int i : fiat) {
+            String[] d = RW_FiatRigaMappa(i);
+            if (d == null) {
+                Object n = RW_Tabella.getModel().getValueAt(i, 0);
+                lookupFalliti.add(n == null ? "(rigo " + (i + 1) + ")" : n.toString());
+                continue;
+            }
+            if (Calcoli_RW_Fiat.CODICE_BENE_CONTO_CORRENTE.equals(d[Calcoli_RW_Fiat.FIAT_COL_CODICE_BENE])) {
+                contoCorrentePresente = true;
+                try {
+                    totIvafeContiCorrenti = totIvafeContiCorrenti.add(new BigDecimal(d[Calcoli_RW_Fiat.FIAT_COL_IVAFE]));
+                } catch (RuntimeException ignore) {
+                }
+            }
+        }
+
         String imgW = VarStatiche.getPathImmagini() + "QuadroW_2023.png";
         String imgWTit = VarStatiche.getPathImmagini() + "QuadroW_2023_Titolo.png";
         String immagineRW = VarStatiche.getPathImmagini() + "QuadroRW_2023.jpg";
@@ -12126,6 +12242,10 @@ if (result.isAction("delete-all")) {
         String pdfRW = VarStatiche.getPathImmagini() + "QuadroRW_2025.pdf";
 
         // ---------- Quadro W FIAT ----------
+        //Punto 5 : la parte FIAT segue il quadro scelto. Punto 2 : niente giorni di detenzione
+        //(solo monitoraggio, non inseribili). Punto 3 : valore iniziale/finale a 0 -> 1. Punto 4 :
+        //righi senza Stato estero evidenziati.
+        if (stampaW) {
         stampa.NuovaPagina();
         stampa.AggiungiTestoCentrato("QUADRO W - VALUTA ESTERA (FIAT) PRESSO INTERMEDIARIO ESTERO - ANNO " + AnnoDiCompetenza, Font.BOLD, 12);
         int nW = nCryptoW;
@@ -12143,19 +12263,31 @@ if (result.isAction("delete-all")) {
             String nome = RW_Tabella.getModel().getValueAt(idx, 0).toString();
             String vi = new BigDecimal(RW_Tabella.getModel().getValueAt(idx, 1).toString()).setScale(0, RoundingMode.HALF_UP).toPlainString();
             String vf = new BigDecimal(RW_Tabella.getModel().getValueAt(idx, 2).toString()).setScale(0, RoundingMode.HALF_UP).toPlainString();
-            if (vf.equals("0") && !vi.equals("0")) vf = "1";
-            String gg = RW_Tabella.getModel().getValueAt(idx, 3).toString();
-            if (new BigDecimal(gg).compareTo(new BigDecimal("365")) >= 0) gg = "365.00";
-            gg = new BigDecimal(gg).setScale(0, RoundingMode.HALF_UP).toPlainString();
+            if (vi.equals("0")) vi = "1";   // punto 3 : lo zero non e' accettato
+            if (vf.equals("0")) vf = "1";
             String stato = RW_Tabella.getModel().getValueAt(idx, 9) == null ? "" : RW_Tabella.getModel().getValueAt(idx, 9).toString().trim();
+            String avvStato = stato.isBlank() ? " - Stato estero non impostato" : "";
+            //Conto corrente estero (codice bene 1) : se l'IVAFE e' dovuta, colonna 16 NON barrata e
+            //colonna 10 con i giorni ; l'importo IVAFE va riportato a mano (il Quadro W del 730 non
+            //ha un campo imposta in questo report). Altrimenti solo monitoraggio come le altre attivita'.
+            String[] d = RW_FiatRigaMappa(idx);
+            boolean contoCorrente = d != null && Calcoli_RW_Fiat.CODICE_BENE_CONTO_CORRENTE.equals(d[Calcoli_RW_Fiat.FIAT_COL_CODICE_BENE]);
+            boolean ivafeDovuta = contoCorrente && "NO".equalsIgnoreCase(d[Calcoli_RW_Fiat.FIAT_COL_SOLO_MONITORAGGIO]);
+            String cbW = contoCorrente ? Calcoli_RW_Fiat.CODICE_BENE_CONTO_CORRENTE : "14";
+            String ggW = ivafeDovuta ? RW_Tabella.getModel().getValueAt(idx, 3).toString() : "";
+            String etichettaBene = contoCorrente
+                    ? " - conto corrente estero" + (ivafeDovuta ? " (IVAFE " + d[Calcoli_RW_Fiat.FIAT_COL_IVAFE] + " EUR, da riportare a mano)" : " (solo monitoraggio, sotto soglia)")
+                    : " - valuta estera (solo monitoraggio)";
             nW++;
             suFoglioW++;
-            stampa.AggiungiHtml("<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>" + nome + "</b> - valuta estera (solo monitoraggio)</html>");
-            stampa.AggiungiQuadroW(primoW ? imgWTit : imgW, String.valueOf(nW), vi, vf, gg, "14", stato, true);
+            stampa.AggiungiHtml("<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>" + nome + "</b>" + etichettaBene + avvStato + "</html>");
+            stampa.AggiungiQuadroW(primoW ? imgWTit : imgW, String.valueOf(nW), vi, vf, ggW, cbW, stato, !ivafeDovuta);
             primoW = false;
         }
+        } // fine if (stampaW)
 
         // ---------- Quadro RW FIAT ----------
+        if (!stampaW) {
         stampa.NuovaPagina();
         int fogliCrypto = nCryptoRW == 0 ? 1 : (nCryptoRW + 4) / 5;
         int foglioRW = fogliCrypto + 1;   // sempre > 1 : il rigo RW8 (totale IC) non va ristampato sul FIAT
@@ -12166,14 +12298,27 @@ if (result.isAction("delete-all")) {
         for (int idx : fiat) {
             String vi = new BigDecimal(RW_Tabella.getModel().getValueAt(idx, 1).toString()).setScale(0, RoundingMode.HALF_UP).toPlainString();
             String vf = new BigDecimal(RW_Tabella.getModel().getValueAt(idx, 2).toString()).setScale(0, RoundingMode.HALF_UP).toPlainString();
-            String gg = RW_Tabella.getModel().getValueAt(idx, 3).toString();
-            if (new BigDecimal(gg).compareTo(new BigDecimal("365")) >= 0) gg = "365.00";
-            gg = new BigDecimal(gg).setScale(0, RoundingMode.HALF_UP).toPlainString();
+            if (vi.equals("0")) vi = "1";   // punto 3 : lo zero non e' accettato
+            if (vf.equals("0")) vf = "1";
             String raw = RW_Tabella.getModel().getValueAt(idx, 0).toString();
             String nome = raw.contains("(") ? raw.split("\\(")[1].split("\\)")[0].trim() : raw;
             String stato = RW_Tabella.getModel().getValueAt(idx, 9) == null ? "" : RW_Tabella.getModel().getValueAt(idx, 9).toString().trim();
-            vIni[slot] = vi; vFin[slot] = vf; gg5[slot] = gg; ic5[slot] = "0";
-            wal5[slot] = nome + " - valuta estera"; note5[slot] = ""; cb5[slot] = "14"; se5[slot] = stato;
+            //Conto corrente estero (codice bene 1) : se l'IVAFE e' dovuta compilo colonna 10 (giorni)
+            //e colonna 29/30 (IVAFE, in AggiungiQuadroRW il parametro IC[]). Altrimenti come le altre
+            //attivita' estere : codice bene 14, solo monitoraggio.
+            String[] d = RW_FiatRigaMappa(idx);
+            boolean contoCorrente = d != null && Calcoli_RW_Fiat.CODICE_BENE_CONTO_CORRENTE.equals(d[Calcoli_RW_Fiat.FIAT_COL_CODICE_BENE]);
+            boolean ivafeDovuta = contoCorrente && "NO".equalsIgnoreCase(d[Calcoli_RW_Fiat.FIAT_COL_SOLO_MONITORAGGIO]);
+            vIni[slot] = vi; vFin[slot] = vf;
+            gg5[slot] = ivafeDovuta ? RW_Tabella.getModel().getValueAt(idx, 3).toString() : "";
+            ic5[slot] = ivafeDovuta
+                    ? new BigDecimal(d[Calcoli_RW_Fiat.FIAT_COL_IVAFE]).setScale(0, RoundingMode.HALF_UP).toPlainString()
+                    : "0";
+            wal5[slot] = nome + (contoCorrente ? " - conto corrente estero" : " - valuta estera");
+            note5[slot] = stato.isBlank() ? "Stato estero mancante"
+                    : (contoCorrente && !ivafeDovuta ? "conto corrente sotto soglia (solo monitoraggio)" : "");
+            cb5[slot] = contoCorrente ? Calcoli_RW_Fiat.CODICE_BENE_CONTO_CORRENTE : "14";
+            se5[slot] = stato;
             slot++;
             nRW++;
             if (slot == 5) {
@@ -12190,6 +12335,7 @@ if (result.isAction("delete-all")) {
             if (anno >= 2025) stampa.AggiungiQuadroRW2025(pdfRW, String.valueOf(nRW), vIni, vFin, gg5, ic5, wal5, note5, foglioRW, "0", cb5, se5);
             else stampa.AggiungiQuadroRW(immagineRW, String.valueOf(nRW), vIni, vFin, gg5, ic5, wal5, note5, foglioRW, "0", cb5, se5);
         }
+        } // fine if (!stampaW)
 
         // ---------- Nota di compilazione FIAT ----------
         stampa.NuovaPagina();
@@ -12205,11 +12351,70 @@ if (result.isAction("delete-all")) {
                 <b>Colonna 4</b> - CODICE STATO ESTERO - lo Stato estero dell'intermediario (se configurato nei
                 periodi del gruppo wallet, altrimenti da inserire a mano)<br>
                 <b>Colonna 7 / 8</b> - VALORE INIZIALE / FINALE - controvalore in euro della giacenza a inizio e
-                fine periodo (cambio di riferimento Banca d'Italia)<br>
+                fine periodo (cambio di riferimento Banca d'Italia). Un valore pari a 0 viene riportato come
+                <b>1</b> perche' il software dell'Agenzia delle entrate non accetta lo zero.<br>
+                <b>Colonna 10</b> - GIORNI - <b>non compilata</b> per la valuta estera : facendo solo
+                monitoraggio non e' possibile inserire i giorni di detenzione.<br>
                 <b>Colonna 14</b> - lasciata vuota<br>
-                <b>Colonna 16</b> - SOLO MONITORAGGIO - <b>barrata</b> : in questa versione il programma non
-                calcola l'IVAFE sulla valuta estera, che va eventualmente determinata e versata a parte.<br>
+                <b>Colonna 16</b> - SOLO MONITORAGGIO - <b>barrata</b> per le "altre attivita' estere di
+                natura finanziaria" (codice bene 14) : il programma non calcola l'IVAFE su queste, che va
+                eventualmente determinata e versata a parte.<br><br>
+                I righi contrassegnati con <b>"Stato estero mancante"</b> (o "Stato estero non impostato" nel Quadro W) vanno completati a
+                mano con il codice dello Stato estero dell'intermediario (colonna 4).<br>
                 </font></html>""");
+        if (!lookupFalliti.isEmpty()) {
+            stampa.AggiungiHtml("""
+                <html><font size="2" face="Courier New,Courier, mono" >
+                <br><b>ATTENZIONE</b> - non e' stato possibile risolvere il dettaglio di calcolo per i
+                seguenti righi FIAT : <b>""" + String.join(", ", lookupFalliti) + """
+                </b>.<br>Sono stati stampati come "altre attivita' estere di natura finanziaria"
+                (codice bene 14, solo monitoraggio) : se uno di essi e' in realta' un <b>conto corrente
+                estero</b> (periodo con "e' conto corrente" = SI) va corretto a mano il codice
+                individuazione bene (1), il valore medio in colonna 8 e l'eventuale IVAFE. Ricalcolare
+                il Quadro RW e ristampare per rimuovere questo avviso.<br>
+                </font></html>""");
+        }
+        if (contoCorrentePresente) {
+            stampa.AggiungiHtml("""
+                <html><font size="2" face="Courier New,Courier, mono" >
+                <br><b>CONTI CORRENTI / DEPOSITI BANCARI ESTERI (codice individuazione bene 1)</b><br>
+                Alcuni righi riguardano veri conti correnti o depositi bancari esteri (periodo con
+                "e' conto corrente" = SI). Per questi :<br>
+                <b>Colonna 3</b> - CODICE INDIVIDUAZIONE BENE - <b>1</b> (non 14).<br>
+                <b>Colonna 8</b> - riporta il <b>valore medio di giacenza</b> in euro del conto sull'anno di
+                vita, non il saldo puntuale a fine periodo.<br>
+                <b>Colonna 10</b> - GIORNI - compilata (giorni di detenzione) solo quando l'IVAFE e' dovuta.<br>
+                <b>Colonna 16</b> - SOLO MONITORAGGIO - <b>non barrata</b> quando l'IVAFE e' dovuta.<br>
+                <b>IVAFE</b> - in misura fissa 34,20 euro rapportati alla quota (100%) e ai giorni di
+                possesso. <u>Non dovuta</u> se il valore medio di giacenza del conto e' &le; 5.000 euro ;
+                in tal caso il rigo e' comunque prodotto per il monitoraggio (obbligatorio se il valore
+                massimo raggiunto supera 15.000 euro).<br>
+                <b>RW6</b> - l'IVAFE dei conti correnti <b>non e' totalizzata automaticamente</b> in questo
+                report : totale IVAFE conti correnti esteri = <b>""" + Funzioni.formattaBigDecimal(totIvafeContiCorrenti.setScale(0, RoundingMode.HALF_UP), false) + """
+                euro</b>, da riportare a mano nel rigo RW6 (e, per il Modello 730, nella relativa sezione
+                del Quadro W).<br>
+                </font></html>""");
+        }
+    }
+
+    /**
+     * La riga {@code String[23]} della mappa {@link #Mappa_RW_ListeXGruppoWallet_Fiat} corrispondente
+     * alla riga {@code rowIndex} di {@code RW_Tabella}, risolta dalla chiave di sintesi in colonna 6
+     * ("Wallet NN|FIAT|&lt;prog&gt;"). {@code null} se la riga non e' FIAT o la chiave non risolve.
+     */
+    private String[] RW_FiatRigaMappa(int rowIndex) {
+        try {
+            Object k = RW_Tabella.getModel().getValueAt(rowIndex, 6);
+            if (k == null) return null;
+            String[] parti = k.toString().split("\\|");
+            if (parti.length < 3 || !"FIAT".equalsIgnoreCase(parti[1])) return null;
+            List<String[]> lista = Mappa_RW_ListeXGruppoWallet_Fiat.get(parti[0]);
+            if (lista == null) return null;
+            int prog = Integer.parseInt(parti[2].trim());
+            return prog >= 0 && prog < lista.size() ? lista.get(prog) : null;
+        } catch (RuntimeException e) {
+            return null;
+        }
     }
 
 

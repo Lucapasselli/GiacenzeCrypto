@@ -273,6 +273,40 @@ class Principale_GruppiWalletRWTest {
         assertFalse(Principale_GruppiWalletRW.validaPeriodi(lista(r3)).isEmpty());
     }
 
+    @Test
+    void validaPeriodi_statoItalia_ammesso() {
+        String[] r = rigaF("1", "", "", StatiEsteri.CODICE_ITALIA, "");
+        assertTrue(Principale_GruppiWalletRW.validaPeriodi(lista(r)).isEmpty(),
+                "il valore sentinella per l'Italia deve essere un codice Stato valido");
+    }
+
+    @Test
+    void validaPeriodi_contoCorrenteValoreNonRiconosciuto_segnalato() {
+        String[] ok = rigaF("1", "", "", "092", "");
+        ok[Principale_GruppiWalletRW.COL_E_CONTO_CORRENTE] = Principale_GruppiWalletRW.CONTO_CORRENTE_SI;
+        assertTrue(Principale_GruppiWalletRW.validaPeriodi(lista(ok)).isEmpty());
+
+        String[] ko = rigaF("1", "", "", "092", "");
+        ko[Principale_GruppiWalletRW.COL_E_CONTO_CORRENTE] = "forse";
+        assertFalse(Principale_GruppiWalletRW.validaPeriodi(lista(ko)).isEmpty());
+    }
+
+    @Test
+    void salvaCarica_contoCorrente_roundTripSoloSulRigoFiat() {
+        String[] fiat = rigaF("1", "", "", "092", "");
+        fiat[Principale_GruppiWalletRW.COL_E_CONTO_CORRENTE] = Principale_GruppiWalletRW.CONTO_CORRENTE_SI;
+        String[] crypto = rigaF("1", "", "", "092", "");
+        crypto[Principale_GruppiWalletRW.COL_TIPO] = "CRYPTO";
+        crypto[Principale_GruppiWalletRW.COL_E_CONTO_CORRENTE] = Principale_GruppiWalletRW.CONTO_CORRENTE_SI;
+
+        assertTrue(Principale_GruppiWalletRW.salvaPeriodi("Wallet 07", lista(crypto, fiat)).isEmpty());
+        List<String[]> out = Principale_GruppiWalletRW.caricaPeriodi("Wallet 07");
+        // ordinamento tipo poi progressivo : CRYPTO prima di FIAT
+        assertNull(out.get(0)[Principale_GruppiWalletRW.COL_E_CONTO_CORRENTE], "sul rigo CRYPTO non e' memorizzato");
+        assertEquals(Principale_GruppiWalletRW.CONTO_CORRENTE_SI,
+                out.get(1)[Principale_GruppiWalletRW.COL_E_CONTO_CORRENTE]);
+    }
+
     // ---------------- finestre effettive (date dedotte) ----------------
 
     @Test
@@ -347,14 +381,14 @@ class Principale_GruppiWalletRWTest {
         assertEquals(3, out.size());
         // ordinamento tipo poi progressivo ; colonne in coda = bollo / Origine / ChiaveDefault / dati fiscali (non impostati -> null)
         assertArrayEquals(new String[]{"CRYPTO", "1", "2023-01-01", "2023-05-31", null, null, null, null, null, null,
-                null, null, null, null, null, null, null, null}, out.get(0));
+                null, null, null, null, null, null, null, null, null}, out.get(0));
         assertArrayEquals(new String[]{"CRYPTO", "2", "2023-09-01", null, null, null, null, null, null, null,
-                null, null, null, null, null, null, null, null}, out.get(1));
+                null, null, null, null, null, null, null, null, null}, out.get(1));
         assertArrayEquals(new String[]{"FIAT", "1", "2023-01-01", "2023-12-31", "1500.00", "estratto conto",
                 "0.00", "conto svuotato",
                 Principale_GruppiWalletRW.MOD_INIZIALE_PRIMO_APPORTO,
                 Principale_GruppiWalletRW.MOD_FINALE_ULTIMA_USCITA,
-                null, null, null, null, null, null, null, null}, out.get(2));
+                null, null, null, null, null, null, null, null, null}, out.get(2));
     }
 
     @Test

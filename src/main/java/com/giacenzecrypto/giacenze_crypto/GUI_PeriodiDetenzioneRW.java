@@ -73,7 +73,6 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella);
         Tabelle.ColoraTabellaSemplice(Tabella);
 
-        Tabella.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         Tabella.setShowGrid(false); // niente righe fra celle : come le altre tabelle dell'app (default FlatLaf)
         Tabella.setPreferredScrollableViewportSize(new java.awt.Dimension(900, 260));
         int[] larghezze = {60, 45, 90, 90, 190, 190, 150, 130, 130, 260, 200, 110, 90, 110};
@@ -115,6 +114,9 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
                 javax.swing.BorderFactory.createMatteBorder(0, 4, 0, 0, new java.awt.Color(0x5B, 0x8D, 0xEF)),
                 javax.swing.BorderFactory.createEmptyBorder(12, 14, 12, 14)));
 
+        // Label_Avvisi : stessa logica di colore del callout informativo, in tinta d'allerta.
+        Label_Avvisi.setForeground(new java.awt.Color(0x8A, 0x5A, 0x00));
+
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowOpened(java.awt.event.WindowEvent e) {
@@ -122,12 +124,25 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
             }
         });
 
-        // Label_Avvisi : stessa logica di colore del callout informativo, in tinta d'allerta.
-        Label_Avvisi.setForeground(new java.awt.Color(0x8A, 0x5A, 0x00));
-
         righe.addAll(Principale_GruppiWalletRW.caricaPeriodi(gruppo));
         ricostruisciVista();
         mostraAvvisiCopertura();
+
+        // pack() di initComponents() è calcolato PRIMA di tutto quanto sopra (titolo del gruppo,
+        // larghezze di colonna, eventuale testo degli avvisi) : un secondo pack() qui rimisura la
+        // finestra sui contenuti reali, invece di restare sulle dimensioni calcolate sui segnaposto.
+        // Senza, il pulsante più a destra (Chiudi) poteva restare fuori dai bordi, da allargare a mano.
+        pack();
+
+        // La tabella ha già lo scroll orizzontale per le colonne che non ci stanno (vedi javadoc di
+        // classe) : sullo stesso principio, se il pack() qui sopra è più largo dello schermo disponibile
+        // lo si restringe, invece di lasciarlo uscire dall'area visibile. Stessa logica di
+        // Giacenze_Crypto.main() per Principale.
+        java.awt.Rectangle schermo =
+                java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        if (getWidth() > schermo.width || getHeight() > schermo.height) {
+            setSize(Math.min(getWidth(), schermo.width), Math.min(getHeight(), schermo.height));
+        }
         setLocationRelativeTo(null);
     }
 
@@ -220,7 +235,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
                 return canEdit [columnIndex];
             }
         });
-        Tabella.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
+        Tabella.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         jScrollPane1.setViewportView(Tabella);
 
         Bottone_Aggiungi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Nuovo.png"))); // NOI18N

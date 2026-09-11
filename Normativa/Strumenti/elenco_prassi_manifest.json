@@ -1,5 +1,38 @@
 [
  {
+  "file": "Prassi_AgenziaEntrate/2012-07-02_Circolare_28E_IVIE_IVAFE.pdf",
+  "titolo": "Imposta sul valore degli immobili situati all'estero e sul valore delle attivita' finanziarie detenute all'estero. Articolo 19, commi da 13 a 23, del decreto legge 6 dicembre 2011, n. 201, convertito, con modificazioni, dalla legge 22 dicembre 2011, n. 214 e successive modificazioni. Provvedimento del Direttore dell'Agenzia delle Entrate 5 giugno 2012",
+  "autorita": "Agenzia delle entrate",
+  "identificativo": "Circolare n. 28/E del 2 luglio 2012",
+  "data_documento": "2012-07-02",
+  "argomenti": "IVAFE, IVIE, quadro RW",
+  "url": "https://www.agenziaentrate.gov.it/portale/documents/20143/299482/Circolare+28+020712_Cir02.07.12.pdf/27add329-de7a-bbff-135e-c3baf715c7a6",
+  "scaricato_il": "2026-09-10",
+  "sha256": "8b63d56326b820d437fc4e815c4908f5aebcfc8ffffa65fdb28486fa5b4a4abf"
+ },
+ {
+  "file": "Prassi_AgenziaEntrate/2013-12-23_Circolare_38E_monitoraggio_fiscale_quadro_RW.pdf",
+  "titolo": "Le nuove disposizioni in materia di monitoraggio fiscale. Adempimenti dei contribuenti. Ritenuta sui redditi degli investimenti esteri e attivita' estere di natura finanziaria",
+  "autorita": "Agenzia delle entrate",
+  "identificativo": "Circolare n. 38/E del 23 dicembre 2013",
+  "data_documento": "2013-12-23",
+  "argomenti": "monitoraggio fiscale, quadro RW, IVAFE",
+  "url": "https://www.agenziaentrate.gov.it/portale/documents/20143/299021/Circolare+n.+38E+del+23+dicembre+2013_circolare+38ex.pdf/41244826-4e6f-e459-2794-e53337fd26a0",
+  "scaricato_il": "2026-09-10",
+  "sha256": "f9ba07a94aaa3a94c54fa44fe797e90ee2919ae01344fafd8f2c9afdcb3cd590"
+ },
+ {
+  "file": "Prassi_AgenziaEntrate/2016-04-08_Circolare_12E_chiarimenti_quesiti_quadro_RW.pdf",
+  "titolo": "Chiarimenti interpretativi relativi a quesiti posti in occasione di eventi in videoconferenza organizzati dalla stampa specializzata",
+  "autorita": "Agenzia delle entrate",
+  "identificativo": "Circolare n. 12/E dell'8 aprile 2016",
+  "data_documento": "2016-04-08",
+  "argomenti": "monitoraggio fiscale, quadro RW, IVAFE",
+  "url": "https://www.agenziaentrate.gov.it/portale/documents/20143/298247/Circolare+12E+del+8+aprile+2016_CIRCOLARE+N_12_E+DEL+08+APRILE+2016.pdf/91a08503-f57c-5832-0724-acf1ecb0700a",
+  "scaricato_il": "2026-09-10",
+  "sha256": "9da8e1e187c43f042d25d1854f9e932df82cfabffb0f14416c88d4a5bbfdb7bf"
+ },
+ {
   "file": "Prassi_AgenziaEntrate/2023-06-26_Risoluzione_36E_codici_tributo_imposte_sostitutive_cripto.pdf",
   "titolo": "Istituzione dei codici tributo per il versamento, mediante modello F24, delle imposte sostitutive derivanti dall'attuazione delle disposizioni in materia di cripto-attivita' previste dalla legge 29 dicembre 2022, n. 197",
   "autorita": "Agenzia delle entrate",

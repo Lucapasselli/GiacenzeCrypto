@@ -632,6 +632,41 @@ public class Principale_GruppiWalletRW {
     }
 
     /** Prossimo progressivo libero per un tipo, dato l'elenco righe già presente in tabella. */
+    /**
+     * L'elenco dei periodi <b>come sarebbe</b> dopo aver confermato {@code candidato} : la riga di
+     * indice {@code indiceModificato} è sostituita, oppure il candidato è aggiunto in coda quando
+     * l'indice è fuori intervallo (riga nuova, tipicamente {@code -1}).
+     *
+     * <p>Serve alla validazione incrociata del dialogo di inserimento/modifica : il candidato va
+     * controllato <i>insieme</i> agli altri periodi (progressivo già usato, finestre sovrapposte) e
+     * non da solo. <b>L'esclusione della riga in modifica è il punto delicato</b> : lasciandola dentro,
+     * ogni modifica si scontrerebbe con sé stessa e nessuna riga esistente sarebbe più salvabile.</p>
+     *
+     * @param righe elenco corrente ({@code null} ammesso)
+     * @param indiceModificato posizione della riga che si sta modificando, {@code -1} per una nuova
+     * @param candidato la riga proposta
+     */
+    public static List<String[]> prospettivaConCandidato(List<String[]> righe, int indiceModificato,
+            String[] candidato) {
+        List<String[]> out = new ArrayList<>();
+        if (righe != null) {
+            for (int i = 0; i < righe.size(); i++) {
+                if (i == indiceModificato) {
+                    if (candidato != null) {
+                        out.add(candidato);
+                    }
+                } else {
+                    out.add(righe.get(i));
+                }
+            }
+        }
+        boolean sostituito = righe != null && indiceModificato >= 0 && indiceModificato < righe.size();
+        if (candidato != null && !sostituito) {
+            out.add(candidato);
+        }
+        return out;
+    }
+
     public static int prossimoProgressivo(List<String[]> righe, String tipo) {
         int max = 0;
         if (righe != null) {

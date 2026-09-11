@@ -78,6 +78,28 @@ class GUI_GruppoRWDialoghiTest {
         }
     }
 
+    /**
+     * Costruttore con contesto (elenco + indice della riga in modifica) : è quello che il dialogo dei
+     * periodi usa da quando la validazione è incrociata. Se il tipo cambia e il progressivo collide,
+     * il campo si sposta da solo su uno libero.
+     */
+    @Test
+    void modificaPeriodoDetenzione_conContesto_siCostruisce() throws Exception {
+        java.util.List<String[]> tutti = java.util.Arrays.asList(
+                riga("CRYPTO", "1", "", ""),
+                riga("FIAT", "1", "2024-01-01", "2024-12-31"));
+
+        GUI_ModificaPeriodoDetenzione[] d = new GUI_ModificaPeriodoDetenzione[1];
+        SwingUtilities.invokeAndWait(() -> d[0] = new GUI_ModificaPeriodoDetenzione(null, null, 2,
+                Principale_GruppiWalletRW.BOLLO_NO, tutti, -1));
+        try {
+            assertFalse(d[0].confermato);
+            assertTrue(d[0].getTitle().toLowerCase().contains("nuovo"));
+        } finally {
+            SwingUtilities.invokeAndWait(d[0]::dispose);
+        }
+    }
+
     private static String[] riga(String tipo, String prog, String di, String df) {
         String[] r = new String[Principale_GruppiWalletRW.COLONNE_PERIODO];
         java.util.Arrays.fill(r, "");

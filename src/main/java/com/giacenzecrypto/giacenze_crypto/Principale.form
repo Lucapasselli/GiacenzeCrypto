@@ -6,6 +6,8 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="RW_Trasferimenti">
     </Component>
+    <Component class="javax.swing.ButtonGroup" name="RW_Liquidita">
+    </Component>
     <Container class="javax.swing.JPopupMenu" name="PopupMenu">
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout">
@@ -6409,10 +6411,13 @@
                                                   <Component id="RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo" alignment="0" min="-2" max="-2" attributes="0"/>
                                                   <Component id="RW_Opzioni_Radio_TrasferimentiNonConteggiati" alignment="0" min="-2" max="-2" attributes="0"/>
                                                   <Component id="RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="RW_Opzioni_Radio_Liquidita_ConIvafe" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="RW_Opzioni_Radio_Liquidita_SoloMonitoraggio" alignment="0" min="-2" max="-2" attributes="0"/>
                                                   <Component id="RW_Bottone_Documentazione1" alignment="0" min="-2" pref="270" max="-2" attributes="0"/>
                                               </Group>
                                           </Group>
                                           <Component id="jLabel16" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="RW_Opzioni_Label_Liquidita" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="0" pref="244" max="32767" attributes="0"/>
                                   </Group>
@@ -6479,6 +6484,12 @@
                               <Component id="RW_Opzioni_Radio_TrasferimentiNonConteggiati" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_Label_Liquidita" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_Radio_Liquidita_ConIvafe" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_Radio_Liquidita_SoloMonitoraggio" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
                               <Component id="RW_Bottone_Documentazione1" min="-2" pref="60" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
@@ -6572,7 +6583,7 @@
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_FiatInRW">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Includi nel Quadro W/RW anche la &lt;b&gt;valuta estera (FIAT)&lt;/b&gt; detenuta presso intermediari esteri (codice bene 14, solo monitoraggio)&lt;/html&gt;"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Includi nel Quadro W/RW anche la &lt;b&gt;valuta estera (FIAT)&lt;/b&gt; detenuta presso intermediari esteri (codice bene 14)&lt;/html&gt;"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_FiatInRWActionPerformed"/>
@@ -6616,6 +6627,34 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="&lt;html&gt;Quadro W/RW - &lt;b&gt;Gestione dei Trasferimenti tra Wallet di propriet&#xe0; :&lt;/b&gt;&lt;/html&gt;"/>
                       </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="RW_Opzioni_Label_Liquidita">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Quadro W/RW - &lt;b&gt;Liquidit&#xe0; in valuta presso intermediari esteri (codice bene 14) :&lt;/b&gt;&lt;/html&gt;"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_Radio_Liquidita_ConIvafe">
+                      <Properties>
+                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.beaninfo.awt.ButtonGroupPropertyEditor">
+                          <ComponentRef name="RW_Liquidita"/>
+                        </Property>
+                        <Property name="selected" type="boolean" value="true"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Sulla liquidit&#xe0; si liquida l&apos;&lt;b&gt;IVAFE ordinaria (0,20 %)&lt;/b&gt;, come sugli altri prodotti finanziari esteri diversi dai conti correnti.&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_Radio_Liquidita_ConIvafeActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_Radio_Liquidita_SoloMonitoraggio">
+                      <Properties>
+                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.beaninfo.awt.ButtonGroupPropertyEditor">
+                          <ComponentRef name="RW_Liquidita"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;La liquidit&#xe0; si dichiara in &lt;b&gt;solo monitoraggio&lt;/b&gt; (colonna 16 barrata), senza liquidare l&apos;IVAFE.&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_Radio_Liquidita_SoloMonitoraggioActionPerformed"/>
+                      </Events>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_LiFoSubMovimenti">
                       <Properties>

@@ -58,7 +58,35 @@ class Calcoli_RW_FiatTest {
             st.execute("DELETE FROM WALLETGRUPPO");
             st.execute("DELETE FROM GRUPPO_PERIODO_RW");
         }
+        // Regime della liquidità : riparto sempre dal default (IVAFE ordinaria liquidata), così i
+        // test misurano il comportamento reale del programma e non una configurazione di comodo.
+        DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO,
+                Calcoli_RW_Fiat.LIQUIDITA_SOLO_MONITORAGGIO_DEFAULT);
         progressivo = 0;
+        // Il Fiat Wallet Crypto.com e' un file nella working directory : va azzerato fra un test e
+        // l'altro, altrimenti le gambe di un test le vede anche il successivo.
+        java.nio.file.Files.deleteIfExists(java.nio.file.Path.of(VarStatiche.getFile_CDCFiatWallet()));
+        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.clear();
+    }
+
+    /**
+     * Scrive il CSV del Fiat Wallet Crypto.com nella working directory dei test.
+     * Formato reale del file : {@code data,descrizione,valuta,importo,valutaTo,importoTo,valutaNat,
+     * importoNat,usd,tipo} e una virgola finale.
+     */
+    private static void fiatWallet(String... righe) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        for (String r : righe) {
+            sb.append(r).append("\n");
+        }
+        java.nio.file.Files.writeString(
+                java.nio.file.Path.of(VarStatiche.getFile_CDCFiatWallet()), sb.toString());
+    }
+
+    /** Una riga del Fiat Wallet in euro. */
+    private static String rigaFW(String istante, String descrizione, String importo, String tipo) {
+        return istante + "," + descrizione + ",EUR," + importo + ",EUR," + importo
+                + ",EUR," + importo + ",0," + tipo + ",";
     }
 
     /** riga GUI di GRUPPO_PERIODO_RW, tipo FIAT, senza dati fiscali. */
@@ -457,7 +485,9 @@ class Calcoli_RW_FiatTest {
         assertEquals("2024-12-31 23:59", r.get(0)[9]);
         assertEquals("366", r.get(0)[11]);                                   // 2024 bisestile
         assertEquals(Calcoli_RW_Fiat.CAUSALE_PERIODO, r.get(0)[12]);
-        assertEquals("", r.get(0)[15]);                                      // nessun avviso
+        // Col regime di default l'unico avviso e' quello dell'IVAFE liquidata : nessun errore.
+        assertTrue(r.get(0)[15].contains("IVAFE"), r.get(0)[15]);
+        assertFalse(r.get(0)[15].toLowerCase().contains("errore"), r.get(0)[15]);
         assertEquals("", r.get(0)[Calcoli_RW_Fiat.FIAT_COL_STATO_ESTERO]);
     }
 
@@ -696,9 +726,10 @@ class Calcoli_RW_FiatTest {
         BigDecimal atteso = new BigDecimal("34.20").multiply(BigDecimal.valueOf(gg))
                 .divide(BigDecimal.valueOf(365), 2, java.math.RoundingMode.HALF_UP);
         assertEquals(atteso.toPlainString(), cc[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
-        // il primo tratto (non conto corrente) resta codice bene 14, solo monitoraggio
+        // il primo tratto (non conto corrente) resta codice bene 14, ma col regime di default
+        // liquida l'IVAFE ordinaria : la scelta sulla liquidità non tocca i righi conto corrente.
         assertEquals("14", r.get(0)[Calcoli_RW_Fiat.FIAT_COL_CODICE_BENE]);
-        assertEquals("SI", r.get(0)[Calcoli_RW_Fiat.FIAT_COL_SOLO_MONITORAGGIO]);
+        assertEquals("NO", r.get(0)[Calcoli_RW_Fiat.FIAT_COL_SOLO_MONITORAGGIO]);
     }
 
     @Test
@@ -766,4 +797,331 @@ class Calcoli_RW_FiatTest {
             DatabaseH2.Pers_Opzioni_Scrivi("RW_FiatInRW", "SI");
         }
     }
+
+    // ------------------------------------------------------------------
+    // IVAFE sulla liquidità in valuta (codice bene 14) e opzione utente
+    // ------------------------------------------------------------------
+
+    private static void regimeLiquidita(boolean soloMonitoraggio) {
+        DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO,
+                soloMonitoraggio ? "SI" : "NO");
+    }
+
+    @Test
+    void liquidita_regimeDiDefault_liquidaIvafeOrdinariaSulValoreFinale() {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        mov("2023-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "10000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 01").get(0);
+        assertEquals("14", r[Calcoli_RW_Fiat.FIAT_COL_CODICE_BENE]);
+        // 10.000 x 0,20 % x 365/365 = 20,00
+        assertEquals("20.00", r[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
+        assertEquals("NO", r[Calcoli_RW_Fiat.FIAT_COL_SOLO_MONITORAGGIO]);
+    }
+
+    @Test
+    void liquidita_opzioneSoloMonitoraggio_nessunaIvafeECasella16Barrata() {
+        regimeLiquidita(true);
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        mov("2023-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "10000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 01").get(0);
+        assertEquals("14", r[Calcoli_RW_Fiat.FIAT_COL_CODICE_BENE]);
+        assertEquals("0.00", r[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
+        assertEquals("SI", r[Calcoli_RW_Fiat.FIAT_COL_SOLO_MONITORAGGIO]);
+        assertEquals("", r[15], "in solo monitoraggio non deve comparire l'avviso sull'IVAFE");
+    }
+
+    /** L'imposta è rapportata ai giorni del tratto, e il denominatore è la lunghezza reale dell'anno. */
+    @Test
+    void liquidita_ivafeProrataSuiGiorniDelTratto_annoBisestile() {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Binance", "Wallet 02");
+        mov("2024-07-01 10:00", "DF", "Binance", "", "", "", "EUR", "FIAT", "10000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2024", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 02").get(0);
+        int gg = Integer.parseInt(r[11]);
+        assertEquals(184, gg);                                    // 01/07 - 31/12
+        BigDecimal atteso = new BigDecimal("10000").multiply(new BigDecimal("0.002"))
+                .multiply(BigDecimal.valueOf(gg))
+                .divide(BigDecimal.valueOf(366), 2, java.math.RoundingMode.HALF_UP);  // 2024 bisestile
+        assertEquals(atteso.toPlainString(), r[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
+    }
+
+    /**
+     * L'opzione non tocca i conti correnti : lì l'imposta è quella in misura fissa, e non è in
+     * discussione. Anche col solo monitoraggio scelto per la liquidità, il conto corrente paga.
+     */
+    @Test
+    void liquidita_soloMonitoraggio_nonTogliieIvafeAlContoCorrente() {
+        regimeLiquidita(true);
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        Principale_GruppiWalletRW.salvaPeriodi("Wallet 01", Arrays.<String[]>asList(
+                periodoFiatCC("1", "", "", "092")));
+        mov("2023-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "9000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 01").get(0);
+        assertEquals(Calcoli_RW_Fiat.CODICE_BENE_CONTO_CORRENTE, r[Calcoli_RW_Fiat.FIAT_COL_CODICE_BENE]);
+        assertEquals("34.20", r[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
+        assertEquals("NO", r[Calcoli_RW_Fiat.FIAT_COL_SOLO_MONITORAGGIO]);
+    }
+
+    /**
+     * Un tratto conto corrente non deve mai portare l'avviso della liquidità : l'imposta la scrive
+     * applicaContoCorrente(), e un avviso smentito subito dopo resterebbe in coda alla colonna 15.
+     */
+    @Test
+    void contoCorrente_nessunAvvisoDiLiquiditaAncheColRegimeDiDefault() {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        Principale_GruppiWalletRW.salvaPeriodi("Wallet 01", Arrays.<String[]>asList(
+                periodoFiatCC("1", "", "", "092")));
+        mov("2023-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "9000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 01").get(0);
+        assertFalse(r[15].contains("liquidità"), r[15]);
+        assertTrue(r[15].contains("conto corrente"), r[15]);
+    }
+
+    /** Saldo finale nullo : nessuna base imponibile, quindi nessuna imposta e casella 16 barrata. */
+    @Test
+    void liquidita_saldoFinaleNullo_nessunaIvafe() {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        mov("2023-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "5000");
+        mov("2025-06-30 10:00", "PF", "Kraken", "EUR", "FIAT", "5000", "", "", "");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 01").get(0);
+        assertEquals("0", new BigDecimal(r[10]).toPlainString());
+        assertEquals("0.00", r[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
+        assertEquals("SI", r[Calcoli_RW_Fiat.FIAT_COL_SOLO_MONITORAGGIO]);
+    }
+
+
+    // ------------------------------------------------------------------
+    // Aliquota maggiorata (Stati a fiscalità privilegiata, art. 19 c. 20-bis)
+    // ------------------------------------------------------------------
+
+    /** Hong Kong (103) è nell'elenco del D.M. 4 maggio 1999 : dal 2024 l'aliquota è doppia. */
+    @Test
+    void liquidita_statoPrivilegiato_aliquotaRaddoppiataDal2024() {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        Principale_GruppiWalletRW.salvaPeriodi("Wallet 01", Arrays.<String[]>asList(
+                periodoFiat("1", "", "", "", "", "", "", "103")));
+        mov("2023-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "10000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 01").get(0);
+        assertEquals("103", r[Calcoli_RW_Fiat.FIAT_COL_STATO_ESTERO]);
+        assertEquals("40.00", r[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);   // 10.000 x 0,40 %
+        assertTrue(r[15].contains("0,40 %"), r[15]);
+        assertTrue(r[15].contains("colonna 21"), r[15]);
+    }
+
+    /** Prima del 2024 la maggiorazione non esiste : stesso Stato, aliquota ordinaria. */
+    @Test
+    void liquidita_statoPrivilegiato_primaDel2024AliquotaOrdinaria() {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        Principale_GruppiWalletRW.salvaPeriodi("Wallet 01", Arrays.<String[]>asList(
+                periodoFiat("1", "", "", "", "", "", "", "103")));
+        mov("2022-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "10000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2023", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 01").get(0);
+        assertEquals("20.00", r[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);   // 10.000 x 0,20 %
+        assertFalse(r[15].contains("colonna 21"), r[15]);
+    }
+
+    /** Uno Stato fuori elenco resta all'aliquota ordinaria anche dopo il 2024. */
+    @Test
+    void liquidita_statoNonPrivilegiato_aliquotaOrdinaria() {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        Principale_GruppiWalletRW.salvaPeriodi("Wallet 01", Arrays.<String[]>asList(
+                periodoFiat("1", "", "", "", "", "", "", "092")));   // LUSSEMBURGO
+        mov("2023-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "10000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        assertEquals("20.00", righiFiat("Wallet 01").get(0)[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
+    }
+
+    /**
+     * Uno Stato non indicato non fa scattare la maggiorazione : il rigo porta già l'avviso sullo
+     * Stato mancante, e presumere la fiscalità privilegiata sarebbe peggio che non presumere nulla.
+     */
+    @Test
+    void liquidita_statoEsteroMancante_aliquotaOrdinaria() {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        mov("2023-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "10000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 01").get(0);
+        assertEquals("", r[Calcoli_RW_Fiat.FIAT_COL_STATO_ESTERO]);
+        assertEquals("20.00", r[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
+    }
+
+    /** Il comma 20-bis parla dei soli "prodotti finanziari" : il conto corrente resta a 34,20 fissi. */
+    @Test
+    void contoCorrente_inStatoPrivilegiato_restaAllaMisuraFissa() {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        Principale_GruppiWalletRW.salvaPeriodi("Wallet 01", Arrays.<String[]>asList(
+                periodoFiatCC("1", "", "", "103")));
+        mov("2023-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "9000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 01").get(0);
+        assertEquals(Calcoli_RW_Fiat.CODICE_BENE_CONTO_CORRENTE, r[Calcoli_RW_Fiat.FIAT_COL_CODICE_BENE]);
+        assertEquals("34.20", r[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
+    }
+
+    @Test
+    void aliquotaIvafe_sceltaPerAnnoEStato() {
+        assertEquals(Calcoli_RW_Fiat.ALIQUOTA_IVAFE_PRIVILEGIATA, Calcoli_RW_Fiat.aliquotaIvafe(2024, "103"));
+        assertEquals(Calcoli_RW_Fiat.ALIQUOTA_IVAFE_ORDINARIA,    Calcoli_RW_Fiat.aliquotaIvafe(2023, "103"));
+        assertEquals(Calcoli_RW_Fiat.ALIQUOTA_IVAFE_ORDINARIA,    Calcoli_RW_Fiat.aliquotaIvafe(2025, "092"));
+        assertEquals(Calcoli_RW_Fiat.ALIQUOTA_IVAFE_ORDINARIA,    Calcoli_RW_Fiat.aliquotaIvafe(2025, ""));
+    }
+
+
+    // ------------------------------------------------------------------
+    // Crypto.com App : la parte FIAT viene dal Fiat Wallet, non dai movimenti crypto
+    // ------------------------------------------------------------------
+
+    @Test
+    void fiatWalletCDC_ilSaldoVieneDalFiatWalletENonDaiMovimentiCrypto() throws Exception {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Crypto.com App", "Wallet 10");
+        // Movimento crypto con gamba FIAT : per Crypto.com App NON deve essere contato.
+        mov("2024-02-01 10:00", "DF", "Crypto.com App", "", "", "", "EUR", "FIAT", "9999");
+        fiatWallet(rigaFW("2024-03-01 09:00:00", "EUR Deposit (via SEPA)", "1000.0", "viban_deposit"),
+                rigaFW("2024-04-01 09:00:00", "Buy CRO", "400.0", "viban_purchase"));
+
+        Map<String, BigDecimal> s = Calcoli_RW_Fiat.saldiFiatPerValuta("Wallet 10", "2024-12-31", true);
+        assertEquals("600", saldo(s, "EUR"), "1000 in ingresso - 400 in uscita, i 9999 del movimento crypto non contano");
+    }
+
+    @Test
+    void fiatWalletCDC_gambaFiatDelMovimentoCryptoNonRaddoppiaIlSaldo() throws Exception {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Crypto.com App", "Wallet 10");
+        // Stesso importo su entrambe le sorgenti : se non fosse escluso il movimento crypto,
+        // il saldo verrebbe 2000 invece di 1000.
+        mov("2024-03-01 09:00", "DF", "Crypto.com App", "", "", "", "EUR", "FIAT", "1000");
+        fiatWallet(rigaFW("2024-03-01 09:00:00", "EUR Deposit (via SEPA)", "1000.0", "viban_deposit"));
+
+        assertEquals("1000", saldo(Calcoli_RW_Fiat.saldiFiatPerValuta("Wallet 10", "2024-12-31", true), "EUR"));
+    }
+
+    @Test
+    void fiatWalletCDC_esclusionePerNomeExchangeNonPerGruppo() throws Exception {
+        // Crypto.com App raggruppato insieme a un altro exchange : le gambe FIAT dell'altro
+        // exchange devono restare, altrimenti l'esclusione per gruppo le cancellerebbe.
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Crypto.com App", "Wallet 10");
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 10");
+        mov("2024-02-01 10:00", "DF", "Crypto.com App", "", "", "", "EUR", "FIAT", "9999"); // scartato
+        mov("2024-02-02 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "500");          // resta
+        fiatWallet(rigaFW("2024-03-01 09:00:00", "EUR Deposit (via SEPA)", "1000.0", "viban_deposit"));
+
+        assertEquals("1500", saldo(Calcoli_RW_Fiat.saldiFiatPerValuta("Wallet 10", "2024-12-31", true), "EUR"));
+    }
+
+    @Test
+    void fiatWalletCDC_ilSegnoVieneDalTipoMovimentoNonDallImporto() throws Exception {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Crypto.com App", "Wallet 10");
+        // Il file porta l'importo col segno meno : l'importatore lo rende positivo e il segno
+        // arriva solo dal tipo movimento (viban_withdrawal = uscita).
+        fiatWallet(rigaFW("2024-03-01 09:00:00", "EUR Deposit (via SEPA)", "1000.0", "viban_deposit"),
+                rigaFW("2024-04-01 09:00:00", "Withdrawal", "-250.0", "viban_withdrawal"));
+
+        assertEquals("750", saldo(Calcoli_RW_Fiat.saldiFiatPerValuta("Wallet 10", "2024-12-31", true), "EUR"));
+    }
+
+    @Test
+    void fiatWalletCDC_tipoSconosciutoScartatoESegnalato() throws Exception {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Crypto.com App", "Wallet 10");
+        fiatWallet(rigaFW("2024-03-01 09:00:00", "EUR Deposit (via SEPA)", "1000.0", "viban_deposit"),
+                rigaFW("2024-04-01 09:00:00", "Boh", "700.0", "tipo_mai_visto"));
+
+        assertEquals("1000", saldo(Calcoli_RW_Fiat.saldiFiatPerValuta("Wallet 10", "2024-12-31", true), "EUR"));
+
+        Calcoli_RW_Fiat.generaRighiFiat("2024", SOLO_EUR);
+        List<String[]> r = righiFiat("Wallet 10");
+        assertEquals(1, r.size());
+        assertTrue(r.get(0)[15].contains("tipo sconosciuto"), r.get(0)[15]);
+    }
+
+    @Test
+    void fiatWalletCDC_movimentoNonInEuroScartatoESegnalato() throws Exception {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Crypto.com App", "Wallet 10");
+        fiatWallet(rigaFW("2024-03-01 09:00:00", "EUR Deposit (via SEPA)", "1000.0", "viban_deposit"),
+                "2024-04-01 09:00:00,GBP Deposit,GBP,300.0,GBP,300.0,GBP,300.0,0,viban_deposit,");
+
+        assertEquals("1000", saldo(Calcoli_RW_Fiat.saldiFiatPerValuta("Wallet 10", "2024-12-31", true), "EUR"));
+
+        Calcoli_RW_Fiat.generaRighiFiat("2024", SOLO_EUR);
+        List<String[]> r = righiFiat("Wallet 10");
+        assertEquals(1, r.size());
+        assertTrue(r.get(0)[15].contains("non in euro"), r.get(0)[15]);
+    }
+
+    @Test
+    void fiatWalletCDC_righeLockEUnlockIgnorate() throws Exception {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Crypto.com App", "Wallet 10");
+        fiatWallet(rigaFW("2024-03-01 09:00:00", "EUR Deposit (via SEPA)", "1000.0", "viban_deposit"),
+                rigaFW("2024-03-02 09:00:00", "Lock", "500.0", "trading.limit_order.fiat_wallet.purchase_lock"),
+                rigaFW("2024-03-02 09:00:01", "Unlock", "500.0", "trading.limit_order.fiat_wallet.purchase_unlock"));
+
+        assertEquals("1000", saldo(Calcoli_RW_Fiat.saldiFiatPerValuta("Wallet 10", "2024-12-31", true), "EUR"));
+        Calcoli_RW_Fiat.generaRighiFiat("2024", SOLO_EUR);
+        assertFalse(righiFiat("Wallet 10").get(0)[15].contains("sconosciuto"), "lock/unlock non sono errori");
+    }
+
+    @Test
+    void fiatWalletCDC_gambeInOrdineCronologicoDentroLaGiornata() throws Exception {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Crypto.com App", "Wallet 10");
+        // Le descrizioni sono in ordine alfabetico inverso rispetto all'ora : l'ordine delle gambe
+        // deve venire dall'istante (l'id le porta), non dalla chiave del Fiat Wallet.
+        fiatWallet(rigaFW("2024-03-01 08:00:00", "Zeta deposito", "100.0", "viban_deposit"),
+                rigaFW("2024-03-01 09:00:00", "Alfa deposito", "200.0", "viban_deposit"));
+
+        List<String[]> gambe = Calcoli_RW_Fiat.gambeFiatGiorno("Wallet 10", "2024-03-01");
+        assertEquals(2, gambe.size());
+        assertEquals("100", new BigDecimal(gambe.get(0)[2]).stripTrailingZeros().toPlainString());
+        assertEquals("200", new BigDecimal(gambe.get(1)[2]).stripTrailingZeros().toPlainString());
+    }
+
+    @Test
+    void fiatWalletCDC_assenteNessunaGambaENessunAvviso() throws Exception {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Crypto.com App", "Wallet 10");
+        mov("2024-02-01 10:00", "AC", "Crypto.com App", "EUR", "FIAT", "100", "CRO", "CRYPTO", "1");
+
+        assertTrue(Calcoli_RW_Fiat.saldiFiatPerValuta("Wallet 10", "2024-12-31", true).isEmpty());
+        assertFalse(Calcoli_RW_Fiat.haMovimentiFiat("Wallet 10"));
+    }
+
+    @Test
+    void fiatWalletCDC_rigoRWCoiValoriDelFiatWallet() throws Exception {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Crypto.com App", "Wallet 10");
+        fiatWallet(rigaFW("2023-06-01 09:00:00", "EUR Deposit (via SEPA)", "1000.0", "viban_deposit"),
+                rigaFW("2024-09-01 09:00:00", "Buy CRO", "400.0", "viban_purchase"));
+
+        Calcoli_RW_Fiat.generaRighiFiat("2024", SOLO_EUR);
+
+        List<String[]> r = righiFiat("Wallet 10");
+        assertEquals(1, r.size());
+        assertEquals("1000", new BigDecimal(r.get(0)[5]).stripTrailingZeros().toPlainString());  // residuo da fine 2023
+        assertEquals("600", new BigDecimal(r.get(0)[10]).stripTrailingZeros().toPlainString());  // 1000 - 400
+    }
+
 }

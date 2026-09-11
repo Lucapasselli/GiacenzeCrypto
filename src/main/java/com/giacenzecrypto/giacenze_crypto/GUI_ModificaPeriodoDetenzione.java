@@ -49,15 +49,45 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
     private static final long serialVersionUID = 1L;
 
     private final String chiaveDefault;
+    /**
+     * Gli <b>altri</b> periodi del gruppo, cioè l'elenco senza la riga che si sta modificando. Serve a
+     * validare il candidato <i>insieme</i> agli altri (progressivo già usato, finestre che si
+     * sovrappongono) invece che da solo : sono controlli che una riga isolata non può fare, e che
+     * prima scattavano solo al salvataggio.
+     */
+    private final List<String[]> altriPeriodi = new java.util.ArrayList<>();
+    /** L'elenco completo del gruppo e la posizione della riga in modifica ({@code -1} = nuova). */
+    private final List<String[]> tuttiIPeriodi = new java.util.ArrayList<>();
+    private final int indiceModificato;
     /** Valori campo 7/8 a mano : non più modificabili qui, ma conservati (vedi javadoc di classe). */
     private final String valIniziale, notaIniziale, valFinale, notaFinale;
 
     public boolean confermato = false;
     public String[] risultato;
 
+    /** Senza contesto : valida la sola riga. Resta per i test e per i chiamanti che non hanno l'elenco. */
     public GUI_ModificaPeriodoDetenzione(java.awt.Window owner, String[] rigaEsistente,
             int progressivoProposto, String bolloDefault) {
+        this(owner, rigaEsistente, progressivoProposto, bolloDefault, null, -1);
+    }
+
+    /**
+     * @param tuttiIPeriodi l'elenco completo del gruppo ({@code null} = nessun controllo incrociato)
+     * @param indiceModificato posizione della riga in {@code tuttiIPeriodi}, {@code -1} se è nuova
+     */
+    public GUI_ModificaPeriodoDetenzione(java.awt.Window owner, String[] rigaEsistente,
+            int progressivoProposto, String bolloDefault,
+            List<String[]> tuttiIPeriodi, int indiceModificato) {
         super(owner, ModalityType.APPLICATION_MODAL);
+        this.indiceModificato = indiceModificato;
+        if (tuttiIPeriodi != null) {
+            this.tuttiIPeriodi.addAll(tuttiIPeriodi);
+            for (int k = 0; k < tuttiIPeriodi.size(); k++) {
+                if (k != indiceModificato) {
+                    altriPeriodi.add(tuttiIPeriodi.get(k));
+                }
+            }
+        }
         try {
             setIconImage(new javax.swing.ImageIcon(VarStatiche.getPathRisorse() + "logo.png").getImage());
         } catch (RuntimeException ignore) {
@@ -440,7 +470,32 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
 
     private void Combo_TipoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Combo_TipoActionPerformed
         aggiornaAbilitazioni();
+        proponiProgressivoLibero();
     }//GEN-LAST:event_Combo_TipoActionPerformed
+
+    /**
+     * Cambiando tipo il progressivo può finire su uno già usato da un periodo di quel tipo : il numero
+     * proposto all'apertura è calcolato per i CRYPTO, e i due tipi si numerano separatamente. Da quando
+     * la validazione incrociata gira alla conferma, quella collisione sarebbe un muro che l'utente non
+     * sa come superare — quindi si sposta il numero <b>solo se serve</b>, lasciando stare un valore già
+     * buono.
+     */
+    private void proponiProgressivoLibero() {
+        if (altriPeriodi.isEmpty()) {
+            return;
+        }
+        String tipo = TIPO_FIAT.equals(Combo_Tipo.getSelectedItem()) ? TIPO_FIAT : TIPO_CRYPTO;
+        String attuale = Campo_Prog.getText().trim();
+        for (String[] altro : altriPeriodi) {
+            if (altro != null && altro.length > COL_PROGRESSIVO
+                    && tipo.equals(val(altro, COL_TIPO))
+                    && attuale.equals(val(altro, COL_PROGRESSIVO).trim())) {
+                Campo_Prog.setText(String.valueOf(
+                        Principale_GruppiWalletRW.prossimoProgressivo(altriPeriodi, tipo)));
+                return;
+            }
+        }
+    }
 
     private void Bottone_OkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_OkActionPerformed
         String tipo = TIPO_FIAT.equals(Combo_Tipo.getSelectedItem()) ? TIPO_FIAT : TIPO_CRYPTO;
@@ -472,10 +527,32 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         r[COL_NOTE_FISCALI] = fiat ? Campo_Note.getText().trim() : "";
         r[COL_FONTE_FISCALE] = fiat ? Campo_Fonte.getText().trim() : "";
 
-        List<String> errori = Principale_GruppiWalletRW.validaPeriodi(java.util.Collections.singletonList(r));
+        // Validazione del candidato INSIEME agli altri periodi del gruppo : è così che si vedono il
+        // progressivo già usato e le finestre che si sovrappongono, controlli che una riga isolata non
+        // può fare. Funziona perché l'elenco a monte è sempre in uno stato già valido e già salvato :
+        // qualunque errore riportato qui è quindi causato da questa riga, e non c'è nulla da filtrare.
+        List<String[]> prospettiva =
+                Principale_GruppiWalletRW.prospettivaConCandidato(tuttiIPeriodi, indiceModificato, r);
+        List<String> errori = Principale_GruppiWalletRW.validaPeriodi(prospettiva);
         if (!errori.isEmpty()) {
-            Messaggi.WarningMessage("Dati non validi", String.join("\n", errori), this);
+            Messaggi.WarningMessage("Dati non validi", String.join("\n", errori)
+                    + (altriPeriodi.isEmpty() ? "" : "\n\nI controlli tengono conto anche degli altri periodi del gruppo."),
+                    this);
             return;
+        }
+        // I buchi di copertura NON sono errori : un conto può essere chiuso e poi riaperto. Si
+        // segnalano e si lascia decidere, senza bloccare (vedi Principale_GruppiWalletRW.avvisiPeriodi).
+        List<String> avvisi = Principale_GruppiWalletRW.avvisiPeriodi(prospettiva);
+        if (!avvisi.isEmpty()) {
+            int scelta = javax.swing.JOptionPane.showConfirmDialog(this,
+                    "Il periodo è valido, ma con gli altri lascia scoperto un tratto :\n\n- "
+                    + String.join("\n- ", avvisi)
+                    + "\n\nPuò essere corretto (un conto chiuso e poi riaperto). Confermare?",
+                    "Copertura incompleta", javax.swing.JOptionPane.YES_NO_OPTION,
+                    javax.swing.JOptionPane.WARNING_MESSAGE);
+            if (scelta != javax.swing.JOptionPane.YES_OPTION) {
+                return;
+            }
         }
         risultato = r;
         confermato = true;

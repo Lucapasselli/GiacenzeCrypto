@@ -776,4 +776,120 @@ class Principale_GruppiWalletRWTest {
     private static String nz(String s) {
         return s == null ? "" : s;
     }
+
+    // ---------------- prospettivaConCandidato ----------------
+
+    @Test
+    void prospettiva_rigaNuova_vieneAggiuntaInCoda() {
+        List<String[]> correnti = lista(
+                riga("CRYPTO", "1", "", "", "", "", "", "", "", ""));
+        String[] nuova = riga("FIAT", "1", "", "", "", "", "", "", "", "");
+
+        List<String[]> p = Principale_GruppiWalletRW.prospettivaConCandidato(correnti, -1, nuova);
+
+        assertEquals(2, p.size());
+        assertSame(correnti.get(0), p.get(0));
+        assertSame(nuova, p.get(1));
+    }
+
+    /**
+     * Il punto delicato: la riga che si sta modificando va <b>sostituita</b>, non affiancata. Se
+     * restasse dentro, ogni modifica troverebbe il proprio progressivo "già usato" e nessuna riga
+     * esistente sarebbe più salvabile.
+     */
+    @Test
+    void prospettiva_rigaInModifica_vieneSostituitaNonAffiancata() {
+        List<String[]> correnti = lista(
+                riga("CRYPTO", "1", "2024-01-01", "2024-06-30", "", "", "", "", "", ""),
+                riga("CRYPTO", "2", "2024-07-01", "", "", "", "", "", "", ""));
+        String[] modificata = riga("CRYPTO", "1", "2024-01-01", "2024-05-31", "", "", "", "", "", "");
+
+        List<String[]> p = Principale_GruppiWalletRW.prospettivaConCandidato(correnti, 0, modificata);
+
+        assertEquals(2, p.size());
+        assertSame(modificata, p.get(0));
+        assertTrue(Principale_GruppiWalletRW.validaPeriodi(p).isEmpty(),
+                "modificare una riga esistente non deve mai andare in conflitto con sé stessa");
+    }
+
+    @Test
+    void prospettiva_candidatoNullo_equivaleAllaRimozioneDellaRiga() {
+        List<String[]> correnti = lista(
+                riga("CRYPTO", "1", "", "", "", "", "", "", "", ""),
+                riga("CRYPTO", "2", "", "", "", "", "", "", "", ""));
+
+        List<String[]> p = Principale_GruppiWalletRW.prospettivaConCandidato(correnti, 0, null);
+
+        assertEquals(1, p.size());
+        assertSame(correnti.get(1), p.get(0));
+    }
+
+    @Test
+    void prospettiva_indiceFuoriIntervallo_trattatoComeRigaNuova() {
+        List<String[]> correnti = lista(riga("CRYPTO", "1", "", "", "", "", "", "", "", ""));
+        String[] nuova = riga("CRYPTO", "2", "", "", "", "", "", "", "", "");
+
+        assertEquals(2, Principale_GruppiWalletRW.prospettivaConCandidato(correnti, 99, nuova).size());
+        assertEquals(1, Principale_GruppiWalletRW.prospettivaConCandidato(null, -1, nuova).size());
+    }
+
+    // ---------------- validazione incrociata del candidato ----------------
+
+    /** Il progressivo duplicato si vede solo guardando il candidato insieme agli altri. */
+    @Test
+    void prospettiva_progressivoGiaUsatoDaUnAltroPeriodo_eErrore() {
+        List<String[]> correnti = lista(riga("CRYPTO", "1", "", "", "", "", "", "", "", ""));
+        String[] nuova = riga("CRYPTO", "1", "2024-01-01", "2024-12-31", "", "", "", "", "", "");
+
+        List<String> errori = Principale_GruppiWalletRW.validaPeriodi(
+                Principale_GruppiWalletRW.prospettivaConCandidato(correnti, -1, nuova));
+
+        assertFalse(errori.isEmpty());
+        assertTrue(String.join(" ", errori).contains("già usato"), String.join(" ", errori));
+    }
+
+    /** Lo stesso progressivo su tipi diversi non è un conflitto: i due tipi si numerano a parte. */
+    @Test
+    void prospettiva_stessoProgressivoSuTipoDiverso_nessunErrore() {
+        List<String[]> correnti = lista(riga("CRYPTO", "1", "", "", "", "", "", "", "", ""));
+        String[] nuova = riga("FIAT", "1", "", "", "", "", "", "", "", "");
+
+        assertTrue(Principale_GruppiWalletRW.validaPeriodi(
+                Principale_GruppiWalletRW.prospettivaConCandidato(correnti, -1, nuova)).isEmpty());
+    }
+
+    @Test
+    void prospettiva_finestreSovrapposte_eErrore() {
+        List<String[]> correnti = lista(
+                riga("FIAT", "1", "2024-01-01", "2024-06-30", "", "", "", "", "", ""));
+        String[] nuova = riga("FIAT", "2", "2024-06-01", "2024-12-31", "", "", "", "", "", "");
+
+        assertFalse(Principale_GruppiWalletRW.validaPeriodi(
+                Principale_GruppiWalletRW.prospettivaConCandidato(correnti, -1, nuova)).isEmpty());
+    }
+
+    /** Periodi contigui: nessun errore e nessun buco da segnalare. */
+    @Test
+    void prospettiva_periodiContigui_nessunErroreENessunAvviso() {
+        List<String[]> correnti = lista(
+                riga("FIAT", "1", "2024-01-01", "2024-06-30", "", "", "", "", "", ""));
+        String[] nuova = riga("FIAT", "2", "2024-07-01", "2024-12-31", "", "", "", "", "", "");
+        List<String[]> p = Principale_GruppiWalletRW.prospettivaConCandidato(correnti, -1, nuova);
+
+        assertTrue(Principale_GruppiWalletRW.validaPeriodi(p).isEmpty());
+        assertTrue(Principale_GruppiWalletRW.avvisiPeriodi(p).isEmpty());
+    }
+
+    /** Un buco fra due periodi resta un avviso, non un errore: il dialogo chiede conferma, non blocca. */
+    @Test
+    void prospettiva_bucoFraPeriodi_avvisoMaNessunErrore() {
+        List<String[]> correnti = lista(
+                riga("FIAT", "1", "2024-01-01", "2024-03-31", "", "", "", "", "", ""));
+        String[] nuova = riga("FIAT", "2", "2024-07-01", "2024-12-31", "", "", "", "", "", "");
+        List<String[]> p = Principale_GruppiWalletRW.prospettivaConCandidato(correnti, -1, nuova);
+
+        assertTrue(Principale_GruppiWalletRW.validaPeriodi(p).isEmpty());
+        assertFalse(Principale_GruppiWalletRW.avvisiPeriodi(p).isEmpty());
+    }
+
 }

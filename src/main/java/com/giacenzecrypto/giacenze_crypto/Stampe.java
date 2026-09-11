@@ -421,9 +421,14 @@ public class Stampe {
 
     /**
      * Variante del foglio Quadro RW con codice individuazione bene e codice Stato estero per rigo :
-     * usata dalla parte FIAT. Un rigo con {@code CodiceBene[i]="14"} e' trattato come "solo monitoraggio"
-     * (colonna 16 barrata, colonna 14 e IC lasciate vuote). {@code CodiceBene}/{@code StatoEstero} a
-     * {@code null} (o {@code null} per il singolo indice) = comportamento cripto (codice "21").
+     * usata dalla parte FIAT. {@code CodiceBene}/{@code StatoEstero} a {@code null} (o {@code null}
+     * per il singolo indice) = comportamento cripto (codice "21").
+     *
+     * <p>{@code SoloMonitoraggio[i]} decide se barrare la colonna 16 e lasciare vuote colonna 14 e
+     * IC. A {@code null} si ricade sul vecchio criterio {@code "14".equals(CodiceBene[i])}, che vale
+     * per i chiamanti che non lo passano ma <b>non</b> e' piu' vero in generale : sulla liquidita' in
+     * valuta (codice 14) l'IVAFE ordinaria puo' essere dovuta, quindi chi conosce il regime del rigo
+     * deve passarlo esplicitamente invece di lasciarlo dedurre dal codice.</p>
      */
     public void AggiungiQuadroRW(String Immagine,
                 String NumeroQuadro,
@@ -437,6 +442,24 @@ public class Stampe {
                 String ICTot,
                 String CodiceBene[],
                 String StatoEstero[]) {
+        AggiungiQuadroRW(Immagine, NumeroQuadro, ValoriIniziali, ValoriFinali, Giorni, IC, Wallet,
+                Note, foglio, ICTot, CodiceBene, StatoEstero, null);
+    }
+
+    /** Come sopra, con il regime dichiarativo esplicito per rigo. */
+    public void AggiungiQuadroRW(String Immagine,
+                String NumeroQuadro,
+                String ValoriIniziali[],
+                String ValoriFinali[],
+                String Giorni[],
+                String IC[],
+                String Wallet[],
+                String Note[],
+                int foglio,
+                String ICTot,
+                String CodiceBene[],
+                String StatoEstero[],
+                boolean SoloMonitoraggio[]) {
           try {
               ICTot=Funzioni.formattaBigDecimal(new BigDecimal(ICTot),false);
 
@@ -472,7 +495,8 @@ public class Stampe {
                     //Codice individuazione bene / Stato estero per rigo : "14" = valuta estera FIAT (solo monitoraggio)
                     String cb=(CodiceBene!=null && CodiceBene[i]!=null)?CodiceBene[i]:"21";
                     String se=(StatoEstero!=null && StatoEstero[i]!=null)?StatoEstero[i]:"";
-                    boolean monit="14".equals(cb);
+                    boolean monit = (SoloMonitoraggio != null && i < SoloMonitoraggio.length)
+                            ? SoloMonitoraggio[i] : "14".equals(cb);
                     if (i==0){
                         //Wallet e Note
                         font = new Font(Font.HELVETICA, 10, Font.BOLD);
@@ -582,7 +606,7 @@ public class Stampe {
         AggiungiQuadroRW2025(FilePdf, NumeroQuadro, ValoriIniziali, ValoriFinali, Giorni, IC, Wallet, Note, foglio, ICTot, null, null);
     }
 
-    /** Variante 2025 con codice individuazione bene / Stato estero per rigo (parte FIAT, codice "14" = solo monitoraggio). */
+    /** Variante 2025 con codice individuazione bene / Stato estero per rigo (parte FIAT). */
     public void AggiungiQuadroRW2025(String FilePdf,
             String NumeroQuadro,
             String ValoriIniziali[],
@@ -595,6 +619,29 @@ public class Stampe {
             String ICTot,
             String CodiceBene[],
             String StatoEstero[]) {
+        AggiungiQuadroRW2025(FilePdf, NumeroQuadro, ValoriIniziali, ValoriFinali, Giorni, IC, Wallet,
+                Note, foglio, ICTot, CodiceBene, StatoEstero, null);
+    }
+
+    /**
+     * Come sopra, con il regime dichiarativo esplicito per rigo : {@code SoloMonitoraggio[i]} decide
+     * la barratura della colonna 16. A {@code null} vale il vecchio criterio
+     * {@code "14".equals(CodiceBene[i])} — vedi la nota su {@link #AggiungiQuadroRW} : sul codice 14
+     * l'imposta puo' essere dovuta, quindi dedurla dal codice non e' piu' corretto.
+     */
+    public void AggiungiQuadroRW2025(String FilePdf,
+            String NumeroQuadro,
+            String ValoriIniziali[],
+            String ValoriFinali[],
+            String Giorni[],
+            String IC[],
+            String Wallet[],
+            String Note[],
+            int foglio,
+            String ICTot,
+            String CodiceBene[],
+            String StatoEstero[],
+            boolean SoloMonitoraggio[]) {
     try {
         ICTot = Funzioni.formattaBigDecimal(new BigDecimal(ICTot), false);
 
@@ -664,7 +711,8 @@ public class Stampe {
 
                 String cbene = (CodiceBene != null && CodiceBene[i] != null) ? CodiceBene[i] : "21";
                 String sest = (StatoEstero != null && StatoEstero[i] != null) ? StatoEstero[i] : "";
-                boolean monit = "14".equals(cbene);
+                boolean monit = (SoloMonitoraggio != null && i < SoloMonitoraggio.length)
+                        ? SoloMonitoraggio[i] : "14".equals(cbene);
 
                 if (i == 0) {
                     font = new Font(Font.HELVETICA, 10, Font.BOLD);

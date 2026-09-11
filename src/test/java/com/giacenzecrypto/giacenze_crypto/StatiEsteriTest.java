@@ -64,4 +64,62 @@ class StatiEsteriTest {
         assertEquals(StatiEsteri.CODICE_ITALIA,
                 StatiEsteri.codiceDaEtichetta(StatiEsteri.etichetta(StatiEsteri.CODICE_ITALIA)));
     }
+
+    // ------------------------------------------------------------------
+    // Elenco del D.M. 4 maggio 1999 (fiscalità privilegiata)
+    // ------------------------------------------------------------------
+
+    /**
+     * Un codice inventato o storpiato nell'elenco sarebbe invisibile: non fa fallire nulla, applica
+     * semplicemente l'aliquota ordinaria a uno Stato che ne vorrebbe una doppia. Questo test è
+     * l'unica difesa contro un refuso.
+     */
+    @Test
+    void ogniCodicePrivilegiatoEsisteNellaTabella10() {
+        java.util.Set<String> noti = new java.util.HashSet<>();
+        for (String[] v : StatiEsteri.ELENCO) noti.add(v[0]);
+        for (String c : StatiEsteri.codiciPrivilegiati()) {
+            assertTrue(noti.contains(c), "codice " + c + " assente dalla Tabella 10");
+        }
+    }
+
+    /**
+     * L'aritmetica: 55 voci pubblicate, meno 3 senza codice nella Tabella 10 (Alderney, Sark,
+     * Antille Olandesi) = 52 voci mappabili; gli Emirati Arabi Uniti valgono però 7 codici invece di
+     * 1, quindi 52 - 1 + 7 = <b>58</b>.
+     */
+    @Test
+    void elencoPrivilegiati_58CodiciPerLe55VociPubblicate() {
+        assertEquals(58, StatiEsteri.codiciPrivilegiati().size());
+    }
+
+    /** Gli Emirati Arabi Uniti sono sette codici: dimenticarne uno dimezzerebbe l'imposta. */
+    @Test
+    void emiratiArabiUniti_tuttiESetteICodici() {
+        for (String c : new String[] {"238", "239", "240", "241", "242", "243", "244"}) {
+            assertTrue(StatiEsteri.isPrivilegiato(c), "emirato " + c + " non riconosciuto");
+        }
+    }
+
+    @Test
+    void isPrivilegiato_statiComuniNonSonoNellElenco() {
+        assertFalse(StatiEsteri.isPrivilegiato("092"));   // LUSSEMBURGO
+        assertFalse(StatiEsteri.isPrivilegiato("037"));   // SAN MARINO : tolto dall'elenco nel 2014
+        assertFalse(StatiEsteri.isPrivilegiato("105"));   // MALTA
+        assertFalse(StatiEsteri.isPrivilegiato(""));
+        assertFalse(StatiEsteri.isPrivilegiato(null));
+        assertFalse(StatiEsteri.isPrivilegiato(StatiEsteri.CODICE_ITALIA));
+    }
+
+    /** La Svizzera è uscita dall'elenco proprio dall'anno in cui la maggiorazione decorre. */
+    @Test
+    void svizzera_nonPiuNellElencoValidoDal2024() {
+        assertFalse(StatiEsteri.isPrivilegiato("071"), "codice della Svizzera nella Tabella 10");
+    }
+
+    @Test
+    void isPrivilegiato_ignoraGliSpaziAttorno() {
+        assertTrue(StatiEsteri.isPrivilegiato(" 103 "));  // HONG KONG
+    }
+
 }

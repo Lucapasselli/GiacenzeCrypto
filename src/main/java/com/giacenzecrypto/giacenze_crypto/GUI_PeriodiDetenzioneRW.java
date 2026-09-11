@@ -122,8 +122,12 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
             }
         });
 
+        // Label_Avvisi : stessa logica di colore del callout informativo, in tinta d'allerta.
+        Label_Avvisi.setForeground(new java.awt.Color(0x8A, 0x5A, 0x00));
+
         righe.addAll(Principale_GruppiWalletRW.caricaPeriodi(gruppo));
         ricostruisciVista();
+        mostraAvvisiCopertura();
         setLocationRelativeTo(null);
     }
 
@@ -178,6 +182,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
 
         Label_Titolo = new javax.swing.JLabel();
         Label_Info = new javax.swing.JLabel();
+        Label_Avvisi = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         Tabella = new javax.swing.JTable();
         Bottone_Aggiungi = new javax.swing.JButton();
@@ -185,7 +190,6 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
         Bottone_Rimuovi = new javax.swing.JButton();
         Bottone_RipristinaRiga = new javax.swing.JButton();
         Bottone_RipristinaTutti = new javax.swing.JButton();
-        Bottone_Salva = new javax.swing.JButton();
         Bottone_Chiudi = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -196,7 +200,9 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
         Label_Titolo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         Label_Titolo.setText("Periodi di detenzione");
 
-        Label_Info.setText("<html><div style='width:840px'><b>A cosa serve.</b> Mostra come il gruppo ha detenuto crypto e valuta estera nel tempo, ai fini del Quadro&nbsp;W/RW. <br>\nGenera un rigo per periodo, separato per CRYPTO e FIAT : serve quando un conto viene chiuso e poi riaperto, o quando cambia il regime del bollo.<br><br>\n<b>Colonne : </b>\n<ul style='margin:3px 10 3px 10'>\n<li><b>Data inizio</b> vuota = dal primo movimento del gruppo&nbsp;&nbsp;&#8226;&nbsp;&nbsp;<b>Data fine</b> vuota = periodo ancora aperto</li>\n<li><b>Calcolo iniziale</b> / <b>finale</b> = come stimare la giacenza al bordo del periodo</li>\n<li><b>Bollo exchange</b> (solo righi CRYPTO) = in quel periodo l'intermediario ha già assolto l'imposta di bollo</li>\n<li><b>Origine</b> = &quot;Predefinito&quot; (dal programma) / &quot;Modificato&quot; / &quot;Manuale&quot;</li>\n</ul>\n<br><b>Pulsanti :</b>\n<ul style='margin:3px 10 3px 10'>\n<li><b>Aggiungi</b> e <b>Modifica</b> aprono un dialogo per inserire o modificare i dati.</li>\n<li><b>Ripristina riga</b> e <b>Ripristina tutto</b> riportano ai valori predefiniti.</li>\n<br><center><font color='#8A8A8A'>Le colonne sono molte e larghe: scorri la tabella in orizzontale.</font></div></html>\n</ul>");
+        Label_Info.setText("<html><div style='width:840px'><b>A cosa serve.</b> Mostra come il gruppo ha detenuto crypto e valuta estera nel tempo, ai fini del Quadro&nbsp;W/RW. <br>\nGenera un rigo per periodo, separato per CRYPTO e FIAT : serve quando un conto viene chiuso e poi riaperto, o quando cambia il regime del bollo.<br><br>\n<b>Colonne : </b>\n<ul style='margin:3px 10 3px 10'>\n<li><b>Data inizio</b> vuota = dal primo movimento del gruppo&nbsp;&nbsp;&#8226;&nbsp;&nbsp;<b>Data fine</b> vuota = periodo ancora aperto</li>\n<li><b>Calcolo iniziale</b> / <b>finale</b> = come stimare la giacenza al bordo del periodo</li>\n<li><b>Bollo exchange</b> (solo righi CRYPTO) = in quel periodo l'intermediario ha già assolto l'imposta di bollo</li>\n<li><b>Origine</b> = &quot;Predefinito&quot; (dal programma) / &quot;Modificato&quot; / &quot;Manuale&quot;</li>\n</ul>\n<br><b>Pulsanti :</b>\n<ul style='margin:3px 10 3px 10'>\n<li><b>Aggiungi</b> e <b>Modifica</b> aprono un dialogo per inserire o modificare i dati.</li>\n<li><b>Ripristina riga</b> e <b>Ripristina tutto</b> riportano ai valori predefiniti.</li>\n<li>Non c'\u00e8 un pulsante <i>Salva</i> : <b>ogni operazione viene salvata subito</b>.</li>\n<br><center><font color='#8A8A8A'>Le colonne sono molte e larghe: scorri la tabella in orizzontale.</font></div></html>\n</ul>");
+
+        Label_Avvisi.setText(" ");
 
         Tabella.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -261,14 +267,6 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
             }
         });
 
-        Bottone_Salva.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Salva.png"))); // NOI18N
-        Bottone_Salva.setText("Salva");
-        Bottone_Salva.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Bottone_SalvaActionPerformed(evt);
-            }
-        });
-
         Bottone_Chiudi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Annulla.png"))); // NOI18N
         Bottone_Chiudi.setText("Chiudi");
         Bottone_Chiudi.addActionListener(new java.awt.event.ActionListener() {
@@ -286,6 +284,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Label_Titolo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(Label_Info)
+                    .addComponent(Label_Avvisi)
                     .addComponent(jScrollPane1)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(Bottone_Aggiungi)
@@ -298,8 +297,6 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_RipristinaTutti)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(Bottone_Salva)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_Chiudi)))
                 .addContainerGap())
         );
@@ -311,6 +308,8 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Label_Info, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Label_Avvisi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -319,7 +318,6 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
                     .addComponent(Bottone_Rimuovi)
                     .addComponent(Bottone_RipristinaRiga)
                     .addComponent(Bottone_RipristinaTutti)
-                    .addComponent(Bottone_Salva)
                     .addComponent(Bottone_Chiudi))
                 .addContainerGap())
         );
@@ -330,11 +328,11 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
     private void Bottone_AggiungiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AggiungiActionPerformed
         int prog = Principale_GruppiWalletRW.prossimoProgressivo(righe, TIPO_CRYPTO);
         GUI_ModificaPeriodoDetenzione d = new GUI_ModificaPeriodoDetenzione(this, null, prog,
-                Principale_GruppiWalletRW.bolloDefaultGruppo(gruppo));
+                Principale_GruppiWalletRW.bolloDefaultGruppo(gruppo), righe, -1);
         d.setVisible(true);
         if (d.confermato) {
             righe.add(d.risultato);
-            ricostruisciVista();
+            salvaAdesso();
             selezionaUltima();
         }
     }//GEN-LAST:event_Bottone_AggiungiActionPerformed
@@ -346,11 +344,11 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
             return;
         }
         GUI_ModificaPeriodoDetenzione d = new GUI_ModificaPeriodoDetenzione(this, righe.get(i), 0,
-                Principale_GruppiWalletRW.bolloDefaultGruppo(gruppo));
+                Principale_GruppiWalletRW.bolloDefaultGruppo(gruppo), righe, i);
         d.setVisible(true);
         if (d.confermato) {
             righe.set(i, d.risultato);
-            ricostruisciVista();
+            salvaAdesso();
         }
     }//GEN-LAST:event_Bottone_ModificaActionPerformed
 
@@ -358,7 +356,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
         int i = rigaSelezionata();
         if (i >= 0) {
             righe.remove(i);
-            ricostruisciVista();
+            salvaAdesso();
         }
     }//GEN-LAST:event_Bottone_RimuoviActionPerformed
 
@@ -369,7 +367,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
             return;
         }
         if (Principale_GruppiWalletRW.ripristinaRigaAlDefault(gruppo, righe, i)) {
-            ricostruisciVista();
+            salvaAdesso();
         } else {
             Messaggi.InfoMessage("Nessun default", "Questo periodo non ha un corrispondente nei dati "
                     + "predefiniti : non c'è nulla a cui ripristinarlo.", this);
@@ -392,14 +390,31 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
         }
         righe.clear();
         righe.addAll(def);
-        ricostruisciVista();
+        salvaAdesso();
     }//GEN-LAST:event_Bottone_RipristinaTuttiActionPerformed
 
-    private void Bottone_SalvaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_SalvaActionPerformed
+    /**
+     * Persiste subito lo stato corrente di {@link #righe}. Sostituisce il pulsante "Salva", tolto il
+     * 2026-09-10 : ogni operazione che tocca l'elenco (aggiunta, modifica, rimozione, ripristino)
+     * salva per conto proprio, e la finestra non è più un foglio di lavoro da confermare a parte.
+     *
+     * <p>È l'<b>unico</b> punto che scrive : la validazione incrociata sta in
+     * {@link GUI_ModificaPeriodoDetenzione}, ma rimozione e ripristini non passano di lì, e due
+     * scrittori vorrebbero dire due posti dove un errore può sfuggire.</p>
+     *
+     * <p>Non dovrebbe mai fallire — quello che entra nell'elenco è già stato validato — ma se
+     * {@code salvaPeriodi} rifiuta, la memoria viene <b>riallineata al database</b> invece di restare
+     * avanti : una vista che mostra righe non salvate è peggio di un'operazione annullata.</p>
+     *
+     * @return {@code true} se il salvataggio è riuscito
+     */
+    private boolean salvaAdesso() {
         List<String> errori = Principale_GruppiWalletRW.salvaPeriodi(gruppo, righe);
         if (!errori.isEmpty()) {
-            Messaggi.WarningMessage("Dati non validi", String.join("\n", errori), this);
-            return;
+            Messaggi.WarningMessage("Salvataggio non riuscito",
+                    String.join("\n", errori) + "\n\nL'elenco è stato riportato all'ultimo stato salvato.", this);
+            ricaricaDaDatabase();
+            return false;
         }
         salvato = true;
         // Se i periodi CRYPTO concordano sul bollo, allineo il flag per-gruppo (toggle tabella "Gruppi Wallet").
@@ -409,17 +424,33 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
         } else if (Principale_GruppiWalletRW.BOLLO_STATO_TUTTI_NO.equals(stato)) {
             Principale_GruppiWalletRW.allineaBolloGruppo(gruppo, false);
         }
+        ricaricaDaDatabase();
+        return true;
+    }
+
+    /** Rilegge i periodi dal database e ridisegna : dopo un salvataggio le righe tornano con l'Origine aggiornata. */
+    private void ricaricaDaDatabase() {
         righe.clear();
         righe.addAll(Principale_GruppiWalletRW.caricaPeriodi(gruppo));
         ricostruisciVista();
+        mostraAvvisiCopertura();
+    }
+
+    /**
+     * Segnala i buchi di copertura fra periodi ({@link Principale_GruppiWalletRW#avvisiPeriodi}) nella
+     * label informativa, senza finestre : sono legittimi — un conto chiuso e poi riaperto — e vederli
+     * comparire in un dialogo a ogni singola operazione sarebbe insopportabile.
+     */
+    private void mostraAvvisiCopertura() {
         List<String> avvisi = Principale_GruppiWalletRW.avvisiPeriodi(righe);
         if (avvisi.isEmpty()) {
-            Messaggi.InfoMessage("Salvato", "Periodi di detenzione salvati.", this);
+            Label_Avvisi.setText(" ");
+            Label_Avvisi.setToolTipText(null);
         } else {
-            Messaggi.InfoMessage("Salvato (con avvisi)",
-                    "Periodi di detenzione salvati.\n\nAvvisi (non bloccanti) :\n- " + String.join("\n- ", avvisi), this);
+            Label_Avvisi.setText("<html><b>Avvisi</b> (non bloccanti) : " + String.join(" ; ", avvisi) + "</html>");
+            Label_Avvisi.setToolTipText("<html>" + String.join("<br>", avvisi) + "</html>");
         }
-    }//GEN-LAST:event_Bottone_SalvaActionPerformed
+    }
 
     private void Bottone_ChiudiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ChiudiActionPerformed
         dispose();
@@ -432,7 +463,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
     private javax.swing.JButton Bottone_Rimuovi;
     private javax.swing.JButton Bottone_RipristinaRiga;
     private javax.swing.JButton Bottone_RipristinaTutti;
-    private javax.swing.JButton Bottone_Salva;
+    private javax.swing.JLabel Label_Avvisi;
     private javax.swing.JLabel Label_Info;
     private javax.swing.JLabel Label_Titolo;
     private javax.swing.JTable Tabella;

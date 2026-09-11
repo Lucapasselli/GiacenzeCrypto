@@ -29,6 +29,12 @@ parametro ``?t=<numero>`` che serve solo a evitare la cache del browser: viene
 tolto per ottenere l'indirizzo canonico registrato nel manifest, ma lo scarico
 usa l'indirizzo cosi' com'e', perche' e' quello che si e' visto funzionare.
 
+``scaricato_il`` e' la data in cui il file e' stato preso da chi lo pubblica, non
+la data dell'ultima esecuzione: per i file gia' presenti, che questo script salta,
+si conserva la data che risulta dal manifest precedente. Riscriverla a ogni giro
+metterebbe in ``fonti.csv`` una provenienza falsa proprio nel campo che dovrebbe
+garantirla. Solo un file davvero (ri)scaricato adesso prende la data di oggi.
+
 Uso:  python3 scarica_documenti.py elenco.json
 """
 
@@ -55,19 +61,38 @@ def sha256(percorso):
     return h.hexdigest()
 
 
+def date_precedenti(percorso_manifest):
+    """Le date di scarico gia' registrate, per file, dal manifest della volta scorsa."""
+    try:
+        with open(percorso_manifest, encoding="utf-8") as f:
+            return {v["file"]: v.get("scaricato_il", "") for v in json.load(f)}
+    except (OSError, ValueError, KeyError):
+        return {}
+
+
 def main():
     elenco = sys.argv[1] if len(sys.argv) > 1 else os.path.join(QUI, "elenco_documenti.json")
     with open(elenco, encoding="utf-8") as f:
         voci = json.load(f)
+
+    nome_manifest = os.path.splitext(os.path.basename(elenco))[0] + "_manifest.json"
+    percorso_manifest = os.path.join(QUI, nome_manifest)
+    gia_registrate = date_precedenti(percorso_manifest)
+    oggi = date.today().isoformat()
 
     manifest, errori = [], 0
     for v in voci:
         cartella = os.path.join(RADICE, v["cartella"])
         os.makedirs(cartella, exist_ok=True)
         dest = os.path.join(cartella, v["nome"])
+        relativo = os.path.join(v["cartella"], v["nome"])
         if os.path.exists(dest) and not os.environ.get("RISCARICA"):
             print(f"   (gia' presente) {v['nome']}")
+            # non e' stato preso adesso: vale la data della volta in cui lo e' stato.
+            # Se manca (file messo li' a mano, o manifest perso) si ripiega su oggi.
+            scaricato_il = gia_registrate.get(relativo) or oggi
         else:
+            scaricato_il = oggi
             time.sleep(PAUSA)
             try:
                 intestazioni = {"User-Agent": UA}
@@ -92,19 +117,18 @@ def main():
                 f.write(dati)
             print(f"-> {v['cartella']}/{v['nome']}  {len(dati)} byte")
         manifest.append({
-            "file": os.path.join(v["cartella"], v["nome"]),
+            "file": relativo,
             "titolo": v["titolo"],
             "autorita": v.get("autorita", ""),
             "identificativo": v.get("identificativo", ""),
             "data_documento": v.get("data", ""),
             "argomenti": ", ".join(v.get("argomenti", [])),
             "url": v["url"].split("?t=")[0],
-            "scaricato_il": date.today().isoformat(),
+            "scaricato_il": scaricato_il,
             "sha256": sha256(dest) if os.path.exists(dest) else "",
         })
 
-    nome_manifest = os.path.splitext(os.path.basename(elenco))[0] + "_manifest.json"
-    with open(os.path.join(QUI, nome_manifest), "w", encoding="utf-8") as f:
+    with open(percorso_manifest, "w", encoding="utf-8") as f:
         json.dump(manifest, f, ensure_ascii=False, indent=1)
     print(f"\n{len(manifest)} file registrati in Strumenti/{nome_manifest}"
           + (f" ({errori} errori)" if errori else ""))

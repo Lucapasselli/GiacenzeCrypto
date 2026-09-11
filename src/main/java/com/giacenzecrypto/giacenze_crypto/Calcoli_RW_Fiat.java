@@ -88,16 +88,41 @@ public final class Calcoli_RW_Fiat {
     }
 
     /**
-     * Tutte le gambe FIAT di {@code MappaCryptoWallet} raggruppate per gruppo wallet, in <b>una sola
-     * passata</b>. Ogni lista è ordinata per id movimento (= cronologico). I trasferimenti interni
-     * ({@code TI}) sono esclusi. Un gruppo senza gambe FIAT non compare nella mappa. Usato da
-     * {@link #generaRighiFiat}, che così non riscorre l'archivio per ogni gruppo e per ogni tratto.
+     * L'indice delle gambe FIAT più gli avvisi maturati costruendolo, per gruppo wallet. Gli avvisi
+     * riguardano il gruppo nel suo insieme (non un tratto) e vengono premessi agli avvisi di ogni
+     * rigo che quel gruppo produce, perché un movimento non contabilizzato sposta il saldo e chi
+     * legge il rigo deve poterlo sapere.
      */
-    private static Map<String, List<GambaFiat>> indicizzaGambeFiat() {
-        Map<String, List<GambaFiat>> indice = new HashMap<>();
+    private static final class IndiceFiat {
+        final Map<String, List<GambaFiat>> gambe = new HashMap<>();
+        final Map<String, List<String>> avvisi = new HashMap<>();
+
+        void avvisa(String gruppo, String avviso) {
+            avvisi.computeIfAbsent(gruppo, k -> new ArrayList<>()).add(avviso);
+        }
+    }
+
+    /**
+     * Tutte le gambe FIAT raggruppate per gruppo wallet, in <b>una sola passata</b> su
+     * {@code MappaCryptoWallet}. Ogni lista è ordinata per id movimento (= cronologico). I
+     * trasferimenti interni ({@code TI}) sono esclusi. Un gruppo senza gambe FIAT non compare nella
+     * mappa. Usato da {@link #generaRighiFiat}, che così non riscorre l'archivio per ogni gruppo e
+     * per ogni tratto.
+     *
+     * <p><b>Unica eccezione alla regola : Crypto.com App.</b> Per quell'exchange la parte FIAT non
+     * si legge dai movimenti crypto ma dalla tabella del <i>Fiat Wallet</i>
+     * ({@code crypto.com.fiatwallet.db}), che è il libro mastro del conto in euro — vedi
+     * {@link #gambeDalFiatWalletCDC}. Le gambe FIAT dei movimenti di {@code Crypto.com App} sono
+     * quindi scartate qui e rimpiazzate da quelle sintetizzate dal Fiat Wallet.</p>
+     */
+    private static IndiceFiat indicizzaGambeFiat() {
+        IndiceFiat indice = new IndiceFiat();
         for (String[] v : MappaCryptoWallet.values()) {
             if (!movimentoUtile(v)) {
                 continue;
+            }
+            if (CDC_FiatECardWallet.NOME_EXCHANGE_CDC_APP.equals(v[3].trim())) {
+                continue; // la parte FIAT arriva dal Fiat Wallet, vedi sotto
             }
             String giorno = v[1].substring(0, 10);
             String gruppo = DatabaseH2.Pers_GruppoWallet_Leggi(v[3].trim(), true);
@@ -105,13 +130,64 @@ public final class Calcoli_RW_Fiat {
             aggiungiSeFiat(gambe, giorno, v[0], v[8], v[9], v[10], false);
             aggiungiSeFiat(gambe, giorno, v[0], v[11], v[12], v[13], true);
             if (!gambe.isEmpty()) {
-                indice.computeIfAbsent(gruppo, k -> new ArrayList<>()).addAll(gambe);
+                indice.gambe.computeIfAbsent(gruppo, k -> new ArrayList<>()).addAll(gambe);
             }
         }
-        for (List<GambaFiat> gambe : indice.values()) {
+        gambeDalFiatWalletCDC(indice);
+        for (List<GambaFiat> gambe : indice.gambe.values()) {
             gambe.sort(Comparator.comparing(g -> g.id));
         }
         return indice;
+    }
+
+    /**
+     * Aggiunge all'indice le gambe FIAT di <b>Crypto.com App</b> lette dal Fiat Wallet.
+     *
+     * <p>L'esclusione a monte è per <b>nome exchange</b> ({@code v[3]}) e non per gruppo wallet : se
+     * l'utente ha messo Crypto.com App nello stesso gruppo di un altro exchange, escludere per
+     * gruppo cancellerebbe anche le gambe FIAT di quell'altro. Il gruppo resta invece la chiave a cui
+     * le gambe sintetizzate vengono attribuite, esattamente come per gli altri exchange.</p>
+     *
+     * <p>Tre cose che il Fiat Wallet impone :</p>
+     * <ul>
+     *   <li><b>Solo euro.</b> Una riga senza colonna in EUR non è contabilizzata dal tab e non lo è
+     *       nemmeno qui : viene scartata (non valorizzata a zero) e conteggiata in un avviso.
+     *       Le gambe prodotte hanno quindi tutte valuta {@code EUR}.</li>
+     *   <li><b>Il segno viene dal tipo movimento</b>, mai dalla quantità : l'importatore rende
+     *       positiva la colonna dell'importo. Un tipo sconosciuto è scartato e segnalato.</li>
+     *   <li><b>L'id porta l'istante</b>, non la chiave del Fiat Wallet : le gambe sono ordinate per
+     *       id e le modalità "primo apporto" / "ultima uscita" dipendono da quell'ordine, che deve
+     *       essere cronologico anche dentro la giornata.</li>
+     * </ul>
+     */
+    private static void gambeDalFiatWalletCDC(IndiceFiat indice) {
+        String gruppo = DatabaseH2.Pers_GruppoWallet_Leggi(CDC_FiatECardWallet.NOME_EXCHANGE_CDC_APP, true);
+        CDC_FiatECardWallet.EsitoFiatWallet esito =
+                CDC_FiatECardWallet.MovimentiEuro(VarStatiche.getFile_CDCFiatWallet());
+        if (esito.movimenti.isEmpty() && esito.scartatiNonInEuro == 0 && esito.scartatiTipoSconosciuto == 0) {
+            return; // nessun Fiat Wallet su questa installazione
+        }
+        int progressivo = 0;
+        List<GambaFiat> gambe = new ArrayList<>();
+        for (CDC_FiatECardWallet.MovimentoFiatWallet m : esito.movimenti) {
+            if (m.importoEUR.signum() == 0) {
+                continue;
+            }
+            progressivo++;
+            String id = m.istante.replaceAll("[^0-9]", "") + "_FW" + String.format("%05d", progressivo);
+            gambe.add(new GambaFiat(m.giorno, "EUR", m.importoEUR, id));
+        }
+        if (!gambe.isEmpty()) {
+            indice.gambe.computeIfAbsent(gruppo, k -> new ArrayList<>()).addAll(gambe);
+        }
+        if (esito.scartatiNonInEuro > 0) {
+            indice.avvisa(gruppo, "Fiat Wallet Crypto.com : " + esito.scartatiNonInEuro
+                    + " movimenti non in euro non contabilizzati");
+        }
+        if (esito.scartatiTipoSconosciuto > 0) {
+            indice.avvisa(gruppo, "Fiat Wallet Crypto.com : " + esito.scartatiTipoSconosciuto
+                    + " movimenti di tipo sconosciuto non contabilizzati");
+        }
     }
 
     /**
@@ -124,7 +200,7 @@ public final class Calcoli_RW_Fiat {
         if (gruppo == null || gruppo.isBlank()) {
             return new ArrayList<>();
         }
-        return indicizzaGambeFiat().getOrDefault(gruppo, new ArrayList<>());
+        return indicizzaGambeFiat().gambe.getOrDefault(gruppo, new ArrayList<>());
     }
 
     /** {@code true} se il movimento ha data e wallet valorizzati e non è un trasferimento interno. */
@@ -468,6 +544,63 @@ public final class Calcoli_RW_Fiat {
     static final BigDecimal IVAFE_CONTO_CORRENTE_FISSA = new BigDecimal("34.20");
     /** Sotto (o pari a) questo valore medio di giacenza l'IVAFE sul conto corrente non è dovuta. */
     static final BigDecimal SOGLIA_ESENZIONE_IVAFE = new BigDecimal("5000");
+
+    /**
+     * Aliquota IVAFE <b>ordinaria</b> sui prodotti finanziari diversi dai conti correnti e dai
+     * libretti di risparmio : 2 per mille (art. 19 comma 20 del D.L. 201/2011 ; istruzioni Redditi
+     * PF, colonna 29 punto I).
+     */
+    static final BigDecimal ALIQUOTA_IVAFE_ORDINARIA = new BigDecimal("0.002");
+
+    /**
+     * Aliquota IVAFE <b>maggiorata</b> per i prodotti finanziari detenuti in Stati o territori a
+     * fiscalità privilegiata : 4 per mille (art. 19 comma 20-bis del D.L. 201/2011 ; istruzioni
+     * Redditi PF, colonna 29 punto I, con barratura della colonna 21). L'elenco degli Stati è in
+     * {@link StatiEsteri#isPrivilegiato(String)}.
+     */
+    static final BigDecimal ALIQUOTA_IVAFE_PRIVILEGIATA = new BigDecimal("0.004");
+
+    /**
+     * Primo anno d'imposta in cui si applica {@link #ALIQUOTA_IVAFE_PRIVILEGIATA} : il comma 20-bis
+     * dispone «a decorrere dall'anno 2024». Prima di quell'anno vale l'aliquota ordinaria anche sugli
+     * Stati dell'elenco.
+     */
+    static final int ANNO_INIZIO_IVAFE_PRIVILEGIATA = 2024;
+
+    /**
+     * L'aliquota IVAFE da applicare a un rigo di liquidità : maggiorata se lo Stato estero del tratto
+     * è nell'elenco del D.M. 4 maggio 1999 <b>e</b> l'anno è almeno
+     * {@value #ANNO_INIZIO_IVAFE_PRIVILEGIATA}, altrimenti ordinaria. Uno Stato non indicato non fa
+     * scattare la maggiorazione : il rigo porta già l'avviso "Stato estero mancante".
+     */
+    static BigDecimal aliquotaIvafe(int anno, String statoEstero) {
+        return anno >= ANNO_INIZIO_IVAFE_PRIVILEGIATA && StatiEsteri.isPrivilegiato(statoEstero)
+                ? ALIQUOTA_IVAFE_PRIVILEGIATA : ALIQUOTA_IVAFE_ORDINARIA;
+    }
+
+    /**
+     * Opzione utente (in {@code personale.mv.db}) : {@code "SI"} = la liquidità in valuta presso
+     * intermediari esteri si dichiara in <b>solo monitoraggio</b>, senza liquidare l'IVAFE ;
+     * {@code "NO"} (default, {@link #LIQUIDITA_SOLO_MONITORAGGIO_DEFAULT}) = si liquida l'IVAFE
+     * ordinaria.
+     *
+     * <p>La scelta esiste perché la questione <b>non è risolta</b> e nessuna delle due risposte è
+     * dimostrabile : l'art. 19 comma 18 tassa i «prodotti finanziari», termine chiuso del TUF
+     * (art. 1 comma 1 lett. u del D.Lgs. 58/1998) che esclude ciò che non è investimento, mentre la
+     * circolare 28/E del 2012 — pubblicata dopo la modifica che ha introdotto quel termine —
+     * descrive ancora la base imponibile come «ogni altra attività da cui possono derivare redditi
+     * di capitale o redditi diversi di natura finanziaria di fonte estera», cioè come il perimetro
+     * stesso del monitoraggio. Il default liquida l'imposta perché è la lettura che segue la prassi
+     * dell'Agenzia ; chi segue la lettera della norma attiva l'opzione. Analisi completa in
+     * {@code nocommit/Documentazione/Analisi_QuadroRW_Codice14.md}, § 6.</p>
+     *
+     * <p>Non tocca i righi <b>conto corrente</b> (codice bene {@value #CODICE_BENE_CONTO_CORRENTE}) :
+     * lì l'imposta è quella in misura fissa e non è in discussione.</p>
+     */
+    public static final String OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO = "RW_LiquiditaSoloMonitoraggio";
+
+    /** Default di {@link #OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO} : {@code "NO"}, cioè l'IVAFE si liquida. */
+    public static final String LIQUIDITA_SOLO_MONITORAGGIO_DEFAULT = "NO";
     /** Sotto (o pari a) questo valore massimo non c'è nemmeno obbligo di monitoraggio (rigo comunque prodotto, con avviso). */
     static final BigDecimal SOGLIA_MONITORAGGIO_CONTO = new BigDecimal("15000");
 
@@ -539,15 +672,16 @@ public final class Calcoli_RW_Fiat {
             return;
         }
 
-        Map<String, List<GambaFiat>> indice = indicizzaGambeFiat();
+        IndiceFiat indice = indicizzaGambeFiat();
         Map<String, String> primoMovXGruppo = Funzioni.MappaPrimoMovimentoXGruppoWallet();
 
-        for (Map.Entry<String, List<GambaFiat>> voce : indice.entrySet()) {
+        for (Map.Entry<String, List<GambaFiat>> voce : indice.gambe.entrySet()) {
             String gruppo = voce.getKey();
             List<GambaFiat> gambe = voce.getValue();
+            List<String> avvisiGruppo = indice.avvisi.getOrDefault(gruppo, new ArrayList<>());
 
             List<String[]> intervalli = intervalliFiat(gruppo, anno);
-            LocalDate aperturaGruppo = dataAperturaGruppo(primoMovXGruppo.get(gruppo), anno);
+            LocalDate aperturaGruppo = dataAperturaGruppo(primoMovXGruppo.get(gruppo), gambe, anno);
 
             List<String[]> righe = new ArrayList<>();
             List<List<String>> avvisiRighe = new ArrayList<>();   // parallelo a righe, per la fase conto corrente
@@ -575,7 +709,7 @@ public final class Calcoli_RW_Fiat {
                     continue; // tratto svuotato dallo spostamento dell'apertura
                 }
 
-                List<String> avvisi = new ArrayList<>();
+                List<String> avvisi = new ArrayList<>(avvisiGruppo);
                 BigDecimal valIni = valoreIniziale(gambe, iv, di, aperturaInfraAnno, cambio, avvisi);
                 BigDecimal valFin = valoreFinale(gambe, iv, df, cambio, avvisi);
 
@@ -602,7 +736,7 @@ public final class Calcoli_RW_Fiat {
 
                 int giorni = FunzioniDate.DifferenzaDate(di.toString(), df.toString()) + 1;
                 righe.add(rigaFiat(anno, gruppo, di, df, valIni, valFin, giorni,
-                        trim(iv[IV_STATO]), etichettaValute(gambe, df), avvisi));
+                        trim(iv[IV_STATO]), etichettaValute(gambe, df), avvisi, contoCorrente));
                 avvisiRighe.add(avvisi);
                 if (contoCorrente) {
                     idxCC.add(righe.size() - 1);
@@ -715,7 +849,7 @@ public final class Calcoli_RW_Fiat {
 
     private static String[] rigaFiat(String anno, String gruppo, LocalDate di, LocalDate df,
             BigDecimal valIni, BigDecimal valFin, int giorni, String statoEstero, String etichettaValute,
-            List<String> avvisi) {
+            List<String> avvisi, boolean contoCorrente) {
         String[] r = new String[FIAT_COLONNE];
         Arrays.fill(r, "");
         r[0] = anno;
@@ -736,14 +870,74 @@ public final class Calcoli_RW_Fiat {
         r[15] = componiAvvisi(avvisi);
         r[16] = "";                           // lista ID coinvolti
         r[FIAT_COL_STATO_ESTERO] = statoEstero == null ? "" : statoEstero;
-        // Default : altra attività estera di natura finanziaria, solo monitoraggio, niente IVAFE.
-        // applicaContoCorrente() riscrive queste colonne sui tratti con EContoCorrente = SI.
+        // Altra attività estera di natura finanziaria. applicaContoCorrente() riscrive queste
+        // colonne sui tratti con EContoCorrente = SI (codice bene 1, imposta in misura fissa).
         r[FIAT_COL_CODICE_BENE] = CODICE_BENE_FIAT;
         r[FIAT_COL_VALORE_MEDIO] = "";
-        r[FIAT_COL_IVAFE] = "0.00";
-        r[FIAT_COL_SOLO_MONITORAGGIO] = "SI";
         r[FIAT_COL_VALORE_MASSIMO] = "";
+        int annoNum = Integer.parseInt(anno);
+        int giorniAnno = Year.of(annoNum).length();
+        BigDecimal aliquota = aliquotaIvafe(annoNum, r[FIAT_COL_STATO_ESTERO]);
+        boolean privilegiata = aliquota.compareTo(ALIQUOTA_IVAFE_PRIVILEGIATA) == 0;
+        // Sui tratti conto corrente l'imposta e l'avviso li scrive applicaContoCorrente() (misura
+        // fissa, che il comma 20-bis non tocca : parla dei soli "prodotti finanziari") : liquidare
+        // qui l'aliquota ordinaria lascerebbe in coda un avviso smentito subito dopo.
+        BigDecimal ivafe = contoCorrente || liquiditaSoloMonitoraggio()
+                ? BigDecimal.ZERO
+                : ivafeLiquidita(valFin, giorni, giorniAnno, aliquota);
+        if (ivafe.signum() > 0) {
+            r[FIAT_COL_IVAFE] = ivafe.toPlainString();
+            r[FIAT_COL_SOLO_MONITORAGGIO] = "NO";
+            avvisi.add("liquidità : IVAFE " + ivafe.toPlainString() + " EUR ("
+                    + (privilegiata ? "0,40 %" : "0,20 %") + " di "
+                    + valFin.setScale(2, RoundingMode.HALF_UP).toPlainString() + " x " + giorni + "/"
+                    + giorniAnno + ")");
+            if (privilegiata) {
+                // La barratura della colonna 21 non è riproducibile sul modulo stampato : senza
+                // questo avviso l'aliquota doppia risulterebbe applicata su un rigo che, a vederlo,
+                // dichiara di essere ordinario.
+                avvisi.add("Stato a fiscalità privilegiata (D.M. 4 maggio 1999) : barrare a mano la"
+                        + " colonna 21 del quadro RW");
+            }
+            r[15] = componiAvvisi(avvisi);
+        } else {
+            r[FIAT_COL_IVAFE] = "0.00";
+            r[FIAT_COL_SOLO_MONITORAGGIO] = "SI";
+        }
         return r;
+    }
+
+    /**
+     * {@code true} se l'utente ha scelto di dichiarare la liquidità in valuta in solo monitoraggio.
+     * Letta a ogni ricalcolo (non messa in cache) : è un'opzione da casella di spunta, cambiarla
+     * deve avere effetto al ricalcolo successivo senza riavviare.
+     */
+    static boolean liquiditaSoloMonitoraggio() {
+        String v = DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO);
+        return v != null && v.equalsIgnoreCase("SI");
+    }
+
+    /**
+     * IVAFE ordinaria di un tratto di liquidità : {@code valore finale x 0,20 % x giorni/giorni
+     * dell'anno}, quota di possesso 100 %.
+     *
+     * <p>La base è il <b>valore finale del tratto</b> e non il saldo al 31 dicembre. È una scelta,
+     * non un vincolo: i tratti nascono da {@link #intervalliFiat} (cambio di Stato estero, del flag
+     * conto corrente, apertura del gruppo), non da periodi di detenzione distinti, quindi la
+     * colonna 8 del quadro — «valore al termine del periodo di detenzione» — andrebbe letta sul
+     * rapporto intero. Si valorizza per tratto perché è l'unica lettura coerente con la colonna 10
+     * (giorni) che il programma già scrive per tratto: usare il saldo al 31 dicembre su un tratto
+     * chiuso a marzo attribuirebbe a quel tratto un valore che in quel periodo non c'era. Un gruppo
+     * che non cambia Stato estero né natura ha comunque un tratto solo, e i due criteri coincidono.</p>
+     */
+    private static BigDecimal ivafeLiquidita(BigDecimal valFin, int giorni, int giorniAnno,
+            BigDecimal aliquota) {
+        if (valFin == null || valFin.signum() <= 0 || giorni <= 0 || giorniAnno <= 0) {
+            return BigDecimal.ZERO;
+        }
+        return valFin.multiply(aliquota)
+                .multiply(BigDecimal.valueOf(giorni))
+                .divide(BigDecimal.valueOf(giorniAnno), 2, RoundingMode.HALF_UP);
     }
 
     /** Testo della colonna avvisi ({@code [15]}) da una lista di messaggi (deduplicati, ordine di inserimento). */
@@ -880,16 +1074,24 @@ public final class Calcoli_RW_Fiat {
     }
 
     /** Data del primo movimento del gruppo se cade nell'anno indicato (apertura infra-anno), altrimenti {@code null}. */
-    private static LocalDate dataAperturaGruppo(String idPrimoMovimento, String anno) {
-        if (idPrimoMovimento == null) {
-            return null;
+    private static LocalDate dataAperturaGruppo(String idPrimoMovimento, List<GambaFiat> gambe, String anno) {
+        String giorno = null;
+        String[] mov = idPrimoMovimento == null ? null : MappaCryptoWallet.get(idPrimoMovimento);
+        if (mov != null && mov[1] != null && mov[1].length() >= 10) {
+            giorno = mov[1].substring(0, 10);
         }
-        String[] mov = MappaCryptoWallet.get(idPrimoMovimento);
-        if (mov == null || mov[1] == null || mov[1].length() < 10) {
-            return null;
+        // Le gambe FIAT di Crypto.com App arrivano dal Fiat Wallet, che e' una sorgente indipendente
+        // dai movimenti crypto e puo' quindi cominciare PRIMA del primo movimento del gruppo. Per
+        // ogni altro exchange la gamba FIAT e' parte di un movimento, quindi il minimo e' gia' quello
+        // e questo giro non cambia nulla. Il minimo va preso PRIMA del test sull'anno : invertire i
+        // due passaggi trasformerebbe un gruppo aperto in un anno precedente in una falsa apertura
+        // infra-anno.
+        for (GambaFiat g : gambe) {
+            if (giorno == null || g.giorno.compareTo(giorno) < 0) {
+                giorno = g.giorno;
+            }
         }
-        String giorno = mov[1].substring(0, 10);
-        if (!giorno.startsWith(anno + "-")) {
+        if (giorno == null || !giorno.startsWith(anno + "-")) {
             return null;
         }
         return parseData(giorno);

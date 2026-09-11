@@ -573,6 +573,7 @@ private static final long serialVersionUID = 3L;
 
         RW_RadioGruppo = new javax.swing.ButtonGroup();
         RW_Trasferimenti = new javax.swing.ButtonGroup();
+        RW_Liquidita = new javax.swing.ButtonGroup();
         PopupMenu = new javax.swing.JPopupMenu();
         MenuItem_CopiaID = new javax.swing.JMenuItem();
         MenuItem_Copia = new javax.swing.JMenuItem();
@@ -880,6 +881,9 @@ private static final long serialVersionUID = 3L;
         jLabel15 = new javax.swing.JLabel();
         RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo = new javax.swing.JCheckBox();
         RW_Opzioni_CheckBox_FiatInRW = new javax.swing.JCheckBox();
+        RW_Opzioni_Label_Liquidita = new javax.swing.JLabel();
+        RW_Opzioni_Radio_Liquidita_ConIvafe = new javax.swing.JRadioButton();
+        RW_Opzioni_Radio_Liquidita_SoloMonitoraggio = new javax.swing.JRadioButton();
         RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo = new javax.swing.JRadioButton();
         RW_Opzioni_Radio_TrasferimentiNonConteggiati = new javax.swing.JRadioButton();
         RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine = new javax.swing.JRadioButton();
@@ -4948,7 +4952,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        RW_Opzioni_CheckBox_FiatInRW.setText("<html>Includi nel Quadro W/RW anche la <b>valuta estera (FIAT)</b> detenuta presso intermediari esteri (codice bene 14, solo monitoraggio)</html>");
+        RW_Opzioni_CheckBox_FiatInRW.setText("<html>Includi nel Quadro W/RW anche la <b>valuta estera (FIAT)</b> detenuta presso intermediari esteri (codice bene 14)</html>");
         RW_Opzioni_CheckBox_FiatInRW.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RW_Opzioni_CheckBox_FiatInRWActionPerformed(evt);
@@ -4982,6 +4986,25 @@ private static final long serialVersionUID = 3L;
 
         jLabel16.setText("<html>Quadro W/RW - <b>Gestione dei Trasferimenti tra Wallet di proprietà :</b></html>");
 
+        RW_Opzioni_Label_Liquidita.setText("<html>Quadro W/RW - <b>Liquidità in valuta presso intermediari esteri (codice bene 14) :</b></html>");
+
+        RW_Liquidita.add(RW_Opzioni_Radio_Liquidita_ConIvafe);
+        RW_Opzioni_Radio_Liquidita_ConIvafe.setSelected(true);
+        RW_Opzioni_Radio_Liquidita_ConIvafe.setText("<html>Sulla liquidità si liquida l'<b>IVAFE ordinaria (0,20 %)</b>, come sugli altri prodotti finanziari esteri diversi dai conti correnti.</html>");
+        RW_Opzioni_Radio_Liquidita_ConIvafe.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Opzioni_Radio_Liquidita_ConIvafeActionPerformed(evt);
+            }
+        });
+
+        RW_Liquidita.add(RW_Opzioni_Radio_Liquidita_SoloMonitoraggio);
+        RW_Opzioni_Radio_Liquidita_SoloMonitoraggio.setText("<html>La liquidità si dichiara in <b>solo monitoraggio</b> (colonna 16 barrata), senza liquidare l'IVAFE.</html>");
+        RW_Opzioni_Radio_Liquidita_SoloMonitoraggio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Opzioni_Radio_Liquidita_SoloMonitoraggioActionPerformed(evt);
+            }
+        });
+
         RW_Opzioni_CheckBox_LiFoSubMovimenti.setText("<html>Il LiFo viene applicato anche ai Sub-Movimenti ( Vedi Documentazione )</html>");
         RW_Opzioni_CheckBox_LiFoSubMovimenti.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -5013,8 +5036,11 @@ private static final long serialVersionUID = 3L;
                                     .addComponent(RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(RW_Opzioni_Radio_TrasferimentiNonConteggiati, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(RW_Opzioni_Radio_Liquidita_ConIvafe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(RW_Opzioni_Radio_Liquidita_SoloMonitoraggio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(RW_Bottone_Documentazione1, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(RW_Opzioni_Label_Liquidita, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 244, Short.MAX_VALUE))
                     .addGroup(Opzioni_RW_PannelloLayout.createSequentialGroup()
                         .addGroup(Opzioni_RW_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -5070,6 +5096,12 @@ private static final long serialVersionUID = 3L;
                 .addComponent(RW_Opzioni_Radio_TrasferimentiNonConteggiati, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(RW_Opzioni_Label_Liquidita, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(RW_Opzioni_Radio_Liquidita_ConIvafe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(RW_Opzioni_Radio_Liquidita_SoloMonitoraggio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(58, 58, 58)
                 .addComponent(RW_Bottone_Documentazione1, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -6449,11 +6481,23 @@ private void SettaIcone(){
             this.RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.setSelected(true);
         }else DatabaseH2.Pers_Opzioni_Scrivi("RW_MostraGiacenzeSePagaBollo","SI");
 
-        //Parte FIAT del quadro W/RW : DISATTIVA di default (codice bene 14, solo monitoraggio).
+        //Parte FIAT del quadro W/RW : DISATTIVA di default (codice bene 14).
         String RW_FiatInRW=DatabaseH2.Pers_Opzioni_Leggi("RW_FiatInRW");
         if(RW_FiatInRW!=null && RW_FiatInRW.equalsIgnoreCase("SI")){
             this.RW_Opzioni_CheckBox_FiatInRW.setSelected(true);
         }else DatabaseH2.Pers_Opzioni_Scrivi("RW_FiatInRW","NO");
+
+        //Regime della liquidità in valuta : di default si liquida l'IVAFE ordinaria (0,20 %).
+        //Il "solo monitoraggio" e' una scelta, non piu' il comportamento implicito : vedi
+        //Calcoli_RW_Fiat.OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO.
+        String RW_LiquiditaSoloMonitoraggio=DatabaseH2.Pers_Opzioni_Leggi(Calcoli_RW_Fiat.OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO);
+        if(RW_LiquiditaSoloMonitoraggio!=null && RW_LiquiditaSoloMonitoraggio.equalsIgnoreCase("SI")){
+            this.RW_Opzioni_Radio_Liquidita_SoloMonitoraggio.setSelected(true);
+        }else {
+            this.RW_Opzioni_Radio_Liquidita_ConIvafe.setSelected(true);
+            DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO,
+                    Calcoli_RW_Fiat.LIQUIDITA_SOLO_MONITORAGGIO_DEFAULT);
+        }
         
         String RW_LiFoComplessivo=DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo"); 
         if(RW_LiFoComplessivo!=null && RW_LiFoComplessivo.equalsIgnoreCase("SI")){
@@ -6663,83 +6707,13 @@ private void SettaIcone(){
      * @param fiatwallet percorso del file CSV del wallet fiat da importare
      */
     public void CDC_FiatWallet_Funzione_ImportaWallet(String fiatwallet) {
-        // TODO add your handling code here:
-
         //Questa funzione importa i dati del wallet, presi dal file csv o dal database interno e li mette nelle mappe
         //questo per rendere le operazioni molto più veloci visto che il tutto viene gestito in ram
         //non vengono utilizzati database visto che i dati sono relativamente pochi
-        //CDC_FiatWallet_Mappa.clear();
-        String riga;
-        try ( FileReader fire = new FileReader(fiatwallet);  BufferedReader bure = new BufferedReader(fire);) {
-            while ((riga = bure.readLine()) != null) {
-                String splittata[] = riga.split(",");
-                if (splittata.length == 10)// se non è esattamente uguale a 10 significa che il file non è corretto
-                {
-                    //le transazioni qua sotto non devo considerarle
-                    if (!splittata[9].equals("trading.limit_order.fiat_wallet.purchase_unlock")
-                            && !splittata[9].equals("trading.limit_order.fiat_wallet.purchase_lock")) {
-                        if (Funzioni_Date_ConvertiDatainLong(splittata[0]) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
-                        {
-                            //CDC_FiatWallet_Mappa.put(splittata[0], riga);
-                            String idRiga;
-                            int Colonna = CDC_Funzione_trovaColonnaEuro(riga);
-                            if (Colonna == 999) {
-                                idRiga = splittata[0] + splittata[1] + splittata[9];
-                            } else {
-                                idRiga = splittata[0] + splittata[1] + splittata[9] + splittata[Colonna];
-                            }
-                            String rigasistemata = "";
-                            splittata[3] = splittata[3].replace("-", ""); //questo toglie i valori negativi dalla colonna 3 che deve essere sempre positiva
-                            for (String composta : splittata) {
-                                rigasistemata = rigasistemata + composta + ",";
-                            }
-                            //System.out.println(rigasistemata);
-                            CDC_FiatWallet_Mappa.put(idRiga, rigasistemata);
-                        }
-                    }
-                }
-            }
-            //   bure.close();
-            //  fire.close();
-        } catch (FileNotFoundException ex) {
-            LoggerGC.ScriviErrore(ex);
-        } catch (IOException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-
-        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.clear();
-        //Ora importo i tipi movimento del FiatWallet
-        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put("crypto_viban", "crypto_viban;+;default;Vendita Crypto");
-        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put("viban_card_top_up", "viban_card_top_up;-;default;TopUp Carta");
-        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put("viban_deposit", "viban_deposit;+;default;Bonifico in Ingresso");
-        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put("viban_purchase", "viban_purchase;-;default;Acquisto Crypto");
-        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put("recurring_buy_order", "recurring_buy_order;-;default;Acquisto Crypto");
-        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put("viban_withdrawal", "viban_withdrawal;-;default;Bonifico su Conto Corrente");
-        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put("trading.limit_order.fiat_wallet.purchase_commit", "trading.limit_order.fiat_wallet.purchase_commit;-;default;Acquisto Crypto");
-        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put("trading.limit_order.fiat_wallet.sell_commit", "trading.limit_order.fiat_wallet.sell_commit;+;default;Vendita Crypto");
-        try {
-            File movPers = new File(VarStatiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
-            if (!movPers.exists()) {
-                movPers.createNewFile();
-            }
-            FileReader fires = new FileReader(VarStatiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
-            BufferedReader bures = new BufferedReader(fires);
-
-            while ((riga = bures.readLine()) != null) {
-                String splittata[] = riga.split(";");
-                if (splittata.length == 4)// se non è esattamente uguale a 4 significa che il file non è corretto
-                {
-                    VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put(splittata[0], riga);
-                }
-            }
-            bures.close();
-            fires.close();
-
-        } catch (FileNotFoundException ex) {
-            LoggerGC.ScriviErrore(ex);
-        } catch (IOException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
+        //La lettura del file e le regole (righe da importare, colonna euro, tipi movimento) stanno in
+        //CDC_FiatECardWallet perche' le condivide con la parte FIAT del quadro W/RW.
+        CDC_FiatWallet_Mappa.putAll(CDC_FiatECardWallet.LeggiRigheFiatWallet(fiatwallet));
+        CDC_FiatECardWallet.CaricaTipiMovimento();
 
         CDC_FiatWallet_ListaSaldi = CDC_FiatWallet_Funzione_CalcolaListaSaldi();
 
@@ -6974,24 +6948,19 @@ private void SettaIcone(){
                 //CDC_FiatWallet_FileTipiMovimentiDB
             int Colonna=CDC_Funzione_trovaColonnaEuro(value);
             if (Colonna!=999){
-            for (String tempo : VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.values())
-            {
-                if (splittata[9].trim().equalsIgnoreCase(tempo.split(";")[0].trim()))
-                        {
-                            TrovataCorrispondenzaTipo=true;
-                            if (tempo.split(";")[1].equalsIgnoreCase("+")){
-                                
-                                totale=totale.add(new BigDecimal(splittata[Colonna]).abs());
-                                
-                                //System.out.println(totale+" , "+piccoGiornata+" , "+ totale.compareTo(piccoGiornata));
-                                if (totale.compareTo(piccoGiornata)>0) piccoGiornata=totale;
-                            }
-                            else
-                             {
-                                 totale=totale.subtract(new BigDecimal(splittata[Colonna]).abs());
-                             }   
-                        }
-            }
+                //il segno viene dalla mappa dei tipi movimento: la colonna [3] e' sempre positiva
+                String Segno=CDC_FiatECardWallet.SegnoTipoMovimento(splittata[9]);
+                if (Segno!=null){
+                    TrovataCorrispondenzaTipo=true;
+                    if (Segno.equalsIgnoreCase("+")){
+                        totale=totale.add(new BigDecimal(splittata[Colonna]).abs());
+                        if (totale.compareTo(piccoGiornata)>0) piccoGiornata=totale;
+                    }
+                    else
+                    {
+                        totale=totale.subtract(new BigDecimal(splittata[Colonna]).abs());
+                    }
+                }
             }
             if(!TrovataCorrispondenzaTipo)
                 {
@@ -7116,19 +7085,7 @@ private void SettaIcone(){
    }
    
      private int CDC_Funzione_trovaColonnaEuro(String riga) {
-       int colonna=999;
-       String splittata[] = riga.split(",");
-       //System.out.println(splittata.length);
-       if (splittata.length==10 || splittata.length==9) {
-           if (splittata[2].trim().equalsIgnoreCase("EUR")){
-               colonna=3;
-           }else if (splittata[4].trim().equalsIgnoreCase("EUR")){
-               colonna=5;
-           }else if (splittata[6].trim().equalsIgnoreCase("EUR")){
-               colonna=7;
-           }
-       }
-       return colonna;
+       return CDC_FiatECardWallet.ColonnaEuro(riga);
    }
    
     private void CDC_FiatWallet_Funzione_Totali_per_tipo_movimento() {
@@ -10726,12 +10683,11 @@ if (result.isAction("delete-all")) {
                 RWx[2] = new BigDecimal(valFinaleColonna).setScale(2, RoundingMode.HALF_UP).toPlainString();  // valore finale / medio (conto corrente)
                 RWx[3] = d[11];                                              // giorni = lunghezza del tratto
                 RWx[4] = d[15] != null && d[15].toLowerCase().contains("error") ? "ERRORI" : "";
-                //IVAFE del conto corrente (misura fissa) in colonna 5 ; per le altre attività estere
-                //resta "0.00" (solo monitoraggio). In entrambi i casi NON entra in RW_Text_IC : il
-                //totalizzatore CRYPTO salta le righe con RWx[8] == "FIAT".
-                RWx[5] = contoCorrente
-                        ? new BigDecimal(d[Calcoli_RW_Fiat.FIAT_COL_IVAFE]).setScale(2, RoundingMode.HALF_UP).toPlainString()
-                        : "0.00";
+                //IVAFE del rigo in colonna 5 : misura fissa sui conti correnti, 0,20 % sulla liquidità
+                //(a meno che l'utente non abbia scelto il solo monitoraggio, e allora è già "0.00"
+                //nella mappa). NON entra in RW_Text_IC : il totalizzatore CRYPTO salta le righe con
+                //RWx[8] == "FIAT".
+                RWx[5] = new BigDecimal(d[Calcoli_RW_Fiat.FIAT_COL_IVAFE]).setScale(2, RoundingMode.HALF_UP).toPlainString();
                 RWx[6] = gruppo + "|FIAT|" + String.format("%03d", prog);
                 RWx[7] = "NO";                                               // il FIAT ignora il bollo
                 RWx[8] = "FIAT";
@@ -11555,6 +11511,27 @@ if (result.isAction("delete-all")) {
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_RW_Opzioni_CheckBox_FiatInRWActionPerformed
 
+    private void RW_Opzioni_Radio_Liquidita_ConIvafeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_Radio_Liquidita_ConIvafeActionPerformed
+        ScegliRegimeLiquiditaFiat(false);
+    }//GEN-LAST:event_RW_Opzioni_Radio_Liquidita_ConIvafeActionPerformed
+
+    private void RW_Opzioni_Radio_Liquidita_SoloMonitoraggioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_Radio_Liquidita_SoloMonitoraggioActionPerformed
+        ScegliRegimeLiquiditaFiat(true);
+    }//GEN-LAST:event_RW_Opzioni_Radio_Liquidita_SoloMonitoraggioActionPerformed
+
+    /**
+     * Regime dichiarativo della liquidità in valuta presso intermediari esteri (righi codice bene 14
+     * della parte FIAT del quadro W/RW) : con IVAFE ordinaria allo 0,20 % oppure in solo monitoraggio.
+     * Vedi {@link Calcoli_RW_Fiat#OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO} per il perché la scelta esiste.
+     */
+    private void ScegliRegimeLiquiditaFiat(boolean soloMonitoraggio) {
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO,
+                soloMonitoraggio ? "SI" : "NO");
+        Funzioni_AggiornaTutto();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }
+
     private void RW_Bottone_DocumentazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_DocumentazioneActionPerformed
         // TODO add your handling code here:
         
@@ -12206,14 +12183,24 @@ if (result.isAction("delete-all")) {
             String vf = RW_Tabella.getModel().getValueAt(i, 2).toString();
             boolean zero = new BigDecimal(vi).setScale(0, RoundingMode.HALF_UP).signum() == 0
                         && new BigDecimal(vf).setScale(0, RoundingMode.HALF_UP).signum() == 0;
-            if (!zero) fiat.add(i);
+            //Un rigo su cui e' stata liquidata l'IVAFE non si scarta mai. Oggi il caso non si
+            //presenta ne' sui conti correnti (in colonna 2 c'e' la giacenza MEDIA, non gli estremi)
+            //ne' sulla liquidita' (la base dell'imposta e' proprio il valore finale : se arrotonda a
+            //zero, l'imposta e' zero). E' una guardia, non una correzione : lega la sopravvivenza del
+            //rigo all'imposta invece che alla natura del rigo, cosi' cambiare la base di calcolo non
+            //fa sparire dalla stampa un rigo che a video mostra un'imposta.
+            if (!zero || ImpostaDovutaSuRigaFiat(i)) fiat.add(i);
         }
         if (fiat.isEmpty()) return;
 
-        //IVAFE totale dei veri conti correnti esteri (codice bene 1) : NON e' totalizzata in RW6,
-        //va riportata a mano. La calcolo qui una volta per la nota di compilazione.
+        //IVAFE totale della parte FIAT (misura fissa sui conti correnti + 0,20 % sulla liquidita') :
+        //NON e' totalizzata in RW6, va riportata a mano. La calcolo qui una volta per la nota di
+        //compilazione, tenendo separato il pezzo dei conti correnti perche' la nota ne descrive le
+        //regole proprie (colonna 8 = giacenza media, soglie 5.000 / 15.000).
+        BigDecimal totIvafeFiat = BigDecimal.ZERO;
         BigDecimal totIvafeContiCorrenti = BigDecimal.ZERO;
         boolean contoCorrentePresente = false;
+        boolean ivafeLiquiditaPresente = false;
         //Righi FIAT il cui dettaglio nella mappa non si e' potuto risolvere (RW_FiatRigaMappa == null) :
         //la stampa li tratta come codice bene 14 / solo monitoraggio, ma la tabella di sintesi a video
         //potrebbe gia' mostrarne l'IVAFE (RW_CalcolaRW_ParteFiat legge la mappa direttamente). Li
@@ -12226,12 +12213,18 @@ if (result.isAction("delete-all")) {
                 lookupFalliti.add(n == null ? "(rigo " + (i + 1) + ")" : n.toString());
                 continue;
             }
+            BigDecimal ivafeRiga;
+            try {
+                ivafeRiga = new BigDecimal(d[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
+            } catch (RuntimeException ignore) {
+                ivafeRiga = BigDecimal.ZERO;
+            }
+            totIvafeFiat = totIvafeFiat.add(ivafeRiga);
             if (Calcoli_RW_Fiat.CODICE_BENE_CONTO_CORRENTE.equals(d[Calcoli_RW_Fiat.FIAT_COL_CODICE_BENE])) {
                 contoCorrentePresente = true;
-                try {
-                    totIvafeContiCorrenti = totIvafeContiCorrenti.add(new BigDecimal(d[Calcoli_RW_Fiat.FIAT_COL_IVAFE]));
-                } catch (RuntimeException ignore) {
-                }
+                totIvafeContiCorrenti = totIvafeContiCorrenti.add(ivafeRiga);
+            } else if (ivafeRiga.signum() > 0) {
+                ivafeLiquiditaPresente = true;
             }
         }
 
@@ -12272,12 +12265,15 @@ if (result.isAction("delete-all")) {
             //ha un campo imposta in questo report). Altrimenti solo monitoraggio come le altre attivita'.
             String[] d = RW_FiatRigaMappa(idx);
             boolean contoCorrente = d != null && Calcoli_RW_Fiat.CODICE_BENE_CONTO_CORRENTE.equals(d[Calcoli_RW_Fiat.FIAT_COL_CODICE_BENE]);
-            boolean ivafeDovuta = contoCorrente && "NO".equalsIgnoreCase(d[Calcoli_RW_Fiat.FIAT_COL_SOLO_MONITORAGGIO]);
+            boolean ivafeDovuta = d != null && "NO".equalsIgnoreCase(d[Calcoli_RW_Fiat.FIAT_COL_SOLO_MONITORAGGIO]);
             String cbW = contoCorrente ? Calcoli_RW_Fiat.CODICE_BENE_CONTO_CORRENTE : "14";
             String ggW = ivafeDovuta ? RW_Tabella.getModel().getValueAt(idx, 3).toString() : "";
             String etichettaBene = contoCorrente
                     ? " - conto corrente estero" + (ivafeDovuta ? " (IVAFE " + d[Calcoli_RW_Fiat.FIAT_COL_IVAFE] + " EUR, da riportare a mano)" : " (solo monitoraggio, sotto soglia)")
-                    : " - valuta estera (solo monitoraggio)";
+                    : " - valuta estera" + (ivafeDovuta
+                        ? " (IVAFE " + d[Calcoli_RW_Fiat.FIAT_COL_IVAFE] + " EUR, da riportare a mano"
+                          + (StatiEsteri.isPrivilegiato(stato) ? " ; Stato a fiscalita' privilegiata, aliquota 0,40 %" : "") + ")"
+                        : " (solo monitoraggio)");
             nW++;
             suFoglioW++;
             stampa.AggiungiHtml("<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>" + nome + "</b>" + etichettaBene + avvStato + "</html>");
@@ -12294,6 +12290,9 @@ if (result.isAction("delete-all")) {
         int nRW = nCryptoRW;
         String[] vIni = new String[5], vFin = new String[5], gg5 = new String[5], ic5 = new String[5],
                  wal5 = new String[5], note5 = new String[5], cb5 = new String[5], se5 = new String[5];
+        //Il regime va passato esplicitamente : Stampe lo dedurrebbe dal codice bene ("14" = solo
+        //monitoraggio), che non e' piu' vero da quando sulla liquidita' si liquida l'IVAFE.
+        boolean[] mon5 = new boolean[5];
         int slot = 0;
         for (int idx : fiat) {
             String vi = new BigDecimal(RW_Tabella.getModel().getValueAt(idx, 1).toString()).setScale(0, RoundingMode.HALF_UP).toPlainString();
@@ -12308,7 +12307,7 @@ if (result.isAction("delete-all")) {
             //attivita' estere : codice bene 14, solo monitoraggio.
             String[] d = RW_FiatRigaMappa(idx);
             boolean contoCorrente = d != null && Calcoli_RW_Fiat.CODICE_BENE_CONTO_CORRENTE.equals(d[Calcoli_RW_Fiat.FIAT_COL_CODICE_BENE]);
-            boolean ivafeDovuta = contoCorrente && "NO".equalsIgnoreCase(d[Calcoli_RW_Fiat.FIAT_COL_SOLO_MONITORAGGIO]);
+            boolean ivafeDovuta = d != null && "NO".equalsIgnoreCase(d[Calcoli_RW_Fiat.FIAT_COL_SOLO_MONITORAGGIO]);
             vIni[slot] = vi; vFin[slot] = vf;
             gg5[slot] = ivafeDovuta ? RW_Tabella.getModel().getValueAt(idx, 3).toString() : "";
             ic5[slot] = ivafeDovuta
@@ -12316,24 +12315,29 @@ if (result.isAction("delete-all")) {
                     : "0";
             wal5[slot] = nome + (contoCorrente ? " - conto corrente estero" : " - valuta estera");
             note5[slot] = stato.isBlank() ? "Stato estero mancante"
-                    : (contoCorrente && !ivafeDovuta ? "conto corrente sotto soglia (solo monitoraggio)" : "");
+                    : (contoCorrente && !ivafeDovuta ? "conto corrente sotto soglia (solo monitoraggio)"
+                    : (!contoCorrente && ivafeDovuta && StatiEsteri.isPrivilegiato(stato)
+                        ? "fiscalita' privilegiata : barrare col. 21" : ""));
             cb5[slot] = contoCorrente ? Calcoli_RW_Fiat.CODICE_BENE_CONTO_CORRENTE : "14";
             se5[slot] = stato;
+            mon5[slot] = !ivafeDovuta;
             slot++;
             nRW++;
             if (slot == 5) {
-                if (anno >= 2025) stampa.AggiungiQuadroRW2025(pdfRW, String.valueOf(nRW), vIni, vFin, gg5, ic5, wal5, note5, foglioRW, "0", cb5, se5);
-                else stampa.AggiungiQuadroRW(immagineRW, String.valueOf(nRW), vIni, vFin, gg5, ic5, wal5, note5, foglioRW, "0", cb5, se5);
+                if (anno >= 2025) stampa.AggiungiQuadroRW2025(pdfRW, String.valueOf(nRW), vIni, vFin, gg5, ic5, wal5, note5, foglioRW, "0", cb5, se5, mon5);
+                else stampa.AggiungiQuadroRW(immagineRW, String.valueOf(nRW), vIni, vFin, gg5, ic5, wal5, note5, foglioRW, "0", cb5, se5, mon5);
                 vIni = new String[5]; vFin = new String[5]; gg5 = new String[5]; ic5 = new String[5];
                 wal5 = new String[5]; note5 = new String[5]; cb5 = new String[5]; se5 = new String[5];
+                mon5 = new boolean[5];
                 slot = 0;
                 foglioRW++;
                 stampa.NuovaPagina();
             }
         }
         if (slot > 0) {
-            if (anno >= 2025) stampa.AggiungiQuadroRW2025(pdfRW, String.valueOf(nRW), vIni, vFin, gg5, ic5, wal5, note5, foglioRW, "0", cb5, se5);
-            else stampa.AggiungiQuadroRW(immagineRW, String.valueOf(nRW), vIni, vFin, gg5, ic5, wal5, note5, foglioRW, "0", cb5, se5);
+            //Gli slot non usati restano a false : Stampe li salta perche' ValoriIniziali[i] e' null.
+            if (anno >= 2025) stampa.AggiungiQuadroRW2025(pdfRW, String.valueOf(nRW), vIni, vFin, gg5, ic5, wal5, note5, foglioRW, "0", cb5, se5, mon5);
+            else stampa.AggiungiQuadroRW(immagineRW, String.valueOf(nRW), vIni, vFin, gg5, ic5, wal5, note5, foglioRW, "0", cb5, se5, mon5);
         }
         } // fine if (!stampaW)
 
@@ -12356,9 +12360,12 @@ if (result.isAction("delete-all")) {
                 <b>Colonna 10</b> - GIORNI - <b>non compilata</b> per la valuta estera : facendo solo
                 monitoraggio non e' possibile inserire i giorni di detenzione.<br>
                 <b>Colonna 14</b> - lasciata vuota<br>
-                <b>Colonna 16</b> - SOLO MONITORAGGIO - <b>barrata</b> per le "altre attivita' estere di
-                natura finanziaria" (codice bene 14) : il programma non calcola l'IVAFE su queste, che va
-                eventualmente determinata e versata a parte.<br><br>
+                <b>Colonna 16</b> - SOLO MONITORAGGIO - barrata sui righi per i quali non e' stata
+                liquidata alcuna imposta. Sui righi "altre attivita' estere di natura finanziaria"
+                (codice bene 14) dipende dall'opzione <i>Opzioni - Opzioni Calcolo RW/W - Liquidita' in
+                valuta presso intermediari esteri</i> : con l'IVAFE ordinaria la colonna <b>non</b> e'
+                barrata e l'imposta e' quella indicata sul rigo, con il solo monitoraggio e' barrata e
+                nessuna imposta viene calcolata.<br><br>
                 I righi contrassegnati con <b>"Stato estero mancante"</b> (o "Stato estero non impostato" nel Quadro W) vanno completati a
                 mano con il codice dello Stato estero dell'intermediario (colonna 4).<br>
                 </font></html>""");
@@ -12368,10 +12375,11 @@ if (result.isAction("delete-all")) {
                 <br><b>ATTENZIONE</b> - non e' stato possibile risolvere il dettaglio di calcolo per i
                 seguenti righi FIAT : <b>""" + String.join(", ", lookupFalliti) + """
                 </b>.<br>Sono stati stampati come "altre attivita' estere di natura finanziaria"
-                (codice bene 14, solo monitoraggio) : se uno di essi e' in realta' un <b>conto corrente
-                estero</b> (periodo con "e' conto corrente" = SI) va corretto a mano il codice
-                individuazione bene (1), il valore medio in colonna 8 e l'eventuale IVAFE. Ricalcolare
-                il Quadro RW e ristampare per rimuovere questo avviso.<br>
+                (codice bene 14) e <b>senza alcuna imposta</b>, mentre la tabella a video puo' gia'
+                mostrarne una : vanno controllati a mano uno per uno. Se uno di essi e' in realta' un
+                <b>conto corrente estero</b> (periodo con "e' conto corrente" = SI) va corretto anche il
+                codice individuazione bene (1) e il valore medio in colonna 8. Ricalcolare il Quadro RW
+                e ristampare per rimuovere questo avviso.<br>
                 </font></html>""");
         }
         if (contoCorrentePresente) {
@@ -12394,6 +12402,45 @@ if (result.isAction("delete-all")) {
                 euro</b>, da riportare a mano nel rigo RW6 (e, per il Modello 730, nella relativa sezione
                 del Quadro W).<br>
                 </font></html>""");
+        }
+        if (ivafeLiquiditaPresente) {
+            stampa.AggiungiHtml("""
+                <html><font size="2" face="Courier New,Courier, mono" >
+                <br><b>LIQUIDITA' IN VALUTA PRESSO INTERMEDIARI ESTERI (codice individuazione bene 14)</b><br>
+                Sui righi di liquidita' e' stata liquidata l'<b>IVAFE ordinaria dello 0,20 %</b> del
+                valore di colonna 8, rapportata alla quota (100%) e ai giorni di possesso, secondo
+                l'opzione scelta in <i>Opzioni - Opzioni Calcolo RW/W</i>. Tre cose da sapere :<br>
+                1) la questione <b>non e' pacifica</b> : l'art. 19 comma 18 del D.L. 201/2011 tassa i
+                "prodotti finanziari", nozione che il TUF non estende a cio' che non e' investimento,
+                mentre la circolare 28/E del 2012 descrive la base imponibile come l'intero perimetro del
+                monitoraggio. Chi segue la prima lettura puo' scegliere il <b>solo monitoraggio</b> nelle
+                opzioni.<br>
+                2) l'aliquota e' scelta in base allo <b>Stato estero</b> del rigo : <b>0,40 %</b> per gli
+                Stati e territori dell'elenco del D.M. 4 maggio 1999 a partire dall'anno d'imposta
+                <b>2024</b> (art. 19 comma 20-bis), <b>0,20 %</b> negli altri casi. Su quei righi resta da
+                fare a mano una cosa sola, che il modulo stampato non riproduce : <b>barrare la colonna
+                21</b>. I righi interessati portano la nota "fiscalita' privilegiata : barrare col. 21".
+                Uno Stato estero <u>non indicato</u> non fa scattare la maggiorazione.<br>
+                3) come per i conti correnti, questo importo <b>non e' totalizzato automaticamente</b> in
+                RW6.<br>
+                <b>Totale IVAFE della parte FIAT</b> (conti correnti + liquidita') = <b>""" + Funzioni.formattaBigDecimal(totIvafeFiat.setScale(0, RoundingMode.HALF_UP), false) + """
+                euro</b>.<br>
+                </font></html>""");
+        }
+    }
+
+    /**
+     * {@code true} se sul rigo FIAT di indice {@code rowIndex} in {@code RW_Tabella} è stata liquidata
+     * un'imposta. Serve al filtro degli "estremi a zero" della stampa : un rigo con imposta dovuta non
+     * va mai scartato, o comparirebbe a video e non nel modulo.
+     */
+    private boolean ImpostaDovutaSuRigaFiat(int rowIndex) {
+        String[] d = RW_FiatRigaMappa(rowIndex);
+        if (d == null) return false;
+        try {
+            return new BigDecimal(d[Calcoli_RW_Fiat.FIAT_COL_IVAFE]).signum() > 0;
+        } catch (RuntimeException ignore) {
+            return false;
         }
     }
 
@@ -18644,6 +18691,9 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel RW_Label_SegnalaErrori;
     private javax.swing.JLabel RW_Label_SegnalaRicalcolo;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_FiatInRW;
+    private javax.swing.JLabel RW_Opzioni_Label_Liquidita;
+    private javax.swing.JRadioButton RW_Opzioni_Radio_Liquidita_ConIvafe;
+    private javax.swing.JRadioButton RW_Opzioni_Radio_Liquidita_SoloMonitoraggio;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_LiFoComplessivo;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_LiFoSubMovimenti;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo;
@@ -18660,6 +18710,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JTable RW_Tabella_Dettagli;
     private javax.swing.JTable RW_Tabella_DettaglioMovimenti;
     private javax.swing.JTextField RW_Text_IC;
+    private javax.swing.ButtonGroup RW_Liquidita;
     private javax.swing.ButtonGroup RW_Trasferimenti;
     private javax.swing.JPanel SaldiNegativi;
     private javax.swing.JButton SaldiNegativi_Bottone_RettificaQta;

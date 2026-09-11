@@ -130,6 +130,103 @@ public final class StatiEsteri {
 
     private static final String SEP = "  —  "; // " — "
 
+    /**
+     * Codici della Tabella 10 corrispondenti agli Stati e territori dell'<b>elenco del D.M. 4 maggio
+     * 1999</b> (e successive modificazioni), quello richiamato dall'art. 19 comma 20-bis del D.L.
+     * 201/2011 per l'IVAFE in misura maggiorata e dall'art. 5 comma 2 del D.L. 167/1990 per le
+     * sanzioni sul monitoraggio. L'elenco è quello pubblicato in appendice al fascicolo 2 delle
+     * istruzioni di Redditi PF, 55 voci.
+     *
+     * <p><b>Una sola lista basta per tutti gli anni in cui la maggiorazione si applica, e non è una
+     * semplificazione.</b> L'unica variazione recente dell'elenco è l'uscita della <b>Svizzera</b> :
+     * c'è nel modello Redditi PF 2024 (anno d'imposta 2023) e non c'è più dal modello 2025 (anno
+     * 2024). La misura del 4 per mille decorre <b>dall'anno 2024</b>, cioè esattamente da quando la
+     * Svizzera non è più nell'elenco : negli anni in cui la maggiorazione può essere dovuta l'elenco
+     * è quello qui sotto. Una tabella per anno non aggiungerebbe nulla.</p>
+     *
+     * <p><b>Sono 58 codici per 55 voci pubblicate, e il conto torna.</b> Tre voci dell'elenco —
+     * <i>Alderney</i>, <i>Sark</i> e <i>Antille Olandesi</i> — <b>non hanno un codice nella Tabella
+     * 10</b> (verificato sull'elenco ufficiale in appendice al fascicolo 1), quindi non sono
+     * selezionabili come Stato estero e non possono comparire su nessun rigo. In pratica Alderney e
+     * Sark si dichiarano sotto Guernsey (201) e le Antille Olandesi sono state sciolte nel 2010
+     * (Curaçao 296, Bonaire/Saint Eustatius/Saba 295, Aruba 212 — quest'ultima già nell'elenco per
+     * conto proprio). L'insieme è quindi <b>completo rispetto a ogni codice che il programma può
+     * memorizzare</b>. Restano 52 voci mappabili, e gli Emirati Arabi Uniti ne valgono 7 invece di
+     * 1 : 52 - 1 + 7 = 58 codici.</p>
+     *
+     * <p>Gli <b>Emirati Arabi Uniti</b> valgono <b>sette</b> codici, non uno : la Tabella 10 li
+     * elenca emirato per emirato (238 Abu Dhabi, 239 Ajman, 240 Dubai, 241 Fuijayrah — grafia della
+     * Tabella, 242 Ras El Kaimah, 243 Sharjah, 244 Umm Al Qaiwain).</p>
+     */
+    private static final java.util.Set<String> PRIVILEGIATI = java.util.Set.of(
+            "004", // ANDORRA
+            "209", // ANGUILLA
+            "197", // ANTIGUA E BARBUDA
+            "212", // ARUBA
+            "160", // BAHAMAS
+            "169", // BAHRAIN
+            "118", // BARBADOS
+            "198", // BELIZE
+            "207", // BERMUDA
+            "125", // BRUNEI DARUSSALAM
+            "019", // COSTA RICA
+            "192", // DOMINICA
+            "024", // ECUADOR
+            "238", "239", "240", "241", "242", "243", "244", // EMIRATI ARABI UNITI (i sette emirati)
+            "027", // FILIPPINE
+            "102", // GIBILTERRA
+            "113", // GIBUTI
+            "156", // GRENADA
+            "201", // GUERNSEY
+            "103", // HONG KONG
+            "203", // MAN ISOLA
+            "211", // CAYMAN (ISOLE)
+            "237", // COOK ISOLE
+            "217", // MARSHALL (ISOLE)
+            "249", // VERGINI BRITANNICHE (ISOLE)
+            "202", // JERSEY C.I.
+            "095", // LIBANO
+            "044", // LIBERIA
+            "090", // LIECHTENSTEIN
+            "059", // MACAO
+            "106", // MALAYSIA
+            "127", // MALDIVE
+            "128", // MAURITIUS
+            "091", // PRINCIPATO DI MONACO
+            "208", // MONTSERRAT
+            "109", // NAURU
+            "205", // NIUE
+            "163", // OMAN
+            "051", // PANAMA
+            "225", // POLINESIA FRANCESE
+            "195", // SAINT KITTS E NEVIS
+            "199", // SAINT LUCIA
+            "196", // ST. VINCENTE E LE GRENADINE
+            "131", // SAMOA
+            "189", // SEYCHELLES
+            "147", // SINGAPORE
+            "022", // TAIWAN
+            "162", // TONGA
+            "210", // TURKS E CAICOS (ISOLE)
+            "193", // TUVALU
+            "080", // URUGUAY
+            "121"  // VANUATU
+    );
+
+    /**
+     * {@code true} se il codice Stato estero è fra quelli dell'elenco del D.M. 4 maggio 1999
+     * ({@link #PRIVILEGIATI}). Un codice vuoto o sconosciuto è {@code false} : non si presume la
+     * fiscalità privilegiata di uno Stato che l'utente non ha indicato.
+     */
+    public static boolean isPrivilegiato(String codice) {
+        return codice != null && PRIVILEGIATI.contains(codice.trim());
+    }
+
+    /** I codici dell'elenco del D.M. 4 maggio 1999, per i test e le diagnostiche. */
+    public static java.util.Set<String> codiciPrivilegiati() {
+        return PRIVILEGIATI;
+    }
+
     /** {@code true} se il codice è il valore sentinella {@link #CODICE_ITALIA} ("conto in Italia"). */
     public static boolean isItalia(String codice) {
         return CODICE_ITALIA.equals(codice == null ? "" : codice.trim());

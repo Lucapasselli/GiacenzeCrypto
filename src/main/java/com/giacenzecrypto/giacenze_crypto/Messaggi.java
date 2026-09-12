@@ -279,15 +279,23 @@ public class Messaggi {
      
      
      /**
-      * Mostra un dialog con una scelta tra 3 tipologie di errore da correggere (movimento non classificato,
-      * transazione senza prezzo, parte del LIFO mancante), mostrando il conteggio di ciascuna tipologia.
+      * Mostra un dialog con una scelta tra 4 tipologie di errore da correggere (movimento non classificato,
+      * transazione senza prezzo, parte del LIFO mancante, giacenze negative), mostrando il conteggio di
+      * ciascuna tipologia.
+      *
+      * <p>Le ultime due portano alla stessa scheda ma <b>non sono la stessa cosa</b>, e le etichette lo
+      * devono dire: "parte del LIFO mancante" conta i movimenti a cui manca il costo di carico, ed e'
+      * ragionata per gruppo wallet; "giacenze negative" conta i singoli sotto-wallet andati sotto zero.
+      * Un giroconto interno azzera la marcatura del LIFO, quindi puo' esserci la seconda senza la prima.
+      *
       * @param NumErroriMovSconosciuti numero di movimenti non classificati
       * @param NumErroriMovNoPrezzo numero di transazioni senza prezzo
       * @param NumErroriStackLiFoMancante numero di errori con parte del LIFO mancante
+      * @param NumErroriGiacenzeNegative numero di terne exchange/sotto-wallet/token con saldo negativo
       * @param win finestra parent del dialog
       * @return il risultato del dialog, da cui leggere l'azione scelta dall'utente tramite {@code isAction}
       */
-     public static AppDialog.DialogResult Personalizzati_Multi_ScegliErrori(int NumErroriMovSconosciuti,int NumErroriMovNoPrezzo,int NumErroriStackLiFoMancante,Window win) {
+     public static AppDialog.DialogResult Personalizzati_Multi_ScegliErrori(int NumErroriMovSconosciuti,int NumErroriMovNoPrezzo,int NumErroriStackLiFoMancante,int NumErroriGiacenzeNegative,Window win) {
          String testo = "Scegli quale tipologia di errore correggere.";
          AppDialog.DialogResult result = AppDialog.builder(win)
                  .windowTitle("Correzione errori")
@@ -307,6 +315,9 @@ public class Messaggi {
                          .role(AppDialog.ActionRole.PRIMARY)
                          .build())
                  .action(AppDialog.DialogAction.builder("LifoMancante", "Parte del LIFO mancante (" + NumErroriStackLiFoMancante + ")")
+                         .role(AppDialog.ActionRole.PRIMARY)
+                         .build())
+                 .action(AppDialog.DialogAction.builder("GiacenzeNegative", "Giacenze negative (" + NumErroriGiacenzeNegative + ")")
                          .role(AppDialog.ActionRole.PRIMARY)
                          .build())
                  .showDialog();

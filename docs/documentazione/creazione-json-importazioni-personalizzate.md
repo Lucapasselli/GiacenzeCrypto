@@ -50,6 +50,7 @@ Ogni proprietà ha un valore predefinito. Se non la inserisci nel JSON, viene us
 "rimuoviDaNomeMoneta": [ ... ],
 "rinominaMonete": { ... },
 "walletPerCausale": { ... },
+"walletSpecularePerCausale": { ... },
 "campiExtra": { ... },
 "centralizzato": false,
 "separatoreCausale": ".",
@@ -614,6 +615,28 @@ Permette di assegnare un wallet diverso da nomeWallet per specifiche causali. La
 }
 ```
 
+### `walletSpecularePerCausale` {#walletspecularepercausale}
+
+**Tipo:** oggetto chiave-valore
+
+Per le causali indicate viene creato, oltre al movimento normale, un **secondo movimento uguale e contrario** sul wallet indicato: se la riga porta 100 USDT in uscita dal wallet principale, ne viene generata l'entrata di 100 USDT sul wallet della gamba speculare. La chiave è la causale originale del CSV.
+
+Serve per le operazioni che spostano una moneta in un comparto dell'exchange e la restituiscono più tardi, con un rendimento e a volte in un'altra moneta: sono due righe del CSV distanti settimane, che l'importazione non può accoppiare da sola. Le due gambe tengono il saldo esatto su entrambi i lati, e la differenza fra quanto è uscito e quanto è rientrato resta come **giacenza negativa** sul comparto, segnalata fra gli errori e da sistemare a mano registrando la reward corrispondente.
+
+```json
+"walletSpecularePerCausale": {
+"Dual Savings Purchase": "Investimenti", "Dual Savings Settlement": "Investimenti"
+}
+```
+
+Tre cose da sapere:
+
+- **Il nome dell'exchange non cambia**: entrambe le gambe restano sullo stesso exchange, cambia solo il nome del wallet. È voluto, perché l'exchange determina il gruppo wallet usato per il calcolo fiscale.
+
+- **La causale va mappata su `TRASFERIMENTO-CRYPTO-INTERNO`** e quel valore va aggiunto anche a `causaliChiuse`. Così le due gambe sono spostamenti interni, che non generano plusvalenze, e restano due movimenti distinti anche quando più righe cadono nello stesso secondo.
+
+- **Vale solo per le righe che muovono una moneta sola.** Su una riga che ne muove già due la gamba speculare non viene creata e l'importazione prosegue con il solo movimento normale.
+
 ## 10. Campi extra {#10-campi-extra}
 
 ### `campiExtra` {#campiextra}
@@ -778,6 +801,8 @@ JSON:
 - Se le gambe di uno stesso movimento condividono una colonna diversa da idGruppo ma non il timestamp esatto, usa raggruppamentoPerCausale.
 
 - Se alcuni movimenti devono andare su wallet separati, compila walletPerCausale.
+
+- Se una causale sposta una moneta in un comparto dell’exchange e una seconda causale la restituisce settimane dopo (depositi vincolati, Dual Investment), usa walletSpecularePerCausale.
 
 - Se le intestazioni CSV variano di versione in versione, usa autoDetectColonne con mappaAutoDetect.
 

@@ -1021,10 +1021,33 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             ricostruisciLordoConFee(mIN, monetaFee, qtaFeeBD, cfg);
         }
 
+        // Gamba speculare (walletSpecularePerCausale): stesso importo a segno invertito su un altro
+        // sotto-wallet. Il numero di movimento delle due gambe non e' fisso ma deciso dal segno della
+        // riga, perche' l'uscita deve sempre precedere l'entrata nell'ordinamento di MappaCryptoWallet
+        // (TreeMap sull'ID) e quale delle due gambe sia l'uscita dipende dalla riga: su una riga
+        // negativa esce la principale, su una positiva esce la speculare.
+        // Si agisce sul TERZO campo dell'ID (numMovimento) e non sul quarto: il quarto e' quello che
+        // getIDUnivoco incrementa in scrittura per risolvere le collisioni (incrementaQuartoCampoID),
+        // quindi un ordinamento affidato a quello potrebbe essere ribaltato da una collisione esterna.
+        // Nota: MovimentiCrypto.creaMovimento forza numMovimento a "000" sui depositi FIAT puri; una
+        // gamba TI non e' mai DF, ma su una causale che risolvesse in DF quel forzamento vincerebbe.
+        String walletSpeculare = cfg.walletSpecularePerCausale.get(causaleCSV);
+        boolean chiedeSpeculare = walletSpeculare != null && !walletSpeculare.isBlank();
+        // Solo su righe a gamba singola: su una riga che muove gia' due monete lo speculare non e'
+        // definito (quale delle due si rispecchia?), quindi si emette il solo movimento principale.
+        boolean haSpeculare = chiedeSpeculare && (mOUT == null) != (mIN == null);
+        if (chiedeSpeculare && !haSpeculare) {
+            LoggerGC.ScriviErrore("walletSpecularePerCausale: la causale \"" + causaleCSV
+                    + "\" non e' a gamba singola, gamba speculare non emessa - " + Arrays.toString(riga));
+        }
+        boolean principaleInUscita = mOUT != null;
+        int nmPrincipale = (!haSpeculare || principaleInUscita) ? 1 : 2;
+        int nmSpeculare = principaleInUscita ? 2 : 1;
+
         // Movimento principale
         String[] rt = MovimentiCrypto.creaMovimento(
                 mOUT, mIN, exchange, wallet, dataLong,
-                prezzoMov, "CSV", 1, 1, null, nota, "A",
+                prezzoMov, "CSV", nmPrincipale, 1, null, nota, "A",
                 idTrans, tipoMovimento, exchange
         );
 
@@ -1073,6 +1096,28 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             }
 
             risultato.add(rt);
+        }
+
+        // Gamba speculare sul sotto-wallet di destinazione. Nessun prezzo e nessuna commissione: e' uno
+        // spostamento interno, la fee della riga resta attaccata alla sola gamba principale.
+        if (haSpeculare) {
+            Moneta mSpec = (principaleInUscita ? mOUT : mIN).ClonaMoneta();
+            // Il segno si inverte con InvertiQta: un replace("-","") cancellerebbe anche il segno
+            // dell'esponente e trasformerebbe 1.5E-8 in 1.5E8 (bug M7).
+            mSpec.InvertiQta();
+
+            String[] rtSpec = MovimentiCrypto.creaMovimento(
+                    principaleInUscita ? null : mSpec,
+                    principaleInUscita ? mSpec : null,
+                    exchange, walletSpeculare, dataLong,
+                    prezzoMov, "CSV", nmSpeculare, 1, null, nota, "A",
+                    idTrans, tipoMovimento, exchange
+            );
+            if (rtSpec != null) {
+                if (rtSpec.length > 7) rtSpec[7] = causaleCSV;
+                if (rtSpec.length > 39) rtSpec[39] = "D";
+                risultato.add(rtSpec);
+            }
         }
 
         // Movimento commissione separato
@@ -1458,6 +1503,33 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         public boolean rimuoviCaseSensitive = false; // default: case insensitive
         public Map<String, Integer> campiExtra = new TreeMap<>();
         public Map<String, String> walletPerCausale = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+        /**
+         * Causale CSV → sotto-wallet ({@code [4]}) su cui emettere la <b>gamba speculare</b> del
+         * movimento, cioè lo stesso importo a segno invertito.
+         *
+         * <p>Serve per le operazioni che spostano una moneta in un comparto dell'exchange e la
+         * restituiscono più tardi, con un rendimento e a volte in un'altra moneta (il Dual Investment
+         * di Binance, dove le due gambe distano settimane e non sono accoppiabili all'import). Le due
+         * gambe rendono il movimento visibile e il saldo esatto su entrambi i lati; lo scarto fra
+         * quanto è uscito e quanto è rientrato resta come <b>giacenza negativa</b> sul sotto-wallet di
+         * destinazione, che l'utente compensa a mano con una reward.
+         *
+         * <p><b>Perché il sotto-wallet e non l'exchange.</b> {@code [3]} resta quello di
+         * {@code nomeExchange}: è la chiave del gruppo wallet fiscale e della deduplica del re-import,
+         * e cambiarlo sposterebbe i movimenti di gruppo. {@code Funzioni.ControllaSaldiNegativi}
+         * costruisce però la sua chiave come {@code [3];[4];token}, quindi il sotto-wallet basta a
+         * far comparire la giacenza negativa nella scheda <i>Verifica Saldi Negativi</i>.
+         *
+         * <p><b>È senza stato e per riga</b>: nessun accoppiamento, nessuna lettura di ciò che è già in
+         * archivio, quindi l'esito non dipende dall'ordine in cui i CSV vengono caricati.
+         *
+         * <p>La causale va mappata su una tipologia che non muova il LIFO — in pratica
+         * {@code TRASFERIMENTO-CRYPTO-INTERNO} — e quella tipologia va messa in {@code causaliChiuse},
+         * altrimenti un gruppo multi-riga finisce in {@code TransazioneDefi} e {@code RitornaScambi}
+         * ne butta via la causale (vedi {@link #consolidaGruppo}).
+         */
+        public Map<String, String> walletSpecularePerCausale = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         public Map<String, Integer> mappaNomiColonne = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         public Set<String> causaliDifferite = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
@@ -1705,6 +1777,12 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 JSONObject wc = root.getJSONObject("walletPerCausale");
                 for (String k : wc.keySet()) {
                     cfg.walletPerCausale.put(k, wc.getString(k));
+                }
+            }
+            if (root.has("walletSpecularePerCausale")) {
+                JSONObject ws = root.getJSONObject("walletSpecularePerCausale");
+                for (String k : ws.keySet()) {
+                    cfg.walletSpecularePerCausale.put(k, ws.getString(k));
                 }
             }
             if (root.has("separatoreCausale")) cfg.separatoreCausale = root.getString("separatoreCausale");

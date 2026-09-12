@@ -229,7 +229,30 @@ private static final long serialVersionUID = 3L;
     public int NumErroriMovSconosciuti=0;
     public int NumErroriMovNoPrezzo=0;
     public int NumErroriStackLiFoMancante=0;
-    
+    /**
+     * Quante terne {@code exchange;sotto-wallet;token} hanno toccato un saldo negativo, cioè il numero
+     * di righe della scheda <i>Verifica Saldi Negativi</i>.
+     *
+     * <p><b>Non è un doppione di {@link #NumErroriStackLiFoMancante}.</b> Quello conta i movimenti con
+     * la lettera {@code A} nel campo {@code [38]}, scritta dal motore delle plusvalenze e quindi
+     * ragionata per <b>gruppo wallet</b>; questo viene da {@link Funzioni#ControllaSaldiNegativi}, che
+     * lavora per <b>exchange + sotto-wallet</b> ({@code [3]};{@code [4]};token). Un trasferimento
+     * interno azzera esplicitamente la {@code A} ({@code v[38].replace("A","")} nel ramo TI di
+     * {@code Calcoli_PlusvalenzeNew}), perciò un comparto andato sotto zero a forza di giroconti — è il
+     * caso dei Dual Investment su un sotto-wallet dedicato — è invisibile all'altro contatore.
+     *
+     * <p><b>Arriva da un altro thread</b>, non dal ciclo di caricamento della tabella movimenti: lo
+     * valorizza {@link #Funzione_CaricaTabelleSecondarieInBackgroud}. Per questo il testo del pulsante
+     * degli errori sta in {@link #Errori_AggiornaPulsante()} e non in fondo al ciclo: chiamato da un
+     * punto solo, mostrerebbe sempre il valore della passata precedente.
+     *
+     * <p><b>Non viene azzerato a inizio caricamento</b>, a differenza dei tre contatori fratelli, e
+     * l'asimmetria è voluta: chi lo calcola può non girare affatto (il caricamento della tabella
+     * movimenti può chiedere di saltare le tabelle secondarie, quando i loro dati non sono cambiati), e
+     * azzerarlo lo farebbe lampeggiare a zero per poi tornare al valore di prima.
+     */
+    public int NumErroriGiacenzeNegative=0;
+
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
     public static boolean InterrompiCiclo=false;
     
@@ -6165,6 +6188,31 @@ private void SettaIcone(){
 
     }
     
+    /**
+     * Scrive testo, abilitazione e suggerimento del pulsante degli errori sommando i quattro contatori.
+     *
+     * <p>Sta in un metodo a sé perché i contatori <b>non nascono tutti nello stesso momento</b>: tre
+     * sono calcolati dal ciclo di {@link #TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa}, il
+     * quarto ({@link #NumErroriGiacenzeNegative}) arriva dal thread delle tabelle secondarie, che
+     * finisce dopo. Aggiornare il pulsante in un punto solo lo lascerebbe indietro di una passata.
+     *
+     * <p>Tocca Swing: va chiamato sull'EDT.
+     */
+    private void Errori_AggiornaPulsante(){
+        int err = NumErroriMovNoPrezzo + NumErroriMovSconosciuti
+                + NumErroriStackLiFoMancante + NumErroriGiacenzeNegative;
+        if (err == 0) {
+            Bottone_Errori.setEnabled(false);
+            Bottone_Errori.setText("Errori (0)");
+            //niente errori, niente suggerimento: spento non vuol dire muto (vedi il costruttore)
+            Bottone_Errori.setToolTipText(null);
+        } else {
+            Bottone_Errori.setEnabled(true);
+            Bottone_Errori.setText("Errori (" + err + ")");
+            Bottone_Errori.setToolTipText(SuggerimentoErrori);
+        }
+    }
+
     private void Funzione_CaricaTabelleSecondarieInBackgroud(){
         //Verranno caricate tutte le tabelle secondarie che dovranno essere aggiornate  ad ogni cambio della tabella principale
         SwingUtilities.invokeLater(() -> {
@@ -6212,6 +6260,12 @@ private void SettaIcone(){
                     SaldiNegativi_Applica(saldiNegativi);
                     DepositiPrelievi_Applica(righeDP, daCategorizzare);
                     SituazioneImport_Applica(situazioneImport);
+                    //Il conteggio arriva solo adesso: il pulsante degli errori va riscritto qui,
+                    //perché il ciclo di caricamento della tabella movimenti è già finito da un pezzo.
+                    //Le righe SCAM nascoste dalla spunta restano contate: la spunta è un filtro di
+                    //vista, non una dichiarazione che il problema non esista.
+                    NumErroriGiacenzeNegative = saldiNegativi.size();
+                    Errori_AggiornaPulsante();
                 });
             }, "TabelleSecondarie").start();
         });
@@ -12864,7 +12918,7 @@ if (result.isAction("delete-all")) {
     }
     private void Funzioni_CorrezioneErroriPrincipali(){
 
-AppDialog.DialogResult result = Messaggi.Personalizzati_Multi_ScegliErrori(NumErroriMovSconosciuti, NumErroriMovNoPrezzo, NumErroriStackLiFoMancante, this);
+AppDialog.DialogResult result = Messaggi.Personalizzati_Multi_ScegliErrori(NumErroriMovSconosciuti, NumErroriMovNoPrezzo, NumErroriStackLiFoMancante, NumErroriGiacenzeNegative, this);
 
 if (result != null && !result.isAction("cancel")) {
 
@@ -12904,8 +12958,26 @@ if (result != null && !result.isAction("cancel")) {
                                 CDC.setSelectedIndex(1);
                                 AnalisiCrypto.setSelectedComponent(SaldiNegativi);
                                 SaldiNegativi.requestFocus();
-                             
-                            }                       
+
+                            }
+                            else if (result.isAction("GiacenzeNegative")) {
+                                //Stessa scheda di 'LifoMancante', ma il conteggio è un altro: qui si
+                                //contano i singoli sotto-wallet andati sotto zero, non i movimenti a cui
+                                //manca il costo di carico. Un giroconto interno azzera la marcatura del
+                                //LiFo, quindi ci possono essere giacenze negative senza nessun LiFo
+                                //mancante - è il caso di un comparto (Earn, Investimenti...) da cui è
+                                //uscito più di quanto vi sia entrato.
+                                String t="Un wallet o sotto-wallet ha registrato, almeno una volta nello storico, una <b>giacenza negativa</b>: "
+                                        + "ne è uscita più moneta di quanta ne sia entrata.<br><br>"
+                                        + "Le cause tipiche sono un movimento in entrata mai importato oppure il rendimento di un comparto "
+                                        + "(Earn, Dual Investment e simili) non ancora registrato come reward.<br><br>"
+                                        + "Si verrà ora reindirizzati alla funzione <b>'Verifica Saldi Negativi'</b>.<br><br>";
+                                Messaggi.InfoMessage("Giacenze negative", t, this);
+                                CDC.setSelectedIndex(1);
+                                AnalisiCrypto.setSelectedComponent(SaldiNegativi);
+                                SaldiNegativi.requestFocus();
+
+                            }
                     }
 
     }
@@ -17879,18 +17951,7 @@ try {
         
         
         //Questo attiva il tasto degli errori qualora ve ne trovassimo
-        int err=NumErroriMovNoPrezzo+NumErroriMovSconosciuti+NumErroriStackLiFoMancante;
-         if(err==0){
-            Bottone_Errori.setEnabled(false);
-            Bottone_Errori.setText("Errori (0)");
-            //niente errori, niente suggerimento: spento non vuol dire muto (vedi il costruttore)
-            Bottone_Errori.setToolTipText(null);
-        }
-        else{
-            Bottone_Errori.setEnabled(true);
-            Bottone_Errori.setText("Errori ("+err+")");
-            Bottone_Errori.setToolTipText(SuggerimentoErrori);
-        }
+        Errori_AggiornaPulsante();
       //  Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
         //Adesso aggiorno i componenti delle funzioni secondarie
         Funzione_AggiornaComboBox();

@@ -86,8 +86,14 @@ class NoteCompilazioneTest {
         assertEquals("T.2025", NoteCompilazione.ChiaveApplicabile(chiavi, "T", "2026"));
         //Sotto il 2023 non si cercano varianti : il programma avverte gia' che il report puo' sbagliare.
         assertEquals("T", NoteCompilazione.ChiaveApplicabile(chiavi, "T", "2022"));
-        //Una nota senza nessuna variante resta quella che e'.
-        assertEquals("RW8", NoteCompilazione.ChiaveApplicabile(chiavi, "RW8", "2025"));
+        //Il quadro RW non e' cambiato fra il 2023 e il 2025 : nessuna variante, e la nota resta una sola.
+        assertEquals("RW", NoteCompilazione.ChiaveApplicabile(chiavi, "RW", "2025"));
+        //Il rigo RW8 invece si : per i redditi 2023 aveva la sola colonna 1, le 2/3/4 arrivano dopo.
+        assertEquals("RW8", NoteCompilazione.ChiaveApplicabile(chiavi, "RW8", "2023"));
+        assertEquals("RW8.2024", NoteCompilazione.ChiaveApplicabile(chiavi, "RW8", "2025"));
+        //E il quadro W del 730 : nel 2023 la colonna 14 aveva altri codici, il quadro T non esisteva.
+        assertEquals("W", NoteCompilazione.ChiaveApplicabile(chiavi, "W", "2023"));
+        assertEquals("W.2024", NoteCompilazione.ChiaveApplicabile(chiavi, "W", "2025"));
         //Il rigo W8 del 730 e' cambiato due volte: nel 2023 aveva la sola colonna 7, dal 2024 le
         //colonne 2/3/4, dal 2025 col rinvio al rigo 301 del 730-3.
         assertEquals("W8", NoteCompilazione.ChiaveApplicabile(chiavi, "W8", "2023"));
@@ -107,6 +113,18 @@ class NoteCompilazioneTest {
         //migrazione vale proprio perche' non cambia una virgola del testo stampato. Ora pero' sono
         //due tag in un file di configurazione: si possono chiudere quando si vuole, senza una release.
         note().forEach((chiave, testo) -> assertTrue(testo.contains("<html>"), chiave + " : manca <html>"));
+    }
+
+    @Test
+    void nessunaNotaHaTestoDopoLaChiusuraDellHtml() throws Exception {
+        //Le note sono array di righe e il tag di chiusura sta in fondo a una riga, non su una riga sua:
+        //aggiungendo un paragrafo in coda e' facilissimo scriverlo *dopo* &lt;/html&gt;, dove non si stampa.
+        note().forEach((chiave, testo) -> {
+            int fine = testo.lastIndexOf("</html>");
+            if (fine < 0) return;
+            assertTrue(testo.substring(fine + "</html>".length()).isBlank(),
+                    chiave + " : c'e' del testo dopo </html>, non verrebbe stampato");
+        });
     }
 
     @Test

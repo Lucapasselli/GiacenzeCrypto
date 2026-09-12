@@ -1,5 +1,5 @@
 {
-  "versione": "1.003",
+  "versione": "1.005",
   "centralizzato":true,
   "fontePrezzoPreferita": "binance",
   "nomeExchange": "Binance",
@@ -61,6 +61,8 @@
     "Transfer Between Main and Funding Wallet":       "IGNORA",
     "Staking Purchase":                               "IGNORA",
     "Staking Redemption":                             "IGNORA",
+    "Dual Savings Purchase":                          "TRASFERIMENTO-CRYPTO-INTERNO",
+    "Dual Savings Settlement":                        "TRASFERIMENTO-CRYPTO-INTERNO",
     "Main and Funding Account Transfer":              "IGNORA",
     "transfer_in":                                    "IGNORA",
     "transfer_out":                                   "IGNORA",
@@ -99,6 +101,7 @@
     "SOL Staking Redemption - Distribute":            "SCAMBIO CRYPTO-CRYPTO",
     "WBETH2.0 - Staking":                             "SCAMBIO CRYPTO-CRYPTO",
     "WBETH2.0 - Redemption Unfreeze and Transfer":    "SCAMBIO CRYPTO-CRYPTO",
+    "Token Swap - Redenomination/Rebranding":         "SCAMBIO CRYPTO-CRYPTO",
     "Transaction Fee":                                "COMMISSIONI",
     "Fee":                                            "COMMISSIONI",
     "Strategy Trading Fee Rebate":                    "COMMISSIONI",
@@ -124,6 +127,7 @@
     "ALTRE-REWARD",
     "AIRDROP",
     "TRASFERIMENTO-CRYPTO",
+    "TRASFERIMENTO-CRYPTO-INTERNO",
     "SCAMBIO DIFFERITO",
     "COMMISSIONI",
     "DEPOSITO FIAT",
@@ -136,6 +140,10 @@
   "campiExtra": {
     "7": 3,
     "21": 6
+  },
+  "walletSpecularePerCausale": {
+    "Dual Savings Purchase":   "Investimenti",
+    "Dual Savings Settlement": "Investimenti"
   },
   "walletPerCausale": {}
 }

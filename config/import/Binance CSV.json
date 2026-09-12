@@ -52,6 +52,7 @@
     "Megadrop Rewards":                               "REWARD",
     "Commission History":                             "ALTRE-REWARD",
 	"Asset - Transfer":                               "ALTRE-REWARD",
+	"Cash Voucher":                                   "CASHBACK",
     "Launchpool Airdrop - System Distribution":       "AIRDROP",
     "Simple Earn Flexible Subscription":              "IGNORA",
     "Simple Earn Flexible Redemption":                "IGNORA",
@@ -110,6 +111,7 @@
     "Buy Crypto With Fiat":                           "ACQUISTO CRYPTO",
     "Convert Fiat to Stablecoin Paysafe":             "ACQUISTO CRYPTO",
     "Tax Liquidation":                                "VENDITA CRYPTO",
+    "Merchant Acquiring":                             "VENDITA CRYPTO",
     "Tax Payment":                                    "VENDITA CRYPTO"
   },
   "causaliUscita": [],

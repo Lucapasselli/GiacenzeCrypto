@@ -66,6 +66,8 @@ class Calcoli_RW_FiatTest {
         // Il Fiat Wallet Crypto.com e' un file nella working directory : va azzerato fra un test e
         // l'altro, altrimenti le gambe di un test le vede anche il successivo.
         java.nio.file.Files.deleteIfExists(java.nio.file.Path.of(VarStatiche.getFile_CDCFiatWallet()));
+        // Stesso motivo per il file dei dati del tab : ci sta il saldo di apertura del Fiat Wallet.
+        java.nio.file.Files.deleteIfExists(java.nio.file.Path.of(VarStatiche.getFile_CDCDatiDB()));
         VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.clear();
     }
 
@@ -1010,6 +1012,45 @@ class Calcoli_RW_FiatTest {
 
         Map<String, BigDecimal> s = Calcoli_RW_Fiat.saldiFiatPerValuta("Wallet 10", "2024-12-31", true);
         assertEquals("600", saldo(s, "EUR"), "1000 in ingresso - 400 in uscita, i 9999 del movimento crypto non contano");
+    }
+
+    /** Scrive in {@code crypto.com.dati.db} il saldo di apertura del Fiat Wallet e la sua data. */
+    private static void saldoApertura(String saldo, String data) throws Exception {
+        java.nio.file.Files.writeString(java.nio.file.Path.of(VarStatiche.getFile_CDCDatiDB()),
+                "CDC_FiatWallet_SaldoIniziale=" + saldo + "\n"
+              + "CDC_FiatWallet_DataSaldoIniziale=" + data + "\n");
+    }
+
+    @Test
+    void fiatWalletCDC_ilSaldoDiAperturaEntraNelSaldoFiat() throws Exception {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Crypto.com App", "Wallet 10");
+        // Il CSV comincia dal primo movimento scaricato : i 500 euro gia' sul conto a quella data
+        // stanno solo nel campo del tab, e senza di loro la giacenza RW e' piu' bassa di 500.
+        saldoApertura("500", "2024-03-01");
+        fiatWallet(rigaFW("2024-03-01 09:00:00", "EUR Deposit (via SEPA)", "1000.0", "viban_deposit"),
+                rigaFW("2024-04-01 09:00:00", "Buy CRO", "400.0", "viban_purchase"));
+
+        assertEquals("1100", saldo(Calcoli_RW_Fiat.saldiFiatPerValuta("Wallet 10", "2024-12-31", true), "EUR"),
+                "500 di apertura + 1000 in ingresso - 400 in uscita");
+    }
+
+    @Test
+    void fiatWalletCDC_saldoDiAperturaContaGiaDalPrimoGiorno() throws Exception {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Crypto.com App", "Wallet 10");
+        saldoApertura("500", "2024-03-01");
+        fiatWallet(rigaFW("2024-03-01 09:00:00", "EUR Deposit (via SEPA)", "1000.0", "viban_deposit"));
+        // A fine del primo giorno ci sono apertura + deposito : la gamba sintetica porta l'orario
+        // 000000, quindi si ordina prima del movimento dello stesso giorno.
+        assertEquals("1500", saldo(Calcoli_RW_Fiat.saldiFiatPerValuta("Wallet 10", "2024-03-01", true), "EUR"));
+    }
+
+    @Test
+    void fiatWalletCDC_saldoDiAperturaZeroOAssenteNonCambiaNulla() throws Exception {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Crypto.com App", "Wallet 10");
+        saldoApertura("0", "2024-03-01");
+        fiatWallet(rigaFW("2024-03-01 09:00:00", "EUR Deposit (via SEPA)", "1000.0", "viban_deposit"));
+        assertEquals("1000", saldo(Calcoli_RW_Fiat.saldiFiatPerValuta("Wallet 10", "2024-12-31", true), "EUR"),
+                "un saldo di apertura a zero non deve aggiungere una gamba");
     }
 
     @Test

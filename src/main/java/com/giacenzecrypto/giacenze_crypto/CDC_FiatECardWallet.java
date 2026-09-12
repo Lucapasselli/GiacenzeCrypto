@@ -426,6 +426,53 @@ public static String[] calcolaSaldiEMedia(
      *
      * @param percorsoFile percorso del CSV del Fiat Wallet
      */
+    /**
+     * Saldo di apertura del Fiat Wallet: la giacenza in euro che c'era <b>prima</b> del primo movimento
+     * importato, inserita a mano dall'utente nel tab <i>Crypto.com &rarr; Fiat Wallet</i> e salvata in
+     * {@code crypto.com.dati.db} insieme alla data a cui si riferisce.
+     * <p>
+     * Serve al Quadro W/RW quanto serve al tab: il CSV del Fiat Wallet comincia dal primo movimento
+     * scaricato, non dall'apertura del conto, quindi senza questo valore l'intera serie dei saldi e' piu'
+     * bassa di quella cifra. Il tab lo tratta come un <b>offset costante</b>
+     * ({@link #calcolaSaldiEMedia} lo somma a saldo iniziale, finale e giacenza media), e il motore RW
+     * lo riproduce inserendo una gamba sintetica alla data indicata.
+     * <p>
+     * <b>La data e' quella del primo movimento importato</b>, non il periodo che il tab sta mostrando:
+     * {@code Principale.CDC_FiatWallet_Funzione_...} la confronta con la data della prima riga del Fiat
+     * Wallet e, se non coincide piu' (archivio cambiato), azzera il saldo e riscrive la data. Quindi e'
+     * un'apertura permanente e non un residuo di ci&ograve; che l'utente stava guardando.
+     *
+     * @return {@code [saldo, data]} con la data in formato {@code yyyy-MM-dd}, oppure {@code null} se il
+     *         file non c'&egrave;, non ha le due voci, o il saldo &egrave; zero o illeggibile
+     */
+    public static String[] SaldoAperturaFiatWallet() {
+        String saldo = null, data = null;
+        java.io.File f = new java.io.File(VarStatiche.getFile_CDCDatiDB());
+        if (!f.exists()) {
+            return null;
+        }
+        try (java.io.BufferedReader r = new java.io.BufferedReader(new java.io.FileReader(f))) {
+            String riga;
+            while ((riga = r.readLine()) != null) {
+                String[] p = riga.split("=");
+                if (p.length != 2) continue;
+                if (p[0].equalsIgnoreCase("CDC_FiatWallet_SaldoIniziale")) saldo = p[1].trim();
+                if (p[0].equalsIgnoreCase("CDC_FiatWallet_DataSaldoIniziale")) data = p[1].trim();
+            }
+        } catch (java.io.IOException ex) {
+            return null;
+        }
+        if (saldo == null || data == null || !dataValida(data)) {
+            return null;
+        }
+        try {
+            if (new java.math.BigDecimal(saldo).signum() == 0) return null;
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+        return new String[]{saldo, data};
+    }
+
     public static EsitoFiatWallet MovimentiEuro(String percorsoFile) {
         List<MovimentoFiatWallet> movimenti = new ArrayList<>();
         int nonInEuro = 0;

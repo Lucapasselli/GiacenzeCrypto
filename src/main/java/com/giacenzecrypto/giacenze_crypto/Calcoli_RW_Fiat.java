@@ -164,11 +164,26 @@ public final class Calcoli_RW_Fiat {
         String gruppo = DatabaseH2.Pers_GruppoWallet_Leggi(CDC_FiatECardWallet.NOME_EXCHANGE_CDC_APP, true);
         CDC_FiatECardWallet.EsitoFiatWallet esito =
                 CDC_FiatECardWallet.MovimentiEuro(VarStatiche.getFile_CDCFiatWallet());
-        if (esito.movimenti.isEmpty() && esito.scartatiNonInEuro == 0 && esito.scartatiTipoSconosciuto == 0) {
+        if (esito.movimenti.isEmpty() && esito.scartatiNonInEuro == 0 && esito.scartatiTipoSconosciuto == 0
+                && CDC_FiatECardWallet.SaldoAperturaFiatWallet() == null) {
             return; // nessun Fiat Wallet su questa installazione
         }
         int progressivo = 0;
         List<GambaFiat> gambe = new ArrayList<>();
+        //Saldo di apertura inserito a mano nel tab Fiat Wallet : il CSV comincia dal primo movimento
+        //scaricato, non dall'apertura del conto. Il tab lo somma come offset costante a saldo iniziale,
+        //finale e giacenza media (CDC_FiatECardWallet.calcolaSaldiEMedia) ; qui la stessa cosa si
+        //ottiene con una gamba sintetica, cosi' entra in tutte le giacenze giornaliere del motore.
+        //L'id porta l'orario 000000 perche' le gambe si ordinano per id e le modalita' "primo apporto"
+        /// "ultima uscita" dipendono da quell'ordine : l'apertura deve venire prima di ogni movimento
+        //dello stesso giorno. Resta datata al primo movimento importato e non al giorno precedente :
+        //spostarla indietro anticiperebbe dataAperturaGruppo, cioe' il prorata dell'IVAFE, su una data
+        //che nessun dato conferma.
+        String[] apertura = CDC_FiatECardWallet.SaldoAperturaFiatWallet();
+        if (apertura != null) {
+            gambe.add(new GambaFiat(apertura[1], "EUR", new BigDecimal(apertura[0]),
+                    apertura[1].replaceAll("[^0-9]", "") + "000000_FW00000"));
+        }
         for (CDC_FiatECardWallet.MovimentoFiatWallet m : esito.movimenti) {
             if (m.importoEUR.signum() == 0) {
                 continue;

@@ -6417,6 +6417,7 @@
                                               </Group>
                                           </Group>
                                           <Component id="jLabel16" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="RW_Opzioni_CheckBox_FiatInRW" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="RW_Opzioni_Label_Liquidita" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="0" pref="244" max="32767" attributes="0"/>
@@ -6427,7 +6428,6 @@
                                               <EmptySpace min="-2" pref="49" max="-2" attributes="0"/>
                                               <Group type="103" groupAlignment="0" attributes="0">
                                                   <Component id="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="RW_Opzioni_CheckBox_FiatInRW" min="-2" max="-2" attributes="0"/>
                                                   <Component id="RW_Opzioni_CheckBox_StakingZero" alignment="0" min="-2" pref="902" max="-2" attributes="0"/>
                                                   <Component id="RW_Opzioni_CheckBox_LiFoSubMovimenti" alignment="0" min="-2" pref="841" max="-2" attributes="0"/>
                                                   <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" alignment="0" min="-2" pref="938" max="-2" attributes="0"/>
@@ -6473,8 +6473,6 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="RW_Opzioni_CheckBox_FiatInRW" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_CheckBox_LiFoSubMovimenti" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="jLabel16" min="-2" max="-2" attributes="0"/>
@@ -6485,6 +6483,8 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_CheckBox_FiatInRW" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_Label_Liquidita" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_Radio_Liquidita_ConIvafe" min="-2" max="-2" attributes="0"/>
@@ -6583,7 +6583,7 @@
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_FiatInRW">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Includi nel Quadro W/RW anche la &lt;b&gt;valuta estera (FIAT)&lt;/b&gt; detenuta presso intermediari esteri (codice bene 14)&lt;/html&gt;"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Includi nel Quadro W/RW anche la &lt;b&gt;liquidità (FIAT)&lt;/b&gt; detenuta presso intermediari esteri (codice bene 14)&lt;/html&gt;"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_FiatInRWActionPerformed"/>
@@ -6630,7 +6630,7 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="RW_Opzioni_Label_Liquidita">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Quadro W/RW - &lt;b&gt;Liquidit&#xe0; in valuta presso intermediari esteri (codice bene 14) :&lt;/b&gt;&lt;/html&gt;"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Quadro W/RW - &lt;b&gt;Liquidit&#xe0; presso intermediari esteri (codice bene 14) :&lt;/b&gt;&lt;/html&gt;"/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JRadioButton" name="RW_Opzioni_Radio_Liquidita_ConIvafe">

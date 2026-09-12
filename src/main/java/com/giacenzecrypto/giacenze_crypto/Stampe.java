@@ -17,13 +17,17 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.html.simpleparser.HTMLWorker;
 import com.lowagie.text.html.simpleparser.StyleSheet;
+import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.ColumnText;
 import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfGState;
 import com.lowagie.text.pdf.PdfImportedPage;
+import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
+import java.awt.Color;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -45,9 +49,51 @@ public class Stampe {
       static String FilePDF="";
       static Document doc;
       static PdfWriter writer;
+
+      // ═══════════════════════════════════════════════════════════════════════════════
+      //  VESTE GRAFICA (copertina, testata, piede, filigrana) - opzionale
+      //
+      //  Si attiva con AttivaVesteGrafica() PRIMA di ApriDocumento() : chi non la chiama
+      //  (stampe RT e le due di Principale) ottiene esattamente il PDF di prima.
+      //
+      //  REGOLA DA NON VIOLARE : tutto quello che sta qui sotto si disegna sul canvas
+      //  (PdfContentByte), mai nel flusso del documento. La pagina del Quadro W porta 5
+      //  strisce di modulo da ~105 pt piu' il rigo-titolo da ~129 pt e lascia poco piu' di
+      //  100 pt liberi fra i margini : un elemento in flusso di troppo fa traboccare il
+      //  quinto rigo sulla pagina dopo, e siccome la paginazione di Principale e' fissa a 5
+      //  per foglio i valori finiscono sovrastampati sul rigo sbagliato - un modulo fiscale
+      //  errato, non un difetto estetico. Sul Quadro RW il vincolo e' l'opposto e piu'
+      //  stretto : il template A4 occupa da y=65,8 a y=805,9 e il suo inchiostro comincia
+      //  21,5 pt sotto il proprio bordo, quindi restano 57,5 pt utili in testa (misurati).
+      //  La testata ne usa 44 : alzarla oltre i 57 taglierebbe il logo del modulo.
+      // ═══════════════════════════════════════════════════════════════════════════════
+
+      /** Palette del logo : verde accento, verde forte, nero, grigi. */
+      static final Color VERDE        = new Color(0xA8, 0xA8, 0x34);
+      static final Color VERDE_SCURO  = new Color(0x8A, 0x8A, 0x1F);
+      static final Color NERO         = new Color(0x0A, 0x0A, 0x0A);
+      static final Color GRIGIO_TESTO = new Color(0x55, 0x55, 0x55);
+      static final Color GRIGIO_TENUE = new Color(0x99, 0x99, 0x99);
+      static final Color GRIGIO_FILO  = new Color(0xDD, 0xDD, 0xDD);
+      static final Color FASCIA_MARGINE = new Color(0xEC, 0xEC, 0xD2);
+
+      /** Facce del font dell'applicazione, caricate dal jar alla prima stampa che le usa. */
+      private static BaseFont bfRegular, bfBold;
+      private static boolean fontHtmlRegistrato = false;
+
+      /**
+       * Cornice attiva sul documento corrente. <b>Statica come {@link #doc} e {@link #writer}</b>, e
+       * azzerata nel costruttore: la classe tiene il documento in campi statici, quindi un campo
+       * d'istanza qui darebbe una coppia disallineata — un secondo {@code Stampe} rimpiazzerebbe
+       * {@code writer} lasciando la cornice del primo a puntare a quello vecchio. Azzerarla nel
+       * costruttore e' cio' che impedisce l'errore opposto, cioe' che una stampa senza veste (RT,
+       * o le due di {@code Principale}) erediti la cornice di una stampa RW precedente.
+       */
+      static CorniceReport cornice = null;
       
      public Stampe(String PDFPath) throws FileNotFoundException {
        FilePDF=PDFPath;
+       cornice = null;   //ogni documento riparte senza veste grafica : vedi il campo
        doc = new Document();
        writer = PdfWriter.getInstance(doc, new FileOutputStream(FilePDF));
      //  doc.open();  
@@ -208,204 +254,6 @@ public class Stampe {
         }
     }
     
-    /**
-     * @return il testo HTML delle note di compilazione del quadro T (Redditi PF) per le annualità antecedenti
-     *         al 2025, con la spiegazione dei righi T41-T45
-     */
-    public static String NoteCompilazioneTante2025(){
-    return """
-                            <html><font size="2" face="Courier New,Courier, mono" >
-                            <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
-                            sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
-                            
-                            Si consiglia di verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
-                            
-                            <b>T41</b> → \u2013 <u>Col.1 -> Totale Corrispettivi → - → Col.2 -> Corrispettivo Acquisto</u> <br>
-                            Indicare il totale dei corrispettivi percepiti ovvero il valore normale (in caso di permuta) realizzati mediante rimborso
-                            o cessione a titolo oneroso, permuta o detenzione di cripto-attività, comunque denominate ed in colonna 2 il relativo costo di acquisto.<br>
-                            <b>T42</b> → \u2013 <u>Corrispettivo di acquisto</u> <br>
-                            Indicare l’importo derivante dalla cessione avvenuta qualora il contribuente si sia avvalso dell’opzione per la
-                            rideterminazione del valore di ciascuna cripto-attività posseduta alla data del 1° gennaio 2023 ai sensi dell’art. 1, commi da 133 a 135,
-                            della legge n. 197 del 2022 e in colonna 2 il relativo costo di acquisto. <br>
-                            (RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <b>T43</b> → \u2013 <u>Eccedenza minusvalenze anni precedenti</u> <br>
-                            Vanno indicate le minusvalenze degli anni precedenti, indicate nel rigo RT94 del quadro RT del modello REDDITI 2024
-                            Persone fisiche, da portare in compensazione con le plusvalenze indicate nella presente sezione.<br> 
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <b>T44 sez. 1</b> → \u2013 <u>Eccedenze minuvalenze certificate da intermediari</u> <br> 
-                            In colonna 2, devono essere indicate le eccedenze di minusvalenze certificate dagli intermediari anche se relative ad anni precedenti ma non oltre il quarto (indicate in colonna 1).<br>
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <b>T45</b> \u2013 <u>Eccedenza d'imposta sostitutiva risultante dalla precedente dichiarazione non compensata</u> <br>
-                            Indicare l’eccedenza d’imposta sostitutiva risultante dalla precedente dichiarazione fino a concorrenza dell’imposta sostitutiva.<br>
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <br><b>Versamento tramite F24</b> – L’imposta sostitutiva sulle plusvalenze da cripto-attività (26%) si versa con modello F24, sezione “Erario”, codice tributo <b>1715</b> (“Imposta sostitutiva su plusvalenze e altri proventi realizzati mediante rimborso o cessione a titolo oneroso, permuta o detenzione di cripto-attività – art. 1, comma 126, L. 197/2022 - Regime dichiarativo”, Risoluzione Agenzia delle Entrate n. 36/E del 26/06/2023), indicando come “anno di riferimento” l’anno d’imposta nel formato AAAA. Per questo codice non risulta istituito un acconto: il versamento avviene in un’unica soluzione, con le stesse scadenze del saldo IRPEF.<br> Per chi presenta il 730 con sostituto d’imposta, l’imposta sostitutiva risultante dal prospetto di liquidazione (Mod. 730-3) viene normalmente trattenuta direttamente in busta paga o rata di pensione, con le stesse modalità del saldo Irpef: il versamento F24 personale con questo codice serve solo a chi presenta il 730 <u>senza sostituto</u> o deve regolarizzare autonomamente un importo non trattenuto correttamente.<br>
-                            </font></html>""";
-    
-    }
-    
-    /**
-     * @return il testo HTML delle note di compilazione del quadro T (Redditi PF) per l'annualità 2025, con la
-     *         spiegazione dei righi delle sezioni V, VII e VIII (T41-T45, T105, T112)
-     */
-    public static String NoteCompilazioneT2025() {
-        return """
-                            <html><font size="2" face="Courier New,Courier, mono" >
-                            <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
-                            sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
-                            
-                            Si consiglia di verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
-                 
-                <b>SEZIONE V</b> - Plusvalenze derivanti dalla cessione di cripto-attività<br>
-                            <b>T41</b> → \u2013 <u>Col.1 -> Totale Corrispettivi → - → Col.2 -> Corrispettivo Acquisto</u> <br>
-                            Indicare il totale dei corrispettivi percepiti ovvero il valore normale (in caso di permuta) realizzati mediante rimborso
-                            o cessione a titolo oneroso, permuta o detenzione di cripto-attività, comunque denominate ed in colonna 2 il relativo costo di acquisto.<br>
-                            <b>T42</b> → \u2013 <u>Corrispettivo di acquisto</u> <br>
-                            Indicare l’importo derivante dalla cessione avvenuta qualora il contribuente si sia avvalso dell’opzione per la
-                            rideterminazione del valore di ciascuna cripto-attività posseduta alla data del 1° gennaio 2023 ai sensi dell’art. 1, commi da 133 a 135,
-                            della legge n. 197 del 2022 e in colonna 2 il relativo costo di acquisto. <br>
-                            (RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <b>T43</b> → \u2013 <u>Eccedenza minusvalenze anni precedenti</u> <br>
-                            Vanno indicate le minusvalenze degli anni precedenti, indicate nel rigo RT94 del quadro RT del modello REDDITI 2024
-                            Persone fisiche, da portare in compensazione con le plusvalenze indicate nella presente sezione.<br> 
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <b>T44 sez. 1</b> → \u2013 <u>Eccedenze minuvalenze certificate da intermediari</u> <br> 
-                            In colonna 2, devono essere indicate le eccedenze di minusvalenze certificate dagli intermediari anche se relative ad anni precedenti ma non oltre il quarto (indicate in colonna 1).<br>
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <b>T45</b> \u2013 <u>Eccedenza d'imposta sostitutiva risultante dalla precedente dichiarazione non compensata</u> <br>
-                            Indicare l’eccedenza d’imposta sostitutiva risultante dalla precedente dichiarazione fino a concorrenza dell’imposta sostitutiva.<br>
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br><br>
-               
-               <b>SEZIONE VII</b> - Minusvalenze non compensate nell’anno<br>
-               <b>T105</b> (Sezione V), le eventuali quote residue delle minusvalenze risultanti dalla sezione V delle dichiarazioni Modello Redditi
-               PF o dalla sezione V delle dichiarazioni Modello 730 relative ai periodi d’imposta 2023 e 2024.<br> 
-               Si specifica che, per il periodo d’imposta 2024, le eventuali quote residue delle minusvalenze risultanti dalla sezione V del modello 730 
-               sono esposte nel rigo 150, colonna 5 del prospetto di liquidazione (Mod. 730-3) del Mod. 730/2025.<br><br>
-               
-               <b>SEZIONE VIII</b> - Riepilogo importi a credito<br>
-               <b>T112</b> → \u2013 Imposta a credito Sez. V <br>
-               Indicare in <b>colonna 1</b> (Eccedenza precedente), l’ammontare delle eccedenze d’imposta sostitutiva risultanti dalla precedente
-               dichiarazione e riportate nel rigo RX21, colonna 5, del Modello Redditi 2025.<br>
-           
-           
-           
-           
-                            <br><b>Versamento tramite F24</b> – L’imposta sostitutiva sulle plusvalenze da cripto-attività (26%) si versa con modello F24, sezione “Erario”, codice tributo <b>1715</b> (“Imposta sostitutiva su plusvalenze e altri proventi realizzati mediante rimborso o cessione a titolo oneroso, permuta o detenzione di cripto-attività – art. 1, comma 126, L. 197/2022 - Regime dichiarativo”, Risoluzione Agenzia delle Entrate n. 36/E del 26/06/2023), indicando come “anno di riferimento” l’anno d’imposta nel formato AAAA. Per questo codice non risulta istituito un acconto: il versamento avviene in un’unica soluzione, con le stesse scadenze del saldo IRPEF.<br> Per chi presenta il 730 con sostituto d’imposta, l’imposta sostitutiva risultante dal prospetto di liquidazione (Mod. 730-3) viene normalmente trattenuta direttamente in busta paga o rata di pensione, con le stesse modalità del saldo Irpef: il versamento F24 personale con questo codice serve solo a chi presenta il 730 <u>senza sostituto</u> o deve regolarizzare autonomamente un importo non trattenuto correttamente.<br>
-           """;
-
-    }
-    
-        /**
-         * @return il testo HTML delle note di compilazione del quadro RT (modello Redditi) per le annualità
-         *         antecedenti al 2025, con la spiegazione dei righi RT41-RT45
-         */
-        public static String NoteCompilazioneRTante2025() {
-        return """
-                            <html><font size="2" face="Courier New,Courier, mono" >
-                            <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
-                            sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
-                            
-                            Si consiglia di verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
-                            
-                            <b>RT41</b> → \u2013 <u>Col.1 -> Totale Corrispettivi → - → Col.2 -> Corrispettivo Acquisto</u> <br>
-                            Indicare il totale dei corrispettivi percepiti ovvero il valore normale (in caso di permuta) realizzati mediante rimborso
-                            o cessione a titolo oneroso, permuta o detenzione di cripto-attività, comunque denominate ed in colonna 2 il relativo costo di acquisto.<br>
-                            <b>RT42</b> → \u2013 <u>Corrispettivo di acquisto</u> <br>
-                            Indicare l’importo derivante dalla cessione avvenuta qualora il contribuente si sia avvalso dell’opzione per la
-                            rideterminazione del valore di ciascuna cripto-attività posseduta alla data del 1° gennaio 2023 ai sensi dell’art. 1, commi da 133 a 135,
-                            della legge n. 197 del 2022 e in colonna 2 il relativo costo di acquisto. <br>
-                            (RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <b>RT43</b> → \u2013 <u>Eccedenza minusvalenze anni precedenti</u> <br>
-                            Vanno indicate le minusvalenze degli anni precedenti, indicate nel rigo RT94 del quadro RT del modello REDDITI 2024
-                            Persone fisiche, da portare in compensazione con le plusvalenze indicate nella presente sezione.<br> 
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <b>RT44 sez. 1</b> → \u2013 <u>Eccedenze minuvalenze certificate da intermediari</u> <br> 
-                            In colonna 2, devono essere indicate le eccedenze di minusvalenze certificate dagli intermediari anche se relative ad anni precedenti ma non oltre il quarto (indicate in colonna 1).<br> 
-                            La somma degli importi di cui ai righi RT43 e RT44, colonna 2, non può essere superiore all’importo di cui al rigo RT88. <br>
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <b>RT45</b> \u2013 <u>Eccedenza d'imposta sostitutiva risultante dalla precedente dichiarazione non compensata</u> <br>
-                            Indicare l’eccedenza d’imposta sostitutiva risultante dalla precedente dichiarazione fino a concorrenza dell’importo indicato nel rigo RT89.<br>
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <br><b>Versamento tramite F24</b> – L’imposta sostitutiva sulle plusvalenze da cripto-attività (26%) si versa con modello F24, sezione “Erario”, codice tributo <b>1715</b> (“Imposta sostitutiva su plusvalenze e altri proventi realizzati mediante rimborso o cessione a titolo oneroso, permuta o detenzione di cripto-attività – art. 1, comma 126, L. 197/2022 - Regime dichiarativo”, Risoluzione Agenzia delle Entrate n. 36/E del 26/06/2023), indicando come “anno di riferimento” l’anno d’imposta nel formato AAAA. Per questo codice non risulta istituito un acconto: il versamento avviene in un’unica soluzione, con le stesse scadenze del saldo IRPEF.<br>
-                            </font></html>""";
-
-    }
-        
-            /**
-             * @return il testo HTML delle note di compilazione del quadro RT (modello Redditi) per l'annualità
-             *         2025, con la spiegazione dei righi della sezione V-A (RT41-RT45 e successivi)
-             */
-            public static String NoteCompilazioneRT2025() {
-        return """
-                            <html><font size="2" face="Courier New,Courier, mono" >
-                            <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
-                            sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
-                            
-                            Si consiglia di verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
-                            
-               <b>SEZIONE V-A</b><br>
-                            <b>RT41</b> → \u2013 <u>Col.3 -> Totale Corrispettivi → - → Col.4 -> Corrispettivo Acquisto</u> <br>
-                            Indicare il totale dei corrispettivi percepiti ovvero il valore normale (in caso di permuta) realizzati mediante rimborso o cessione a titolo oneroso, 
-                            permuta o detenzione di cripto-attività, comunque denominate relative a cessioni poste in essere a decorrere dal 1° gennaio 2025 ad eccezione 
-                            delle cessioni di cripto-attività il cui costo sia stato rideterminato ai sensi dell’art. 1, commi da 133 a 135, della legge n. 197 del 2022 
-                            o ai sensi dell’art. 1, comma 26, della legge n. 207 del 2024 ed in colonna 4 il relativo costo di acquisto.<br>
-                            <b>RT42 colonna 3</b> → \u2013 <u>Corrispettivo di acquisto</u> <br>
-                            Indicare l’importo derivante dalla cessione avvenuta qualora il contribuente si sia avvalso dell’opzione per la rideterminazione del valore 
-                            di ciascuna cripto-attività posseduta alla data del 1° gennaio 2025 ai sensi dell’art. 1, commi da 133 a 135, della legge n. 197 del 2022 
-                            o alla data del 1° gennaio 2025 ai sensi dell’art. 1, comma 26, della legge n. 207 del 2024 e in <b>colonna 4</b> il relativo costo di acquisto<br>
-                            (RIVALUTAZIONE NON GESTITA DAL PROGRAMMA)<br>
-                            <b>RT43</b> → \u2013 <u>Eccedenza minusvalenze anni precedenti</u> <br>
-                            Vanno indicate le minusvalenze degli anni precedenti, indicate nel rigo RT94 del quadro RT del modello REDDITI 2024 Persone fisiche, da portare in 
-                            compensazione con le plusvalenze indicate nella presente sezione. <br>
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <b>RT44 sez. 1</b> → \u2013 <u>Eccedenze minuvalenze certificate da intermediari</u> <br> 
-                            Devono essere indicate le eccedenze di minusvalenze certificate dagli intermediari anche se relative ad anni precedenti ma non oltre il quarto (indicate in <b>colonna 1</b>).<br>
-                            La somma degli importi di cui ai righi RT43 e RT44, colonna 2, non può essere superiore all’importo di cui al rigo RT88. <br>
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <b>RT45</b> \u2013 <u>Eccedenza d'imposta sostitutiva risultante dalla precedente dichiarazione non compensata</u> <br>
-                            Indicare l’eccedenza d’imposta sostitutiva risultante dalla precedente dichiarazione fino a concorrenza dell’importo indicato nel rigo RT89.<br>
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br><br>
-               
-        <b>SEZIONE VI</b> – Plusvalenze o minusvalenze Sezione I-A, II-A, III-A, IV-A e V-A<br>
-               NB:Se utilizzate il software dell'agenzia delle entrate questa parte verrà compilata automaticamente prendendo i dati dalla sezione V<br>
-        <b>RT57</b> \u2013
-        Indicare anche la differenza tra l’importo indicato nelle colonne 3 dei righi RT41, e RT42, (di tutti i moduli compilati) ed i relativi importi di colonna 4 se positiva.<br>
-        Se il risultato è negativo riportare l’eccedenza nella colonna 1 e la colonna 2 non va compilata.<br> 
-        Le minusvalenze sono riportate in deduzione integralmente dall’ammontare delle plusvalenze dei periodi successivi, ma non oltre il quarto, e vanno indicate nel rigo RT105, colonna 5.<br> 
-        Tali minusvalenze non possono essere portate in diminuzione delle plusvalenze indicate nelle altre sezioni del presente quadro<br><br>
-               
-        <b>SEZIONE V-B</b><br>
-               NB:Se utilizzate il software dell'agenzia delle entrate questa parte verrà compilata automaticamente prendendo i dati dalla sezione V<br>
-               <b>RT88</b> \u2013
-                va indicato il risultato della seguente operazione: RT57, col. 2 – RT43 – RT44, col. 2.<br>
-               (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-               <b>RT89</b> \u2013
-                indicare l’imposta sostitutiva, pari al 26 per cento dell’importo di rigo RT88.<br>
-                (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-               <b>RT90</b> \u2013
-                indicare l’ammontare dell’imposta sostitutiva dovuta che è pari al seguente risultato: RT89 – RT45.<br>
-                (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br><br>
-               
-        <b>SEZIONE VII</b> – Minusvalenze non compensate nell’anno<br>
-              In questa sezione vanno riportate le minusvalenze residue che non si sono potute compensare nel presente quadro.<br> 
-              <b>RT105</b> \u2013
-              Inserire le eventuali quote residue delle minusvalenze risultanti dalla dichiarazione relativa al periodo d’imposta 2023 e nella colonna 5 
-              le minusvalenze derivanti dalla sezione V di tutti i moduli compilati della presente dichiarazione.<br>
-              (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br><br>
-        
-               <b>SEZIONE VIII</b> – Riepilogo importi a credito<br>
-                            In questa sezione vanno riportate le minusvalenze residue che non si sono potute compensare nel presente quadro.<br> 
-                            <b>RT112</b> 
-                            - In <b>colonna 1</b>, Indicare l’ammontare delle eccedenze d’imposta sostitutiva risultanti dalla precedente dichiarazione e riportate nel rigo RX21, colonna 5 del quadro RX del Modello Redditi 2025;<br>
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            - In <b>colonna 3</b>, Indicare l’eventuale credito residuo da riportare nel rigo RX21 del Fascicolo I, costituito dal risultato della seguente operazione: RT112 col. 1 – RT45.<br>
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-                                 
-               
-                            <br><b>Versamento tramite F24</b> – L’imposta sostitutiva sulle plusvalenze da cripto-attività (26%) si versa con modello F24, sezione “Erario”, codice tributo <b>1715</b> (“Imposta sostitutiva su plusvalenze e altri proventi realizzati mediante rimborso o cessione a titolo oneroso, permuta o detenzione di cripto-attività – art. 1, comma 126, L. 197/2022 - Regime dichiarativo”, Risoluzione Agenzia delle Entrate n. 36/E del 26/06/2023), indicando come “anno di riferimento” l’anno d’imposta nel formato AAAA. Per questo codice non risulta istituito un acconto: il versamento avviene in un’unica soluzione, con le stesse scadenze del saldo IRPEF.<br>
-               """;
-
-    }
-    
     public void AggiungiQuadroRW(String Immagine,
                 String NumeroQuadro,
                 String ValoriIniziali[],
@@ -482,8 +330,13 @@ public class Stampe {
              //RW8 se foglio 1
              if (foglio==1){                 
                  font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+                 //RW8 : SOLO la colonna 1 (totale imposta dovuta). La colonna 5 (imposta a debito)
+                 //vale col.1 - col.2 + col.3 - col.4 e non va versata sotto i 12 euro (istruzioni
+                 //Redditi PF 2026, fascicolo 2 p. 53): le colonne 2-4 vengono dalle dichiarazioni
+                 //precedenti e il programma non le conosce, quindi ci scriveva un debito giusto solo
+                 //per chi non ha eccedenze ne' acconti. Ora resta vuota, con la formula nelle note.
                  setPara(writer.getDirectContent(), new Phrase(ICTot,font), 150+doc.leftMargin(), psosizioneVeriticale+12);
-                 setPara(writer.getDirectContent(), new Phrase(ICTot,font), 405+doc.leftMargin(), psosizioneVeriticale+12);
+
              }
              font = new Font(Font.HELVETICA, 10, Font.BOLD);
              setPara(writer.getDirectContent(), new Phrase("QUADRO RW PER CRIPTO-ATTIVITA'",font), 200+doc.leftMargin(), psosizioneVeriticale+655);
@@ -500,9 +353,10 @@ public class Stampe {
                     if (i==0){
                         //Wallet e Note
                         font = new Font(Font.HELVETICA, 10, Font.BOLD);
-                        setPara(writer.getDirectContent(), new Phrase(Wallet[i],font), 5+doc.leftMargin(), psosizioneVeriticale+525);
+                        ColonnaNomeENota(Wallet[i], Note[i], psosizioneVeriticale+525, LARG_COLONNA_RW_IMMAGINE,
+                                5+doc.leftMargin(), psosizioneVeriticale+510);
                         font = new Font(Font.HELVETICA, 8, Font.NORMAL);
-                        setPara(writer.getDirectContent(), new Phrase(Note[i],font), 5+doc.leftMargin(), psosizioneVeriticale+510);
+
                         //Codice Possesso
                         setPara(writer.getDirectContent(), new Phrase("1",font), 142+doc.leftMargin(), psosizioneVeriticale+540);
                         //Codice Individuazione Bene (col 3)
@@ -535,9 +389,10 @@ public class Stampe {
                     }else{
                         //Wallet e Note
                         font = new Font(Font.HELVETICA, 10, Font.BOLD);
-                        setPara(writer.getDirectContent(), new Phrase(Wallet[i],font), 5+doc.leftMargin(), psosizioneVeriticale+410-(i-1)*84);
+                        ColonnaNomeENota(Wallet[i], Note[i], psosizioneVeriticale+410-(i-1)*84, LARG_COLONNA_RW_IMMAGINE,
+                                5+doc.leftMargin(), psosizioneVeriticale+395-(i-1)*84);
                         font = new Font(Font.HELVETICA, 8, Font.NORMAL);
-                        setPara(writer.getDirectContent(), new Phrase(Note[i],font), 5+doc.leftMargin(), psosizioneVeriticale+395-(i-1)*84);
+
                         //Codice Possesso
                         setPara(writer.getDirectContent(), new Phrase("1",font), 142+doc.leftMargin(), psosizioneVeriticale+425-(i-1)*84);
                         //Codice Individuazione Bene (col 3)
@@ -688,13 +543,11 @@ public class Stampe {
          //507-582
          //-17    .....   +26
 
-        // RW8 se foglio 1
+        // RW8 se foglio 1 : SOLO la colonna 1 (totale imposta dovuta), vedi ICTot
         if (foglio == 1) {
             font = new Font(Font.HELVETICA, 8, Font.NORMAL);
             setPara(writer.getDirectContent(), new Phrase(ICTot, font),
                     133 + doc.leftMargin(), psosizioneVeriticale + 38);
-            setPara(writer.getDirectContent(), new Phrase(ICTot, font),
-                    388 + doc.leftMargin(), psosizioneVeriticale + 38);
         }
 
         font = new Font(Font.HELVETICA, 10, Font.BOLD);
@@ -715,12 +568,9 @@ public class Stampe {
                         ? SoloMonitoraggio[i] : "14".equals(cbene);
 
                 if (i == 0) {
-                    font = new Font(Font.HELVETICA, 10, Font.BOLD);
-                    setPara(writer.getDirectContent(), new Phrase(Wallet[i], font),
-                            -15 + doc.leftMargin(), psosizioneVeriticale + 551);
-                    font = new Font(Font.HELVETICA, 8, Font.NORMAL);
-                    setPara(writer.getDirectContent(), new Phrase(Note[i], font),
+                    ColonnaNomeENota(Wallet[i], Note[i], psosizioneVeriticale + 551, LARG_COLONNA_RW_2025,
                             -15 + doc.leftMargin(), psosizioneVeriticale + 536);
+                    font = new Font(Font.HELVETICA, 8, Font.NORMAL);
                     setPara(writer.getDirectContent(), new Phrase("1", font),
                             125 + doc.leftMargin(), psosizioneVeriticale + 566);
                     setPara(writer.getDirectContent(), new Phrase(cbene, font),
@@ -753,12 +603,9 @@ public class Stampe {
                                 458 + doc.leftMargin(), psosizioneVeriticale + 471);
                     }
                 } else {
-                    font = new Font(Font.HELVETICA, 10, Font.BOLD);
-                    setPara(writer.getDirectContent(), new Phrase(Wallet[i], font),
-                            -15 + doc.leftMargin(), psosizioneVeriticale + 436 - (i - 1) * 84);
+                    ColonnaNomeENota(Wallet[i], Note[i], psosizioneVeriticale + 436 - (i - 1) * 84,
+                            LARG_COLONNA_RW_2025, -15 + doc.leftMargin(), psosizioneVeriticale + 421 - (i - 1) * 84);
                     font = new Font(Font.HELVETICA, 8, Font.NORMAL);
-                    setPara(writer.getDirectContent(), new Phrase(Note[i], font),
-                            -15 + doc.leftMargin(), psosizioneVeriticale + 421 - (i - 1) * 84);
                     setPara(writer.getDirectContent(), new Phrase("1", font),
                             125 + doc.leftMargin(), psosizioneVeriticale + 451 - (i - 1) * 84);
                     setPara(writer.getDirectContent(), new Phrase(cbene, font),
@@ -1263,6 +1110,517 @@ public class Stampe {
      * @param Titoli intestazioni delle colonne
      * @param Dettagli righe di dati, ciascuna con lo stesso numero di colonne di {@code Titoli}
      */
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    //  Veste grafica : API pubblica
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Attiva la veste grafica del report (copertina, testata, piede, filigrana).
+     * <p>
+     * <b>Va chiamata prima di {@link #ApriDocumento()}</b> e <b>al posto di</b> {@link #Piede(String)} :
+     * il piede vecchio usa {@code doc.setFooter(HeaderFooter)}, che stampa da pagina 1 e finirebbe
+     * anche sulla copertina. Chi non la chiama ottiene il PDF esattamente come prima.
+     *
+     * @param Quadro sigla del quadro ({@code "QUADRO W"}, {@code "QUADRO RW"}), usata nel marcatore
+     *               verticale del margine
+     * @param Anno anno d'imposta
+     */
+    public void AttivaVesteGrafica(String Quadro, String Anno) {
+        CaricaFont();
+        cornice = new CorniceReport(Quadro, Anno);
+        writer.setPageEvent(cornice);
+    }
+
+    /**
+     * Testo mostrato a destra nella testata delle pagine successive alla copertina.
+     * Da impostare all'inizio di ogni pagina, prima di comporla.
+     *
+     * @param Contesto descrizione della pagina (es. {@code "Quadro W - anno 2025 - Foglio 1"})
+     * @param ModuloATuttaPagina {@code true} sulle pagine del Quadro RW, dove il modulo copre tutta
+     *        la pagina : la filigrana viene dimezzata per non velare l'intero foglio
+     */
+    public void ContestoPagina(String Contesto, boolean ModuloATuttaPagina) {
+        if (cornice == null) return;
+        cornice.Contesto = Contesto == null ? "" : Contesto;
+        cornice.ModuloATuttaPagina = ModuloATuttaPagina;
+    }
+
+    /** @return {@code true} se la veste grafica e' attiva su questo documento */
+    public boolean VesteGraficaAttiva() {
+        return cornice != null;
+    }
+
+    /**
+     * Disegna la copertina sulla pagina corrente. La pagina resta senza testata e senza piede :
+     * la cornice riconosce il numero di pagina e la salta.
+     *
+     * @param Quadro titolo grande (es. {@code "Quadro W"})
+     * @param Sottotitolo riga sotto il titolo (es. {@code "Cripto-attivita'"})
+     * @param Anno anno d'imposta
+     * @param Generato data e ora di generazione, gia' formattate
+     */
+    public void AggiungiCopertina(String Quadro, String Sottotitolo, String Anno, String Generato) {
+        if (cornice == null) return;
+        try {
+            PdfContentByte cb = writer.getDirectContent();
+            float W = doc.getPageSize().getWidth();
+            float H = doc.getPageSize().getHeight();
+            cornice.PaginaCopertina = writer.getPageNumber();
+
+            com.lowagie.text.Image logo = LogoApplicazione();
+            if (logo != null) {
+                logo.scaleAbsolute(54, 54);
+                logo.setAbsolutePosition(70, H - 120);
+                cb.addImage(logo);
+            }
+            Testo(cb, "GIACENZE CRYPTO", bfBold, 12, NERO, 136, H - 84, Element.ALIGN_LEFT, 3.5f);
+            Testo(cb, "monitoraggio e fiscalità delle cripto-attività", bfRegular, 8, GRIGIO_TENUE,
+                    136, H - 98, Element.ALIGN_LEFT, 0.5f);
+            Linea(cb, 70, H - 140, W - 70, H - 140, VERDE, 0.8f);
+
+            Testo(cb, "REPORT PER LA COMPILAZIONE", bfRegular, 9.5f, VERDE_SCURO, 70, H - 330, Element.ALIGN_LEFT, 3f);
+            Testo(cb, Quadro, bfBold, 40, NERO, 70, H - 382, Element.ALIGN_LEFT, 0f);
+            Testo(cb, Sottotitolo, bfRegular, 24, GRIGIO_TESTO, 70, H - 416, Element.ALIGN_LEFT, 0f);
+            Linea(cb, 70, H - 446, 240, H - 446, VERDE, 2.5f);
+            Testo(cb, "Anno d'imposta " + Anno, bfRegular, 13, NERO, 70, H - 478, Element.ALIGN_LEFT, 0.5f);
+
+            float y = 250;
+            Linea(cb, 70, y + 22, W - 70, y + 22, GRIGIO_FILO, 0.6f);
+            RigaDato(cb, "Documento", "Report " + Quadro + " - " + Sottotitolo, 70, y, W - 70);
+            RigaDato(cb, "Anno d'imposta", Anno, 70, y - 26, W - 70);
+            RigaDato(cb, "Generato il", Generato, 70, y - 52, W - 70);
+            //Titolo contiene gia' la versione (VarStatiche.componiTitolo).
+            RigaDato(cb, "Prodotto da", VarStatiche.Titolo, 70, y - 78, W - 70);
+
+            Testo(cb, "AVVERTENZA", bfBold, 7.5f, VERDE_SCURO, 70, 108, Element.ALIGN_LEFT, 2f);
+            Testo(cb, "I documenti ottenuti e le informazioni presenti hanno sempre valenza informativa e meramente",
+                    bfRegular, 7.5f, GRIGIO_TESTO, 70, 94, Element.ALIGN_LEFT, 0f);
+            Testo(cb, "indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.",
+                    bfRegular, 7.5f, GRIGIO_TESTO, 70, 83, Element.ALIGN_LEFT, 0f);
+            Linea(cb, 70, 58, W - 70, 58, VERDE, 0.8f);
+            //L'indirizzo esce da RiferimentoStampe() e non e' scritto a mano : nell'edizione Store
+            //e' vuoto di proposito, e una copertina che lo mostrasse aggirerebbe quella scelta.
+            String rif = VarStatiche.RiferimentoStampe();
+            if (!rif.isBlank()) {
+                Testo(cb, rif.replaceFirst("^\\s*-\\s*", ""), bfRegular, 8, GRIGIO_TENUE, 70, 42, Element.ALIGN_LEFT, 1f);
+            }
+
+            //La copertina e' tutta sul canvas : serve un elemento perche' la pagina venga emessa.
+            doc.add(new Paragraph(" "));
+        } catch (Exception ex) {
+            Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Distanziatore alto quanto la testata disegnata, da mettere in cima alle pagine dei moduli.
+     * La testata sta sul canvas e non occupa flusso : senza questo il primo elemento le finirebbe sotto.
+     */
+    public void DistanziatoreTestata() {
+        if (cornice == null) return;
+        Paragraph spazio = new Paragraph(" ");
+        spazio.setLeading(28f);
+        doc.add(spazio);
+    }
+
+    /**
+     * Titolo di sezione, per le pagine che hanno spazio (note, riepiloghi).
+     * <b>Non usarlo sulle pagine dei moduli</b> : vedi la nota sul budget di flusso in testa alla classe.
+     *
+     * @param Titolo titolo della sezione
+     * @param Sottotitolo riga piccola sotto il titolo
+     */
+    public void AggiungiTitoloSezione(String Titolo, String Sottotitolo) {
+        if (cornice == null) return;
+        DistanziatoreTestata();
+        Paragraph par = new Paragraph();
+        par.add(new Chunk(Titolo, new Font(bfBold, 15, Font.NORMAL, NERO)));
+        par.add(Chunk.NEWLINE);
+        par.add(new Chunk(Sottotitolo, new Font(bfRegular, 8.5f, Font.NORMAL, GRIGIO_TESTO)));
+        par.setSpacingAfter(8f);
+        doc.add(par);
+    }
+
+    /**
+     * Riga di intestazione di un rigo del Quadro W : progressivo in pastiglia verde, nome del gruppo
+     * wallet, eventuale segnalazione di errore in rosso. Sostituisce la riga HTML in Courier.
+     *
+     * @param Progressivo etichetta del rigo (es. {@code "W1"})
+     * @param Gruppo nome del gruppo wallet
+     * @param Errore testo dell'errore, vuoto se non ce ne sono
+     */
+    public void AggiungiEtichettaGruppo(String Progressivo, String Gruppo, String Errore) {
+        AggiungiEtichettaGruppo(Progressivo, Gruppo, "", Errore);
+    }
+
+    /**
+     * Altezza fissa riservata in flusso a un'etichetta di rigo : una riga, o due quando c'e' anche
+     * il dettaglio. Vedi {@link #AggiungiEtichettaGruppo}.
+     */
+    private static final float ALTEZZA_ETICHETTA = 13f;
+    private static final float ALTEZZA_ETICHETTA_CON_DETTAGLIO = 18f;
+
+    /**
+     * Come {@link #AggiungiEtichettaGruppo(String, String, String)}, con in piu' un dettaglio neutro
+     * fra il nome e l'eventuale errore : usato dalla parte FIAT per il tipo di attivita' e l'IVAFE.
+     * <p>
+     * <b>L'etichetta si disegna sul canvas dentro uno spazio di altezza fissa</b> ({@value #ALTEZZA_ETICHETTA} pt),
+     * non come paragrafo che si impagina da solo, e il testo che eccede la larghezza viene troncato.
+     * Non e' pignoleria: il foglio porta 5 moduli da ~105 pt piu' il rigo-titolo da ~129 pt, e la
+     * paginazione di {@code Principale} e' fissa a 5 righi per foglio. Con un paragrafo normale
+     * un'etichetta lunga va a capo, il quinto rigo scivola sulla pagina dopo e i valori finiscono
+     * sovrastampati sul rigo sbagliato — un modulo fiscale errato. Misurato sul caso peggiore reale
+     * (nome lungo + dettaglio conto corrente + IVAFE + avviso Stato): con i paragrafi restavano
+     * <b>1,7 pt</b> di margine, e la vecchia riga HTML in Courier traboccava gia' per conto suo.
+     * Con l'altezza fissa il margine e' di oltre 120 pt e non dipende piu' dalla lunghezza dei nomi.
+     *
+     * @param Dettaglio testo descrittivo, in grigio (non e' una segnalazione)
+     */
+    public void AggiungiEtichettaGruppo(String Progressivo, String Gruppo, String Dettaglio, String Errore) {
+        if (cornice == null) {
+            //Senza veste grafica resta la riga HTML di prima, cosi' i chiamanti non devono ramificare.
+            AggiungiHtml("<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>" + Gruppo + "</b>"
+                    + (Dettaglio == null ? "" : Dettaglio) + (Errore == null || Errore.isBlank() ? "" : " - " + Errore) + "</html>");
+            return;
+        }
+        boolean conDettaglio = Dettaglio != null && !Dettaglio.isBlank();
+        Paragraph spazio = new Paragraph(" ");
+        spazio.setLeading(conDettaglio ? ALTEZZA_ETICHETTA_CON_DETTAGLIO : ALTEZZA_ETICHETTA);
+        doc.add(spazio);
+
+        PdfContentByte cb = writer.getDirectContent();
+        float x = doc.leftMargin();
+        float xMax = doc.getPageSize().getWidth() - doc.rightMargin();
+        //Con il dettaglio la prima riga sta piu' in alto : la seconda le va sotto.
+        float y = writer.getVerticalPosition(false) + (conDettaglio ? 9.5f : 3f);
+
+        //Pastiglia verde col progressivo
+        String p = " " + Progressivo + " ";
+        float largP = bfBold.getWidthPoint(p, 7.5f);
+        cb.saveState();
+        cb.setColorFill(VERDE);
+        cb.rectangle(x, y - 2.5f, largP, 11f);
+        cb.fill();
+        cb.restoreState();
+        Testo(cb, p, bfBold, 7.5f, new Color(0x16, 0x16, 0x0A), x, y, Element.ALIGN_LEFT, 0f);
+        x += largP + 6f;
+
+        //Prima riga : nome ed eventuale errore. L'errore sta qui e non in coda al dettaglio perche'
+        //e' la parte che non puo' permettersi di finire troncata.
+        x = TestoTroncato(cb, Gruppo, bfBold, 10.5f, NERO, x, y, xMax);
+        if (Errore != null && !Errore.isBlank()) {
+            TestoTroncato(cb, "   " + Errore.trim(), bfBold, 8f, new Color(0xB0, 0x30, 0x10), x, y, xMax);
+        }
+        //Seconda riga : il dettaglio, in grigio, rientrato sotto il nome.
+        if (conDettaglio) {
+            String d = Dettaglio.trim();
+            if (d.startsWith("-")) d = d.substring(1).trim();
+            TestoTroncato(cb, d, bfRegular, 7.5f, GRIGIO_TESTO,
+                    doc.leftMargin() + largP + 6f, y - 9f, xMax);
+        }
+    }
+
+    /**
+     * Colonna bianca a sinistra del modulo RW, dove finiscono nome del gruppo e note.
+     * <p>
+     * Misurata sui moduli veri: l'inchiostro delle caselle comincia a 130 pt sul template 2025 e a
+     * 145 pt sulle scansioni 2023/2024, mentre la fascia verde di margine arriva a 24,5 pt. Prima
+     * i nomi partivano da 21 pt, cioe' <b>dentro</b> la fascia, e le note lunghe proseguendo su una
+     * riga sola finivano sopra il modulo compilato.
+     */
+    private static final float X_COLONNA_RW = 30f;
+    private static final float LARG_COLONNA_RW_2025 = 97f;
+    private static final float LARG_COLONNA_RW_IMMAGINE = 109f;
+
+    /**
+     * Scrive {@code s} nella colonna larga {@code larghezza} andando a capo sugli spazi, e spezzando
+     * a meta' parola solo le parole che da sole non ci starebbero (un indirizzo, un nome senza spazi).
+     * Disegnando sul canvas non esiste il ritorno a capo automatico: senza questo il testo prosegue
+     * dritto oltre la colonna e va a finire sopra il modulo.
+     *
+     * @param maxRighe oltre questo numero di righe il testo viene troncato con dei puntini, cosi' una
+     *                 nota molto lunga non invade il rigo successivo
+     * @return la y dell'ultima riga scritta
+     */
+    private static float TestoAvvolto(PdfContentByte cb, String s, BaseFont bf, float size, Color c,
+            float x, float y, float larghezza, float interlinea, int maxRighe) {
+        java.util.List<String> righe = new ArrayList<>();
+        StringBuilder riga = new StringBuilder();
+        for (String parola : s.trim().split("\\s+")) {
+            if (parola.isEmpty()) continue;
+            String prova = riga.length() == 0 ? parola : riga + " " + parola;
+            if (bf.getWidthPoint(prova, size) <= larghezza) {
+                riga.setLength(0);
+                riga.append(prova);
+                continue;
+            }
+            if (riga.length() > 0) {
+                righe.add(riga.toString());
+                riga.setLength(0);
+            }
+            //Parola piu' larga della colonna : va spezzata, altrimenti sborderebbe da sola.
+            while (bf.getWidthPoint(parola, size) > larghezza) {
+                int taglio = 1;
+                while (taglio < parola.length()
+                        && bf.getWidthPoint(parola.substring(0, taglio + 1), size) <= larghezza) taglio++;
+                righe.add(parola.substring(0, taglio));
+                parola = parola.substring(taglio);
+            }
+            riga.append(parola);
+        }
+        if (riga.length() > 0) righe.add(riga.toString());
+
+        float yr = y;
+        for (int i = 0; i < righe.size(); i++) {
+            String t = righe.get(i);
+            if (i == maxRighe - 1 && righe.size() > maxRighe) {
+                while (t.length() > 0 && bf.getWidthPoint(t + "...", size) > larghezza) t = t.substring(0, t.length() - 1);
+                t = t + "...";
+            }
+            Testo(cb, t, bf, size, c, x, yr, Element.ALIGN_LEFT, 0f);
+            yr -= interlinea;
+            if (i == maxRighe - 1) break;
+        }
+        return yr + interlinea;
+    }
+
+    /**
+     * Nome del gruppo e nota di un rigo RW, nella colonna bianca a sinistra del modulo.
+     * <p>
+     * Con la veste grafica attiva vanno a capo dentro la colonna; senza, restano le due righe secche
+     * di prima alle coordinate storiche ({@code xVecchia}), perche' li' i font del report non sono
+     * nemmeno caricati.
+     *
+     * @param yNome y della prima riga del nome
+     * @param larghezza larghezza della colonna, diversa fra template 2025 e scansioni precedenti
+     * @param xVecchia x delle due righe nel comportamento senza veste
+     * @param yNotaVecchia y della nota nel comportamento senza veste
+     */
+    private void ColonnaNomeENota(String Nome, String Nota, float yNome, float larghezza,
+            float xVecchia, float yNotaVecchia) {
+        PdfContentByte cb = writer.getDirectContent();
+        if (cornice == null) {
+            setPara(cb, new Phrase(Nome, new Font(Font.HELVETICA, 10, Font.BOLD)), xVecchia, yNome);
+            setPara(cb, new Phrase(Nota == null ? "" : Nota, new Font(Font.HELVETICA, 8, Font.NORMAL)),
+                    xVecchia, yNotaVecchia);
+            return;
+        }
+        float y = TestoAvvolto(cb, Nome == null ? "" : Nome, bfBold, 9f, NERO,
+                X_COLONNA_RW, yNome, larghezza, 10f, 3);
+        if (Nota != null && !Nota.isBlank()) {
+            TestoAvvolto(cb, Nota, bfRegular, 7f, ColoreNota(Nota),
+                    X_COLONNA_RW, y - 11f, larghezza, 8f, 4);
+        }
+    }
+
+    /**
+     * Colore di una nota di rigo RW. Le note del percorso cripto sono sempre segnalazioni di errore
+     * ({@code "Errori da correggere!"}), quelle del percorso FIAT sono informative (Stato mancante,
+     * fiscalita' privilegiata, conto sotto soglia): il rosso va solo alle prime.
+     */
+    private static Color ColoreNota(String nota) {
+        return nota != null && nota.startsWith("Errori") ? new Color(0xB0, 0x30, 0x10) : GRIGIO_TESTO;
+    }
+
+    /**
+     * Scrive {@code s} a partire da {@code x}, troncandolo con dei puntini se non ci sta entro
+     * {@code xMax}. Disegnando sul canvas non c'e' ritorno a capo automatico: senza troncatura il
+     * testo proseguirebbe oltre il margine destro.
+     *
+     * @return la x raggiunta dalla fine del testo scritto
+     */
+    private static float TestoTroncato(PdfContentByte cb, String s, BaseFont bf, float size, Color c,
+            float x, float y, float xMax) {
+        if (x >= xMax) return x;
+        float disponibile = xMax - x;
+        if (bf.getWidthPoint(s, size) > disponibile) {
+            String puntini = "...";
+            float largPuntini = bf.getWidthPoint(puntini, size);
+            StringBuilder sb = new StringBuilder();
+            float largo = 0;
+            for (int i = 0; i < s.length(); i++) {
+                float w = bf.getWidthPoint(String.valueOf(s.charAt(i)), size);
+                if (largo + w + largPuntini > disponibile) break;
+                sb.append(s.charAt(i));
+                largo += w;
+            }
+            s = sb.toString().stripTrailing() + puntini;
+        }
+        Testo(cb, s, bf, size, c, x, y, Element.ALIGN_LEFT, 0f);
+        return x + bf.getWidthPoint(s, size);
+    }
+
+    // ─── Caricamento del font e del logo ──────────────────────────────────────────
+
+    /**
+     * Carica dal jar le due facce di Noto Sans usate dalla veste grafica e le registra anche in
+     * {@link FontFactory}, cosi' {@link #AggiungiHtml(String)} puo' chiedere {@code face="Noto Sans"}.
+     * <p>
+     * Il {@code registerFamily} non e' decorativo : registrando i due file senza alias la famiglia
+     * risultante e' {@code "Noto Sans Regular"} e {@code HTMLWorker} non risolverebbe il grassetto,
+     * stampando l'intero testo in bold (o l'intero testo in regular). {@code RandomAccessFileOrArray}
+     * accetta un percorso di classpath, quindi i TTF si leggono direttamente da dentro il jar.
+     */
+    private static synchronized void CaricaFont() {
+        try {
+            if (bfRegular == null) {
+                bfRegular = BaseFont.createFont("/Fonts/NotoSans-Regular.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+                bfBold    = BaseFont.createFont("/Fonts/NotoSans-Bold.ttf",    BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            }
+            if (!fontHtmlRegistrato) {
+                FontFactory.register("/Fonts/NotoSans-Regular.ttf");
+                FontFactory.register("/Fonts/NotoSans-Bold.ttf");
+                FontFactory.register("/Fonts/NotoSans-Italic.ttf");
+                FontFactory.getFontImp().registerFamily(FAMIGLIA_HTML, "NotoSans-Regular", "/Fonts/NotoSans-Regular.ttf");
+                FontFactory.getFontImp().registerFamily(FAMIGLIA_HTML, "NotoSans-Bold",    "/Fonts/NotoSans-Bold.ttf");
+                fontHtmlRegistrato = true;
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, "Font del report non caricato", ex);
+        }
+    }
+
+    /** Nome famiglia con cui il font e' registrato in FontFactory (minuscolo : la mappa e' case-folded). */
+    private static final String FAMIGLIA_HTML = "noto sans";
+
+    /** Il logo sta nel classpath ({@code src/main/resources/logo.png}), non in {@code Immagini/}. */
+    private static com.lowagie.text.Image LogoApplicazione() {
+        try {
+            java.net.URL u = Stampe.class.getResource("/logo.png");
+            return u == null ? null : com.lowagie.text.Image.getInstance(u);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    // ─── Utilita' di disegno ──────────────────────────────────────────────────────
+
+    static void Testo(PdfContentByte cb, String s, BaseFont bf, float size, Color c,
+            float x, float y, int align, float spaziatura) {
+        cb.saveState();
+        cb.beginText();
+        cb.setFontAndSize(bf, size);
+        cb.setColorFill(c);
+        if (spaziatura > 0) cb.setCharacterSpacing(spaziatura);
+        cb.showTextAligned(align, s, x, y, 0);
+        cb.setCharacterSpacing(0);
+        cb.endText();
+        cb.restoreState();
+    }
+
+    static void Linea(PdfContentByte cb, float x1, float y1, float x2, float y2, Color c, float w) {
+        cb.saveState();
+        cb.setColorStroke(c);
+        cb.setLineWidth(w);
+        cb.moveTo(x1, y1);
+        cb.lineTo(x2, y2);
+        cb.stroke();
+        cb.restoreState();
+    }
+
+    static void RigaDato(PdfContentByte cb, String etichetta, String valore, float x, float y, float xFine) {
+        Testo(cb, etichetta.toUpperCase(), bfRegular, 7, GRIGIO_TENUE, x, y, Element.ALIGN_LEFT, 1.5f);
+        Testo(cb, valore, bfRegular, 9.5f, NERO, x + 130, y, Element.ALIGN_LEFT, 0f);
+        Linea(cb, x, y - 8, xFine, y - 8, GRIGIO_FILO, 0.6f);
+    }
+
+    /**
+     * Testata, piede e filigrana del report, disegnati sul canvas a fine pagina.
+     * La copertina viene saltata.
+     */
+    static class CorniceReport extends PdfPageEventHelper {
+
+        final String Quadro;
+        final String Anno;
+        String Contesto = "";
+        boolean ModuloATuttaPagina = false;
+        int PaginaCopertina = 0;
+
+        CorniceReport(String Quadro, String Anno) {
+            this.Quadro = Quadro;
+            this.Anno = Anno;
+        }
+
+        @Override
+        public void onEndPage(PdfWriter writer, Document doc) {
+            int pagina = writer.getPageNumber();
+            if (pagina == PaginaCopertina) return;
+            try {
+                float W = doc.getPageSize().getWidth();
+                float H = doc.getPageSize().getHeight();
+                Filigrana(writer.getDirectContentUnder(), writer.getDirectContent(), W, H);
+                Testata(writer.getDirectContent(), W, H);
+                Piede(writer.getDirectContent(), W, pagina);
+            } catch (Exception ex) {
+                Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        /**
+         * Due filigrane sovrapposte : la fascia verde nel margine sinistro, che il modulo non copre
+         * mai, e la scritta diagonale sovrastampata.
+         * <p>
+         * La scritta <b>deve</b> stare sul canvas sopra ({@code getDirectContent}) con opacita' bassa :
+         * i moduli dell'Agenzia sono immagini opache (QuadroW_2023.png e' RGBA con alpha 255 ovunque,
+         * gli altri sono JPEG), quindi sotto sparirebbe. Verificata a 300 dpi sui riquadri degli
+         * importi : al 4,5 % non intacca la leggibilita' delle cifre.
+         */
+        void Filigrana(PdfContentByte sotto, PdfContentByte sopra, float W, float H) {
+            sotto.saveState();
+            sotto.setColorFill(FASCIA_MARGINE);
+            sotto.rectangle(0, 0, 22, H);
+            sotto.fill();
+            sotto.setColorFill(VERDE);
+            sotto.rectangle(22, 0, 2.5f, H);
+            sotto.fill();
+            sotto.restoreState();
+            sotto.saveState();
+            sotto.beginText();
+            sotto.setFontAndSize(bfBold, 7);
+            sotto.setColorFill(VERDE_SCURO);
+            sotto.setCharacterSpacing(2f);
+            sotto.showTextAligned(Element.ALIGN_CENTER, Quadro + " " + Anno, 12, H / 2, 90);
+            sotto.setCharacterSpacing(0);
+            sotto.endText();
+            sotto.restoreState();
+
+            PdfGState gs = new PdfGState();
+            gs.setFillOpacity(ModuloATuttaPagina ? 0.028f : 0.045f);
+            sopra.saveState();
+            sopra.setGState(gs);
+            sopra.beginText();
+            sopra.setFontAndSize(bfBold, 58);
+            sopra.setColorFill(VERDE);
+            sopra.showTextAligned(Element.ALIGN_CENTER, "GIACENZE CRYPTO", W / 2, H / 2, 55);
+            sopra.endText();
+            sopra.restoreState();
+        }
+
+        /** Alta 44 pt dal bordo : sul Quadro RW ne sono disponibili 57,5 prima dell'inchiostro del modulo. */
+        void Testata(PdfContentByte cb, float W, float H) {
+            com.lowagie.text.Image logo = LogoApplicazione();
+            if (logo != null) {
+                try {
+                    logo.scaleAbsolute(14, 14);
+                    logo.setAbsolutePosition(46, H - 38);
+                    cb.addImage(logo);
+                } catch (Exception ignora) {
+                }
+            }
+            Testo(cb, "GIACENZE CRYPTO", bfBold, 7.5f, GRIGIO_TESTO, 66, H - 33, Element.ALIGN_LEFT, 2.5f);
+            Testo(cb, Contesto, bfRegular, 7.5f, GRIGIO_TENUE, W - 36, H - 33, Element.ALIGN_RIGHT, 0f);
+            Linea(cb, 46, H - 44, W - 36, H - 44, VERDE, 0.7f);
+        }
+
+        void Piede(PdfContentByte cb, float W, int pagina) {
+            Linea(cb, 46, 40, W - 36, 40, new Color(0xE2, 0xE2, 0xE2), 0.6f);
+            Testo(cb, "Generato da " + VarStatiche.Titolo + VarStatiche.RiferimentoStampe(),
+                    bfRegular, 6.5f, GRIGIO_TENUE, 46, 28, Element.ALIGN_LEFT, 0f);
+            Testo(cb, "Pagina " + pagina, bfRegular, 7, GRIGIO_TESTO, W - 36, 28, Element.ALIGN_RIGHT, 0f);
+        }
+    }
+
     public void AggiungiTabella(String[] Titoli,List<String[]> Dettagli){
       Font font = new Font(Font.HELVETICA, 10, Font.BOLD);
       int NumeroColonne=Titoli.length;
@@ -1306,6 +1664,12 @@ public class Stampe {
      */
     public void AggiungiHtml(String html){
           try {
+              //Con la veste grafica attiva le note escono nel font del programma invece che in
+              //Courier. La sostituzione e' qui e non nei chiamanti perche' le stringhe HTML sono
+              //sparse in Principale e tutte scritte con la stessa face : un punto solo da tenere
+              //allineato, e chi non attiva la veste non vede alcuna differenza.
+              //Le due grafie con e senza spazio dopo la virgola sono entrambe presenti in Principale.
+              if (cornice!=null) html=html.replaceAll("face=\"Courier New,\\s*Courier,\\s*mono\"", "face=\"Noto Sans\"");
               StyleSheet style=new StyleSheet();
               ArrayList<Element> htmlContetList = HTMLWorker.parseToList(new StringReader(html), null);
               Paragraph paragraph = new Paragraph();

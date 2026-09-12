@@ -4952,7 +4952,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        RW_Opzioni_CheckBox_FiatInRW.setText("<html>Includi nel Quadro W/RW anche la <b>valuta estera (FIAT)</b> detenuta presso intermediari esteri (codice bene 14)</html>");
+        RW_Opzioni_CheckBox_FiatInRW.setText("<html>Includi nel Quadro W/RW anche la <b>liquidità (FIAT)</b> detenuta presso intermediari esteri (codice bene 14)</html>");
         RW_Opzioni_CheckBox_FiatInRW.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RW_Opzioni_CheckBox_FiatInRWActionPerformed(evt);
@@ -4986,7 +4986,7 @@ private static final long serialVersionUID = 3L;
 
         jLabel16.setText("<html>Quadro W/RW - <b>Gestione dei Trasferimenti tra Wallet di proprietà :</b></html>");
 
-        RW_Opzioni_Label_Liquidita.setText("<html>Quadro W/RW - <b>Liquidità in valuta presso intermediari esteri (codice bene 14) :</b></html>");
+        RW_Opzioni_Label_Liquidita.setText("<html>Quadro W/RW - <b>Liquidità presso intermediari esteri (codice bene 14) :</b></html>");
 
         RW_Liquidita.add(RW_Opzioni_Radio_Liquidita_ConIvafe);
         RW_Opzioni_Radio_Liquidita_ConIvafe.setSelected(true);
@@ -5040,6 +5040,7 @@ private static final long serialVersionUID = 3L;
                                     .addComponent(RW_Opzioni_Radio_Liquidita_SoloMonitoraggio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(RW_Bottone_Documentazione1, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(RW_Opzioni_CheckBox_FiatInRW, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(RW_Opzioni_Label_Liquidita, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 244, Short.MAX_VALUE))
                     .addGroup(Opzioni_RW_PannelloLayout.createSequentialGroup()
@@ -5048,7 +5049,6 @@ private static final long serialVersionUID = 3L;
                                 .addGap(49, 49, 49)
                                 .addGroup(Opzioni_RW_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(RW_Opzioni_CheckBox_FiatInRW, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(RW_Opzioni_CheckBox_StakingZero, javax.swing.GroupLayout.PREFERRED_SIZE, 902, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(RW_Opzioni_CheckBox_LiFoSubMovimenti, javax.swing.GroupLayout.PREFERRED_SIZE, 841, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(RW_Opzioni_CheckBox_LiFoComplessivo, javax.swing.GroupLayout.PREFERRED_SIZE, 938, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -5085,8 +5085,6 @@ private static final long serialVersionUID = 3L;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(RW_Opzioni_CheckBox_FiatInRW, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_CheckBox_LiFoSubMovimenti, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -5097,6 +5095,8 @@ private static final long serialVersionUID = 3L;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(RW_Opzioni_CheckBox_FiatInRW, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_Label_Liquidita, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_Radio_Liquidita_ConIvafe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -6486,6 +6486,7 @@ private void SettaIcone(){
         if(RW_FiatInRW!=null && RW_FiatInRW.equalsIgnoreCase("SI")){
             this.RW_Opzioni_CheckBox_FiatInRW.setSelected(true);
         }else DatabaseH2.Pers_Opzioni_Scrivi("RW_FiatInRW","NO");
+        RW_Opzioni_AggiornaAbilitazioneFiat();
 
         //Regime della liquidità in valuta : di default si liquida l'IVAFE ordinaria (0,20 %).
         //Il "solo monitoraggio" e' una scelta, non piu' il comportamento implicito : vedi
@@ -10770,7 +10771,7 @@ if (result.isAction("delete-all")) {
                 String Mov[] = new String[7];
                 Mov[0] = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 4).toString();
                 Mov[1] = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
-                Mov[2] = "Periodo FIAT (valuta estera) - solo monitoraggio";
+                Mov[2] = "Periodo FIAT (liquidità) - solo monitoraggio";
                 Mov[3] = "";
                 Mov[4] = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString();
                 Mov[5] = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString();
@@ -11503,13 +11504,29 @@ if (result.isAction("delete-all")) {
     }//GEN-LAST:event_RW_Opzioni_CheckBox_MostraGiacenzeSePagaBolloActionPerformed
 
     private void RW_Opzioni_CheckBox_FiatInRWActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_FiatInRWActionPerformed
-        // Attiva/disattiva la parte FIAT del quadro W/RW (righi valuta estera presso intermediario estero,
-        // codice bene 14, solo monitoraggio). Letta da Calcoli_RW.AggiornaRWFR.
+        // Attiva/disattiva la parte FIAT del quadro W/RW (righi liquidita' presso intermediario estero,
+        // codice bene 14). Letta da Calcoli_RW.AggiornaRWFR.
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         DatabaseH2.Pers_Opzioni_Scrivi("RW_FiatInRW", RW_Opzioni_CheckBox_FiatInRW.isSelected() ? "SI" : "NO");
+        RW_Opzioni_AggiornaAbilitazioneFiat();
         Funzioni_AggiornaTutto();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_RW_Opzioni_CheckBox_FiatInRWActionPerformed
+
+    /**
+     * Abilita o disabilita la sezione FIAT delle opzioni RW/W in base alla casella
+     * {@code RW_Opzioni_CheckBox_FiatInRW}, che ne e' la testata : senza la parte FIAT nel quadro, il
+     * regime della liquidita' non ha nulla su cui applicarsi.
+     * <p><b>Va chiamata anche da {@link #AggiornaSpunte()}</b>, non solo dal gestore della casella :
+     * all'avvio la spunta viene ripristinata dalle opzioni salvate senza passare da un evento, e senza
+     * questa chiamata la sezione resterebbe abilitata fino al primo click dell'utente.
+     */
+    private void RW_Opzioni_AggiornaAbilitazioneFiat() {
+        boolean attiva = RW_Opzioni_CheckBox_FiatInRW.isSelected();
+        RW_Opzioni_Label_Liquidita.setEnabled(attiva);
+        RW_Opzioni_Radio_Liquidita_ConIvafe.setEnabled(attiva);
+        RW_Opzioni_Radio_Liquidita_SoloMonitoraggio.setEnabled(attiva);
+    }
 
     private void RW_Opzioni_Radio_Liquidita_ConIvafeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_Radio_Liquidita_ConIvafeActionPerformed
         ScegliRegimeLiquiditaFiat(false);
@@ -11715,10 +11732,14 @@ if (result.isAction("delete-all")) {
             Stampe stampa=new Stampe(VarStatiche.getCartella_Temporanei()+"RW_"+AnnoDiCompetenza+"_"+DataOra+".pdf");
             String quadroScelto = stampaW ? "QUADRO W" : "QUADRO RW";
             //String piede="Stampa generata da "+this.getTitle()+"  - https://sourceforge.net/projects/giacenze-crypto-com";
-            String piede="Stampa generata da "+VarStatiche.Titolo+VarStatiche.RiferimentoStampe()+"                        REPORT x "+quadroScelto+" Anno "+AnnoDiCompetenza;
-            stampa.Piede(piede);
+            //Veste grafica del report : sostituisce Piede(), che stamperebbe anche sulla copertina.
+            //Da attivare prima di ApriDocumento().
+            stampa.AttivaVesteGrafica(quadroScelto, AnnoDiCompetenza);
             stampa.ApriDocumento();
-            stampa.AggiungiTestoCentrato(quadroScelto+" PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza,Font.BOLD,12);
+            stampa.AggiungiCopertina(stampaW ? "Quadro W" : "Quadro RW", "Cripto-attività", AnnoDiCompetenza,
+                    new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date()));
+            stampa.NuovaPagina();
+            stampa.ContestoPagina(quadroScelto+" - cripto-attività - anno "+AnnoDiCompetenza+" - Foglio 1", !stampaW);
             int numeroRighe=RW_Tabella.getModel().getRowCount();
 
             //Stampa Quadro W
@@ -11728,7 +11749,7 @@ if (result.isAction("delete-all")) {
             int foglio=1;
             String testo="";
           if (stampaW) {
-            stampa.AggiungiTesto("FOGLIO "+foglio,Font.BOLD,10);
+            stampa.DistanziatoreTestata();
             for (int i=0;i<numeroRighe;i++){
                 //I righi FIAT (valuta estera) hanno una stampa dedicata (fase F5) : per ora non entrano
                 //nel Quadro W cripto ne' nel Quadro RW cripto (eviterei di emetterli con codice bene 21).
@@ -11757,12 +11778,14 @@ if (result.isAction("delete-all")) {
                     if ((righeQuadroStampate)%5==0&& righeQuadroStampate != 0){
                         stampa.NuovaPagina();
                         foglio++;
-                        stampa.AggiungiTesto("FOGLIO "+foglio,Font.BOLD,10);
+                        stampa.ContestoPagina(quadroScelto+" - cripto-attività - anno "+AnnoDiCompetenza+" - Foglio "+foglio, false);
+                        stampa.DistanziatoreTestata();
                         righeQuadroStampate = righeQuadroStampate - 5;
                     }
                     righeQuadroStampate++;
                     totRigheW++;
-                    stampa.AggiungiHtml("<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>"+NomeGruppo+"</b>" + Errore+"</html>");
+                    //Senza veste grafica AggiungiEtichettaGruppo ricade da sola sulla vecchia riga HTML.
+                    stampa.AggiungiEtichettaGruppo("W"+righeQuadroStampate, NomeGruppo, errori?"Attenzione! Ci sono degli errori da correggere!":"");
                     if (PagaBollo.equalsIgnoreCase("SI")&&
                             (RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.isSelected()||
                             RW_Opzioni_RilevanteSoloValoriIniFin.isSelected()))GG="";
@@ -11776,61 +11799,18 @@ if (result.isAction("delete-all")) {
             
             
                     stampa.NuovaPagina();
-                    stampa.AggiungiTestoCentrato("NOTE RELATIVE AL RIGO W8 \n\n", Font.BOLD, 12);
+                    stampa.ContestoPagina("Note relative al rigo W8 - anno "+AnnoDiCompetenza, false);
+                    if (stampa.VesteGraficaAttiva()) stampa.AggiungiTitoloSezione("Note relative al rigo W8", "Quadro W - anno d'imposta "+AnnoDiCompetenza);
+                    else stampa.AggiungiTestoCentrato("NOTE RELATIVE AL RIGO W8 \n\n", Font.BOLD, 12);
 
-                                        testo = """
-                            <html><font size="2" face="Courier New,Courier, mono" >
-                            <b>ATTENZIONE :</b> <u>La parte relativa al rigo W8 va compilata a mano prendendo i valori dalle dichiarazioni precedenti.</u><br>
-                                                Il programma attualmente non ha una sezione dove inserire e memorizzare questi dati<br><br>
-                            Per la compilazione seguire le seguenti istruzioni : <br><br>
-                            
-                            <b>SEZIONE IV</b> - Versamenti e residui Imposta cripto-attività <br> <br>
-                            <b>Colonna 2</b> → – <u>Eccedenza dichiarazione precedente cripto-attività</u> –
-                                riportare l’eventuale credito dell’imposta sul valore delle cripto-attività possedute all’estero che risulta dalla dichiarazione relativa ai redditi 2024, indicato nella colonna 7 del rigo 301 (o nella colonna 7 del rigo 351 per il coniuge dichiarante) del modello 730-3 2025 o nella colonna 5 del rigo RX27 del Mod. REDDITI PF 2025. <br><br>
-                            <b>Colonna 3</b> → – <u>Eccedenza compensata modello F24 cripto-attività</u> –
-                                indicare l’importo dell’eccedenza dell’imposta sulle cripto-attività eventualmente compensata utilizzando il modello F24. <br><br>
-                            <b>Colonna 4</b> → – <u>Acconti versati</u> –
-                                indicare l’ammontare complessivo degli importi versati con il modello F24 indicando i codici tributo 1728 (primo acconto) e 1729 (secondo acconto) e l’anno 2025. <br><br>
-                            Il rigo W8 si ferma alla colonna 4: a differenza del rigo RW8 del Modello Redditi PF, qui non c’è
-                            un calcolo di debito/credito a carico del contribuente. Per chi presenta il 730 con sostituto
-                            d’imposta, l’eventuale saldo dell’imposta sulle cripto-attività risultante dal prospetto di
-                            liquidazione (Mod. 730-3) viene trattenuto direttamente in busta paga o rata di pensione, con le
-                            stesse modalità del saldo Irpef – nessun versamento F24 personale è normalmente richiesto. Il
-                            codice tributo <b>1727</b> serve solo a chi presenta il 730 <u>senza sostituto</u> (versamento diretto tramite
-                            F24) o a chi deve regolarizzare autonomamente un importo non trattenuto correttamente.<br>
-                            </font></html>""";
+                                        testo = NoteCompilazione.Testo(NoteCompilazione.W8, AnnoDiCompetenza);
                     stampa.AggiungiHtml(testo); 
                     
                     stampa.NuovaPagina();
-                    stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO W\n\n", Font.BOLD, 12);
-                    testo = """
-                            <html><font size="2" face="Courier New,Courier, mono" >
-                            <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
-                            sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
-                            
-                            Le impostazioni sottostanti sono quelle utilizzate nella maggioranza dei casi, si consiglia di
-                            verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
-                            
-                            <b>Colonna 1</b> → \u2013 <u>TITOLO DI POSSESSO</u> \u2013 <b>Propriet\u00e0 (1)</b><br>
-                            <b>Colonna 3</b> → \u2013 <u>CODICE INDIVIDUAZIONE BENE</u> \u2013 <b>Cripto-attivit\u00e0 (21)</b><br>
-                            <b>Colonna 4</b> → \u2013 <u>CODICE STATO ESTERO</u> \u2013 <b>Vuoto</b><br>
-                            <b>Colonna 5</b> → \u2013 <u>QUOTA DI POSSESSO</u> \u2013 <b>(100)</b> (se non cointestate)<br>
-                            <b>Colonna 6</b> → \u2013 <u>CRITERIO DETERMINAZIONE VALORE</u> \u2013 <b>Valore di mercato (1)</b><br>
-                            <b>Colonna 7</b> → \u2013 <u>VALORE INIZIALE</u> \u2013 Valore all'inizio del periodo d'imposta o al primo giorno di detenzione dell'investimento.<br>
-                            <b>Colonna 8</b> → \u2013 <u>VALORE FINALE</u> \u2013 Valore al termine del periodo d\u2019imposta ovvero al termine del periodo di detenzione dell'attivit\u00e0.<br>
-                            <b>Colonna 10</b> \u2013 <u>GIORNI IC</u> \u2013 Numero giorni di detenzione per l'imposta sul valore delle cripto-attivit\u00e0.<br>
-                            <b>Colonna 14</b> \u2013 <u>CODICE</u> \u2013 Deve essere indicato un codice per indicare la compilazione di uno o
-                            pi\u00f9 quadri reddituali conseguenti al cespite indicato oggetto di monitoraggio, ovvero se il bene \u00e8 infruttifero, 
-                            in particolare, indicare:<br>
-                            → → - (Codice 1) x Compilazione quadro D, rigo D4 codici 5 e 8 &emsp;<br>
-                            → → - (Codice 2) x Compilazione quadro M, rigo M31 &emsp;<br>
-                            → → - (Codice 3) x Compilazione quadro T &emsp;<br>
-                            → → - (Codice 4) x Compilazione contemporanea di due o tre ipotesi descritte con i codici precedenti<br>
-                            → → - (Codice 5) Nel caso in cui i redditi relativi ai prodotti finanziari verranno percepiti in un successivo
-                            periodo d\u2019imposta ovvero se i predetti prodotti finanziari sono infruttiferi. In questo caso
-                            \u00e8 opportuno che gli interessati acquisiscano dagli intermediari esteri documenti o
-                            attestazioni da cui risulti tale circostanza<br>
-                            <b>Colonna 16</b> \u2013 <u>SOLO MONITORAGGIO</u> \u2013 Da selezionare in caso si faccia solo monitoraggio (es. quando l'intermediario paga il bollo)</font></html>""";
+                    stampa.ContestoPagina("Note di compilazione - anno "+AnnoDiCompetenza, false);
+                    if (stampa.VesteGraficaAttiva()) stampa.AggiungiTitoloSezione("Note di compilazione", "Quadro W - anno d'imposta "+AnnoDiCompetenza);
+                    else stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO W\n\n", Font.BOLD, 12);
+                    testo = NoteCompilazione.Testo(NoteCompilazione.W, AnnoDiCompetenza);
                     stampa.AggiungiHtml(testo);
           } // fine if (stampaW) : blocco Quadro W (punto 5)
 
@@ -11906,6 +11886,9 @@ if (result.isAction("delete-all")) {
                                 foglio++;
                                 righeQuadroStampate = righeQuadroStampate - 5;
                                 stampa.NuovaPagina();
+                                //Dopo NuovaPagina : ContestoPagina vale per la pagina che si apre, e
+                                //NuovaPagina chiude quella appena disegnata (che porta il foglio precedente).
+                                stampa.ContestoPagina(quadroScelto+" - cripto-attività - anno "+AnnoDiCompetenza+" - Foglio "+foglio, true);
                                 stampa.AggiungiTesto("\n",Font.NORMAL,10);
                             }else{
                                 mancaStampa=true;
@@ -11926,6 +11909,12 @@ if (result.isAction("delete-all")) {
                             Messaggi[righeQuadroStampate]=Errore;
                             righeQuadroStampate++;
                             totRigheRW++;
+                            //Appena un rigo entra nel foglio c'e' di nuovo qualcosa da stampare.
+                            //Prima mancaStampa veniva alzato solo nel ramo "else" di sopra: sull'iterazione
+                            //che svuota il foglio veniva azzerato e il rigo appena inserito non lo rialzava,
+                            //quindi con un numero di righi pari a 5k+1 (6, 11, 16...) l'ultimo foglio non
+                            //veniva mai emesso e quei righi sparivano dalla dichiarazione senza un avviso.
+                            mancaStampa=true;
                             
                             //stampa.AggiungiTesto("\n",Font.NORMAL,10);
 
@@ -11947,70 +11936,18 @@ if (result.isAction("delete-all")) {
                     //STAMPO LE NOTE DI COMPILAZIONE DEL QUADRO RW
                     
                     stampa.NuovaPagina();
-                    stampa.AggiungiTestoCentrato("NOTE RELATIVE AL RIGO RW8 \n\n", Font.BOLD, 12);
+                    stampa.ContestoPagina("Note relative al rigo RW8 - anno "+AnnoDiCompetenza, false);
+                    if (stampa.VesteGraficaAttiva()) stampa.AggiungiTitoloSezione("Note relative al rigo RW8", "Quadro RW - anno d'imposta "+AnnoDiCompetenza);
+                    else stampa.AggiungiTestoCentrato("NOTE RELATIVE AL RIGO RW8 \n\n", Font.BOLD, 12);
                                         
-                                        testo = """
-                            <html><font size="2" face="Courier New,Courier, mono" >
-                            <b>ATTENZIONE :</b> <u>La parte relativa al rigo RW8, ad esclusione del valore dell'imposta, va compilata a mano prendendo i valori dalle dichiarazioni precedenti.</u><br>
-                                                Il programma attualmente non ha una sezione dove inserire e memorizzare questi dati<br><br>
-                            Per la compilazione seguire le seguenti istruzioni : <br><br>
-                            
-                            <b>Colonna 1</b> → 
-                                 riportare il totale dell’imposta dovuta che risulta sommando gli importi determinati nella colonna 34 dei righi compilati nella presente sezione. (Già gestita dal programma) <br><br>                                    
-                            <b>Colonna 2</b> → \u2013 <u>Eccedenza dichiarazione precedente cripto-attività</u> \u2013
-                                riportare l’eventuale credito dell’imposta sul valore delle cripto-attività possedute all’estero che risulta dalla dichiarazione relativa ai redditi 2024, indicato nella colonna 7 del rigo 301 (o nella colonna 7 del rigo 351 per il coniuge dichiarante) del modello 730-3 2025 o nella colonna 5 del rigo RX27 del Mod. REDDITI PF 2025. <br><br>
-                            <b>Colonna 3</b> → \u2013 <u>Eccedenza compensata modello F24 cripto-attività</u> \u2013 
-                                indicare l’importo dell’eccedenza dell’imposta sulle cripto-attività eventualmente compensata utilizzando il modello F24. <br><br>
-                            <b>Colonna 4</b> → \u2013 <u>Acconti versati</u> \u2013 
-                                indicare l’ammontare complessivo degli importi versati con il modello F24 indicando i codici tributo 1728 (primo acconto) e 1729 (secondo acconto) e l’anno 2025. <br><br>
-                            <b>Colonna 5 e 6</b> \u2013
-                                Per determinare l’imposta sulle cripto-attività a debito o a credito effettuare la seguente operazione: col. 1 – col. 2 + col. 3 – col. 4.<br> 
-                                Se il risultato di tale operazione è positivo (debito) riportare l’importo così ottenuto nella <b>colonna 5</b> (Imposta a debito)<br>. 
-                                In tal caso l’imposta sul valore dell’imposta va versata con il modello F24, indicando il codice tributo 1727, con le stesse modalità e scadenze previste per l’Irpef ivi comprese quelle relative alle modalità di versamento dell’imposta in acconto e a saldo.<br> 
-                                L’imposta non va versata se l’importo di questa colonna non supera 12 euro.<br>
-                                Se il risultato di tale operazione è negativo (credito) riportare l’importo così ottenuto nella <b>colonna</b> 6 (Imposta a credito)<br>. 
-                            
-                            </font></html>""";
+                                        testo = NoteCompilazione.Testo(NoteCompilazione.RW8, AnnoDiCompetenza);
                     stampa.AggiungiHtml(testo);                     
                     
                     stampa.NuovaPagina();
                     
                     stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO RW\n\n", Font.BOLD, 12);
                  // String testo;
-                    testo = """
-                            <html><font size="2" face="Courier New,Courier, mono" >
-                            <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
-                            sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
-                            
-                            Le impostazioni sottostanti sono quelle utilizzate nella maggioranza dei casi, si consiglia di
-                            verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
-                            
-                            <b>Colonna 1</b> → \u2013 <u>TITOLO DI POSSESSO</u> \u2013 <b>Propriet\u00e0 (1)</b><br>
-                            <b>Colonna 3</b> → \u2013 <u>CODICE INDIVIDUAZIONE BENE</u> \u2013 <b>Cripto-attivit\u00e0 (21)</b><br>
-                            <b>Colonna 4</b> → \u2013 <u>CODICE STATO ESTERO</u> \u2013 <b>Vuoto</b><br>
-                            <b>Colonna 5</b> → \u2013 <u>QUOTA DI POSSESSO</u> \u2013 <b>(100)</b> (se non cointestate)<br>
-                            <b>Colonna 6</b> → \u2013 <u>CRITERIO DETERMINAZIONE VALORE</u> \u2013 <b>Valore di mercato (1)</b><br>
-                            <b>Colonna 7</b> → \u2013 <u>VALORE INIZIALE</u> \u2013 Valore all'inizio del periodo d'imposta o al primo giorno di detenzione dell'investimento.<br>
-                            <b>Colonna 8</b> → \u2013 <u>VALORE FINALE</u> \u2013 Valore al termine del periodo d\u2019imposta ovvero al termine del periodo di detenzione dell'attivit\u00e0.<br>
-                            <b>Colonna 10</b> \u2013 <u>GIORNI IC</u> \u2013 Numero giorni di detenzione per l'imposta sul valore delle cripto-attivit\u00e0.<br>
-                            <b>Colonna 14</b> \u2013 <u>CODICE</u> \u2013 Deve essere indicato un codice per indicare la compilazione di uno o
-                            pi\u00f9 quadri reddituali conseguenti al cespite indicato oggetto di monitoraggio, ovvero se il bene \u00e8 infruttifero, 
-                            in particolare, indicare:<br>
-                            → → - (Codice 1) x Compilazione Quadro RL &emsp;<br>
-                            → → - (Codice 2) x Compilazione Quadro RM &emsp;<br>
-                            → → - (Codice 3) x Compilazione Quadro RT &emsp;<br>
-                            → → - (Codice 4) x Compilazione contemporanea di due o tre Quadri tra RL, RM e RT<br>
-                            → → - (Codice 5) Nel caso in cui i redditi relativi ai prodotti finanziari verranno percepiti in un successivo
-                            periodo d\u2019imposta ovvero se i predetti prodotti finanziari sono infruttiferi. In questo caso
-                            \u00e8 opportuno che gli interessati acquisiscano dagli intermediari esteri documenti o
-                            attestazioni da cui risulti tale circostanza<br>
-                            <b>Colonna 16</b> \u2013 <u>SOLO MONITORAGGIO</u> \u2013 Da selezionare in caso si faccia solo monitoraggio (es. quando l'intermediario paga il bollo)<br>
-                            <b>Colonna 33</b> \u2013 <u>IC</u> \u2013 E’ l’imposta di competenza (2x1000) calcolata rapportando il valore finale di colonna 8 a quota e giorni di possesso.<br>                           
-                            <b>Colonna 34</b> \u2013 <u>IC DOVUTA</u> \u2013 E’ l’imposta da versare che corrisponde all’importo di "Colonna 33" meno "Colonna 12".<br>
-                            <b>RW8</b> \u2013 <u>IMPOSTA CRIPTO-ATTIVITA'</u> \u2013 Deve essere compilato per determinare l’imposta sul valore
-                            delle cripto-attività. Nel caso in cui siano utilizzati più moduli va compilato esclusivamente il
-                            rigo RW8 del primo modulo indicando in esso il totale di tutti i righi compilati.<br>                            
-                            </font></html>""";
+                    testo = NoteCompilazione.Testo(NoteCompilazione.RW, AnnoDiCompetenza);
                     stampa.AggiungiHtml(testo);
           } // fine if (!stampaW) : blocco Quadro RW (punto 5)
 
@@ -12240,18 +12177,28 @@ if (result.isAction("delete-all")) {
         //righi senza Stato estero evidenziati.
         if (stampaW) {
         stampa.NuovaPagina();
-        stampa.AggiungiTestoCentrato("QUADRO W - VALUTA ESTERA (FIAT) PRESSO INTERMEDIARIO ESTERO - ANNO " + AnnoDiCompetenza, Font.BOLD, 12);
         int nW = nCryptoW;
         int foglioW = (nCryptoW == 0 ? 1 : (nCryptoW + 4) / 5) + 1;   // foglio nuovo, dopo quelli cripto
         int suFoglioW = 0;                // righi FIAT gia' su questo foglio (parte da una pagina nuova)
-        stampa.AggiungiTesto("FOGLIO " + foglioW, Font.BOLD, 10);
+        //Anche questa pagina porta 5 righi di modulo : titolo e numero di foglio stanno nella
+        //testata disegnata, non nel flusso, che non ha spazio da regalare.
+        if (stampa.VesteGraficaAttiva()) {
+            stampa.ContestoPagina("Quadro W - liquidità (FIAT) - anno " + AnnoDiCompetenza + " - Foglio " + foglioW, false);
+            stampa.DistanziatoreTestata();
+        } else {
+            stampa.AggiungiTestoCentrato("QUADRO W - LIQUIDITA' (FIAT) PRESSO INTERMEDIARIO ESTERO - ANNO " + AnnoDiCompetenza, Font.BOLD, 12);
+            stampa.AggiungiTesto("FOGLIO " + foglioW, Font.BOLD, 10);
+        }
         boolean primoW = true;
         for (int idx : fiat) {
             if (suFoglioW == 5) {
                 stampa.NuovaPagina();
                 foglioW++;
                 suFoglioW = 0;
-                stampa.AggiungiTesto("FOGLIO " + foglioW, Font.BOLD, 10);
+                if (stampa.VesteGraficaAttiva()) {
+                    stampa.ContestoPagina("Quadro W - liquidità (FIAT) - anno " + AnnoDiCompetenza + " - Foglio " + foglioW, false);
+                    stampa.DistanziatoreTestata();
+                } else stampa.AggiungiTesto("FOGLIO " + foglioW, Font.BOLD, 10);
             }
             String nome = RW_Tabella.getModel().getValueAt(idx, 0).toString();
             String vi = new BigDecimal(RW_Tabella.getModel().getValueAt(idx, 1).toString()).setScale(0, RoundingMode.HALF_UP).toPlainString();
@@ -12270,13 +12217,13 @@ if (result.isAction("delete-all")) {
             String ggW = ivafeDovuta ? RW_Tabella.getModel().getValueAt(idx, 3).toString() : "";
             String etichettaBene = contoCorrente
                     ? " - conto corrente estero" + (ivafeDovuta ? " (IVAFE " + d[Calcoli_RW_Fiat.FIAT_COL_IVAFE] + " EUR, da riportare a mano)" : " (solo monitoraggio, sotto soglia)")
-                    : " - valuta estera" + (ivafeDovuta
+                    : " - liquidità" + (ivafeDovuta
                         ? " (IVAFE " + d[Calcoli_RW_Fiat.FIAT_COL_IVAFE] + " EUR, da riportare a mano"
                           + (StatiEsteri.isPrivilegiato(stato) ? " ; Stato a fiscalita' privilegiata, aliquota 0,40 %" : "") + ")"
                         : " (solo monitoraggio)");
             nW++;
             suFoglioW++;
-            stampa.AggiungiHtml("<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>" + nome + "</b>" + etichettaBene + avvStato + "</html>");
+            stampa.AggiungiEtichettaGruppo("W" + nW, nome, etichettaBene, avvStato.isBlank() ? "" : "Stato estero non impostato");
             stampa.AggiungiQuadroW(primoW ? imgWTit : imgW, String.valueOf(nW), vi, vf, ggW, cbW, stato, !ivafeDovuta);
             primoW = false;
         }
@@ -12287,6 +12234,7 @@ if (result.isAction("delete-all")) {
         stampa.NuovaPagina();
         int fogliCrypto = nCryptoRW == 0 ? 1 : (nCryptoRW + 4) / 5;
         int foglioRW = fogliCrypto + 1;   // sempre > 1 : il rigo RW8 (totale IC) non va ristampato sul FIAT
+        stampa.ContestoPagina("Quadro RW - liquidità (FIAT) - anno " + AnnoDiCompetenza + " - Foglio " + foglioRW, true);
         int nRW = nCryptoRW;
         String[] vIni = new String[5], vFin = new String[5], gg5 = new String[5], ic5 = new String[5],
                  wal5 = new String[5], note5 = new String[5], cb5 = new String[5], se5 = new String[5];
@@ -12313,7 +12261,7 @@ if (result.isAction("delete-all")) {
             ic5[slot] = ivafeDovuta
                     ? new BigDecimal(d[Calcoli_RW_Fiat.FIAT_COL_IVAFE]).setScale(0, RoundingMode.HALF_UP).toPlainString()
                     : "0";
-            wal5[slot] = nome + (contoCorrente ? " - conto corrente estero" : " - valuta estera");
+            wal5[slot] = nome + (contoCorrente ? " - conto corrente estero" : " - liquidità");
             note5[slot] = stato.isBlank() ? "Stato estero mancante"
                     : (contoCorrente && !ivafeDovuta ? "conto corrente sotto soglia (solo monitoraggio)"
                     : (!contoCorrente && ivafeDovuta && StatiEsteri.isPrivilegiato(stato)
@@ -12332,6 +12280,7 @@ if (result.isAction("delete-all")) {
                 slot = 0;
                 foglioRW++;
                 stampa.NuovaPagina();
+                stampa.ContestoPagina("Quadro RW - liquidità (FIAT) - anno " + AnnoDiCompetenza + " - Foglio " + foglioRW, true);
             }
         }
         if (slot > 0) {
@@ -12343,89 +12292,23 @@ if (result.isAction("delete-all")) {
 
         // ---------- Nota di compilazione FIAT ----------
         stampa.NuovaPagina();
-        stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE - VALUTA ESTERA (FIAT)\n\n", Font.BOLD, 12);
-        stampa.AggiungiHtml("""
-                <html><font size="2" face="Courier New,Courier, mono" >
-                <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno sempre valenza informativa e
-                meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
-                I righi seguenti riguardano la <b>valuta estera</b> (euro e valute estere) detenuta presso
-                intermediari esteri, da monitorare nel Quadro W/RW come "altre attivita' estere di natura
-                finanziaria - valute estere - depositi e conti correnti bancari costituiti all'estero".<br><br>
-                <b>Colonna 3</b> - CODICE INDIVIDUAZIONE BENE - <b>14</b><br>
-                <b>Colonna 4</b> - CODICE STATO ESTERO - lo Stato estero dell'intermediario (se configurato nei
-                periodi del gruppo wallet, altrimenti da inserire a mano)<br>
-                <b>Colonna 7 / 8</b> - VALORE INIZIALE / FINALE - controvalore in euro della giacenza a inizio e
-                fine periodo (cambio di riferimento Banca d'Italia). Un valore pari a 0 viene riportato come
-                <b>1</b> perche' il software dell'Agenzia delle entrate non accetta lo zero.<br>
-                <b>Colonna 10</b> - GIORNI - <b>non compilata</b> per la valuta estera : facendo solo
-                monitoraggio non e' possibile inserire i giorni di detenzione.<br>
-                <b>Colonna 14</b> - lasciata vuota<br>
-                <b>Colonna 16</b> - SOLO MONITORAGGIO - barrata sui righi per i quali non e' stata
-                liquidata alcuna imposta. Sui righi "altre attivita' estere di natura finanziaria"
-                (codice bene 14) dipende dall'opzione <i>Opzioni - Opzioni Calcolo RW/W - Liquidita' in
-                valuta presso intermediari esteri</i> : con l'IVAFE ordinaria la colonna <b>non</b> e'
-                barrata e l'imposta e' quella indicata sul rigo, con il solo monitoraggio e' barrata e
-                nessuna imposta viene calcolata.<br><br>
-                I righi contrassegnati con <b>"Stato estero mancante"</b> (o "Stato estero non impostato" nel Quadro W) vanno completati a
-                mano con il codice dello Stato estero dell'intermediario (colonna 4).<br>
-                </font></html>""");
+        stampa.ContestoPagina("Note di compilazione - liquidità (FIAT) - anno " + AnnoDiCompetenza, false);
+        if (stampa.VesteGraficaAttiva()) stampa.AggiungiTitoloSezione("Note di compilazione", "Liquidità (FIAT) - anno d'imposta " + AnnoDiCompetenza);
+        else stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE - LIQUIDITA' (FIAT)\n\n", Font.BOLD, 12);
+        stampa.AggiungiHtml(NoteCompilazione.Testo(NoteCompilazione.FIAT, AnnoDiCompetenza));
         if (!lookupFalliti.isEmpty()) {
-            stampa.AggiungiHtml("""
-                <html><font size="2" face="Courier New,Courier, mono" >
-                <br><b>ATTENZIONE</b> - non e' stato possibile risolvere il dettaglio di calcolo per i
-                seguenti righi FIAT : <b>""" + String.join(", ", lookupFalliti) + """
-                </b>.<br>Sono stati stampati come "altre attivita' estere di natura finanziaria"
-                (codice bene 14) e <b>senza alcuna imposta</b>, mentre la tabella a video puo' gia'
-                mostrarne una : vanno controllati a mano uno per uno. Se uno di essi e' in realta' un
-                <b>conto corrente estero</b> (periodo con "e' conto corrente" = SI) va corretto anche il
-                codice individuazione bene (1) e il valore medio in colonna 8. Ricalcolare il Quadro RW
-                e ristampare per rimuovere questo avviso.<br>
-                </font></html>""");
+            stampa.AggiungiHtml(NoteCompilazione.Testo(NoteCompilazione.FIAT_LOOKUP_FALLITI, AnnoDiCompetenza,
+                    java.util.Map.of("righi", String.join(", ", lookupFalliti))));
         }
         if (contoCorrentePresente) {
-            stampa.AggiungiHtml("""
-                <html><font size="2" face="Courier New,Courier, mono" >
-                <br><b>CONTI CORRENTI / DEPOSITI BANCARI ESTERI (codice individuazione bene 1)</b><br>
-                Alcuni righi riguardano veri conti correnti o depositi bancari esteri (periodo con
-                "e' conto corrente" = SI). Per questi :<br>
-                <b>Colonna 3</b> - CODICE INDIVIDUAZIONE BENE - <b>1</b> (non 14).<br>
-                <b>Colonna 8</b> - riporta il <b>valore medio di giacenza</b> in euro del conto sull'anno di
-                vita, non il saldo puntuale a fine periodo.<br>
-                <b>Colonna 10</b> - GIORNI - compilata (giorni di detenzione) solo quando l'IVAFE e' dovuta.<br>
-                <b>Colonna 16</b> - SOLO MONITORAGGIO - <b>non barrata</b> quando l'IVAFE e' dovuta.<br>
-                <b>IVAFE</b> - in misura fissa 34,20 euro rapportati alla quota (100%) e ai giorni di
-                possesso. <u>Non dovuta</u> se il valore medio di giacenza del conto e' &le; 5.000 euro ;
-                in tal caso il rigo e' comunque prodotto per il monitoraggio (obbligatorio se il valore
-                massimo raggiunto supera 15.000 euro).<br>
-                <b>RW6</b> - l'IVAFE dei conti correnti <b>non e' totalizzata automaticamente</b> in questo
-                report : totale IVAFE conti correnti esteri = <b>""" + Funzioni.formattaBigDecimal(totIvafeContiCorrenti.setScale(0, RoundingMode.HALF_UP), false) + """
-                euro</b>, da riportare a mano nel rigo RW6 (e, per il Modello 730, nella relativa sezione
-                del Quadro W).<br>
-                </font></html>""");
+            stampa.AggiungiHtml(NoteCompilazione.Testo(NoteCompilazione.FIAT_CONTI_CORRENTI, AnnoDiCompetenza,
+                    java.util.Map.of("totale", Funzioni.formattaBigDecimal(
+                            totIvafeContiCorrenti.setScale(0, RoundingMode.HALF_UP), false))));
         }
         if (ivafeLiquiditaPresente) {
-            stampa.AggiungiHtml("""
-                <html><font size="2" face="Courier New,Courier, mono" >
-                <br><b>LIQUIDITA' IN VALUTA PRESSO INTERMEDIARI ESTERI (codice individuazione bene 14)</b><br>
-                Sui righi di liquidita' e' stata liquidata l'<b>IVAFE ordinaria dello 0,20 %</b> del
-                valore di colonna 8, rapportata alla quota (100%) e ai giorni di possesso, secondo
-                l'opzione scelta in <i>Opzioni - Opzioni Calcolo RW/W</i>. Tre cose da sapere :<br>
-                1) la questione <b>non e' pacifica</b> : l'art. 19 comma 18 del D.L. 201/2011 tassa i
-                "prodotti finanziari", nozione che il TUF non estende a cio' che non e' investimento,
-                mentre la circolare 28/E del 2012 descrive la base imponibile come l'intero perimetro del
-                monitoraggio. Chi segue la prima lettura puo' scegliere il <b>solo monitoraggio</b> nelle
-                opzioni.<br>
-                2) l'aliquota e' scelta in base allo <b>Stato estero</b> del rigo : <b>0,40 %</b> per gli
-                Stati e territori dell'elenco del D.M. 4 maggio 1999 a partire dall'anno d'imposta
-                <b>2024</b> (art. 19 comma 20-bis), <b>0,20 %</b> negli altri casi. Su quei righi resta da
-                fare a mano una cosa sola, che il modulo stampato non riproduce : <b>barrare la colonna
-                21</b>. I righi interessati portano la nota "fiscalita' privilegiata : barrare col. 21".
-                Uno Stato estero <u>non indicato</u> non fa scattare la maggiorazione.<br>
-                3) come per i conti correnti, questo importo <b>non e' totalizzato automaticamente</b> in
-                RW6.<br>
-                <b>Totale IVAFE della parte FIAT</b> (conti correnti + liquidita') = <b>""" + Funzioni.formattaBigDecimal(totIvafeFiat.setScale(0, RoundingMode.HALF_UP), false) + """
-                euro</b>.<br>
-                </font></html>""");
+            stampa.AggiungiHtml(NoteCompilazione.Testo(NoteCompilazione.FIAT_IVAFE_LIQUIDITA, AnnoDiCompetenza,
+                    java.util.Map.of("totale", Funzioni.formattaBigDecimal(
+                            totIvafeFiat.setScale(0, RoundingMode.HALF_UP), false))));
         }
     }
 
@@ -15702,13 +15585,9 @@ if (result != null && !result.isAction("cancel")) {
                         
                     
                     stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO T\n\n", Font.BOLD, 12);
-                    String testo;
-                    if (Anno<2025){
-                        testo = Stampe.NoteCompilazioneTante2025();
-                    }
-                    else{
-                        testo = Stampe.NoteCompilazioneT2025();
-                        }   
+                    //Quale testo vale per quest'anno lo decide il file delle note, non un if qui : la
+                    //variante "T.2025" copre il 2025 e gli anni dopo, la chiave nuda gli anni prima.
+                    String testo = NoteCompilazione.Testo(NoteCompilazione.T, AnnoDiCompetenza);
                     stampa.AggiungiHtml(testo);
                     
                     
@@ -15727,12 +15606,7 @@ if (result != null && !result.isAction("cancel")) {
             stampa.NuovaPagina();
             stampa.AggiungiTestoCentrato("QUADRO RT PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza+"\n\n",Font.BOLD,12);
             stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO RT\n\n", Font.BOLD, 12);
-            if (Anno<2025){
-                        testo = Stampe.NoteCompilazioneRTante2025();
-                    }
-                    else{
-                        testo = Stampe.NoteCompilazioneRT2025();
-                        }  
+            testo = NoteCompilazione.Testo(NoteCompilazione.RT, AnnoDiCompetenza);
             stampa.AggiungiHtml(testo);            
                         
                     

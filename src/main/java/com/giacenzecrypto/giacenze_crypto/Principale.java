@@ -893,6 +893,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_GruppoWallet_CheckBox_PlusManuali = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale = new javax.swing.JCheckBox();
         Prezzi_Opzioni_CheckBox_ServizioOnchain = new javax.swing.JCheckBox();
+        Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti = new javax.swing.JCheckBox();
         Opzioni_RW_Pannello = new javax.swing.JPanel();
         RW_Opzioni_CheckBox_LiFoComplessivo = new javax.swing.JCheckBox();
         RW_Opzioni_CheckBox_StakingZero = new javax.swing.JCheckBox();
@@ -967,6 +968,8 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKey_Coingecko_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Coingecko_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_Coingecko_LabelSito = new javax.swing.JLabel();
+        Opzioni_ProviderDefi_ApiKeyNodeReal_Label = new javax.swing.JLabel();
+        Opzioni_ProviderDefi_ApiKeyNodeReal_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_Moralis_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_Moralis_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Moralis_LabelSito = new javax.swing.JLabel();
@@ -2416,14 +2419,14 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Nome", "Rete", "Address Defi del Token", "Tipo", "Qta", "<html><center>Valore<br>(in Euro)</html>", "Errori", "InfoPrezzo"
+                "Nome", "Rete", "Address Defi del Token", "Tipo", "Qta", "<html><center>Valore<br>(in Euro)</html>", "<html><center>Costo Carico<br>(in Euro)</html>", "Errori", "InfoPrezzo"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -2455,9 +2458,12 @@ private static final long serialVersionUID = 3L;
             GiacenzeaData_Tabella.getColumnModel().getColumn(5).setMinWidth(100);
             GiacenzeaData_Tabella.getColumnModel().getColumn(5).setPreferredWidth(100);
             GiacenzeaData_Tabella.getColumnModel().getColumn(5).setMaxWidth(100);
-            GiacenzeaData_Tabella.getColumnModel().getColumn(7).setMinWidth(0);
-            GiacenzeaData_Tabella.getColumnModel().getColumn(7).setPreferredWidth(0);
-            GiacenzeaData_Tabella.getColumnModel().getColumn(7).setMaxWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(6).setMinWidth(110);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(6).setPreferredWidth(110);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(6).setMaxWidth(110);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(8).setMinWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(8).setPreferredWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(8).setMaxWidth(0);
         }
         GiacenzeaData_Tabella.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_Tabella.getColumnModel().getTotalColumnWidth(), 42));
         Tabelle.ColoraRigheTabella0GiacenzeaData(GiacenzeaData_Tabella);
@@ -4856,6 +4862,13 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti.setText("<html><b>Scambi cripto-cripto : </b>Considera sempre fiscalmente rilevante lo scambio tra cripto, anche tra monete con le medesime caratteristiche e funzioni (es. stablecoin verso stablecoin): calcola plusvalenza e nuovo costo di carico<br>(Non attivo di default: di norma lo scambio tra cripto con medesime caratteristiche e funzioni non genera plusvalenza)</html>");
+        Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevantiActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_Calcolo_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Calcolo_Pannello);
         Opzioni_Calcolo_Pannello.setLayout(Opzioni_Calcolo_PannelloLayout);
         Opzioni_Calcolo_PannelloLayout.setHorizontalGroup(
@@ -4881,7 +4894,8 @@ private static final long serialVersionUID = 3L;
                                     .addComponent(Plusvalenze_Opzioni_NonConsiderareMovimentiNC, javax.swing.GroupLayout.PREFERRED_SIZE, 877, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Opzioni_GruppoWallet_CheckBox_PlusManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(Prezzi_Opzioni_CheckBox_ServizioOnchain, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(Prezzi_Opzioni_CheckBox_ServizioOnchain, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
@@ -4898,6 +4912,8 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Prezzi_Opzioni_CheckBox_ServizioOnchain, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -5813,6 +5829,19 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Opzioni_ProviderDefi_ApiKeyNodeReal_Label.setText("ApiKey NodeReal (BSC) :");
+
+        Opzioni_ProviderDefi_ApiKeyNodeReal_TextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                Opzioni_ProviderDefi_ApiKeyNodeReal_TextFieldMouseReleased(evt);
+            }
+        });
+        Opzioni_ProviderDefi_ApiKeyNodeReal_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                Opzioni_ProviderDefi_ApiKeyNodeReal_TextFieldKeyReleased(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_ApiKeyLayout = new javax.swing.GroupLayout(Opzioni_ApiKey);
         Opzioni_ApiKey.setLayout(Opzioni_ApiKeyLayout);
         Opzioni_ApiKeyLayout.setHorizontalGroup(
@@ -5840,6 +5869,7 @@ private static final long serialVersionUID = 3L;
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                         .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Opzioni_ProviderDefi_ApiKeyNodeReal_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(Opzioni_ApiKey_Coingecko_Label, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(Opzioni_ApiKey_Moralis_Label, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(Opzioni_ApiKey_Cronos_Label, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -5847,6 +5877,7 @@ private static final long serialVersionUID = 3L;
                         .addGap(4, 4, 4)
                         .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Opzioni_ProviderDefi_ApiKeyNodeReal_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                                 .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -5911,6 +5942,10 @@ private static final long serialVersionUID = 3L;
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_Label)
                     .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Opzioni_ProviderDefi_ApiKeyNodeReal_Label)
+                    .addComponent(Opzioni_ProviderDefi_ApiKeyNodeReal_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -5945,7 +5980,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_ProviderDefi_TextAreaIstruzioni.setColumns(20);
         Opzioni_ProviderDefi_TextAreaIstruzioni.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
         Opzioni_ProviderDefi_TextAreaIstruzioni.setRows(3);
-        Opzioni_ProviderDefi_TextAreaIstruzioni.setText("Scegli, per ogni chain, quale provider usare per lo scaricamento dei movimenti DeFi. \nPer Cronos il default è Blockscout perché permette di impostare un blocco di partenza per lo scaricamento (a differenza del vecchio provider); Cronos usa sempre la ApiKey Cronos inserita nel tab \"ApiKey\", non quella Blockscout (anch'essa nel tab \"ApiKey\").");
+        Opzioni_ProviderDefi_TextAreaIstruzioni.setText("Scegli, per ogni chain, quale provider usare per lo scaricamento dei movimenti DeFi. \nPer Cronos il default è Blockscout perché permette di impostare un blocco di partenza per lo scaricamento (a differenza del vecchio provider); Cronos usa sempre la ApiKey Cronos inserita nel tab \"ApiKey\", non quella Blockscout (anch'essa nel tab \"ApiKey\").\nAvalanche dal 13/09/2026 non usa più Moralis ma Routescan, che risponde senza chiave. BSC resta su Moralis: non esiste nessun explorer Etherscan-compatibile gratuito per quella chain. Su Ethereum, Arbitrum, Base, Polygon, Gnosis, Optimism, Ink e Robinhood Chain le istanze Blockscout pubbliche concedono solo 10 richieste ogni ~45 minuti per indirizzo IP: inserendo la ApiKey Blockscout (tab \"ApiKey\") il programma passa da solo alla Blockscout PRO API, che ne concede 5 al secondo. Senza chiave, superato il limite lo scaricamento si ferma con un avviso che lo dice esplicitamente.");
         Opzioni_ProviderDefi_TextAreaIstruzioni.setPreferredSize(new java.awt.Dimension(774, 44));
         Opzioni_ProviderDefi_ScrollIstruzioni.setViewportView(Opzioni_ProviderDefi_TextAreaIstruzioni);
 
@@ -6451,6 +6486,16 @@ private void SettaIcone(){
         }
         Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti.setSelected("SI".equalsIgnoreCase(Plusvalenze_Pre2023ScambiRilevanti));
 
+        //Default "NO": senza questa opzione il comportamento resta quello di sempre (lo scambio fra
+        //cripto con le medesime caratteristiche e funzioni non genera plusvalenza).
+        String Plusvalenze_ScambiSempreRilevanti=DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_ScambiSempreRilevanti");
+        if(Plusvalenze_ScambiSempreRilevanti==null)
+        {
+            DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_ScambiSempreRilevanti", "NO");
+            Plusvalenze_ScambiSempreRilevanti="NO";
+        }
+        Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti.setSelected("SI".equalsIgnoreCase(Plusvalenze_ScambiSempreRilevanti));
+
         //Log verboso dei JSON scaricati: allineo sia il checkbox che il flag condiviso letto dalle
         //funzioni di importazione/prezzatura, che devono avere il valore corretto anche se l'utente
         //non tocca mai il checkbox.
@@ -6617,6 +6662,7 @@ private void SettaIcone(){
         Opzioni_ApiKey_Cronos_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"));
         Opzioni_ApiKey_UniSat_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat")));
         Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Blockscout")));
+        Opzioni_ProviderDefi_ApiKeyNodeReal_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi(NodeRealDefi.OPZIONE_APIKEY)));
 
         //Layout colonne personalizzato della tabella movimenti (preferenza utente, personale.mv.db).
         //Va dopo TransazioniCrypto_Funzioni_NascondiColonneTabellaCrypto() del costruttore: applica()
@@ -7803,7 +7849,7 @@ private void SettaIcone(){
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
             int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
             String mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            String ErroreSegnalato = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 6).toString();
+            String ErroreSegnalato = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 7).toString();
             String Rete="";
             if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1)!=null)
                 {
@@ -8877,6 +8923,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //Il tab è un contenitore vuoto lato Designer : il contenuto è il pannello condiviso con il
             //dialogo GUI_DocumentiFonte, e si riempie da solo nel proprio costruttore.
             GestioneDocumentale_Pannello = new GUI_DocumentiFonte_Pannello();
+            //Eliminando un documento si possono eliminare anche i suoi movimenti : il ricalcolo resta qui,
+            //il pannello si limita a chiederlo. Il flag si spegne subito dopo, altrimenti la ripresa del
+            //fuoco lasciata dal dialogo di conferma rifarebbe una seconda volta lo stesso lavoro.
+            GestioneDocumentale_Pannello.ImpostaAzioneRicalcolo(() -> {
+                Funzioni_AggiornaTutto();
+                TabellaCryptodaAggiornare = false;
+            });
             GestioneDocumentale.setLayout(new java.awt.BorderLayout());
             GestioneDocumentale.add(GestioneDocumentale_Pannello, java.awt.BorderLayout.CENTER);
             GestioneDocumentale.revalidate();
@@ -9051,8 +9104,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 BigDecimal Qta = new BigDecimal(GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 4).toString());
                 String Prezzo = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 5).toString();
                 String InfoPR="";
-                if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 7)!=null)
-                    InfoPR = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 7).toString();
+                if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 8)!=null)
+                    InfoPR = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 8).toString();
 
                 if (!Funzioni_WalletDeFi.isValidAddress(Address, Rete))Address=null;
 
@@ -11227,6 +11280,18 @@ if (result.isAction("delete-all")) {
        // Calcoli_Plusvalenze.AggiornaPlusvalenze();
     }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevantiActionPerformed
 
+    private void Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevantiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevantiActionPerformed
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        //Scrivo nelle Opzioni del DB se ogni scambio cripto-cripto e' fiscalmente rilevante,
+        //anche fra monete con le medesime caratteristiche e funzioni.
+        DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_ScambiSempreRilevanti",
+                Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti.isSelected() ? "SI" : "NO");
+        //L'opzione sta in OpzioniRicalcolo.Epoca(), quindi il cambio forza da solo una passata
+        //completa: non serve invalidare a mano lo stato del ricalcolo incrementale.
+        Funzioni_AggiornaTutto();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevantiActionPerformed
+
     private void Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZeroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZeroActionPerformed
         // TODO add your handling code here:
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -13131,6 +13196,7 @@ if (result != null && !result.isAction("cancel")) {
         boolean CronosDiversa=true;
         boolean UniSatDiversa=true;
         boolean BlockscoutDiversa=true;
+        boolean NodeRealDiversa=true;
 
         if (Opzioni_ApiKey_Helius_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))))HeliusDiversa=false;
@@ -13146,6 +13212,8 @@ if (result != null && !result.isAction("cancel")) {
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat"))))UniSatDiversa=false;
         if (Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Blockscout"))))BlockscoutDiversa=false;
+        if (Opzioni_ProviderDefi_ApiKeyNodeReal_TextField.getText().trim()
+                .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi(NodeRealDefi.OPZIONE_APIKEY))))NodeRealDiversa=false;
 
 
         //Controllo ed eventualmente salvo le api Helius
@@ -13218,6 +13286,13 @@ if (result != null && !result.isAction("cancel")) {
             DatabaseH2.Opzioni_Scrivi("ApiKey_Blockscout", Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.getText().trim());
         }
 
+        //Controllo ed eventualmente salvo la api NodeReal. Nessuna validazione di formato: per NodeReal
+        //non c'è una chiamata di verifica a costo zero, e una chiave sbagliata si manifesta subito come
+        //errore HTTP al primo scaricamento, con il messaggio del server riportato all'utente.
+        if (NodeRealDiversa){
+            DatabaseH2.Opzioni_Scrivi(NodeRealDefi.OPZIONE_APIKEY, Opzioni_ProviderDefi_ApiKeyNodeReal_TextField.getText().trim());
+        }
+
         Opzioni_ApiKey_ControllaPulsanti();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_ApiKey_Bottone_SalvaActionPerformed
@@ -13231,6 +13306,7 @@ if (result != null && !result.isAction("cancel")) {
         Opzioni_ApiKey_Cronos_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos")));
         Opzioni_ApiKey_UniSat_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat")));
         Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Blockscout")));
+        Opzioni_ProviderDefi_ApiKeyNodeReal_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi(NodeRealDefi.OPZIONE_APIKEY)));
         Opzioni_ApiKey_ControllaPulsanti();
     }//GEN-LAST:event_Opzioni_ApiKey_Bottone_AnnullaActionPerformed
 
@@ -13323,7 +13399,10 @@ if (result != null && !result.isAction("cancel")) {
     private String[] Opzioni_ProviderDefi_OpzioniPerChain(String rete) {
         if (rete.equalsIgnoreCase("SOL")) return new String[]{"HELIUS"};
         if (rete.equalsIgnoreCase("BTC")) return new String[]{"BITCOIN"};
-        if (rete.equalsIgnoreCase("BSC") || rete.equalsIgnoreCase("BASE") || rete.equalsIgnoreCase("AVAX")) return new String[]{"MORALIS", "BLOCKSCOUT"};
+        //BSC è l'unica chain senza nessun explorer Etherscan-compatibile gratuito: NodeReal è il
+        //ripiego, e va offerto solo dove il suo nr_getTransactionByAddress esiste davvero
+        if (rete.equalsIgnoreCase("BSC")) return new String[]{"MORALIS", NodeRealDefi.PROVIDER, "BLOCKSCOUT"};
+        if (rete.equalsIgnoreCase("BASE") || rete.equalsIgnoreCase("AVAX")) return new String[]{"MORALIS", "BLOCKSCOUT"};
         if (rete.equalsIgnoreCase("CRO")) return new String[]{"BLOCKSCOUT", "CRONOSCAN"};
         //Ink non è mai stata su Etherscan (nemmeno a pagamento, a differenza di OP/GNOSIS): offrire
         //ETHERSCAN qui punterebbe a Mappa_ChainExplorer.get("INK")[0], lasciato vuoto apposta perché
@@ -13663,6 +13742,14 @@ if (result != null && !result.isAction("cancel")) {
                             righiModificati++;
                             diffPrezzi = diffPrezzi.subtract(new BigDecimal(trans[15])).add(new BigDecimal(pr));
                         trans[15] = pr;
+                        //Il flag "prezzato" va rimesso in discussione insieme al prezzo: un movimento
+                        //nato senza prezzo porta [32]="NO", che vuol dire "gia' cercato, non chiedere
+                        //piu'", e resterebbe fra gli errori "senza prezzo" pur avendo ora un
+                        //controvalore. Si svuota invece di scrivere "SI": e' la convenzione gia' usata
+                        //dalla marcatura SCAM (GiacenzeaData_Funzione_IdentificaComeScam e simili), e
+                        //lascia la decisione all'unico punto che la prende, Prezzi.isMovimentoPrezzato,
+                        //che al prossimo caricamento della tabella vedra' [15] diverso da 0.00.
+                        trans[32] = "";
                     }
                 }
                 }
@@ -14148,6 +14235,14 @@ if (result != null && !result.isAction("cancel")) {
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_ApiKey_UniSat_LabelSitoMouseExited
 
+    private void Opzioni_ProviderDefi_ApiKeyNodeReal_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ProviderDefi_ApiKeyNodeReal_TextFieldMouseReleased
+        Opzioni_ApiKey_ControllaPulsanti();
+    }//GEN-LAST:event_Opzioni_ProviderDefi_ApiKeyNodeReal_TextFieldMouseReleased
+
+    private void Opzioni_ProviderDefi_ApiKeyNodeReal_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ProviderDefi_ApiKeyNodeReal_TextFieldKeyReleased
+        Opzioni_ApiKey_ControllaPulsanti();
+    }//GEN-LAST:event_Opzioni_ProviderDefi_ApiKeyNodeReal_TextFieldKeyReleased
+
     private void Opzioni_ProviderDefi_ApiKeyBlockscout_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ProviderDefi_ApiKeyBlockscout_TextFieldMouseReleased
         // TODO add your handling code here:
     }//GEN-LAST:event_Opzioni_ProviderDefi_ApiKeyBlockscout_TextFieldMouseReleased
@@ -14260,7 +14355,7 @@ if (result != null && !result.isAction("cancel")) {
                 //Devo ovviamente cancellarlo per inserirne uno nuovo altrimenti questo prende il sopravvento
                DatabaseH2.InserisciPrezzoPresonalizzato(DataRiferimento, "Personalizzato", mon, "0.00", Rete, Address, Gruppo, DataRiferimento);
 
-                GiacenzeaData_Tabella.getModel().setValueAt("", rigaselezionata, 6);
+                GiacenzeaData_Tabella.getModel().setValueAt("", rigaselezionata, 7);
                 //Una volta cambiato il prezzo aggiorno la tabella
             }
         }
@@ -15718,6 +15813,19 @@ if (result != null && !result.isAction("cancel")) {
                                     <br>
                                                     """;
                             }
+                            if(Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti.isSelected()){
+                                    testo = testo + """
+                                    \u2022 Tutti gli scambi tra cripto-attività sono considerati fiscalmente rilevanti, compresi quelli tra monete aventi medesime caratteristiche e funzioni<br>
+                                    (ogni scambio genera quindi una plusvalenza o minusvalenza, e il nuovo costo di carico è pari al valore della cripto-attività ricevuta)<br>
+                                    <br>
+                                                    """;
+                            }else{
+                                    testo = testo + """
+                                    \u2022 Gli scambi tra cripto-attività aventi medesime caratteristiche e funzioni non sono considerati fiscalmente rilevanti<br>
+                                    (non generano plusvalenza e il costo di carico della cripto-attività ceduta viene trasferito a quella ricevuta)<br>
+                                    <br>
+                                                    """;
+                            }
                                 testo = testo + """
                                     \u2022 Le tipologie di Reward scelte come fiscalmente rilevanti sono :<br>                                  
                                     """;
@@ -16745,6 +16853,15 @@ try {
                     Tabelle.Funzioni_PulisciTabella(GiacenzeaData_ModelloTabella);
                 }
                 
+                //Le pile LIFO dei lotti residui : una passata sola, NON filtrata per wallet (il filtro
+                //si applica in lettura, vedi CalcolaCostiCaricoRimanenze)
+                progress.SetLabel("Calcolo del costo di carico delle rimanenze in corso....");
+                //Il campo, non il metodo omonimo, che ha effetti collaterali (vedi AttesaConnessione)
+                Principale_GiacenzeaData.CostiCaricoRimanenze CostiCarico =
+                        Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(DataRiferimento,
+                                () -> progress.FineThread);
+                progress.SetLabel("Calcolo Giazenze e  Prezzi in corso....");
+
                 int i = 0;
                 BigDecimal TotEuro = new BigDecimal(0);
                 for (String moneta : QtaCrypto.keySet()) {
@@ -16774,13 +16891,14 @@ try {
                     Moneta M1 = QtaCrypto.get(moneta);
                     String Rete = M1.Rete;
                     String Address = M1.MonetaAddress;
-                    Object riga[] = new Object[8];
+                    Object riga[] = new Object[9];
                     riga[0] = M1.Moneta;
                     riga[2] = Address;//qui ci va l'address della moneta se non sto analizzando i wallet nel complesso
                     riga[3] = M1.Tipo;
                     riga[4] = M1.Qta;
                     riga[1] = M1.Rete;
-                    riga[6] = "";
+                    riga[6] = Double.valueOf(0);
+                    riga[7] = "";
 
                     String Gruppo=Funzioni.getGruppoWalletXPrezzi(Wallet);
                     //System.out.println(Gruppo);
@@ -16800,18 +16918,22 @@ try {
                            // System.out.println(M1.Moneta+" - "+M1.Tipo+" - "+M1.Qta+" - "+M1.Rete+" - "+M1.MonetaAddress);
                             if (IP==null||IP.prezzoUnitario==null){
                                 riga[5]="0.00";
-                                riga[6]="Token senza prezzo";
+                                riga[7]="Token senza prezzo";
                             }else{
                                 IP.prezzoQta=IP.prezzoUnitario.multiply(new BigDecimal(M1.Qta)).abs();
                                 riga[5]=IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).toPlainString();
-                                riga[7]=IP.Ritorna40();
+                                riga[8]=IP.Ritorna40();
                             }
                         }
-                        if (riga[4].toString().contains("-") && !riga[5].equals("0.00")) {
+                        if (Funzioni.isNegativo(riga[4].toString()) && !riga[5].equals("0.00")) {
                             riga[5] = "-" + riga[5];
                         }
                         //System.out.println(riga[4]);
                         riga[5] = Double.valueOf((String) riga[5]);
+                        //Costo di carico dei lotti LIFO che coprono la giacenza appena mostrata
+                        riga[6] = Double.valueOf(CostiCarico.CostoDelleRimanenze(Wallet,
+                                Principale_GiacenzeaData.ChiaveRiga(M1.Moneta, M1.Tipo, Address, Rete),
+                                M1.Qta));
 
                         if (CompiloTabella) {
                            // Object[] r = riga;
@@ -18564,6 +18686,8 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JPanel Opzioni_PrezziKO_Pannello;
     private javax.swing.JLabel Opzioni_ProviderDefi_ApiKeyBlockscout_Label;
     private javax.swing.JTextField Opzioni_ProviderDefi_ApiKeyBlockscout_TextField;
+    private javax.swing.JLabel Opzioni_ProviderDefi_ApiKeyNodeReal_Label;
+    private javax.swing.JTextField Opzioni_ProviderDefi_ApiKeyNodeReal_TextField;
     private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Annulla;
     private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Ripristina;
     private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Salva;
@@ -18590,6 +18714,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti;
+    private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_NonConsiderareMovimentiNC;
     private javax.swing.JPopupMenu PopupMenu;

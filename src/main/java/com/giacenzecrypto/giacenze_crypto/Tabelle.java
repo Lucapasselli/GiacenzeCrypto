@@ -338,7 +338,7 @@ public class Tabelle {
     
         /**
          * Applica alla tabella 0 (riepilogo) di "Giacenze a data" un renderer che alterna lo sfondo delle righe
-         * (in base al tema) e colora in rosso la colonna 6 e la colonna 4 quando contiene un valore negativo.
+         * (in base al tema) e colora in rosso la colonna 7 (errori) e la colonna 4 quando contiene un valore negativo.
          * @param table la tabella a cui applicare il renderer
          * @return la stessa tabella passata, con il renderer applicato
          */
@@ -371,11 +371,11 @@ public class Tabelle {
                     c.setBackground(Tabelle.SfondoSelezione(row));
 
                 }
-                else if (table.getModel()!=null&&table.getModel().getColumnCount()>3 && table.getModel()!=null &&table.getModel().getValueAt(table.getRowSorter().convertRowIndexToModel(row), 4).toString().contains("-")) {
+                else if (table.getModel()!=null&&table.getModel().getColumnCount()>3 && table.getModel()!=null &&Funzioni.isNegativo(table.getModel().getValueAt(table.getRowSorter().convertRowIndexToModel(row), 4).toString())) {
                     c.setBackground(bg);
                     c.setForeground(rosso);
                 }
-                else if (col==6) {
+                else if (col==7) {
                     c.setBackground(bg);
                     c.setForeground(rosso);
                 }

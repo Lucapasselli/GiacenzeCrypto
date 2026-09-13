@@ -63,6 +63,7 @@ class CalcoliPlusvalenzeNewAggiornaPlusvalenzeTest {
         DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_NoPlusvalenzeCommissioni", "NO");
         DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_Pre2023EarnCostoZero", "NO");
         DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_Pre2023ScambiRilevanti", "NO");
+        DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_ScambiSempreRilevanti", "NO");
         DatabaseH2.Pers_Opzioni_Scrivi("PDD_Staking", "SI");
         DatabaseH2.Pers_Opzioni_Scrivi("PDD_CashBack", "SI");
         DatabaseH2.Pers_Opzioni_Scrivi("PDD_Airdrop", "SI");
@@ -210,6 +211,58 @@ class CalcoliPlusvalenzeNewAggiornaPlusvalenzeTest {
         assertEquals("1200", scambio[17]);
         assertEquals("200.00", scambio[19]); // 1200 - 1000
         assertEquals("S", scambio[33]);
+    }
+
+    @Test
+    void scambioOmogeneoPost2023_conOpzioneScambiSempreRilevanti_generaPlusvalenza() {
+        DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_ScambiSempreRilevanti", "SI");
+        acquisto("2024-01-01 10:00", "BTC", "1", "1000");
+        String[] scambio = movimento("2024-02-01 10:00", "SC", "", "SCAMBIO",
+                "BTC", "Crypto", "1", "ETH", "Crypto", "10", "1200");
+        String[] ven = vendita("2024-06-01 10:00", "ETH", "10", "1600");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        // Con l'opzione attiva lo scambio omogeneo prende la strada della tipologia 2:
+        // realizzo sulla moneta ceduta e nuovo costo di carico pari al valore dello scambio
+        assertEquals("1000.00", scambio[16]);
+        assertEquals("1200", scambio[17]);
+        assertEquals("200.00", scambio[19]); // 1200 - 1000
+        assertEquals("S", scambio[33]);
+        // La vendita successiva parte dal nuovo costo di carico, non da quello del BTC
+        assertEquals("1200.00", ven[16]);
+        assertEquals("400.00", ven[19]); // 1600 - 1200
+        assertEquals("S", ven[33]);
+    }
+
+    @Test
+    void scambioOmogeneo_senzaOpzione_restaNeutroAncheDopoIlNuovoFlag() {
+        //Il default deve lasciare tutto com'era: e' lo stesso scenario del test
+        //scambioOmogeneoPost2023_neutrale_trasferisceIlCostoDiCarico, con l'opzione scritta a "NO"
+        DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_ScambiSempreRilevanti", "NO");
+        acquisto("2024-01-01 10:00", "BTC", "1", "1000");
+        String[] scambio = movimento("2024-02-01 10:00", "SC", "", "SCAMBIO",
+                "BTC", "Crypto", "1", "ETH", "Crypto", "10", "1200");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        assertEquals("1000.00", scambio[17]);
+        assertEquals("0.00", scambio[19]);
+        assertEquals("N", scambio[33]);
+    }
+
+    @Test
+    void scambioOmogeneo_MovimentoRilevanteSegueLaStessaOpzioneDelMotore() {
+        String[] scambio = movimento("2024-02-01 10:00", "SC", "", "SCAMBIO",
+                "BTC", "Crypto", "1", "ETH", "Crypto", "10", "1200");
+
+        DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_ScambiSempreRilevanti", "NO");
+        assertFalse(Funzioni.MovimentoRilevante(scambio),
+                "Senza l'opzione lo scambio fra monete dello stesso tipo non e' rilevante");
+
+        DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_ScambiSempreRilevanti", "SI");
+        assertTrue(Funzioni.MovimentoRilevante(scambio),
+                "Con l'opzione attiva ogni scambio cripto-cripto e' rilevante");
     }
 
     // ------------------------------------------------------------------

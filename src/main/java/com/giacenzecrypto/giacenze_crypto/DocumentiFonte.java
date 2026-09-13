@@ -236,18 +236,54 @@ public class DocumentiFonte {
      */
     public static boolean EseguiImportDaFile(File Origine, String Tipo, String DescrizioneOrigine,
             java.util.function.BooleanSupplier Importazione) {
+        return EseguiImportDaFile(Origine, Tipo, DescrizioneOrigine, null, Importazione);
+    }
+
+    /**
+     * Come {@link #EseguiImportDaFile(File, String, String, java.util.function.BooleanSupplier)}, ma con
+     * la finestra di avanzamento dell'operazione.
+     *
+     * <p>Qui si aprono anche i due scope che valgono per <b>tutti</b> gli import da file, e questo è il
+     * punto giusto perché è l'unico attraversato da tutti e otto i punti di ingresso:
+     * <ul>
+     *   <li>{@link Interruzione}, che prima era aperto solo da {@code CcxtInterop.fetchMovimentiConBar}:
+     *       durante un import da CSV il tasto Interrompi non arrivava alla fase prezzi, che è la parte
+     *       lunga. Vale l'invariante scritta nel javadoc di {@link Interruzione}: dentro lo scope non
+     *       deve chiudersi nessun'altra finestra {@link Download} oltre a quella dell'operazione —
+     *       {@code Download.formWindowClosed} chiama {@code Chiedi()} a ogni chiusura, anche quella
+     *       normale di fine lavoro. Qui regge perché la finestra dell'operazione è l'unica aperta
+     *       durante l'import e viene chiusa dal chiamante <b>dopo</b> il ritorno di questo metodo;</li>
+     *   <li>{@link AttesaConnessione}, che rende l'assenza di rete un motivo di abbandono invece che una
+     *       fila di movimenti scritti senza prezzo.</li>
+     * </ul>
+     *
+     * @param Origine file scelto dall'utente
+     * @param Tipo uno fra {@link #TIPO_CSV}, {@link #TIPO_JSON}
+     * @param DescrizioneOrigine da dove viene (importatore nativo o file di configurazione)
+     * @param Avanzamento finestra di avanzamento dell'operazione, può essere {@code null}
+     * @param Importazione l'importazione vera e propria, che ritorna il proprio esito
+     * @return quello che ha ritornato {@code Importazione}
+     */
+    public static boolean EseguiImportDaFile(File Origine, String Tipo, String DescrizioneOrigine,
+            Download Avanzamento, java.util.function.BooleanSupplier Importazione) {
         UltimaDescrizioneImport = DescrizioneOrigine == null ? "" : DescrizioneOrigine;
         UltimoFileImport = Origine == null ? "" : Origine.getName();
         Registrazione R = Registra(Origine, Tipo, DescrizioneOrigine);
         int aggiunte;
         Importazioni.DocumentoFonteCorrente = R.Id;
         boolean esito;
+        Interruzione.Apri();
+        AttesaConnessione.Apri(Avanzamento);
         try {
             esito = Importazione.getAsBoolean();
         } finally {
             aggiunte = Importazioni.TransazioniAggiunte;
             Importazioni.DocumentoFonteCorrente = 0;
+            AttesaConnessione.Chiudi();
+            Interruzione.Chiudi();
         }
+        //Con l'importazione abbandonata aggiunte è 0 e la registrazione, se nuova, viene annullata:
+        //è esattamente quello che serve, il documento non deve restare in archivio senza movimenti.
         ChiudiRegistrazione(R, aggiunte);
         return esito;
     }
@@ -382,14 +418,22 @@ public class DocumentiFonte {
         AggiungiAllaSessione(Id, "explorer", UrlSenzaChiave(Url), Risposta);
     }
 
-    /** @return l'URL con il valore dei parametri di chiave API sostituito da {@code ***} */
+    /** @return l'URL con il valore delle chiavi API sostituito da {@code ***} */
     static String UrlSenzaChiave(String Url) {
         if (Funzioni.noData(Url)) {
             return "";
         }
         //Solo i nomi che sono davvero chiavi: un "token=USDT" è un dato del movimento, non un segreto,
         //e oscurarlo renderebbe il documento meno leggibile senza proteggere niente
-        return Url.replaceAll("(?i)([?&](apikey|api_key|apikey_secret|key)=)[^&]*", "$1***");
+        String Pulito = Url.replaceAll("(?i)([?&](apikey|api_key|apikey_secret|key)=)[^&]*", "$1***");
+        //NodeReal (e gli altri provider JSON-RPC con lo stesso schema) porta la chiave in un SEGMENTO DI
+        //PERCORSO, https://bsc-mainnet.nodereal.io/v1/<chiave>, non in un parametro: la regola qui sopra
+        //non la vedrebbe nemmeno, e la chiave finirebbe in chiaro dentro un documento che contiene già
+        //tutta la storia delle transazioni dell'utente. Il filtro è volutamente stretto — host e prefisso
+        //di versione espliciti — perché un "oscura il segmento che sembra una chiave" colpirebbe anche
+        //hash e indirizzi, che nel documento devono restare leggibili.
+        Pulito = Pulito.replaceAll("(?i)(//[a-z0-9.\\-]*nodereal\\.io/v[0-9]+/)[^/?#]+", "$1***");
+        return Pulito;
     }
 
     /** Chiude il flusso della sessione. Da chiamare sempre, anche se lo scarico è fallito. */

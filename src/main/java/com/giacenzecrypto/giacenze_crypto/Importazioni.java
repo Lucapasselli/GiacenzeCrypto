@@ -167,6 +167,17 @@ public class Importazioni {
     public static int DocumentoFonteCorrente=0;
     //La mappa delle chain conterrà per ogni chain l'indirizzo del chain explorer e relativa api
     public static String movimentiSconosciuti="";
+
+    /**
+     * Testo premesso a {@link #movimentiSconosciuti} quando l'importazione viene abbandonata per
+     * mancanza di connessione. Finisce nel riquadro degli errori di {@code Importazioni_Resoconto},
+     * che e' l'unico punto attraversato da tutte le strade di import: senza, l'utente vedrebbe solo
+     * "0 transazioni importate" senza sapere perche'.
+     */
+    public static final String AVVISO_IMPORT_ABBANDONATO =
+            "IMPORTAZIONE ANNULLATA: connessione assente dopo " + AttesaConnessione.TENTATIVI
+            + " tentativi. Nessun movimento e' stato inserito: i movimenti sarebbero rimasti senza\n"
+            + "prezzo. Ripetere l'importazione quando la connessione e' stabile.\n\n";
     
     /**
      * Esito di una singola importazione, nella forma che serve a {@link Importazioni_Resoconto}.
@@ -1239,6 +1250,17 @@ public class Importazioni {
      * @return array di 2 interi: {@code [0]} movimenti effettivamente aggiunti, {@code [1]} movimenti scartati
      */
     public static int[] ScriviListaSuMappaCrypto(List<String[]> lista,boolean SovrascriEsistenti,int IdDocumento){
+        //===== 0 - IMPORTAZIONE ABBANDONATA PER MANCANZA DI CONNESSIONE: NON SI SCRIVE NULLA =====
+        //Meglio non importare che importare senza prezzo. Non scrivere nulla e' anche cio' che rende
+        //l'abbandono ripetibile: la prossima esecuzione riparte dallo stesso punto, esattamente come
+        //per l'import OKX incompleto (bug C13). Fuori da un'importazione Abortita() e' sempre false.
+        if (AttesaConnessione.Abortita()) {
+            LoggerGC.ScriviErrore("Importazione abbandonata: connessione assente, "
+                    + lista.size() + " movimenti NON scritti");
+            movimentiSconosciuti = AVVISO_IMPORT_ABBANDONATO + movimentiSconosciuti;
+            return new int[]{0, 0};
+        }
+
         //===== 1 - CONTROLLA LA LISTA PER VEDERE CHE NON CI SIANO ID DUPLICATI, NEL QUAL CASO LI RENDE UNIVOCI =====
         lista=CreaListaConIDUnivoco(lista);
         
@@ -3294,6 +3316,10 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
          * @param SovrascrivoEsistenti se {@code true} analizza anche i movimenti già presenti in {@link Principale#MappaCryptoWallet} con lo stesso ID
          */
         public static void ConsolidaMovimentiDifferiti(List<String[]> listaMovimentidaConsolidare,boolean SovrascrivoEsistenti){
+            //Importazione abbandonata: i movimenti non verranno scritti, quindi accoppiarli sarebbe
+            //lavoro buttato e, peggio, CreaMovimentiScambioCryptoDifferito agirebbe su ID che in
+            //MappaCryptoWallet non esistono.
+            if (AttesaConnessione.Abortita()) return;
             Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             int nElementi = listaMovimentidaConsolidare.size();
             //Con questo ordino i movimenti
@@ -4842,9 +4868,20 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
         //già usato e verificato in DeFi_RitornaTransazioniCronoscan) invece di filtrare per blocco lato
         //server, e poi ripulisco doppioni/transazioni già importate lato client con DeFi_PulisciJSONCronos.
         //Le altre chain Blockscout-family (non Cronos) restano invece sul filtro server-side per startblock.
-        boolean paginazioneBlockscout = !Dominio.contains("chainid=") && Dominio.contains("cronos.org");
+        //"chainid=" è Etherscan V2 multichain, "chain_id=" (con l'underscore) è la Blockscout PRO API:
+        //stesso trattamento, entrambi i domini arrivano già con una query string propria
+        boolean urlConQueryString = Dominio.contains("chainid=") || Dominio.contains("chain_id=");
+        boolean paginazioneBlockscout = !urlConQueryString && Dominio.contains("cronos.org");
         int pagina=1;
         int offsetPagina=1000;
+        //Routescan (AVAX), interrogato senza "offset", restituisce 25 record per richiesta. La
+        //condizione di fine del ciclo per blocco e' "meno di 1000 record ricevuti": al primo giro
+        //sarebbe gia' vera e l'importazione si fermerebbe dopo 25 movimenti, senza nessun errore.
+        //Chiedendo esplicitamente offset=1000 il ciclo torna identico a Etherscan/Blockscout
+        //(verificato: 1000 record per giro, startblock e sort=asc rispettati, il giro successivo
+        //riparte dall'ultimo blocco ricevuto). Il tetto di Routescan e' ~5000: a offset=10000
+        //risponde HTTP 502, quindi non conviene alzarlo.
+        boolean offsetEsplicito = Dominio.contains("routescan.io");
 
          try {
              while (!finito){//Siccome il limite è di 10000 movimenti se supero quel limite continuo le richieste dall'ultima arrivata
@@ -4853,8 +4890,8 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
             }
             //String urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
             String urls;
-            if (Dominio.contains("chainid=")) {
-                //Etherscan v2 multichain: il dominio contiene già una query string (?chainid=...)
+            if (urlConQueryString) {
+                //Etherscan v2 multichain o Blockscout PRO API: il dominio contiene già una query string
                 urls=Dominio+"&module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
             }
             else if (paginazioneBlockscout) {
@@ -4867,6 +4904,7 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
                 //deve essere quella inserita dall'utente in Opzioni - ApiKey (non va mai hardcodata),
                 //per le altre chain Blockscout è opzionale
                 urls=Dominio+"?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc";
+                if (offsetEsplicito) urls += "&offset=" + offsetPagina;
                 if (vespa != null && !vespa.isBlank()) urls += "&apikey=" + vespa;
             }
 
@@ -4875,15 +4913,27 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
             System.out.println("Recupero informazioni da Explorer "+Dominio+" relativamente a wallet "+ walletAddress);
             if (paginazioneBlockscout) System.out.println("pagina : "+pagina+" relativi a tipologia : "+Tipo);
             else System.out.println("da Blocco : "+BloccoTemp+" relativi a tipologia : "+Tipo);
+            //Le istanze pubbliche Blockscout limitano le richieste per IP e rispondono HTTP 429
+            //("Too many requests"): è una condizione temporanea, non un errore dell'importazione, e
+            //trattarla come fatale (come fa il blocco sotto per tutti gli altri >=400) vorrebbe dire
+            //abbandonare un import a metà per un limite che si riapre da solo dopo qualche decina di
+            //secondi. Qui si riprova un numero limitato di volte, rispettando "Retry-After" quando
+            //c'è; esaurite quelle, il 429 ricade nel percorso di errore normale e l'utente vede il
+            //messaggio del server (che suggerisce la ApiKey Blockscout gratuita). Il tasto Annulla
+            //resta vivo durante l'attesa: senza il controllo su FineThread una pausa lunga
+            //renderebbe la finestra di avanzamento insensibile.
+            int codiceRisposta;
+            String Risposta;
+            int tentativo429 = 0;
+            while (true) {
             URL url = new URI(urls).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
-            int codiceRisposta = con.getResponseCode();
+            codiceRisposta = con.getResponseCode();
             //Sopra i 400 HttpURLConnection.getInputStream() lancia IOException senza mai far leggere
             //il body della risposta: leggo invece l'error stream così il messaggio reale del server
             //(es. "Block range excess 10000 blocks") non va perso e può essere mostrato all'utente.
             InputStream streamRisposta = (codiceRisposta >= 400) ? con.getErrorStream() : con.getInputStream();
-            String Risposta;
             if (streamRisposta == null) {
                 Risposta = "";
             } else {
@@ -4895,6 +4945,50 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
                 }
                 in.close();
                 Risposta = responseTxlist.toString();
+            }
+            if (codiceRisposta == 429) {
+                //Un X-Ratelimit-Reset lungo è la finestra "senza chiave" di Blockscout (misurata fino a
+                //44 minuti): nessuna attesa ragionevole la risolve, quindi ci si ferma subito invece di
+                //consumare TENTATIVI_429 tentativi senza speranza e con un messaggio generico che non
+                //direbbe all'utente cosa fare davvero.
+                String resetHeader = con.getHeaderField("X-Ratelimit-Reset");
+                boolean apiKeyGiaUsata = vespa != null && !vespa.isBlank();
+                if (Explorer_FinestraSenzaChiaveEsaurita(resetHeader, apiKeyGiaUsata)) {
+                    long minuti = Math.max(1, Long.parseLong(resetHeader.trim()) / 60000);
+                    String messaggio = "L'explorer " + Dominio + " ha esaurito il limite di richieste "
+                            + "senza una ApiKey (si sblocca fra circa " + minuti + " minuti).\n"
+                            + "Inserire una ApiKey Blockscout gratuita in Opzioni -> Preferenze Provider DeFi "
+                            + "per aumentare il limite di richieste (da 10 ogni ~45 minuti a 5 al secondo).";
+                    if (progressb != null) progressb.ChiudiFinestra();
+                    LoggerGC.ScriviErrore(messaggio);
+                    if (ccc != null) {
+                        JOptionPane.showConfirmDialog(ccc, messaggio, "Limite di richieste raggiunto",
+                                JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                    }
+                    return null;
+                }
+            }
+            if (codiceRisposta != 429 || tentativo429 >= TENTATIVI_429) break;
+            tentativo429++;
+            int attesa = ATTESA_429_SECONDI * tentativo429;
+            String retryAfter = con.getHeaderField("Retry-After");
+            if (retryAfter != null && Funzioni.isNumeric(retryAfter.trim(), false)) {
+                //Retry-After in secondi (la forma con la data non è usata da Blockscout): lo rispetto
+                //solo se chiede di più della mia attesa, così un server che dicesse "1 secondo" non
+                //mi fa ripartire a raffica contro lo stesso limite.
+                attesa = Math.max(attesa, Integer.parseInt(retryAfter.trim()));
+            }
+            if (attesa > ATTESA_429_MASSIMA_SECONDI) attesa = ATTESA_429_MASSIMA_SECONDI;
+            LoggerGC.logInfo("Explorer " + Dominio + " ha risposto HTTP 429 per '" + Tipo + "': attendo "
+                    + attesa + " s e riprovo (tentativo " + tentativo429 + " di " + TENTATIVI_429 + ")");
+            for (int s = 0; s < attesa; s++) {
+                if (progressb != null) {
+                    if (progressb.FineThread()) return null;
+                    progressb.SetMessaggioAvanzamento("Explorer occupato (429): riprovo fra "
+                            + (attesa - s) + " s");
+                }
+                TimeUnit.SECONDS.sleep(1);
+            }
             }
             if (VarCondivise.LogJsonDefi) {
                 System.out.println(Risposta);
@@ -5976,6 +6070,54 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
 
     
       
+    /** Quante volte si riprova una richiesta a un explorer che ha risposto HTTP 429 prima di arrendersi. */
+    private static final int TENTATIVI_429 = 4;
+    /**
+     * Attesa base fra un tentativo e il successivo dopo un HTTP 429; cresce a ogni tentativo (2, 4, 6, 8 s).
+     * <p>E' tarata sulla PRO API di Blockscout, l'unico 429 che un'attesa possa davvero risolvere: li' il
+     * limite e' 5 richieste al secondo su una finestra di **un secondo** (misurato: 12 richieste in
+     * parallelo, 5 passate e 7 rifiutate, e nessun header {@code Retry-After}), quindi bastano pochi
+     * secondi. Sulle vecchie istanze pubbliche per-chain il 429 e' invece una finestra di decine di
+     * minuti: nessuna attesa ragionevole la risolve, e infatti li' i tentativi servono solo a non
+     * abbandonare l'importazione al primo colpo prima di riportare il messaggio del server.
+     */
+    private static final int ATTESA_429_SECONDI = 2;
+    /** Tetto all'attesa dopo un HTTP 429, anche quando il server chiede di più con Retry-After. */
+    private static final int ATTESA_429_MASSIMA_SECONDI = 90;
+    /**
+     * Soglia, in millisecondi, sopra la quale un {@code X-Ratelimit-Reset} indica la finestra "senza
+     * chiave" di Blockscout e non quella della PRO API. Misurato il 13/09/2026 su ETH/ARB/BASE/POL/
+     * GNOSIS/OP/INK: senza chiave la finestra è di almeno 44 minuti (2.647.368 ms osservati), con la
+     * chiave sulla PRO API è di circa un secondo. 30 secondi sta comodamente fra i due, con margine
+     * enorme su entrambi i lati.
+     */
+    private static final long SOGLIA_FINESTRA_LUNGA_MS = 30_000;
+
+    /**
+     * Decide se un HTTP 429 di un explorer Blockscout-family è la finestra "senza chiave" (fino a
+     * decine di minuti, misurata) o una finestra breve dove riprovare ha senso (la PRO API con chiave,
+     * ~1 secondo, o un altro explorer). Il segnale è il valore dell'header {@code X-Ratelimit-Reset} in
+     * millisecondi: nessuna attesa ragionevole risolve il primo caso, quindi lì l'importazione si ferma
+     * subito con un avviso invece di consumare {@link #TENTATIVI_429} tentativi senza speranza.
+     * <p>Non guarda l'host: la stessa istanza (es. {@code gnosis.blockscout.com}) rimanda a un dominio
+     * diverso per chain ({@code gnosisscan.io}) ma espone lo stesso limite, quindi un elenco di host
+     * sarebbe fragile. Una chiave già in uso per questa richiesta esclude sempre il caso "senza
+     * chiave", anche se per qualche motivo il reset fosse comunque lungo.
+     * @param resetMs valore grezzo dell'header {@code X-Ratelimit-Reset}, o {@code null}/non numerico
+     *                 se l'header manca
+     * @param apiKeyPresente se per questa richiesta è già stata usata una ApiKey Blockscout
+     */
+    static boolean Explorer_FinestraSenzaChiaveEsaurita(String resetMs, boolean apiKeyPresente) {
+        if (apiKeyPresente || resetMs == null) return false;
+        String v = resetMs.trim();
+        if (!Funzioni.isNumeric(v, false)) return false;
+        try {
+            return Long.parseLong(v) > SOGLIA_FINESTRA_LUNGA_MS;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
     /**
      * Provider di default per una chain, usato quando l'utente non ha salvato
      * una preferenza esplicita nella tabella PROVIDERDEFI.
@@ -5998,7 +6140,24 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
         //Principale.Opzioni_ProviderDefi_OpzioniPerChain, che per questo non offre ETHERSCAN per INK)
         if (Rete.equalsIgnoreCase("INK")) return "BLOCKSCOUT";
         if (Rete.equalsIgnoreCase("ROBINHOOD")) return "BLOCKSCOUT"; //stesso caso di Ink, vedi sopra
-        if (Rete.equalsIgnoreCase("BSC") || Rete.equalsIgnoreCase("BASE") || Rete.equalsIgnoreCase("AVAX")) return "MORALIS";
+        //AVAX e' uscita da Moralis il 13/09/2026: Routescan risponde senza chiave a tutte e cinque
+        //le azioni piu' balance e non limita le richieste (15 consecutive, tutte 200). La spinta a
+        //toglierla e' che Moralis non pubblica piu' un piano gratuito (solo Starter 149 $/mese):
+        //la strada di default di queste chain e' irraggiungibile per chi installa il programma ora.
+        //BSC e BASE restano su Moralis, per due motivi diversi e nessuno dei due risolvibile qui:
+        // - BSC (56) non ha nessuna API Etherscan-compatibile gratuita (verificato: nessuna istanza
+        //   Blockscout pubblica, Routescan risponde "chain not supported", Etherscan V2 risponde
+        //   "Free API access is not supported for this chain"). L'alternativa e' Etherscan V2 a
+        //   pagamento o NodeReal, che e' JSON-RPC e vuole un importatore nuovo.
+        // - BASE (8453) ha l'istanza Blockscout ufficiale, ma dal 2026 le istanze ospitate su
+        //   blockscout.com concedono **10 richieste all'ora per IP** senza chiave (misurato sugli
+        //   header x-ratelimit-limit/remaining/reset di base, eth, arbitrum e polygon). Un solo
+        //   wallet ne consuma almeno cinque, una per azione, e di piu' appena c'e' paginazione:
+        //   come default sarebbe rotto in partenza. Resta scelta valida a mano, dopo aver messo la
+        //   ApiKey Blockscout gratuita in "Preferenze Provider DeFi"; Routescan non copre la 8453.
+        //Alternative e costi in nocommit/Documentazione/Analisi_Provider_BSC.md
+        if (Rete.equalsIgnoreCase("BSC") || Rete.equalsIgnoreCase("BASE")) return "MORALIS";
+        if (Rete.equalsIgnoreCase("AVAX")) return "BLOCKSCOUT";
         if (Rete.equalsIgnoreCase("SOL")) return "HELIUS";
         if (Rete.equalsIgnoreCase("BTC")) return "BITCOIN";
         return "ETHERSCAN";
@@ -6024,18 +6183,69 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
     }
 
     /**
-     * URL base dell'istanza Blockscout da usare per una chain: quello personalizzato
-     * salvato dall'utente se presente, altrimenti un'istanza pubblica verificata
-     * (solo ETH/ARB/BASE/POL/CRO/GNOSIS/OP/INK/ROBINHOOD). Per le altre chain (es. BSC/AVAX/BERA/MONAD)
+     * Chain id delle sole chain verificate come supportate dalla Blockscout PRO API (13/09/2026):
+     * interrogate con una chiave reale, AVAX/CRO/BERA rispondono {@code "Network not supported"} e
+     * restano quindi sull'endpoint per-istanza. Tabella separata da {@code GOPLUS_CHAIN_ID} in
+     * {@code Principale} — quella serve a uno scopo diverso (le chain che GoPlus dichiara di coprire)
+     * e non contiene INK/ROBINHOOD.
+     */
+    private static final Map<String, String> CHAIN_ID_BLOCKSCOUT_PRO = Map.ofEntries(
+            Map.entry("ETH", "1"),
+            Map.entry("ARB", "42161"),
+            Map.entry("BASE", "8453"),
+            Map.entry("POL", "137"),
+            Map.entry("GNOSIS", "100"),
+            Map.entry("OP", "10"),
+            Map.entry("INK", "57073"),
+            Map.entry("ROBINHOOD", "4663")
+    );
+
+    /**
+     * URL della Blockscout PRO API per una chain, se l'utente ha salvato una ApiKey Blockscout e la
+     * chain è fra quelle verificate ({@link #CHAIN_ID_BLOCKSCOUT_PRO}). Dal 01/07/2026 le API
+     * per-istanza sono dismesse: senza chiave concedono comunque 10 richieste per finestra (misurata
+     * fino a 44 minuti), con la chiave la PRO API ne concede 5 al secondo, quasi 1800 volte tanto.
+     * Dettagli e misure in {@code nocommit/Documentazione/Analisi_Provider_BSC.md}.
+     * @return {@code null} se manca la chiave o la chain non è fra quelle verificate: il chiamante
+     *         ricade allora sull'endpoint per-istanza
+     */
+    static String DeFi_ProviderBlockscoutProUrl(String Rete) {
+        //Opzioni_Leggi non è null-safe se il database non è ancora aperto (succede nei test che non
+        //passano da CreaoCollegaDatabase prima di questa chiamata): stessa guardia di
+        //DatabaseH2.ProviderDefi_LeggiTutti.
+        if (DatabaseH2.connection == null) return null;
+        String apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Blockscout");
+        if (apiKey == null || apiKey.isBlank()) return null;
+        String chainId = CHAIN_ID_BLOCKSCOUT_PRO.get(Rete.toUpperCase());
+        if (chainId == null) return null;
+        return "https://api.blockscout.com/v2/api?chain_id=" + chainId;
+    }
+
+    /**
+     * URL base dell'istanza Blockscout da usare per una chain: quello personalizzato salvato
+     * dall'utente se presente, altrimenti la PRO API se c'è una ApiKey Blockscout e la chain è fra
+     * quelle verificate ({@link #DeFi_ProviderBlockscoutProUrl}), altrimenti un endpoint pubblico
+     * per-istanza verificato (ETH/ARB/BASE/POL/CRO/GNOSIS/OP/INK/ROBINHOOD su Blockscout, AVAX su
+     * Routescan). Per le altre chain (es. BSC/BERA/MONAD)
      * ritorna null: l'utente deve compilare l'URL personalizzato nella tabella
      * "Preferenze Provider DeFi" prima di poter usare Blockscout su quella chain.
      */
     public static String DeFi_ProviderBlockscoutUrl(String Rete) {
         String custom = DeFi_ProviderUrlCustom(Rete);
         if (custom != null && !custom.isBlank()) return custom;
+        String pro = DeFi_ProviderBlockscoutProUrl(Rete);
+        if (pro != null) return pro;
         if (Rete.equalsIgnoreCase("ETH")) return "https://eth.blockscout.com/api";
         if (Rete.equalsIgnoreCase("ARB")) return "https://arbitrum.blockscout.com/api";
         if (Rete.equalsIgnoreCase("BASE")) return "https://base.blockscout.com/api";
+        //AVAX non ha nessuna istanza Blockscout: la chain 43114 non e' nel registro ufficiale
+        //chains.blockscout.com. L'endpoint Etherscan-compatibile e' quello di Routescan (lo stesso
+        //motore che alimenta Snowtrace), che risponde senza chiave a tutte e cinque le azioni piu'
+        //balance e rispetta startblock/sort. Non e' Blockscout: qui "BLOCKSCOUT" vuol dire
+        //"explorer Etherscan-compatibile diverso da Etherscan", ed e' il motivo per cui questo
+        //metodo resta il punto unico da cui passa l'URL. Vedi anche offsetEsplicito in
+        //DeFi_RitornaTransazioniEtherscan: senza "offset" Routescan torna 25 record per richiesta.
+        if (Rete.equalsIgnoreCase("AVAX")) return "https://api.routescan.io/v2/network/mainnet/evm/43114/etherscan/api";
         if (Rete.equalsIgnoreCase("POL")) return "https://polygon.blockscout.com/api";
         if (Rete.equalsIgnoreCase("CRO")) return "https://explorer-api.cronos.org/mainnet/api/v2";
         if (Rete.equalsIgnoreCase("GNOSIS")) return "https://gnosis.blockscout.com/api";
@@ -6161,7 +6371,8 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                 }
 
             } 
-            else if ((Rete.equalsIgnoreCase("BSC")||Rete.equalsIgnoreCase("BASE")||Rete.equalsIgnoreCase("AVAX")) && !Provider.equals("BLOCKSCOUT")) {
+            else if ((Rete.equalsIgnoreCase("BSC")||Rete.equalsIgnoreCase("BASE")||Rete.equalsIgnoreCase("AVAX"))
+                    && !Provider.equals("BLOCKSCOUT") && !Provider.equals(NodeRealDefi.PROVIDER)) {
 
                     //Se ho dei portafogli non gestiti da etherscan li passo alla funzione che si occupa di cercare i dati su Moralis
 //System.out.println("Leggo da Moralissssssss");
@@ -6224,6 +6435,17 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                     }
 
             }
+            else if (Provider.equals(NodeRealDefi.PROVIDER)
+                    && Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi(NodeRealDefi.OPZIONE_APIKEY)).isBlank()){
+                System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " per mancaza di ApiKey");
+                System.out.println("Andare nella sezione 'Opzioni' - 'Preferenze Provider DeFi' per inserire l'apiKey relativa a NodeReal");
+                    try {
+                        TimeUnit.SECONDS.sleep(5);
+                    } catch (InterruptedException ex) {
+                        LoggerGC.ScriviErrore(ex);
+                    }
+
+            }
             else if (Provider.equals("BLOCKSCOUT") && !Rete.equalsIgnoreCase("CRO") && (DeFi_ProviderBlockscoutUrl(Rete)==null || DeFi_ProviderBlockscoutUrl(Rete).isBlank())){
                 System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " perché non è configurato un URL Blockscout per la rete " + Rete);
                         System.out.println("Andare nella sezione 'Opzioni' - 'Preferenze Provider DeFi' per inserire l'URL dell'istanza Blockscout");
@@ -6234,7 +6456,8 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                     }
 
             }
-            else if (!Provider.equals("BLOCKSCOUT") && !Rete.equalsIgnoreCase("CRO")&&!Funzioni.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))){
+            else if (!Provider.equals("BLOCKSCOUT") && !Provider.equals(NodeRealDefi.PROVIDER)
+                    && !Rete.equalsIgnoreCase("CRO")&&!Funzioni.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))){
                 System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " per mancaza di ApiKey");
                         System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa ad Etherscan");
                     try {
@@ -6258,6 +6481,10 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                 } else if (Provider.equals("BLOCKSCOUT")) {
                     apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Blockscout");
                     Indirizzo = DeFi_ProviderBlockscoutUrl(Rete);
+                } else if (Provider.equals(NodeRealDefi.PROVIDER)) {
+                    //NodeReal non ha un "dominio explorer": l'endpoint lo compone NodeRealDefi dalla rete
+                    //e dalla chiave, che sta in un segmento di percorso e non in un parametro
+                    apiKey = DatabaseH2.Opzioni_Leggi(NodeRealDefi.OPZIONE_APIKEY);
                 } else {
                     apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan");
                 }
@@ -6275,6 +6502,7 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                 progressb.SetMessaggioAvanzamento("Preparazione fase 1 di 5");
                 Object Risposta[];
                 if (usaCronoscanLegacy)Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "txlist", Blocco, apiKey, ccc, progressb);
+                else if (Provider.equals(NodeRealDefi.PROVIDER)) Risposta = NodeRealDefi.Scarica(apiKey, Rete, walletAddress, "txlist", Blocco, ccc, progressb);
                 else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "txlist", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
@@ -6285,6 +6513,7 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                 //PARTE 2  : Recupero la lista delle transazioni dei token bsc20 
                 progressb.SetMessaggioAvanzamento("Preparazione fase 2 di 5");
                 if (usaCronoscanLegacy)Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "tokentx", Blocco, apiKey, ccc, progressb);
+                else if (Provider.equals(NodeRealDefi.PROVIDER)) Risposta = NodeRealDefi.Scarica(apiKey, Rete, walletAddress, "tokentx", Blocco, ccc, progressb);
                 else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "tokentx", Blocco, apiKey, ccc, progressb);
                  if (Risposta == null) {
                     return null;//se in errore termino il ciclo
@@ -6295,6 +6524,7 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                 //PARTE 3: Recupero la lista delle transazioni dei token erc721 (NFT) 
                 progressb.SetMessaggioAvanzamento("Preparazione fase 3 di 5");
                 if (usaCronoscanLegacy)Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "tokennfttx", Blocco, apiKey, ccc, progressb);
+                else if (Provider.equals(NodeRealDefi.PROVIDER)) Risposta = NodeRealDefi.Scarica(apiKey, Rete, walletAddress, "tokennfttx", Blocco, ccc, progressb);
                 else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "tokennfttx", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
@@ -6305,6 +6535,7 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                 //PARTE 4: Recupero la lista delle transazioni dei token erc1155 
                 progressb.SetMessaggioAvanzamento("Preparazione fase 4 di 5");
                 if (usaCronoscanLegacy)Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "token1155tx", Blocco, apiKey, ccc, progressb);
+                else if (Provider.equals(NodeRealDefi.PROVIDER)) Risposta = NodeRealDefi.Scarica(apiKey, Rete, walletAddress, "token1155tx", Blocco, ccc, progressb);
                 else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "token1155tx", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
@@ -6315,6 +6546,7 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                 //PARTE 5: Recupero delle transazioni interne
                 progressb.SetMessaggioAvanzamento("Preparazione fase 5 di 5");
                 if (usaCronoscanLegacy)Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "txlistinternal", Blocco, apiKey, ccc, progressb);
+                else if (Provider.equals(NodeRealDefi.PROVIDER)) Risposta = NodeRealDefi.Scarica(apiKey, Rete, walletAddress, "txlistinternal", Blocco, ccc, progressb);
                 else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "txlistinternal", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo

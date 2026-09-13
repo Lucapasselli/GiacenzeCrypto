@@ -381,6 +381,26 @@ class DocumentiFonteTest {
     }
 
     @Test
+    void urlSenzaChiave_oscuraLaChiaveNodeRealCheStaNelPercorso() {
+        //NodeReal non passa la chiave come parametro ma come segmento di percorso: la regola sui
+        //parametri non la vedrebbe nemmeno e la chiave finirebbe in chiaro nel documento
+        String pulito = DocumentiFonte.UrlSenzaChiave("https://bsc-mainnet.nodereal.io/v1/SEGRETISSIMO");
+
+        assertFalse(pulito.contains("SEGRETISSIMO"), pulito);
+        assertEquals("https://bsc-mainnet.nodereal.io/v1/***", pulito);
+    }
+
+    @Test
+    void urlSenzaChiave_nonOscuraHashEIndirizziDiAltriUrl() {
+        //il filtro sul percorso è volutamente stretto: un "oscura il segmento che sembra una chiave"
+        //renderebbe illeggibili gli hash e gli indirizzi, che nel documento devono restare
+        String hash = "https://api.etherscan.io/api/v2/tx/0x491ad3caef862e5606a352d971e3bab60adcc8fa";
+        assertEquals(hash, DocumentiFonte.UrlSenzaChiave(hash));
+        assertEquals("https://deep-index.moralis.io/api/v2.2/wallets/0xABC/history",
+                DocumentiFonte.UrlSenzaChiave("https://deep-index.moralis.io/api/v2.2/wallets/0xABC/history"));
+    }
+
+    @Test
     void urlSenzaChiave_riconosceLeVarianti() {
         assertTrue(DocumentiFonte.UrlSenzaChiave("http://x?api_key=abc").contains("api_key=***"));
         assertTrue(DocumentiFonte.UrlSenzaChiave("http://x?a=1&APIKEY=abc").contains("APIKEY=***"));

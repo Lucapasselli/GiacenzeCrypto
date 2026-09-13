@@ -2,6 +2,12 @@
 /Temporanei/
 /test/
 /nocommit/
+
+# Stato locale di rtk/tokensave (indice del sorgente, non codice). L'indice vero e proprio
+# (tokensave.db) era escluso solo di rimbalzo dalla riga *.db qui sotto, che sta li' per i
+# database H2: se lo strumento cambiasse estensione comincerebbe a essere committato in
+# silenzio. config.json contiene inoltre il percorso assoluto della cartella di lavoro.
+/.tokensave/
 *.db
 *.backup
 

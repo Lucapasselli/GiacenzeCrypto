@@ -232,28 +232,64 @@ public class Principale_DocumentiFonte {
     }
 
     /**
+     * Esito di {@link #EliminaDocumenti(List, Window)} : quanti documenti e quanti movimenti sono stati
+     * eliminati davvero.
+     *
+     * <p>Un {@code boolean} non basta più da quando l'eliminazione può portarsi via anche i movimenti :
+     * il pannello deve poter distinguere "è cambiato il registro" (basta rileggere la tabella) da "è
+     * cambiata la mappa dei movimenti" (serve il ricalcolo di tutto il resto dell'applicazione).
+     *
+     * @param Documenti documenti eliminati
+     * @param Movimenti movimenti eliminati insieme a loro
+     */
+    public record EsitoEliminazione(int Documenti, int Movimenti) {
+
+        /** Esito di un'operazione annullata o rifiutata */
+        public static final EsitoEliminazione NIENTE = new EsitoEliminazione(0, 0);
+
+        /** @return {@code true} se il registro dei documenti è cambiato */
+        public boolean Modificato() {
+            return Documenti > 0;
+        }
+    }
+
+    /**
      * Elimina i documenti selezionati, copia e riga di registro.
      *
-     * <p>Rifiuta l'operazione se anche uno solo ha ancora dei movimenti agganciati: quei movimenti
-     * resterebbero a puntare nel vuoto, e la traccia del file da cui provengono sarebbe persa per sempre —
-     * i documenti non si possono ricostruire.
+     * <p>Due percorsi, e la differenza sta tutta in quanti documenti sono selezionati :
+     * <ul>
+     *   <li><b>documento singolo</b> : si elimina anche se ha ancora dei movimenti agganciati, ma allora
+     *       quei movimenti vengono eliminati <b>insieme</b> a lui, dietro due conferme distinte. Lasciarli
+     *       orfani sarebbe peggio che non poter eliminare niente : resterebbero a puntare a un file che
+     *       non esiste più, e la loro provenienza sarebbe persa senza che nulla lo dica;</li>
+     *   <li><b>selezione multipla</b> : si elimina solo ciò a cui non punta più nessun movimento. La
+     *       cascata è deliberatamente riservata al documento singolo — un avviso che elenca cinque
+     *       documenti e qualche migliaio di movimenti non lo legge nessuno, e qui sbagliare non è
+     *       rimediabile.</li>
+     * </ul>
      *
      * @param Ids documenti da eliminare
-     * @param owner finestra rispetto a cui centrare la conferma
-     * @return {@code true} se qualcosa è stato eliminato
+     * @param owner finestra rispetto a cui centrare le conferme
+     * @return quanto è stato eliminato davvero
      */
-    public static boolean EliminaDocumenti(List<Integer> Ids, Window owner) {
+    public static EsitoEliminazione EliminaDocumenti(List<Integer> Ids, Window owner) {
         if (Ids == null || Ids.isEmpty()) {
-            return false;
+            return EsitoEliminazione.NIENTE;
         }
         List<String> conMovimenti = NonEliminabili(Ids);
-        if (!conMovimenti.isEmpty()) {
+
+        if (!conMovimenti.isEmpty() && Ids.size() > 1) {
             Messaggi.WarningMessage("Eliminazione documenti",
                     "Ci sono ancora movimenti che fanno riferimento a questi documenti",
                     "Non eliminabili : " + String.join(", ", conMovimenti)
-                    + "<br><br>Eliminandoli quei movimenti perderebbero per sempre il collegamento al file "
-                    + "da cui provengono, che non è ricostruibile.", owner);
-            return false;
+                    + "<br><br>Su una selezione multipla si possono eliminare solo i documenti a cui non "
+                    + "punta più nessun movimento.<br>Per eliminare un documento insieme ai suoi movimenti "
+                    + "selezionalo da solo.", owner);
+            return EsitoEliminazione.NIENTE;
+        }
+
+        if (!conMovimenti.isEmpty()) {
+            return EliminaDocumentoConMovimenti(Ids.get(0), owner);
         }
 
         AppDialog.DialogResult result = AppDialog.builder(owner)
@@ -277,12 +313,161 @@ public class Principale_DocumentiFonte {
                 .showDialog();
 
         if (result == null || !result.isAction("elimina")) {
-            return false;
+            return EsitoEliminazione.NIENTE;
         }
         for (int Id : Ids) {
             DocumentiFonte.Annulla(Id);
         }
-        return true;
+        return new EsitoEliminazione(Ids.size(), 0);
+    }
+
+    /**
+     * Elimina un documento <b>e</b> i movimenti che ancora vi puntano, dietro due conferme distinte.
+     *
+     * <p>Le due conferme non sono un vezzo : il pulsante è lo stesso con cui si eliminano i documenti
+     * inerti, la selezione della tabella si sposta con una freccia, e qui si cancella una parte
+     * dell'archivio fiscale. La prima conferma dice <i>che cosa</i> sparisce, la seconda <i>che non
+     * torna indietro</i>.
+     *
+     * <p>L'ordine delle tre operazioni conta, e non è intercambiabile :
+     * <ol>
+     *   <li>si tolgono i movimenti dalla mappa;</li>
+     *   <li>si <b>salva subito</b> con backup permanente. La cancellazione dei movimenti, nel resto
+     *       dell'applicazione, è solo in memoria finché l'utente non preme <i>Salva</i> — ma qui
+     *       l'eliminazione del documento è immediata e definitiva, quindi un <i>Annulla</i> nella
+     *       tabella dei movimenti li rileggerebbe dal file facendoli puntare a un documento che non
+     *       esiste più. {@code Scrivi_Movimenti_Crypto(.., true)} rinomina il file <i>attuale</i> —
+     *       quello che i movimenti ce li ha ancora — in {@code Backup/movimenti.crypto.backup.&lt;ts&gt;} :
+     *       quel backup è l'unica via di recupero, ed è il motivo per cui si scrive <b>prima</b> di
+     *       eliminare il documento;</li>
+     *   <li>si elimina il documento.</li>
+     * </ol>
+     *
+     * @param Id documento da eliminare
+     * @param owner finestra rispetto a cui centrare le conferme
+     * @return quanto è stato eliminato
+     */
+    private static EsitoEliminazione EliminaDocumentoConMovimenti(int Id, Window owner) {
+        DocumentiFonte.Documento d = DocumentiFonte.Leggi(Id);
+        String Nome = d == null ? "documento " + Id : d.NomeOriginale;
+        DocumentiFonte.Riepilogo r = DocumentiFonte.Riepiloghi().get(Id);
+        if (r == null || r.Movimenti == 0) {
+            //La selezione era stata fatta su una tabella caricata prima : non c'è più niente da
+            //travolgere, quindi si ricade sul percorso ordinario invece di spaventare per niente
+            return EliminaDocumenti(List.of(Id), owner);
+        }
+
+        AppDialog.DialogResult primo = AppDialog.builder(owner)
+                .windowTitle("Conferma eliminazione")
+                .bodyTitle("Eliminare anche i movimenti importati?")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message("A " + Nome + " sono ancora agganciati " + r.Movimenti
+                        + (r.Movimenti == 1 ? " movimento." : " movimenti."))
+                .details("Wallet / exchange : " + (r.WalletInRiga().isEmpty() ? "-" : r.WalletInRiga())
+                        + "<br>Periodo dei movimenti : " + (r.Periodo().isEmpty() ? "-" : r.Periodo())
+                        + "<br><br>Eliminando il documento verranno eliminati <b>anche quei movimenti</b>, "
+                        + "insieme agli eventuali movimenti generati automaticamente a partire da loro "
+                        + "(commissioni, reward, classificazioni). I movimenti di altri documenti collegati "
+                        + "a questi verranno riportati alla situazione precedente alla classificazione.")
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("avanti", "Continua")
+                        .role(AppDialog.ActionRole.DANGER)
+                        .build())
+                .showDialog();
+
+        if (primo == null || !primo.isAction("avanti")) {
+            return EsitoEliminazione.NIENTE;
+        }
+
+        AppDialog.DialogResult secondo = AppDialog.builder(owner)
+                .windowTitle("Conferma definitiva")
+                .bodyTitle("Sei sicuro? L'operazione non è reversibile")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message("Stai per eliminare " + r.Movimenti
+                        + (r.Movimenti == 1 ? " movimento" : " movimenti")
+                        + " dall'archivio, insieme a " + Nome + ".")
+                .details("I movimenti eliminati non si possono recuperare dall'applicazione, e nemmeno il "
+                        + "file da cui provenivano : plusvalenze, giacenze e quadri RW/RT verranno "
+                        + "ricalcolati senza di loro.<br><br>"
+                        + "L'archivio viene salvato subito : dell'archivio <b>prima</b> della "
+                        + "cancellazione resta una copia nella cartella <b>Backup</b>, ed è l'unico modo "
+                        + "per tornare indietro.")
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("elimina", "Elimina movimenti e documento")
+                        .role(AppDialog.ActionRole.DANGER)
+                        .build())
+                .showDialog();
+
+        if (secondo == null || !secondo.isAction("elimina")) {
+            return EsitoEliminazione.NIENTE;
+        }
+
+        int eliminati = EliminaMovimentiDelDocumento(Id);
+        //Salvataggio permanente : il file attuale, con i movimenti ancora dentro, diventa il backup
+        Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet, true);
+        DocumentiFonte.Annulla(Id);
+        return new EsitoEliminazione(1, eliminati);
+    }
+
+    /**
+     * Toglie dalla mappa tutti i movimenti che puntano al documento indicato.
+     *
+     * <p>Passa da {@link Funzioni#RimuoviMovimentazioneXID}, e non da una {@code remove} diretta, perché
+     * un movimento classificato non è solo sé stesso : quella funzione elimina i movimenti generati
+     * automaticamente dal suo gruppo e riporta gli altri alla situazione precedente. Da qui i due
+     * accorgimenti :
+     * <ul>
+     *   <li>gli ID si raccolgono in una passata a parte e si eliminano dopo, perché la mappa cambia
+     *       sotto le mani;</li>
+     *   <li>si <b>ripete</b> finché una passata non trova più nulla. Sugli scambi differiti il
+     *       ripristino <i>rinomina</i> i movimenti rimasti (toglie il prefisso dall'ID), quindi un
+     *       movimento di questo documento può ricomparire sotto una chiave nuova dopo che la sua è già
+     *       stata visitata — e resterebbe a puntare a un documento che non esiste più. Il limite di
+     *       passate è una rete di sicurezza, non il caso normale.</li>
+     * </ul>
+     *
+     * <p>Un movimento di un <b>altro</b> documento non resta con un {@code [20]} che punta nel vuoto, e
+     * non è un caso fortunato : il riferimento incrociato è scritto <b>su tutti i membri del gruppo</b>,
+     * ognuno con l'elenco degli altri (verificato su tutti i punti che scrivono {@code [20]} in
+     * {@code GUI_ClassificazioneMovimento}). Chi cita un movimento eliminato è quindi a sua volta citato
+     * da lui, finisce nel gruppo che {@code RimuoviMovimentazioneXID} passa al ripristino e si ritrova
+     * {@code [18]}/{@code [19]}/{@code [20]} azzerati. È l'invariante su cui poggia il primo dei due
+     * avvisi, che lo promette all'utente.
+     *
+     * @param Id documento di cui eliminare i movimenti
+     * @return quanti movimenti sono stati eliminati davvero
+     */
+    static int EliminaMovimentiDelDocumento(int Id) {
+        int eliminati = 0;
+        for (int passata = 0; passata < 10; passata++) {
+            List<String> daEliminare = new ArrayList<>();
+            for (Map.Entry<String, String[]> e : MappaCryptoWallet.entrySet()) {
+                String v[] = e.getValue();
+                if (v != null && v.length > 41 && DocumentiFonte.IdDaCampo41(v[41]) == Id) {
+                    daEliminare.add(e.getKey());
+                }
+            }
+            if (daEliminare.isEmpty()) {
+                break;
+            }
+            for (String ID : daEliminare) {
+                //Come in Principale.Funzione_EliminaMovimenti : rimuovendo un movimento collegato ne
+                //spariscono altri del suo gruppo, quindi si conta solo ciò su cui si è agito davvero
+                if (MappaCryptoWallet.get(ID) != null) {
+                    Funzioni.RimuoviMovimentazioneXID(ID);
+                    eliminati++;
+                }
+            }
+        }
+        return eliminati;
     }
 
     /**

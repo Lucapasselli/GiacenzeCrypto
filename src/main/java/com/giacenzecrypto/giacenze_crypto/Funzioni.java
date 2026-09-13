@@ -177,6 +177,19 @@ public class Funzioni {
         
     static boolean ConnInternetAttiva=false;
     static long TimesTampUltimoControlloInternet=0;   
+
+    /**
+     * Fa scadere subito la cache di {@link #CeConnessioneInternet()}, cosi' la prossima chiamata esegue
+     * un test vero invece di ripetere l'esito precedente.
+     *
+     * <p>Serve a {@link AttesaConnessione}: la cache dura un minuto e la pausa fra i tentativi e' di
+     * tre, quindi oggi sarebbe scaduta da se' — ma legare la correttezza del riprova alla durata della
+     * pausa vuol dire romperlo il giorno in cui qualcuno la accorcia per provarlo.
+     */
+    static void ScadeCacheConnessione() {
+        TimesTampUltimoControlloInternet = 0;
+    }
+
     static boolean CeConnessioneInternet() {
         String[] urls = {
             "https://www.google.com",
@@ -3041,7 +3054,8 @@ return MappaLista;
      * dipendono da {@link #RewardRilevante} e dalle opzioni {@code Plusvalenze_Pre2023EarnCostoZero} per i
      * movimenti antecedenti al 2023-01-01; scambi crypto ({@code SC}) sono rilevanti solo se le due monete
      * scambiate hanno tipo diverso secondo {@link #RitornaTipoCrypto} (a meno che l'opzione
-     * {@code Plusvalenze_Pre2023ScambiRilevanti} non li renda sempre rilevanti prima del 2023); depositi/prelievi
+     * {@code Plusvalenze_Pre2023ScambiRilevanti} non li renda sempre rilevanti prima del 2023, o che
+     * {@code Plusvalenze_ScambiSempreRilevanti} li renda sempre rilevanti in qualunque anno); depositi/prelievi
      * crypto non classificati dipendono dall'opzione {@code PL_CosiderareMovimentiNC}. Un ID malformato (meno di
      * 5 segmenti) viene normalizzato e loggato come errore anziché causare un'eccezione.
      * @param Mov riga di movimento grezza
@@ -3061,6 +3075,7 @@ return MappaLista;
         String Data = Mov[1];
         boolean Pre2023EarnCostoZero = false;
         boolean Pre2023ScambiRilevanti = false;
+        boolean ScambiSempreRilevanti = false;
         long long2023 = FunzioniDate.ConvertiDatainLongMinuto("2023-01-01 00:00");
         long dataLong = FunzioniDate.ConvertiDatainLongMinuto(Data);
         boolean DataSuperiore2023 = true;
@@ -3074,6 +3089,10 @@ return MappaLista;
         String Plusvalenze_Pre2023ScambiRilevanti = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023ScambiRilevanti");
         if (Plusvalenze_Pre2023ScambiRilevanti != null && Plusvalenze_Pre2023ScambiRilevanti.equalsIgnoreCase("SI")) {
             Pre2023ScambiRilevanti = true;
+        }
+        String Plusvalenze_ScambiSempreRilevanti = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_ScambiSempreRilevanti");
+        if (Plusvalenze_ScambiSempreRilevanti != null && Plusvalenze_ScambiSempreRilevanti.equalsIgnoreCase("SI")) {
+            ScambiSempreRilevanti = true;
         }
         //Con questa opzione decido che fare in caso di movimenti non classificati, se conteggiarli o meno
        boolean ConsideraMovimentiNC=true;
@@ -3116,7 +3135,9 @@ return MappaLista;
         {
             String Tipo1 = RitornaTipoCrypto(m[0].Moneta, Data, m[0].Tipo);
             String Tipo2 = RitornaTipoCrypto(m[1].Moneta, Data, m[1].Tipo);
-            if (DataSuperiore2023 || !Pre2023ScambiRilevanti) {
+            //Stessa condizione del motore (Calcoli_PlusvalenzeNew.ElaboraMovimento, tipologia 1):
+            //con ScambiSempreRilevanti attiva anche lo scambio fra monete dello stesso tipo e' rilevante
+            if ((DataSuperiore2023 || !Pre2023ScambiRilevanti) && !ScambiSempreRilevanti) {
                 if (Tipo1.equalsIgnoreCase(Tipo2)) {
                     rilevante = false;
                     plusvalenza = false;

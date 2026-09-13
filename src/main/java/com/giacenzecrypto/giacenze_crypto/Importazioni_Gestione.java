@@ -879,7 +879,7 @@ if (voce.isJson()) {
                     Importazioni.AzzeraContatori();
 
                     boolean ok = DocumentiFonte.EseguiImportDaFile(
-                            new File(FileDaImportare), DocumentiFonte.TIPO_CSV, new File(percorsoJson).getName(),
+                            new File(FileDaImportare), DocumentiFonte.TIPO_CSV, new File(percorsoJson).getName(), progressb,
                             () -> ImportazioneGenerica.importa(
                                     FileDaImportare,
                                     percorsoJson,
@@ -978,7 +978,7 @@ if (voce.isJson()) {
                             }
                             final boolean PrezzoZeroF = PrezzoZero;
                             DocumentiFonte.EseguiImportDaFile(
-                                    new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Crypto.com Exchange CSV",
+                                    new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Crypto.com Exchange CSV", progressb,
                                     () -> Importazioni.Ex_CryptoComExchange_Importa(FileDaImportare, SovrascriEsistenti, c, PrezzoZeroF, progressb));
                             Importazioni_Resoconto res = new Importazioni_Resoconto();
                             res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
@@ -1073,7 +1073,7 @@ if (voce.isJson()) {
                         }
                         final boolean PrezzoZeroF = PrezzoZero;
                         DocumentiFonte.EseguiImportDaFile(
-                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "CoinTracking CSV",
+                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "CoinTracking CSV", progressb,
                                 () -> Importazioni.Ex_CoinTracking_Importa(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZeroF, progressb));
 
                         Importazioni_Resoconto res = new Importazioni_Resoconto();
@@ -1177,7 +1177,7 @@ if (voce.isJson()) {
 
                         final boolean PrezzoZeroF = PrezzoZero;
                         DocumentiFonte.EseguiImportDaFile(
-                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Tatax CSV",
+                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Tatax CSV", progressb,
                                 () -> Importazioni.Ex_Tatax_Importa(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZeroF, progressb));
 
                         Importazioni_Resoconto res = new Importazioni_Resoconto();
@@ -1235,7 +1235,7 @@ if (voce.isJson()) {
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         Importazioni.AzzeraContatori();
                         DocumentiFonte.EseguiImportDaFile(
-                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Binance CSV (formato storico)",
+                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Binance CSV (formato storico)", progressb,
                                 () -> Importazioni.Ex_Binance_Importa(FileDaImportare, SovrascriEsistenti, c, progressb));
                         Importazioni_Resoconto res = new Importazioni_Resoconto();
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -1281,7 +1281,7 @@ if (voce.isJson()) {
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         Importazioni.AzzeraContatori();
                         DocumentiFonte.EseguiImportDaFile(
-                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Binance Financial Report",
+                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Binance Financial Report", progressb,
                                 () -> Importazioni.Ex_BinanceTaxReport_Importa(FileDaImportare, SovrascriEsistenti, c, progressb));
                         Importazioni_Resoconto res = new Importazioni_Resoconto();
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -1327,7 +1327,7 @@ if (voce.isJson()) {
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         Importazioni.AzzeraContatori();
                         DocumentiFonte.EseguiImportDaFile(
-                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "OKX CSV (formato storico)",
+                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "OKX CSV (formato storico)", progressb,
                                 () -> Importazioni.Ex_OKX_Importa(FileDaImportare, SovrascriEsistenti, c, progressb));
                         Importazioni_Resoconto res = new Importazioni_Resoconto();
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));

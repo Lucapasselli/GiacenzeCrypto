@@ -865,7 +865,10 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 !TipoMU.isBlank() && !TipoME.isBlank()) //non devno essere campi nulli (senza scambi)
         {
             
-            if (DataSuperiore2023||!Opzioni.Pre2023ScambiRilevanti){//se la data è superiore al 2023 oppure gli scambi pre 2023 non voglio renderli rilvenati
+            //ScambiSempreRilevanti (opzione utente, default NO): se attiva anche lo scambio fra
+            //cripto dello stesso tipo prende la strada della tipologia 2, cioe' il ramo else qui
+            //sotto - scarico del LIFO, ricarico al valore di mercato e calcolo della plusvalenza.
+            if ((DataSuperiore2023||!Opzioni.Pre2023ScambiRilevanti)&&!Opzioni.ScambiSempreRilevanti){//se la data è superiore al 2023 oppure gli scambi pre 2023 non voglio renderli rilvenati
                 //Tolgo dallo stack il costo di carico della cripèto uscita
                 VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
                 
@@ -1260,6 +1263,8 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         final boolean Pre2023EarnCostoZero;
         /** Se {@code true} gli scambi fra cripto dello stesso tipo sono rilevanti anche prima del 2023 ({@code Plusvalenze_Pre2023ScambiRilevanti}). */
         final boolean Pre2023ScambiRilevanti;
+        /** Se {@code true} <b>ogni</b> scambio cripto-cripto e' fiscalmente rilevante, anche fra monete dello stesso tipo ({@code Plusvalenze_ScambiSempreRilevanti}). */
+        final boolean ScambiSempreRilevanti;
         /** 1 gennaio 2023 nel formato long dei minuti, soglia delle due regole qui sopra. */
         final long long2023;
 
@@ -1279,6 +1284,9 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
 
             String Pre2023Scambi = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023ScambiRilevanti");
             Pre2023ScambiRilevanti = (Pre2023Scambi != null && Pre2023Scambi.equalsIgnoreCase("SI"));
+
+            String ScambiSempre = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_ScambiSempreRilevanti");
+            ScambiSempreRilevanti = (ScambiSempre != null && ScambiSempre.equalsIgnoreCase("SI"));
 
             long2023 = FunzioniDate.ConvertiDatainLongMinuto("2023-01-01 00:00");
         }
@@ -1305,6 +1313,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             h = Mescola(h, NoPlusCommissioni ? "1" : "0");
             h = Mescola(h, Pre2023EarnCostoZero ? "1" : "0");
             h = Mescola(h, Pre2023ScambiRilevanti ? "1" : "0");
+            h = Mescola(h, ScambiSempreRilevanti ? "1" : "0");
             h = Mescola(h, Long.toString(long2023));
             //Lette dentro Funzioni.RewardRilevante
             h = Mescola(h, DatabaseH2.Pers_Opzioni_Leggi("PDD_CashBack", "SI"));

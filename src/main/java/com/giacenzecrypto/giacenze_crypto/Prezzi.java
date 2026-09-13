@@ -112,11 +112,18 @@ public class Prezzi {
             Movimento[32] = "SI";
             return true;
         }
-        //Questa ultima parte server per sistemare eventuali errori nell'assegnazione del prezzo
-      /*  else if (Movimento[32].equals("NO")&&!Movimento[15].equals("0.00"))
-            {Movimento[32] = "SI";}
-        else if (Movimento[32].equals("NO"))
-            {System.out.println("ooorco "+Movimento[15]);}*/
+        //Movimento valorizzato ma ancora marcato "NO": e' una combinazione contraddittoria, e finche'
+        //resta tale il movimento viene contato fra gli errori "senza prezzo" e mostrato dal filtro
+        //relativo, pur avendo un controvalore che il motore delle plusvalenze usa regolarmente ([15] e'
+        //il campo che Calcoli_PlusvalenzeNew legge come Valore).
+        //Non e' uno stato che qualcuno produce alla nascita: MovimentiCrypto.creaMovimento scrive "NO"
+        //solo insieme a Prezzo="0.00", e i due "NO" di GUI_ModificaMovimento sono irraggiungibili
+        //(MovimentoValorizzato e' true su ogni percorso che arriva alla scrittura). Nasce invece da chi
+        //riscrive [15] a posteriori: il ricalcolo prezzi di Opzioni -> Varie, cioe' proprio la strada con
+        //cui si recupera un archivio importato senza prezzi.
+        else if (Movimento[32].equals("NO") && !Movimento[15].equals("0.00")) {
+            Movimento[32] = "SI";
+        }
         
         //Controllo l'esito dei movimenti sopra e setto prezzato di conseguenza
         prezzato=Movimento[32].equals("SI");
@@ -753,8 +760,9 @@ public class Prezzi {
         {            
             return null;
         }
-        //Se non c'è connessione internet mi fermo qua e ritorno null
-        if (!Funzioni.CeConnessioneInternet()) return null;
+        //Se non c'è connessione internet si aspetta che torni (solo dentro un'importazione, vedi
+        //AttesaConnessione); questa e' la strada dei token DeFi cercati per indirizzo.
+        if (!Funzioni.CeConnessioneInternet() && !AttesaConnessione.Attendi()) return null;
 
         
         //se il token non è gestito da coingecko e non è già nel database ritorno null
@@ -1126,8 +1134,12 @@ public class Prezzi {
         //ancora minuti. Interruzione.Richiesta() e' false fuori da un'operazione aperta, quindi qui non
         //puo' spegnere in silenzio gli scaricamenti che non nascono da un'importazione.
         if (Interruzione.Richiesta()) return ripiego;
-        //Se non c'è connessione internet mi fermo qua e restituisco l'eventuale ripiego
-        if (!Funzioni.CeConnessioneInternet()) return ripiego;
+        //Se non c'è connessione internet si aspetta che torni, ma solo dentro un'importazione:
+        //AttesaConnessione.Attendi() e' un no-op fuori da uno scope aperto, quindi le valorizzazioni
+        //singole e i ricalcoli continuano a mollare subito come prima. Dentro un'importazione invece
+        //restituire il ripiego (spesso null) significa scrivere il movimento a 0.00 con campo [32]="NO":
+        //e' quello che ha lasciato 15.158 movimenti senza prezzo il 12/09/2026.
+        if (!Funzioni.CeConnessioneInternet() && !AttesaConnessione.Attendi()) return ripiego;
 
 
           //Servizio prezzi remoto (solo Fonte vuota): copre ~20 monete on-chain, risponde con UNA

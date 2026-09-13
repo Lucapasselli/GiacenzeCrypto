@@ -1318,11 +1318,15 @@ public static Path getNodeExePath() {
         //Lo scope si apre e si chiude QUI, nel proprietario dell'operazione, e non nel costruttore di
         //Download: le finestre di avanzamento si annidano, e legare lo scope alla finestra lascerebbe il
         //conteggio disallineato appena una di esse salta la chiusura. Vedi Interruzione.
+        //AttesaConnessione ha lo stesso proprietario e la stessa durata: dentro questo scope una
+        //caduta di linea fa aspettare e, se non torna, fa abbandonare lo scarico senza scrivere.
         Interruzione.Apri();
+        AttesaConnessione.Apri(progress);
         try {
             worker.execute();
             progress.setVisible(true);// Questo blocca finché done() non chiama dispose()
         } finally {
+            AttesaConnessione.Chiudi();
             Interruzione.Chiudi();
         }
 

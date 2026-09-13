@@ -99,7 +99,8 @@ public class GUI_InformazioniTest {
     public void ilTestoNominaLeAltreFontiELaLicenza() {
         String t = GUI_Informazioni.Testo();
         for (String fonte : new String[]{"Binance", "Coinbase", "CoinMarketCap", "DefiLlama",
-            "Blockscout", "Moralis", "Helius", "Unisat", "mempool.space", "GoPlus", "Banca d'Italia"}) {
+            "Blockscout", "Routescan", "Moralis", "Helius", "Unisat", "mempool.space", "GoPlus",
+            "Banca d'Italia"}) {
             assertTrue(t.contains(fonte), "la fonte " + fonte + " non è nominata");
         }
         assertTrue(t.contains("MIT"));

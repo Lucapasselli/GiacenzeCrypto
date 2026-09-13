@@ -439,6 +439,13 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                 final int IdDocumentoDefi = DocumentiFonte.ApriSessione("DeFi");
                 Importazioni.DocumentoFonteCorrente = IdDocumentoDefi;
 
+                //Questa strada non passa da Importazioni.ScriviListaSuMappaCrypto (scrive un movimento
+                //alla volta, vedi sotto), quindi lo scope di AttesaConnessione va aperto qui e la resa va
+                //controllata a mano insieme a "interrotto". Interruzione non serve: qui l'annullamento
+                //passa gia' da progress.FineThread(), che AttesaConnessione legge dalla finestra.
+                AttesaConnessione.Apri(progress);
+                try {
+
                 //Tutte le nuove operazioni trovat vengono messe nella mappaTransazioniDefi
                 Map<String,String[]> Mappa_Wallet_Dati = new TreeMap<>();
                 Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.DeFi_RitornaTransazioni(Portafogli, c, progress);
@@ -467,10 +474,17 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                         }
                     }
 
-                    if (interrotto) {
-                        //L'utente ha premuto "Interrompi" durante la seconda fase di recupero prezzi:
-                        //scarto tutti i movimenti scaricati in questa sessione, come già avviene se
-                        //l'interruzione avviene durante la prima fase (Importazioni.DeFi_RitornaTransazioni)
+                    if (interrotto || AttesaConnessione.Abortita()) {
+                        //L'utente ha premuto "Interrompi" durante la seconda fase di recupero prezzi, oppure
+                        //e' caduta la connessione e non e' tornata: scarto tutti i movimenti scaricati in
+                        //questa sessione, come già avviene se l'interruzione avviene durante la prima fase
+                        //(Importazioni.DeFi_RitornaTransazioni). Meglio niente che movimenti senza prezzo.
+                        if (AttesaConnessione.Abortita()) {
+                            Importazioni.movimentiSconosciuti =
+                                    Importazioni.AVVISO_IMPORT_ABBANDONATO + Importazioni.movimentiSconosciuti;
+                            LoggerGC.ScriviErrore("Scaricamento DeFi abbandonato: connessione assente, "
+                                    + RigheDaScrivere.size() + " movimenti NON scritti");
+                        }
                         Importazioni.TransazioniAggiunte = 0;
                     } else {
                     for (String[] st : RigheDaScrivere) {
@@ -538,6 +552,10 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                     }
 
                 }
+                }
+
+                } finally {
+                    AttesaConnessione.Chiudi();
                 }
 
                 //Chiusura del documento di origine: uno scaricamento che non ha aggiunto nulla (nessuna

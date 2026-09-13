@@ -8,6 +8,11 @@ import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.awt.Cursor;
 import java.awt.Window;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.swing.JTable;
@@ -460,6 +465,305 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
     
     
     
+
+    /**
+     * Costo di carico LIFO delle rimanenze per la tabella "Giacenze a data": una passata sola su
+     * {@link Principale#MappaCryptoWallet} costruisce le pile dei lotti ancora in giacenza alla data
+     * scelta, poi ogni riga della tabella interroga quelle pile con
+     * {@link CostiCaricoRimanenze#CostoDelleRimanenze(String, String, String)}.
+     * <p>
+     * <b>Le regole con cui i lotti entrano ed escono sono le stesse della PARTE 2 di
+     * {@code Calcoli_RT.CalcoliPlusvalenzeXAnno}</b> (movimenti interni ignorati, prelievi PTW scaricati
+     * al momento del deposito e non della partenza, DTW che scarica il gruppo di provenienza): è la terza
+     * copia di quelle regole nel programma — dopo il motore delle plusvalenze e il quadro RT — e dirlo è
+     * meglio che nasconderlo. Il costo dei lotti non viene ricalcolato: si legge da {@code v[17]} (entrata)
+     * ed è il costo di carico che il motore delle plusvalenze ha già scritto sul movimento, quindi il
+     * numero mostrato qui non può divergere da quello fiscale per un calcolo diverso.
+     * <p>
+     * Due scelte che il disegno dà per assodate:
+     * <ul>
+     * <li><b>La passata non è filtrata per wallet, la lettura sì.</b> Le quantità della tabella si possono
+     * filtrare a monte perché sommare è un'operazione locale; il LIFO no — togliere dal flusso i movimenti
+     * di un altro wallet cambia quali lotti restano. Soprattutto, un trasferimento interno non porta con sé
+     * nessun costo ({@code v[16]} e {@code v[17]} sono entrambi vuoti quando la controparte è dello stesso
+     * gruppo), quindi una pila costruita sui soli movimenti del wallet selezionato mostrerebbe quantità
+     * positive a costo zero per ogni moneta arrivata da un giroconto.</li>
+     * <li><b>La pila è per gruppo wallet, come nel motore, ma la chiave della moneta è quella della riga
+     * della tabella</b> ({@code Moneta;Tipo;Address;Rete}) e non il solo simbolo: due righe con lo stesso
+     * simbolo su reti diverse sono due righe distinte e leggendo entrambe dalla stessa pila si conterebbe
+     * due volte lo stesso lotto.</li>
+     * </ul>
+     *
+     * @param DataRiferimento istante (escluso) fino al quale considerare i movimenti, come nel ciclo che riempie la tabella
+     * @return le pile dei lotti residui, da interrogare riga per riga
+     */
+    public static CostiCaricoRimanenze CalcolaCostiCaricoRimanenze(long DataRiferimento) {
+        return CalcolaCostiCaricoRimanenze(DataRiferimento, null);
+    }
+
+    /**
+     * Come {@link #CalcolaCostiCaricoRimanenze(long)}, ma interrompibile: su un archivio da centomila
+     * movimenti la passata dura abbastanza da dover rispondere al pulsante <i>Annulla</i> della finestra
+     * di avanzamento, esattamente come fa il ciclo che riempie poi la tabella.
+     * @param DataRiferimento istante (escluso) fino al quale considerare i movimenti
+     * @param Interrotto sorgente dello stato di annullamento, interrogata ogni {@value #MOVIMENTI_PER_CONTROLLO_INTERRUZIONE} movimenti; {@code null} per non interrompere mai
+     * @return le pile dei lotti residui; se l'elaborazione è stata interrotta sono <b>incomplete</b> e il chiamante non deve mostrarle
+     */
+    public static CostiCaricoRimanenze CalcolaCostiCaricoRimanenze(long DataRiferimento,
+            java.util.function.BooleanSupplier Interrotto) {
+
+        CostiCaricoRimanenze Costi = new CostiCaricoRimanenze();
+        int Esaminati = 0;
+        for (String[] v : MappaCryptoWallet.values()) {
+            //Post-incremento a partire da zero : il primo controllo è sul primo movimento, così una
+            //richiesta di annullamento già in piedi non fa comunque partire la passata
+            if (Interrotto != null && Esaminati++ % MOVIMENTI_PER_CONTROLLO_INTERRUZIONE == 0
+                    && Interrotto.getAsBoolean()) {
+                return Costi;
+            }
+            if (!(FunzioniDate.ConvertiDatainLong(v[1]) < DataRiferimento)) {
+                continue;
+            }
+            String Rete = Funzioni.TrovaReteDaIMovimento(v);
+            String Gruppo = Costi.GruppoDelMovimento(v[3]);
+            String IDTS[] = v[0].split("_");
+            boolean MovimentoInterno = IDTS.length > 4 && IDTS[4].equalsIgnoreCase("TI");
+
+            //USCITA : scarico i lotti, tranne che per i movimenti interni e per i PTW (prelievi verso un
+            //wallet proprio), che vengono scaricati dal DTW corrispondente quando arrivano a destinazione
+            if (!v[9].isBlank() && !v[9].equalsIgnoreCase("FIAT") && !v[16].isBlank()
+                    && !v[18].contains("PTW") && !MovimentoInterno) {
+                Costi.TogliLotti(Gruppo, ChiaveRiga(v[8], v[9], v[26], Rete), v[10]);
+            }
+
+            //ENTRATA : carico il lotto al costo di carico scritto dal motore delle plusvalenze
+            if (!v[12].isBlank() && !v[12].equalsIgnoreCase("FIAT") && !v[17].isBlank() && !MovimentoInterno) {
+                if (!v[18].contains("DTW")) {
+                    Costi.InserisciLotto(Gruppo, ChiaveRiga(v[11], v[12], v[28], Rete), v[13], v[17], v[0]);
+                } else {
+                    //Deposito da un wallet proprio : se la controparte sta in un gruppo diverso il costo di
+                    //carico si sposta da quel gruppo a questo, altrimenti non si muove nulla
+                    String Controparte[] = Calcoli_PlusvalenzeNew.RitornaIDeGruppoControparteSeGruppoDiverso(v);
+                    if (Controparte[0] != null) {
+                        Costi.InserisciLotto(Gruppo, ChiaveRiga(v[11], v[12], v[28], Rete), v[13], v[17], v[0]);
+                        String Mov[] = MappaCryptoWallet.get(Controparte[0]);
+                        if (Mov != null) {
+                            String ReteControparte = Funzioni.TrovaReteDaIMovimento(Mov);
+                            Costi.TogliLotti(Controparte[1], ChiaveRiga(Mov[8], Mov[9], Mov[26], ReteControparte), Mov[10]);
+                        }
+                    }
+                }
+            }
+        }
+        return Costi;
+    }
+
+    /**
+     * Ogni quanti movimenti la passata dei costi di carico controlla se l'utente ha annullato. Non a ogni
+     * movimento perché {@code Download.FineThread()} non è un semplice getter.
+     */
+    private static final int MOVIMENTI_PER_CONTROLLO_INTERRUZIONE = 2000;
+
+    /**
+     * Compone la chiave con cui una moneta è identificata nella tabella "Giacenze a data", con la stessa
+     * regola del ciclo che riempie la tabella: se la rete manca, manca anche l'address (i due vanno a
+     * braccetto e tenerne uno solo spezzerebbe in due righe la stessa giacenza).
+     * @param Moneta simbolo della criptoattività
+     * @param Tipo tipo della moneta (Crypto, NFT, FIAT, ...)
+     * @param Address address del contratto, o vuoto
+     * @param Rete rete/chain di appartenenza, o vuota
+     * @return la chiave {@code Moneta;Tipo;Address;Rete}
+     */
+    public static String ChiaveRiga(String Moneta, String Tipo, String Address, String Rete) {
+        if (Rete == null || Rete.isBlank()) {
+            Rete = "";
+            Address = "";
+        }
+        if (Address == null) {
+            Address = "";
+        }
+        if (Tipo == null) {
+            Tipo = "";
+        }
+        return Moneta + ";" + Tipo + ";" + Address + ";" + Rete;
+    }
+
+    /**
+     * Le pile LIFO dei lotti ancora in giacenza, per gruppo wallet e per riga della tabella
+     * "Giacenze a data". Si costruisce con {@link #CalcolaCostiCaricoRimanenze(long)}.
+     */
+    public static final class CostiCaricoRimanenze {
+
+        /** Gruppo wallet → chiave di riga → pila dei lotti residui ({@code {quantità, costo, ID movimento}}). */
+        private final Map<String, Map<String, ArrayDeque<String[]>>> Pile = new TreeMap<>();
+
+        /**
+         * Copia dell'opzione {@code PlusXWallet}: se è spenta il motore delle plusvalenze usa una pila sola
+         * ("Wallet 01") e qui si fa lo stesso, altrimenti le due letture divergerebbero.
+         */
+        private final boolean PlusXWallet;
+
+        private CostiCaricoRimanenze() {
+            String PlusXW = DatabaseH2.Pers_Opzioni_Leggi("PlusXWallet");
+            PlusXWallet = (PlusXW != null && PlusXW.equalsIgnoreCase("SI"));
+        }
+
+        /** @return il gruppo wallet su cui tenere la pila dei movimenti del wallet indicato */
+        private String GruppoDelMovimento(String Wallet) {
+            if (!PlusXWallet) {
+                return "Wallet 01";
+            }
+            return DatabaseH2.Pers_GruppoWallet_Leggi(Wallet, true);
+        }
+
+        /**
+         * Aggiunge un lotto in cima alla pila. Quantità vuote, non numeriche o nulle non producono nessun
+         * lotto; un costo non numerico vale zero (il lotto deve comunque esistere, o la quantità
+         * successivamente scaricata non troverebbe nulla e si sfalserebbe tutto il resto della pila).
+         */
+        private void InserisciLotto(String Gruppo, String Chiave, String Qta, String Costo, String ID) {
+            if (Gruppo == null || Qta == null || Qta.isBlank()) {
+                return;
+            }
+            BigDecimal QtaLotto;
+            try {
+                QtaLotto = new BigDecimal(Qta.trim()).abs();
+            } catch (NumberFormatException ex) {
+                return;
+            }
+            if (QtaLotto.signum() == 0) {
+                return;
+            }
+            BigDecimal CostoLotto;
+            try {
+                CostoLotto = new BigDecimal(Costo.trim()).abs();
+            } catch (NumberFormatException ex) {
+                CostoLotto = BigDecimal.ZERO;
+            }
+            Pile.computeIfAbsent(Gruppo, k -> new TreeMap<>())
+                    .computeIfAbsent(Chiave, k -> new ArrayDeque<>())
+                    .push(new String[]{QtaLotto.toPlainString(), CostoLotto.toPlainString(), ID});
+        }
+
+        /**
+         * Scarica dalla pila, dall'ultimo entrato, i lotti necessari a coprire la quantità indicata. Un
+         * lotto più capiente del necessario rientra in pila per la parte residua, col costo proporzionato.
+         * Se la pila finisce prima non si segnala nulla: la mancanza è già contata dal motore delle
+         * plusvalenze ("parte del LiFo mancante") e la riga si vede comunque in rosso per la giacenza negativa.
+         */
+        private void TogliLotti(String Gruppo, String Chiave, String Qta) {
+            if (Gruppo == null || Qta == null || Qta.isBlank()) {
+                return;
+            }
+            Map<String, ArrayDeque<String[]>> PerChiave = Pile.get(Gruppo);
+            if (PerChiave == null) {
+                return;
+            }
+            ArrayDeque<String[]> Pila = PerChiave.get(Chiave);
+            if (Pila == null) {
+                return;
+            }
+            BigDecimal Rimanente;
+            try {
+                Rimanente = new BigDecimal(Qta.trim()).abs();
+            } catch (NumberFormatException ex) {
+                return;
+            }
+            while (Rimanente.signum() > 0 && !Pila.isEmpty()) {
+                String Lotto[] = Pila.pop();
+                BigDecimal QtaLotto = new BigDecimal(Lotto[0]);
+                BigDecimal CostoLotto = new BigDecimal(Lotto[1]);
+                if (QtaLotto.compareTo(Rimanente) <= 0) {
+                    Rimanente = Rimanente.subtract(QtaLotto);
+                } else {
+                    BigDecimal QtaResidua = QtaLotto.subtract(Rimanente);
+                    BigDecimal CostoResiduo = CostoLotto
+                            .divide(QtaLotto, VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP)
+                            .multiply(QtaResidua)
+                            .setScale(VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP);
+                    Pila.push(new String[]{QtaResidua.toPlainString(), CostoResiduo.toPlainString(), Lotto[2]});
+                    Rimanente = BigDecimal.ZERO;
+                }
+            }
+        }
+
+        /**
+         * Costo di carico dei lotti che coprono la giacenza mostrata su una riga della tabella.
+         * <p>
+         * I lotti dei gruppi wallet in gioco vengono uniti e riordinati per ID del movimento di origine —
+         * che è cronologico, visto che l'ID comincia con {@code yyyyMMddHHmmss} — così la lettura è la
+         * stessa qualunque sia l'ampiezza della selezione: su un gruppo intero, o su "Tutti", la quantità
+         * mostrata copre l'intera pila e il costo è quello di tutte le rimanenze; su un singolo wallet copre
+         * solo la parte più recente, che è la lettura LIFO della domanda "quanto è costato quello che resta".
+         *
+         * @param Wallet selezione della combo wallet ("Tutti", un nome di wallet, o "Gruppo : X ( alias )")
+         * @param Chiave chiave della riga, da {@link Principale_GiacenzeaData#ChiaveRiga(String, String, String, String)}
+         * @param Qta giacenza mostrata sulla riga
+         * @return il costo di carico con due decimali; {@code "0.00"} se la giacenza è nulla o negativa (non ci sono rimanenze da valorizzare) o se non si trova nessun lotto
+         */
+        public String CostoDelleRimanenze(String Wallet, String Chiave, String Qta) {
+            BigDecimal Richiesta;
+            try {
+                Richiesta = new BigDecimal(Qta.trim());
+            } catch (NumberFormatException | NullPointerException ex) {
+                return "0.00";
+            }
+            if (Richiesta.signum() <= 0) {
+                return "0.00";
+            }
+            List<String[]> Lotti = new ArrayList<>();
+            for (String Gruppo : GruppiInSelezione(Wallet)) {
+                Map<String, ArrayDeque<String[]>> PerChiave = Pile.get(Gruppo);
+                if (PerChiave == null) {
+                    continue;
+                }
+                ArrayDeque<String[]> Pila = PerChiave.get(Chiave);
+                if (Pila != null) {
+                    Lotti.addAll(Pila);
+                }
+            }
+            //Dal più recente al più vecchio : l'ID comincia con yyyyMMddHHmmss, quindi l'ordine
+            //alfabetico decrescente è già quello cronologico inverso richiesto dal LIFO
+            Lotti.sort((a, b) -> b[2].compareToIgnoreCase(a[2]));
+
+            BigDecimal Costo = BigDecimal.ZERO;
+            for (String[] Lotto : Lotti) {
+                if (Richiesta.signum() <= 0) {
+                    break;
+                }
+                BigDecimal QtaLotto = new BigDecimal(Lotto[0]);
+                BigDecimal CostoLotto = new BigDecimal(Lotto[1]);
+                if (QtaLotto.compareTo(Richiesta) <= 0) {
+                    Richiesta = Richiesta.subtract(QtaLotto);
+                    Costo = Costo.add(CostoLotto);
+                } else {
+                    Costo = Costo.add(CostoLotto
+                            .divide(QtaLotto, VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP)
+                            .multiply(Richiesta));
+                    Richiesta = BigDecimal.ZERO;
+                }
+            }
+            return Costo.setScale(2, RoundingMode.HALF_UP).toPlainString();
+        }
+
+        /**
+         * I gruppi wallet le cui pile vanno lette per la selezione corrente della combo wallet.
+         * Con {@code PlusXWallet} spenta la pila è una sola e la selezione non la restringe.
+         */
+        private Collection<String> GruppiInSelezione(String Wallet) {
+            if (!PlusXWallet || Wallet == null || Wallet.isBlank() || Wallet.equalsIgnoreCase("tutti")) {
+                return Pile.keySet();
+            }
+            if (Wallet.contains("Gruppo :")) {
+                return List.of(Wallet.split(" : ")[1].split("\\(")[0].trim());
+            }
+            //Un wallet non più presente in WALLETGRUPPO non ha lotti da leggere : meglio nessun costo
+            //che il costo di un gruppo scelto a caso
+            String Gruppo = DatabaseH2.Pers_GruppoWallet_Leggi(Wallet, false);
+            return Gruppo == null ? List.of() : List.of(Gruppo);
+        }
+    }
+
     //Queste 3 classi serviranno per sistemare la parte relativa al calcolo delle giacenzeadata
     //per ora non utilizzata
     

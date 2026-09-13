@@ -45,6 +45,18 @@ public class GUI_DocumentiFonte_Pannello extends javax.swing.JPanel {
     /** Cosa fare quando si preme "Chiudi"; {@code null} finché nessuno lo chiede, e il pulsante resta nascosto */
     private Runnable AzioneChiusura = null;
 
+    /**
+     * Cosa fare quando l'eliminazione si è portata via anche dei movimenti, cioè il ricalcolo di tutto il
+     * resto dell'applicazione.
+     *
+     * <p>{@code null} è il caso del dialogo, che non ha modo di richiamare {@code Funzioni_AggiornaTutto()}
+     * e si limita ad alzare {@link Principale#TabellaCryptodaAggiornare} : la finestra principale lo
+     * consuma quando riprende il fuoco alla chiusura. Nel tab quel giro non basta — il fuoco non se n'è mai
+     * andato — ed è {@code Principale} a passare qui cosa eseguire, così il ricalcolo resta dov'è sempre
+     * stato invece di essere rifatto dentro il pannello.
+     */
+    private Runnable AzioneRicalcolo = null;
+
     /** {@code true} se da quando il pannello è aperto è stato eliminato qualche documento */
     private boolean Modificato = false;
 
@@ -215,10 +227,30 @@ public class GUI_DocumentiFonte_Pannello extends javax.swing.JPanel {
     }//GEN-LAST:event_Bottone_EsportaActionPerformed
 
     private void Bottone_EliminaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_EliminaActionPerformed
-        if (Principale_DocumentiFonte.EliminaDocumenti(IdSelezionati(), Proprietario())) {
-            Modificato = true;
-            Ricarica();
+        Principale_DocumentiFonte.EsitoEliminazione esito
+                = Principale_DocumentiFonte.EliminaDocumenti(IdSelezionati(), Proprietario());
+        if (!esito.Modificato()) {
+            return;
         }
+        Modificato = true;
+        Ricarica();
+        if (esito.Movimenti() == 0) {
+            return;
+        }
+        //Il ricalcolo va fatto PRIMA del messaggio, non dopo : il WINDOW_GAINED_FOCUS lasciato dalla
+        //conferma che si è appena chiusa verrebbe smaltito dentro il ciclo di eventi modale del messaggio,
+        //che resterebbe grigio per tutta la durata del calcolo. È la stessa ragione documentata in
+        //Principale.Funzione_EliminaMovimenti, e il motivo per cui li' il flag viene spento prima.
+        if (AzioneRicalcolo != null) {
+            AzioneRicalcolo.run();
+        } else {
+            Principale.TabellaCryptodaAggiornare = true;
+        }
+        Messaggi.SuccessMessage("Documento eliminato",
+                esito.Movimenti() + (esito.Movimenti() == 1 ? " movimento eliminato" : " movimenti eliminati")
+                + " insieme al documento",
+                "L'archivio è già stato salvato. Della situazione precedente alla cancellazione resta una "
+                + "copia nella cartella Backup.", Proprietario());
     }//GEN-LAST:event_Bottone_EliminaActionPerformed
 
     private void Bottone_AggiornaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AggiornaActionPerformed
@@ -241,6 +273,17 @@ public class GUI_DocumentiFonte_Pannello extends javax.swing.JPanel {
     public void ImpostaAzioneChiusura(Runnable Azione) {
         AzioneChiusura = Azione;
         Bottone_Chiudi.setVisible(Azione != null);
+    }
+
+    /**
+     * Dichiara cosa eseguire quando l'eliminazione di un documento si porta via anche dei movimenti.
+     * <p>Da chiamare solo da chi monta il pannello dentro la finestra principale : nel dialogo il
+     * ricalcolo passa da {@link Principale#TabellaCryptodaAggiornare}, consumato alla ripresa del fuoco.
+     *
+     * @param Azione il ricalcolo da eseguire, tipicamente {@code Funzioni_AggiornaTutto()}
+     */
+    public void ImpostaAzioneRicalcolo(Runnable Azione) {
+        AzioneRicalcolo = Azione;
     }
 
     /** @return {@code true} se da quando il pannello esiste sono stati eliminati dei documenti */
@@ -326,10 +369,15 @@ public class GUI_DocumentiFonte_Pannello extends javax.swing.JPanel {
         //"Apri" lavora sul singolo: aprire dieci file insieme non è quello che si intende chiedendolo
         Bottone_Apri.setEnabled(selezionati == 1);
         Bottone_Esporta.setEnabled(selezionati > 0);
-        Bottone_Elimina.setEnabled(selezionati > 0 && TuttiSenzaMovimenti());
-        Bottone_Elimina.setToolTipText(selezionati > 0 && !TuttiSenzaMovimenti()
-                ? "La selezione contiene documenti a cui sono ancora agganciati dei movimenti"
-                : "Possibile solo sui documenti a cui non è agganciato più nessun movimento");
+        //Su un documento solo si elimina sempre : se ha ancora dei movimenti agganciati, l'operazione
+        //propone di eliminare anche quelli. Su una selezione multipla no — la cascata chiede due conferme
+        //che elencano che cosa sparisce, e su cinque documenti insieme quel dettaglio non c'è.
+        boolean inerti = TuttiSenzaMovimenti();
+        Bottone_Elimina.setEnabled(selezionati == 1 || (selezionati > 1 && inerti));
+        Bottone_Elimina.setToolTipText(selezionati > 1 && !inerti
+                ? "Su una selezione multipla si eliminano solo i documenti senza movimenti agganciati: "
+                        + "per eliminare un documento insieme ai suoi movimenti selezionalo da solo"
+                : "Elimina il documento; se ha ancora dei movimenti agganciati propone di eliminare anche quelli");
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

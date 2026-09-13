@@ -2963,7 +2963,7 @@ private static String F_buildKeyMovimento(String[] riga) {
     String qtaU = "";
     if (F_isNumeroNonZero(riga[10])) {       // Campo 10 != "0"
         mu = F_safe(riga[8]);                // Campo 8: moneta uscita
-        qtaU = F_safe(riga[10]);             // Campo 10: quantità uscita
+        qtaU = F_normalizzaQta(riga[10]);    // Campo 10: quantità uscita, come numero
     }
 
     // ENTRATA (campi 11=moneta, 13=qta): includi SOLO se qta != 0
@@ -2971,11 +2971,29 @@ private static String F_buildKeyMovimento(String[] riga) {
     String qtaE = "";
     if (F_isNumeroNonZero(riga[13])) {       // Campo 13 != "0"
         me = F_safe(riga[11]);               // Campo 11: moneta entrata
-        qtaE = F_safe(riga[13]);             // Campo 13: quantità entrata
+        qtaE = F_normalizzaQta(riga[13]);    // Campo 13: quantità entrata, come numero
     }
 
     // CHIAVE FINALE: tutti i campi rilevanti uniti con "|"
     return data + "|" + exchange + "|" + mu + "|" + qtaU + "|" + me + "|" + qtaE;
+}
+
+/**
+ * Normalizza una quantità per il confronto nella chiave di dedup: la riduce al valore numerico
+ * (BigDecimal, senza zeri non significativi) invece di confrontare la stringa così com'è. Serve perché
+ * la stessa quantità può arrivare rappresentata diversamente ("1.50" da un movimento già importato prima
+ * di {@code stripTrailingZeros}, "1.5" da uno nuovo): confrontando le stringhe sarebbero due movimenti
+ * diversi e verrebbe importato un duplicato.
+ * @param s quantità così come scritta nel campo del movimento
+ * @return la stessa quantità come {@code BigDecimal.toPlainString()} senza zeri non significativi,
+ *         oppure {@code s} invariata se non è un numero valido (per non far fallire l'intero confronto)
+ */
+private static String F_normalizzaQta(String s) {
+    String t = F_safe(s).trim();
+    if (t.isEmpty() || !Funzioni.isNumeric(t, false)) {
+        return t;
+    }
+    return new BigDecimal(t).stripTrailingZeros().toPlainString();
 }
 
 /**

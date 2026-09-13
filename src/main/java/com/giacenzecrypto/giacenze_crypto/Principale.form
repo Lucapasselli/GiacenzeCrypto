@@ -7490,8 +7490,16 @@
                                       </Group>
                                       <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="Opzioni_ProviderDefi_ApiKeyBlockscout_TextField" min="-2" pref="658" max="-2" attributes="0"/>
-                                          <Component id="Opzioni_ProviderDefi_ApiKeyNodeReal_TextField" min="-2" pref="658" max="-2" attributes="0"/>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="Opzioni_ProviderDefi_ApiKeyBlockscout_TextField" min="-2" pref="658" max="-2" attributes="0"/>
+                                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                                              <Component id="Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSito" min="-2" pref="381" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="Opzioni_ProviderDefi_ApiKeyNodeReal_TextField" min="-2" pref="658" max="-2" attributes="0"/>
+                                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                                              <Component id="Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSito" min="-2" pref="381" max="-2" attributes="0"/>
+                                          </Group>
                                           <Group type="102" alignment="0" attributes="0">
                                               <Component id="Opzioni_ApiKey_Bottone_Salva" min="-2" pref="120" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
@@ -7574,11 +7582,13 @@
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="Opzioni_ProviderDefi_ApiKeyBlockscout_Label" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="Opzioni_ProviderDefi_ApiKeyBlockscout_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSito" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="Opzioni_ProviderDefi_ApiKeyNodeReal_Label" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="Opzioni_ProviderDefi_ApiKeyNodeReal_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSito" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
@@ -7757,6 +7767,16 @@
                         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ProviderDefi_ApiKeyBlockscout_TextFieldKeyReleased"/>
                       </Events>
                     </Component>
+                    <Component class="javax.swing.JLabel" name="Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSito">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="https://dev.blockscout.com/"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSitoMouseClicked"/>
+                        <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSitoMouseEntered"/>
+                        <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSitoMouseExited"/>
+                      </Events>
+                    </Component>
                     <Component class="javax.swing.JLabel" name="Opzioni_ProviderDefi_ApiKeyNodeReal_Label">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="ApiKey NodeReal (BSC) :"/>
@@ -7766,6 +7786,16 @@
                       <Events>
                         <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ProviderDefi_ApiKeyNodeReal_TextFieldMouseReleased"/>
                         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ProviderDefi_ApiKeyNodeReal_TextFieldKeyReleased"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSito">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="https://dashboard.nodereal.io/"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSitoMouseClicked"/>
+                        <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSitoMouseEntered"/>
+                        <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSitoMouseExited"/>
                       </Events>
                     </Component>
                   </SubComponents>

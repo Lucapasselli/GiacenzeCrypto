@@ -575,6 +575,8 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             if (qtaStr.isBlank() || !Funzioni.isNumeric(qtaStr, false)) {
                 continue;
             }
+            // Come ogni altra quantita' costruita in questo file: mai zeri non significativi in giro.
+            qtaStr = new BigDecimal(qtaStr).stripTrailingZeros().toPlainString();
 
             Moneta mon = new Moneta();
             mon.InserisciValori(moneta, qtaStr, "", "");

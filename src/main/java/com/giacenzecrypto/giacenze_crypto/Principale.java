@@ -970,6 +970,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKey_Coingecko_LabelSito = new javax.swing.JLabel();
         Opzioni_ProviderDefi_ApiKeyNodeReal_Label = new javax.swing.JLabel();
         Opzioni_ProviderDefi_ApiKeyNodeReal_TextField = new javax.swing.JTextField();
+        Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSito = new javax.swing.JLabel();
         Opzioni_ApiKey_Moralis_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_Moralis_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Moralis_LabelSito = new javax.swing.JLabel();
@@ -982,6 +983,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKey_MoralisNB_Label = new javax.swing.JLabel();
         Opzioni_ProviderDefi_ApiKeyBlockscout_Label = new javax.swing.JLabel();
         Opzioni_ProviderDefi_ApiKeyBlockscout_TextField = new javax.swing.JTextField();
+        Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSito = new javax.swing.JLabel();
         Opzioni_ProviderDefi_Pannello = new javax.swing.JPanel();
         Opzioni_ProviderDefi_ScrollTabella = new javax.swing.JScrollPane();
         Opzioni_ProviderDefi_Tabella = new javax.swing.JTable();
@@ -5829,6 +5831,19 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSito.setText("https://dev.blockscout.com/");
+        Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSito.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSitoMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSitoMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSitoMouseExited(evt);
+            }
+        });
+
         Opzioni_ProviderDefi_ApiKeyNodeReal_Label.setText("ApiKey NodeReal (BSC) :");
 
         Opzioni_ProviderDefi_ApiKeyNodeReal_TextField.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -5839,6 +5854,19 @@ private static final long serialVersionUID = 3L;
         Opzioni_ProviderDefi_ApiKeyNodeReal_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 Opzioni_ProviderDefi_ApiKeyNodeReal_TextFieldKeyReleased(evt);
+            }
+        });
+
+        Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSito.setText("https://dashboard.nodereal.io/");
+        Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSito.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSitoMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSitoMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSitoMouseExited(evt);
             }
         });
 
@@ -5876,8 +5904,14 @@ private static final long serialVersionUID = 3L;
                             .addComponent(Opzioni_ApiKey_UniSat_Label, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(4, 4, 4)
                         .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(Opzioni_ProviderDefi_ApiKeyNodeReal_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ProviderDefi_ApiKeyNodeReal_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                                 .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -5941,11 +5975,13 @@ private static final long serialVersionUID = 3L;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_Label)
-                    .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSito))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ProviderDefi_ApiKeyNodeReal_Label)
-                    .addComponent(Opzioni_ProviderDefi_ApiKeyNodeReal_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(Opzioni_ProviderDefi_ApiKeyNodeReal_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSito))
                 .addGap(18, 18, 18)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -14252,6 +14288,36 @@ if (result != null && !result.isAction("cancel")) {
         Opzioni_ApiKey_ControllaPulsanti();
     }//GEN-LAST:event_Opzioni_ProviderDefi_ApiKeyBlockscout_TextFieldKeyReleased
 
+    private void Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSitoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSitoMouseClicked
+        // TODO add your handling code here:
+        Funzioni.ApriWeb("https://dev.blockscout.com/");
+    }//GEN-LAST:event_Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSitoMouseClicked
+
+    private void Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSitoMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSitoMouseEntered
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSitoMouseEntered
+
+    private void Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSitoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSitoMouseExited
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSitoMouseExited
+
+    private void Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSitoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSitoMouseClicked
+        // TODO add your handling code here:
+        Funzioni.ApriWeb("https://dashboard.nodereal.io/");
+    }//GEN-LAST:event_Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSitoMouseClicked
+
+    private void Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSitoMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSitoMouseEntered
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSitoMouseEntered
+
+    private void Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSitoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSitoMouseExited
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSitoMouseExited
+
 
     private void Opzioni_GruppoWallet_CheckBox_PlusManualiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_CheckBox_PlusManualiActionPerformed
         // TODO add your handling code here:
@@ -18685,8 +18751,10 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel Opzioni_Label_StatoCompattazione;
     private javax.swing.JPanel Opzioni_PrezziKO_Pannello;
     private javax.swing.JLabel Opzioni_ProviderDefi_ApiKeyBlockscout_Label;
+    private javax.swing.JLabel Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSito;
     private javax.swing.JTextField Opzioni_ProviderDefi_ApiKeyBlockscout_TextField;
     private javax.swing.JLabel Opzioni_ProviderDefi_ApiKeyNodeReal_Label;
+    private javax.swing.JLabel Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSito;
     private javax.swing.JTextField Opzioni_ProviderDefi_ApiKeyNodeReal_TextField;
     private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Annulla;
     private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Ripristina;

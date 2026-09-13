@@ -3327,13 +3327,51 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
      
         /**
          * Individua e associa automaticamente gli scambi differiti (prelievo su un exchange seguito da un
-         * deposito equivalente su un altro entro 15 minuti, con prezzo che non si discosta più del 10%),
-         * usando la stessa funzione di associazione manuale
+         * deposito equivalente su un altro entro {@code minutiTolleranza} minuti, con prezzo che non si
+         * discosta più del 10%), usando la stessa funzione di associazione manuale
          * {@link GUI_ClassificazioneMovimento#CreaMovimentiScambioCryptoDifferito}.
+         *
+         * <p>Ogni movimento entra in <b>al più un</b> abbinamento: un prelievo si ferma al primo deposito
+         * compatibile trovato (non ne cerca un secondo) e un deposito già usato non viene più riproposto
+         * ad altri prelievi. Senza questa regola {@code CreaMovimentiScambioCryptoDifferito} verrebbe
+         * richiamata più volte sullo stesso ID, che al secondo tentativo non esiste più in
+         * {@link Principale#MappaCryptoWallet} (rinominato dal primo abbinamento).
+         *
          * @param listaMovimentidaConsolidare movimenti da analizzare per la ricerca di scambi differiti
          * @param SovrascrivoEsistenti se {@code true} analizza anche i movimenti già presenti in {@link Principale#MappaCryptoWallet} con lo stesso ID
+         * @param minutiTolleranza tolleranza, in minuti, tra prelievo e deposito perché siano considerati abbinabili
          */
-        public static void ConsolidaMovimentiDifferiti(List<String[]> listaMovimentidaConsolidare,boolean SovrascrivoEsistenti){
+        public static void ConsolidaMovimentiDifferiti(List<String[]> listaMovimentidaConsolidare,boolean SovrascrivoEsistenti,long minutiTolleranza){
+            ConsolidaMovimentiDifferiti(listaMovimentidaConsolidare, SovrascrivoEsistenti, minutiTolleranza, null);
+        }
+
+        /**
+         * Come {@link #ConsolidaMovimentiDifferiti(List, boolean, long)}, ma con la lista dei "già
+         * esistenti" calcolata dal chiamante <b>prima</b> della scrittura in {@link Principale#MappaCryptoWallet},
+         * invece che rilevata qui dentro.
+         *
+         * <p>Questa funzione gira sempre <b>dopo</b> che {@link Importazioni#ScriviListaSuMappaCrypto} ha
+         * già scritto i movimenti (serve a {@code CreaMovimentiScambioCryptoDifferito}, che li rilegge per
+         * ID): a quel punto un movimento genuinamente nuovo di questo stesso import è già in mappa quanto
+         * uno che c'era da prima, e {@code MappaCryptoWallet.get(id)==null} non li distingue più. Passare
+         * qui l'insieme rilevato <b>prima</b> della scrittura è l'unico modo corretto di sapere quali fossero
+         * davvero già presenti.
+         *
+         * <p>{@code giaEsistentiPrimaDellImport == null} riproduce esattamente il comportamento storico
+         * (il controllo post-scrittura qui sotto, con il suo difetto noto: quando {@code SovrascrivoEsistenti}
+         * è {@code false}, che è il default della casella "Sovrascrivere movimenti già presenti", ogni
+         * movimento appena scritto risulta "già in mappa" e viene escluso, quindi l'abbinamento automatico
+         * non scatta mai su un'importazione normale). Non è stato toccato per non spostare l'esito fiscale
+         * degli importatori CSV storici Binance/OKX, che chiamano solo le overload a 2/3 argomenti.
+         *
+         * @param listaMovimentidaConsolidare movimenti da analizzare per la ricerca di scambi differiti
+         * @param SovrascrivoEsistenti se {@code true} analizza anche i movimenti già presenti in {@link Principale#MappaCryptoWallet} con lo stesso ID
+         * @param minutiTolleranza tolleranza, in minuti, tra prelievo e deposito perché siano considerati abbinabili
+         * @param giaEsistentiPrimaDellImport ID (campo {@code [0]}) dei movimenti di {@code listaMovimentidaConsolidare}
+         *        già presenti in {@link Principale#MappaCryptoWallet} <b>prima</b> di questo import, o
+         *        {@code null} per il vecchio comportamento (rilevazione post-scrittura)
+         */
+        public static void ConsolidaMovimentiDifferiti(List<String[]> listaMovimentidaConsolidare,boolean SovrascrivoEsistenti,long minutiTolleranza,Set<String> giaEsistentiPrimaDellImport){
             //Importazione abbandonata: i movimenti non verranno scritti, quindi accoppiarli sarebbe
             //lavoro buttato e, peggio, CreaMovimentiScambioCryptoDifferito agirebbe su ID che in
             //MappaCryptoWallet non esistono.
@@ -3342,51 +3380,70 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
             int nElementi = listaMovimentidaConsolidare.size();
             //Con questo ordino i movimenti
             for (int i = 0; i < nElementi; i++) {
-                String consolidata[] = listaMovimentidaConsolidare.get(i); 
-                if (SovrascrivoEsistenti||MappaCryptoWallet.get(consolidata[0])==null){ 
+                String consolidata[] = listaMovimentidaConsolidare.get(i);
+                boolean giaEsistente = giaEsistentiPrimaDellImport != null
+                        ? giaEsistentiPrimaDellImport.contains(consolidata[0])
+                        : MappaCryptoWallet.get(consolidata[0]) != null; //comportamento storico, post-scrittura
+                if (SovrascrivoEsistenti||!giaEsistente){
                     //Aggiungo alla mappa da verificare solo i movimenti nuovi o se è attiva la spunta di sovrascrivere i movimenti esistenti
                     Mappa_Movimenti.put(consolidata[0], consolidata);
                 }
             }
-            
+
+            long tolleranzaMs = minutiTolleranza * 60000L;
+            //ID già coinvolti in un abbinamento: né un prelievo né un deposito possono essere riusati una
+            //seconda volta (vedi javadoc).
+            Set<String> giaAssociati = new HashSet<>();
+
             for(String[] riga:Mappa_Movimenti.values()){
-                //Se trovo un prelievo devo vedere se nei 10 minuti successivi c'è stato un deposito e lo associo
-               // System.out.println(riga[5]);
-                if (riga[5].contains("PRELIEVO")){
+                //Se trovo un prelievo devo vedere se nella finestra di tolleranza c'è stato un deposito e lo associo.
+                //MappaCryptoWallet.containsKey(riga[0]) e' una difesa: un movimento di un vero re-import (stesso
+                //CSV una seconda volta) puo' finire qui pur non essendo mai stato scritto - deduplicato per
+                //contenuto da F_ritornaSoloElementiNuovi contro la copia già rinumerata dal primo abbinamento.
+                //CreaMovimentiScambioCryptoDifferito rilegge per ID: senza questo controllo andrebbe in
+                //NullPointerException invece di lasciare quella riga (già gestita al primo import) da sola.
+                if (riga[5].contains("PRELIEVO") && !giaAssociati.contains(riga[0]) && MappaCryptoWallet.containsKey(riga[0])){
                     //leggo l'ora
                     long timestampPrelievo=FunzioniDate.ConvertiDatainLongMinuto(riga[1]);
-                    // una volta letto l'ora vado a vedere se nei 15 minuti successivi c'è un deposito, in quel caso
+                    // una volta letto l'ora vado a vedere se nella finestra configurata c'è un deposito, in quel caso
                     // lo associo a questo movimenti di prelievo solo se il prezzo tra le due monete non si discosta di più del 10%
                     // oppure se non riesco a trovare il prezzo
                     // altrimenti lascio tutto com'è
                     for(String[] rigaConfronto:Mappa_Movimenti.values()){
-                        if (rigaConfronto[5].contains("DEPOSITO")){                            
+                        if (rigaConfronto[5].contains("DEPOSITO") && !giaAssociati.contains(rigaConfronto[0]) && MappaCryptoWallet.containsKey(rigaConfronto[0])){
                             BigDecimal PrezzoPrelievo=new BigDecimal(riga[15]);
                             BigDecimal PrezzoDeposito=new BigDecimal(rigaConfronto[15]);
                             BigDecimal Diecipercento=PrezzoPrelievo.divide(new BigDecimal(10));
                             long timestampDeposito=FunzioniDate.ConvertiDatainLongMinuto(rigaConfronto[1]);
-                          /*  System.out.println(PrezzoPrelievo);
-                           // System.out.println(PrezzoDeposito);
-                          //  System.out.println(Diecipercento);
-                           // System.out.println(timestampPrelievo);
-                           // System.out.println(timestampDeposito);*/
-                            //Se il tempo intercorso tra deposito e prelievo è inferiore di 15 minuti controllo il prezzo
-                            if (timestampDeposito-timestampPrelievo>0 && timestampDeposito-timestampPrelievo<900000&&
+                            //Se il tempo intercorso tra deposito e prelievo è inferiore alla tolleranza controllo il prezzo
+                            if (timestampDeposito-timestampPrelievo>0 && timestampDeposito-timestampPrelievo<tolleranzaMs&&
                                     PrezzoPrelievo.subtract(PrezzoDeposito).abs().compareTo(Diecipercento)==-1){
-                                //Se la differenza tra il prezzo di prelievo e deposito è inferiore al 10% allora proseguo
-                                //e associo i movimenti e poi termino il ciclo
+                                //Se la differenza tra il prezzo di prelievo e deposito è inferiore al 10% allora associo
+                                //i movimenti, li marco come già usati e passo al prossimo prelievo (break): un prelievo
+                                //si abbina al più a un deposito, e viceversa.
                                     GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(riga[0], rigaConfronto[0]);
-                                    
-                                                               
+                                    giaAssociati.add(riga[0]);
+                                    giaAssociati.add(rigaConfronto[0]);
+                                    break;
                             }
                         }
                     }
-                    
+
                 }
             }
-                   
+
         }
-     
+
+        /**
+         * Come {@link #ConsolidaMovimentiDifferiti(List, boolean, long)}, con la tolleranza storica di 15
+         * minuti (quella degli importatori Binance/OKX storici).
+         * @param listaMovimentidaConsolidare movimenti da analizzare per la ricerca di scambi differiti
+         * @param SovrascrivoEsistenti se {@code true} analizza anche i movimenti già presenti in {@link Principale#MappaCryptoWallet} con lo stesso ID
+         */
+        public static void ConsolidaMovimentiDifferiti(List<String[]> listaMovimentidaConsolidare,boolean SovrascrivoEsistenti){
+            ConsolidaMovimentiDifferiti(listaMovimentidaConsolidare, SovrascrivoEsistenti, 15);
+        }
+
         
           /**
            * Consolida le righe grezze già categorizzate del CSV Binance ({@link #Ex_Binance_Importa}) in

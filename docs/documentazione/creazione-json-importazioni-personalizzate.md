@@ -36,6 +36,7 @@ Ogni proprietà ha un valore predefinito. Se non la inserisci nel JSON, viene us
 "consolidaRigheStessaData": false,
 "tolleranzaSecondiConsolidamento": 2,
 "causaliDifferite": [],
+"minutiScambioDifferito": 15,
 "colonne": { ... },
 "raggruppamentoPerCausale": { ... },
 "colonneControvalore": { ... },
@@ -487,6 +488,20 @@ Se specificato, la tolleranza temporale viene applicata solo ai gruppi che conte
 ```json
 "causaliDifferite": ["Trade","Swap"]
 ```
+
+### La causale `SCAMBIO DIFFERITO` e `minutiScambioDifferito` {#scambio-differito}
+
+Alcune operazioni (l'Auto-Invest di Binance, un recupero fondi, una redistribuzione di token) mostrano nel CSV due righe indipendenti — un prelievo e un deposito, spesso di monete diverse — che in realtà sono le due metà dello stesso scambio, avvenuto "dietro le quinte" dell'exchange. Mappando la causale su `SCAMBIO DIFFERITO` (invece che su `TRASFERIMENTO-CRYPTO`) quella riga entra anche nella ricerca automatica di abbinamento a fine import: se, fra tutte le righe `SCAMBIO DIFFERITO` di questa importazione, un prelievo trova un deposito entro `minutiScambioDifferito` minuti e con un controvalore che non si scosta di oltre il 10%, i due movimenti vengono trasformati in un vero scambio (trasferimento verso una piattaforma fittizia, scambio, trasferimento di ritorno) invece di restare due movimenti scollegati.
+
+`SCAMBIO DIFFERITO` va sempre aggiunta anche a `causaliChiuse` (è un movimento a gamba singola, come `TRASFERIMENTO-CRYPTO`).
+
+**Tipo:** numero intero (minuti) | **Default:** 15
+
+```json
+"minutiScambioDifferito": 15
+```
+
+Il valore di default (15 minuti) è quello storicamente usato per Binance; un altro exchange, con tempi di regolamento diversi, può richiederne uno diverso.
 
 ### `idTransazione` (nella sezione colonne) {#idtransazione-nella-sezione-colonne}
 

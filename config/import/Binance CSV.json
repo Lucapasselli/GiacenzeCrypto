@@ -1,5 +1,5 @@
 {
-  "versione": "1.006",
+  "versione": "1.007",
   "centralizzato":true,
   "fontePrezzoPreferita": "binance",
   "nomeExchange": "Binance",
@@ -19,6 +19,7 @@
   },
   "consolidaRigheStessaData": true,
   "tolleranzaSecondiConsolidamento": 1,
+  "minutiScambioDifferito": 25,
   "causaliDifferite": [
   "Small Assets Exchange BNB (Spot)",
   "Small Assets Exchange BNB",

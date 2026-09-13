@@ -12,6 +12,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -183,18 +184,29 @@ public class ImportazioneGenerica {
             }
         }
 
-        if (!movimentiDifferiti.isEmpty()) {
-
-            Importazioni.ConsolidaMovimentiDifferiti(movimentiDifferiti, sovrascriEsistenti);
-        }
-        
        /* Importazioni.movimentiSconosciuti +=
     "=== MOVIMENTI DA SCRIVERE: " + listaCompleta.size() + " ===\n";*/
-        
+
+        // Snapshot PRIMA della scrittura: quali ID di movimentiDifferiti sono già in mappa da un import
+        // precedente (vero re-import della stessa causale SCAMBIO DIFFERITO). Va preso ora: dopo la
+        // scrittura un movimento appena inserito da questo stesso import e uno che c'era già da prima
+        // sono indistinguibili guardando la sola MappaCryptoWallet (vedi Importazioni.ConsolidaMovimentiDifferiti).
+        Set<String> differitiGiaEsistenti = new HashSet<>();
+        for (String[] r : movimentiDifferiti) {
+            if (Principale.MappaCryptoWallet.get(r[0]) != null) differitiGiaEsistenti.add(r[0]);
+        }
+
         int[] insScart = Importazioni.ScriviListaSuMappaCrypto(listaCompleta, sovrascriEsistenti);
         Importazioni.TransazioniAggiunte = insScart[0];
         Importazioni.TrasazioniScartate = insScart[1];
         Importazioni.Transazioni = insScart[0] + insScart[1];
+
+        // Va fatto DOPO la scrittura: CreaMovimentiScambioCryptoDifferito rilegge i movimenti da
+        // MappaCryptoWallet per ID (li rimuove e li rinumera), quindi prima della scrittura li
+        // troverebbe null - stesso ordine di Importazioni.Ex_Binance_Importa/Ex_OKX_ConsolidaPerOrdine.
+        if (!movimentiDifferiti.isEmpty()) {
+            Importazioni.ConsolidaMovimentiDifferiti(movimentiDifferiti, sovrascriEsistenti, cfg.minutiScambioDifferito, differitiGiaEsistenti);
+        }
 
         if (Importazioni.TransazioniAggiunte > 0) {
             Principale.TabellaCryptodaAggiornare = true;
@@ -497,8 +509,18 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 
         // Caso 1: movimento singolo – consolido direttamente
         if (gruppo.size() == 1) {
-            List<String[]> movs = costruisciMovimenti(gruppo.get(0), null, cfg);
-            if (movs != null) risultato.addAll(movs);
+            String[] riga0 = gruppo.get(0);
+            List<String[]> movs = costruisciMovimenti(riga0, null, cfg);
+            if (movs != null) {
+                risultato.addAll(movs);
+                // "SCAMBIO DIFFERITO" (autoinvest/asset recovery/token swap): il movimento principale
+                // (il primo di movs, prima di eventuali gambe fee/speculare) va accodato anche alla lista
+                // da riesaminare a fine import, per l'abbinamento automatico prelievo/deposito - vedi
+                // Importazioni.ConsolidaMovimentiDifferiti.
+                if (!movs.isEmpty() && "SCAMBIO DIFFERITO".equalsIgnoreCase(cfg.tipoMovimentoPerRiga(riga0))) {
+                    differiti.add(movs.get(0));
+                }
+            }
             return risultato;
         }
 
@@ -552,7 +574,13 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 (tipoMovimento != null && cfg.causaliChiuse.contains(tipoMovimento))) {*/
             if (cfg.causaliChiuse.contains(tipoMovimento)) {
                 List<String[]> movs = costruisciMovimenti(riga, null, cfg);
-                if (movs != null) risultato.addAll(movs);
+                if (movs != null) {
+                    risultato.addAll(movs);
+                    // Stesso motivo del caso "movimento singolo" sopra.
+                    if (!movs.isEmpty() && "SCAMBIO DIFFERITO".equalsIgnoreCase(tipoMovimento)) {
+                        differiti.add(movs.get(0));
+                    }
+                }
                 continue;
             }
 
@@ -1489,6 +1517,13 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         public boolean consolidaRigheStessaData = false;
         public long tolleranzaSecondiConsolidamento = 2;
 
+        // Tolleranza, in minuti, tra un prelievo e un deposito perché la causale SCAMBIO DIFFERITO
+        // (autoinvest/asset recovery/token swap differiti, vedi causaliChiuse) li consideri le due gambe
+        // dello stesso scambio e li abbini con Importazioni.ConsolidaMovimentiDifferiti. Storicamente 15
+        // minuti, fissi, per Binance (Ex_Binance_Consolida): parametrico qui perché un altro exchange puo'
+        // avere tempi di regolamento diversi.
+        public long minutiScambioDifferito = 15;
+
         public Map<String, String> mappaCausali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         public Set<String> causaliUscita = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         public Set<String> causaliEntrata = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
@@ -1622,6 +1657,9 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             }
             if (root.has("tolleranzaSecondiConsolidamento")) {
                 cfg.tolleranzaSecondiConsolidamento = root.getLong("tolleranzaSecondiConsolidamento");
+            }
+            if (root.has("minutiScambioDifferito")) {
+                cfg.minutiScambioDifferito = root.getLong("minutiScambioDifferito");
             }
             if (root.has("causaliDifferite")) {
                 JSONArray arr = root.getJSONArray("causaliDifferite");

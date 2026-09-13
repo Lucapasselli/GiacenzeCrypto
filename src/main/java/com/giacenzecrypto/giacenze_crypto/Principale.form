@@ -6652,7 +6652,7 @@
                     </Component>
                     <Component class="javax.swing.JRadioButton" name="RW_Opzioni_Radio_Liquidita_ConIvafe">
                       <Properties>
-                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.beaninfo.awt.ButtonGroupPropertyEditor">
+                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                           <ComponentRef name="RW_Liquidita"/>
                         </Property>
                         <Property name="selected" type="boolean" value="true"/>
@@ -6664,7 +6664,7 @@
                     </Component>
                     <Component class="javax.swing.JRadioButton" name="RW_Opzioni_Radio_Liquidita_SoloMonitoraggio">
                       <Properties>
-                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.beaninfo.awt.ButtonGroupPropertyEditor">
+                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                           <ComponentRef name="RW_Liquidita"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="&lt;html&gt;La liquidit&#xe0; si dichiara in &lt;b&gt;solo monitoraggio&lt;/b&gt; (colonna 16 barrata), senza liquidare l&apos;IVAFE.&lt;/html&gt;"/>

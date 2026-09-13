@@ -6147,14 +6147,17 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
         //BSC e BASE restano su Moralis, per due motivi diversi e nessuno dei due risolvibile qui:
         // - BSC (56) non ha nessuna API Etherscan-compatibile gratuita (verificato: nessuna istanza
         //   Blockscout pubblica, Routescan risponde "chain not supported", Etherscan V2 risponde
-        //   "Free API access is not supported for this chain"). L'alternativa e' Etherscan V2 a
-        //   pagamento o NodeReal, che e' JSON-RPC e vuole un importatore nuovo.
-        // - BASE (8453) ha l'istanza Blockscout ufficiale, ma dal 2026 le istanze ospitate su
-        //   blockscout.com concedono **10 richieste all'ora per IP** senza chiave (misurato sugli
-        //   header x-ratelimit-limit/remaining/reset di base, eth, arbitrum e polygon). Un solo
-        //   wallet ne consuma almeno cinque, una per azione, e di piu' appena c'e' paginazione:
-        //   come default sarebbe rotto in partenza. Resta scelta valida a mano, dopo aver messo la
-        //   ApiKey Blockscout gratuita in "Preferenze Provider DeFi"; Routescan non copre la 8453.
+        //   "Free API access is not supported for this chain", e nemmeno la Blockscout PRO API la
+        //   copre: "Network not supported"). L'alternativa e' Etherscan V2 a pagamento oppure
+        //   NodeReal (vedi NodeRealDefi), gia' implementato e selezionabile ma non promosso a
+        //   default: e' un secondo percorso bespoke, non un semplice URL diverso.
+        // - BASE (8453) ha l'istanza Blockscout ufficiale, ma le istanze ospitate su blockscout.com
+        //   concedono solo **10 richieste per finestra di ~45 minuti per IP** senza chiave (misurato
+        //   sugli header x-ratelimit-limit/remaining/reset di base, eth, arbitrum e polygon). Un
+        //   solo wallet ne consuma almeno cinque, una per azione: come default sarebbe rotto in
+        //   partenza. Con una ApiKey Blockscout il programma passa pero' da solo alla PRO API (vedi
+        //   DeFi_ProviderBlockscoutProUrl), che concede 5 richieste al secondo: resta quindi una
+        //   scelta valida a mano, non piu' solo "meglio di niente". Routescan non copre la 8453.
         //Alternative e costi in nocommit/Documentazione/Analisi_Provider_BSC.md
         if (Rete.equalsIgnoreCase("BSC") || Rete.equalsIgnoreCase("BASE")) return "MORALIS";
         if (Rete.equalsIgnoreCase("AVAX")) return "BLOCKSCOUT";

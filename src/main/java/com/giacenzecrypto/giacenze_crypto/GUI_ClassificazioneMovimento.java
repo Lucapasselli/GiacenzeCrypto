@@ -2437,8 +2437,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 Moneta M2 = new Moneta();
                 M2.InserisciValori(MovimentoDeposito[11], MovimentoDeposito[13], MovimentoDeposito[28], MovimentoDeposito[12]);
                 Prezzo=Prezzi.DammiPrezzoTransazione(M1, M2, DatalongDeposito, "0", true, 3, Rete,"");
-                System.out.println(Prezzo);
-                // Se il prezzo è uguale a zero allora prendo il prezzo di deposito se esiste                
+                // Se il prezzo è uguale a zero allora prendo il prezzo di deposito se esiste
                 if(Prezzo.equals("0.00")){
                     Prezzo=MovimentoDeposito[15];
                 }

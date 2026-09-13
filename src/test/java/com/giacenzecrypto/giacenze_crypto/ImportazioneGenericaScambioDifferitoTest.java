@@ -36,6 +36,9 @@ import static org.junit.jupiter.api.Assertions.*;
  *       la sola mappa, da uno che c'era già da prima - e finiva sempre escluso, disattivando
  *       l'abbinamento automatico su ogni import normale. L'overload a 4 argomenti riceve lo snapshot
  *       calcolato dal chiamante prima della scrittura ({@link ImportazioneGenerica}) proprio per questo.</li>
+ *   <li>prelievo/deposito si riconoscono dalla <b>categoria in coda all'ID</b> (PC/PF, DC/DF) più campo
+ *       {@code [18]} vuoto (non ancora classificato), non dal testo di campo {@code [5]} — identico su
+ *       un {@code TRASFERIMENTO-CRYPTO} qualunque, che passa dallo stesso ramo di fallback.</li>
  * </ul>
  *
  * <p>I controvalori sono sempre già presenti sui movimenti di partenza (come in
@@ -309,5 +312,96 @@ class ImportazioneGenericaScambioDifferitoTest {
         ImportazioneGenerica.consolidaGruppo(gruppo, cfg, differiti);
 
         assertTrue(differiti.isEmpty(), "una causale diversa da SCAMBIO DIFFERITO non deve finire nella lista");
+    }
+
+    // =============================================================================================
+    // IL CRITERIO E' LA CATEGORIA IN CODA ALL'ID (PC/PF/DC/DF) + CAMPO18 VUOTO, NON IL TESTO DI CAMPO5
+    // =============================================================================================
+    //
+    // Campo5 ("PRELIEVO CRYPTO"/"DEPOSITO FIAT"...) e' identico su un TRASFERIMENTO-CRYPTO qualunque:
+    // entrambe le causali passano dallo stesso ramo di fallback di creaMovimento quando il TipoTr non e'
+    // nella mappa interna. Non e' quindi un discriminante valido preso da solo - lo scoping vero e' a
+    // monte (solo le righe SCAMBIO DIFFERITO finiscono in movimentiDifferiti), ma la funzione deve
+    // comunque riconoscere correttamente prelievo/deposito fra le righe che le arrivano.
+
+    @Test
+    void unaGambaFiat_vieneRiconosciutaComePrelievoODeposito() {
+        // PF (prelievo FIAT) <-> DC (deposito crypto): "acquisto differito", il simmetrico del caso
+        // PC<->DF già coperto sopra. Prova che il riconoscimento non e' ristretto al solo crypto-crypto.
+        String prelievo[] = movimento("20240315103000_WalletTest_001_1_PF", "PRELIEVO FIAT",
+                "EUR", "-20000", "", "", "20000.00", "2024-03-15 10:30");
+        prelievo[25] = "EUR"; prelievo[26] = "EUR";
+        String deposito[] = movimento("20240315104000_WalletTest_002_1_DC", "DEPOSITO CRYPTO",
+                "", "", "BTC", "0.5", "20000.00", "2024-03-15 10:40");
+        deposito[27] = "BTC"; deposito[28] = "BTC";
+
+        String idPrelievoOriginale = prelievo[0];
+        String idDepositoOriginale = deposito[0];
+
+        List<String[]> lista = List.of(prelievo, deposito);
+        List<String[]> differiti = new ArrayList<>(lista);
+        Set<String> giaEsistenti = snapshotGiaEsistenti(differiti);
+
+        Importazioni.ScriviListaSuMappaCrypto(lista, false);
+        Importazioni.ConsolidaMovimentiDifferiti(differiti, false, 15, giaEsistenti);
+
+        assertNull(MappaCryptoWallet.get(idPrelievoOriginale), "il prelievo FIAT deve essere stato riconosciuto e abbinato");
+        assertNull(MappaCryptoWallet.get(idDepositoOriginale), "il deposito crypto deve essere stato riconosciuto e abbinato");
+    }
+
+    @Test
+    void unMovimentoGiaClassificato_nonVieneRiconsiderato() {
+        // Stessa coppia di prelievoEDepositoEntroLaTolleranza_vengonoAbbinati, ma il prelievo ha già
+        // campo18 valorizzato (come dopo un primo abbinamento, o una classificazione manuale): la
+        // categoria nell'ID è ancora PC (la rinumerazione non la cambia), ma non va più toccato.
+        String prelievo[] = movimento("20240315103000_WalletTest_001_1_PC", "PRELIEVO CRYPTO",
+                "BTC", "-0.5", "", "", "20000.00", "2024-03-15 10:30");
+        prelievo[18] = "PTW - Scambio Differito"; // già classificato
+        String deposito[] = movimento("20240315104000_WalletTest_002_1_DF", "DEPOSITO FIAT",
+                "", "", "EUR", "20000", "20000.00", "2024-03-15 10:40");
+
+        List<String[]> lista = List.of(prelievo, deposito);
+        List<String[]> differiti = new ArrayList<>(lista);
+        Set<String> giaEsistenti = snapshotGiaEsistenti(differiti);
+
+        Importazioni.ScriviListaSuMappaCrypto(lista, false);
+        Importazioni.ConsolidaMovimentiDifferiti(differiti, false, 15, giaEsistenti);
+
+        assertNotNull(MappaCryptoWallet.get(prelievo[0]),
+                "un prelievo già classificato (campo18 valorizzato) non deve essere riabbinato");
+        assertEquals("PTW - Scambio Differito", MappaCryptoWallet.get(prelievo[0])[18]);
+    }
+
+    @Test
+    void unTrasferimentoOrdinario_conCampo5IdenticoAUnoScambioDifferito_nonSiConfonde() {
+        // TRASFERIMENTO-CRYPTO produce lo stesso campo5 ("PRELIEVO CRYPTO"/"DEPOSITO CRYPTO") e la stessa
+        // categoria (PC/DC) di SCAMBIO DIFFERITO, perché entrambe le causali passano dallo stesso ramo
+        // di fallback di creaMovimento. La prova che oggi non si confondono non sta nel controllo dentro
+        // ConsolidaMovimentiDifferiti (che da solo non li distinguerebbe), ma nel fatto che un
+        // TRASFERIMENTO-CRYPTO non entra mai in movimentiDifferiti/listaScambiDifferiti a monte: qui lo
+        // dimostriamo passando esplicitamente solo la riga SCAMBIO DIFFERITO, come fa il codice reale.
+        String prelievoDifferito[] = movimento("20240315103000_WalletTest_001_1_PC", "PRELIEVO CRYPTO",
+                "BTC", "-0.5", "", "", "20000.00", "2024-03-15 10:30");
+        prelievoDifferito[25] = "BTC"; prelievoDifferito[26] = "BTC";
+        // Un prelievo "normale" (TRASFERIMENTO-CRYPTO), stesso campo5/categoria, MAI passato a
+        // ConsolidaMovimentiDifferiti: solo scritto in mappa, a simulare che coesista nell'archivio.
+        String prelievoOrdinario[] = movimento("20240315103100_WalletTest_005_1_PC", "PRELIEVO CRYPTO",
+                "ETH", "-1", "", "", "3000.00", "2024-03-15 10:31");
+        String deposito[] = movimento("20240315104000_WalletTest_002_1_DF", "DEPOSITO FIAT",
+                "", "", "EUR", "20000", "20000.00", "2024-03-15 10:40");
+        deposito[27] = "EUR"; deposito[28] = "EUR";
+
+        List<String[]> tuttiScrittiInMappa = List.of(prelievoDifferito, prelievoOrdinario, deposito);
+        // Solo il prelievo SCAMBIO DIFFERITO e il deposito vanno alla funzione: il prelievo ordinario
+        // resta fuori, come farebbe il vero import (mai aggiunto a movimentiDifferiti).
+        List<String[]> differiti = List.of(prelievoDifferito, deposito);
+        Set<String> giaEsistenti = snapshotGiaEsistenti(differiti);
+
+        Importazioni.ScriviListaSuMappaCrypto(new ArrayList<>(tuttiScrittiInMappa), false);
+        Importazioni.ConsolidaMovimentiDifferiti(differiti, false, 15, giaEsistenti);
+
+        assertNotNull(MappaCryptoWallet.get(prelievoOrdinario[0]),
+                "il prelievo ordinario, mai passato alla funzione, non deve mai essere toccato");
+        assertEquals("PRELIEVO CRYPTO", MappaCryptoWallet.get(prelievoOrdinario[0])[5]);
     }
 }

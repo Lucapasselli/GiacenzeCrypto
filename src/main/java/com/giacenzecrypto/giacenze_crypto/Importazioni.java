@@ -3326,10 +3326,49 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
   
      
         /**
+         * @param riga movimento da esaminare
+         * @return {@code true} se {@code riga} è un prelievo (categoria {@code PC} o {@code PF} in coda
+         *         all'ID) non ancora classificato (campo {@code [18]} vuoto)
+         */
+        private static boolean EPrelievoDaClassificare(String[] riga){
+            String parti[] = riga[0].split("_");
+            if (parti.length < 5) return false;
+            String categoria = parti[4];
+            return (categoria.equalsIgnoreCase("PC") || categoria.equalsIgnoreCase("PF"))
+                    && (riga[18]==null || riga[18].isBlank());
+        }
+
+        /**
+         * @param riga movimento da esaminare
+         * @return {@code true} se {@code riga} è un deposito (categoria {@code DC} o {@code DF} in coda
+         *         all'ID) non ancora classificato (campo {@code [18]} vuoto)
+         */
+        private static boolean EDepositoDaClassificare(String[] riga){
+            String parti[] = riga[0].split("_");
+            if (parti.length < 5) return false;
+            String categoria = parti[4];
+            return (categoria.equalsIgnoreCase("DC") || categoria.equalsIgnoreCase("DF"))
+                    && (riga[18]==null || riga[18].isBlank());
+        }
+
+        /**
          * Individua e associa automaticamente gli scambi differiti (prelievo su un exchange seguito da un
          * deposito equivalente su un altro entro {@code minutiTolleranza} minuti, con prezzo che non si
          * discosta più del 10%), usando la stessa funzione di associazione manuale
          * {@link GUI_ClassificazioneMovimento#CreaMovimentiScambioCryptoDifferito}.
+         *
+         * <p>Prelievo e deposito si riconoscono dalla <b>categoria in coda all'ID</b> ({@code PC}/{@code PF}
+         * e {@code DC}/{@code DF}), non dal testo di campo {@code [5]}: quel testo ("PRELIEVO CRYPTO",
+         * "DEPOSITO FIAT"...) è identico su un {@code TRASFERIMENTO-CRYPTO} qualunque, perché entrambe le
+         * causali passano dallo stesso ramo di fallback di {@code MovimentiCrypto.creaMovimento}
+         * ({@code RitornaTipologiaTransazione}) quando il {@code TipoTr} non è nella mappa interna. A
+         * evitare di riconsiderare un movimento già abbinato (che mantiene la stessa categoria: la
+         * rinumerazione di {@code CreaMovimentiScambioCryptoDifferito} non la tocca) è campo {@code [18]},
+         * valorizzato solo alla classificazione. La causale giusta (solo quelle mappate su
+         * {@code SCAMBIO DIFFERITO}) è già garantita a monte: questa funzione scandisce solo
+         * {@code listaMovimentidaConsolidare}, e in ogni chiamante quella lista è popolata esclusivamente
+         * quando la causale risolve in {@code SCAMBIO DIFFERITO} — un controllo aggiuntivo qui su campo
+         * {@code [7]} (la causale grezza del CSV) duplicherebbe quella lista senza aggiungere protezione.
          *
          * <p>Ogni movimento entra in <b>al più un</b> abbinamento: un prelievo si ferma al primo deposito
          * compatibile trovato (non ne cerca un secondo) e un deposito già usato non viene più riproposto
@@ -3402,7 +3441,7 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
                 //contenuto da F_ritornaSoloElementiNuovi contro la copia già rinumerata dal primo abbinamento.
                 //CreaMovimentiScambioCryptoDifferito rilegge per ID: senza questo controllo andrebbe in
                 //NullPointerException invece di lasciare quella riga (già gestita al primo import) da sola.
-                if (riga[5].contains("PRELIEVO") && !giaAssociati.contains(riga[0]) && MappaCryptoWallet.containsKey(riga[0])){
+                if (EPrelievoDaClassificare(riga) && !giaAssociati.contains(riga[0]) && MappaCryptoWallet.containsKey(riga[0])){
                     //leggo l'ora
                     long timestampPrelievo=FunzioniDate.ConvertiDatainLongMinuto(riga[1]);
                     // una volta letto l'ora vado a vedere se nella finestra configurata c'è un deposito, in quel caso
@@ -3410,7 +3449,7 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
                     // oppure se non riesco a trovare il prezzo
                     // altrimenti lascio tutto com'è
                     for(String[] rigaConfronto:Mappa_Movimenti.values()){
-                        if (rigaConfronto[5].contains("DEPOSITO") && !giaAssociati.contains(rigaConfronto[0]) && MappaCryptoWallet.containsKey(rigaConfronto[0])){
+                        if (EDepositoDaClassificare(rigaConfronto) && !giaAssociati.contains(rigaConfronto[0]) && MappaCryptoWallet.containsKey(rigaConfronto[0])){
                             BigDecimal PrezzoPrelievo=new BigDecimal(riga[15]);
                             BigDecimal PrezzoDeposito=new BigDecimal(rigaConfronto[15]);
                             BigDecimal Diecipercento=PrezzoPrelievo.divide(new BigDecimal(10));

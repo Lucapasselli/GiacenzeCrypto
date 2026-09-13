@@ -13237,7 +13237,7 @@ if (result != null && !result.isAction("cancel")) {
         if (Opzioni_ApiKey_Helius_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))))HeliusDiversa=false;
         if (Opzioni_ApiKey_Etherscan_TextField.getText().trim()
-                .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherescan"))))EtherscanDiversa=false;
+                .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))))EtherscanDiversa=false;
         if (Opzioni_ApiKey_Coingecko_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"))))CoingeckoDiversa=false;
         if (Opzioni_ApiKey_Moralis_TextField.getText().trim()
@@ -15976,7 +15976,8 @@ if (result != null && !result.isAction("cancel")) {
                 Opzioni_ApiKey_Moralis_TextField.getText()+
                 Opzioni_ApiKey_Cronos_TextField.getText()+
                 Opzioni_ApiKey_UniSat_TextField.getText()+
-                Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.getText();
+                Opzioni_ProviderDefi_ApiKeyBlockscout_TextField.getText()+
+                Opzioni_ProviderDefi_ApiKeyNodeReal_TextField.getText();
         //String NuovoValore=Opzioni_ApiKey_Helius_TextField.getText();
         String ValoreSalvato=
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))+
@@ -15985,7 +15986,8 @@ if (result != null && !result.isAction("cancel")) {
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"))+
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"))+
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_UniSat"))+
-                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Blockscout"));
+                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Blockscout"))+
+                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi(NodeRealDefi.OPZIONE_APIKEY));
        // System.out.println(ValoreSalvato);
         //String ValoreSalvato=DatabaseH2.Opzioni_Leggi("ApiKey_Helius");
         if (!NuovoValore.equals(ValoreSalvato)){

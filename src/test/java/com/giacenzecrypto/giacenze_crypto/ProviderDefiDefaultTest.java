@@ -12,6 +12,9 @@ import org.junit.jupiter.api.Test;
  * <p>Sono le due funzioni pure della catena provider: {@code DeFi_ProviderEffettivo} legge invece la
  * tabella PROVIDERDEFI e quindi qui non è verificabile senza database. Il caso che interessa di più è
  * GNOSIS, spostato su Blockscout perché dal 01/09/2026 esce dal piano gratuito di Etherscan V2.
+ * <p>BSC è l'eccezione: il suo default dipende dalla ApiKey Moralis salvata (vedi
+ * {@link Importazioni#DeFi_ProviderDefault}), quindi non è verificabile senza database e ha un file a
+ * parte, {@link DeFi_ProviderDefaultBscTest}, sul modello di {@link DeFi_ProviderBlockscoutProUrlTest}.
  */
 public class ProviderDefiDefaultTest {
 
@@ -23,15 +26,14 @@ public class ProviderDefiDefaultTest {
 
     @Test
     public void leChainNonGratuiteSuEtherscanNonRestanoSuEtherscan() {
-        //BSC, BASE, AVAX e OP sono tutte fuori dal piano gratuito di Etherscan V2. Due delle quattro
+        //BSC, BASE, AVAX e OP sono tutte fuori dal piano gratuito di Etherscan V2. Tre delle quattro
         //hanno un explorer Etherscan-compatibile pubblico e usabile senza chiave.
         assertEquals("BLOCKSCOUT", Importazioni.DeFi_ProviderDefault("OP"));
         assertEquals("https://optimism.blockscout.com/api", Importazioni.DeFi_ProviderBlockscoutUrl("OP"));
-        //BASE ha l'istanza Blockscout ufficiale ma NON e' un default: dal 2026 le istanze ospitate su
-        //blockscout.com danno 10 richieste all'ora per IP senza chiave, e un solo wallet ne consuma
-        //almeno cinque. L'endpoint resta configurato, cosi' la scelta manuale (con la ApiKey
-        //Blockscout gratuita) funziona.
-        assertEquals("MORALIS", Importazioni.DeFi_ProviderDefault("BASE"));
+        //BASE è uscita da Moralis il 14/09/2026 (che non pubblica più un piano gratuito): l'istanza
+        //Blockscout ufficiale funziona senza chiave, con un budget di 10 richieste ogni ~45 minuti per
+        //IP che una ApiKey Blockscout gratuita alza a 5 al secondo.
+        assertEquals("BLOCKSCOUT", Importazioni.DeFi_ProviderDefault("BASE"));
         assertEquals("https://base.blockscout.com/api", Importazioni.DeFi_ProviderBlockscoutUrl("BASE"));
         //AVAX non ha un'istanza Blockscout (la chain 43114 non è nel registro chains.blockscout.com):
         //l'endpoint Etherscan-compatibile è Routescan. Il nome del provider resta "BLOCKSCOUT" perché
@@ -39,17 +41,6 @@ public class ProviderDefiDefaultTest {
         assertEquals("BLOCKSCOUT", Importazioni.DeFi_ProviderDefault("AVAX"));
         assertEquals("https://api.routescan.io/v2/network/mainnet/evm/43114/etherscan/api",
                 Importazioni.DeFi_ProviderBlockscoutUrl("AVAX"));
-    }
-
-    @Test
-    public void bscRestaSuMoralisPerchePerLa56NonCeNienteDiGratuito() {
-        //Verificato il 13/09/2026: nessuna istanza Blockscout pubblica per la chain 56, Routescan
-        //risponde "chain not supported", Etherscan V2 risponde "Free API access is not supported for
-        //this chain". Se un giorno ne comparisse una, questo test è il punto da cui accorgersi che la
-        //riga su Moralis non serve più.
-        assertEquals("MORALIS", Importazioni.DeFi_ProviderDefault("BSC"));
-        assertEquals("MORALIS", Importazioni.DeFi_ProviderDefault("bsc"));
-        assertNull(Importazioni.DeFi_ProviderBlockscoutUrl("BSC"));
     }
 
     @Test
@@ -103,6 +94,6 @@ public class ProviderDefiDefaultTest {
             assertNotNull(Url, "manca l'URL Blockscout per " + Rete);
             assertTrue(Url.startsWith("https://"), "URL Blockscout non valido per " + Rete + ": " + Url);
         }
-        assertTrue(Controllate >= 4, "attese almeno CRO, GNOSIS, OP e AVAX con default Blockscout, trovate " + Controllate);
+        assertTrue(Controllate >= 5, "attese almeno CRO, GNOSIS, OP, AVAX e BASE con default Blockscout, trovate " + Controllate);
     }
 }

@@ -196,7 +196,7 @@ public class GUI_Informazioni extends JDialog {
          .append("dati di mercato pubblici</li>");
         h.append("<li>CoinMarketCap, per l'anagrafica dei token</li>");
         h.append("<li>DefiLlama, per le quotazioni storiche di ripiego</li>");
-        h.append("<li>Blockscout, Routescan, Moralis, Helius, Unisat e mempool.space, per le ")
+        h.append("<li>Blockscout, Routescan, NodeReal, Moralis, Helius, Unisat e mempool.space, per le ")
          .append("transazioni delle varie blockchain</li>");
         h.append("<li>GoPlus Labs, per l'analisi di sicurezza dei token</li>");
         h.append("<li>Banca d'Italia, per il cambio ufficiale EUR/USD usato nei calcoli fiscali</li>");

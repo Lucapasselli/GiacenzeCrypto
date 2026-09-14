@@ -6254,30 +6254,42 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
         //Principale.Opzioni_ProviderDefi_OpzioniPerChain, che per questo non offre ETHERSCAN per INK)
         if (Rete.equalsIgnoreCase("INK")) return "BLOCKSCOUT";
         if (Rete.equalsIgnoreCase("ROBINHOOD")) return "BLOCKSCOUT"; //stesso caso di Ink, vedi sopra
-        //AVAX e' uscita da Moralis il 13/09/2026: Routescan risponde senza chiave a tutte e cinque
-        //le azioni piu' balance e non limita le richieste (15 consecutive, tutte 200). La spinta a
-        //toglierla e' che Moralis non pubblica piu' un piano gratuito (solo Starter 149 $/mese):
-        //la strada di default di queste chain e' irraggiungibile per chi installa il programma ora.
-        //BSC e BASE restano su Moralis, per due motivi diversi e nessuno dei due risolvibile qui:
-        // - BSC (56) non ha nessuna API Etherscan-compatibile gratuita (verificato: nessuna istanza
-        //   Blockscout pubblica, Routescan risponde "chain not supported", Etherscan V2 risponde
-        //   "Free API access is not supported for this chain", e nemmeno la Blockscout PRO API la
-        //   copre: "Network not supported"). L'alternativa e' Etherscan V2 a pagamento oppure
-        //   NodeReal (vedi NodeRealDefi), gia' implementato e selezionabile ma non promosso a
-        //   default: e' un secondo percorso bespoke, non un semplice URL diverso.
-        // - BASE (8453) ha l'istanza Blockscout ufficiale, ma le istanze ospitate su blockscout.com
-        //   concedono solo **10 richieste per finestra di ~45 minuti per IP** senza chiave (misurato
-        //   sugli header x-ratelimit-limit/remaining/reset di base, eth, arbitrum e polygon). Un
-        //   solo wallet ne consuma almeno cinque, una per azione: come default sarebbe rotto in
-        //   partenza. Con una ApiKey Blockscout il programma passa pero' da solo alla PRO API (vedi
-        //   DeFi_ProviderBlockscoutProUrl), che concede 5 richieste al secondo: resta quindi una
-        //   scelta valida a mano, non piu' solo "meglio di niente". Routescan non copre la 8453.
-        //Alternative e costi in nocommit/Documentazione/Analisi_Provider_BSC.md
-        if (Rete.equalsIgnoreCase("BSC") || Rete.equalsIgnoreCase("BASE")) return "MORALIS";
-        if (Rete.equalsIgnoreCase("AVAX")) return "BLOCKSCOUT";
+        //Moralis non pubblica piu' un piano gratuito (solo Starter 149 $/mese): tenerlo come default
+        //vorrebbe dire che chi installa il programma oggi non riesce a scaricare nulla su queste chain
+        //finche' non paga un abbonamento. Dettagli e verifiche in
+        //nocommit/Documentazione/Analisi_Provider_BSC.md.
+        // - AVAX (uscita da Moralis il 13/09/2026): Routescan risponde senza chiave a tutte e cinque
+        //   le azioni piu' balance e non limita le richieste (15 consecutive, tutte 200).
+        // - BASE (uscita da Moralis il 14/09/2026): l'istanza Blockscout ufficiale funziona senza
+        //   chiave, ma le istanze ospitate su blockscout.com concedono solo 10 richieste per finestra
+        //   di ~45 minuti per IP (misurato sugli header x-ratelimit-*): sufficiente per un uso
+        //   occasionale, lento con piu' wallet. Una ApiKey Blockscout gratuita (tab "ApiKey") fa
+        //   passare il programma da solo alla PRO API, che ne concede 5 al secondo.
+        // - BSC e' l'unica chain senza nessun explorer Etherscan-compatibile gratuito. NodeReal (vedi
+        //   NodeRealDefi) e' l'alternativa gratuita, gia' verificata contro i wallet reali dell'utente
+        //   (stessi hash trovati da Moralis, nessuno mancante), ma solo per chi non ha gia' una chiave
+        //   Moralis: un utente con una ApiKey Moralis gia' compilata non deve smettere di scaricare BSC
+        //   in silenzio solo perche' il default e' cambiato sotto di lui. Per questo BSC non ha un
+        //   default fisso: vedi DeFi_ProviderDefaultBSC qui sotto.
+        if (Rete.equalsIgnoreCase("BASE") || Rete.equalsIgnoreCase("AVAX")) return "BLOCKSCOUT";
+        if (Rete.equalsIgnoreCase("BSC")) return DeFi_ProviderDefaultBSC();
         if (Rete.equalsIgnoreCase("SOL")) return "HELIUS";
         if (Rete.equalsIgnoreCase("BTC")) return "BITCOIN";
         return "ETHERSCAN";
+    }
+
+    /**
+     * Default di BSC, condizionato alla ApiKey Moralis: chi l'ha già compilata continua a usare
+     * Moralis (non deve smettere di scaricare BSC in silenzio solo perché il default è cambiato),
+     * chi parte da zero prende NodeReal, l'unica alternativa gratuita. Estratto da
+     * {@link #DeFi_ProviderDefault} perché, a differenza di ogni altro ramo di quel metodo, legge
+     * un'opzione salvata invece di dipendere solo dalla rete.
+     */
+    private static String DeFi_ProviderDefaultBSC() {
+        //Opzioni_Leggi non è null-safe se il database non è ancora aperto: stessa guardia di
+        //DeFi_ProviderBlockscoutProUrl/DatabaseH2.ProviderDefi_LeggiTutti.
+        String moralisKey = (DatabaseH2.connection != null) ? DatabaseH2.Opzioni_Leggi("ApiKey_Moralis") : null;
+        return (moralisKey != null && !moralisKey.isBlank()) ? "MORALIS" : NodeRealDefi.PROVIDER;
     }
 
     /**
@@ -6555,7 +6567,7 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
             else if (Provider.equals(NodeRealDefi.PROVIDER)
                     && Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi(NodeRealDefi.OPZIONE_APIKEY)).isBlank()){
                 System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " per mancaza di ApiKey");
-                System.out.println("Andare nella sezione 'Opzioni' - 'Preferenze Provider DeFi' per inserire l'apiKey relativa a NodeReal");
+                System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa a NodeReal");
                     try {
                         TimeUnit.SECONDS.sleep(5);
                     } catch (InterruptedException ex) {

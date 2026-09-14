@@ -905,13 +905,13 @@ private static final long serialVersionUID = 3L;
         jLabel15 = new javax.swing.JLabel();
         RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo = new javax.swing.JCheckBox();
         RW_Opzioni_CheckBox_FiatInRW = new javax.swing.JCheckBox();
-        RW_Opzioni_Label_Liquidita = new javax.swing.JLabel();
-        RW_Opzioni_Radio_Liquidita_ConIvafe = new javax.swing.JRadioButton();
-        RW_Opzioni_Radio_Liquidita_SoloMonitoraggio = new javax.swing.JRadioButton();
         RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo = new javax.swing.JRadioButton();
         RW_Opzioni_Radio_TrasferimentiNonConteggiati = new javax.swing.JRadioButton();
         RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine = new javax.swing.JRadioButton();
         jLabel16 = new javax.swing.JLabel();
+        RW_Opzioni_Label_Liquidita = new javax.swing.JLabel();
+        RW_Opzioni_Radio_Liquidita_ConIvafe = new javax.swing.JRadioButton();
+        RW_Opzioni_Radio_Liquidita_SoloMonitoraggio = new javax.swing.JRadioButton();
         RW_Opzioni_CheckBox_LiFoSubMovimenti = new javax.swing.JCheckBox();
         RW_Bottone_Documentazione1 = new javax.swing.JButton();
         Opzioni_Temi = new javax.swing.JPanel();
@@ -968,9 +968,6 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKey_Coingecko_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Coingecko_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_Coingecko_LabelSito = new javax.swing.JLabel();
-        Opzioni_ProviderDefi_ApiKeyNodeReal_Label = new javax.swing.JLabel();
-        Opzioni_ProviderDefi_ApiKeyNodeReal_TextField = new javax.swing.JTextField();
-        Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSito = new javax.swing.JLabel();
         Opzioni_ApiKey_Moralis_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_Moralis_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Moralis_LabelSito = new javax.swing.JLabel();
@@ -984,9 +981,13 @@ private static final long serialVersionUID = 3L;
         Opzioni_ProviderDefi_ApiKeyBlockscout_Label = new javax.swing.JLabel();
         Opzioni_ProviderDefi_ApiKeyBlockscout_TextField = new javax.swing.JTextField();
         Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSito = new javax.swing.JLabel();
+        Opzioni_ProviderDefi_ApiKeyNodeReal_Label = new javax.swing.JLabel();
+        Opzioni_ProviderDefi_ApiKeyNodeReal_TextField = new javax.swing.JTextField();
+        Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSito = new javax.swing.JLabel();
         Opzioni_ProviderDefi_Pannello = new javax.swing.JPanel();
         Opzioni_ProviderDefi_ScrollTabella = new javax.swing.JScrollPane();
         Opzioni_ProviderDefi_Tabella = new javax.swing.JTable();
+        Opzioni_ProviderDefi_LabelTitoloIstruzioni = new javax.swing.JLabel();
         Opzioni_ProviderDefi_ScrollIstruzioni = new javax.swing.JScrollPane();
         Opzioni_ProviderDefi_TextAreaIstruzioni = new javax.swing.JTextArea();
         Opzioni_ProviderDefi_Bottone_Salva = new javax.swing.JButton();
@@ -1690,7 +1691,7 @@ private static final long serialVersionUID = 3L;
                             .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(54, 54, 54)
                         .addComponent(TransazioniCrypto_Bottone_AggiorbaVersione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 48, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 49, Short.MAX_VALUE)
                         .addComponent(Bottone_Errori, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -6010,14 +6011,21 @@ private static final long serialVersionUID = 3L;
         });
         Opzioni_ProviderDefi_ScrollTabella.setViewportView(Opzioni_ProviderDefi_Tabella);
 
-        Opzioni_ProviderDefi_ScrollIstruzioni.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        Opzioni_ProviderDefi_LabelTitoloIstruzioni.setFont(new java.awt.Font("Noto Sans", 1, 15)); // NOI18N
+        Opzioni_ProviderDefi_LabelTitoloIstruzioni.setText("Come scegliere il provider");
+
+        Opzioni_ProviderDefi_ScrollIstruzioni.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        Opzioni_ProviderDefi_ScrollIstruzioni.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         Opzioni_ProviderDefi_TextAreaIstruzioni.setEditable(false);
         Opzioni_ProviderDefi_TextAreaIstruzioni.setColumns(20);
         Opzioni_ProviderDefi_TextAreaIstruzioni.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
-        Opzioni_ProviderDefi_TextAreaIstruzioni.setRows(3);
-        Opzioni_ProviderDefi_TextAreaIstruzioni.setText("Scegli, per ogni chain, quale provider usare per lo scaricamento dei movimenti DeFi. \nPer Cronos il default è Blockscout perché permette di impostare un blocco di partenza per lo scaricamento (a differenza del vecchio provider); Cronos usa sempre la ApiKey Cronos inserita nel tab \"ApiKey\", non quella Blockscout (anch'essa nel tab \"ApiKey\").\nAvalanche dal 13/09/2026 non usa più Moralis ma Routescan, che risponde senza chiave. BSC resta su Moralis: non esiste nessun explorer Etherscan-compatibile gratuito per quella chain. Su Ethereum, Arbitrum, Base, Polygon, Gnosis, Optimism, Ink e Robinhood Chain le istanze Blockscout pubbliche concedono solo 10 richieste ogni ~45 minuti per indirizzo IP: inserendo la ApiKey Blockscout (tab \"ApiKey\") il programma passa da solo alla Blockscout PRO API, che ne concede 5 al secondo. Senza chiave, superato il limite lo scaricamento si ferma con un avviso che lo dice esplicitamente.");
-        Opzioni_ProviderDefi_TextAreaIstruzioni.setPreferredSize(new java.awt.Dimension(774, 44));
+        Opzioni_ProviderDefi_TextAreaIstruzioni.setLineWrap(true);
+        Opzioni_ProviderDefi_TextAreaIstruzioni.setRows(7);
+        Opzioni_ProviderDefi_TextAreaIstruzioni.setWrapStyleWord(true);
+        Opzioni_ProviderDefi_TextAreaIstruzioni.setText("Per ogni rete puoi scegliere quale servizio (provider) scarica lo storico dei movimenti dei wallet DeFi. Per la maggior parte delle reti il provider già impostato funziona senza bisogno di configurazione; alcuni provider richiedono comunque una chiave API, gratuita o a pagamento a seconda del caso, prima di poter scaricare qualcosa (la colonna \"Provider Attuale\" mostra quello in uso). Cambia il provider scelto se preferisci un'alternativa o se un download si interrompe per troppe richieste.\n\nI provider pubblici usati senza chiave concedono poche richieste ogni tot minuti per indirizzo IP; superato il limite lo scaricamento si ferma con un avviso esplicito, non con un errore silenzioso. Inserendo una tua chiave API personale nel tab \"ApiKey\" (Blockscout o NodeReal, gratuite; Moralis, a pagamento) il limite sale sensibilmente, o lo scaricamento diventa possibile. Eccezione: per Cronos la chiave da usare è sempre quella \"Cronos\" del tab \"ApiKey\", anche scegliendo Blockscout.\n\nNella colonna \"URL Blockscout personalizzato\" puoi indicare un'istanza Blockscout diversa da quella pubblica del programma, ad esempio una tua istanza privata.");
+        Opzioni_ProviderDefi_TextAreaIstruzioni.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 14, 10, 14));
+        Opzioni_ProviderDefi_TextAreaIstruzioni.setPreferredSize(new java.awt.Dimension(774, 150));
         Opzioni_ProviderDefi_ScrollIstruzioni.setViewportView(Opzioni_ProviderDefi_TextAreaIstruzioni);
 
         Opzioni_ProviderDefi_Bottone_Salva.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Salva.png"))); // NOI18N
@@ -6052,6 +6060,7 @@ private static final long serialVersionUID = 3L;
                 .addContainerGap()
                 .addGroup(Opzioni_ProviderDefi_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Opzioni_ProviderDefi_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 1448, Short.MAX_VALUE)
+                    .addComponent(Opzioni_ProviderDefi_LabelTitoloIstruzioni)
                     .addComponent(Opzioni_ProviderDefi_ScrollIstruzioni)
                     .addGroup(Opzioni_ProviderDefi_PannelloLayout.createSequentialGroup()
                         .addComponent(Opzioni_ProviderDefi_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -6064,7 +6073,9 @@ private static final long serialVersionUID = 3L;
         Opzioni_ProviderDefi_PannelloLayout.setVerticalGroup(
             Opzioni_ProviderDefi_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_ProviderDefi_PannelloLayout.createSequentialGroup()
-                .addComponent(Opzioni_ProviderDefi_ScrollIstruzioni, javax.swing.GroupLayout.DEFAULT_SIZE, 86, Short.MAX_VALUE)
+                .addComponent(Opzioni_ProviderDefi_LabelTitoloIstruzioni)
+                .addGap(6, 6, 6)
+                .addComponent(Opzioni_ProviderDefi_ScrollIstruzioni, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_ProviderDefi_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 646, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -13435,10 +13446,13 @@ if (result != null && !result.isAction("cancel")) {
     private String[] Opzioni_ProviderDefi_OpzioniPerChain(String rete) {
         if (rete.equalsIgnoreCase("SOL")) return new String[]{"HELIUS"};
         if (rete.equalsIgnoreCase("BTC")) return new String[]{"BITCOIN"};
-        //BSC è l'unica chain senza nessun explorer Etherscan-compatibile gratuito: NodeReal è il
-        //ripiego, e va offerto solo dove il suo nr_getTransactionByAddress esiste davvero
-        if (rete.equalsIgnoreCase("BSC")) return new String[]{"MORALIS", NodeRealDefi.PROVIDER, "BLOCKSCOUT"};
-        if (rete.equalsIgnoreCase("BASE") || rete.equalsIgnoreCase("AVAX")) return new String[]{"MORALIS", "BLOCKSCOUT"};
+        //BSC è l'unica chain senza nessun explorer Etherscan-compatibile gratuito: NodeReal (richiede
+        //una ApiKey NodeReal gratuita) è proposto per primo perché è l'alternativa gratuita. Il default
+        //effettivo (DeFi_ProviderDefault) dipende dalla ApiKey Moralis: chi ne ha già una compilata
+        //resta su Moralis, chi parte da zero prende NodeReal — questa combo lascia comunque scegliere
+        //liberamente fra i tre.
+        if (rete.equalsIgnoreCase("BSC")) return new String[]{NodeRealDefi.PROVIDER, "BLOCKSCOUT", "MORALIS"};
+        if (rete.equalsIgnoreCase("BASE") || rete.equalsIgnoreCase("AVAX")) return new String[]{"BLOCKSCOUT", "MORALIS"};
         if (rete.equalsIgnoreCase("CRO")) return new String[]{"BLOCKSCOUT", "CRONOSCAN"};
         //Ink non è mai stata su Etherscan (nemmeno a pagamento, a differenza di OP/GNOSIS): offrire
         //ETHERSCAN qui punterebbe a Mappa_ChainExplorer.get("INK")[0], lasciato vuoto apposta perché
@@ -18761,6 +18775,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Annulla;
     private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Ripristina;
     private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Salva;
+    private javax.swing.JLabel Opzioni_ProviderDefi_LabelTitoloIstruzioni;
     private javax.swing.JPanel Opzioni_ProviderDefi_Pannello;
     private javax.swing.JScrollPane Opzioni_ProviderDefi_ScrollIstruzioni;
     private javax.swing.JScrollPane Opzioni_ProviderDefi_ScrollTabella;
@@ -18784,8 +18799,8 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti;
-    private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale;
+    private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_NonConsiderareMovimentiNC;
     private javax.swing.JPopupMenu PopupMenu;
     private javax.swing.JCheckBox Prezzi_Opzioni_CheckBox_ServizioOnchain;
@@ -18820,14 +18835,15 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JCheckBox RW_CheckBox_VediSoloErrori;
     private javax.swing.JLabel RW_Label_SegnalaErrori;
     private javax.swing.JLabel RW_Label_SegnalaRicalcolo;
+    private javax.swing.ButtonGroup RW_Liquidita;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_FiatInRW;
-    private javax.swing.JLabel RW_Opzioni_Label_Liquidita;
-    private javax.swing.JRadioButton RW_Opzioni_Radio_Liquidita_ConIvafe;
-    private javax.swing.JRadioButton RW_Opzioni_Radio_Liquidita_SoloMonitoraggio;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_LiFoComplessivo;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_LiFoSubMovimenti;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_StakingZero;
+    private javax.swing.JLabel RW_Opzioni_Label_Liquidita;
+    private javax.swing.JRadioButton RW_Opzioni_Radio_Liquidita_ConIvafe;
+    private javax.swing.JRadioButton RW_Opzioni_Radio_Liquidita_SoloMonitoraggio;
     private javax.swing.JRadioButton RW_Opzioni_Radio_TrasferimentiNonConteggiati;
     private javax.swing.JRadioButton RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo;
     private javax.swing.JRadioButton RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine;
@@ -18840,7 +18856,6 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JTable RW_Tabella_Dettagli;
     private javax.swing.JTable RW_Tabella_DettaglioMovimenti;
     private javax.swing.JTextField RW_Text_IC;
-    private javax.swing.ButtonGroup RW_Liquidita;
     private javax.swing.ButtonGroup RW_Trasferimenti;
     private javax.swing.JPanel SaldiNegativi;
     private javax.swing.JButton SaldiNegativi_Bottone_RettificaQta;

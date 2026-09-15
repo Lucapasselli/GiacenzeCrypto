@@ -10606,6 +10606,8 @@ if (result.isAction("delete-all")) {
         thread = new Thread() {
             /** Calcola in background i dati del quadro RW (giacenze e periodi di detenzione per anno/wallet/moneta). */
             public void run() {
+              LoggerGC.apriOperazione("RW");
+              try {
 
                 //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
                 //in futuro dovrò mettere anche un limite per data e un limite per wallet
@@ -10747,6 +10749,9 @@ if (result.isAction("delete-all")) {
                 }
                 RW_Text_IC.setText(ICtot);
                 progress.ChiudiFinestra();
+              } finally {
+                LoggerGC.chiudiOperazione();
+              }
             }
         };
         thread.start();

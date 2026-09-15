@@ -280,6 +280,7 @@ public class DatabaseH2 {
 
             createTableSQL = "CREATE TABLE IF NOT EXISTS OPZIONI (Opzione VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
             EseguiDDL(connectionPersonale, createTableSQL);
+            aggiornaDimensioneColonnaValoreH2Opzioni(connectionPersonale);
 
             //--- Quadro RW : periodi di detenzione dei gruppi wallet (2026-08-30, rifatta il 2026-09-09) ---
             //UNA sola tabella di dati dell'utente (gruppo GRUPPI_WALLET nel backup). Fino al 2026-09-08

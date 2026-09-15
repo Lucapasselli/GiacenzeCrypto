@@ -1,5 +1,5 @@
 {
-  "versione": "1.007",
+  "versione": "1.008",
   "centralizzato":true,
   "fontePrezzoPreferita": "binance",
   "nomeExchange": "Binance",
@@ -56,6 +56,7 @@
 	"Asset - Transfer":                               "ALTRE-REWARD",
 	"Cash Voucher":                                   "CASHBACK",
     "Launchpool Airdrop - System Distribution":       "AIRDROP",
+    "Simple Earn Flexible Airdrop":                   "AIRDROP",
     "Simple Earn Flexible Subscription":              "IGNORA",
     "Simple Earn Flexible Redemption":                "IGNORA",
     "Simple Earn Locked Subscription":                "IGNORA",

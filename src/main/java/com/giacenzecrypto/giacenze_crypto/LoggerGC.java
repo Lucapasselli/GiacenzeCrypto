@@ -2,12 +2,46 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayDeque;
 import java.util.Date;
+import java.util.Deque;
 import java.util.logging.*;
 import javax.swing.JTextPane;
 
 public class LoggerGC {
     private static final Logger logger = Logger.getLogger(LoggerGC.class.getName());
+
+    //Nome dell'operazione "grossa" avviata dall'utente (RW, Aggiorna Tutto, ...) attualmente in corso
+    //sul thread chiamante, usato da ScriviErrore per dire da dove viene un errore anche quando il
+    //chiamante diretto (poche righe più su nello stack) non lo dice da solo. E' un ThreadLocal, non uno
+    //stato globale: ogni thread di sfondo lanciato da un'operazione deve aprirla di nuovo lui stesso
+    //(non si propaga da solo dal thread che lo lancia), ed è uno stack (non un singolo valore) per
+    //permettere a un'operazione di aprirne un'altra annidata senza perdere quella esterna alla chiusura.
+    private static final ThreadLocal<Deque<String>> operazioneCorrente = ThreadLocal.withInitial(ArrayDeque::new);
+
+    /**
+     * Segna l'inizio, sul thread corrente, di un'operazione "grossa" avviata dall'utente (es. "RW",
+     * "Aggiorna Tutto"), cosi' che {@link #ScriviErrore} possa citarla. Va sempre accoppiata a una
+     * {@link #chiudiOperazione()} in un blocco {@code finally}. Un thread di sfondo lanciato da
+     * un'operazione non la eredita automaticamente: va aperta di nuovo esplicitamente all'inizio del
+     * suo {@code run()}.
+     * @param nome nome dell'operazione, mostrato cosi' com'e' nei log di errore
+     */
+    public static void apriOperazione(String nome) {
+        operazioneCorrente.get().push(nome);
+    }
+
+    /** Chiude l'operazione piu' recente aperta con {@link #apriOperazione} sul thread corrente. */
+    public static void chiudiOperazione() {
+        Deque<String> pila = operazioneCorrente.get();
+        if (!pila.isEmpty()) pila.pop();
+    }
+
+    /** @return l'operazione piu' recente aperta sul thread corrente, o {@code null} se nessuna e' aperta */
+    private static String operazioneCorrenteStringa() {
+        Deque<String> pila = operazioneCorrente.get();
+        return pila.isEmpty() ? null : pila.peek();
+    }
     private static FileHandler fileHandler;
 
     // Stream opzionali separati per out e err
@@ -155,15 +189,20 @@ public class LoggerGC {
      * @param ex testo dell'errore da registrare
      */
     public static void ScriviErrore(String ex) {
-        System.err.println("ERRORE in "+LoggerGC.getCurrentClassAndMethod(3)+" chiamato da "+getCurrentClassAndMethod(4)+"\n"+ex);
+        System.err.println("ERRORE in "+LoggerGC.getCurrentClassAndMethod(3)+" chiamato da "+getCurrentClassAndMethod(4)+suffissoOperazione()+"\n"+ex);
 }
     /**
      * Come {@link #ScriviErrore(String)}, ma a partire da un'eccezione (ne stampa il solo messaggio, non lo stack trace).
      * @param ex eccezione da registrare
      */
     public static void ScriviErrore(Throwable ex) {
-        System.err.println("ERRORE in "+LoggerGC.getCurrentClassAndMethod(3)+" chiamato da "+getCurrentClassAndMethod(4)+"\n"+ex.getMessage());
+        System.err.println("ERRORE in "+LoggerGC.getCurrentClassAndMethod(3)+" chiamato da "+getCurrentClassAndMethod(4)+suffissoOperazione()+"\n"+ex.getMessage());
 }
+    /** @return {@code " (operazione: NOME)"} se un'operazione e' aperta sul thread corrente, altrimenti stringa vuota */
+    private static String suffissoOperazione() {
+        String op = operazioneCorrenteStringa();
+        return op == null ? "" : " (operazione: " + op + ")";
+    }
 
 
     /** Chiude il {@link FileHandler} del log, se inizializzato. */

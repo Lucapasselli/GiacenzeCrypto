@@ -2822,6 +2822,13 @@ public static boolean PrezzoIrrecuperabileDaDB_Scrivi(
 
         return ps.executeUpdate() > 0;
     } catch (SQLException ex) {
+        //23505 = violazione chiave univoca: due chiamate concorrenti a CambioXXXEUR sullo stesso
+        //(symbol, timestamp, rete, address) possono arrivare entrambe qui prima che la prima scrittura
+        //sia visibile alla lettura di PrezzoIrrecuperabileDaDB_Leggi. La riga esiste gia': e' l'esito
+        //voluto, non un errore da loggare come SEVERE.
+        if (ex.getErrorCode() == 23505) {
+            return true;
+        }
         LoggerGC.ScriviErrore(ex);
         return false;
     }
@@ -3635,23 +3642,43 @@ static boolean RecuperaPrezziDaCCXTRange(String Symbol, long Since, long Until,
 
         try {
             pb.redirectErrorStream(false);
-            Process process = pb.start();
-            AtomicBoolean scadutoPerTimeout = CcxtInterop.avviaWatchdogTimeout(process, CcxtInterop.TIMEOUT_SCRIPT_PREZZI_MINUTI);
 
             // Leggi l'output dello script (JSON stampato da console.log)
             StringBuilder output = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    output.append(line).append("\n");
+            int exitCode = -1;
+            boolean timeoutScaduto = false;
+            //Un solo retry: assorbe i crash transitori del processo Node (es. il bug undici
+            //"assert(!this.paused)" osservato su alcune connessioni exchange), senza insistere su un
+            //problema di connessione vero, che e' gia' gestito a parte dal watchdog di timeout sotto.
+            final int TENTATIVI_MAX = 2;
+            for (int tentativo = 1; tentativo <= TENTATIVI_MAX; tentativo++) {
+                output.setLength(0);
+                Process process = pb.start();
+                AtomicBoolean scadutoPerTimeout = CcxtInterop.avviaWatchdogTimeout(process, CcxtInterop.TIMEOUT_SCRIPT_PREZZI_MINUTI);
+
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                        BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        output.append(line).append("\n");
+                    }
+                    while ((line = errReader.readLine()) != null) System.out.println("[NODE] " + line);
                 }
-                while ((line = errReader.readLine()) != null) System.out.println("[NODE] " + line);
+
+                // Attendi che il processo finisca
+                exitCode = process.waitFor();
+                timeoutScaduto = scadutoPerTimeout.get();
+                if (timeoutScaduto || exitCode == 0) break;
+
+                System.err.println("Script Node fallito (tentativo " + tentativo + "/" + TENTATIVI_MAX
+                        + "). Exit code: " + exitCode);
+                if (tentativo < TENTATIVI_MAX) {
+                    System.err.println(output);
+                    System.err.println("Riprovo...");
+                }
             }
 
-            // Attendi che il processo finisca
-            int exitCode = process.waitFor();
-            if (scadutoPerTimeout.get()) {
+            if (timeoutScaduto) {
                 System.err.println("Script Node interrotto: nessuna risposta entro "
                         + CcxtInterop.TIMEOUT_SCRIPT_PREZZI_MINUTI + " minuti (probabile problema di connessione)");
                 return false;

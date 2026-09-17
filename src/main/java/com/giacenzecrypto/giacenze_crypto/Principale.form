@@ -149,6 +149,17 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_UnisciMovimentiActionPerformed"/>
           </Events>
         </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="MenuItem_TraslaOrario">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/Images/24_TraslaOrario.png"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Trasla Orario"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_TraslaOrarioActionPerformed"/>
+          </Events>
+        </MenuItem>
         <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator6">
         </Component>
         <MenuItem class="javax.swing.JMenuItem" name="MenuItem_ModificaPrezzo">
@@ -7696,7 +7707,7 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="Opzioni_ApiKey_Moralis_Label">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="ApiKey Moralis :"/>
+                        <Property name="text" type="java.lang.String" value="ApiKey Moralis (richiede un piano a pagamento) :"/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JLabel" name="Opzioni_ApiKey_Moralis_LabelSito">
@@ -7753,7 +7764,7 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="Opzioni_ApiKey_MoralisNB_Label">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="NB : Per evitare sforamenti dei limiti giornalieri sulle api di Moralis ogni volta che si scaricano i movimenti da un wallet questi sono limitati a circa 1.000, per scaricarne altri rifare la chiamata"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;NB : Moralis non offre pi&#xf9; un piano gratuito (serve un abbonamento a pagamento, minimo piano Starter): senza un abbonamento attivo le richieste falliscono e la chain BSC user&#xe0; NodeReal.&lt;br&gt;Con un abbonamento attivo, ricorda che i movimenti scaricati per ogni chiamata sono comunque limitati a circa 1.000, per scaricarne altri rifare la chiamata&lt;/html&gt;"/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JLabel" name="Opzioni_ProviderDefi_ApiKeyBlockscout_Label">

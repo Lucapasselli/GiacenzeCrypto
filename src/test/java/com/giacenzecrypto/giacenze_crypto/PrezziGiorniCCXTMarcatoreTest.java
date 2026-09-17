@@ -13,6 +13,13 @@ import static org.junit.jupiter.api.Assertions.*;
  * classificazione delle fonti prezzo, introdotti il 2026-08-27 in {@link Prezzi} per non riscaricare
  * l'intera giornata dagli exchange piu' di una volta per coppia (moneta, giorno).
  *
+ * <p><b>Attenzione (2026-09-17): il marcatore a giornata non e' piu' il percorso vivo.</b> Lo
+ * scaricamento usa ora {@code PrezziOraCCXT}, con chiave {@code (symbol, ora, exchange)}: la chiave a
+ * giornata non aveva l'exchange, quindi "giornata fatta" voleva dire "fatta per tutti e otto" e
+ * impediva di tornare a chiedere l'exchange che serviva davvero. La tabella vecchia resta sul disco
+ * come storico e questa classe continua a coprirne il round-trip, ma un suo verde non dice piu' nulla
+ * sullo scaricamento attuale — quello e' verificato dalle sonde dal vivo.
+ *
  * <p>Il rischio specifico coperto: {@link Prezzi#GiornoCCXT_Leggi}/{@link Prezzi#GiornoCCXT_Scrivi}
  * non vengono mai eseguiti dal resto della suite (ogni percorso di prezzo ritorna prima, e lo
  * scaricamento vero richiede Node, assente nei test). Un errore nella {@code MERGE} o un disallineamento

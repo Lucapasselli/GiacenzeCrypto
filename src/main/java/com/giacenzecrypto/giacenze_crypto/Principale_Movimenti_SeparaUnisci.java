@@ -57,8 +57,15 @@ public class Principale_Movimenti_SeparaUnisci {
      * <p>Il 41 (documento di origine) è qui perché le due gambe della separazione sono <b>ricostruite</b> da
      * {@link MovimentiCrypto#creaMovimento}, non copiate: senza questa lista il legame al file da cui il
      * movimento proveniva andrebbe perso proprio nel momento in cui lo si manipola.
+     *
+     * <p>Il 42 (lignaggio dello storico modifiche) è qui per lo stesso motivo del 41: le gambe sono
+     * ricostruite, e senza questa riga il collegamento alle versioni precedenti si perderebbe proprio
+     * nel momento in cui si manipola il movimento. Conseguenza voluta: separando, le <b>due</b> gambe
+     * ereditano lo stesso lignaggio e condividono quindi la storia del movimento da cui vengono — per
+     * questo {@code MovimentiStorico.SalvaBuffer} non cancella un lignaggio ancora portato da un
+     * movimento vivo.
      */
-    private static final int[] CampiDaRiportare = {2, 7, 14, 23, 30, 31, 36, 37, 39, 41};
+    private static final int[] CampiDaRiportare = {2, 7, 14, 23, 30, 31, 36, 37, 39, 41, 42};
 
     // =================================================================================================
     // ABILITAZIONE DELLE VOCI DI MENU

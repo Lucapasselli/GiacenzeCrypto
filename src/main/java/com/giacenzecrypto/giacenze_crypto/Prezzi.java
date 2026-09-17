@@ -1015,12 +1015,18 @@ public class Prezzi {
        *       si esce restituendo l'eventuale {@code ripiego} (mai {@code null} se un ripiego c'è);</li>
        *   <li>servizio prezzi remoto ({@link ServizioPrezziClient#tentaRecupero}), solo se {@code Fonte}
        *       è vuota;</li>
-       *   <li>scaricamento dagli exchange dell'<b>intera giornata</b> (fuso Europe/Rome) via
-       *       {@link #RecuperaPrezziDaCCXTGiornata}, <b>una sola volta per coppia (moneta, giorno)</b>:
-       *       il marcatore persistente {@code PrezziGiorniCCXT} (letto da {@link #GiornoCCXT_Leggi},
-       *       scritto da {@link #GiornoCCXT_Scrivi}) evita che le corse successive rilancino Node. Il
-       *       giorno corrente non viene mai marcato; il marcatore si scrive solo dopo un download
-       *       riuscito, mai sulla scorciatoia;</li>
+       *   <li>scaricamento dagli exchange dell'<b>ora</b> che serve (fuso Europe/Rome) via
+       *       {@link #RecuperaPrezziDaCCXTLotto}, con il marcatore {@code PrezziOraCCXT} a chiave
+       *       {@code (symbol, ora, exchange)} (letto da {@link #OraCCXT_Leggi}, scritto da
+       *       {@link #OraCCXT_Scrivi}). Si interrogano <b>tutti</b> gli exchange, non solo quello
+       *       richiesto: dentro un lotto interrogarne otto non costa piu' che interrogarne uno, e
+       *       cosi' l'ora resta coperta anche per le richieste successive su un altro exchange.
+       *       Una riga di marcatore significa <b>"chiesto"</b>, non "riuscito": si scrive solo per gli
+       *       exchange che hanno <b>risposto</b> (anche senza dati) e mai per quelli falliti, altrimenti
+       *       un blip di rete congelerebbe il buco per sempre; e mai per l'ora corrente, che non e'
+       *       finita. Le ore di confine (finestra ±5 min a cavallo) vengono scaricate entrambe.
+       *       Il vecchio percorso a giornata ({@code PrezziGiorniCCXT}) non viene piu' letto: la sua
+       *       chiave non aveva l'exchange, quindi impediva di tornare a chiedere quello che serviva;</li>
        *   <li>rilettura della cache a ±5 min e poi ±60 min;</li>
        *   <li>se a questo punto esiste un {@code ripiego} lo si restituisce;</li>
        *   <li>ultimo tentativo: {@link #RecuperaPrezziDaCoinMarketCap} (precisione oraria); se anche
@@ -1151,21 +1157,61 @@ public class Prezzi {
               ServizioPrezziClient.tentaRecupero(Crypto, Datalong);
           }
 
-          //Prezzi dagli exchange: si scarica l'INTERA GIORNATA (fuso Europe/Rome), una sola volta
-          //per coppia (moneta, giorno). Il marcatore persistente PrezziGiorniCCXT tiene traccia dei
-          //giorni gia' scaricati, cosi' le corse successive (re-import, ricalcolo incrementale) non
-          //rilanciano Node. Il GIORNO CORRENTE non viene mai marcato — continuano ad arrivare prezzi
-          //nuovi — quindi li' si riscarica ogni sessione (il dedup di sessione di managerRichieste
-          //evita comunque i doppioni entro la stessa sessione).
-          long inizioGiorno = FunzioniDate.InizioGiornoRoma(Datalong);
-          long fineGiorno = FunzioniDate.InizioGiornoRoma(inizioGiorno + 90000000L) - 1;//+25h -> mezzanotte giorno dopo (DST-safe)
-          int giornoGG = FunzioniDate.GiornoIntGG(Datalong);
+          //Prezzi dagli exchange: si scarica l'ORA che serve (fuso Europe/Rome), non piu' l'intera
+          //giornata, e il marcatore e' PrezziOraCCXT con chiave (symbol, ora, exchange).
+          //
+          //Perche' e' cambiato: PrezziGiorniCCXT non aveva l'exchange in chiave, quindi "giornata
+          //fatta" voleva dire "fatta per tutti e otto" e impediva di tornare a chiedere proprio
+          //l'exchange che serviva — il caso "ho i prezzi binance ma il movimento e' di OKX".
+          //PrezziGiorniCCXT resta sul disco come storico ma NON si legge piu'.
+          //
+          //Si interrogano TUTTI gli exchange, non solo quello richiesto: misurato che dentro un lotto
+          //interrogarne otto non costa piu' che interrogarne uno (3.633 ms contro 4.068 ms su sei
+          //richieste), perche' le latenze si sovrappongono e il costo fisso del processo e' gia'
+          //pagato. Cosi' l'ora resta coperta per tutti, e la prossima richiesta su un altro exchange
+          //non riscarica nulla.
           long adessoMs = System.currentTimeMillis();
-          boolean giornoCorrente = adessoMs >= inizioGiorno && adessoMs <= fineGiorno;
-          if (!GiornoCCXT_Leggi(Crypto, giornoGG)) {
-              boolean okGiornata = RecuperaPrezziDaCCXTGiornata(Crypto, inizioGiorno, Math.min(fineGiorno, adessoMs));
-              if (okGiornata && !giornoCorrente) {
-                  GiornoCCXT_Scrivi(Crypto, giornoGG);
+          String exchangeRichiesto = ExchangeRiconosciuto(Fonte);
+
+          //Ore di confine: la ricerca lavora a +-5 minuti, quindi un movimento alle 23:58 puo'
+          //servirsi dell'ora successiva. Si scaricano entrambe quando la finestra le attraversa,
+          //invece di lasciare un buco sistematico sui movimenti a cavallo.
+          java.util.LinkedHashSet<Long> oreDaCoprire = new java.util.LinkedHashSet<>();
+          oreDaCoprire.add(FunzioniDate.InizioOraRoma(Datalong));
+          oreDaCoprire.add(FunzioniDate.InizioOraRoma(Datalong - 300000L));
+          oreDaCoprire.add(FunzioniDate.InizioOraRoma(Datalong + 300000L));
+
+          List<RichiestaPrezzo> daScaricare = new ArrayList<>();
+          for (long inizioOra : oreDaCoprire) {
+              if (inizioOra > adessoMs) continue;
+              long oraInt = FunzioniDate.OraIntYYYYMMDDHH(inizioOra);
+              //Basta che UN exchange non sia ancora stato interrogato per dover rilanciare l'ora: il
+              //lotto li copre tutti in una volta, quindi non si guadagna nulla a spezzare la richiesta.
+              boolean mancaQualcuno = false;
+              for (String ex : EXCHANGE_CCXT) {
+                  if (!OraCCXT_Leggi(Crypto, oraInt, ex)) { mancaQualcuno = true; break; }
+              }
+              if (!exchangeRichiesto.isEmpty() && !OraCCXT_Leggi(Crypto, oraInt, exchangeRichiesto)) {
+                  mancaQualcuno = true;
+              }
+              if (mancaQualcuno) {
+                  daScaricare.add(new RichiestaPrezzo(Crypto, inizioOra,
+                          Math.min(inizioOra + 3600000L - 1, adessoMs)));
+              }
+          }
+
+          if (!daScaricare.isEmpty()) {
+              for (EsitoLotto esito : RecuperaPrezziDaCCXTLotto(daScaricare, EXCHANGES_CCXT)) {
+                  if (!esito.risposto) continue;
+                  long inizioOra = FunzioniDate.InizioOraRoma(esito.since);
+                  //L'ora corrente non si marca mai: non e' finita e continua a produrre candele nuove.
+                  if (adessoMs < inizioOra + 3600000L) continue;
+                  long oraInt = FunzioniDate.OraIntYYYYMMDDHH(inizioOra);
+                  for (String ex : EXCHANGE_CCXT) {
+                      //Solo chi ha RISPOSTO: un exchange fallito (rete, rate limit, manutenzione) non
+                      //va marcato, altrimenti quel buco resterebbe tale per sempre.
+                      if (!esito.falliti.contains(ex)) OraCCXT_Scrivi(esito.simbolo, oraInt, ex);
+                  }
               }
           }
           risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Fonte, Rete, Address,5,qta);
@@ -2640,6 +2686,15 @@ public class Prezzi {
  *           nella stessa unità temporale (millisecondi). Se il database usa secondi UNIX,
  *           adattare la logica di confronto di conseguenza.
  */
+//L'ordinamento delle query qui sotto e' `ABS(timestamp - ?) ASC, exchange ASC`, e il secondo
+//criterio NON e' cosmetico: a parita' di distanza temporale decide quale exchange prezza il
+//movimento, cioe' un valore che finisce nelle dichiarazioni. Prima era implicito (H2 scandiva in
+//ordine di chiave primaria, che comincia con timestamp ed exchange) e dava lo stesso esito; scritto
+//esplicitamente, quell'esito diventa intenzionale e non piu' dipendente dal piano di accesso.
+//NON trasformarlo in `exchange = 'binance' DESC` ne' in un ordinamento per lista di priorita':
+//cambierebbe i prezzi gia' dichiarati. La regola vera e' "il primo in ordine alfabetico fra gli
+//exchange presenti", verificata con `ascendex` davanti a `binance` in
+//PrezziOrdinePrioritaTest.laSceltaAParitaDiDistanzaSegueLOrdineAlfabeticoDellExchange.
 public static InfoPrezzo DammiPrezzoDaDatabase(
         String symbol,
         long timestampRiferimento,
@@ -2678,7 +2733,7 @@ symbol=symbol.toUpperCase();
           AND (rete = ? OR ? = '')
           AND (address = ? OR ? = '')
           AND (exchange ILIKE ? OR ? = '')
-        ORDER BY ABS(timestamp - ?) ASC
+        ORDER BY ABS(timestamp - ?) ASC, exchange ASC
         LIMIT 1
     """;
         try (PreparedStatement ps = DatabaseH2.connectionPersonale.prepareStatement(baseQuery)) {
@@ -2722,7 +2777,7 @@ symbol=symbol.toUpperCase();
           AND (rete = ? OR ? = '')
           AND (address = ? OR ? = '')
           AND (exchange ILIKE ? OR ? = '')
-        ORDER BY ABS(timestamp - ?) ASC
+        ORDER BY ABS(timestamp - ?) ASC, exchange ASC
         LIMIT 1
     """;
         try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(baseQuery)) {
@@ -2764,7 +2819,7 @@ symbol=symbol.toUpperCase();
           AND timestamp BETWEEN ? AND ?
           AND (rete = ? OR ? = '')
           AND (address = ? OR ? = '')
-        ORDER BY ABS(timestamp - ?) ASC
+        ORDER BY ABS(timestamp - ?) ASC, exchange ASC
         LIMIT 1
     """;
     
@@ -2920,6 +2975,13 @@ public static int PrezziKO_CancellaPeriodo(long timestampIniziale, long timestam
  *           nella stessa unità temporale (millisecondi). Se il database usa secondi UNIX,
  *           adattare la logica di confronto di conseguenza.
  */
+//Stesso ordinamento esplicito di DammiPrezzoDaDatabase, e per la stessa ragione: anche qui piu'
+//righe possono cadere nella finestra allo stesso istante sotto fonti diverse (es. "Personalizzato
+//(TUTTI)" accanto a "binance (Wallet 01)"), e a decidere era l'ordine di chiave primaria.
+//ATTENZIONE, differenza voluta rispetto a DammiPrezzoDaDatabase: qui il ramo senza fonte preferita
+//e' un vero `else`, quindi con una fonte specificata che non trova nulla si ritorna null senza
+//cercare fra tutte le fonti. Uniformare le due funzioni cambierebbe i prezzi di chi ha impostato
+//un exchange preferito per gruppo wallet (vedi PrezziOrdinePrioritaTest).
 public static InfoPrezzo DammiPrezzoDaDatabasePersonale(
         String symbol,
         long timestampRiferimento,
@@ -2958,7 +3020,7 @@ symbol=symbol.toUpperCase();
           AND (rete = ? OR ? = '')
           AND (address = ? OR ? = '')
           AND (exchange ILIKE ? OR ? = '')
-        ORDER BY ABS(timestamp - ?) ASC
+        ORDER BY ABS(timestamp - ?) ASC, exchange ASC
         LIMIT 1
     """;
         try (PreparedStatement ps = DatabaseH2.connectionPersonale.prepareStatement(baseQuery)) {
@@ -2999,7 +3061,7 @@ symbol=symbol.toUpperCase();
           AND timestamp BETWEEN ? AND ?
           AND (rete = ? OR ? = '')
           AND (address = ? OR ? = '')
-        ORDER BY ABS(timestamp - ?) ASC
+        ORDER BY ABS(timestamp - ?) ASC, exchange ASC
         LIMIT 1
     """;
     
@@ -3504,6 +3566,12 @@ static boolean fonteEDaExchangeCCXT(String fonte) {
  *         per {@code symbol} nel giorno {@code giorno} ({@code yyyyMMdd}, Europe/Rome) sono già state
  *         scaricate per intero
  */
+// SUPERATO dal 2026-09-17: il percorso vivo e' PrezziOraCCXT, con l'exchange nella chiave (vedi
+// OraCCXT_Leggi/OraCCXT_Scrivi). Questi due metodi non hanno piu' chiamanti in produzione: restano
+// perche' la tabella PrezziGiorniCCXT resta sul disco come storico e PrezziGiorniCCXTMarcatoreTest
+// ne copre ancora il round-trip. Non usarli per decidere cosa scaricare: la loro chiave non ha
+// l'exchange, quindi "giornata fatta" significa "fatta per tutti e otto" e impedisce di tornare a
+// chiedere proprio l'exchange che serve.
 static boolean GiornoCCXT_Leggi(String symbol, int giorno) {
     String sql = "SELECT 1 FROM PrezziGiorniCCXT WHERE symbol = ? AND giorno = ?";
     try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(sql)) {
@@ -3535,6 +3603,171 @@ static void GiornoCCXT_Scrivi(String symbol, int giorno) {
 }
 
 /**
+ * @return {@code true} se in {@code PrezziOraCCXT} risulta che {@code exchange} è già stato
+ *         interrogato per {@code symbol} nell'ora {@code ora} ({@code yyyyMMddHH}, Europe/Rome)
+ *
+ * <p><b>Marcato non significa "ha dei prezzi"</b>: significa "chiesto, non richiedere piu'". Che i
+ * dati esistano lo dice {@code PrezziNew}. È la distinzione che permette di non reinterrogare in
+ * eterno un exchange che quella moneta non la tratta.
+ */
+static boolean OraCCXT_Leggi(String symbol, long ora, String exchange) {
+    String sql = "SELECT 1 FROM PrezziOraCCXT WHERE symbol = ? AND ora = ? AND exchange = ?";
+    try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(sql)) {
+        ps.setString(1, symbol == null ? "" : symbol.toUpperCase());
+        ps.setLong(2, ora);
+        ps.setString(3, exchange == null ? "" : exchange.trim().toLowerCase());
+        try (ResultSet rs = ps.executeQuery()) {
+            return rs.next();
+        }
+    } catch (SQLException ex) {
+        LoggerGC.ScriviErrore(ex);
+        return false;
+    }
+}
+
+/**
+ * Registra che {@code exchange} è stato interrogato per {@code symbol} nell'ora indicata.
+ *
+ * <p>Da chiamare <b>solo</b> quando l'exchange ha <b>risposto</b> — anche senza dati — e <b>mai</b>
+ * quando la chiamata è fallita (rete, rate limit, manutenzione): marcare un'ora saltata per un errore
+ * transitorio congelerebbe quel buco per sempre. La distinzione arriva da {@link EsitoLotto#falliti}.
+ * E <b>mai per l'ora corrente</b>, che non è ancora finita e continua a produrre candele nuove.
+ */
+static void OraCCXT_Scrivi(String symbol, long ora, String exchange) {
+    String sql = "MERGE INTO PrezziOraCCXT (symbol, ora, exchange) KEY (symbol, ora, exchange) VALUES (?, ?, ?)";
+    try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(sql)) {
+        ps.setString(1, symbol == null ? "" : symbol.toUpperCase());
+        ps.setLong(2, ora);
+        ps.setString(3, exchange == null ? "" : exchange.trim().toLowerCase());
+        ps.executeUpdate();
+    } catch (SQLException ex) {
+        LoggerGC.ScriviErrore(ex);
+    }
+}
+
+/**
+ * Traduce una "fonte" qualunque nell'id CCXT corrispondente, se lo è.
+ *
+ * <p>Serve perché il parametro {@code Fonte} che arriva a {@link #CambioXXXEUR} non è omogeneo: gli
+ * importatori passano id CCXT veri ({@code "binance"}, {@code "okx"}), ma altri chiamanti passano il
+ * campo {@code [3]} del movimento — che in {@code WALLETGRUPPO} contiene nomi come {@code "OKX"},
+ * {@code "Bybit"}, {@code "Crypto.com App"} — o addirittura la stringa di fonte mostrata in GUI.
+ * Qui si accetta solo ciò che è davvero un id fra gli otto conosciuti; tutto il resto diventa "nessuna
+ * preferenza". Il confronto è sicuro proprio perché serve a rispondere a "da quale exchange posso
+ * scaricare?": un mancato riconoscimento fa solo scaricare da tutti, non cambia quale prezzo vince.
+ *
+ * @return l'id CCXT in minuscolo, oppure {@code ""} se {@code fonte} non è uno di essi
+ */
+static String ExchangeRiconosciuto(String fonte) {
+    if (fonte == null) return "";
+    String f = fonte.trim().toLowerCase();
+    return EXCHANGE_CCXT.contains(f) ? f : "";
+}
+
+/**
+ * Quanti exchange distinti risultano già interrogati per {@code symbol} nell'ora {@code ora}.
+ *
+ * <p>Esiste per il filtro del pre-scarico, che lo chiama una volta per ogni coppia (moneta, ora)
+ * raccolta: una sola query indicizzata invece degli otto {@link #OraCCXT_Leggi} che servirebbero a
+ * rispondere alla stessa domanda. Come là, <b>conta i "chiesto", non i "riusciti"</b>.
+ */
+static int OraCCXT_Conta(String symbol, long ora) {
+    String sql = "SELECT COUNT(DISTINCT exchange) FROM PrezziOraCCXT WHERE symbol = ? AND ora = ?";
+    try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(sql)) {
+        ps.setString(1, symbol == null ? "" : symbol.toUpperCase());
+        ps.setLong(2, ora);
+        try (ResultSet rs = ps.executeQuery()) {
+            return rs.next() ? rs.getInt(1) : 0;
+        }
+    } catch (SQLException ex) {
+        LoggerGC.ScriviErrore(ex);
+        return 0;
+    }
+}
+
+/**
+ * Toglie da un elenco di richieste quelle che <b>non farebbero scaricare nulla comunque</b>.
+ *
+ * <p><b>Perché serve.</b> I due punti di pre-scarico raccolgono le coppie (moneta, ora) che
+ * serviranno, ma non sanno quali siano già risolte: senza questo filtro il pre-scarico rispediva a
+ * Node anche le ore già in cache — cioè quasi tutto, su un archivio maturo o alla seconda corsa — e
+ * il lavoro utile finiva sepolto sotto quello inutile.
+ *
+ * <p><b>Le due condizioni sono esattamente quelle con cui {@link #CambioXXXEUR} rinuncia a
+ * scaricare</b>, e non una di più: il filtro del raccoglitore deve combaciare con la rinuncia del
+ * consumatore, altrimenti si torna a lanciare un processo Node per movimento.
+ * <ol>
+ *   <li>tutti gli exchange risultano già interrogati per quell'ora ({@code PrezziOraCCXT}) — è la
+ *       condizione che impedisce di richiedere in eterno un'ora in cui gli exchange non hanno
+ *       davvero dati, dove quindi la cache resta vuota per sempre;</li>
+ *   <li>in cache c'è già un prezzo entro <b>±5 minuti da {@link RichiestaPrezzo#istante}</b> — la
+ *       stessa tolleranza del consumatore, non l'ora intera — e la sua fonte <b>è un exchange CCXT</b>
+ *       ({@link #fonteEDaExchangeCCXT}, la stessa prova di {@code CambioXXXEUR}). Un prezzo di
+ *       ripiego (CoinMarketCap, servizio remoto) non basta: là il download parte comunque, quindi
+ *       qui scartare sarebbe sbagliato. È questa la condizione che copre chi ha un archivio
+ *       riempito dal vecchio percorso a giornata, che ha i prezzi in {@code PrezziNew} e zero righe
+ *       in {@code PrezziOraCCXT}.</li>
+ * </ol>
+ * La prima è più economica e va provata per prima.
+ *
+ * <p><b>Differenza voluta rispetto a {@code CambioXXXEUR}, che sembra una svista e non lo è</b>: qui
+ * {@code rete} e {@code address} si passano vuoti (= qualunque), mentre là sono quelli del movimento.
+ * Le richieste sono raccolte per (simbolo, ora) e il loro address non è univoco, quindi due token
+ * omonimi su reti diverse si leggono a vicenda come "già coperti". L'errore è per difetto — la
+ * coppia non viene pre-scaricata e quel movimento passa dal percorso lento di prima — e resta dentro
+ * la garanzia già dichiarata dai due pre-scarichi: <b>non cambia mai quale prezzo viene scelto</b>.
+ *
+ * @param progress finestra facoltativa: la passata costa una query o due per richiesta e su decine di
+ *                 migliaia di coppie si vede, quindi si dichiara invece di sembrare un blocco
+ * @return una lista nuova con le sole richieste da spedire davvero
+ */
+public static List<RichiestaPrezzo> FiltraRichiesteGiaCoperte(List<RichiestaPrezzo> richieste, Download progress) {
+    List<RichiestaPrezzo> daChiedere = new ArrayList<>();
+    if (richieste == null || richieste.isEmpty()) return daChiedere;
+
+    if (progress != null) {
+        progress.SetLabel("Verifica dei prezzi già presenti in archivio...");
+        progress.SetMassimo(richieste.size());
+        progress.SetAvanzamento(0);
+    }
+
+    int esaminate = 0;
+    for (RichiestaPrezzo r : richieste) {
+        if (Interruzione.Richiesta()) break;
+        esaminate++;
+        if (progress != null && esaminate % 200 == 0) progress.SetAvanzamento(esaminate);
+
+        long oraInt = FunzioniDate.OraIntYYYYMMDDHH(r.since);
+        if (OraCCXT_Conta(r.simbolo, oraInt) >= EXCHANGE_CCXT.size()) continue;
+
+        //La domanda e' ESATTAMENTE quella che si fa CambioXXXEUR prima di scaricare (vedi "Prezzi
+        //precisi (5 min) gia' in cache"): c'e' un prezzo CCXT entro +-5 minuti DALL'ISTANTE che
+        //serve? Chiedere invece "esiste un prezzo qualsiasi dentro quest'ora" — mezza finestra, cioe'
+        //+-30 minuti — era piu' largo del consumatore: un prezzo a 40 minuti di distanza sta nella
+        //stessa ora ma non soddisfa CambioXXXEUR, che scaricherebbe lo stesso. Il pre-scarico
+        //saltava quella moneta per niente e se la ritrovava a lanciare un processo Node per conto
+        //proprio: nessun prezzo sbagliato, ma il guadagno del lotto perso. Si vedeva soprattutto
+        //sull'ora corrente, che non viene mai marcata e quindi non e' mai coperta dalla condizione 1.
+        InfoPrezzo inCache = DammiPrezzoDaDatabase(r.simbolo, r.istante, "", "", "", 5, BigDecimal.ONE);
+        if (inCache != null && fonteEDaExchangeCCXT(inCache.Fonte)) continue;
+
+        daChiedere.add(r);
+    }
+
+    //Si chiude la barra sul proprio massimo: questa e' una fase a se', e il chiamante ne aprira'
+    //un'altra con un massimo piu' piccolo (le sole richieste sopravvissute). Senza questa riga la
+    //barra resterebbe a meta' e poi ripartirebbe da un numero piu' basso — SetMassimo cambia il
+    //massimo ma NON azzera il valore corrente.
+    if (progress != null) progress.SetAvanzamento(richieste.size());
+
+    int scartate = richieste.size() - daChiedere.size();
+    if (scartate > 0) {
+        System.out.println("Pre-scarico prezzi: " + scartate + " coppie (moneta, ora) gia' coperte, non richieste");
+    }
+    return daChiedere;
+}
+
+/**
  * Lancia lo script Node {@code Historical_Multi_Eur.js} (tramite CCXT, installato/verificato con
  * {@link CcxtInterop}) per recuperare quotazioni minuto-per-minuto di {@code Symbol} dagli exchange
  * (binance, cryptocom, bybit, okx, coinbase, bitstamp, kucoin, bitget) nella finestra 2h prima / 6h dopo il
@@ -3556,6 +3789,9 @@ public static void RecuperaPrezziDaCCXT(String Symbol, long timestamp) {
  * @return {@code true} se lo script è stato eseguito con successo (o la giornata risultava già
  *         coperta in questa sessione), {@code false} su errore / script fallito / intervallo non valido
  */
+// SUPERATO dal 2026-09-17, senza chiamanti: lo scaricamento va per ORA e in lotto, vedi
+// RecuperaPrezziDaCCXTLotto e il blocco in CambioXXXEUR. Scaricare l'intera giornata costava ~40
+// richieste per (moneta, giorno) contro le ~1 di un'ora che serve davvero.
 static boolean RecuperaPrezziDaCCXTGiornata(String Symbol, long inizioGiorno, long fineGiorno) {
     return RecuperaPrezziDaCCXTRange(Symbol, inizioGiorno, fineGiorno,
             inizioGiorno, fineGiorno, "GG_" + Symbol.toUpperCase());
@@ -3586,7 +3822,9 @@ static boolean RecuperaPrezziDaCCXTRange(String Symbol, long Since, long Until,
 
         //se questa stessa richiesta (o una che la copre) è già stata fatta in sessione, non la ripeto
         if (managerRichieste.isAlreadyRequested(chiaveSessione, SinceVerifica, UntilVerifica)) return true;
-        TimeUnit.SECONDS.sleep(1);
+        //Tolto il `sleep(1)` che stava qui: proteggeva una raffica di processi Node avviati uno per
+        //quotazione, ma la cadenza verso ogni exchange la governa gia' il limitatore interno di ccxt,
+        //e un secondo fisso per movimento era puro tempo morto (il percorso a lotti non l'ha mai avuto).
 
         //Lista degli exchange a cui richiedere il prezzo della cripto
         String exchanges = EXCHANGES_CCXT;
@@ -3718,6 +3956,527 @@ static boolean RecuperaPrezziDaCCXTRange(String Symbol, long Since, long Until,
 
 
      
+/** Dimensione di un blocco di richieste spedito allo script in una sola invocazione.
+ *
+ *  <p><b>A dimensionarlo è la reattività percepita, non il watchdog.</b> L'avanzamento e il controllo
+ *  di {@link Interruzione#Richiesta()} avvengono una volta <b>per blocco</b>: a ~188 ms per richiesta
+ *  un blocco da 1.000 teneva la barra ferma ~3 minuti e ritardava altrettanto il pulsante "Interrompi",
+ *  cioè il programma sembrava bloccato. Con 100 la barra si muove e "Interrompi" risponde ogni ~19 s.
+ *
+ *  <p>Il watchdog di {@link CcxtInterop#TIMEOUT_SCRIPT_PREZZI_MINUTI} (5 minuti) resta il tetto
+ *  invalicabile — un blocco che lo superasse verrebbe ucciso a metà — ma non è più il vincolo che
+ *  morde. Il costo fisso in più per blocco (~0,7 s di avvio processo, e la rilettura del JSON dei
+ *  markets, che vive quanto il processo) è rumore accanto ai ~19 s di lavoro utile del blocco. */
+static final int RICHIESTE_PER_BLOCCO = 100;
+
+/**
+ * Riempie la cache prezzi <b>prima</b> che qualcuno cominci a valorizzare, raccogliendo da un insieme
+ * di movimenti tutte le coppie (moneta, ora) che serviranno e scaricandole a lotti.
+ *
+ * <p><b>Perché conviene.</b> Il percorso normale chiede un prezzo alla volta e, quando manca, lancia
+ * un processo Node per quella singola coppia: ~3.300 ms. Dentro un lotto la stessa richiesta costa
+ * ~188 ms (misurato su 30 richieste reali). Qui non cambia <b>cosa</b> viene scelto come prezzo, solo
+ * quanto costa averlo: a valle resta identico il percorso di {@link #CambioXXXEUR}, che trova i dati
+ * già in cache invece di scaricarli. Se questa raccolta sbaglia per difetto, l'effetto peggiore è che
+ * qualche movimento passi dal percorso lento di prima — mai che prenda un prezzo diverso.
+ *
+ * @param movimenti i movimenti che stanno per essere valorizzati
+ * @param annoMinimo si ignorano i movimenti di anni precedenti; 0 per non filtrare
+ * @param progress finestra di avanzamento facoltativa
+ * @return quante coppie (moneta, ora) sono state richieste
+ */
+public static int PreScaricaPrezzi(java.util.Collection<String[]> movimenti, int annoMinimo, Download progress) {
+    List<RichiestaPrezzo> richieste = RaccogliRichiestePerMovimenti(movimenti, annoMinimo);
+    if (richieste.isEmpty()) return 0;
+
+    //Si scartano qui le coppie gia' in cache o gia' chieste: e' cio' che distingue "pre-scarico" da
+    //"riscarico". Il conteggio annunciato sotto e' quello DOPO il filtro, altrimenti la barra
+    //prometterebbe un lavoro che non viene fatto.
+    richieste = FiltraRichiesteGiaCoperte(richieste, progress);
+    if (richieste.isEmpty()) return 0;
+
+    System.out.println("Pre-scarico prezzi: " + richieste.size() + " coppie (moneta, ora) da chiedere");
+    if (progress != null) {
+        progress.SetLabel("Pre-scarico prezzi: " + richieste.size() + " quotazioni da recuperare...");
+        progress.SetMassimo(richieste.size());
+        //Azzeramento esplicito: SetMassimo non tocca il valore corrente, che dopo la fase di filtro
+        //vale il numero di coppie ESAMINATE — quasi sempre molto piu' grande di quelle rimaste.
+        //Senza questa riga la barra della nuova fase parte gia' sfondata.
+        progress.SetAvanzamento(0);
+    }
+
+    return ScaricaRichiesteABlocchi(richieste, progress);
+}
+
+/**
+ * La raccolta di {@link #PreScaricaPrezzi}, separata dallo scaricamento: è la parte che decide
+ * <b>cosa</b> chiedere, e l'unica che si può provare senza Node, senza rete e senza database
+ * ({@code PrezziPreScaricoMovimentiTest}).
+ *
+ * <p><b>Riproduce i bivi che la valorizzazione prende dopo</b>, e sbagliarli non produce prezzi
+ * diversi ma lavoro inutile in un senso o nell'altro (una coppia raccolta di troppo è una richiesta
+ * sprecata, una di meno è un movimento che si riscarica il prezzo da solo, un processo Node per volta):
+ * <ul>
+ *   <li><b>Tre ore, non una.</b> {@link #CambioXXXEUR} cerca il prezzo a ±5 minuti dall'istante e
+ *       perciò copre l'ora della data <b>e</b> quelle a ±5 minuti. Chiedendone una sola, ogni
+ *       movimento nei primi o negli ultimi cinque minuti di un'ora restava scoperto proprio
+ *       sull'ora accanto: misurato il 17/09/2026, sette invocazioni singole in coda a un lotto da
+ *       312. Fuori dai bordi le tre ore coincidono e l'insieme si richiude da sé su una sola.</li>
+ *   <li><b>FIAT, SCAM ed E-Money</b> si risolvono altrove, e i movimenti con controvalore già
+ *       dichiarato ({@code [14]}) non verranno riprezzati: la loro ora non serve.</li>
+ *   <li><b>Un token con address e rete validi non passa da CCXT</b> ma da {@link #CambioAddressEUR},
+ *       che legge i prezzi on-chain: chiederlo agli exchange è lavoro buttato.
+ *       <b>Eccezione</b>: gli address di {@link Principale#Mappa_AddressRete_Nome}, per cui
+ *       {@link #DammiPrezzoInfoTransazione} sostituisce il simbolo e azzera l'address apposta per
+ *       farli cercare sugli exchange (USDT su BSC/CRO, ETH su BASE…). Quelli si chiedono, e si
+ *       chiedono <b>col simbolo mappato</b>: scaricarli sotto il nome locale riempirebbe la cache a
+ *       una chiave che poi nessuno cerca.</li>
+ *   <li>La rete si legge <b>come la legge la valorizzazione</b> ({@link #DammiPrezzoDaTransazione}):
+ *       se non è tra {@link Principale#MappaRetiSupportate} gli address non contano e il token torna
+ *       a essere cercato per simbolo.</li>
+ *   <li><b>Il simbolo si normalizza con {@link Principale#Mappa_MoneteStessoPrezzo}</b> (WETH→ETH,
+ *       WCRO→CRO, XDAI→DAI) perché è la prima cosa che fa {@link #CambioXXXEUR}: scaricare sotto il
+ *       nome non normalizzato riempie la cache a una chiave che poi nessuno cerca.</li>
+ * </ul>
+ *
+ * @param movimenti i movimenti che stanno per essere valorizzati
+ * @param annoMinimo si ignorano i movimenti di anni precedenti; 0 per non filtrare
+ * @return le coppie (moneta, ora) da chiedere, ancora da filtrare su ciò che è già in cache
+ */
+static List<RichiestaPrezzo> RaccogliRichiestePerMovimenti(java.util.Collection<String[]> movimenti, int annoMinimo) {
+    List<RichiestaPrezzo> richieste = new ArrayList<>();
+    if (movimenti == null || movimenti.isEmpty()) return richieste;
+
+    long adessoMs = System.currentTimeMillis();
+    java.util.LinkedHashSet<String> chiavi = new java.util.LinkedHashSet<>();
+
+    for (String[] v : movimenti) {
+        if (v == null || v.length < 15) continue;
+        if (Interruzione.Richiesta()) break;
+        if (annoMinimo > 0) {
+            String id = v[0] == null ? "" : v[0];
+            if (id.length() < 4) continue;
+            try {
+                if (Integer.parseInt(id.substring(0, 4)) < annoMinimo) continue;
+            } catch (NumberFormatException ex) {
+                continue;
+            }
+        }
+        //Il controvalore dichiarato dal documento di origine ha la precedenza: questi movimenti non
+        //verranno riprezzati, quindi la loro ora non serve.
+        if (v[14] != null && !v[14].isBlank()) continue;
+
+        long data = FunzioniDate.ConvertiDatainLongMinuto(v[1]);
+        if (data <= 0) continue;
+
+        //Le stesse tre ore di CambioXXXEUR: quella della data e quelle a ±5 minuti, che solo al
+        //confine dell'ora diventano distinte.
+        java.util.LinkedHashSet<Long> oreDaCoprire = new java.util.LinkedHashSet<>();
+        oreDaCoprire.add(FunzioniDate.InizioOraRoma(data));
+        oreDaCoprire.add(FunzioniDate.InizioOraRoma(data - 300000L));
+        oreDaCoprire.add(FunzioniDate.InizioOraRoma(data + 300000L));
+
+        //La rete si ricava come in DammiPrezzoDaTransazione. Il try non e' pro forma: la funzione
+        //spacchetta l'ID e qui passano TUTTI i movimenti, anche quelli che la valorizzazione
+        //salterebbe — un ID malformato deve costare un pre-scarico in meno, non far cadere il
+        //ricalcolo. (Scrive la rete in v[34], che e' la sua cache e non entra nell'impronta delle
+        //plusvalenze: nessun ricalcolo incrementale viene sporcato.)
+        String rete = "";
+        if (v.length > 34) {
+            try {
+                String r = Funzioni.TrovaReteDaIMovimento(v);
+                if (r != null && Principale.MappaRetiSupportate.get(r) != null) rete = r;
+            } catch (RuntimeException ex) {
+                rete = "";
+            }
+        }
+
+        for (int k = 0; k < 2; k++) {
+            String moneta = k == 0 ? v[8] : v[11];
+            String tipo = k == 0 ? v[9] : v[12];
+            if (moneta == null || moneta.isBlank()) continue;
+            if (tipo != null && tipo.trim().equalsIgnoreCase("FIAT")) continue;
+            if (Funzioni.isSCAM(moneta)) continue;
+            if (Principale.Mappa_EMoney != null && Principale.Mappa_EMoney.get(moneta) != null) continue;
+
+            String address = "";
+            if (!rete.isBlank() && v.length > 28) {
+                String a = k == 0 ? v[26] : v[28];
+                if (a != null) address = a;
+            }
+
+            //Token noto sulla sua rete: la valorizzazione lo cerchera' col simbolo mappato e senza
+            //address, cioe' proprio sugli exchange. Altrimenti, se address e rete sono validi, il
+            //prezzo arriva da DefiLlama/coingecko e questa richiesta non servirebbe a nessuno.
+            String alias = rete.isBlank() ? null
+                    : Principale.Mappa_AddressRete_Nome.get(address + "_" + rete);
+            if (alias == null && !rete.isBlank() && Funzioni_WalletDeFi.isValidAddress(address, rete)) continue;
+
+            //Normalizzazione wrapped/nativo: la stessa che CambioXXXEUR applica in ingresso. Senza,
+            //la cache si riempirebbe sotto WETH mentre la valorizzazione andra' a cercare ETH, e il
+            //pre-scarico lavorerebbe per nessuno.
+            String scelto = alias != null ? alias : moneta;
+            String simbolo = Principale.Mappa_MoneteStessoPrezzo.getOrDefault(scelto, scelto).toUpperCase();
+            for (long inizioOra : oreDaCoprire) {
+                if (inizioOra > adessoMs) continue;
+                if (chiavi.add(simbolo + "|" + inizioOra)) {
+                    //`data` (la data del movimento) e non l'ora: e' l'istante su cui il filtro verifica
+                    //la cache con la stessa tolleranza del consumatore. Piu' movimenti nella stessa ora
+                    //condividono la richiesta, che tiene l'istante del primo: al massimo un movimento
+                    //lontano nell'ora ricade sul percorso lento, mai su un prezzo diverso.
+                    richieste.add(new RichiestaPrezzo(simbolo, inizioOra,
+                            Math.min(inizioOra + 3600000L - 1, adessoMs), data));
+                }
+            }
+        }
+    }
+    return richieste;
+}
+
+/**
+ * Variante di {@link #PreScaricaPrezzi} per una <b>situazione patrimoniale a una data</b> (scheda
+ * "Giacenze a data"): tante monete, un solo istante.
+ *
+ * <p><b>Perché serve una terza raccolta</b> invece di riusare le altre due: lì il punto di partenza
+ * sono movimenti o righe di CSV, ognuno con la <i>sua</i> data; qui ci sono oggetti {@link Moneta}
+ * che condividono la stessa data di riferimento. Senza pre-scarico ogni moneta non ancora in cache
+ * fa partire un processo Node per conto proprio: una tabella con cento token significava fino a
+ * cento invocazioni da ~3.300 ms, adesso una sola.
+ *
+ * <p><b>Le esclusioni riproducono i bivi che {@link #CambioXXXEUR} prende prima di arrivare agli
+ * exchange</b>, e sbagliarle rende il pre-scarico inutile (non dannoso: come per le altre due
+ * raccolte, qui non si decide mai <i>quale</i> prezzo vince, solo quanto costa averlo):
+ * <ul>
+ *   <li>un token con address <b>e</b> rete validi non passa da CCXT ma da
+ *       {@link #CambioAddressEUR}, che legge i prezzi on-chain;</li>
+ *   <li>il simbolo va normalizzato con {@code Mappa_MoneteStessoPrezzo} <b>come fa CambioXXXEUR</b>:
+ *       scaricare sotto il nome non normalizzato riempirebbe la cache a un'altra chiave rispetto a
+ *       quella che verrà poi cercata, e il lotto non servirebbe a nulla;</li>
+ *   <li>una data futura o anteriore al 2017 non produce nessuna richiesta, esattamente come là.</li>
+ * </ul>
+ *
+ * <p>Le ore coperte sono <b>le stesse tre</b> di {@code CambioXXXEUR} (quella della data e quelle a
+ * ±5 minuti, che al confine di mezzanotte diventano due distinte): coprirne meno lascerebbe il
+ * percorso per singola moneta a lanciare Node proprio per l'ora scoperta.
+ *
+ * @return quante coppie (moneta, ora) sono state effettivamente richieste
+ */
+public static int PreScaricaPrezziMonete(java.util.Collection<Moneta> monete, long data, Download progress) {
+    if (monete == null || monete.isEmpty() || data <= 0) return 0;
+
+    long adessoMs = System.currentTimeMillis();
+    //Stessi due limiti di CambioXXXEUR: oltre "adesso" non esistono prezzi, prima del 2017 non se ne
+    //cercano. Senza questi, una data limite produrrebbe richieste che nessuno userà.
+    if (data > adessoMs || data < 1483225200000L) return 0;
+
+    java.util.LinkedHashSet<Long> oreDaCoprire = new java.util.LinkedHashSet<>();
+    oreDaCoprire.add(FunzioniDate.InizioOraRoma(data));
+    oreDaCoprire.add(FunzioniDate.InizioOraRoma(data - 300000L));
+    oreDaCoprire.add(FunzioniDate.InizioOraRoma(data + 300000L));
+
+    java.util.LinkedHashSet<String> chiavi = new java.util.LinkedHashSet<>();
+    List<RichiestaPrezzo> richieste = new ArrayList<>();
+
+    for (Moneta m : monete) {
+        if (Interruzione.Richiesta()) break;
+        if (m == null || m.Moneta == null || m.Moneta.isBlank()) continue;
+        if (m.Tipo != null && m.Tipo.trim().equalsIgnoreCase("FIAT")) continue;
+        if (Funzioni.isSCAM(m.Moneta)) continue;
+        if (Principale.Mappa_EMoney != null && Principale.Mappa_EMoney.get(m.Moneta) != null) continue;
+
+        String rete = m.Rete == null ? "" : m.Rete;
+        if (!rete.isBlank() && Funzioni_WalletDeFi.isValidAddress(m.MonetaAddress, rete)) continue;
+
+        String simbolo = (Principale.Mappa_MoneteStessoPrezzo == null
+                ? m.Moneta
+                : Principale.Mappa_MoneteStessoPrezzo.getOrDefault(m.Moneta, m.Moneta)).toUpperCase();
+
+        for (long inizioOra : oreDaCoprire) {
+            if (inizioOra > adessoMs) continue;
+            if (chiavi.add(simbolo + "|" + inizioOra)) {
+                //L'istante e' `data` per tutte e tre le ore, comprese quelle di confine: anche
+                //CambioXXXEUR prende UNA sola decisione a +-5 minuti da `Datalong` che vale per
+                //tutte e tre. Con la data di oggi `data` coincide con `until`, e la mezza finestra
+                //nel futuro semplicemente non contiene righe.
+                richieste.add(new RichiestaPrezzo(simbolo, inizioOra,
+                        Math.min(inizioOra + 3600000L - 1, adessoMs), data));
+            }
+        }
+    }
+
+    if (richieste.isEmpty()) return 0;
+
+    richieste = FiltraRichiesteGiaCoperte(richieste, progress);
+    if (richieste.isEmpty()) return 0;
+
+    System.out.println("Pre-scarico prezzi (giacenze a data): " + richieste.size() + " coppie (moneta, ora) da chiedere");
+    if (progress != null) {
+        progress.SetLabel("Pre-scarico prezzi: " + richieste.size() + " quotazioni da recuperare...");
+        progress.SetMassimo(richieste.size());
+        progress.SetAvanzamento(0);
+    }
+
+    return ScaricaRichiesteABlocchi(richieste, progress);
+}
+
+/**
+ * Spezza un elenco di richieste in blocchi e li scarica uno per uno con {@link #RecuperaPrezziDaCCXTLotto}.
+ *
+ * <p>Estratto perché lo condividono tutti i punti di pre-scarico (movimenti già formati, righe di un
+ * CSV in import, ...): la dimensione del blocco e il rispetto del watchdog sono una regola sola e
+ * devono restare in un posto solo.
+ *
+ * @return quante richieste sono state spedite
+ */
+public static int ScaricaRichiesteABlocchi(List<RichiestaPrezzo> richieste, Download progress) {
+    if (richieste == null || richieste.isEmpty()) return 0;
+    int fatte = 0;
+    for (int i = 0; i < richieste.size(); i += RICHIESTE_PER_BLOCCO) {
+        if (Interruzione.Richiesta()) break;
+        List<RichiestaPrezzo> blocco = richieste.subList(i, Math.min(i + RICHIESTE_PER_BLOCCO, richieste.size()));
+        RecuperaPrezziDaCCXTLotto(new ArrayList<>(blocco), EXCHANGES_CCXT);
+        fatte += blocco.size();
+        if (progress != null) progress.SetAvanzamento(fatte);
+    }
+    return fatte;
+}
+
+/** Una richiesta dentro un lotto: quotazioni di {@code simbolo} nella finestra {@code [since, until]}. */
+public static class RichiestaPrezzo {
+    public final String simbolo;
+    public final long since;
+    public final long until;
+    /**
+     * L'istante che ha reso necessaria questa richiesta: la data del movimento, della riga di CSV o
+     * della situazione patrimoniale. <b>Non è ridondante rispetto alla finestra</b>: la finestra è
+     * l'ora intera da scaricare, mentre chi valorizza cerca un prezzo a <b>±5 minuti da questo
+     * istante</b>. Serve a {@link #FiltraRichiesteGiaCoperte} per porsi esattamente la stessa
+     * domanda del consumatore invece di accontentarsi di "un prezzo qualsiasi dentro quest'ora".
+     */
+    public final long istante;
+
+    /**
+     * Per chi <b>non</b> ha un istante preciso da indicare: {@code istante} cade sul centro della
+     * finestra e il controllo della cache diventa perciò approssimativo. Tutti i pre-scarichi la
+     * data ce l'hanno e devono usare l'altro costruttore, altrimenti perdono l'allineamento.
+     */
+    public RichiestaPrezzo(String simbolo, long since, long until) {
+        this(simbolo, since, until, since + (until - since) / 2);
+    }
+
+    public RichiestaPrezzo(String simbolo, long since, long until, long istante) {
+        this.simbolo = simbolo == null ? "" : simbolo.toUpperCase();
+        this.since = since;
+        this.until = until;
+        this.istante = istante;
+    }
+}
+
+/**
+ * Esito di una singola richiesta del lotto.
+ * <p><b>{@code risposto} non significa "ha trovato prezzi"</b>: significa che lo script ha risposto
+ * per quella richiesta, anche con zero punti. È la distinzione che serve a chi marca le ore già
+ * interrogate — marcare un'ora saltata per un errore di rete congelerebbe il buco per sempre.
+ */
+public static class EsitoLotto {
+    public final String simbolo;
+    public final long since;
+    public final long until;
+    public final boolean risposto;
+    /** Id degli exchange la cui chiamata è fallita con un errore vero (diverso da "nessun dato"). */
+    public final java.util.Set<String> falliti;
+    public final int punti;
+
+    EsitoLotto(String simbolo, long since, long until, boolean risposto,
+            java.util.Set<String> falliti, int punti) {
+        this.simbolo = simbolo;
+        this.since = since;
+        this.until = until;
+        this.risposto = risposto;
+        this.falliti = falliti;
+        this.punti = punti;
+    }
+}
+
+/**
+ * Scarica in <b>una sola invocazione</b> di {@code Historical_Multi_Eur.js} le quotazioni di molte
+ * coppie (moneta, finestra), scrivendole in {@code PrezziNew} con lo stesso
+ * {@link #ScriviPuntiPrezzoInCache} del percorso a richiesta singola.
+ *
+ * <p><b>Perché esiste.</b> Il costo fisso di un'invocazione è ~0,7 s (di cui ~0,56 s il solo
+ * {@code require('ccxt')}), e finora si pagava per ogni singola coppia. Misurato sullo stesso
+ * insieme di 6 richieste: ~3.300 ms l'una a invocazioni separate contro ~650 ms dentro un lotto.
+ * Dentro il lotto, inoltre, interrogare tutti e otto gli exchange <b>non costa più</b> che
+ * interrogarne uno (3.633 ms contro 4.068 ms, differenza nel rumore di rete), perché le latenze si
+ * sovrappongono e gli oggetti exchange — e quindi il limitatore interno di ccxt — sono condivisi.
+ *
+ * <p>Niente {@code sleep(1)} come nel percorso a richiesta singola: lì proteggeva una raffica di
+ * processi, qui il processo è uno solo e la cadenza verso ogni exchange la governa ccxt.
+ *
+ * <p>La chiave di sessione usata per {@link #managerRichieste} è {@code "ORA_"+simbolo}, distinta da
+ * quelle del percorso a finestra ({@code simbolo}) e a giornata ({@code "GG_"+simbolo}): finestre di
+ * ampiezza diversa non devono dedursi coperte a vicenda.
+ *
+ * @param richieste le coppie da scaricare; quelle già coperte in questa sessione vengono saltate
+ * @param exchanges elenco di id CCXT separati da virgola, tipicamente {@link #EXCHANGES_CCXT}
+ * @return un esito per ogni richiesta <b>ricevuta</b> (anche per quelle saltate, marcate come già
+ *         risposte), oppure tutti gli esiti a {@code risposto=false} se l'invocazione è fallita
+ */
+static List<EsitoLotto> RecuperaPrezziDaCCXTLotto(List<RichiestaPrezzo> richieste, String exchanges) {
+    List<EsitoLotto> esiti = new ArrayList<>();
+    if (richieste == null || richieste.isEmpty()) return esiti;
+
+    long adesso = System.currentTimeMillis();
+    List<RichiestaPrezzo> daChiedere = new ArrayList<>();
+    for (RichiestaPrezzo r : richieste) {
+        if (r.since > adesso) continue;
+        long until = Math.min(r.until, adesso);
+        if (managerRichieste.isAlreadyRequested("ORA_" + r.simbolo, r.since, until)) {
+            //già coperta in sessione: non la si rispedisce, ma per il chiamante è "risposta"
+            esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, true, java.util.Set.of(), 0));
+            continue;
+        }
+        daChiedere.add(new RichiestaPrezzo(r.simbolo, r.since, until));
+    }
+    if (daChiedere.isEmpty()) return esiti;
+
+    try {
+        Path nodePath = CcxtInterop.getNodeExePath();
+        Path scriptPath = Paths.get(VarStatiche.getPathRisorse() + "Scripts/Historical_Multi_Eur.js");
+        CcxtInterop.ensureNodeInstalled();
+        CcxtInterop.installCcxt();
+        if (!Files.exists(nodePath) || !Files.exists(scriptPath)) {
+            System.err.println("Lotto prezzi: node o script non trovati (" + nodePath + " / " + scriptPath + ")");
+            for (RichiestaPrezzo r : daChiedere) {
+                esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, false, java.util.Set.of(), 0));
+            }
+            return esiti;
+        }
+
+        JsonArray payload = new JsonArray();
+        for (RichiestaPrezzo r : daChiedere) {
+            JsonObject o = new JsonObject();
+            o.addProperty("symbol", r.simbolo);
+            o.addProperty("since", r.since);
+            o.addProperty("until", r.until);
+            payload.add(o);
+        }
+        final String json = payload.toString();
+
+        List<String> command = new ArrayList<>();
+        command.add(nodePath.toString());
+        command.add(scriptPath.toAbsolutePath().toString());
+        command.add("--lotto");
+        command.add("--exchanges");
+        command.add(exchanges == null || exchanges.isBlank() ? EXCHANGES_CCXT : exchanges);
+        command.add("--timeframe");
+        command.add("1m");
+
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.directory(scriptPath.getParent().toFile());
+        Map<String, String> env = pb.environment();
+        String nodeModules = CcxtInterop.NODE_DIR.resolve("node_modules").toAbsolutePath().toString();
+        String existing = env.get("NODE_PATH");
+        env.put("NODE_PATH", existing == null || existing.isEmpty() ? nodeModules
+                : nodeModules + File.pathSeparator + existing);
+
+        System.out.println("Lotto prezzi: " + daChiedere.size() + " richieste in una sola invocazione");
+        Process process = pb.start();
+        AtomicBoolean scaduto = CcxtInterop.avviaWatchdogTimeout(process, CcxtInterop.TIMEOUT_SCRIPT_PREZZI_MINUTI);
+
+        //stdin su un thread a parte: scrivendo l'ingresso e leggendo l'uscita dallo stesso thread si
+        //va in stallo non appena il JSON supera il buffer della pipe (il figlio si blocca scrivendo
+        //l'uscita mentre noi stiamo ancora scrivendo l'ingresso). Con lotti piccoli non si vedrebbe.
+        Thread scrittore = new Thread(() -> {
+            try (java.io.Writer w = new java.io.OutputStreamWriter(process.getOutputStream(),
+                    java.nio.charset.StandardCharsets.UTF_8)) {
+                w.write(json);
+            } catch (IOException ex) {
+                LoggerGC.ScriviErrore(ex);
+            }
+        });
+        scrittore.setDaemon(true);
+        scrittore.start();
+
+        StringBuilder output = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) output.append(line).append("\n");
+            while ((line = errReader.readLine()) != null) System.out.println("[NODE] " + line);
+        }
+        int exitCode = process.waitFor();
+        scrittore.join(5000);
+
+        if (scaduto.get() || exitCode != 0) {
+            System.err.println("Lotto prezzi fallito (exit " + exitCode + (scaduto.get() ? ", timeout" : "") + ")");
+            for (RichiestaPrezzo r : daChiedere) {
+                esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, false, java.util.Set.of(), 0));
+            }
+            return esiti;
+        }
+
+        if (VarCondivise.LogJsonPrezzi) System.out.println(output.toString());
+
+        JsonElement rootEl = JsonParser.parseString(output.toString());
+        if (!rootEl.isJsonArray()) {
+            System.err.println("Lotto prezzi: output non è un array JSON valido.");
+            for (RichiestaPrezzo r : daChiedere) {
+                esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, false, java.util.Set.of(), 0));
+            }
+            return esiti;
+        }
+
+        for (JsonElement el : rootEl.getAsJsonArray()) {
+            if (!el.isJsonObject()) continue;
+            JsonObject o = el.getAsJsonObject();
+            String simbolo = o.has("symbol") ? o.get("symbol").getAsString() : "";
+            long since = o.has("since") ? o.get("since").getAsLong() : 0;
+            long until = o.has("until") ? o.get("until").getAsLong() : 0;
+
+            java.util.Set<String> falliti = new java.util.HashSet<>();
+            if (o.has("falliti") && o.get("falliti").isJsonArray()) {
+                for (JsonElement f : o.getAsJsonArray("falliti")) falliti.add(f.getAsString());
+            }
+
+            int nPunti = 0;
+            //Quali exchange hanno davvero portato dati: la chiave di ogni "prices" e' l'id
+            //dell'exchange. Senza questo elenco il log direbbe solo "sono arrivati N punti", che non
+            //permette di capire ne' da chi arriva il prezzo che finira' nel movimento, ne' quale
+            //exchange e' sistematicamente muto.
+            java.util.TreeSet<String> conDati = new java.util.TreeSet<>();
+            if (o.has("punti") && o.get("punti").isJsonArray()) {
+                JsonArray punti = o.getAsJsonArray("punti");
+                nPunti = punti.size();
+                for (JsonElement pEl : punti) {
+                    if (!pEl.isJsonObject()) continue;
+                    JsonObject pObj = pEl.getAsJsonObject();
+                    if (pObj.has("prices") && pObj.get("prices").isJsonObject()) {
+                        conDati.addAll(pObj.getAsJsonObject("prices").keySet());
+                    }
+                }
+                ScriviPuntiPrezzoInCache(simbolo, punti);
+            }
+            System.out.println("Prezzi CCXT " + simbolo + " " + FunzioniDate.ConvertiDatadaLongAlSecondo(since)
+                    + " -> " + FunzioniDate.ConvertiDatadaLongAlSecondo(until)
+                    + ": " + nPunti + " quotazioni"
+                    + (conDati.isEmpty() ? "" : " da " + String.join(", ", conDati))
+                    + (falliti.isEmpty() ? "" : " | NON hanno risposto: " + String.join(", ", new java.util.TreeSet<>(falliti)))
+                    + (conDati.isEmpty() && falliti.isEmpty() ? " (nessun exchange tratta questa moneta in questo periodo)" : ""));
+            managerRichieste.addRange("ORA_" + simbolo, since, until);
+            esiti.add(new EsitoLotto(simbolo, since, until, true, falliti, nPunti));
+        }
+        return esiti;
+
+    } catch (IOException | InterruptedException ex) {
+        LoggerGC.ScriviErrore(ex);
+        for (RichiestaPrezzo r : daChiedere) {
+            esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, false, java.util.Set.of(), 0));
+        }
+        return esiti;
+    }
+}
+
 public static class InfoPrezzo {
     public BigDecimal prezzoUnitario;
     public BigDecimal prezzoQta;

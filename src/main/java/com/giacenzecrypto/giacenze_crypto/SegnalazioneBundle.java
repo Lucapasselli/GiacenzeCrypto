@@ -71,7 +71,22 @@ public final class SegnalazioneBundle {
                 + "Sistema: " + System.getProperty("os.name", "?") + " "
                 + System.getProperty("os.version", "?") + " (" + System.getProperty("os.arch", "?") + ")\n"
                 + "Java: " + System.getProperty("java.version", "?") + "\n"
-                + "Data: " + LocalDateTime.now().format(DATA) + "\n";
+                + "Data: " + LocalDateTime.now().format(DATA) + "\n"
+                + "prezzi.mv.db: " + dimensioneDbPrezzi() + "\n";
+    }
+
+    /**
+     * @return la dimensione su disco di {@code prezzi.mv.db}, l'unico dei tre database che pu&ograve;
+     *         crescere fuori scala (vedi Analisi_DB_Prezzi_Manutenzione.md), o {@code "n.d."} se il
+     *         file non esiste.
+     */
+    private static String dimensioneDbPrezzi() {
+        File f = new File(VarStatiche.getWorkingDirectory() + "prezzi.mv.db");
+        if (!f.exists()) {
+            return "n.d.";
+        }
+        double mb = f.length() / (1024.0 * 1024.0);
+        return mb >= 1024 ? String.format("%.2f GB", mb / 1024.0) : String.format("%.0f MB", mb);
     }
 
     /**

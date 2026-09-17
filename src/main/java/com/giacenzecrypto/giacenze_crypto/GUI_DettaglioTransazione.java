@@ -85,6 +85,12 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             }else{
                 Bottone_DeFi.setEnabled(false);
             }
+
+        //Il pulsante dello storico si accende solo se di questo movimento esiste davvero una versione
+        //precedente: lo storico si popola solo quando l'utente modifica un movimento a mano.
+        //Si chiede al database, non "il movimento ha un lignaggio": il lignaggio viene timbrato prima
+        //della conferma di una modifica che l'utente può ancora annullare, e resterebbe senza righe.
+        Bottone_Storico.setEnabled(DatabaseH2.StoricoMovimenti_Esiste(MovimentiStorico.LignaggioDi(IDTransazione)));
         
         String Valore;
         String Val[];
@@ -414,6 +420,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         ScrollTabella = new javax.swing.JScrollPane();
         Tabella = new javax.swing.JTable();
         Bottone_DeFi = new javax.swing.JButton();
+        Bottone_Storico = new javax.swing.JButton();
         Bottone_MovPrecedente = new javax.swing.JButton();
         Bottone_MovSuccessivo = new javax.swing.JButton();
         TextPane_Titolo = new javax.swing.JTextPane();
@@ -520,6 +527,15 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             }
         });
 
+        Bottone_Storico.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
+        Bottone_Storico.setText("Versioni precedenti");
+        Bottone_Storico.setEnabled(false);
+        Bottone_Storico.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_StoricoActionPerformed(evt);
+            }
+        });
+
         Bottone_MovPrecedente.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/40_FrecciaSinistra.png"))); // NOI18N
         Bottone_MovPrecedente.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -564,6 +580,8 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                         .addComponent(Bottone_Modifica, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_DeFi, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Bottone_Storico, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -581,6 +599,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                 .addGap(8, 8, 8)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Bottone_DeFi)
+                    .addComponent(Bottone_Storico)
                     .addComponent(Bottone_Modifica))
                 .addContainerGap())
         );
@@ -631,6 +650,10 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         // TODO add your handling code here:
         Funzioni_WalletDeFi.ApriExplorer(mappa_ID.get(Riferimento));
     }//GEN-LAST:event_Bottone_DeFiActionPerformed
+
+    private void Bottone_StoricoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_Storico
+        GUI_StoricoMovimento.Mostra(mappa_ID.get(Riferimento), this);
+    }//GEN-LAST:event_Bottone_Storico
 
     private void Bottone_ModificaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ModificaActionPerformed
         // TODO add your handling code here:
@@ -890,6 +913,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
     private javax.swing.JButton Bottone_Modifica;
     private javax.swing.JButton Bottone_MovPrecedente;
     private javax.swing.JButton Bottone_MovSuccessivo;
+    private javax.swing.JButton Bottone_Storico;
     private javax.swing.JMenuItem MenuItem_Copia;
     private javax.swing.JMenuItem MenuItem_DocumentoFonte;
     private javax.swing.JMenuItem MenuItem_CopiaID;

@@ -2151,23 +2151,61 @@ public static boolean Ex_Tatax_Importa(String fileTatax, boolean SovrascriEsiste
             FileWriter w=new FileWriter(VarStatiche.getFile_CryptoWallet());
             BufferedWriter b=new BufferedWriter (w);
        for (String[] v : Mappa_Movimenti.values()) {
-           String riga="";
-                for (String v1 : v) {
-                    if(v1==null)v1="";
-                    riga = riga + v1.replace(";", "") + ";";//Ovviamente il punto e virgola non può comparire altrimenti rompe il file
-                }
-           //Questa serve per togliere l'ultimo ";" dalla stringa in quanto superfluo
-           riga=riga.substring(0,riga.length()-1);
-          // System.out.println(riga);
-           b.write(riga+"\n");
-
+           b.write(SerializzaRiga(v)+"\n");
        }
        b.close();
        w.close();
+       //Lo storico delle modifiche si riversa SOLO qui, e solo dopo che il file dei movimenti è stato
+       //chiuso senza errori: se la scrittura fallisce, l'IOException salta questa riga e il buffer
+       //resta intatto per il tentativo successivo, invece di raccontare una modifica che su disco non
+       //c'è. Per lo stesso motivo la chiamata sta QUI dentro e non nei chiamanti: così non può essere
+       //dimenticata da un futuro quinto punto che salvi i movimenti.
+       MovimentiStorico.SalvaBuffer(Mappa_Movimenti);
     }catch (IOException ex) {
-              //     LoggerGC.ScriviErrore(ex);
+                   LoggerGC.ScriviErrore(ex);
                }
     }
+
+        /**
+         * Serializza una riga di movimento nel formato del file {@code movimenti.crypto.db}: campi
+         * separati da {@code ;}, senza escaping — gli eventuali {@code ;} presenti nei valori vengono
+         * <b>rimossi</b>, perché romperebbero il file.
+         *
+         * <p>Logica estratta da {@link #Scrivi_Movimenti_Crypto}, dove era in linea, per poterla
+         * riusare nello storico delle modifiche ({@link MovimentiStorico}). Il comportamento è
+         * identico a prima, compresa la perdita dei {@code ;}.</p>
+         *
+         * @param v riga di movimento, anche più corta di {@link #ColonneTabella}
+         * @return la riga serializzata, senza il {@code ;} finale
+         */
+        public static String SerializzaRiga(String[] v) {
+            StringBuilder riga = new StringBuilder();
+            for (String v1 : v) {
+                if (v1 == null) v1 = "";
+                riga.append(v1.replace(";", "")).append(";");
+            }
+            //Tolgo l'ultimo ";" in quanto superfluo
+            if (riga.length() > 0) riga.setLength(riga.length() - 1);
+            return riga.toString();
+        }
+
+        /**
+         * Inverso di {@link #SerializzaRiga}: rilegge una riga serializzata riportandola a
+         * {@link #ColonneTabella} campi, con lo stesso padding usato per le righe corte caricate dal
+         * file dei movimenti.
+         *
+         * <p>Non è un round-trip perfetto, e non può esserlo: i {@code ;} eventualmente presenti nei
+         * valori sono già stati persi in scrittura.</p>
+         *
+         * @param Riga la riga serializzata, eventualmente {@code null}
+         * @return array di {@link #ColonneTabella} elementi, mai {@code null}, senza celle {@code null}
+         */
+        public static String[] DeserializzaRiga(String Riga) {
+            String[] Campi = (Riga == null ? "" : Riga).split(";", -1);
+            String[] v = new String[ColonneTabella];
+            System.arraycopy(Campi, 0, v, 0, Math.min(Campi.length, ColonneTabella));
+            return RiempiVuotiArray(v);
+        }
         
     
     /**
@@ -6265,31 +6303,20 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
         //   di ~45 minuti per IP (misurato sugli header x-ratelimit-*): sufficiente per un uso
         //   occasionale, lento con piu' wallet. Una ApiKey Blockscout gratuita (tab "ApiKey") fa
         //   passare il programma da solo alla PRO API, che ne concede 5 al secondo.
-        // - BSC e' l'unica chain senza nessun explorer Etherscan-compatibile gratuito. NodeReal (vedi
+        // - BSC e' l'unica chain senza nessun explorer Etherscan-compatibile gratuito: NodeReal (vedi
         //   NodeRealDefi) e' l'alternativa gratuita, gia' verificata contro i wallet reali dell'utente
-        //   (stessi hash trovati da Moralis, nessuno mancante), ma solo per chi non ha gia' una chiave
-        //   Moralis: un utente con una ApiKey Moralis gia' compilata non deve smettere di scaricare BSC
-        //   in silenzio solo perche' il default e' cambiato sotto di lui. Per questo BSC non ha un
-        //   default fisso: vedi DeFi_ProviderDefaultBSC qui sotto.
+        //   (stessi hash trovati da Moralis, nessuno mancante). Fino al 15/09/2026 restava condizionato
+        //   alla ApiKey Moralis (chi l'aveva gia' compilata restava su Moralis). Verificato quel giorno
+        //   con una chiamata reale (sia a latestBlockNumber sia a getWalletHistory, con una chiave vera
+        //   dell'utente, ben formata) che l'account risponde 401 "Your Moralis Free usage is paused" a
+        //   prescindere dalla chiave: il piano gratuito non esiste piu' per nessuno, quindi tenere
+        //   Moralis come default per chi ha gia' una chiave non evita piu' un'interruzione silenziosa,
+        //   la garantisce. NodeReal e' quindi il default incondizionato di BSC, come per BASE/AVAX.
         if (Rete.equalsIgnoreCase("BASE") || Rete.equalsIgnoreCase("AVAX")) return "BLOCKSCOUT";
-        if (Rete.equalsIgnoreCase("BSC")) return DeFi_ProviderDefaultBSC();
+        if (Rete.equalsIgnoreCase("BSC")) return NodeRealDefi.PROVIDER;
         if (Rete.equalsIgnoreCase("SOL")) return "HELIUS";
         if (Rete.equalsIgnoreCase("BTC")) return "BITCOIN";
         return "ETHERSCAN";
-    }
-
-    /**
-     * Default di BSC, condizionato alla ApiKey Moralis: chi l'ha già compilata continua a usare
-     * Moralis (non deve smettere di scaricare BSC in silenzio solo perché il default è cambiato),
-     * chi parte da zero prende NodeReal, l'unica alternativa gratuita. Estratto da
-     * {@link #DeFi_ProviderDefault} perché, a differenza di ogni altro ramo di quel metodo, legge
-     * un'opzione salvata invece di dipendere solo dalla rete.
-     */
-    private static String DeFi_ProviderDefaultBSC() {
-        //Opzioni_Leggi non è null-safe se il database non è ancora aperto: stessa guardia di
-        //DeFi_ProviderBlockscoutProUrl/DatabaseH2.ProviderDefi_LeggiTutti.
-        String moralisKey = (DatabaseH2.connection != null) ? DatabaseH2.Opzioni_Leggi("ApiKey_Moralis") : null;
-        return (moralisKey != null && !moralisKey.isBlank()) ? "MORALIS" : NodeRealDefi.PROVIDER;
     }
 
     /**
@@ -6463,6 +6490,10 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
 //  progressb.RipristinaStdout();
         AzzeraContatori();
         Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        //Un avviso di ApiKey mancante/non valida va mostrato una sola volta per provider, non una volta
+        //per ogni wallet di quel provider nella lista (altrimenti piu' wallet BSC senza chiave aprono
+        //piu' finestre modali identiche di seguito)
+        Set<String> AvvisiApiKeyMostrati = new HashSet<>();
         int avaTot=0;
         for (String wallets : Portafogli) {
             avaTot++;
@@ -6504,11 +6535,21 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                     && !Provider.equals("BLOCKSCOUT") && !Provider.equals(NodeRealDefi.PROVIDER)) {
 
                     //Se ho dei portafogli non gestiti da etherscan li passo alla funzione che si occupa di cercare i dati su Moralis
-//System.out.println("Leggo da Moralissssssss");
-            if (Funzioni.isApiKeyValidaMoralis(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"))) {
+            String moralisApiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Moralis");
+            if (moralisApiKey == null || moralisApiKey.isBlank()) {
+                //Chiave non inserita: distinto dal caso sotto (chiave inserita ma la verifica e' fallita),
+                //altrimenti l'utente legge lo stesso messaggio "manca la ApiKey" anche quando l'ha già
+                //compilata (bug segnalato 2026-09-15)
+                if (AvvisiApiKeyMostrati.add("MORALIS_MANCANTE")) {
+                    String msg = "Non è stata inserita una ApiKey Moralis, necessaria per scaricare " + Rete + ".\n"
+                            + "Andare in 'Opzioni' - 'ApiKey' per inserirla.";
+                    LoggerGC.ScriviErrore(msg);
+                    if (ccc != null) JOptionPane.showConfirmDialog(ccc, msg, "ApiKey Moralis mancante",
+                            JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                }
+            }
+            else if (Funzioni.isApiKeyValidaMoralis(moralisApiKey)) {
                 //A questo punto aggiungo alla mappa anche i wallet presi da moralis
-               // Map<String, TransazioneDefi> MappaTransazioniDefi2 = DeFi_RitornaTransazioniMoralis(walletAddress,Rete,Blocco,progressb);
-               //System.out.println("Leggo da Moralis");
                 Map<String, TransazioneDefi> MappaTransazioniDefi2 = DeFi_RitornaTransazioniMoralis(walletAddress,Rete,Blocco,ccc,progressb);
                 progressb.setIndeterminate(false);
                 if (MappaTransazioniDefi2!=null){
@@ -6518,15 +6559,19 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                 }
             }
             else {
-                        System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " per mancaza di ApiKey");
-                        System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa ad Moralis");
-                try {
-                    TimeUnit.SECONDS.sleep(5);
-                } catch (InterruptedException ex) {
-                    //LoggerGC.ScriviErrore(ex);
-                    LoggerGC.ScriviErrore(ex);
+                //Chiave presente ma la richiesta di verifica (contro la chain Ethereum, indipendente da
+                //quella che si vuole scaricare) non ha risposto 200: puo' essere una chiave scaduta/errata,
+                //ma anche un piano che non copre Ethereum o un errore temporaneo, quindi il messaggio non
+                //deve suggerire "manca la chiave" quando la chiave c'e'
+                if (AvvisiApiKeyMostrati.add("MORALIS_NON_VALIDA")) {
+                    String msg = "La ApiKey Moralis inserita non ha superato la verifica (richiesta di controllo su Ethereum non riuscita).\n"
+                            + "Il wallet " + walletAddress + " (" + Rete + ") non può essere scaricato da Moralis.\n"
+                            + "Controllare che la chiave sia corretta e attiva, o riprovare più tardi (dettaglio nel log).";
+                    LoggerGC.ScriviErrore(msg);
+                    if (ccc != null) JOptionPane.showConfirmDialog(ccc, msg, "Verifica ApiKey Moralis non riuscita",
+                            JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
                 }
-                    }
+            }
         
 
             }
@@ -6554,26 +6599,38 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
             //Qui da sostituire con cronoscan
             else if (Rete.equalsIgnoreCase("CRO")&&!Funzioni.isApiKeyValidaCronos(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"))){
                 //Vale sia con Blockscout che con Cronoscan legacy: entrambi usano lo stesso dominio/ApiKey di explorer-api.cronos.org
-                System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " per mancaza di ApiKey");
-                        System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa a Cronos.org");
-                    try {
-                        TimeUnit.SECONDS.sleep(5);
-                    } catch (InterruptedException ex) {
-
-                        LoggerGC.ScriviErrore(ex);
+                //Stessa distinzione applicata a Moralis/NodeReal (bug segnalato 2026-09-15): chiave assente
+                //e chiave presente-ma-verifica-fallita sono casi diversi e non vanno confusi nel messaggio
+                String cronosApiKey = Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"));
+                if (cronosApiKey.isBlank()) {
+                    if (AvvisiApiKeyMostrati.add("CRONOS_MANCANTE")) {
+                        String msg = "Non è stata inserita una ApiKey Cronos.org, necessaria per scaricare " + Rete + ".\n"
+                                + "Andare in 'Opzioni' - 'ApiKey' per inserirla.";
+                        LoggerGC.ScriviErrore(msg);
+                        if (ccc != null) JOptionPane.showConfirmDialog(ccc, msg, "ApiKey Cronos.org mancante",
+                                JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
                     }
-
+                } else if (AvvisiApiKeyMostrati.add("CRONOS_NON_VALIDA")) {
+                    String msg = "La ApiKey Cronos.org inserita non ha superato la verifica.\n"
+                            + "Il wallet " + walletAddress + " (" + Rete + ") non può essere scaricato.\n"
+                            + "Controllare che la chiave sia corretta e attiva, o riprovare più tardi (dettaglio nel log).";
+                    LoggerGC.ScriviErrore(msg);
+                    if (ccc != null) JOptionPane.showConfirmDialog(ccc, msg, "Verifica ApiKey Cronos.org non riuscita",
+                            JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                }
             }
             else if (Provider.equals(NodeRealDefi.PROVIDER)
                     && Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi(NodeRealDefi.OPZIONE_APIKEY)).isBlank()){
-                System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " per mancaza di ApiKey");
-                System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa a NodeReal");
-                    try {
-                        TimeUnit.SECONDS.sleep(5);
-                    } catch (InterruptedException ex) {
-                        LoggerGC.ScriviErrore(ex);
-                    }
-
+                //Prima (bug segnalato 2026-09-15) qui si scriveva solo su console e si proseguiva: senza
+                //ApiKey NodeReal e' il default per BSC (DeFi_ProviderDefault), quindi un utente che non
+                //l'ha ancora compilata vedeva l'import terminare con zero movimenti, senza nessun avviso
+                if (AvvisiApiKeyMostrati.add("NODEREAL_MANCANTE")) {
+                    String msg = "Non è stata inserita una ApiKey NodeReal, necessaria per scaricare BSC.\n"
+                            + "Andare in 'Opzioni' - 'ApiKey' per inserirla.";
+                    LoggerGC.ScriviErrore(msg);
+                    if (ccc != null) JOptionPane.showConfirmDialog(ccc, msg, "ApiKey NodeReal mancante",
+                            JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                }
             }
             else if (Provider.equals("BLOCKSCOUT") && !Rete.equalsIgnoreCase("CRO") && (DeFi_ProviderBlockscoutUrl(Rete)==null || DeFi_ProviderBlockscoutUrl(Rete).isBlank())){
                 System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " perché non è configurato un URL Blockscout per la rete " + Rete);
@@ -6587,15 +6644,25 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
             }
             else if (!Provider.equals("BLOCKSCOUT") && !Provider.equals(NodeRealDefi.PROVIDER)
                     && !Rete.equalsIgnoreCase("CRO")&&!Funzioni.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))){
-                System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " per mancaza di ApiKey");
-                        System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa ad Etherscan");
-                    try {
-                        TimeUnit.SECONDS.sleep(5);
-                    } catch (InterruptedException ex) {
-                        //LoggerGC.ScriviErrore(ex);
-                        LoggerGC.ScriviErrore(ex);
+                //Stessa distinzione applicata a Moralis/NodeReal/Cronos (bug segnalato 2026-09-15): chiave
+                //assente e chiave presente-ma-verifica-fallita sono casi diversi e non vanno confusi
+                String etherscanApiKey = Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"));
+                if (etherscanApiKey.isBlank()) {
+                    if (AvvisiApiKeyMostrati.add("ETHERSCAN_MANCANTE")) {
+                        String msg = "Non è stata inserita una ApiKey Etherscan, necessaria per scaricare " + Rete + ".\n"
+                                + "Andare in 'Opzioni' - 'ApiKey' per inserirla.";
+                        LoggerGC.ScriviErrore(msg);
+                        if (ccc != null) JOptionPane.showConfirmDialog(ccc, msg, "ApiKey Etherscan mancante",
+                                JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
                     }
-
+                } else if (AvvisiApiKeyMostrati.add("ETHERSCAN_NON_VALIDA")) {
+                    String msg = "La ApiKey Etherscan inserita non ha superato la verifica.\n"
+                            + "Il wallet " + walletAddress + " (" + Rete + ") non può essere scaricato.\n"
+                            + "Controllare che la chiave sia corretta e attiva, o riprovare più tardi (dettaglio nel log).";
+                    LoggerGC.ScriviErrore(msg);
+                    if (ccc != null) JOptionPane.showConfirmDialog(ccc, msg, "Verifica ApiKey Etherscan non riuscita",
+                            JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                }
             }
             else{
 

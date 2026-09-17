@@ -336,6 +336,9 @@ public class Backup_Restore {
         //Il registro dei documenti sta nel gruppo dei movimenti: il campo [41] di ogni movimento ne
         //referenzia l'Id, separarli lascerebbe quei riferimenti appesi
         t.add(new Tabella("DOCUMENTIFONTE", DB.PERSONALE, Gruppo.MOVIMENTI));
+        //Storico delle modifiche ai movimenti: sta nel gruppo dei movimenti per lo stesso motivo di
+        //DOCUMENTIFONTE, referenzia gli ID dei movimenti e non ha senso ripristinato separatamente
+        t.add(new Tabella("MOVIMENTI_STORICO", DB.PERSONALE, Gruppo.MOVIMENTI));
         //Nell'edizione Store la tabella non esiste (vedi VarStatiche.EdizioneStore()): fuori da questo
         //elenco vuol dire che non viene salvata e che un archivio prodotto dall'edizione completa la
         //salta al ripristino, con l'avviso già previsto da Backup_Compatibilita. Il gruppo CHIAVI_API

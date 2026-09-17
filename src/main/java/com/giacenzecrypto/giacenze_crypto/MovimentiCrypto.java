@@ -11,6 +11,7 @@ import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -93,6 +94,51 @@ private static Map<String, String[]> creaMappaTipologie() {
 }
 
     
+    /**
+     * Indici che un ciclo di ricopia campo-per-campo su un movimento ricostruito da
+     * {@link #creaMovimento} non deve toccare — <b>blocklist</b>, non whitelist: ogni indice che non
+     * compare qui viene copiato verbatim dal movimento vecchio a quello nuovo, incluso un campo di
+     * provenienza aggiunto in futuro alla riga (attualmente 45 colonne,
+     * {@code Importazioni.ColonneTabella}) senza bisogno di ricordarsi di aggiungerlo a un elenco. È
+     * la lacuna che ha causato il bug M10 di {@code nocommit/Documentazione/Analisi_Bug_Criticita.md}:
+     * {@code GUI_ModificaMovimento} ricopiava solo 5 campi scelti a mano invece di ragionare
+     * "tutto tranne...", perdendo in silenzio il documento di origine.
+     *
+     * <p>Sta qui, accanto a {@code creaMovimento}, perché è di {@code creaMovimento} che descrive il
+     * contratto, ed è condivisa da {@code Principale_TraslaOrario} e {@code GUI_ModificaMovimento}:
+     * due copie della stessa lista tornerebbero a divergere, che è il modo in cui M10 è nato.</p>
+     *
+     * <p><b>Il campo 42 (lignaggio dello storico modifiche) non va aggiunto qui</b>, ed è l'unico caso
+     * in cui l'assenza da questa lista è una scelta esplicita invece che il comportamento
+     * predefinito: è proprio questa copia automatica a trasportare la catena delle versioni dal
+     * movimento vecchio a quello nuovo quando una modifica ne ricalcola l'ID. Vedi
+     * {@link MovimentiStorico#CAMPO_LIGNAGGIO}.</p>
+     *
+     * <p>Un campo va aggiunto qui, e non lasciato alla copia automatica, solo se cade in una di queste
+     * categorie — altrimenti la copia verbatim è quella giusta:</p>
+     * <ul>
+     *   <li><b>popolato da {@link #creaMovimento} a partire dai parametri che riceve</b> (wallet,
+     *       monete, ID, prezzo, timestamp, nota, hash, rete...): 0,1,3,4,5,6,8,9,10,11,12,13,15,18,21,
+     *       22,24,25,26,27,28,29,32,34,40. Attenzione: questi campi <b>non</b> sono "già a posto" in
+     *       senso assoluto — il valore che assumono dipende da cosa il chiamante passa a
+     *       {@code creaMovimento} (in Trasla Orario i valori vecchi invariati, in Modifica Movimento
+     *       quelli nuovi scritti dall'utente). Il contratto è "li decide il chiamante tramite i
+     *       parametri, non sovrascriverli qui";</li>
+     *   <li><b>calcolato dal motore delle plusvalenze</b>: 16/17 (costo di carico), 19/33
+     *       (plusvalenza), 38 (flag di anomalia), 31 (data/ora fine trasferimento) — vanno lasciati
+     *       vuoti e rigenerati dal ricalcolo, mai riportati con lo stato vecchio;</li>
+     *   <li><b>35</b>, backup temporaneo del prezzo usato dalla classificazione manuale;</li>
+     *   <li><b>20</b>, movimenti associati: dopo {@code RimuoviMovimentazioneXID} è sempre vuoto,
+     *       elencato qui per esplicitare l'invariante.</li>
+     * </ul>
+     */
+    public static final Set<Integer> CampiNonCopiabiliVerbatim = Set.of(
+            0, 1, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 15, 18, 21, 22, 24, 25, 26, 27, 28, 29, 32, 34, 40,
+            16, 17, 19, 31, 33, 38,
+            35,
+            20
+    );
+
     public static String[] creaMovimento(
             Moneta MonetaOUT, Moneta MonetaIN,
             String Wallet, String Wallet2,

@@ -66,7 +66,16 @@ async function findBestPair(ex, baseSymbol) {
 
 
 
+// Memoria in processo dei markets gia' letti, per id di exchange. La cache su file qui sotto evita
+// di richiamare l'API, ma non di rileggere e ri-analizzare il JSON a ogni richiesta: quello di
+// binance pesa 36 MB, e in modalita' lotto la stessa lettura si ripeterebbe per ogni (moneta, ora).
+// Vive quanto il processo, quindi nella modalita' a richiesta singola non cambia nulla.
+const marketsInMemoria = new Map();
+
 async function getMarketsSymbols(exchange) {
+    if (marketsInMemoria.has(exchange.id)) {
+        return marketsInMemoria.get(exchange.id);
+    }
     const tempDir = path.join(os.tmpdir(), 'GiacenzeCrypto');
     if (!fs.existsSync(tempDir)) {
         fs.mkdirSync(tempDir, { recursive: true });
@@ -95,6 +104,7 @@ async function getMarketsSymbols(exchange) {
         markets = JSON.parse(raw);
     }
 
+    marketsInMemoria.set(exchange.id, markets);
     return markets;
 }
 
@@ -103,7 +113,70 @@ async function getMarketsSymbols(exchange) {
 
 
 
-async function fetchHistorical(ex, symbol, timeframe, since, until, limit = 1000) {
+// La serie della coppia di conversione (es. EUR/USDT) e' identica per TUTTE le monete della
+// stessa finestra: essendo lo script invocato una volta per moneta, senza questa memoria su file
+// verrebbe riscaricata da zero a ogni moneta dello stesso giorno. Verificato su TIA e SHIB su
+// binance (nessuna delle due ha la coppia diretta in EUR): due monete, una sola serie scaricata.
+// Quante monete ne abbiano bisogno sull'intero archivio non e' stato misurato.
+// La chiave e' la quadrupla esatta (exchange, coppia, since, until) e non il giorno: anche
+// `Prezzi.RecuperaPrezziDaCCXT` chiede finestre arbitrarie (+-ore attorno a un movimento), e una
+// chiave per giorno le confonderebbe fra loro. Le giornate intere condividono comunque la cache
+// perche' `RecuperaPrezziDaCCXTGiornata` passa gli stessi estremi per ogni moneta di quel giorno.
+// Convenzioni identiche a `getMarketsSymbols`: stessa cartella, JSON semplice, eta' da mtime.
+function fileCacheConversione(exId, pair, since, until) {
+    const tempDir = path.join(os.tmpdir(), 'GiacenzeCrypto');
+    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+    // Il "v2" e' un token di versione del CONTENUTO, non del formato del file: una finestra
+    // passata non scade mai (vedi `finestraChiusa` sotto), quindi un cambiamento di come
+    // `fetchHistorical` scarica la serie lascerebbe servire per sempre le serie salvate da prima.
+    // Chi modifica `fetchHistorical` deve incrementare questo token.
+    // v1 -> v2 il 2026-09-17 con la correzione di A9 (limite per chiamata da 1000 a 60): le serie
+    // salvate prima potevano essere troncate o sfasate proprio per quel bug.
+    const nome = `conv_v2_${exId}_${pair.replace(/[^A-Za-z0-9]/g, '_')}_${since}_${until}.json`;
+    return path.join(tempDir, nome);
+}
+
+async function fetchHistoricalConversione(ex, symbol, timeframe, since, until) {
+    const file = fileCacheConversione(ex.id, symbol, since, until);
+    // Una finestra che comprende "adesso" non e' chiusa: arrivano ancora candele nuove, quindi la
+    // si rilegge solo entro pochi minuti. Una finestra interamente passata non cambia mai piu'.
+    const finestraChiusa = until < Date.now();
+    if (fs.existsSync(file)) {
+        const eta = Date.now() - fs.statSync(file).mtimeMs;
+        if (finestraChiusa || eta < 5 * 60 * 1000) {
+            try {
+                return JSON.parse(fs.readFileSync(file, 'utf8'));
+            } catch (e) {
+                // file troncato da una corsa interrotta: si riscarica invece di propagare l'errore
+                logInfo(`Cache conversione illeggibile (${path.basename(file)}), riscarico: ${e.message}`);
+            }
+        }
+    }
+    const dati = await fetchHistorical(ex, symbol, timeframe, since, until);
+    // Una serie vuota non si memorizza: sarebbe indistinguibile da "non ancora scaricata" e
+    // renderebbe permanente un buco dovuto a un errore transitorio dell'exchange.
+    if (dati.length) {
+        try {
+            fs.writeFileSync(file, JSON.stringify(dati), 'utf8');
+        } catch (e) {
+            logInfo(`Cache conversione non scrivibile (${path.basename(file)}): ${e.message}`);
+        }
+    }
+    return dati;
+}
+
+// Il limite per chiamata deve stare sotto il tetto di candele di OGNI exchange interrogato, non
+// sotto il piu' generoso: era 1000, ma sullo storico okx si fermava a 100, bitget a 200, coinbase e
+// cryptocom a 300. Chiedendo piu' del tetto, ccxt interpreta il limite come AMPIEZZA della finestra
+// e restituisce le ULTIME candele dell'intervallo invece delle prime: cadevano fuori da
+// [since, until] e il filtro finale le scartava tutte, silenziosamente (bug A9 in
+// Analisi_Bug_Criticita.md; bitget aveva 0 righe in PrezziNew da sempre).
+// 60 = un'ora a 1m, sotto ogni tetto, e allineato alla direzione del passo 5 del piano
+// (bucket orari). Su Binance una richiesta con limit <= 99 pesa 1 invece di 2, la fascia piu'
+// economica, quindi il conto delle richieste sale ma il peso no in proporzione.
+// Volutamente NON si usa la paginazione interna di ccxt (`paginate: true`): lancia BadRequest oltre
+// 10 chiamate, pretende `until` dentro params, e kucoin/bitstamp non la implementano affatto.
+async function fetchHistorical(ex, symbol, timeframe, since, until, limit = 60) {
     const all_ohlcv = [];
     let current_since = since;
 
@@ -123,7 +196,7 @@ async function fetchHistorical(ex, symbol, timeframe, since, until, limit = 1000
 
 /** Implementazione condivisa da `cercaPrezziStorici` e `cercaPrezziStoriciConEsito` (sotto): fa il
  * lavoro vero, la seconda espone anche quali exchange sono falliti con un errore vero. */
-async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, since, until }) {
+async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, since, until, istanze }) {
     const results = {};
     const falliti = [];
 
@@ -132,7 +205,12 @@ async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, sinc
             if (!ccxtLib[exchange_id.toLowerCase()]) {
                 return [exchange_id, [], null];
             }
-            const ex = new ccxtLib[exchange_id.toLowerCase()]();
+            // Con `istanze` fornite (modalita' lotto) l'oggetto exchange e' condiviso da tutte le
+            // richieste: e' cio' che rende autorevole il limitatore interno di ccxt, che tiene lo
+            // stato nell'istanza e con un oggetto nuovo per richiesta ripartirebbe da zero ignorando
+            // le chiamate precedenti. Senza `istanze` il comportamento e' identico a prima.
+            const ex = (istanze && istanze[exchange_id.toLowerCase()])
+                    || new ccxtLib[exchange_id.toLowerCase()]();
 
             const pairInfo = await findBestPair(ex, baseSymbol);
             if (!pairInfo) return [exchange_id, [], null];
@@ -144,7 +222,7 @@ async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, sinc
 
             // Conversione se serve (es. BTC/USDT -> BTC/EUR usando EUR/USDT)
             if (pairInfo.needsConversion) {
-                const convData = await fetchHistorical(ex, pairInfo.conversionPair, timeframe, since, until);
+                const convData = await fetchHistoricalConversione(ex, pairInfo.conversionPair, timeframe, since, until);
 
                 // Creo una mappa timestamp -> conversion rate
                 const convMap = {};
@@ -240,6 +318,65 @@ async function cercaPrezziStoriciConEsito(args) {
     return eseguiRicerca(args);
 }
 
+/**
+ * Serve MOLTE richieste (moneta, finestra) in una sola invocazione del processo.
+ *
+ * Perche' esiste: il costo fisso di un'invocazione e' ~0,7 s (di cui ~0,56 s il solo
+ * `require('ccxt')`, quindici volte l'avvio di Node), e finora si pagava per ogni singola coppia
+ * (moneta, ora). Qui si paga una volta per lotto. Gli oggetti exchange sono costruiti una volta e
+ * condivisi: oltre a risparmiare la costruzione, e' cio' che rende autorevole il limitatore di ccxt
+ * (`enableRateLimit` e' true di default), che vive nell'istanza.
+ *
+ * Le richieste vengono servite con concorrenza limitata: le latenze di rete si sovrappongono, mentre
+ * ccxt serializza da se' le chiamate verso lo stesso exchange con l'attesa dovuta. Servirle in fila
+ * farebbe risparmiare solo il costo fisso, cioe' poco.
+ *
+ * @param richieste array di `{symbol, since, until}`
+ * @returns array parallelo a `richieste`, ogni voce `{symbol, since, until, punti, falliti}`.
+ *          `falliti` distingue "l'exchange ha risposto e non ha dati" da "la chiamata e' fallita",
+ *          distinzione necessaria a chi marca le ore gia' interrogate: marcare un'ora saltata per un
+ *          errore di rete congelerebbe un buco per sempre.
+ */
+async function cercaPrezziStoriciLotto({ ccxtLib, exchangeIds, timeframe, richieste, concorrenza }) {
+    const istanze = {};
+    for (const id of exchangeIds) {
+        const chiave = id.toLowerCase();
+        if (ccxtLib[chiave]) istanze[chiave] = new ccxtLib[chiave]();
+    }
+
+    const esiti = new Array(richieste.length);
+    const inVolo = Math.max(1, Math.min(concorrenza || 4, richieste.length || 1));
+    let prossima = 0;
+
+    async function lavoratore() {
+        while (true) {
+            const i = prossima++;
+            if (i >= richieste.length) return;
+            const r = richieste[i];
+            try {
+                const { punti, falliti } = await eseguiRicerca({
+                    ccxtLib,
+                    exchangeIds,
+                    baseSymbol: r.symbol,
+                    timeframe: timeframe || '1m',
+                    since: r.since,
+                    until: r.until,
+                    istanze,
+                });
+                esiti[i] = { symbol: r.symbol, since: r.since, until: r.until, punti, falliti };
+            } catch (err) {
+                //Una richiesta che esplode non deve abbattere il lotto: si segnala e si prosegue.
+                //`falliti` con tutti gli exchange impedisce che l'ora venga marcata come interrogata.
+                logError(`Richiesta ${r.symbol} ${r.since}-${r.until} fallita: ${(err && err.message) || err}`);
+                esiti[i] = { symbol: r.symbol, since: r.since, until: r.until, punti: [], falliti: exchangeIds.slice() };
+            }
+        }
+    }
+
+    await Promise.all(Array.from({ length: inVolo }, () => lavoratore()));
+    return esiti;
+}
+
 async function main() {
     try {
         const ccxt = require('ccxt');
@@ -259,6 +396,23 @@ async function main() {
         const exchanges = params.exchanges ? params.exchanges.split(",").map(e => e.trim()) : ["binance"];
         const baseSymbol = params.symbol || "BTC";
         const timeframe = params.timeframe || "1m";
+
+        //Modalita' lotto: le richieste arrivano come JSON su stdin, `[{symbol, since, until}, ...]`.
+        //Si passa da stdin e non da un argomento perche' un lotto di migliaia di richieste supererebbe
+        //il limite della riga di comando. Il ramo a richiesta singola qui sotto resta identico.
+        if (params.lotto !== undefined) {
+            const testo = fs.readFileSync(0, 'utf8');
+            const richieste = JSON.parse(testo);
+            const esiti = await cercaPrezziStoriciLotto({
+                ccxtLib: ccxt,
+                exchangeIds: exchanges,
+                timeframe,
+                richieste,
+                concorrenza: params.concorrenza ? parseInt(params.concorrenza) : undefined,
+            });
+            console.log(JSON.stringify(esiti));
+            return;
+        }
         const since = params.since ? parseInt(params.since) : new ccxt.binance().parse8601("2024-01-01T00:00:00Z");
         const until = params.until ? parseInt(params.until) : new ccxt.binance().milliseconds();
 
@@ -278,7 +432,7 @@ async function main() {
     }
 }
 
-module.exports = { findBestPair, fetchHistorical, getMarketsSymbols, cercaPrezziStorici, cercaPrezziStoriciConEsito };
+module.exports = { findBestPair, fetchHistorical, getMarketsSymbols, cercaPrezziStorici, cercaPrezziStoriciConEsito, cercaPrezziStoriciLotto };
 
 if (require.main === module) {
     main();

@@ -130,6 +130,7 @@ public class Giacenze_Crypto {
         try {
             SplashAvvio.fase(SplashAvvio.Fase.AMBIENTE);
             LoggerGC.init();
+            LoggerGC.installaLogPulsantiGlobale();
 
             Principale.tema = DatabaseH2.Opzioni_Leggi("Tema");
             if (Principale.tema == null) {

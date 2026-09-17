@@ -1,11 +1,15 @@
 package com.giacenzecrypto.giacenze_crypto;
 
+import java.awt.AWTEvent;
+import java.awt.Toolkit;
+import java.awt.event.MouseEvent;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 import java.util.Date;
 import java.util.Deque;
 import java.util.logging.*;
+import javax.swing.AbstractButton;
 import javax.swing.JTextPane;
 
 public class LoggerGC {
@@ -42,6 +46,39 @@ public class LoggerGC {
         Deque<String> pila = operazioneCorrente.get();
         return pila.isEmpty() ? null : pila.peek();
     }
+
+    /**
+     * Registra un listener AWT globale che logga (a INFO) la pressione di ogni pulsante/voce di menu/
+     * checkbox dell'applicazione, senza dover agganciare ogni singolo {@code ActionListener}: passano
+     * da qui anche i pulsanti delle finestre di dialogo ({@link AppDialog}, usata da {@link Messaggi}),
+     * perche' sono {@link AbstractButton} veri. Va chiamato una sola volta, il prima possibile in avvio
+     * (dopo {@link #init()}).
+     * <p><b>Attenzione, non ovvio</b>: si aggancia su {@code AWTEvent.MOUSE_EVENT_MASK}, non
+     * {@code ACTION_EVENT_MASK} — verificato empiricamente (non si trova nella documentazione
+     * ufficiale) che gli {@code ActionEvent} di Swing (bottone premuto, voce di menu scelta) non
+     * passano mai dal listener AWT globale: {@code AbstractButton.fireActionPerformed} chiama i
+     * propri {@code ActionListener} direttamente, senza passare dalla coda eventi che il listener
+     * globale osserva. Il rilascio del mouse (`MOUSE_RELEASED`), invece, e' un evento AWT vero e
+     * passa sempre di li' — e per costruzione precede sempre l'{@code ActionEvent} che genera,
+     * quindi e' un proxy affidabile. Copre i click col mouse (compresi i {@code JMenuItem} nei
+     * popup) ma non l'attivazione da tastiera (Invio/Spazio su un pulsante con il focus, incluso il
+     * pulsante di default di un {@link AppDialog}), che non genera nessun {@code MouseEvent}.
+     */
+    public static void installaLogPulsantiGlobale() {
+        Toolkit.getDefaultToolkit().addAWTEventListener(event -> {
+            if (!(event instanceof MouseEvent me)) return;
+            if (me.getID() != MouseEvent.MOUSE_RELEASED) return;
+            if (!(me.getSource() instanceof AbstractButton pulsante)) return;
+            if (!pulsante.contains(me.getPoint())) return;
+            String nome = pulsante.getText();
+            //Molti pulsanti generati da NetBeans hanno l'etichetta in HTML (a-capo, grassetto): qui
+            //serve solo il testo per il log, non la formattazione.
+            if (nome != null) nome = nome.replaceAll("<[^>]+>", " ").trim().replaceAll("\\s+", " ");
+            if (nome == null || nome.isBlank()) nome = pulsante.getClass().getSimpleName();
+            logger.info("[Pulsante] " + nome);
+        }, AWTEvent.MOUSE_EVENT_MASK);
+    }
+
     private static FileHandler fileHandler;
 
     // Stream opzionali separati per out e err

@@ -12,9 +12,11 @@ import org.junit.jupiter.api.Test;
  * <p>Sono le due funzioni pure della catena provider: {@code DeFi_ProviderEffettivo} legge invece la
  * tabella PROVIDERDEFI e quindi qui non è verificabile senza database. Il caso che interessa di più è
  * GNOSIS, spostato su Blockscout perché dal 01/09/2026 esce dal piano gratuito di Etherscan V2.
- * <p>BSC è l'eccezione: il suo default dipende dalla ApiKey Moralis salvata (vedi
- * {@link Importazioni#DeFi_ProviderDefault}), quindi non è verificabile senza database e ha un file a
- * parte, {@link DeFi_ProviderDefaultBscTest}, sul modello di {@link DeFi_ProviderBlockscoutProUrlTest}.
+ * <p>Fino al 15/09/2026 BSC era l'eccezione: il suo default dipendeva dalla ApiKey Moralis salvata, e
+ * viveva in un file a parte con un database H2 temporaneo ({@code DeFi_ProviderDefaultBscTest}).
+ * Verificato quel giorno che l'account Moralis dell'utente risponde 401 "Free usage is paused" anche
+ * con una chiave già compilata e ben formata: il default di BSC è quindi tornato incondizionato
+ * (NodeReal, come BASE/AVAX su Blockscout) e il file a parte non serve più.
  */
 public class ProviderDefiDefaultTest {
 
@@ -41,6 +43,10 @@ public class ProviderDefiDefaultTest {
         assertEquals("BLOCKSCOUT", Importazioni.DeFi_ProviderDefault("AVAX"));
         assertEquals("https://api.routescan.io/v2/network/mainnet/evm/43114/etherscan/api",
                 Importazioni.DeFi_ProviderBlockscoutUrl("AVAX"));
+        //BSC non ha un explorer Etherscan-compatibile gratuito: NodeReal è il default incondizionato
+        //dal 15/09/2026 (prima dipendeva dalla ApiKey Moralis salvata, vedi la nota di classe)
+        assertEquals(NodeRealDefi.PROVIDER, Importazioni.DeFi_ProviderDefault("BSC"));
+        assertEquals(NodeRealDefi.PROVIDER, Importazioni.DeFi_ProviderDefault("bsc"));
     }
 
     @Test

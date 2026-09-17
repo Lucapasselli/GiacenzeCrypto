@@ -612,6 +612,7 @@ private static final long serialVersionUID = 3L;
         MenuItem_ClassificaMovimento = new javax.swing.JMenuItem();
         MenuItem_SeparaMovimento = new javax.swing.JMenuItem();
         MenuItem_UnisciMovimenti = new javax.swing.JMenuItem();
+        MenuItem_TraslaOrario = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         MenuItem_ModificaPrezzo = new javax.swing.JMenuItem();
         MenuItem_ModificaNote = new javax.swing.JMenuItem();
@@ -1109,6 +1110,15 @@ private static final long serialVersionUID = 3L;
             }
         });
         PopupMenu.add(MenuItem_UnisciMovimenti);
+
+        MenuItem_TraslaOrario.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_TraslaOrario.png"))); // NOI18N
+        MenuItem_TraslaOrario.setText("Trasla Orario");
+        MenuItem_TraslaOrario.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_TraslaOrarioActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_TraslaOrario);
         PopupMenu.add(jSeparator6);
 
         MenuItem_ModificaPrezzo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
@@ -5750,7 +5760,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        Opzioni_ApiKey_Moralis_Label.setText("ApiKey Moralis :");
+        Opzioni_ApiKey_Moralis_Label.setText("ApiKey Moralis (richiede un piano a pagamento) :");
 
         Opzioni_ApiKey_Moralis_LabelSito.setText("https://admin.moralis.com/login");
         Opzioni_ApiKey_Moralis_LabelSito.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -5817,7 +5827,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        Opzioni_ApiKey_MoralisNB_Label.setText("NB : Per evitare sforamenti dei limiti giornalieri sulle api di Moralis ogni volta che si scaricano i movimenti da un wallet questi sono limitati a circa 1.000, per scaricarne altri rifare la chiamata");
+        Opzioni_ApiKey_MoralisNB_Label.setText("<html>NB : Moralis non offre più un piano gratuito (serve un abbonamento a pagamento, minimo piano Starter): senza un abbonamento attivo le richieste falliscono e la chain BSC userà NodeReal.<br>Con un abbonamento attivo, ricorda che i movimenti scaricati per ogni chiamata sono comunque limitati a circa 1.000, per scaricarne altri rifare la chiamata</html>");
 
         Opzioni_ProviderDefi_ApiKeyBlockscout_Label.setText("ApiKey Blockscout (opzionale) :");
 
@@ -9997,7 +10007,14 @@ GiacenzeaData_CompilaTabellaToken(true);
                     //Conto quindi soltanto quelli su cui l'operazione ha agito davvero, per non annunciare
                     //più cancellazioni di quante ne siano avvenute
                     if (MappaCryptoWallet.get(ID) != null) {
+                        //Il lignaggio va letto PRIMA della rimozione: dopo, il movimento non è più nella
+                        //mappa e la sua catena di versioni non sarebbe più raggiungibile
+                        String Lignaggio = MovimentiStorico.LignaggioDi(ID);
                         Funzioni.RimuoviMovimentazioneXID(ID);
+                        //Solo accodamento, nessuna scrittura sul database: la cancellazione stessa è
+                        //provvisoria finché l'utente non salva, e lo storico deve seguire lo stesso
+                        //destino della modifica che descrive
+                        MovimentiStorico.AccodaCancellazione(Lignaggio);
                         eliminati++;
                     }
                 }
@@ -13452,10 +13469,11 @@ if (result != null && !result.isAction("cancel")) {
         if (rete.equalsIgnoreCase("SOL")) return new String[]{"HELIUS"};
         if (rete.equalsIgnoreCase("BTC")) return new String[]{"BITCOIN"};
         //BSC è l'unica chain senza nessun explorer Etherscan-compatibile gratuito: NodeReal (richiede
-        //una ApiKey NodeReal gratuita) è proposto per primo perché è l'alternativa gratuita. Il default
-        //effettivo (DeFi_ProviderDefault) dipende dalla ApiKey Moralis: chi ne ha già una compilata
-        //resta su Moralis, chi parte da zero prende NodeReal — questa combo lascia comunque scegliere
-        //liberamente fra i tre.
+        //una ApiKey NodeReal gratuita) è proposto per primo perché è l'alternativa gratuita ed è anche
+        //il default effettivo (DeFi_ProviderDefault), incondizionato dal 15/09/2026 — Moralis non ha
+        //più nessun piano gratuito e un account verificato risponde 401 anche con una chiave già
+        //compilata, quindi non è più un default sicuro per nessuno. Resta comunque selezionabile a
+        //mano in questa combo per chi ha un abbonamento Moralis a pagamento.
         if (rete.equalsIgnoreCase("BSC")) return new String[]{NodeRealDefi.PROVIDER, "BLOCKSCOUT", "MORALIS"};
         if (rete.equalsIgnoreCase("BASE") || rete.equalsIgnoreCase("AVAX")) return new String[]{"BLOCKSCOUT", "MORALIS"};
         if (rete.equalsIgnoreCase("CRO")) return new String[]{"BLOCKSCOUT", "CRONOSCAN"};
@@ -13765,6 +13783,16 @@ if (result != null && !result.isAction("cancel")) {
                 //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
                 //in futuro dovrò mettere anche un limite per data e un limite per wallet
                 progress.Titolo("Ricalcolo prezzi in corso....");
+
+                //Pre-scarico: qui l'insieme dei movimenti da valorizzare e' noto in anticipo per
+                //intero, quindi conviene raccogliere le coppie (moneta, ora) che serviranno e
+                //chiederle a lotti invece di lasciare che il ciclo qui sotto lanci un processo Node
+                //per ogni quotazione mancante (~3.300 ms l'una, contro ~188 ms dentro un lotto).
+                //Non cambia QUALE prezzo viene scelto: riempie solo la cache che il ciclo interroga.
+                Prezzi.PreScaricaPrezzi(MappaCryptoWallet.values(), anno, progress);
+
+                //Il massimo va rimesso DOPO il pre-scarico, che usa la stessa finestra con un
+                //massimo diverso (il numero di quotazioni, non di movimenti).
                 progress.SetLabel("Ricalcolo prezzi in corso....");
                 progress.SetMassimo(MappaCryptoWallet.size());
                 BigDecimal diffPrezzi = BigDecimal.ZERO;
@@ -13890,6 +13918,22 @@ if (result != null && !result.isAction("cancel")) {
             DepositiPrelievi_Caricatabella();
         }
     }//GEN-LAST:event_MenuItem_UnisciMovimentiActionPerformed
+
+    private void MenuItem_TraslaOrarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_TraslaOrarioActionPerformed
+        // TODO add your handling code here:
+        if (PopUp_IDTrans != null) {
+            //Passo tutta la selezione, non solo la prima riga, stesso schema di Classifica Movimento
+            List<String> selezione = PopUp_IDTransSelezionati.isEmpty()
+                    ? List.of(PopUp_IDTrans) : PopUp_IDTransSelezionati;
+            if (Principale_TraslaOrario.TraslaOrario(selezione, this)) {
+                //Ricalcolo una sola volta e azzero il flag, così la riacquisizione del focus dopo la chiusura
+                //del dialog di conferma non rifà inutilmente lo stesso ricalcolo
+                Funzioni_AggiornaTutto();
+                TabellaCryptodaAggiornare = false;
+                DepositiPrelievi_Caricatabella();
+            }
+        }
+    }//GEN-LAST:event_MenuItem_TraslaOrarioActionPerformed
 
     /**
      * Gestisce la voce di menu "Separa in Deposito/Prelievo": chiede conferma, esegue la separazione dietro
@@ -16947,7 +16991,17 @@ try {
                 Principale_GiacenzeaData.CostiCaricoRimanenze CostiCarico =
                         Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(DataRiferimento,
                                 () -> progress.FineThread);
+                //Pre-scarico prezzi: qui l'elenco delle monete da valorizzare e' gia' completo e la
+                //data e' una sola, quindi si chiedono tutte le quotazioni in un lotto solo invece di
+                //lasciare che il ciclo qui sotto lanci un processo Node per ogni moneta non in cache.
+                //Non cambia QUALE prezzo viene scelto: riempie la cache che il ciclo interroga.
+                Prezzi.PreScaricaPrezziMonete(QtaCrypto.values(), DataRiferimento, progress);
+
+                //Il massimo torna quello dei token: il pre-scarico ha usato la stessa finestra con un
+                //massimo diverso (le quotazioni), e SetMassimo non azzera il valore corrente.
                 progress.SetLabel("Calcolo Giazenze e  Prezzi in corso....");
+                progress.SetMassimo(QtaCrypto.size());
+                progress.SetAvanzamento(0);
 
                 int i = 0;
                 BigDecimal TotEuro = new BigDecimal(0);
@@ -18704,6 +18758,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JMenuItem MenuItem_ModificaPrezzo;
     private javax.swing.JMenuItem MenuItem_ModificaReward;
     private javax.swing.JMenuItem MenuItem_SeparaMovimento;
+    private javax.swing.JMenuItem MenuItem_TraslaOrario;
     private javax.swing.JMenuItem MenuItem_UnisciMovimenti;
     private javax.swing.JPanel Normativa;
     private javax.swing.JPanel Opzioni;

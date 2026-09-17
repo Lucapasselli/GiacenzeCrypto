@@ -276,6 +276,8 @@ public class NodeRealDefi {
             long Inizio = Da;
             while (true) {
                 long Fine = Math.min(Inizio + AMPIEZZA_FINESTRA, Ultimo);
+                System.out.println("NodeReal: wallet " + walletAddress + " (" + Rete + ") azione " + Tipo
+                        + " - finestra blocchi " + (StoriaIntera ? "storia intera" : (Inizio + "-" + Fine)));
                 String PageKey = "";
                 int Pagina = 0;
                 while (true) {
@@ -300,6 +302,8 @@ public class NodeRealDefi {
                     }
                     String Prossima = (Ris == null) ? "" : Ris.optString("pageKey", "");
                     Pagina++;
+                    System.out.println("NodeReal: " + Tipo + " - pagina " + Pagina + ", righe totali finora: "
+                            + Righe.length());
                     if (Prossima.isEmpty() || Prossima.equals(PageKey) || Pagina >= MAX_PAGINE) break;
                     PageKey = Prossima;
                 }

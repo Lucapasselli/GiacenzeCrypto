@@ -172,6 +172,21 @@ public class ImportazioneGenerica {
         List<String[]> listaCompleta = new ArrayList<>();
         List<String[]> movimentiDifferiti = new ArrayList<>();
 
+        //Pre-scarico prezzi: qui le righe del CSV sono tutte lette e gia' consolidate, quindi
+        //l'insieme di cio' che verra' valorizzato e' noto in anticipo. Chiederlo a lotti costa
+        //~188 ms per quotazione invece dei ~3.300 ms di un processo Node per volta.
+        //Non si puo' riusare Prezzi.PreScaricaPrezzi, che vuole movimenti gia' formati: qui i
+        //movimenti nascono dopo, dentro costruisciMovimenti, e data e monete si leggono dalla
+        //configurazione. Raccogliere DOPO consolidaCausaliPerGiorno e' voluto: quella somma le
+        //quantita' ma non tocca data ne' moneta, quindi le coppie sono esattamente quelle che
+        //verranno poi cercate.
+        PreScaricaPrezziDaRighe(righe, cfg, progressb);
+        if (progressb != null) {
+            progressb.SetLabel("Importazione in corso...");
+            progressb.SetMassimo(righe.size());
+            progressb.SetAvanzamento(0);
+        }
+
         int righeFatte = 0;
         for (List<String[]> gruppo : raggruppaRighe(righe, cfg)) {
             if (progressb != null && progressb.FineThread) {
@@ -860,6 +875,118 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         if (tot.isBlank() || !Funzioni.isNumeric(tot, false)) return null;
         BigDecimal netto = new BigDecimal(tot).abs().subtract(commissioneControvalore(riga, cfg));
         return netto.stripTrailingZeros().toPlainString();
+    }
+
+    /**
+     * Raccoglie dalle righe già lette di un CSV le coppie (moneta, ora) che verranno cercate durante
+     * l'importazione, e le scarica a lotti <b>prima</b> che cominci la costruzione dei movimenti.
+     *
+     * <p>Perché non si riusa {@code Prezzi.PreScaricaPrezzi}: quella vuole movimenti già formati, ma
+     * qui i movimenti nascono dopo, dentro {@link #costruisciMovimenti}, e la valorizzazione avviene
+     * durante la costruzione. A questo punto esistono solo righe grezze, e data e monete si leggono
+     * dalla configurazione — con gli stessi metodi che userà poi la costruzione
+     * ({@code convertiDataInMillis}, {@code normalizzaMoneta}), così le coppie raccolte sono
+     * esattamente quelle che verranno cercate.
+     *
+     * <p>Le colonne moneta da guardare sono <b>tre</b>: quella principale, quella della commissione e
+     * quella della gamba in uscita degli scambi ({@code colonnaMonetaUscita}, dichiarata ottanta righe
+     * più in basso delle altre nella configurazione). Dimenticarne una lascerebbe metà degli scambi
+     * al percorso lento.
+     *
+     * <p>Come per l'altro pre-scarico: <b>non cambia quale prezzo verrà scelto</b>, riempie solo la
+     * cache che la valorizzazione interroga. Una raccolta incompleta costa tempo, non correttezza.
+     */
+    static void PreScaricaPrezziDaRighe(List<String[]> righe, ConfigurazioneImport cfg, Download progressb) {
+        List<Prezzi.RichiestaPrezzo> richieste = RaccogliRichiestePerRighe(righe, cfg);
+        if (richieste.isEmpty()) return;
+
+        //Si scarta qui cio' che e' gia' in cache o gia' stato chiesto: senza questo filtro il
+        //pre-scarico rispediva a Node anche le ore gia' coperte, cioe' quasi tutto su un archivio
+        //maturo. Il conteggio annunciato sotto e' quello DOPO il filtro, altrimenti la barra
+        //prometterebbe un lavoro che non viene fatto.
+        richieste = Prezzi.FiltraRichiesteGiaCoperte(richieste, progressb);
+        if (richieste.isEmpty()) return;
+
+        System.out.println("Pre-scarico prezzi (CSV): " + richieste.size() + " coppie (moneta, ora)");
+        if (progressb != null) {
+            progressb.SetLabel("Pre-scarico prezzi: " + richieste.size() + " quotazioni da recuperare...");
+            progressb.SetMassimo(richieste.size());
+            //SetMassimo non azzera il valore corrente, che dopo la fase di filtro vale il numero di
+            //coppie esaminate: senza questa riga la nuova fase partirebbe a barra gia' piena.
+            progressb.SetAvanzamento(0);
+        }
+        Prezzi.ScaricaRichiesteABlocchi(richieste, progressb);
+    }
+
+    /**
+     * La raccolta di {@link #PreScaricaPrezziDaRighe}, separata dallo scaricamento perché è la parte
+     * che decide <b>cosa</b> chiedere ed è l'unica provabile senza Node, senza rete e senza database
+     * ({@code ImportazioneGenericaPreScaricoRigheTest}).
+     *
+     * <p>Vale anche qui la regola dell'altra raccolta ({@link Prezzi#RaccogliRichiestePerMovimenti}):
+     * riproduce i bivi che la valorizzazione prenderà dopo, e sbagliarli non cambia un prezzo ma
+     * produce lavoro inutile — una coppia di troppo è una richiesta sprecata, una di meno è una riga
+     * che si riscarica il prezzo da sola con un processo Node dedicato (~3.300 ms contro ~188 ms
+     * dentro un lotto). Due cose che <b>devono</b> restare allineate a {@code CambioXXXEUR}:
+     * <ul>
+     *   <li><b>Tre ore, non una</b>: la ricerca lavora a ±5 minuti dall'istante, quindi copre l'ora
+     *       della data e quelle a ±5 minuti. Con una sola ora, ogni riga nei primi o negli ultimi
+     *       cinque minuti restava scoperta proprio sull'ora accanto. Lontano dai bordi le tre ore
+     *       coincidono e l'insieme si richiude da sé su una: non moltiplica le richieste.</li>
+     *   <li><b>Il simbolo si normalizza</b> con {@link Principale#Mappa_MoneteStessoPrezzo}
+     *       (WETH→ETH, WCRO→CRO, XDAI→DAI) <b>dopo</b> {@code normalizzaMoneta} della configurazione:
+     *       la prima rinomina è quella del CSV, la seconda è quella che fa la valorizzazione in
+     *       ingresso. Saltandola la cache si riempie sotto una chiave che nessuno andrà a cercare.</li>
+     * </ul>
+     *
+     * <p>Le colonne moneta da guardare sono <b>tre</b>: quella principale, quella della commissione e
+     * quella della gamba in uscita degli scambi ({@code colonnaMonetaUscita}, dichiarata ottanta righe
+     * più in basso delle altre nella configurazione). Dimenticarne una lascerebbe metà degli scambi
+     * al percorso lento.
+     *
+     * @return le coppie (moneta, ora) da chiedere, ancora da filtrare su ciò che è già in cache
+     */
+    static List<Prezzi.RichiestaPrezzo> RaccogliRichiestePerRighe(List<String[]> righe, ConfigurazioneImport cfg) {
+        List<Prezzi.RichiestaPrezzo> richieste = new ArrayList<>();
+        if (righe == null || righe.isEmpty() || cfg == null) return richieste;
+
+        long adessoMs = System.currentTimeMillis();
+        java.util.LinkedHashSet<String> chiavi = new java.util.LinkedHashSet<>();
+        int[] colonneMoneta = {cfg.colonnaMoneta, cfg.colonnaMonetaFee, cfg.colonnaMonetaUscita};
+
+        for (String[] riga : righe) {
+            if (Interruzione.Richiesta()) break;
+            long data = cfg.convertiDataInMillis(safe(riga, cfg.colonnaData));
+            if (data <= 0) continue;
+
+            //Le stesse tre ore di CambioXXXEUR: quella della data e quelle a ±5 minuti, che solo al
+            //confine dell'ora diventano distinte.
+            java.util.LinkedHashSet<Long> oreDaCoprire = new java.util.LinkedHashSet<>();
+            oreDaCoprire.add(FunzioniDate.InizioOraRoma(data));
+            oreDaCoprire.add(FunzioniDate.InizioOraRoma(data - 300000L));
+            oreDaCoprire.add(FunzioniDate.InizioOraRoma(data + 300000L));
+
+            for (int col : colonneMoneta) {
+                if (col < 0) continue;
+                String moneta = cfg.normalizzaMoneta(safe(riga, col));
+                if (moneta == null || moneta.isBlank()) continue;
+                if (moneta.equalsIgnoreCase("EUR") || moneta.equalsIgnoreCase("USD")) continue;
+                if (Funzioni.isSCAM(moneta)) continue;
+                if (Principale.Mappa_EMoney != null && Principale.Mappa_EMoney.get(moneta) != null) continue;
+
+                String simbolo = Principale.Mappa_MoneteStessoPrezzo.getOrDefault(moneta, moneta).toUpperCase();
+                for (long inizioOra : oreDaCoprire) {
+                    if (inizioOra > adessoMs) continue;
+                    if (chiavi.add(simbolo + "|" + inizioOra)) {
+                        //`data` (quella della riga) e non l'ora: e' l'istante su cui il filtro verifica la
+                        //cache con la stessa tolleranza di chi poi valorizza.
+                        richieste.add(new Prezzi.RichiestaPrezzo(simbolo, inizioOra,
+                                Math.min(inizioOra + 3600000L - 1, adessoMs), data));
+                    }
+                }
+            }
+        }
+        return richieste;
     }
 
     static List<String[]> costruisciMovimenti(String[] riga, String tipoForzato, ConfigurazioneImport cfg) {

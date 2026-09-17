@@ -78,10 +78,8 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="Bottone_RiscaricaPrezzi" min="-2" pref="51" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="Bottone_Personalizzato" alignment="0" min="-2" pref="51" max="-2" attributes="0"/>
-                      <Component id="Bottone_Annulla" alignment="3" min="-2" pref="52" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="Bottone_Personalizzato" alignment="0" min="-2" pref="51" max="-2" attributes="0"/>
+                  <Component id="Bottone_Annulla" min="-2" pref="52" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
           </Group>

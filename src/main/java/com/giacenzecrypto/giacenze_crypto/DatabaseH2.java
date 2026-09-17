@@ -116,16 +116,60 @@ public class DatabaseH2 {
                         "giorno INT NOT NULL, " +
                         "PRIMARY KEY (symbol, giorno)" +
                         ")");
+
+            //Marcatore per ORA e PER EXCHANGE: sostituisce PrezziGiorniCCXT, che resta sul disco come
+            //storico ma non viene piu' letto (la sua chiave non ha l'exchange, quindi "giornata fatta"
+            //significava "fatta per tutti e otto" e impediva di tornare a chiedere il singolo exchange
+            //che serviva davvero).
+            //`ora` e' un intero yyyyMMddHH, fuso Europe/Rome, come `giorno` e' yyyyMMdd.
+            //UNA RIGA SIGNIFICA "CHIESTO", NON "RIUSCITO": che i dati esistano lo dice PrezziNew. Si
+            //scrive solo quando l'exchange ha RISPOSTO (anche senza dati); mai quando la chiamata e'
+            //fallita, altrimenti un blip di rete congelerebbe quel buco per sempre.
+            EseguiDDL(connectionPrezzi, "CREATE TABLE IF NOT EXISTS PrezziOraCCXT (" +
+                        "symbol VARCHAR(100) NOT NULL, " +
+                        "ora BIGINT NOT NULL, " +
+                        "exchange VARCHAR(100) NOT NULL, " +
+                        "PRIMARY KEY (symbol, ora, exchange)" +
+                        ")");
             
+            //Prezzi personalizzati (inseriti a mano dall'utente). A differenza della cache in
+            //prezzi.mv.db, qui `gruppo` sta in una colonna sua invece di essere incollato dentro
+            //`exchange` come "Personalizzato (TUTTI)": la colonna serve alla preferenza prezzi per
+            //gruppo wallet, e tenerla separata evita che il lettore debba cercare per sottostringa.
+            //Oggi vale sempre 'TUTTI' (nessuna preferenza), vedi Funzioni.getGruppoWalletXPrezzi.
             EseguiDDL(connectionPersonale, "CREATE TABLE IF NOT EXISTS PrezziNew (" +
                         "timestamp BIGINT NOT NULL, " +
                         "exchange VARCHAR(100) NOT NULL, " +
                         "symbol VARCHAR(100) NOT NULL, " +
                         "rete VARCHAR(100) NOT NULL, " +
                         "address VARCHAR(255) NOT NULL, " +
+                        "gruppo VARCHAR(255) DEFAULT 'TUTTI' NOT NULL, " +
                         "prezzo DOUBLE, " +
-                        "PRIMARY KEY (timestamp, exchange, symbol, rete, address)" +
+                        "PRIMARY KEY (timestamp, exchange, symbol, rete, address, gruppo)" +
                         ")");
+            //Migrazione per i database creati prima della colonna `gruppo`. Gira una volta sola:
+            //la guardia è l'assenza della colonna, quindi il cambio di chiave primaria non si ripete.
+            //Qui NON si può lasciar cadere la tabella come per MOVIMENTI_STORICO: contiene i prezzi
+            //di fine anno inseriti a mano dall'utente, cioè il dato su cui si regge il quadro RW.
+            //L'ordine dei passi non è arbitrario: H2 pretende che le colonne di chiave siano NOT NULL
+            //(errore 90023), e ADD COLUMN ... DEFAULT crea una colonna nullable, quindi il SET NOT NULL
+            //deve stare dopo il riempimento e prima della nuova chiave.
+            try (Statement stPrezziPers = connectionPersonale.createStatement()) {
+                if (TabellaSenzaColonna(stPrezziPers, "PREZZINEW", "GRUPPO")) {
+                    stPrezziPers.execute("ALTER TABLE PrezziNew ADD COLUMN IF NOT EXISTS gruppo VARCHAR(255) DEFAULT 'TUTTI'");
+                    stPrezziPers.execute("UPDATE PrezziNew SET gruppo = 'TUTTI' WHERE gruppo IS NULL");
+                    //Spacchetta il composito storico "Fonte (Gruppo)" nelle due colonne. Le righe che
+                    //non hanno la parentesi (fonti normali) restano com'erano, col gruppo di default.
+                    stPrezziPers.execute("UPDATE PrezziNew SET "
+                            + "gruppo = TRIM(REGEXP_REPLACE(exchange, '^.*\\((.*)\\)$', '$1')), "
+                            + "exchange = TRIM(REGEXP_REPLACE(exchange, '^(.*?)\\s*\\(.*\\)$', '$1')) "
+                            + "WHERE exchange LIKE '%(%)'");
+                    stPrezziPers.execute("ALTER TABLE PrezziNew ALTER COLUMN gruppo SET NOT NULL");
+                    stPrezziPers.execute("ALTER TABLE PrezziNew DROP PRIMARY KEY");
+                    stPrezziPers.execute("ALTER TABLE PrezziNew ADD PRIMARY KEY (timestamp, exchange, symbol, rete, address, gruppo)");
+                    LoggerGC.logInfo("PrezziNew (personale): gruppo separato dalla fonte, chiave primaria aggiornata");
+                }
+            }
         
             String createTableSQL = "CREATE TABLE IF NOT EXISTS Prezzo_ora_Address_Chain  (ora_address_chain VARCHAR(255) PRIMARY KEY, prezzo VARCHAR(255))";
             EseguiDDL(connection, createTableSQL);
@@ -232,7 +276,49 @@ public class DatabaseH2 {
             try (Statement stmtDoc = connectionPersonale.createStatement()) {
                 stmtDoc.execute("CREATE INDEX IF NOT EXISTS IDX_DOCUMENTIFONTE_HASH ON DOCUMENTIFONTE (Hash)");
             }
-            
+
+            //Storico delle modifiche ai movimenti: una riga per ogni modifica manuale che ricalcola l'ID
+            //(GUI_ModificaMovimento CASO A2), per ogni traslazione oraria e per ogni modifica in place.
+            //RigaOriginale è la riga com'era PRIMA, serializzata come nel file movimenti.crypto.db.
+            //
+            //DUE CHIAVI DIVERSE, DI PROPOSITO:
+            // - Lignaggio (campo [42] del movimento) è la chiave di LETTURA e di CANCELLAZIONE: tutte le
+            //   versioni di uno stesso movimento la condividono, anche quando l'ID cambia a ogni modifica.
+            //   È il motivo per cui l'indice sta lì e non sull'ID;
+            // - (IdMovimentoNuovo, DataModifica) resta l'IDENTITÀ della singola riga, ed è la chiave
+            //   dichiarata a Backup_Compatibilita. Il Lignaggio NON è unico per riga e non può servire a
+            //   quello scopo: separando un movimento le due gambe ereditano lo stesso lignaggio, e
+            //   traslandole nella stessa selezione si ottengono due righe con lignaggio e millisecondo
+            //   identici, che il ripristino del backup collasserebbe in una sola.
+            //
+            //Transitorio (2026-09-16): la prima versione della tabella era chiavata sull'ID del movimento
+            //e non aveva la colonna Lignaggio. Nessun archivio utente contiene storico (la funzione non è
+            //mai stata pubblicata), quindi invece di una migrazione si lascia cadere la tabella vecchia.
+            //CREATE TABLE IF NOT EXISTS su una tabella già esistente non fa nulla e non fallisce: senza
+            //questo passaggio ogni INSERT fallirebbe a runtime finendo solo nel log.
+            try (Statement stmtVecchia = connectionPersonale.createStatement()) {
+                if (TabellaSenzaColonna(stmtVecchia, "MOVIMENTI_STORICO", "LIGNAGGIO")) {
+                    stmtVecchia.execute("DROP TABLE MOVIMENTI_STORICO");
+                    LoggerGC.logInfo("MOVIMENTI_STORICO: schema precedente rimosso, la tabella viene ricreata con il lignaggio");
+                }
+            }
+            createTableSQL = "CREATE TABLE IF NOT EXISTS MOVIMENTI_STORICO ("
+                    + "Lignaggio VARCHAR(64) NOT NULL, "
+                    + "DataModifica BIGINT NOT NULL, "
+                    + "IdMovimentoNuovo VARCHAR(255) NOT NULL, "
+                    + "IdMovimentoVecchio VARCHAR(255), "
+                    + "RigaOriginale VARCHAR(8000), "
+                    + "Operazione VARCHAR(50))";
+            EseguiDDL(connectionPersonale, createTableSQL);
+            try (Statement stmtStorico = connectionPersonale.createStatement()) {
+                stmtStorico.execute("CREATE INDEX IF NOT EXISTS IDX_MOVSTORICO_LIGNAGGIO ON MOVIMENTI_STORICO (Lignaggio)");
+                //Controllo rumoroso: se la colonna non c'è, lo storico non funziona e deve dirlo qui,
+                //invece di lasciarlo scoprire a una serie di INSERT falliti in silenzio nel log
+                if (TabellaSenzaColonna(stmtStorico, "MOVIMENTI_STORICO", "LIGNAGGIO")) {
+                    LoggerGC.logInfo("ATTENZIONE: MOVIMENTI_STORICO non ha la colonna Lignaggio, lo storico delle modifiche non sarà registrato");
+                }
+            }
+
             //Tabella che associa i Wallet ad un Gruppo per poter poi gestire correttamente i quadri RW
             createTableSQL = "CREATE TABLE IF NOT EXISTS WALLETGRUPPO  (Wallet VARCHAR(255) PRIMARY KEY, Gruppo VARCHAR(255))";
             EseguiDDL(connectionPersonale, createTableSQL);
@@ -478,10 +564,14 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
 
         if (Rete==null||Principale.Mappa_ChainExplorer.get(Rete) == null) Rete = "";
 
-        // Fonte -> rimuovo parte dopo "("
+        // Fonte e gruppo vanno in due colonne distinte: `exchange` porta solo la fonte, `gruppo` solo
+        // il gruppo wallet. Fino al 2026-09-17 venivano incollati in una stringa sola
+        // ("Personalizzato (TUTTI)") e il lettore doveva cercarli per sottostringa; lo spacchettamento
+        // dei dati già salvati avviene nella migrazione in CreaoCollegaDatabase.
+        // Lo strip della parentesi resta perché i chiamanti passano ancora la fonte così come la
+        // leggono dalla GUI, che può mostrarla nel vecchio formato composito.
         if (Fonte.contains("(")) Fonte = Fonte.split("\\(")[0].trim();
         if (isEmpty(Gruppo)) Gruppo = "TUTTI";
-        Fonte = Fonte + " (" + Gruppo + ")";
 
         // --- Determino modalità ---
         boolean perNome = (isEmpty(Address) || isEmpty(Rete)) && !isEmpty(Moneta);
@@ -529,7 +619,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
             deleteSql = """
                 DELETE FROM PrezziNew 
                 WHERE timestamp = ?
-                  AND exchange ILIKE ?
+                  AND gruppo = ?
                   AND symbol = ?
                   AND rete = ''
                   AND address = ''
@@ -538,7 +628,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
             deleteSql = """
                 DELETE FROM PrezziNew
                 WHERE timestamp = ?
-                  AND exchange ILIKE ?
+                  AND gruppo = ?
                   AND symbol = ''
                   AND rete = ?
                   AND address = ?
@@ -549,7 +639,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
 
         try (PreparedStatement del = DatabaseH2.connectionPersonale.prepareStatement(deleteSql)) {
             del.setLong(1, Timestamp);
-            del.setString(2, "%" + Gruppo + "%");
+            del.setString(2, Gruppo);
             if (perNome) {
                 del.setString(3, MonetaKey);
             } else {
@@ -560,7 +650,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         }
         try (PreparedStatement del = DatabaseH2.connectionPersonale.prepareStatement(deleteSql)) {
             del.setLong(1, timestampDaCancellare);
-            del.setString(2, "%" + Gruppo + "%");
+            del.setString(2, Gruppo);
             if (perNome) {
                 del.setString(3, MonetaKey);
             } else {
@@ -571,10 +661,12 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         }
 
         // --- 2) MERGE nuovo valore ---
+        //La KEY deve elencare la chiave primaria per intero, gruppo compreso: con una KEY parziale
+        //H2 aggiornerebbe la riga sbagliata quando lo stesso istante avrà prezzi di gruppi diversi.
         String mergeSql = """
-            MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo, rete, address)
-            KEY (timestamp, exchange, symbol, rete, address)
-            VALUES (?, ?, ?, ?, ?, ?)
+            MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo, rete, address, gruppo)
+            KEY (timestamp, exchange, symbol, rete, address, gruppo)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             """;
 
         try (PreparedStatement ps = DatabaseH2.connectionPersonale.prepareStatement(mergeSql)) {
@@ -594,6 +686,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
                 ps.setString(5, Rete);
                 ps.setString(6, Address);
             }
+            ps.setString(7, Gruppo);
 
             //System.out.println("InserisciPrezzoPresonalizzato : "+ps.toString());
             ps.executeUpdate();
@@ -2700,8 +2793,8 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
      * riletto. Il writer è stato corretto; questa migrazione recupera le righe già presenti.
      * <p>
      * Si usa MERGE+DELETE riga per riga (non un {@code UPDATE ... SET symbol=UPPER(symbol)}) per
-     * non violare la chiave primaria {@code (timestamp, exchange, symbol, rete, address)} nel caso
-     * raro in cui, per lo stesso istante/exchange, esista già la variante maiuscola.
+     * non violare la chiave primaria {@code (timestamp, exchange, symbol, rete, address, gruppo)}
+     * nel caso raro in cui, per lo stesso istante/exchange, esista già la variante maiuscola.
      */
     private static void PrezziPersonalizzati_MigraSymbolMaiuscolo() {
         //Il flag sta in personale.mv.db (Pers_Opzioni_*), accanto ai dati che migra: se si ripristina
@@ -2713,19 +2806,24 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
                 return;
             }
             java.util.List<Object[]> daMigrare = new java.util.ArrayList<>();
-            String select = "SELECT timestamp, exchange, symbol, prezzo FROM PrezziNew "
+            //`gruppo` viaggia insieme alla riga: fa parte della chiave primaria, quindi una MERGE con
+            //KEY parziale aggiornerebbe la riga di un altro gruppo e la DELETE ne cancellerebbe più
+            //di una. Oggi il gruppo è sempre 'TUTTI' e la differenza non si vede, ma la migrazione
+            //deve restare corretta quando la preferenza prezzi per gruppo wallet esisterà davvero.
+            String select = "SELECT timestamp, exchange, symbol, prezzo, gruppo FROM PrezziNew "
                     + "WHERE rete = '' AND address = '' AND symbol <> UPPER(symbol)";
             try (PreparedStatement ps = connectionPersonale.prepareStatement(select);
                  ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    daMigrare.add(new Object[]{rs.getLong(1), rs.getString(2), rs.getString(3), rs.getDouble(4)});
+                    daMigrare.add(new Object[]{rs.getLong(1), rs.getString(2), rs.getString(3),
+                        rs.getDouble(4), rs.getString(5)});
                 }
             }
             if (!daMigrare.isEmpty()) {
-                String merge = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo, rete, address) "
-                        + "KEY (timestamp, exchange, symbol, rete, address) VALUES (?, ?, ?, ?, '', '')";
+                String merge = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo, rete, address, gruppo) "
+                        + "KEY (timestamp, exchange, symbol, rete, address, gruppo) VALUES (?, ?, ?, ?, '', '', ?)";
                 String del = "DELETE FROM PrezziNew WHERE timestamp = ? AND exchange = ? AND symbol = ? "
-                        + "AND rete = '' AND address = ''";
+                        + "AND rete = '' AND address = '' AND gruppo = ?";
                 try (PreparedStatement psM = connectionPersonale.prepareStatement(merge);
                      PreparedStatement psD = connectionPersonale.prepareStatement(del)) {
                     for (Object[] r : daMigrare) {
@@ -2733,10 +2831,12 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
                         psM.setString(2, (String) r[1]);
                         psM.setString(3, ((String) r[2]).toUpperCase());
                         psM.setDouble(4, (Double) r[3]);
+                        psM.setString(5, (String) r[4]);
                         psM.executeUpdate();
                         psD.setLong(1, (Long) r[0]);
                         psD.setString(2, (String) r[1]);
                         psD.setString(3, (String) r[2]);
+                        psD.setString(4, (String) r[4]);
                         psD.executeUpdate();
                     }
                 }
@@ -2966,6 +3066,143 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
             connection = DriverManager.getConnection(VarStatiche.getDBPrincipale(), usernameH2, passwordH2);
             //Nessuna cache da invalidare: la compattazione non cambia il contenuto, solo come è
             //disposto nel file, quindi quello che è già stato letto resta valido
+            return true;
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+            return false;
+        }
+    }
+
+    // ============================================================================
+    //  Storico delle modifiche ai movimenti (MOVIMENTI_STORICO, personale.mv.db)
+    //  Meccanica completa in nocommit/Documentazione/Analisi_Storico_Modifiche_Movimenti.md
+    // ============================================================================
+
+    /**
+     * @return {@code true} se la tabella esiste ma <b>non</b> ha la colonna indicata (nomi in maiuscolo,
+     *         come li cataloga H2); {@code false} anche quando la tabella non esiste affatto
+     */
+    private static boolean TabellaSenzaColonna(Statement st, String Tabella, String Colonna) throws SQLException {
+        try (ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
+                + "WHERE TABLE_NAME = '" + Tabella + "'")) {
+            if (!rs.next() || rs.getInt(1) == 0) {
+                return false;
+            }
+        }
+        try (ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS "
+                + "WHERE TABLE_NAME = '" + Tabella + "' AND COLUMN_NAME = '" + Colonna + "'")) {
+            return rs.next() && rs.getInt(1) == 0;
+        }
+    }
+
+    /**
+     * Scrive una voce di storico.
+     *
+     * @param Lignaggio identificativo della catena di modifiche, campo {@code [42]} del movimento
+     * @param DataModifica parametro <b>in ingresso</b>, non generato qui: deve essere l'istante in cui
+     *        la modifica è avvenuta, non quello (successivo, anche di molto) del salvataggio — è ciò
+     *        che ordina le versioni dentro il lignaggio
+     * @return {@code true} se la riga è stata scritta
+     */
+    public static boolean StoricoMovimenti_Scrivi(String Lignaggio, String IdNuovo, String IdVecchio,
+            String RigaOriginale, String Operazione, long DataModifica) {
+        String sql = "INSERT INTO MOVIMENTI_STORICO "
+                + "(Lignaggio, DataModifica, IdMovimentoNuovo, IdMovimentoVecchio, RigaOriginale, Operazione) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(sql)) {
+            ps.setString(1, Lignaggio);
+            ps.setLong(2, DataModifica);
+            ps.setString(3, IdNuovo);
+            ps.setString(4, IdVecchio);
+            ps.setString(5, RigaOriginale);
+            ps.setString(6, Operazione);
+            ps.executeUpdate();
+            return true;
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+            return false;
+        }
+    }
+
+    /**
+     * Tutte le versioni precedenti di un movimento, dalla più recente.
+     *
+     * <p>La lettura è per <b>lignaggio</b> e non per ID: è ciò che rende l'elenco completo anche quando
+     * una modifica ha ricalcolato l'ID: con la chiave sull'ID, una versione salvata quando il movimento
+     * si chiamava ancora in un altro modo resterebbe agganciata a un ID che non esiste più e l'utente
+     * non la vedrebbe mai.</p>
+     *
+     * @param Lignaggio lignaggio del movimento (campo {@code [42]}); se vuoto l'elenco è vuoto
+     * @return righe {@code {IdVecchio, DataModifica, RigaOriginale, Operazione, IdNuovo}}, mai {@code null}
+     */
+    public static List<String[]> StoricoMovimenti_Leggi(String Lignaggio) {
+        List<String[]> Righe = new ArrayList<>();
+        if (Lignaggio == null || Lignaggio.isBlank()) {
+            return Righe;
+        }
+        String sql = "SELECT IdMovimentoVecchio, DataModifica, RigaOriginale, Operazione, IdMovimentoNuovo "
+                + "FROM MOVIMENTI_STORICO WHERE Lignaggio = ? ORDER BY DataModifica DESC";
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(sql)) {
+            ps.setString(1, Lignaggio);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Righe.add(new String[]{rs.getString(1), String.valueOf(rs.getLong(2)),
+                        rs.getString(3), rs.getString(4), rs.getString(5)});
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return Righe;
+    }
+
+    /**
+     * Se di un lignaggio esiste almeno una versione salvata.
+     *
+     * <p>È questa, e non "il campo {@code [42]} è valorizzato", la domanda da fare per sapere se un
+     * movimento ha uno storico: un movimento può avere un lignaggio e nessuna riga, perché il lignaggio
+     * viene timbrato prima della conferma finale di una modifica che l'utente può ancora annullare.</p>
+     *
+     * @param Lignaggio lignaggio da cercare
+     * @return {@code true} se esiste almeno una riga
+     */
+    public static boolean StoricoMovimenti_Esiste(String Lignaggio) {
+        if (Lignaggio == null || Lignaggio.isBlank()) {
+            return false;
+        }
+        String sql = "SELECT 1 FROM MOVIMENTI_STORICO WHERE Lignaggio = ? LIMIT 1";
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(sql)) {
+            ps.setString(1, Lignaggio);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+            return false;
+        }
+    }
+
+    /**
+     * Cancella tutte le versioni di un lignaggio: è l'intera pulizia che segue la cancellazione di un
+     * movimento.
+     *
+     * <p>Una sola istruzione sostituisce la risalita ad anelli della prima versione di questa
+     * funzionalità: finché la catena era ricostruita abbinando ID vecchi e ID nuovi, una stringa ID
+     * riusata dopo un reimport rendeva ambiguo il confine fra due catene e la risalita doveva fermarsi
+     * lì. Con il lignaggio quell'ambiguità non esiste: le righe da cancellare sono esattamente quelle
+     * che lo portano.</p>
+     *
+     * @param Lignaggio lignaggio da cancellare
+     * @return {@code true} se la cancellazione è riuscita (anche se non ha trovato nulla da cancellare)
+     */
+    public static boolean StoricoMovimenti_CancellaLignaggio(String Lignaggio) {
+        if (Lignaggio == null || Lignaggio.isBlank()) {
+            return true;
+        }
+        String sql = "DELETE FROM MOVIMENTI_STORICO WHERE Lignaggio = ?";
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(sql)) {
+            ps.setString(1, Lignaggio);
+            ps.executeUpdate();
             return true;
         } catch (SQLException ex) {
             LoggerGC.ScriviErrore(ex);

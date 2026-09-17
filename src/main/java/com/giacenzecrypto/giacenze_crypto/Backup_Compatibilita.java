@@ -81,7 +81,10 @@ public class Backup_Compatibilita {
      */
     private static final Map<String, String[]> CHIAVI = Map.ofEntries(
             Map.entry("personale/OPZIONI", new String[]{"OPZIONE"}),
-            Map.entry("personale/PrezziNew", new String[]{"TIMESTAMP", "EXCHANGE", "SYMBOL", "RETE", "ADDRESS"}),
+            //GRUPPO fa parte della chiave dal 2026-09-17: prima il gruppo era incollato dentro EXCHANGE
+            //("Personalizzato (TUTTI)"), ora è una colonna sua. Un archivio più vecchio non porta la
+            //colonna e al ripristino prende il DEFAULT 'TUTTI', che è esattamente il valore che aveva.
+            Map.entry("personale/PrezziNew", new String[]{"TIMESTAMP", "EXCHANGE", "SYMBOL", "RETE", "ADDRESS", "GRUPPO"}),
             Map.entry("personale/XXXEUR", new String[]{"DATASIMBOLO"}),
             Map.entry("personale/Prezzo_ora_Address_Chain", new String[]{"ORA_ADDRESS_CHAIN"}),
             Map.entry("personale/WALLETS", new String[]{"WALLET_RETE"}),
@@ -92,6 +95,7 @@ public class Backup_Compatibilita {
             Map.entry("personale/EXCHANGETOKENS", new String[]{"EXCHANGE_TOKEN"}),
             Map.entry("personale/GRUPPO_PERIODO_RW", new String[]{"GRUPPO_TIPO_PROG"}),
             Map.entry("personale/DOCUMENTIFONTE", new String[]{"ID"}),
+            Map.entry("personale/MOVIMENTI_STORICO", new String[]{"IDMOVIMENTONUOVO", "DATAMODIFICA"}),
             Map.entry("personale/EXCHANGEAPI", new String[]{"NOME"}),
             Map.entry("principale/OPZIONI", new String[]{"OPZIONE"}),
             Map.entry("principale/RINOMINATOKEN", new String[]{"ADDRESS_CHAIN"}),

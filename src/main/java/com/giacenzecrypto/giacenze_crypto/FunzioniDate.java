@@ -52,6 +52,7 @@ public class FunzioniDate {
     private static final ThreadLocal<SimpleDateFormat> SDF_DATA_ORA = formattatoreRoma("yyyy-MM-dd HH");
     private static final ThreadLocal<SimpleDateFormat> SDF_DATA_ID = formattatoreRoma("yyyyMMddHHmmss");
     private static final ThreadLocal<SimpleDateFormat> SDF_DATA_GIORNO = formattatoreRoma("yyyyMMdd");
+    private static final ThreadLocal<SimpleDateFormat> SDF_DATA_ORA_INT = formattatoreRoma("yyyyMMddHH");
 
     /**
      * @param Data1 data/ora in millisecondi epoch
@@ -67,6 +68,31 @@ public class FunzioniDate {
      */
     public static long InizioGiornoRoma(long Data1) {
         SimpleDateFormat f = SDF_DATA.get();
+        try {
+            return f.parse(f.format(new Date(Data1))).getTime();
+        } catch (ParseException ex) {
+            //format e parse usano lo stesso pattern: non dovrebbe mai accadere
+            return Data1;
+        }
+    }
+
+    /**
+     * @param Data1 data/ora in millisecondi epoch
+     * @return l'ora di calendario di {@code Data1} come {@code yyyyMMddHH}, fuso Europe/Rome
+     *         (è un {@code long} e non un {@code int} come {@link #GiornoIntGG}: dieci cifre
+     *         sforano l'intero a 32 bit già dal 2147-11-08, ma soprattutto ogni data del 2000 in poi
+     *         supera {@code Integer.MAX_VALUE})
+     */
+    public static long OraIntYYYYMMDDHH(long Data1) {
+        return Long.parseLong(SDF_DATA_ORA_INT.get().format(new Date(Data1)));
+    }
+
+    /**
+     * @param Data1 data/ora in millisecondi epoch
+     * @return i millisecondi epoch dell'inizio dell'ora (Europe/Rome) che contiene {@code Data1}
+     */
+    public static long InizioOraRoma(long Data1) {
+        SimpleDateFormat f = SDF_DATA_ORA.get();
         try {
             return f.parse(f.format(new Date(Data1))).getTime();
         } catch (ParseException ex) {
@@ -302,9 +328,18 @@ public class FunzioniDate {
            // return 0;
         }
         return m1;
-    }     
-        
-        
+    }
+
+        /**
+         * Inverso di {@link #ConvertiDataIDinLong(String)}.
+         * @param Millis millisecondi epoch
+         * @return {@code Millis} formattato come prefisso di ID movimento ({@code yyyyMMddHHmmss}, fuso Europe/Rome)
+         */
+        public static String FormattaDataID(long Millis) {
+            return SDF_DATA_ID.get().format(new Date(Millis));
+        }
+
+
         /**
          * @param isoDate data/ora in formato ISO 8601 (es. {@code "2024-07-22T01:53:29.000Z"})
          * @return i millisecondi epoch corrispondenti, oppure {@code 0L} se {@code isoDate} è {@code null}/vuota o non parsabile

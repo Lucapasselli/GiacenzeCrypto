@@ -1491,6 +1491,20 @@ worker.execute();*/
             // Aggiorno direttamente i campi dell'array MovimentoRiportato che è già referenziato
             // da MappaCryptoWallet, quindi la mappa riflette immediatamente le modifiche.
             if (MovimentoRiportato[0].equals(ID)) {
+                            // Storico: lo snapshot va preso QUI, prima delle assegnazioni sotto.
+                            // MovimentoRiportato È l'array vivo dentro MappaCryptoWallet (assegnato per
+                            // riferimento da CompilaCampidaID), quindi subito dopo sarebbe già mutato e
+                            // la "versione precedente" non esisterebbe più da nessuna parte.
+                            // L'ID non cambia, quindi la voce ha IdVecchio == IdNuovo ed è marcata
+                            // ModificaInPlace, che qui è solo un'etichetta per il visualizzatore.
+                            // Il lignaggio si timbra PRIMA dello snapshot, così anche la versione
+                            // salvata porta la stessa chiave della catena: è ciò che permette di
+                            // ritrovare questa modifica anche dopo che un'altra avrà cambiato l'ID.
+                            String LignaggioInPlace = MovimentiStorico.AssicuraLignaggio(MovimentoRiportato);
+                            MovimentiStorico.AccodaModifica(LignaggioInPlace, MovimentoRiportato[0],
+                                    MovimentoRiportato[0], Importazioni.SerializzaRiga(MovimentoRiportato),
+                                    MovimentiStorico.OP_IN_PLACE);
+
                             // Prezzo e note: sempre aggiornati
                             MovimentoRiportato[15] = ValoreTransazione;
                             MovimentoRiportato[21] = Note;
@@ -1568,6 +1582,19 @@ worker.execute();*/
                     .showDialog();
 
                 if(result != null && result.isAction("si")){
+
+                            // Storico: ID e riga vanno catturati ORA, prima della rimozione.
+                            // RimuoviMovimentazioneXID, se il movimento è abbinato, muta l'array in place
+                            // (azzera [18]/[19]/[20]/[31] e può riscrivere [0] negli scambi differiti)
+                            // prima di toglierlo dalla mappa. Nota: essendo la cattura fatta qui, la riga
+                            // salvata è lo stato al momento della conferma — non quello "mai toccato":
+                            // Funzione_ModificaMovimento può già aver sciolto il gruppo aprendo il dialogo.
+                            // Il lignaggio va timbrato sul movimento vecchio PRIMA di serializzarlo: il
+                            // ciclo di ricopia più sotto (blocklist) lo porta poi sul movimento nuovo,
+                            // che è il modo in cui la catena sopravvive al cambio di ID.
+                            String LignaggioStorico = MovimentiStorico.AssicuraLignaggio(MovimentoRiportato);
+                            String IDVecchioStorico = MovimentoRiportato[0];
+                            String RigaOriginaleStorico = Importazioni.SerializzaRiga(MovimentoRiportato);
 
                             // Rimozione del vecchio movimento dalla mappa (e dai DB collegati se presenti)
                             Funzioni.RimuoviMovimentazioneXID(MovimentoRiportato[0]);
@@ -1705,14 +1732,19 @@ worker.execute();*/
                                 null                        // IdentificazioneID: null → usa il nome del wallet
                             );
 
-                            // ── Reintegro campi non popolati da creaMovimento ─────────────────────────
-                            // creaMovimento non imposta RT[2], RT[14], RT[23], RT[30], RT[31]:
-                            // li copio dal vecchio movimento per non perdere informazioni già presenti.
-                            RT[2]  = MovimentoRiportato[2];  // progressivo "N di M" del gruppo
-                            RT[14] = MovimentoRiportato[14]; // campo aggiuntivo ereditato
-                            RT[23] = MovimentoRiportato[23]; // campo aggiuntivo ereditato
-                            RT[30] = MovimentoRiportato[30]; // campo aggiuntivo ereditato
-                            RT[31] = MovimentoRiportato[31]; // campo aggiuntivo ereditato
+                            // ── Reintegro i campi non popolati da creaMovimento ───────────────────────
+                            // Prima si ricopiavano a mano solo 5 campi (2,14,23,30,31) e si perdevano in
+                            // silenzio la causale originale (7), gli address di provenienza/destinazione
+                            // (36/37), la fonte dati (39) e soprattutto il documento di origine (41):
+                            // è il bug M10. Ora il criterio è rovesciato — si copia tutto tranne ciò che
+                            // decide il chiamante o che ricalcola il motore — con la stessa blocklist
+                            // usata da Trasla Orario, così i due punti non possono più divergere.
+                            // Effetto collaterale voluto: il 31 (data fine trasferimento, scritta dal
+                            // motore) non viene più riportato stantio, perché è nella blocklist.
+                            for (int Campo = 0; Campo < RT.length && Campo < MovimentoRiportato.length; Campo++) {
+                                if (!MovimentiCrypto.CampiNonCopiabiliVerbatim.contains(Campo))
+                                    RT[Campo] = MovimentoRiportato[Campo];
+                            }
 
                             // ── Override info prezzo/fonte con i valori della GUI ─────────────────────
                             // creaMovimento imposta RT[40] con una fonte semplice ("|||NomeFonte"), mentre
@@ -1724,6 +1756,12 @@ worker.execute();*/
 
                             MappaCryptoWallet.put(RT[0], RT);
                             IDNuovo = RT[0];
+
+                            // Storico: solo accodamento in memoria, nessuna scrittura sul database. La
+                            // modifica è provvisoria finché l'utente non salva i movimenti, e lo storico
+                            // deve seguire esattamente lo stesso destino della modifica che descrive.
+                            MovimentiStorico.AccodaModifica(LignaggioStorico, RT[0], IDVecchioStorico,
+                                    RigaOriginaleStorico, "ModificaMovimento");
                             return true;
 
                         } else {

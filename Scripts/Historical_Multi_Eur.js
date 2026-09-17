@@ -61,6 +61,23 @@ async function findBestPair(ex, baseSymbol) {
         }
     }
 
+    // Direzione inversa: per quando baseSymbol è esso stesso una valuta di quotazione comune
+    // (USDT, USDC) e l'exchange quota EUR/USD come BASE — es. Binance ha "EUR/USDT", mai
+    // "USDT/EUR". Senza questo, cercare il prezzo di USDT/USDC stesse non trovava mai nulla: i
+    // controlli sopra guardano solo ${baseSymbol}/X, mai X/${baseSymbol} (bug osservato il
+    // 2026-09-18 valorizzando USDT come giacenza in RT).
+    if (`EUR/${baseSymbol}` in markets) {
+        return { pair: `EUR/${baseSymbol}`, invert: true, needsConversion: false };
+    }
+    if (`USD/${baseSymbol}` in markets) {
+        if ("EUR/USD" in markets) {
+            return { pair: `USD/${baseSymbol}`, invert: true, needsConversion: true, conversionPair: "EUR/USD" };
+        }
+        if ("USD/EUR" in markets) {
+            return { pair: `USD/${baseSymbol}`, invert: true, needsConversion: true, conversionPair: "USD/EUR" };
+        }
+    }
+
     return null;
 }
 
@@ -71,6 +88,13 @@ async function findBestPair(ex, baseSymbol) {
 // binance pesa 36 MB, e in modalita' lotto la stessa lettura si ripeterebbe per ogni (moneta, ora).
 // Vive quanto il processo, quindi nella modalita' a richiesta singola non cambia nulla.
 const marketsInMemoria = new Map();
+
+// Tasso di cambio EUR/stablecoin condiviso da TUTTE le monete della stessa finestra, invece di uno
+// per exchange: senza questa memoria, in un lotto con N monete che hanno tutte bisogno della stessa
+// conversione USDT->EUR, la si cercherebbe (e si proverebbe a scalare da Binance agli altri exchange)
+// N volte invece di una sola. Chiave `${quoteCcy}|${since}|${until}`, valore l'esito di
+// trovaSerieConversione (anche `null` se nessun exchange l'ha, per non ritentare invano).
+const serieConversioneMemo = new Map();
 
 async function getMarketsSymbols(exchange) {
     if (marketsInMemoria.has(exchange.id)) {
@@ -194,16 +218,67 @@ async function fetchHistorical(ex, symbol, timeframe, since, until, limit = 60) 
     return all_ohlcv.filter(c => c[0] <= until);
 }
 
+/**
+ * Cerca un tasso di cambio EUR/`quoteCcy` (USDT, USD o USDC) valido per la finestra indicata,
+ * provando gli exchange in `ordineEsplorazione` UNO ALLA VOLTA e fermandosi al primo che risponde
+ * con dati non vuoti. Il tasso di cambio è un fatto di mercato, non specifico dell'exchange da cui
+ * arriva il prezzo della moneta: se crypto.com ha un buco sulla propria serie EUR/USDT per un'ora,
+ * non c'è motivo di scartare il prezzo di CRO che crypto.com fornisce benissimo — si può convertire
+ * con il tasso di un altro exchange che quell'ora ce l'ha (vedi CLAUDE.md e il caso CRO/crypto.com
+ * del 2026-09-17).
+ *
+ * @return `{exchangeId, pair, dati}` del primo exchange trovato, o `null` se nessuno ha dati
+ */
+async function trovaSerieConversione(ccxtLib, istanze, ordineEsplorazione, quoteCcy, timeframe, since, until) {
+    for (const exId of ordineEsplorazione) {
+        const chiave = exId.toLowerCase();
+        if (!ccxtLib[chiave]) continue;
+        const ex = (istanze && istanze[chiave]) || new ccxtLib[chiave]();
+        let markets;
+        try {
+            markets = await getMarketsSymbols(ex);
+        } catch (e) {
+            continue;
+        }
+        // Stessa preferenza di findBestPair: EUR/X prima di X/EUR.
+        let pair = null;
+        if (`EUR/${quoteCcy}` in markets) pair = `EUR/${quoteCcy}`;
+        else if (`${quoteCcy}/EUR` in markets) pair = `${quoteCcy}/EUR`;
+        if (!pair) continue;
+
+        try {
+            const dati = await fetchHistoricalConversione(ex, pair, timeframe, since, until);
+            if (dati.length) return { exchangeId: exId, pair, dati };
+        } catch (e) {
+            continue;
+        }
+    }
+    return null;
+}
+
+/** Wrapper di {@link trovaSerieConversione} con la memoria di modulo `serieConversioneMemo`: una
+ * sola ricerca per (valuta, finestra), riusata da tutte le monete della stessa invocazione. */
+async function serieConversioneCondivisa(ccxtLib, istanze, ordineEsplorazione, quoteCcy, timeframe, since, until) {
+    const chiaveMemo = `${quoteCcy}|${since}|${until}`;
+    if (serieConversioneMemo.has(chiaveMemo)) return serieConversioneMemo.get(chiaveMemo);
+    const risultato = await trovaSerieConversione(ccxtLib, istanze, ordineEsplorazione, quoteCcy, timeframe, since, until);
+    serieConversioneMemo.set(chiaveMemo, risultato);
+    return risultato;
+}
+
 /** Implementazione condivisa da `cercaPrezziStorici` e `cercaPrezziStoriciConEsito` (sotto): fa il
  * lavoro vero, la seconda espone anche quali exchange sono falliti con un errore vero. */
 async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, since, until, istanze }) {
     const results = {};
+    const risultatiGrezzi = {};
     const falliti = [];
+    // Binance prima (il più liquido), poi gli altri exchange di questa richiesta nell'ordine dato.
+    const ordineConversione = [...new Set(['binance', ...exchangeIds])];
 
     async function safe_fetch(exchange_id) {
         try {
             if (!ccxtLib[exchange_id.toLowerCase()]) {
-                return [exchange_id, [], null];
+                return [exchange_id, [], null, []];
             }
             // Con `istanze` fornite (modalita' lotto) l'oggetto exchange e' condiviso da tutte le
             // richieste: e' cio' che rende autorevole il limitatore interno di ccxt, che tiene lo
@@ -213,60 +288,74 @@ async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, sinc
                     || new ccxtLib[exchange_id.toLowerCase()]();
 
             const pairInfo = await findBestPair(ex, baseSymbol);
-            if (!pairInfo) return [exchange_id, [], null];
+            if (!pairInfo) return [exchange_id, [], null, []];
 
-            // OHLCV principale (es. BTC/USDT o BTC/EUR)
-            const baseData = await fetchHistorical(ex, pairInfo.pair, timeframe, since, until);
+            // OHLCV principale (es. BTC/USDT o BTC/EUR, oppure EUR/USDT o USD/USDT se pairInfo.invert)
+            const baseDataGrezza = await fetchHistorical(ex, pairInfo.pair, timeframe, since, until);
+            // pairInfo.invert: la coppia trovata ha baseSymbol in posizione di QUOTA (es. "EUR/USDT"
+            // per baseSymbol="USDT"), quindi il prezzo grezzo è l'inverso di quello che serve — e
+            // high/low si scambiano, essendo l'inversione decrescente sui valori positivi.
+            const baseData = pairInfo.invert
+                    ? baseDataGrezza.map(([ts, o, h, l, c, v]) => [ts, 1 / o, 1 / l, 1 / h, 1 / c, v])
+                    : baseDataGrezza;
 
             let finalData = baseData;
+            const grezzi = [];
 
-            // Conversione se serve (es. BTC/USDT -> BTC/EUR usando EUR/USDT)
+            // Conversione se serve (es. BTC/USDT -> BTC/EUR usando un tasso EUR/USDT condiviso)
             if (pairInfo.needsConversion) {
-                const convData = await fetchHistoricalConversione(ex, pairInfo.conversionPair, timeframe, since, until);
+                // "CRO/USDT" -> "USDT" nel caso normale; "USD/USDT" (invert) -> "USD", perché dopo
+                // l'inversione qui sopra baseData è già "USDT in USD", non "USDT in USDT".
+                const quoteCcy = pairInfo.invert ? pairInfo.pair.split('/')[0] : pairInfo.pair.split('/')[1];
+                const conv = await serieConversioneCondivisa(
+                        ccxtLib, istanze, ordineConversione, quoteCcy, timeframe, since, until);
 
-                // Creo una mappa timestamp -> conversion rate
+                // Mappa timestamp -> tasso EUR/quoteCcy, qualunque sia l'exchange che l'ha fornito e
+                // qualunque sia la direzione della coppia trovata (EUR/X o X/EUR).
                 const convMap = {};
-                for (const c of convData) {
-                    convMap[c[0]] = c[4]; // chiusura
+                if (conv) {
+                    const invertire = conv.pair.startsWith('EUR/');
+                    for (const c of conv.dati) {
+                        const chiusura = c[4]; // chiusura, come prima
+                        convMap[c[0]] = invertire ? 1 / chiusura : chiusura;
+                    }
                 }
 
-                finalData = baseData.map(c => {
+                finalData = [];
+                for (const c of baseData) {
                     const [ts, o, h, l, close, v] = c;
-                    const conv = convMap[ts];
-                    if (!conv) return null;
-
-                    // Se conversionPair è EUR/USDT → prezzo BTC/EUR = (BTC/USDT) / (EUR/USDT)
-                    // Se conversionPair è USDT/EUR → prezzo BTC/EUR = (BTC/USDT) * (USDT/EUR)
-                    let factor = 1;
-                    if (pairInfo.conversionPair.startsWith("EUR/")) {
-                        factor = 1 / conv;
-                    } else if (pairInfo.conversionPair.startsWith("USD/EUR")
-                            || pairInfo.conversionPair.startsWith("USDT/EUR")
-                            || pairInfo.conversionPair.startsWith("USDC/EUR")) {
-                        factor = conv;
+                    const fattore = convMap[ts];
+                    if (fattore) {
+                        finalData.push([ts, o * fattore, h * fattore, l * fattore, close * fattore, v]);
+                    } else {
+                        // Nessun exchange (Binance compreso) ha un tasso di cambio per questo minuto
+                        // esatto: il prezzo grezzo si passa comunque, la conversione la fa il programma
+                        // (CoinMarketCap + Banca d'Italia) invece di perdere il dato.
+                        grezzi.push({ ts, valore: o, denom: quoteCcy });
                     }
-
-                    return [ts, o * factor, h * factor, l * factor, close * factor, v];
-                }).filter(Boolean);
+                }
             }
 
-            return [exchange_id, finalData, null];
+            return [exchange_id, finalData, null, grezzi];
         } catch (err) {
             // Un errore vero (rate limit, manutenzione, rete, ...) è diverso da "l'exchange non ha
             // questa coppia" (gestito sopra con un `return` pulito, non un'eccezione): qui va
             // segnalato come fallito, non confuso con "nessun dato" — vedi Analisi_VPS_Prezzi_Sito.md,
             // "Esclusioni: exchange falliti vs nessun dato".
-            return [exchange_id, [], (err && err.message) || 'errore sconosciuto'];
+            return [exchange_id, [], (err && err.message) || 'errore sconosciuto', []];
         }
     }
 
     // Fetch parallelo
     const fetched = await Promise.all(exchangeIds.map(ex_id => safe_fetch(ex_id)));
 
-    for (const [ex_id, ohlcv_data, errore] of fetched) {
+    for (const [ex_id, ohlcv_data, errore, grezzi] of fetched) {
         if (errore) falliti.push(ex_id);
         if (ohlcv_data.length) {
             results[ex_id] = ohlcv_data;
+        }
+        if (grezzi && grezzi.length) {
+            risultatiGrezzi[ex_id] = grezzi;
         }
     }
 
@@ -279,12 +368,21 @@ async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, sinc
             combined[ts][ex_id] = o;
         }
     }
+    const combinedGrezzi = {};
+    for (const ex_id in risultatiGrezzi) {
+        for (const g of risultatiGrezzi[ex_id]) {
+            if (!combinedGrezzi[g.ts]) combinedGrezzi[g.ts] = {};
+            combinedGrezzi[g.ts][ex_id] = { valore: g.valore, denom: g.denom };
+        }
+    }
 
-    const sorted_timestamps = Object.keys(combined).map(Number).sort((a, b) => a - b);
-    const punti = sorted_timestamps.map(ts => ({
-        timestamp: ts,
-        prices: combined[ts],
-    }));
+    const sorted_timestamps = [...new Set([...Object.keys(combined), ...Object.keys(combinedGrezzi)])]
+            .map(Number).sort((a, b) => a - b);
+    const punti = sorted_timestamps.map(ts => {
+        const punto = { timestamp: ts, prices: combined[ts] || {} };
+        if (combinedGrezzi[ts]) punto.grezzi = combinedGrezzi[ts];
+        return punto;
+    });
 
     return { punti, falliti };
 }

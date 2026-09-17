@@ -1699,6 +1699,11 @@ public class Prezzi {
 
             RecuperaCoinsCoinMarketCap();
             Integer cmcId = DatabaseH2.GestitiCoinMarketCap_Leggi(Crypto);
+            //Riserva per le due stablecoin usate dalla conversione EUR del pre-scarico
+            //(ConvertiStablecoinInEuro): i loro id CMC sono noti e stabili da anni, e senza
+            //questa riserva la conversione smetterebbe di funzionare per chiunque non abbia
+            //configurato una API key CoinMarketCap (la mappa dinamica si popola solo con quella).
+            if (cmcId == null) cmcId = ID_CMC_STABLECOIN.get(Crypto);
             if (cmcId == null) {
                 System.out.println("RecuperaPrezziDaCoinMarketCap: " + Crypto + " non trovato nella mappa CMC");
                 return;
@@ -2854,11 +2859,26 @@ symbol=symbol.toUpperCase();
 
 
 
+/** Margine sotto il quale un istante è "troppo recente" per essere marcato irrecuperabile: vedi
+ *  {@link #PrezzoIrrecuperabileDaDB_Scrivi}. */
+private static final long MARGINE_KO_TROPPO_RECENTE_MS = 2 * 60 * 60 * 1000L;
+
 public static boolean PrezzoIrrecuperabileDaDB_Scrivi(
         String symbol,
         long timestampRiferimento,
         String rete,
         String address) {
+
+    //Un istante troppo vicino ad "adesso" non ha ancora avuto il tempo di essere pubblicato dagli
+    //exchange (nè da CoinMarketCap): scriverlo qui lo renderebbe erroneamente "irrecuperabile per
+    //sempre" per il resto della giornata, perchè l'istante di riferimento usato per l'anno fiscale
+    //in corso (Calcoli_RT.ChiudiAnno) è fisso a "oggi 00:00" e non avanza con l'orologio — vedi
+    //CLAUDE.md, caso CRO del 2026-09-18. Due ore di margine e non un giorno intero: un margine di
+    //un giorno avrebbe spostato lo stesso problema al cambio di data, sull'istante "oggi 00:00"
+    //appena diventato valido.
+    if (System.currentTimeMillis() - timestampRiferimento < MARGINE_KO_TROPPO_RECENTE_MS) {
+        return false;
+    }
 
     if (symbol == null)symbol="";
 
@@ -3514,28 +3534,63 @@ public static void ScriviPuntiPrezzoInCache(String symbol, JsonArray punti) {
             JsonObject pricesObj = obj.has("prices") && obj.get("prices").isJsonObject()
                     ? obj.getAsJsonObject("prices")
                     : null;
-            if (pricesObj == null) continue;
+            if (pricesObj != null) {
+                for (Map.Entry<String, JsonElement> entry : pricesObj.entrySet()) {
+                    String exchange = entry.getKey();
+                    JsonElement valEl = entry.getValue();
+                    if (valEl == null || valEl.isJsonNull()) continue;
 
-            for (Map.Entry<String, JsonElement> entry : pricesObj.entrySet()) {
-                String exchange = entry.getKey();
-                JsonElement valEl = entry.getValue();
-                if (valEl == null || valEl.isJsonNull()) continue;
+                    double value;
+                    try {
+                        value = valEl.getAsDouble();
+                    } catch (Exception ex) {
+                        // valore non numerico: skip
+                        continue;
+                    }
 
-                double value;
-                try {
-                    value = valEl.getAsDouble();
-                } catch (Exception ex) {
-                    // valore non numerico: skip
-                    continue;
+                    ps.setLong(1, ts);
+                    ps.setString(2, exchange);
+                    ps.setString(3, symbol);
+                    ps.setDouble(4, value);
+                    ps.setString(5, "");//Rete
+                    ps.setString(6, "");//Address
+                    ps.addBatch();
                 }
+            }
 
-                ps.setLong(1, ts);
-                ps.setString(2, exchange);
-                ps.setString(3, symbol);
-                ps.setDouble(4, value);
-                ps.setString(5, "");//Rete
-                ps.setString(6, "");//Address
-                ps.addBatch();
+            //Punti trovati da un exchange ma senza un tasso di cambio EUR affidabile da nessuna
+            //fonte exchange (né quella piattaforma né, a scalare da Binance, le altre interrogate)
+            //per quell'esatto minuto: si converte qui con CoinMarketCap+Banca d'Italia
+            //(ConvertiStablecoinInEuro) e si scrive con l'exchange DI PROVENIENZA del dato grezzo,
+            //non "CoinMarketCap" — scelta esplicita: i casi sono rari e per le date più vecchie una
+            //piccola imprecisione è accettabile, mentre l'attribuzione all'exchange resta più
+            //leggibile. Conseguenza voluta: fonteEDaExchangeCCXT() tratterà questa riga come un
+            //prezzo diretto di quell'exchange, indistinguibile a valle da uno vero.
+            if (obj.has("grezzi") && obj.get("grezzi").isJsonObject()) {
+                for (Map.Entry<String, JsonElement> entry : obj.getAsJsonObject("grezzi").entrySet()) {
+                    String exchange = entry.getKey();
+                    if (!entry.getValue().isJsonObject()) continue;
+                    JsonObject g = entry.getValue().getAsJsonObject();
+                    if (!g.has("valore") || !g.has("denom")) continue;
+
+                    BigDecimal valoreGrezzo;
+                    try {
+                        valoreGrezzo = g.get("valore").getAsBigDecimal();
+                    } catch (Exception ex) {
+                        continue;
+                    }
+                    String denom = g.get("denom").getAsString();
+                    BigDecimal valoreEur = ConvertiStablecoinInEuro(valoreGrezzo, denom, ts);
+                    if (valoreEur == null) continue;
+
+                    ps.setLong(1, ts);
+                    ps.setString(2, exchange);
+                    ps.setString(3, symbol);
+                    ps.setDouble(4, valoreEur.doubleValue());
+                    ps.setString(5, "");//Rete
+                    ps.setString(6, "");//Address
+                    ps.addBatch();
+                }
             }
         }
         ps.executeBatch();
@@ -3559,6 +3614,38 @@ static final java.util.Set<String> EXCHANGE_CCXT =
  */
 static boolean fonteEDaExchangeCCXT(String fonte) {
     return fonte != null && EXCHANGE_CCXT.contains(fonte.trim().toLowerCase());
+}
+
+/** Id CoinMarketCap di USDT e USDC, stabili da anni: riserva usata da {@link #RecuperaPrezziDaCoinMarketCap}
+ *  quando la mappa dinamica (che richiede una API key configurata) non le conosce. */
+static final Map<String, Integer> ID_CMC_STABLECOIN = Map.of("USDT", 825, "USDC", 3408);
+
+/**
+ * Converte in EUR un valore denominato in USD o in una stablecoin (USDT/USDC), per i punti che
+ * {@code Historical_Multi_Eur.js} restituisce come "grezzi": trovati su un exchange ma senza un
+ * tasso di cambio EUR affidabile da nessuna fonte exchange (nè quella stessa piattaforma nè, a
+ * scalare da Binance, le altre interrogate) per quell'esatto minuto.
+ *
+ * <p>Per USDT/USDC si usa il prezzo storico della stablecoin stessa in EUR — già calcolato da
+ * {@link #RecuperaPrezziDaCoinMarketCap} con CoinMarketCap (id cablati in {@link #ID_CMC_STABLECOIN},
+ * non serve una API key) + {@link #CambioUSDEUR} (Banca d'Italia) — anziché rifare da capo il
+ * doppio passaggio. Se CoinMarketCap non risponde, ultimo ripiego: la stablecoin vale 1 USD esatto.
+ *
+ * @return il valore convertito in EUR, o {@code null} se anche Banca d'Italia non ha un tasso
+ *         per quella data
+ */
+static BigDecimal ConvertiStablecoinInEuro(BigDecimal valoreStablecoin, String denom, long timestampMs) {
+    if ("USD".equalsIgnoreCase(denom)) {
+        String eur = CambioUSDEUR(valoreStablecoin.toPlainString(), FunzioniDate.ConvertiDatadaLong(timestampMs));
+        return eur == null ? null : new BigDecimal(eur);
+    }
+    RecuperaPrezziDaCoinMarketCap(denom, timestampMs);
+    InfoPrezzo prezzoStablecoinInEur = DammiPrezzoDaDatabase(denom, timestampMs, "", "", "", 60, BigDecimal.ONE);
+    if (prezzoStablecoinInEur != null) {
+        return valoreStablecoin.multiply(prezzoStablecoinInEur.prezzoUnitario);
+    }
+    String eur = CambioUSDEUR(valoreStablecoin.toPlainString(), FunzioniDate.ConvertiDatadaLong(timestampMs));
+    return eur == null ? null : new BigDecimal(eur);
 }
 
 /**
@@ -3736,6 +3823,17 @@ public static List<RichiestaPrezzo> FiltraRichiesteGiaCoperte(List<RichiestaPrez
         if (Interruzione.Richiesta()) break;
         esaminate++;
         if (progress != null && esaminate % 200 == 0) progress.SetAvanzamento(esaminate);
+
+        //Una richiesta gia' marcata irrecuperabile PROPRIO su questo istante (stessa chiave di
+        //PrezzoIrrecuperabileDaDB_Scrivi alla riga 1241 di CambioXXXEUR: simbolo, istante esatto,
+        //rete/address vuoti) non va richiesta: CambioXXXEUR la scarterebbe comunque al suo primo
+        //controllo (riga 1133) senza mai arrivare a interrogare gli exchange. Senza questo salto il
+        //pre-scarico la richiede lo stesso e, se stavolta la rete risponde, scrive un prezzo che
+        //l'istante esatto aveva gia' dichiarato irrecuperabile — cambiando l'esito rispetto a chi non
+        //passa dal pre-scarico, invece di limitarsi a raggruppare le stesse richieste in blocchi
+        //(vedi Calcoli_RW_GoldenMasterTest, dove questo aveva fatto ritrovare prezzi di fine anno
+        //diversi dalla baseline).
+        if (PrezzoIrrecuperabileDaDB_Leggi(r.simbolo, r.istante, "", "")) continue;
 
         long oraInt = FunzioniDate.OraIntYYYYMMDDHH(r.since);
         if (OraCCXT_Conta(r.simbolo, oraInt) >= EXCHANGE_CCXT.size()) continue;
@@ -4159,9 +4257,12 @@ static List<RichiestaPrezzo> RaccogliRichiestePerMovimenti(java.util.Collection<
  * ±5 minuti, che al confine di mezzanotte diventano due distinte): coprirne meno lascerebbe il
  * percorso per singola moneta a lanciare Node proprio per l'ora scoperta.
  *
+ * @param origine etichetta breve del chiamante (es. "giacenze a data", "RW", "RT"), solo per il log:
+ *        la funzione è condivisa da più schede/motori e senza questa etichetta il log di uno mostra
+ *        sempre il nome del primo che l'ha usata, indipendentemente da chi la sta davvero chiamando
  * @return quante coppie (moneta, ora) sono state effettivamente richieste
  */
-public static int PreScaricaPrezziMonete(java.util.Collection<Moneta> monete, long data, Download progress) {
+public static int PreScaricaPrezziMonete(java.util.Collection<Moneta> monete, long data, Download progress, String origine) {
     if (monete == null || monete.isEmpty() || data <= 0) return 0;
 
     long adessoMs = System.currentTimeMillis();
@@ -4209,7 +4310,7 @@ public static int PreScaricaPrezziMonete(java.util.Collection<Moneta> monete, lo
     richieste = FiltraRichiesteGiaCoperte(richieste, progress);
     if (richieste.isEmpty()) return 0;
 
-    System.out.println("Pre-scarico prezzi (giacenze a data): " + richieste.size() + " coppie (moneta, ora) da chiedere");
+    System.out.println("Pre-scarico prezzi (" + origine + "): " + richieste.size() + " coppie (moneta, ora) da chiedere");
     if (progress != null) {
         progress.SetLabel("Pre-scarico prezzi: " + richieste.size() + " quotazioni da recuperare...");
         progress.SetMassimo(richieste.size());
@@ -4230,11 +4331,33 @@ public static int PreScaricaPrezziMonete(java.util.Collection<Moneta> monete, lo
  */
 public static int ScaricaRichiesteABlocchi(List<RichiestaPrezzo> richieste, Download progress) {
     if (richieste == null || richieste.isEmpty()) return 0;
+    //Stesso gate di CambioXXXEUR (riga ~1148) prima di andare in rete: senza, il pre-scarico
+    //interrogherebbe comunque gli exchange quando l'app si considera offline (AttesaConnessione.Attendi()
+    //e' un no-op fuori da un'importazione, quindi qui equivale a "non sono connesso") — differenza
+    //osservata proprio da un test che forza lo stato offline per restare deterministico
+    //(Calcoli_RW_GoldenMasterTest): senza questo controllo il pre-scarico trovava online prezzi che il
+    //resto della valorizzazione, offline, avrebbe lasciato non trovati.
+    if (!Funzioni.CeConnessioneInternet() && !AttesaConnessione.Attendi()) return 0;
+    long adessoMs = System.currentTimeMillis();
     int fatte = 0;
     for (int i = 0; i < richieste.size(); i += RICHIESTE_PER_BLOCCO) {
         if (Interruzione.Richiesta()) break;
         List<RichiestaPrezzo> blocco = richieste.subList(i, Math.min(i + RICHIESTE_PER_BLOCCO, richieste.size()));
-        RecuperaPrezziDaCCXTLotto(new ArrayList<>(blocco), EXCHANGES_CCXT);
+        //Stessa marcatura di PrezziOraCCXT che fa CambioXXXEUR (riga ~1204) dopo la SUA chiamata a
+        //RecuperaPrezziDaCCXTLotto: senza, un exchange che risponde "nessun dato" per una moneta mai
+        //quotata (CRO su un periodo scoperto, un token delistato, ...) non lascia traccia persistente
+        //di essere gia' stato controllato, e ogni nuova sessione lo richiede da capo all'infinito —
+        //FiltraRichiesteGiaCoperte non lo vedrebbe mai "coperto" per quell'ora.
+        for (EsitoLotto esito : RecuperaPrezziDaCCXTLotto(new ArrayList<>(blocco), EXCHANGES_CCXT)) {
+            if (!esito.risposto) continue;
+            long inizioOra = FunzioniDate.InizioOraRoma(esito.since);
+            //L'ora corrente non si marca mai: non e' finita e continua a produrre candele nuove.
+            if (adessoMs < inizioOra + 3600000L) continue;
+            long oraInt = FunzioniDate.OraIntYYYYMMDDHH(inizioOra);
+            for (String ex : EXCHANGE_CCXT) {
+                if (!esito.falliti.contains(ex)) OraCCXT_Scrivi(esito.simbolo, oraInt, ex);
+            }
+        }
         fatte += blocco.size();
         if (progress != null) progress.SetAvanzamento(fatte);
     }

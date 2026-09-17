@@ -221,6 +221,9 @@ private static final long serialVersionUID = 3L;
     static public Map<String, String> Mappa_MoneteStessoPrezzo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     
     public transient Calcoli_RT.AnalisiPlus APlus;
+    //true se l'ultimo RW_CalcolaRW e' arrivato in fondo; false se interrotto dall'utente col
+    //pulsante "Interrompi" della finestra di progresso (vedi RW_CalcolaRW).
+    private transient boolean RW_ElaborazioneCompletata = true;
     public static String tema;
     //Grafico della scheda "Dettagli x Tipologia" del quadro RT: istanziato dopo initComponents e
     //aggiunto a RT_Pannello_GraficoTipologia (contenitore disegnato dal GUI Builder).
@@ -10617,6 +10620,7 @@ if (result.isAction("delete-all")) {
         // 7 - Prezzo Fine
         // 8 - Giorni di detenzione
         // 9 - Causale
+        RW_ElaborazioneCompletata = true;
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
         Thread thread;
@@ -10631,10 +10635,16 @@ if (result.isAction("delete-all")) {
                 progress.Titolo("Calcolo RW in corso.... Attendere");
                 progress.SetLabel("Calcolo RW in corso.... Attendere");
                 progress.NascondiBarra();
-                progress.NascondiInterrompi();
+                //Il pulsante Interrompi resta visibile: AggiornaRWFR controlla progress.FineThread()
+                //nel ciclo principale ed esce restituendo false se viene premuto.
                 //Trovo le giacenze di inizio e fine anno
                 Map<String, List<String[]>> MappaListaGiacenzeInizioFine=Funzioni.RW_GiacenzeInizioFineAnno(RW_Anno_ComboBox.getSelectedItem().toString());
-                Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
+                // Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
+                RW_ElaborazioneCompletata = Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString(), progress);
+                if (!RW_ElaborazioneCompletata) {
+                    progress.ChiudiFinestra();
+                    return;
+                }
                 //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
                 Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
 
@@ -10773,6 +10783,9 @@ if (result.isAction("delete-all")) {
         };
         thread.start();
         progress.setVisible(true);
+        if (!RW_ElaborazioneCompletata) {
+            Messaggi.WarningMessage("Elaborazione terminata dall'utente", "", this);
+        }
         this.RW_Label_SegnalaRicalcolo.setVisible(false);
         RW_Tabella.requestFocus();
 
@@ -16995,7 +17008,7 @@ try {
                 //data e' una sola, quindi si chiedono tutte le quotazioni in un lotto solo invece di
                 //lasciare che il ciclo qui sotto lanci un processo Node per ogni moneta non in cache.
                 //Non cambia QUALE prezzo viene scelto: riempie la cache che il ciclo interroga.
-                Prezzi.PreScaricaPrezziMonete(QtaCrypto.values(), DataRiferimento, progress);
+                Prezzi.PreScaricaPrezziMonete(QtaCrypto.values(), DataRiferimento, progress, "giacenze a data");
 
                 //Il massimo torna quello dei token: il pre-scarico ha usato la stessa finestra con un
                 //massimo diverso (le quotazioni), e SetMassimo non azzera il valore corrente.

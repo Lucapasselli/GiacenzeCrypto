@@ -900,6 +900,22 @@ public class Calcoli_RT {
                     d= FunzioniDate.ConvertiDatainLongMinuto(Data);
                 }
                 Map<String, Map<String, PlusXMoneta>> MappaGrWallet_MappaMoneta_PlusXMoneta=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno);
+
+                //Pre-scarico: raccolgo qui le stesse monete (qta>0, in ogni wallet dell'anno) che il
+                //doppio ciclo qui sotto sta per valorizzare una per una a 'd', e le chiedo a lotti invece
+                //di lasciare che DammiPrezzoTransazione lanci un processo Node per ognuna non ancora in
+                //cache. Non cambia quale prezzo viene scelto (vedi Prezzi.PreScaricaPrezziMonete).
+                List<Moneta> MoneteDaValorizzare = new ArrayList<>();
+                for (Map<String, PlusXMoneta> MappaMoneta : MappaGrWallet_MappaMoneta_PlusXMoneta.values()) {
+                    for (PlusXMoneta px : MappaMoneta.values()) {
+                        Moneta mCandidata = px.Get_Moneta();
+                        if (new BigDecimal(mCandidata.Qta).compareTo(BigDecimal.ZERO) > 0) {
+                            MoneteDaValorizzare.add(mCandidata);
+                        }
+                    }
+                }
+                Prezzi.PreScaricaPrezziMonete(MoneteDaValorizzare, d, progress, "RT");
+
                 for (String Wallet : MappaGrWallet_MappaMoneta_PlusXMoneta.keySet()){
                     Map<String, PlusXMoneta> MappaMoneta_PlusXMoneta=MappaGrWallet_MappaMoneta_PlusXMoneta.get(Wallet);
                     for (String Moneta : MappaMoneta_PlusXMoneta.keySet()){

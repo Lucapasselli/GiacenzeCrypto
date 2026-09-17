@@ -521,9 +521,19 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
        * @param MappaGrWallet_CryptoStack mappa gruppo wallet → stack LIFO RW per moneta, popolata in place
        * @param inizio istante di inizio periodo (epoch minuti, per il recupero prezzo)
        * @param DataInizioAnno data di inizio periodo in formato leggibile, usata per i lotti creati
+       * @param progress finestra di progresso, o {@code null}; usata solo per raggruppare in blocchi le
+       *        richieste di prezzo di inizio anno ({@link Prezzi#PreScaricaPrezziMonete}) invece di lasciare
+       *        che il ciclo qui sotto lanci un processo Node per ogni moneta non ancora in cache
        */
       public static void CreaPrimiMovimenti(Map<String, Map<String, Moneta>> MappaGrWallet_QtaCryptoInizio,Map<String,
-              Map<String, ArrayDeque<ElementiStack>>> MappaGrWallet_CryptoStack, long inizio, String DataInizioAnno) {
+              Map<String, ArrayDeque<ElementiStack>>> MappaGrWallet_CryptoStack, long inizio, String DataInizioAnno,
+              Download progress) {
+
+        List<Moneta> TutteLeMoneteInizio = new ArrayList<>();
+        for (Map<String, Moneta> a : MappaGrWallet_QtaCryptoInizio.values()) {
+            TutteLeMoneteInizio.addAll(a.values());
+        }
+        Prezzi.PreScaricaPrezziMonete(TutteLeMoneteInizio, inizio, progress, "RW");
 
         for (String key : MappaGrWallet_QtaCryptoInizio.keySet()) {
             Map<String, Moneta> a = MappaGrWallet_QtaCryptoInizio.get(key);
@@ -1065,7 +1075,24 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
          * @param AnnoRif anno di riferimento del quadro RW, come stringa numerica (es. "2024")
          */
         public static void AggiornaRWFR(String AnnoRif) {
-        
+            AggiornaRWFR(AnnoRif, null);
+        }
+
+        /**
+         * Come {@link #AggiornaRWFR(String)}, con una finestra di progresso opzionale: se {@code progress}
+         * non è {@code null} il ciclo principale sui movimenti controlla {@link Download#FineThread()} e, se
+         * l'utente ha premuto "Interrompi", esce restituendo {@code false} senza completare il quadro (le
+         * mappe restano nello stato parziale in cui si trovavano: sta al chiamante non usarle). La stessa
+         * finestra serve anche a raggruppare in blocchi le richieste di prezzo di inizio/fine anno tramite
+         * {@link Prezzi#PreScaricaPrezziMonete} — non cambia quale prezzo viene scelto, solo quanto costa
+         * ottenerlo (vedi il javadoc di quel metodo).
+         *
+         * @param AnnoRif anno di riferimento del quadro RW, come stringa numerica (es. "2024")
+         * @param progress finestra di progresso/interruzione, o {@code null} per il comportamento invariato
+         * @return {@code true} se il calcolo è arrivato in fondo, {@code false} se interrotto dall'utente
+         */
+        public static boolean AggiornaRWFR(String AnnoRif, Download progress) {
+
         MappaGruppo_IDPrimoMovimento=Funzioni.MappaPrimoMovimentoXGruppoWallet();
         String Rilevanza=DatabaseH2.Pers_Opzioni_Leggi("RW_Rilevanza");
         //Chiusura conseguente apertura di un nuovo rigo segue queste roegole
@@ -1117,6 +1144,9 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         List<String[]> ListaRW;
 
         for (String[] v : MappaCryptoWallet.values()) {
+            if (progress != null && progress.FineThread()) {
+                return false;
+            }
             String GruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);
             String GW = GruppoWallet;
             //if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) GW = "Unico 01";
@@ -1219,10 +1249,10 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 //1 - Inseirsco nello stack tutti i valori iniziali precedentemente trovati
                 //2 - Uso il lifo per il calcolo dei valori RW
                 if (PrimoMovimentoAnno) {
-                    
-                    CreaPrimiMovimenti(MappaGrWallet_QtaCryptoInizio,MappaGrWallet_CryptoStack,inizio,DataInizioAnno);
+
+                    CreaPrimiMovimenti(MappaGrWallet_QtaCryptoInizio,MappaGrWallet_CryptoStack,inizio,DataInizioAnno,progress);
                     PrimoMovimentoAnno = false;
-                    
+
                 }
 
                 //Continuo comunque a fare la somma della qta delle crypto che servirà dopo per chiudere gli RW di fine anno
@@ -1753,11 +1783,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 //Se arrivato a questo punto non ho ancora creato i primi movimenti li creo ora
                 //1 - Inseirsco nello stack tutti i valori iniziali precedentemente trovati
                 //2 - Uso il lifo per il calcolo dei valori RW
-                if (PrimoMovimentoAnno) {                   
-                    CreaPrimiMovimenti(MappaGrWallet_QtaCryptoInizio,MappaGrWallet_CryptoStack,inizio,DataInizioAnno);
+                if (PrimoMovimentoAnno) {
+                    CreaPrimiMovimenti(MappaGrWallet_QtaCryptoInizio,MappaGrWallet_CryptoStack,inizio,DataInizioAnno,progress);
                    // System.out.println("Secondo Primo Movimento");
                     //PrimoMovimentoAnno = false;
-                 }  
+                 }
  
                 //finito il ciclo
                 //1 - Trovo il valore di fine anno di riferimento relativo a tutti i token e chiudo tutti i conti aperti
@@ -1766,8 +1796,19 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                // if(DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) MappaGrWallet_QtaCrypto=MappaGrWallet_QtaCryptoTOT;
              //  Map<String, Map<String, Moneta>> MappaGrWallet_QtaCrypto2=new TreeMap<>();
              //   MappaGrWallet_QtaCrypto2 .putAll(MappaGrWallet_QtaCrypto);
-              
-               
+
+
+                    //Pre-scarico: a questo punto MappaGrWallet_QtaCryptoInizio contiene, per ogni gruppo
+                    //wallet, le giacenze aggiornate dal ciclo appena finito, cioe' esattamente le monete
+                    //che il ciclo qui sotto sta per valorizzare a fine anno. Si chiedono a lotti invece di
+                    //lasciare che DammiPrezzoTransazioneSalvaInfoPrezzo lanci un processo Node per ognuna
+                    //non ancora in cache. Non cambia quale prezzo viene scelto (vedi Prezzi.PreScaricaPrezziMonete).
+                    List<Moneta> TutteLeMoneteFine = new ArrayList<>();
+                    for (Map<String, Moneta> a : MappaGrWallet_QtaCryptoInizio.values()) {
+                        TutteLeMoneteFine.addAll(a.values());
+                    }
+                    Prezzi.PreScaricaPrezziMonete(TutteLeMoneteFine, fine, progress, "RW");
+
                     for (String key : MappaGrWallet_QtaCryptoInizio.keySet()) {
                         //Key è il Gruppo Wallet
                         String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(key);
@@ -1881,6 +1922,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         if (DatabaseH2.Pers_Opzioni_Leggi("RW_FiatInRW", "NO").equalsIgnoreCase("SI")) {
             Calcoli_RW_Fiat.generaRighiFiat(AnnoRif);
         }
+        return true;
     }
     
     

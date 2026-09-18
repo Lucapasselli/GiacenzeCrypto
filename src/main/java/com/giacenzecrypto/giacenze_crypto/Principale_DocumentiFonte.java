@@ -326,21 +326,22 @@ public class Principale_DocumentiFonte {
      *
      * <p>Le due conferme non sono un vezzo : il pulsante è lo stesso con cui si eliminano i documenti
      * inerti, la selezione della tabella si sposta con una freccia, e qui si cancella una parte
-     * dell'archivio fiscale. La prima conferma dice <i>che cosa</i> sparisce, la seconda <i>che non
-     * torna indietro</i>.
+     * dell'archivio fiscale. La prima conferma dice <i>che cosa</i> sparisce, la seconda che la
+     * cancellazione, per quanto provvisoria, va presa sul serio.
      *
-     * <p>L'ordine delle tre operazioni conta, e non è intercambiabile :
+     * <p>La cancellazione del documento è <b>provvisoria quanto quella dei movimenti</b> che si tolgono
+     * dalla mappa, e per lo stesso motivo: nel resto dell'applicazione la cancellazione di un movimento
+     * resta solo in memoria finché l'utente non preme <i>Salva</i>, e cancellare qui subito copia e riga
+     * di registro del documento la renderebbe l'unica eccezione — un <i>Annulla</i> nella tabella dei
+     * movimenti (che li rilegge dal file) li farebbe ricomparire puntando a un documento già sparito.
+     * L'ordine è quindi:
      * <ol>
-     *   <li>si tolgono i movimenti dalla mappa;</li>
-     *   <li>si <b>salva subito</b> con backup permanente. La cancellazione dei movimenti, nel resto
-     *       dell'applicazione, è solo in memoria finché l'utente non preme <i>Salva</i> — ma qui
-     *       l'eliminazione del documento è immediata e definitiva, quindi un <i>Annulla</i> nella
-     *       tabella dei movimenti li rileggerebbe dal file facendoli puntare a un documento che non
-     *       esiste più. {@code Scrivi_Movimenti_Crypto(.., true)} rinomina il file <i>attuale</i> —
-     *       quello che i movimenti ce li ha ancora — in {@code Backup/movimenti.crypto.backup.&lt;ts&gt;} :
-     *       quel backup è l'unica via di recupero, ed è il motivo per cui si scrive <b>prima</b> di
-     *       eliminare il documento;</li>
-     *   <li>si elimina il documento.</li>
+     *   <li>si tolgono i movimenti dalla mappa (provvisorio, come sempre);</li>
+     *   <li>si accoda la cancellazione del documento con {@link DocumentiFonte#AccodaCancellazione(int)} :
+     *       sparisce subito dal pannello, ma copia e riga di registro restano finché
+     *       {@link DocumentiFonte#SalvaBuffer(java.util.Map)} non le tocca davvero — chiamata da dentro
+     *       {@code Importazioni.Scrivi_Movimenti_Crypto}, cioè al prossimo <i>Salva</i> in
+     *       "Transazioni Crypto" (o alla chiusura, se l'utente sceglie di salvare).</li>
      * </ol>
      *
      * @param Id documento da eliminare
@@ -385,19 +386,19 @@ public class Principale_DocumentiFonte {
 
         AppDialog.DialogResult secondo = AppDialog.builder(owner)
                 .windowTitle("Conferma definitiva")
-                .bodyTitle("Sei sicuro? L'operazione non è reversibile")
+                .bodyTitle("Confermi la cancellazione?")
                 .showTitleInBody(true)
                 .theme()
                 .type(AppDialog.DialogType.WARNING)
                 .message("Stai per eliminare " + r.Movimenti
                         + (r.Movimenti == 1 ? " movimento" : " movimenti")
                         + " dall'archivio, insieme a " + Nome + ".")
-                .details("I movimenti eliminati non si possono recuperare dall'applicazione, e nemmeno il "
-                        + "file da cui provenivano : plusvalenze, giacenze e quadri RW/RT verranno "
-                        + "ricalcolati senza di loro.<br><br>"
-                        + "L'archivio viene salvato subito : dell'archivio <b>prima</b> della "
-                        + "cancellazione resta una copia nella cartella <b>Backup</b>, ed è l'unico modo "
-                        + "per tornare indietro.")
+                .details("Il documento e i movimenti spariranno subito dalla tabella e dai calcoli : "
+                        + "plusvalenze, giacenze e quadri RW/RT verranno ricalcolati senza di loro.<br><br>"
+                        + "La cancellazione resta però provvisoria : diventa definitiva solo quando premi "
+                        + "<b>Salva</b> nella sezione \"Transazioni Crypto\". Fino a quel momento puoi "
+                        + "tornare indietro con il pulsante <b>Annulla</b> della stessa sezione, che "
+                        + "ripristina anche il documento.")
                 .action(AppDialog.DialogAction.builder("cancel", "Annulla")
                         .role(AppDialog.ActionRole.SECONDARY)
                         .build())
@@ -411,9 +412,12 @@ public class Principale_DocumentiFonte {
         }
 
         int eliminati = EliminaMovimentiDelDocumento(Id);
-        //Salvataggio permanente : il file attuale, con i movimenti ancora dentro, diventa il backup
-        Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet, true);
-        DocumentiFonte.Annulla(Id);
+        //La cancellazione del documento è provvisoria quanto quella dei movimenti appena tolti dalla mappa:
+        //niente scrittura qui. Sparisce subito da Elenco() (quindi dal pannello), ma la riga di registro e il
+        //file restano finché l'utente non preme Salva in 'Transazioni Crypto' — DocumentiFonte.SalvaBuffer(),
+        //chiamata da dentro Scrivi_Movimenti_Crypto esattamente come MovimentiStorico.SalvaBuffer, la rende
+        //allora definitiva. Un Annulla nel frattempo la scarta insieme al resto (vedi ScartaBuffer()).
+        DocumentiFonte.AccodaCancellazione(Id);
         return new EsitoEliminazione(1, eliminati);
     }
 

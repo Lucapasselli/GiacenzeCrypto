@@ -10129,10 +10129,35 @@ GiacenzeaData_CompilaTabellaToken(true);
                     }
                 }
             }
+
+            //Doppio click col tasto sinistro su una riga che è davvero un movimento (posizioneID!=-1,
+            //quindi identificato sopra, e presente in MappaCryptoWallet): apre il dettaglio, come la
+            //voce "Dettagli Movimento" del menu contestuale. Non si passa da PopUp_IDTrans/PopUp_Component,
+            //perché Funzioni.PopUpMenu li valorizza solo sul tasto destro, subito sotto
+            if (evt.getClickCount()==2 && SwingUtilities.isLeftMouseButton(evt) && IDTransazione!=null){
+                Funzione_ApriDettaglioMovimento(IDTransazione, tabella);
+                return;
+            }
+
             Funzioni.PopUpMenu(this, evt, PopupMenu,IDTransazione);
             // TransazioniCrypto_CompilaTextPaneDatiMovimento();
-            
+
         }
+    }
+
+    /**
+     * Apre {@link GUI_DettaglioTransazione} sul movimento indicato. Condivisa fra la voce di menu
+     * "Dettagli Movimento" e il doppio click sulle tabelle che elencano movimenti, così le due strade
+     * non possono divergere.
+     * @param ID ID del movimento di cui mostrare il dettaglio
+     * @param c componente da cui posizionare relativamente il dialogo
+     */
+    private void Funzione_ApriDettaglioMovimento(String ID, Component c) {
+        GUI_DettaglioTransazione t = new GUI_DettaglioTransazione();
+        t.AzzeraMap();
+        t.TransazioniCrypto_CompilaTextPaneDatiMovimento(ID);
+        t.setLocationRelativeTo(c);
+        t.setVisible(true);
     }
     
     
@@ -13711,11 +13736,7 @@ if (result != null && !result.isAction("cancel")) {
     private void MenuItem_DettagliMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_DettagliMovimentoActionPerformed
         // TODO add your handling code here:
         if (PopUp_IDTrans!=null){
-            GUI_DettaglioTransazione t =new GUI_DettaglioTransazione();
-            t.AzzeraMap();
-            t.TransazioniCrypto_CompilaTextPaneDatiMovimento(PopUp_IDTrans);
-            t.setLocationRelativeTo(PopUp_Component);           
-            t.setVisible(true);
+            Funzione_ApriDettaglioMovimento(PopUp_IDTrans, PopUp_Component);
         }
     }//GEN-LAST:event_MenuItem_DettagliMovimentoActionPerformed
 
@@ -15721,6 +15742,12 @@ if (result != null && !result.isAction("cancel")) {
         } catch (IOException ex) {
             LoggerGC.ScriviErrore(ex);
         }
+        //Ricaricare i movimenti da file fa ricomparire anche quelli di un documento la cui cancellazione
+        //era in coda (Gestione Documentale) ma non ancora salvata: la coda va scartata, altrimenti quel
+        //documento resterebbe nascosto dal pannello fino al prossimo salvataggio vero pur non avendo
+        //più nulla da cancellare
+        DocumentiFonte.ScartaBuffer();
+        GestioneDocumentaleDaAggiornare = true;
         //Metto gli avvisi sulle funzioni che probabilmente sono da ricalcolare
         AccendiLabelRicalcolo();
         if(GiacenzeaData_Tabella.getRowCount()>0)GiacenzeaData_Label_Aggiornare.setVisible(true);

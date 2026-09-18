@@ -68,8 +68,8 @@
     "Transfer Between Main and Funding Wallet":       "IGNORA",
     "Staking Purchase":                               "IGNORA",
     "Staking Redemption":                             "IGNORA",
-    "Dual Savings Purchase":                          "TRASFERIMENTO-CRYPTO-INTERNO",
-    "Dual Savings Settlement":                        "TRASFERIMENTO-CRYPTO-INTERNO",
+    "Dual Savings Purchase":                          "TRASFERIMENTO-CRYPTO",
+    "Dual Savings Settlement":                        "TRASFERIMENTO-CRYPTO",
     "Main and Funding Account Transfer":              "IGNORA",
     "transfer_in":                                    "IGNORA",
     "transfer_out":                                   "IGNORA",
@@ -107,8 +107,8 @@
     "Buy":                                            "SCAMBIO CRYPTO-CRYPTO",
     "Sell":                                           "SCAMBIO CRYPTO-CRYPTO",
     "Transaction Related":                            "SCAMBIO CRYPTO-CRYPTO",
-    "ETH 2.0 Staking":                               "SCAMBIO CRYPTO-CRYPTO",
-    "ETH 2.0 Staking Withdrawals":                   "SCAMBIO CRYPTO-CRYPTO",
+    "ETH 2.0 Staking":                                "SCAMBIO CRYPTO-CRYPTO",
+    "ETH 2.0 Staking Withdrawals":                    "SCAMBIO CRYPTO-CRYPTO",
     "Stablecoins Auto-Conversion":                    "SCAMBIO CRYPTO-CRYPTO",
     "SOL Staking Redemption - Distribute":            "SCAMBIO CRYPTO-CRYPTO",
     "WBETH2.0 - Staking":                             "SCAMBIO CRYPTO-CRYPTO",
@@ -156,10 +156,6 @@
   "campiExtra": {
     "7": 3,
     "21": 6
-  },
-  "walletSpecularePerCausale": {
-    "Dual Savings Purchase":   "Investimenti",
-    "Dual Savings Settlement": "Investimenti"
   },
   "walletPerCausale": {}
 }

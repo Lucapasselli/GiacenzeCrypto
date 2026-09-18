@@ -58,6 +58,10 @@ class DocumentiFonteTest {
 
     @BeforeEach
     void puliscePartenza() {
+        //Va scartato PRIMA del giro su Elenco() : una cancellazione ancora in coda da un test precedente
+        //nasconderebbe il documento a questo stesso ciclo di pulizia, che quindi non lo cancellerebbe
+        //(il buffer è statico e sopravvive fra i test)
+        DocumentiFonte.ScartaBuffer();
         for (DocumentiFonte.Documento d : DocumentiFonte.Elenco()) {
             DocumentiFonte.Annulla(d.Id);
         }
@@ -157,6 +161,84 @@ class DocumentiFonteTest {
         assertEquals(0, R.Id, "senza file non c'è nulla da conservare");
         assertFalse(R.Nuovo);
         assertTrue(DocumentiFonte.Elenco().isEmpty());
+    }
+
+    // ------------------------------------------------------------------
+    // CANCELLAZIONE PROVVISORIA — "documento + movimenti" non tocca disco finché non si consolida
+    // ------------------------------------------------------------------
+
+    @Test
+    void accodaCancellazione_spariceSubitoDaElencoMaRestaLeggibile() throws Exception {
+        DocumentiFonte.Registrazione R = DocumentiFonte.Registra(
+                fileConContenuto("in_coda.csv", "riga\n"), DocumentiFonte.TIPO_CSV, "Prova");
+
+        DocumentiFonte.AccodaCancellazione(R.Id);
+
+        assertTrue(DocumentiFonte.Elenco().isEmpty(),
+                "il pannello non deve mostrare un documento la cui cancellazione è in coda");
+        assertNotNull(DocumentiFonte.Leggi(R.Id),
+                "Leggi() non filtra: Annulla() lo usa per risalire al file da cancellare davvero");
+        assertNotNull(DocumentiFonte.FileConservato(R.Id), "il file non è ancora stato toccato");
+        assertTrue(DocumentiFonte.InAttesaDiCancellazione(R.Id));
+    }
+
+    @Test
+    void salvaBuffer_senzaMovimentiViviCancellaDavvero() throws Exception {
+        DocumentiFonte.Registrazione R = DocumentiFonte.Registra(
+                fileConContenuto("da_consolidare.csv", "riga\n"), DocumentiFonte.TIPO_CSV, "Prova");
+        DocumentiFonte.AccodaCancellazione(R.Id);
+
+        DocumentiFonte.SalvaBuffer(Principale.MappaCryptoWallet);
+
+        assertNull(DocumentiFonte.Leggi(R.Id), "al consolidamento, senza movimenti vivi, si cancella per davvero");
+        assertFalse(DocumentiFonte.InAttesaDiCancellazione(R.Id), "la voce esce comunque dal buffer");
+    }
+
+    @Test
+    void salvaBuffer_conMovimentiRicomparsiNonCancellaEDe_accoda() throws Exception {
+        //Simula un Annulla che ha ricaricato dal file un movimento del documento: la cancellazione era
+        //stata accodata quando il movimento era già fuori mappa, ma qui è tornato prima del consolidamento
+        DocumentiFonte.Registrazione R = DocumentiFonte.Registra(
+                fileConContenuto("resuscitato.csv", "riga\n"), DocumentiFonte.TIPO_CSV, "Prova");
+        DocumentiFonte.AccodaCancellazione(R.Id);
+        movimentoInMappa("20210105120000_A_001_1_DC", "Binance", String.valueOf(R.Id));
+
+        DocumentiFonte.SalvaBuffer(Principale.MappaCryptoWallet);
+
+        assertNotNull(DocumentiFonte.Leggi(R.Id),
+                "un documento ancora agganciato a un movimento vivo non va cancellato");
+        assertFalse(DocumentiFonte.InAttesaDiCancellazione(R.Id),
+                "la voce esce comunque dal buffer, risolta senza cancellare");
+        assertFalse(DocumentiFonte.Elenco().isEmpty(), "non essendo più in coda, torna visibile nel pannello");
+    }
+
+    @Test
+    void scartaBuffer_annullaLaCancellazioneInCodaSenzaToccareIlDocumento() throws Exception {
+        DocumentiFonte.Registrazione R = DocumentiFonte.Registra(
+                fileConContenuto("ripensato.csv", "riga\n"), DocumentiFonte.TIPO_CSV, "Prova");
+        DocumentiFonte.AccodaCancellazione(R.Id);
+
+        DocumentiFonte.ScartaBuffer();
+
+        assertFalse(DocumentiFonte.InAttesaDiCancellazione(R.Id));
+        assertFalse(DocumentiFonte.Elenco().isEmpty(), "scartata la coda, il documento torna visibile subito");
+        assertNotNull(DocumentiFonte.FileConservato(R.Id));
+    }
+
+    @Test
+    void registra_reimportareUnDocumentoInCodaLoToglieDallaCoda() throws Exception {
+        //Rilanciare l'import dello stesso file mentre la sua cancellazione è ancora in coda lo rende di
+        //nuovo vivo per l'utente: non deve restare nascosto dal pannello fino al prossimo salvataggio
+        File csv = fileConContenuto("reimportato.csv", "riga\n");
+        DocumentiFonte.Registrazione R = DocumentiFonte.Registra(csv, DocumentiFonte.TIPO_CSV, "Prova");
+        DocumentiFonte.AccodaCancellazione(R.Id);
+
+        DocumentiFonte.Registrazione Ripetuta = DocumentiFonte.Registra(csv, DocumentiFonte.TIPO_CSV, "Prova");
+
+        assertEquals(R.Id, Ripetuta.Id);
+        assertFalse(Ripetuta.Nuovo);
+        assertFalse(DocumentiFonte.InAttesaDiCancellazione(R.Id));
+        assertFalse(DocumentiFonte.Elenco().isEmpty());
     }
 
     // ------------------------------------------------------------------

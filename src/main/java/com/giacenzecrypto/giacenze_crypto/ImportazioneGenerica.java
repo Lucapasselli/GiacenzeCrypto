@@ -271,17 +271,17 @@ public class ImportazioneGenerica {
                 if (riga == null) {
                     continue;
                 }
-                riga = riga.replace("\"", "").replaceAll("\uFEFF", "").trim();
+                riga = riga.replaceAll("\uFEFF", "").trim();
                 if (riga.isBlank()) {
                     continue;
                 }
                 if (numRiga <= cfg.righeIntestazione) {
                     if (numRiga == cfg.rigaIntestazione && cfg.autoDetectColonne) {
-                        cfg.risolviColonneDaIntestazione(riga.split(sep, -1));
+                        cfg.risolviColonneDaIntestazione(splitCsvRispettoVirgolette(riga, sep));
                     }
                     continue;
                 }
-                if (riga.matches("[-,]+")) {
+                if (riga.replace("\"", "").matches("[-,]+")) {
                     continue;
                 }
                 righeRaw.add(riga);
@@ -290,7 +290,7 @@ public class ImportazioneGenerica {
 
         // FASE 2 – splitto e valido
         for (String r : righeRaw) {
-            String[] campi = r.split(sep, -1);
+            String[] campi = splitCsvRispettoVirgolette(r, sep);
             if (campi.length <= cfg.colonnaData) {
                 scarta("RIGA TROPPO CORTA", r);
                 continue;
@@ -332,6 +332,49 @@ public class ImportazioneGenerica {
         });
 
         return risultato;
+    }
+
+    /**
+     * Divide una riga CSV grezza sul separatore configurato, rispettando le virgolette: un
+     * separatore che compare dentro una coppia di {@code "} non chiude il campo. Le virgolette
+     * vengono tolte dal contenuto dei campi qui, non prima dello split — farlo prima scambierebbe
+     * per separatore di colonna un separatore che sta dentro un campo quotato (es. la virgola delle
+     * migliaia di un importo, {@code "$2,270.52"}), sfasando tutte le colonne successive (bug C16,
+     * vedi {@code nocommit/Documentazione/Analisi_Bug_Criticita.md}).
+     *
+     * <p>Non implementa l'escaping RFC4180 delle virgolette raddoppiate ({@code ""} dentro un campo
+     * quotato per rappresentare un {@code "} letterale): come il vecchio {@code replace("\"","")},
+     * le virgolette vengono semplicemente rimosse dal contenuto.</p>
+     *
+     * <p>Se il separatore non è un singolo carattere (mai il caso in nessuna configurazione
+     * attuale) si ripiega sul comportamento precedente, per non introdurre un comportamento nuovo
+     * e non testato su un caso che oggi non si presenta.</p>
+     *
+     * @param riga riga CSV grezza, con le virgolette originali ancora presenti
+     * @param sep separatore di colonna configurato (es. {@code ","})
+     * @return i campi della riga, senza virgolette
+     */
+    static String[] splitCsvRispettoVirgolette(String riga, String sep) {
+        if (sep == null || sep.length() != 1) {
+            return riga.replace("\"", "").split(sep, -1);
+        }
+        char sepChar = sep.charAt(0);
+        List<String> campi = new ArrayList<>();
+        StringBuilder campo = new StringBuilder();
+        boolean dentroVirgolette = false;
+        for (int i = 0; i < riga.length(); i++) {
+            char c = riga.charAt(i);
+            if (c == '"') {
+                dentroVirgolette = !dentroVirgolette;
+            } else if (c == sepChar && !dentroVirgolette) {
+                campi.add(campo.toString());
+                campo.setLength(0);
+            } else {
+                campo.append(c);
+            }
+        }
+        campi.add(campo.toString());
+        return campi.toArray(new String[0]);
     }
 
     /**

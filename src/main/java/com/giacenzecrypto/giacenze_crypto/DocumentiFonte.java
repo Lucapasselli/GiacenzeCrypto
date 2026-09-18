@@ -44,6 +44,14 @@ import java.util.zip.GZIPOutputStream;
  *       Reimportare un file già importato è precisamente il caso che aggiunge zero movimenti <i>e</i> riusa
  *       l'id esistente per via del riconoscimento per impronta: cancellarlo lascerebbe orfani i movimenti
  *       della <i>prima</i> importazione.</li>
+ *   <li><b>Cancellare un documento insieme ai suoi movimenti è provvisorio quanto la cancellazione dei
+ *       movimenti stessi.</b> {@link #AccodaCancellazione(int)} lo fa sparire subito da {@link #Elenco()}
+ *       ma non tocca copia né riga di registro: lo fa {@link #SalvaBuffer(java.util.Map)}, chiamata da
+ *       {@code Importazioni.Scrivi_Movimenti_Crypto} esattamente come {@code MovimentiStorico.SalvaBuffer},
+ *       cioè nello stesso istante in cui la cancellazione dei movimenti smette di essere annullabile.
+ *       {@link #Leggi(int)} deliberatamente <b>non</b> nasconde questi documenti — {@code Annulla} lo
+ *       chiama per risalire al file da cancellare, e filtrarlo lì lascerebbe il {@code .gz} orfano per
+ *       sempre.</li>
  * </ul>
  *
  * <p>Nello stile delle estrazioni recenti: tutti i metodi sono {@code static}, la classe non ha campi Swing
@@ -135,6 +143,9 @@ public class DocumentiFonte {
 
             int esistente = CercaPerImpronta(impronta);
             if (esistente > 0) {
+                //Rimportarlo lo rende di nuovo vivo: se una sua cancellazione era in coda, Elenco() non
+                //deve continuare a nasconderlo fino al prossimo salvataggio
+                BufferCancellazioni.remove(Integer.valueOf(esistente));
                 return new Registrazione(esistente, false);
             }
 
@@ -182,6 +193,8 @@ public class DocumentiFonte {
 
             int esistente = CercaPerImpronta(impronta);
             if (esistente > 0) {
+                //Vedi la nota gemella in Registra(File, ...)
+                BufferCancellazioni.remove(Integer.valueOf(esistente));
                 return new Registrazione(esistente, false);
             }
 
@@ -477,6 +490,84 @@ public class DocumentiFonte {
         }
     }
 
+    /** Documenti la cui cancellazione è stata chiesta ma non ancora resa permanente, vedi {@link #AccodaCancellazione(int)}. */
+    private static final List<Integer> BufferCancellazioni = new ArrayList<>();
+
+    /**
+     * Accoda la cancellazione provvisoria di un documento: sparisce subito da {@link #Elenco()} — e quindi
+     * dalle tabelle che lo elencano — ma copia e riga di registro restano finché
+     * {@link #SalvaBuffer(java.util.Map)} non le tocca davvero.
+     *
+     * <p>Segue lo stesso disegno di {@code MovimentiStorico.AccodaCancellazione}, e per lo stesso motivo:
+     * chi chiama questo metodo ha appena tolto dalla mappa i movimenti agganciati con
+     * {@code Funzioni.RimuoviMovimentazioneXID}, e quella rimozione è essa stessa provvisoria finché
+     * l'utente non preme Salva. Cancellare subito copia e registro renderebbe irreversibile un'operazione
+     * che nel resto dell'applicazione non lo è ancora: un <i>Annulla</i> sulla tabella dei movimenti (che
+     * li rilegge dal file) li farebbe ricomparire puntando a un documento già sparito.
+     *
+     * @param Id documento la cui cancellazione va accodata; ignorato se non positivo o già in coda
+     */
+    public static void AccodaCancellazione(int Id) {
+        if (Id > 0 && !BufferCancellazioni.contains(Id)) {
+            BufferCancellazioni.add(Id);
+        }
+    }
+
+    /**
+     * Rende reali le cancellazioni accodate da {@link #AccodaCancellazione(int)}.
+     *
+     * <p>Da chiamare da {@code Importazioni.Scrivi_Movimenti_Crypto}, <b>dopo</b> che la scrittura del file
+     * dei movimenti è andata a buon fine, esattamente come {@code MovimentiStorico.SalvaBuffer} — è lo
+     * stesso istante in cui la cancellazione dei movimenti smette di essere provvisoria.
+     *
+     * <p>Un documento accodato ma i cui movimenti sono poi ricomparsi (l'utente ha premuto <i>Annulla</i>
+     * sulla tabella, che li rilegge dal file) non viene cancellato: si ricontrolla qui, sulla mappa che sta
+     * davvero per essere salvata — non necessariamente {@code Principale.MappaCryptoWallet}, vedi il
+     * parametro di {@code MovimentiStorico.SalvaBuffer} — la stessa condizione di {@link #Riepiloghi()},
+     * nessun movimento vivo che vi punti ancora. La voce esce comunque dal buffer, risolta in un modo o
+     * nell'altro.
+     *
+     * @param MovimentiVivi la mappa dei movimenti che si sta davvero persistendo
+     */
+    public static void SalvaBuffer(Map<String, String[]> MovimentiVivi) {
+        for (int Id : BufferCancellazioni) {
+            if (!DocumentoVivo(MovimentiVivi, Id)) {
+                Annulla(Id);
+            }
+        }
+        BufferCancellazioni.clear();
+    }
+
+    /**
+     * Scarta le cancellazioni ancora in coda, senza eseguirle.
+     *
+     * <p>Da chiamare quando l'utente annulla tutte le modifiche non salvate ai movimenti (pulsante
+     * <i>Annulla</i> di "Transazioni Crypto"): a quel punto anche i movimenti che avevano reso il documento
+     * eliminabile sono tornati come da file. Senza questa chiamata il documento resterebbe nascosto dal
+     * pannello fino al prossimo salvataggio vero, anche se la cancellazione che lo riguardava non c'è più.
+     */
+    public static void ScartaBuffer() {
+        BufferCancellazioni.clear();
+    }
+
+    /** @return {@code true} se il documento è in attesa di essere davvero cancellato */
+    public static boolean InAttesaDiCancellazione(int Id) {
+        return BufferCancellazioni.contains(Id);
+    }
+
+    /** @return {@code true} se almeno un movimento della mappa punta ancora a quel documento */
+    private static boolean DocumentoVivo(Map<String, String[]> Movimenti, int Id) {
+        if (Movimenti == null) {
+            return false;
+        }
+        for (String[] v : Movimenti.values()) {
+            if (v != null && v.length > 41 && IdDaCampo41(v[41]) == Id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Elimina copia e riga di registro.
      *
@@ -524,7 +615,12 @@ public class DocumentiFonte {
         return null;
     }
 
-    /** @return tutti i documenti registrati, dal più recente al più vecchio */
+    /**
+     * @return tutti i documenti registrati, dal più recente al più vecchio, esclusi quelli la cui
+     *         cancellazione è accodata da {@link #AccodaCancellazione(int)} — devono sparire dalla tabella
+     *         subito, anche se non sono ancora stati cancellati per davvero. {@link #Leggi(int)} non
+     *         applica lo stesso filtro: {@link #Annulla(int)} lo usa per risalire al file da cancellare.
+     */
     public static List<Documento> Elenco() {
         List<Documento> elenco = new ArrayList<>();
         try (Statement st = DatabaseH2.connectionPersonale.createStatement();
@@ -532,7 +628,10 @@ public class DocumentiFonte {
                      "SELECT Id, PercorsoRelativo, NomeOriginale, Tipo, Origine, DataImport, Hash, Movimenti "
                      + "FROM DOCUMENTIFONTE ORDER BY Id DESC")) {
             while (rs.next()) {
-                elenco.add(DaResultSet(rs));
+                Documento d = DaResultSet(rs);
+                if (!BufferCancellazioni.contains(d.Id)) {
+                    elenco.add(d);
+                }
             }
         } catch (Exception e) {
             System.out.println("DocumentiFonte.Elenco : " + e.getMessage());

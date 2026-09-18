@@ -88,9 +88,10 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
 
         //Il pulsante dello storico si accende solo se di questo movimento esiste davvero una versione
         //precedente: lo storico si popola solo quando l'utente modifica un movimento a mano.
-        //Si chiede al database, non "il movimento ha un lignaggio": il lignaggio viene timbrato prima
-        //della conferma di una modifica che l'utente può ancora annullare, e resterebbe senza righe.
-        Bottone_Storico.setEnabled(DatabaseH2.StoricoMovimenti_Esiste(MovimentiStorico.LignaggioDi(IDTransazione)));
+        //MovimentiStorico.EsisteStorico, non "il movimento ha un lignaggio" né il solo DB: il lignaggio
+        //viene timbrato prima della conferma di una modifica che l'utente può ancora annullare (e
+        //resterebbe senza righe), e una modifica appena fatta può non essere ancora salvata su disco.
+        Bottone_Storico.setEnabled(MovimentiStorico.EsisteStorico(MovimentiStorico.LignaggioDi(IDTransazione)));
         
         String Valore;
         String Val[];

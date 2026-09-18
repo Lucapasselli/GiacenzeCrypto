@@ -2161,6 +2161,10 @@ public static boolean Ex_Tatax_Importa(String fileTatax, boolean SovrascriEsiste
        //c'è. Per lo stesso motivo la chiamata sta QUI dentro e non nei chiamanti: così non può essere
        //dimenticata da un futuro quinto punto che salvi i movimenti.
        MovimentiStorico.SalvaBuffer(Mappa_Movimenti);
+       //Stessa logica, stesso istante: un documento la cui cancellazione è stata accodata (documento +
+       //movimenti eliminati insieme, vedi Principale_DocumentiFonte) diventa davvero cancellato solo
+       //quando i movimenti smettono di essere provvisori, cioè qui.
+       DocumentiFonte.SalvaBuffer(Mappa_Movimenti);
     }catch (IOException ex) {
                    LoggerGC.ScriviErrore(ex);
                }

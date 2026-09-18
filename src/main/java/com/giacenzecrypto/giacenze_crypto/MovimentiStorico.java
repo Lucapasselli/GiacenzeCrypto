@@ -229,4 +229,47 @@ public class MovimentiStorico {
     static int VociInAttesa() {
         return BufferModifiche.size() + BufferCancellazioni.size();
     }
+
+    /**
+     * Tutte le versioni precedenti di un movimento, <b>buffer non ancora salvato compreso</b>: è quello
+     * che rende lo storico visibile anche prima che l'utente prema Salva in "Transazioni Crypto", e non
+     * solo dopo che {@link #SalvaBuffer(java.util.Map)} l'ha riversato su {@code MOVIMENTI_STORICO}.
+     * Stesso formato di riga di {@link DatabaseH2#StoricoMovimenti_Leggi(String)}
+     * ({@code {IdVecchio, DataModifica, RigaOriginale, Operazione, IdNuovo}}), unione delle due fonti e
+     * riordinata per data di modifica decrescente: non si può assumere che il buffer sia sempre più
+     * recente del DB, perché un salvataggio può cadere fra due modifiche fatte a mano nella stessa
+     * sessione.
+     *
+     * @param Lignaggio lignaggio del movimento (campo {@link #CAMPO_LIGNAGGIO}); se vuoto l'elenco è vuoto
+     * @return righe, mai {@code null}
+     */
+    public static List<String[]> Versioni(String Lignaggio) {
+        List<String[]> Righe = new ArrayList<>();
+        if (Funzioni.noData(Lignaggio)) {
+            return Righe;
+        }
+        Righe.addAll(DatabaseH2.StoricoMovimenti_Leggi(Lignaggio));
+        for (VoceModifica m : BufferModifiche) {
+            if (Lignaggio.equals(m.lignaggio())) {
+                Righe.add(new String[]{m.idVecchio(), String.valueOf(m.dataModifica()), m.rigaOriginale(),
+                    m.operazione(), m.idNuovo()});
+            }
+        }
+        Righe.sort((a, b) -> Long.compare(Long.parseLong(b[1]), Long.parseLong(a[1])));
+        return Righe;
+    }
+
+    /**
+     * Se di un lignaggio esiste almeno una versione precedente da mostrare, salvata su disco o ancora
+     * in buffer.
+     *
+     * <p>È questa, e non {@code DatabaseH2.StoricoMovimenti_Esiste}, la domanda giusta per accendere il
+     * pulsante "Versioni precedenti": quella guarda solo il DB, quindi una modifica appena fatta e non
+     * ancora salvata lo terrebbe spento pur avendo una versione precedente da vedere.</p>
+     *
+     * @param Lignaggio lignaggio da cercare
+     */
+    public static boolean EsisteStorico(String Lignaggio) {
+        return !Versioni(Lignaggio).isEmpty();
+    }
 }

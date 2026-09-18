@@ -249,8 +249,9 @@ public class GUI_DocumentiFonte_Pannello extends javax.swing.JPanel {
         Messaggi.SuccessMessage("Documento eliminato",
                 esito.Movimenti() + (esito.Movimenti() == 1 ? " movimento eliminato" : " movimenti eliminati")
                 + " insieme al documento",
-                "L'archivio è già stato salvato. Della situazione precedente alla cancellazione resta una "
-                + "copia nella cartella Backup.", Proprietario());
+                "Premi Salva nella sezione 'Transazioni Crypto' per rendere permanente la cancellazione; "
+                + "fino ad allora puoi tornare indietro con Annulla, che ripristina anche il documento.",
+                Proprietario());
     }//GEN-LAST:event_Bottone_EliminaActionPerformed
 
     private void Bottone_AggiornaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AggiornaActionPerformed

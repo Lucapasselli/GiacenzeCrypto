@@ -1,5 +1,5 @@
 {
-  "versione": "1.010",
+  "versione": "1.011",
   "centralizzato":true,
   "fontePrezzoPreferita": "binance",
   "nomeExchange": "Binance",
@@ -55,7 +55,6 @@
     "Megadrop Rewards":                               "REWARD",
     "Commission History":                             "ALTRE-REWARD",
 	"Asset - Transfer":                               "ALTRE-REWARD",
-	"Funds Transfer Request - Vega":                  "ALTRE-REWARD",
 	"Cash Voucher":                                   "CASHBACK",
     "Launchpool Airdrop - System Distribution":       "AIRDROP",
     "Launchpool Airdrop - User Claim Distribution":   "AIRDROP",
@@ -83,6 +82,7 @@
     "Withdraw":                                       "TRASFERIMENTO-CRYPTO",
     "deposit":                                        "TRASFERIMENTO-CRYPTO",
     "Deposit":                                        "TRASFERIMENTO-CRYPTO",
+    "Funds Transfer Request - Vega":                  "TRASFERIMENTO-CRYPTO",
     "Send":                                           "TRASFERIMENTO-CRYPTO",
     "C2C Transfer":                                   "TRASFERIMENTO-CRYPTO",
     "Fiat OCBS - Add Fiat and Fees":                  "TRASFERIMENTO-CRYPTO",

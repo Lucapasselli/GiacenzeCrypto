@@ -266,19 +266,47 @@ async function serieConversioneCondivisa(ccxtLib, istanze, ordineEsplorazione, q
     return risultato;
 }
 
+/**
+ * Verifica se `datiOhlcv` copre l'istante richiesto (±5 minuti, la stessa tolleranza con cui
+ * {@code DammiPrezzoDaDatabase} cerca in cache): se sì, la cascata di {@link eseguiRicerca} può
+ * fermarsi qui senza interrogare altri exchange. Senza un istante preciso (percorso a richiesta
+ * singola, mai in cascata) basta che l'exchange abbia risposto con qualcosa.
+ */
+function copreIstante(datiOhlcv, istante) {
+    if (istante == null) return datiOhlcv.length > 0;
+    const finestra = 5 * 60 * 1000;
+    return datiOhlcv.some(c => Math.abs(c[0] - istante) <= finestra);
+}
+
 /** Implementazione condivisa da `cercaPrezziStorici` e `cercaPrezziStoriciConEsito` (sotto): fa il
- * lavoro vero, la seconda espone anche quali exchange sono falliti con un errore vero. */
-async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, since, until, istanze }) {
+ * lavoro vero, la seconda espone anche quali exchange sono falliti con un errore vero.
+ *
+ * @param cascata se true (solo dal percorso a lotti, {@link cercaPrezziStoriciLotto}), interroga UN
+ *        exchange alla volta invece di tutti in parallelo — prima `exchangePreferito` (o Binance se
+ *        assente), poi i restanti in ordine ALFABETICO, fermandosi al primo che copre `istanteEsatto`
+ *        (vedi {@link copreIstante}). L'ordine alfabetico per il ripiego non è arbitrario: è lo stesso
+ *        con cui `DammiPrezzoDaDatabase` sceglie a parità di distanza quando si interrogano tutti gli
+ *        exchange insieme (vedi `PrezziOrdinePrioritaTest` e `Analisi_Prezzi_Scaricamento_Costi.md`
+ *        §4b) — è l'unico ordine che garantisce lo stesso prezzo finale della ricerca completa.
+ *        Ogni exchange REALMENTE interrogato (in entrambe le modalità) scarica comunque l'ORA
+ *        INTERA, mai un sottoinsieme di minuti: il marcatore `PrezziOraCCXT` è per ora, non per
+ *        minuto, e un download parziale lo renderebbe disonesto.
+ * @param exchangePreferito primo exchange da provare in cascata, se noto (altrimenti Binance)
+ * @param istanteEsatto l'istante che la cascata deve coprire per fermarsi; `null` fuori dalla cascata
+ */
+async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, since, until, istanze,
+        cascata, exchangePreferito, istanteEsatto }) {
     const results = {};
     const risultatiGrezzi = {};
     const falliti = [];
+    const interrogati = [];
     // Binance prima (il più liquido), poi gli altri exchange di questa richiesta nell'ordine dato.
     const ordineConversione = [...new Set(['binance', ...exchangeIds])];
 
     async function safe_fetch(exchange_id) {
         try {
             if (!ccxtLib[exchange_id.toLowerCase()]) {
-                return [exchange_id, [], null, []];
+                return [exchange_id, [], null, [], false];
             }
             // Con `istanze` fornite (modalita' lotto) l'oggetto exchange e' condiviso da tutte le
             // richieste: e' cio' che rende autorevole il limitatore interno di ccxt, che tiene lo
@@ -288,7 +316,7 @@ async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, sinc
                     || new ccxtLib[exchange_id.toLowerCase()]();
 
             const pairInfo = await findBestPair(ex, baseSymbol);
-            if (!pairInfo) return [exchange_id, [], null, []];
+            if (!pairInfo) return [exchange_id, [], null, [], false];
 
             // OHLCV principale (es. BTC/USDT o BTC/EUR, oppure EUR/USDT o USD/USDT se pairInfo.invert)
             const baseDataGrezza = await fetchHistorical(ex, pairInfo.pair, timeframe, since, until);
@@ -298,6 +326,7 @@ async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, sinc
             const baseData = pairInfo.invert
                     ? baseDataGrezza.map(([ts, o, h, l, c, v]) => [ts, 1 / o, 1 / l, 1 / h, 1 / c, v])
                     : baseDataGrezza;
+            const copertura = copreIstante(baseData, istanteEsatto);
 
             let finalData = baseData;
             const grezzi = [];
@@ -336,27 +365,35 @@ async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, sinc
                 }
             }
 
-            return [exchange_id, finalData, null, grezzi];
+            return [exchange_id, finalData, null, grezzi, copertura];
         } catch (err) {
             // Un errore vero (rate limit, manutenzione, rete, ...) è diverso da "l'exchange non ha
             // questa coppia" (gestito sopra con un `return` pulito, non un'eccezione): qui va
             // segnalato come fallito, non confuso con "nessun dato" — vedi Analisi_VPS_Prezzi_Sito.md,
             // "Esclusioni: exchange falliti vs nessun dato".
-            return [exchange_id, [], (err && err.message) || 'errore sconosciuto', []];
+            return [exchange_id, [], (err && err.message) || 'errore sconosciuto', [], false];
         }
     }
 
-    // Fetch parallelo
-    const fetched = await Promise.all(exchangeIds.map(ex_id => safe_fetch(ex_id)));
-
-    for (const [ex_id, ohlcv_data, errore, grezzi] of fetched) {
+    function registra([ex_id, ohlcv_data, errore, grezzi]) {
+        interrogati.push(ex_id);
         if (errore) falliti.push(ex_id);
-        if (ohlcv_data.length) {
-            results[ex_id] = ohlcv_data;
+        if (ohlcv_data.length) results[ex_id] = ohlcv_data;
+        if (grezzi && grezzi.length) risultatiGrezzi[ex_id] = grezzi;
+    }
+
+    if (cascata) {
+        const primo = exchangePreferito || 'binance';
+        const restanti = exchangeIds.filter(id => id !== primo).sort();
+        for (const ex_id of [primo, ...restanti]) {
+            const esito = await safe_fetch(ex_id);
+            registra(esito);
+            if (esito[4]) break; // copertura raggiunta: nessun altro exchange da interrogare
         }
-        if (grezzi && grezzi.length) {
-            risultatiGrezzi[ex_id] = grezzi;
-        }
+    } else {
+        // Fetch parallelo (percorso a richiesta singola, mai in cascata)
+        const fetched = await Promise.all(exchangeIds.map(ex_id => safe_fetch(ex_id)));
+        for (const esito of fetched) registra(esito);
     }
 
     // Combino risultati
@@ -384,7 +421,7 @@ async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, sinc
         return punto;
     });
 
-    return { punti, falliti };
+    return { punti, falliti, interrogati };
 }
 
 /**
@@ -429,11 +466,21 @@ async function cercaPrezziStoriciConEsito(args) {
  * ccxt serializza da se' le chiamate verso lo stesso exchange con l'attesa dovuta. Servirle in fila
  * farebbe risparmiare solo il costo fisso, cioe' poco.
  *
- * @param richieste array di `{symbol, since, until}`
- * @returns array parallelo a `richieste`, ogni voce `{symbol, since, until, punti, falliti}`.
+ * Ogni richiesta viene servita in CASCATA (vedi {@link eseguiRicerca}): prima `richieste[i].exchangePreferito`
+ * (o Binance se assente), poi i restanti in ordine alfabetico, fermandosi al primo che copre
+ * `richieste[i].istante`. È la differenza col percorso a richiesta singola (`cercaPrezziStorici`),
+ * che interroga sempre tutti gli exchange — usato apposta dal pulsante "Riscarica tutti i prezzi
+ * dalle fonti", dove si vuole il confronto completo, non la scorciatoia.
+ *
+ * @param richieste array di `{symbol, since, until, istante, exchangePreferito}` (gli ultimi due
+ *        opzionali: `istante` assente equivale a "basta che risponda qualcosa", `exchangePreferito`
+ *        assente equivale a "Binance")
+ * @returns array parallelo a `richieste`, ogni voce `{symbol, since, until, punti, falliti, interrogati}`.
  *          `falliti` distingue "l'exchange ha risposto e non ha dati" da "la chiamata e' fallita",
  *          distinzione necessaria a chi marca le ore gia' interrogate: marcare un'ora saltata per un
- *          errore di rete congelerebbe un buco per sempre.
+ *          errore di rete congelerebbe un buco per sempre. `interrogati` è chi è stato REALMENTE
+ *          interrogato in questa cascata (mai tutti gli otto, salvo il caso limite in cui nessuno
+ *          copra l'istante): solo loro vanno marcati su `PrezziOraCCXT`, non l'intera `exchangeIds`.
  */
 async function cercaPrezziStoriciLotto({ ccxtLib, exchangeIds, timeframe, richieste, concorrenza }) {
     const istanze = {};
@@ -452,7 +499,7 @@ async function cercaPrezziStoriciLotto({ ccxtLib, exchangeIds, timeframe, richie
             if (i >= richieste.length) return;
             const r = richieste[i];
             try {
-                const { punti, falliti } = await eseguiRicerca({
+                const { punti, falliti, interrogati } = await eseguiRicerca({
                     ccxtLib,
                     exchangeIds,
                     baseSymbol: r.symbol,
@@ -460,13 +507,23 @@ async function cercaPrezziStoriciLotto({ ccxtLib, exchangeIds, timeframe, richie
                     since: r.since,
                     until: r.until,
                     istanze,
+                    cascata: true,
+                    exchangePreferito: r.exchangePreferito || '',
+                    istanteEsatto: r.istante != null ? r.istante : null,
                 });
-                esiti[i] = { symbol: r.symbol, since: r.since, until: r.until, punti, falliti };
+                // exchangePreferito in eco: serve a Java per tenere separata, nel dedup di sessione,
+                // una richiesta con preferenza da una senza (o con preferenza diversa) sulla stessa
+                // (moneta, ora) — altrimenti la seconda risulterebbe "già chiesta" e salterebbe
+                // proprio l'exchange che le serve davvero.
+                esiti[i] = { symbol: r.symbol, since: r.since, until: r.until, punti, falliti, interrogati,
+                        exchangePreferito: r.exchangePreferito || '' };
             } catch (err) {
                 //Una richiesta che esplode non deve abbattere il lotto: si segnala e si prosegue.
-                //`falliti` con tutti gli exchange impedisce che l'ora venga marcata come interrogata.
+                //`interrogati` vuoto: non si sa cosa sia stato davvero chiesto, quindi non si marca
+                //nulla su PrezziOraCCXT piuttosto che marcare (e quindi bloccare) exchange a caso.
                 logError(`Richiesta ${r.symbol} ${r.since}-${r.until} fallita: ${(err && err.message) || err}`);
-                esiti[i] = { symbol: r.symbol, since: r.since, until: r.until, punti: [], falliti: exchangeIds.slice() };
+                esiti[i] = { symbol: r.symbol, since: r.since, until: r.until, punti: [], falliti: [], interrogati: [],
+                        exchangePreferito: r.exchangePreferito || '' };
             }
         }
     }
@@ -479,12 +536,22 @@ async function main() {
     try {
         const ccxt = require('ccxt');
 
-        // Parametri CLI
+        // Parametri CLI. "lotto" è un flag booleano, senza valore proprio: trattarlo come gli
+        // altri (prendere args[i+1] come valore) gli fa inghiottire il *nome* del flag successivo
+        // invece che il suo valore — con "--lotto --exchanges binance,cryptocom,..." risultava
+        // params.exchanges MAI valorizzato, quindi ogni scaricamento a lotto interrogava solo
+        // Binance (il ripiego di default), qualunque lista di exchange gli venisse passata. Bug
+        // scoperto il 2026-09-18 da CRO (mai su Binance) che risultava "nessun exchange" anche con
+        // crypto.com pienamente disponibile.
         const args = process.argv.slice(2);
         const params = {};
         for (let i = 0; i < args.length; i++) {
             if (args[i].startsWith("--")) {
                 const key = args[i].substring(2);
+                if (key === "lotto") {
+                    params.lotto = "true";
+                    continue;
+                }
                 const value = args[i + 1];
                 params[key] = value;
                 i++;

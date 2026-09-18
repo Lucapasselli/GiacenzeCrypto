@@ -953,6 +953,10 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         long adessoMs = System.currentTimeMillis();
         java.util.LinkedHashSet<String> chiavi = new java.util.LinkedHashSet<>();
         int[] colonneMoneta = {cfg.colonnaMoneta, cfg.colonnaMonetaFee, cfg.colonnaMonetaUscita};
+        //Stessa fonte che userà la valorizzazione vera (DammiPrezzoInfoTransazione, righe 660/724):
+        //è la stessa per tutta questa config, quindi si risolve una volta sola qui invece che per
+        //ogni riga. ExchangeRiconosciuto normalizza/valida esattamente come fa CambioXXXEUR.
+        String exchangePreferito = Prezzi.ExchangeRiconosciuto(cfg.fontePrezzoPreferita);
 
         for (String[] riga : righe) {
             if (Interruzione.Richiesta()) break;
@@ -981,7 +985,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                         //`data` (quella della riga) e non l'ora: e' l'istante su cui il filtro verifica la
                         //cache con la stessa tolleranza di chi poi valorizza.
                         richieste.add(new Prezzi.RichiestaPrezzo(simbolo, inizioOra,
-                                Math.min(inizioOra + 3600000L - 1, adessoMs), data));
+                                Math.min(inizioOra + 3600000L - 1, adessoMs), data, exchangePreferito));
                     }
                 }
             }

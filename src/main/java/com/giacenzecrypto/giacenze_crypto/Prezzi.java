@@ -1196,7 +1196,7 @@ public class Prezzi {
               }
               if (mancaQualcuno) {
                   daScaricare.add(new RichiestaPrezzo(Crypto, inizioOra,
-                          Math.min(inizioOra + 3600000L - 1, adessoMs)));
+                          Math.min(inizioOra + 3600000L - 1, adessoMs), Datalong, exchangeRichiesto));
               }
           }
 
@@ -1207,9 +1207,12 @@ public class Prezzi {
                   //L'ora corrente non si marca mai: non e' finita e continua a produrre candele nuove.
                   if (adessoMs < inizioOra + 3600000L) continue;
                   long oraInt = FunzioniDate.OraIntYYYYMMDDHH(inizioOra);
-                  for (String ex : EXCHANGE_CCXT) {
+                  for (String ex : esito.interrogati) {
                       //Solo chi ha RISPOSTO: un exchange fallito (rete, rate limit, manutenzione) non
-                      //va marcato, altrimenti quel buco resterebbe tale per sempre.
+                      //va marcato, altrimenti quel buco resterebbe tale per sempre. Con la cascata
+                      //"interrogati" e' gia' un sottoinsieme di EXCHANGE_CCXT (preferito/Binance, poi
+                      //eventuali ripieghi alfabetici): marcare chi non e' mai stato chiesto lo
+                      //farebbe risultare "controllato" senza esserlo mai stato.
                       if (!esito.falliti.contains(ex)) OraCCXT_Scrivi(esito.simbolo, oraInt, ex);
                   }
               }
@@ -4354,7 +4357,10 @@ public static int ScaricaRichiesteABlocchi(List<RichiestaPrezzo> richieste, Down
             //L'ora corrente non si marca mai: non e' finita e continua a produrre candele nuove.
             if (adessoMs < inizioOra + 3600000L) continue;
             long oraInt = FunzioniDate.OraIntYYYYMMDDHH(inizioOra);
-            for (String ex : EXCHANGE_CCXT) {
+            //Con la cascata (preferito/Binance, poi ripiego alfabetico) "interrogati" e' un
+            //sottoinsieme di EXCHANGE_CCXT, non piu' l'insieme intero: marcare chi non e' mai stato
+            //chiesto lo farebbe risultare "controllato" senza esserlo mai stato.
+            for (String ex : esito.interrogati) {
                 if (!esito.falliti.contains(ex)) OraCCXT_Scrivi(esito.simbolo, oraInt, ex);
             }
         }
@@ -4379,19 +4385,34 @@ public static class RichiestaPrezzo {
     public final long istante;
 
     /**
+     * Primo exchange da provare nella cascata del percorso a lotti ({@code Historical_Multi_Eur.js},
+     * {@code cercaPrezziStoriciLotto}): se vuoto si parte da Binance. Riprodurre qui la stessa fonte
+     * che userebbe {@link #CambioXXXEUR} per questa richiesta (via {@link #ExchangeRiconosciuto}) è
+     * ciò che permette al pre-scarico di andare in cascata invece di interrogare sempre tutti gli
+     * otto exchange, senza violare "ogni exchange il suo prezzo" — vedi
+     * {@code Analisi_Prezzi_Scaricamento_Costi.md} §4a/§8.
+     */
+    public final String exchangePreferito;
+
+    /**
      * Per chi <b>non</b> ha un istante preciso da indicare: {@code istante} cade sul centro della
      * finestra e il controllo della cache diventa perciò approssimativo. Tutti i pre-scarichi la
      * data ce l'hanno e devono usare l'altro costruttore, altrimenti perdono l'allineamento.
      */
     public RichiestaPrezzo(String simbolo, long since, long until) {
-        this(simbolo, since, until, since + (until - since) / 2);
+        this(simbolo, since, until, since + (until - since) / 2, "");
     }
 
     public RichiestaPrezzo(String simbolo, long since, long until, long istante) {
+        this(simbolo, since, until, istante, "");
+    }
+
+    public RichiestaPrezzo(String simbolo, long since, long until, long istante, String exchangePreferito) {
         this.simbolo = simbolo == null ? "" : simbolo.toUpperCase();
         this.since = since;
         this.until = until;
         this.istante = istante;
+        this.exchangePreferito = exchangePreferito == null ? "" : exchangePreferito;
     }
 }
 
@@ -4409,16 +4430,37 @@ public static class EsitoLotto {
     /** Id degli exchange la cui chiamata è fallita con un errore vero (diverso da "nessun dato"). */
     public final java.util.Set<String> falliti;
     public final int punti;
+    /**
+     * Id degli exchange REALMENTE interrogati per questa richiesta: con la cascata dello script
+     * (preferito/Binance, poi gli altri in ordine alfabetico solo se serve) non sono più "tutti gli
+     * otto" per definizione. Solo questi vanno marcati su {@code PrezziOraCCXT} — marcare un exchange
+     * mai interrogato lo farebbe risultare "controllato" quando non lo è mai stato.
+     */
+    public final java.util.Set<String> interrogati;
 
     EsitoLotto(String simbolo, long since, long until, boolean risposto,
-            java.util.Set<String> falliti, int punti) {
+            java.util.Set<String> falliti, int punti, java.util.Set<String> interrogati) {
         this.simbolo = simbolo;
         this.since = since;
         this.until = until;
         this.risposto = risposto;
         this.falliti = falliti;
         this.punti = punti;
+        this.interrogati = interrogati;
     }
+}
+
+/**
+ * Chiave di sessione per {@link #managerRichieste} nel percorso a lotti: include l'exchange
+ * preferito perché con la cascata due richieste sulla stessa (moneta, ora) possono aver bisogno di
+ * interrogare exchange diversi (una preferisce crypto.com, l'altra nessuno/Binance). Senza questa
+ * distinzione la seconda risulterebbe "già chiesta" dalla prima e salterebbe proprio l'exchange che
+ * le serve. "Binance" esplicito ed "nessuna preferenza" condividono la chiave: la cascata parte da
+ * Binance in entrambi i casi.
+ */
+private static String chiaveSessioneOra(String simbolo, String exchangePreferito) {
+    String pref = (exchangePreferito == null || exchangePreferito.isBlank()) ? "binance" : exchangePreferito;
+    return "ORA_" + simbolo + "|" + pref.toLowerCase();
 }
 
 /**
@@ -4436,9 +4478,9 @@ public static class EsitoLotto {
  * <p>Niente {@code sleep(1)} come nel percorso a richiesta singola: lì proteggeva una raffica di
  * processi, qui il processo è uno solo e la cadenza verso ogni exchange la governa ccxt.
  *
- * <p>La chiave di sessione usata per {@link #managerRichieste} è {@code "ORA_"+simbolo}, distinta da
- * quelle del percorso a finestra ({@code simbolo}) e a giornata ({@code "GG_"+simbolo}): finestre di
- * ampiezza diversa non devono dedursi coperte a vicenda.
+ * <p>La chiave di sessione usata per {@link #managerRichieste} è {@link #chiaveSessioneOra}, distinta
+ * da quelle del percorso a finestra ({@code simbolo}) e a giornata ({@code "GG_"+simbolo}): finestre
+ * di ampiezza diversa non devono dedursi coperte a vicenda.
  *
  * @param richieste le coppie da scaricare; quelle già coperte in questa sessione vengono saltate
  * @param exchanges elenco di id CCXT separati da virgola, tipicamente {@link #EXCHANGES_CCXT}
@@ -4454,12 +4496,14 @@ static List<EsitoLotto> RecuperaPrezziDaCCXTLotto(List<RichiestaPrezzo> richiest
     for (RichiestaPrezzo r : richieste) {
         if (r.since > adesso) continue;
         long until = Math.min(r.until, adesso);
-        if (managerRichieste.isAlreadyRequested("ORA_" + r.simbolo, r.since, until)) {
-            //già coperta in sessione: non la si rispedisce, ma per il chiamante è "risposta"
-            esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, true, java.util.Set.of(), 0));
+        if (managerRichieste.isAlreadyRequested(chiaveSessioneOra(r.simbolo, r.exchangePreferito), r.since, until)) {
+            //già coperta in sessione: non la si rispedisce, ma per il chiamante è "risposta".
+            //interrogati vuoto: la marcatura PrezziOraCCXT vera è già avvenuta alla richiesta
+            //precedente che ha effettivamente coperto questa sessione.
+            esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, true, java.util.Set.of(), 0, java.util.Set.of()));
             continue;
         }
-        daChiedere.add(new RichiestaPrezzo(r.simbolo, r.since, until));
+        daChiedere.add(new RichiestaPrezzo(r.simbolo, r.since, until, r.istante, r.exchangePreferito));
     }
     if (daChiedere.isEmpty()) return esiti;
 
@@ -4471,7 +4515,7 @@ static List<EsitoLotto> RecuperaPrezziDaCCXTLotto(List<RichiestaPrezzo> richiest
         if (!Files.exists(nodePath) || !Files.exists(scriptPath)) {
             System.err.println("Lotto prezzi: node o script non trovati (" + nodePath + " / " + scriptPath + ")");
             for (RichiestaPrezzo r : daChiedere) {
-                esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, false, java.util.Set.of(), 0));
+                esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, false, java.util.Set.of(), 0, java.util.Set.of()));
             }
             return esiti;
         }
@@ -4482,6 +4526,10 @@ static List<EsitoLotto> RecuperaPrezziDaCCXTLotto(List<RichiestaPrezzo> richiest
             o.addProperty("symbol", r.simbolo);
             o.addProperty("since", r.since);
             o.addProperty("until", r.until);
+            o.addProperty("istante", r.istante);
+            if (!r.exchangePreferito.isBlank()) {
+                o.addProperty("exchangePreferito", r.exchangePreferito);
+            }
             payload.add(o);
         }
         final String json = payload.toString();
@@ -4534,7 +4582,7 @@ static List<EsitoLotto> RecuperaPrezziDaCCXTLotto(List<RichiestaPrezzo> richiest
         if (scaduto.get() || exitCode != 0) {
             System.err.println("Lotto prezzi fallito (exit " + exitCode + (scaduto.get() ? ", timeout" : "") + ")");
             for (RichiestaPrezzo r : daChiedere) {
-                esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, false, java.util.Set.of(), 0));
+                esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, false, java.util.Set.of(), 0, java.util.Set.of()));
             }
             return esiti;
         }
@@ -4545,7 +4593,7 @@ static List<EsitoLotto> RecuperaPrezziDaCCXTLotto(List<RichiestaPrezzo> richiest
         if (!rootEl.isJsonArray()) {
             System.err.println("Lotto prezzi: output non è un array JSON valido.");
             for (RichiestaPrezzo r : daChiedere) {
-                esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, false, java.util.Set.of(), 0));
+                esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, false, java.util.Set.of(), 0, java.util.Set.of()));
             }
             return esiti;
         }
@@ -4561,6 +4609,15 @@ static List<EsitoLotto> RecuperaPrezziDaCCXTLotto(List<RichiestaPrezzo> richiest
             if (o.has("falliti") && o.get("falliti").isJsonArray()) {
                 for (JsonElement f : o.getAsJsonArray("falliti")) falliti.add(f.getAsString());
             }
+            //Con la cascata (preferito/Binance, poi alfabetico) non sono piu' "tutti gli otto" per
+            //definizione: solo chi e' in questo elenco e' stato davvero interrogato.
+            java.util.Set<String> interrogati = new java.util.HashSet<>();
+            if (o.has("interrogati") && o.get("interrogati").isJsonArray()) {
+                for (JsonElement ie : o.getAsJsonArray("interrogati")) interrogati.add(ie.getAsString());
+            }
+            //Eco della preferenza di questa richiesta, per marcare la sessione con la stessa chiave
+            //con cui e' stata verificata sopra (chiaveSessioneOra) — vedi il suo javadoc.
+            String exchangePreferitoEco = o.has("exchangePreferito") ? o.get("exchangePreferito").getAsString() : "";
 
             int nPunti = 0;
             //Quali exchange hanno davvero portato dati: la chiave di ogni "prices" e' l'id
@@ -4586,15 +4643,15 @@ static List<EsitoLotto> RecuperaPrezziDaCCXTLotto(List<RichiestaPrezzo> richiest
                     + (conDati.isEmpty() ? "" : " da " + String.join(", ", conDati))
                     + (falliti.isEmpty() ? "" : " | NON hanno risposto: " + String.join(", ", new java.util.TreeSet<>(falliti)))
                     + (conDati.isEmpty() && falliti.isEmpty() ? " (nessun exchange tratta questa moneta in questo periodo)" : ""));
-            managerRichieste.addRange("ORA_" + simbolo, since, until);
-            esiti.add(new EsitoLotto(simbolo, since, until, true, falliti, nPunti));
+            managerRichieste.addRange(chiaveSessioneOra(simbolo, exchangePreferitoEco), since, until);
+            esiti.add(new EsitoLotto(simbolo, since, until, true, falliti, nPunti, interrogati));
         }
         return esiti;
 
     } catch (IOException | InterruptedException ex) {
         LoggerGC.ScriviErrore(ex);
         for (RichiestaPrezzo r : daChiedere) {
-            esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, false, java.util.Set.of(), 0));
+            esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, false, java.util.Set.of(), 0, java.util.Set.of()));
         }
         return esiti;
     }

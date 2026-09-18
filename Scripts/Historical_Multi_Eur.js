@@ -278,6 +278,25 @@ function copreIstante(datiOhlcv, istante) {
     return datiOhlcv.some(c => Math.abs(c[0] - istante) <= finestra);
 }
 
+/**
+ * Classifica un errore di `safe_fetch` per il log persistente (mai a video, vedi sotto): una pagina
+ * HTML al posto del JSON e' il blocco anti-bot tipo Cloudflare scoperto su crypto.com (vedi CLAUDE.md,
+ * "crypto.com nel percorso a lotti"), diverso da un vero errore ccxt (timeout, rate limit, rete), a sua
+ * volta diverso da un imprevisto che vale la pena vedere per intero. Riga singola e troncata: finisce
+ * nel log rotante dell'app, non deve gonfiarlo con un dump HTML di alcuni KB per ogni fallimento.
+ * @return `{categoria, dettaglio}`, `dettaglio` gia' pronto per un log su una riga sola
+ */
+function classificaErroreFetch(err) {
+    const msg = ((err && err.message) || String(err)).replace(/[\r\n]+/g, ' ');
+    const tipoCcxt = (err && err.constructor && err.constructor.name) || '';
+    let categoria = 'ALTRO';
+    if (/<!DOCTYPE|<html/i.test(msg)) categoria = 'PAGINA_HTML';
+    else if (/timeout/i.test(tipoCcxt)) categoria = 'TIMEOUT';
+    else if (/RateLimitExceeded|DDoSProtection/.test(tipoCcxt)) categoria = 'RATE_LIMIT';
+    else if (/NetworkError|ExchangeNotAvailable/.test(tipoCcxt)) categoria = 'RETE';
+    return { categoria, tipoCcxt, dettaglio: msg.slice(0, 200) };
+}
+
 /** Implementazione condivisa da `cercaPrezziStorici` e `cercaPrezziStoriciConEsito` (sotto): fa il
  * lavoro vero, la seconda espone anche quali exchange sono falliti con un errore vero.
  *
@@ -371,6 +390,13 @@ async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, sinc
             // questa coppia" (gestito sopra con un `return` pulito, non un'eccezione): qui va
             // segnalato come fallito, non confuso con "nessun dato" — vedi Analisi_VPS_Prezzi_Sito.md,
             // "Esclusioni: exchange falliti vs nessun dato".
+            // Log persistente per analisi nel tempo (mai a video): lo stderr di questo script finisce
+            // gia' nel log rotante dell'app — Prezzi.java lo stampa con System.out.println("[NODE] "+riga)
+            // e LoggerGC redirige System.out su GiacenzeCrypto.log — quindi non serve nessuna modifica
+            // lato Java. E' cosi' che e' stato scoperto il blocco Cloudflare su crypto.com.
+            const { categoria, tipoCcxt, dettaglio } = classificaErroreFetch(err);
+            console.error(`[PREZZI-ERRORE] exchange=${exchange_id} simbolo=${baseSymbol} `
+                    + `tipoCcxt=${tipoCcxt} categoria=${categoria} dettaglio="${dettaglio}"`);
             return [exchange_id, [], (err && err.message) || 'errore sconosciuto', [], false];
         }
     }
@@ -486,7 +512,18 @@ async function cercaPrezziStoriciLotto({ ccxtLib, exchangeIds, timeframe, richie
     const istanze = {};
     for (const id of exchangeIds) {
         const chiave = id.toLowerCase();
-        if (ccxtLib[chiave]) istanze[chiave] = new ccxtLib[chiave]();
+        if (!ccxtLib[chiave]) continue;
+        // crypto.com dichiara a ccxt un rateLimit di 10 ms (praticamente nessun freno), ma dietro
+        // l'API c'e' Cloudflare: una raffica di richieste sullo stesso IP (misurato: oltre ~5/s
+        // sostenute) fa rispondere una pagina HTML di sfida ("Just a moment...") al posto del JSON,
+        // che ccxt non sa interpretare e rilancia come ExchangeError generico — non e' un timeout e
+        // non e' recuperabile con un retry immediato, il blocco resta attivo per la sessione. A 2
+        // richieste/s (rateLimit 500) il blocco non si e' MAI innescato su 800 richieste di prova,
+        // contro il 71% di fallimenti al rateLimit di default. Il rateLimit va passato nel
+        // COSTRUTTORE: e' li' che ccxt calcola tokenBucket.refillRate, riassegnare la proprieta'
+        // dopo la costruzione non lo aggiorna.
+        const opts = chiave === 'cryptocom' ? { rateLimit: 500 } : {};
+        istanze[chiave] = new ccxtLib[chiave](opts);
     }
 
     const esiti = new Array(richieste.length);

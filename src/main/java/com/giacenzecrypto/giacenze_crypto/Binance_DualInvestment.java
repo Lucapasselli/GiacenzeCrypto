@@ -87,6 +87,13 @@ public class Binance_DualInvestment {
      */
     public static Esito Abbina(File fileDettaglio) throws IOException {
         Esito esito = new Esito();
+        //A differenza di ImportazioneGenerica.consolidaGruppo, che segnala solo le causali
+        //effettivamente incontrate riga per riga, qui l'avviso fiscale sui derivati deve comparire
+        //sempre: un Dual Investment è per definizione un contratto a termine, indipendentemente da
+        //quanti contratti risultino poi abbinati.
+        Importazioni.CausaliDerivatiSegnalate.clear();
+        Importazioni.SegnalaCausaleDerivato(CAUSALE_PURCHASE);
+        Importazioni.SegnalaCausaleDerivato(CAUSALE_SETTLEMENT);
         int offsetOre = estraiOffset(fileDettaglio.getName());
         Set<String> giaUsati = new HashSet<>();
 

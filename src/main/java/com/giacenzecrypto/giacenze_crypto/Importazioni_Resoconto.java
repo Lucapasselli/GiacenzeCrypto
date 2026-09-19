@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.nio.charset.StandardCharsets;
 
 
 
@@ -39,6 +40,17 @@ private static final long serialVersionUID = 8L;
     private int cScartate;
     private int cSconosciute;
     private String movimentiSconosciuti = "";
+
+    /**
+     * Soglia oltre la quale l'invio della segnalazione passa dal JSON diretto (endpoint
+     * {@code /segnalazioni/errore-import}, limite server 256 KB sul corpo della richiesta) allo
+     * stesso canale compresso usato per i log ({@code /segnalazioni/log}, tetto 10 MB): con
+     * migliaia di transazioni scartate il testo supera facilmente 256 KB e l'invio falliva con un
+     * messaggio pensato per l'altro percorso ("usa il bundle diagnostico"), che qui non significa
+     * nulla. Tenuta ben sotto il limite server (e sotto i 200.000 caratteri a cui il server
+     * comunque tronca il corpo diretto) per lasciare margine all'overhead di escaping del JSON.
+     */
+    private static final int SOGLIA_COMPRESSIONE_BYTE = 150 * 1024;
 
     public Importazioni_Resoconto() {
         setModalityType(ModalityType.APPLICATION_MODAL);
@@ -122,8 +134,66 @@ private static final long serialVersionUID = 8L;
             this.TextPane_AvvisoDerivati.setCaretPosition(0);
         }
         pack();
-              
-        
+
+
+    }
+
+    /**
+     * Popola il riepilogo con l'esito di un abbinamento {@link Binance_DualInvestment}, rietichettando
+     * i quattro campi del resoconto generico invece di aggiungerne di nuovi al {@code .form}: le
+     * etichette e i colori non hanno lo stesso significato di un import CSV (qui non ci sono
+     * "transazioni scartate perché già esistenti", e "non ancora liquidati" non è un errore), ma la
+     * struttura del dialogo - titolo, quattro conteggi, elenco dei casi da rivedere, avviso fiscale sui
+     * derivati - è la stessa. {@link Binance_DualInvestment#Abbina} segnala sempre le causali Dual
+     * Savings Purchase/Settlement, quindi l'avviso sui derivati compare sempre, indipendentemente da
+     * quanti contratti siano stati abbinati.
+     * @param E esito dell'abbinamento
+     */
+    public void ImpostaValoriDualInvestment(Binance_DualInvestment.Esito E) {
+        Label_Titolo.setText("RESOCONTO ABBINAMENTO DUAL INVESTMENT");
+        Label_TransTotali.setText("Contratti nel file :");
+        Label_TransImportate.setText("Abbinati :");
+        Label_TransScartate.setText("Non ancora liquidati :");
+        Label_TransSconosciute.setText("Ambigui o non trovati in archivio :");
+
+        this.Text_TransTotali.setText(String.valueOf(E.contrattiTotali));
+        this.Text_TransImportate.setText(String.valueOf(E.abbinati));
+        this.Text_TransScartate.setText(String.valueOf(E.nonAncoraLiquidati));
+        //Un contratto ancora aperto non è un errore: colore neutro anche se diverso da zero.
+        this.Text_TransScartate.setForeground(Color.BLACK);
+        int nonAbbinati = E.ambigui + E.nonTrovati;
+        this.Text_TransSconosciute.setText(String.valueOf(nonAbbinati));
+        this.Text_TransSconosciute.setForeground(nonAbbinati == 0 ? Color.BLACK : Color.RED);
+
+        this.cTotali = E.contrattiTotali;
+        this.cAggiunte = E.abbinati;
+        this.cScartate = E.nonAncoraLiquidati;
+        this.cSconosciute = nonAbbinati;
+        this.movimentiSconosciuti = String.join("\n", E.dettagli);
+
+        if (!E.dettagli.isEmpty()) {
+            this.Bottone_CopiaAppunti.setEnabled(true);
+            this.jScrollPane1.setVisible(true);
+            this.jScrollPane2.setVisible(true);
+            this.TextPane_Attenzione.setVisible(true);
+            this.TextPane_Errori.setVisible(true);
+            this.TextPane_Errori.setText(this.movimentiSconosciuti);
+            this.TextPane_Attenzione.setText("<html><body><p style=\"margin-top:0\">"
+                    + "<b><center>ATTENZIONE: alcuni contratti non sono stati abbinati automaticamente.</b><br><br>"
+                    + "<center>I contratti elencati qui sotto sono ambigui oppure non sono stati trovati in archivio.<br>"
+                    + "<center>Premi il pulsante <b>Invia segnalazione errori</b> per mandarli all'autore:"
+                    + " verranno spediti solo queste righe, il tipo di importazione e la versione del programma."
+                    + "</p></body></html>");
+        }
+
+        String avvisoDerivati = Importazioni.TestoAvvisoDerivati();
+        if (!avvisoDerivati.isBlank()) {
+            this.jScrollPane3.setVisible(true);
+            this.TextPane_AvvisoDerivati.setVisible(true);
+            this.TextPane_AvvisoDerivati.setText(avvisoDerivati);
+            this.TextPane_AvvisoDerivati.setCaretPosition(0);
+        }
+        pack();
     }
 
     /**
@@ -317,10 +387,14 @@ private static final long serialVersionUID = 8L;
         dow.SetLabel("Invio in corso, attendere...");
         dow.setLocationRelativeTo(this);
 
+        final boolean corpoGrande = corpo.getBytes(StandardCharsets.UTF_8).length > SOGLIA_COMPRESSIONE_BYTE;
+
         final SegnalazioniClient.Esito[] esito = new SegnalazioniClient.Esito[1];
         Thread t = new Thread(() -> {
             try {
-                esito[0] = SegnalazioniClient.inviaErroreImport(corpo, d);
+                esito[0] = corpoGrande
+                        ? SegnalazioniClient.inviaLog(SegnalazioneBundle.gzip(corpo), "errore-import-grande", d)
+                        : SegnalazioniClient.inviaErroreImport(corpo, d);
             } catch (RuntimeException ex) {
                 LoggerGC.ScriviErrore(ex);
                 esito[0] = new SegnalazioniClient.Esito(false, 0, "Errore imprevisto: " + ex.getMessage());

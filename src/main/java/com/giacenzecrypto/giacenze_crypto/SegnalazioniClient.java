@@ -110,13 +110,17 @@ public final class SegnalazioniClient {
                 .url(urlBase() + "segnalazioni/errore-import")
                 .post(RequestBody.create(body.toString(), JSON))
                 .build();
-        return esegui(req);
+        return esegui(req, Contesto.ERRORE_IMPORT);
     }
 
     /**
      * Invia un log gi&agrave; compresso.
      * @param gz byte del {@code .gz} (documento di testo unico gi&agrave; redatto e compresso)
-     * @param modalita {@code "bundle"} o {@code "log-completo"} — solo informativo, finisce nei metadati
+     * @param modalita {@code "bundle"} o {@code "log-completo"} per un vero invio di log,
+     *        {@code "errore-import-grande"} quando questo metodo è usato per una segnalazione di
+     *        errore import troppo grande per il JSON diretto (vedi {@link Importazioni_Resoconto})
+     *        — solo informativo lato server, finisce nei metadati, ma qui sceglie anche il testo
+     *        del messaggio in caso di errore "troppo-grande"
      * @param d contesto dell'import se l'invio parte dal resoconto di importazione, altrimenti {@code null}
      */
     public static Esito inviaLog(byte[] gz, String modalita, DescrittoreImport d) {
@@ -135,10 +139,22 @@ public final class SegnalazioniClient {
                 .addHeader("X-Segnalazione-Meta", header)
                 .post(RequestBody.create(gz, GZIP))
                 .build();
-        return esegui(req);
+        Contesto ctx = "errore-import-grande".equals(modalita) ? Contesto.ERRORE_IMPORT_GRANDE : Contesto.LOG;
+        return esegui(req, ctx);
     }
 
-    private static Esito esegui(Request req) {
+    /**
+     * Distingue, solo ai fini del messaggio mostrato all'utente in caso di errore "troppo-grande",
+     * fra i tre punti da cui {@link #esegui} può essere chiamato — lo stesso {@code esito} del
+     * server ("troppo-grande") ha un rimedio diverso a seconda di chi ha inviato la richiesta:
+     * {@link #inviaErroreImport} (JSON diretto, limite 256 KB), un vero {@link #inviaLog} di log
+     * (dove "usa il bundle diagnostico" è un consiglio sensato, essendo l'altra modalità offerta
+     * dalla stessa maschera), o {@link #inviaLog} riusato per un errore import troppo grande anche
+     * compresso (dove "bundle diagnostico" non esiste e non significherebbe nulla).
+     */
+    private enum Contesto { ERRORE_IMPORT, ERRORE_IMPORT_GRANDE, LOG }
+
+    private static Esito esegui(Request req, Contesto ctx) {
         try (Response r = HTTP.newCall(req).execute()) {
             String corpo = r.body() != null ? r.body().string() : "";
             String esito = "";
@@ -150,14 +166,26 @@ public final class SegnalazioniClient {
             } catch (RuntimeException ignora) {
                 // corpo non JSON: si ripiega sul solo codice HTTP
             }
-            return new Esito(r.isSuccessful(), r.code(), messaggioUtente(r.code(), esito));
+            return new Esito(r.isSuccessful(), r.code(), messaggioUtente(r.code(), esito, ctx));
         } catch (IOException ex) {
             return new Esito(false, 0,
                     "Servizio non raggiungibile. Controlla la connessione e riprova. (" + ex.getMessage() + ")");
         }
     }
 
-    private static String messaggioUtente(int codice, String esito) {
+    private static String messaggioUtente(int codice, String esito, Contesto ctx) {
+        if ("troppo-grande".equals(esito)) {
+            return switch (ctx) {
+                case LOG ->
+                    "Il file supera i 10 MB compressi: usa il \"bundle diagnostico\" o riduci i log allegati.";
+                case ERRORE_IMPORT_GRANDE ->
+                    "L'elenco delle transazioni scartate supera i 10 MB anche compresso: "
+                    + "è un caso eccezionale, contatta l'autore in altro modo (es. allegando un estratto).";
+                case ERRORE_IMPORT ->
+                    "Il testo è troppo lungo per essere inviato in un'unica segnalazione: riprova, "
+                    + "verrà inviato automaticamente in forma compressa.";
+            };
+        }
         return switch (esito) {
             case "ok" ->
                 "Segnalazione inviata. Grazie!";
@@ -165,8 +193,6 @@ public final class SegnalazioniClient {
                 "Troppi invii ravvicinati: attendi un minuto e riprova.";
             case "quota-giornaliera" ->
                 "Raggiunto il numero massimo di invii giornalieri da questo indirizzo. Riprova domani.";
-            case "troppo-grande" ->
-                "Il file supera i 10 MB compressi: usa il \"bundle diagnostico\" o riduci i log allegati.";
             case "payload-non-valido" ->
                 "Il contenuto inviato non è un archivio valido.";
             case "corpo-mancante" ->

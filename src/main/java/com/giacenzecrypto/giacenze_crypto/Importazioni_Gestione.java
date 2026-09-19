@@ -940,17 +940,11 @@ if (voce.isJson()) {
                     if (esito.abbinati > 0) {
                         Principale.TabellaCryptodaAggiornare = true;
                     }
-                    StringBuilder dettaglio = new StringBuilder();
-                    dettaglio.append("Contratti nel file: ").append(esito.contrattiTotali).append("\n");
-                    dettaglio.append("Abbinati: ").append(esito.abbinati).append("\n");
-                    dettaglio.append("Non ancora liquidati: ").append(esito.nonAncoraLiquidati).append("\n");
-                    dettaglio.append("Non trovati in archivio: ").append(esito.nonTrovati).append("\n");
-                    dettaglio.append("Ambigui (lasciati da classificare a mano): ").append(esito.ambigui);
-                    if (!esito.dettagli.isEmpty()) {
-                        dettaglio.append("\n\n").append(String.join("\n", esito.dettagli));
-                    }
-                    Messaggi.InfoMessage("Abbinamento Dual Investment",
-                            "Abbinamento completato.", dettaglio.toString(), this);
+                    Importazioni_Resoconto res = new Importazioni_Resoconto();
+                    this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    res.ImpostaValoriDualInvestment(esito);
+                    res.setLocationRelativeTo(this);
+                    res.setVisible(true);
                 } catch (Exception ex) {
                     LoggerGC.ScriviErrore(ex);
                     Messaggi.WarningMessage("Abbinamento Dual Investment",

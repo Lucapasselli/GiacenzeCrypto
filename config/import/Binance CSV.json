@@ -26,6 +26,10 @@
   "WBETH2.0 - Redemption Unfreeze and Transfer",
   "Merchant Acquiring"
   ],
+  "causaliAllertaDerivati": [
+  "Dual Savings Purchase",
+  "Dual Savings Settlement"
+  ],
   "mappaCausali": {
     "Binance Card Cashback":                          "CASHBACK",
     "Card Cashback":                                  "CASHBACK",

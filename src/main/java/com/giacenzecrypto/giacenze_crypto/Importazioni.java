@@ -134,6 +134,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -167,6 +168,18 @@ public class Importazioni {
     public static int DocumentoFonteCorrente=0;
     //La mappa delle chain conterrà per ogni chain l'indirizzo del chain explorer e relativa api
     public static String movimentiSconosciuti="";
+
+    /**
+     * Causali CSV (testo grezzo) incontrate durante l'importazione corrente e presenti nella
+     * {@code causaliAllertaDerivati} della configurazione — tipicamente prodotti derivati/a termine
+     * che il programma importa e tratta come cripto per approssimazione. Popolata da
+     * {@link #SegnalaCausaleDerivato}, azzerata da {@link #AzzeraContatori()}, letta da
+     * {@link Importazioni_Resoconto} tramite {@link #TestoAvvisoDerivati()}.
+     *
+     * <p>Volutamente indipendente da {@link #movimentiSconosciuti}: qui i movimenti sono importati
+     * correttamente, non sono errori di riconoscimento — è un avviso fiscale, non uno di import.
+     */
+    public static Set<String> CausaliDerivatiSegnalate = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
     /**
      * Testo premesso a {@link #movimentiSconosciuti} quando l'importazione viene abbandonata per
@@ -262,7 +275,52 @@ public class Importazioni {
                 TrasazioniScartate=0;
                 TrasazioniSconosciute=0;
                 movimentiSconosciuti="";
+                CausaliDerivatiSegnalate.clear();
             }
+
+    /**
+     * Segnala che l'importazione corrente ha incontrato una riga con una causale elencata in
+     * {@code causaliAllertaDerivati} (config JSON). Chiamata da {@link ImportazioneGenerica#consolidaGruppo}
+     * per ogni riga che la incontra, indipendentemente dall'esito dell'abbinamento fiscale della riga.
+     * @param causale causale CSV grezza (non quella mappata) che ha fatto scattare l'avviso
+     */
+    public static void SegnalaCausaleDerivato(String causale) {
+        CausaliDerivatiSegnalate.add(causale);
+    }
+
+    /**
+     * Testo dell'avviso fiscale sui derivati da mostrare in {@link Importazioni_Resoconto}, o stringa
+     * vuota se {@link #CausaliDerivatiSegnalate} è vuoto (nessuna causale a rischio incontrata).
+     * <p>Il contenuto riflette l'analisi fatta sui Dual Investment di Binance: sono economicamente un
+     * contratto a termine/opzionario (diritto/obbligo di cedere o acquistare a un prezzo prefissato),
+     * che l'art. 67, comma 1, lett. c-quater) del TUIR e la Circolare Agenzia Entrate 30/E del
+     * 27/10/2023 (§2.3.2) inquadrano fra i redditi diversi di natura finanziaria — non fra le
+     * plusvalenze da cripto-attività di cui alla lett. c-sexies). Il programma non calcola i redditi da
+     * derivati: questi movimenti vengono comunque importati e trattati come una permuta cripto-cripto,
+     * un'approssimazione che può non riflettere il trattamento fiscale corretto.
+     * @return il testo dell'avviso, o {@code ""} se non c'è nulla da segnalare
+     */
+    public static String TestoAvvisoDerivati() {
+        if (CausaliDerivatiSegnalate.isEmpty()) return "";
+        StringBuilder elenco = new StringBuilder();
+        for (String c : CausaliDerivatiSegnalate) {
+            if (elenco.length() > 0) elenco.append(", ");
+            elenco.append(c);
+        }
+        return "Sono stati importati movimenti di tipo: " + elenco + ".\n\n"
+                + "Si tratta economicamente di un prodotto a termine/opzionario (un contratto che dà il "
+                + "diritto o l'obbligo di cedere o acquistare a un prezzo prefissato entro una scadenza), "
+                + "non di una semplice compravendita di cripto-attività a pronti.\n\n"
+                + "Secondo l'art. 67, comma 1, lettera c-quater) del TUIR e la Circolare dell'Agenzia delle "
+                + "Entrate 30/E del 27/10/2023 (§2.3.2), i redditi da contratti derivati - anche quando hanno "
+                + "come sottostante cripto-attività - rientrano fra i redditi diversi di natura finanziaria "
+                + "(quadro RT, non compensabili con plus/minusvalenze da cripto-attività), non fra le "
+                + "plusvalenze da cripto-attività della lettera c-sexies).\n\n"
+                + "Il programma non gestisce il calcolo dei redditi da derivati: questi movimenti vengono "
+                + "comunque importati e trattati come una permuta cripto-cripto, un'approssimazione che "
+                + "potrebbe non riflettere il corretto trattamento fiscale. Si consiglia di verificare con "
+                + "un professionista la qualificazione di questi importi.";
+    }
 
     /**
      * Avvisa l'utente che una mappa causali non è disponibile e annota il motivo nel riepilogo di import.
@@ -3372,7 +3430,7 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
          * @return {@code true} se {@code riga} è un prelievo (categoria {@code PC} o {@code PF} in coda
          *         all'ID) non ancora classificato (campo {@code [18]} vuoto)
          */
-        private static boolean EPrelievoDaClassificare(String[] riga){
+        static boolean EPrelievoDaClassificare(String[] riga){
             String parti[] = riga[0].split("_");
             if (parti.length < 5) return false;
             String categoria = parti[4];
@@ -3385,7 +3443,7 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
          * @return {@code true} se {@code riga} è un deposito (categoria {@code DC} o {@code DF} in coda
          *         all'ID) non ancora classificato (campo {@code [18]} vuoto)
          */
-        private static boolean EDepositoDaClassificare(String[] riga){
+        static boolean EDepositoDaClassificare(String[] riga){
             String parti[] = riga[0].split("_");
             if (parti.length < 5) return false;
             String categoria = parti[4];

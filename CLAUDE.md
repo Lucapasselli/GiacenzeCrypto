@@ -143,7 +143,7 @@ Two more statics carry the context of the movements popup menu: `PopUp_IDTrans` 
 
 **I contatori del pulsante "Errori" sono quattro e non nascono tutti insieme.** Tre (`NumErroriMovNoPrezzo`, `NumErroriMovSconosciuti`, `NumErroriStackLiFoMancante`) li calcola il ciclo di `TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa`; il quarto, `NumErroriGiacenzeNegative`, arriva dal thread di `Funzione_CaricaTabelleSecondarieInBackgroud`, che finisce **dopo**. Per questo il testo del pulsante sta in `Errori_AggiornaPulsante()`, chiamato da tutti e due i punti: da uno solo mostrerebbe sempre il conteggio della passata precedente, e zero al primo caricamento.
 
-**"Giacenze negative" non è un doppione di "parte del LiFo mancante"**, anche se le due voci del dialogo portano alla stessa scheda. La prima viene da `Funzioni.ControllaSaldiNegativi`, che ragiona per **exchange + sotto-wallet** (`[3];[4];token`); la seconda conta i movimenti con la lettera `A` in `v[38]`, scritta dal motore delle plusvalenze e quindi ragionata per **gruppo wallet**. Un trasferimento interno azzera esplicitamente quella `A`, perciò un comparto svuotato a forza di giroconti — il caso dei Dual Investment su `Investimenti`, sopra — produce la prima e non la seconda. Le etichette del dialogo devono continuare a distinguerle. `ControllaSaldiNegativi` scorre `MappaCryptoWallet` nell'ordine della mappa, che è una `TreeMap` sull'ID il cui prefisso è `yyyyMMddHHmmss`: il conteggio è quindi **cronologico a prescindere dall'ordine in cui i CSV sono stati importati**, e un rientro caricato prima della sua uscita viene segnalato finché manca l'altra riga.
+**"Giacenze negative" non è un doppione di "parte del LiFo mancante"**, anche se le due voci del dialogo portano alla stessa scheda. La prima viene da `Funzioni.ControllaSaldiNegativi`, che ragiona per **exchange + sotto-wallet** (`[3];[4];token`); la seconda conta i movimenti con la lettera `A` in `v[38]`, scritta dal motore delle plusvalenze e quindi ragionata per **gruppo wallet**. Un trasferimento interno azzera esplicitamente quella `A`, perciò un comparto svuotato a forza di giroconti (es. un sotto-wallet alimentato via `walletSpecularePerCausale`) produce la prima e non la seconda. Le etichette del dialogo devono continuare a distinguerle. `ControllaSaldiNegativi` scorre `MappaCryptoWallet` nell'ordine della mappa, che è una `TreeMap` sull'ID il cui prefisso è `yyyyMMddHHmmss`: il conteggio è quindi **cronologico a prescindere dall'ordine in cui i CSV sono stati importati**, e un rientro caricato prima della sua uscita viene segnalato finché manca l'altra riga.
 
 ### Separating GUI from operational logic (ongoing refactor)
 
@@ -333,11 +333,37 @@ Defines the canonical movement type map. Each raw label from an import (e.g. `ST
 
 **`walletSpecularePerCausale`** emits a mirror leg (same coin, inverted quantity via
 `Moneta.InvertiQta()`, never `replace("-","")`) for causali that move a coin into an exchange
-sub-compartment and return it later with a yield (Binance Dual Investment). The counterparty is the
-same wallet group on purpose — the transfer must **not** touch the LIFO stack. The causale must also
-be in `causaliChiuse`, or a multi-row group loses everything: **`causaliChiuse`** decides whether two
-legs of a group merge into one movement or stay split, independently of `raggruppaRighe`'s row
-grouping (`TRASFERIMENTO-CRYPTO` is closed, `SCAMBIO CRYPTO-CRYPTO` is not).
+sub-compartment and return it later with a yield. The counterparty is the same wallet group on
+purpose — the transfer must **not** touch the LIFO stack. The causale must also be in `causaliChiuse`,
+or a multi-row group loses everything: **`causaliChiuse`** decides whether two legs of a group merge
+into one movement or stay split, independently of `raggruppaRighe`'s row grouping
+(`TRASFERIMENTO-CRYPTO` is closed, `SCAMBIO CRYPTO-CRYPTO` is not). It is **not** what Binance Dual
+Investment uses today — those stay plain `TRASFERIMENTO-CRYPTO` (categoria PC/DC, campo18 blank),
+abbinati by hand or via `Binance_DualInvestment.Abbina()` from the "Advanced Earn - Dual Investment
+History" detail CSV, since that file carries a contract id the normal transaction export doesn't. Any
+config can list causali in `causaliAllertaDerivati` (same raw-causale matching as `causaliDifferite`)
+to raise a fiscal disclaimer in `Importazioni_Resoconto` at the end of import — the program doesn't
+compute derivative income (art. 67 c-quater TUIR) and treats these as a crypto-crypto exchange by
+approximation. Full mechanics in `nocommit/Documentazione/Analisi_Import_Meccanismi.md`.
+
+**`Binance_DualInvestment.Abbina()` treats a matched contract differently depending on whether the
+settlement coin equals the subscribed coin.** Different coin (e.g. subscribed USDT, settled BTC) is a
+genuine permuta and goes through `GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito`
+(five synthetic movements, both endpoints renumbered). Same coin — the common case, principal +
+interest settled back in the subscribed currency — would make that same swap permute the *entire*
+settled amount instead of only the excess, so it goes through
+`Binance_DualInvestment.CreaMovimentiDualInvestmentStessaMoneta` instead: Purchase and Settlement keep
+their own IDs (only content fields are mutated, exactly like `CreaMovimentoTrasferimentoA/Da`'s Vault
+mechanism, not renumbered), a mirror TI pair moves the **subscribed quantity only** to/from a
+`Dual Savings` sub-wallet (PTW/DTW markers, same wallet group ⇒ invisible to the LIFO stack, see the
+"costo di carico" note above), the Settlement movement's own quantity/value are reduced to that
+subscribed quantity, and — only if the settlement paid more than the subscription — the exact
+difference becomes an independent `REWARD` movement priced on the same per-unit value already computed
+for Settlement at import (no new price lookup). Unlike the generic Vault mechanism, the reward here is
+exact from the contract's own two quantities (known from the detail CSV), not inferred from an
+aggregate sub-wallet balance — deliberately **not** reusing `CreaMovimentoTrasferimentoA/Da` themselves,
+to avoid risking their aggregate-balance/hash-based-reward logic for a case they were never designed
+for.
 
 **"Scambio differito"** (`SCAMBIO DIFFERITO`) recognises a withdrawal and a deposit on independent
 CSV rows, after the whole import is written, as the two halves of one exchange happening "behind the
@@ -423,10 +449,19 @@ zero movements and reuses the existing id; and `DocumentoFonteCorrente` must not
 `AzzeraContatori()`, because several import branches call it twice.
 
 Deleting a document with movements attached deletes those movements too (single selection only,
-double confirmation) — order matters: remove from map → `Scrivi_Movimenti_Crypto(map, true)` (which
-backs up the pre-deletion file) → `DocumentiFonte.Annulla`. Credentials never enter the NDJSON
-documents written for API/DeFi downloads — `DocumentiFonte.UrlSenzaChiave` redacts keys from
-blockchain-explorer URLs.
+double confirmation), and since 2026-09-18 the deletion is **provisional**, exactly like deleting a
+movement on its own: `Principale_DocumentiFonte.EliminaDocumentoConMovimenti` removes the movements
+from the map and calls `DocumentiFonte.AccodaCancellazione(Id)` — the document disappears from
+`DocumentiFonte.Elenco()` (so from the panel) immediately, but the registry row and the `.gz` are
+untouched. `DocumentiFonte.SalvaBuffer(Map)` makes it real, called from `Importazioni.
+Scrivi_Movimenti_Crypto` right next to `MovimentiStorico.SalvaBuffer` — the same instant the movement
+deletion itself stops being undoable. `Leggi(int)` deliberately does **not** filter pending-deletion
+ids (`Annulla` reads it to resolve the file to delete); only `Elenco()` does. The "Annulla" button in
+"Transazioni Crypto" (discard unsaved changes) calls `DocumentiFonte.ScartaBuffer()` to drop the queue
+— its own liveness re-check inside `SalvaBuffer` would already stop a live document from being deleted,
+but without `ScartaBuffer` it would stay wrongly hidden from the panel until the next real save.
+Credentials never enter the NDJSON documents written for API/DeFi downloads —
+`DocumentiFonte.UrlSenzaChiave` redacts keys from blockchain-explorer URLs.
 
 Full mechanics (hash/backup ordering guarantees, the repeated-pass removal sweep, the two GUI
 mount points sharing one operational class) in

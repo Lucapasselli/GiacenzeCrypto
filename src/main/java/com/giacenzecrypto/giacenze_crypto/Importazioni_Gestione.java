@@ -97,6 +97,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     static final String NAT_CDC_EXCHANGE   = "CDC_EXCHANGE";
     static final String NAT_BINANCE_OLD    = "BINANCE_OLD";
     static final String NAT_BINANCE_REPORT = "BINANCE_REPORT";
+    static final String NAT_BINANCE_DUAL_INVESTMENT = "BINANCE_DUAL_INVESTMENT";
     static final String NAT_COINTRACKING   = "COINTRACKING";
     static final String NAT_TATAX_OLD      = "TATAX_OLD";
     static final String NAT_OKX_OLD        = "OKX_OLD";
@@ -301,6 +302,7 @@ private void raccogliEstrazioni() {
     aggiungiEstrazione(new VoceImport("Crypto.com",   "Exchange CSV",     NAT_CDC_EXCHANGE,   null));
     aggiungiEstrazione(new VoceImport("Binance",      "Formato storico",  NAT_BINANCE_OLD,    null));
     aggiungiEstrazione(new VoceImport("Binance",      "Financial Report", NAT_BINANCE_REPORT, null));
+    aggiungiEstrazione(new VoceImport("Binance",      "Dettaglio Dual Investment", NAT_BINANCE_DUAL_INVESTMENT, null));
     aggiungiEstrazione(new VoceImport("CoinTracking", "Formato storico",  NAT_COINTRACKING,   null));
     aggiungiEstrazione(new VoceImport("Tatax",        "Formato storico",  NAT_TATAX_OLD,      null));
     aggiungiEstrazione(new VoceImport("OKX",          "Formato storico",  NAT_OKX_OLD,        null));
@@ -925,6 +927,40 @@ if (voce.isJson()) {
     progressb.setVisible(true);
 }
         
+        else if (voce.isNativo(NAT_BINANCE_DUAL_INVESTMENT)) {
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
+            JFileChooser fc = new JFileChooser(Directory);
+            int returnVal = fc.showOpenDialog(this);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
+                DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
+                try {
+                    Binance_DualInvestment.Esito esito = Binance_DualInvestment.Abbina(new File(FileDaImportare));
+                    if (esito.abbinati > 0) {
+                        Principale.TabellaCryptodaAggiornare = true;
+                    }
+                    StringBuilder dettaglio = new StringBuilder();
+                    dettaglio.append("Contratti nel file: ").append(esito.contrattiTotali).append("\n");
+                    dettaglio.append("Abbinati: ").append(esito.abbinati).append("\n");
+                    dettaglio.append("Non ancora liquidati: ").append(esito.nonAncoraLiquidati).append("\n");
+                    dettaglio.append("Non trovati in archivio: ").append(esito.nonTrovati).append("\n");
+                    dettaglio.append("Ambigui (lasciati da classificare a mano): ").append(esito.ambigui);
+                    if (!esito.dettagli.isEmpty()) {
+                        dettaglio.append("\n\n").append(String.join("\n", esito.dettagli));
+                    }
+                    Messaggi.InfoMessage("Abbinamento Dual Investment",
+                            "Abbinamento completato.", dettaglio.toString(), this);
+                } catch (Exception ex) {
+                    LoggerGC.ScriviErrore(ex);
+                    Messaggi.WarningMessage("Abbinamento Dual Investment",
+                            "Errore durante la lettura del file: " + ex.getMessage(), this);
+                }
+                dispose();
+            }
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+
         else if (voce.isNativo(NAT_CDC_APP)) {
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");

@@ -568,6 +568,9 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         // Caso 1: movimento singolo – consolido direttamente
         if (gruppo.size() == 1) {
             String[] riga0 = gruppo.get(0);
+            if (cfg.causaliAllertaDerivati.contains(cfg.getCausaleCSV(riga0))) {
+                Importazioni.SegnalaCausaleDerivato(cfg.getCausaleCSV(riga0));
+            }
             List<String[]> movs = costruisciMovimenti(riga0, null, cfg);
             if (movs != null) {
                 risultato.addAll(movs);
@@ -609,6 +612,10 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             if (tipoMovimento.equalsIgnoreCase("IGNORA")
                     || tipoMovimento.equalsIgnoreCase("NON CONSIDERARE")) {
                 continue;
+            }
+
+            if (cfg.causaliAllertaDerivati.contains(causaleCSV)) {
+                Importazioni.SegnalaCausaleDerivato(causaleCSV);
             }
 
             if (dataDiGruppo == null) {
@@ -1017,6 +1024,10 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 if (col < 0) continue;
                 String moneta = cfg.normalizzaMoneta(safe(riga, col));
                 if (moneta == null || moneta.isBlank()) continue;
+                // "-" e' il segnaposto di "assente" di export come Nexo (Fee/Fee Currency valgono "-"
+                // quando la riga non ha commissione): non e' mai un vero ticker, ma senza questo salto
+                // finisce trattato come una moneta reale e richiede quotazioni orarie su tutto lo storico.
+                if (moneta.equals("-")) continue;
                 if (moneta.equalsIgnoreCase("EUR") || moneta.equalsIgnoreCase("USD")) continue;
                 if (Funzioni.isSCAM(moneta)) continue;
                 if (Principale.Mappa_EMoney != null && Principale.Mappa_EMoney.get(moneta) != null) continue;
@@ -1719,12 +1730,16 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
          * Causale CSV → sotto-wallet ({@code [4]}) su cui emettere la <b>gamba speculare</b> del
          * movimento, cioè lo stesso importo a segno invertito.
          *
-         * <p>Serve per le operazioni che spostano una moneta in un comparto dell'exchange e la
-         * restituiscono più tardi, con un rendimento e a volte in un'altra moneta (il Dual Investment
-         * di Binance, dove le due gambe distano settimane e non sono accoppiabili all'import). Le due
-         * gambe rendono il movimento visibile e il saldo esatto su entrambi i lati; lo scarto fra
-         * quanto è uscito e quanto è rientrato resta come <b>giacenza negativa</b> sul sotto-wallet di
+         * <p>Pensato per le operazioni che spostano una moneta in un comparto dell'exchange e la
+         * restituiscono più tardi, con un rendimento e a volte in un'altra moneta. Le due gambe
+         * rendono il movimento visibile e il saldo esatto su entrambi i lati; lo scarto fra quanto è
+         * uscito e quanto è rientrato resta come <b>giacenza negativa</b> sul sotto-wallet di
          * destinazione, che l'utente compensa a mano con una reward.
+         *
+         * <p><b>Non è la scelta usata oggi per i Dual Investment di Binance</b> (che restano
+         * {@code TRASFERIMENTO-CRYPTO}, campo18 vuoto, abbinati via {@link Binance_DualInvestment} o a
+         * mano): il meccanismo resta qui, generico e disponibile, per un futuro caso analogo su un
+         * altro exchange.
          *
          * <p><b>Perché il sotto-wallet e non l'exchange.</b> {@code [3]} resta quello di
          * {@code nomeExchange}: è la chiave del gruppo wallet fiscale e della deduplica del re-import,
@@ -1743,6 +1758,17 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         public Map<String, String> walletSpecularePerCausale = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         public Map<String, Integer> mappaNomiColonne = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         public Set<String> causaliDifferite = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+
+        /**
+         * Causali CSV (testo grezzo, non quello mappato) per cui il programma non gestisce
+         * correttamente il trattamento fiscale — tipicamente prodotti derivati/a termine (es. i Dual
+         * Investment di Binance) importati e trattati come una permuta cripto-cripto per
+         * approssimazione. Ogni riga che le incontra fa comparire, a fine importazione, un avviso in
+         * {@link Importazioni_Resoconto} (vedi {@link Importazioni#SegnalaCausaleDerivato}):
+         * indipendente dall'esito dell'abbinamento delle singole righe, serve solo a segnalare il
+         * limite del programma su quel tipo di operazione.
+         */
+        public Set<String> causaliAllertaDerivati = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
         // Causale composita (max 3 colonne concatenate con separatoreCausale)
         public int colonnaCausale2 = -1;
@@ -1839,6 +1865,12 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 JSONArray arr = root.getJSONArray("causaliDifferite");
                 for (int i = 0; i < arr.length(); i++) {
                     cfg.causaliDifferite.add(arr.getString(i));
+                }
+            }
+            if (root.has("causaliAllertaDerivati")) {
+                JSONArray arr = root.getJSONArray("causaliAllertaDerivati");
+                for (int i = 0; i < arr.length(); i++) {
+                    cfg.causaliAllertaDerivati.add(arr.getString(i));
                 }
             }
 

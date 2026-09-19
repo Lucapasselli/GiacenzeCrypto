@@ -47,8 +47,10 @@ private static final long serialVersionUID = 8L;
         //resterebbero visibili due riquadri vuoti anche quando non c'è nulla da segnalare.
         jScrollPane1.setVisible(false);
         jScrollPane2.setVisible(false);
+        jScrollPane3.setVisible(false);
         TextPane_Attenzione.setVisible(false);
         TextPane_Errori.setVisible(false);
+        TextPane_AvvisoDerivati.setVisible(false);
 
         //Il vecchio pulsante "Copia errori negli appunti" diventa l'invio diretto della segnalazione
         //(il .form resta invariato: qui si cambia solo l'etichetta e, nell'handler, il comportamento).
@@ -112,6 +114,13 @@ private static final long serialVersionUID = 8L;
                     + " verranno spediti solo queste righe, il tipo di importazione e la versione del programma."
                     + "</p></body></html>");
         }
+        String avvisoDerivati = Importazioni.TestoAvvisoDerivati();
+        if (!avvisoDerivati.isBlank()) {
+            this.jScrollPane3.setVisible(true);
+            this.TextPane_AvvisoDerivati.setVisible(true);
+            this.TextPane_AvvisoDerivati.setText(avvisoDerivati);
+            this.TextPane_AvvisoDerivati.setCaretPosition(0);
+        }
         pack();
               
         
@@ -134,6 +143,8 @@ private static final long serialVersionUID = 8L;
         TextPane_Attenzione = new javax.swing.JTextPane();
         jScrollPane2 = new javax.swing.JScrollPane();
         TextPane_Errori = new javax.swing.JTextPane();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        TextPane_AvvisoDerivati = new javax.swing.JTextPane();
         Text_TransTotali = new javax.swing.JTextField();
         Text_TransImportate = new javax.swing.JTextField();
         Text_TransScartate = new javax.swing.JTextField();
@@ -161,6 +172,9 @@ private static final long serialVersionUID = 8L;
 
         TextPane_Errori.setEditable(false);
         jScrollPane2.setViewportView(TextPane_Errori);
+
+        TextPane_AvvisoDerivati.setEditable(false);
+        jScrollPane3.setViewportView(TextPane_AvvisoDerivati);
 
         Text_TransTotali.setEditable(false);
         Text_TransTotali.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
@@ -203,6 +217,7 @@ private static final long serialVersionUID = 8L;
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane3)
                     .addComponent(jScrollPane2)
                     .addComponent(Label_Titolo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 563, Short.MAX_VALUE)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -250,6 +265,8 @@ private static final long serialVersionUID = 8L;
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(Bottone_CopiaAppunti, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
@@ -376,6 +393,7 @@ private static final long serialVersionUID = 8L;
     private javax.swing.JLabel Label_TransSconosciute;
     private javax.swing.JLabel Label_TransTotali;
     private javax.swing.JTextPane TextPane_Attenzione;
+    private javax.swing.JTextPane TextPane_AvvisoDerivati;
     private javax.swing.JTextPane TextPane_Errori;
     private javax.swing.JTextField Text_TransImportate;
     private javax.swing.JTextField Text_TransScartate;
@@ -383,5 +401,6 @@ private static final long serialVersionUID = 8L;
     private javax.swing.JTextField Text_TransTotali;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     // End of variables declaration//GEN-END:variables
 }

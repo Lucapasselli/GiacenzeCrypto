@@ -3619,6 +3619,52 @@ static boolean fonteEDaExchangeCCXT(String fonte) {
     return fonte != null && EXCHANGE_CCXT.contains(fonte.trim().toLowerCase());
 }
 
+/**
+ * @return {@code true} se in {@code PrezziNew} esiste almeno un prezzo di un exchange CCXT
+ *         ({@link #fonteEDaExchangeCCXT}) entro {@code minuti} da {@code timestampRiferimento}.
+ *
+ * <p><b>Non è lo stesso di "il prezzo più vicino è CCXT"</b>, che è quanto fa
+ * {@link #DammiPrezzoDaDatabase} + {@link #fonteEDaExchangeCCXT} su un solo risultato: quella
+ * combinazione perde quando un prezzo di ripiego (tipicamente CoinMarketCap, scritto sull'ora
+ * tonda) cade alla STESSA distanza di un prezzo CCXT — {@code ORDER BY ABS(...), exchange ASC}
+ * sceglie "CoinMarketCap" (maiuscola, precede alfabeticamente gli id CCXT minuscoli) e il
+ * chiamante conclude "non coperto" anche quando il prezzo CCXT è già in cache. Usata da
+ * {@link #FiltraRichiesteGiaCoperte}, dove la domanda è solo "serve richiederlo?" — vedi
+ * CLAUDE.md, redownload del pre-scarico CSV su coppie vicine al confine dell'ora.
+ *
+ * <p>Non tocca {@link #DammiPrezzoDaDatabase}: quella sceglie il prezzo da <b>usare</b> per un
+ * movimento, e cambiarne l'ordinamento cambierebbe quale prezzo finisce in un movimento reale
+ * (golden master). Qui si chiede solo "esiste", non "qual è il migliore".
+ */
+static boolean EsistePrezzoCCXTInCache(String symbol, long timestampRiferimento, String rete, String address, long minuti) {
+    if (symbol == null || symbol.isBlank()) return false;
+    symbol = symbol.toUpperCase();
+    long tsMin = timestampRiferimento - minuti * 60 * 1000;
+    long tsMax = timestampRiferimento + minuti * 60 * 1000;
+
+    String sql = "SELECT 1 FROM PrezziNew "
+            + "WHERE symbol = ? AND timestamp BETWEEN ? AND ? "
+            + "AND (rete = ? OR ? = '') AND (address = ? OR ? = '') "
+            + "AND LOWER(exchange) IN (" + EXCHANGES_CCXT.replace(",", "','").replaceAll("^|$", "'") + ") "
+            + "LIMIT 1";
+
+    try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(sql)) {
+        ps.setString(1, symbol);
+        ps.setLong(2, tsMin);
+        ps.setLong(3, tsMax);
+        ps.setString(4, rete == null ? "" : rete);
+        ps.setString(5, rete == null ? "" : rete);
+        ps.setString(6, address == null ? "" : address);
+        ps.setString(7, address == null ? "" : address);
+        try (ResultSet rs = ps.executeQuery()) {
+            return rs.next();
+        }
+    } catch (SQLException ex) {
+        LoggerGC.ScriviErrore(ex);
+        return false;
+    }
+}
+
 /** Id CoinMarketCap di USDT e USDC, stabili da anni: riserva usata da {@link #RecuperaPrezziDaCoinMarketCap}
  *  quando la mappa dinamica (che richiede una API key configurata) non le conosce. */
 static final Map<String, Integer> ID_CMC_STABLECOIN = Map.of("USDT", 825, "USDC", 3408);
@@ -3849,8 +3895,15 @@ public static List<RichiestaPrezzo> FiltraRichiesteGiaCoperte(List<RichiestaPrez
         //saltava quella moneta per niente e se la ritrovava a lanciare un processo Node per conto
         //proprio: nessun prezzo sbagliato, ma il guadagno del lotto perso. Si vedeva soprattutto
         //sull'ora corrente, che non viene mai marcata e quindi non e' mai coperta dalla condizione 1.
-        InfoPrezzo inCache = DammiPrezzoDaDatabase(r.simbolo, r.istante, "", "", "", 5, BigDecimal.ONE);
-        if (inCache != null && fonteEDaExchangeCCXT(inCache.Fonte)) continue;
+        //
+        //ESISTE, non "il piu' vicino e' CCXT": vedi il javadoc di EsistePrezzoCCXTInCache. Usare qui
+        //DammiPrezzoDaDatabase (che restituisce UN SOLO prezzo, il piu' vicino) sbagliava ogni volta
+        //che un prezzo di ripiego (CoinMarketCap, scritto sull'ora tonda) cadeva alla stessa distanza
+        //di un prezzo CCXT gia' in cache: l'ORDER BY ... , exchange ASC sceglieva "CoinMarketCap"
+        //(maiuscola, precede alfabeticamente gli id CCXT minuscoli), fonteEDaExchangeCCXT bocciava il
+        //risultato, e la coppia veniva rispedita a Node a ogni singola importazione anche se il
+        //prezzo CCXT era gia' li'.
+        if (EsistePrezzoCCXTInCache(r.simbolo, r.istante, "", "", 5)) continue;
 
         daChiedere.add(r);
     }

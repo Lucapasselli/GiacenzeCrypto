@@ -133,6 +133,19 @@ class ImportazioneGenericaPreScaricoRigheTest {
         assertEquals(Set.of("ADA", "BNB"), simboliChiesti(richieste));
     }
 
+    /**
+     * Il difetto osservato con un export Nexo: quando la riga non ha commissione, Fee e Fee Currency
+     * valgono entrambi "-" (non blank), e senza un salto dedicato "-" veniva raccolto come se fosse un
+     * vero ticker, richiedendo quotazioni orarie su tutto lo storico per una moneta inesistente.
+     */
+    @Test
+    void ilSegnaposdiTrattinoDellaCommissioneNonVieneRaccolto() {
+        List<Prezzi.RichiestaPrezzo> richieste = ImportazioneGenerica.RaccogliRichiestePerRighe(
+                List.<String[]>of(new String[]{"2022-11-18 05:30:00", "NEXO", "-"}), cfg());
+
+        assertEquals(Set.of("NEXO"), simboliChiesti(richieste));
+    }
+
     @Test
     void unaRaccoltaSenzaRigheNonChiedeNulla() {
         assertTrue(ImportazioneGenerica.RaccogliRichiestePerRighe(null, cfg()).isEmpty());

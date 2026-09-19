@@ -289,8 +289,11 @@ public class Importazioni {
     }
 
     /**
-     * Testo dell'avviso fiscale sui derivati da mostrare in {@link Importazioni_Resoconto}, o stringa
-     * vuota se {@link #CausaliDerivatiSegnalate} è vuoto (nessuna causale a rischio incontrata).
+     * Testo HTML dell'avviso fiscale sui derivati mostrato da {@link Importazioni_Resoconto} in un
+     * dialog separato (non più incassato nel riquadro del resoconto, dove si leggeva poco), o stringa
+     * vuota se {@link #CausaliDerivatiSegnalate} è vuoto (nessuna causale a rischio incontrata). I tag
+     * {@code <b>} evidenziano i punti salienti — è testo destinato a un {@code JLabel}/{@code JTextPane}
+     * in modalità HTML, non testo semplice.
      * <p>Il contenuto riflette l'analisi fatta sui Dual Investment di Binance: sono economicamente un
      * contratto a termine/opzionario (diritto/obbligo di cedere o acquistare a un prezzo prefissato),
      * che l'art. 67, comma 1, lett. c-quater) del TUIR e la Circolare Agenzia Entrate 30/E del
@@ -298,28 +301,34 @@ public class Importazioni {
      * plusvalenze da cripto-attività di cui alla lett. c-sexies). Il programma non calcola i redditi da
      * derivati: questi movimenti vengono comunque importati e trattati come una permuta cripto-cripto,
      * un'approssimazione che può non riflettere il trattamento fiscale corretto.
-     * @return il testo dell'avviso, o {@code ""} se non c'è nulla da segnalare
+     * @return il testo HTML dell'avviso, o {@code ""} se non c'è nulla da segnalare
      */
     public static String TestoAvvisoDerivati() {
         if (CausaliDerivatiSegnalate.isEmpty()) return "";
         StringBuilder elenco = new StringBuilder();
         for (String c : CausaliDerivatiSegnalate) {
             if (elenco.length() > 0) elenco.append(", ");
-            elenco.append(c);
+            elenco.append(EscapeHtml(c));
         }
-        return "Sono stati importati movimenti di tipo: " + elenco + ".\n\n"
-                + "Si tratta economicamente di un prodotto a termine/opzionario (un contratto che dà il "
-                + "diritto o l'obbligo di cedere o acquistare a un prezzo prefissato entro una scadenza), "
+        return "Sono stati importati movimenti di tipo: <b>" + elenco + "</b>.\n\n"
+                + "Si tratta economicamente di un <b>prodotto a termine/opzionario</b> (un contratto che dà "
+                + "il diritto o l'obbligo di cedere o acquistare a un prezzo prefissato entro una scadenza), "
                 + "non di una semplice compravendita di cripto-attività a pronti.\n\n"
-                + "Secondo l'art. 67, comma 1, lettera c-quater) del TUIR e la Circolare dell'Agenzia delle "
-                + "Entrate 30/E del 27/10/2023 (§2.3.2), i redditi da contratti derivati - anche quando hanno "
-                + "come sottostante cripto-attività - rientrano fra i redditi diversi di natura finanziaria "
-                + "(quadro RT, non compensabili con plus/minusvalenze da cripto-attività), non fra le "
-                + "plusvalenze da cripto-attività della lettera c-sexies).\n\n"
-                + "Il programma non gestisce il calcolo dei redditi da derivati: questi movimenti vengono "
-                + "comunque importati e trattati come una permuta cripto-cripto, un'approssimazione che "
-                + "potrebbe non riflettere il corretto trattamento fiscale. Si consiglia di verificare con "
-                + "un professionista la qualificazione di questi importi.";
+                + "Secondo l'<b>art. 67, comma 1, lettera c-quater) del TUIR</b> e la <b>Circolare dell'Agenzia "
+                + "delle Entrate 30/E del 27/10/2023 (§2.3.2)</b>, i redditi da contratti derivati - anche "
+                + "quando hanno come sottostante cripto-attività - rientrano fra i <b>redditi diversi di "
+                + "natura finanziaria (quadro RT)</b>, <b>non sono compensabili</b> con plus/minusvalenze da "
+                + "cripto-attività e <b>non</b> rientrano fra le plusvalenze da cripto-attività della "
+                + "lettera c-sexies).\n\n"
+                + "Il programma <b>non gestisce il calcolo dei redditi da derivati</b>: questi movimenti "
+                + "vengono comunque importati e trattati come una permuta cripto-cripto, un'approssimazione "
+                + "che potrebbe non riflettere il corretto trattamento fiscale. Si consiglia di verificare "
+                + "con un professionista la qualificazione di questi importi.";
+    }
+
+    /** Escape minimo per inserire testo non fidato (causali CSV) dentro l'HTML di {@link #TestoAvvisoDerivati()}. */
+    private static String EscapeHtml(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
     /**

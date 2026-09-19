@@ -41,6 +41,11 @@ private static final long serialVersionUID = 8L;
     private int cSconosciute;
     private String movimentiSconosciuti = "";
 
+    // Avviso fiscale sui prodotti derivati (Dual Investment e simili): tenuto da parte invece che
+    // incassato in un riquadro del resoconto, e mostrato come dialog separato alla chiusura - vedi dispose().
+    private String avvisoDerivati = "";
+    private boolean avvisoDerivatiMostrato = false;
+
     /**
      * Soglia oltre la quale l'invio della segnalazione passa dal JSON diretto (endpoint
      * {@code /segnalazioni/errore-import}, limite server 256 KB sul corpo della richiesta) allo
@@ -59,10 +64,8 @@ private static final long serialVersionUID = 8L;
         //resterebbero visibili due riquadri vuoti anche quando non c'è nulla da segnalare.
         jScrollPane1.setVisible(false);
         jScrollPane2.setVisible(false);
-        jScrollPane3.setVisible(false);
         TextPane_Attenzione.setVisible(false);
         TextPane_Errori.setVisible(false);
-        TextPane_AvvisoDerivati.setVisible(false);
 
         //Il vecchio pulsante "Copia errori negli appunti" diventa l'invio diretto della segnalazione
         //(il .form resta invariato: qui si cambia solo l'etichetta e, nell'handler, il comportamento).
@@ -126,13 +129,7 @@ private static final long serialVersionUID = 8L;
                     + " verranno spediti solo queste righe, il tipo di importazione e la versione del programma."
                     + "</p></body></html>");
         }
-        String avvisoDerivati = Importazioni.TestoAvvisoDerivati();
-        if (!avvisoDerivati.isBlank()) {
-            this.jScrollPane3.setVisible(true);
-            this.TextPane_AvvisoDerivati.setVisible(true);
-            this.TextPane_AvvisoDerivati.setText(avvisoDerivati);
-            this.TextPane_AvvisoDerivati.setCaretPosition(0);
-        }
+        this.avvisoDerivati = Importazioni.TestoAvvisoDerivati();
         pack();
 
 
@@ -143,10 +140,10 @@ private static final long serialVersionUID = 8L;
      * i quattro campi del resoconto generico invece di aggiungerne di nuovi al {@code .form}: le
      * etichette e i colori non hanno lo stesso significato di un import CSV (qui non ci sono
      * "transazioni scartate perché già esistenti", e "non ancora liquidati" non è un errore), ma la
-     * struttura del dialogo - titolo, quattro conteggi, elenco dei casi da rivedere, avviso fiscale sui
-     * derivati - è la stessa. {@link Binance_DualInvestment#Abbina} segnala sempre le causali Dual
-     * Savings Purchase/Settlement, quindi l'avviso sui derivati compare sempre, indipendentemente da
-     * quanti contratti siano stati abbinati.
+     * struttura del dialogo - titolo, quattro conteggi, elenco dei casi da rivedere - è la stessa.
+     * {@link Binance_DualInvestment#Abbina} segnala sempre le causali Dual Savings Purchase/Settlement,
+     * quindi l'avviso fiscale sui derivati (mostrato come dialog separato da {@link #dispose()}, non più
+     * incassato qui) compare sempre, indipendentemente da quanti contratti siano stati abbinati.
      * @param E esito dell'abbinamento
      */
     public void ImpostaValoriDualInvestment(Binance_DualInvestment.Esito E) {
@@ -186,13 +183,7 @@ private static final long serialVersionUID = 8L;
                     + "</p></body></html>");
         }
 
-        String avvisoDerivati = Importazioni.TestoAvvisoDerivati();
-        if (!avvisoDerivati.isBlank()) {
-            this.jScrollPane3.setVisible(true);
-            this.TextPane_AvvisoDerivati.setVisible(true);
-            this.TextPane_AvvisoDerivati.setText(avvisoDerivati);
-            this.TextPane_AvvisoDerivati.setCaretPosition(0);
-        }
+        this.avvisoDerivati = Importazioni.TestoAvvisoDerivati();
         pack();
     }
 
@@ -213,8 +204,6 @@ private static final long serialVersionUID = 8L;
         TextPane_Attenzione = new javax.swing.JTextPane();
         jScrollPane2 = new javax.swing.JScrollPane();
         TextPane_Errori = new javax.swing.JTextPane();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        TextPane_AvvisoDerivati = new javax.swing.JTextPane();
         Text_TransTotali = new javax.swing.JTextField();
         Text_TransImportate = new javax.swing.JTextField();
         Text_TransScartate = new javax.swing.JTextField();
@@ -242,9 +231,6 @@ private static final long serialVersionUID = 8L;
 
         TextPane_Errori.setEditable(false);
         jScrollPane2.setViewportView(TextPane_Errori);
-
-        TextPane_AvvisoDerivati.setEditable(false);
-        jScrollPane3.setViewportView(TextPane_AvvisoDerivati);
 
         Text_TransTotali.setEditable(false);
         Text_TransTotali.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
@@ -287,7 +273,6 @@ private static final long serialVersionUID = 8L;
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3)
                     .addComponent(jScrollPane2)
                     .addComponent(Label_Titolo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 563, Short.MAX_VALUE)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -336,8 +321,6 @@ private static final long serialVersionUID = 8L;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(Bottone_CopiaAppunti, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
                     .addComponent(Bottone_Ok, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -351,6 +334,37 @@ private static final long serialVersionUID = 8L;
         // TODO add your handling code here:
         this.dispose();
     }//GEN-LAST:event_Bottone_OkActionPerformed
+
+    /**
+     * Oltre a chiudere la finestra, fa comparire l'avviso fiscale sui derivati (se presente) come dialog
+     * separato: intercetta sia il pulsante OK sia la chiusura dalla X, che finiscono comunque qui perché
+     * {@code defaultCloseOperation} è {@code DISPOSE_ON_CLOSE}. Un riquadro incassato nel resoconto, fra i
+     * conteggi e gli errori, si leggeva poco; qui compare da solo, dopo che l'utente ha già visto l'esito
+     * dell'importazione.
+     */
+    @Override
+    public void dispose() {
+        if (!avvisoDerivatiMostrato && !avvisoDerivati.isBlank()) {
+            avvisoDerivatiMostrato = true;
+            MostraAvvisoDerivati();
+        }
+        super.dispose();
+    }
+
+    private void MostraAvvisoDerivati() {
+        AppDialog.builder(this)
+                .windowTitle("Avviso fiscale")
+                .bodyTitle("Movimenti trattati come permuta cripto-cripto per approssimazione")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message("Alcuni dei movimenti importati sono economicamente prodotti a termine/opzionari, "
+                        + "non semplici compravendite di cripto-attività a pronti.")
+                .details(avvisoDerivati)
+                .action(AppDialog.DialogAction.builder("ok", "Ho capito")
+                        .role(AppDialog.ActionRole.PRIMARY).build())
+                .showDialog();
+    }
 
     private void Bottone_CopiaAppuntiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_CopiaAppuntiActionPerformed
         final String corpo = TextPane_Errori.getText();
@@ -467,7 +481,6 @@ private static final long serialVersionUID = 8L;
     private javax.swing.JLabel Label_TransSconosciute;
     private javax.swing.JLabel Label_TransTotali;
     private javax.swing.JTextPane TextPane_Attenzione;
-    private javax.swing.JTextPane TextPane_AvvisoDerivati;
     private javax.swing.JTextPane TextPane_Errori;
     private javax.swing.JTextField Text_TransImportate;
     private javax.swing.JTextField Text_TransScartate;
@@ -475,6 +488,5 @@ private static final long serialVersionUID = 8L;
     private javax.swing.JTextField Text_TransTotali;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
     // End of variables declaration//GEN-END:variables
 }

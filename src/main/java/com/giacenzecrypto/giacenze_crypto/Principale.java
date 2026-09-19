@@ -10133,9 +10133,13 @@ GiacenzeaData_CompilaTabellaToken(true);
             //Doppio click col tasto sinistro su una riga che è davvero un movimento (posizioneID!=-1,
             //quindi identificato sopra, e presente in MappaCryptoWallet): apre il dettaglio, come la
             //voce "Dettagli Movimento" del menu contestuale. Non si passa da PopUp_IDTrans/PopUp_Component,
-            //perché Funzioni.PopUpMenu li valorizza solo sul tasto destro, subito sotto
+            //perché Funzioni.PopUpMenu li valorizza solo sul tasto destro, subito sopra.
+            //Il componente per il posizionamento è "this" (la finestra principale), non "tabella": una
+            //JTable dentro uno scroll pane ha un'altezza propria pari a tutte le righe, non alla sola
+            //parte visibile, quindi setLocationRelativeTo(tabella) centrerebbe il dialogo su quell'area
+            //enorme invece che sulla finestra — esattamente come fa il menu contestuale via PopUp_Component.
             if (evt.getClickCount()==2 && SwingUtilities.isLeftMouseButton(evt) && IDTransazione!=null){
-                Funzione_ApriDettaglioMovimento(IDTransazione, tabella);
+                Funzione_ApriDettaglioMovimento(IDTransazione, this);
                 return;
             }
 

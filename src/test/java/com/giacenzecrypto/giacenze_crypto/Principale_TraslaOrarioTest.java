@@ -12,10 +12,10 @@ import static org.junit.jupiter.api.Assertions.*;
  * avanti/indietro di N ore l'orario di uno o più movimenti selezionati.
  *
  * <p>I test invocano {@link Principale_TraslaOrario#EseguiTraslazione(List, long)}, che esegue la
- * traslazione senza alcuna interazione con l'utente (i dialoghi di richiesta ore e di conferma
- * scioglimento abbinamenti vivono in {@link Principale_TraslaOrario#TraslaOrario} e non sono
- * testabili in un ambiente headless, stesso schema di {@code Principale_Movimenti_SeparaUnisciTest}
- * con {@code Esegui*}).</p>
+ * traslazione senza alcuna interazione con l'utente (i dialoghi di richiesta ore, di avviso sui
+ * movimenti da blockchain e di scelta del ricalcolo prezzi vivono in
+ * {@link Principale_TraslaOrario#TraslaOrario} e non sono testabili in un ambiente headless, stesso
+ * schema di {@code Principale_Movimenti_SeparaUnisciTest} con {@code Esegui*}).</p>
  */
 class Principale_TraslaOrarioTest {
 
@@ -148,26 +148,59 @@ class Principale_TraslaOrarioTest {
     }
 
     @Test
-    void campiCalcolatiDalMotoreEBackupPrezzo_nonVengonoCopiatiVerbatim() {
-        //16/17/19/33/38 (motore plusvalenze), 31 (data fine trasferimento) e 35 (backup prezzo della
-        //classificazione manuale) devono restare vuoti sul movimento traslato e non portarsi dietro lo
-        //stato vecchio: la blocklist li esclude esplicitamente dalla copia automatica
+    void campiCalcolatiDalMotoreVengonoSvuotati() {
+        //16/19/33/38 (motore plusvalenze) e 31 (data fine trasferimento) devono restare vuoti sul
+        //movimento traslato e non portarsi dietro lo stato vecchio: sono output del motore delle
+        //plusvalenze, che li ricalcola al prossimo giro di AggiornaPlusvalenze
         String Deposito[] = movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
                 "", "", "", "ETH", "Crypto", "8", "20000.00");
         Deposito[16] = "1000.00";
-        Deposito[17] = "1000.00";
         Deposito[19] = "50.00";
         Deposito[31] = DATA;
         Deposito[33] = "50.00";
-        Deposito[35] = "999.00";
         Deposito[38] = "A";
 
         Principale_TraslaOrario.EseguiTraslazione(List.of(Deposito[0]), UN_ORA);
 
         String Traslato[] = MappaCryptoWallet.get("20240315113000_WalletTest_001_001_DC");
-        for (int Campo : new int[]{16, 17, 19, 31, 33, 35, 38}) {
+        for (int Campo : new int[]{16, 19, 31, 33, 38}) {
             assertEquals("", Traslato[Campo], "il campo " + Campo + " non deve essere riportato verbatim");
         }
+    }
+
+    @Test
+    void campo35BackupPrezzoClassificazioneManuale_vieneConservatoVerbatim() {
+        //Backup del prezzo pre-classificazione (ACQUISTO/DONAZIONE/PRESTITO/LIQUIDAZIONE): non è
+        //output del motore, è classificazione manuale dell'utente e deve sopravvivere alla traslazione
+        String Acquisto[] = movimento(DATA_ID + "_WalletTest_001_001_DC", "ACQUISTO CRYPTO",
+                "", "", "", "ETH", "Crypto", "8", "20000.00");
+        Acquisto[35] = "999.00";
+
+        Principale_TraslaOrario.EseguiTraslazione(List.of(Acquisto[0]), UN_ORA);
+
+        String Traslato[] = MappaCryptoWallet.get("20240315113000_WalletTest_001_001_DC");
+        assertEquals("999.00", Traslato[35]);
+    }
+
+    @Test
+    void campo17CostoDiCaricoDonazione_vieneConservatoVerbatimSoloSeDDO() {
+        //Campo 17 ha un doppio uso: per i DDO è il costo di carico della donazione inserito a mano
+        //(input utente, va conservato); per tutti gli altri movimenti è output del motore (va svuotato)
+        String Donazione[] = movimento(DATA_ID + "_WalletTest_001_001_DC", "DONAZIONE",
+                "", "", "", "ETH", "Crypto", "8", "20000.00");
+        Donazione[18] = "DDO - Donazione";
+        Donazione[17] = "18000.00";
+
+        String NonDDO[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "BTC", "Crypto", "1", "20000.00");
+        NonDDO[17] = "18000.00";
+
+        Principale_TraslaOrario.EseguiTraslazione(List.of(Donazione[0], NonDDO[0]), UN_ORA);
+
+        assertEquals("18000.00", MappaCryptoWallet.get("20240315113000_WalletTest_001_001_DC")[17],
+                "per i DDO il campo 17 è input utente e va conservato");
+        assertEquals("", MappaCryptoWallet.get("20240315113000_WalletTest_002_001_DC")[17],
+                "per gli altri movimenti il campo 17 è output del motore e va svuotato");
     }
 
     @Test
@@ -228,9 +261,10 @@ class Principale_TraslaOrarioTest {
     // =============================================================================================
 
     @Test
-    void movimentoConCommissioneCollegata_sciogieIlGruppoEdEliminaLaCommissioneAutomatica() {
-        //Un prelievo con una commissione automatica collegata: stessa struttura che
-        //GUI_ClassificazioneMovimento.RiportaTransazioniASituazioneIniziale sa già sciogliere
+    void movimentoConCommissioneCollegata_traslaEntrambiEPreservaLaClassificazione() {
+        //Un prelievo con una commissione automatica collegata: la commissione ha lo stesso segmento[0]
+        //(timestamp) del prelievo, quindi è un membro "posseduto" e si trasla insieme a lui invece di
+        //essere sciolta
         String Prelievo[] = movimento(DATA_ID + "_WalletTest_001_001_PC", "PRELIEVO CRYPTO",
                 "BTC", "Crypto", "-0.50", "", "", "", "20000.00");
         Prelievo[18] = "PCO - CASHOUT O SIMILARE";
@@ -239,26 +273,30 @@ class Principale_TraslaOrarioTest {
         String Commissione[] = movimento(DATA_ID + "_WalletTest_002_001_CM", "COMMISSIONE",
                 "BTC", "Crypto", "-0.01", "", "", "", "400.00");
         Commissione[22] = "AU";
+        Commissione[20] = Prelievo[0];
 
         int Traslati = Principale_TraslaOrario.EseguiTraslazione(List.of(Prelievo[0]), UN_ORA);
 
         assertEquals(1, Traslati);
-        assertNull(MappaCryptoWallet.get(Commissione[0]), "la commissione automatica collegata viene eliminata");
         assertNull(MappaCryptoWallet.get(Prelievo[0]), "l'ID originale del prelievo sparisce");
+        assertNull(MappaCryptoWallet.get(Commissione[0]), "l'ID originale della commissione sparisce (traslata, non eliminata)");
 
-        String Traslato[] = MappaCryptoWallet.get("20240315113000_WalletTest_001_001_PC");
-        assertNotNull(Traslato, "il prelievo ricompare con l'ID traslato");
-        assertEquals("", Traslato[18], "la classificazione manuale viene azzerata dallo scioglimento del gruppo");
-        assertEquals("", Traslato[20], "l'abbinamento viene azzerato");
+        String PrelievoTraslato[] = MappaCryptoWallet.get("20240315113000_WalletTest_001_001_PC");
+        assertNotNull(PrelievoTraslato, "il prelievo ricompare con l'ID traslato");
+        assertEquals("PCO - CASHOUT O SIMILARE", PrelievoTraslato[18], "la classificazione manuale sopravvive");
+
+        String CommissioneTraslata[] = MappaCryptoWallet.get("20240315113000_WalletTest_002_001_CM");
+        assertNotNull(CommissioneTraslata, "la commissione ricompare traslata dello stesso delta");
+        assertEquals("-0.01", CommissioneTraslata[10], "la commissione viene replicata verbatim, non ricalcolata");
+        assertEquals(CommissioneTraslata[0], PrelievoTraslato[20], "il prelievo punta al nuovo ID della commissione");
+        assertEquals(PrelievoTraslato[0], CommissioneTraslata[20], "la commissione punta al nuovo ID del prelievo");
     }
 
     @Test
-    void entrambiIMembriDelGruppoSelezionati_laCommissioneGiaConsumataVieneSaltataSenzaErrori() {
-        //Caso di selezione multipla che ha motivato il guard "rileggi dalla mappa prima di agire":
-        //il prelievo e la sua commissione automatica sono selezionati insieme. Disassociando il
-        //prelievo (primo della lista, essendo una TreeMap sull'ID) la commissione viene già eliminata
-        //da RiportaTransazioniASituazioneIniziale, quindi quando il ciclo la raggiunge deve limitarsi
-        //a saltarla, senza sollevare eccezioni né ritentare di traslarla.
+    void entrambiIMembriDelGruppoSelezionati_ilSecondoUsaGiaIlRiferimentoAggiornato() {
+        //Selezione multipla: prelievo e commissione selezionati insieme nello stesso batch. Traslando
+        //prima il prelievo, il [20] della commissione (letto fresco, non da uno snapshot di inizio
+        //batch) punta già al nuovo ID del prelievo quando tocca a lei
         String Prelievo[] = movimento(DATA_ID + "_WalletTest_001_001_PC", "PRELIEVO CRYPTO",
                 "BTC", "Crypto", "-0.50", "", "", "", "20000.00");
         Prelievo[18] = "PCO - CASHOUT O SIMILARE";
@@ -267,12 +305,180 @@ class Principale_TraslaOrarioTest {
         String Commissione[] = movimento(DATA_ID + "_WalletTest_002_001_CM", "COMMISSIONE",
                 "BTC", "Crypto", "-0.01", "", "", "", "400.00");
         Commissione[22] = "AU";
+        Commissione[20] = Prelievo[0];
 
+        //La commissione è AU: non è "traslabile" come capofila, ma il prelievo la trascina con sé
         int Traslati = Principale_TraslaOrario.EseguiTraslazione(List.of(Prelievo[0], Commissione[0]), UN_ORA);
 
-        assertEquals(1, Traslati, "solo il prelievo viene traslato: la commissione è AU e comunque già consumata");
+        assertEquals(1, Traslati, "solo il prelievo è un capofila valido: la commissione è AU");
         assertNull(MappaCryptoWallet.get(Commissione[0]));
+        String CommissioneTraslata[] = MappaCryptoWallet.get("20240315113000_WalletTest_002_001_CM");
+        assertNotNull(CommissioneTraslata, "la commissione viene comunque traslata, trascinata dal prelievo");
         assertNotNull(MappaCryptoWallet.get("20240315113000_WalletTest_001_001_PC"));
+    }
+
+    @Test
+    void membroEsternoDelGruppo_restaFermoEVieneAggiornatoSoloIlRiferimentoIncrociato() {
+        //Trasferimento tra wallet a quantità uguali (nessuna commissione/reward), con prelievo e
+        //deposito registrati a orari diversi (segmenti[0] diversi, caso realistico: due exchange
+        //diversi): traslare solo il prelievo non deve spostare il deposito, solo aggiornare il suo [20]
+        String DataDeposito = "20240315120000"; // due ore dopo il prelievo
+        String Prelievo[] = movimento(DATA_ID + "_WalletTest_001_001_PC", "TRASFERIMENTO TRA WALLET",
+                "BTC", "Crypto", "-0.5", "", "", "", "20000.00");
+        Prelievo[18] = "PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+        Prelievo[20] = DataDeposito + "_WalletTest_002_001_DC";
+
+        String Deposito[] = movimento(DataDeposito + "_WalletTest_002_001_DC", "TRASFERIMENTO TRA WALLET",
+                "", "", "", "BTC", "Crypto", "0.5", "20000.00");
+        Deposito[18] = "DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+        Deposito[20] = Prelievo[0];
+
+        Principale_TraslaOrario.EseguiTraslazione(List.of(Prelievo[0]), UN_ORA);
+
+        String PrelievoTraslato[] = MappaCryptoWallet.get("20240315113000_WalletTest_001_001_PC");
+        assertNotNull(PrelievoTraslato);
+
+        String DepositoInvariato[] = MappaCryptoWallet.get(Deposito[0]);
+        assertNotNull(DepositoInvariato, "il deposito, membro esterno, non viene spostato");
+        assertEquals(PrelievoTraslato[0], DepositoInvariato[20], "il suo riferimento incrociato punta però al nuovo ID del prelievo");
+        assertEquals(Deposito[0], PrelievoTraslato[20], "il prelievo continua a puntare al deposito, mai spostato");
+    }
+
+    @Test
+    void membroEsternoConLoStessoTimestamp_restaFermoPerchéNonAU() {
+        //Riproduce un bug segnalato dall'utente: prelievo e deposito di un trasferimento tra wallet
+        //reale (PTW/DTW) nascono con lo STESSO segmento[0] (fotografano lo stesso istante), ma nessuno
+        //dei due è "AU" (uno è "A", l'altro "M"). Il solo timestamp uguale non deve bastare a
+        //trascinare la controparte: senza il controllo su [22]=="AU" il deposito verrebbe erroneamente
+        //traslato insieme al prelievo selezionato
+        String Prelievo[] = movimento(DATA_ID + "_MoonPay.Principale_001_001_PC", "TRASFERIMENTO TRA WALLET",
+                "BNB", "Crypto", "-0.0656", "", "", "", "35.43");
+        Prelievo[18] = "PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+        Prelievo[22] = "M";
+        Prelievo[20] = DATA_ID + "_0xWallet.BSC_001_001_DC";
+
+        String Deposito[] = movimento(DATA_ID + "_0xWallet.BSC_001_001_DC", "TRASFERIMENTO TRA WALLET",
+                "", "", "", "BNB", "Crypto", "0.0656", "35.43");
+        Deposito[18] = "DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+        Deposito[22] = "A";
+        Deposito[20] = Prelievo[0];
+
+        int Traslati = Principale_TraslaOrario.EseguiTraslazione(List.of(Prelievo[0]), UN_ORA);
+
+        assertEquals(1, Traslati);
+        String PrelievoTraslato[] = MappaCryptoWallet.get("20240315113000_MoonPay.Principale_001_001_PC");
+        assertNotNull(PrelievoTraslato, "il prelievo selezionato si trasla");
+
+        String DepositoInvariato[] = MappaCryptoWallet.get(Deposito[0]);
+        assertNotNull(DepositoInvariato, "il deposito, non selezionato e non AU, non deve muoversi anche se condivide il timestamp");
+        assertEquals(PrelievoTraslato[0], DepositoInvariato[20], "il suo riferimento incrociato punta però al nuovo ID del prelievo");
+        assertEquals(Deposito[0], PrelievoTraslato[20], "il prelievo continua a puntare al deposito, mai spostato");
+    }
+
+    // =============================================================================================
+    // GRUPPI A PIÙ DI DUE MEMBRI (rientro da Vault/Collaterale, scambio differito)
+    // =============================================================================================
+
+    @Test
+    void rientroDaVaultConMirrorECorrettivo_vengonoReplicatiVerbatimSenzaRiscansione() {
+        //Un deposito "rientro da Vault" con un mirror PC (sub-wallet Vault) e un correttivo/reward DC
+        //(giacenza negativa compensata in fase di classificazione): entrambi condividono il segmento[0]
+        //del deposito, quindi si traslano con lui. Nessuna riscansione della mappa: gli importi devono
+        //restare identici a quelli già decisi in fase di classificazione, solo spostati nel tempo
+        String Deposito[] = movimento(DATA_ID + "_WalletTest_001_001_DC", "TRASFERIMENTO DA PIATTAFORMA",
+                "", "", "", "ETH", "Crypto", "10", "20000.00");
+        Deposito[18] = "PTW - Trasferimento Interno";
+        Deposito[20] = DATA_ID + "_WalletTest_002_001_PC," + DATA_ID + "_WalletTest_003_001_DC";
+
+        String MirrorPC[] = movimento(DATA_ID + "_WalletTest_002_001_PC", "TRASFERIMENTO DA PIATTAFORMA",
+                "ETH", "Crypto", "-10", "", "", "", "20000.00");
+        MirrorPC[18] = "PTW - Trasferimento Interno";
+        MirrorPC[22] = "AU";
+        MirrorPC[20] = Deposito[0] + "," + DATA_ID + "_WalletTest_003_001_DC";
+
+        String Correttivo[] = movimento(DATA_ID + "_WalletTest_003_001_DC", "REWARD",
+                "", "", "", "ETH", "Crypto", "0.3", "6000.00");
+        Correttivo[18] = "DAI - Reward";
+        Correttivo[22] = "AU";
+        Correttivo[20] = Deposito[0] + "," + MirrorPC[0];
+
+        int Traslati = Principale_TraslaOrario.EseguiTraslazione(List.of(Deposito[0]), UN_ORA);
+
+        assertEquals(1, Traslati);
+        String DepositoT[] = MappaCryptoWallet.get("20240315113000_WalletTest_001_001_DC");
+        String MirrorT[] = MappaCryptoWallet.get("20240315113000_WalletTest_002_001_PC");
+        String CorrettivoT[] = MappaCryptoWallet.get("20240315113000_WalletTest_003_001_DC");
+        assertNotNull(DepositoT);
+        assertNotNull(MirrorT, "il mirror sul Vault si trasla insieme al deposito");
+        assertNotNull(CorrettivoT, "il correttivo/reward si trasla insieme al deposito, replicato non ricalcolato");
+        assertEquals("-10", MirrorT[10], "quantità del mirror invariata");
+        assertEquals("0.3", CorrettivoT[13], "quantità del correttivo invariata");
+        assertEquals("6000.00", CorrettivoT[15], "prezzo del correttivo invariato, nessun ricalcolo");
+
+        //[20] rimappato su tutti e tre verso i nuovi ID reciproci
+        assertTrue(DepositoT[20].contains(MirrorT[0]) && DepositoT[20].contains(CorrettivoT[0]));
+        assertTrue(MirrorT[20].contains(DepositoT[0]) && MirrorT[20].contains(CorrettivoT[0]));
+        assertTrue(CorrettivoT[20].contains(DepositoT[0]) && CorrettivoT[20].contains(MirrorT[0]));
+    }
+
+    @Test
+    void scambioDifferito_traslareSoloIlPrelievoMuoveSoloLuiEIlTrasferimentoAssociato() {
+        //Scambio differito a 5 movimenti: Prelievo(00)+Trasferimento1(01) condividono il timestamp
+        //originale del prelievo; Scambio(02)+Trasferimento2(03)+Deposito(04) quello del deposito.
+        //Traslare solo il prelievo deve muovere lui e Trasferimento1, lasciando fermi gli altri tre
+        //(con [20] aggiornato)
+        String T1 = DATA_ID; // timestamp originale del prelievo
+        String T2 = "20240315120000"; // timestamp originale del deposito, ore dopo
+
+        String Prelievo[] = movimento(T1 + "_00WalletTest_001_001_PC", "TRASFERIMENTO PER SCAMBIO",
+                "USDT", "Crypto", "-1000", "", "", "", "1.00");
+        String Trasf1[] = movimento(T1 + "_01WalletTest_001_001_DC", "TRASFERIMENTO PER SCAMBIO",
+                "", "", "", "USDT", "Crypto", "1000", "1.00");
+        Trasf1[22] = "AU";
+        String Scambio[] = movimento(T2 + "_02WalletTest_001_001_SC", "SCAMBIO CRYPTO",
+                "USDT", "Crypto", "-1000", "ETH", "Crypto", "0.5", "2000.00");
+        Scambio[22] = "AU";
+        String Trasf2[] = movimento(T2 + "_03WalletTest_001_001_PC", "TRASFERIMENTO PER SCAMBIO",
+                "ETH", "Crypto", "-0.5", "", "", "", "2000.00");
+        Trasf2[22] = "AU";
+        String Deposito[] = movimento(T2 + "_04WalletTest_001_001_DC", "TRASFERIMENTO PER SCAMBIO",
+                "", "", "", "ETH", "Crypto", "0.5", "2000.00");
+
+        String Lista = Prelievo[0] + "," + Trasf1[0] + "," + Scambio[0] + "," + Trasf2[0] + "," + Deposito[0];
+        for (String[] M : List.of(Prelievo, Trasf1, Scambio, Trasf2, Deposito)) {
+            //[20] di ciascuno: la lista completa degli altri quattro
+            String Altri[] = Lista.split(",");
+            StringBuilder Sb = new StringBuilder();
+            for (String Altro : Altri) {
+                if (!Altro.equals(M[0])) {
+                    if (Sb.length() > 0) Sb.append(",");
+                    Sb.append(Altro);
+                }
+            }
+            M[20] = Sb.toString();
+        }
+
+        int Traslati = Principale_TraslaOrario.EseguiTraslazione(List.of(Prelievo[0]), UN_ORA);
+
+        assertEquals(1, Traslati);
+        assertNull(MappaCryptoWallet.get(Prelievo[0]));
+        assertNull(MappaCryptoWallet.get(Trasf1[0]));
+        String PrelievoT[] = MappaCryptoWallet.get("20240315113000_00WalletTest_001_001_PC");
+        String Trasf1T[] = MappaCryptoWallet.get("20240315113000_01WalletTest_001_001_DC");
+        assertNotNull(PrelievoT, "il prelievo si trasla");
+        assertNotNull(Trasf1T, "trasferimento1 si trasla insieme al prelievo (stesso timestamp originale)");
+
+        //Scambio, Trasferimento2 e Deposito restano fermi ai loro ID originali...
+        assertNotNull(MappaCryptoWallet.get(Scambio[0]), "lo scambio, timestamp del deposito, non si sposta");
+        assertNotNull(MappaCryptoWallet.get(Trasf2[0]), "trasferimento2, timestamp del deposito, non si sposta");
+        assertNotNull(MappaCryptoWallet.get(Deposito[0]), "il deposito non si sposta");
+
+        //...ma il loro [20] è stato aggiornato per puntare ai nuovi ID di prelievo e trasferimento1
+        String ScambioT[] = MappaCryptoWallet.get(Scambio[0]);
+        assertTrue(ScambioT[20].contains(PrelievoT[0]) && ScambioT[20].contains(Trasf1T[0]),
+                "il riferimento incrociato dello scambio punta ai nuovi ID di prelievo/trasferimento1");
+        assertFalse(ScambioT[20].contains(Prelievo[0]) || ScambioT[20].contains(Trasf1[0]),
+                "non deve restare alcun riferimento ai vecchi ID");
     }
 
     @Test

@@ -82,8 +82,17 @@ class PrezziOrdinePrioritaTest {
         }
     }
 
+    /** Prezzo personalizzato nella forma di oggi: exchange "Personalizzato" e gruppo "TUTTI" in colonne separate. */
     private static void personalizzato(String simbolo, String prezzo) throws Exception {
-        scriviRiga(DatabaseH2.connectionPersonale, simbolo, ISTANTE, "Personalizzato (TUTTI)", prezzo);
+        String sql = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo, rete, address, gruppo) "
+                + "KEY (timestamp, exchange, symbol, rete, address, gruppo) VALUES (?, ?, ?, ?, '', '', 'TUTTI')";
+        try (PreparedStatement ps = DatabaseH2.connectionPersonale.prepareStatement(sql)) {
+            ps.setLong(1, ISTANTE);
+            ps.setString(2, "Personalizzato");
+            ps.setString(3, simbolo);
+            ps.setBigDecimal(4, new BigDecimal(prezzo));
+            ps.executeUpdate();
+        }
     }
 
     private static void cache(String simbolo, String exchange, String prezzo) throws Exception {
@@ -113,7 +122,7 @@ class PrezziOrdinePrioritaTest {
         assertNotNull(ip, "con tutte e tre le fonti presenti un prezzo va restituito");
         assertEquals(new BigDecimal("111").compareTo(ip.prezzoUnitario), 0,
                 "il gradino 1 (personalizzati) deve vincere sugli altri due");
-        assertEquals("Personalizzato (TUTTI)", ip.Fonte);
+        assertEquals("Personalizzato", ip.Fonte);
     }
 
     @Test
@@ -233,5 +242,22 @@ class PrezziOrdinePrioritaTest {
                 "con fonte 'okx' il lettore dei personalizzati non deve ripiegare su una fonte diversa");
         assertNotNull(Prezzi.DammiPrezzoDaDatabasePersonale("TSTG", ISTANTE, "", "", "", 60, BigDecimal.ONE),
                 "con fonte vuota (il caso di RW) deve invece trovare la riga personalizzata");
+    }
+
+    @Test
+    void ilGruppoWalletComeFonteTrovaIlPersonalizzato() throws Exception {
+        //Regressione del 2026-09-17: "Giacenze a data" passa come fonte il gruppo ("TUTTI") e il lettore lo
+        //cercava dentro `exchange`; da quando il gruppo e' una colonna sua ("Personalizzato" + "TUTTI") non
+        //trovava piu' nulla, mentre RW (fonte vuota) il prezzo lo trovava: stesso token, valori diversi.
+        personalizzato("TSTZ", "888");
+
+        Prezzi.InfoPrezzo ip = Prezzi.DammiPrezzoDaDatabasePersonale("TSTZ", ISTANTE, "TUTTI", "", "", 60, BigDecimal.ONE);
+
+        assertNotNull(ip, "il gruppo TUTTI deve trovare il prezzo personalizzato salvato con gruppo TUTTI");
+        assertEquals(0, new BigDecimal("888").compareTo(ip.prezzoUnitario));
+        assertNotNull(Prezzi.DammiPrezzoDaDatabasePersonale("TSTZ", ISTANTE, "tutti", "", "", 60, BigDecimal.ONE),
+                "il confronto sul gruppo e' case-insensitive");
+        assertNull(Prezzi.DammiPrezzoDaDatabasePersonale("TSTZ", ISTANTE, "Wallet 01", "", "", 60, BigDecimal.ONE),
+                "un altro gruppo non deve vedere il prezzo del gruppo TUTTI");
     }
 }

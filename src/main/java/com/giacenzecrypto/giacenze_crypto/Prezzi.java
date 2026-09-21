@@ -2727,12 +2727,12 @@ symbol=symbol.toUpperCase();
         //try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(baseQuery + " /* preferito */")) {
         //A1 - Prezzo da personalizzati
         
-        //metto like nella fonte perchè nei personalizzati vado a cercare il gruppo wallet non la fonte in se
-        //Quando creo i personalizzati infatti inserisco anche il gruppo wakllet nella fonte per individuarli
-        //Nel caso non specifichi un grupo metto ALL quindi ad esempio la fonte sarà "personalizzato (ALL)" piuttosto che 
-        //binance (Wallet 01) piuttosto che personalizzato (Wallet 02) etc....
-        //nel caso sia messo binance, starà ad indicare che quello è il prezzo di binance che si è scelto che per quel gruppo
-        //deve essere il predefinito.
+        //Nei personalizzati il parametro non e' tanto l'exchange quanto il GRUPPO wallet (oggi sempre "TUTTI", vedi
+        //Funzioni.getGruppoWalletXPrezzi). Dal 2026-09-17 il gruppo e' una colonna sua di PrezziNew e non e' piu' incollato
+        //dentro `exchange` ("Personalizzato (TUTTI)" -> exchange "Personalizzato" + gruppo "TUTTI"): confrontare solo
+        //`exchange` con "TUTTI" non trovava piu' nulla, e "Giacenze a data" restava senza il prezzo che RW (fonte vuota) trovava.
+        //Si confronta quindi il gruppo, e l'exchange nel caso sia questo l'exchange indicato come preferito per il gruppo
+        //(es. "binance"). Confronto case-insensitive e senza wildcard.
         String baseQuery = """
         SELECT prezzo, exchange, timestamp
         FROM PrezziNew
@@ -3042,7 +3042,7 @@ symbol=symbol.toUpperCase();
           AND timestamp BETWEEN ? AND ?
           AND (rete = ? OR ? = '')
           AND (address = ? OR ? = '')
-          AND (exchange ILIKE ? OR ? = '')
+          AND (LOWER(gruppo) = LOWER(?) OR LOWER(exchange) = LOWER(?))
         ORDER BY ABS(timestamp - ?) ASC, exchange ASC
         LIMIT 1
     """;
@@ -3055,7 +3055,7 @@ symbol=symbol.toUpperCase();
             ps.setString(6, rete == null ? "" : rete);
             ps.setString(7, address == null ? "" : address);
             ps.setString(8, address == null ? "" : address);
-            ps.setString(9, "%" +exchangePreferito+"%");
+            ps.setString(9, exchangePreferito);
             ps.setString(10, exchangePreferito);
             ps.setLong(11, timestampRiferimento);
 

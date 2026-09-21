@@ -58,11 +58,47 @@ public class MappeCausali {
      */
     static final String[] FILE_DI_SISTEMA = new String[]{
         BINANCE_OLD, BINANCE_FINANCIAL_REPORT, OKX, CRYPTOCOM_APP, CRYPTOCOM_EXCHANGE, TATAX_OLD,
-        TipiOKX.NOME, DatiPredefinitiRW.NOME, NoteCompilazione.NOME
+        TipiOKX.NOME, DatiPredefinitiRW.NOME
     };
 
-    /** Cartella delle risorse nel jar che contiene le copie di default delle mappe */
-    private static final String RISORSA_JAR = "/ImportMappe/";
+    /**
+     * File distribuiti in {@code config/varie/}: testi e tabelle che non c'entrano con l'import (oggi le
+     * note di compilazione dei quadri W/RW e T/RT). Stessa strada di {@link #FILE_DI_SISTEMA}: default
+     * nel jar sotto {@code /Varie/}, installati al primo avvio, riallineati dal repository.
+     */
+    static final String[] FILE_VARIE = new String[]{
+        NoteCompilazione.NOME
+    };
+
+    /**
+     * Le cartelle di {@code config/} che seguono la strada "file su disco, ripiego sulla copia nel jar".
+     * Una sola strada per tutte, cambia solo dove stanno i file.
+     */
+    enum Cartella {
+        /** {@code config/importmappe/}, copia di default in {@code /ImportMappe/} */
+        MAPPE("/ImportMappe/") {
+            @Override String disco() { return VarStatiche.getCartella_ConfigImportMappe(); }
+            @Override String[] file() { return FILE_DI_SISTEMA; }
+        },
+        /** {@code config/varie/}, copia di default in {@code /Varie/} */
+        VARIE("/Varie/") {
+            @Override String disco() { return VarStatiche.getCartella_ConfigVarie(); }
+            @Override String[] file() { return FILE_VARIE; }
+        };
+
+        /** Cartella delle risorse nel jar che contiene le copie di default */
+        final String risorsaJar;
+
+        Cartella(String risorsaJar) {
+            this.risorsaJar = risorsaJar;
+        }
+
+        /** @return il percorso della cartella su disco, nella directory di lavoro */
+        abstract String disco();
+
+        /** @return i file distribuiti in questa cartella, senza estensione */
+        abstract String[] file();
+    }
 
     /**
      * Legge da disco la mappa causali indicata, con ripiego sulla copia inclusa nel jar.
@@ -109,17 +145,27 @@ public class MappeCausali {
      * @return la tabella, oppure {@code null} se non è disponibile né su disco né nel jar
      */
     static <T> T CaricaConRipiego(String nome, Analizzatore<T> analizzatore) {
-        T tabella = analizzatore.Interpreta(LeggiTesto(PercorsoSuDisco(nome)), nome);
+        return CaricaConRipiego(nome, Cartella.MAPPE, analizzatore);
+    }
+
+    /**
+     * Come {@link #CaricaConRipiego(String, Analizzatore)}, per un file di una cartella di {@code config/}
+     * diversa da {@code importmappe}.
+     *
+     * @param cartella dove cercare il file su disco e nel jar
+     */
+    static <T> T CaricaConRipiego(String nome, Cartella cartella, Analizzatore<T> analizzatore) {
+        T tabella = analizzatore.Interpreta(LeggiTesto(PercorsoSuDisco(nome, cartella)), nome);
         if (tabella != null) {
             return tabella;
         }
-        tabella = analizzatore.Interpreta(LeggiTestoDaJar(nome), nome);
+        tabella = analizzatore.Interpreta(LeggiTestoDaJar(nome, cartella), nome);
         if (tabella != null) {
-            System.out.println("MappeCausali: uso la copia di default nel jar per la mappa " + nome);
+            System.out.println("MappeCausali: uso la copia di default nel jar per " + nome);
             return tabella;
         }
-        LoggerGC.ScriviErrore("MappeCausali: mappa causali '" + nome + "' non disponibile, né in "
-                + VarStatiche.getCartella_ConfigImportMappe() + " né fra le risorse del programma");
+        LoggerGC.ScriviErrore("MappeCausali: '" + nome + "' non disponibile, né in "
+                + cartella.disco() + " né fra le risorse del programma");
         return null;
     }
 
@@ -142,30 +188,32 @@ public class MappeCausali {
      * una modifica dell'utente non vengono sovrascritti dalla copia (più vecchia) contenuta nel jar.
      */
     public static void InstallaDefaultSeMancanti() {
-        for (String nome : FILE_DI_SISTEMA) {
-            try {
-                Path destinazione = Paths.get(VarStatiche.getCartella_ConfigImportMappe(), nome + ".json");
-                if (Files.exists(destinazione)) {
-                    continue;
-                }
-                try (InputStream in = MappeCausali.class.getResourceAsStream(RISORSA_JAR + nome + ".json")) {
-                    if (in == null) {
-                        LoggerGC.ScriviErrore("MappeCausali: risorsa di default mancante nel jar per la mappa " + nome);
+        for (Cartella cartella : Cartella.values()) {
+            for (String nome : cartella.file()) {
+                try {
+                    Path destinazione = PercorsoSuDisco(nome, cartella);
+                    if (Files.exists(destinazione)) {
                         continue;
                     }
-                    Files.createDirectories(destinazione.getParent());
-                    Files.write(destinazione, in.readAllBytes());
-                    System.out.println("MappeCausali: installata la mappa di default " + nome + ".json");
+                    try (InputStream in = MappeCausali.class.getResourceAsStream(cartella.risorsaJar + nome + ".json")) {
+                        if (in == null) {
+                            LoggerGC.ScriviErrore("MappeCausali: risorsa di default mancante nel jar per " + nome);
+                            continue;
+                        }
+                        Files.createDirectories(destinazione.getParent());
+                        Files.write(destinazione, in.readAllBytes());
+                        System.out.println("MappeCausali: installato il file di default " + nome + ".json");
+                    }
+                } catch (Exception ex) {
+                    LoggerGC.ScriviErrore(ex);
                 }
-            } catch (Exception ex) {
-                LoggerGC.ScriviErrore(ex);
             }
         }
     }
 
-    /** @return il percorso del file in {@code config/importmappe/} */
-    private static Path PercorsoSuDisco(String nome) {
-        return Paths.get(VarStatiche.getCartella_ConfigImportMappe(), nome + ".json");
+    /** @return il percorso del file nella cartella di {@code config/} indicata */
+    private static Path PercorsoSuDisco(String nome, Cartella cartella) {
+        return Paths.get(cartella.disco(), nome + ".json");
     }
 
     /** @return il testo del file, oppure {@code null} se assente o illeggibile */
@@ -181,9 +229,9 @@ public class MappeCausali {
         }
     }
 
-    /** @return il testo della risorsa {@code /ImportMappe/<nome>.json} del jar, oppure {@code null} */
-    private static String LeggiTestoDaJar(String nome) {
-        try (InputStream in = MappeCausali.class.getResourceAsStream(RISORSA_JAR + nome + ".json")) {
+    /** @return il testo della risorsa {@code <cartella del jar>/<nome>.json}, oppure {@code null} */
+    private static String LeggiTestoDaJar(String nome, Cartella cartella) {
+        try (InputStream in = MappeCausali.class.getResourceAsStream(cartella.risorsaJar + nome + ".json")) {
             if (in == null) {
                 return null;
             }

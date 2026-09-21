@@ -136,6 +136,14 @@
                     <include>*.json</include>
                 </includes>
             </resource>
+            <!-- Idem per config/varie/ (note di compilazione dei quadri): copia di default in /Varie/ -->
+            <resource>
+                <directory>config/varie</directory>
+                <targetPath>Varie</targetPath>
+                <includes>
+                    <include>*.json</include>
+                </includes>
+            </resource>
         </resources>
         <plugins>
             <plugin>

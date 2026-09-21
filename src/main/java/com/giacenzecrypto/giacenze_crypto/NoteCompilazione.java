@@ -5,7 +5,7 @@ import org.json.JSONObject;
 
 /**
  * Testi delle <b>note di compilazione</b> stampate in coda ai quadri W/RW e T/RT, letti da
- * {@code config/importmappe/NoteCompilazione.json} invece che scritti nel codice.
+ * {@code config/varie/NoteCompilazione.json} invece che scritti nel codice.
  *
  * <p><b>Perche' esiste.</b> Sono istruzioni fiscali: cambiano quando cambia la modulistica, e finche'
  * stavano dentro {@code Principale} e {@code Stampe} correggere una riga sbagliata voleva dire
@@ -53,7 +53,7 @@ import org.json.JSONObject;
  */
 public class NoteCompilazione {
 
-    /** Nome del file in {@code config/importmappe/}, senza estensione */
+    /** Nome del file in {@code config/varie/}, senza estensione */
     public static final String NOME = "NoteCompilazione";
 
     // ─── Chiavi delle note. Vanno tenute allineate al file JSON. ───────────────────────────────
@@ -100,7 +100,7 @@ public class NoteCompilazione {
         String html = Leggi(chiave, anno);
         if (html == null) {
             LoggerGC.ScriviErrore("NoteCompilazione: nota '" + chiave + "' non disponibile, ne' in "
-                    + VarStatiche.getCartella_ConfigImportMappe() + NOME + ".json né fra le risorse del programma");
+                    + VarStatiche.getCartella_ConfigVarie() + NOME + ".json né fra le risorse del programma");
             return "<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>ATTENZIONE :</b> "
                     + "il testo delle note di compilazione (" + chiave + ") non e' disponibile in questa "
                     + "installazione. Il file " + NOME + ".json non e' stato trovato o non contiene questa voce. "
@@ -138,7 +138,7 @@ public class NoteCompilazione {
      * sulla chiave nuda. {@code null} se non c'e' nessuna delle due.
      */
     private static String Leggi(String chiave, String anno) {
-        Map<String, String> note = MappeCausali.CaricaConRipiego(NOME, NoteCompilazione::Interpreta);
+        Map<String, String> note = MappeCausali.CaricaConRipiego(NOME, MappeCausali.Cartella.VARIE, NoteCompilazione::Interpreta);
         if (note == null) {
             return null;
         }

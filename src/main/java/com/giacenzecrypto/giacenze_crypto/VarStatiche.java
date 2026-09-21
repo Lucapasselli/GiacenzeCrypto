@@ -253,6 +253,11 @@ public class VarStatiche {
         return getWorkingDirectory() + "config/importmappe/";
     }
 
+    /** @return il percorso della cartella {@code config/varie/}, testi e tabelle non legati all'import (note di compilazione) */
+    public static String getCartella_ConfigVarie() {
+        return getWorkingDirectory() + "config/varie/";
+    }
+
     /** @return il percorso della cartella {@code config/loghi/}, loghi degli exchange/wallet */
     public static String getCartella_ConfigLoghi() {
         return getWorkingDirectory() + "config/loghi/";

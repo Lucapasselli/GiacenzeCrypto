@@ -244,6 +244,10 @@ private static final long serialVersionUID = 3L;
      * {@code Calcoli_PlusvalenzeNew}), perciò un comparto andato sotto zero a forza di giroconti — è il
      * caso dei Dual Investment su un sotto-wallet dedicato — è invisibile all'altro contatore.
      *
+     * <p><b>I token SCAM non sono contati</b> (nome che termina con {@code " **"}), anche se la tabella
+     * li mostra quando la spunta "Nascondi Token Scam" è tolta: sono già dichiarati spazzatura, un
+     * loro saldo negativo non richiede nessuna correzione.
+     *
      * <p><b>Arriva da un altro thread</b>, non dal ciclo di caricamento della tabella movimenti: lo
      * valorizza {@link #Funzione_CaricaTabelleSecondarieInBackgroud}. Per questo il testo del pulsante
      * degli errori sta in {@link #Errori_AggiornaPulsante()} e non in fondo al ciclo: chiamato da un
@@ -339,6 +343,9 @@ private static final long serialVersionUID = 3L;
             if (!cartella.exists()) cartella.mkdirs();
 
             cartella=new File (VarStatiche.getCartella_ConfigImportMappe());
+            if (!cartella.exists()) cartella.mkdirs();
+
+            cartella=new File (VarStatiche.getCartella_ConfigVarie());
             if (!cartella.exists()) cartella.mkdirs();
 
             cartella=new File (VarStatiche.getCartella_ConfigLoghi());
@@ -6382,9 +6389,12 @@ private void SettaIcone(){
                     SituazioneImport_Applica(situazioneImport);
                     //Il conteggio arriva solo adesso: il pulsante degli errori va riscritto qui,
                     //perché il ciclo di caricamento della tabella movimenti è già finito da un pezzo.
-                    //Le righe SCAM nascoste dalla spunta restano contate: la spunta è un filtro di
-                    //vista, non una dichiarazione che il problema non esista.
-                    NumErroriGiacenzeNegative = saldiNegativi.size();
+                    //I token SCAM non si contano, a prescindere dalla spunta "Nascondi Token Scam":
+                    //un saldo negativo su un token già dichiarato SCAM non è un errore da correggere.
+                    //La spunta resta un filtro di sola vista della tabella, il contatore no.
+                    NumErroriGiacenzeNegative = (int) saldiNegativi.stream()
+                            .filter(s -> !Funzioni.isSCAM(s.split(";")[2]))
+                            .count();
                     Errori_AggiornaPulsante();
                 });
             }, "TabelleSecondarie").start();
@@ -13095,7 +13105,8 @@ if (result.isAction("delete-all")) {
                 boolean Store = VarStatiche.EdizioneStore();
                 java.util.List<Funzioni.CartellaConfig> cartelle = new java.util.ArrayList<>(java.util.List.of(
                         new Funzioni.CartellaConfig(VarStatiche.getCartella_ConfigImport(),      "import",      ".json", true),
-                        new Funzioni.CartellaConfig(VarStatiche.getCartella_ConfigImportMappe(), "importmappe", ".json", true)));
+                        new Funzioni.CartellaConfig(VarStatiche.getCartella_ConfigImportMappe(), "importmappe", ".json", true),
+                        new Funzioni.CartellaConfig(VarStatiche.getCartella_ConfigVarie(),       "varie",       ".json", true)));
                 if (!Store) {
                     cartelle.add(new Funzioni.CartellaConfig(VarStatiche.getCartella_ConfigLoghi(), "loghi", ".png", false));
                 }
@@ -13105,6 +13116,7 @@ if (result.isAction("delete-all")) {
 
                 Riepiloga("import complete", aggiornati.get("import"));
                 Riepiloga("mappe causali",   aggiornati.get("importmappe"));
+                Riepiloga("varie",           aggiornati.get("varie"));
                 if (!Store) Riepiloga("loghi", aggiornati.get("loghi"));
             }
 

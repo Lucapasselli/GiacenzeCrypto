@@ -388,6 +388,7 @@ public class Backup_Restore {
         m.put("ImportConfig", VarStatiche.getCartella_ImportConfig());
         m.put("config/import", VarStatiche.getCartella_ConfigImport());
         m.put("config/importmappe", VarStatiche.getCartella_ConfigImportMappe());
+        m.put("config/varie", VarStatiche.getCartella_ConfigVarie());
         m.put("config/loghi", VarStatiche.getCartella_ConfigLoghi());
         return m;
     }

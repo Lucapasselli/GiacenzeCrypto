@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Note di compilazione dei quadri, spostate da {@code Principale}/{@code Stampe} a
- * {@code config/importmappe/NoteCompilazione.json} per poterle correggere senza una nuova versione.
+ * {@code config/varie/NoteCompilazione.json} per poterle correggere senza una nuova versione.
  * <p>
  * Il guadagno ha un costo: prima erano stringhe Java e il compilatore garantiva almeno che ci fossero.
  * Ora una chiave sbagliata o un segnaposto scritto male si vedrebbero soltanto stampando il report, a
@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class NoteCompilazioneTest {
 
-    private static final Path FILE = Path.of("config/importmappe/NoteCompilazione.json");
+    private static final Path FILE = Path.of("config/varie/NoteCompilazione.json");
 
     /** Le chiavi dichiarate come costanti pubbliche in {@link NoteCompilazione}. */
     private static final String[] CHIAVI = {
@@ -195,9 +195,9 @@ class NoteCompilazioneTest {
 
     @Test
     void laCopiaDiDefaultEDistribuitaNelJar() {
-        //config/importmappe finisce in /ImportMappe/ del jar tramite il <resource> del pom : se il
+        //config/varie finisce in /Varie/ del jar tramite il <resource> del pom : se il
         //file non c'e', InstallaDefaultSeMancanti non ha nulla da installare al primo avvio.
-        assertNotNull(NoteCompilazione.class.getResourceAsStream("/ImportMappe/"
+        assertNotNull(NoteCompilazione.class.getResourceAsStream("/Varie/"
                 + NoteCompilazione.NOME + ".json"),
                 "NoteCompilazione.json non e' fra le risorse del programma");
     }

@@ -618,6 +618,8 @@ private static final long serialVersionUID = 3L;
         MenuItem_TraslaOrario = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         MenuItem_ModificaPrezzo = new javax.swing.JMenuItem();
+        MenuItem_ConfermaPrezzoZero = new javax.swing.JMenuItem();
+        MenuItem_RicalcolaPrezzi = new javax.swing.JMenuItem();
         MenuItem_ModificaNote = new javax.swing.JMenuItem();
         MenuItem_ModificaReward = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
@@ -1137,6 +1139,24 @@ private static final long serialVersionUID = 3L;
             }
         });
         PopupMenu.add(MenuItem_ModificaPrezzo);
+
+        MenuItem_ConfermaPrezzoZero.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_PrezzoZero.png"))); // NOI18N
+        MenuItem_ConfermaPrezzoZero.setText("Conferma che il token non ha prezzo (valorizza a Zero)");
+        MenuItem_ConfermaPrezzoZero.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_ConfermaPrezzoZeroActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_ConfermaPrezzoZero);
+
+        MenuItem_RicalcolaPrezzi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_RicalcolaPrezzi.png"))); // NOI18N
+        MenuItem_RicalcolaPrezzi.setText("Ricalcola Prezzi");
+        MenuItem_RicalcolaPrezzi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_RicalcolaPrezziActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_RicalcolaPrezzi);
 
         MenuItem_ModificaNote.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Nuovo.png"))); // NOI18N
         MenuItem_ModificaNote.setText("Modifica Note");
@@ -5975,7 +5995,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_ApiKey_Moralis_LabelSito)
                     .addComponent(Opzioni_ApiKey_Moralis_Label))
                 .addGap(8, 8, 8)
-                .addComponent(Opzioni_ApiKey_MoralisNB_Label)
+                .addComponent(Opzioni_ApiKey_MoralisNB_Label, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ApiKey_Cronos_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -6027,7 +6047,6 @@ private static final long serialVersionUID = 3L;
         Opzioni_ProviderDefi_LabelTitoloIstruzioni.setFont(new java.awt.Font("Noto Sans", 1, 15)); // NOI18N
         Opzioni_ProviderDefi_LabelTitoloIstruzioni.setText("Come scegliere il provider");
 
-        Opzioni_ProviderDefi_ScrollIstruzioni.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         Opzioni_ProviderDefi_ScrollIstruzioni.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         Opzioni_ProviderDefi_TextAreaIstruzioni.setEditable(false);
@@ -6073,7 +6092,7 @@ private static final long serialVersionUID = 3L;
                 .addContainerGap()
                 .addGroup(Opzioni_ProviderDefi_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Opzioni_ProviderDefi_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 1448, Short.MAX_VALUE)
-                    .addComponent(Opzioni_ProviderDefi_LabelTitoloIstruzioni)
+                    .addComponent(Opzioni_ProviderDefi_LabelTitoloIstruzioni, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(Opzioni_ProviderDefi_ScrollIstruzioni)
                     .addGroup(Opzioni_ProviderDefi_PannelloLayout.createSequentialGroup()
                         .addComponent(Opzioni_ProviderDefi_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -14110,6 +14129,40 @@ if (result != null && !result.isAction("cancel")) {
         
     }//GEN-LAST:event_MenuItem_ModificaPrezzoActionPerformed
 
+    private void MenuItem_ConfermaPrezzoZeroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ConfermaPrezzoZeroActionPerformed
+        // TODO add your handling code here:
+        //Opera su tutta la selezione, con un solo ricalcolo finale (mai il singolo in un ciclo). Il ripiego su
+        //PopUp_IDTrans copre la tabella che aprisse questo popup senza riempire PopUp_IDTransSelezionati
+        if (PopUp_IDTrans != null) {
+            List<String> selezione = PopUp_IDTransSelezionati.isEmpty()
+                    ? List.of(PopUp_IDTrans) : PopUp_IDTransSelezionati;
+            if (Principale_Movimenti_PrezzoZero.ConfermaPrezzoZero(selezione, this)) {
+                //Ricalcolo una sola volta e azzero il flag, così la riacquisizione del focus dopo la chiusura
+                //del dialog di conferma non rifà inutilmente lo stesso ricalcolo
+                Funzioni_AggiornaTutto();
+                TabellaCryptodaAggiornare = false;
+                DepositiPrelievi_Caricatabella();
+            }
+        }
+    }//GEN-LAST:event_MenuItem_ConfermaPrezzoZeroActionPerformed
+
+    private void MenuItem_RicalcolaPrezziActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_RicalcolaPrezziActionPerformed
+        // TODO add your handling code here:
+        //Opera su tutta la selezione con un solo ricalcolo finale, come "Conferma prezzo zero". La logica (avviso,
+        //cancellazione dei PrezziKO, ricerca, annullamento) sta in Principale_Movimenti_RicalcolaPrezzi
+        if (PopUp_IDTrans != null) {
+            List<String> selezione = PopUp_IDTransSelezionati.isEmpty()
+                    ? List.of(PopUp_IDTrans) : PopUp_IDTransSelezionati;
+            if (Principale_Movimenti_RicalcolaPrezzi.RicalcolaPrezzi(selezione, this)) {
+                //Ricalcolo una sola volta e azzero il flag, così la riacquisizione del focus dopo la chiusura
+                //della finestra di avanzamento non rifà inutilmente lo stesso ricalcolo
+                Funzioni_AggiornaTutto();
+                TabellaCryptodaAggiornare = false;
+                DepositiPrelievi_Caricatabella();
+            }
+        }
+    }//GEN-LAST:event_MenuItem_RicalcolaPrezziActionPerformed
+
     private void MenuItem_ModificaNoteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaNoteActionPerformed
         // TODO add your handling code here:
         //Come per "Elimina Movimento": la voce resta attiva su selezione multipla, quindi passo tutta la
@@ -14520,7 +14573,11 @@ if (result != null && !result.isAction("cancel")) {
                     Address = null;
                 }
                 //Devo ovviamente cancellarlo per inserirne uno nuovo altrimenti questo prende il sopravvento
-               DatabaseH2.InserisciPrezzoPresonalizzato(DataRiferimento, "Personalizzato", mon, "0.00", Rete, Address, Gruppo, DataRiferimento);
+               if (!DatabaseH2.InserisciPrezzoPresonalizzato(DataRiferimento, "Personalizzato", mon, "0.00", Rete, Address, Gruppo, DataRiferimento)) {
+                   //Senza questo controllo l'errore restava muto e la cella "Errori" veniva svuotata lo stesso
+                   AvvisaErroreSalvataggioPrezzoPersonalizzato();
+                   return;
+               }
 
                 GiacenzeaData_Tabella.getModel().setValueAt("", rigaselezionata, 7);
                 //Una volta cambiato il prezzo aggiorno la tabella
@@ -18789,6 +18846,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel Giacenzeadata_Walletb_Label;
     private javax.swing.JMenu MenuItem_ChiediIA;
     private javax.swing.JMenuItem MenuItem_ClassificaMovimento;
+    private javax.swing.JMenuItem MenuItem_ConfermaPrezzoZero;
     private javax.swing.JMenuItem MenuItem_Copia;
     private javax.swing.JMenuItem MenuItem_CopiaID;
     private javax.swing.JMenuItem MenuItem_DettagliMovimento;
@@ -18801,6 +18859,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JMenuItem MenuItem_ModificaNote;
     private javax.swing.JMenuItem MenuItem_ModificaPrezzo;
     private javax.swing.JMenuItem MenuItem_ModificaReward;
+    private javax.swing.JMenuItem MenuItem_RicalcolaPrezzi;
     private javax.swing.JMenuItem MenuItem_SeparaMovimento;
     private javax.swing.JMenuItem MenuItem_TraslaOrario;
     private javax.swing.JMenuItem MenuItem_UnisciMovimenti;

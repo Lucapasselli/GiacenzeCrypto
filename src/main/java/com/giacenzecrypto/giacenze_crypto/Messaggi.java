@@ -65,9 +65,77 @@ public class Messaggi {
                 return result.isAction("assign-zero");
         
     }
-    
+
+        /**
+         * Mostra un dialog di conferma per assegnare valore zero a più movimenti privi di prezzo
+         * (voce di menu "Conferma che il token non ha prezzo").
+         * @param Numero quanti movimenti verranno valorizzati a zero
+         * @param w finestra parent del dialog
+         * @return {@code true} se l'utente conferma il valore zero
+         */
+        public static boolean ConfermaMovimentiSenzaPrezzo(int Numero, Window w) {
+         AppDialog.DialogResult result = AppDialog.builder(w)
+                        .windowTitle("Movimenti senza prezzo")
+                        .bodyTitle("Movimenti senza prezzo")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.WARNING)
+                        .message(Numero == 1 ? "Il movimento selezionato non ha un prezzo disponibile."
+                                : "I " + Numero + " movimenti selezionati non hanno un prezzo disponibile.")
+                        .details(Numero == 1 ? "Vuoi confermare il valore di € 0.00 per il movimento?"
+                                : "Vuoi confermare il valore di € 0.00 per tutti e " + Numero + " i movimenti?")
+                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("assign-zero", "Assegna zero")
+                                .role(AppDialog.ActionRole.DANGER)
+                                .build())
+                        .showDialog();
+
+                return result.isAction("assign-zero");
+    }
         
         
+        /**
+         * Avvisa l'utente di cosa farà "Ricalcola Prezzi" e delle conseguenze, e chiede conferma.
+         * @param Movimenti quanti movimenti verranno ricalcolati
+         * @param RecordKO  quanti record dei "prezzi irrecuperabili" (PrezziKO) verranno cancellati per poterli riprovare
+         * @param w finestra parent del dialog
+         * @return {@code true} se l'utente vuole procedere
+         */
+        public static boolean ConfermaRicalcoloPrezzi(int Movimenti, int RecordKO, Window w) {
+         AppDialog.DialogResult result = AppDialog.builder(w)
+                        .windowTitle("Ricalcola Prezzi")
+                        .bodyTitle("Ricalcola Prezzi")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.WARNING)
+                        .message("Verrà ripetuta la ricerca del prezzo per " + (Movimenti == 1
+                                ? "il movimento selezionato." : "i " + Movimenti + " movimenti selezionati.")
+                                + "<br><br>Prima di cercare i prezzi, "
+                                + (RecordKO == 0 ? "non risultano token già segnati come senza prezzo per questi movimenti."
+                                : "verranno cancellati " + RecordKO + " record dei token già segnati come senza prezzo (KO) "
+                                  + "negli istanti di questi movimenti, così da poterli riprovare.")
+                                + "<br><br>Conseguenze:<br>"
+                                + " - i prezzi attuali verranno sostituiti solo se ne viene trovato uno diverso; "
+                                + "compresi quelli inseriti o confermati a mano<br>"
+                                + " - se un prezzo non viene trovato il movimento resta com'è<br>"
+                                + " - tutti i calcoli (giacenze, plusvalenze, quadri) verranno aggiornati<br>"
+                                + " - serve la connessione a Internet e l'operazione può richiedere del tempo")
+                        .details("Potrai annullare l'operazione dalla finestra di avanzamento prima che termini: "
+                                + "in quel caso non verrà modificato nessun prezzo. Vuoi procedere?")
+                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("recalc", "Ricalcola")
+                                .role(AppDialog.ActionRole.PRIMARY)
+                                .build())
+                        .showDialog();
+
+                return result.isAction("recalc");
+    }
+
+
         //Messaggi di conferma semplificati
         
         /**

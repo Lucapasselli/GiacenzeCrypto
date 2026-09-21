@@ -174,6 +174,28 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_ModificaPrezzoActionPerformed"/>
           </Events>
         </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="MenuItem_ConfermaPrezzoZero">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/Images/24_PrezzoZero.png"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Conferma che il token non ha prezzo (valorizza a Zero)"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_ConfermaPrezzoZeroActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="MenuItem_RicalcolaPrezzi">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/Images/24_RicalcolaPrezzi.png"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Ricalcola Prezzi"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_RicalcolaPrezziActionPerformed"/>
+          </Events>
+        </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="MenuItem_ModificaNote">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
@@ -7920,7 +7942,6 @@
                     </Component>
                     <Container class="javax.swing.JScrollPane" name="Opzioni_ProviderDefi_ScrollIstruzioni">
                       <Properties>
-                        <Property name="verticalScrollBarPolicy" type="int" value="20"/>
                         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                           <Border info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                             <EtchetBorder/>

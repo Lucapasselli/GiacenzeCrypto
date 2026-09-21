@@ -414,6 +414,12 @@ public class Funzioni {
     }         
               
               
+    /** Testo della voce di menu che conferma a zero i movimenti senza prezzo (le voci si trovano per testo). */
+    public static final String POPUP_VOCE_PREZZO_ZERO = "Conferma che il token non ha prezzo (valorizza a Zero)";
+
+    /** Testo della voce di menu che rifà la ricerca del prezzo sui movimenti selezionati, token KO compresi. */
+    public static final String POPUP_VOCE_RICALCOLA_PREZZI = "Ricalcola Prezzi";
+
     /**
      * Voci del menu contestuale dei movimenti che operano su <b>un solo</b> movimento e vanno quindi
      * disattivate quando la selezione ne contiene più di uno.
@@ -474,6 +480,8 @@ public class Funzioni {
                 PopUp_disabilitaMenuDatesto(pop,"Crea movimento di scambio da Deposito/Prelievo");
                 PopUp_disabilitaMenuDatesto(pop,"Chiedi all'IA");
                 PopUp_disabilitaMenuDatesto(pop,"Apri documento di origine");
+                PopUp_disabilitaMenuDatesto(pop,POPUP_VOCE_PREZZO_ZERO);
+                PopUp_disabilitaMenuDatesto(pop,POPUP_VOCE_RICALCOLA_PREZZI);
 
             }else{
                 PopUp_abilitaMenuDaTesto(pop,"Dettagli Movimento");
@@ -517,6 +525,18 @@ public class Funzioni {
                 if (Principale_Movimenti_SeparaUnisci.isUnibileInScambio(Principale.PopUp_IDTransSelezionati)){
                     PopUp_abilitaMenuDaTesto(pop,"Crea movimento di scambio da Deposito/Prelievo");
                 }else PopUp_disabilitaMenuDatesto(pop,"Crea movimento di scambio da Deposito/Prelievo");
+
+                //"Conferma che il token non ha prezzo": solo se TUTTI i movimenti selezionati sono senza
+                //prezzo. Agisce sull'intera selezione, quindi non sta fra le voci a movimento singolo
+                if (Principale_Movimenti_PrezzoZero.isConfermabile(Principale.PopUp_IDTransSelezionati)){
+                    PopUp_abilitaMenuDaTesto(pop,POPUP_VOCE_PREZZO_ZERO);
+                }else PopUp_disabilitaMenuDatesto(pop,POPUP_VOCE_PREZZO_ZERO);
+
+                //"Ricalcola Prezzi": agisce sull'intera selezione (non è fra le voci a movimento singolo) e
+                //serve almeno un movimento a cui il prezzo si possa rifare
+                if (Principale_Movimenti_RicalcolaPrezzi.isRicalcolabile(Principale.PopUp_IDTransSelezionati)){
+                    PopUp_abilitaMenuDaTesto(pop,POPUP_VOCE_RICALCOLA_PREZZI);
+                }else PopUp_disabilitaMenuDatesto(pop,POPUP_VOCE_RICALCOLA_PREZZI);
 
                 //Voci che hanno senso su un solo movimento: su selezione multipla vanno disattivate, perché
                 //lavorano tutte sul solo PopUp_IDTrans (la prima riga selezionata) e darebbero all'utente

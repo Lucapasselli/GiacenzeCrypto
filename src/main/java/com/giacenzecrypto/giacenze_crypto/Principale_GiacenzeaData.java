@@ -154,8 +154,9 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                                 .theme()
                                 .type(AppDialog.DialogType.WARNING)
                                 .message("""
-                    Per raggiungere la giacenza desiderata è necessario generare un movimento di prelievo di %s unità.
-                    """.formatted(SQta.replace("-", "")))
+                    Per raggiungere la giacenza desiderata è necessario generare un movimento di prelievo di %s.
+                    """.formatted(DescrizioneQtaEValore(Moneta, AddressMoneta, Funzioni.TrovaReteDaIMovimento(mov),
+                                    SQta.replace("-", ""), IDTrans, owner)))
                                 .details("""
                                          
                     Scegli come classificare il movimento da creare.
@@ -282,8 +283,9 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                                 .type(AppDialog.DialogType.INFO)
                                 .message("""
                     Per raggiungere la giacenza desiderata è necessario generare
-                    un movimento di deposito di %s unità.
-                    """.formatted(SQta.replace("-", "")))
+                    un movimento di deposito di %s.
+                    """.formatted(DescrizioneQtaEValore(Moneta, AddressMoneta, Funzioni.TrovaReteDaIMovimento(mov),
+                                    SQta.replace("-", ""), IDTrans, owner)))
                                 .details("""
                                          
                     Scegli come classificare il movimento da creare.
@@ -795,5 +797,119 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
         String wallet = "";
         String sottoWallet = "";
         boolean interrotto = false;
+    }
+
+    /** Soglia minima (in euro) del valore di un movimento perché il suo prezzo unitario sia considerato affidabile. */
+    private static final BigDecimal VALORE_MIN_MOVIMENTO_VICINO = new BigDecimal("10");
+    /** Finestra di ricerca (ms) dei movimenti vicini alla data del movimento da creare: 5 minuti prima e dopo. */
+    private static final long FINESTRA_MOVIMENTI_VICINI_MS = 5L * 60 * 1000;
+
+    /**
+     * Testo per i dialog di rettifica giacenza: quantità e simbolo del token, seguiti se possibile da
+     * {@code " corrispondenti a circa € xx.xx"}. Se il prezzo non si trova, restituisce solo quantità e simbolo.
+     * <p>
+     * Il prezzo si cerca dal più economico al più costoso, per non rallentare la maschera:
+     * <ol>
+     *   <li>cache dei prezzi ({@link Prezzi#DammiPrezzoDaDatabasePersonale} e {@link Prezzi#DammiPrezzoDaDatabase},
+     *       solo lettura);</li>
+     *   <li>un movimento del token entro ±5 minuti con valore di almeno 10 euro, di cui si ricava il prezzo
+     *       unitario (il più vicino nel tempo);</li>
+     *   <li>ricerca online ({@link Prezzi#CambioXXXEUR}).</li>
+     * </ol>
+     * @param Moneta simbolo del token
+     * @param Address indirizzo di contratto del token (può essere vuoto)
+     * @param Rete rete del movimento di partenza
+     * @param Qta quantità positiva del movimento da creare
+     * @param IDTrans ID del movimento selezionato: il suo prefisso data è la data del movimento da creare
+     * @param owner finestra su cui mostrare il cursore d'attesa durante l'eventuale ricerca online
+     */
+    static String DescrizioneQtaEValore(String Moneta, String Address, String Rete, String Qta, String IDTrans, Window owner) {
+        String base = Qta + " " + Moneta;
+        try {
+            long ts = FunzioniDate.ConvertiDataIDinLong(IDTrans.split("_")[0]);
+            if (ts <= 0) return base;
+            BigDecimal qta = new BigDecimal(Qta);
+            boolean addressValido = Address != null && !Address.isBlank() && Rete != null && !Rete.isBlank()
+                    && Funzioni_WalletDeFi.isValidAddress(Address, Rete);
+            BigDecimal prezzoUnitario = PrezzoUnitarioDaCache(Moneta, addressValido ? Address : "", addressValido ? Rete : "", ts, qta);
+            if (prezzoUnitario == null) {
+                prezzoUnitario = PrezzoUnitarioDaMovimentiVicini(Moneta, addressValido ? Address : "", ts);
+            }
+            if (prezzoUnitario == null) {
+                if (owner != null) owner.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                try {
+                    Prezzi.InfoPrezzo IP = Prezzi.CambioXXXEUR(Moneta, Qta, ts, addressValido ? Address : "", addressValido ? Rete : "", "", false);
+                    prezzoUnitario = PrezzoUnitarioDaInfoPrezzo(IP, qta);
+                } finally {
+                    if (owner != null) owner.setCursor(Cursor.getDefaultCursor());
+                }
+            }
+            if (prezzoUnitario == null) return base;
+            BigDecimal valore = prezzoUnitario.multiply(qta).abs();
+            if (valore.signum() > 0 && valore.compareTo(new BigDecimal("0.005")) < 0) {
+                return base + " corrispondenti a meno di € 0.01";
+            }
+            return base + " corrispondenti a circa € " + valore.setScale(2, RoundingMode.HALF_UP).toPlainString();
+        } catch (Exception ex) {
+            //Il prezzo è solo un'informazione in più nel messaggio: un errore non deve impedire la rettifica
+            LoggerGC.ScriviErrore("Stima valore per il messaggio di rettifica giacenza non riuscita: " + ex.getMessage());
+            return base;
+        }
+    }
+
+    private static BigDecimal PrezzoUnitarioDaInfoPrezzo(Prezzi.InfoPrezzo IP, BigDecimal qta) {
+        if (IP == null) return null;
+        if (IP.prezzoUnitario != null) return IP.prezzoUnitario;
+        if (IP.prezzoQta != null && qta.signum() != 0) {
+            return IP.prezzoQta.divide(qta.abs(), 20, RoundingMode.HALF_UP);
+        }
+        return null;
+    }
+
+    /** Solo lettura delle cache: prezzi personalizzati (±60 min) e prezzi esatti (±5 min). Nessuna rete. */
+    private static BigDecimal PrezzoUnitarioDaCache(String Moneta, String Address, String Rete, long ts, BigDecimal qta) {
+        String simbolo = Address.isBlank()
+                ? Principale.Mappa_MoneteStessoPrezzo.getOrDefault(Moneta, Moneta)
+                : "";//con un address valido il simbolo non va passato, come fa CambioAddressEUR
+        Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoDaDatabasePersonale(simbolo, ts, "", Rete, Address, 60, qta);
+        if (IP == null) IP = Prezzi.DammiPrezzoDaDatabase(simbolo, ts, "", Rete, Address, 5, qta);
+        return PrezzoUnitarioDaInfoPrezzo(IP, qta);
+    }
+
+    /**
+     * Cerca fra i movimenti entro ±5 minuti da {@code ts} quello più vicino nel tempo che coinvolge il token
+     * e vale almeno 10 euro, e ne ricava il prezzo unitario (valore del movimento / quantità del token).
+     * Il token si riconosce per address se presente, altrimenti per simbolo.
+     */
+    private static BigDecimal PrezzoUnitarioDaMovimentiVicini(String Moneta, String Address, long ts) {
+        //Le chiavi di MappaCryptoWallet cominciano con yyyyMMddHHmmss, quindi basta un subMap sulla finestra
+        String da = FunzioniDate.FormattaDataID(ts - FINESTRA_MOVIMENTI_VICINI_MS);
+        String a = FunzioniDate.FormattaDataID(ts + FINESTRA_MOVIMENTI_VICINI_MS) + "~";//"~" viene dopo le cifre: include ogni ID che comincia con quella data
+        BigDecimal migliore = null;
+        long distanzaMigliore = Long.MAX_VALUE;
+        for (String[] v : MappaCryptoWallet.subMap(da, true, a, true).values()) {
+            if (v.length <= 29 || !Funzioni.isNumeric(v[15], false)) continue;
+            BigDecimal valore = new BigDecimal(v[15]).abs();
+            if (valore.compareTo(VALORE_MIN_MOVIMENTO_VICINO) < 0) continue;
+            //Un lato del movimento con il token: uscita ([8],[10],[26]) oppure ingresso ([11],[13],[28])
+            String qtaToken = null;
+            if (StessoToken(Moneta, Address, v[8], v[26])) qtaToken = v[10];
+            else if (StessoToken(Moneta, Address, v[11], v[28])) qtaToken = v[13];
+            if (qtaToken == null || !Funzioni.isNumeric(qtaToken, false)) continue;
+            BigDecimal q = new BigDecimal(qtaToken).abs();
+            if (q.signum() == 0) continue;
+            long distanza = Math.abs(FunzioniDate.ConvertiDataIDinLong(v[0].split("_")[0]) - ts);
+            if (distanza < distanzaMigliore) {
+                distanzaMigliore = distanza;
+                migliore = valore.divide(q, 20, RoundingMode.HALF_UP);
+            }
+        }
+        return migliore;
+    }
+
+    private static boolean StessoToken(String Moneta, String Address, String monetaMov, String addressMov) {
+        if (monetaMov == null || monetaMov.isBlank()) return false;
+        if (!Address.isBlank()) return Address.equalsIgnoreCase(addressMov);
+        return Moneta.equalsIgnoreCase(monetaMov);
     }
 }

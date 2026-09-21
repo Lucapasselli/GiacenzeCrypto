@@ -119,6 +119,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         this.setIconImage(icon.getImage());
         this.setTitle("Classificazione Movimento");
         initComponents();
+        PortaColonnaGruppoAccantoAlWallet();
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(jTable1);
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_MovimentiAbbinati);
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.jTable1.getModel();
@@ -211,6 +212,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         this.setIconImage(icon.getImage());
         this.setTitle("Classificazione Movimento");
         initComponents();
+        PortaColonnaGruppoAccantoAlWallet();
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(jTable1);
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_MovimentiAbbinati);
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.jTable1.getModel();
@@ -332,6 +334,35 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
     }
 
     /**
+     * Alias del gruppo wallet a cui appartiene il wallet indicato; se il gruppo non ha un alias mostra il nome
+     * del gruppo, se il wallet non e' assegnato a nessun gruppo restituisce una stringa vuota. Non assegna
+     * mai un gruppo (ritornaWallet1seNull=false): aprire questo dialogo non deve scrivere nel DB personale.
+     * @param Wallet campo [3] del movimento
+     * @param MappaAlias mappa gruppo -> {gruppo, alias, ...}, letta una volta sola dal chiamante
+     */
+    private static String AliasGruppoWallet(String Wallet, Map<String, String[]> MappaAlias) {
+        if (Wallet == null || Wallet.isBlank()) return "";
+        String Gruppo = DatabaseH2.Pers_GruppoWallet_Leggi(Wallet, false);
+        if (Gruppo == null) return "";
+        String[] a = MappaAlias.get(Gruppo);
+        return (a != null && a[1] != null && !a[1].isBlank()) ? a[1] : Gruppo;
+    }
+
+    /**
+     * Il "Gruppo Wallet" e' l'ultima colonna del modello (indice 8) e viene portato in vista subito dopo
+     * "Exchange/Wallet". Si sposta solo la vista: gli indici di modello (Tipo=3, Moneta=4, Qta=5, [6]=v[18],
+     * Prezzo=7) letti dai renderer di {@link Tabelle} e dal codice qui sotto restano quelli di prima.
+     */
+    private void PortaColonnaGruppoAccantoAlWallet() {
+        for (javax.swing.JTable t : new javax.swing.JTable[]{jTable1, Tabella_MovimentiAbbinati}) {
+            t.moveColumn(8, 3);
+            javax.swing.table.TableColumn c = t.getColumnModel().getColumn(3);
+            c.setMinWidth(100);
+            c.setPreferredWidth(140);
+        }
+    }
+
+    /**
      * Costruisce la riga da mostrare nella tabella dei movimenti a partire dal movimento
      * identificato da {@code ID}, scegliendo moneta e quantità di uscita o di entrata a seconda
      * che il movimento sia un prelievo ({@code "PC"}) o un deposito.
@@ -342,7 +373,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
           String v[]=MappaCryptoWallet.get(ID);
           String TipoMovimento=v[0].split("_")[4].trim();
 
-            String riga[]=new String[8];
+            String riga[]=new String[9];
             riga[0]=v[0];
             riga[1]=v[1];
             riga[2]=v[3];
@@ -359,6 +390,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                 }
             riga[6]=v[18];
             riga[7]=v[15];
+            riga[8]=AliasGruppoWallet(v[3],DatabaseH2.Pers_GruppoAlias_LeggiTabella());
            return riga;                                              
     }                
 
@@ -423,14 +455,14 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         jTable1.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "ID", "Data e Ora", "Exchange/Wallet", "Tipo", "Moneta", "Qta", "null", "Prezzo"
+                "ID", "Data e Ora", "Exchange/Wallet", "Tipo", "Moneta", "Qta", "null", "Prezzo", "Gruppo Wallet"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -467,11 +499,11 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
 
             },
             new String [] {
-                "ID", "Data e Ora", "Exchange/Wallet", "Tipo", "Moneta", "Qta", "null", "Prezzo"
+                "ID", "Data e Ora", "Exchange/Wallet", "Tipo", "Moneta", "Qta", "null", "Prezzo", "Gruppo Wallet"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -2727,6 +2759,7 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.Tabella_MovimentiAbbinati.getModel();
         Tabelle.Funzioni_PulisciTabella(ModelloTabellaDepositiPrelievi);
         //Tabelle.ColoraRigheTabellaCrypto(jTable2);
+        Map<String, String[]> MappaAlias = DatabaseH2.Pers_GruppoAlias_LeggiTabella();
         String attuale[] = MappaCryptoWallet.get(ID);
         long DataOraAttuale = FunzioniDate.ConvertiDatainLongMinuto(attuale[1]);
         String TipoMovimentoAttuale = attuale[0].split("_")[4].trim();
@@ -2811,7 +2844,7 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                            // && DiffPrec.compareTo(new BigDecimal(1)) <= 0
                             ) 
                     {
-                        String riga[] = new String[8];
+                        String riga[] = new String[9];
                         riga[0] = v[0];
                         riga[1] = v[1];
                         riga[2] = v[3];
@@ -2820,6 +2853,7 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                         riga[5] = QtanoABS.stripTrailingZeros().toPlainString();
                         riga[6] = v[18];
                         riga[7] = v[15];
+                        riga[8] = AliasGruppoWallet(v[3], MappaAlias);
                         
                         ModelloTabellaDepositiPrelievi.addRow(riga);
 
@@ -2885,7 +2919,7 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                             ) 
                     {
                                             
-                        String riga[] = new String[8];
+                        String riga[] = new String[9];
                         riga[0] = v[0];
                         riga[1] = v[1];
                         riga[2] = v[3];
@@ -2894,6 +2928,7 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                         riga[5] = QtanoABS.stripTrailingZeros().toPlainString();
                         riga[6] = v[18];
                         riga[7] = v[15];
+                        riga[8] = AliasGruppoWallet(v[3], MappaAlias);
                         ModelloTabellaDepositiPrelievi.addRow(riga);                 
                     
                     }

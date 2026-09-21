@@ -323,7 +323,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                         String Nota = AppDialog.showTextInputDialog(
                                 owner,
                                 "Nota movimento",
-                                "NInserisci un'eventuale nota sul movimento",
+                                "Inserisci un'eventuale nota sul movimento",
                                 "",
                                 "Nota",
                                 "Rettifica di Giacenza"

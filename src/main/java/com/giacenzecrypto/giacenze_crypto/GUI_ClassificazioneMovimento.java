@@ -342,7 +342,14 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
      */
     private static String AliasGruppoWallet(String Wallet, Map<String, String[]> MappaAlias) {
         if (Wallet == null || Wallet.isBlank()) return "";
-        String Gruppo = DatabaseH2.Pers_GruppoWallet_Leggi(Wallet, false);
+        return AliasDelGruppo(DatabaseH2.Pers_GruppoWallet_Leggi(Wallet, false), MappaAlias);
+    }
+
+    /**
+     * Alias di un gruppo wallet gia' noto (nome del gruppo se manca l'alias, vuoto se il gruppo e' null).
+     * Condivisa con la tabella Depositi/Prelievi di {@code Principale}, che il gruppo lo ha gia' letto.
+     */
+    public static String AliasDelGruppo(String Gruppo, Map<String, String[]> MappaAlias) {
         if (Gruppo == null) return "";
         String[] a = MappaAlias.get(Gruppo);
         return (a != null && a[1] != null && !a[1].isBlank()) ? a[1] : Gruppo;

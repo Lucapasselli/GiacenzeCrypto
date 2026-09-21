@@ -396,6 +396,12 @@ private static final long serialVersionUID = 3L;
         });
         // Tabelle con filtri: header completo applicato subito, Tabelle_FiltroColonne non lo rieseguirà
         Tabelle.Tabelle_InizializzaHeader(TransazioniCryptoTabella);
+        //"Gruppo Wallet" e' l'ultima colonna del modello (indice 10), portata in vista accanto a "Exchange / Wallet":
+        //si sposta solo la vista, cosi' gli indici di modello letti da Tabelle e dai gestori restano quelli di prima
+        DepositiPrelievi_Tabella.moveColumn(10, 3);
+        DepositiPrelievi_Tabella.getColumnModel().getColumn(3).setMinWidth(100);
+        DepositiPrelievi_Tabella.getColumnModel().getColumn(3).setPreferredWidth(140);
+        DepositiPrelievi_Tabella.getColumnModel().getColumn(3).setMaxWidth(300);
         Tabelle.Tabelle_InizializzaHeader(DepositiPrelievi_Tabella);
         Tabelle.Tabelle_InizializzaHeader(SaldiNegativi_TabellaDettaglioMovimenti);
         Tabelle.Tabelle_InizializzaHeader(RW_Tabella_Dettagli);
@@ -1762,11 +1768,11 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "ID_Transazione", "Data e Ora", "Exchange / Wallet", "Tipo Transazione", "Moneta", "<html><center>Qta</html>", "Dettaglio Trasferimento", "<html><center>Prezzo</html>", "Dett. Defi/CSV", "Controparte"
+                "ID_Transazione", "Data e Ora", "Exchange / Wallet", "Tipo Transazione", "Moneta", "<html><center>Qta</html>", "Dettaglio Trasferimento", "<html><center>Prezzo</html>", "Dett. Defi/CSV", "Controparte", "Gruppo Wallet"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -8504,6 +8510,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private static List<String[]> DepositiPrelievi_Calcola(java.util.Collection<String[]> movimenti,
             ParametriDepositiPrelievi par, List<String> daCategorizzareOut) {
         List<String[]> righeTabella = new ArrayList<>();
+        Map<String, String[]> MappaAlias = DatabaseH2.Pers_GruppoAlias_LeggiTabella();
         for (String[] v : movimenti) {
             String TipoMovimento = v[0].split("_")[4].trim();
             if (Funzioni.isDepositoPrelievoClassificabile(null, v,par.mostraFIAT)) {
@@ -8516,7 +8523,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         //Filtro Token
                         if (par.tokenVoluto.equalsIgnoreCase("Tutti") || v[8].equals(par.tokenVoluto) || v[11].equals(par.tokenVoluto)) {
 
-                            String riga[] = new String[10];
+                            String riga[] = new String[11];
                             riga[0] = v[0];
                             riga[1] = v[1];
                             riga[2] = v[3];
@@ -8540,6 +8547,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             riga[7] = v[15];
                             riga[8] = v[7];
                             riga[9] = v[30];
+                            riga[10] = GUI_ClassificazioneMovimento.AliasDelGruppo(gwallet, MappaAlias);
                             Funzioni.RiempiVuotiArray(riga);
                             righeTabella.add(riga);
                             //Se il movimento non è ancora categorizzato e non riguarda movimenti FIAT lo metto nella lista dei movimenti ancora non categorizzati

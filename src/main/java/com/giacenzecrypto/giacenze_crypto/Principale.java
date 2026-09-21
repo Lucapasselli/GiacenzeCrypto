@@ -6669,7 +6669,7 @@ private void SettaIcone(){
             this.RW_Opzioni_CheckBox_StakingZero.setSelected(true);
         }else DatabaseH2.Pers_Opzioni_Scrivi("RW_StakingZero","NO");
         
-        String PL_CosiderareMovimentiNC=DatabaseH2.Pers_Opzioni_Leggi("PL_NonCosiderareMovimentiNC"); 
+        String PL_CosiderareMovimentiNC=DatabaseH2.Pers_Opzioni_Leggi("PL_CosiderareMovimentiNC");
         if(PL_CosiderareMovimentiNC!=null && PL_CosiderareMovimentiNC.equalsIgnoreCase("NO")){
             this.Plusvalenze_Opzioni_NonConsiderareMovimentiNC.setSelected(true);
         }else DatabaseH2.Pers_Opzioni_Scrivi("PL_CosiderareMovimentiNC","SI");

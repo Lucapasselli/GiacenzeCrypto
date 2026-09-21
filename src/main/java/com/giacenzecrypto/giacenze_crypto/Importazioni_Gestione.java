@@ -813,7 +813,7 @@ if (voce.isJson()) {
     Bottone_SelezionaFile.setEnabled(false);
     Bottone_Annulla.setEnabled(false);
 
-    String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_Importazioni_Gestione");
+    String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
     JFileChooser fc = new JFileChooser(Directory);
     int returnVal = fc.showOpenDialog(c);
 
@@ -873,7 +873,7 @@ if (voce.isJson()) {
 
                     String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
                     DatabaseH2.Pers_Opzioni_Scrivi(
-                            "Directory_Importazioni_Gestione",
+                            "Directory_ImportazioniGestione",
                             fc.getSelectedFile().getParent()
                     );
 

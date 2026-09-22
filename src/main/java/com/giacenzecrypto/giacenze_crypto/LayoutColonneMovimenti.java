@@ -17,11 +17,19 @@ import org.json.JSONObject;
  * quale larghezza.
  *
  * <p><b>Agisce solo sul {@link TableColumnModel} (la vista), mai sul {@link javax.swing.table.TableModel}.</b>
- * Il model resta a 40 colonne nell'ordine originale, quindi continuano a funzionare senza modifiche:
+ * Il model resta a 42 colonne nell'ordine originale, quindi continuano a funzionare senza modifiche:
  * i filtri per colonna ({@code Tabelle.tableFilters}, indicizzati per model), l'ordinamento, le somme
  * nell'header, l'export Excel e ogni {@code getValueAt(modelRow, N)} dei renderer. Nascondere una
  * colonna = {@code removeColumn}; mostrarla = ricrearla e riordinarla. {@code convertColumnIndexToModel}
  * regge perché ogni {@link TableColumn} conserva il proprio {@code modelIndex}.
+ *
+ * <p>Le colonne 0-39 sono i campi del movimento ({@code v[0..39]}, via {@code Funzioni.Converti_String_Object}).
+ * Le colonne 40 ("Fonte Prezzi") e 41 ("Alias Gruppo Wallet") sono state aggiunte in coda apposta per non
+ * spostare nessun indice esistente: la 40 è comunque un campo reale del movimento ({@code v[40]}, già
+ * esistente e usato da {@link Prezzi.InfoPrezzo#Ritorna40()} ma mai mostrato in questa tabella prima d'ora),
+ * la 41 è **derivata** — non esiste in {@code v[]}, viene calcolata dal ciclo di caricamento risalendo dal
+ * gruppo wallet di {@code v[3]} all'alias in {@code GRUPPO_ALIAS} — quindi non può ottenersi semplicemente
+ * spuntando un campo esistente, a differenza di tutte le altre.
  *
  * <p>Il default (costruttore {@code applica(tabella, null)}) riproduce esattamente l'insieme e
  * l'ordine storici di {@code Principale.TransazioniCrypto_Funzioni_NascondiColonneTabellaCrypto()}.
@@ -45,6 +53,9 @@ public final class LayoutColonneMovimenti {
     /** Ordine di default delle colonne visibili: coincide con lo storico di NascondiColonneTabellaCrypto(). */
     static final List<Integer> ORDINE_DEFAULT = List.of(1, 3, 4, 5, 6, 8, 10, 11, 13, 15, 17, 19);
 
+    /** Indice di model massimo esistente (0-based): 40 = Fonte Prezzi, 41 = Alias Gruppo Wallet. */
+    static final int COLONNA_MASSIMA = 41;
+
     private final List<Integer> ordine;
     private final Map<Integer, Integer> larghezze;
 
@@ -66,7 +77,7 @@ public final class LayoutColonneMovimenti {
     /** @return gli indici di model proponibili nel dialogo (tutti i non interni, in ordine di model). */
     static List<Integer> colonneOffribili() {
         List<Integer> l = new ArrayList<>();
-        for (int m = 0; m <= 34; m++) {
+        for (int m = 0; m <= COLONNA_MASSIMA; m++) {
             if (!COLONNE_INTERNE.contains(m)) l.add(m);
         }
         return l;
@@ -104,7 +115,7 @@ public final class LayoutColonneMovimenti {
             for (int i = 0; i < col.length(); i++) {
                 JSONObject c = col.getJSONObject(i);
                 int m = c.getInt("m");
-                if (m < 0 || m > 39 || COLONNE_INTERNE.contains(m) || ord.contains(m)) continue;
+                if (m < 0 || m > COLONNA_MASSIMA || COLONNE_INTERNE.contains(m) || ord.contains(m)) continue;
                 ord.add(m);
                 if (c.has("w")) {
                     int w = c.getInt("w");
@@ -156,7 +167,7 @@ public final class LayoutColonneMovimenti {
         // 1. quali colonne restano visibili, in quale ordine
         List<Integer> visibili = new ArrayList<>();
         for (int m : layout.ordine) {
-            if (m >= 0 && m <= 39 && !COLONNE_INTERNE.contains(m) && !visibili.contains(m)) visibili.add(m);
+            if (m >= 0 && m <= COLONNA_MASSIMA && !COLONNE_INTERNE.contains(m) && !visibili.contains(m)) visibili.add(m);
         }
         for (int f : COLONNE_FISSE) {
             if (!visibili.contains(f)) visibili.add(f);
@@ -217,6 +228,8 @@ public final class LayoutColonneMovimenti {
         preferita(cm, 17, 100);   // Nuovo Costo di Carico in EURO
         preferita(cm, 18, 100);   // Tipo Trasferimento
         preferita(cm, 19, 100);   // Plusvalenza in EURO
+        preferita(cm, 40, 100);   // Fonte Prezzi
+        preferita(cm, 41, 120);   // Alias Gruppo Wallet
     }
 
     private static void preferita(TableColumnModel cm, int modelIndex, int pref) {

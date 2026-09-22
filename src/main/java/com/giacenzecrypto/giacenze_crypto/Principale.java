@@ -1219,14 +1219,14 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "<html><center>ID<br>Transazione</html>", "<html><center>Data e Ora</html>", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico<br>Moneta Uscente</html>", "<html><center>Costo di Carico<br>Moneta Entrante</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "Blocco Transazione", "Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento con Plusvalenza", "Rete", "null", "null", "null", "Errori", "null"
+                "<html><center>ID<br>Transazione</html>", "<html><center>Data e Ora</html>", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico<br>Moneta Uscente</html>", "<html><center>Costo di Carico<br>Moneta Entrante</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "Blocco Transazione", "Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento con Plusvalenza", "Rete", "null", "null", "null", "Errori", "null", "Fonte Prezzi", "Alias Gruppo Wallet"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -18160,7 +18160,13 @@ try {
         TransazioniCryptoTabella.setRowSorter(sorter);*/
 
         Map<String, String> Mappa_NomiTokenPersonalizzati = DatabaseH2.RinominaToken_LeggiTabella();
-        
+
+        //Colonna "Alias Gruppo Wallet" (derivata, non è un campo del movimento): l'alias si legge da
+        //GRUPPO_ALIAS, che ha poche decine di righe al più. Caricandola qui tutta una volta sola ed
+        //interrogandola con una semplice Map.get() dentro il ciclo si evita una query H2 per ogni
+        //movimento - DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo), usata altrove, non è cache-ata e
+        //costerebbe una SELECT a riga.
+        Map<String, String[]> Mappa_GruppiAlias_XColonna = DatabaseH2.Pers_GruppoAlias_LeggiTabella();
 
        // Map<String,String> Mappa_CommissioniDaCancellare = new TreeMap<>();
 
@@ -18314,6 +18320,23 @@ try {
                 //la riga vera e propria solo se la tabella è a video
                 if (costruisciRighe) {
                     Object[] z = Funzioni.Converti_String_Object(v);
+                    //z ha tanti elementi quanti v[] (45), ma il model ne ha 42: il resto viene
+                    //troncato da DefaultTableModel.justifyRows. Le posizioni 40/41 del *model* non
+                    //sono v[40]/v[41] "grezzi": sono state aggiunte in coda apposta (vedi
+                    //LayoutColonneMovimenti) per non spostare nessun indice esistente, quindi vanno
+                    //sovrascritte qui prima di passare la riga.
+                    //
+                    //[40] "Fonte Prezzi": v[40] è il campo composito Moneta|Timestamp|Prezzo|Fonte
+                    //(Prezzi.InfoPrezzo.Ritorna40()) - qui si mostra solo la Fonte.
+                    Prezzi.InfoPrezzo infoPrezzoRiga = Funzioni.noData(v[40]) ? null : new Prezzi.InfoPrezzo(v[40]);
+                    z[40] = (infoPrezzoRiga != null && infoPrezzoRiga.Fonte != null) ? infoPrezzoRiga.Fonte : "";
+
+                    //[41] "Alias Gruppo Wallet": derivata da gruppoWallet (già calcolato sopra per i
+                    //filtri) via la mappa gruppo->alias caricata una volta sola prima del ciclo.
+                    //Fallback al nome del gruppo se l'utente non ha ancora impostato un alias.
+                    String[] aliasGruppoRiga = Mappa_GruppiAlias_XColonna.get(gruppoWallet);
+                    z[41] = (aliasGruppoRiga != null && !Funzioni.noData(aliasGruppoRiga[1]))
+                            ? aliasGruppoRiga[1] : gruppoWallet;
                     ModelloTabellaCrypto.addRow(z);
                 }
             }

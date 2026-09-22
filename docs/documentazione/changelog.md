@@ -50,6 +50,7 @@ In caso di problemi si può chiedere supporto sul
 - **Menu contestuale dei movimenti: "Conferma che il token non ha prezzo (valorizza a Zero)"**. Disponibile quando tutti i movimenti selezionati sono senza prezzo: li valorizza a zero senza scrivere un prezzo personalizzato per il token, e il movimento esce dagli errori "senza prezzo".
 - **Rettifica giacenza in "Giacenze a data"**: i messaggi che propongono il movimento di deposito o prelievo da creare indicano ora anche il controvalore approssimato (per esempio «di 0.00032244 TAO corrispondenti a circa € 0.10»), ricavato dai prezzi già noti, da un movimento vicino nel tempo o, in mancanza, dalla ricerca online.
 - Nella finestra **"Classifica Movimento"** e nella tabella **Depositi/Prelievi** è comparsa la colonna **"Gruppo Wallet"**, accanto a "Exchange / Wallet", con l'alias del gruppo (o il suo nome se non ne ha uno).
+- Nella tabella dei movimenti, dal pulsante **"Colonne..."** si possono ora mostrare anche due colonne aggiuntive: **"Fonte Prezzi"** (da dove viene il prezzo usato per il movimento) e **"Alias Gruppo Wallet"** (l'alias del gruppo wallet a cui il movimento appartiene, o il nome del gruppo se non ne ha ancora uno).
 
 **Correzione di bug**
 

@@ -58,6 +58,10 @@
     D -> CSV Generico
     E -> Inserimento Manuale
 40 - Fonte prezzi così composta : Token | Timestamp | PrezzoUnitario | FontePrezzi
+41 - Id del documento di origine dell'importazione (vedi DocumentiFonte.java/DocumentoFonteCorrente) -> solo l'id numerico, mai un path; 0/vuoto se il movimento non è collegato a un documento
+42 - Lignaggio: UUID generato la prima volta che il movimento viene modificato a mano, chiave della sua storia in MOVIMENTI_STORICO (vedi MovimentiStorico.CAMPO_LIGNAGGIO). Vuoto = mai modificato manualmente. Va sempre copiato verbatim da chi ricostruisce un movimento
+43 - Libero, non ancora utilizzato
+44 - Libero, non ancora utilizzato
 */
 
 

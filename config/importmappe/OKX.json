@@ -1,7 +1,7 @@
 {
-  "versione": "1.000",
+  "versione": "1.001",
   "centralizzato": true,
-  "descrizione": "Causali OKX, condivise fra l'import del CSV storico (voce OKX_Old) e l'import via API/CCXT",
+  "descrizione": "Causali OKX, condivise fra l'import del CSV storico (voce OKX_Old) e l'import via API/CCXT. v1.001: aggiunte 'ETH Staking subscription'/'ETH Staking swapping' (codici funding 137/138 di OKX_Tipi.json) come SCAMBIO CRYPTO-CRYPTO -> la sottoscrizione al prodotto 'ETH Staking' e' una permuta ETH->BETH, non un giroconto interno come 'Stake'/'Redeem staking' (che restano sulla stessa moneta).",
   "mappaCausali": {
     "": "NON CONSIDERARE",
     "Buy": "SCAMBIO CRYPTO-CRYPTO",
@@ -9,6 +9,8 @@
     "Crypto dust auto-transfer in": "REWARD",
     "deposit": "TRASFERIMENTO-CRYPTO",
     "Deposit yield": "REWARD",
+    "ETH Staking subscription": "SCAMBIO CRYPTO-CRYPTO",
+    "ETH Staking swapping": "SCAMBIO CRYPTO-CRYPTO",
     "Flash Deals Earnings": "REWARD",
     "From unified trading account": "NON CONSIDERARE",
     "Mystery box bonus": "REWARD",

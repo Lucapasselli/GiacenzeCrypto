@@ -129,6 +129,45 @@ class CcxtInteropConvertOKXBillsTest {
     }
 
     /**
+     * Il prodotto "ETH Staking" (funding {@code type} 137/138, non l'on-chain staking del 328): la
+     * sottoscrizione (ETH in uscita) e la "swapping" di ritorno (BETH in entrata) arrivano sullo stesso
+     * istante, come le gambe di uno scambio, e vanno entrambe classificate SCAMBIO CRYPTO-CRYPTO — è una
+     * permuta ETH->BETH, non un giroconto interno. Dati reali segnalati da un utente il 2026-09-22.
+     */
+    @Test
+    void ethStakingSubscriptionESwappingSonoUnoScambioEthBeth() {
+        List<String[]> righe = CcxtInterop.convertOKXBills(bills("""
+            [{"billId":"800","ccy":"ETH","balChg":"-0.50441892","type":"137","ts":"1788736688000"},
+             {"billId":"801","ccy":"BETH","balChg":"0.50441892","type":"138","ts":"1788736688000"}]
+            """), "Funding");
+
+        assertEquals(2, righe.size());
+        assertEquals("ETH Staking subscription", righe.get(0)[4]);
+        assertEquals("ETH Staking swapping", righe.get(1)[4]);
+        assertEquals(righe.get(0)[0], righe.get(1)[0]);
+
+        var mappa = Importazioni.Ex_OKX_MappaCausali();
+        assertEquals("SCAMBIO CRYPTO-CRYPTO", mappa.get("ETH Staking subscription"));
+        assertEquals("SCAMBIO CRYPTO-CRYPTO", mappa.get("ETH Staking swapping"));
+    }
+
+    /**
+     * Il rendimento giornaliero dello stesso prodotto (funding {@code type} 139) riusa l'etichetta generica
+     * "Staking earnings" già mappata a REWARD dal codice 328 (on-chain), invece di crearne una coppia
+     * dedicata: è lo stesso trattamento fiscale, solo un prodotto OKX diverso.
+     */
+    @Test
+    void ethStakingEarningsUsaLaStessaEtichettaDelloStakingOnChain() {
+        List<String[]> righe = CcxtInterop.convertOKXBills(bills("""
+            [{"billId":"802","ccy":"BETH","balChg":"0.00002428","type":"139","ts":"1788668536000"}]
+            """), "Funding");
+
+        assertEquals(1, righe.size());
+        assertEquals("Staking earnings", righe.get(0)[4]);
+        assertEquals("REWARD", Importazioni.Ex_OKX_MappaCausali().get("Staking earnings"));
+    }
+
+    /**
      * Il 30 vale solo sul conto Trading. Sul Funding i codici bassi hanno tutt'altro significato — il 2 è
      * un prelievo, non una vendita — quindi un 30 che arrivasse di là deve restare non mappato e finire
      * nel riepilogo dei movimenti sconosciuti invece di essere scambiato per un acquisto.

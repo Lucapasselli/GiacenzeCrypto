@@ -321,10 +321,23 @@ private void raccogliEstrazioni() {
             String fornitore = daNomeFile != null ? daNomeFile : nomeBase;
             String estrazione = nomeBase;
             String descrizione = null;
+            boolean nonAncoraSupportata = false;
 
             try {
                 ImportazioneGenerica.ConfigurazioneImport cfg =
                         ImportazioneGenerica.ConfigurazioneImport.carica(f.getAbsolutePath());
+
+                // Configurazione che usa una funzionalità del formato più recente di questa
+                // installazione (vedi ConfigurazioneImport.versioneMinimaApp): non si propone, altrimenti
+                // l'utente la sceglierebbe e otterrebbe un import silenziosamente sbagliato (campi nuovi
+                // ignorati) invece che il messaggio esplicito di questo skip. Un caricamento diretto (non
+                // da questa finestra) resta possibile: il vincolo è solo qui, non in
+                // ConfigurazioneImport.carica.
+                if (!Funzioni.VersioneAppAlmeno(VarStatiche.Versione, cfg.versioneMinimaApp)) {
+                    LoggerGC.logInfo("Configurazione di import \"" + f.getName() + "\" richiede almeno la versione "
+                            + cfg.versioneMinimaApp + " (questa è la " + VarStatiche.Versione + "): non proposta.");
+                    nonAncoraSupportata = true;
+                }
 
                 if (cfg.fornitore != null && !cfg.fornitore.isBlank()) {
                     //Indicazione esplicita: vince su tutto
@@ -348,6 +361,9 @@ private void raccogliEstrazioni() {
                 LoggerGC.ScriviErrore(ex);
             }
 
+            if (nonAncoraSupportata) {
+                continue;
+            }
             aggiungiEstrazione(new VoceImport(fornitore, estrazione, null, f, descrizione));
         }
     } catch (Exception ex) {

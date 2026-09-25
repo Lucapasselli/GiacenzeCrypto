@@ -531,7 +531,15 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
 
         List<Moneta> TutteLeMoneteInizio = new ArrayList<>();
         for (Map<String, Moneta> a : MappaGrWallet_QtaCryptoInizio.values()) {
-            TutteLeMoneteInizio.addAll(a.values());
+            //Stesso filtro del ciclo qui sotto (FIAT e saldo zero esclusi): senza, il pre-scarico
+            //chiedeva prezzi CCXT anche per monete azzerate da tempo (es. spam/scam mai marcati,
+            //dust venduto per intero) che il ciclo non valorizza comunque - inutili sia per il
+            //quadro RW sia per la cache.
+            for (Moneta m : a.values()) {
+                if (!m.Tipo.equalsIgnoreCase("FIAT") && new BigDecimal(m.Qta).compareTo(new BigDecimal(0)) != 0) {
+                    TutteLeMoneteInizio.add(m);
+                }
+            }
         }
         Prezzi.PreScaricaPrezziMonete(TutteLeMoneteInizio, inizio, progress, "RW");
 
@@ -1803,9 +1811,17 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                     //che il ciclo qui sotto sta per valorizzare a fine anno. Si chiedono a lotti invece di
                     //lasciare che DammiPrezzoTransazioneSalvaInfoPrezzo lanci un processo Node per ognuna
                     //non ancora in cache. Non cambia quale prezzo viene scelto (vedi Prezzi.PreScaricaPrezziMonete).
+                    //Stesso filtro del ciclo qui sotto (FIAT e saldo zero esclusi): senza, il pre-scarico
+                    //chiedeva prezzi CCXT anche per monete azzerate da tempo che il ciclo non valorizza
+                    //comunque, gonfiando inutilmente il lotto (visto su archivi con anni di storia: centinaia
+                    //di token spam/dust a saldo zero richiesti a ogni "Calcola" del quadro RW).
                     List<Moneta> TutteLeMoneteFine = new ArrayList<>();
                     for (Map<String, Moneta> a : MappaGrWallet_QtaCryptoInizio.values()) {
-                        TutteLeMoneteFine.addAll(a.values());
+                        for (Moneta m : a.values()) {
+                            if (!m.Tipo.equalsIgnoreCase("FIAT") && new BigDecimal(m.Qta).compareTo(new BigDecimal(0)) != 0) {
+                                TutteLeMoneteFine.add(m);
+                            }
+                        }
                     }
                     Prezzi.PreScaricaPrezziMonete(TutteLeMoneteFine, fine, progress, "RW");
 

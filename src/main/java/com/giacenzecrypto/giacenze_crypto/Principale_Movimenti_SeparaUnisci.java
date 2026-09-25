@@ -8,10 +8,14 @@ import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.awt.Window;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Logica operativa delle due voci del menu contestuale che trasformano la struttura di un movimento:
+ * Logica operativa delle tre voci del menu contestuale che trasformano la struttura di un movimento:
  * <ul>
  *   <li><b>Separa in Deposito/Prelievo</b> — spezza un movimento che coinvolge due monete nelle sue due
  *       gambe indipendenti (un prelievo per la moneta in uscita, un deposito per quella in entrata) ed
@@ -19,6 +23,12 @@ import java.util.List;
  *   <li><b>Crea movimento di scambio da Deposito/Prelievo</b> — l'operazione inversa: fonde un deposito e
  *       un prelievo non classificati, sullo stesso wallet e distanti al più un secondo, in un unico
  *       movimento di scambio/acquisto/vendita ed elimina i due originali.</li>
+ *   <li><b>Unisci movimenti omogenei</b> — fonde N movimenti dello stesso tipo (stessa categoria, stesso
+ *       campo 5, stesso campo 18), sulla stessa moneta e sullo stesso wallet/sotto-wallet, distanti al più
+ *       un secondo l'uno dall'altro, sommandone le quantità in un unico movimento. A differenza dello
+ *       scambio, qui i movimenti di partenza sono eventi economici indipendenti (es. 3 depositi separati),
+ *       non le due facce di una stessa transazione: il controvalore del risultato è quindi la
+ *       <b>somma</b> dei controvalori originali, non la scelta del più affidabile.</li>
  * </ul>
  *
  * <p>Entrambe le operazioni delegano la costruzione dei nuovi movimenti a
@@ -869,5 +879,474 @@ public class Principale_Movimenti_SeparaUnisci {
         if (Funzioni.noData(Note1)) return Funzioni.noData(Note2) ? "" : Note2;
         if (Funzioni.noData(Note2) || Note1.trim().equalsIgnoreCase(Note2.trim())) return Note1;
         return Note1 + " - " + Note2;
+    }
+
+    // =================================================================================================
+    // FUNZIONE 3 - UNISCI MOVIMENTI OMOGENEI (somma le quantità)
+    // =================================================================================================
+
+    /**
+     * Verifica se i movimenti selezionati possono essere fusi in un unico movimento sommandone le
+     * quantità: vedi {@link #TrovaGruppoOmogeneo} per le condizioni esatte.
+     * @param IDs lista degli ID attualmente selezionati in tabella, può essere {@code null}
+     * @return {@code true} se la voce "Unisci movimenti omogenei" va abilitata
+     */
+    public static boolean isUnibileInUnico(List<String> IDs) {
+        return TrovaGruppoOmogeneo(IDs) != null;
+    }
+
+    /**
+     * Individua, tra gli ID selezionati, il gruppo di movimenti omogenei fondibile in uno solo.
+     *
+     * <p>Condizioni, tutte necessarie: almeno due ID, tutti esistenti in mappa; ciascun movimento
+     * coinvolge <b>una sola</b> moneta (un deposito/prelievo/reward, mai uno scambio a due gambe, per cui
+     * "sommare le quantità" non avrebbe un significato univoco); stessa moneta (simbolo, address e rete);
+     * stesso wallet <b>e</b> sotto-wallet; stessa categoria, stesso campo 5 e stesso campo 18 (non basta la
+     * categoria: due RW con campo 18 diverso, es. AIRDROP e CASHBACK, sono fiscalmente distinte); nessuno
+     * collegato ad altri movimenti (campo 20) o generato automaticamente (campo 22 = "AU", verrebbe
+     * comunque rigenerato alla prossima importazione); tutti compatibili a coppie entro la tolleranza di
+     * {@link #TOLLERANZA_ISTANTE_MS} — non solo rispetto al primo, perché tre movimenti a 0s/0.9s/1.8s
+     * avrebbero gli estremi a 1.8s di distanza pur essendo ciascuno entro un secondo dal successivo.
+     *
+     * @param IDs lista degli ID selezionati (eventuali doppioni vengono ignorati)
+     * @return i movimenti del gruppo in ordine di ID, cioè cronologico e uguale a quello della mappa (così
+     *         il risultato non dipende dall'ordine in cui l'utente ha selezionato le righe), oppure
+     *         {@code null} se la selezione non soddisfa tutte le condizioni
+     */
+    static List<String[]> TrovaGruppoOmogeneo(List<String> IDs) {
+        if (IDs == null) return null;
+        Set<String> IDDistinti = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        for (String ID : IDs) {
+            if (ID != null) IDDistinti.add(ID);
+        }
+        if (IDDistinti.size() < 2) return null;
+
+        List<String[]> Gruppo = new ArrayList<>();
+        for (String ID : IDDistinti) {
+            String Movimento[] = MappaCryptoWallet.get(ID);
+            if (Movimento == null) return null;
+            Gruppo.add(Movimento);
+        }
+
+        String Primo[] = Gruppo.get(0);
+        if (!MovimentoUnaSolaMoneta(Primo) || !MovimentoFondibileInUnico(Primo)) return null;
+        boolean Uscita = MonetaValida(Primo[8], Primo[10]);
+
+        for (int i = 1; i < Gruppo.size(); i++) {
+            String Corrente[] = Gruppo.get(i);
+            if (!MovimentoUnaSolaMoneta(Corrente) || !MovimentoFondibileInUnico(Corrente)) return null;
+            if (MonetaValida(Corrente[8], Corrente[10]) != Uscita) return null;
+            if (!StessoTipo(Primo, Corrente)) return null;
+            if (!StessoWalletESottoWallet(Primo, Corrente)) return null;
+            if (!StessaMoneta(Primo, Corrente, Uscita)) return null;
+        }
+
+        //Tolleranza a coppie, non solo rispetto al primo: vedi il javadoc del metodo
+        for (int i = 0; i < Gruppo.size(); i++) {
+            for (int j = i + 1; j < Gruppo.size(); j++) {
+                if (!IstantiCompatibili(Gruppo.get(i), Gruppo.get(j))) return null;
+            }
+        }
+
+        return Gruppo;
+    }
+
+    /** @return {@code true} se il movimento coinvolge esattamente una moneta (mai zero, mai due) */
+    private static boolean MovimentoUnaSolaMoneta(String Movimento[]) {
+        return MonetaValida(Movimento[8], Movimento[10]) ^ MonetaValida(Movimento[11], Movimento[13]);
+    }
+
+    /** @return {@code true} se il movimento non è collegato ad altri (campo 20) né generato automaticamente (campo 22 = "AU") */
+    private static boolean MovimentoFondibileInUnico(String Movimento[]) {
+        if (Movimento[20] != null && !Movimento[20].isBlank()) return false;
+        return Movimento[22] == null || !Movimento[22].equalsIgnoreCase("AU");
+    }
+
+    /** @return {@code true} se i due movimenti hanno la stessa categoria, lo stesso campo 5 e lo stesso campo 18 */
+    private static boolean StessoTipo(String M1[], String M2[]) {
+        return CampoUguale(Categoria(M1), Categoria(M2))
+                && CampoUguale(M1[5], M2[5])
+                && CampoUguale(M1[18], M2[18]);
+    }
+
+    /** @return {@code true} se i due movimenti sono sullo stesso wallet e sullo stesso sotto-wallet */
+    private static boolean StessoWalletESottoWallet(String M1[], String M2[]) {
+        return CampoUguale(M1[3], M2[3]) && CampoUguale(M1[4], M2[4]);
+    }
+
+    /**
+     * @param Uscita {@code true} per confrontare la moneta in uscita (campi 8/26), {@code false} per
+     *               quella in entrata (campi 11/28)
+     * @return {@code true} se i due movimenti muovono lo stesso token: stesso simbolo, stesso address e
+     *         stessa rete (non basta il simbolo: due token con lo stesso ticker su reti diverse sono
+     *         monete diverse)
+     */
+    private static boolean StessaMoneta(String M1[], String M2[], boolean Uscita) {
+        boolean StessoSimboloEAddress = Uscita
+                ? CampoUguale(M1[8], M2[8]) && CampoUguale(M1[26], M2[26])
+                : CampoUguale(M1[11], M2[11]) && CampoUguale(M1[28], M2[28]);
+        if (!StessoSimboloEAddress) return false;
+        return CampoUguale(Funzioni.TrovaReteDaIMovimento(M1), Funzioni.TrovaReteDaIMovimento(M2));
+    }
+
+    /** @return {@code true} se i due campi sono uguali (case-insensitive), trattando {@code null} come stringa vuota */
+    private static boolean CampoUguale(String A, String B) {
+        String a = A == null ? "" : A.trim();
+        String b = B == null ? "" : B.trim();
+        return a.equalsIgnoreCase(b);
+    }
+
+    /**
+     * Fonde in un unico movimento tutti i movimenti dello stesso tipo indicati, sommandone le quantità;
+     * chiede sempre conferma esplicita all'utente, con avvisi aggiuntivi quando la fusione comporta una
+     * perdita di informazione (vedi {@link #EseguiUnioneOmogenei}).
+     *
+     * @param IDs lista degli ID selezionati
+     * @param owner finestra su cui centrare i dialoghi di conferma ed errore
+     * @return {@code true} se l'unione è stata effettuata (il chiamante deve aggiornare le tabelle)
+     */
+    public static boolean UnisciMovimentiOmogenei(List<String> IDs, Window owner) {
+        List<String[]> Gruppo = TrovaGruppoOmogeneo(IDs);
+        if (Gruppo == null) {
+            Messaggi.WarningMessage("Movimenti non fondibili",
+                    "Per unire più movimenti servono almeno due movimenti dello stesso tipo (stessa "
+                    + "categoria, stessa descrizione e stessa classificazione), sulla stessa moneta e sullo "
+                    + "stesso wallet, nessuno collegato ad altri movimenti né generato automaticamente, e "
+                    + "distanti al massimo un secondo l'uno dall'altro.", owner);
+            return false;
+        }
+
+        boolean Uscita = MonetaValida(Gruppo.get(0)[8], Gruppo.get(0)[10]);
+        String Moneta = NomeVisualizzato(Uscita ? Gruppo.get(0)[8] : Gruppo.get(0)[11],
+                Uscita ? Gruppo.get(0)[25] : Gruppo.get(0)[27]);
+        boolean TuttiValorizzati = Gruppo.stream().allMatch(Principale_Movimenti_SeparaUnisci::Valorizzato);
+        boolean PrezziDiversi = TuttiValorizzati && PrezziUnitariDiversi(Gruppo, Uscita);
+
+        StringBuilder Dettagli = new StringBuilder();
+        Dettagli.append("I ").append(Gruppo.size())
+                .append(" movimenti selezionati verranno sostituiti da un unico movimento che somma le quantità:<br>");
+        for (int i = 0; i < Gruppo.size(); i++) {
+            //Con selezioni molto ampie (es. decine di dust) l'elenco completo renderebbe il dialogo
+            //più alto dello schermo: resta comunque tutto nella nota e nello storico del movimento
+            if (i == RIGHE_MAX_DIALOGO_UNIONE) {
+                Dettagli.append(" - ... e altri ").append(Gruppo.size() - i).append(" movimenti<br>");
+                break;
+            }
+            String Qta = Uscita ? Gruppo.get(i)[10] : Gruppo.get(i)[13];
+            Dettagli.append(" - ").append(new BigDecimal(Qta).abs().stripTrailingZeros().toPlainString())
+                    .append(" ").append(Moneta).append("<br>");
+        }
+        Dettagli.append("Totale: <b>").append(SommaQuantita(Gruppo, Uscita).abs().stripTrailingZeros().toPlainString())
+                .append(" ").append(Moneta).append("</b> sul wallet <b>").append(Gruppo.get(0)[3]).append("</b>.<br>");
+        Dettagli.append("I movimenti di partenza verranno eliminati; le loro righe originali restano "
+                + "consultabili nello storico modifiche del movimento unito.<br>");
+
+        //Se una nuova importazione o un nuovo scaricamento dovessero ripresentare le stesse righe
+        //originarie (stesso giorno, stesso exchange, stesse quantità), la deduplica non le riconoscerebbe
+        //più: nessun movimento in mappa ha più quelle quantità singole dopo la fusione
+        Dettagli.append("<br><b>Attenzione:</b> se in futuro reimporti lo stesso file o riscarichi lo "
+                + "stesso periodo da API, questi movimenti torneranno ad essere riconosciuti come nuovi e "
+                + "si aggiungeranno a quello unificato, duplicando l'importo.<br>");
+
+        if (PrezziDiversi) {
+            Dettagli.append("<br><b>Attenzione:</b> i movimenti selezionati hanno un prezzo unitario "
+                    + "diverso tra loro. Unendoli, il costo di carico diventa un unico valore medio per "
+                    + "l'intera quantità: se in futuro verrà prelevata solo una parte di questa giacenza, "
+                    + "il calcolo LIFO userà quel costo medio invece del costo specifico di ciascun "
+                    + "movimento originale, con un possibile effetto sulla plusvalenza calcolata.<br>");
+        }
+        if (!TuttiValorizzati) {
+            Dettagli.append("<br>Non tutti i movimenti selezionati hanno un prezzo: il movimento "
+                    + "risultante verrà lasciato non valorizzato e andrà riprezzato.<br>");
+        }
+        if (AltriMovimentiIntercalati(Gruppo, Uscita)) {
+            Dettagli.append("<br><b>Attenzione:</b> tra i movimenti selezionati sono registrati altri "
+                    + "movimenti della stessa moneta sullo stesso wallet. Il movimento unito verrà collocato "
+                    + "all'istante dell'ultimo dei movimenti selezionati, quindi dopo di essi: il calcolo "
+                    + "LIFO li elaborerà in un ordine diverso da quello attuale.<br>");
+        }
+        if (DistintiNonVuoti(Gruppo, 41).size() > 1) {
+            Dettagli.append("<br>I movimenti provengono da documenti di origine diversi: il movimento "
+                    + "unito resterà collegato a uno solo di essi, gli altri perderanno il collegamento.<br>");
+        }
+        if (DistintiNonVuoti(Gruppo, 42).size() > 1) {
+            Dettagli.append("<br>Più di un movimento ha uno storico delle modifiche proprio: verrà "
+                    + "mantenuto solo quello di un movimento, lo storico precedente degli altri andrà perso "
+                    + "(le loro righe attuali resteranno comunque nello storico del movimento unito).<br>");
+        }
+        Dettagli.append("<br>Si vuole proseguire?");
+
+        AppDialog.DialogResult result = AppDialog.builder(owner)
+                .windowTitle("Unione movimenti")
+                .bodyTitle("Unire i movimenti selezionati in uno solo?")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message("I movimenti verranno sostituiti da un unico movimento con la quantità totale.")
+                .details(Dettagli.toString())
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("unisci", "Unisci i movimenti")
+                        .role(AppDialog.ActionRole.DANGER)
+                        .build())
+                .showDialog();
+
+        if (result == null || !result.isAction("unisci")) {
+            return false;
+        }
+
+        return EseguiUnioneOmogenei(Gruppo, owner);
+    }
+
+    /**
+     * Esegue materialmente l'unione, una volta superati i controlli e ottenuta la conferma dell'utente.
+     *
+     * <p>Il movimento risultante è un <b>clone</b> del movimento più recente del gruppo (non una
+     * ricostruzione via {@link MovimentiCrypto#creaMovimento}): a differenza della fusione in scambio, qui
+     * i movimenti sono già classificati allo stesso modo, e ricostruirli con {@code TipoTr=null}
+     * ricalcolerebbe categoria/campo 5/campo 18 dal solo tipo delle monete, perdendo classificazioni come
+     * REWARD, CASHBACK o le sottotipologie custom (es. "PCO - CASHOUT O SIMILARE"). Il clone eredita quindi
+     * verbatim tutti i campi di provenienza dal movimento base, e solo quantità, controvalore, nota e i
+     * campi calcolati dal motore vengono toccati esplicitamente.</p>
+     *
+     * <p>Il controvalore è la <b>somma</b> dei controvalori originali, e non quello di una singola gamba
+     * scelta come più affidabile: a differenza dello scambio, i movimenti qui non sono le due facce di una
+     * stessa transazione ma eventi economici indipendenti. Se anche uno solo dei movimenti non è
+     * valorizzato, il risultato resta non valorizzato: sommare un prezzo parziale darebbe un totale
+     * silenziosamente sbagliato.</p>
+     *
+     * <p>Due campi non sono semplice output del motore e vengono quindi <b>sommati</b>, non svuotati (stessa
+     * distinzione fatta da {@code Principale_TraslaOrario}): il 17 sui DDO, dove è il costo di carico della
+     * donazione inserito a mano, e il 35, backup del prezzo di mercato che la classificazione ripristina
+     * quando il movimento viene riportato alla situazione iniziale.</p>
+     *
+     * <p>Lo storico modifiche del movimento unito riceve una voce per <b>ogni</b> movimento di partenza,
+     * con la sua riga originale: è ciò che rende l'unione ricostruibile, dato che le singole quantità
+     * altrimenti sopravvivrebbero solo nella nota.</p>
+     *
+     * @param Gruppo movimenti da unire, così come restituiti da {@link #TrovaGruppoOmogeneo}
+     * @param owner finestra su cui centrare l'eventuale messaggio di errore
+     * @return {@code true} se l'unione è stata effettuata
+     */
+    static boolean EseguiUnioneOmogenei(List<String[]> Gruppo, Window owner) {
+        boolean Uscita = MonetaValida(Gruppo.get(0)[8], Gruppo.get(0)[10]);
+        String MovimentoBase[] = MovimentoPiuRecente(Gruppo);
+        String Nuovo[] = Arrays.copyOf(MovimentoBase, MovimentoBase.length);
+
+        String QtaFusa = SommaQuantita(Gruppo, Uscita).stripTrailingZeros().toPlainString();
+        if (Uscita) Nuovo[10] = QtaFusa; else Nuovo[13] = QtaFusa;
+
+        //Se il movimento base non ha un campo di provenienza lo si prende dal primo che ce l'ha, come fa
+        //la fusione in scambio: in particolare documento di origine (41) e lignaggio (42), che altrimenti
+        //andrebbero persi solo perché il movimento più recente non li porta
+        for (int Campo : CampiProvenienzaUnione) {
+            if (Campo < Nuovo.length && Funzioni.noData(Nuovo[Campo])) {
+                for (String M[] : Gruppo) {
+                    if (Campo < M.length && !Funzioni.noData(M[Campo])) {
+                        Nuovo[Campo] = M[Campo];
+                        break;
+                    }
+                }
+            }
+        }
+
+        boolean TuttiValorizzati = Gruppo.stream().allMatch(Principale_Movimenti_SeparaUnisci::Valorizzato);
+        if (TuttiValorizzati) {
+            BigDecimal SommaValore = BigDecimal.ZERO;
+            for (String M[] : Gruppo) SommaValore = SommaValore.add(new BigDecimal(PrezzoSicuro(M[15])));
+            Nuovo[15] = SommaValore.setScale(2, RoundingMode.HALF_UP).toPlainString();
+            Nuovo[32] = "SI";
+            //La fonte generica "Personalizzato" è la stessa convenzione usata quando il prezzo è imposto
+            //dall'esterno: il totale appena calcolato non va più toccato da un'eventuale ri-prezzatura
+            //automatica, che soprascriverebbe la somma con qta*prezzo di un singolo token
+            Nuovo[40] = "|||Personalizzato";
+        } else {
+            Nuovo[15] = "0.00";
+            Nuovo[32] = "NO";
+            Nuovo[40] = "";
+        }
+
+        Nuovo[21] = NotaUnione(Gruppo, Uscita);
+        Nuovo[22] = "M";
+
+        //Campi calcolati dal motore delle plusvalenze: azzerati e non riportati con lo stato vecchio, li
+        //ricalcola AggiornaPlusvalenze al prossimo giro
+        for (int Campo : CampiMotoreDaSvuotare) Nuovo[Campo] = "";
+        boolean IsDDO = Nuovo[18] != null && Nuovo[18].contains("DDO");
+        Nuovo[17] = IsDDO ? SommaCampo(Gruppo, 17, -1) : "";
+        Nuovo[35] = DistintiNonVuoti(Gruppo, 35).isEmpty() ? "" : SommaCampo(Gruppo, 35, 15);
+
+        Importazioni.RiempiVuotiArray(Nuovo);
+
+        for (String M[] : Gruppo) MappaCryptoWallet.remove(M[0]);
+
+        if (!InserisciMovimento(Nuovo)) {
+            for (String M[] : Gruppo) MappaCryptoWallet.put(M[0], M);
+            Esito Errore = ErroreIDUnivoco(Nuovo[0]);
+            Messaggi.WarningMessage(Errore.Titolo, Errore.Messaggio, owner);
+            return false;
+        }
+
+        //Storico: il movimento unito tiene un solo lignaggio e riceve una voce per ogni riga di partenza;
+        //i lignaggi degli altri movimenti non sono più portati da nessuno e vanno ripuliti al salvataggio,
+        //come per una cancellazione (altrimenti resterebbero nel database senza più un movimento collegato)
+        String Lignaggio = MovimentiStorico.AssicuraLignaggio(Nuovo);
+        for (String M[] : Gruppo) {
+            MovimentiStorico.AccodaModifica(Lignaggio, Nuovo[0], M[0], Importazioni.SerializzaRiga(M), OP_UNIONE);
+        }
+        for (String AltroLignaggio : DistintiNonVuoti(Gruppo, MovimentiStorico.CAMPO_LIGNAGGIO)) {
+            if (!AltroLignaggio.equals(Lignaggio)) MovimentiStorico.AccodaCancellazione(AltroLignaggio);
+        }
+
+        StringBuilder IDOriginali = new StringBuilder();
+        for (String M[] : Gruppo) IDOriginali.append(M[0]).append(" ");
+        LoggerGC.logInfo("Movimenti " + IDOriginali.toString().trim() + " uniti nel movimento " + Nuovo[0]);
+        return true;
+    }
+
+    /** Etichetta dell'operazione nello storico modifiche (tradotta in {@code GUI_StoricoMovimento}). */
+    static final String OP_UNIONE = "UnisciMovimenti";
+
+    /** Oltre questo numero di movimenti il dialogo di conferma riassume invece di elencare. */
+    private static final int RIGHE_MAX_DIALOGO_UNIONE = 10;
+
+    /**
+     * Campi di provenienza che, se vuoti sul movimento base, vengono presi dal primo movimento del gruppo
+     * che li ha: causale originale, ID/blocco, hash, address, documento di origine e lignaggio.
+     */
+    private static final int[] CampiProvenienzaUnione = {7, 14, 23, 24, 30, 36, 37, 39, 41, 42};
+
+    /**
+     * Output del motore delle plusvalenze, da svuotare sul movimento unito: stesso elenco di
+     * {@code Principale_TraslaOrario.CAMPI_MOTORE_DA_SVUOTARE}. Il 17 e il 35 sono trattati a parte.
+     */
+    private static final int[] CampiMotoreDaSvuotare = {16, 19, 31, 33, 38};
+
+    /**
+     * @return il movimento più recente del gruppo, cioè l'ultimo: {@link #TrovaGruppoOmogeneo} restituisce
+     *         il gruppo già in ordine di ID, quindi a parità di secondo decide il resto dell'ID e non
+     *         l'ordine in cui l'utente ha selezionato le righe
+     */
+    private static String[] MovimentoPiuRecente(List<String[]> Gruppo) {
+        return Gruppo.get(Gruppo.size() - 1);
+    }
+
+    /** @return la somma algebrica delle quantità del lato movimentato (negativa per le uscite) */
+    private static BigDecimal SommaQuantita(List<String[]> Gruppo, boolean Uscita) {
+        BigDecimal Somma = BigDecimal.ZERO;
+        for (String M[] : Gruppo) Somma = Somma.add(new BigDecimal((Uscita ? M[10] : M[13]).trim()));
+        return Somma;
+    }
+
+    /**
+     * Somma un campo numerico sui movimenti del gruppo.
+     * @param Campo campo da sommare
+     * @param Ripiego campo da usare al posto di {@code Campo} dove questo è vuoto, oppure {@code -1}
+     * @return la somma a 2 decimali, oppure stringa vuota se anche un solo valore non è numerico: un
+     *         totale parziale sarebbe un valore sbagliato che sembra giusto
+     */
+    private static String SommaCampo(List<String[]> Gruppo, int Campo, int Ripiego) {
+        BigDecimal Somma = BigDecimal.ZERO;
+        for (String M[] : Gruppo) {
+            String Valore = M[Campo];
+            if (Funzioni.noData(Valore) && Ripiego >= 0) Valore = M[Ripiego];
+            if (!Funzioni.isNumeric(Valore, false)) return "";
+            Somma = Somma.add(new BigDecimal(Valore.trim()));
+        }
+        return Somma.setScale(2, RoundingMode.HALF_UP).toPlainString();
+    }
+
+    /**
+     * @return {@code true} se fra il primo e l'ultimo movimento del gruppo (in ordine di mappa, cioè
+     *         nell'ordine in cui li elabora il LIFO) c'è un altro movimento, non selezionato, che muove la
+     *         stessa moneta sullo stesso wallet: il movimento unito, collocato sull'ultimo, lo scavalcherà
+     */
+    static boolean AltriMovimentiIntercalati(List<String[]> Gruppo, boolean Uscita) {
+        String Primo[] = Gruppo.get(0);
+        String Ultimo[] = Gruppo.get(Gruppo.size() - 1);
+        String Simbolo = Uscita ? Primo[8] : Primo[11];
+        Set<String> IDGruppo = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        for (String M[] : Gruppo) IDGruppo.add(M[0]);
+
+        for (String M[] : MappaCryptoWallet.subMap(Primo[0], true, Ultimo[0], true).values()) {
+            if (IDGruppo.contains(M[0])) continue;
+            if (!CampoUguale(M[3], Primo[3])) continue;
+            if (CampoUguale(M[8], Simbolo) || CampoUguale(M[11], Simbolo)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Confronta i prezzi unitari (controvalore/quantità) dei movimenti del gruppo, già verificati tutti
+     * valorizzati dal chiamante. Una tolleranza relativa dell'1% assorbe i normali arrotondamenti del
+     * controvalore a 2 decimali senza mascherare una differenza di prezzo reale.
+     * @return {@code true} se almeno un movimento ha un prezzo unitario che si scosta di oltre l'1% dal
+     *         primo prezzo unitario valido incontrato
+     */
+    private static boolean PrezziUnitariDiversi(List<String[]> Gruppo, boolean Uscita) {
+        BigDecimal Riferimento = null;
+        for (String M[] : Gruppo) {
+            BigDecimal Qta = new BigDecimal(Uscita ? M[10] : M[13]).abs();
+            if (Qta.compareTo(BigDecimal.ZERO) == 0) continue;
+            BigDecimal PrezzoUnitario = new BigDecimal(PrezzoSicuro(M[15])).divide(Qta, 12, RoundingMode.HALF_UP);
+            if (Riferimento == null) {
+                Riferimento = PrezzoUnitario;
+            } else if (Riferimento.compareTo(BigDecimal.ZERO) != 0) {
+                BigDecimal ScartoRelativo = PrezzoUnitario.subtract(Riferimento).abs().divide(Riferimento, 6, RoundingMode.HALF_UP);
+                if (ScartoRelativo.compareTo(new BigDecimal("0.01")) > 0) return true;
+            } else if (PrezzoUnitario.compareTo(BigDecimal.ZERO) != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** @return i valori distinti, non vuoti, del campo indicato tra i movimenti del gruppo */
+    private static Set<String> DistintiNonVuoti(List<String[]> Gruppo, int Campo) {
+        Set<String> Valori = new LinkedHashSet<>();
+        for (String M[] : Gruppo) {
+            if (Campo < M.length && !Funzioni.noData(M[Campo])) Valori.add(M[Campo].trim());
+        }
+        return Valori;
+    }
+
+    /**
+     * Costruisce la nota del movimento unito: una frase riassuntiva sempre presente (così l'unione resta
+     * tracciabile anche senza consultare il log), seguita dalle note originali distinte concatenate e,
+     * quando i movimenti fusi portano hash/causali diversi in campo 24, dal loro elenco — quel campo ne
+     * può contenere solo uno, quindi gli altri andrebbero altrimenti persi senza lasciare traccia.
+     */
+    private static String NotaUnione(List<String[]> Gruppo, boolean Uscita) {
+        String DataBase = DataID(MovimentoPiuRecente(Gruppo));
+        String Orario = DataBase.length() == 14
+                ? DataBase.substring(8, 10) + ":" + DataBase.substring(10, 12) + ":" + DataBase.substring(12, 14)
+                : "";
+
+        //Niente virgole né punti e virgola: sono i caratteri che MovimentiCrypto.normalizzaNome toglie
+        //dalle note, e il ";" è il separatore di movimenti.crypto.db
+        StringBuilder Riepilogo = new StringBuilder("Movimento generato unendo " + Gruppo.size() + " movimenti da ");
+        for (int i = 0; i < Gruppo.size(); i++) {
+            if (i > 0) Riepilogo.append(" + ");
+            String Qta = Uscita ? Gruppo.get(i)[10] : Gruppo.get(i)[13];
+            Riepilogo.append(new BigDecimal(Qta.trim()).abs().stripTrailingZeros().toPlainString());
+        }
+        if (!Orario.isBlank()) Riepilogo.append(" avvenuti alle ").append(Orario);
+        Riepilogo.append(".");
+
+        Set<String> NoteOriginali = new LinkedHashSet<>();
+        for (String M[] : Gruppo) {
+            if (!Funzioni.noData(M[21])) NoteOriginali.add(M[21].trim());
+        }
+        if (!NoteOriginali.isEmpty()) {
+            Riepilogo.append(" Note originali: ").append(String.join(" - ", NoteOriginali)).append(".");
+        }
+
+        Set<String> HashDistinti = DistintiNonVuoti(Gruppo, 24);
+        if (HashDistinti.size() > 1) {
+            Riepilogo.append(" Riferimenti originali: ").append(String.join(" / ", HashDistinti)).append(".");
+        }
+
+        return Riepilogo.toString().replace(";", "");
     }
 }

@@ -38,6 +38,8 @@ class Principale_Movimenti_SeparaUnisciTest {
     @BeforeEach
     void svuotaMappa() {
         MappaCryptoWallet.clear();
+        //L'unione di movimenti omogenei accoda voci nello storico modifiche, che è statico
+        MovimentiStorico.AzzeraBuffer();
     }
 
     /**
@@ -669,5 +671,370 @@ class Principale_Movimenti_SeparaUnisciTest {
 
         assertEquals("12", MappaCryptoWallet.get(IDOriginale)[41],
                 "l'andata e ritorno non deve far perdere il legame con il file di origine");
+    }
+
+    // =============================================================================================
+    // UNIONE DI MOVIMENTI OMOGENEI (somma le quantità)
+    // =============================================================================================
+
+    @Test
+    void dueDepositiOmogenei_sonoUnibili() {
+        movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "5", "10000.00");
+
+        assertTrue(Principale_Movimenti_SeparaUnisci.isUnibileInUnico(
+                List.of(DATA_ID + "_WalletTest_001_001_DC", DATA_ID + "_WalletTest_002_001_DC")));
+    }
+
+    @Test
+    void unione_sommaLeQuantitaEIControvalori() {
+        movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "5", "10000.00");
+        String Terzo[] = movimento(DATA_ID + "_WalletTest_003_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "2", "4000.00");
+
+        List<String[]> Gruppo = Principale_Movimenti_SeparaUnisci.TrovaGruppoOmogeneo(
+                List.of(DATA_ID + "_WalletTest_001_001_DC", DATA_ID + "_WalletTest_002_001_DC", Terzo[0]));
+        assertNotNull(Gruppo);
+
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiUnioneOmogenei(Gruppo, null));
+
+        assertEquals(1, MappaCryptoWallet.size(), "i tre movimenti di partenza devono essere eliminati");
+        String Unito[] = MappaCryptoWallet.values().iterator().next();
+        assertEquals("ETH", Unito[11]);
+        assertEquals("10", Unito[13]);
+        assertEquals("20000.00", Unito[15]);
+        assertEquals("SI", Unito[32]);
+        assertEquals("|||Personalizzato", Unito[40]);
+    }
+
+    @Test
+    void unione_mantieneCategoriaCampo5ECampo18DelMovimentoOriginale() {
+        //Bug da non reintrodurre: ricostruire con creaMovimento(TipoTr=null) ricalcolerebbe categoria e
+        //campo 5 dal solo tipo delle monete, perdendo classificazioni come CASHOUT o REWARD
+        String Primo[] = movimento(DATA_ID + "_WalletTest_001_001_PC", "CASH OUT",
+                "BTC", "Crypto", "-0.5", "", "", "", "20000.00");
+        Primo[18] = "PCO - CASHOUT O SIMILARE";
+        String Secondo[] = movimento(DATA_ID + "_WalletTest_002_001_PC", "CASH OUT",
+                "BTC", "Crypto", "-0.3", "", "", "", "12000.00");
+        Secondo[18] = "PCO - CASHOUT O SIMILARE";
+
+        List<String[]> Gruppo = Principale_Movimenti_SeparaUnisci.TrovaGruppoOmogeneo(List.of(Primo[0], Secondo[0]));
+        assertNotNull(Gruppo);
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiUnioneOmogenei(Gruppo, null));
+
+        String Unito[] = MappaCryptoWallet.values().iterator().next();
+        assertEquals("PC", Unito[0].split("_")[4]);
+        assertEquals("CASH OUT", Unito[5]);
+        assertEquals("PCO - CASHOUT O SIMILARE", Unito[18]);
+        assertEquals("-0.8", Unito[10]);
+    }
+
+    @Test
+    void unione_conQuantitaInNotazioneScientifica_sommaCorrettamente() {
+        String Primo[] = movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "SHIB", "Crypto", "1.5E-8", "0.00");
+        Primo[32] = "NO";
+        String Secondo[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "SHIB", "Crypto", "2.5E-9", "0.00");
+        Secondo[32] = "NO";
+
+        List<String[]> Gruppo = Principale_Movimenti_SeparaUnisci.TrovaGruppoOmogeneo(List.of(Primo[0], Secondo[0]));
+        assertNotNull(Gruppo);
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiUnioneOmogenei(Gruppo, null));
+
+        String Unito[] = MappaCryptoWallet.values().iterator().next();
+        //1.5E-8 + 2.5E-9 = 1.75E-8, scritto in notazione piana (mai E, per la regola M7)
+        assertEquals("0.0000000175", Unito[13]);
+        assertFalse(Unito[13].contains("E"), "toPlainString non deve mai produrre notazione scientifica");
+    }
+
+    @Test
+    void unione_conUnMovimentoNonValorizzato_lasciaIlRisultatoNonValorizzato() {
+        movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        String Secondo[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "5", "0.00");
+        Secondo[32] = "NO";
+
+        List<String[]> Gruppo = Principale_Movimenti_SeparaUnisci.TrovaGruppoOmogeneo(
+                List.of(DATA_ID + "_WalletTest_001_001_DC", Secondo[0]));
+        assertNotNull(Gruppo);
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiUnioneOmogenei(Gruppo, null));
+
+        String Unito[] = MappaCryptoWallet.values().iterator().next();
+        assertEquals("0.00", Unito[15]);
+        assertEquals("NO", Unito[32]);
+    }
+
+    @Test
+    void unione_concatenaLeNoteOriginaliDistinteInUnaFraseRiepilogativa() {
+        String Primo[] = movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        Primo[21] = "Prima nota";
+        String Secondo[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "5", "10000.00");
+        Secondo[21] = "Seconda nota";
+
+        List<String[]> Gruppo = Principale_Movimenti_SeparaUnisci.TrovaGruppoOmogeneo(List.of(Primo[0], Secondo[0]));
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiUnioneOmogenei(Gruppo, null));
+
+        String Unito[] = MappaCryptoWallet.values().iterator().next();
+        assertTrue(Unito[21].contains("unendo 2 movimenti"), Unito[21]);
+        assertTrue(Unito[21].contains("Prima nota"), Unito[21]);
+        assertTrue(Unito[21].contains("Seconda nota"), Unito[21]);
+    }
+
+    @Test
+    void unione_ilRisultatoNasceSulMovimentoConLaDataPiuRecente() {
+        movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        String Secondo[] = spostaSuIstante(movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "5", "10000.00"), DATA_ID_1S, TIMESTAMP_1S);
+
+        List<String[]> Gruppo = Principale_Movimenti_SeparaUnisci.TrovaGruppoOmogeneo(
+                List.of(DATA_ID + "_WalletTest_001_001_DC", Secondo[0]));
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiUnioneOmogenei(Gruppo, null));
+
+        String Unito[] = MappaCryptoWallet.get(DATA_ID_1S + "_WalletTest_002_001_DC");
+        assertNotNull(Unito, "il movimento unito nasce sull'ID del più recente dei due");
+        assertEquals(TIMESTAMP_1S, Unito[29]);
+    }
+
+    @Test
+    void unione_conMovimentiSuLatiDiversi_nonEUnibile() {
+        movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        movimento(DATA_ID + "_WalletTest_002_001_PC", "PRELIEVO CRYPTO",
+                "ETH", "Crypto", "-3", "", "", "", "6000.00");
+
+        assertFalse(Principale_Movimenti_SeparaUnisci.isUnibileInUnico(
+                List.of(DATA_ID + "_WalletTest_001_001_DC", DATA_ID + "_WalletTest_002_001_PC")));
+    }
+
+    @Test
+    void unione_conSottoWalletDiversi_nonEUnibile() {
+        movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        String Secondo[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "5", "10000.00");
+        Secondo[4] = "Sotto-wallet diverso";
+
+        assertFalse(Principale_Movimenti_SeparaUnisci.isUnibileInUnico(
+                List.of(DATA_ID + "_WalletTest_001_001_DC", Secondo[0])));
+    }
+
+    @Test
+    void unione_conCampo18Diverso_nonEUnibile() {
+        //Stessa categoria e stesso campo 5, solo il sottotipo fiscale (campo 18) è diverso: il caso
+        //isolato, perché con un campo 5 diverso il gruppo verrebbe già scartato per quello
+        String Primo[] = movimento(DATA_ID + "_WalletTest_001_001_DC", "REWARD",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        Primo[18] = "DAI - Airdrop,Cashback,Rewards etc.. (plusvalenza)";
+        String Secondo[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "REWARD",
+                "", "", "", "ETH", "Crypto", "5", "10000.00");
+        Secondo[18] = "DCZ - DEPOSITO A COSTO 0";
+
+        assertFalse(Principale_Movimenti_SeparaUnisci.isUnibileInUnico(List.of(Primo[0], Secondo[0])));
+    }
+
+    @Test
+    void unione_conMovimentoCollegatoAdAltri_nonEUnibile() {
+        movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        String Secondo[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "5", "10000.00");
+        Secondo[20] = "20240101000000_AltroWallet_001_001_TI";
+
+        assertFalse(Principale_Movimenti_SeparaUnisci.isUnibileInUnico(
+                List.of(DATA_ID + "_WalletTest_001_001_DC", Secondo[0])));
+    }
+
+    @Test
+    void unione_conMovimentoAutomatico_nonEUnibile() {
+        movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        String Secondo[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "5", "10000.00");
+        Secondo[22] = "AU";
+
+        assertFalse(Principale_Movimenti_SeparaUnisci.isUnibileInUnico(
+                List.of(DATA_ID + "_WalletTest_001_001_DC", Secondo[0])));
+    }
+
+    @Test
+    void unione_conTreMovimentiAgliEstremiOltreLaTolleranza_nonEUnibile() {
+        //Date dell'ID diverse su tutte e tre le coppie, cosi' il confronto cade sempre sul campo 29 (il
+        //confronto per stringa dell'ID scatterebbe già "compatibile" a parità di secondo, mascherando il
+        //caso). A è a 0s, B a 0.9s da A, C a 1.8s da A pur essendo a soli 0.9s da B: ogni coppia
+        //consecutiva è entro un secondo, ma gli estremi A-C distano 1.8s
+        String Primo[] = movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        String Secondo[] = spostaSuIstante(movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "5", "10000.00"), DATA_ID_1S, TIMESTAMP_1S);
+        Secondo[29] = "1710495000900";
+        String Terzo[] = spostaSuIstante(movimento(DATA_ID + "_WalletTest_003_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "2", "4000.00"), DATA_ID_2S, TIMESTAMP_2S);
+        Terzo[29] = "1710495001800";
+
+        assertFalse(Principale_Movimenti_SeparaUnisci.isUnibileInUnico(
+                List.of(Primo[0], Secondo[0], Terzo[0])),
+                "il primo e il terzo distano 1.8s, oltre la tolleranza, pur essendo ciascuno entro un secondo dal vicino");
+    }
+
+    @Test
+    void unione_diUnSoloMovimentoOUnaListaVuota_nonEUnibile() {
+        movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+
+        assertFalse(Principale_Movimenti_SeparaUnisci.isUnibileInUnico(List.of(DATA_ID + "_WalletTest_001_001_DC")));
+        assertFalse(Principale_Movimenti_SeparaUnisci.isUnibileInUnico(List.of()));
+        assertFalse(Principale_Movimenti_SeparaUnisci.isUnibileInUnico(null));
+    }
+
+    @Test
+    void unione_diUnoScambioADueGambe_nonEUnibile() {
+        //Sommare le quantità di due scambi a due gambe non avrebbe un significato univoco
+        String Primo[] = movimento(DATA_ID + "_WalletTest_001_001_SC", "SCAMBIO CRYPTO",
+                "BTC", "Crypto", "-0.5", "ETH", "Crypto", "8", "20000.00");
+        String Secondo[] = movimento(DATA_ID + "_WalletTest_002_001_SC", "SCAMBIO CRYPTO",
+                "BTC", "Crypto", "-0.3", "ETH", "Crypto", "5", "12000.00");
+
+        assertFalse(Principale_Movimenti_SeparaUnisci.isUnibileInUnico(List.of(Primo[0], Secondo[0])));
+    }
+
+    @Test
+    void unione_nonDipendeDallOrdineDiSelezioneEIgnoraIDoppioni() {
+        String Primo[] = movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        String Secondo[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "5", "10000.00");
+
+        //Selezione in ordine inverso e con un ID ripetuto: senza deduplica 5 verrebbe sommato due volte
+        List<String[]> Gruppo = Principale_Movimenti_SeparaUnisci.TrovaGruppoOmogeneo(
+                List.of(Secondo[0], Primo[0], Secondo[0]));
+        assertNotNull(Gruppo);
+        assertEquals(2, Gruppo.size());
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiUnioneOmogenei(Gruppo, null));
+
+        //A parità di secondo il movimento base è l'ultimo in ordine di ID, non l'ultimo selezionato
+        String Unito[] = MappaCryptoWallet.get(DATA_ID + "_WalletTest_002_001_DC");
+        assertNotNull(Unito);
+        assertEquals("8", Unito[13]);
+    }
+
+    @Test
+    void unione_seIlMovimentoBaseNonHaDocumentoELignaggio_liPrendeDagliAltri() {
+        String Primo[] = movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        Primo[41] = "12";
+        Primo[42] = "lignaggio-primo";
+        String Secondo[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "5", "10000.00");
+
+        List<String[]> Gruppo = Principale_Movimenti_SeparaUnisci.TrovaGruppoOmogeneo(List.of(Primo[0], Secondo[0]));
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiUnioneOmogenei(Gruppo, null));
+
+        String Unito[] = MappaCryptoWallet.get(Secondo[0]);
+        assertEquals("12", Unito[41], "il documento di origine non va perso solo perché manca sul movimento base");
+        assertEquals("lignaggio-primo", Unito[42], "lo storico del primo movimento resta raggiungibile");
+    }
+
+    @Test
+    void unione_registraNelloStoricoUnaVocePerOgniMovimentoEPulisceGliAltriLignaggi() {
+        String Primo[] = movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        Primo[42] = "lignaggio-primo";
+        String Secondo[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "5", "10000.00");
+        Secondo[42] = "lignaggio-secondo";
+        String Terzo[] = movimento(DATA_ID + "_WalletTest_003_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "2", "4000.00");
+
+        List<String[]> Gruppo = Principale_Movimenti_SeparaUnisci.TrovaGruppoOmogeneo(
+                List.of(Primo[0], Secondo[0], Terzo[0]));
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiUnioneOmogenei(Gruppo, null));
+
+        //Il base è il terzo (senza lignaggio): eredita quello del primo, e il secondo va ripulito
+        assertEquals("lignaggio-primo", MappaCryptoWallet.get(Terzo[0])[42]);
+        assertEquals(3 + 1, MovimentiStorico.VociInAttesa(),
+                "tre righe di partenza nello storico del movimento unito + una cancellazione di lignaggio");
+    }
+
+    @Test
+    void unione_diDonazioni_sommaIlCostoDiCaricoInseritoAMano() {
+        //Per i DDO il campo 17 non è output del motore ma il costo di carico scritto dall'utente
+        String Primo[] = movimento(DATA_ID + "_WalletTest_001_001_DC", "DONAZIONE",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        Primo[18] = "DDO - Donazione";
+        Primo[17] = "1500.00";
+        String Secondo[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DONAZIONE",
+                "", "", "", "ETH", "Crypto", "5", "10000.00");
+        Secondo[18] = "DDO - Donazione";
+        Secondo[17] = "2500.00";
+
+        List<String[]> Gruppo = Principale_Movimenti_SeparaUnisci.TrovaGruppoOmogeneo(List.of(Primo[0], Secondo[0]));
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiUnioneOmogenei(Gruppo, null));
+
+        assertEquals("4000.00", MappaCryptoWallet.get(Secondo[0])[17]);
+    }
+
+    @Test
+    void unione_sommaIlPrezzoDiBackupDelCampo35UsandoIlPrezzoAttualeDoveManca() {
+        //Il 35 è il prezzo di mercato che la classificazione ha sostituito: riportando il movimento alla
+        //situazione iniziale torna nel 15, quindi va sommato come il 15 e non svuotato
+        String Primo[] = movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        Primo[35] = "5800.00";
+        String Secondo[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "5", "10000.00");
+
+        List<String[]> Gruppo = Principale_Movimenti_SeparaUnisci.TrovaGruppoOmogeneo(List.of(Primo[0], Secondo[0]));
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiUnioneOmogenei(Gruppo, null));
+
+        String Unito[] = MappaCryptoWallet.get(Secondo[0]);
+        assertEquals("15800.00", Unito[35]);
+        assertEquals("16000.00", Unito[15]);
+        assertEquals("", Unito[17], "fuori dai DDO il 17 è output del motore e va svuotato");
+    }
+
+    @Test
+    void unione_segnalaUnAltroMovimentoDellaStessaMonetaTraQuelliSelezionati() {
+        String Primo[] = movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        //Un prelievo di ETH sullo stesso wallet che nella mappa cade fra i due depositi
+        movimento(DATA_ID + "_WalletTest_002_001_PC", "PRELIEVO CRYPTO",
+                "ETH", "Crypto", "-1", "", "", "", "2000.00");
+        String Terzo[] = movimento(DATA_ID + "_WalletTest_003_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "5", "10000.00");
+
+        List<String[]> Gruppo = Principale_Movimenti_SeparaUnisci.TrovaGruppoOmogeneo(List.of(Primo[0], Terzo[0]));
+        assertNotNull(Gruppo);
+        assertTrue(Principale_Movimenti_SeparaUnisci.AltriMovimentiIntercalati(Gruppo, false));
+
+        MappaCryptoWallet.remove(DATA_ID + "_WalletTest_002_001_PC");
+        assertFalse(Principale_Movimenti_SeparaUnisci.AltriMovimentiIntercalati(Gruppo, false));
+    }
+
+    @Test
+    void unione_laNotaNonContieneSeparatoriDiCampo() {
+        String Primo[] = movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        Primo[24] = "hashA";
+        String Secondo[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "5", "10000.00");
+        Secondo[24] = "hashB";
+
+        List<String[]> Gruppo = Principale_Movimenti_SeparaUnisci.TrovaGruppoOmogeneo(List.of(Primo[0], Secondo[0]));
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiUnioneOmogenei(Gruppo, null));
+
+        String Nota = MappaCryptoWallet.get(Secondo[0])[21];
+        assertFalse(Nota.contains(";"), Nota);
+        assertTrue(Nota.contains("3 + 5"), Nota);
+        assertTrue(Nota.contains("hashA") && Nota.contains("hashB"), "gli hash scartati dal campo 24 restano nella nota: " + Nota);
     }
 }

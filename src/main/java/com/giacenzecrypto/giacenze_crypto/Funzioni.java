@@ -613,6 +613,45 @@ public class Funzioni {
     }
 
     /**
+     * Confronta due versioni "punteggiate" (es. {@code "1.0.65"} vs {@code "1.0.64"}), numero per
+     * numero da sinistra a destra. Le versioni possono avere un numero diverso di segmenti (es.
+     * {@code "1.0.58.03"}): i segmenti mancanti valgono 0.
+     * @return negativo se {@code a < b}, zero se uguali, positivo se {@code a > b}
+     */
+    public static int ConfrontaVersioni(String a, String b) {
+        String[] pa = (a == null ? "" : a.trim()).split("\\.");
+        String[] pb = (b == null ? "" : b.trim()).split("\\.");
+        int n = Math.max(pa.length, pb.length);
+        for (int i = 0; i < n; i++) {
+            int va = i < pa.length ? numeroSegmentoVersione(pa[i]) : 0;
+            int vb = i < pb.length ? numeroSegmentoVersione(pb[i]) : 0;
+            if (va != vb) return Integer.compare(va, vb);
+        }
+        return 0;
+    }
+
+    private static int numeroSegmentoVersione(String segmento) {
+        try {
+            return Integer.parseInt(segmento.trim());
+        } catch (NumberFormatException ex) {
+            return 0;
+        }
+    }
+
+    /**
+     * {@code true} se la versione dell'applicazione in esecuzione ({@code versioneApp}) è sufficiente
+     * per una funzionalità che richiede almeno {@code versioneMinima}. Una {@code versioneMinima} vuota
+     * non pone alcun vincolo (sempre {@code true}); una {@code versioneApp} non interpretabile (es.
+     * {@code "sconosciuta"}, build senza il filtering Maven di {@code version.properties}) non blocca
+     * per prudenza — vedi {@code VarStatiche.leggiVersione} — ma la libera scelta è di chi chiama.
+     */
+    public static boolean VersioneAppAlmeno(String versioneApp, String versioneMinima) {
+        if (versioneMinima == null || versioneMinima.isBlank()) return true;
+        if (versioneApp == null || versioneApp.isBlank() || !Character.isDigit(versioneApp.trim().charAt(0))) return true;
+        return ConfrontaVersioni(versioneApp, versioneMinima) >= 0;
+    }
+
+    /**
      * Riduce una credenziale (chiave API, secret, passphrase) alla forma abbreviata da usare nei log:
      * le prime quattro cifre seguite da puntini. Serve a poter riconoscere <i>quale</i> credenziale sia
      * in gioco senza scriverla per intero nei file di log, che possono essere allegati a una segnalazione.

@@ -161,6 +161,17 @@ private static final long serialVersionUID = 3L;
     private Principale_FiltriMovimenti.FiltriMovimenti FiltriCorrenti =
             Principale_FiltriMovimenti.Nessuno(0, 0);
 
+    /**
+     * Periodo che i due selettori di data in alto (condivisi con la scheda Crypto.com) avevano prima
+     * che la combo "Periodo" del dialogo filtri li spostasse su un anno intero. {@code null} quando non
+     * c'e' nessuno spostamento da annullare. Valorizzato la prima volta da
+     * {@link #FiltriMovimenti_ImpostaAnno}, letto e azzerato da {@link #FiltriMovimenti_AzzeraTutti()} —
+     * cosi' scegliere pi&ugrave; anni di fila non perde il periodo davvero originale, e "Azzera Filtri"
+     * lo restituisce una volta sola.
+     */
+    private String FiltriMovimenti_DataIniziale_Precedente = null;
+    private String FiltriMovimenti_DataFinale_Precedente = null;
+
     //Aspetto "a riposo" del pulsante Filtri e della label del conteggio righe, letto una volta subito
     //dopo initComponents() e ripristinato quando non ci sono filtri attivi (vedi
     //FiltriMovimenti_AggiornaIndicatori). Senza salvarlo, il primo passaggio allo stato evidenziato
@@ -628,6 +639,7 @@ private static final long serialVersionUID = 3L;
         MenuItem_ClassificaMovimento = new javax.swing.JMenuItem();
         MenuItem_SeparaMovimento = new javax.swing.JMenuItem();
         MenuItem_UnisciMovimenti = new javax.swing.JMenuItem();
+        MenuItem_UnisciOmogenei = new javax.swing.JMenuItem();
         MenuItem_TraslaOrario = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         MenuItem_ModificaPrezzo = new javax.swing.JMenuItem();
@@ -1128,6 +1140,15 @@ private static final long serialVersionUID = 3L;
             }
         });
         PopupMenu.add(MenuItem_UnisciMovimenti);
+
+        MenuItem_UnisciOmogenei.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Unisci.png"))); // NOI18N
+        MenuItem_UnisciOmogenei.setText("Unisci movimenti omogenei (somma quantità)");
+        MenuItem_UnisciOmogenei.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_UnisciOmogeneiActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_UnisciOmogenei);
 
         MenuItem_TraslaOrario.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_TraslaOrario.png"))); // NOI18N
         MenuItem_TraslaOrario.setText("Trasla Orario");
@@ -13996,6 +14017,17 @@ if (result != null && !result.isAction("cancel")) {
         }
     }//GEN-LAST:event_MenuItem_UnisciMovimentiActionPerformed
 
+    private void MenuItem_UnisciOmogeneiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_UnisciOmogeneiActionPerformed
+        // TODO add your handling code here:
+        if (Principale_Movimenti_SeparaUnisci.UnisciMovimentiOmogenei(PopUp_IDTransSelezionati, this)) {
+            //Ricalcolo una sola volta e azzero il flag, così la riacquisizione del focus dopo la chiusura
+            //del dialog di conferma non rifà inutilmente lo stesso ricalcolo
+            Funzioni_AggiornaTutto();
+            TabellaCryptodaAggiornare = false;
+            DepositiPrelievi_Caricatabella();
+        }
+    }//GEN-LAST:event_MenuItem_UnisciOmogeneiActionPerformed
+
     private void MenuItem_TraslaOrarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_TraslaOrarioActionPerformed
         // TODO add your handling code here:
         if (PopUp_IDTrans != null) {
@@ -15643,13 +15675,15 @@ if (result != null && !result.isAction("cancel")) {
         //Le due combo servono al dialogo solo per copiarne gli elenchi: e' Funzione_AggiornaComboBox()
         //a riempirle durante il caricamento della tabella, e rigenerarli nel dialogo vorrebbe dire due
         //sorgenti della stessa lista.
-        Principale_FiltriMovimenti.FiltriMovimenti scelti = GUI_FiltriMovimenti.Mostra(this,
+        GUI_FiltriMovimenti.Scelta scelta = GUI_FiltriMovimenti.Mostra(this,
                 FiltriMovimenti_Correnti(dataInizio, dataFine),
                 ComboFiltroWallet, ComboFiltroToken);
 
-        if (scelti == null) return;   //Annulla: non si tocca nulla, nemmeno la tabella
+        if (scelta == null) return;   //Annulla: non si tocca nulla, nemmeno la tabella
 
-        FiltriCorrenti = scelti;
+        FiltriCorrenti = scelta.Filtri();
+        //Se l'utente ha scelto un anno nella combo Periodo, sposta anche i due selettori in alto.
+        if (scelta.AnnoPeriodo() != null) FiltriMovimenti_ImpostaAnno(scelta.AnnoPeriodo());
         FiltriMovimenti_AggiornaPulsante();
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa();
     }//GEN-LAST:event_TransazioniCrypto_Bottone_FiltriActionPerformed
@@ -17998,8 +18032,52 @@ try {
         FiltriCorrenti = Principale_FiltriMovimenti.Nessuno(0, 0);
         TransazioniCryptoFiltro_Text.setText("");
         Tabelle.Tabella_RimuoviFiltri(TransazioniCryptoTabella);
+        if (FiltriMovimenti_DataIniziale_Precedente != null) {
+            //La combo "Periodo" del dialogo filtri aveva spostato le due date in alto su un anno
+            //intero: "Azzera Filtri" le riporta come stavano prima, non le lascia sull'anno scelto.
+            CDC_ImpostaPeriodo(FiltriMovimenti_DataIniziale_Precedente, FiltriMovimenti_DataFinale_Precedente);
+            FiltriMovimenti_DataIniziale_Precedente = null;
+            FiltriMovimenti_DataFinale_Precedente = null;
+        }
         FiltriMovimenti_AggiornaPulsante();
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa();
+    }
+
+    /**
+     * Imposta le due date in alto sull'intero anno scelto nella combo "Periodo" del dialogo filtri.
+     * La prima volta dopo l'ultimo azzeramento salva il periodo che c'era prima, cosi'
+     * {@link #FiltriMovimenti_AzzeraTutti()} puo' restituirlo quando i filtri vengono rimossi; scegliere
+     * altri anni di seguito non sovrascrive quel salvataggio.
+     *
+     * @param anno l'anno scelto
+     */
+    private void FiltriMovimenti_ImpostaAnno(int anno) {
+        if (FiltriMovimenti_DataIniziale_Precedente == null) {
+            FiltriMovimenti_DataIniziale_Precedente = CDC_DataIniziale;
+            FiltriMovimenti_DataFinale_Precedente = CDC_DataFinale;
+        }
+        CDC_ImpostaPeriodo(anno + "-01-01", anno + "-12-31");
+    }
+
+    /**
+     * Porta le due date in alto a un valore preciso, aggiornando GUI, file e tabelle come fa l'utente
+     * muovendo i {@code JDateChooser} — ma <b>senza</b> passare dai loro {@code PropertyChangeListener}
+     * ({@code CDC_DataChooser_InizialePropertyChange}/{@code FinalePropertyChange}), che confrontano
+     * ogni nuova data con l'altro estremo <i>gi&agrave; impostato</i> e rifiuterebbero un intervallo che
+     * non si sovrappone a quello corrente (es. spostarsi su un anno tutto precedente all'intervallo
+     * attuale farebbe leggere "data finale minore della iniziale" a met&agrave; dell'operazione).
+     * Impostando prima entrambi i campi e solo dopo i due {@code JDateChooser}, quando i loro listener
+     * scattano trovano gi&agrave; l'intervallo coerente e non fanno nulla.
+     *
+     * @param iniziale nuova data di inizio, {@code yyyy-MM-dd}
+     * @param finale nuova data di fine, {@code yyyy-MM-dd}
+     */
+    private void CDC_ImpostaPeriodo(String iniziale, String finale) {
+        CDC_DataIniziale = iniziale;
+        CDC_DataFinale = finale;
+        CDC_ScriviFileDatiDB();
+        CDC_ScriviDatesuGUI();
+        CDC_AggiornaGui();
     }
 
     /**
@@ -18906,6 +18984,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JMenuItem MenuItem_SeparaMovimento;
     private javax.swing.JMenuItem MenuItem_TraslaOrario;
     private javax.swing.JMenuItem MenuItem_UnisciMovimenti;
+    private javax.swing.JMenuItem MenuItem_UnisciOmogenei;
     private javax.swing.JPanel Normativa;
     private javax.swing.JPanel Opzioni;
     private javax.swing.JCheckBox OpzioniRewards_CashBackComeFIAT;

@@ -1071,6 +1071,19 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 
         String causaleCSV = cfg.getCausaleCSV(riga);
 
+        // Scambio gambe (vedi causaliScambiaGambe): per le causali elencate, scambia le celle grezze
+        // di quantita'/quantitaUscita (e di moneta/monetaUscita, se non condividono gia' la colonna
+        // con quantita'/quantitaUscita) PRIMA di ogni lettura successiva. Lavora su una copia della
+        // riga: gli altri campi (data, causale, id, fee, note...) restano agli indici originali.
+        if (!cfg.causaliScambiaGambe.isEmpty() && cfg.causaliScambiaGambe.contains(causaleCSV.trim())
+                && cfg.colonnaQuantita >= 0 && cfg.colonnaQuantitaUscita >= 0) {
+            riga = riga.clone();
+            scambiaColonne(riga, cfg.colonnaQuantita, cfg.colonnaQuantitaUscita);
+            if (cfg.colonnaMoneta != cfg.colonnaQuantita || cfg.colonnaMonetaUscita != cfg.colonnaQuantitaUscita) {
+                scambiaColonne(riga, cfg.colonnaMoneta, cfg.colonnaMonetaUscita);
+            }
+        }
+
         String walletOverride = cfg.walletPerCausale.get(causaleCSV);
         if (walletOverride != null && !walletOverride.isBlank()) {
             wallet = walletOverride;
@@ -1085,10 +1098,12 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             return null;
         }
 
-        String moneta = cfg.normalizzaMoneta(safe(riga, cfg.colonnaMoneta));
-        String qtaStr = normalizzaNumero(safe(riga, cfg.colonnaQuantita));
-        String monetaFee = cfg.normalizzaMoneta(safe(riga, cfg.colonnaMonetaFee));
-        String qtaFee = normalizzaNumero(safe(riga, cfg.colonnaQuantitaFee));
+        String[] pPrimaria = leggiCoppiaMonetaQuantita(riga, cfg, cfg.colonnaMoneta, cfg.colonnaQuantita);
+        String qtaStr = pPrimaria[0];
+        String moneta = pPrimaria[1];
+        String[] pFee = leggiCoppiaMonetaQuantita(riga, cfg, cfg.colonnaMonetaFee, cfg.colonnaQuantitaFee);
+        String qtaFee = pFee[0];
+        String monetaFee = pFee[1];
         String valoreEuro = normalizzaNumero(safe(riga, cfg.colonnaValoreEuro));
         String prezzo = normalizzaNumero(safe(riga, cfg.colonnaPrezzo));
         String idTrans = safe(riga, cfg.colonnaIDTransazione);
@@ -1113,6 +1128,17 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             qtaStr = qtaStr.replace("-", "");
         }
 
+        // Forzatura di verso globale (vedi versoForzato): si applica a prescindere dalla causale,
+        // per i file a direzione unica dove non c'e' nessuna colonna causale affidabile da cui
+        // dedurla riga per riga.
+        if (cfg.versoForzato == ConfigurazioneImport.RegolaSegno.FORZATO_USCITA) {
+            if (!qtaStr.startsWith("-")) {
+                qtaStr = "-" + qtaStr;
+            }
+        } else if (cfg.versoForzato == ConfigurazioneImport.RegolaSegno.FORZATO_ENTRATA) {
+            qtaStr = qtaStr.replace("-", "");
+        }
+
         Moneta mOUT = null;
         Moneta mIN = null;
         BigDecimal qtaPrimaria = null;
@@ -1134,8 +1160,9 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 
         // Eventuale lato uscita separato sulla stessa riga
         if (cfg.colonnaQuantitaUscita >= 0 && cfg.colonnaMonetaUscita >= 0) {
-            String qtaOut = normalizzaNumero(safe(riga, cfg.colonnaQuantitaUscita));
-            String monOut = cfg.normalizzaMoneta(safe(riga, cfg.colonnaMonetaUscita));
+            String[] pUscita = leggiCoppiaMonetaQuantita(riga, cfg, cfg.colonnaMonetaUscita, cfg.colonnaQuantitaUscita);
+            String qtaOut = pUscita[0];
+            String monOut = pUscita[1];
 
             if (!qtaOut.isBlank() && Funzioni.isNumeric(qtaOut, false)) {
                 BigDecimal qOut = new BigDecimal(qtaOut);
@@ -1467,6 +1494,42 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         return s;
     }
 
+    /** Scambia in-place due colonne di una riga CSV gia' splittata (no-op se un indice e' &lt; 0 o fuori range). */
+    private static void scambiaColonne(String[] riga, int a, int b) {
+        if (a < 0 || b < 0 || a >= riga.length || b >= riga.length) {
+            return;
+        }
+        String tmp = riga[a];
+        riga[a] = riga[b];
+        riga[b] = tmp;
+    }
+
+    /**
+     * Legge una coppia quantita'/moneta, gestendo il caso "valore composto" (vedi
+     * {@link ConfigurazioneImport#separatoreValoreMoneta}): se le due colonne configurate
+     * coincidono, la cella e' "NUMERO&lt;separatore&gt;SIMBOLO" in un'unica cella (es. Gate.io
+     * "407.57;AME") e va spezzata sul primo separatore invece di leggere due colonne distinte.
+     *
+     * @return {quantita' normalizzata, moneta normalizzata}
+     */
+    private static String[] leggiCoppiaMonetaQuantita(String[] riga, ConfigurazioneImport cfg,
+            int colonnaMoneta, int colonnaQuantita) {
+        if (!cfg.separatoreValoreMoneta.isEmpty() && colonnaQuantita >= 0 && colonnaMoneta == colonnaQuantita) {
+            String raw = safe(riga, colonnaQuantita);
+            int idx = raw.indexOf(cfg.separatoreValoreMoneta);
+            if (idx >= 0) {
+                return new String[]{
+                    normalizzaNumero(raw.substring(0, idx)),
+                    cfg.normalizzaMoneta(raw.substring(idx + cfg.separatoreValoreMoneta.length()))
+                };
+            }
+        }
+        return new String[]{
+            normalizzaNumero(safe(riga, colonnaQuantita)),
+            cfg.normalizzaMoneta(safe(riga, colonnaMoneta))
+        };
+    }
+
     /**
      * Restituisce una stringa di fallback se il valore passato è nullo o vuoto.
      *
@@ -1564,6 +1627,19 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
          * voce corrispondente nella finestra {@code Importazioni_Gestione}. Vuoto = nessun tooltip.
          */
         public String descrizione = "";
+        /**
+         * Versione minima dell'applicazione (es. {@code "1.0.65"}) che sa interpretare questa
+         * configurazione. Vuoto (default) = nessun vincolo, si comporta come oggi. Serve per le
+         * configurazioni che usano una funzionalità del formato aggiunta dopo una certa versione
+         * (es. {@link #separatoreValoreMoneta}, {@link #causaliScambiaGambe}, {@link #versoForzato}):
+         * su un push di {@code config/import/}, un'installazione con l'app ancora alla versione
+         * precedente vedrebbe il file ma non saprebbe interpretarne i campi nuovi. Il confronto è in
+         * {@code Funzioni.VersioneAppAlmeno}; chi COSTRUISCE l'elenco delle estrazioni disponibili
+         * ({@code Importazioni_Gestione.raccogliEstrazioni}) è responsabile di scartare le
+         * configurazioni non ancora supportate, non {@code ConfigurazioneImport.carica} stesso — un
+         * caricamento diretto (test, uso da programma) resta sempre possibile.
+         */
+        public String versioneMinimaApp = "";
         public String nomeWallet = "Principale";
         public String separatore = ",";
         public String encoding = "UTF-8";
@@ -1713,6 +1789,29 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         public Set<String> causaliUscita = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         public Set<String> causaliEntrata = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
+        // Forzatura di verso globale, applicata a OGNI riga indipendentemente dalla causale. Serve per
+        // gli export a file separato per direzione (es. Gate.io 'mywithdrawals.csv'/'mydeposits.csv':
+        // nessuna colonna causale, ogni riga del file e' per definizione un prelievo o un deposito).
+        // A differenza di causaliUscita/causaliEntrata, che dipendono dal testo esatto della causale,
+        // questa non richiede che quel testo sia costante o prevedibile riga per riga.
+        public RegolaSegno versoForzato = RegolaSegno.NESSUNA;
+
+        // Colonna/colonna: quando la cella di 'quantita' (o 'quantitaUscita', o 'quantitaFee') e'
+        // nella stessa colonna configurata anche come 'moneta' (risp. 'monetaUscita'/'monetaFee'), il
+        // valore grezzo e' "NUMERO<separatore>SIMBOLO" in un'unica cella (es. Gate.io Spot Trade
+        // History: "407.57;AME") invece di due colonne separate. Vuoto (default) = comportamento
+        // invariato, moneta e quantita' restano due colonne distinte come in tutte le altre config.
+        public String separatoreValoreMoneta = "";
+
+        // Causali per cui, su una riga che porta GIA' entrambe le gambe (moneta/quantita' +
+        // monetaUscita/quantitaUscita), il ruolo entrata/uscita delle due colonne va scambiato prima
+        // di ogni altra elaborazione. Serve quando lo stesso export usa due colonne a ruolo fisso
+        // (es. Gate.io: colonna 'Deal amount' e colonna 'Total') ma la direzione reale dipende dalla
+        // causale della riga (Buy: Deal amount entra, Total esce; Sell: il contrario). Lo scambio
+        // avviene sulle celle grezze, quindi se moneta/quantita' condividono la stessa colonna
+        // (vedi separatoreValoreMoneta) simbolo e importo si scambiano insieme in un solo passaggio.
+        public Set<String> causaliScambiaGambe = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+
         /**
          * NUOVO – causali che, anche in gruppo multi-riga, vanno trattate come
          * movimento singolo (non accumulate nel TransazioneDefi). Es:
@@ -1824,6 +1923,9 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             }
             if (root.has("descrizione")) {
                 cfg.descrizione = root.getString("descrizione");
+            }
+            if (root.has("versioneMinimaApp")) {
+                cfg.versioneMinimaApp = root.getString("versioneMinimaApp");
             }
             if (root.has("nomeWallet")) {
                 cfg.nomeWallet = root.getString("nomeWallet");
@@ -1982,6 +2084,23 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 JSONArray arr = root.getJSONArray("causaliEntrata");
                 for (int i = 0; i < arr.length(); i++) {
                     cfg.causaliEntrata.add(arr.getString(i));
+                }
+            }
+            if (root.has("versoForzato")) {
+                String v = root.getString("versoForzato");
+                if ("USCITA".equalsIgnoreCase(v)) {
+                    cfg.versoForzato = ConfigurazioneImport.RegolaSegno.FORZATO_USCITA;
+                } else if ("ENTRATA".equalsIgnoreCase(v)) {
+                    cfg.versoForzato = ConfigurazioneImport.RegolaSegno.FORZATO_ENTRATA;
+                }
+            }
+            if (root.has("separatoreValoreMoneta")) {
+                cfg.separatoreValoreMoneta = root.getString("separatoreValoreMoneta");
+            }
+            if (root.has("causaliScambiaGambe")) {
+                JSONArray arr = root.getJSONArray("causaliScambiaGambe");
+                for (int i = 0; i < arr.length(); i++) {
+                    cfg.causaliScambiaGambe.add(arr.getString(i));
                 }
             }
 

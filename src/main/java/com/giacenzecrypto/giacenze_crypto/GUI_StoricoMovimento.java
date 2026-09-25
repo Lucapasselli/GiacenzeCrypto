@@ -130,6 +130,8 @@ public class GUI_StoricoMovimento extends javax.swing.JDialog {
                 "Modifica del movimento (ID ricalcolato)";
             case "TraslaOrario" ->
                 "Traslazione dell'orario";
+            case Principale_Movimenti_SeparaUnisci.OP_UNIONE ->
+                "Unione con altri movimenti (riga di partenza)";
             case MovimentiStorico.OP_IN_PLACE ->
                 "Modifica dei dati (ID invariato)";
             default ->

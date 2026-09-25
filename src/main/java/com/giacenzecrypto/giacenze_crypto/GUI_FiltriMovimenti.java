@@ -24,9 +24,12 @@ import javax.swing.JComboBox;
  *       tabella <b>una volta sola</b>, mentre oggi ogni casella toccata nella barra ne fa ripartire una.</li>
  * </ul>
  *
- * <p>Le date non compaiono qui: non sono nella barra dei movimenti nemmeno adesso, arrivano dai due
- * selettori della scheda Crypto.com e sono condivise con quella. Spostarle &egrave; una modifica a
- * s&eacute;, da fare sapendo che riguarda anche l'altra scheda.
+ * <p>Le date non stanno nel record {@link FiltriMovimenti}: non sono nella barra dei movimenti nemmeno
+ * adesso, arrivano dai due selettori della scheda Crypto.com e sono condivise con quella. La combo
+ * <b>Periodo</b> ne &egrave; comunque una scorciatoia: sceglie un anno e restituisce quell'anno a parte
+ * (vedi {@link Scelta}), perch&eacute; il dialogo non possiede i due selettori e non pu&ograve; impostarli da
+ * s&eacute; &mdash; &egrave; {@code Principale} a farlo, e a ricordare il periodo precedente cos&igrave; da
+ * poterlo restituire quando i filtri vengono rimossi.
  *
  * @author luca.passelli
  */
@@ -39,8 +42,20 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
     private static final String VOCE_CON = "Solo movimenti con un documento";
     private static final String VOCE_SENZA = "Solo movimenti senza documento";
 
-    /** Criteri scelti, {@code null} finch&eacute; l'utente non preme Applica. */
-    private FiltriMovimenti Esito = null;
+    /** Voce della combo Periodo che non tocca le date in alto. */
+    private static final String VOCE_PERIODO_NESSUNO = "(non modificare)";
+
+    /**
+     * Esito del dialogo.
+     *
+     * @param Filtri i criteri scelti
+     * @param AnnoPeriodo l'anno scelto nella combo Periodo, oppure {@code null} se lasciata su
+     *                    {@link #VOCE_PERIODO_NESSUNO}
+     */
+    public record Scelta(FiltriMovimenti Filtri, Integer AnnoPeriodo) {}
+
+    /** Esito scelto, {@code null} finch&eacute; l'utente non preme Applica (o se annulla). */
+    private Scelta Esito = null;
 
     /** Intervallo di date d'ingresso, riportato tale e quale nel record restituito. */
     private final long DataInizio;
@@ -56,9 +71,9 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
      * @param Correnti criteri attivi in questo momento, che il dialogo mostra come punto di partenza
      * @param ComboWallet la combo dei wallet della barra, da cui copiare le voci
      * @param ComboToken la combo dei token della barra, da cui copiare le voci
-     * @return i criteri scelti, oppure {@code null} se l'utente ha annullato
+     * @return l'esito scelto, oppure {@code null} se l'utente ha annullato
      */
-    public static FiltriMovimenti Mostra(Window Proprietario, FiltriMovimenti Correnti,
+    public static Scelta Mostra(Window Proprietario, FiltriMovimenti Correnti,
             JComboBox<String> ComboWallet, JComboBox<String> ComboToken) {
         GUI_FiltriMovimenti d = new GUI_FiltriMovimenti(Proprietario, Correnti, ComboWallet, ComboToken);
         d.setLocationRelativeTo(Proprietario);
@@ -78,6 +93,7 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         CopiaVoci(ComboWallet, ComboBox_Wallet);
         CopiaVoci(ComboToken, ComboBox_Token);
         RiempiDocumenti();
+        RiempiPeriodo();
 
         if (Correnti != null) {
             SelezionaOTieni(ComboBox_Wallet, Correnti.Wallet());
@@ -142,6 +158,55 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         ComboBox_Documento.setModel(m);
     }
 
+    /**
+     * Riempie la combo Periodo: la voce neutra, poi un anno per riga, dal pi&ugrave; recente al pi&ugrave;
+     * vecchio, coprendo l'intervallo fra il primo e l'ultimo movimento in archivio (esteso all'anno
+     * corrente se serve). Ricavarlo dai movimenti invece che da un elenco fisso evita di doverlo
+     * allungare a mano ogni anno, come succede altrove nel programma (es. {@code RW_Anno_ComboBox}).
+     */
+    private void RiempiPeriodo() {
+        DefaultComboBoxModel<String> m = new DefaultComboBoxModel<>();
+        m.addElement(VOCE_PERIODO_NESSUNO);
+        for (int anno : AnniDisponibili()) m.addElement(String.valueOf(anno));
+        ComboBox_Periodo.setModel(m);
+    }
+
+    /**
+     * @return gli anni coperti dai movimenti in archivio, dal pi&ugrave; recente al pi&ugrave; vecchio, sempre
+     * comprendente almeno l'anno corrente. {@code MappaCryptoWallet} &egrave; una {@code TreeMap} sull'ID,
+     * il cui prefisso &egrave; {@code yyyyMMddHHmmss}: la prima e l'ultima chiave bastano, non serve
+     * scorrerla tutta.
+     */
+    private static java.util.List<Integer> AnniDisponibili() {
+        int oggi = java.time.Year.now().getValue();
+        int min = oggi, max = oggi;
+        try {
+            if (!Principale.MappaCryptoWallet.isEmpty()) {
+                min = Integer.parseInt(Principale.MappaCryptoWallet.firstKey().substring(0, 4));
+                max = Math.max(oggi, Integer.parseInt(Principale.MappaCryptoWallet.lastKey().substring(0, 4)));
+            }
+        } catch (Exception e) {
+            //Un ID che non comincia con una data non deve impedire di aprire il dialogo: si ripiega
+            //sul solo anno corrente.
+            min = oggi;
+            max = oggi;
+        }
+        java.util.List<Integer> anni = new java.util.ArrayList<>();
+        for (int a = max; a >= min; a--) anni.add(a);
+        return anni;
+    }
+
+    /** @return l'anno scelto nella combo Periodo, oppure {@code null} se lasciata su {@link #VOCE_PERIODO_NESSUNO} */
+    private Integer AnnoScelto() {
+        String voce = String.valueOf(ComboBox_Periodo.getSelectedItem());
+        if (VOCE_PERIODO_NESSUNO.equals(voce)) return null;
+        try {
+            return Integer.valueOf(voce);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     /** Seleziona una voce se c'&egrave;, altrimenti lascia la selezione com'&egrave;. */
     private static void SelezionaOTieni(JComboBox<String> Combo, String Voce) {
         if (Voce == null) return;
@@ -194,6 +259,8 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         java.awt.GridBagConstraints gridBagConstraints;
 
         Pannello_Criteri = new javax.swing.JPanel();
+        Label_Periodo = new javax.swing.JLabel();
+        ComboBox_Periodo = new javax.swing.JComboBox();
         Label_Wallet = new javax.swing.JLabel();
         ComboBox_Wallet = new javax.swing.JComboBox();
         Label_Token = new javax.swing.JLabel();
@@ -217,16 +284,32 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         Pannello_Criteri.setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 14, 12, 14));
         Pannello_Criteri.setLayout(new java.awt.GridBagLayout());
 
-        Label_Wallet.setText("Wallet / Gruppo :");
+        Label_Periodo.setText("Periodo (Anno) :");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
-        Pannello_Criteri.add(Label_Wallet, gridBagConstraints);
+        Pannello_Criteri.add(Label_Periodo, gridBagConstraints);
+        ComboBox_Periodo.setToolTipText("Imposta le due date in alto sull'intero anno scelto; \"Azzera Filtri\" le riporta come stavano prima");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        Pannello_Criteri.add(ComboBox_Periodo, gridBagConstraints);
+
+        Label_Wallet.setText("Wallet / Gruppo :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
+        Pannello_Criteri.add(Label_Wallet, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
@@ -235,13 +318,13 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         Label_Token.setText("Token :");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
         Pannello_Criteri.add(Label_Token, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
@@ -250,20 +333,20 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         Label_Documento.setText("Documento di origine :");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
         Pannello_Criteri.add(Label_Documento, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         Pannello_Criteri.add(ComboBox_Documento, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -273,7 +356,7 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         CheckBox_TrasferimentiInterni.setText("Nascondi Trasferimenti Interni");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
@@ -282,7 +365,7 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         CheckBox_TokenScam.setText("Nascondi Token SCAM");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
@@ -291,7 +374,7 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         CheckBox_SenzaPrezzo.setText("Mostra solo i movimenti senza prezzo");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
@@ -300,7 +383,7 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         CheckBox_LifoMancante.setText("Mostra solo i movimenti con LiFo mancante");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         Pannello_Criteri.add(CheckBox_LifoMancante, gridBagConstraints);
@@ -347,6 +430,7 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         SelezionaOTieni(ComboBox_Wallet, Principale_FiltriMovimenti.TUTTI);
         SelezionaOTieni(ComboBox_Token, Principale_FiltriMovimenti.TUTTI);
         ComboBox_Documento.setSelectedIndex(0);
+        ComboBox_Periodo.setSelectedIndex(0);
         CheckBox_TrasferimentiInterni.setSelected(false);
         CheckBox_TokenScam.setSelected(false);
         CheckBox_SenzaPrezzo.setSelected(false);
@@ -360,8 +444,9 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
 
     private void Bottone_OkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_OkActionPerformed
         //Le date restano quelle che erano: il dialogo non le espone, quindi non deve nemmeno poterle
-        //cambiare per sbaglio.
-        Esito = Leggi(DataInizio, DataFine);
+        //cambiare per sbaglio. L'anno scelto nella combo Periodo viaggia a parte: e' Principale a
+        //impostare i due selettori in alto, il dialogo non li possiede.
+        Esito = new Scelta(Leggi(DataInizio, DataFine), AnnoScelto());
         dispose();
     }//GEN-LAST:event_Bottone_OkActionPerformed
 
@@ -374,9 +459,11 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
     private javax.swing.JCheckBox CheckBox_TokenScam;
     private javax.swing.JCheckBox CheckBox_TrasferimentiInterni;
     private javax.swing.JComboBox ComboBox_Documento;
+    private javax.swing.JComboBox ComboBox_Periodo;
     private javax.swing.JComboBox ComboBox_Token;
     private javax.swing.JComboBox ComboBox_Wallet;
     private javax.swing.JLabel Label_Documento;
+    private javax.swing.JLabel Label_Periodo;
     private javax.swing.JLabel Label_Token;
     private javax.swing.JLabel Label_Wallet;
     private javax.swing.JPanel Pannello_Criteri;

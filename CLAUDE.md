@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest#nomeDelMetodo
 
-# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.58.03)
+# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.64.01)
 java -jar target/Giacenze_Crypto-<version>-jar-with-dependencies.jar --NoJarPath --workdir ./test/2025/
 ```
 
@@ -41,7 +41,7 @@ Tests live in `src/test/java/` (same package as production code, to reach packag
 | `CalcoliPlusvalenzeNewGoldenMasterTest` | full recompute against the real local dataset |
 | `EccezioniDefiTest` | DeFi movement exceptions |
 | `PrezziEmoneyEuroTest` | EMoney tokens pinned to EUR |
-| `Principale_Movimenti_SeparaUnisciTest` | splitting a movement into deposit/withdrawal and merging them back into a swap |
+| `Principale_Movimenti_SeparaUnisciTest` | splitting a movement into deposit/withdrawal, merging them back into a swap, and merging N same-type movements by summing quantities |
 | `MovimentiCryptoCreaMovimentoTest` | `MovimentiCrypto.creaMovimento()` — in/out direction and resulting categoria |
 | `SegnoQuantitaM7Test` | `Funzioni.isNegativo()`, `Moneta.InvertiQta()` and CEX in/out classification (bug M7) |
 | `CcxtInteropConvertOKXBillsTest` | `CcxtInterop.convertOKXBills()` — OKX API bills → the 19-field intermediate rows shared with the OKX CSV import |
@@ -155,7 +155,7 @@ This extraction is already under way — it is a deliberate, incremental refacto
 |---|---|
 | `Principale_GiacenzeaData.java` | operational logic of the "Giacenze a data" tab |
 | `Principale_Opzioni_Pulizie.java` | data-cleanup operations from the options tab |
-| `Principale_Movimenti_SeparaUnisci.java` | the two inverse popup operations on movements: splitting one two-coin movement into an independent deposit + withdrawal, and merging an unclassified deposit + withdrawal back into a single swap |
+| `Principale_Movimenti_SeparaUnisci.java` | three popup operations on movements: splitting one two-coin movement into an independent deposit + withdrawal, merging an unclassified deposit + withdrawal back into a single swap, and merging N already-classified movements of the same type/coin/wallet into one by summing their quantities |
 
 **These rules are provisional**: they simply describe what the two existing classes already do, and are still to be reviewed and agreed with the user — open points include whether dialogs and wait cursors belong in the extracted classes at all, and whether shared state should keep being reached through the static maps or be passed in instead. Until that review happens, mirror the existing pattern rather than inventing a different one.
 
@@ -272,14 +272,16 @@ colonna 21 sul modulo stampato resta manuale. Analisi legale e di implementazion
 
 ### Le note di compilazione dei quadri stanno in un JSON, non nel codice
 
-I testi stampati in coda ai quadri W/RW e T/RT vivono in `config/importmappe/NoteCompilazione.json`,
+I testi stampati in coda ai quadri W/RW e T/RT vivono in `config/varie/NoteCompilazione.json`,
 letti da `NoteCompilazione.java`. Sono istruzioni fiscali: cambiano con la modulistica, e finche'
 stavano nei blocchi di testo di `Principale`/`Stampe` correggere una riga sbagliata voleva dire
 pubblicare una versione. Il file segue la strada delle mappe causali e di `TipiOKX` — copia di default
-nel jar (`config/importmappe/` **e'** la sorgente del `/ImportMappe/` del jar, vedi il `<resource>` del
-pom), installata al primo avvio da `MappeCausali.InstallaDefaultSeMancanti()` e riallineata a ogni
-apertura da `Funzioni.AggiornamentoConfigDaRepositoryUnicaChiamata`. Il nome e' in
-`MappeCausali.FILE_DI_SISTEMA`. Quattro cose non ovvie:
+nel jar (`config/varie/` **e'** la sorgente del `/Varie/` del jar, vedi il `<resource>` del pom; non sta
+in `config/importmappe/`, che e' solo per le mappe dell'import), installata al primo avvio da
+`MappeCausali.InstallaDefaultSeMancanti()` e riallineata a ogni apertura da
+`Funzioni.AggiornamentoConfigDaRepositoryUnicaChiamata`. Il nome e' in `MappeCausali.FILE_VARIE`; la
+strada disco→jar e' la stessa delle mappe, scelta con l'enum `MappeCausali.Cartella` (`MAPPE`/`VARIE`).
+Quattro cose non ovvie:
 
 - **Gli anni della dichiarazione sono segnaposto**, `{anno}` / `{annoPrec}` / `{annoSucc}`, risolti alla
   stampa. Scritti come cifre il file sarebbe da riscrivere ogni gennaio, cioe' esattamente il problema

@@ -1171,7 +1171,8 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         {"cryptocom", "Crypto.com"}, {"okx", "OKX"}, {"bitpanda", "Bitpanda"},
         {"bitget", "Bitget"}, {"kucoin", "KuCoin"}, {"bybit", "Bybit"},
         {"revolut", "Revolut"}, {"nexo", "Nexo"}, {"bitstamp", "Bitstamp"},
-        {"gemini", "Gemini"}, {"bitfinex", "Bitfinex"}
+        {"gemini", "Gemini"}, {"bitfinex", "Bitfinex"},
+        {"gateio", "Gate.io"}
     };
 
     /** Numero del primo gruppo wallet preconfigurato : {@code "Wallet 101"} ↔ {@code EXCHANGE_NOTI[0]}. */

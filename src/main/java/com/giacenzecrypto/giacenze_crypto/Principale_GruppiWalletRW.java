@@ -148,7 +148,7 @@ public class Principale_GruppiWalletRW {
     /**
      * Ordina i nomi di gruppo {@code "Wallet <n>"} per valore <b>numerico</b> ({@code "Wallet 2"} &lt;
      * {@code "Wallet 10"} &lt; {@code "Wallet 101"}), invece dell'ordine lessicografico che infilerebbe
-     * {@code "Wallet 101".."Wallet 114"} fra {@code "Wallet 10"} e {@code "Wallet 11"}. I nomi che non
+     * i preconfigurati {@code "Wallet 101"}, {@code "Wallet 102"}, ..., fra {@code "Wallet 10"} e {@code "Wallet 11"}. I nomi che non
      * seguono lo schema {@code "Wallet <n>"} vanno in coda, in ordine alfabetico case-insensitive.
      */
     public static final Comparator<String> ORDINE_GRUPPO = (a, b) -> {

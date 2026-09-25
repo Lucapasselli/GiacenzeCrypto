@@ -33,15 +33,31 @@ class DatiPredefinitiRWTest {
     }
 
     @Test
-    void carica_dalJar_haI14ExchangeENoteBinance() {
+    void carica_dalJar_haI15ExchangeENoteBinance() {
         DatiPredefinitiRW p = DatiPredefinitiRW.Carica();
         assertNotNull(p, "RW_Predefiniti.json deve essere leggibile (copia nel jar)");
-        assertEquals(14, p.exchange().size());
+        assertEquals(15, p.exchange().size());
         assertNotNull(p.exchangePerId("BINANCE"), "lookup case-insensitive");
         assertEquals("Wallet 101", p.exchangePerId("binance").gruppo);
         // hash stabile fra due letture
         assertEquals(p.hash(), DatiPredefinitiRW.Carica().hash());
         assertFalse(p.hash().isBlank());
+    }
+
+    @Test
+    void ogniExchangeNoto_haLaSuaVoceConIlGruppoGiusto() {
+        //EXCHANGE_NOTI decide in quale "Wallet 1xx" finiscono i movimenti di un exchange; il JSON dà a
+        //quel gruppo nome e dati fiscali. Un exchange aggiunto solo al primo lascerebbe il gruppo senza
+        //nome (è successo con Gate.io)
+        DatiPredefinitiRW p = DatiPredefinitiRW.Carica();
+        assertNotNull(p);
+        assertEquals(DatabaseH2.EXCHANGE_NOTI.length, p.exchange().size(),
+                "EXCHANGE_NOTI e RW_Predefiniti.json devono elencare gli stessi exchange");
+        for (String[] ex : DatabaseH2.EXCHANGE_NOTI) {
+            DatiPredefinitiRW.ExchangePredef voce = p.exchangePerId(ex[0]);
+            assertNotNull(voce, "manca in RW_Predefiniti.json: " + ex[0]);
+            assertEquals(Principale_GruppiWalletRW.gruppoPreconfigurato(ex[0]), voce.gruppo, ex[0]);
+        }
     }
 
     @Test

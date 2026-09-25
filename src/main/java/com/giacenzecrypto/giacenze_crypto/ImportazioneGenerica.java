@@ -1015,10 +1015,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 
             //Le stesse tre ore di CambioXXXEUR: quella della data e quelle a ±5 minuti, che solo al
             //confine dell'ora diventano distinte.
-            java.util.LinkedHashSet<Long> oreDaCoprire = new java.util.LinkedHashSet<>();
-            oreDaCoprire.add(FunzioniDate.InizioOraRoma(data));
-            oreDaCoprire.add(FunzioniDate.InizioOraRoma(data - 300000L));
-            oreDaCoprire.add(FunzioniDate.InizioOraRoma(data + 300000L));
+            java.util.LinkedHashSet<Long> oreDaCoprire = Prezzi.OreDaCoprire(data);
 
             for (int col : colonneMoneta) {
                 if (col < 0) continue;

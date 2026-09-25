@@ -84,9 +84,9 @@ async function findBestPair(ex, baseSymbol) {
 
 
 // Memoria in processo dei markets gia' letti, per id di exchange. La cache su file qui sotto evita
-// di richiamare l'API, ma non di rileggere e ri-analizzare il JSON a ogni richiesta: quello di
-// binance pesa 36 MB, e in modalita' lotto la stessa lettura si ripeterebbe per ogni (moneta, ora).
-// Vive quanto il processo, quindi nella modalita' a richiesta singola non cambia nulla.
+// di richiamare l'API, ma non di rileggere e ri-analizzare il JSON a ogni richiesta: in modalita'
+// lotto la stessa lettura si ripeterebbe per ogni (moneta, ora). Contiene i markets SNELLI (vedi
+// `snellisciMarkets`). Vive quanto il processo, quindi nella modalita' a richiesta singola non cambia nulla.
 const marketsInMemoria = new Map();
 
 // Tasso di cambio EUR/stablecoin condiviso da TUTTE le monete della stessa finestra, invece di uno
@@ -95,6 +95,47 @@ const marketsInMemoria = new Map();
 // N volte invece di una sola. Chiave `${quoteCcy}|${since}|${until}`, valore l'esito di
 // trovaSerieConversione (anche `null` se nessun exchange l'ha, per non ritentare invano).
 const serieConversioneMemo = new Map();
+
+/**
+ * Consegna a ccxt i markets gia' letti da `getMarketsSymbols`, se l'istanza non li ha ancora.
+ *
+ * Senza, la cache su file serviva solo a `findBestPair`: `fetchOHLCV` di ccxt comincia con
+ * `if (this.markets === undefined) await this.loadMarkets()`, quindi ogni processo riscaricava DA
+ * RETE l'elenco completo delle coppie di ogni exchange da cui prendeva prezzi (0,65-2,5 s ciascuno,
+ * misurato il 2026-09-25), senza lasciare traccia nel log. Una richiesta singola costava cosi'
+ * 3-6 s invece di 1,8-2,7 s, a output identico.
+ *
+ * Va chiamata SOLO subito prima di scaricare, non in `getMarketsSymbols`: `setMarkets` costruisce gli
+ * indici interni di ccxt (~0,1 s per exchange), e farlo su tutti gli exchange scorsi dalla cascata
+ * rallentava la moneta non quotata da nessuno da 1,2 a 2,1 s.
+ */
+function consegnaMarkets(exchange) {
+    if (exchange.markets === undefined && marketsInMemoria.has(exchange.id)) {
+        exchange.setMarkets(marketsInMemoria.get(exchange.id));
+    }
+}
+
+/**
+ * Riduce i markets di ccxt a quelli che servono per i prezzi storici: solo le coppie spot, con `info`
+ * svuotato. `info` e' la risposta grezza dell'exchange (filtri d'ordine, permessi, leva, su Coinbase
+ * perfino prezzo/volume delle 24h e l'icona): pesa dal 30% (bitstamp) all'86% (binance) del file e
+ * nessun `fetchOHLCV` degli 8 exchange lo legge (l'unico uso, okx, e' per le candele "index", mai
+ * chieste qui). Le coppie non spot hanno chiavi di altra forma (`BTC/USDT:USDT`) che `findBestPair`
+ * non cerca mai.
+ *
+ * Misurato il 2026-09-25: 46,6 -> 6,8 MB di file per gli 8 exchange, parse 0,55 -> 0,1 s, memoria di
+ * un processo con tutti gli 8 caricati 526 -> 259 MB. Output identico byte per byte su 15 monete x 8
+ * exchange, e stessa coppia scelta su tutte le 8.582 combinazioni moneta x exchange.
+ * `info` resta presente ma vuoto, per prudenza: cosi' un eventuale accesso `market['info'][...]`
+ * da' `undefined` invece di un'eccezione.
+ */
+function snellisciMarkets(markets) {
+    const snelli = {};
+    for (const k in markets) {
+        if (markets[k] && markets[k].spot) snelli[k] = { ...markets[k], info: {} };
+    }
+    return snelli;
+}
 
 async function getMarketsSymbols(exchange) {
     if (marketsInMemoria.has(exchange.id)) {
@@ -105,27 +146,46 @@ async function getMarketsSymbols(exchange) {
         fs.mkdirSync(tempDir, { recursive: true });
     }
 
-    const marketsFile = path.join(tempDir, `markets_${exchange.id}.json`);
-    const oneHourMs = 1 * 60 * 60 * 6000; // 6 ore
-    let markets;
+    // "v2" = file snelli (vedi `snellisciMarkets`). Il nome cambia perche' un `markets_<id>.json`
+    // intero rimasto da una versione precedente non venga letto e tenuto in memoria per intero; quei
+    // vecchi file non si toccano (stanno nella cartella temporanea e non li legge piu' nessuno).
+    const marketsFile = path.join(tempDir, `markets_v2_${exchange.id}.json`);
+    const seiOreMs = 6 * 60 * 60 * 1000;
+    let markets = null;
 
-    const needReload = () => {
-        if (!fs.existsSync(marketsFile)) return true;
-        const age = Date.now() - fs.statSync(marketsFile).mtimeMs;
-        return age > oneHourMs;
-    };
+    const fileValido = fs.existsSync(marketsFile)
+            && Date.now() - fs.statSync(marketsFile).mtimeMs <= seiOreMs;
+    if (fileValido) {
+        try {
+            markets = JSON.parse(fs.readFileSync(marketsFile, "utf8"));
+        } catch (e) {
+            // file troncato da una corsa interrotta: si riscarica invece di propagare l'errore
+            logInfo(`Markets su file illeggibili (${path.basename(marketsFile)}), riscarico: ${e.message}`);
+        }
+    }
 
-    if (needReload()) {
+    if (markets === null) {
         logInfo(`Ricarico markets da API per ${exchange.id}...`);
-        markets = await exchange.loadMarkets();
-
-        // Rimuove riferimenti circolari e valori non serializzabili
-        const cleanMarkets = JSON.parse(JSON.stringify(markets));
-        fs.writeFileSync(marketsFile, JSON.stringify(cleanMarkets, null, 2), "utf8");
-    } else {
-       // logInfo(`Carico markets da file locale ${marketsFile}`);
-        const raw = fs.readFileSync(marketsFile, "utf8");
-        markets = JSON.parse(raw);
+        // JSON andata e ritorno: rimuove riferimenti circolari e valori non serializzabili, e rende
+        // l'oggetto in memoria identico a quello che le corse successive rileggeranno dal file.
+        // Il download avviene su un'istanza usa e getta, NON su `exchange`: ccxt tiene nell'istanza la
+        // promessa di loadMarkets e con lei i markets interi, e un `setMarkets` successivo non li
+        // libera. Misurato nel processo persistente (--servizio): 535 MB dopo un ricarico contro 233
+        // leggendo il file. Cosi' `exchange` finisce nello stesso stato del ramo che legge il file.
+        const usaEGetta = new exchange.constructor();
+        markets = snellisciMarkets(JSON.parse(JSON.stringify(await usaEGetta.loadMarkets())));
+        // Scrittura su file temporaneo + rename: un processo parallelo (richiesta singola dalla GUI
+        // mentre gira un lotto) non puo' leggere un file scritto a meta'.
+        // Un errore qui (su Windows il rename fallisce se un altro processo ha il file aperto) non deve
+        // far perdere la richiesta: i markets sono gia' in memoria, al massimo la prossima corsa riscarica.
+        const temporaneo = `${marketsFile}.${process.pid}.tmp`;
+        try {
+            fs.writeFileSync(temporaneo, JSON.stringify(markets), "utf8");
+            fs.renameSync(temporaneo, marketsFile);
+        } catch (e) {
+            logInfo(`Markets non scrivibili su file (${path.basename(marketsFile)}): ${e.message}`);
+            try { fs.unlinkSync(temporaneo); } catch (e2) { /* gia' assente */ }
+        }
     }
 
     marketsInMemoria.set(exchange.id, markets);
@@ -247,6 +307,7 @@ async function trovaSerieConversione(ccxtLib, istanze, ordineEsplorazione, quote
         if (!pair) continue;
 
         try {
+            consegnaMarkets(ex);
             const dati = await fetchHistoricalConversione(ex, pair, timeframe, since, until);
             if (dati.length) return { exchangeId: exId, pair, dati };
         } catch (e) {
@@ -338,6 +399,7 @@ async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, sinc
             if (!pairInfo) return [exchange_id, [], null, [], false];
 
             // OHLCV principale (es. BTC/USDT o BTC/EUR, oppure EUR/USDT o USD/USDT se pairInfo.invert)
+            consegnaMarkets(ex);
             const baseDataGrezza = await fetchHistorical(ex, pairInfo.pair, timeframe, since, until);
             // pairInfo.invert: la coppia trovata ha baseSymbol in posizione di QUOTA (es. "EUR/USDT"
             // per baseSymbol="USDT"), quindi il prezzo grezzo è l'inverso di quello che serve — e
@@ -484,7 +546,8 @@ async function cercaPrezziStoriciConEsito(args) {
  *
  * Perche' esiste: il costo fisso di un'invocazione e' ~0,7 s (di cui ~0,56 s il solo
  * `require('ccxt')`, quindici volte l'avvio di Node), e finora si pagava per ogni singola coppia
- * (moneta, ora). Qui si paga una volta per lotto. Gli oggetti exchange sono costruiti una volta e
+ * (moneta, ora). Qui si paga una volta per lotto. Fino al 2026-09-25 a quel costo fisso si sommava,
+ * non misurato, un `loadMarkets()` da rete per ogni exchange usato (vedi `consegnaMarkets`). Gli oggetti exchange sono costruiti una volta e
  * condivisi: oltre a risparmiare la costruzione, e' cio' che rende autorevole il limitatore di ccxt
  * (`enableRateLimit` e' true di default), che vive nell'istanza.
  *
@@ -498,6 +561,9 @@ async function cercaPrezziStoriciConEsito(args) {
  * che interroga sempre tutti gli exchange — usato apposta dal pulsante "Riscarica tutti i prezzi
  * dalle fonti", dove si vuole il confronto completo, non la scorciatoia.
  *
+ * Con `tutti` la cascata si spegne: ogni richiesta interroga tutti gli exchange in parallelo, come il
+ * percorso a richiesta singola. Lo usa "Riscarica tutti i prezzi dalle fonti" (GUI_ModificaPrezzo).
+ *
  * @param richieste array di `{symbol, since, until, istante, exchangePreferito}` (gli ultimi due
  *        opzionali: `istante` assente equivale a "basta che risponda qualcosa", `exchangePreferito`
  *        assente equivale a "Binance")
@@ -508,23 +574,10 @@ async function cercaPrezziStoriciConEsito(args) {
  *          interrogato in questa cascata (mai tutti gli otto, salvo il caso limite in cui nessuno
  *          copra l'istante): solo loro vanno marcati su `PrezziOraCCXT`, non l'intera `exchangeIds`.
  */
-async function cercaPrezziStoriciLotto({ ccxtLib, exchangeIds, timeframe, richieste, concorrenza }) {
-    const istanze = {};
-    for (const id of exchangeIds) {
-        const chiave = id.toLowerCase();
-        if (!ccxtLib[chiave]) continue;
-        // crypto.com dichiara a ccxt un rateLimit di 10 ms (praticamente nessun freno), ma dietro
-        // l'API c'e' Cloudflare: una raffica di richieste sullo stesso IP (misurato: oltre ~5/s
-        // sostenute) fa rispondere una pagina HTML di sfida ("Just a moment...") al posto del JSON,
-        // che ccxt non sa interpretare e rilancia come ExchangeError generico — non e' un timeout e
-        // non e' recuperabile con un retry immediato, il blocco resta attivo per la sessione. A 2
-        // richieste/s (rateLimit 500) il blocco non si e' MAI innescato su 800 richieste di prova,
-        // contro il 71% di fallimenti al rateLimit di default. Il rateLimit va passato nel
-        // COSTRUTTORE: e' li' che ccxt calcola tokenBucket.refillRate, riassegnare la proprieta'
-        // dopo la costruzione non lo aggiorna.
-        const opts = chiave === 'cryptocom' ? { rateLimit: 500 } : {};
-        istanze[chiave] = new ccxtLib[chiave](opts);
-    }
+async function cercaPrezziStoriciLotto({ ccxtLib, exchangeIds, timeframe, richieste, concorrenza, istanze, tutti }) {
+    // `istanze` passate dal chiamante solo in modalita' servizio (vedi `servizio`), che le tiene vive
+    // fra un lotto e l'altro; altrimenti si creano qui, come sempre.
+    istanze = istanze || creaIstanze(ccxtLib, exchangeIds);
 
     const esiti = new Array(richieste.length);
     const inVolo = Math.max(1, Math.min(concorrenza || 4, richieste.length || 1));
@@ -544,7 +597,9 @@ async function cercaPrezziStoriciLotto({ ccxtLib, exchangeIds, timeframe, richie
                     since: r.since,
                     until: r.until,
                     istanze,
-                    cascata: true,
+                    // `tutti`: nessuna cascata, tutti gli exchange in parallelo — e' il pulsante "Riscarica
+                    // tutti i prezzi dalle fonti", che vuole il confronto completo e non la scorciatoia.
+                    cascata: !tutti,
                     exchangePreferito: r.exchangePreferito || '',
                     istanteEsatto: r.istante != null ? r.istante : null,
                 });
@@ -569,6 +624,96 @@ async function cercaPrezziStoriciLotto({ ccxtLib, exchangeIds, timeframe, richie
     return esiti;
 }
 
+/** Un oggetto exchange ccxt per ogni id, condiviso da tutte le richieste di un lotto (o, in modalita'
+ * servizio, di tutti i lotti): e' cio' che rende autorevole il limitatore interno di ccxt. */
+function creaIstanze(ccxtLib, exchangeIds) {
+    const istanze = {};
+    for (const id of exchangeIds) {
+        const chiave = id.toLowerCase();
+        if (!ccxtLib[chiave]) continue;
+        // crypto.com dichiara a ccxt un rateLimit di 10 ms (praticamente nessun freno), ma dietro
+        // l'API c'e' Cloudflare: una raffica di richieste sullo stesso IP (misurato: oltre ~5/s
+        // sostenute) fa rispondere una pagina HTML di sfida ("Just a moment...") al posto del JSON,
+        // che ccxt non sa interpretare e rilancia come ExchangeError generico — non e' un timeout e
+        // non e' recuperabile con un retry immediato, il blocco resta attivo per la sessione. A 2
+        // richieste/s (rateLimit 500) il blocco non si e' MAI innescato su 800 richieste di prova,
+        // contro il 71% di fallimenti al rateLimit di default. Il rateLimit va passato nel
+        // COSTRUTTORE: e' li' che ccxt calcola tokenBucket.refillRate, riassegnare la proprieta'
+        // dopo la costruzione non lo aggiorna.
+        const opts = chiave === 'cryptocom' ? { rateLimit: 500 } : {};
+        istanze[chiave] = new ccxtLib[chiave](opts);
+    }
+    return istanze;
+}
+
+/** Oltre questa eta' le istanze del servizio (e con loro i markets in memoria) si ricreano: e' la
+ * stessa scadenza del file markets in `getMarketsSymbols`, che un processo breve non raggiungeva mai. */
+const DURATA_ISTANZE_SERVIZIO_MS = 6 * 60 * 60 * 1000;
+
+/**
+ * Modalita' servizio: il processo resta vivo e serve un lotto per riga.
+ *
+ * Perche' esiste: anche dopo aver tolto il `loadMarkets()` da rete (vedi `consegnaMarkets`) ogni
+ * invocazione pagava ~1,5 s fissi — `require('ccxt')`, la costruzione delle istanze, la lettura dei
+ * markets — per scaricare magari un'ora sola. Tenuto vivo, una richiesta a caldo costa 0,3-0,4 s
+ * (misurato il 2026-09-25). Lo gestisce `ServizioNodePrezzi.java`, che lo chiude dopo 10 minuti di
+ * inattivita'.
+ *
+ * Protocollo, una riga JSON per messaggio in ciascun verso:
+ *   stdin:  {"id": n, "exchanges": "binance,okx,...", "timeframe": "1m", "richieste": [...], "tutti": false}
+ *           (`richieste` identico al JSON della modalita' --lotto; `tutti` come in `cercaPrezziStoriciLotto`)
+ *   stdout: {"id": n, "esiti": [...]}  oppure  {"id": n, "errore": "..."}
+ * stdout e' riservato alle risposte; i log restano su stderr come nelle altre modalita'.
+ * I messaggi si servono uno alla volta, nell'ordine di arrivo. Chiuso stdin (Java ha chiuso il
+ * servizio, o e' morto) il processo termina: niente processi Node orfani.
+ *
+ * Ogni lotto deve dare lo stesso risultato che avrebbe dato un processo nuovo, quindi:
+ * - `serieConversioneMemo` si svuota a ogni messaggio: memorizza anche i fallimenti (`null`), e in un
+ *   processo lungo un errore di rete momentaneo diventerebbe permanente;
+ * - le istanze si ricreano dopo `DURATA_ISTANZE_SERVIZIO_MS` o se cambia l'elenco di exchange, e con
+ *   loro si svuota `marketsInMemoria`, cosi' il controllo d'eta' del file markets torna a valere.
+ */
+async function servizio(ccxtLib) {
+    const readline = require('readline');
+    const righe = readline.createInterface({ input: process.stdin, crlfDelay: Infinity, terminal: false });
+    let istanze = null;
+    let chiaveIstanze = '';
+    let istanzeCreateIl = 0;
+
+    for await (const riga of righe) {
+        if (!riga.trim()) continue;
+        let id = null;
+        try {
+            const msg = JSON.parse(riga);
+            id = msg.id;
+            const exchangeIds = (msg.exchanges || 'binance').split(',').map(e => e.trim()).filter(e => e);
+            const chiave = exchangeIds.join(',');
+            if (!istanze || chiave !== chiaveIstanze || Date.now() - istanzeCreateIl > DURATA_ISTANZE_SERVIZIO_MS) {
+                marketsInMemoria.clear();
+                istanze = creaIstanze(ccxtLib, exchangeIds);
+                chiaveIstanze = chiave;
+                istanzeCreateIl = Date.now();
+            }
+            serieConversioneMemo.clear();
+            const esiti = await cercaPrezziStoriciLotto({
+                ccxtLib,
+                exchangeIds,
+                timeframe: msg.timeframe || '1m',
+                richieste: msg.richieste || [],
+                concorrenza: msg.concorrenza,
+                istanze,
+                tutti: msg.tutti === true,
+            });
+            process.stdout.write(JSON.stringify({ id, esiti }) + '\n');
+        } catch (err) {
+            const messaggio = (err && err.message) || String(err);
+            logError(`Servizio: messaggio ${id} fallito: ${messaggio}`);
+            process.stdout.write(JSON.stringify({ id, errore: messaggio }) + '\n');
+        }
+    }
+    process.exit(0);
+}
+
 async function main() {
     try {
         const ccxt = require('ccxt');
@@ -585,8 +730,8 @@ async function main() {
         for (let i = 0; i < args.length; i++) {
             if (args[i].startsWith("--")) {
                 const key = args[i].substring(2);
-                if (key === "lotto") {
-                    params.lotto = "true";
+                if (key === "lotto" || key === "servizio" || key === "tutti") {
+                    params[key] = "true";
                     continue;
                 }
                 const value = args[i + 1];
@@ -598,6 +743,12 @@ async function main() {
         const exchanges = params.exchanges ? params.exchanges.split(",").map(e => e.trim()) : ["binance"];
         const baseSymbol = params.symbol || "BTC";
         const timeframe = params.timeframe || "1m";
+
+        //Modalita' servizio: processo persistente, un lotto per riga di stdin (vedi `servizio`).
+        if (params.servizio !== undefined) {
+            await servizio(ccxt);
+            return;
+        }
 
         //Modalita' lotto: le richieste arrivano come JSON su stdin, `[{symbol, since, until}, ...]`.
         //Si passa da stdin e non da un argomento perche' un lotto di migliaia di richieste supererebbe
@@ -611,6 +762,7 @@ async function main() {
                 timeframe,
                 richieste,
                 concorrenza: params.concorrenza ? parseInt(params.concorrenza) : undefined,
+                tutti: params.tutti !== undefined,
             });
             console.log(JSON.stringify(esiti));
             return;

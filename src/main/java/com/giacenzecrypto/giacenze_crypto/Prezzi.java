@@ -1174,12 +1174,9 @@ public class Prezzi {
           String exchangeRichiesto = ExchangeRiconosciuto(Fonte);
 
           //Ore di confine: la ricerca lavora a +-5 minuti, quindi un movimento alle 23:58 puo'
-          //servirsi dell'ora successiva. Si scaricano entrambe quando la finestra le attraversa,
+          //servirsi dell'ora successiva. Si scaricano entrambe quando serve davvero (vedi OreDaCoprire),
           //invece di lasciare un buco sistematico sui movimenti a cavallo.
-          java.util.LinkedHashSet<Long> oreDaCoprire = new java.util.LinkedHashSet<>();
-          oreDaCoprire.add(FunzioniDate.InizioOraRoma(Datalong));
-          oreDaCoprire.add(FunzioniDate.InizioOraRoma(Datalong - 300000L));
-          oreDaCoprire.add(FunzioniDate.InizioOraRoma(Datalong + 300000L));
+          java.util.LinkedHashSet<Long> oreDaCoprire = OreDaCoprire(Datalong);
 
           List<RichiestaPrezzo> daScaricare = new ArrayList<>();
           for (long inizioOra : oreDaCoprire) {
@@ -3374,7 +3371,7 @@ public static void RecuperaGiacenzeDaCCXT(String Exchange,String APIKey,String A
              ProcessBuilder pb = new ProcessBuilder(command);
              
              pb.directory(scriptPath.getParent().toFile());
-             Path nodeModulesPath = CcxtInterop.NODE_DIR.resolve("node_modules").toAbsolutePath();
+             Path nodeModulesPath = CcxtInterop.getNodeDir().resolve("node_modules").toAbsolutePath();
              Map<String, String> env = pb.environment();
              // Aggiungi node_modules a NODE_PATH (se esiste già, concatena)
              String existingNodePath = env.get("NODE_PATH");
@@ -3922,17 +3919,15 @@ public static List<RichiestaPrezzo> FiltraRichiesteGiaCoperte(List<RichiestaPrez
 }
 
 /**
- * Lancia lo script Node {@code Historical_Multi_Eur.js} (tramite CCXT, installato/verificato con
- * {@link CcxtInterop}) per recuperare quotazioni minuto-per-minuto di {@code Symbol} dagli exchange
- * (binance, cryptocom, bybit, okx, coinbase, bitstamp, kucoin, bitget) nella finestra 2h prima / 6h dopo il
- * timestamp indicato, salvandone i risultati in {@code PrezziNew}. Delega a
- * {@link #RecuperaPrezziDaCCXTRange}.
+ * Quotazioni minuto-per-minuto di {@code Symbol} da tutti gli exchange CCXT (binance, cryptocom, bybit,
+ * okx, coinbase, bitstamp, kucoin, bitget) nella finestra ±60 minuti dal timestamp, salvate in
+ * {@code PrezziNew}. Delega a {@link #RecuperaPrezziDaCCXTTutti}; fino al 2026-09-25 la finestra era
+ * 2h prima / 6h dopo e passava da un processo Node suo.
  * @param Symbol simbolo della crypto da quotare
  * @param timestamp data/ora di riferimento in millisecondi epoch
  */
 public static void RecuperaPrezziDaCCXT(String Symbol, long timestamp) {
-    RecuperaPrezziDaCCXTRange(Symbol, timestamp - 7200000, timestamp + 21600000,
-            timestamp - 300000, timestamp + 300000, Symbol.toUpperCase());
+    RecuperaPrezziDaCCXTTutti(List.of(Symbol), timestamp);
 }
 
 /**
@@ -4021,7 +4016,7 @@ static boolean RecuperaPrezziDaCCXTRange(String Symbol, long Since, long Until,
         ProcessBuilder pb = new ProcessBuilder(command);
 
         pb.directory(scriptPath.getParent().toFile());
-        Path nodeModulesPath = CcxtInterop.NODE_DIR.resolve("node_modules").toAbsolutePath();
+        Path nodeModulesPath = CcxtInterop.getNodeDir().resolve("node_modules").toAbsolutePath();
         Map<String, String> env = pb.environment();
         // Aggiungi node_modules a NODE_PATH (se esiste già, concatena)
         String existingNodePath = env.get("NODE_PATH");
@@ -4225,10 +4220,7 @@ static List<RichiestaPrezzo> RaccogliRichiestePerMovimenti(java.util.Collection<
 
         //Le stesse tre ore di CambioXXXEUR: quella della data e quelle a ±5 minuti, che solo al
         //confine dell'ora diventano distinte.
-        java.util.LinkedHashSet<Long> oreDaCoprire = new java.util.LinkedHashSet<>();
-        oreDaCoprire.add(FunzioniDate.InizioOraRoma(data));
-        oreDaCoprire.add(FunzioniDate.InizioOraRoma(data - 300000L));
-        oreDaCoprire.add(FunzioniDate.InizioOraRoma(data + 300000L));
+        java.util.LinkedHashSet<Long> oreDaCoprire = OreDaCoprire(data);
 
         //La rete si ricava come in DammiPrezzoDaTransazione. Il try non e' pro forma: la funzione
         //spacchetta l'ID e qui passano TUTTI i movimenti, anche quelli che la valorizzazione
@@ -4326,10 +4318,7 @@ public static int PreScaricaPrezziMonete(java.util.Collection<Moneta> monete, lo
     //cercano. Senza questi, una data limite produrrebbe richieste che nessuno userà.
     if (data > adessoMs || data < 1483225200000L) return 0;
 
-    java.util.LinkedHashSet<Long> oreDaCoprire = new java.util.LinkedHashSet<>();
-    oreDaCoprire.add(FunzioniDate.InizioOraRoma(data));
-    oreDaCoprire.add(FunzioniDate.InizioOraRoma(data - 300000L));
-    oreDaCoprire.add(FunzioniDate.InizioOraRoma(data + 300000L));
+    java.util.LinkedHashSet<Long> oreDaCoprire = OreDaCoprire(data);
 
     java.util.LinkedHashSet<String> chiavi = new java.util.LinkedHashSet<>();
     List<RichiestaPrezzo> richieste = new ArrayList<>();
@@ -4421,6 +4410,35 @@ public static int ScaricaRichiesteABlocchi(List<RichiestaPrezzo> richieste, Down
         if (progress != null) progress.SetAvanzamento(fatte);
     }
     return fatte;
+}
+
+/**
+ * Le ore (inizio, fuso Europe/Rome) da scaricare perché la ricerca a ±5 minuti da {@code istante}
+ * ({@link #DammiPrezzoDaDatabase}, estremi inclusi) trovi tutte le candele che potrebbe usare: quella
+ * dell'istante, e quella accanto solo se una sua candela a 1 minuto cade davvero entro 5 minuti.
+ *
+ * <p><b>Unica sorgente della regola</b> per {@link #CambioXXXEUR} e per i tre pre-scarichi (movimenti,
+ * giacenze a data, righe di CSV in {@code ImportazioneGenerica}): se divergessero, il pre-scarico
+ * chiederebbe ore diverse da quelle che il consumatore poi cerca.
+ *
+ * <p><b>Le due ore di confine non sono simmetriche.</b> Le candele sono etichettate con l'inizio del
+ * minuto: l'ora successiva comincia con la candela delle hh:00, quindi serve appena {@code istante+5min}
+ * la raggiunge. L'ora precedente invece finisce con la candela delle hh:59, un minuto prima del confine:
+ * serve solo se {@code istante} è entro le hh:04 dell'ora corrente. Fino al 2026-09-25 la regola era
+ * {@code InizioOraRoma(istante - 5min)}, che chiedeva l'ora precedente anche per un movimento fra le
+ * hh:04 e le hh:05 — ora che nessun exchange poteva coprire, e che la cascata dei lotti interrogava
+ * perciò su tutti e otto gli exchange senza fermarsi al primo (osservato su un'importazione OKX: un
+ * movimento alle 23:04 e l'ora 22 chiesta a otto exchange).
+ */
+static java.util.LinkedHashSet<Long> OreDaCoprire(long istante) {
+    final long tolleranza = 300000L;
+    final long minuto = 60000L;
+    java.util.LinkedHashSet<Long> ore = new java.util.LinkedHashSet<>();
+    long ora = FunzioniDate.InizioOraRoma(istante);
+    ore.add(ora);
+    if (istante - (ora - minuto) <= tolleranza) ore.add(FunzioniDate.InizioOraRoma(ora - 1));
+    ore.add(FunzioniDate.InizioOraRoma(istante + tolleranza));
+    return ore;
 }
 
 /** Una richiesta dentro un lotto: quotazioni di {@code simbolo} nella finestra {@code [since, until]}. */
@@ -4528,6 +4546,10 @@ private static String chiaveSessioneOra(String simbolo, String exchangePreferito
  * interrogarne uno (3.633 ms contro 4.068 ms, differenza nel rumore di rete), perché le latenze si
  * sovrappongono e gli oggetti exchange — e quindi il limitatore interno di ccxt — sono condivisi.
  *
+ * <p>Dal 2026-09-25 il lotto passa per {@link ServizioNodePrezzi}, un processo Node che resta vivo fra
+ * un lotto e l'altro (chiuso dopo 10 minuti di inattività): il costo fisso si paga una volta per
+ * sessione invece che per lotto. Il processo dedicato resta come ripiego se il servizio non parte.
+ *
  * <p>Niente {@code sleep(1)} come nel percorso a richiesta singola: lì proteggeva una raffica di
  * processi, qui il processo è uno solo e la cadenza verso ogni exchange la governa ccxt.
  *
@@ -4561,90 +4583,8 @@ static List<EsitoLotto> RecuperaPrezziDaCCXTLotto(List<RichiestaPrezzo> richiest
     if (daChiedere.isEmpty()) return esiti;
 
     try {
-        Path nodePath = CcxtInterop.getNodeExePath();
-        Path scriptPath = Paths.get(VarStatiche.getPathRisorse() + "Scripts/Historical_Multi_Eur.js");
-        CcxtInterop.ensureNodeInstalled();
-        CcxtInterop.installCcxt();
-        if (!Files.exists(nodePath) || !Files.exists(scriptPath)) {
-            System.err.println("Lotto prezzi: node o script non trovati (" + nodePath + " / " + scriptPath + ")");
-            for (RichiestaPrezzo r : daChiedere) {
-                esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, false, java.util.Set.of(), 0, java.util.Set.of()));
-            }
-            return esiti;
-        }
-
-        JsonArray payload = new JsonArray();
-        for (RichiestaPrezzo r : daChiedere) {
-            JsonObject o = new JsonObject();
-            o.addProperty("symbol", r.simbolo);
-            o.addProperty("since", r.since);
-            o.addProperty("until", r.until);
-            o.addProperty("istante", r.istante);
-            if (!r.exchangePreferito.isBlank()) {
-                o.addProperty("exchangePreferito", r.exchangePreferito);
-            }
-            payload.add(o);
-        }
-        final String json = payload.toString();
-
-        List<String> command = new ArrayList<>();
-        command.add(nodePath.toString());
-        command.add(scriptPath.toAbsolutePath().toString());
-        command.add("--lotto");
-        command.add("--exchanges");
-        command.add(exchanges == null || exchanges.isBlank() ? EXCHANGES_CCXT : exchanges);
-        command.add("--timeframe");
-        command.add("1m");
-
-        ProcessBuilder pb = new ProcessBuilder(command);
-        pb.directory(scriptPath.getParent().toFile());
-        Map<String, String> env = pb.environment();
-        String nodeModules = CcxtInterop.NODE_DIR.resolve("node_modules").toAbsolutePath().toString();
-        String existing = env.get("NODE_PATH");
-        env.put("NODE_PATH", existing == null || existing.isEmpty() ? nodeModules
-                : nodeModules + File.pathSeparator + existing);
-
-        System.out.println("Lotto prezzi: " + daChiedere.size() + " richieste in una sola invocazione");
-        Process process = pb.start();
-        AtomicBoolean scaduto = CcxtInterop.avviaWatchdogTimeout(process, CcxtInterop.TIMEOUT_SCRIPT_PREZZI_MINUTI);
-
-        //stdin su un thread a parte: scrivendo l'ingresso e leggendo l'uscita dallo stesso thread si
-        //va in stallo non appena il JSON supera il buffer della pipe (il figlio si blocca scrivendo
-        //l'uscita mentre noi stiamo ancora scrivendo l'ingresso). Con lotti piccoli non si vedrebbe.
-        Thread scrittore = new Thread(() -> {
-            try (java.io.Writer w = new java.io.OutputStreamWriter(process.getOutputStream(),
-                    java.nio.charset.StandardCharsets.UTF_8)) {
-                w.write(json);
-            } catch (IOException ex) {
-                LoggerGC.ScriviErrore(ex);
-            }
-        });
-        scrittore.setDaemon(true);
-        scrittore.start();
-
-        StringBuilder output = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) output.append(line).append("\n");
-            while ((line = errReader.readLine()) != null) System.out.println("[NODE] " + line);
-        }
-        int exitCode = process.waitFor();
-        scrittore.join(5000);
-
-        if (scaduto.get() || exitCode != 0) {
-            System.err.println("Lotto prezzi fallito (exit " + exitCode + (scaduto.get() ? ", timeout" : "") + ")");
-            for (RichiestaPrezzo r : daChiedere) {
-                esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, false, java.util.Set.of(), 0, java.util.Set.of()));
-            }
-            return esiti;
-        }
-
-        if (VarCondivise.LogJsonPrezzi) System.out.println(output.toString());
-
-        JsonElement rootEl = JsonParser.parseString(output.toString());
-        if (!rootEl.isJsonArray()) {
-            System.err.println("Lotto prezzi: output non è un array JSON valido.");
+        JsonElement rootEl = EseguiLottoScript(daChiedere, exchanges, false);
+        if (rootEl == null) {
             for (RichiestaPrezzo r : daChiedere) {
                 esiti.add(new EsitoLotto(r.simbolo, r.since, r.until, false, java.util.Set.of(), 0, java.util.Set.of()));
             }
@@ -4672,30 +4612,7 @@ static List<EsitoLotto> RecuperaPrezziDaCCXTLotto(List<RichiestaPrezzo> richiest
             //con cui e' stata verificata sopra (chiaveSessioneOra) — vedi il suo javadoc.
             String exchangePreferitoEco = o.has("exchangePreferito") ? o.get("exchangePreferito").getAsString() : "";
 
-            int nPunti = 0;
-            //Quali exchange hanno davvero portato dati: la chiave di ogni "prices" e' l'id
-            //dell'exchange. Senza questo elenco il log direbbe solo "sono arrivati N punti", che non
-            //permette di capire ne' da chi arriva il prezzo che finira' nel movimento, ne' quale
-            //exchange e' sistematicamente muto.
-            java.util.TreeSet<String> conDati = new java.util.TreeSet<>();
-            if (o.has("punti") && o.get("punti").isJsonArray()) {
-                JsonArray punti = o.getAsJsonArray("punti");
-                nPunti = punti.size();
-                for (JsonElement pEl : punti) {
-                    if (!pEl.isJsonObject()) continue;
-                    JsonObject pObj = pEl.getAsJsonObject();
-                    if (pObj.has("prices") && pObj.get("prices").isJsonObject()) {
-                        conDati.addAll(pObj.getAsJsonObject("prices").keySet());
-                    }
-                }
-                ScriviPuntiPrezzoInCache(simbolo, punti);
-            }
-            System.out.println("Prezzi CCXT " + simbolo + " " + FunzioniDate.ConvertiDatadaLongAlSecondo(since)
-                    + " -> " + FunzioniDate.ConvertiDatadaLongAlSecondo(until)
-                    + ": " + nPunti + " quotazioni"
-                    + (conDati.isEmpty() ? "" : " da " + String.join(", ", conDati))
-                    + (falliti.isEmpty() ? "" : " | NON hanno risposto: " + String.join(", ", new java.util.TreeSet<>(falliti)))
-                    + (conDati.isEmpty() && falliti.isEmpty() ? " (nessun exchange tratta questa moneta in questo periodo)" : ""));
+            int nPunti = ScriviEsitoInCache(o, simbolo, since, until, falliti);
             managerRichieste.addRange(chiaveSessioneOra(simbolo, exchangePreferitoEco), since, until);
             esiti.add(new EsitoLotto(simbolo, since, until, true, falliti, nPunti, interrogati));
         }
@@ -4708,6 +4625,198 @@ static List<EsitoLotto> RecuperaPrezziDaCCXTLotto(List<RichiestaPrezzo> richiest
         }
         return esiti;
     }
+}
+
+/**
+ * Spedisce un lotto a {@code Historical_Multi_Eur.js}: prima al processo persistente
+ * ({@link ServizioNodePrezzi}), e al processo singolo di sempre solo se il servizio non parte o e'
+ * occupato. Condiviso dal percorso a lotti e da {@link #RecuperaPrezziDaCCXTTutti}.
+ *
+ * @param tutti {@code true} = tutti gli exchange in parallelo, senza cascata (vedi lo script)
+ * @return l'array degli esiti, oppure {@code null} se node/script mancano o il lotto e' fallito
+ */
+private static JsonElement EseguiLottoScript(List<RichiestaPrezzo> richieste, String exchanges, boolean tutti)
+        throws IOException, InterruptedException {
+    Path nodePath = CcxtInterop.getNodeExePath();
+    Path scriptPath = Paths.get(VarStatiche.getPathRisorse() + "Scripts/Historical_Multi_Eur.js");
+    CcxtInterop.ensureNodeInstalled();
+    CcxtInterop.installCcxt();
+    if (!Files.exists(nodePath) || !Files.exists(scriptPath)) {
+        System.err.println("Lotto prezzi: node o script non trovati (" + nodePath + " / " + scriptPath + ")");
+        return null;
+    }
+
+    JsonArray payload = new JsonArray();
+    for (RichiestaPrezzo r : richieste) {
+        JsonObject o = new JsonObject();
+        o.addProperty("symbol", r.simbolo);
+        o.addProperty("since", r.since);
+        o.addProperty("until", r.until);
+        o.addProperty("istante", r.istante);
+        if (!r.exchangePreferito.isBlank()) {
+            o.addProperty("exchangePreferito", r.exchangePreferito);
+        }
+        payload.add(o);
+    }
+    final String exchangesEffettivi = exchanges == null || exchanges.isBlank() ? EXCHANGES_CCXT : exchanges;
+
+    //Prima il processo Node persistente (ServizioNodePrezzi): a caldo un lotto di una sola ora costa
+    //0,3-0,4 s invece di ~1,5 s di solo avvio. Se il servizio non parte si ripiega sul processo
+    //singolo, che e' il comportamento di sempre; se invece parte e il lotto fallisce (timeout,
+    //errore) il lotto e' fallito e basta (null), come quando fallisce il processo singolo.
+    System.out.println("Lotto prezzi: " + richieste.size() + " richieste in una sola invocazione"
+            + (tutti ? " (tutti gli exchange)" : ""));
+    JsonElement rootEl;
+    try {
+        rootEl = ServizioNodePrezzi.Lotto(nodePath, scriptPath, exchangesEffettivi, payload, tutti,
+                TimeUnit.MINUTES.toMillis(CcxtInterop.TIMEOUT_SCRIPT_PREZZI_MINUTI));
+    } catch (ServizioNodePrezzi.NonDisponibile nd) {
+        System.err.println("Servizio prezzi non disponibile (" + nd.getMessage() + "): uso un processo singolo");
+        rootEl = LottoInProcessoSingolo(nodePath, scriptPath, exchangesEffettivi, payload.toString(), tutti);
+    }
+    if (rootEl == null) return null;
+    if (!rootEl.isJsonArray()) {
+        System.err.println("Lotto prezzi: output non è un array JSON valido.");
+        return null;
+    }
+    if (VarCondivise.LogJsonPrezzi) System.out.println(rootEl.toString());
+    return rootEl;
+}
+
+/**
+ * Scrive in {@code PrezziNew} i punti di un esito del lotto e ne stampa il riassunto nel log.
+ * @return quanti punti sono arrivati
+ */
+private static int ScriviEsitoInCache(JsonObject o, String simbolo, long since, long until, java.util.Set<String> falliti) {
+    int nPunti = 0;
+    //Quali exchange hanno davvero portato dati: la chiave di ogni "prices" e' l'id
+    //dell'exchange. Senza questo elenco il log direbbe solo "sono arrivati N punti", che non
+    //permette di capire ne' da chi arriva il prezzo che finira' nel movimento, ne' quale
+    //exchange e' sistematicamente muto.
+    java.util.TreeSet<String> conDati = new java.util.TreeSet<>();
+    if (o.has("punti") && o.get("punti").isJsonArray()) {
+        JsonArray punti = o.getAsJsonArray("punti");
+        nPunti = punti.size();
+        for (JsonElement pEl : punti) {
+            if (!pEl.isJsonObject()) continue;
+            JsonObject pObj = pEl.getAsJsonObject();
+            if (pObj.has("prices") && pObj.get("prices").isJsonObject()) {
+                conDati.addAll(pObj.getAsJsonObject("prices").keySet());
+            }
+        }
+        ScriviPuntiPrezzoInCache(simbolo, punti);
+    }
+    System.out.println("Prezzi CCXT " + simbolo + " " + FunzioniDate.ConvertiDatadaLongAlSecondo(since)
+            + " -> " + FunzioniDate.ConvertiDatadaLongAlSecondo(until)
+            + ": " + nPunti + " quotazioni"
+            + (conDati.isEmpty() ? "" : " da " + String.join(", ", conDati))
+            + (falliti.isEmpty() ? "" : " | NON hanno risposto: " + String.join(", ", new java.util.TreeSet<>(falliti)))
+            + (conDati.isEmpty() && falliti.isEmpty() ? " (nessun exchange tratta questa moneta in questo periodo)" : ""));
+    return nPunti;
+}
+
+/** Ampiezza (per lato) della finestra di {@link #RecuperaPrezziDaCCXTTutti}: la stessa con cui
+ *  {@code GUI_ModificaPrezzo} legge poi la cache ({@link #DammiListaPrezziDaDatabase} a 60 minuti). */
+static final long FINESTRA_RISCARICA_MS = 60L * 60 * 1000;
+
+/**
+ * "Riscarica tutti i prezzi dalle fonti" ({@code GUI_ModificaPrezzo}): quotazioni EUR di
+ * {@code simboli} da <b>tutti</b> gli exchange CCXT in parallelo (niente cascata: qui si vuole il
+ * confronto completo), nella finestra ±60 minuti da {@code timestamp}, scritte in {@code PrezziNew}.
+ *
+ * <p><b>Perche' ±60 minuti.</b> Fino al 2026-09-25 la finestra andava da 2 ore prima a 6 ore dopo: 8
+ * chiamate in fila per exchange da 60 candele, 5,7-8 s per moneta, per prezzi che il dialogo non
+ * mostra mai — la tabella legge solo il prezzo piu' vicino per exchange entro ±60 minuti. Con la
+ * finestra della tabella sono 2 chiamate per exchange.
+ *
+ * <p><b>Tutte le monete in un solo lotto</b>, servite in parallelo dal processo persistente: prima ogni
+ * moneta pagava un processo Node suo (~1,5 s di avvio) e aspettava la precedente.
+ *
+ * <p>Non marca {@code PrezziOraCCXT}: la finestra non e' un'ora intera, e il marcatore promette proprio
+ * quello. Una moneta gia' richiesta in questa sessione attorno allo stesso istante non si richiede
+ * (stessa chiave di sessione, il simbolo, del vecchio {@link #RecuperaPrezziDaCCXTRange}).
+ */
+public static void RecuperaPrezziDaCCXTTutti(java.util.Collection<String> simboli, long timestamp) {
+    if (simboli == null || simboli.isEmpty()) return;
+    long adesso = System.currentTimeMillis();
+    long since = timestamp - FINESTRA_RISCARICA_MS;
+    long until = Math.min(timestamp + FINESTRA_RISCARICA_MS, adesso);
+    if (since > adesso) return;
+    long verificaDa = Math.min(timestamp - 300000L, adesso - 300000L);
+    long verificaA = Math.min(timestamp + 300000L, adesso);
+
+    List<RichiestaPrezzo> richieste = new ArrayList<>();
+    java.util.Set<String> visti = new java.util.HashSet<>();
+    for (String s : simboli) {
+        if (s == null || s.isBlank()) continue;
+        String simbolo = s.toUpperCase();
+        if (!visti.add(simbolo)) continue;
+        if (managerRichieste.isAlreadyRequested(simbolo, verificaDa, verificaA)) continue;
+        richieste.add(new RichiestaPrezzo(simbolo, since, until, timestamp));
+    }
+    if (richieste.isEmpty()) return;
+
+    try {
+        JsonElement rootEl = EseguiLottoScript(richieste, EXCHANGES_CCXT, true);
+        if (rootEl == null) return;
+        for (JsonElement el : rootEl.getAsJsonArray()) {
+            if (!el.isJsonObject()) continue;
+            JsonObject o = el.getAsJsonObject();
+            String simbolo = o.has("symbol") ? o.get("symbol").getAsString() : "";
+            java.util.Set<String> falliti = new java.util.HashSet<>();
+            if (o.has("falliti") && o.get("falliti").isJsonArray()) {
+                for (JsonElement f : o.getAsJsonArray("falliti")) falliti.add(f.getAsString());
+            }
+            ScriviEsitoInCache(o, simbolo, since, until, falliti);
+            managerRichieste.addRange(simbolo, since, until);
+        }
+    } catch (IOException | InterruptedException ex) {
+        LoggerGC.ScriviErrore(ex);
+    }
+}
+
+/**
+ * Il percorso a lotti "di sempre": un processo {@code Historical_Multi_Eur.js --lotto} che nasce, serve
+ * {@code json} e muore. Resta come ripiego quando {@link ServizioNodePrezzi} non riesce a partire.
+ * @return l'output dello script gia' interpretato come JSON, oppure {@code null} se il processo e' fallito
+ */
+private static JsonElement LottoInProcessoSingolo(Path nodePath, Path scriptPath, String exchanges, String json,
+        boolean tutti) throws IOException, InterruptedException {
+    List<String> argomenti = new ArrayList<>(List.of("--lotto", "--exchanges", exchanges, "--timeframe", "1m"));
+    if (tutti) argomenti.add("--tutti");
+    ProcessBuilder pb = ServizioNodePrezzi.ProcessoScript(nodePath, scriptPath, argomenti);
+    Process process = pb.start();
+    AtomicBoolean scaduto = CcxtInterop.avviaWatchdogTimeout(process, CcxtInterop.TIMEOUT_SCRIPT_PREZZI_MINUTI);
+
+    //stdin su un thread a parte: scrivendo l'ingresso e leggendo l'uscita dallo stesso thread si
+    //va in stallo non appena il JSON supera il buffer della pipe (il figlio si blocca scrivendo
+    //l'uscita mentre noi stiamo ancora scrivendo l'ingresso). Con lotti piccoli non si vedrebbe.
+    Thread scrittore = new Thread(() -> {
+        try (java.io.Writer w = new java.io.OutputStreamWriter(process.getOutputStream(),
+                java.nio.charset.StandardCharsets.UTF_8)) {
+            w.write(json);
+        } catch (IOException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    });
+    scrittore.setDaemon(true);
+    scrittore.start();
+
+    StringBuilder output = new StringBuilder();
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+        String line;
+        while ((line = reader.readLine()) != null) output.append(line).append("\n");
+        while ((line = errReader.readLine()) != null) System.out.println("[NODE] " + line);
+    }
+    int exitCode = process.waitFor();
+    scrittore.join(5000);
+
+    if (scaduto.get() || exitCode != 0) {
+        System.err.println("Lotto prezzi fallito (exit " + exitCode + (scaduto.get() ? ", timeout" : "") + ")");
+        return null;
+    }
+    return JsonParser.parseString(output.toString());
 }
 
 public static class InfoPrezzo {

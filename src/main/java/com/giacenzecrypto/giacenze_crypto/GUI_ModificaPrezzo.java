@@ -761,6 +761,19 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
         String rete = Funzioni.TrovaReteDaIMovimento(Movimento);
         if (rete == null || Principale.MappaRetiSupportate.get(rete) == null) rete = "";
 
+        //Gli exchange CCXT si interrogano per tutte le monete in un colpo solo (in parallelo nel processo
+        //Node persistente), poi le altre fonti moneta per moneta come prima.
+        java.util.List<String> simboliCCXT = new java.util.ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            String moneta = (i == 0) ? Movimento[8] : Movimento[11];
+            String tipo = (i == 0) ? Movimento[9] : Movimento[12];
+            String address = rete.isBlank() ? "" : ((i == 0) ? Movimento[26] : Movimento[28]);
+            if (moneta == null || moneta.isBlank() || tipo.equalsIgnoreCase("FIAT")) continue;
+            String monAlias = Principale.Mappa_AddressRete_Nome.get(address + "_" + rete);
+            simboliCCXT.add(monAlias != null ? monAlias : moneta);
+        }
+        Prezzi.RecuperaPrezziDaCCXTTutti(simboliCCXT, data);
+
         for (int i = 0; i < 2; i++) {
             String moneta = (i == 0) ? Movimento[8] : Movimento[11];
             String tipo = (i == 0) ? Movimento[9] : Movimento[12];
@@ -773,7 +786,6 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
                 Prezzi.RecuperaTassidiCambiodaAddress_DefiLlama(FunzioniDate.ConvertiDatadaLong(data), address, rete, moneta);
             }
             ServizioPrezziClient.tentaRecupero(moneta, data);
-            Prezzi.RecuperaPrezziDaCCXT(moneta, data);
             Prezzi.RecuperaPrezziDaCoinMarketCap(moneta, data);
         }
     }
@@ -783,6 +795,17 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
         long data = FunzioniDate.ConvertiDatainLongSecondo(ora);
         Moneta[] M = new Moneta[]{MU != null ? MU : new Moneta(), ME != null ? ME : new Moneta()};
         String rete = (Rete != null && Principale.MappaRetiSupportate.get(Rete) != null) ? Rete : "";
+
+        //Come in scaricaPrezziDaID: exchange CCXT per tutte le monete in una volta, poi le altre fonti.
+        java.util.List<String> simboliCCXT = new java.util.ArrayList<>();
+        for (Moneta m : M) {
+            if (m.Moneta == null || m.Moneta.isBlank() || m.Tipo == null || m.Tipo.equalsIgnoreCase("FIAT")) continue;
+            String address = rete.isBlank() ? "" : m.MonetaAddress;
+            String monAlias = Principale.Mappa_AddressRete_Nome.get(address + "_" + rete);
+            simboliCCXT.add(monAlias != null ? monAlias : m.Moneta);
+        }
+        Prezzi.RecuperaPrezziDaCCXTTutti(simboliCCXT, data);
+
         for (Moneta m : M) {
             if (m.Moneta == null || m.Moneta.isBlank() || m.Tipo == null || m.Tipo.equalsIgnoreCase("FIAT")) continue;
             String address = rete.isBlank() ? "" : m.MonetaAddress;
@@ -794,7 +817,6 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
                 Prezzi.RecuperaTassidiCambiodaAddress_DefiLlama(FunzioniDate.ConvertiDatadaLong(data), address, rete, nomeMoneta);
             }
             ServizioPrezziClient.tentaRecupero(nomeMoneta, data);
-            Prezzi.RecuperaPrezziDaCCXT(nomeMoneta, data);
             Prezzi.RecuperaPrezziDaCoinMarketCap(nomeMoneta, data);
         }
     }

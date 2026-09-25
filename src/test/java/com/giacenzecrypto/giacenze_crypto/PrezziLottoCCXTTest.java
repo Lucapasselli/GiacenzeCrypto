@@ -77,6 +77,9 @@ class PrezziLottoCCXTTest {
 
     @AfterAll
     static void chiude() throws Exception {
+        //Il lotto passa dal processo Node persistente: lo si spegne qui invece di lasciarlo vivo per il
+        //resto della suite (lo chiuderebbe comunque il gancio di uscita della JVM).
+        ServizioNodePrezzi.Chiudi();
         DatabaseH2.connection.close();
         DatabaseH2.connectionPersonale.close();
         DatabaseH2.connectionPrezzi.close();
@@ -104,6 +107,21 @@ class PrezziLottoCCXTTest {
                 "Script dei prezzi non trovato: prova saltata");
     }
 
+    /**
+     * Salta il test se Binance non e' stato raggiunto: lo script non ha risposto affatto, oppure ha
+     * risposto con Binance tra i {@code falliti}. Il secondo caso e' la rete che cade a meta' — osservato
+     * il 2026-09-25, {@code getaddrinfo ENOTFOUND api.binance.com} su due richieste e la terza andata
+     * bene un secondo dopo — e controllare solo {@code risposto} lo faceva diventare un fallimento.
+     * Il costo: un errore vero di Binance lato script apparirebbe come salto, non come fallimento; il log
+     * del test ({@code [PREZZI-ERRORE] ... categoria=}) dice quale dei due e'.
+     */
+    private static void assumeBinanceRaggiunto(List<Prezzi.EsitoLotto> esiti) {
+        Assumptions.assumeTrue(esiti.stream().allMatch(e -> e.risposto),
+                "lo script non ha risposto (rete assente?): prova saltata");
+        Assumptions.assumeTrue(esiti.stream().noneMatch(e -> e.falliti.contains("binance")),
+                "binance non raggiungibile in questo momento (rete?): prova saltata");
+    }
+
     private static long righeInCache(String simbolo) throws Exception {
         try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(
                 "SELECT COUNT(*) FROM PrezziNew WHERE symbol = ?")) {
@@ -127,8 +145,7 @@ class PrezziLottoCCXTTest {
         assertEquals(2, esiti.size(), "un esito per ogni richiesta ricevuta");
         //Se la rete non risponde gli esiti sono tutti non-risposti: e' un ambiente senza connessione,
         //non un difetto del codice, quindi il test si ferma qui invece di fallire.
-        Assumptions.assumeTrue(esiti.stream().allMatch(e -> e.risposto),
-                "lo script non ha risposto (rete assente?): prova saltata");
+        assumeBinanceRaggiunto(esiti);
 
         for (Prezzi.EsitoLotto e : esiti) {
             assertTrue(e.punti > 0, e.simbolo + " deve aver restituito punti");
@@ -145,8 +162,8 @@ class PrezziLottoCCXTTest {
 
         List<Prezzi.RichiestaPrezzo> prima = List.of(new Prezzi.RichiestaPrezzo("SOL", SINCE, UNTIL));
         List<Prezzi.EsitoLotto> uno = Prezzi.RecuperaPrezziDaCCXTLotto(prima, "binance");
-        Assumptions.assumeTrue(uno.size() == 1 && uno.get(0).risposto,
-                "lo script non ha risposto (rete assente?): prova saltata");
+        Assumptions.assumeTrue(uno.size() == 1, "un esito per richiesta");
+        assumeBinanceRaggiunto(uno);
 
         //Seconda richiesta identica: il dedup di sessione la copre, quindi niente processo Node e
         //zero punti nuovi, ma per il chiamante resta "risposta" (i dati sono gia' in cache).
@@ -174,8 +191,8 @@ class PrezziLottoCCXTTest {
 
         List<Prezzi.EsitoLotto> esiti = Prezzi.RecuperaPrezziDaCCXTLotto(
                 List.of(new Prezzi.RichiestaPrezzo("XLM", SINCE, UNTIL)), "binance");
-        Assumptions.assumeTrue(esiti.size() == 1 && esiti.get(0).risposto,
-                "lo script non ha risposto (rete assente?): prova saltata");
+        Assumptions.assumeTrue(esiti.size() == 1, "un esito per richiesta");
+        assumeBinanceRaggiunto(esiti);
 
         //Si marca chi ha risposto, e solo lui: e' la regola che impedisce a un blip di rete di
         //congelare un buco per sempre.

@@ -104,9 +104,22 @@ public class CcxtInterop {
         return null;
     }
 
-    public static final Path NODE_DIR = NODE_ESTERNO != null
-            ? NODE_ESTERNO
-            : Paths.get(VarStatiche.getWorkingDirectory()+"tools", "node").toAbsolutePath().normalize();
+    /**
+     * Cartella di Node: quella fornita dal pacchetto ({@link #NODE_ESTERNO}) oppure
+     * {@code <workdir>/tools/node}.
+     *
+     * <p>Si calcola a ogni chiamata e non e' piu' una costante: fino al 2026-09-25 era un
+     * {@code static final} fissato sulla working directory del momento in cui la classe veniva caricata.
+     * Nell'applicazione e' la stessa cosa (la working directory si imposta all'avvio, prima di qualunque
+     * uso di Node), ma nei test la classe la carica il primo che la tocca, con la sua working directory,
+     * e tutti i successivi cercavano Node li' — {@code PrezziLottoCCXTTest} si saltava sempre nella suite
+     * completa per "Node non installato".
+     */
+    public static Path getNodeDir() {
+        return NODE_ESTERNO != null
+                ? NODE_ESTERNO
+                : Paths.get(VarStatiche.getWorkingDirectory() + "tools", "node").toAbsolutePath().normalize();
+    }
 
     /**
      * Giorni di storico oltre i quali lo scaricamento OKX via API non è più affidabile. Corrisponde a quanto
@@ -441,7 +454,7 @@ public class CcxtInterop {
         String url = "https://nodejs.org/dist/" + NODE_VERSION + "/" + filename;
         
         //Verifico se è presente una specifica versione di node, qualora non lo sia scarico la nuova
-        if (Files.exists(Paths.get(NODE_DIR.toString()+"/node-" + NODE_VERSION + "-" + platform))) {
+        if (Files.exists(Paths.get(getNodeDir().toString()+"/node-" + NODE_VERSION + "-" + platform))) {
            // System.out.println("✅ Node.js già presente");
             return;
         }
@@ -455,8 +468,8 @@ public class CcxtInterop {
         }
 
         System.out.println("Scaricato: " + filename);
-        System.out.println("Node DIR = "+NODE_DIR);
-        extractArchive(downloadPath, NODE_DIR, extension);
+        System.out.println("Node DIR = "+getNodeDir());
+        extractArchive(downloadPath, getNodeDir(), extension);
         System.out.println("Estratto Node.js");
 
         // su Windows, dentro la cartella estratta ci sarà node.exe + npm.cmd
@@ -491,7 +504,7 @@ public class CcxtInterop {
             nodeBaseDir = nodeBaseDir.getParent();
         }      */
 
-    Path nodeModulesDir = NODE_DIR.resolve("node_modules");
+    Path nodeModulesDir = getNodeDir().resolve("node_modules");
     //Path nodeModulesDir = nodeBaseDir.resolve("node_modules").toAbsolutePath();
     Path ccxtDir = nodeModulesDir.resolve("ccxt");
 
@@ -510,7 +523,7 @@ public class CcxtInterop {
             : "Aggiorno ccxt da " + versioneInstallata + " a " + CCXT_VERSION + "...");
     ProcessBuilder builder = new ProcessBuilder(npmPath.toString(), "install", "ccxt@" + CCXT_VERSION);
     System.out.println(VarStatiche.getWorkingDirectory() + "tools/node");
-    builder.directory(NODE_DIR.toFile());
+    builder.directory(getNodeDir().toFile());
     //builder.directory(nodeModulesDir.toFile());
     //builder.directory(new File(Statiche.getWorkingDirectory() + "tools/node"));  // directory di lavoro
     System.out.println("Comando: " + String.join(" ", builder.command()));
@@ -564,8 +577,8 @@ public class CcxtInterop {
      * affidamento, non un problema di permessi.
      */
     private static void isolaConfigNpm(Map<String, String> env) {
-        env.put("npm_config_userconfig", NODE_DIR.resolve("npmrc-vuoto-user.ini").toString());
-        env.put("npm_config_globalconfig", NODE_DIR.resolve("npmrc-vuoto-global.ini").toString());
+        env.put("npm_config_userconfig", getNodeDir().resolve("npmrc-vuoto-user.ini").toString());
+        env.put("npm_config_globalconfig", getNodeDir().resolve("npmrc-vuoto-global.ini").toString());
     }
 
     /**
@@ -704,7 +717,7 @@ public class CcxtInterop {
         Path nodePath = getNodeExePath();
         System.out.println("nodePath="+nodePath);
         
-    Path nodeModulesDir = NODE_DIR.resolve("node_modules");
+    Path nodeModulesDir = getNodeDir().resolve("node_modules");
     //Path nodeModulesDir = nodeBaseDir.resolve("node_modules").toAbsolutePath();
     Path ModuloDir = nodeModulesDir.resolve(Modulo);
 
@@ -720,7 +733,7 @@ public class CcxtInterop {
     System.out.println("Installo "+Modulo+"...");
     ProcessBuilder builder = new ProcessBuilder(npmPath.toString(), "install", Modulo);
     System.out.println(VarStatiche.getWorkingDirectory() + "tools/node");
-    builder.directory(NODE_DIR.toFile());
+    builder.directory(getNodeDir().toFile());
     //builder.directory(nodeModulesDir.toFile());
     //builder.directory(new File(Statiche.getWorkingDirectory() + "tools/node"));  // directory di lavoro
     System.out.println("Comando: " + String.join(" ", builder.command()));
@@ -761,9 +774,9 @@ public class CcxtInterop {
         }
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("win")) {
-            return NODE_DIR.resolve("node-" + NODE_VERSION + "-win-x64").resolve("npm.cmd");
+            return getNodeDir().resolve("node-" + NODE_VERSION + "-win-x64").resolve("npm.cmd");
         } else {
-            return NODE_DIR.resolve("node-" + NODE_VERSION + "-" + (os.contains("mac") ? "darwin-x64" : "linux-x64"))
+            return getNodeDir().resolve("node-" + NODE_VERSION + "-" + (os.contains("mac") ? "darwin-x64" : "linux-x64"))
                            .resolve("bin").resolve("npm");
         }
     }
@@ -782,14 +795,14 @@ public static Path getNodeExePath() {
     String baseName;
     if (os.contains("win")) {
         baseName = "node-" + NODE_VERSION + "-win-x64";
-        return NODE_DIR.resolve(baseName).resolve("node.exe");
+        return getNodeDir().resolve(baseName).resolve("node.exe");
     } else if (os.contains("mac")) {
         baseName = "node-" + NODE_VERSION + "-darwin-x64";
-        return NODE_DIR.resolve(baseName).resolve("bin").resolve("node");
+        return getNodeDir().resolve(baseName).resolve("bin").resolve("node");
     } else {
         // Linux
         baseName = "node-" + NODE_VERSION + "-linux-x64";
-        return NODE_DIR.resolve(baseName).resolve("bin").resolve("node");
+        return getNodeDir().resolve(baseName).resolve("bin").resolve("node");
     }
 }
    
@@ -1094,9 +1107,14 @@ public static Path getNodeExePath() {
      * @param giaProposto se la scelta è già stata proposta almeno una volta
      * @param archivioDaCompletare se restano trimestri da ritirare da un recupero precedente
      */
+    /** L'unico exchange a cui si applica il limite di storico delle API. */
+    static boolean isOKX(String exchangeId) {
+        return exchangeId != null && exchangeId.trim().equalsIgnoreCase("OKX");
+    }
+
     static boolean serveDialogoStoricoOKX(String exchangeId, long startDate, long adesso, boolean giaProposto,
             boolean archivioDaCompletare) {
-        if (exchangeId == null || !exchangeId.trim().equalsIgnoreCase("OKX")) return false;
+        if (!isOKX(exchangeId)) return false;
         long giorni = (adesso - startDate) / (24L * 60 * 60 * 1000);
         return giorni > GIORNI_STORICO_OKX || !giaProposto || archivioDaCompletare;
     }
@@ -1138,6 +1156,9 @@ public static Path getNodeExePath() {
      * @return la scelta dell'utente; {@link SceltaStorico#PROCEDI} anche quando il dialogo non serve
      */
     static EsitoStorico SceltaStoricoOKX(String exchangeId, long startDate, Component c) {
+        //Per gli altri exchange la risposta e' gia' decisa: si esce prima di leggere le opzioni dal
+        //database personale, che per loro non servono (e che nei test puo' non essere aperto).
+        if (!isOKX(exchangeId)) return new EsitoStorico(SceltaStorico.PROCEDI, startDate);
         boolean giaProposto = VALORE_ARCHIVIO_PROPOSTO_OKX.equalsIgnoreCase(
                 DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_ARCHIVIO_PROPOSTO_OKX, ""));
         boolean daCompletare = archivioOKXDaCompletare();
@@ -2917,7 +2938,7 @@ public static Path getNodeExePath() {
         }
 */
         //Path nodeModulesPath = nodeBaseDir.resolve("node_modules").toAbsolutePath();
-        Path nodeModulesPath = NODE_DIR.resolve("node_modules").toAbsolutePath();
+        Path nodeModulesPath = getNodeDir().resolve("node_modules").toAbsolutePath();
         
         Map<String, String> env = builder.environment();
 
@@ -2925,7 +2946,7 @@ public static Path getNodeExePath() {
         String existingNodePath = env.get("NODE_PATH");
         //System.out.println("existingNodePath : "+existingNodePath);
         String newNodePath = nodeModulesPath.toString();
-        //String newNodePath = NODE_DIR.toString();
+        //String newNodePath = getNodeDir().toString();
         //System.out.println("newNodePath : "+newNodePath);
         if (existingNodePath != null && !existingNodePath.isEmpty()) {
             newNodePath += File.pathSeparator + existingNodePath;

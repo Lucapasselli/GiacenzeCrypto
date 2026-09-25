@@ -116,6 +116,30 @@ class PrezziPreScaricoMovimentiTest {
     }
 
     /**
+     * Le due ore di confine non sono simmetriche: l'ora precedente finisce con la candela delle 04:59,
+     * quindi serve solo fino alle 05:04:00 comprese. Fra le 05:04 e le 05:05 la vecchia regola
+     * ({@code InizioOraRoma(istante - 5min)}) la chiedeva lo stesso: nessun exchange poteva coprirla e
+     * la cascata dei lotti la girava su tutti e otto (osservato il 25/09/2026 su un'importazione OKX).
+     */
+    @Test
+    void lOraPrecedenteSiChiedeSoloSeLaSuaUltimaCandelaEEntroCinqueMinuti() {
+        long cinqueEQuattro = FunzioniDate.ConvertiDatainLongMinuto("2022-11-18 05:04");
+        long oraPrecedente = ora("2022-11-18 04:00");
+        long oraCorrente = ora("2022-11-18 05:00");
+
+        assertEquals(Set.of(oraCorrente, oraPrecedente), Prezzi.OreDaCoprire(cinqueEQuattro),
+                "alle 05:04:00 la candela delle 04:59 e' a 5 minuti esatti: l'ora precedente serve");
+        assertEquals(Set.of(oraCorrente), Prezzi.OreDaCoprire(cinqueEQuattro + 1),
+                "un millisecondo dopo la candela delle 04:59 e' oltre i 5 minuti");
+        assertEquals(Set.of(oraCorrente), Prezzi.OreDaCoprire(cinqueEQuattro + 30_000),
+                "alle 05:04:30 l'ora precedente non puo' dare nulla");
+        //Il lato dell'ora successiva era gia' esatto: la sua prima candela e' quella delle 06:00.
+        long cinqueECinquantacinque = FunzioniDate.ConvertiDatainLongMinuto("2022-11-18 05:55");
+        assertEquals(Set.of(oraCorrente, ora("2022-11-18 06:00")), Prezzi.OreDaCoprire(cinqueECinquantacinque));
+        assertEquals(Set.of(oraCorrente), Prezzi.OreDaCoprire(cinqueECinquantacinque - 1));
+    }
+
+    /**
      * L'altra metà della regola, ed è ciò che impedisce alla correzione di triplicare le richieste:
      * lontano dai bordi le tre ore di {@code CambioXXXEUR} coincidono e l'insieme si richiude su una.
      */

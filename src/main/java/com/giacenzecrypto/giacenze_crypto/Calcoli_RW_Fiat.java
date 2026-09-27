@@ -68,9 +68,24 @@ public final class Calcoli_RW_Fiat {
     /** Categoria dei trasferimenti interni allo stesso wallet : niente RW, niente saldo FIAT. */
     static final String CATEGORIA_TRASFERIMENTO_INTERNO = "TI";
 
+    /** Categoria del deposito FIAT : l'unica entrata di valuta che è un apporto di capitale nuovo. */
+    static final String CATEGORIA_DEPOSITO_FIAT = "DF";
+
+    /** Categoria del prelievo FIAT : l'unica uscita di valuta che è un'uscita di capitale dal rapporto. */
+    static final String CATEGORIA_PRELIEVO_FIAT = "PF";
+
     // =======================================================================
     // Indice delle gambe FIAT (una gamba = un lato FIAT di un movimento)
     // =======================================================================
+
+    /**
+     * Natura di una gamba rispetto al rapporto : capitale che entra dall'esterno ({@code APPORTO}),
+     * capitale che esce verso l'esterno ({@code PRELIEVO}), oppure una semplice variazione della
+     * composizione del rapporto ({@code INTERNA} : acquisti e vendite di crypto, commissioni, saldo di
+     * apertura). Decisa all'indicizzazione dalla categoria del movimento o dal tipo del Fiat Wallet,
+     * <b>mai dal segno</b> : una vendita di crypto è un'entrata FIAT ma non è un apporto.
+     */
+    enum NaturaGamba { APPORTO, PRELIEVO, INTERNA }
 
     /** Un lato FIAT di un movimento : giorno ISO, valuta (maiuscolo), importo firmato (uscita &lt; 0), id movimento. */
     private static final class GambaFiat {
@@ -78,12 +93,14 @@ public final class Calcoli_RW_Fiat {
         final String valuta;
         final BigDecimal importo;
         final String id;
+        final NaturaGamba natura;
 
-        GambaFiat(String giorno, String valuta, BigDecimal importo, String id) {
+        GambaFiat(String giorno, String valuta, BigDecimal importo, String id, NaturaGamba natura) {
             this.giorno = giorno;
             this.valuta = valuta;
             this.importo = importo;
             this.id = id;
+            this.natura = natura;
         }
     }
 
@@ -127,8 +144,11 @@ public final class Calcoli_RW_Fiat {
             String giorno = v[1].substring(0, 10);
             String gruppo = DatabaseH2.Pers_GruppoWallet_Leggi(v[3].trim(), true);
             List<GambaFiat> gambe = new ArrayList<>();
-            aggiungiSeFiat(gambe, giorno, v[0], v[8], v[9], v[10], false);
-            aggiungiSeFiat(gambe, giorno, v[0], v[11], v[12], v[13], true);
+            String cat = categoria(v);
+            aggiungiSeFiat(gambe, giorno, v[0], v[8], v[9], v[10], false,
+                    CATEGORIA_PRELIEVO_FIAT.equals(cat) ? NaturaGamba.PRELIEVO : NaturaGamba.INTERNA);
+            aggiungiSeFiat(gambe, giorno, v[0], v[11], v[12], v[13], true,
+                    CATEGORIA_DEPOSITO_FIAT.equals(cat) ? NaturaGamba.APPORTO : NaturaGamba.INTERNA);
             if (!gambe.isEmpty()) {
                 indice.gambe.computeIfAbsent(gruppo, k -> new ArrayList<>()).addAll(gambe);
             }
@@ -181,8 +201,9 @@ public final class Calcoli_RW_Fiat {
         //che nessun dato conferma.
         String[] apertura = CDC_FiatECardWallet.SaldoAperturaFiatWallet();
         if (apertura != null) {
+            //Il saldo di apertura non e' un apporto : e' il capitale che c'era gia' prima del CSV.
             gambe.add(new GambaFiat(apertura[1], "EUR", new BigDecimal(apertura[0]),
-                    apertura[1].replaceAll("[^0-9]", "") + "000000_FW00000"));
+                    apertura[1].replaceAll("[^0-9]", "") + "000000_FW00000", NaturaGamba.INTERNA));
         }
         for (CDC_FiatECardWallet.MovimentoFiatWallet m : esito.movimenti) {
             if (m.importoEUR.signum() == 0) {
@@ -190,7 +211,7 @@ public final class Calcoli_RW_Fiat {
             }
             progressivo++;
             String id = m.istante.replaceAll("[^0-9]", "") + "_FW" + String.format("%05d", progressivo);
-            gambe.add(new GambaFiat(m.giorno, "EUR", m.importoEUR, id));
+            gambe.add(new GambaFiat(m.giorno, "EUR", m.importoEUR, id, naturaTipoFiatWalletCDC(m.tipo)));
         }
         if (!gambe.isEmpty()) {
             indice.gambe.computeIfAbsent(gruppo, k -> new ArrayList<>()).addAll(gambe);
@@ -203,6 +224,26 @@ public final class Calcoli_RW_Fiat {
             indice.avvisa(gruppo, "Fiat Wallet Crypto.com : " + esito.scartatiTipoSconosciuto
                     + " movimenti di tipo sconosciuto non contabilizzati");
         }
+    }
+
+    /**
+     * Natura di un movimento del Fiat Wallet Crypto.com : solo il bonifico in ingresso
+     * ({@code viban_deposit}) è un apporto e solo il bonifico verso il conto corrente
+     * ({@code viban_withdrawal}) è un prelievo. Acquisti e vendite di crypto cambiano la composizione
+     * del rapporto, non il capitale. La ricarica della carta ({@code viban_card_top_up}) resta
+     * interna di proposito : è denaro che passa a un altro prodotto dello stesso intermediario, non
+     * un bonifico verso l'esterno. I tipi personalizzati dall'utente non si possono classificare e
+     * restano interni.
+     */
+    static NaturaGamba naturaTipoFiatWalletCDC(String tipo) {
+        String t = trim(tipo);
+        if ("viban_deposit".equalsIgnoreCase(t)) {
+            return NaturaGamba.APPORTO;
+        }
+        if ("viban_withdrawal".equalsIgnoreCase(t)) {
+            return NaturaGamba.PRELIEVO;
+        }
+        return NaturaGamba.INTERNA;
     }
 
     /**
@@ -226,7 +267,7 @@ public final class Calcoli_RW_Fiat {
     }
 
     private static void aggiungiSeFiat(List<GambaFiat> gambe, String giorno, String id,
-            String simbolo, String tipo, String qta, boolean entrata) {
+            String simbolo, String tipo, String qta, boolean entrata, NaturaGamba natura) {
         if (!gambaFiatValida(tipo, simbolo, qta)) {
             return;
         }
@@ -235,7 +276,7 @@ public final class Calcoli_RW_Fiat {
             return;
         }
         gambe.add(new GambaFiat(giorno, trim(simbolo).toUpperCase(),
-                entrata ? importo : importo.negate(), id));
+                entrata ? importo : importo.negate(), id, natura));
     }
 
     /** Saldo firmato per valuta da una lista di gambe già filtrata per gruppo. */
@@ -406,7 +447,7 @@ public final class Calcoli_RW_Fiat {
     }
 
     /** La prima finestra che copre la data, o {@code null}. */
-    private static Principale_GruppiWalletRW.Finestra finestraCheCopre(
+    static Principale_GruppiWalletRW.Finestra finestraCheCopre(
             List<Principale_GruppiWalletRW.Finestra> finestre, LocalDate data) {
         for (Principale_GruppiWalletRW.Finestra f : finestre) {
             if (f.copre(data)) {
@@ -429,7 +470,7 @@ public final class Calcoli_RW_Fiat {
      * estero) resta il primo della lista ordinata, e senza quel controllo porterebbe le sue modalità e i
      * suoi valori manuali negli anni <i>successivi</i> alla propria chiusura.</p>
      */
-    private static String[] periodoConInizio(List<Principale_GruppiWalletRW.Finestra> finestre,
+    static String[] periodoConInizio(List<Principale_GruppiWalletRW.Finestra> finestre,
             LocalDate data, boolean ammettiAperto) {
         for (Principale_GruppiWalletRW.Finestra f : finestre) {
             if (f.inizio != null && f.inizio.equals(data)) {
@@ -451,7 +492,7 @@ public final class Calcoli_RW_Fiat {
      * aperto <b>che copre quella data</b> (stessa avvertenza : un periodo aperto ma cominciato dopo non
      * deve portare la sua modalità alla fine di un anno precedente).
      */
-    private static String[] periodoConFine(List<Principale_GruppiWalletRW.Finestra> finestre,
+    static String[] periodoConFine(List<Principale_GruppiWalletRW.Finestra> finestre,
             LocalDate data, boolean ammettiAperto) {
         for (Principale_GruppiWalletRW.Finestra f : finestre) {
             if (f.fine != null && f.fine.equals(data)) {
@@ -542,7 +583,12 @@ public final class Calcoli_RW_Fiat {
     public static final int FIAT_COL_STATO_ESTERO = 17;
     /** Codice individuazione bene (colonna 3 del quadro RW) : "1" per il conto corrente, "14" per le altre attività estere. */
     public static final int FIAT_COL_CODICE_BENE = 18;
-    /** Valore medio di giacenza in EUR sull'intero anno di vita del conto (colonna 8 del quadro RW per il conto corrente). "" per gli altri righi. */
+    /**
+     * Valore medio di giacenza in EUR : sul conto corrente la giacenza media annua (somma dei saldi dei giorni
+     * di vita del conto diviso {@value #GIORNI_GIACENZA_MEDIA_ANNUA}, colonna 8 del quadro RW) ; sugli altri righi quello del tratto, solo con l'opzione
+     * {@link #OPZIONE_VALORE_FINALE_MAX_MEDIA} attiva, altrimenti "". Il valore da dichiarare lo
+     * decide {@link #valoreFinaleDichiarato(String[])}.
+     */
     public static final int FIAT_COL_VALORE_MEDIO = 19;
     /** IVAFE dovuta in EUR (misura fissa 34,20 € pro quota/giorni). "0.00" se non dovuta (esenzione ≤ 5.000 €) o rigo non conto corrente. */
     public static final int FIAT_COL_IVAFE = 20;
@@ -616,6 +662,131 @@ public final class Calcoli_RW_Fiat {
 
     /** Default di {@link #OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO} : {@code "NO"}, cioè l'IVAFE si liquida. */
     public static final String LIQUIDITA_SOLO_MONITORAGGIO_DEFAULT = "NO";
+    /**
+     * Opzione utente (in {@code personale.mv.db}) : {@code "SI"} = sui righi di liquidità <b>diversi
+     * dal conto corrente</b> (codice bene {@value #CODICE_BENE_FIAT}) il valore finale dichiarato
+     * (colonna 8 del quadro RW, e base dell'IVAFE ordinaria) è il <b>maggiore</b> fra la giacenza
+     * media giornaliera del tratto e il saldo a fine tratto ; {@code "NO"} (default,
+     * {@link #VALORE_FINALE_MAX_MEDIA_DEFAULT}) = il saldo a fine tratto, come prima.
+     *
+     * <p>La giacenza media è quella del <b>periodo di detenzione</b> : somma dei saldi giornalieri
+     * del tratto divisa per i giorni del tratto ({@link #mediaPeriodo}, dove si spiega perché non la
+     * media annua DSU), con saldo negativo portato a zero e conversione in EUR alla data di fine tratto (la stessa del saldo finale). Il saldo reale resta
+     * in {@code [10]} ; la media va in {@link #FIAT_COL_VALORE_MEDIO} e il valore da dichiarare lo
+     * ricava {@link #valoreFinaleDichiarato(String[])}. Un tratto con valore finale <b>manuale</b>
+     * non è toccato : chi scrive il valore a mano lo fa di solito perché i movimenti sono incompleti,
+     * e una media calcolata da quei movimenti non sarebbe migliore.</p>
+     *
+     * <p>Non tocca i righi conto corrente : lì la colonna 8 porta già la giacenza media annua del
+     * conto ({@link #applicaContoCorrente}).</p>
+     */
+    public static final String OPZIONE_VALORE_FINALE_MAX_MEDIA = "RW_FiatValoreFinaleMaxMedia";
+
+    /** Default di {@link #OPZIONE_VALORE_FINALE_MAX_MEDIA} : {@code "NO"}, cioè il saldo a fine tratto. */
+    public static final String VALORE_FINALE_MAX_MEDIA_DEFAULT = "NO";
+
+    /**
+     * Opzione utente (in {@code personale.mv.db}) : {@code "SI"} = un <b>deposito FIAT</b> (apporto di
+     * capitale nuovo) di controvalore superiore a {@link #OPZIONE_SOGLIA_APPORTI} chiude il rigo di
+     * liquidità il giorno prima dell'apporto e ne apre uno nuovo dal giorno dell'apporto. È la regola
+     * della circolare 12/E dell'8 aprile 2016, § 14.1 : «il momento di avvenuta variazione dovrà essere
+     * considerata come discriminante temporale da cui far discendere un nuovo adempimento
+     * dichiarativo». Default {@code "NO"}.
+     *
+     * <p>Contano <b>solo</b> gli apporti ({@link NaturaGamba#APPORTO} : categoria {@code DF}, bonifico
+     * in ingresso sul Fiat Wallet Crypto.com) : una vendita di crypto porta euro nel rapporto ma ne
+     * cambia soltanto la composizione, e la circolare dice che quelle variazioni non rilevano.</p>
+     *
+     * <p>Non si applica in regime di <b>solo monitoraggio</b> ({@link #liquiditaSoloMonitoraggio()}) :
+     * senza imposta i giorni di detenzione non servono a nulla e spezzare il rigo non cambia niente.
+     * Non si applica ai tratti <b>conto corrente</b> : lì la colonna 8 è la giacenza media annua del
+     * conto ({@link #applicaContoCorrente}) e la circolare stessa rimanda i conti correnti a quella
+     * soluzione, quindi i pezzi sarebbero righi identici.</p>
+     */
+    public static final String OPZIONE_SPEZZA_SU_APPORTI = "RW_FiatSpezzaSuApporti";
+    /** Soglia in EUR di {@link #OPZIONE_SPEZZA_SU_APPORTI} : spezza solo un apporto <b>strettamente</b> maggiore. */
+    public static final String OPZIONE_SOGLIA_APPORTI = "RW_FiatSogliaApporti";
+    /**
+     * Come {@link #OPZIONE_SPEZZA_SU_APPORTI} ma per i <b>prelievi FIAT</b> (categoria {@code PF},
+     * bonifico in uscita dal Fiat Wallet Crypto.com). La circolare 12/E/2016 non lo chiede : il testo
+     * parla solo di apporti. È una libertà in più per chi preferisce la lettura estesa, e va saputo che
+     * spezzare su un prelievo <b>alza</b> la base dell'IVAFE (il valore più alto di prima del prelievo
+     * pesa per i suoi giorni invece di sparire). Default {@code "NO"}.
+     */
+    public static final String OPZIONE_SPEZZA_SU_PRELIEVI = "RW_FiatSpezzaSuPrelievi";
+    /** Soglia in EUR di {@link #OPZIONE_SPEZZA_SU_PRELIEVI} : spezza solo un prelievo <b>strettamente</b> maggiore. */
+    public static final String OPZIONE_SOGLIA_PRELIEVI = "RW_FiatSogliaPrelievi";
+    /** Default delle due opzioni di taglio : disattive. */
+    public static final String SPEZZA_DEFAULT = "NO";
+    /** Default delle due soglie, in EUR. */
+    public static final String SOGLIA_TAGLIO_DEFAULT = "500";
+
+    /**
+     * La soglia di taglio attiva per l'opzione indicata, o {@code null} se il taglio non si applica :
+     * opzione spenta, liquidità in solo monitoraggio, soglia illeggibile. Una soglia vuota vale il
+     * default. Letta a ogni ricalcolo, come le altre opzioni della parte FIAT.
+     */
+    static BigDecimal sogliaTaglio(String opzioneAttiva, String opzioneSoglia) {
+        String attiva = DatabaseH2.Pers_Opzioni_Leggi(opzioneAttiva);
+        if (attiva == null || !attiva.equalsIgnoreCase("SI") || liquiditaSoloMonitoraggio()) {
+            return null;
+        }
+        return leggiSoglia(DatabaseH2.Pers_Opzioni_Leggi(opzioneSoglia));
+    }
+
+    /**
+     * Interpreta una soglia scritta dall'utente : accetta la virgola decimale e il punto delle
+     * migliaia all'italiana ({@code 1.500,50}, e anche {@code 1.500} senza decimali, che altrimenti
+     * varrebbe 1,5) ; un punto che non separa gruppi di tre cifre resta il separatore decimale
+     * ({@code 500.5}) ; vuoto = {@link #SOGLIA_TAGLIO_DEFAULT} ; {@code null} se non numerica o negativa.
+     */
+    public static BigDecimal leggiSoglia(String testo) {
+        String t = trim(testo);
+        if (t.isEmpty()) {
+            t = SOGLIA_TAGLIO_DEFAULT;
+        }
+        if (t.contains(",")) {
+            t = t.replace(".", "").replace(",", ".");
+        } else if (t.matches("\\d{1,3}(\\.\\d{3})+")) {
+            t = t.replace(".", "");
+        }
+        try {
+            BigDecimal b = new BigDecimal(t);
+            return b.signum() < 0 ? null : b;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /** {@code true} se l'utente ha scelto il massimo fra giacenza media e saldo finale (letta a ogni ricalcolo). */
+    static boolean valoreFinaleMaxMedia() {
+        String v = DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_VALORE_FINALE_MAX_MEDIA);
+        return v != null && v.equalsIgnoreCase("SI");
+    }
+
+    /**
+     * Il valore da riportare come "valore finale" (colonna 8 del quadro RW / W) per un rigo della
+     * mappa FIAT : sul conto corrente la giacenza media ; sugli altri righi il maggiore fra giacenza
+     * media e saldo finale se la media è valorizzata (opzione {@link #OPZIONE_VALORE_FINALE_MAX_MEDIA}),
+     * altrimenti il saldo finale {@code [10]}. Unico punto in cui si decide : la tabella di sintesi e
+     * le stampe lo leggono da qui.
+     */
+    public static String valoreFinaleDichiarato(String[] d) {
+        String saldo = d[10];
+        String media = d.length > FIAT_COL_VALORE_MEDIO ? d[FIAT_COL_VALORE_MEDIO] : null;
+        if (media == null || media.isBlank()) {
+            return saldo;
+        }
+        if (CODICE_BENE_CONTO_CORRENTE.equals(d[FIAT_COL_CODICE_BENE])) {
+            return media;
+        }
+        try {
+            return new BigDecimal(media).compareTo(new BigDecimal(saldo)) > 0 ? media : saldo;
+        } catch (RuntimeException e) {
+            return saldo;
+        }
+    }
+
     /** Sotto (o pari a) questo valore massimo non c'è nemmeno obbligo di monitoraggio (rigo comunque prodotto, con avviso). */
     static final BigDecimal SOGLIA_MONITORAGGIO_CONTO = new BigDecimal("15000");
 
@@ -674,6 +845,10 @@ public final class Calcoli_RW_Fiat {
      * cade nell'anno (apertura infra-anno). Un valore negativo è portato a zero con un avviso ; un
      * tratto con valore iniziale e finale <i>genuinamente</i> nulli non produce rigo.</p>
      *
+     * <p>Con le opzioni {@link #OPZIONE_SPEZZA_SU_APPORTI} / {@link #OPZIONE_SPEZZA_SU_PRELIEVI} un
+     * tratto non conto corrente si spezza ulteriormente a ogni deposito / prelievo FIAT sopra soglia
+     * ({@link #tagliApportiPrelievi}), un rigo per pezzo.</p>
+     *
      * @param anno anno di riferimento, formato {@code yyyy}
      */
     public static void generaRighiFiat(String anno) {
@@ -689,6 +864,8 @@ public final class Calcoli_RW_Fiat {
 
         IndiceFiat indice = indicizzaGambeFiat();
         Map<String, String> primoMovXGruppo = Funzioni.MappaPrimoMovimentoXGruppoWallet();
+        BigDecimal sogliaApporti = sogliaTaglio(OPZIONE_SPEZZA_SU_APPORTI, OPZIONE_SOGLIA_APPORTI);
+        BigDecimal sogliaPrelievi = sogliaTaglio(OPZIONE_SPEZZA_SU_PRELIEVI, OPZIONE_SOGLIA_PRELIEVI);
 
         for (Map.Entry<String, List<GambaFiat>> voce : indice.gambe.entrySet()) {
             String gruppo = voce.getKey();
@@ -724,38 +901,24 @@ public final class Calcoli_RW_Fiat {
                     continue; // tratto svuotato dallo spostamento dell'apertura
                 }
 
-                List<String> avvisi = new ArrayList<>(avvisiGruppo);
-                BigDecimal valIni = valoreIniziale(gambe, iv, di, aperturaInfraAnno, cambio, avvisi);
-                BigDecimal valFin = valoreFinale(gambe, iv, df, cambio, avvisi);
-
                 boolean contoCorrente = Principale_GruppiWalletRW.CONTO_CORRENTE_SI.equals(trim(iv[IV_E_CONTO_CORRENTE]));
-                boolean negativo = valIni.signum() < 0 || valFin.signum() < 0;
-                // Salto il tratto solo se i due estremi sono GENUINAMENTE nulli (punto 14) : un saldo
-                // negativo viene invece portato a zero ma il rigo resta, con l'avviso.
-                // Eccezione : per un vero conto corrente estero la misura che conta e' la giacenza
-                // MEDIA sull'anno di vita, non i due estremi : un conto aperto e svuotato dentro l'anno
-                // ha entrambi gli estremi a zero ma puo' comunque dovere l'IVAFE. Il rigo passa e ci
-                // pensa applicaContoCorrente() a decidere media, massimo e imposta.
-                if (!negativo && valIni.signum() == 0 && valFin.signum() == 0 && !contoCorrente) {
-                    continue;
-                }
-                if (negativo) {
-                    if (valIni.signum() < 0) {
-                        valIni = BigDecimal.ZERO;
+                // Apporti / prelievi sopra soglia (opzioni RW_FiatSpezzaSu*) : il tratto si spezza in
+                // pezzi, ognuno col suo rigo. Mai sul conto corrente (vedi OPZIONE_SPEZZA_SU_APPORTI).
+                List<Taglio> tagli = contoCorrente ? new ArrayList<>()
+                        : tagliApportiPrelievi(gambe, di, df, sogliaApporti, sogliaPrelievi, cambio);
+                LocalDate pezzoInizio = di;
+                for (int k = 0; k <= tagli.size(); k++) {
+                    boolean primo = k == 0;
+                    boolean ultimo = k == tagli.size();
+                    Taglio tIni = primo ? null : tagli.get(k - 1);
+                    Taglio tFin = ultimo ? null : tagli.get(k);
+                    LocalDate pezzoFine = ultimo ? df : tFin.giorno.minusDays(1);
+                    generaRigoPezzo(anno, gruppo, gambe, iv, pezzoInizio, pezzoFine, tIni, tFin,
+                            primo && aperturaInfraAnno, contoCorrente, avvisiGruppo, cambio,
+                            righe, avvisiRighe, rangeCC, idxCC);
+                    if (!ultimo) {
+                        pezzoInizio = tFin.giorno;
                     }
-                    if (valFin.signum() < 0) {
-                        valFin = BigDecimal.ZERO;
-                    }
-                    avvisi.add("saldo FIAT negativo nel periodo, valorizzato a zero");
-                }
-
-                int giorni = FunzioniDate.DifferenzaDate(di.toString(), df.toString()) + 1;
-                righe.add(rigaFiat(anno, gruppo, di, df, valIni, valFin, giorni,
-                        trim(iv[IV_STATO]), etichettaValute(gambe, df), avvisi, contoCorrente));
-                avvisiRighe.add(avvisi);
-                if (contoCorrente) {
-                    idxCC.add(righe.size() - 1);
-                    rangeCC.add(new int[] {(int) di.toEpochDay(), (int) df.toEpochDay()});
                 }
             }
             // Fase conto corrente estero : valore medio / massimo sull'anno di vita del conto, IVAFE fissa.
@@ -766,7 +929,162 @@ public final class Calcoli_RW_Fiat {
         }
     }
 
+    /**
+     * Un taglio di un tratto per apporto o prelievo di capitale : {@code giorno} è il primo giorno
+     * del pezzo che comincia, {@code posizione} l'indice della gamba nella lista ordinata del gruppo.
+     */
+    private static final class Taglio {
+        final LocalDate giorno;
+        final int posizione;
+        final GambaFiat gamba;
+        final BigDecimal eur;
+
+        Taglio(LocalDate giorno, int posizione, GambaFiat gamba, BigDecimal eur) {
+            this.giorno = giorno;
+            this.posizione = posizione;
+            this.gamba = gamba;
+            this.eur = eur;
+        }
+
+        /** Testo per gli avvisi del rigo : "un apporto di capitale di 1000.00 EUR del 2024-06-10". */
+        String descrizione() {
+            return (gamba.natura == NaturaGamba.APPORTO ? "un apporto di capitale" : "un prelievo") + " di "
+                    + eur.setScale(2, RoundingMode.HALF_UP).toPlainString() + " EUR del " + giorno;
+        }
+
+        String fonte() {
+            return gamba.natura == NaturaGamba.APPORTO ? "circ. 12/E/2016 par. 14.1" : "opzione sui prelievi";
+        }
+    }
+
+    /**
+     * I tagli di un tratto {@code [di, df]} : un apporto ({@code sogliaApporti != null}) o un prelievo
+     * ({@code sogliaPrelievi != null}) il cui controvalore in EUR alla sua data supera
+     * <b>strettamente</b> la soglia. Il taglio cade sul giorno della gamba : il pezzo precedente finisce
+     * il giorno prima, il successivo comincia quel giorno (stessa convenzione dei periodi CRYPTO). Una
+     * gamba nel <b>primo</b> giorno del tratto non taglia nulla (il pezzo precedente sarebbe vuoto), e
+     * in una giornata si taglia una volta sola, sulla prima gamba che supera la soglia : gli altri
+     * movimenti di quel giorno finiscono nel pezzo nuovo.
+     */
+    private static List<Taglio> tagliApportiPrelievi(List<GambaFiat> gambe, LocalDate di, LocalDate df,
+            BigDecimal sogliaApporti, BigDecimal sogliaPrelievi, ControvaloreEUR cambio) {
+        List<Taglio> tagli = new ArrayList<>();
+        if (sogliaApporti == null && sogliaPrelievi == null) {
+            return tagli;
+        }
+        String da = di.toString();
+        String a = df.toString();
+        for (int i = 0; i < gambe.size(); i++) {
+            GambaFiat g = gambe.get(i);
+            if (g.giorno.compareTo(da) <= 0 || g.giorno.compareTo(a) > 0) {
+                continue;
+            }
+            BigDecimal soglia = g.natura == NaturaGamba.APPORTO ? sogliaApporti
+                    : g.natura == NaturaGamba.PRELIEVO ? sogliaPrelievi : null;
+            if (soglia == null) {
+                continue;
+            }
+            // Una valuta non convertibile non taglia : l'avviso lo porta gia' il saldo del rigo.
+            BigDecimal eur = cambio.eur(g.valuta, g.importo.abs(), g.giorno);
+            if (eur == null || eur.compareTo(soglia) <= 0) {
+                continue;
+            }
+            LocalDate giorno = parseData(g.giorno);
+            if (giorno == null || (!tagli.isEmpty() && tagli.get(tagli.size() - 1).giorno.equals(giorno))) {
+                continue;
+            }
+            tagli.add(new Taglio(giorno, i, g, eur));
+        }
+        return tagli;
+    }
+
+    /**
+     * Il rigo di un pezzo di tratto {@code [di, df]}. Senza tagli il pezzo è il tratto intero e questo
+     * metodo fa esattamente quello che faceva il corpo del ciclo di {@link #generaRighiFiat} prima delle
+     * opzioni di taglio.
+     *
+     * <p>Sui bordi <b>interni</b> ({@code tIni} / {@code tFin} non nulli) i valori non vengono dalle
+     * modalità del periodo né dai valori manuali, che descrivono i bordi del tratto : il valore finale è
+     * il saldo immediatamente <b>prima</b> della gamba del taglio, quello iniziale del pezzo successivo
+     * il saldo immediatamente <b>dopo</b> (circ. 12/E/2016 § 14.1, punti 1 e 2). Entrambi si leggono per
+     * posizione nella lista ordinata, quindi comprendono i movimenti dello stesso giorno venuti prima.</p>
+     */
+    private static void generaRigoPezzo(String anno, String gruppo, List<GambaFiat> gambe, String[] iv,
+            LocalDate di, LocalDate df, Taglio tIni, Taglio tFin, boolean aperturaInfraAnno,
+            boolean contoCorrente, List<String> avvisiGruppo, ControvaloreEUR cambio,
+            List<String[]> righe, List<List<String>> avvisiRighe, List<int[]> rangeCC, List<Integer> idxCC) {
+        List<String> avvisi = new ArrayList<>(avvisiGruppo);
+        if (tIni != null) {
+            avvisi.add("periodo aperto da " + tIni.descrizione() + " (" + tIni.fonte() + ")");
+        }
+        if (tFin != null) {
+            avvisi.add("periodo chiuso il giorno prima di " + tFin.descrizione() + " (" + tFin.fonte() + ")");
+        }
+        BigDecimal valIni = tIni != null
+                ? saldoEURFinoA(gambe, tIni.posizione + 1, tIni.giorno.toString(), cambio, avvisi)
+                : valoreIniziale(gambe, iv, di, aperturaInfraAnno, cambio, avvisi);
+        BigDecimal valFin = tFin != null
+                ? saldoEURFinoA(gambe, tFin.posizione, tFin.giorno.toString(), cambio, avvisi)
+                : valoreFinale(gambe, iv, df, cambio, avvisi);
+
+        boolean negativo = valIni.signum() < 0 || valFin.signum() < 0;
+        // Opzione "massimo fra giacenza media e saldo finale" (solo righi non conto corrente,
+        // e mai su un valore finale scritto a mano) : la media va calcolata PRIMA del salto
+        // degli estremi nulli, perche' un tratto aperto e svuotato nell'anno ha i due estremi a
+        // zero ma una media positiva, e con l'opzione attiva quel rigo va dichiarato. Il valore
+        // manuale riguarda solo il pezzo che finisce sul bordo del tratto.
+        BigDecimal media = null;
+        if (!contoCorrente && valoreFinaleMaxMedia()
+                && (tFin != null || importoONull(iv[IV_VAL_FINALE_MAN]) == null)) {
+            media = mediaPeriodo(gambe, di, df, df.toString(), cambio, avvisi);
+        }
+        // Salto il tratto solo se i due estremi sono GENUINAMENTE nulli (punto 14) : un saldo
+        // negativo viene invece portato a zero ma il rigo resta, con l'avviso.
+        // Eccezione : per un vero conto corrente estero la misura che conta e' la giacenza
+        // MEDIA sull'anno di vita, non i due estremi : un conto aperto e svuotato dentro l'anno
+        // ha entrambi gli estremi a zero ma puo' comunque dovere l'IVAFE. Il rigo passa e ci
+        // pensa applicaContoCorrente() a decidere media, massimo e imposta.
+        if (!negativo && valIni.signum() == 0 && valFin.signum() == 0 && !contoCorrente
+                && (media == null || media.signum() == 0)) {
+            return;
+        }
+        if (negativo) {
+            if (valIni.signum() < 0) {
+                valIni = BigDecimal.ZERO;
+            }
+            if (valFin.signum() < 0) {
+                valFin = BigDecimal.ZERO;
+            }
+            avvisi.add("saldo FIAT negativo nel periodo, valorizzato a zero");
+        }
+
+        int giorni = FunzioniDate.DifferenzaDate(di.toString(), df.toString()) + 1;
+        righe.add(rigaFiat(anno, gruppo, di, df, valIni, valFin, media, giorni,
+                trim(iv[IV_STATO]), etichettaValute(gambe, df), avvisi, contoCorrente));
+        avvisiRighe.add(avvisi);
+        if (contoCorrente) {
+            idxCC.add(righe.size() - 1);
+            rangeCC.add(new int[] {(int) di.toEpochDay(), (int) df.toEpochDay()});
+        }
+    }
+
     // --- valore iniziale / finale di un tratto ---------------------------
+
+    /** Controvalore in EUR del saldo delle prime {@code n} gambe della lista ordinata (saldo a un istante, non a una giornata). */
+    private static BigDecimal saldoEURFinoA(List<GambaFiat> gambe, int n, String dataCambioIso,
+            ControvaloreEUR cambio, List<String> avvisi) {
+        Map<String, BigDecimal> saldi = new TreeMap<>();
+        for (int i = 0; i < n && i < gambe.size(); i++) {
+            saldi.merge(gambe.get(i).valuta, gambe.get(i).importo, BigDecimal::add);
+        }
+        BigDecimal tot = BigDecimal.ZERO;
+        for (Map.Entry<String, BigDecimal> e : saldi.entrySet()) {
+            if (e.getValue().signum() != 0) {
+                tot = tot.add(converti(e.getKey(), e.getValue(), dataCambioIso, cambio, avvisi));
+            }
+        }
+        return tot;
+    }
 
     private static BigDecimal valoreIniziale(List<GambaFiat> gambe, String[] iv, LocalDate di,
             boolean aperturaInfraAnno, ControvaloreEUR cambio, List<String> avvisi) {
@@ -863,8 +1181,17 @@ public final class Calcoli_RW_Fiat {
     // --- costruzione del rigo -------------------------------------------
 
     private static String[] rigaFiat(String anno, String gruppo, LocalDate di, LocalDate df,
-            BigDecimal valIni, BigDecimal valFin, int giorni, String statoEstero, String etichettaValute,
-            List<String> avvisi, boolean contoCorrente) {
+            BigDecimal valIni, BigDecimal valFin, BigDecimal media, int giorni, String statoEstero,
+            String etichettaValute, List<String> avvisi, boolean contoCorrente) {
+        // Valore da dichiarare in colonna 8 e base dell'IVAFE : il saldo finale, oppure la giacenza
+        // media del tratto se l'opzione e' attiva e la media e' maggiore. [10] resta il saldo reale.
+        BigDecimal valDichiarato = valFin;
+        if (media != null && media.compareTo(valFin) > 0) {
+            valDichiarato = media;
+            avvisi.add("valore finale = giacenza media del periodo " + media.toPlainString()
+                    + " EUR, maggiore del saldo a fine periodo "
+                    + valFin.setScale(2, RoundingMode.HALF_UP).toPlainString() + " EUR");
+        }
         String[] r = new String[FIAT_COLONNE];
         Arrays.fill(r, "");
         r[0] = anno;
@@ -888,7 +1215,7 @@ public final class Calcoli_RW_Fiat {
         // Altra attività estera di natura finanziaria. applicaContoCorrente() riscrive queste
         // colonne sui tratti con EContoCorrente = SI (codice bene 1, imposta in misura fissa).
         r[FIAT_COL_CODICE_BENE] = CODICE_BENE_FIAT;
-        r[FIAT_COL_VALORE_MEDIO] = "";
+        r[FIAT_COL_VALORE_MEDIO] = media == null ? "" : media.toPlainString();
         r[FIAT_COL_VALORE_MASSIMO] = "";
         int annoNum = Integer.parseInt(anno);
         int giorniAnno = Year.of(annoNum).length();
@@ -899,13 +1226,13 @@ public final class Calcoli_RW_Fiat {
         // qui l'aliquota ordinaria lascerebbe in coda un avviso smentito subito dopo.
         BigDecimal ivafe = contoCorrente || liquiditaSoloMonitoraggio()
                 ? BigDecimal.ZERO
-                : ivafeLiquidita(valFin, giorni, giorniAnno, aliquota);
+                : ivafeLiquidita(valDichiarato, giorni, giorniAnno, aliquota);
         if (ivafe.signum() > 0) {
             r[FIAT_COL_IVAFE] = ivafe.toPlainString();
             r[FIAT_COL_SOLO_MONITORAGGIO] = "NO";
             avvisi.add("liquidità : IVAFE " + ivafe.toPlainString() + " EUR ("
                     + (privilegiata ? "0,40 %" : "0,20 %") + " di "
-                    + valFin.setScale(2, RoundingMode.HALF_UP).toPlainString() + " x " + giorni + "/"
+                    + valDichiarato.setScale(2, RoundingMode.HALF_UP).toPlainString() + " x " + giorni + "/"
                     + giorniAnno + ")");
             if (privilegiata) {
                 // La barratura della colonna 21 non è riproducibile sul modulo stampato : senza
@@ -961,17 +1288,31 @@ public final class Calcoli_RW_Fiat {
     }
 
     /**
+     * Divisore della giacenza media annua del <b>conto corrente</b> : sempre 365, qualunque sia il numero
+     * di giorni in cui il conto è rimasto aperto nell'anno, e anche nel bisestile. È la definizione
+     * ufficiale dell'Agenzia delle entrate, provvedimento n. 73782 del 28 maggio 2015, punto 3.1 : «Il
+     * calcolo della giacenza media annua si determina dividendo la somma delle giacenze giornaliere per
+     * 365, indipendentemente dal numero di giorni in cui il deposito/conto risulta attivo» ; coerente con
+     * la circolare 28/E/2012 § 2.4.1, per cui ai fini della soglia di 5.000 € rileva il «valore medio di
+     * giacenza annuo […] a nulla rilevando il periodo di detenzione del rapporto». Qui non conta i giorni
+     * due volte : l'IVAFE del conto corrente è fissa e i giorni la prorata da soli, la media decide solo
+     * colonna 8 e soglia. Fino al 2026-09-27 il divisore era il numero di giorni di vita del conto.
+     *
+     * <p>Da <b>non</b> usare per la liquidità codice 14 : lì la media diventa la base di un'imposta
+     * proporzionale già rapportata ai giorni (vedi {@link #mediaPeriodo}).</p>
+     */
+    static final int GIORNI_GIACENZA_MEDIA_ANNUA = 365;
+
+    /**
      * Fase <b>conto corrente estero</b>. Per un gruppo con almeno un tratto {@code EContoCorrente = SI}
      * nell'anno : calcola il <b>valore medio</b> e il <b>valore massimo</b> (EUR) della giacenza
-     * sull'intero periodo di vita del conto nell'anno, poi riscrive i righi conto corrente con codice
+     * sui giorni di vita del conto nell'anno (media divisa per {@value #GIORNI_GIACENZA_MEDIA_ANNUA}), poi riscrive i righi conto corrente con codice
      * individuazione bene {@value #CODICE_BENE_CONTO_CORRENTE}, la giacenza media in
      * {@link #FIAT_COL_VALORE_MEDIO} e — se dovuta — l'IVAFE in {@link #FIAT_COL_IVAFE}.
      *
      * <p>IVAFE in <b>misura fissa</b> {@link #IVAFE_CONTO_CORRENTE_FISSA} € rapportata alla quota
      * (100 %) e al periodo di possesso ({@code giorni tratto / giorni dell'anno}). Non dovuta se il
-     * valore medio ≤ {@link #SOGLIA_ESENZIONE_IVAFE} € : la soglia si confronta col valore medio del
-     * conto <b>sulla sua vita</b> (i giorni prorata solo l'imposta, non la soglia — è la lettura
-     * dell'esempio delle istruzioni Redditi PF 2026). La verifica è sul <b>singolo gruppo wallet</b> :
+     * valore medio ≤ {@link #SOGLIA_ESENZIONE_IVAFE} € (verifica sul <b>singolo gruppo wallet</b>) :
      * il programma non gestisce due conti presso lo stesso intermediario. Se non dovuta ma il valore
      * massimo &gt; {@link #SOGLIA_MONITORAGGIO_CONTO} € resta l'obbligo di monitoraggio ; sotto quella
      * soglia il rigo è prodotto comunque, con avviso.</p>
@@ -1000,42 +1341,10 @@ public final class Calcoli_RW_Fiat {
         String dataCambio = ultimoGiorno.toString();
 
         List<String> avvisiComuni = new ArrayList<>();
-        Map<String, BigDecimal> tasso = new HashMap<>();
-        List<GambaFiat> ordinate = new ArrayList<>(gambe);
-        ordinate.sort(Comparator.comparing(g -> g.giorno));
-
-        int gi = 0;
-        Map<String, BigDecimal> saldo = new HashMap<>();
-        BigDecimal somma = BigDecimal.ZERO;
-        BigDecimal massimo = BigDecimal.ZERO;
-        int n = 0;
-        for (LocalDate g : giorniVita) {
-            String gs = g.toString();
-            while (gi < ordinate.size() && ordinate.get(gi).giorno.compareTo(gs) <= 0) {
-                GambaFiat gf = ordinate.get(gi++);
-                saldo.merge(gf.valuta, gf.importo, BigDecimal::add);
-            }
-            BigDecimal totGiorno = BigDecimal.ZERO;
-            for (Map.Entry<String, BigDecimal> e : saldo.entrySet()) {
-                if (e.getValue().signum() == 0) {
-                    continue;
-                }
-                BigDecimal t = tasso.computeIfAbsent(e.getKey(), v -> tassoEUR(v, dataCambio, cambio, avvisiComuni));
-                totGiorno = totGiorno.add(t.multiply(e.getValue()));
-            }
-            if (totGiorno.signum() < 0) {
-                totGiorno = BigDecimal.ZERO; // conto in rosso : 0 ai fini della giacenza
-            }
-            somma = somma.add(totGiorno);
-            if (totGiorno.compareTo(massimo) > 0) {
-                massimo = totGiorno;
-            }
-            n++;
-        }
-        BigDecimal valoreMedio = n > 0
-                ? somma.divide(BigDecimal.valueOf(n), 2, RoundingMode.HALF_UP)
-                : BigDecimal.ZERO;
-        massimo = massimo.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal[] mediaMassimo = giacenzeGiornaliere(gambe, giorniVita, GIORNI_GIACENZA_MEDIA_ANNUA,
+                dataCambio, cambio, avvisiComuni);
+        BigDecimal valoreMedio = mediaMassimo[0];
+        BigDecimal massimo = mediaMassimo[1];
         boolean dovuta = valoreMedio.compareTo(SOGLIA_ESENZIONE_IVAFE) > 0;
         int giorniAnno = Year.of(Integer.parseInt(anno)).length();
 
@@ -1067,6 +1376,81 @@ public final class Calcoli_RW_Fiat {
             }
             r[15] = componiAvvisi(av);
         }
+    }
+
+    /**
+     * Giacenza media del <b>periodo di detenzione</b> dei giorni da {@code da} ad {@code a} inclusi,
+     * per l'opzione {@link #OPZIONE_VALORE_FINALE_MAX_MEDIA} : somma dei saldi giornalieri divisa per
+     * i giorni del tratto stesso, cioè per gli stessi giorni che il rigo dichiara in colonna 10.
+     *
+     * <p><b>Non</b> è la giacenza media annua delle istruzioni DSU (somma / 365 a prescindere dai
+     * giorni di apertura), che fino al 2026-09-27 si usava qui ed era sbagliata per questo scopo :
+     * l'IVAFE ordinaria è già rapportata ai giorni ({@code valore x aliquota x giorni / giorni
+     * dell'anno}), e una media divisa per 365 contava i giorni <b>due volte</b>. L'effetto era che
+     * spezzare un rigo faceva pagare meno : 10.000 € tutto l'anno davano 20 € di IVAFE, gli stessi
+     * 10.000 € in due righi da 180 e 185 giorni ne davano circa 10. Con la media sul periodo un saldo
+     * costante paga lo stesso comunque lo si divida. La media DSU resta materia dell'ISEE, non del
+     * quadro RW.</p>
+     */
+    private static BigDecimal mediaPeriodo(List<GambaFiat> gambe, LocalDate da, LocalDate a,
+            String dataCambio, ControvaloreEUR cambio, List<String> avvisi) {
+        List<LocalDate> giorni = new ArrayList<>();
+        for (LocalDate g = da; !g.isAfter(a); g = g.plusDays(1)) {
+            giorni.add(g);
+        }
+        return giacenzeGiornaliere(gambe, giorni, 0, dataCambio, cambio, avvisi)[0];
+    }
+
+    /**
+     * Giacenza <b>media</b> e <b>massima</b> in EUR (scala 2) del saldo FIAT a fine giornata sui
+     * giorni indicati, che devono essere in ordine crescente. Un saldo giornaliero negativo conta
+     * zero (conto in rosso). La conversione è lineare a data fissa {@code dataCambio} : un tasso per
+     * valuta, non una conversione per giorno. Unica implementazione, usata dal conto corrente e
+     * dall'opzione {@link #OPZIONE_VALORE_FINALE_MAX_MEDIA}.
+     *
+     * @param divisore giorni per cui dividere la somma dei saldi ; {@code 0} = il numero di giorni
+     *                 passati (media del periodo, quella della liquidità codice 14)
+     * @return {@code [media, massimo]} ; {@code [0, 0]} se non ci sono giorni
+     */
+    private static BigDecimal[] giacenzeGiornaliere(List<GambaFiat> gambe, Iterable<LocalDate> giorni,
+            int divisore, String dataCambio, ControvaloreEUR cambio, List<String> avvisi) {
+        Map<String, BigDecimal> tasso = new HashMap<>();
+        List<GambaFiat> ordinate = new ArrayList<>(gambe);
+        ordinate.sort(Comparator.comparing(g -> g.giorno));
+
+        int gi = 0;
+        Map<String, BigDecimal> saldo = new HashMap<>();
+        BigDecimal somma = BigDecimal.ZERO;
+        BigDecimal massimo = BigDecimal.ZERO;
+        int n = 0;
+        for (LocalDate g : giorni) {
+            String gs = g.toString();
+            while (gi < ordinate.size() && ordinate.get(gi).giorno.compareTo(gs) <= 0) {
+                GambaFiat gf = ordinate.get(gi++);
+                saldo.merge(gf.valuta, gf.importo, BigDecimal::add);
+            }
+            BigDecimal totGiorno = BigDecimal.ZERO;
+            for (Map.Entry<String, BigDecimal> e : saldo.entrySet()) {
+                if (e.getValue().signum() == 0) {
+                    continue;
+                }
+                BigDecimal t = tasso.computeIfAbsent(e.getKey(), v -> tassoEUR(v, dataCambio, cambio, avvisi));
+                totGiorno = totGiorno.add(t.multiply(e.getValue()));
+            }
+            if (totGiorno.signum() < 0) {
+                totGiorno = BigDecimal.ZERO; // conto in rosso : 0 ai fini della giacenza
+            }
+            somma = somma.add(totGiorno);
+            if (totGiorno.compareTo(massimo) > 0) {
+                massimo = totGiorno;
+            }
+            n++;
+        }
+        int d = divisore > 0 ? divisore : n;
+        BigDecimal media = d > 0
+                ? somma.divide(BigDecimal.valueOf(d), 2, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO;
+        return new BigDecimal[] {media, massimo.setScale(2, RoundingMode.HALF_UP)};
     }
 
     /** Tasso EUR di una valuta a data fissa (conversione lineare) : {@code cambio.eur(valuta, 1, data)}. {@code 0} se non convertibile. */

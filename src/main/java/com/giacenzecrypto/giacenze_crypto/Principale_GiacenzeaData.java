@@ -869,7 +869,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
     /** Solo lettura delle cache: prezzi personalizzati (±60 min) e prezzi esatti (±5 min). Nessuna rete. */
     private static BigDecimal PrezzoUnitarioDaCache(String Moneta, String Address, String Rete, long ts, BigDecimal qta) {
         String simbolo = Address.isBlank()
-                ? Principale.Mappa_MoneteStessoPrezzo.getOrDefault(Moneta, Moneta)
+                ? AliasPrezziToken.StessoPrezzo(Moneta, ts)
                 : "";//con un address valido il simbolo non va passato, come fa CambioAddressEUR
         Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoDaDatabasePersonale(simbolo, ts, "", Rete, Address, 60, qta);
         if (IP == null) IP = Prezzi.DammiPrezzoDaDatabase(simbolo, ts, "", Rete, Address, 5, qta);

@@ -1,0 +1,1252 @@
+{
+  "formato": 1,
+  "descrizione": [
+    "Token che, su una certa rete, vanno prezzati come un'altra moneta quotata sugli exchange (CCXT, candele da 1 minuto) invece che per address (DefiLlama/CoinGecko, quotazioni orarie).",
+    "alias: chiave address+rete; prezzoDa e' il simbolo cercato sugli exchange; simboloToken e' il simbolo on-chain del token; tipo 'canonico' = emesso dall'emittente ufficiale su quella rete, 'bridged' = versione ponte.",
+    "riferimento: true = il token di riferimento per quella moneta su quella rete (il canonico, oppure il bridged dove un canonico non c'e'). Solo queste voci alimentano il controllo anti-impersonazione dei depositi/prelievi.",
+    "stessoPrezzo: simbolo -> simbolo per le monete senza address valido (es. WETH da exchange quotato come ETH).",
+    "dal: data (aaaa-mm-gg) da cui la voce vale; prima di quella data il token si prezza come se la voce non ci fosse. Serve a non cambiare i valori di anni gia' dichiarati: una voce aggiunta nell'anno N nasce con dal = N-01-01. Le voci senza dal valgono sempre. L'opzione 'anche per gli anni passati' fa ignorare tutte le date. In stessoPrezzo una voce con data si scrive {\"prezzoDa\": ..., \"dal\": ...}.",
+    "ATTENZIONE: questo file cambia i prezzi (anche quelli di fine anno del quadro RW) senza un cambio di versione: ogni modifica e' una modifica fiscale."
+  ],
+  "alias": [
+    {
+      "rete": "ABSTRACT",
+      "address": "0x3439153eb7af838ad19d56e1571fbd09333c2809",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:l2-standard-bridged-weth-abstract",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "ABSTRACT",
+      "address": "0x84a71ccd554cc1b02749b35d22f684cc8ec987e1",
+      "simboloToken": "USDC.e",
+      "prezzoDa": "USDC",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:stargate-bridged-usdc",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "ABSTRACT",
+      "address": "0x0709f39376deee2a2dfc94a58edeb2eb9df012bd",
+      "simboloToken": "USDT",
+      "prezzoDa": "USDT",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:abstract-bridged-usdt-abstract",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "ARB",
+      "address": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+      "simboloToken": "cbBTC",
+      "prezzoDa": "BTC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:coinbase-wrapped-btc",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "ARB",
+      "address": "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f",
+      "simboloToken": "WBTC",
+      "prezzoDa": "BTC",
+      "tipo": "bridged",
+      "riferimento": false,
+      "fonte": "coingecko:arbitrum-bridged-wbtc-arbitrum-one",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "ARB",
+      "address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:arbitrum-bridged-weth-arbitrum-one",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "ARB",
+      "address": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usd-coin",
+      "verificato": "developers.circle.com 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "ARB",
+      "address": "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
+      "simboloToken": "USDC.e",
+      "prezzoDa": "USDC",
+      "tipo": "bridged",
+      "riferimento": false,
+      "fonte": "coingecko:usd-coin-ethereum-bridged",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "ARB",
+      "address": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
+      "simboloToken": "USDT0",
+      "prezzoDa": "USDT",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usdt0",
+      "verificato": "docs.usdt0.to 2026-09-25"
+    },
+    {
+      "rete": "AVAX",
+      "address": "0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7",
+      "simboloToken": "WAVAX",
+      "prezzoDa": "AVAX",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-avax",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "AVAX",
+      "address": "0x0555e30da8f98308edb960aa94c0db47230d2b9c",
+      "simboloToken": "WBTC",
+      "prezzoDa": "BTC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-bitcoin",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "AVAX",
+      "address": "0x152b9d0fdc40c096757f570a51e494bd4b943e50",
+      "simboloToken": "BTC.b",
+      "prezzoDa": "BTC",
+      "tipo": "bridged",
+      "riferimento": false,
+      "fonte": "coingecko:bitcoin-avalanche-bridged-btc-b",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "AVAX",
+      "address": "0x50b7545627a5162f82a992c33b87adc75187b218",
+      "simboloToken": "WBTC.e",
+      "prezzoDa": "BTC",
+      "tipo": "bridged",
+      "riferimento": false,
+      "fonte": "coingecko:avalanche-old-bridged-wbtc-avalanche",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "AVAX",
+      "address": "0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:avalanche-bridged-weth-avalanche",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "AVAX",
+      "address": "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usd-coin",
+      "verificato": "developers.circle.com 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "AVAX",
+      "address": "0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664",
+      "simboloToken": "USDC.e",
+      "prezzoDa": "USDC",
+      "tipo": "bridged",
+      "riferimento": false,
+      "fonte": "coingecko:usd-coin-avalanche-bridged-usdc-e",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "AVAX",
+      "address": "0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7",
+      "simboloToken": "USDT",
+      "prezzoDa": "USDT",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:tether",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "BASE",
+      "address": "0x0555e30da8f98308edb960aa94c0db47230d2b9c",
+      "simboloToken": "WBTC",
+      "prezzoDa": "BTC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-bitcoin",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "BASE",
+      "address": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+      "simboloToken": "cbBTC",
+      "prezzoDa": "BTC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:coinbase-wrapped-btc",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "BASE",
+      "address": "0x4200000000000000000000000000000000000006",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:l2-standard-bridged-weth-base"
+    },
+    {
+      "rete": "BASE",
+      "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usd-coin",
+      "verificato": "developers.circle.com 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "BASE",
+      "address": "0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca",
+      "simboloToken": "USDbC",
+      "prezzoDa": "USDC",
+      "tipo": "bridged",
+      "riferimento": false,
+      "fonte": "coingecko:bridged-usd-coin-base",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "BASE",
+      "address": "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2",
+      "simboloToken": "USDT",
+      "prezzoDa": "USDT",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:l2-standard-bridged-usdt-base",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "BERA",
+      "address": "0x6969696969696969696969696969696969696969",
+      "simboloToken": "WBERA",
+      "prezzoDa": "BERA",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-bera"
+    },
+    {
+      "rete": "BERA",
+      "address": "0x0555e30da8f98308edb960aa94c0db47230d2b9c",
+      "simboloToken": "WBTC",
+      "prezzoDa": "BTC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-bitcoin",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "BERA",
+      "address": "0x2f6f07cdcf3588944bf4c42ac74ff24bf56e7590",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:stargate-bridged-weth",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "BERA",
+      "address": "0x549943e04f40284185054145c6e4e9568c1d3241",
+      "simboloToken": "USDC.e",
+      "prezzoDa": "USDC",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:stargate-bridged-usdc"
+    },
+    {
+      "rete": "BERA",
+      "address": "0x779ded0c9e1022225f8e0630b35a9b54be713736",
+      "simboloToken": "USDT0",
+      "prezzoDa": "USDT",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usdt0",
+      "verificato": "docs.usdt0.to 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "BLAST",
+      "address": "0x4300000000000000000000000000000000000004",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:l2-standard-bridged-weth-blast",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "BSC",
+      "address": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
+      "simboloToken": "WBNB",
+      "prezzoDa": "BNB",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wbnb",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "BSC",
+      "address": "0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c",
+      "simboloToken": "BTCB",
+      "prezzoDa": "BTC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:binance-bitcoin",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "BSC",
+      "address": "0x0555e30da8f98308edb960aa94c0db47230d2b9c",
+      "simboloToken": "WBTC",
+      "prezzoDa": "BTC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-bitcoin",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "BSC",
+      "address": "0xe9e7cea3dedca5984780bafc599bd69add087d56",
+      "simboloToken": "BUSD",
+      "prezzoDa": "BUSD",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:binance-peg-busd"
+    },
+    {
+      "rete": "BSC",
+      "address": "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:binance-peg-weth",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "BSC",
+      "address": "0x570a5d26f7765ecb712c0924e4de545b89fd43df",
+      "simboloToken": "SOL",
+      "prezzoDa": "SOL",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:binance-peg-sol",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "BSC",
+      "address": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:binance-bridged-usdc-bnb-smart-chain",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "BSC",
+      "address": "0x55d398326f99059ff775485246999027b3197955",
+      "simboloToken": "USDT",
+      "prezzoDa": "USDT",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:binance-bridged-usdt-bnb-smart-chain"
+    },
+    {
+      "rete": "CRO",
+      "address": "0x062e66477faf219f25d27dced647bf57c3107d52",
+      "simboloToken": "WBTC",
+      "prezzoDa": "BTC",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:cronos-bridged-wbtc-cronos"
+    },
+    {
+      "rete": "CRO",
+      "address": "0xc74d59a548ecf7fc1754bb7810d716e9ac3e3ae5",
+      "simboloToken": "BUSD",
+      "prezzoDa": "BUSD",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:bridged-busd"
+    },
+    {
+      "rete": "CRO",
+      "address": "0x5c7f8a570d578ed84e63fdfa7b1ee72deae1ae23",
+      "simboloToken": "WCRO",
+      "prezzoDa": "CRO",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-cro",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "CRO",
+      "address": "0xf2001b145b43032aaf5ee2884e456ccd805f677d",
+      "simboloToken": "DAI",
+      "prezzoDa": "DAI",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:crypto-com-bridged-dai-cronos"
+    },
+    {
+      "rete": "CRO",
+      "address": "0xe44fd7fcb2b1581822d0c862b68222998a0c299a",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:bridged-weth"
+    },
+    {
+      "rete": "CRO",
+      "address": "0xf44acfdc916898449e39062934c2b496799b6abe",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:stargate-bridged-weth",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "CRO",
+      "address": "0x3d7f2c478aafdb65542bcb44bceec05849999d2d",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usd-coin",
+      "verificato": "developers.circle.com 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "CRO",
+      "address": "0xc21223249ca28397b4b6541dffaecc539bff0c59",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "bridged",
+      "riferimento": false,
+      "fonte": "coingecko:cronos-bridged-usdc-cronos"
+    },
+    {
+      "rete": "CRO",
+      "address": "0xf951ec28187d9e5ca673da8fe6757e6f0be5f77c",
+      "simboloToken": "USDC.e",
+      "prezzoDa": "USDC",
+      "tipo": "bridged",
+      "riferimento": false,
+      "fonte": "coingecko:stargate-bridged-usdc",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "CRO",
+      "address": "0x66e428c3f67a68878562e79a0234c1f83c208770",
+      "simboloToken": "USDT",
+      "prezzoDa": "USDT",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:cronos-bridged-usdt-cronos"
+    },
+    {
+      "rete": "ETH",
+      "address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+      "simboloToken": "WBTC",
+      "prezzoDa": "BTC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-bitcoin",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "ETH",
+      "address": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+      "simboloToken": "cbBTC",
+      "prezzoDa": "BTC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:coinbase-wrapped-btc",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "ETH",
+      "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:weth",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "ETH",
+      "address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usd-coin",
+      "verificato": "developers.circle.com 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "ETH",
+      "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "simboloToken": "USDT",
+      "prezzoDa": "USDT",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:tether",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "GNOSIS",
+      "address": "0x8e5bbbb09ed1ebde8674cda39a0c169401db4252",
+      "simboloToken": "WBTC",
+      "prezzoDa": "BTC",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:gnosis-xdai-bridged-wbtc-gnosis-chain",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "GNOSIS",
+      "address": "0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:gnosis-xdai-bridged-weth-gnosis-chain",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "GNOSIS",
+      "address": "0xddafbb505ad214d7b80b1f830fccc89b60fb7a83",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:gnosis-xdai-bridged-usdc-gnosis",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "GNOSIS",
+      "address": "0x2a22f9c3b484c3629090feed35f17ff8f88f76f0",
+      "simboloToken": "USDC.e",
+      "prezzoDa": "USDC",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:bridged-usdc-gnosis",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "GNOSIS",
+      "address": "0x4ecaba5870353805a9f068101a40e0f32ed605c6",
+      "simboloToken": "USDT",
+      "prezzoDa": "USDT",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:gnosis-xdai-bridged-usdt-gnosis",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "HYPEREVM",
+      "address": "0x5555555555555555555555555555555555555555",
+      "simboloToken": "WHYPE",
+      "prezzoDa": "HYPE",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-hype",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "HYPEREVM",
+      "address": "0xb88339cb7199b77e23db6e890353e22632ba630f",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usd-coin",
+      "verificato": "developers.circle.com 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "HYPEREVM",
+      "address": "0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb",
+      "simboloToken": "USDT0",
+      "prezzoDa": "USDT",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usdt0",
+      "verificato": "docs.usdt0.to 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "INK",
+      "address": "0x4200000000000000000000000000000000000006",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:ink-bridged-weth-ink",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "INK",
+      "address": "0x2d270e6886d130d724215a266106e6832161eaed",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usd-coin",
+      "verificato": "developers.circle.com 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "INK",
+      "address": "0xf1815bd50389c46847f0bda824ec8da914045d14",
+      "simboloToken": "USDC.e",
+      "prezzoDa": "USDC",
+      "tipo": "bridged",
+      "riferimento": false,
+      "fonte": "coingecko:stargate-bridged-usdc",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "INK",
+      "address": "0x0200c29006150606b650577bbe7b6248f58470c1",
+      "simboloToken": "USDT0",
+      "prezzoDa": "USDT",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usdt0",
+      "verificato": "docs.usdt0.to 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "KATANA",
+      "address": "0x0913da6da4b42f538b445599b46bb4622342cf52",
+      "simboloToken": "vbWBTC",
+      "prezzoDa": "BTC",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:vaultbridge-bridged-wbtc-katana",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "KATANA",
+      "address": "0xee7d8bcfb72bc1880d0cf19822eb0a2e6577ab62",
+      "simboloToken": "vbETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:vaultbridge-bridged-eth-katana",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "KATANA",
+      "address": "0x203a662b0bd271a6ed5a60edfbd04bfce608fd36",
+      "simboloToken": "vbUSDC",
+      "prezzoDa": "USDC",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:vaultbridge-bridged-usdc-katana",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "KATANA",
+      "address": "0x2dca96907fde857dd3d816880a0df407eeb2d2f2",
+      "simboloToken": "vbUSDT",
+      "prezzoDa": "USDT",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:vaultbridge-bridged-usdt-katana",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "LINEA",
+      "address": "0x3aab2285ddcddad8edf438c1bab47e1a9d05a9b4",
+      "simboloToken": "WBTC",
+      "prezzoDa": "BTC",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:linea-bridged-wbtc-linea",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "LINEA",
+      "address": "0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-ether-linea",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "LINEA",
+      "address": "0x176211869ca2b568f2a7d4ee941e073a821ee1ff",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:bridged-usd-coin-linea",
+      "verificato": "developers.circle.com 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "LINEA",
+      "address": "0xa219439258ca9da29e9cc4ce5596924745e12b93",
+      "simboloToken": "USDT",
+      "prezzoDa": "USDT",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:bridged-tether-linea",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "MANTLE",
+      "address": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead1111",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-ether-mantle-bridge",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "MANTLE",
+      "address": "0x78c1b0c915c4faa5fffa6cabf0219da63d7f4cb8",
+      "simboloToken": "WMNT",
+      "prezzoDa": "MNT",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-mantle",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "MANTLE",
+      "address": "0x09bc4e0d864854c6afb6eb9a9cdf58ac190d0df9",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:mantle-bridged-usdc-mantle",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "MANTLE",
+      "address": "0x779ded0c9e1022225f8e0630b35a9b54be713736",
+      "simboloToken": "USDT0",
+      "prezzoDa": "USDT",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usdt0",
+      "verificato": "docs.usdt0.to 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "MANTLE",
+      "address": "0x201eba5cc46d216ce6dc03f6a759e8e766e956ae",
+      "simboloToken": "USDT",
+      "prezzoDa": "USDT",
+      "tipo": "bridged",
+      "riferimento": false,
+      "fonte": "coingecko:stargate-bridged-usdt",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "MONAD",
+      "address": "0x0555e30da8f98308edb960aa94c0db47230d2b9c",
+      "simboloToken": "WBTC",
+      "prezzoDa": "BTC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-bitcoin",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "MONAD",
+      "address": "0xd18b7ec58cdf4876f6afebd3ed1730e4ce10414b",
+      "simboloToken": "cbBTC",
+      "prezzoDa": "BTC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:coinbase-wrapped-btc",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "MONAD",
+      "address": "0xee8c0e9f1bffb4eb878d8f15f368a02a35481242",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:wormhole-bridged-weth-monad",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "MONAD",
+      "address": "0x3bd359c1119da7da1d913d1c4d2b7c461115433a",
+      "simboloToken": "WMON",
+      "prezzoDa": "MON",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-monad",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "MONAD",
+      "address": "0x754704bc059f8c67012fed69bc8a327a5aafb603",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usd-coin",
+      "verificato": "developers.circle.com 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "MONAD",
+      "address": "0xe7cd86e13ac4309349f30b3435a9d337750fc82d",
+      "simboloToken": "USDT0",
+      "prezzoDa": "USDT",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usdt0",
+      "verificato": "docs.usdt0.to 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "OP",
+      "address": "0x68f180fcce6836688e9084f035309e29bf0a2095",
+      "simboloToken": "WBTC",
+      "prezzoDa": "BTC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-bitcoin",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "OP",
+      "address": "0x4200000000000000000000000000000000000006",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:l2-standard-bridged-weth-optimism",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "OP",
+      "address": "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usd-coin",
+      "verificato": "developers.circle.com 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "OP",
+      "address": "0x7f5c764cbc14f9669b88837ca1490cca17c31607",
+      "simboloToken": "USDC.e",
+      "prezzoDa": "USDC",
+      "tipo": "bridged",
+      "riferimento": false,
+      "fonte": "coingecko:bridged-usd-coin-optimism",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "OP",
+      "address": "0x01bff41798a0bcf287b996046ca68b395dbc1071",
+      "simboloToken": "USDT0",
+      "prezzoDa": "USDT",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usdt0",
+      "verificato": "docs.usdt0.to 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "OP",
+      "address": "0x94b008aa00579c1307b0ef2c499ad98a8ce58e58",
+      "simboloToken": "USDT",
+      "prezzoDa": "USDT",
+      "tipo": "bridged",
+      "riferimento": false,
+      "fonte": "coingecko:bridged-usdt",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "POL",
+      "address": "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6",
+      "simboloToken": "WBTC",
+      "prezzoDa": "BTC",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:polygon-bridged-wbtc-polygon-pos",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "POL",
+      "address": "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:polygon-pos-bridged-weth-polygon-pos",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "POL",
+      "address": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usd-coin",
+      "verificato": "developers.circle.com 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "POL",
+      "address": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
+      "simboloToken": "USDC.e",
+      "prezzoDa": "USDC",
+      "tipo": "bridged",
+      "riferimento": false,
+      "fonte": "coingecko:bridged-usdc-polygon-pos-bridge",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "POL",
+      "address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
+      "simboloToken": "USDT0",
+      "prezzoDa": "USDT",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usdt0",
+      "verificato": "docs.usdt0.to 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "ROBINHOOD",
+      "address": "0xcec185eb182c47d1ba1efc84e6959e18cd620be4",
+      "simboloToken": "cbBTC",
+      "prezzoDa": "BTC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:coinbase-wrapped-btc",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "ROBINHOOD",
+      "address": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:robinhood-wrapped-eth-robinhood-chain",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "SOL",
+      "address": "5XZw2LKTyrfvfiskJ78AMpackRjPcyCif1WhUsPDuVqQ",
+      "simboloToken": "WBTC",
+      "prezzoDa": "BTC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-bitcoin",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "SOL",
+      "address": "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij",
+      "simboloToken": "cbBTC",
+      "prezzoDa": "BTC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:coinbase-wrapped-btc",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "SOL",
+      "address": "So11111111111111111111111111111111111111112",
+      "simboloToken": "WSOL",
+      "prezzoDa": "SOL",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-solana",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "SOL",
+      "address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usd-coin",
+      "verificato": "developers.circle.com 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "SOL",
+      "address": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+      "simboloToken": "USDT",
+      "prezzoDa": "USDT",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:tether",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "SONIC",
+      "address": "0x0555e30da8f98308edb960aa94c0db47230d2b9c",
+      "simboloToken": "WBTC",
+      "prezzoDa": "BTC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-bitcoin",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "SONIC",
+      "address": "0x50c42deacd8fc9773493ed674b675be577f2634b",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:bridged-wrapped-ether-sonic",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "SONIC",
+      "address": "0x039e2fb66102314ce7b64ce5ce3e5183bc94ad38",
+      "simboloToken": "WS",
+      "prezzoDa": "S",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-sonic",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "SONIC",
+      "address": "0x29219dd400f2bf60e5a23d13be72b486d4038894",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usd-coin",
+      "verificato": "developers.circle.com 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "SONIC",
+      "address": "0x6047828dc181963ba44974801ff68e538da5eaf9",
+      "simboloToken": "USDT",
+      "prezzoDa": "USDT",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:sonic-bridged-usdt-sonic",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "TAIKO",
+      "address": "0xa51894664a773981c6c112c43ce576f315d5b1b6",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-eth-taiko",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "TAIKO",
+      "address": "0x07d83526730c7438048d55a4fc0b850e2aab6f0b",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:taiko-bridged-usdc-taiko",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "TAIKO",
+      "address": "0x19e26b0638bf63aa9fa4d14c6baf8d52ebe86c5c",
+      "simboloToken": "USDC.e",
+      "prezzoDa": "USDC",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:stargate-bridged-usdc",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "TAIKO",
+      "address": "0x9c2dc7377717603eb92b2655c5f2e7997a4945bd",
+      "simboloToken": "USDT",
+      "prezzoDa": "USDT",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:stargate-bridged-usdt",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "UNICHAIN",
+      "address": "0x0555e30da8f98308edb960aa94c0db47230d2b9c",
+      "simboloToken": "WBTC",
+      "prezzoDa": "BTC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-bitcoin",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "UNICHAIN",
+      "address": "0x927b51f251480a681271180da4de28d44ec4afb8",
+      "simboloToken": "WBTC",
+      "prezzoDa": "BTC",
+      "tipo": "bridged",
+      "riferimento": false,
+      "fonte": "coingecko:unichain-bridged-wbtc-unichain-2",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "UNICHAIN",
+      "address": "0x4200000000000000000000000000000000000006",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:unichain-bridged-weth-unichain",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "UNICHAIN",
+      "address": "0x078d782b760474a361dda0af3839290b0ef57ad6",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usd-coin",
+      "verificato": "developers.circle.com 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "UNICHAIN",
+      "address": "0x9151434b16b9763660705744891fa906f660ecc5",
+      "simboloToken": "USDT0",
+      "prezzoDa": "USDT",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usdt0",
+      "verificato": "docs.usdt0.to 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "UNICHAIN",
+      "address": "0x588ce4f028d8e7b53b687865d6a67b3a54c75518",
+      "simboloToken": "USDT",
+      "prezzoDa": "USDT",
+      "tipo": "bridged",
+      "riferimento": false,
+      "fonte": "coingecko:unichain-bridged-usdt-unichain",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "WORLD",
+      "address": "0x03c7054bcb39f7b2e5b2c7acb37583e32d70cfa3",
+      "simboloToken": "WBTC",
+      "prezzoDa": "BTC",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:bridged-wrapped-bitcoin-worldchain",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "WORLD",
+      "address": "0x4200000000000000000000000000000000000006",
+      "simboloToken": "WETH",
+      "prezzoDa": "ETH",
+      "tipo": "bridged",
+      "riferimento": true,
+      "fonte": "coingecko:wrapped-eth-world-chain",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "WORLD",
+      "address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+      "simboloToken": "USDC",
+      "prezzoDa": "USDC",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "coingecko:usd-coin",
+      "verificato": "developers.circle.com 2026-09-25",
+      "dal": "2026-01-01"
+    }
+  ],
+  "stessoPrezzo": {
+    "WETH": "ETH",
+    "WCRO": "CRO",
+    "XDAI": "DAI",
+    "WBNB": {
+      "prezzoDa": "BNB",
+      "dal": "2026-01-01"
+    },
+    "WAVAX": {
+      "prezzoDa": "AVAX",
+      "dal": "2026-01-01"
+    },
+    "WSOL": {
+      "prezzoDa": "SOL",
+      "dal": "2026-01-01"
+    },
+    "WS": {
+      "prezzoDa": "S",
+      "dal": "2026-01-01"
+    },
+    "WMNT": {
+      "prezzoDa": "MNT",
+      "dal": "2026-01-01"
+    },
+    "WHYPE": {
+      "prezzoDa": "HYPE",
+      "dal": "2026-01-01"
+    },
+    "WMON": {
+      "prezzoDa": "MON",
+      "dal": "2026-01-01"
+    },
+    "WBERA": {
+      "prezzoDa": "BERA",
+      "dal": "2026-01-01"
+    }
+  }
+}

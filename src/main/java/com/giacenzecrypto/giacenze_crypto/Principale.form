@@ -154,7 +154,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/Images/24_Unisci.png"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Unisci movimenti omogenei (somma quantità)"/>
+            <Property name="text" type="java.lang.String" value="Unisci movimenti omogenei (somma quantit&#xe0;)"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_UnisciOmogeneiActionPerformed"/>
@@ -6309,6 +6309,7 @@
                                                   <Component id="Opzioni_GruppoWallet_CheckBox_PlusManuali" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
                                                   <Component id="Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
                                                   <Component id="Prezzi_Opzioni_CheckBox_ServizioOnchain" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
+                                                  <Component id="Prezzi_Opzioni_CheckBox_AliasAnniPassati" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
                                                   <Component id="Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
                                               </Group>
                                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -6334,6 +6335,8 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Prezzi_Opzioni_CheckBox_ServizioOnchain" min="-2" pref="54" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Prezzi_Opzioni_CheckBox_AliasAnniPassati" min="-2" pref="69" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti" min="-2" pref="54" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jSeparator3" min="-2" pref="10" max="-2" attributes="0"/>
@@ -6345,9 +6348,9 @@
                               <Component id="Plusvalenze_Opzioni_NonConsiderareMovimentiNC" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="65" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
                               <Component id="RT_Bottone_Documentazione1" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
+                              <EmptySpace pref="351" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -6457,6 +6460,14 @@
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Prezzi_Opzioni_CheckBox_ServizioOnchainActionPerformed"/>
                       </Events>
                     </Component>
+                    <Component class="javax.swing.JCheckBox" name="Prezzi_Opzioni_CheckBox_AliasAnniPassati">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Prezzi dagli exchange anche per gli anni gi&#xe0; dichiarati : &lt;/b&gt;Per alcune monete molto diffuse (es. WETH, USDC, WBTC) usa il prezzo degli exchange, pi&#xf9; preciso, anche per gli anni precedenti al loro inserimento nell&apos;elenco&lt;br&gt;(Attivo di default solo sulle nuove installazioni. Se hai gi&#xe0; presentato dichiarazioni con questo programma lascialo spento, altrimenti i valori di quegli anni possono cambiare)&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Prezzi_Opzioni_CheckBox_AliasAnniPassatiActionPerformed"/>
+                      </Events>
+                    </Component>
                     <Component class="javax.swing.JCheckBox" name="Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Scambi cripto-cripto : &lt;/b&gt;Considera sempre fiscalmente rilevante lo scambio tra cripto, anche tra monete con le medesime caratteristiche e funzioni (es. stablecoin verso stablecoin): calcola plusvalenza e nuovo costo di carico&lt;br&gt;(Non attivo di default: di norma lo scambio tra cripto con medesime caratteristiche e funzioni non genera plusvalenza)&lt;/html&gt;"/>
@@ -6492,6 +6503,17 @@
                                                   <Component id="RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine" alignment="0" min="-2" max="-2" attributes="0"/>
                                                   <Component id="RW_Opzioni_Radio_Liquidita_ConIvafe" alignment="0" min="-2" max="-2" attributes="0"/>
                                                   <Component id="RW_Opzioni_Radio_Liquidita_SoloMonitoraggio" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="RW_Opzioni_CheckBox_FiatValoreFinaleMaxMedia" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Group type="102" alignment="0" attributes="0">
+                                                      <Component id="RW_Opzioni_CheckBox_FiatSpezzaApporti" min="-2" max="-2" attributes="0"/>
+                                                      <EmptySpace max="-2" attributes="0"/>
+                                                      <Component id="RW_Opzioni_Text_FiatSogliaApporti" min="-2" pref="90" max="-2" attributes="0"/>
+                                                  </Group>
+                                                  <Group type="102" alignment="0" attributes="0">
+                                                      <Component id="RW_Opzioni_CheckBox_FiatSpezzaPrelievi" min="-2" max="-2" attributes="0"/>
+                                                      <EmptySpace max="-2" attributes="0"/>
+                                                      <Component id="RW_Opzioni_Text_FiatSogliaPrelievi" min="-2" pref="90" max="-2" attributes="0"/>
+                                                  </Group>
                                                   <Component id="RW_Bottone_Documentazione1" alignment="0" min="-2" pref="270" max="-2" attributes="0"/>
                                               </Group>
                                           </Group>
@@ -6569,7 +6591,19 @@
                               <Component id="RW_Opzioni_Radio_Liquidita_ConIvafe" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_Radio_Liquidita_SoloMonitoraggio" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_CheckBox_FiatValoreFinaleMaxMedia" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="2" attributes="0">
+                                  <Component id="RW_Opzioni_CheckBox_FiatSpezzaApporti" alignment="2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RW_Opzioni_Text_FiatSogliaApporti" alignment="2" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="2" attributes="0">
+                                  <Component id="RW_Opzioni_CheckBox_FiatSpezzaPrelievi" alignment="2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RW_Opzioni_Text_FiatSogliaPrelievi" alignment="2" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
                               <Component id="RW_Bottone_Documentazione1" min="-2" pref="60" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
@@ -6733,6 +6767,50 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_Radio_Liquidita_SoloMonitoraggioActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_FiatValoreFinaleMaxMedia">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Sulla liquidit&#xe0; diversa dai conti correnti il &lt;b&gt;valore finale&lt;/b&gt; &#xe8; il maggiore fra la &lt;b&gt;giacenza media del periodo&lt;/b&gt; e il saldo a fine periodo (anche come base dell&apos;IVAFE).&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_FiatValoreFinaleMaxMediaActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_FiatSpezzaApporti">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Un &lt;b&gt;deposito FIAT&lt;/b&gt; (solo nuova liquidit&#xe0;) superiore alla soglia chiude il rigo il giorno prima e ne apre uno nuovo (circ. 12/E/2016, &#xa7; 14.1). Soglia in euro :&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_FiatSpezzaApportiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="RW_Opzioni_Text_FiatSogliaApporti">
+                      <Properties>
+                        <Property name="horizontalAlignment" type="int" value="4"/>
+                        <Property name="text" type="java.lang.String" value="500"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="RW_Opzioni_Text_FiatSogliaApportiFocusLost"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_Text_FiatSogliaApportiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_FiatSpezzaPrelievi">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Un &lt;b&gt;prelievo FIAT&lt;/b&gt; superiore alla soglia chiude il rigo il giorno prima e ne apre uno nuovo (non richiesto dalla circolare : alza la base dell&apos;IVAFE). Soglia in euro :&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_FiatSpezzaPrelieviActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="RW_Opzioni_Text_FiatSogliaPrelievi">
+                      <Properties>
+                        <Property name="horizontalAlignment" type="int" value="4"/>
+                        <Property name="text" type="java.lang.String" value="500"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="RW_Opzioni_Text_FiatSogliaPrelieviFocusLost"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_Text_FiatSogliaPrelieviActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_LiFoSubMovimenti">

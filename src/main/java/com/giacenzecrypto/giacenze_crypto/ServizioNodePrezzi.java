@@ -56,6 +56,9 @@ final class ServizioNodePrezzi {
     /** Dopo quanto tempo senza richieste il processo si chiude (scelta dell'utente, 2026-09-25). */
     static final long INATTIVITA_MAX_MS = TimeUnit.MINUTES.toMillis(10);
 
+    /** Ogni quanto l'attesa di un lotto controlla se l'utente ha premuto Interrompi. */
+    static final long ATTESA_CONTROLLO_INTERRUZIONE_MS = 1000;
+
     /** Riga messa in coda dal lettore di stdout quando il processo chiude l'uscita (e' morto). Si confronta
      *  per identita' ({@code ==}), quindi nessuna riga letta dallo script puo' essere scambiata per lei. */
     @SuppressWarnings("StringOperationCanBeSimplified")
@@ -154,15 +157,25 @@ final class ServizioNodePrezzi {
     private static JsonArray attendiRisposta(Istanza ist, long id, long timeoutMs) throws NonDisponibile {
         long scadenza = System.currentTimeMillis() + timeoutMs;
         while (true) {
+            //Il tasto Interrompi non interrompe il thread, accende solo Interruzione: senza questo
+            //controllo si aspettava l'intero lotto (osservato il 2026-09-27: 24 s dopo Interrompi, su
+            //un lotto da 100 richieste). Si chiude il processo invece di lasciarlo finire in disparte,
+            //altrimenti il lotto successivo si accoderebbe dietro quello abbandonato; ripartire costa
+            //~1,5 s, i markets sono gia' su file.
+            if (Interruzione.Richiesta()) {
+                chiudi("interruzione richiesta dall'utente", false);
+                return null;
+            }
             long resta = scadenza - System.currentTimeMillis();
             String riga;
             try {
-                riga = resta > 0 ? ist.uscite.poll(resta, TimeUnit.MILLISECONDS) : null;
+                riga = resta > 0 ? ist.uscite.poll(Math.min(resta, ATTESA_CONTROLLO_INTERRUZIONE_MS), TimeUnit.MILLISECONDS) : null;
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
                 chiudi("attesa interrotta");
                 return null;
             }
+            if (riga == null && System.currentTimeMillis() < scadenza) continue;
             if (riga == null) {
                 System.err.println("Servizio prezzi: nessuna risposta entro " + (timeoutMs / 1000)
                         + " s (probabile problema di connessione), chiudo il processo");
@@ -271,7 +284,7 @@ final class ServizioNodePrezzi {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             //Senza lock: una richiesta in corso lo terrebbe, e la chiusura dell'app non deve aspettarla.
             Istanza ist = corrente;
-            if (ist != null) termina(ist);
+            if (ist != null) termina(ist, true);
         }, "servizio-prezzi-chiusura"));
     }
 
@@ -310,22 +323,29 @@ final class ServizioNodePrezzi {
     }
 
     private static void chiudi(String motivo) {
+        chiudi(motivo, true);
+    }
+
+    /** @param attendiUscita {@code false} = termina subito, senza i 2 s di cortesia di {@link #termina} */
+    private static void chiudi(String motivo, boolean attendiUscita) {
         Istanza ist = corrente;
         corrente = null;
         if (ist == null) return;
         System.out.println("Servizio prezzi: chiudo il processo Node (" + motivo + ")");
-        termina(ist);
+        termina(ist, attendiUscita);
     }
 
-    /** Chiude stdin (lo script esce da solo) e, se non basta entro 2 s, termina il processo e i suoi figli. */
-    private static void termina(Istanza ist) {
+    /** Chiude stdin (lo script esce da solo) e, se non basta entro 2 s, termina il processo e i suoi figli.
+     *  Con {@code attendiUscita} falso i 2 s si saltano: a lotto in corso lo script legge stdin solo a
+     *  lotto finito, quindi chiuderlo non basterebbe comunque. */
+    private static void termina(Istanza ist, boolean attendiUscita) {
         try {
             ist.ingresso.close();
         } catch (IOException ignorata) {
             //gia' chiuso o processo gia' morto
         }
         try {
-            if (ist.processo.waitFor(2, TimeUnit.SECONDS)) return;
+            if (attendiUscita && ist.processo.waitFor(2, TimeUnit.SECONDS)) return;
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }

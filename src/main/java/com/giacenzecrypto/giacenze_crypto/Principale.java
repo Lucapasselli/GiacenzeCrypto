@@ -481,7 +481,8 @@ private static final long serialVersionUID = 3L;
         //la visibilità, quindi la barra non resta con un buco al suo posto.
         if (VarStatiche.EdizioneStore()) TransazioniCrypto_Bottone_ExchangeAPI.setVisible(false);
         Funzioni_AggiornamentoImportConfig();
-        Prezzi.CompilaMoneteStessoPrezzo();
+        //Mappa_MoneteStessoPrezzo si riempie piu' sotto, in VarCondivise.CompilaMappaChain(), insieme agli
+        //alias per address: entrambe vengono da config/varie/AliasPrezziToken.json (AliasPrezziToken.Carica)
         Bottone_Titolo.setText(VarStatiche.Titolo);
         //Il titolo è l'unico elemento presente su tutte le schede, ed è da lì che si apre la finestra
         //Informazioni: è la sede delle attribuzioni dovute a CoinGecko ed Etherscan, che vanno mostrate
@@ -924,6 +925,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_GruppoWallet_CheckBox_PlusManuali = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale = new javax.swing.JCheckBox();
         Prezzi_Opzioni_CheckBox_ServizioOnchain = new javax.swing.JCheckBox();
+        Prezzi_Opzioni_CheckBox_AliasAnniPassati = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti = new javax.swing.JCheckBox();
         Opzioni_RW_Pannello = new javax.swing.JPanel();
         RW_Opzioni_CheckBox_LiFoComplessivo = new javax.swing.JCheckBox();
@@ -943,6 +945,11 @@ private static final long serialVersionUID = 3L;
         RW_Opzioni_Label_Liquidita = new javax.swing.JLabel();
         RW_Opzioni_Radio_Liquidita_ConIvafe = new javax.swing.JRadioButton();
         RW_Opzioni_Radio_Liquidita_SoloMonitoraggio = new javax.swing.JRadioButton();
+        RW_Opzioni_CheckBox_FiatValoreFinaleMaxMedia = new javax.swing.JCheckBox();
+        RW_Opzioni_CheckBox_FiatSpezzaApporti = new javax.swing.JCheckBox();
+        RW_Opzioni_Text_FiatSogliaApporti = new javax.swing.JTextField();
+        RW_Opzioni_CheckBox_FiatSpezzaPrelievi = new javax.swing.JCheckBox();
+        RW_Opzioni_Text_FiatSogliaPrelievi = new javax.swing.JTextField();
         RW_Opzioni_CheckBox_LiFoSubMovimenti = new javax.swing.JCheckBox();
         RW_Bottone_Documentazione1 = new javax.swing.JButton();
         Opzioni_Temi = new javax.swing.JPanel();
@@ -4932,6 +4939,13 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Prezzi_Opzioni_CheckBox_AliasAnniPassati.setText("<html><b>Prezzi dagli exchange anche per gli anni già dichiarati : </b>Per alcune monete molto diffuse (es. WETH, USDC, WBTC) usa il prezzo degli exchange, più preciso, anche per gli anni precedenti al loro inserimento nell'elenco<br>(Attivo di default solo sulle nuove installazioni. Se hai già presentato dichiarazioni con questo programma lascialo spento, altrimenti i valori di quegli anni possono cambiare)</html>");
+        Prezzi_Opzioni_CheckBox_AliasAnniPassati.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Prezzi_Opzioni_CheckBox_AliasAnniPassatiActionPerformed(evt);
+            }
+        });
+
         Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti.setText("<html><b>Scambi cripto-cripto : </b>Considera sempre fiscalmente rilevante lo scambio tra cripto, anche tra monete con le medesime caratteristiche e funzioni (es. stablecoin verso stablecoin): calcola plusvalenza e nuovo costo di carico<br>(Non attivo di default: di norma lo scambio tra cripto con medesime caratteristiche e funzioni non genera plusvalenza)</html>");
         Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -4965,6 +4979,7 @@ private static final long serialVersionUID = 3L;
                                     .addComponent(Opzioni_GruppoWallet_CheckBox_PlusManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Prezzi_Opzioni_CheckBox_ServizioOnchain, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(Prezzi_Opzioni_CheckBox_AliasAnniPassati, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
@@ -4983,6 +4998,8 @@ private static final long serialVersionUID = 3L;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Prezzi_Opzioni_CheckBox_ServizioOnchain, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Prezzi_Opzioni_CheckBox_AliasAnniPassati, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -4994,9 +5011,9 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Plusvalenze_Opzioni_NonConsiderareMovimentiNC)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni)
-                .addGap(65, 65, 65)
+                .addGap(18, 18, 18)
                 .addComponent(RT_Bottone_Documentazione1)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(351, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Opzioni di Calcolo", Opzioni_Calcolo_Pannello);
@@ -5114,6 +5131,53 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        RW_Opzioni_CheckBox_FiatValoreFinaleMaxMedia.setText("<html>Sulla liquidità diversa dai conti correnti il <b>valore finale</b> è il maggiore fra la <b>giacenza media del periodo</b> e il saldo a fine periodo (anche come base dell'IVAFE).</html>");
+        RW_Opzioni_CheckBox_FiatValoreFinaleMaxMedia.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Opzioni_CheckBox_FiatValoreFinaleMaxMediaActionPerformed(evt);
+            }
+        });
+
+        RW_Opzioni_CheckBox_FiatSpezzaApporti.setText("<html>Un <b>deposito FIAT</b> (solo nuova liquidità) superiore alla soglia chiude il rigo il giorno prima e ne apre uno nuovo (circ. 12/E/2016, § 14.1). Soglia in euro :</html>");
+        RW_Opzioni_CheckBox_FiatSpezzaApporti.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Opzioni_CheckBox_FiatSpezzaApportiActionPerformed(evt);
+            }
+        });
+
+        RW_Opzioni_Text_FiatSogliaApporti.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        RW_Opzioni_Text_FiatSogliaApporti.setText("500");
+        RW_Opzioni_Text_FiatSogliaApporti.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                RW_Opzioni_Text_FiatSogliaApportiFocusLost(evt);
+            }
+        });
+        RW_Opzioni_Text_FiatSogliaApporti.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Opzioni_Text_FiatSogliaApportiActionPerformed(evt);
+            }
+        });
+
+        RW_Opzioni_CheckBox_FiatSpezzaPrelievi.setText("<html>Un <b>prelievo FIAT</b> superiore alla soglia chiude il rigo il giorno prima e ne apre uno nuovo (non richiesto dalla circolare : alza la base dell'IVAFE). Soglia in euro :</html>");
+        RW_Opzioni_CheckBox_FiatSpezzaPrelievi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Opzioni_CheckBox_FiatSpezzaPrelieviActionPerformed(evt);
+            }
+        });
+
+        RW_Opzioni_Text_FiatSogliaPrelievi.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        RW_Opzioni_Text_FiatSogliaPrelievi.setText("500");
+        RW_Opzioni_Text_FiatSogliaPrelievi.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                RW_Opzioni_Text_FiatSogliaPrelieviFocusLost(evt);
+            }
+        });
+        RW_Opzioni_Text_FiatSogliaPrelievi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Opzioni_Text_FiatSogliaPrelieviActionPerformed(evt);
+            }
+        });
+
         RW_Opzioni_CheckBox_LiFoSubMovimenti.setText("<html>Il LiFo viene applicato anche ai Sub-Movimenti ( Vedi Documentazione )</html>");
         RW_Opzioni_CheckBox_LiFoSubMovimenti.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -5147,6 +5211,15 @@ private static final long serialVersionUID = 3L;
                                     .addComponent(RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(RW_Opzioni_Radio_Liquidita_ConIvafe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(RW_Opzioni_Radio_Liquidita_SoloMonitoraggio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(RW_Opzioni_CheckBox_FiatValoreFinaleMaxMedia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(Opzioni_RW_PannelloLayout.createSequentialGroup()
+                                        .addComponent(RW_Opzioni_CheckBox_FiatSpezzaApporti, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(RW_Opzioni_Text_FiatSogliaApporti, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(Opzioni_RW_PannelloLayout.createSequentialGroup()
+                                        .addComponent(RW_Opzioni_CheckBox_FiatSpezzaPrelievi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(RW_Opzioni_Text_FiatSogliaPrelievi, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addComponent(RW_Bottone_Documentazione1, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(RW_Opzioni_CheckBox_FiatInRW, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -5211,7 +5284,17 @@ private static final long serialVersionUID = 3L;
                 .addComponent(RW_Opzioni_Radio_Liquidita_ConIvafe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_Radio_Liquidita_SoloMonitoraggio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(58, 58, 58)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(RW_Opzioni_CheckBox_FiatValoreFinaleMaxMedia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(Opzioni_RW_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(RW_Opzioni_CheckBox_FiatSpezzaApporti, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(RW_Opzioni_Text_FiatSogliaApporti, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(Opzioni_RW_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(RW_Opzioni_CheckBox_FiatSpezzaPrelievi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(RW_Opzioni_Text_FiatSogliaPrelievi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(40, 40, 40)
                 .addComponent(RW_Bottone_Documentazione1, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -6578,6 +6661,10 @@ private void SettaIcone(){
         Prezzi_Opzioni_CheckBox_ServizioOnchain.setSelected(
                 "SI".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(ServizioPrezziClient.OPZIONE_ABILITATO, ServizioPrezziClient.OPZIONE_ABILITATO_DEFAULT)));
 
+        //Alias prezzi anche per gli anni gia' dichiarati: al primo avvio di questa versione si accende solo se
+        //l'installazione e' nuova (nessun archivio movimenti), vedi AliasPrezziToken.InizializzaOpzione
+        Prezzi_Opzioni_CheckBox_AliasAnniPassati.setSelected(AliasPrezziToken.InizializzaOpzione());
+
         String Plusvalenze_NoPlusvalenzeCommissioni=DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_NoPlusvalenzeCommissioni");
         if(Plusvalenze_NoPlusvalenzeCommissioni==null)
         {
@@ -6701,7 +6788,6 @@ private void SettaIcone(){
         if(RW_FiatInRW!=null && RW_FiatInRW.equalsIgnoreCase("SI")){
             this.RW_Opzioni_CheckBox_FiatInRW.setSelected(true);
         }else DatabaseH2.Pers_Opzioni_Scrivi("RW_FiatInRW","NO");
-        RW_Opzioni_AggiornaAbilitazioneFiat();
 
         //Regime della liquidità in valuta : di default si liquida l'IVAFE ordinaria (0,20 %).
         //Il "solo monitoraggio" e' una scelta, non piu' il comportamento implicito : vedi
@@ -6714,7 +6800,24 @@ private void SettaIcone(){
             DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO,
                     Calcoli_RW_Fiat.LIQUIDITA_SOLO_MONITORAGGIO_DEFAULT);
         }
-        
+
+        //Valore finale della liquidita' non conto corrente : di default il saldo a fine periodo.
+        String RW_FiatValoreFinaleMaxMedia=DatabaseH2.Pers_Opzioni_Leggi(Calcoli_RW_Fiat.OPZIONE_VALORE_FINALE_MAX_MEDIA);
+        if(RW_FiatValoreFinaleMaxMedia!=null && RW_FiatValoreFinaleMaxMedia.equalsIgnoreCase("SI")){
+            this.RW_Opzioni_CheckBox_FiatValoreFinaleMaxMedia.setSelected(true);
+        }else DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_VALORE_FINALE_MAX_MEDIA,
+                Calcoli_RW_Fiat.VALORE_FINALE_MAX_MEDIA_DEFAULT);
+
+        //Rigo di liquidita' spezzato sugli apporti (circ. 12/E/2016 par. 14.1) e, a scelta, sui
+        //prelievi : entrambi disattivi di default, soglia 500 euro. Vedi Calcoli_RW_Fiat.OPZIONE_SPEZZA_SU_APPORTI.
+        RW_Opzioni_RipristinaTaglio(RW_Opzioni_CheckBox_FiatSpezzaApporti, RW_Opzioni_Text_FiatSogliaApporti,
+                Calcoli_RW_Fiat.OPZIONE_SPEZZA_SU_APPORTI, Calcoli_RW_Fiat.OPZIONE_SOGLIA_APPORTI);
+        RW_Opzioni_RipristinaTaglio(RW_Opzioni_CheckBox_FiatSpezzaPrelievi, RW_Opzioni_Text_FiatSogliaPrelievi,
+                Calcoli_RW_Fiat.OPZIONE_SPEZZA_SU_PRELIEVI, Calcoli_RW_Fiat.OPZIONE_SOGLIA_PRELIEVI);
+        //Solo qui, dopo il ripristino di tutte le opzioni FIAT : l'abilitazione dei tagli dipende anche
+        //dal regime della liquidita', che viene ripristinato sopra.
+        RW_Opzioni_AggiornaAbilitazioneFiat();
+
         String RW_LiFoComplessivo=DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo"); 
         if(RW_LiFoComplessivo!=null && RW_LiFoComplessivo.equalsIgnoreCase("SI")){
             this.RW_Opzioni_CheckBox_LiFoComplessivo.setSelected(true);
@@ -10733,126 +10836,26 @@ if (result.isAction("delete-all")) {
                     return;
                 }
                 //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
-                Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
-
-                for (String key : Principale.Mappa_RW_ListeXGruppoWallet.keySet()) {
-                    String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(key);
-                    String RW_MostraGiacenzeSePagaBollo=DatabaseH2.Pers_Opzioni_Leggi("RW_MostraGiacenzeSePagaBollo");
-                    boolean MostraGiacenzeSePagaBollo=false;
-                    if (Valori[2].equals("S")&&RW_MostraGiacenzeSePagaBollo.equals("SI"))MostraGiacenzeSePagaBollo=true;
-                    // System.out.println(key);
-                    String Errore = "";
-                    String RW1[];
-                    RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, key);//Questo serve solo per compilare anche i quadri sui wallet senza movimentazioni ne giacenze 
-                    //RW1 = RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, key);
-                    for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(key)) {
-                        //System.out.println(lista[1]);
-                        //System.out.println(key);
-                        if (lista[4].equals("0000-00-00 00:00")) {
-                            Errore = "ERRORI";
-                        }
-                        if (lista[15].toLowerCase().contains("error")) {
-                            Errore = "ERRORI";
-                        }
-                        //  ValFinalexggTOT = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(ValFinalexggTOT);
-
-                        //Questa funzione crea una nuova voce nel caso sia un nuovo quadro o recupera i valori qualora sia un quadro vecchio 
-                        RW1 = RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, lista[6]);
-                        //Se il wallet iniziale è diverso da quello finale (che è quello in esame) e inizialeWsuIniziale=true (variabile da tabella)
-                        //il valore iniziale lo devo sommare al wallet iniziale e non a quello in esame
-                        //lista[1]-> Gruppo Wallet Iniziale ----- lista[6]-> Gruppo Wallet Finale
-                        if ((!lista[1].equals(lista[6])) 
-                                && RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine.isSelected() 
-                                && !lista[1].isBlank())//Se il 
-                        //Se lista[1] ovvero il wallet di origine potrebbe essere blanc nel caso di giacenza negative
-                        //in quel caso non posso trovare da dove arriva
-                        {
-                            String Val[]=DatabaseH2.Pers_GruppoAlias_Leggi(lista[1]);
-                            String RW_MostraGiacPagaBollo=DatabaseH2.Pers_Opzioni_Leggi("RW_MostraGiacenzeSePagaBollo");
-                            boolean MostraGiacSePagaBollo=false;
-                            if (Val[2].equals("S")&&RW_MostraGiacPagaBollo.equals("SI"))MostraGiacSePagaBollo=true;
-                           // LoggerGC.logInfo("MostraGiacSePagaBollo="+MostraGiacSePagaBollo,"CDC_Grafica.RW_CalcolaRW");
-                            //Se il wallet di destinazione è un wallet che paga bollo non faccio nulla
-                            if(!MostraGiacSePagaBollo){
-                                String RW2[];
-                                RW2 = RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, lista[1]);
-                                RW2[1] = new BigDecimal(lista[5]).add(new BigDecimal(RW2[1])).toPlainString();//RW1[1] è il valore iniziale
-                            }
-
-                        } else {
-                            RW1[1] = new BigDecimal(lista[5]).add(new BigDecimal(RW1[1])).toPlainString();//RW1[1] è il valore iniziale
-                            //Qua dovrò gestire l'rw dell'altro wallet
-                        }
-                        
-                        RW1[2] = new BigDecimal(lista[10]).add(new BigDecimal(RW1[2])).toPlainString();
-                        RW1[4] = Errore;
-                        //RW[6]=gg*prezzo+i precedenti gg* prezzo -> Serve per poi trovare i gg ponderati
-                        RW1[6] = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(new BigDecimal(RW1[6])).toPlainString();
-                        //se il valore finale è diverso da zero allora proseguo con il calcolo dei gg ponderati
-                        if (new BigDecimal(RW1[2]).compareTo(new BigDecimal(0)) != 0) {
-                            RW1[3] = new BigDecimal(RW1[6]).divide(new BigDecimal(RW1[2]), 2, RoundingMode.HALF_UP).toPlainString();
-                        } else if (RW_Opzioni_RilevanteSoloValoriIniFin.isSelected()) {
-                            RW1[3] = new BigDecimal(lista[11]).setScale(2, RoundingMode.HALF_UP).toPlainString();
-                        }
-                        //IC
-                        RW1[5] = new BigDecimal(RW1[2]).divide(new BigDecimal("365"), VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP).multiply(new BigDecimal(RW1[3])).multiply(new BigDecimal("0.002")).setScale(2, RoundingMode.HALF_UP).toPlainString();
-
-                    }
-                    //Adesso se il wallet paga bollo mostro solo le giacenze di inizio e fine anno quindi sostituisco la lista per quel wallet
-                    //con quella con le giacenze di inizio e fine anno
-                    //poi sistemo i dati dell'RW
-                    //Lo faccio alla fine perchè nella parte prima il programma deve essere in grado di fare dei calcoli che se avessi solo la 
-                    //lista con le giacenze iniziali e finali non riuscirei a fare
-                    
-                    if (MostraGiacenzeSePagaBollo){
-                        
-                        //Azzero l'RW per quel Wallet
-                        Mappa_RW_ListeXGruppoWallet.put(key,MappaListaGiacenzeInizioFine.get(key));
-                        RW1 = RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, key);
-                        RW1[1] = "0.00";//Valore iniziale
-                        RW1[2] = "0.00";//Valore Finale
-                        RW1[3] = "0.00";//gg di Detenzione
-                        RW1[4] = "";    //Errori
-                        RW1[5] = "0.00";//IC Calcolata
-                        RW1[6] = "0.00";//gg*valore+gg2*valore2+.....
-                        RW1[7] = "NO";
-                        //Comincio a compilare i nuovi valori
-                        for (String[] lista : MappaListaGiacenzeInizioFine.get(key)) { 
-                            RW1[1] = new BigDecimal(lista[5]).add(new BigDecimal(RW1[1])).toPlainString();//Val iniziale
-                            RW1[2] = new BigDecimal(lista[10]).add(new BigDecimal(RW1[2])).toPlainString();//Val Finale
-                            RW1[3] = new BigDecimal(lista[11]).setScale(2, RoundingMode.HALF_UP).toPlainString();
-                            RW1[4] = Errore;
-                            RW1[5] = new BigDecimal(RW1[2]).divide(new BigDecimal("365"), VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP).multiply(new BigDecimal(RW1[3])).multiply(new BigDecimal("0.002")).setScale(2, RoundingMode.HALF_UP).toPlainString();
-                            
-                        }
-                       // LoggerGC.logInfo("Anno : "+RW_Anno_ComboBox.getSelectedItem().toString()+" - Wallet : "+key+" - gg detenzione :"+RW1[3],"CDCGrafica.RW_CalcolaRW");
-                        
-                    }
-
-                }
+                //Righi CRYPTO : uno per gruppo wallet e per tratto CRYPTO (periodi di GRUPPO_PERIODO_RW) ; un gruppo
+                //senza periodi ha il rigo unico di sempre. Logica in Principale_QuadroRW.
+                String AnnoRW = RW_Anno_ComboBox.getSelectedItem().toString();
+                Map<String, String[]> MappaWallerQuadro = Principale_QuadroRW.RighiCrypto(
+                        Mappa_RW_ListeXGruppoWallet, MappaListaGiacenzeInizioFine,
+                        g -> Calcoli_RW_PeriodiCrypto.trattiCrypto(g, AnnoRW), DatabaseH2::Pers_GruppoAlias_Leggi,
+                        RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine.isSelected(),
+                        RW_Opzioni_RilevanteSoloValoriIniFin.isSelected(),
+                        "SI".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi("RW_MostraGiacenzeSePagaBollo")));
                 //Parte FIAT : aggiunge a MappaWallerQuadro un rigo per ogni tratto di detenzione in valuta
                 //(chiave "Wallet NN|FIAT|<prog>"). Non tocca i righi CRYPTO gia' calcolati.
                 RW_CalcolaRW_ParteFiat(MappaWallerQuadro);
 
                 String ICtot = "0";
-                //Blocco 1 : righi CRYPTO - aggregazione per media ponderata + totale IC.
+                //Blocco 1 : righi CRYPTO (gia' completi di etichetta, chiave e bollo) + totale IC.
                 for (String[] RWx : MappaWallerQuadro.values()) {
                     if ("FIAT".equalsIgnoreCase(RWx[8])) continue;
-                    //Rinomino i Wallet seguendo l'Alias
-                    String Gruppo = "Wallet " + RWx[0].split(" ")[0].trim();
-                    String Valori[] = DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
-                    RWx[0] = RWx[0].split(" ")[0].trim() + " ( " + Valori[1] + " )";
-                    //Chiave di sintesi : "Wallet NN|CRYPTO|" (il progressivo periodo serve solo al FIAT).
-                    //Sostituisce i vecchi reverse-lookup basati su RWx[0].split(" ").
-                    RWx[6] = Gruppo + "|CRYPTO|";
-                    String PagaBollo = "NO";
-                    if (Valori[2].equalsIgnoreCase("S")) {
-                        RWx[5] = "0.00";
-                        PagaBollo = "SI";
-                    } else {
+                    if (!"SI".equals(RWx[7])) {
                         ICtot = new BigDecimal(ICtot).add(new BigDecimal(RWx[5])).toPlainString();
                     }
-                    RWx[7] = PagaBollo;
                     ModelloTabella.addRow(RWx);
                 }
                 //Blocco 2 : righi FIAT (valuta estera presso intermediario estero) - solo monitoraggio, niente IC.
@@ -10881,6 +10884,39 @@ if (result.isAction("delete-all")) {
         //Adesso Calcolo la media ponderata e genero gli RW dalla lista appena creata
     }
     
+    /**
+     * Date ISO {inizio, fine} del periodo CRYPTO della riga i-esima di {@code RW_Tabella}, lette dalla chiave di
+     * sintesi {@code "Wallet NN|CRYPTO|inizio/fine"}; {@code null} per il rigo unico del gruppo (o un rigo FIAT).
+     */
+    private String[] RW_PeriodoRiga(int riga) {
+        Object k = RW_Tabella.getModel().getValueAt(riga, 6);
+        String[] parti = k == null ? new String[0] : k.toString().split("\\|", -1);
+        if (parti.length > 2 && "CRYPTO".equals(parti[1]) && parti[2].contains("/")) {
+            return parti[2].split("/");
+        }
+        return null;
+    }
+
+    /** Il periodo della riga come "dal gg/mm al gg/mm", o vuoto per il rigo unico del gruppo. */
+    private String RW_PeriodoStampa(int riga) {
+        String[] p = RW_PeriodoRiga(riga);
+        if (p == null) return "";
+        return "dal " + p[0].substring(8, 10) + "/" + p[0].substring(5, 7)
+                + " al " + p[1].substring(8, 10) + "/" + p[1].substring(5, 7);
+    }
+
+    /**
+     * Col bollo pagato i giorni in stampa restano vuoti se il gruppo ha detenuto per tutto il periodo del rigo:
+     * l'anno (365/366) per il rigo unico, la lunghezza del periodo per un rigo di periodo.
+     */
+    private boolean RW_DetenutoTuttoIlPeriodo(int riga, String GG) {
+        String[] p = RW_PeriodoRiga(riga);
+        if (p == null) return GG.equals("365") || GG.equals("366");
+        long lunghezza = java.time.temporal.ChronoUnit.DAYS.between(
+                java.time.LocalDate.parse(p[0]), java.time.LocalDate.parse(p[1])) + 1;
+        return new BigDecimal(GG).compareTo(BigDecimal.valueOf(lunghezza)) >= 0;
+    }
+
     /** Natura ("CRYPTO" / "FIAT") della riga i-esima di {@code RW_Tabella} ; "CRYPTO" se la colonna non c'e' o e' vuota. */
     private String RW_FiatNaturaRiga(int riga){
         try {
@@ -10890,30 +10926,6 @@ if (result.isAction("delete-all")) {
         } catch (RuntimeException e) {
             return "CRYPTO";
         }
-    }
-
-    private String[] RW_Funzione_RitornaRWQuadro(Map<String, String[]> MappaWallerQuadro,String GruppoWallet){
-       // System.out.println("--"+GruppoWallet);
-              String RW1[] = new String[10];
-              if (MappaWallerQuadro.get(GruppoWallet)==null){//se la mappa è nulla la popolo per la prima volta
-                        if(GruppoWallet.split(" ").length>1)
-                            RW1[0] = GruppoWallet.split(" ")[1] + " (" + GruppoWallet + ")";
-                        else
-                            RW1[0] = GruppoWallet;
-                        RW1[1] = "0.00";//Valore iniziale
-                        RW1[2] = "0.00";//Valore Finale
-                        RW1[3] = "0.00";//gg di Detenzione
-                        RW1[4] = "";    //Errori
-                        RW1[5] = "0.00";//IC Calcolata
-                        RW1[6] = "0.00";//gg*valore+gg2*valore2+..... (poi sovrascritto con la chiave di sintesi gruppo|natura|prog)
-                        RW1[7] = "NO";
-                        RW1[8] = "CRYPTO";//Natura del rigo : CRYPTO (default) o FIAT
-                        RW1[9] = "";      //Codice Stato estero (solo righi FIAT)
-                        MappaWallerQuadro.put(GruppoWallet, RW1);
-                    }else{//altrimenti recupero i dati vecchi e li aggiorno
-                        RW1=MappaWallerQuadro.get(GruppoWallet);
-                    }
-              return RW1;
     }
 
     /**
@@ -10927,7 +10939,9 @@ if (result.isAction("delete-all")) {
      * resta "0.00" (solo monitoraggio). Per i <b>veri conti correnti esteri</b> (codice bene 1) la
      * colonna 5 porta l'<b>IVAFE</b> calcolata da {@code Calcoli_RW_Fiat} e la colonna 2 ("Val. Finale")
      * porta il <b>valore medio di giacenza</b> — non il saldo puntuale a fine tratto, che resta
-     * nella riga della mappa FIAT ({@code [10]}) per il dettaglio a video. L'IVAFE dei conti correnti
+     * nella riga della mappa FIAT ({@code [10]}) per il dettaglio a video ; con l'opzione
+     * {@code Calcoli_RW_Fiat.OPZIONE_VALORE_FINALE_MAX_MEDIA} anche i righi codice bene 14 portano il
+     * maggiore fra giacenza media del tratto e saldo finale. L'IVAFE dei conti correnti
      * <b>non entra</b> in {@code RW_Text_IC} : il totalizzatore CRYPTO salta le righe con natura FIAT.</p>
      */
     private void RW_CalcolaRW_ParteFiat(Map<String, String[]> MappaWallerQuadro){
@@ -10944,14 +10958,10 @@ if (result.isAction("delete-all")) {
                 boolean annoIntero = di.equals(anno + "-01-01") && df.equals(anno + "-12-31");
                 String etichetta = num + " ( " + alias[1] + " )";
                 if (!annoIntero) etichetta = etichetta + " [" + di + " / " + df + "]";
-                boolean contoCorrente = Calcoli_RW_Fiat.CODICE_BENE_CONTO_CORRENTE.equals(
-                        d[Calcoli_RW_Fiat.FIAT_COL_CODICE_BENE]);
-                //Conto corrente : colonna 8 del quadro RW = valore MEDIO di giacenza (d[19]), non il
-                //saldo puntuale a fine tratto (d[10], che resta nella riga della mappa per il dettaglio).
-                String valFinaleColonna = contoCorrente
-                        && d[Calcoli_RW_Fiat.FIAT_COL_VALORE_MEDIO] != null
-                        && !d[Calcoli_RW_Fiat.FIAT_COL_VALORE_MEDIO].isBlank()
-                        ? d[Calcoli_RW_Fiat.FIAT_COL_VALORE_MEDIO] : d[10];
+                //Colonna 8 del quadro RW : sul conto corrente il valore MEDIO di giacenza (d[19]),
+                //sugli altri righi il saldo a fine tratto o, con l'opzione "massimo fra giacenza media
+                //e valore finale", il maggiore dei due. d[10] resta il saldo reale per il dettaglio.
+                String valFinaleColonna = Calcoli_RW_Fiat.valoreFinaleDichiarato(d);
                 String[] RWx = new String[10];
                 RWx[0] = etichetta;
                 //Punto 1 : a video i totali FIAT seguono la stessa regola delle crypto (2 decimali),
@@ -11008,7 +11018,19 @@ if (result.isAction("delete-all")) {
                     ? Mappa_RW_ListeXGruppoWallet_Fiat.get(Gruppo)
                     : Mappa_RW_ListeXGruppoWallet.get(Gruppo);
             if (RigheDettaglio == null) RigheDettaglio = new java.util.ArrayList<>();
+            //Rigo CRYPTO di un periodo ("Wallet NN|CRYPTO|inizio/fine") : solo le righe il cui tratto è quello,
+            //riconosciuto dalla data fine [9] (il motore chiude i lotti a ogni confine di periodo).
+            String[] PartiChiave = chiaveSintesi.split("\\|", -1);
+            String TrattoDa = "", TrattoA = "";
+            if (!"FIAT".equalsIgnoreCase(NaturaRiga) && PartiChiave.length > 2 && PartiChiave[2].contains("/")) {
+                TrattoDa = PartiChiave[2].split("/")[0];
+                TrattoA = PartiChiave[2].split("/")[1];
+            }
             for (String[] lista : RigheDettaglio) {
+                if (!TrattoDa.isEmpty() && lista[9] != null && lista[9].length() >= 10) {
+                    String GiornoFine = lista[9].substring(0, 10);
+                    if (GiornoFine.compareTo(TrattoDa) < 0 || GiornoFine.compareTo(TrattoA) > 0) continue;
+                }
                 //I righi CRYPTO vengono da liste ricostruite a ogni ricalcolo, i righi FIAT vivono nella
                 //mappa Mappa_RW_ListeXGruppoWallet_Fiat e verrebbero corrotti da una seconda selezione
                 //(lo split verrebbe rieseguito su una stringa gia' aliasata) : per il FIAT lavoro su copia.
@@ -11105,7 +11127,9 @@ if (result.isAction("delete-all")) {
                 //Se arrivo qua significa che il movimento è in realtà la giacenza iniziale
                 //devo quindi trovare a quanto ammonta e scriverlo
                 String GRIni="Wallet "+GruppoWalletIni.split(" ")[0];
-                List<Moneta> listaIniziale=Mappa_RW_GiacenzeInizioPeriodo.get(GRIni);
+                //Le giacenze di inizio anno valgono solo per il rigo che parte dal 1/1 : un rigo di un periodo
+                //CRYPTO ("Giacenza Inizio Periodo") mostra i valori della riga stessa.
+                List<Moneta> listaIniziale=IDIniziale.contains("Periodo") ? null : Mappa_RW_GiacenzeInizioPeriodo.get(GRIni);
                 String MonNome="";
                 String MonQta="";
                 String MonPrz="";
@@ -11182,7 +11206,8 @@ if (result.isAction("delete-all")) {
                 //Se arrivo qua significa che sto gestendo un valore finale di fine anno
                 String Mov[]=new String[7];
                 String GRFin="Wallet "+GruppoWalletFin.split(" ")[0];
-                List<Moneta> listaFinale=Mappa_RW_GiacenzeFinePeriodo.get(GRFin);
+                //Come sopra : un rigo chiuso a un confine di periodo ("Giacenza Fine Periodo") mostra i valori della riga.
+                List<Moneta> listaFinale=IDFinale.contains("Periodo") ? null : Mappa_RW_GiacenzeFinePeriodo.get(GRFin);
                 String MonNome="";
                 String MonQta="";
                 String MonPrz="";
@@ -11199,6 +11224,11 @@ if (result.isAction("delete-all")) {
                         MonTipo=Mon.Tipo;
                     }
                 }}
+                if (MonQta.isBlank()) {
+                    MonQta=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 8).toString();
+                    MonNome=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 7).toString();
+                    MonPrz=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString();
+                }
                 Mov[0]=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 9).toString();
                 Mov[1]=GruppoWalletFin;
                 Mov[2]=IDFinale;
@@ -11814,7 +11844,95 @@ if (result.isAction("delete-all")) {
         RW_Opzioni_Label_Liquidita.setEnabled(attiva);
         RW_Opzioni_Radio_Liquidita_ConIvafe.setEnabled(attiva);
         RW_Opzioni_Radio_Liquidita_SoloMonitoraggio.setEnabled(attiva);
+        RW_Opzioni_CheckBox_FiatValoreFinaleMaxMedia.setEnabled(attiva);
+        //I tagli su apporti/prelievi servono solo se l'IVAFE si liquida : in solo monitoraggio non ci
+        //sono giorni di detenzione da dichiarare e il motore li ignora comunque.
+        boolean tagli = attiva && !RW_Opzioni_Radio_Liquidita_SoloMonitoraggio.isSelected();
+        RW_Opzioni_CheckBox_FiatSpezzaApporti.setEnabled(tagli);
+        RW_Opzioni_Text_FiatSogliaApporti.setEnabled(tagli && RW_Opzioni_CheckBox_FiatSpezzaApporti.isSelected());
+        RW_Opzioni_CheckBox_FiatSpezzaPrelievi.setEnabled(tagli);
+        RW_Opzioni_Text_FiatSogliaPrelievi.setEnabled(tagli && RW_Opzioni_CheckBox_FiatSpezzaPrelievi.isSelected());
     }
+
+    /** Ripristina casella e soglia di un'opzione di taglio, scrivendo i default se mancano. */
+    private void RW_Opzioni_RipristinaTaglio(javax.swing.JCheckBox casella, javax.swing.JTextField soglia,
+            String opzioneAttiva, String opzioneSoglia) {
+        String attiva = DatabaseH2.Pers_Opzioni_Leggi(opzioneAttiva);
+        if (attiva != null && attiva.equalsIgnoreCase("SI")) {
+            casella.setSelected(true);
+        } else {
+            casella.setSelected(false);
+            DatabaseH2.Pers_Opzioni_Scrivi(opzioneAttiva, Calcoli_RW_Fiat.SPEZZA_DEFAULT);
+        }
+        String valore = DatabaseH2.Pers_Opzioni_Leggi(opzioneSoglia);
+        if (valore == null || Calcoli_RW_Fiat.leggiSoglia(valore) == null) {
+            valore = Calcoli_RW_Fiat.SOGLIA_TAGLIO_DEFAULT;
+            DatabaseH2.Pers_Opzioni_Scrivi(opzioneSoglia, valore);
+        }
+        soglia.setText(valore);
+    }
+
+    /** Casella di un'opzione di taglio cliccata : salva, riallinea l'abilitazione della soglia, ricalcola. */
+    private void RW_Opzioni_CambiaTaglio(javax.swing.JCheckBox casella, String opzioneAttiva) {
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        DatabaseH2.Pers_Opzioni_Scrivi(opzioneAttiva, casella.isSelected() ? "SI" : "NO");
+        RW_Opzioni_AggiornaAbilitazioneFiat();
+        Funzioni_AggiornaTutto();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }
+
+    /**
+     * Soglia di un'opzione di taglio confermata (Invio o uscita dal campo). Ricalcola solo se il valore
+     * è cambiato : l'uscita dal campo scatta anche senza modifiche, e un ricalcolo completo a ogni
+     * cambio di focus sarebbe inutile. Un valore non valido viene rifiutato e il campo torna a
+     * quello salvato.
+     */
+    private void RW_Opzioni_ConfermaSoglia(javax.swing.JTextField campo, String opzioneSoglia) {
+        String salvato = DatabaseH2.Pers_Opzioni_Leggi(opzioneSoglia);
+        if (salvato == null) salvato = Calcoli_RW_Fiat.SOGLIA_TAGLIO_DEFAULT;
+        String testo = campo.getText().trim();
+        if (testo.equals(salvato.trim())) return;
+        java.math.BigDecimal soglia = testo.isEmpty() ? null : Calcoli_RW_Fiat.leggiSoglia(testo);
+        if (soglia == null) {
+            campo.setText(salvato);
+            Messaggi.WarningMessage("Soglia non valida",
+                    "La soglia deve essere un importo in euro maggiore o uguale a zero (es. 500 oppure 1.500,50).", this);
+            return;
+        }
+        //Si salva il valore interpretato e lo si rimette nel campo : se "1.500" fosse stato letto
+        //come 1,5 l'utente lo vedrebbe subito.
+        String normalizzata = soglia.stripTrailingZeros().toPlainString();
+        campo.setText(normalizzata);
+        if (normalizzata.equals(salvato.trim())) return;
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        DatabaseH2.Pers_Opzioni_Scrivi(opzioneSoglia, normalizzata);
+        Funzioni_AggiornaTutto();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }
+
+    private void RW_Opzioni_CheckBox_FiatSpezzaApportiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_FiatSpezzaApportiActionPerformed
+        RW_Opzioni_CambiaTaglio(RW_Opzioni_CheckBox_FiatSpezzaApporti, Calcoli_RW_Fiat.OPZIONE_SPEZZA_SU_APPORTI);
+    }//GEN-LAST:event_RW_Opzioni_CheckBox_FiatSpezzaApportiActionPerformed
+
+    private void RW_Opzioni_CheckBox_FiatSpezzaPrelieviActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_FiatSpezzaPrelieviActionPerformed
+        RW_Opzioni_CambiaTaglio(RW_Opzioni_CheckBox_FiatSpezzaPrelievi, Calcoli_RW_Fiat.OPZIONE_SPEZZA_SU_PRELIEVI);
+    }//GEN-LAST:event_RW_Opzioni_CheckBox_FiatSpezzaPrelieviActionPerformed
+
+    private void RW_Opzioni_Text_FiatSogliaApportiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_Text_FiatSogliaApportiActionPerformed
+        RW_Opzioni_ConfermaSoglia(RW_Opzioni_Text_FiatSogliaApporti, Calcoli_RW_Fiat.OPZIONE_SOGLIA_APPORTI);
+    }//GEN-LAST:event_RW_Opzioni_Text_FiatSogliaApportiActionPerformed
+
+    private void RW_Opzioni_Text_FiatSogliaApportiFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_RW_Opzioni_Text_FiatSogliaApportiFocusLost
+        RW_Opzioni_ConfermaSoglia(RW_Opzioni_Text_FiatSogliaApporti, Calcoli_RW_Fiat.OPZIONE_SOGLIA_APPORTI);
+    }//GEN-LAST:event_RW_Opzioni_Text_FiatSogliaApportiFocusLost
+
+    private void RW_Opzioni_Text_FiatSogliaPrelieviActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_Text_FiatSogliaPrelieviActionPerformed
+        RW_Opzioni_ConfermaSoglia(RW_Opzioni_Text_FiatSogliaPrelievi, Calcoli_RW_Fiat.OPZIONE_SOGLIA_PRELIEVI);
+    }//GEN-LAST:event_RW_Opzioni_Text_FiatSogliaPrelieviActionPerformed
+
+    private void RW_Opzioni_Text_FiatSogliaPrelieviFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_RW_Opzioni_Text_FiatSogliaPrelieviFocusLost
+        RW_Opzioni_ConfermaSoglia(RW_Opzioni_Text_FiatSogliaPrelievi, Calcoli_RW_Fiat.OPZIONE_SOGLIA_PRELIEVI);
+    }//GEN-LAST:event_RW_Opzioni_Text_FiatSogliaPrelieviFocusLost
 
     private void RW_Opzioni_Radio_Liquidita_ConIvafeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_Radio_Liquidita_ConIvafeActionPerformed
         ScegliRegimeLiquiditaFiat(false);
@@ -11823,6 +11941,16 @@ if (result.isAction("delete-all")) {
     private void RW_Opzioni_Radio_Liquidita_SoloMonitoraggioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_Radio_Liquidita_SoloMonitoraggioActionPerformed
         ScegliRegimeLiquiditaFiat(true);
     }//GEN-LAST:event_RW_Opzioni_Radio_Liquidita_SoloMonitoraggioActionPerformed
+
+    private void RW_Opzioni_CheckBox_FiatValoreFinaleMaxMediaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_FiatValoreFinaleMaxMediaActionPerformed
+        //Vedi Calcoli_RW_Fiat.OPZIONE_VALORE_FINALE_MAX_MEDIA : valore finale della liquidita' non
+        //conto corrente = maggiore fra giacenza media del tratto e saldo a fine tratto.
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_VALORE_FINALE_MAX_MEDIA,
+                RW_Opzioni_CheckBox_FiatValoreFinaleMaxMedia.isSelected() ? "SI" : "NO");
+        Funzioni_AggiornaTutto();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_RW_Opzioni_CheckBox_FiatValoreFinaleMaxMediaActionPerformed
 
     /**
      * Regime dichiarativo della liquidità in valuta presso intermediari esteri (righi codice bene 14
@@ -11833,6 +11961,7 @@ if (result.isAction("delete-all")) {
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO,
                 soloMonitoraggio ? "SI" : "NO");
+        RW_Opzioni_AggiornaAbilitazioneFiat(); //i tagli su apporti/prelievi dipendono dal regime
         Funzioni_AggiornaTutto();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
@@ -12073,7 +12202,10 @@ if (result.isAction("delete-all")) {
                     righeQuadroStampate++;
                     totRigheW++;
                     //Senza veste grafica AggiungiEtichettaGruppo ricade da sola sulla vecchia riga HTML.
-                    stampa.AggiungiEtichettaGruppo("W"+righeQuadroStampate, NomeGruppo, errori?"Attenzione! Ci sono degli errori da correggere!":"");
+                    //Rigo di un periodo CRYPTO : le date vanno nel dettaglio, altrimenti due righi dello stesso gruppo sarebbero uguali
+                    String PeriodoW = RW_PeriodoStampa(i);
+                    stampa.AggiungiEtichettaGruppo("W"+righeQuadroStampate, NomeGruppo, PeriodoW.isEmpty() ? "" : " - " + PeriodoW,
+                            errori?"Attenzione! Ci sono degli errori da correggere!":"");
                     if (PagaBollo.equalsIgnoreCase("SI")&&
                             (RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.isSelected()||
                             RW_Opzioni_RilevanteSoloValoriIniFin.isSelected()))GG="";
@@ -12183,7 +12315,10 @@ if (result.isAction("delete-all")) {
                             }
                             
                             //stampa.AggiungiHtml("<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>"+NomeGruppo+"</b>" + Errore+"</html>");
-                            if (PagaBollo.equalsIgnoreCase("SI") && (GG.equals("365") || GG.equals("366"))) {
+                            //Rigo di un periodo CRYPTO : le date seguono il nome, altrimenti due righi dello stesso gruppo sarebbero uguali
+                            String PeriodoRW = RW_PeriodoStampa(i);
+                            if (!PeriodoRW.isEmpty()) NomeGruppo = NomeGruppo + " (" + PeriodoRW + ")";
+                            if (PagaBollo.equalsIgnoreCase("SI") && RW_DetenutoTuttoIlPeriodo(i, GG)) {
                                 GG = "";
                             } else if (PagaBollo.equalsIgnoreCase("SI")) {
                                 GG = "(" + GG + ")*";
@@ -12372,6 +12507,39 @@ if (result.isAction("delete-all")) {
                                     """;                                
                             }
                             
+                stampa.AggiungiHtml(testo);
+            }
+
+            //Parte FIAT : le opzioni della liquidita' cambiano i valori e l'imposta dei righi FIAT
+            //stampati, quindi chi legge il report deve poterle vedere. Blocco a se' e non dentro l'else
+            //qui sopra : vale anche con l'opzione "solo valori di inizio e fine anno" delle crypto.
+            if (RW_Opzioni_CheckBox_FiatInRW.isSelected()) {
+                            testo = """
+                                    <html><font size="2" face="Courier New, Courier, mono" >
+                                    <br><b>LIQUIDITÀ PRESSO INTERMEDIARI ESTERI (FIAT) : </b><br>
+                                    &emsp;\u2022 Il quadro comprende anche la liquidità (euro e altre valute) detenuta presso intermediari esteri.<br>
+                                    """;
+                                if (RW_Opzioni_Radio_Liquidita_SoloMonitoraggio.isSelected()) {
+                                testo = testo + """
+                                    &emsp;\u2022 La liquidità diversa dai conti correnti (codice bene 14) è dichiarata in solo monitoraggio, senza liquidare l'IVAFE.<br>
+                                    """;
+                                } else {
+                                testo = testo + """
+                                    &emsp;\u2022 Sulla liquidità diversa dai conti correnti (codice bene 14) si liquida l'IVAFE ordinaria dello 0,20 % (0,40 % per gli Stati a fiscalità privilegiata dal 2024).<br>
+                                    """;
+                                }
+                                if (RW_Opzioni_CheckBox_FiatValoreFinaleMaxMedia.isSelected()) {
+                                testo = testo + """
+                                    &emsp;\u2022 Sulla liquidità diversa dai conti correnti il valore finale è il maggiore fra la giacenza media del periodo di detenzione (somma dei saldi giornalieri divisa per i giorni del periodo) e il saldo a fine periodo, e lo stesso valore è la base dell'IVAFE.<br>
+                                    """;
+                                } else {
+                                testo = testo + """
+                                    &emsp;\u2022 Sulla liquidità diversa dai conti correnti il valore finale è il saldo a fine periodo.<br>
+                                    """;
+                                }
+                                testo = testo + """
+                                    &emsp;\u2022 Sui conti correnti esteri (codice bene 1) il valore finale è la giacenza media annua (somma dei saldi giornalieri divisa sempre per 365, anche per un conto aperto solo parte dell'anno) e l'IVAFE è quella in misura fissa (34,20 euro), non dovuta se la giacenza media non supera 5.000 euro.<br></html>
+                                    """;
                 stampa.AggiungiHtml(testo);
             }
 
@@ -14388,6 +14556,18 @@ if (result != null && !result.isAction("cancel")) {
                 Prezzi_Opzioni_CheckBox_ServizioOnchain.isSelected() ? "SI" : "NO");
     }//GEN-LAST:event_Prezzi_Opzioni_CheckBox_ServizioOnchainActionPerformed
 
+    private void Prezzi_Opzioni_CheckBox_AliasAnniPassatiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Prezzi_Opzioni_CheckBox_AliasAnniPassatiActionPerformed
+        boolean attiva = Prezzi_Opzioni_CheckBox_AliasAnniPassati.isSelected();
+        //Accenderla cambia i valori degli anni gia' dichiarati: si chiede conferma, spegnerla no
+        if (attiva && !Messaggi.Personalizzati_SINO_AliasAnniPassati(this)) {
+            Prezzi_Opzioni_CheckBox_AliasAnniPassati.setSelected(false);
+            return;
+        }
+        AliasPrezziToken.ImpostaAncheAnniPassati(attiva);
+        //Il quadro RW valorizza dal vivo: quello a video e' stato calcolato con l'altra regola
+        if (RW_Tabella.getRowCount() > 0) RW_Label_SegnalaRicalcolo.setVisible(true);
+    }//GEN-LAST:event_Prezzi_Opzioni_CheckBox_AliasAnniPassatiActionPerformed
+
     private void Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed
         // TODO add your handling code here:
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -15229,27 +15409,12 @@ if (result != null && !result.isAction("cancel")) {
     }
 
     /**
-     * Verifica gratuita (nessuna chiamata API) di impersonazione: se sulla STESSA rete esiste in
-     * {@link #Mappa_AddressRete_Nome} un token noto con lo stesso simbolo ma un address diverso, si tratta
-     * quasi certamente di un token contraffatto (es. un finto "USDT" sulla stessa chain del vero USDT).
-     * Il confronto è limitato alla stessa rete perché la mappa è una piccola lista di alias non esaustiva:
-     * un simbolo noto solo su un'altra chain (es. USDT su ETH, non presente in mappa) non è un'impersonazione,
-     * è semplicemente una rete che la mappa non copre.
+     * Verifica gratuita (nessuna chiamata API) di impersonazione contro i token di riferimento di
+     * {@code config/varie/AliasPrezziToken.json}, esclusi i token censiti da CoinGecko: la regola sta in
+     * {@link AliasPrezziToken#MotivoImpersonazioneEsclusiCensiti}.
      */
     private String DepositiPrelievi_VerificaSpamImpersonazione(String nomeMoneta, String address, String rete) {
-        if (nomeMoneta == null || address == null || rete == null) return null;
-        String chiave = address + "_" + rete;
-        for (Map.Entry<String, String> entry : Mappa_AddressRete_Nome.entrySet()) {
-            String chiaveNota = entry.getKey();
-            String reteNota = chiaveNota.substring(chiaveNota.lastIndexOf('_') + 1);
-            if (entry.getValue().equalsIgnoreCase(nomeMoneta)
-                    && reteNota.equalsIgnoreCase(rete)
-                    && !chiaveNota.equalsIgnoreCase(chiave)) {
-                return "simbolo \"" + nomeMoneta + "\" coincide con il token noto " + entry.getValue()
-                        + " sulla stessa rete (" + chiaveNota + ") ma con address diverso: possibile impersonazione";
-            }
-        }
-        return null;
+        return AliasPrezziToken.MotivoImpersonazioneEsclusiCensiti(nomeMoneta, address, rete);
     }
 
     private static final Map<String, String> GOPLUS_CHAIN_ID = Map.ofEntries(
@@ -19088,6 +19253,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_NonConsiderareMovimentiNC;
     private javax.swing.JPopupMenu PopupMenu;
+    private javax.swing.JCheckBox Prezzi_Opzioni_CheckBox_AliasAnniPassati;
     private javax.swing.JCheckBox Prezzi_Opzioni_CheckBox_ServizioOnchain;
     private javax.swing.JPanel RT;
     private javax.swing.JButton RT_Bottone_Calcola;
@@ -19122,6 +19288,9 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel RW_Label_SegnalaRicalcolo;
     private javax.swing.ButtonGroup RW_Liquidita;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_FiatInRW;
+    private javax.swing.JCheckBox RW_Opzioni_CheckBox_FiatSpezzaApporti;
+    private javax.swing.JCheckBox RW_Opzioni_CheckBox_FiatSpezzaPrelievi;
+    private javax.swing.JCheckBox RW_Opzioni_CheckBox_FiatValoreFinaleMaxMedia;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_LiFoComplessivo;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_LiFoSubMovimenti;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo;
@@ -19136,6 +19305,8 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JRadioButton RW_Opzioni_RilenvanteTuttigliScambi;
     private javax.swing.JRadioButton RW_Opzioni_RilevanteScambiRilevanti;
     private javax.swing.JRadioButton RW_Opzioni_RilevanteSoloValoriIniFin;
+    private javax.swing.JTextField RW_Opzioni_Text_FiatSogliaApporti;
+    private javax.swing.JTextField RW_Opzioni_Text_FiatSogliaPrelievi;
     private javax.swing.ButtonGroup RW_RadioGruppo;
     private javax.swing.JTable RW_Tabella;
     private javax.swing.JTable RW_Tabella_Dettagli;

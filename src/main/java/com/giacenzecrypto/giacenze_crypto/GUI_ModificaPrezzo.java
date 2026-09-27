@@ -769,7 +769,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
             String tipo = (i == 0) ? Movimento[9] : Movimento[12];
             String address = rete.isBlank() ? "" : ((i == 0) ? Movimento[26] : Movimento[28]);
             if (moneta == null || moneta.isBlank() || tipo.equalsIgnoreCase("FIAT")) continue;
-            String monAlias = Principale.Mappa_AddressRete_Nome.get(address + "_" + rete);
+            String monAlias = AliasPrezziToken.Alias(address, rete, data);
             simboliCCXT.add(monAlias != null ? monAlias : moneta);
         }
         Prezzi.RecuperaPrezziDaCCXTTutti(simboliCCXT, data);
@@ -779,7 +779,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
             String tipo = (i == 0) ? Movimento[9] : Movimento[12];
             String address = rete.isBlank() ? "" : ((i == 0) ? Movimento[26] : Movimento[28]);
             if (moneta == null || moneta.isBlank() || tipo.equalsIgnoreCase("FIAT")) continue;
-            String monAlias = Principale.Mappa_AddressRete_Nome.get(address + "_" + rete);
+            String monAlias = AliasPrezziToken.Alias(address, rete, data);
             if (monAlias != null) moneta = monAlias;
             if (Funzioni_WalletDeFi.isValidAddress(address, rete)) {
                 Prezzi.RecuperaTassidiCambiodaAddress_Coingecko(FunzioniDate.ConvertiDatadaLong(data), address, rete, moneta);
@@ -801,7 +801,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
         for (Moneta m : M) {
             if (m.Moneta == null || m.Moneta.isBlank() || m.Tipo == null || m.Tipo.equalsIgnoreCase("FIAT")) continue;
             String address = rete.isBlank() ? "" : m.MonetaAddress;
-            String monAlias = Principale.Mappa_AddressRete_Nome.get(address + "_" + rete);
+            String monAlias = AliasPrezziToken.Alias(address, rete, data);
             simboliCCXT.add(monAlias != null ? monAlias : m.Moneta);
         }
         Prezzi.RecuperaPrezziDaCCXTTutti(simboliCCXT, data);
@@ -810,7 +810,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
             if (m.Moneta == null || m.Moneta.isBlank() || m.Tipo == null || m.Tipo.equalsIgnoreCase("FIAT")) continue;
             String address = rete.isBlank() ? "" : m.MonetaAddress;
             String nomeMoneta = m.Moneta;
-            String monAlias = Principale.Mappa_AddressRete_Nome.get(address + "_" + rete);
+            String monAlias = AliasPrezziToken.Alias(address, rete, data);
             if (monAlias != null) nomeMoneta = monAlias;
             if (Funzioni_WalletDeFi.isValidAddress(address, rete)) {
                 Prezzi.RecuperaTassidiCambiodaAddress_Coingecko(FunzioniDate.ConvertiDatadaLong(data), address, rete, nomeMoneta);

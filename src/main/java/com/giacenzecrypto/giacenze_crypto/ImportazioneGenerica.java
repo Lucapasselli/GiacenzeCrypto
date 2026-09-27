@@ -1029,7 +1029,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 if (Funzioni.isSCAM(moneta)) continue;
                 if (Principale.Mappa_EMoney != null && Principale.Mappa_EMoney.get(moneta) != null) continue;
 
-                String simbolo = Principale.Mappa_MoneteStessoPrezzo.getOrDefault(moneta, moneta).toUpperCase();
+                String simbolo = AliasPrezziToken.StessoPrezzo(moneta, data).toUpperCase();
                 for (long inizioOra : oreDaCoprire) {
                     if (inizioOra > adessoMs) continue;
                     if (chiavi.add(simbolo + "|" + inizioOra)) {
@@ -1552,7 +1552,11 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
      */
     private static void scarta(String motivo, String riga) {
         Importazioni.movimentiSconosciuti += motivo + " | " + riga + "\n";
-        Importazioni.TrasazioniScartate++;    // <- aggiunta
+        //Solo "sconosciute": TrasazioniScartate nel resoconto vuol dire "gia' esistenti", e
+        //contarla anche li' faceva risultare doppione una riga illeggibile. In un import completo
+        //non si vedeva perche' ScriviListaSuMappaCrypto sovrascrive TrasazioniScartate; dopo un
+        //Interrompi (uscita prima della scrittura) il conteggio restava e compariva come
+        //"1 scartata perche' gia' esistente" su un archivio vuoto (2026-09-27).
         Importazioni.TrasazioniSconosciute++;
     }
 

@@ -63,11 +63,11 @@ public class MappeCausali {
 
     /**
      * File distribuiti in {@code config/varie/}: testi e tabelle che non c'entrano con l'import (oggi le
-     * note di compilazione dei quadri W/RW e T/RT). Stessa strada di {@link #FILE_DI_SISTEMA}: default
+     * note di compilazione dei quadri W/RW e T/RT, gli alias address/rete dei prezzi). Stessa strada di {@link #FILE_DI_SISTEMA}: default
      * nel jar sotto {@code /Varie/}, installati al primo avvio, riallineati dal repository.
      */
     static final String[] FILE_VARIE = new String[]{
-        NoteCompilazione.NOME
+        NoteCompilazione.NOME, AliasPrezziToken.NOME
     };
 
     /**

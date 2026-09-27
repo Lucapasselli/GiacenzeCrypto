@@ -78,7 +78,7 @@ public class Stampe {
       static final Color FASCIA_MARGINE = new Color(0xEC, 0xEC, 0xD2);
 
       /** Facce del font dell'applicazione, caricate dal jar alla prima stampa che le usa. */
-      private static BaseFont bfRegular, bfBold;
+      static BaseFont bfRegular, bfBold;
       private static boolean fontHtmlRegistrato = false;
 
       /**
@@ -1133,6 +1133,21 @@ public class Stampe {
     }
 
     /**
+     * La stessa veste grafica dei report, per i manuali di {@code docs/documentazione} (vedi
+     * {@link GeneraPdfDocumentazione}). A differenza di un report, un manuale e' testo che scorre su piu'
+     * pagine : i margini lasciano spazio alla testata e al piede, che stanno sul canvas e non occupano
+     * flusso. Come {@link #AttivaVesteGrafica} va chiamata prima di {@link #ApriDocumento()}.
+     *
+     * @param Marcatore testo del marcatore verticale nel margine sinistro (es. {@code "DOCUMENTAZIONE"})
+     */
+    public void AttivaVesteDocumento(String Marcatore) {
+        CaricaFont();
+        cornice = new CorniceReport(Marcatore, "");
+        writer.setPageEvent(cornice);
+        doc.setMargins(58, 44, 62, 58);
+    }
+
+    /**
      * Testo mostrato a destra nella testata delle pagine successive alla copertina.
      * Da impostare all'inizio di ogni pagina, prima di comporla.
      *
@@ -1462,7 +1477,7 @@ public class Stampe {
      * stampando l'intero testo in bold (o l'intero testo in regular). {@code RandomAccessFileOrArray}
      * accetta un percorso di classpath, quindi i TTF si leggono direttamente da dentro il jar.
      */
-    private static synchronized void CaricaFont() {
+    static synchronized void CaricaFont() {
         try {
             if (bfRegular == null) {
                 bfRegular = BaseFont.createFont("/Fonts/NotoSans-Regular.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
@@ -1485,7 +1500,7 @@ public class Stampe {
     private static final String FAMIGLIA_HTML = "noto sans";
 
     /** Il logo sta nel classpath ({@code src/main/resources/logo.png}), non in {@code Immagini/}. */
-    private static com.lowagie.text.Image LogoApplicazione() {
+    static com.lowagie.text.Image LogoApplicazione() {
         try {
             java.net.URL u = Stampe.class.getResource("/logo.png");
             return u == null ? null : com.lowagie.text.Image.getInstance(u);

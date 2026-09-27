@@ -27,6 +27,29 @@ I pacchetti pronti all'uso vengono pubblicati a ogni rilascio:
 In caso di problemi si può chiedere supporto sul
 [gruppo Telegram](https://t.me/+6kfy5mjov-I2ODY8).
 
+## Versione 1.0.65 {#versione-1065}
+
+**Nuove implementazioni**
+
+- **Quadro W/RW: un rigo per ogni periodo di detenzione cripto.** I periodi CRYPTO impostati in *Opzioni – Gruppi Wallet Crypto* sono ora attivi nei calcoli e nella stampa: il rigo di un gruppo si spezza a ogni confine di periodo, ogni periodo ha il proprio bollo (con il bollo pagato l'imposta è zero), il nome del rigo riporta le date del periodo e selezionandolo il dettaglio mostra solo le sue righe. Con le opzioni B, C e D le posizioni aperte vengono chiuse e riaperte al confine allo stesso prezzo di mercato, quindi il valore finale di un periodo coincide con il valore iniziale del successivo. Un gruppo senza periodi continua a produrre il rigo unico di sempre. In stampa i righi di periodo portano le date accanto al nome e i giorni del rigo col bollo restano vuoti quando il gruppo ha detenuto per tutto il periodo.
+- **Quadro W/RW: giacenze di inizio e fine anno calcolate in un solo modo.** L'opzione A e la casella "per i Wallet che pagano già il bollo mostra solo giacenza ad inizio fine anno" usano ora la stessa fotografia delle giacenze. Gli NFT sono sempre compresi e gli euro mai. Per un gruppo aperto durante l'anno la moneta del primo movimento vale quanto il movimento, e una giacenza negativa non viene conteggiata ma segnalata come errore.
+- **Quadro W/RW, liquidità: nuova opzione "valore finale maggiore fra giacenza media e saldo".** In *Opzioni – Opzioni Calcolo RW/W* (disattivata in modo predefinito), per la liquidità diversa dai conti correnti (codice bene 14) il valore finale diventa il maggiore fra la **giacenza media annua** e il saldo a fine periodo, e su quel valore si calcola anche l'IVAFE. La giacenza media si calcola come nelle istruzioni della DSU e nella scheda dell'Agenzia delle Entrate: somma dei saldi giornalieri divisa per 365, anche se il conto è stato aperto solo per una parte dell'anno e anche negli anni bisestili. Il rigo avvisa quando prevale la media e con l'opzione attiva compare anche un conto aperto e svuotato nel corso dell'anno. I conti correnti continuano a riportare la giacenza media, come chiedono le istruzioni del quadro RW.
+- **Stampa del Quadro W/RW**: nel riepilogo "Opzioni scelte per il calcolo" c'è ora anche la parte della liquidità (regime dell'IVAFE, calcolo del valore finale, conti correnti).
+- **Importazione da Gate.io**: storico degli scambi a pronti, depositi e prelievi, con il gruppo wallet preconfigurato *Wallet 115 – Gate.io*.
+- **Importazione da Bybit (in prova)**: file CSV "Asset Change Details" del conto Spot e del conto Funding, con scambi, commissioni, conversioni dei residui, airdrop e interessi di Earn e Launchpool. I giroconti fra i due conti non vengono importati. Non sono ancora gestiti l'Unified Trading Account e i derivati.
+- **Prezzi dagli exchange per i token equivalenti.** Token come WETH su Base o USDC.e vengono prezzati come la moneta principale sugli exchange, al minuto invece che all'ora. L'elenco delle equivalenze sta in un file aggiornato all'avvio. Per non cambiare le dichiarazioni già presentate, le equivalenze nuove valgono solo dalla loro data di introduzione, salvo attivare in *Opzioni – Opzioni di Calcolo* la casella *Prezzi dagli exchange anche per gli anni già dichiarati* (attiva in modo predefinito solo sulle installazioni nuove).
+- **Menu contestuale dei movimenti: "Unisci movimenti omogenei".** Fonde in un unico movimento più movimenti dello stesso tipo, della stessa moneta e dello stesso wallet registrati a non più di un secondo l'uno dall'altro, sommandone quantità e controvalore. La conferma avvisa dei possibili effetti su una futura reimportazione e sul costo di carico.
+- Nella finestra **"Filtri..."** della tabella dei movimenti c'è ora la scelta **"Periodo (Anno)"**, che imposta in un clic le date sull'intero anno scelto.
+- **Recupero dei prezzi più veloce**: il processo che interroga gli exchange resta attivo fra una richiesta e l'altra invece di ripartire ogni volta, "Riscarica tutti i prezzi dalle fonti" interroga gli exchange in parallelo, e il calcolo del quadro RW non richiede più i prezzi delle monete con giacenza zero.
+- Il **manuale del Quadro W/RW** è stato aggiornato con i periodi di detenzione, la liquidità presso intermediari esteri, i gruppi preconfigurati e la stampa. I PDF dei manuali hanno ora la stessa veste grafica delle stampe dei quadri.
+
+**Correzione di bug**
+
+- **Quadro W/RW con l'opzione A**: se un gruppo nasceva durante l'anno con un deposito in euro, quegli euro entravano nel valore iniziale del rigo cripto.
+- **Quadro W/RW, gruppi col bollo con "mostra solo giacenza"**: una giacenza negativa veniva conteggiata come valore positivo, gonfiando il rigo invece di segnalare l'errore.
+- Un **prezzo personalizzato** salvato per un token con indirizzo non veniva più riletto quando il token è fra quelli prezzati come una moneta equivalente.
+- La marcatura automatica come SCAM per imitazione non colpisce più un token il cui indirizzo è censito su CoinGecko (per esempio l'ETH di Wormhole su BSC).
+
 ## Versione 1.0.64 {#versione-1064}
 
 **Nuove implementazioni**

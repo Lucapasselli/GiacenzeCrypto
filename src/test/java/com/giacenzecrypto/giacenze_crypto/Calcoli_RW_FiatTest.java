@@ -62,6 +62,10 @@ class Calcoli_RW_FiatTest {
         // test misurano il comportamento reale del programma e non una configurazione di comodo.
         DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO,
                 Calcoli_RW_Fiat.LIQUIDITA_SOLO_MONITORAGGIO_DEFAULT);
+        DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_VALORE_FINALE_MAX_MEDIA,
+                Calcoli_RW_Fiat.VALORE_FINALE_MAX_MEDIA_DEFAULT);
+        opzioniTaglio(Calcoli_RW_Fiat.SPEZZA_DEFAULT, Calcoli_RW_Fiat.SOGLIA_TAGLIO_DEFAULT,
+                Calcoli_RW_Fiat.SPEZZA_DEFAULT, Calcoli_RW_Fiat.SOGLIA_TAGLIO_DEFAULT);
         progressivo = 0;
         // Il Fiat Wallet Crypto.com e' un file nella working directory : va azzerato fra un test e
         // l'altro, altrimenti le gambe di un test le vede anche il successivo.
@@ -685,6 +689,8 @@ class Calcoli_RW_FiatTest {
 
         List<String[]> r = righiFiat("Wallet 01");
         assertEquals("34.20", r.get(0)[Calcoli_RW_Fiat.FIAT_COL_IVAFE], "366/366 = 1, non 366/365");
+        // la media invece divide per 365 anche nel bisestile (provv. 28/05/2015) : 366 x 10000 / 365
+        assertEquals("10027.40", r.get(0)[Calcoli_RW_Fiat.FIAT_COL_VALORE_MEDIO]);
     }
 
     @Test
@@ -705,7 +711,7 @@ class Calcoli_RW_FiatTest {
     }
 
     @Test
-    void generaRighiFiat_contoCorrente_infraAnno_sogliaSullaVitaNonPonderataPerGiorni() {
+    void generaRighiFiat_contoCorrente_infraAnno_mediaSempreSu365Giorni() {
         DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
         // conto corrente da 01/07 in poi ; prima del 01/07 non è conto corrente (nessun periodo lo copre)
         Principale_GruppiWalletRW.salvaPeriodi("Wallet 01", Arrays.<String[]>asList(
@@ -720,14 +726,12 @@ class Calcoli_RW_FiatTest {
         assertEquals(2, r.size());
         String[] cc = r.get(1);
         assertEquals(Calcoli_RW_Fiat.CODICE_BENE_CONTO_CORRENTE, cc[Calcoli_RW_Fiat.FIAT_COL_CODICE_BENE]);
-        // valore medio sulla vita del conto (2° semestre) = 9000, sopra soglia anche se ~metà anno
-        assertEquals("9000.00", cc[Calcoli_RW_Fiat.FIAT_COL_VALORE_MEDIO]);
-        assertEquals("NO", cc[Calcoli_RW_Fiat.FIAT_COL_SOLO_MONITORAGGIO]);
-        // IVAFE prorata sui giorni del tratto (01/07-31/12 = 184 gg su 365)
-        int gg = Integer.parseInt(cc[11]);
-        BigDecimal atteso = new BigDecimal("34.20").multiply(BigDecimal.valueOf(gg))
-                .divide(BigDecimal.valueOf(365), 2, java.math.RoundingMode.HALF_UP);
-        assertEquals(atteso.toPlainString(), cc[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
+        // giacenza media annua (provv. 28/05/2015 punto 3.1) : 9000 x 184 giorni / 365, non / 184.
+        // Sotto i 5.000 : IVAFE non dovuta anche se il saldo e' sempre stato 9.000.
+        assertEquals("184", cc[11]);
+        assertEquals("4536.99", cc[Calcoli_RW_Fiat.FIAT_COL_VALORE_MEDIO]);
+        assertEquals("SI", cc[Calcoli_RW_Fiat.FIAT_COL_SOLO_MONITORAGGIO]);
+        assertEquals("0.00", cc[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
         // il primo tratto (non conto corrente) resta codice bene 14, ma col regime di default
         // liquida l'IVAFE ordinaria : la scelta sulla liquidità non tocca i righi conto corrente.
         assertEquals("14", r.get(0)[Calcoli_RW_Fiat.FIAT_COL_CODICE_BENE]);
@@ -1163,6 +1167,377 @@ class Calcoli_RW_FiatTest {
         assertEquals(1, r.size());
         assertEquals("1000", new BigDecimal(r.get(0)[5]).stripTrailingZeros().toPlainString());  // residuo da fine 2023
         assertEquals("600", new BigDecimal(r.get(0)[10]).stripTrailingZeros().toPlainString());  // 1000 - 400
+    }
+
+    // ------------------------------------------------------------------
+    // opzione : valore finale = max(giacenza media del tratto, saldo finale)
+    // ------------------------------------------------------------------
+
+    private static void opzioneMaxMedia(boolean attiva) {
+        DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_VALORE_FINALE_MAX_MEDIA, attiva ? "SI" : "NO");
+    }
+
+    /** 10.000 EUR tutto l'anno fino al 30/11, 1.000 EUR dal 01/12 : media (334x10000 + 31x1000)/365. */
+    private static void liquiditaCheScendeADicembre() {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        mov("2023-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "10000");
+        mov("2025-12-01 10:00", "PF", "Kraken", "EUR", "FIAT", "9000", "", "", "");
+    }
+
+    @Test
+    void maxMedia_disattiva_valoreFinaleEIlSaldoEMediaVuota() {
+        liquiditaCheScendeADicembre();
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 01").get(0);
+        assertEquals("", r[Calcoli_RW_Fiat.FIAT_COL_VALORE_MEDIO]);
+        assertEquals("1000", new BigDecimal(Calcoli_RW_Fiat.valoreFinaleDichiarato(r)).stripTrailingZeros().toPlainString());
+        assertEquals("2.00", r[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
+    }
+
+    @Test
+    void maxMedia_mediaMaggiore_dichiaraLaMediaEIvafeSullaMedia() {
+        opzioneMaxMedia(true);
+        liquiditaCheScendeADicembre();
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 01").get(0);
+        assertEquals("9235.62", r[Calcoli_RW_Fiat.FIAT_COL_VALORE_MEDIO]);
+        assertEquals("9235.62", Calcoli_RW_Fiat.valoreFinaleDichiarato(r));
+        assertEquals("1000", new BigDecimal(r[10]).toPlainString(), "[10] resta il saldo reale");
+        assertEquals("18.47", r[Calcoli_RW_Fiat.FIAT_COL_IVAFE], "0,20 % di 9235,62 x 365/365");
+        assertEquals(Calcoli_RW_Fiat.CODICE_BENE_FIAT, r[Calcoli_RW_Fiat.FIAT_COL_CODICE_BENE]);
+        assertTrue(r[15].contains("giacenza media"), r[15]);
+    }
+
+    @Test
+    void maxMedia_mediaMinore_restaIlSaldoFinale() {
+        opzioneMaxMedia(true);
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        mov("2023-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "1000");
+        mov("2025-07-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "5000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 01").get(0);
+        assertEquals("6000", new BigDecimal(Calcoli_RW_Fiat.valoreFinaleDichiarato(r)).toPlainString());
+        assertEquals("12.00", r[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
+        assertFalse(r[15].contains("giacenza media"), r[15]);
+    }
+
+    @Test
+    void maxMedia_apertoESvuotatoNellAnno_ilRigoCompareConLaMedia() {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        mov("2023-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "100");
+        mov("2023-02-01 10:00", "PF", "Kraken", "EUR", "FIAT", "100", "", "", "");
+        mov("2025-03-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "7300");
+        mov("2025-03-31 10:00", "PF", "Kraken", "EUR", "FIAT", "7300", "", "", "");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+        assertTrue(righiFiat("Wallet 01").isEmpty(), "senza opzione : estremi nulli, nessun rigo");
+
+        opzioneMaxMedia(true);
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        List<String[]> righi = righiFiat("Wallet 01");
+        assertEquals(1, righi.size());
+        String[] r = righi.get(0);
+        assertEquals("600.00", Calcoli_RW_Fiat.valoreFinaleDichiarato(r), "7300 x 30 giorni / 365");
+        assertEquals("1.20", r[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
+    }
+
+    @Test
+    void maxMedia_aperturaInfraAnno_mediaDivisaPerIGiorniDelPeriodoNonDellAnno() {
+        opzioneMaxMedia(true);
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        mov("2025-10-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "10000");
+        mov("2025-12-01 10:00", "PF", "Kraken", "EUR", "FIAT", "9000", "", "", "");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 01").get(0);
+        assertEquals("92", r[11], "tratto 01/10 - 31/12");
+        // (61 x 10000 + 31 x 1000) / 92 giorni di detenzione, non / 365 (media DSU, 1756,16) :
+        // l'IVAFE rapporta gia' ai giorni, e dividere anche la media li conterebbe due volte
+        assertEquals("6967.39", r[Calcoli_RW_Fiat.FIAT_COL_VALORE_MEDIO]);
+        assertEquals("6967.39", Calcoli_RW_Fiat.valoreFinaleDichiarato(r));
+        assertEquals("3.51", r[Calcoli_RW_Fiat.FIAT_COL_IVAFE], "6967,39 x 0,20 % x 92/365");
+    }
+
+    @Test
+    void maxMedia_annoBisestile_saldoCostanteMediaUgualeAlSaldo() {
+        opzioneMaxMedia(true);
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        mov("2023-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "1000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2024", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 01").get(0);
+        // 366 x 1000 / 366 giorni di detenzione : nessun gonfiamento nel bisestile
+        assertEquals("1000.00", r[Calcoli_RW_Fiat.FIAT_COL_VALORE_MEDIO]);
+        assertEquals("2.00", r[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
+        assertFalse(r[15].contains("giacenza media del periodo"), r[15]);
+    }
+
+    @Test
+    void maxMedia_soloMonitoraggio_ivafeZeroMaValoreComunqueMassimo() {
+        opzioneMaxMedia(true);
+        DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO, "SI");
+        liquiditaCheScendeADicembre();
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 01").get(0);
+        assertEquals("9235.62", Calcoli_RW_Fiat.valoreFinaleDichiarato(r));
+        assertEquals("0.00", r[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
+        assertEquals("SI", r[Calcoli_RW_Fiat.FIAT_COL_SOLO_MONITORAGGIO]);
+    }
+
+    @Test
+    void maxMedia_valoreFinaleManuale_nonToccato() {
+        opzioneMaxMedia(true);
+        liquiditaCheScendeADicembre();
+        Principale_GruppiWalletRW.salvaPeriodi("Wallet 01", Arrays.<String[]>asList(
+                periodoFiat("1", "", "", "", "500", "", "")));
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 01").get(0);
+        assertEquals("", r[Calcoli_RW_Fiat.FIAT_COL_VALORE_MEDIO]);
+        assertEquals("500", new BigDecimal(Calcoli_RW_Fiat.valoreFinaleDichiarato(r)).toPlainString());
+    }
+
+    @Test
+    void maxMedia_contoCorrente_nonToccato() {
+        opzioneMaxMedia(true);
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        Principale_GruppiWalletRW.salvaPeriodi("Wallet 01", Arrays.<String[]>asList(
+                periodoFiatCC("1", "", "", "092")));
+        mov("2023-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "10000");
+        mov("2025-12-01 10:00", "PF", "Kraken", "EUR", "FIAT", "9000", "", "", "");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        String[] r = righiFiat("Wallet 01").get(0);
+        assertEquals(Calcoli_RW_Fiat.CODICE_BENE_CONTO_CORRENTE, r[Calcoli_RW_Fiat.FIAT_COL_CODICE_BENE]);
+        assertEquals("9235.62", r[Calcoli_RW_Fiat.FIAT_COL_VALORE_MEDIO], "media annua su 365 giorni");
+        assertEquals("9235.62", Calcoli_RW_Fiat.valoreFinaleDichiarato(r));
+        assertEquals("34.20", r[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
+        assertFalse(r[15].contains("giacenza media del periodo"), r[15]);
+    }
+
+    // ------------------------------------------------------------------
+    // taglio del rigo su apporti / prelievi di capitale (circ. 12/E/2016 par. 14.1)
+    // ------------------------------------------------------------------
+
+    private static void opzioniTaglio(String apporti, String sogliaApporti, String prelievi, String sogliaPrelievi) {
+        DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_SPEZZA_SU_APPORTI, apporti);
+        DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_SOGLIA_APPORTI, sogliaApporti);
+        DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_SPEZZA_SU_PRELIEVI, prelievi);
+        DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_SOGLIA_PRELIEVI, sogliaPrelievi);
+    }
+
+    private static String num(String s) {
+        return new BigDecimal(s).stripTrailingZeros().toPlainString();
+    }
+
+    @Test
+    void taglio_opzioneSpenta_unSoloRigoAncheConUnGrossoDeposito() {
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        mov("2024-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "1000");
+        mov("2025-06-10 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "50000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        assertEquals(1, righiFiat("Wallet 01").size());
+    }
+
+    @Test
+    void taglio_apportoSopraSoglia_chiudeIlGiornoPrimaERiapreConIlSaldoDopo() {
+        opzioniTaglio("SI", "500", "NO", "500");
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        mov("2024-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "1000");
+        // stesso giorno del taglio : il prelievo viene prima del deposito e sta nel pezzo vecchio
+        mov("2025-06-10 09:00", "PF", "Kraken", "EUR", "FIAT", "100", "", "", "");
+        mov("2025-06-10 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "2000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        List<String[]> r = righiFiat("Wallet 01");
+        assertEquals(2, r.size());
+        assertEquals("2025-01-01 00:00", r.get(0)[4]);
+        assertEquals("2025-06-09 23:59", r.get(0)[9]);
+        assertEquals("1000", num(r.get(0)[5]));
+        assertEquals("900", num(r.get(0)[10]), "saldo immediatamente prima dell'apporto");
+        assertEquals("160", r.get(0)[11]);
+        assertEquals("0.79", r.get(0)[Calcoli_RW_Fiat.FIAT_COL_IVAFE], "900 x 0,20 % x 160/365");
+        assertTrue(r.get(0)[15].contains("periodo chiuso il giorno prima di un apporto di capitale di 2000.00 EUR del 2025-06-10"), r.get(0)[15]);
+
+        assertEquals("2025-06-10 00:00", r.get(1)[4]);
+        assertEquals("2025-12-31 23:59", r.get(1)[9]);
+        assertEquals("2900", num(r.get(1)[5]), "saldo immediatamente dopo l'apporto");
+        assertEquals("2900", num(r.get(1)[10]));
+        assertEquals("205", r.get(1)[11]);
+        assertEquals("3.26", r.get(1)[Calcoli_RW_Fiat.FIAT_COL_IVAFE], "2900 x 0,20 % x 205/365");
+        assertTrue(r.get(1)[15].contains("12/E/2016"), r.get(1)[15]);
+        // ogni rigo ha il suo avviso IVAFE, non quello del rigo accanto
+        assertFalse(r.get(1)[15].contains("0.79"), r.get(1)[15]);
+    }
+
+    @Test
+    void taglio_conMaxMedia_unSaldoCostanteSpezzatoPagaQuantoIntero() {
+        // Il caso segnalato dall'utente : con la media DSU (/365) i due pezzi pagavano circa la meta'.
+        opzioneMaxMedia(true);
+        opzioniTaglio("NO", "500", "SI", "500");
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        mov("2024-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "10000");
+        // prelievo e rientro nello stesso giorno : il saldo di fine giornata resta 10.000
+        mov("2025-06-30 09:00", "PF", "Kraken", "EUR", "FIAT", "600", "", "", "");
+        mov("2025-06-30 18:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "600");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        List<String[]> r = righiFiat("Wallet 01");
+        assertEquals(2, r.size());
+        assertEquals("180", r.get(0)[11]);
+        assertEquals("185", r.get(1)[11]);
+        BigDecimal totale = new BigDecimal(r.get(0)[Calcoli_RW_Fiat.FIAT_COL_IVAFE])
+                .add(new BigDecimal(r.get(1)[Calcoli_RW_Fiat.FIAT_COL_IVAFE]));
+        assertEquals("20.00", totale.toPlainString(), "10.000 x 0,20 % : come il rigo unico");
+    }
+
+    @Test
+    void taglio_apportoUgualeAllaSoglia_nonSpezza() {
+        opzioniTaglio("SI", "500", "NO", "500");
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        mov("2024-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "1000");
+        mov("2025-06-10 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "500");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        assertEquals(1, righiFiat("Wallet 01").size(), "la soglia va superata, non raggiunta");
+    }
+
+    @Test
+    void leggiSoglia_formatiItalianiEPuntoDecimale() {
+        assertEquals("1500", Calcoli_RW_Fiat.leggiSoglia("1.500").toPlainString(), "punto delle migliaia, non 1,5");
+        assertEquals("10000", Calcoli_RW_Fiat.leggiSoglia("10.000").toPlainString());
+        assertEquals("1500.50", Calcoli_RW_Fiat.leggiSoglia("1.500,50").toPlainString());
+        assertEquals("500.5", Calcoli_RW_Fiat.leggiSoglia("500.5").toPlainString());
+        assertEquals("500", Calcoli_RW_Fiat.leggiSoglia("").toPlainString(), "vuoto = default");
+        assertNull(Calcoli_RW_Fiat.leggiSoglia("-1"));
+        assertNull(Calcoli_RW_Fiat.leggiSoglia("abc"));
+    }
+
+    @Test
+    void taglio_sogliaAllItaliana_virgolaDecimale() {
+        opzioniTaglio("SI", "1.999,99", "NO", "500");
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        mov("2024-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "1000");
+        mov("2025-06-10 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "2000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        assertEquals(2, righiFiat("Wallet 01").size());
+    }
+
+    @Test
+    void taglio_venditaCryptoSopraSoglia_nonEUnApporto() {
+        opzioniTaglio("SI", "500", "SI", "500");
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Binance", "Wallet 02");
+        mov("2024-01-01 10:00", "DF", "Binance", "", "", "", "EUR", "FIAT", "1000");
+        mov("2025-04-01 10:00", "VC", "Binance", "BTC", "Crypto", "0.1", "EUR", "FIAT", "5000");
+        mov("2025-08-01 10:00", "AC", "Binance", "EUR", "FIAT", "3000", "BTC", "Crypto", "0.05");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        assertEquals(1, righiFiat("Wallet 02").size(), "compravendite interne al rapporto : nessun taglio");
+    }
+
+    @Test
+    void taglio_soloMonitoraggio_nessunTaglio() {
+        opzioniTaglio("SI", "500", "SI", "500");
+        DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO, "SI");
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        mov("2024-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "1000");
+        mov("2025-06-10 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "2000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        assertEquals(1, righiFiat("Wallet 01").size());
+    }
+
+    @Test
+    void taglio_contoCorrente_nessunTaglio() {
+        opzioniTaglio("SI", "500", "SI", "500");
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        Principale_GruppiWalletRW.salvaPeriodi("Wallet 01", Arrays.<String[]>asList(
+                periodoFiatCC("1", "", "", "092")));
+        mov("2024-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "10000");
+        mov("2025-06-10 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "2000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        List<String[]> r = righiFiat("Wallet 01");
+        assertEquals(1, r.size());
+        assertEquals("34.20", r.get(0)[Calcoli_RW_Fiat.FIAT_COL_IVAFE]);
+    }
+
+    @Test
+    void taglio_depositoNelGiornoDiApertura_nonSpezza() {
+        opzioniTaglio("SI", "500", "NO", "500");
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Binance", "Wallet 02");
+        mov("2025-03-15 09:00", "DF", "Binance", "", "", "", "EUR", "FIAT", "1000");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        List<String[]> r = righiFiat("Wallet 02");
+        assertEquals(1, r.size());
+        assertEquals("2025-03-15 00:00", r.get(0)[4]);
+    }
+
+    @Test
+    void taglio_prelievoSopraSoglia_soloConLaSuaOpzione() {
+        opzioniTaglio("NO", "500", "SI", "500");
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Kraken", "Wallet 01");
+        mov("2024-01-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "2000");
+        mov("2025-03-01 10:00", "DF", "Kraken", "", "", "", "EUR", "FIAT", "700");   // apporti spenti : non taglia
+        mov("2025-09-01 10:00", "PF", "Kraken", "EUR", "FIAT", "800", "", "", "");
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        List<String[]> r = righiFiat("Wallet 01");
+        assertEquals(2, r.size());
+        assertEquals("2025-08-31 23:59", r.get(0)[9]);
+        assertEquals("2700", num(r.get(0)[10]), "saldo prima del prelievo");
+        assertEquals("2025-09-01 00:00", r.get(1)[4]);
+        assertEquals("1900", num(r.get(1)[5]), "saldo dopo il prelievo");
+        assertTrue(r.get(0)[15].contains("prelievo di 800.00 EUR"), r.get(0)[15]);
+        assertEquals(365, Integer.parseInt(r.get(0)[11]) + Integer.parseInt(r.get(1)[11]));
+    }
+
+    @Test
+    void taglio_fiatWalletCDC_soloIlBonificoInIngressoSpezza() throws Exception {
+        opzioniTaglio("SI", "500", "NO", "500");
+        DatabaseH2.Pers_GruppoWallet_Scrivi("Crypto.com App", "Wallet 10");
+        // gruppo aperto l'anno prima : nessuna apertura infra-anno
+        mov("2024-06-01 10:00", "DC", "Crypto.com App", "", "", "", "CRO", "Crypto", "10");
+        // saldo di apertura del Fiat Wallet dentro l'anno : non e' un apporto
+        saldoApertura("5000", "2025-02-01");
+        fiatWallet(rigaFW("2025-05-01 09:00:00", "EUR Deposit (via SEPA)", "1000.0", "viban_deposit"),
+                rigaFW("2025-07-01 09:00:00", "CRO -> EUR", "3000.0", "crypto_viban"));
+
+        Calcoli_RW_Fiat.generaRighiFiat("2025", SOLO_EUR);
+
+        List<String[]> r = righiFiat("Wallet 10");
+        assertEquals(2, r.size(), "taglia solo il viban_deposit, non la vendita ne' il saldo di apertura");
+        assertEquals("2025-04-30 23:59", r.get(0)[9]);
+        assertEquals("5000", num(r.get(0)[10]));
+        assertEquals("2025-05-01 00:00", r.get(1)[4]);
+        assertEquals("6000", num(r.get(1)[5]));
+        assertEquals("9000", num(r.get(1)[10]));
     }
 
 }

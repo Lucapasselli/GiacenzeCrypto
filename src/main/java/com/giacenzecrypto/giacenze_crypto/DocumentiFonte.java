@@ -78,6 +78,9 @@ public class DocumentiFonte {
      */
     public static volatile String UltimaDescrizioneImport = "";
     public static volatile String UltimoFileImport = "";
+    /** {@code true} se l'ultimo {@link #EseguiImportDaFile} e' stato interrotto dall'utente: il resoconto
+     *  lo legge come le due qui sopra, e cosi' lo sanno tutti i punti di ingresso senza toccarli uno a uno. */
+    public static volatile boolean UltimoImportInterrotto = false;
 
     /**
      * Esito di una registrazione.
@@ -281,6 +284,7 @@ public class DocumentiFonte {
             Download Avanzamento, java.util.function.BooleanSupplier Importazione) {
         UltimaDescrizioneImport = DescrizioneOrigine == null ? "" : DescrizioneOrigine;
         UltimoFileImport = Origine == null ? "" : Origine.getName();
+        UltimoImportInterrotto = false;
         Registrazione R = Registra(Origine, Tipo, DescrizioneOrigine);
         int aggiunte;
         Importazioni.DocumentoFonteCorrente = R.Id;
@@ -293,6 +297,8 @@ public class DocumentiFonte {
             aggiunte = Importazioni.TransazioniAggiunte;
             Importazioni.DocumentoFonteCorrente = 0;
             AttesaConnessione.Chiudi();
+            //Va letto prima di Chiudi(): fuori dallo scope Richiesta() e' false per costruzione.
+            UltimoImportInterrotto = Interruzione.Richiesta();
             Interruzione.Chiudi();
         }
         //Con l'importazione abbandonata aggiunte è 0 e la registrazione, se nuova, viene annullata:
@@ -339,6 +345,7 @@ public class DocumentiFonte {
     public static int ApriSessione(String DescrizioneOrigine) {
         UltimaDescrizioneImport = Funzioni.noData(DescrizioneOrigine) ? "" : DescrizioneOrigine;
         UltimoFileImport = "";
+        UltimoImportInterrotto = false;
         try {
             int Id = ProssimoId();
             if (Id <= 0) {

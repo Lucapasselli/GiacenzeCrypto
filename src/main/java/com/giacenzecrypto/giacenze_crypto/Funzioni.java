@@ -2615,197 +2615,20 @@ return ListaSaldi;
 }
     
       /**
-       * Calcola, per ciascun gruppo wallet, le giacenze crypto di inizio e fine anno (con relativo prezzo in
-       * euro tramite {@link Prezzi#DammiPrezzoTransazione}), producendo una riga per ogni moneta con
-       * quantità/prezzo iniziali e finali, giorni di detenzione e causale (che distingue tra "Fine Anno" e
-       * "Apertura Wallet/Fine Anno" per la prima moneta ricevuta dal wallet). Se il wallet ha ricevuto il suo
-       * primo movimento durante l'anno stesso, la giacenza iniziale parte da quella data e non dal 1° gennaio.
+       * Giacenze cripto di inizio e fine di ogni tratto CRYPTO (periodi del gruppo; senza periodi l'anno intero)
+       * di ogni gruppo wallet, un rigo per moneta e per tratto, nel formato delle
+       * liste del quadro RW. Delega a {@link Calcoli_RW_Giacenze#GiacenzePerTratti(String)}, l'unica
+       * routine che calcola questa fotografia (la stessa della Rilevanza A), e applica poi
+       * {@link Calcoli_RW#SistemaErroriInListe} per le segnalazioni di prezzo mancante.
        * @param Anno anno di riferimento, formato {@code yyyy}
        * @return mappa gruppo wallet → lista di righe di dettaglio (una per moneta con giacenza diversa da zero in almeno uno dei due estremi)
        */
       public static Map<String, List<String[]>> RW_GiacenzeInizioFineAnno(String Anno){
-            //Nel wallet si può mettere il nome del gruppo Wallet
-            /*
-            0 -> Anno
-            1 -> Gruppo Wallet Inizio Anno (Sarà sempre
-            2 -> Nome Moneta
-            */
-        String DataInizio=Anno+"-01-01";
-        String DataFine=Anno+"-12-31";
-        
-        Map<String, String[]> MappaDataPartenza= new TreeMap<>();
-        long lDataFine=FunzioniDate.ConvertiDatainLong(DataFine)+86400000;
-        long lDataInizio=FunzioniDate.ConvertiDatainLong(DataInizio);
-          
-        //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
-        //FASE 2 THREAD : CREO LA NUOVA MAPPA DI APPOGGIO PER L'ANALISI DEI TOKEN
-        Map<String,Map<String, Moneta[]>> MappaCoinsWallet = new TreeMap<>();//Map<GruppoWallet,Map<NomeMoneta,Monete(Inizio e Fine anno)>>
-        Map<String, Moneta[]> QtaCrypto;//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
-        //Moneta[0]->Qta Inizio Anno ----- Moneta[1]->Qta Fine Anno
-            boolean PrimoMovimento;
-                for (String[] movimento : MappaCryptoWallet.values()) {
-                    //Prima cosa controllo che le date corrispondano all'ID
-                    if(!movimento[0].substring(0, 4).equals(movimento[1].substring(0, 4))){
-                        // LoggerGC.logInfo("ID diverso da data --- "+movimento[0]+ " --- "+movimento[1],"Funzioni.RW_GiacenzeInizioFineAnno");
-                    }
-                    
-                    String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3],true);
-                    //1 - Inizializzo le Mappe
-                    if (MappaCoinsWallet.get(GruppoWallet)==null)
-                    {
-                       // LoggerGC.logInfo("Wallet - "+GruppoWallet+" - ID Iniziale --- "+movimento[0],"Funzioni.RW_GiacenzeInizioFineAnno");
-                        QtaCrypto = new TreeMap<>();
-                        MappaCoinsWallet.put(GruppoWallet, QtaCrypto);
-                        String DataPartenza_Prezzo_ID[]=new String[]{movimento[1],movimento[15],movimento[0],movimento[11]};
-                        MappaDataPartenza.put(GruppoWallet, DataPartenza_Prezzo_ID);
-                        PrimoMovimento=true;
-                    }else{
-                        QtaCrypto = MappaCoinsWallet.get(GruppoWallet);
-                        PrimoMovimento=false;
-                    }
-                    
-                    
-                    //2 - 
-                    //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
-                    //altrimenti non vado avanti
-                    String Rete = Funzioni.TrovaReteDaIMovimento(movimento);
-                    long DataMovimento = FunzioniDate.ConvertiDatainLong(movimento[1]);
-
-
-                            // GiacenzeaData_Wallet_ComboBox.getSelectedItem()
-                            //Faccio la somma dei movimenti in usicta
-                           Moneta Monete[]=RitornaMoneteDaID(movimento[0]);
-                            //questo ciclo for serve per inserire i valori sia della moneta uscita che di quella entrata
-                            for (int a = 0; a < 2; a++) {
-                                //ANALIZZO MOVIMENTI
-                                if (!Monete[a].Moneta.isBlank() && Monete[a].Tipo.equalsIgnoreCase("Crypto") && QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo)!=null) {
-                                    //Movimento già presente da implementare
-                                    Moneta M[] = QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo);
-                                    //if (Monete[a].Moneta.equals("ACE"))System.out.println("Aggiunta"+Monete[a].Qta);
-                                    if (DataMovimento < lDataInizio) {
-                                    M[0].Qta = new BigDecimal(M[0].Qta)
-                                            .add(new BigDecimal(Monete[a].Qta)).stripTrailingZeros().toPlainString();
-                                    }if (DataMovimento < lDataFine) {
-                                    M[1].Qta = new BigDecimal(M[1].Qta)
-                                            .add(new BigDecimal(Monete[a].Qta)).stripTrailingZeros().toPlainString();                                   
-                                    }
-                                    
-                                    //Qui se nnon ho anora la moneta in pancia
-                                } else if (!Monete[a].Moneta.isBlank() && Monete[a].Tipo.equalsIgnoreCase("Crypto")) {
-                                    //if (Monete[a].Moneta.equals("ACE"))System.out.println("Inserimento"+Monete[a].Qta);
-                                    //Movimento Nuovo da inserire
-                                    Moneta M[]=new Moneta[2];
-                                    M[0]=new Moneta();
-                                    M[1]=new Moneta();
-                                    if (DataMovimento < lDataInizio) {
-                                        M[0].InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
-                                        M[0].Rete= Rete;
-                                        M[1].InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
-                                        M[1].Rete= Rete;
-                                    }
-                                    if (DataMovimento < lDataFine && DataMovimento >= lDataInizio) {
-                                        //Se è il primo movimento in assoluto il valore di inizio anno lo valorizzo
-                                        //A questo movimento e non a zero
-                                        if (PrimoMovimento){
-                                            M[0].InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
-                                            M[0].Rete= Rete;
-                                        }
-                                        else{
-                                           M[0].InserisciValori(Monete[a].Moneta, "0", Monete[a].MonetaAddress, Monete[a].Tipo);
-                                           M[0].Rete= Rete; 
-                                        }
-                                        M[1].InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
-                                        M[1].Rete= Rete;
-                                    }
-                                    if (DataMovimento < lDataFine){
-                                        QtaCrypto.put(Monete[a].Moneta+";"+Monete[a].Tipo, M);
-                                    }
-
-                                }
-                            }
-                         //  MappaCoinsWallet.put(Rete, QtaCrypto);
-                        
-                    
-                }
-        //LoggerGC.logInfo("-------------------------------------------------------------------","Funzioni.RW_GiacenzeInizioFineAnno");
-        //Adesso elenco tutte le monete e le metto il tutto in una lista   
-        Map<String, List<String[]>> MappaLista= new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        List<String[]> lista;
-        
-        
-        for(String GWallet:MappaCoinsWallet.keySet()){
-            int DiffDate=FunzioniDate.DifferenzaDate(DataInizio, DataFine)+1;
-           // LoggerGC.logInfo("DiffDate1 - "+DataInizio+" - "+DataFine+" - "+DiffDate,"Funzioni.RW_GiacenzeInizioFineAnno");
-            Map<String, Moneta[]> QtaCrypt=MappaCoinsWallet.get(GWallet);
-            lista=RW_RitornaListaDaMappa(MappaLista,GWallet);
-          /*  if(MappaLista.get(GWallet)==null){
-                lista=new ArrayList<>();
-                MappaLista.put(GWallet, lista);
-            }else lista=MappaLista.get(GWallet);*/
-            
-            String DataInizioWallet=MappaDataPartenza.get(GWallet)[0];
-            long lDataInizioWallet=FunzioniDate.ConvertiDatainLongMinuto(DataInizioWallet);
-            long lDataInizio1=lDataInizio;
-            String DataInizio1=DataInizio+" 00:00";
-            if (lDataInizioWallet > lDataInizio) {
-                DiffDate = FunzioniDate.DifferenzaDate(FunzioniDate.ConvertiDatadaLong(lDataInizioWallet), DataFine) + 1;
-                //LoggerGC.logInfo("DiffDate2 - "+GWallet+" - "+lDataInizioWallet+" - "+DataFine+" - "+DiffDate,"Funzioni.RW_GiacenzeInizioFineAnno");
-                //LoggerGC.logInfo("Wallet - "+GWallet+" - Data Inizio --- "+DataInizio1,"Funzioni.RW_GiacenzeInizioFineAnno");
-                DataInizio1 = DataInizioWallet;
-                lDataInizio1 = FunzioniDate.ConvertiDatainLongMinuto(DataInizio1);
-            }           
-            //LoggerGC.logInfo("Wallet - "+GWallet+" - Data Inizio --- "+DataInizio1,"Funzioni.RW_GiacenzeInizioFineAnno");
-            for(Moneta m[]:QtaCrypt.values()){
-                if(!(m[0].Qta.equals("0")&&m[1].Qta.equals("0")))
-                {
-                    String DicituraInizio="Giacenza Inizio Anno";
-                    String Causale="Fine Anno";
-                    if (m[0].Moneta.equals(MappaDataPartenza.get(GWallet)[3])) {                        
-                        Causale = "Apertura Wallet/Fine Anno";
-                        DicituraInizio = MappaDataPartenza.get(GWallet)[2];
-                    }                   
-                    if(m[0].Qta.equals("0"))m[0].Prezzo="0.0000";
-                    else m[0].Prezzo=Prezzi.DammiPrezzoTransazione(m[0], null, lDataInizio1, null, false, 15, m[0].Rete,"");
-                    if(m[1].Qta.equals("0"))m[1].Prezzo="0.0000";
-                    else m[1].Prezzo=Prezzi.DammiPrezzoTransazione(m[1], null, lDataFine, null, false, 15, m[1].Rete,"");
-                    String xlista[]=new String[17];
-                    xlista[0]=Anno;                                             //Anno RW
-                    xlista[1]=GWallet;                                          //Gruppo Wallet Inizio
-                    xlista[2]=m[0].Moneta;                                      //Moneta Inizio
-                    xlista[3]=m[0].Qta;                                         //Qta Inizio
-                    xlista[4]=DataInizio1;                                      //Data Inizio
-                    xlista[5]=m[0].Prezzo;                                      //Prezzo Inizio
-                    xlista[6]=GWallet;                                          //GruppoWallet Fine
-                    xlista[7]=m[1].Moneta;                                      //Moneta Fine
-                    xlista[8]=m[1].Qta;                                         //Qta Fine
-                    xlista[9]=DataFine+" 23:59";                                //Data Fine
-                    xlista[10]=m[1].Prezzo;                                     //Prezzo Fine
-                    xlista[11]=String.valueOf(DiffDate);                        //Giorni di Detenzione
-                    xlista[12]=Causale;                                         //Causale
-                    xlista[13]=DicituraInizio;                                  //ID Movimento Apertura (o segnalazione inizio anno)
-                    xlista[14]="Giacenza Fine Anno";                            //ID Movimento Chiusura (o segnalazione fine anno o segnalazione errore)
-                    xlista[15]="";                                              //Tipo Errore
-                    xlista[16]="";                                              //Lista ID coinvolti separati da virgola
-                    lista.add(xlista);
-                    
-                    //System.out.println(GWallet+";"+m[0].Moneta+";"+m[0].Qta+";"+m[0].Prezzo+";"+m[1].Qta+";"+m[1].Prezzo); 
-                }
-            }
-            
-        }
+        Map<String, List<String[]>> MappaLista = Calcoli_RW_Giacenze.GiacenzePerTratti(Anno);
         Calcoli_RW.SistemaErroriInListe(MappaLista);
-return MappaLista;
-}
+        return MappaLista;
+      }
       
-    private static List<String[]> RW_RitornaListaDaMappa(Map<String, List<String[]>> MappaLista,String Key){
-        List<String[]> lista;
-            if(MappaLista.get(Key)==null){
-                lista=new ArrayList<>();
-                MappaLista.put(Key, lista);
-            }else lista=MappaLista.get(Key);
-        return lista;
-    }
-    
     
     /**
      * Individua le combinazioni exchange/wallet/token per cui il saldo netto delle sole uscite (movimenti in

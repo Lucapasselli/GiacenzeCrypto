@@ -5,27 +5,17 @@
 # programma precedenti alla 1.0.62 aprono i manuali all'indirizzo .../documentazione/<nome>.pdf,
 # e quei collegamenti non devono diventare 404 (né mostrare testo vecchio).
 #
-# Serve LibreOffice (soffice), python3 e Pillow (python3-pillow): senza Pillow le immagini
-# tornerebbero a essere inserite alla dimensione nominale, cioè enormi e fuori dal margine,
-# ed è per questo che qui la sua assenza è un errore e non un avviso.
+# Dal 2026-09-27 i PDF sono prodotti dal programma stesso (GeneraPdfDocumentazione), con la stessa
+# veste grafica delle stampe dei quadri W/RW: copertina, testata col logo, fascia nel margine,
+# piè di pagina numerato, Noto Sans incorporato. Serve solo il JDK; LibreOffice non serve più.
 # Da eseguire dalla radice del repository:
 #   sh docs/strumenti/genera-pdf.sh
 set -e
-python3 -c 'import PIL' 2>/dev/null || { echo "Manca Pillow: installare python3-pillow" >&2; exit 1; }
 RADICE=$(cd "$(dirname "$0")/../.." && pwd)
-DOC="$RADICE/docs/documentazione"
-LAVORO=$(mktemp -d)
-trap 'rm -rf "$LAVORO"' EXIT
-
-for f in "$DOC"/*.md; do
-    nome=$(basename "$f" .md)
-    [ "$nome" = "index" ] && continue
-    [ "$nome" = "changelog" ] && continue   # solo pagina web, non ha mai avuto un PDF
-    python3 "$RADICE/docs/strumenti/md2html.py" "$f" > "$LAVORO/$nome.html"
-done
-cp -r "$DOC/immagini" "$LAVORO/"
-
-# --convert-to va lanciato con la cartella di lavoro accanto alle immagini, i cui percorsi sono relativi
-(cd "$LAVORO" && soffice --headless --convert-to pdf ./*.html >/dev/null)
-cp "$LAVORO"/*.pdf "$DOC/"
-echo "PDF rigenerati in $DOC"
+cd "$RADICE"
+./mvnw -q compile
+CP_FILE="$RADICE/target/classpath-documentazione.txt"
+./mvnw -q dependency:build-classpath -Dmdep.outputFile="$CP_FILE" >/dev/null
+java -Djava.awt.headless=true -cp "target/classes:$(cat "$CP_FILE")" \
+    com.giacenzecrypto.giacenze_crypto.GeneraPdfDocumentazione docs/documentazione
+echo "PDF rigenerati in $RADICE/docs/documentazione"

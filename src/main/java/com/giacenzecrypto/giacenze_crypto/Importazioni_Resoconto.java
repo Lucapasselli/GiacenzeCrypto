@@ -34,6 +34,8 @@ private static final long serialVersionUID = 8L;
     // riferiscono. Catturati alla costruzione perché il resoconto viene aperto subito dopo
     // l'import (vedi DocumentiFonte.UltimaDescrizioneImport).
     private String contestoDescrizione = "";
+    /** L'import da file e' stato interrotto dall'utente: vedi {@link DocumentiFonte#UltimoImportInterrotto}. */
+    private boolean interrotto = false;
     private String contestoFile = "";
     private int cTotali;
     private int cAggiunte;
@@ -73,6 +75,7 @@ private static final long serialVersionUID = 8L;
 
         contestoDescrizione = DocumentiFonte.UltimaDescrizioneImport == null ? "" : DocumentiFonte.UltimaDescrizioneImport;
         contestoFile = DocumentiFonte.UltimoFileImport == null ? "" : DocumentiFonte.UltimoFileImport;
+        interrotto = DocumentiFonte.UltimoImportInterrotto;
     }
 
     /**
@@ -114,6 +117,18 @@ private static final long serialVersionUID = 8L;
         this.movimentiSconosciuti = movScon == null ? "" : movScon;
         if (TSconosciute==0) Text_TransSconosciute.setForeground(Color.BLACK); else Text_TransSconosciute.setForeground(Color.RED);
         if (TScartate==0) this.Text_TransScartate.setForeground(Color.BLACK); else Text_TransScartate.setForeground(Color.RED);
+        //Dopo un Interrompi i conteggi sono parziali: senza questo avviso il resoconto sembrava quello di
+        //un'importazione finita (e un'importazione CSV interrotta non scrive nulla, quindi "0 importate").
+        String avvisoInterruzione = "";
+        if (interrotto) {
+            Label_Titolo.setText("IMPORTAZIONE INTERROTTA");
+            Label_Titolo.setForeground(Color.RED);
+            avvisoInterruzione = "<b><center>IMPORTAZIONE INTERROTTA</b><br><br>"
+                    + "<center>L'importazione è stata interrotta prima della fine: i conteggi qui sotto riguardano"
+                    + " solo la parte elaborata fino a quel momento.<br>"
+                    + "<center>Per completarla ripeti l'importazione dello stesso file:"
+                    + " i movimenti già presenti non vengono duplicati.";
+        }
         if (!movScon.trim().equalsIgnoreCase("")){
             this.Bottone_CopiaAppunti.setEnabled(true);
             this.jScrollPane1.setVisible(true);
@@ -123,10 +138,16 @@ private static final long serialVersionUID = 8L;
             this.TextPane_Errori.setText(movScon);
             //Il riquadro d'avviso non manda più a una mail: c'è il pulsante "Invia segnalazione errori".
             this.TextPane_Attenzione.setText("<html><body><p style=\"margin-top:0\">"
+                    + (avvisoInterruzione.isEmpty() ? "" : avvisoInterruzione + "<br><br>")
                     + "<b><center>ATTENZIONE: alcune transazioni non sono state importate.</b><br><br>"
                     + "<center>I movimenti elencati qui sotto non sono riconosciuti dall'import del programma.<br>"
                     + "<center>Premi il pulsante <b>Invia segnalazione errori</b> per mandarli all'autore:"
                     + " verranno spediti solo queste righe, il tipo di importazione e la versione del programma."
+                    + "</p></body></html>");
+        } else if (interrotto) {
+            this.jScrollPane1.setVisible(true);
+            this.TextPane_Attenzione.setVisible(true);
+            this.TextPane_Attenzione.setText("<html><body><p style=\"margin-top:0\">" + avvisoInterruzione
                     + "</p></body></html>");
         }
         this.avvisoDerivati = Importazioni.TestoAvvisoDerivati();

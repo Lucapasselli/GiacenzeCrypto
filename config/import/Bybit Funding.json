@@ -1,0 +1,63 @@
+{
+  "_commento": "Bybit - export 'Asset Change Details' del conto FUNDING (file 'AssetChangeDetails_fund_<UID>_<da>_<a>_N.csv'). La prima riga del file contiene UID/Company Name/Country, l'intestazione vera e' la seconda. Colonne: 0=Uid 1=Date & Time(UTC) 2=Coin 3=QTY (col segno; le quantita' piccole sono in notazione scientifica, es. 2.7E-7) 4=Type 5=Account Balance 6=Description.",
+  "_commentoCausale": "La causale e' la colonna Description, non Type: Type e' generico ('Earn' copre interessi, sottoscrizioni, riscatti e rendimenti Launchpool), mentre Description distingue ('Easy Earn | Flexible Interest Distribution', 'Launchpool Yield', 'Transfer to Spot Account', ...).",
+  "_commentoConti": "Stesso nomeExchange e nomeWallet di 'Bybit Spot.json': i giroconti verso/da Spot, Unified Trading Account e Derivatives sono interni al wallet e vengono ignorati, cosi' come sottoscrizioni e riscatti di Easy Earn e Launchpool (la moneta resta dell'utente). I giroconti col conto Derivati fanno scattare l'avviso sui derivati a fine importazione: il risultato del trading in derivati non e' nel file.",
+  "_commentoLaunchpad": "'Launchpad Subscription' / 'Launchpad Subscription Refund' ignorati: la differenza fra MNT impegnati e restituiti e' il prezzo del token Launchpad, che arriva nel conto Spot come 'airdropAssetIncrease' (vedi il commento in 'Bybit Spot.json').",
+  "_commentoConsolidamento": "Ogni riga e' un movimento a se' (interessi giornalieri, rendimenti, depositi, prelievi): nessuno scambio da ricomporre.",
+  "versione": "1.000",
+  "centralizzato": true,
+  "fontePrezzoPreferita": "bybit",
+  "nomeExchange": "Bybit",
+  "estrazione": "Funding - Asset Change Details (ATTENZIONE : in fase ALFA)",
+  "descrizione": "<html><div style='width:380px'>Bybit &ndash; export <b>Asset Change Details</b> del conto <b>Funding</b>: interessi Easy Earn, rendimenti Launchpool, depositi e prelievi. Va importato insieme a quello del conto Spot (configurazione a parte).</div></html>",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 2,
+  "rigaIntestazione": 2,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
+  "fuso": "UTC",
+  "colonne": {
+    "data": 1,
+    "causale": 6,
+    "moneta": 2,
+    "quantita": 3
+  },
+  "consolidaRigheStessaData": false,
+  "tolleranzaSecondiConsolidamento": 0,
+  "causaliDifferite": [],
+  "causaliAllertaDerivati": [
+    "Transfer from Derivatives Account",
+    "Transfer to Derivatives Account"
+  ],
+  "mappaCausali": {
+    "Easy Earn | Flexible Interest Distribution":  "EARN",
+    "Launchpool Yield":                            "EARN",
+    "Easy Earn | Flexible Subscription":           "IGNORA",
+    "Easy Earn | Flexible Redemption":             "IGNORA",
+    "Launchpool Subscription":                     "IGNORA",
+    "Launchpool Auto-Withdrawal":                  "IGNORA",
+    "Launchpool Manual Withdrawal":                "IGNORA",
+    "Launchpad Subscription":                      "IGNORA",
+    "Launchpad Subscription Refund":               "IGNORA",
+    "Transfer to Spot Account":                    "IGNORA",
+    "Transfer from Spot Account":                  "IGNORA",
+    "Transfer to Unified Trading Account":         "IGNORA",
+    "Transfer from Unified Trading Account":       "IGNORA",
+    "Transfer to Derivatives Account":             "IGNORA",
+    "Transfer from Derivatives Account":           "IGNORA",
+    "Deposit":                                     "TRASFERIMENTO-CRYPTO",
+    "Withdrawal":                                  "TRASFERIMENTO-CRYPTO"
+  },
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": [
+    "EARN",
+    "TRASFERIMENTO-CRYPTO"
+  ],
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

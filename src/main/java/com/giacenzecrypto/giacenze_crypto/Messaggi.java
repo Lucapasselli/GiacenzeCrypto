@@ -226,6 +226,39 @@ public class Messaggi {
      * @param win finestra parent del dialog
      * @return {@code true} se l'utente conferma di voler proseguire con la modifica
      */
+    /**
+     * Conferma per accendere "Prezzi dagli exchange anche per gli anni gia' dichiarati"
+     * ({@link AliasPrezziToken#OPZIONE_ANCHE_ANNI_PASSATI}): e' l'unica scelta che cambia i valori di anni
+     * gia' dichiarati, quindi va detto chiaramente prima.
+     * @return {@code true} se l'utente conferma
+     */
+    public static boolean Personalizzati_SINO_AliasAnniPassati(Window win) {
+        AppDialog.DialogResult result = AppDialog.builder(win)
+                    .windowTitle("Prezzi degli anni passati")
+                    .bodyTitle("Usare i prezzi degli exchange anche per gli anni passati?")
+                    .showTitleInBody(false)
+                    .theme()
+                    .type(AppDialog.DialogType.WARNING)
+                    .message("Attenzione!<br><br>Se hai già presentato dichiarazioni con questo programma, i valori di quegli anni possono cambiare.")
+                    .details("""
+                    Per alcune monete molto diffuse sulle blockchain (es. WETH, USDC, WBTC) il programma usa il prezzo degli exchange invece di quello cercato per indirizzo.
+
+                    Con questa opzione lo fa anche per gli anni precedenti a quando la moneta è entrata nell'elenco: il quadro RW di quegli anni, ricalcolato, può dare valori diversi da quelli già dichiarati (di solito pochi centesimi).
+
+                    I prezzi già scritti nei movimenti non cambiano, a meno di ricalcolarli.
+
+                    Vuoi attivarla?
+                    """)
+                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("attiva", "Attiva")
+                            .role(AppDialog.ActionRole.DANGER)
+                            .build())
+                    .showDialog();
+        return (result != null && result.isAction("attiva"));
+    }
+
     public static boolean Personalizzati_SINO_ModificaMovimento(Window win) {
         AppDialog.DialogResult result = AppDialog.builder(win)
                     .windowTitle("Conferma modifica")

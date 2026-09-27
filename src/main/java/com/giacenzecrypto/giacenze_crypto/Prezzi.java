@@ -838,12 +838,12 @@ public class Prezzi {
     
     /**
      * Popola {@link Principale#Mappa_MoneteStessoPrezzo} con le coppie di token wrapped/nativi noti
-     * per avere lo stesso prezzo (es. WCRO→CRO, WETH→ETH, XDAI→DAI).
+     * per avere lo stesso prezzo (es. WCRO→CRO, WETH→ETH, XDAI→DAI). L'elenco sta nella voce
+     * {@code stessoPrezzo} di {@code config/varie/AliasPrezziToken.json}, che {@link AliasPrezziToken#Carica()}
+     * legge insieme agli alias per address: all'avvio lo fa gia' {@link VarCondivise#CompilaMappaChain()}.
      */
     public static void CompilaMoneteStessoPrezzo(){
-     Principale.Mappa_MoneteStessoPrezzo.put("WCRO", "CRO");
-     Principale.Mappa_MoneteStessoPrezzo.put("WETH", "ETH");
-     Principale.Mappa_MoneteStessoPrezzo.put("XDAI", "DAI");
+     AliasPrezziToken.Carica();
     }
     
     
@@ -1074,7 +1074,8 @@ public class Prezzi {
 
 
         //2 - INTERROGO I DATI MEMORIZZATI NEL DATABASE INTERNO
-        Crypto = Principale.Mappa_MoneteStessoPrezzo.getOrDefault(Crypto, Crypto);
+        //Con la data: una voce stessoPrezzo aggiunta dopo un anno gia' dichiarato non vale per quell'anno
+        Crypto = AliasPrezziToken.StessoPrezzo(Crypto, Datalong);
         long Anno2017 = Long.parseLong("1483225200000");
 
         long adesso = System.currentTimeMillis();
@@ -2226,6 +2227,25 @@ public class Prezzi {
     }
     
     /**
+     * Prezzo personalizzato di un token a cui {@link #DammiPrezzoInfoTransazione} ha appena applicato un alias
+     * di {@link Principale#Mappa_AddressRete_Nome} (WETH su Base → ETH).
+     * <p>Serve perche' l'alias toglie l'address, e i prezzi inseriti a mano per un token con address sono
+     * salvati proprio per address+rete e col simbolo grezzo: cercando "ETH" senza address la riga "WETH"
+     * non si trova piu', e un prezzo di fine anno scelto dall'utente sparirebbe in silenzio dal quadro RW.
+     * Qui si legge soltanto il personalizzato: la cache dei prezzi per address si salta apposta, perche'
+     * conterrebbe le quotazioni orarie di DefiLlama che l'alias esiste per evitare.
+     * @param m la moneta gia' rinominata dall'alias
+     * @param AddressOriginale l'address prima dell'alias, {@code null} se la moneta non aveva alias
+     * @return il prezzo personalizzato, oppure {@code null} se non c'e' (o la moneta non aveva alias)
+     */
+    static InfoPrezzo PrezzoPersonalizzatoTokenConAlias(Moneta m, String AddressOriginale, String Rete, long Data, String fonte) {
+        if (AddressOriginale == null || m.Qta == null || m.Qta.isBlank()) return null;
+        InfoPrezzo IP = DammiPrezzoDaDatabasePersonale("", Data, fonte, Rete, AddressOriginale, 60, new BigDecimal(m.Qta));
+        if (IP != null) IP.Moneta = m.Moneta;
+        return IP;
+    }
+    
+    /**
      * Determina il prezzo di riferimento (unitario e totale) per uno scambio tra due monete, scegliendo quale
      * delle due usare come base secondo un ordine di affidabilità: 1) FIAT EUR (prezzo esatto, nessuna ricerca),
      * 2) EMoney token denominati in euro (cambio fisso 1:1, fonte {@code "EURO"}), 3) USD (tramite {@link #CambioUSDEUR}),
@@ -2274,9 +2294,16 @@ public class Prezzi {
         //B - Questa parte impone la ricerca su binance per determinati token salvati nella mappa
         //questo rende più veloce la ricerca e più affiabile
         //es. USDT su rete BSC o su rete CRO li cerco in ogni caso su Binance rendendo anche univoco il prezzo tra le varie chain
+        //L'address originale si conserva: un prezzo personalizzato inserito a mano per quel token e' salvato
+        //per address+rete e col simbolo grezzo (WETH, non ETH), e senza l'address non lo si ritroverebbe
+        //piu' (vedi PrezzoPersonalizzatoTokenConAlias).
+        String AddressPrimaDellAlias[] = new String[2];
         for (int k = 0; k < 2; k++) {
-            if (mon[k] != null && Principale.Mappa_AddressRete_Nome.get(mon[k].MonetaAddress + "_" + Rete) != null) {
-                mon[k].Moneta = Principale.Mappa_AddressRete_Nome.get(mon[k].MonetaAddress + "_" + Rete);
+            //Alias letto alla data del prezzo: prima del suo `dal` il token si prezza per address come prima
+            String alias = mon[k] == null ? null : AliasPrezziToken.Alias(mon[k].MonetaAddress, Rete, Data);
+            if (alias != null) {
+                mon[k].Moneta = alias;
+                AddressPrimaDellAlias[k] = mon[k].MonetaAddress;
                 mon[k].MonetaAddress=null;
 
             }
@@ -2386,7 +2413,8 @@ public class Prezzi {
                 for (int k = 0; k < 2; k++) {
                 if (mon[k] != null && (mon[k].Moneta).toUpperCase().equals(SimboloPrioritario) && mon[k].Tipo.trim().equalsIgnoreCase("Crypto")) {
                     //come prima cosa provo a vedere se ho un prezzo personalizzato e uso quello
-                            IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,fonte,true);
+                            IP=PrezzoPersonalizzatoTokenConAlias(mon[k], AddressPrimaDellAlias[k], Rete, Data, fonte);
+                            if (IP==null) IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,fonte,true);
                            /* tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
           System.out.println("Tempo C : "+tempoOperazione+"ms");*/
                             if (IP!=null)
@@ -2409,7 +2437,8 @@ public class Prezzi {
             if (mon[k] != null) {
                 //Se non ho l'address cerco su binance altrimenti cerco su coingecko
 
-                        IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,fonte,true);
+                        IP=PrezzoPersonalizzatoTokenConAlias(mon[k], AddressPrimaDellAlias[k], Rete, Data, fonte);
+                        if (IP==null) IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,fonte,true);
                      /*   tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
           System.out.println("Tempo D : "+tempoOperazione+"ms");*/
                         if (IP!=null)
@@ -3566,7 +3595,10 @@ public static void ScriviPuntiPrezzoInCache(String symbol, JsonArray punti) {
             //piccola imprecisione è accettabile, mentre l'attribuzione all'exchange resta più
             //leggibile. Conseguenza voluta: fonteEDaExchangeCCXT() tratterà questa riga come un
             //prezzo diretto di quell'exchange, indistinguibile a valle da uno vero.
-            if (obj.has("grezzi") && obj.get("grezzi").isJsonObject()) {
+            //Dopo un Interrompi la conversione si salta: ogni data costa 1-2 s di CoinMarketCap
+            //(osservato il 2026-09-27: 19 s di conversioni dopo l'interruzione). I chiamanti non
+            //marcano l'ora quando l'interruzione e' stata chiesta, quindi questi punti non vanno persi.
+            if (obj.has("grezzi") && obj.get("grezzi").isJsonObject() && !Interruzione.Richiesta()) {
                 for (Map.Entry<String, JsonElement> entry : obj.getAsJsonObject("grezzi").entrySet()) {
                     String exchange = entry.getKey();
                     if (!entry.getValue().isJsonObject()) continue;
@@ -4088,8 +4120,9 @@ static boolean RecuperaPrezziDaCCXTRange(String Symbol, long Since, long Until,
 
             ScriviPuntiPrezzoInCache(Symbol, rootArr);
 
-            //Script andato a buon fine: registro il range come già richiesto in questa sessione
-            managerRichieste.addRange(chiaveSessione, Since, Until);
+            //Script andato a buon fine: registro il range come già richiesto in questa sessione.
+            //Non dopo un Interrompi: ScriviPuntiPrezzoInCache puo' aver saltato le conversioni.
+            if (!Interruzione.Richiesta()) managerRichieste.addRange(chiaveSessione, Since, Until);
             return true;
 
         } catch (IOException | InterruptedException e) {
@@ -4255,14 +4288,14 @@ static List<RichiestaPrezzo> RaccogliRichiestePerMovimenti(java.util.Collection<
             //address, cioe' proprio sugli exchange. Altrimenti, se address e rete sono validi, il
             //prezzo arriva da DefiLlama/coingecko e questa richiesta non servirebbe a nessuno.
             String alias = rete.isBlank() ? null
-                    : Principale.Mappa_AddressRete_Nome.get(address + "_" + rete);
+                    : AliasPrezziToken.Alias(address, rete, data);
             if (alias == null && !rete.isBlank() && Funzioni_WalletDeFi.isValidAddress(address, rete)) continue;
 
             //Normalizzazione wrapped/nativo: la stessa che CambioXXXEUR applica in ingresso. Senza,
             //la cache si riempirebbe sotto WETH mentre la valorizzazione andra' a cercare ETH, e il
             //pre-scarico lavorerebbe per nessuno.
             String scelto = alias != null ? alias : moneta;
-            String simbolo = Principale.Mappa_MoneteStessoPrezzo.getOrDefault(scelto, scelto).toUpperCase();
+            String simbolo = AliasPrezziToken.StessoPrezzo(scelto, data).toUpperCase();
             for (long inizioOra : oreDaCoprire) {
                 if (inizioOra > adessoMs) continue;
                 if (chiavi.add(simbolo + "|" + inizioOra)) {
@@ -4333,9 +4366,7 @@ public static int PreScaricaPrezziMonete(java.util.Collection<Moneta> monete, lo
         String rete = m.Rete == null ? "" : m.Rete;
         if (!rete.isBlank() && Funzioni_WalletDeFi.isValidAddress(m.MonetaAddress, rete)) continue;
 
-        String simbolo = (Principale.Mappa_MoneteStessoPrezzo == null
-                ? m.Moneta
-                : Principale.Mappa_MoneteStessoPrezzo.getOrDefault(m.Moneta, m.Moneta)).toUpperCase();
+        String simbolo = AliasPrezziToken.StessoPrezzo(m.Moneta, data).toUpperCase();
 
         for (long inizioOra : oreDaCoprire) {
             if (inizioOra > adessoMs) continue;
@@ -4613,8 +4644,13 @@ static List<EsitoLotto> RecuperaPrezziDaCCXTLotto(List<RichiestaPrezzo> richiest
             String exchangePreferitoEco = o.has("exchangePreferito") ? o.get("exchangePreferito").getAsString() : "";
 
             int nPunti = ScriviEsitoInCache(o, simbolo, since, until, falliti);
-            managerRichieste.addRange(chiaveSessioneOra(simbolo, exchangePreferitoEco), since, until);
-            esiti.add(new EsitoLotto(simbolo, since, until, true, falliti, nPunti, interrogati));
+            //Dopo un Interrompi ScriviPuntiPrezzoInCache salta le conversioni in EUR, quindi l'ora puo'
+            //essere incompleta: non "risposto", cosi' ne' la sessione ne' PrezziOraCCXT la marcano e
+            //alla prossima importazione si richiede. Prudente anche per gli esiti scritti prima
+            //dell'interruzione: costa al piu' una richiesta ripetuta.
+            boolean completo = !Interruzione.Richiesta();
+            if (completo) managerRichieste.addRange(chiaveSessioneOra(simbolo, exchangePreferitoEco), since, until);
+            esiti.add(new EsitoLotto(simbolo, since, until, completo, falliti, nPunti, interrogati));
         }
         return esiti;
 
@@ -4787,6 +4823,7 @@ private static JsonElement LottoInProcessoSingolo(Path nodePath, Path scriptPath
     ProcessBuilder pb = ServizioNodePrezzi.ProcessoScript(nodePath, scriptPath, argomenti);
     Process process = pb.start();
     AtomicBoolean scaduto = CcxtInterop.avviaWatchdogTimeout(process, CcxtInterop.TIMEOUT_SCRIPT_PREZZI_MINUTI);
+    AtomicBoolean interrotto = avviaSorveglianzaInterruzione(process);
 
     //stdin su un thread a parte: scrivendo l'ingresso e leggendo l'uscita dallo stesso thread si
     //va in stallo non appena il JSON supera il buffer della pipe (il figlio si blocca scrivendo
@@ -4812,11 +4849,44 @@ private static JsonElement LottoInProcessoSingolo(Path nodePath, Path scriptPath
     int exitCode = process.waitFor();
     scrittore.join(5000);
 
+    if (interrotto.get()) {
+        System.out.println("Lotto prezzi: processo Node terminato su richiesta di interruzione");
+        return null;
+    }
     if (scaduto.get() || exitCode != 0) {
         System.err.println("Lotto prezzi fallito (exit " + exitCode + (scaduto.get() ? ", timeout" : "") + ")");
         return null;
     }
     return JsonParser.parseString(output.toString());
+}
+
+/**
+ * Termina {@code process} (con i suoi discendenti, che altrimenti terrebbero aperte le pipe) appena
+ * l'utente preme Interrompi, controllando {@link Interruzione} ogni
+ * {@link ServizioNodePrezzi#ATTESA_CONTROLLO_INTERRUZIONE_MS}. E' la controparte, per il processo singolo,
+ * del controllo in {@code ServizioNodePrezzi.attendiRisposta}: senza, il lotto andava comunque fino in
+ * fondo (decine di secondi su 100 richieste). Il thread finisce da solo quando il processo termina.
+ * @return {@code true} se il processo e' stato terminato per l'interruzione
+ */
+static AtomicBoolean avviaSorveglianzaInterruzione(Process process) {
+    AtomicBoolean interrotto = new AtomicBoolean(false);
+    Thread sorveglianza = new Thread(() -> {
+        try {
+            while (!process.waitFor(ServizioNodePrezzi.ATTESA_CONTROLLO_INTERRUZIONE_MS, TimeUnit.MILLISECONDS)) {
+                if (Interruzione.Richiesta()) {
+                    interrotto.set(true);
+                    process.descendants().forEach(ProcessHandle::destroyForcibly);
+                    process.destroyForcibly();
+                    return;
+                }
+            }
+        } catch (InterruptedException ignorata) {
+            //nessuno interrompe questo thread: se succede, si smette semplicemente di sorvegliare
+        }
+    }, "lotto-prezzi-interruzione");
+    sorveglianza.setDaemon(true);
+    sorveglianza.start();
+    return interrotto;
 }
 
 public static class InfoPrezzo {

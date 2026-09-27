@@ -89,6 +89,14 @@ async function findBestPair(ex, baseSymbol) {
 // `snellisciMarkets`). Vive quanto il processo, quindi nella modalita' a richiesta singola non cambia nulla.
 const marketsInMemoria = new Map();
 
+// Caricamenti dei markets in corso, per id di exchange: la promessa, non il risultato. Il lotto serve
+// 4 richieste in parallelo, e senza questa mappa tutte e 4 trovavano `marketsInMemoria` vuota nello
+// stesso istante e riscaricavano ciascuna i markets dalla rete (osservato il 2026-09-27 a file scaduti:
+// "Ricarico markets" x4 per coinbase, bybit, okx e kucoin). Chi arriva mentre il caricamento e' in
+// corso aspetta la stessa promessa. La voce si toglie a caricamento finito, riuscito o no: un errore di
+// rete non resta cosi' memorizzato per tutta la vita del processo persistente.
+const marketsInCaricamento = new Map();
+
 // Tasso di cambio EUR/stablecoin condiviso da TUTTE le monete della stessa finestra, invece di uno
 // per exchange: senza questa memoria, in un lotto con N monete che hanno tutte bisogno della stessa
 // conversione USDT->EUR, la si cercherebbe (e si proverebbe a scalare da Binance agli altri exchange)
@@ -141,6 +149,19 @@ async function getMarketsSymbols(exchange) {
     if (marketsInMemoria.has(exchange.id)) {
         return marketsInMemoria.get(exchange.id);
     }
+    if (marketsInCaricamento.has(exchange.id)) {
+        return marketsInCaricamento.get(exchange.id);
+    }
+    const caricamento = caricaMarkets(exchange);
+    marketsInCaricamento.set(exchange.id, caricamento);
+    try {
+        return await caricamento;
+    } finally {
+        marketsInCaricamento.delete(exchange.id);
+    }
+}
+
+async function caricaMarkets(exchange) {
     const tempDir = path.join(os.tmpdir(), 'GiacenzeCrypto');
     if (!fs.existsSync(tempDir)) {
         fs.mkdirSync(tempDir, { recursive: true });

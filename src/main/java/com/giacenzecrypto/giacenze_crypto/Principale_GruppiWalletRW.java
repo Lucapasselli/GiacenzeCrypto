@@ -33,8 +33,9 @@ import java.util.Set;
  * lo è un cambio di regime del bollo per i righi CRYPTO : il taglio è uno solo e viene da qui.
  * Un gruppo senza righi FIAT non ha Stato estero, e va bene così.</p>
  *
- * <p><b>Stato.</b> I periodi CRYPTO non sono ancora letti da {@code Calcoli_RW.AggiornaRWFR} ; i
- * periodi <b>FIAT</b> sono consumati da {@link Calcoli_RW_Fiat}. La validazione di
+ * <p><b>Stato.</b> I periodi CRYPTO spezzano il rigo cripto (dal 2026-09-26: tratti in
+ * {@link Calcoli_RW_PeriodiCrypto}, taglio dei lotti in {@code Calcoli_RW.AggiornaRWFR}, righi in
+ * {@link Principale_QuadroRW}) ; i periodi <b>FIAT</b> sono consumati da {@link Calcoli_RW_Fiat}. La validazione di
  * {@link #validaPeriodi(List)} è strutturale <i>più</i> semantica sulle <b>sovrapposizioni</b>
  * (errore bloccante : le finestre di detenzione dello stesso rigo non possono accavallarsi) ; i
  * <b>buchi</b> sono ammessi (conto chiuso e poi riaperto) e vengono solo segnalati da

@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest#nomeDelMetodo
 
-# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.64.01)
+# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.64.02)
 java -jar target/Giacenze_Crypto-<version>-jar-with-dependencies.jar --NoJarPath --workdir ./test/2025/
 ```
 
@@ -155,6 +155,7 @@ This extraction is already under way — it is a deliberate, incremental refacto
 |---|---|
 | `Principale_GiacenzeaData.java` | operational logic of the "Giacenze a data" tab |
 | `Principale_Opzioni_Pulizie.java` | data-cleanup operations from the options tab |
+| `Principale_QuadroRW.java` | the CRYPTO rows of the Quadro W/RW summary table (`RighiCrypto`): one row per wallet group and per CRYPTO holding period, bollo of the period, year-end/period snapshot for bollo periods. Extracted from `RW_CalcolaRW` on 2026-09-26 when rows became per period |
 | `Principale_Movimenti_SeparaUnisci.java` | three popup operations on movements: splitting one two-coin movement into an independent deposit + withdrawal, merging an unclassified deposit + withdrawal back into a single swap, and merging N already-classified movements of the same type/coin/wallet into one by summing their quantities |
 
 **These rules are provisional**: they simply describe what the two existing classes already do, and are still to be reviewed and agreed with the user — open points include whether dialogs and wait cursors belong in the extracted classes at all, and whether shared state should keep being reached through the static maps or be passed in instead. Until that review happens, mirror the existing pattern rather than inventing a different one.
@@ -247,6 +248,8 @@ discards fingerprints and checkpoints, so a transient failure cannot become perm
 (the `v[20]` digest for PTW/DTW ordering, which fields survive a full recompute unchanged) in
 `nocommit/Documentazione/Analisi_Ricalcolo_Incrementale_Plusvalenze.md`.
 - `Calcoli_RW.java` — Quadro W/RW (annual wealth declaration) calculations
+- `Calcoli_RW_Giacenze.java` — the **only** year-start/year-end crypto holdings snapshot (per wallet group, date window, injectable price): feeds both Rilevanza A (`Calcoli_RW.ChiudiRWGiacenzeFinali`) and the bollo-group substitution (`Funzioni.RW_GiacenzeInizioFineAnno`, now a delegate). Until 2026-09-26 those were two implementations that disagreed; don't reintroduce a second one. Rules and history in `nocommit/Documentazione/Analisi_QuadroRW_Crypto_Periodi.md` §8
+- **CRYPTO rows are split by holding period** (`GRUPPO_PERIODO_RW` rows with `TipoRigo = CRYPTO`, since 2026-09-26): `Calcoli_RW_PeriodiCrypto.trattiCrypto` cuts the year at every period boundary (gaps = rows without a period, group bollo flag); for methods B/C/D `Calcoli_RW.AggiornaRWFR` closes every open LIFO lot of the group at 23:59 of the day before a boundary and reopens it at 00:00, priced at the boundary, so **no detail row ever spans two periods** and a detail row belongs to the period containing its end date `[9]`. The summary-table key is `Wallet NN|CRYPTO|` for an unsplit group (unchanged) and `Wallet NN|CRYPTO|yyyy-MM-dd/yyyy-MM-dd` for a period row. A group without CRYPTO periods produces exactly the old single row (verified on the real dataset). Decisions in `nocommit/Documentazione/Analisi_QuadroRW_Crypto_Periodi.md` §6
 - `Calcoli_RW_Fiat.java` — the FIAT half of Quadro W/RW (foreign currency held at a foreign intermediary), into the separate map `Principale.Mappa_RW_ListeXGruppoWallet_Fiat` so the CRYPTO path — and its golden master — stays byte-identical
 - `Calcoli_RT.java` — Quadro T/RT (capital gains tax form) calculations
 
@@ -269,6 +272,20 @@ in *Opzioni → Opzioni Calcolo RW/W*) — non più una scelta silenziosa del pr
 4‰ per gli Stati "privilegiati" del D.M. 4/5/1999 dal 2024 in poi, altrimenti 2‰; la barratura della
 colonna 21 sul modulo stampato resta manuale. Analisi legale e di implementazione complete in
 `nocommit/Documentazione/Analisi_QuadroRW_Codice14.md`.
+
+**Rigo di liquidità spezzato sugli apporti (circ. 12/E/2016 § 14.1)** e, a scelta, sui prelievi:
+`Calcoli_RW_Fiat.OPZIONE_SPEZZA_SU_APPORTI/PRELIEVI` + soglia (default spente, 500 €). Un apporto è
+deciso dalla **natura** della gamba (`NaturaGamba`: entrata di un `DF`, `viban_deposit` del Fiat Wallet),
+mai dal segno — una vendita di crypto porta euro ma non è un apporto. Il motore ignora i tagli in solo
+monitoraggio e sui tratti conto corrente, qualunque cosa dica la GUI. Meccanica nella sezione finale
+dello stesso documento.
+
+**Le due giacenze medie della parte FIAT hanno divisori diversi, e non è un doppione da unificare.**
+Conto corrente (codice 1): somma dei saldi / **365** sempre (`GIORNI_GIACENZA_MEDIA_ANNUA`, provv. AdE
+28/05/2015 punto 3.1), perché l'IVAFE è fissa e la media decide solo colonna 8 e soglia dei 5.000 €.
+Liquidità codice 14 con l'opzione max-media: somma / **giorni del tratto** (`mediaPeriodo`), perché la
+media diventa la base di un'imposta proporzionale già rapportata ai giorni — con /365 i giorni
+contavano due volte e spezzare un rigo faceva pagare circa la metà (corretto il 2026-09-27).
 
 ### Le note di compilazione dei quadri stanno in un JSON, non nel codice
 
@@ -388,6 +405,32 @@ Full mechanics of all four in `nocommit/Documentazione/Analisi_Import_Meccanismi
 ### Price fetching (`Prezzi.java`)
 Queries several exchanges in parallel via OkHttp. Prices are cached in `connectionPrezzi`. Exchange access via CCXT goes through the Node layer below.
 
+**Token alias for exchange pricing live in `config/varie/AliasPrezziToken.json`** (since 2026-09-25,
+read by `AliasPrezziToken.Carica()` from `VarCondivise.CompilaMappaChain()`): `alias` fills
+`Principale.Mappa_AddressRete_Nome` (WETH on Base → ETH, USDC.e → USDC: priced via CCXT at 1-minute
+resolution instead of hourly DefiLlama/CoinGecko), `stessoPrezzo` fills `Mappa_MoneteStessoPrezzo`.
+Three non-obvious points: the file **changes fiscal numbers without a version bump** (Quadro RW values
+31/12 live), so edit it as a fiscal change; an alias nulls the address, so a hand-entered price saved
+by address+rete is read first by `Prezzi.PrezzoPersonalizzatoTokenConAlias` — keep that ahead of any
+alias move; only `riferimento: true` entries (the canonical token, or the bridged one where no canonical exists —
+USDT on BSC) feed the automatic SCAM marking of `AliasPrezziToken.MotivoImpersonazione`, and a
+token whose address+rete is in `GESTITICOINGECKO` is never an impersonation
+(`MotivoImpersonazioneEsclusiCensiti` — by address, never by symbol; the name rule and GoPlus still apply).
+`Calcoli_RW_GoldenMasterTest` sets the alias state explicitly (before 2026-09-25 it didn't load them at
+all, so its result depended on test order) and checks it three ways: `rw.golden` with the option off,
+`rw_anniPassati.golden` with it on, and — with no baseline — that with the option off every year closed
+before the first `dal` is identical to the historical 12 entries (`AliasPrezziToken.Predefinite()`). That
+last test is the one that fails if an entry is added without `dal`. WPOL/WMATIC is left out on purpose (the POL ticker was not
+MATIC before 09/2024).
+**Past declarations must not move**: each entry added after the first 12 carries `dal` (ISO date), and an
+alias applies only to prices at instants strictly **after** 00:00 of that day — strictly, because
+`Calcoli_RW` prices the year-end of year N at `01/01/N+1 00:00`, which is also the start of N+1. So every
+pricing reader goes through `AliasPrezziToken.Alias(address, rete, istante)` /
+`StessoPrezzo(simbolo, istante)`, never through the two maps directly (they hold all entries, undated).
+A new entry added in year N gets `dal = N-01-01`. The option `AliasPrezzi_AncheAnniPassati`
+(*Opzioni di calcolo*, "Prezzi dagli exchange anche per gli anni già dichiarati") ignores every `dal`; it is
+initialised once, "SI" only on a new installation (`movimenti.crypto.db` absent or empty). Details in `nocommit/Documentazione/Analisi_Alias_Prezzi_Token_CCXT.md`.
+
 **The remote path reads on-chain DEX prices (Fase 1-bis, 2026-08-25) and is opt-in — see `ServizioPrezziClient.OPZIONE_ABILITATO_DEFAULT`.** The old CCXT-based shared cache was retired entirely (all seven configured exchanges were confirmed, from their own published API terms, to forbid redistributing market data to third parties even for non-commercial use — see `nocommit/Documentazione/Analisi_VPS_Prezzi_Sito.md`). The replacement reads prices directly from DEX pool state (`ServizioPrezzi/src/onchain/`), which is nobody's market data. It was briefly switched on by default on 2026-08-26, once the `/v1/monete` transparency endpoint (below) made the service's coverage independently checkable, then reverted to disabled-by-default the same day at the user's request pending further testing — do not flip `OPZIONE_ABILITATO_DEFAULT` back to `"SI"` without asking. It's still a checkbox in *Opzioni → Opzioni di Calcolo* (`Prezzi_Opzioni_CheckBox_ServizioOnchain`), persisted as `ServizioPrezziClient.OPZIONE_ABILITATO` in `personale.mv.db`. Tests override it with the `prezzi.servizio.abilitato` system property.
 
 `CambioXXXEUR` tries a remote pull-through cache (`ServizioPrezziClient.tentaRecupero`) before the
@@ -411,9 +454,20 @@ Part of the exchange and price logic lives in JavaScript, not Java, and runs **o
 
 **CCXT is pinned (`CcxtInterop.CCXT_VERSION`) and self-correcting, the same principle as `NODE_VERSION`, since 2026-09-04.** Before that, `installCcxt()` ran a bare `npm install ccxt` exactly once — whatever "latest" happened to be on that installation's first API import — and never touched it again, because the only check was "does `node_modules/ccxt` exist". An install from months earlier stayed on that old version forever, silently. A user reported OKX API downloads failing on `Funding errore ... : exchange[metodo] is not a function` for `privateGetAssetBillsHistory` (bug **C14**, `nocommit/Documentazione/Analisi_Bug_Criticita.md`): their installed ccxt predated CCXT adding the `asset/bills-history` endpoint, so the implicit method plainly didn't exist — Trading (`privateGetAccountBillsArchive`, an older endpoint) kept working the whole time, which is what made it look OKX-specific rather than an ambient library problem. `installCcxt()` now reads `node_modules/ccxt/package.json`'s `"version"` and reinstalls whenever it doesn't match `CCXT_VERSION`, so bumping the constant is what future devs do when a script starts relying on an endpoint/method not yet in the pinned version — exactly like bumping `NODE_VERSION`. **This check is skipped when `NODE_ESTERNO != null`** (flatpak/MSIX): that ccxt copy sits in a read-only prefix installed by the packaging manifest, and `getNpmPath()` throws in that mode on purpose (see the flatpak section below) — `installCcxt()` returns immediately instead of ever reaching it.
 
-**npm's own version is not tracked separately — it ships inside the pinned Node distribution.** `getNpmPath()` only ever resolves `npm[.cmd]` from inside `NODE_DIR/node-<NODE_VERSION>-<platform>/`, never a system-wide npm, so its version already moves in lockstep with `NODE_VERSION` with nothing extra to pin. What *is* machine-dependent is npm's **config**: on a real user's Windows machine (2026-09-04) `npm install` printed `npm warn Unknown user config "allow-scripts"` — a key this app never sets, read from that machine's own `.npmrc` (some unrelated tool's leftover). Since our installs are meant to be internal and deterministic, `isolaConfigNpm()` points `npm_config_userconfig`/`npm_config_globalconfig` at a file that deliberately does not exist before every `npm install` in `installCcxt()`/`installModuleNode()` — npm treats a missing config file as "nothing extra to read" (documented behavior, not an error), so the install no longer depends on whatever a given machine's own npm config happens to contain.
+**npm's own version is not tracked separately — it ships inside the pinned Node distribution.** `getNpmPath()` only ever resolves `npm[.cmd]` from inside `getNodeDir()/node-<NODE_VERSION>-<platform>/`, never a system-wide npm, so its version already moves in lockstep with `NODE_VERSION` with nothing extra to pin. What *is* machine-dependent is npm's **config**: on a real user's Windows machine (2026-09-04) `npm install` printed `npm warn Unknown user config "allow-scripts"` — a key this app never sets, read from that machine's own `.npmrc` (some unrelated tool's leftover). Since our installs are meant to be internal and deterministic, `isolaConfigNpm()` points `npm_config_userconfig`/`npm_config_globalconfig` at a file that deliberately does not exist before every `npm install` in `installCcxt()`/`installModuleNode()` — npm treats a missing config file as "nothing extra to read" (documented behavior, not an error), so the install no longer depends on whatever a given machine's own npm config happens to contain.
 
 Callers (`CcxtInterop.fetchMovimento()`, and several methods in `Prezzi.java`) then build a path `getPathRisorse() + "Scripts/<name>.js"` and launch it as a child process, passing credentials/dates/tokens as command-line arguments and parsing JSON from stdout. Scripts cover Binance endpoints (`Binance_Trades.js`, `Binance_Conversioni.js`, `Binance_EarnFlessibili.js`, `Binance_SaldiGiornalieri.js`, …), generic movement fetching (`FetchMovimenti.js`) and historical prices (`Historical_Multi_Eur.js`).
+
+**`Historical_Multi_Eur.js` is the exception: for batched prices it runs as a long-lived process**
+(`--servizio`, managed by `ServizioNodePrezzi.java`, one batch per stdin line, closed after 10 minutes
+idle), with the old one-process-per-batch path kept as fallback. "Riscarica tutti i prezzi dalle fonti"
+uses it too, with the `tutti` flag (all exchanges in parallel, no cascade) and a ±60-minute window that
+matches what `GUI_ModificaPrezzo` then reads from the cache. So its module-level caches outlive a
+batch: anything added there must be reset per message or expire, or a transient failure becomes
+permanent for the session. It also hands its cached markets to ccxt (`consegnaMarkets`) and keeps them
+spot-only without `info` (`markets_v2_*.json`) — without the first, `fetchOHLCV` silently re-downloads
+every exchange's market list over the network. Details in
+`nocommit/Documentazione/Analisi_Prezzi_Scaricamento_Costi.md` §10.
 
 **A change to Binance import or CCXT price fetching may belong in `Scripts/*.js` rather than in Java** — check both sides. These scripts ship alongside the JAR, like `Immagini/`.
 
@@ -574,7 +628,7 @@ Resolved against `workingDirectory`:
 - `ImportConfig/` — the **legacy** folder of the same files (`getCartella_ImportConfig()`), read only for entries *not* marked `"centralizzato": true`, i.e. the user's own. A centralised config dropped here is silently ignored — seed `config/import/` instead when testing an unpublished change
 - `ChatbotIA.json` — chatbot list for "Chiedi a IA", created with defaults on first use
 - `Backup/` and `Temporanei/` — created automatically if missing
-- `tools/node/` — standalone Node distribution, downloaded on first CCXT use (`CcxtInterop.NODE_DIR`)
+- `tools/node/` — standalone Node distribution, downloaded on first CCXT use (`CcxtInterop.getNodeDir()`, computed on every call rather than a `static final`: as a constant it froze on whichever working directory loaded the class first, which in the test suite made `PrezziLottoCCXTTest` always skip)
 
 ## Internal technical documents — live under `nocommit/`, never committed
 
@@ -614,30 +668,31 @@ The manuals the application opens are **pages, not files**: the source is the Ma
 `docs/documentazione/`, which GitHub Pages renders as `.html` with the same name, and
 `DocumentiAiuto` holds one constant per page (`disclaimer.html`, …) plus `NOVITA_VERSIONI`
 (`changelog.html`, the per-version change list, converted from `Documentazione/Readme.txt`).
-Five things the arrangement depends on:
+Four things the arrangement depends on:
 
 - **The Markdown is the only source.** The `.odt` originals in `Documentazione/` are not regenerated
   from it and are not updated any more; editing them changes nothing that anyone reads.
 - **The PDFs published next to the pages are generated, not written.** Every version up to 1.0.61 opens
   `…/documentazione/<nome>.pdf`, so those URLs must keep answering — and must not answer with stale
-  text. `docs/strumenti/genera-pdf.sh` rebuilds them from the same Markdown (`md2html.py` + LibreOffice);
-  re-run it after editing a page. `DocumentiAiutoTest` fails if either half is missing.
+  text. `docs/strumenti/genera-pdf.sh` rebuilds them from the same Markdown; re-run it after editing a
+  page. `DocumentiAiutoTest` fails if either half is missing. Since 2026-09-27 the generator is
+  `GeneraPdfDocumentazione` (in `src/main`, like `GeneraSplash`, but not called by the app): it draws the
+  manuals with **the same veste grafica as the W/RW prints** through `Stampe.AttivaVesteDocumento` (cover,
+  header with logo, margin band, watermark, numbered footer, embedded Noto Sans). It converts only the
+  Markdown subset the manuals use; a new construct in a page needs support there. Three OpenPDF traps it
+  already avoids: an image must be a **standalone element** with `setStrictImageSequence(true)` (inside a
+  paragraph a tall image overflows the page bottom, without strict sequence the following text jumps
+  ahead of it); glyphs Noto Sans lacks (→) fall back to the base-14 Symbol font; table columns are never
+  narrower than their longest word. The old LibreOffice pipeline (`md2html.py`) was removed.
 - **Headings carry explicit `{#ancora}` ids.** The in-page links are written against them instead of
   against kramdown's generated slugs, which differ on accents and punctuation (`À`, `–`, `/`) and would
-  silently break. In the PDFs `md2html.py` turns each of them into an `<a name="…"></a>` **as well as**
-  an `id=`: LibreOffice's HTML import builds its bookmarks from `<a name>`, and while it merely stripped
-  them the index at the top of every manual pointed at nothing and was not clickable.
-- **LibreOffice ignores the CSS that governs the page, and honours the HTML attributes instead.** Two
-  consequences that `md2html.py` has to work around, both of which produced the "immagini enormi e fuori
-  posto" of the first PDFs: `max-width` on `img` does nothing — an image with no `width`/`height`
-  attribute is imported at its nominal 96 dpi, so a 2260 px screenshot lands 60 cm wide on a 21 cm page
-  and is cut off at the margin — and a table with no `width` attribute is laid out at its natural width,
-  losing the last column the same way. So the converter measures every image with PIL and writes the
-  attributes itself (`DPI_IMMAGINI` = 150, capped at 16 × 20 cm inside an A4 with 2 cm margins), and
-  emits `width="100%"` on the tables. For the same reason the font is declared per element: `body` alone
-  does not reach the headings, which fall back to LibreOffice's Liberation Serif.
+  silently break. In the PDFs each id becomes a named destination (and H2/H3 also a bookmark), so the index
+  at the top of every manual stays clickable.
 - **Images live in `docs/documentazione/immagini/<pagina>/`**, numbered in reading order; they were
   extracted from the `.odt` originals, so a screenshot that is redone must replace the numbered file.
+  Screenshots of the app are taken on an **anonymised copy** of the user's data (addresses, hashes, API keys
+  and amounts altered), never on the real archive; the tooling for the Quadro RW manual is
+  `nocommit/StrumentiTest/PreparaDocRW.java` + `ScattaDocRW.java`.
 
 The window title no longer says *Beta*: the program left the beta phase on 2026-08-18, so
 `VarStatiche.componiTitolo` takes only the version and the Store edition no longer differs from the

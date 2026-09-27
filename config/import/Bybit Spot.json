@@ -1,0 +1,57 @@
+{
+  "_commento": "Bybit - export 'Asset Change Details' del conto SPOT (file 'AssetChangeDetails_spot_<UID>_<da>_<a>_N.csv'). La prima riga del file contiene UID/Company Name/Country, l'intestazione vera e' la seconda. Colonne: 0=Uid 1=Type 2=Coin 3=Amount (col segno, variazione di saldo) 4=Wallet Balance 5=Time(UTC). Nessun identificativo di riga. Dentro lo stesso secondo le righe NON sono in ordine cronologico (il saldo progressivo torna solo sommando il secondo intero): nessuna conseguenza, il raggruppamento e' per secondo.",
+  "_commentoConti": "Bybit esporta un file per conto (Spot, Funding, Derivatives, Unified Trading Account) e questa configurazione legge solo lo Spot: il Funding ha la sua ('Bybit Funding.json'). Stesso nomeExchange e stesso nomeWallet di proposito, cosi' i giroconti fra i conti Bybit sono interni allo stesso wallet e si possono ignorare da entrambi i lati. Dopo il passaggio all'Unified Trading Account il conto Spot si svuota con un giroconto finale e da li' in poi i movimenti stanno nell'export dell'UTA, che ha un tracciato diverso e non e' coperto da queste configurazioni.",
+  "_commentoScambi": "'trade' sono le due gambe di un ordine (stesso secondo, segni opposti), 'tradingFee' la commissione, riportata su una riga a parte e sempre nella moneta ricevuta: la quantita' di 'trade' e' LORDA (il saldo scende della fee sulla riga successiva), quindi la fee diventa un movimento COMMISSIONI senza ricostruire nulla. Piu' esecuzioni dello stesso ordine nello stesso secondo si sommano per moneta in un solo scambio.",
+  "_commentoDust": "'smallBalanceIntoBITReduceAsset' (moneta ceduta) + 'convertSmallBalanceIntoBITIncreaseAssets' (MNT ricevuto) sono la conversione dei piccoli saldi in MNT: uno scambio. Le due gambe possono cadere su secondi consecutivi, da qui 'causaliDifferite' con tolleranza di 1 secondo, che vale solo per queste due causali (trade e giroconti restano a tolleranza zero).",
+  "_commentoAirdrop": "'airdropAssetIncrease' osservato solo come distribuzione dei token Launchpad: arriva nello stesso secondo del 'Launchpad Subscription Refund' del Funding, e la differenza fra MNT impegnati e MNT restituiti e' il prezzo pagato. Le due righe stanno in file diversi e il motore non puo' abbinarle: il token entra come AIRDROP (reddito al valore di mercato) e gli MNT spesi, ignorati nel Funding, restano in giacenza. Differenza di pochi MNT per distribuzione; chi vuole il trattamento esatto (permuta MNT->token) lo sistema a mano.",
+  "_commentoTipoVuoto": "Alcune righe hanno Type vuoto: uscite dell'intero saldo verso un conto non esportato (probabilmente Derivatives). Mappate come TRASFERIMENTO-CRYPTO, cosi' la giacenza torna e il movimento resta da classificare a mano invece di sparire fra le righe scartate.",
+  "versione": "1.000",
+  "centralizzato": true,
+  "fontePrezzoPreferita": "bybit",
+  "nomeExchange": "Bybit",
+  "estrazione": "Spot - Asset Change Details (ATTENZIONE : in fase ALFA)",
+  "descrizione": "<html><div style='width:380px'>Bybit &ndash; export <b>Asset Change Details</b> del conto <b>Spot</b>. Va importato insieme a quello del conto Funding (configurazione a parte). I movimenti dell'Unified Trading Account e del conto Derivati non sono in questo file.</div></html>",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 2,
+  "rigaIntestazione": 2,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
+  "fuso": "UTC",
+  "colonne": {
+    "data": 5,
+    "causale": 1,
+    "moneta": 2,
+    "quantita": 3
+  },
+  "consolidaRigheStessaData": true,
+  "tolleranzaSecondiConsolidamento": 1,
+  "causaliDifferite": [
+    "smallBalanceIntoBITReduceAsset",
+    "convertSmallBalanceIntoBITIncreaseAssets"
+  ],
+  "mappaCausali": {
+    "trade":                                     "SCAMBIO CRYPTO-CRYPTO",
+    "tradingFee":                                "COMMISSIONI",
+    "smallBalanceIntoBITReduceAsset":            "SCAMBIO CRYPTO-CRYPTO",
+    "convertSmallBalanceIntoBITIncreaseAssets":  "SCAMBIO CRYPTO-CRYPTO",
+    "airdropAssetIncrease":                      "AIRDROP",
+    "internalAccountTransferDeposit":            "IGNORA",
+    "internalAccountTransferWithdrawal":         "IGNORA",
+    "Flexible Savings Subscription":             "IGNORA",
+    "Flexible Savings Principal Redemption":     "IGNORA",
+    "":                                          "TRASFERIMENTO-CRYPTO"
+  },
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": [
+    "COMMISSIONI",
+    "AIRDROP",
+    "TRASFERIMENTO-CRYPTO"
+  ],
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

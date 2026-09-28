@@ -179,6 +179,14 @@ public class Funzioni {
     static long TimesTampUltimoControlloInternet=0;   
 
     /**
+     * Solo per i test: finche' vale {@code true}, {@link #CeConnessioneInternet()} risponde "nessuna
+     * connessione" senza provare la rete. Forzare {@link #ConnInternetAttiva} a {@code false} non basta:
+     * quell'esito vale 60 secondi, poi il metodo rifa' il test vero, e un golden master che dura di piu'
+     * scaricava prezzi a meta' esecuzione (risultato diverso a ogni run, 2026-09-29).
+     */
+    static volatile boolean ReteDisabilitataPerTest = false;
+
+    /**
      * Fa scadere subito la cache di {@link #CeConnessioneInternet()}, cosi' la prossima chiamata esegue
      * un test vero invece di ripetere l'esito precedente.
      *
@@ -191,6 +199,7 @@ public class Funzioni {
     }
 
     static boolean CeConnessioneInternet() {
+        if (ReteDisabilitataPerTest) return false;
         String[] urls = {
             "https://www.google.com",
             "https://cloudflare.com",

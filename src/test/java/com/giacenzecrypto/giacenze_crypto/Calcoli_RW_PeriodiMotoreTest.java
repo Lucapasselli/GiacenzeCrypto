@@ -30,12 +30,12 @@ class Calcoli_RW_PeriodiMotoreTest {
     static void apreDatabaseTemporaneo() {
         VarStatiche.setWorkingDirectory(tempDir.toString() + "/");
         assertTrue(DatabaseH2.CreaoCollegaDatabase(), "Impossibile creare il database H2 temporaneo per i test");
-        Funzioni.ConnInternetAttiva = false;
-        Funzioni.TimesTampUltimoControlloInternet = System.currentTimeMillis();
+        Funzioni.ReteDisabilitataPerTest = true;
     }
 
     @AfterAll
     static void chiudeDatabase() throws Exception {
+        Funzioni.ReteDisabilitataPerTest = false;
         Principale.Mappa_EMoney.clear();
         Principale.Mappa_EMoney_CaseSensitive.clear();
         Principale.MappaCryptoWallet.clear();

@@ -60,11 +60,12 @@ import static org.junit.jupiter.api.Assertions.*;
  * <ul>
  *   <li>i database originali NON vengono mai aperti (si lavora su copie in
  *       {@code nocommit/}), quindi il lock single-instance dell'app non interferisce;</li>
- *   <li>il test forza lo stato "offline" di {@link Funzioni#CeConnessioneInternet()}
- *       prima di iniziare, così le valorizzazioni mancanti in cache non partono in
- *       rete a prendere un prezzo diverso a ogni run. La finestra di cache di quel
- *       metodo è di 60 s: per un batch lungo conviene comunque lanciare il test a
- *       connessione staccata quando si (ri)genera la baseline.</li>
+ *   <li>il test spegne la rete con {@link Funzioni#ReteDisabilitataPerTest} per tutta
+ *       la durata, così le valorizzazioni mancanti in cache non partono in rete a
+ *       prendere un prezzo diverso a ogni run. Prima si forzava solo l'esito
+ *       memorizzato di {@link Funzioni#CeConnessioneInternet()}, che scade dopo 60 s:
+ *       il test dura di più, e dal secondo minuto scaricava prezzi (differenze
+ *       diverse a ogni esecuzione).</li>
  * </ul>
  * Se una differenza rispetto alla baseline è ATTESA (nuovi movimenti nel dataset,
  * nuove opzioni RW, correzione voluta di un calcolo), verificare che ogni
@@ -182,8 +183,7 @@ class Calcoli_RW_GoldenMasterTest {
 
         // Forzo "nessuna connessione" per le valorizzazioni non in cache: senza questo, un prezzo
         // mancante partirebbe in rete e la baseline non sarebbe riproducibile.
-        Funzioni.ConnInternetAttiva = false;
-        Funzioni.TimesTampUltimoControlloInternet = System.currentTimeMillis();
+        Funzioni.ReteDisabilitataPerTest = true;
 
         caricaMovimentiReali();
 
@@ -195,6 +195,7 @@ class Calcoli_RW_GoldenMasterTest {
 
     @AfterAll
     static void ripulisce() throws Exception {
+        Funzioni.ReteDisabilitataPerTest = false;
         if (databaseAperto) {
             try { DatabaseH2.connection.close(); } catch (Exception ignored) {}
             try { DatabaseH2.connectionPersonale.close(); } catch (Exception ignored) {}

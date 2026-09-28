@@ -54,6 +54,8 @@
                           <Component id="Bottone_AggiornaSelezionati" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_IndirizziBTC" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="Bottone_Aggiorna" pref="242" max="32767" attributes="0"/>
                   </Group>
                   <Component id="ScrollPaneTabellaWallets" alignment="0" max="32767" attributes="0"/>
@@ -84,6 +86,7 @@
                       </Group>
                   </Group>
                   <Component id="Bottone_Aggiorna" max="32767" attributes="0"/>
+                  <Component id="Bottone_IndirizziBTC" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
@@ -253,6 +256,18 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_AggiornaSelezionatiActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_IndirizziBTC">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Wallet.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;Indirizzi del&lt;br&gt;wallet BTC...&lt;/html&gt;"/>
+        <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Wallet Bitcoin composto da piu&apos; indirizzi: si crea inserendo un nome (non un indirizzo) con rete Bitcoin,&lt;br&gt;poi qui si indicano gli indirizzi che lo compongono&lt;/html&gt;"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_IndirizziBTCActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

@@ -215,6 +215,8 @@ public class Trans_Bitcoin {
                     if (VarCondivise.LogJsonDefi) {
                         System.out.println(json);
                     }
+                    //Come per gli explorer EVM, la risposta entra nel documento di origine dello scarico
+                    DocumentiFonte.AggiungiRispostaWeb(Importazioni.DocumentoFonteCorrente, url, json);
                     if (Funzioni.isValidJSONArray(json)) {
                         page = new JSONArray(json);
                     }
@@ -255,16 +257,28 @@ public class Trans_Bitcoin {
     }
 
     /**
-     * Converte una singola transazione Bitcoin (JSON da mempool.space) in TransazioneDefi.
-     * ourAddresses: tutti gli indirizzi appartenenti al wallet (derivati o singolo indirizzo).
-     * walletEntry: chiave xpub o indirizzo singolo (senza il suffisso "(BTC)").
+     * Cosa una transazione significa per un certo insieme di indirizzi: quanti satoshi escono dai nostri
+     * input, quanti rientrano sui nostri output, la commissione e la prima controparte esterna.
+     * <p>E' separata dalla costruzione del movimento perche' serve anche a confrontare la stessa
+     * transazione letta con due insiemi diversi (vedi {@link WalletBtcMultiIndirizzo}): due analisi
+     * uguali producono lo stesso movimento, quindi la transazione non va toccata.
      */
-    private static TransazioneDefi parseTransaction(JSONObject tx, String walletEntry, Set<String> ourAddresses) {
-        String txid = tx.optString("txid", "N/A");
-        JSONObject status = tx.optJSONObject("status");
-        long blockTime = (status != null) ? status.optLong("block_time", 0) : 0;
-        int blockHeight = (status != null) ? status.optInt("block_height", 0) : 0;
+    record Analisi(boolean Coinbase, long InviatiSats, long RicevutiSats, long FeeSats, String Controparte) {
+        /**
+         * Nessuna uscita netta verso l'esterno: per il wallet la transazione e' solo la commissione di un
+         * trasferimento fra indirizzi propri. {@link #parseTransaction} la restituisce senza monete e
+         * lo scarico la scarta.
+         */
+        boolean SoloCommissione() {
+            return !Coinbase && InviatiSats > 0 && InviatiSats - RicevutiSats - FeeSats <= 0;
+        }
+    }
 
+    /**
+     * Analizza una transazione mempool.space rispetto agli indirizzi del wallet.
+     * @return {@code null} se la transazione non coinvolge nessuno degli indirizzi
+     */
+    static Analisi analizza(JSONObject tx, Set<String> ourAddresses) {
         boolean isCoinbase = false;
         long sentSats = 0;     // satoshi in uscita da nostri indirizzi (input)
         long receivedSats = 0; // satoshi in entrata su nostri indirizzi (output)
@@ -321,7 +335,27 @@ public class Trans_Bitcoin {
         // Scarta le transazioni che non coinvolgono i nostri indirizzi
         if (receivedSats == 0 && sentSats == 0 && !isCoinbase) return null;
 
-        long feeSats = tx.optLong("fee", 0);
+        return new Analisi(isCoinbase, sentSats, receivedSats, tx.optLong("fee", 0), counterparty);
+    }
+
+    /**
+     * Converte una singola transazione Bitcoin (JSON da mempool.space) in TransazioneDefi.
+     * ourAddresses: tutti gli indirizzi appartenenti al wallet (derivati o singolo indirizzo).
+     * walletEntry: chiave xpub, indirizzo singolo o nome del wallet multi-indirizzo (senza il suffisso "(BTC)").
+     */
+    static TransazioneDefi parseTransaction(JSONObject tx, String walletEntry, Set<String> ourAddresses) {
+        Analisi a = analizza(tx, ourAddresses);
+        if (a == null) return null;
+
+        String txid = tx.optString("txid", "N/A");
+        JSONObject status = tx.optJSONObject("status");
+        long blockTime = (status != null) ? status.optLong("block_time", 0) : 0;
+        int blockHeight = (status != null) ? status.optInt("block_height", 0) : 0;
+        boolean isCoinbase = a.Coinbase();
+        long sentSats = a.InviatiSats();
+        long receivedSats = a.RicevutiSats();
+        long feeSats = a.FeeSats();
+        String counterparty = a.Controparte();
 
         TransazioneDefi trans = new TransazioneDefi();
         trans.Rete = "BTC";
@@ -386,15 +420,7 @@ public class Trans_Bitcoin {
         try {
             System.out.println("[BTC] === Importazione wallet: " + walletEntry + " (dal blocco " + fromBlock + ") ===");
 
-            Set<String> addresses;
-            if (isExtendedKey(walletEntry)) {
-                progressb.SetLabel("[BTC] Derivazione indirizzi da chiave estesa...");
-                addresses = deriveUsedAddresses(walletEntry, progressb);
-            } else {
-                addresses = new LinkedHashSet<>();
-                addresses.add(walletEntry);
-                System.out.println("[BTC] Indirizzo singolo: " + walletEntry);
-            }
+            Set<String> addresses = IndirizziDaScansionare(walletEntry, "[BTC]", progressb);
 
             if (addresses.isEmpty()) {
                 System.out.println("[BTC] Nessun indirizzo trovato per " + walletEntry);
@@ -559,7 +585,7 @@ public class Trans_Bitcoin {
                 for (int i = 0; i < detail.length(); i++) {
                     JSONObject item = detail.getJSONObject(i);
                     int blockHeight = item.optInt("height", item.optInt("blockHeight", 0));
-                    if (blockHeight > 0 && blockHeight <= fromBlock) { done = true; break; }
+                    if (blockHeight > 0 && blockHeight < fromBlock) { done = true; break; }
                     if (!item.optBoolean("valid", true)) continue;
 
                     int type = item.optInt("type", -1);
@@ -681,7 +707,7 @@ public class Trans_Bitcoin {
                 for (int i = 0; i < detail.length(); i++) {
                     JSONObject item = detail.getJSONObject(i);
                     int blockHeight = item.optInt("height", item.optInt("blockHeight", 0));
-                    if (blockHeight > 0 && blockHeight <= fromBlock) { done = true; break; }
+                    if (blockHeight > 0 && blockHeight < fromBlock) { done = true; break; }
 
                     String txid = item.optString("txid", "");
                     if (txid.isBlank()) continue;
@@ -746,15 +772,7 @@ public class Trans_Bitcoin {
         try {
             System.out.println("[BTC+UniSat] === Importazione wallet: " + walletEntry + " (dal blocco " + fromBlock + ") ===");
 
-            Set<String> addresses;
-            if (isExtendedKey(walletEntry)) {
-                progressb.SetLabel("[BTC+UniSat] Derivazione indirizzi da chiave estesa...");
-                addresses = deriveUsedAddresses(walletEntry, progressb);
-            } else {
-                addresses = new LinkedHashSet<>();
-                addresses.add(walletEntry);
-                System.out.println("[BTC+UniSat] Indirizzo singolo: " + walletEntry);
-            }
+            Set<String> addresses = IndirizziDaScansionare(walletEntry, "[BTC+UniSat]", progressb);
             if (addresses.isEmpty()) {
                 System.out.println("[BTC+UniSat] Nessun indirizzo trovato per " + walletEntry);
                 return result;
@@ -874,5 +892,90 @@ public class Trans_Bitcoin {
         // Chiavi pubbliche estese
         if (address.matches("^[xyzt]pub[1-9A-HJ-NP-Za-km-z]{100,115}$")) return true;
         return false;
+    }
+
+    // =========================================================================
+    //  WALLET MULTI-INDIRIZZO
+    // =========================================================================
+
+    /**
+     * Gli indirizzi da scansionare per una voce della lista wallet BTC, che puo' essere di tre tipi:
+     * una chiave estesa (indirizzi derivati), un indirizzo singolo, oppure il nome di un wallet
+     * multi-indirizzo, i cui indirizzi stanno in {@code WALLET_BTC_INDIRIZZI}.
+     * <p>Il nome non puo' essere scambiato per uno degli altri due tipi: {@link #isNomeWalletValido}
+     * lo impedisce quando il wallet viene creato.
+     */
+    static Set<String> IndirizziDaScansionare(String walletEntry, String prefissoLog, Download progressb) throws Exception {
+        if (isExtendedKey(walletEntry)) {
+            progressb.SetLabel(prefissoLog + " Derivazione indirizzi da chiave estesa...");
+            return deriveUsedAddresses(walletEntry, progressb);
+        }
+        if (!isValidBitcoinAddress(walletEntry)) {
+            Set<String> indirizzi = DatabaseH2.Pers_WalletBtcIndirizzi_Leggi(walletEntry);
+            System.out.println(prefissoLog + " Wallet multi-indirizzo " + walletEntry + ": " + indirizzi.size() + " indirizzi");
+            return indirizzi;
+        }
+        Set<String> addresses = new LinkedHashSet<>();
+        addresses.add(walletEntry);
+        System.out.println(prefissoLog + " Indirizzo singolo: " + walletEntry);
+        return addresses;
+    }
+
+    /**
+     * Il nome di un wallet multi-indirizzo finisce nel campo wallet dei movimenti come
+     * {@code "Nome (BTC)"} e nella lista wallet separato da {@code ;}, e al momento dello scarico
+     * decide da solo che tipo di voce e': per questo non puo' essere un indirizzo, non puo' cominciare
+     * come una chiave estesa (basta il prefisso, vedi {@link #isExtendedKey}) e non puo' contenere
+     * parentesi o punto e virgola.
+     * @return {@code null} se il nome va bene, altrimenti il motivo per cui non va
+     */
+    public static String isNomeWalletValido(String nome) {
+        if (nome == null || nome.isBlank()) return "Il nome del wallet e' vuoto";
+        if (isValidBitcoinAddress(nome.trim())) return "Il nome non puo' essere un indirizzo Bitcoin";
+        if (isExtendedKey(nome)) return "Il nome non puo' cominciare con xpub, ypub, zpub o tpub";
+        if (nome.contains("(") || nome.contains(")") || nome.contains(";"))
+            return "Il nome non puo' contenere parentesi o punto e virgola";
+        return null;
+    }
+
+    /**
+     * Cronologia completa (solo transazioni confermate) di un indirizzo, dal primo blocco.
+     */
+    static List<JSONObject> CronologiaIndirizzo(String address) throws IOException, InterruptedException {
+        return fetchAddressTxs(address, 0);
+    }
+
+    /**
+     * Movimenti BRC-20 e Runes di un singolo indirizzo fino al blocco {@code bloccoMassimo} compreso,
+     * attribuiti al wallet {@code walletEntry}. Serve quando un indirizzo entra in un wallet gia'
+     * importato: lo scarico incrementale riparte dall'ultimo blocco e sotto quel blocco non tornerebbe
+     * mai.
+     */
+    static Map<String, TransazioneDefi> TokenIndirizzoFinoAlBlocco(String address, String walletEntry,
+            int bloccoMassimo, String apiKey, Download progressb) throws IOException, InterruptedException {
+        Map<String, TransazioneDefi> tutti = new LinkedHashMap<>();
+        for (String ticker : getBRC20Tickers(address, apiKey)) {
+            if (progressb != null && progressb.FineThread()) return tutti;
+            tutti.putAll(fetchBRC20HistoryForTicker(address, ticker, apiKey, 0, walletEntry));
+            Thread.sleep(200);
+        }
+        for (JSONObject runeInfo : getRunesBalances(address, apiKey)) {
+            if (progressb != null && progressb.FineThread()) return tutti;
+            String runeid = runeInfo.optString("runeid", "");
+            if (runeid.isBlank()) continue;
+            String runeName = runeInfo.optString("rune", runeInfo.optString("spacedRune", runeid));
+            tutti.putAll(fetchRunesHistoryForRune(address, runeid, runeName,
+                    runeInfo.optInt("divisibility", 0), apiKey, 0, walletEntry));
+            Thread.sleep(200);
+        }
+        tutti.values().removeIf(t -> {
+            try {
+                int b = Integer.parseInt(t.Blocco);
+                return b <= 0 || b > bloccoMassimo;
+            } catch (NumberFormatException e) {
+                return true;
+            }
+        });
+        return tutti;
     }
 }

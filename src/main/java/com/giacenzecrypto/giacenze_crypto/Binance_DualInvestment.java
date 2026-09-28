@@ -139,7 +139,9 @@ public class Binance_DualInvestment {
             if (sub[1].equalsIgnoreCase(settle[1])) {
                 CreaMovimentiDualInvestmentStessaMoneta(purchase.id, settlement.id);
             } else {
-                GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(purchase.id, settlement.id);
+                //Stesso sotto-wallet del caso a moneta uguale, così i movimenti sintetici di un Dual
+                //Investment si distinguono dagli altri scambi differiti (Auto-Invest ecc.)
+                GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(purchase.id, settlement.id, WALLET_DUAL_SAVINGS);
             }
             giaUsati.add(purchase.id);
             giaUsati.add(settlement.id);

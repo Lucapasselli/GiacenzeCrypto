@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest#nomeDelMetodo
 
-# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.64.02)
+# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.64.03)
 java -jar target/Giacenze_Crypto-<version>-jar-with-dependencies.jar --NoJarPath --workdir ./test/2025/
 ```
 
@@ -346,7 +346,38 @@ Defines the canonical movement type map. Each raw label from an import (e.g. `ST
 - Exchange-specific classes: `CDC_FiatECardWallet.java`, `BinanceTaxReportClient.java`, `CcxtInterop.java`
 - DeFi/blockchain: `Funzioni_WalletDeFi.java`, `TransazioneDefi.java`, `Trans_Solana.java`, `ERC20MetadataReader.java`
 
+**BTC multi-address wallets (`WalletBtcMultiIndirizzo`, 2026-09-28).** A BTC entry in `WALLETS` is
+one of three kinds, decided by the string itself: an extended key (addresses derived), a single
+address, or a **name** whose addresses live in `WALLET_BTC_INDIRIZZI` (`personale.mv.db`) — resolved in
+`Trans_Bitcoin.IndirizziDaScansionare`. `Trans_Bitcoin.isNomeWalletValido` is what keeps a name from
+being mistaken for the other two (`isExtendedKey` only checks the prefix). Grouping at import, not via
+`GRUPPO_ALIAS`, is the point: `analizza` classifies in/out against the address *set*, so per-address
+imports turn change outputs into fake withdrawals + deposits. Changing the list of an already-imported
+wallet re-reads only the history of the added/removed addresses — only transactions touching them can
+change meaning — and only **up to the wallet's highest imported `v[23]`**: adding a newer transaction
+would move the incremental import's restart point past other addresses' unread ones. A transaction that
+touched the old set but has no rows was deleted by the user and must not be resurrected. The plan is
+computed from `Trans_Bitcoin.Analisi` without building `TransazioneDefi`, because `InserisciMonete`
+already fetches prices. Known gap: the address list is persisted immediately while movement changes
+wait for *Salva*, so discarding them leaves list and movements out of step.
+
 **In a generic-CSV config, `nomeExchange` becomes movement field `[3]` and `nomeWallet` field `[4]` — and `[3]` is load-bearing twice over.** `costruisciMovimenti` calls `creaMovimento(mOUT, mIN, exchange, wallet, …)` with `exchange = nomeExchange` in the `Wallet` slot: `[3] = nomeExchange`, `[4] = nomeWallet`. Field `[3]` is then the exchange key in the re-import dedup (`Importazioni.F_buildKeyMovimento` = `giorno|[3]|monetaU|qtaU|monetaE|qtaE`) **and** the key of the fiscal wallet-group lookup (`Calcoli_PlusvalenzeNew` reads `DatabaseH2.Pers_GruppoWallet_Leggi(v[3])`). So changing a config's `nomeExchange` re-imports every already-stored movement of that source as a duplicate (different `[3]`), and moves those movements into a different wallet group unless a `GRUPPO_ALIAS` re-unites them. `nomeWallet` (`[4]`) is fiscally inert — like the OKX note above. The two `config/import/Coinbase*.json` use this on purpose: retail keeps `nomeExchange` "Coinbase", `Coinbase Pro GDAX.json` v2.000 sets it to "Coinbase Pro" so GDAX is a distinct wallet/group, and the retail↔Pro giroconti (`Pro/Exchange Deposit/Withdrawal` → `TRASFERIMENTO-CRYPTO`, and the GDAX `deposit`/`withdrawal` in crypto → auto `DC`/`PC`) are left with blank `campo18` for manual *Classifica Movimento* pairing. That config also drops the old `type.unit` composite causale (`causale2`/`separatoreCausale`): one bare causale per `type`, EUR-vs-crypto on `deposit`/`withdrawal` resolved by `RitornaTipologiaTransazione` from the coin's FIAT/Crypto type. Pinned by `ImportazioneGenericaCoinbaseProGdaxTest`.
+
+**`girocontoFiat` — euro moved between two of the user's own wallets (`GirocontiFiat`, 2026-09-28).**
+The GDAX EUR `deposit`s are not direct SEPA transfers: each one is the other half of a retail
+`Exchange Deposit`/`Pro Deposit`. Left alone, the pair is an unrelated PF + DF, so a "deposito FIAT"
+filter double-counts the money and `Calcoli_RW_Fiat` reads both halves as apporto/prelievo. At the end
+of every generic import, `GirocontiFiat.Abbina` scans the **whole** archive and pairs them as PTW/DTW,
+through the manual classification function. The categoria stays PF/DF so the balance really moves
+between wallets. The rule is declared **mirrored in both configs**, so import order doesn't matter and
+re-importing either file fixes existing data. A pair needs both raw causali `[7]` in the declared sets:
+that is what keeps a bank `Deposit` out. `Calcoli_RW_Fiat.isGirocontoStessoGruppo` makes the legs
+INTERNA only when the counterpart is in the **same** wallet group. Towards another group the euro
+really enters another rapporto, so there it stays an apporto. The same pairing can be done by hand:
+`GUI_ClassificazioneMovimento` offers PF/DF only "nessuna selezione" and the giroconto, and refuses a
+deposit larger than the withdrawal, which would otherwise become a euro reward. An unclassified PF/DF
+is still **not** counted as an error: the counter uses `isDepositoPrelievoClassificabile(…, false)`.
+Pinned by `GirocontiFiatTest`.
 
 **`colonneControvalore.noteAcquistoDaSaldo` (`Coinbase CSV.json` ≥ v1.006) — Buy pagati con carta non devono movimentare euro.** For a causale in `causaliConMovimentoCommissione` (only `Buy`), `costruisciMovimenti` normally synthesises a FIAT-out leg of `Total − fee` (→ categoria `AC`) plus a separate `COMMISSIONI` movement. When `noteAcquistoDaSaldo` is set and the row's Notes are non-empty and contain **none** of its markers (`"EUR Wallet"`), the Buy was paid from outside the exchange balance (card, Apple/Google Pay, direct bank): both the synthetic FIAT leg and the `COMMISSIONI` movement are skipped, and the lone crypto-in movement has its ID categoria rewritten `_DC`→`_AC` with `campo5="ACQUISTO CRYPTO"` and **`campo18` left empty** — the exact shape the Crypto.com App importer already produces (`Importazioni.java`, "Forzo il fatto che sia un acquisto crypto"). `Calcoli_PlusvalenzeNew`'s `v[18].contains("DAC") || TipoID.equals("AC")` branch then loads it at full cost `campo[15]` (= `Total − fee`), plusvalenza 0, no EUR moved. Empty Notes → unchanged (synthesised FIAT leg). Pinned by `ImportazioneGenericaCoinbaseTest`.
 

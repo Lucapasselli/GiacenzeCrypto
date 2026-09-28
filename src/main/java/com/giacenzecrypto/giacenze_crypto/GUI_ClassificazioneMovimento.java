@@ -102,7 +102,47 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         CB_PC_DONAZIONEFURTO,
         CB_PC_LIQUIDAZIONEPRESTITO
     };
-    
+
+    //COMBOBOX DEPOSITI/PRELIEVI FIAT
+    //L'unica classificazione di un movimento in valuta è il giroconto verso/da un altro wallet proprio
+    //(vedi GirocontiFiat): un DF/PF non classificato è già un versamento/prelievo vero e non è un errore.
+    //Il testo contiene "TRASFERIMENTO TRA WALLET", che CompilaTabellaMovimetiAssociabili cerca.
+    static final String CB_DF_TRASFERIMENTO="TRASFERIMENTO TRA WALLET DI PROPRIETA' - giroconto FIAT (bisognerà selezionare il prelievo nella tabella sotto)";
+    static final String CB_PF_TRASFERIMENTO="TRASFERIMENTO TRA WALLET DI PROPRIETA' - giroconto FIAT (bisognerà selezionare il deposito nella tabella sotto)";
+    static String[] CB_DF_SINGOLO = new String[]{
+        CB_NESSUNASELEZIONE,
+        CB_DF_TRASFERIMENTO
+    };
+    static String[] CB_PF_SINGOLO = new String[]{
+        CB_NESSUNASELEZIONE,
+        CB_PF_TRASFERIMENTO
+    };
+    //Selezione multipla di movimenti FIAT : un giroconto si abbina uno a uno, resta solo il disassocia
+    static String[] CB_FIAT_MULTIPLO = new String[]{
+        CB_NESSUNASELEZIONE
+    };
+
+    /** Categoria FIAT ({@code DF}/{@code PF}) dall'ID del movimento. */
+    static boolean isFiat(String ID) {
+        String cat = ID.split("_")[4];
+        return cat.equalsIgnoreCase("DF") || cat.equalsIgnoreCase("PF");
+    }
+
+    /** Vero per un prelievo, crypto o FIAT ({@code PC}/{@code PF}). */
+    static boolean isPrelievo(String ID) {
+        String cat = ID.split("_")[4];
+        return cat.equalsIgnoreCase("PC") || cat.equalsIgnoreCase("PF");
+    }
+
+    /** Opzioni della combo per un singolo movimento, secondo la sua categoria. */
+    static String[] OpzioniSingolo(String ID) {
+        String cat = ID.split("_")[4];
+        if (cat.equalsIgnoreCase("DF")) return CB_DF_SINGOLO;
+        if (cat.equalsIgnoreCase("PF")) return CB_PF_SINGOLO;
+        if (cat.equalsIgnoreCase("DC")) return CB_DC_SINGOLO;
+        return CB_PC_SINGOLO;
+    }
+
     
 
     
@@ -165,14 +205,9 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         }
 
         ArrayList<String> elements = new ArrayList<>();
-        if (ID.split("_")[4].equalsIgnoreCase("DC")){
-            elements.addAll(java.util.Arrays.asList(CB_DC_SINGOLO));
-
-        }else
-        {
-            elements.addAll(java.util.Arrays.asList(CB_PC_SINGOLO));
-
-        }
+        elements.addAll(java.util.Arrays.asList(OpzioniSingolo(ID)));
+        //Per i FIAT la combo ha solo "nessuna selezione" e il giroconto
+        if (isFiat(ID)) ntipo = (tipomov.equalsIgnoreCase("PTW") || tipomov.equalsIgnoreCase("DTW")) ? 1 : 0;
 
        
             //ComboBoxModel model = new DefaultComboBoxModel(elements.toArray());
@@ -200,9 +235,13 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         //Controllo che tutti i movimenti appartegano alla stessa categoria
         boolean trovatoDeposito=false;
         boolean trovatoPrelievo=false;
+        boolean trovatoFiat=false;
+        boolean trovatoCrypto=false;
         for (String ID:IDsTrans){
             if(ID.split("_")[4].equalsIgnoreCase("DC"))trovatoDeposito=true;
             if(ID.split("_")[4].equalsIgnoreCase("PC"))trovatoPrelievo=true;
+            if(isFiat(ID))trovatoFiat=true;
+            else trovatoCrypto=true;
         }
  
   
@@ -281,12 +320,9 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
             }
             
 
-            if (ID.split("_")[4].equalsIgnoreCase("DC")) {
-                elements.addAll(java.util.Arrays.asList(CB_DC_SINGOLO));
-
-            } else {
-                elements.addAll(java.util.Arrays.asList(CB_PC_SINGOLO));
-            }     
+            elements.addAll(java.util.Arrays.asList(OpzioniSingolo(ID)));
+            //Per i FIAT la combo ha solo "nessuna selezione" e il giroconto
+            if (isFiat(ID)) ntipo = (tipomov.equalsIgnoreCase("PTW") || tipomov.equalsIgnoreCase("DTW")) ? 1 : 0;
             ComboBoxModel<String> model = new DefaultComboBoxModel<>(elements.toArray(String[]::new));
             ComboBox_TipoMovimento.setModel(model);
             this.ComboBox_TipoMovimento.setSelectedIndex(ntipo);
@@ -295,7 +331,9 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
 
         } else {
 
-            if (trovatoDeposito) {
+            if (trovatoFiat) {
+                elements.addAll(java.util.Arrays.asList(CB_FIAT_MULTIPLO));
+            } else if (trovatoDeposito) {
                 elements.addAll(java.util.Arrays.asList(CB_DC_MULTIPLO));
             } else {
                 elements.addAll(java.util.Arrays.asList(CB_PC_MULTIPLO));
@@ -311,7 +349,12 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
             Messaggi.InfoMessage("Classificazione Multipla", "Non è possibile eseguire una classificazione multipla su movimenti disomogenei,<br>"
                     + "selezionare solo depositi o solo prelievi.", this);
             SwingUtilities.invokeLater(() -> dispose());
-        }    
+        } else if (trovatoFiat&&trovatoCrypto)
+        {
+            Messaggi.InfoMessage("Classificazione Multipla", "Non è possibile eseguire una classificazione multipla su movimenti disomogenei,<br>"
+                    + "selezionare solo movimenti crypto o solo movimenti FIAT.", this);
+            SwingUtilities.invokeLater(() -> dispose());
+        }
         
         
     }
@@ -372,20 +415,19 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
     /**
      * Costruisce la riga da mostrare nella tabella dei movimenti a partire dal movimento
      * identificato da {@code ID}, scegliendo moneta e quantità di uscita o di entrata a seconda
-     * che il movimento sia un prelievo ({@code "PC"}) o un deposito.
+     * che il movimento sia un prelievo ({@code "PC"}/{@code "PF"}) o un deposito.
      * @param ID identificativo del movimento da cui estrarre i dati
      * @return array di 8 colonne pronto per essere inserito nel modello della tabella
      */
-    public String[] DammiRigaTabellaDaID(String ID){
+    public static String[] DammiRigaTabellaDaID(String ID){
           String v[]=MappaCryptoWallet.get(ID);
-          String TipoMovimento=v[0].split("_")[4].trim();
 
             String riga[]=new String[9];
             riga[0]=v[0];
             riga[1]=v[1];
             riga[2]=v[3];
             riga[3]=v[5];
-            if (TipoMovimento.equalsIgnoreCase("PC"))
+            if (isPrelievo(v[0]))
                 {
                 riga[4]=v[8];
                 riga[5]=new BigDecimal(v[10]).stripTrailingZeros().toPlainString();
@@ -668,7 +710,15 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
             return;
         }
         
-        if (IDTrans.split("_")[4].equalsIgnoreCase("DC")) {
+        if (isFiat(IDTrans)) {
+            //Giroconto FIAT : unica classificazione prevista
+            if (sceltaS.equals(CB_DF_TRASFERIMENTO) || sceltaS.equals(CB_PF_TRASFERIMENTO)) {
+                ModificaEffettuata=Crea_Trasferimenti(IDsTrans,"TRASFERIMENTO TRA WALLET",Note);
+                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                if (ModificaEffettuata) this.dispose();
+                return;
+            }
+        } else if (IDTrans.split("_")[4].equalsIgnoreCase("DC")) {
             //in questo caso sono in presenza di un movimento di deposito
             switch (sceltaS) {
                 case CB_DC_REWARDS -> {
@@ -1151,13 +1201,26 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     String IDDeposito;
                     //se il movimento selezionato non è associato a nulla alloro lo associo, altrimenti faccio uscire un messaggio di errore
                     if (attualeControparte[20].equalsIgnoreCase("")) {
-                        
+
+                        //Giroconto FIAT : un deposito più alto del prelievo diventerebbe una reward in euro
+                        //(CreaMovimentiTrasferimentosuWalletProprio, caso "Qta prelievo minore"), che non ha senso.
+                        //La differenza opposta resta ammessa : è la commissione del bonifico, in euro.
+                        String idSelezionato = IDsTr.toArray()[0].toString();
+                        if (isFiat(idSelezionato) && !QtaGirocontoFiatAmmessa(
+                                isPrelievo(idSelezionato) ? idSelezionato : IDTransazioneControparte,
+                                isPrelievo(idSelezionato) ? IDTransazioneControparte : idSelezionato)) {
+                            Messaggi.WarningMessage("Attenzione richiesta!",
+                                    "L'importo depositato è più alto di quello prelevato.<br>"
+                                    + "Un giroconto FIAT può avere solo una commissione, non un importo in più.", this);
+                            return false;
+                        }
+
                         //Se arrivo qua vuol dire che posso pulire il movimento
                         IDsTr=PulisciMovimentiAssociati(IDsTr);
                         String id=IDsTr.toArray()[0].toString();
                         String attuale[] = MappaCryptoWallet.get(id);
 
-                        if (id.split("_")[4].equalsIgnoreCase("DC")) {
+                        if (!isPrelievo(id)) {
                             // tipoControparte = "PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
                             IDDeposito = id;
                             IDPrelievo = IDTransazioneControparte;
@@ -1201,6 +1264,13 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
     
     
+    /** Vero se il deposito del giroconto FIAT non supera il prelievo (al più ne manca la commissione). */
+    static boolean QtaGirocontoFiatAmmessa(String IDPrelievo, String IDDeposito) {
+        String[] prelievo = MappaCryptoWallet.get(IDPrelievo);
+        String[] deposito = MappaCryptoWallet.get(IDDeposito);
+        return new BigDecimal(deposito[13]).abs().compareTo(new BigDecimal(prelievo[10]).abs()) <= 0;
+    }
+
     private boolean Crea_Acquisto(Set<String> IDsTr, String Note, String Tipologia) {
         boolean ritorno = false;
         for (String id : IDsTr) {
@@ -2362,6 +2432,17 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
      * @param IDDeposito ID del movimento di deposito originale (moneta diversa da quella prelevata)
      */
     public static void CreaMovimentiScambioCryptoDifferito(String IDPrelievo,String IDDeposito){
+        CreaMovimentiScambioCryptoDifferito(IDPrelievo, IDDeposito, "Piattaforma di scambio");
+    }
+
+    /**
+     * Come {@link #CreaMovimentiScambioCryptoDifferito(String, String)}, ma con il nome del
+     * sotto-wallet su cui stanno i tre movimenti sintetici. Serve solo a distinguerli in tabella
+     * (es. "Dual Savings" per i Dual Investment di Binance): il sotto-wallet [4] non entra nel
+     * calcolo, che ragiona per exchange [3] / gruppo wallet e per campo 18.
+     * @param WalletPiattaforma nome del sotto-wallet dei movimenti sintetici
+     */
+    public static void CreaMovimentiScambioCryptoDifferito(String IDPrelievo,String IDDeposito,String WalletPiattaforma){
         //come prima cosa devo generare un nuovo id per il prelievo
         //System.out.println("Creo 3 movimenti");
         String MovimentoPrelievo[]=MappaCryptoWallet.get(IDPrelievo);
@@ -2418,9 +2499,9 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         MT1[3]=MovimentoPrelievo[3];
         MS[3]=MovimentoPrelievo[3];
         MT2[3]=MovimentoPrelievo[3];
-        MT1[4]="Piattaforma di scambio";//da mettere defi se il movimento è in defi
-        MS[4]="Piattaforma di scambio";//da mettere defi se il movimento è in defi
-        MT2[4]="Piattaforma di scambio";//da mettere defi se il movimento è in defi
+        MT1[4]=WalletPiattaforma;//da mettere defi se il movimento è in defi
+        MS[4]=WalletPiattaforma;//da mettere defi se il movimento è in defi
+        MT2[4]=WalletPiattaforma;//da mettere defi se il movimento è in defi
         MT1[5]="TRASFERIMENTO PER SCAMBIO";
         MS[5]="SCAMBIO CRYPTO";
         if (DepositoFIAT)
@@ -2561,7 +2642,8 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         if (evt.getStateChange() == ItemEvent.SELECTED){
 
           if (sceltaS.equals(CB_DC_TRASFERIMENTO)||sceltaS.equals(CB_DC_SCAMBIODIFF)||
-                  sceltaS.equals(CB_PC_TRASFERIMENTO)||sceltaS.equals(CB_PC_SCAMBIODIFF))
+                  sceltaS.equals(CB_PC_TRASFERIMENTO)||sceltaS.equals(CB_PC_SCAMBIODIFF)||
+                  sceltaS.equals(CB_DF_TRASFERIMENTO)||sceltaS.equals(CB_PF_TRASFERIMENTO))
           {
             TransferSI();
           }
@@ -2703,6 +2785,17 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                        // attuale[15] = new BigDecimal(attuale[15]).add(PrezzoCommissione).toPlainString();
                     }
 
+                } else if (ID.split("_")[4].equalsIgnoreCase("DF")) {
+                    //Giroconto FIAT tra wallet (GirocontiFiat o classificazione manuale)
+                    attuale[5] = "DEPOSITO FIAT";
+                } else if (ID.split("_")[4].equalsIgnoreCase("PF")) {
+                    attuale[5] = "PRELIEVO FIAT";
+                    //La commissione del bonifico era stata tolta dal prelievo : torna al suo posto.
+                    //Una reward non c'è mai (QtaGirocontoFiatAmmessa la impedisce)
+                    if (QtaCommissione != null) {
+                        attuale[10] = new BigDecimal(attuale[10]).add(QtaCommissione).toPlainString();
+                        attuale[15] = new BigDecimal(attuale[15]).add(PrezzoCommissione).toPlainString();
+                    }
                 }
                 String Old18=attuale[18].trim();
                 attuale[18] = "";
@@ -2786,16 +2879,18 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
             BigDecimal EscursioneContraria=new BigDecimal(0.1);
             BigDecimal QtaAttualeMax;
             BigDecimal QtaAttualeMin;
-            if (TipoMovimentoAttuale.equalsIgnoreCase("PC")) {
+            //Un giroconto FIAT si abbina a un FIAT (PF<->DF), uno crypto a un crypto (PC<->DC)
+            boolean Fiat = isFiat(attuale[0]);
+            if (isPrelievo(attuale[0])) {
                 MonetaAttuale = attuale[8].trim();
                 QtaAttuale = new BigDecimal(attuale[10]).stripTrailingZeros();
-                TipoMovimentoRichiesto = "DC";
+                TipoMovimentoRichiesto = Fiat ? "DF" : "DC";
                 QtaAttualeMin = QtaAttuale.subtract(QtaAttuale.multiply(escursioneMassima).divide(new BigDecimal(100))).abs();
                 QtaAttualeMax = QtaAttuale.add(QtaAttuale.multiply(EscursioneContraria).divide(new BigDecimal(100))).abs();
             } else {
                 MonetaAttuale = attuale[11].trim();
                 QtaAttuale = new BigDecimal(attuale[13]).stripTrailingZeros();
-                TipoMovimentoRichiesto = "PC";
+                TipoMovimentoRichiesto = Fiat ? "PF" : "PC";
                 QtaAttualeMin = QtaAttuale.subtract(QtaAttuale.multiply(EscursioneContraria).divide(new BigDecimal(100))).abs();
                 QtaAttualeMax = QtaAttuale.add(QtaAttuale.multiply(escursioneMassima).divide(new BigDecimal(100))).abs();
             }
@@ -2822,7 +2917,7 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                     long DataOra = FunzioniDate.ConvertiDatainLongMinuto(v[1]);
                     long DataMinima=DataOraAttuale- 86400000;
                     long DataMassima=DataOraAttuale+ 86400000;
-                    if (TipoMovimento.equalsIgnoreCase("DC"))
+                    if (TipoMovimento.equalsIgnoreCase("DC")||TipoMovimento.equalsIgnoreCase("DF"))
                     {
                         Qta = new BigDecimal(v[13]).abs();
                         QtanoABS = new BigDecimal(v[13]);

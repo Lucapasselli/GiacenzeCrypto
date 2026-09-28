@@ -145,10 +145,11 @@ public final class Calcoli_RW_Fiat {
             String gruppo = DatabaseH2.Pers_GruppoWallet_Leggi(v[3].trim(), true);
             List<GambaFiat> gambe = new ArrayList<>();
             String cat = categoria(v);
+            boolean giroconto = isGirocontoStessoGruppo(v, gruppo);
             aggiungiSeFiat(gambe, giorno, v[0], v[8], v[9], v[10], false,
-                    CATEGORIA_PRELIEVO_FIAT.equals(cat) ? NaturaGamba.PRELIEVO : NaturaGamba.INTERNA);
+                    CATEGORIA_PRELIEVO_FIAT.equals(cat) && !giroconto ? NaturaGamba.PRELIEVO : NaturaGamba.INTERNA);
             aggiungiSeFiat(gambe, giorno, v[0], v[11], v[12], v[13], true,
-                    CATEGORIA_DEPOSITO_FIAT.equals(cat) ? NaturaGamba.APPORTO : NaturaGamba.INTERNA);
+                    CATEGORIA_DEPOSITO_FIAT.equals(cat) && !giroconto ? NaturaGamba.APPORTO : NaturaGamba.INTERNA);
             if (!gambe.isEmpty()) {
                 indice.gambe.computeIfAbsent(gruppo, k -> new ArrayList<>()).addAll(gambe);
             }
@@ -524,6 +525,32 @@ public final class Calcoli_RW_Fiat {
     // -----------------------------------------------------------------------
     // helper comuni
     // -----------------------------------------------------------------------
+
+    /**
+     * Vero se {@code v} è un {@code PF}/{@code DF} classificato come trasferimento tra wallet
+     * ({@code PTW}/{@code DTW} in {@code v[18]}) la cui controparte ({@code v[20]}) sta nello
+     * <b>stesso</b> gruppo wallet : il saldo resta nello stesso rigo, quindi la gamba non è né un
+     * apporto né un prelievo (es. il bonifico da Coinbase a Coinbase Pro, che altrimenti conterebbe
+     * come apporto una seconda volta dopo quello dalla banca). Verso un gruppo <b>diverso</b> la
+     * valuta entra davvero in un altro rapporto, e la gamba resta apporto/prelievo di quel rigo.
+     */
+    static boolean isGirocontoStessoGruppo(String[] v, String gruppo) {
+        if (v.length <= 20 || v[18] == null || v[20] == null
+                || !(v[18].contains("PTW") || v[18].contains("DTW"))) {
+            return false;
+        }
+        //In v[20] può esserci anche la commissione del trasferimento, che sta sempre sul wallet di
+        //partenza : la controparte è solo la gamba col marcatore opposto
+        String marcatoreOpposto = v[18].contains("PTW") ? "DTW" : "PTW";
+        for (String id : v[20].split(",")) {
+            String[] controparte = MappaCryptoWallet.get(id.trim());
+            if (controparte != null && controparte[18] != null && controparte[18].contains(marcatoreOpposto)
+                    && gruppo.equals(DatabaseH2.Pers_GruppoWallet_Leggi(controparte[3].trim(), true))) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private static boolean isTrasferimentoInterno(String[] v) {
         return CATEGORIA_TRASFERIMENTO_INTERNO.equals(categoria(v));

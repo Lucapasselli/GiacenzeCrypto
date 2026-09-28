@@ -16125,17 +16125,12 @@ if (result != null && !result.isAction("cancel")) {
             int modelRow = DepositiPrelievi_Tabella.convertRowIndexToModel(viewRow);
             String ID = DepositiPrelievi_Tabella.getModel().getValueAt(modelRow, 0).toString();
             //Prima di proseguire con il resto abilito o diabilito i pulsanti a seconda del tipo di movimento
-            //I movimenti fiat infatti non devo poterli classificare ad esempio
-             if (Funzioni.isDepositoPrelievoClassificabile(ID, null,false)){
-                 DepositiPrelievi_Bottone_DettaglioDefi.setEnabled(true);
-                 DepositiPrelievi_Bottone_Scam.setEnabled(true);
-                 DepositiPrelievi_Bottone_AssegnazioneManuale.setEnabled(true);
-             }
-             else{
-                 DepositiPrelievi_Bottone_DettaglioDefi.setEnabled(false);
-                 DepositiPrelievi_Bottone_Scam.setEnabled(false);
-                 DepositiPrelievi_Bottone_AssegnazioneManuale.setEnabled(false);
-             }
+            //I movimenti fiat non hanno dettaglio DeFi né stato SCAM, ma si possono classificare come
+            //giroconto tra wallet (unica opzione che GUI_ClassificazioneMovimento offre loro)
+             boolean crypto = Funzioni.isDepositoPrelievoClassificabile(ID, null,false);
+             DepositiPrelievi_Bottone_DettaglioDefi.setEnabled(crypto);
+             DepositiPrelievi_Bottone_Scam.setEnabled(crypto);
+             DepositiPrelievi_Bottone_AssegnazioneManuale.setEnabled(Funzioni.isDepositoPrelievoClassificabile(ID, null,true));
             
             
             

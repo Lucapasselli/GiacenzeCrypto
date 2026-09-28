@@ -138,6 +138,11 @@ class Binance_DualInvestmentTest {
         assertEquals(0, esito.nonTrovati);
         assertNull(MappaCryptoWallet.get(idPurchaseOriginale), "il purchase è stato rinumerato dall'abbinamento");
         assertNull(MappaCryptoWallet.get(idSettlementOriginale), "il settlement è stato rinumerato dall'abbinamento");
+        // I tre movimenti sintetici (trasferimento, scambio, trasferimento) stanno sul sotto-wallet
+        // "Dual Savings", non sulla "Piattaforma di scambio" generica degli altri scambi differiti.
+        long sintetici = MappaCryptoWallet.values().stream()
+                .filter(v -> "AU".equals(v[22])).peek(v -> assertEquals("Dual Savings", v[4])).count();
+        assertEquals(3, sintetici);
     }
 
     // =============================================================================================

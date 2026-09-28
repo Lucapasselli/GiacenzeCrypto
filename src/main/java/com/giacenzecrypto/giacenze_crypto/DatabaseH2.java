@@ -14,7 +14,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -214,7 +216,12 @@ public class DatabaseH2 {
             
             createTableSQL = "CREATE TABLE IF NOT EXISTS WALLETS (Wallet_Rete VARCHAR(255) PRIMARY KEY, Wallet VARCHAR(255), Rete VARCHAR(255))";
             EseguiDDL(connectionPersonale, createTableSQL);
-            
+
+            //Indirizzi dei wallet BTC multi-indirizzo: il wallet sta in WALLETS con un nome al posto
+            //dell'indirizzo, qui ci sono gli indirizzi che lo compongono (vedi WalletBtcMultiIndirizzo)
+            createTableSQL = "CREATE TABLE IF NOT EXISTS WALLET_BTC_INDIRIZZI (Wallet VARCHAR(255), Indirizzo VARCHAR(255), PRIMARY KEY (Wallet, Indirizzo))";
+            EseguiDDL(connectionPersonale, createTableSQL);
+
             //Questa tabella è stata creata principalmente per gestire i token di binance che vengono usati nei trades
             //Serve per poter aggiungere manualmente una lista di tokens di cui verranno richiesti i trades
             createTableSQL = "CREATE TABLE IF NOT EXISTS EXCHANGETOKENS (Exchange_Token VARCHAR(255) PRIMARY KEY, Exchange VARCHAR(255), Token VARCHAR(255))";
@@ -903,6 +910,85 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
 
         } catch (SQLException ex) {
             LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+    /**
+     * Gli indirizzi di un wallet BTC multi-indirizzo.
+     *
+     * @param Wallet nome del wallet (come sta in {@code WALLETS.Wallet})
+     * @return gli indirizzi in ordine di inserimento; vuoto se il wallet non ne ha
+     */
+    public static Set<String> Pers_WalletBtcIndirizzi_Leggi(String Wallet) {
+        Set<String> Indirizzi = new LinkedHashSet<>();
+        String sql = "SELECT Indirizzo FROM WALLET_BTC_INDIRIZZI WHERE Wallet = ? ORDER BY Indirizzo";
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(sql)) {
+            ps.setString(1, Wallet);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Indirizzi.add(rs.getString("Indirizzo"));
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return Indirizzi;
+    }
+
+    /**
+     * Tutti gli indirizzi di tutti i wallet BTC multi-indirizzo.
+     *
+     * @return indirizzo → nome del wallet che lo contiene
+     */
+    public static Map<String, String> Pers_WalletBtcIndirizzi_LeggiTutti() {
+        Map<String, String> Mappa = new TreeMap<>();
+        String sql = "SELECT Wallet, Indirizzo FROM WALLET_BTC_INDIRIZZI";
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Mappa.put(rs.getString("Indirizzo"), rs.getString("Wallet"));
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return Mappa;
+    }
+
+    /**
+     * Sostituisce l'elenco degli indirizzi di un wallet BTC multi-indirizzo. Un elenco vuoto toglie
+     * tutti gli indirizzi (e' anche il modo di ripulire la tabella quando il wallet viene eliminato).
+     *
+     * @return {@code true} se la scrittura e' andata a buon fine
+     */
+    public static boolean Pers_WalletBtcIndirizzi_Scrivi(String Wallet, Set<String> Indirizzi) {
+        try {
+            boolean AutoCommit = connectionPersonale.getAutoCommit();
+            connectionPersonale.setAutoCommit(false);
+            try {
+                try (PreparedStatement ps = connectionPersonale.prepareStatement(
+                        "DELETE FROM WALLET_BTC_INDIRIZZI WHERE Wallet = ?")) {
+                    ps.setString(1, Wallet);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = connectionPersonale.prepareStatement(
+                        "INSERT INTO WALLET_BTC_INDIRIZZI (Wallet, Indirizzo) VALUES (?, ?)")) {
+                    for (String Indirizzo : Indirizzi) {
+                        ps.setString(1, Wallet);
+                        ps.setString(2, Indirizzo);
+                        ps.executeUpdate();
+                    }
+                }
+                connectionPersonale.commit();
+            } catch (SQLException ex) {
+                connectionPersonale.rollback();
+                throw ex;
+            } finally {
+                connectionPersonale.setAutoCommit(AutoCommit);
+            }
+            return true;
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+            return false;
         }
     }
         

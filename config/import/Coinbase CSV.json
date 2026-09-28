@@ -2,7 +2,7 @@
   "_commento": "Coinbase (conto retail) - export 'Transactions' scaricato da coinbase.com (Impostazioni > Estratto conto / Reports). Le prime 3 righe del file NON sono dati: 1='Transactions', 2='User,<nome>,<uuid>', 3=intestazione vera. Da riga 4 in poi 13 colonne: 0=ID 1=Timestamp 2=Transaction Type 3=Asset 4=Quantity Transacted 5=Price Currency 6=Price at Transaction 7=Subtotal 8=Total (inclusive of fees and/or spread) 9=Fees and/or Spread 10=Notes 11=Sender Address 12=Recipient Address.",
   "_commentoData": "Il timestamp e' 'yyyy-MM-dd HH:mm:ss UTC' con il letterale ' UTC' in coda: parseDataRaw usa DateTimeFormatter e il suffisso NON rientra nella regex che toglie gli offset ' +00:00', quindi va messo nel pattern come letterale o ogni riga fallirebbe con 'DATA NON PARSABILE'. 'fuso':'UTC' converte poi al fuso di sistema.",
   "_commentoImporti": "Tutti gli importi in euro nel file hanno il prefisso '€' (e il meno PRIMA del simbolo: '-€1,48'). normalizzaNumero toglie i simboli di valuta € $ £ ¥ mantenendo il segno, quindi le colonne euro sono usabili direttamente. Il file usa il punto come separatore decimale e nessun separatore delle migliaia. NOTA: nella colonna 9 (Fees and/or Spread) le righe 'Convert' scrivono il numero SENZA '€' mentre tutte le altre causali lo scrivono con '€' - normalizzaNumero gestisce comunque entrambi i casi.",
-  "versione": "1.006",
+  "versione": "1.007",
   "centralizzato": true,
   "fontePrezzoPreferita": "coinbase",
   "nomeExchange": "Coinbase",
@@ -45,6 +45,13 @@
   "consolidaRigheStessaData": true,
   "tolleranzaSecondiConsolidamento": 60,
   "causaliDifferite": ["Convert"],
+  "_commentoGirocontoFiat": "Da v1.007. Le righe in EUR con causale 'Exchange Deposit'/'Pro Deposit' (uscita) e 'Exchange Withdrawal'/'Pro Withdrawal' (entrata) sono giroconti verso/da Coinbase Pro / GDAX, non bonifici dalla banca (quelli sono 'Deposit'). Il motore ne ricava un PRELIEVO/DEPOSITO FIAT, e senza abbinamento l'altra meta' ('deposit'/'withdrawal' in EUR dello statement GDAX) sembrerebbe un secondo versamento dalla banca. A fine import GirocontiFiat abbina le due gambe come trasferimento tra wallet (PTW/DTW, categoria PF/DF invariata): importo identico, segno opposto, stessa valuta, entro 'secondiTolleranza' (sull'export reale lo scarto e' di 0-3 secondi). La stessa regola e' dichiarata, rovesciata, in 'Coinbase Pro GDAX.json': l'abbinamento gira sull'intero archivio, quindi funziona in qualunque ordine si importino i due file e sistema anche i movimenti gia' presenti reimportando uno dei due. Una riga senza controparte resta un PF/DF non classificato (che non conta come errore).",
+  "girocontoFiat": {
+    "controparte": "Coinbase Pro",
+    "causali": ["Exchange Deposit", "Exchange Withdrawal", "Pro Deposit", "Pro Withdrawal"],
+    "causaliControparte": ["deposit", "withdrawal"],
+    "secondiTolleranza": 60
+  },
   "_commentoCausalePerNota": "Alcuni movimenti a reddito arrivano nel file come 'Receive' e si distinguono da un normale trasferimento SOLO dal testo della colonna Notes. Le regole sotto riclassificano quelle righe in base a causale CSV = 'Receive' + una sottostringa di Notes (confronto case-insensitive), la prima regola che combacia vince: 'from Coinbase Earn' (premi Coinbase Earn vecchio stile, prima che diventassero 'Learning Reward') -> EARN; 'from Coinbase Referral' (bonus invito) -> REWARD; 'airdrop' (es. 'from Flare Airdrop') -> AIRDROP. Tutte danno categoria RW (reddito che entra nel LIFO al valore di mercato), cambia solo l'etichetta campo5. Le altre 'Receive' restano trasferimenti crypto. NON coperti di proposito: 'from Coinbase' secco (ambiguo) e i trasferimenti P2P/spam ('from <nome>', 'from Free ETH Spinner', ...).",
   "causalePerNota": [
     { "causale": "Receive", "notaContiene": "from Coinbase Earn",     "tipo": "EARN" },

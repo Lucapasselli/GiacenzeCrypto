@@ -97,6 +97,21 @@ class ImportazioneGenericaAvvisoDerivatiTest {
         assertTrue(Importazioni.TestoAvvisoDerivati().isBlank());
     }
 
+    /** Una causale in lista ma mappata IGNORA non entra nell'archivio: nessun avviso (caso Bybit Funding). */
+    @Test
+    void consolidaGruppo_causaleInListaMaIgnorata_nonSegnalaNulla() throws Exception {
+        ConfigurazioneImport cfg = cfgBinanceVeloce();
+        cfg.causaliAllertaDerivati.add("Transfer Between Main and Funding Wallet");
+        List<String[]> differiti = new ArrayList<>();
+        List<String[]> gruppo = new ArrayList<>();
+        gruppo.add(rigaBinance("2022-05-12 06:24:50", "Transfer Between Main and Funding Wallet", "USDT", "-100.00000000"));
+
+        ImportazioneGenerica.consolidaGruppo(gruppo, cfg, differiti);
+
+        assertTrue(Importazioni.CausaliDerivatiSegnalate.isEmpty());
+        assertTrue(Importazioni.TestoAvvisoDerivati().isBlank());
+    }
+
     @Test
     void azzeraContatori_svuotaLeCausaliSegnalate() {
         Importazioni.SegnalaCausaleDerivato("Dual Savings Purchase");

@@ -223,6 +223,15 @@ public class ImportazioneGenerica {
             Importazioni.ConsolidaMovimentiDifferiti(movimentiDifferiti, sovrascriEsistenti, cfg.minutiScambioDifferito, differitiGiaEsistenti);
         }
 
+        // Anche con zero movimenti aggiunti : gira sull'intero archivio, quindi reimportare il file
+        // sistema i giroconti gia' in archivio, e l'altra meta' puo' essere arrivata da un import
+        // precedente dell'altro wallet.
+        int giroconti = GirocontiFiat.Abbina(cfg.nomeExchange, cfg.girocontoFiat);
+        if (giroconti > 0) {
+            GirocontiFiat.AbbinatiImportazione += giroconti;
+            Principale.TabellaCryptodaAggiornare = true;
+        }
+
         if (Importazioni.TransazioniAggiunte > 0) {
             Principale.TabellaCryptodaAggiornare = true;
         }
@@ -568,7 +577,10 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         // Caso 1: movimento singolo – consolido direttamente
         if (gruppo.size() == 1) {
             String[] riga0 = gruppo.get(0);
-            if (cfg.causaliAllertaDerivati.contains(cfg.getCausaleCSV(riga0))) {
+            // Una riga ignorata non entra nell'archivio: niente avviso, come nel caso multi-riga sotto.
+            String tipoRiga0 = cfg.tipoMovimentoPerRiga(riga0);
+            boolean ignorata = "IGNORA".equalsIgnoreCase(tipoRiga0) || "NON CONSIDERARE".equalsIgnoreCase(tipoRiga0);
+            if (!ignorata && cfg.causaliAllertaDerivati.contains(cfg.getCausaleCSV(riga0))) {
                 Importazioni.SegnalaCausaleDerivato(cfg.getCausaleCSV(riga0));
             }
             List<String[]> movs = costruisciMovimenti(riga0, null, cfg);
@@ -1786,6 +1798,10 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         // avere tempi di regolamento diversi.
         public long minutiScambioDifferito = 15;
 
+        // Giroconti FIAT verso/da un altro wallet dello stesso utente, abbinati a fine import come
+        // trasferimento tra wallet (vedi GirocontiFiat). null = nessun abbinamento.
+        public GirocontiFiat.Regola girocontoFiat = null;
+
         public Map<String, String> mappaCausali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         public Set<String> causaliUscita = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         public Set<String> causaliEntrata = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
@@ -1963,6 +1979,9 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             }
             if (root.has("minutiScambioDifferito")) {
                 cfg.minutiScambioDifferito = root.getLong("minutiScambioDifferito");
+            }
+            if (root.has("girocontoFiat")) {
+                cfg.girocontoFiat = GirocontiFiat.Regola.daJson(root.getJSONObject("girocontoFiat"));
             }
             if (root.has("causaliDifferite")) {
                 JSONArray arr = root.getJSONArray("causaliDifferite");

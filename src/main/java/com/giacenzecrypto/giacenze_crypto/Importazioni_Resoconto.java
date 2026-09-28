@@ -129,6 +129,9 @@ private static final long serialVersionUID = 8L;
                     + "<center>Per completarla ripeti l'importazione dello stesso file:"
                     + " i movimenti già presenti non vengono duplicati.";
         }
+        //Informativo, non un errore : i giroconti FIAT abbinati (GirocontiFiat), che su un reimport sono
+        //l'unico effetto visibile dell'importazione
+        String notaGiroconti = GirocontiFiat.TestoResoconto();
         if (!movScon.trim().equalsIgnoreCase("")){
             this.Bottone_CopiaAppunti.setEnabled(true);
             this.jScrollPane1.setVisible(true);
@@ -143,11 +146,14 @@ private static final long serialVersionUID = 8L;
                     + "<center>I movimenti elencati qui sotto non sono riconosciuti dall'import del programma.<br>"
                     + "<center>Premi il pulsante <b>Invia segnalazione errori</b> per mandarli all'autore:"
                     + " verranno spediti solo queste righe, il tipo di importazione e la versione del programma."
+                    + (notaGiroconti.isEmpty() ? "" : "<br><br>" + notaGiroconti)
                     + "</p></body></html>");
-        } else if (interrotto) {
+        } else if (interrotto || !notaGiroconti.isEmpty()) {
             this.jScrollPane1.setVisible(true);
             this.TextPane_Attenzione.setVisible(true);
+            String separatore = avvisoInterruzione.isEmpty() || notaGiroconti.isEmpty() ? "" : "<br><br>";
             this.TextPane_Attenzione.setText("<html><body><p style=\"margin-top:0\">" + avvisoInterruzione
+                    + separatore + notaGiroconti
                     + "</p></body></html>");
         }
         this.avvisoDerivati = Importazioni.TestoAvvisoDerivati();

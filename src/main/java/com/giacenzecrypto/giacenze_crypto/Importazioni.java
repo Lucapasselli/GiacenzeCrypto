@@ -280,12 +280,14 @@ public class Importazioni {
                 TrasazioniSconosciute=0;
                 movimentiSconosciuti="";
                 CausaliDerivatiSegnalate.clear();
+                GirocontiFiat.AbbinatiImportazione=0;
             }
 
     /**
      * Segnala che l'importazione corrente ha incontrato una riga con una causale elencata in
      * {@code causaliAllertaDerivati} (config JSON). Chiamata da {@link ImportazioneGenerica#consolidaGruppo}
-     * per ogni riga che la incontra, indipendentemente dall'esito dell'abbinamento fiscale della riga.
+     * per ogni riga che la incontra, indipendentemente dall'esito dell'abbinamento fiscale della riga,
+     * ma non per le righe mappate {@code IGNORA}/{@code NON CONSIDERARE}, che non entrano nell'archivio.
      * @param causale causale CSV grezza (non quella mappata) che ha fatto scattare l'avviso
      */
     public static void SegnalaCausaleDerivato(String causale) {

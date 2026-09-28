@@ -1,10 +1,10 @@
 {
   "_commento": "Bybit - export 'Asset Change Details' del conto FUNDING (file 'AssetChangeDetails_fund_<UID>_<da>_<a>_N.csv'). La prima riga del file contiene UID/Company Name/Country, l'intestazione vera e' la seconda. Colonne: 0=Uid 1=Date & Time(UTC) 2=Coin 3=QTY (col segno; le quantita' piccole sono in notazione scientifica, es. 2.7E-7) 4=Type 5=Account Balance 6=Description.",
   "_commentoCausale": "La causale e' la colonna Description, non Type: Type e' generico ('Earn' copre interessi, sottoscrizioni, riscatti e rendimenti Launchpool), mentre Description distingue ('Easy Earn | Flexible Interest Distribution', 'Launchpool Yield', 'Transfer to Spot Account', ...).",
-  "_commentoConti": "Stesso nomeExchange e nomeWallet di 'Bybit Spot.json': i giroconti verso/da Spot, Unified Trading Account e Derivatives sono interni al wallet e vengono ignorati, cosi' come sottoscrizioni e riscatti di Easy Earn e Launchpool (la moneta resta dell'utente). I giroconti col conto Derivati fanno scattare l'avviso sui derivati a fine importazione: il risultato del trading in derivati non e' nel file.",
+  "_commentoConti": "Stesso nomeExchange e nomeWallet di 'Bybit Spot.json': i giroconti verso/da Spot, Unified Trading Account e Derivatives sono interni al wallet e vengono ignorati, cosi' come sottoscrizioni e riscatti di Easy Earn e Launchpool (la moneta resta dell'utente). Niente avviso sui derivati per i giroconti col conto Derivati: sono trasferimenti interni, non redditi. L'avviso va messo sulle causali dei proventi (PnL, funding fee) quando ci sara' una configurazione per l'export del conto Derivati.",
   "_commentoLaunchpad": "'Launchpad Subscription' / 'Launchpad Subscription Refund' ignorati: la differenza fra MNT impegnati e restituiti e' il prezzo del token Launchpad, che arriva nel conto Spot come 'airdropAssetIncrease' (vedi il commento in 'Bybit Spot.json').",
   "_commentoConsolidamento": "Ogni riga e' un movimento a se' (interessi giornalieri, rendimenti, depositi, prelievi): nessuno scambio da ricomporre.",
-  "versione": "1.000",
+  "versione": "1.001",
   "centralizzato": true,
   "fontePrezzoPreferita": "bybit",
   "nomeExchange": "Bybit",
@@ -27,10 +27,6 @@
   "consolidaRigheStessaData": false,
   "tolleranzaSecondiConsolidamento": 0,
   "causaliDifferite": [],
-  "causaliAllertaDerivati": [
-    "Transfer from Derivatives Account",
-    "Transfer to Derivatives Account"
-  ],
   "mappaCausali": {
     "Easy Earn | Flexible Interest Distribution":  "EARN",
     "Launchpool Yield":                            "EARN",

@@ -507,7 +507,7 @@ public class Funzioni {
                     PopUp_abilitaMenuDaTesto(pop,"Apri documento di origine");
                 }else PopUp_disabilitaMenuDatesto(pop,"Apri documento di origine");
 
-                if (isDepositoPrelievoClassificabile(ID, null,false)){
+                if (isDepositoPrelievoClassificabile(ID, null,true)){//i FIAT: solo giroconto tra wallet
                    PopUp_abilitaMenuDaTesto(pop,"Classifica Movimento"); 
                 }else PopUp_disabilitaMenuDatesto(pop,"Classifica Movimento");
                 

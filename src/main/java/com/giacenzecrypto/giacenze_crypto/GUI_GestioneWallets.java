@@ -108,6 +108,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         ComboBox_Rete = new javax.swing.JComboBox<>();
         Bottone_Aggiorna = new javax.swing.JButton();
         Bottone_AggiornaSelezionati = new javax.swing.JButton();
+        Bottone_IndirizziBTC = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
@@ -203,6 +204,15 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
             }
         });
 
+        Bottone_IndirizziBTC.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Wallet.png"))); // NOI18N
+        Bottone_IndirizziBTC.setText("<html>Indirizzi del<br>wallet BTC...</html>");
+        Bottone_IndirizziBTC.setToolTipText("<html>Wallet Bitcoin composto da piu' indirizzi: si crea inserendo un nome (non un indirizzo) con rete Bitcoin,<br>poi qui si indicano gli indirizzi che lo compongono</html>");
+        Bottone_IndirizziBTC.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_IndirizziBTCActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -226,6 +236,8 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                             .addComponent(Bottone_RimuoviWallet, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Bottone_IndirizziBTC)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE))
                     .addComponent(ScrollPaneTabellaWallets))
                 .addContainerGap())
@@ -248,7 +260,8 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                             .addComponent(Label_Rete)
                             .addComponent(Bottone_InserisciWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Bottone_IndirizziBTC, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -291,6 +304,26 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         if(ComboBox_Rete.getSelectedIndex()==0){
             //non è valido la selezione della combobox
             Messaggi.WarningMessage("Rete non valida", "Attenzione! <br>Devi selezionare una rete valida", this);
+        }
+        else if (Rete.equalsIgnoreCase(WalletBtcMultiIndirizzo.RETE) && !Funzioni_WalletDeFi.isValidAddress(Wallet,Rete)){
+            //Su Bitcoin un testo che non e' un indirizzo ne' una chiave estesa e' il nome di un wallet
+            //multi-indirizzo: gli indirizzi si inseriscono subito dopo
+            String Motivo = Trans_Bitcoin.isNomeWalletValido(Wallet);
+            if (Motivo != null) {
+                Messaggi.WarningMessage("Wallet non Valido", "Attenzione! <br>" + Motivo, this);
+            } else if (MappaWallets.get(Wallet+"_"+Rete)!=null){
+                Messaggi.WarningMessage("Wallet gia' presente", "Attenzione! <br>Wallet gia' prensente nella lista", this);
+            } else {
+                DatabaseH2.Pers_Wallets_Scrivi(Wallet, Rete);
+                PopolaTabella();
+                GUI_WalletBtcIndirizzi.Mostra(Wallet, this);
+                PopolaTabella();
+            }
+        }
+        else if (Rete.equalsIgnoreCase(WalletBtcMultiIndirizzo.RETE)
+                && DatabaseH2.Pers_WalletBtcIndirizzi_LeggiTutti().get(Wallet) != null){
+            Messaggi.WarningMessage("Wallet gia' presente", "Attenzione! <br>L'indirizzo fa gia' parte del wallet \""
+                    + DatabaseH2.Pers_WalletBtcIndirizzi_LeggiTutti().get(Wallet) + "\"", this);
         }
         else if (!Funzioni_WalletDeFi.isValidAddress(Wallet,Rete)){
                 //non è un indirizzo di wallet valido
@@ -646,6 +679,9 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
 
             if (result != null && result.isAction("si")) {
                 DatabaseH2.Pers_Wallets_Cancella(walletReteKey);
+                if (isWalletBtcMultiIndirizzo(walletAddress, walletRete)) {
+                    DatabaseH2.Pers_WalletBtcIndirizzi_Scrivi(walletAddress, java.util.Set.of());
+                }
                 PopolaTabella();
 
                 result = AppDialog.builder(this)
@@ -716,6 +752,30 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         }
         AggiornaWallets(selezionati);
     }//GEN-LAST:event_Bottone_AggiornaSelezionatiActionPerformed
+
+    private void Bottone_IndirizziBTCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_IndirizziBTCActionPerformed
+        if (TabellaWallets.getSelectedRow() < 0) {
+            Messaggi.WarningMessage("Nessun Wallet selezionato",
+                    "Seleziona un wallet BTC multi-indirizzo.<br>Per crearne uno si inserisce un nome (non un indirizzo) con rete Bitcoin.", this);
+            return;
+        }
+        int riga = TabellaWallets.convertRowIndexToModel(TabellaWallets.getSelectedRow());
+        String Wallet = TabellaWallets.getModel().getValueAt(riga, 1).toString();
+        String Rete = TabellaWallets.getModel().getValueAt(riga, 2).toString();
+        if (!isWalletBtcMultiIndirizzo(Wallet, Rete)) {
+            Messaggi.WarningMessage("Wallet non multi-indirizzo",
+                    "Il wallet selezionato e' un indirizzo singolo o una chiave estesa.<br>"
+                    + "Per un wallet con piu' indirizzi si inserisce un nome (non un indirizzo) con rete Bitcoin.", this);
+            return;
+        }
+        GUI_WalletBtcIndirizzi.Mostra(Wallet, this);
+        PopolaTabella();
+    }//GEN-LAST:event_Bottone_IndirizziBTCActionPerformed
+
+    /** Un wallet BTC della lista che ha un nome al posto dell'indirizzo, vedi {@link WalletBtcMultiIndirizzo} */
+    private static boolean isWalletBtcMultiIndirizzo(String Wallet, String Rete) {
+        return Rete.equalsIgnoreCase(WalletBtcMultiIndirizzo.RETE) && !Trans_Bitcoin.isValidBitcoinAddress(Wallet);
+    }
 
     /**
      * @param args the command line arguments
@@ -815,6 +875,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Aggiorna;
     private javax.swing.JButton Bottone_AggiornaSelezionati;
+    private javax.swing.JButton Bottone_IndirizziBTC;
     private javax.swing.JButton Bottone_InserisciWallet;
     private javax.swing.JButton Bottone_RimuoviWallet;
     private javax.swing.JComboBox<String> ComboBox_Rete;

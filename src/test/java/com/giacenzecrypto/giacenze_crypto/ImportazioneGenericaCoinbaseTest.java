@@ -135,6 +135,10 @@ class ImportazioneGenericaCoinbaseTest {
         assertEquals("EUR", comm[8], "commissione pagata in EUR");
         assertEquals(0, new BigDecimal("0.0769563498").compareTo(new BigDecimal(comm[10]).abs()));
         assertEquals(note, comm[21]);
+
+        //La commissione e' collegata allo scambio della stessa riga (CommissioniCollegate)
+        assertFalse(CommissioniCollegate.Chiave(scambio).isEmpty(), "lo scambio porta la chiave delle commissioni");
+        assertEquals(CommissioniCollegate.Chiave(scambio), CommissioniCollegate.Chiave(comm));
     }
 
     // ---- config reale ---------------------------------------------------------------------------

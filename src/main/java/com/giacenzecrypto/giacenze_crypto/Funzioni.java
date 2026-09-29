@@ -429,6 +429,10 @@ public class Funzioni {
     /** Testo della voce di menu che rifà la ricerca del prezzo sui movimenti selezionati, token KO compresi. */
     public static final String POPUP_VOCE_RICALCOLA_PREZZI = "Ricalcola Prezzi";
 
+    /** Testi delle voci del menu contestuale per le commissioni collegate (vedi {@link Principale_CommissioniCollegate}) */
+    public static final String POPUP_VOCE_COLLEGA_COMMISSIONI = "Collega commissioni ai movimenti";
+    public static final String POPUP_VOCE_SCOLLEGA_COMMISSIONI = "Scollega commissioni";
+
     /**
      * Voci del menu contestuale dei movimenti che operano su <b>un solo</b> movimento e vanno quindi
      * disattivate quando la selezione ne contiene più di uno.
@@ -491,6 +495,8 @@ public class Funzioni {
                 PopUp_disabilitaMenuDatesto(pop,"Apri documento di origine");
                 PopUp_disabilitaMenuDatesto(pop,POPUP_VOCE_PREZZO_ZERO);
                 PopUp_disabilitaMenuDatesto(pop,POPUP_VOCE_RICALCOLA_PREZZI);
+                PopUp_disabilitaMenuDatesto(pop,POPUP_VOCE_COLLEGA_COMMISSIONI);
+                PopUp_disabilitaMenuDatesto(pop,POPUP_VOCE_SCOLLEGA_COMMISSIONI);
 
             }else{
                 PopUp_abilitaMenuDaTesto(pop,"Dettagli Movimento");
@@ -546,6 +552,17 @@ public class Funzioni {
                 if (Principale_Movimenti_RicalcolaPrezzi.isRicalcolabile(Principale.PopUp_IDTransSelezionati)){
                     PopUp_abilitaMenuDaTesto(pop,POPUP_VOCE_RICALCOLA_PREZZI);
                 }else PopUp_disabilitaMenuDatesto(pop,POPUP_VOCE_RICALCOLA_PREZZI);
+
+                //Commissioni collegate: agiscono sull'intera selezione. Collegare richiede almeno una
+                //commissione e un altro movimento, scollegare almeno una riga gia' collegata
+                List<String> SelezioneCommissioni = Principale.PopUp_IDTransSelezionati.isEmpty()
+                        ? List.of(ID) : Principale.PopUp_IDTransSelezionati;
+                if (Principale_CommissioniCollegate.isCollegabile(SelezioneCommissioni)){
+                    PopUp_abilitaMenuDaTesto(pop,POPUP_VOCE_COLLEGA_COMMISSIONI);
+                }else PopUp_disabilitaMenuDatesto(pop,POPUP_VOCE_COLLEGA_COMMISSIONI);
+                if (Principale_CommissioniCollegate.isScollegabile(SelezioneCommissioni)){
+                    PopUp_abilitaMenuDaTesto(pop,POPUP_VOCE_SCOLLEGA_COMMISSIONI);
+                }else PopUp_disabilitaMenuDatesto(pop,POPUP_VOCE_SCOLLEGA_COMMISSIONI);
 
                 //Voci che hanno senso su un solo movimento: su selezione multipla vanno disattivate, perché
                 //lavorano tutte sul solo PopUp_IDTrans (la prima riga selezionata) e darebbero all'utente
@@ -2018,6 +2035,8 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
     public static boolean DuplicaMovimento(String ID){
         String riga[]=Principale.MappaCryptoWallet.get(ID);
         String nuovariga[]=riga.clone();
+        //Il duplicato e' un movimento indipendente: non appartiene al gruppo di commissioni dell'originale
+        if (nuovariga.length>CommissioniCollegate.CAMPO) nuovariga[CommissioniCollegate.CAMPO]="";
         String IDori=nuovariga[0];
         String idSplit[]=IDori.split("_");
         if (idSplit.length>4){

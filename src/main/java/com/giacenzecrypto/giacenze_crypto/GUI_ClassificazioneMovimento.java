@@ -2611,6 +2611,12 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             MT1[41]=MovimentoPrelievo[41];
             MS[41]=Funzioni.noData(MovimentoPrelievo[41])?MovimentoDeposito[41]:MovimentoPrelievo[41];
             MT2[41]=MovimentoDeposito[41];
+            //Commissioni collegate (CommissioniCollegate): lo scambio è l'operazione a cui la commissione
+            //appartiene davvero, quindi ne porta la chiave. Solo lo scambio, non i due trasferimenti, e
+            //senza fondere i gruppi del prelievo e del deposito: MS è generato automaticamente e sparisce
+            //quando la classificazione viene annullata, mentre una fusione resterebbe
+            String ChiavePrelievo=CommissioniCollegate.Chiave(MovimentoPrelievo);
+            MS[CommissioniCollegate.CAMPO]=ChiavePrelievo.isEmpty()?CommissioniCollegate.Chiave(MovimentoDeposito):ChiavePrelievo;
 
             Importazioni.RiempiVuotiArray(MT1);
             Importazioni.RiempiVuotiArray(MS);

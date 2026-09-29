@@ -641,6 +641,8 @@ private static final long serialVersionUID = 3L;
         MenuItem_SeparaMovimento = new javax.swing.JMenuItem();
         MenuItem_UnisciMovimenti = new javax.swing.JMenuItem();
         MenuItem_UnisciOmogenei = new javax.swing.JMenuItem();
+        MenuItem_CollegaCommissioni = new javax.swing.JMenuItem();
+        MenuItem_ScollegaCommissioni = new javax.swing.JMenuItem();
         MenuItem_TraslaOrario = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         MenuItem_ModificaPrezzo = new javax.swing.JMenuItem();
@@ -978,6 +980,9 @@ private static final long serialVersionUID = 3L;
         Opzioni_Compattazione_Pannello = new javax.swing.JPanel();
         Opzioni_Bottone_Compattazione = new javax.swing.JButton();
         Opzioni_Label_StatoCompattazione = new javax.swing.JLabel();
+        Opzioni_CommissioniCollegate_Pannello = new javax.swing.JPanel();
+        Opzioni_Bottone_CommissioniCollegate = new javax.swing.JButton();
+        Opzioni_Label_CommissioniCollegate = new javax.swing.JLabel();
         Opzioni_Pulizie_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
         Opzioni_Pulizie_DataChooser_Finale = new com.toedter.calendar.JDateChooser();
         jLabel18 = new javax.swing.JLabel();
@@ -1156,6 +1161,24 @@ private static final long serialVersionUID = 3L;
             }
         });
         PopupMenu.add(MenuItem_UnisciOmogenei);
+
+        MenuItem_CollegaCommissioni.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Catena.png"))); // NOI18N
+        MenuItem_CollegaCommissioni.setText("Collega commissioni ai movimenti");
+        MenuItem_CollegaCommissioni.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_CollegaCommissioniActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_CollegaCommissioni);
+
+        MenuItem_ScollegaCommissioni.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Separa.png"))); // NOI18N
+        MenuItem_ScollegaCommissioni.setText("Scollega commissioni");
+        MenuItem_ScollegaCommissioni.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_ScollegaCommissioniActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_ScollegaCommissioni);
 
         MenuItem_TraslaOrario.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_TraslaOrario.png"))); // NOI18N
         MenuItem_TraslaOrario.setText("Trasla Orario");
@@ -5592,6 +5615,39 @@ private static final long serialVersionUID = 3L;
 
         jTabbedPane2.addTab("Compattazione database", Opzioni_Compattazione_Pannello);
 
+        Opzioni_Bottone_CommissioniCollegate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Catena.png"))); // NOI18N
+        Opzioni_Bottone_CommissioniCollegate.setText("Collega le commissioni dell'archivio ai loro movimenti");
+        Opzioni_Bottone_CommissioniCollegate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Bottone_CommissioniCollegateActionPerformed(evt);
+            }
+        });
+
+        Opzioni_Label_CommissioniCollegate.setText("<html>Collega ogni commissione al movimento a cui appartiene (stesso hash o id d'ordine, oppure unico movimento nello stesso secondo sullo stesso wallet). Serve per le commissioni importate prima di questa funzione. Il collegamento è solo informativo e non cambia nessun calcolo; le commissioni già collegate non vengono toccate.</html>");
+
+        javax.swing.GroupLayout Opzioni_CommissioniCollegate_PannelloLayout = new javax.swing.GroupLayout(Opzioni_CommissioniCollegate_Pannello);
+        Opzioni_CommissioniCollegate_Pannello.setLayout(Opzioni_CommissioniCollegate_PannelloLayout);
+        Opzioni_CommissioniCollegate_PannelloLayout.setHorizontalGroup(
+            Opzioni_CommissioniCollegate_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_CommissioniCollegate_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(Opzioni_CommissioniCollegate_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Opzioni_Bottone_CommissioniCollegate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Opzioni_Label_CommissioniCollegate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        Opzioni_CommissioniCollegate_PannelloLayout.setVerticalGroup(
+            Opzioni_CommissioniCollegate_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_CommissioniCollegate_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Opzioni_Label_CommissioniCollegate)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Bottone_CommissioniCollegate, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(600, Short.MAX_VALUE))
+        );
+
+        jTabbedPane2.addTab("Commissioni collegate", Opzioni_CommissioniCollegate_Pannello);
+
         Opzioni_Pulizie_DataChooser_Iniziale.setDateFormatString("yyyy-MM-dd");
         Opzioni_Pulizie_DataChooser_Iniziale.setFont(Opzioni_Pulizie_DataChooser_Iniziale.getFont().deriveFont(Opzioni_Pulizie_DataChooser_Iniziale.getFont().getStyle() | java.awt.Font.BOLD));
         Opzioni_Pulizie_DataChooser_Iniziale.setMinimumSize(new java.awt.Dimension(100, 31));
@@ -8794,7 +8850,20 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     
 
     
-    private void DepositiPrelievi_AssegnazioneAutomatica(){
+    /**
+     * Classificazione automatica di depositi/prelievi (bottone "Assegnazione Automatica").
+     * <p>La FASE 1 (abbinamento diretto di due righe della tabella) considera sia le coppie crypto
+     * ({@code DC}/{@code PC}) sia quelle FIAT ({@code DF}/{@code PF}, lo stesso meccanismo di
+     * {@link GirocontiFiat#Abbina}), ma mai una coppia mista. Le FASI 2-8, tutte specifiche del
+     * mondo DeFi, restano crypto: {@code DepositiPrelieviDaCategorizzare} le esclude di proposito
+     * (vedi {@link Funzioni#isDepositoPrelievoClassificabile}).
+     * @param soloSelezionati se non {@code null}, limita l'abbinamento ai movimenti con questo ID: una
+     *        coppia si abbina solo se entrambe le gambe sono nell'insieme, per non agganciare un
+     *        movimento non scelto quando ce ne sono molti ravvicinati. La FASE 3 (rientri da Vault) viene
+     *        saltata del tutto in modalità selezione, perché ricostruisce da sola l'intero gruppo di
+     *        movimenti collegati al contratto e non si presta a un sottoinsieme.
+     */
+    private void DepositiPrelievi_AssegnazioneAutomatica(Set<String> soloSelezionati){
                 // TODO add your handling code here:
         //qua devo fare le verifiche sui numeri e assegnare le unioni correttamente
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -8814,38 +8883,49 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //String wallet=ModelloTabella1DepositiPrelievi.getValueAt(i, 2).toString();
             String wallet=MappaCryptoWallet.get(id)[3]+MappaCryptoWallet.get(id)[4];
             //come prima cosa verifico che il movimento non sia già abbinato/assegnato
-            //e che sia un movimento classificabile ma non fiat
-        if (MappaCryptoWallet.get(id)!=null 
+            //e che sia un movimento classificabile, crypto o fiat
+        if (MappaCryptoWallet.get(id)!=null
                 && MappaCryptoWallet.get(id)[18].equalsIgnoreCase("")
-                && Funzioni.isDepositoPrelievoClassificabile(id,null,false)
+                && Funzioni.isDepositoPrelievoClassificabile(id,null,true)
                 )
-            for (int k=i+1;k<numeroRighe;k++){ 
+            for (int k=i+1;k<numeroRighe;k++){
                 String id2=ModelloTabella1DepositiPrelievi.getValueAt(k, 0).toString();
+                //Modalità selezione: l'abbinamento scatta solo se entrambe le gambe sono selezionate,
+                //così con molti movimenti ravvicinati non si abbina a un movimento che l'utente non ha scelto
+                if (soloSelezionati!=null && !(soloSelezionati.contains(id) && soloSelezionati.contains(id2))){
+                    continue;
+                }
                 String data2=ModelloTabella1DepositiPrelievi.getValueAt(k, 1).toString();
                 String moneta2=ModelloTabella1DepositiPrelievi.getValueAt(k, 4).toString();
                 String qta2=ModelloTabella1DepositiPrelievi.getValueAt(k, 5).toString();
                 //String wallet2=ModelloTabella1DepositiPrelievi.getValueAt(k, 2).toString();
                 String wallet2=MappaCryptoWallet.get(id2)[3]+MappaCryptoWallet.get(id2)[4];
-                //le condizioni affinchè avvenga l'abbinamento automatico devono essere               
+                //le condizioni affinchè avvenga l'abbinamento automatico devono essere
                 //1- il movimento non deve risultarte già abbinato
                 //2- differenza tra le date minore di 1 ora
                 //3- stessa moneta
                 //4- exchange diverso
                 //5- importo uguale o comunque non deve differire di più del 2% ma uno deve essere un deposito e l'altro un prelievo
-                //6- un movimento deve essere in negativo e l'altro in positivo                
-                //7 - La qta uscita deve essere sempre maggiore o uguale di quella ricevuta
+                //6- un movimento deve essere in negativo e l'altro in positivo
+                //7 - La qta uscita deve essere sempre maggiore o uguale di quella ricevuta (senza tolleranza
+                //    per una coppia FIAT: un giroconto in euro non può mai depositare più di quanto prelevato,
+                //    altrimenti l'eccedenza sarebbe una reward in euro, vedi GUI_ClassificazioneMovimento.QtaGirocontoFiatAmmessa)
+                boolean unaGambaFiat = id.split("_")[4].trim().equalsIgnoreCase("DF")
+                        || id.split("_")[4].trim().equalsIgnoreCase("PF")
+                        || id2.split("_")[4].trim().equalsIgnoreCase("DF")
+                        || id2.split("_")[4].trim().equalsIgnoreCase("PF");
                 BigDecimal Sommaqta2=new BigDecimal(qta).add(new BigDecimal (qta2)).stripTrailingZeros();
-                
+
                 //Se sommaQta è maggiore di zero significa che sono entrati più soldi di quelli usciti e questo è impossibile
                 //per cui non posso eseguire il movimento
                 //vado avanti solo se sommaqta è minore o uguale a zero
                 BigDecimal Sommaqta=Sommaqta2.abs();
                 //La minimo inverso serve per indicare che anche se la differenza tra l'ingresso e le uscite è positiva (ho ricevuto più del depositato)
                 //Posso comunque classificare il movimento se la differenza è inferiore di 100000 volte al valore della transazione ovvero 0,001%
-                BigDecimal MinimoInverso=new BigDecimal(qta).abs().divide(new BigDecimal(10000));
-                BigDecimal PercentualeDifferenza=new BigDecimal(100);                
+                BigDecimal MinimoInverso= unaGambaFiat ? BigDecimal.ZERO : new BigDecimal(qta).abs().divide(new BigDecimal(10000));
+                BigDecimal PercentualeDifferenza=new BigDecimal(100);
                 if (Double.parseDouble(qta)!=0){
-                    PercentualeDifferenza=Sommaqta.divide(new BigDecimal(qta),4,RoundingMode.HALF_UP).multiply(new BigDecimal(100)).abs(); 
+                    PercentualeDifferenza=Sommaqta.divide(new BigDecimal(qta),4,RoundingMode.HALF_UP).multiply(new BigDecimal(100)).abs();
                     }
                 if (MappaCryptoWallet.get(id2)[18].equalsIgnoreCase("")&&//1
                         Funzioni_Date_DifferenzaDateSecondi(data2,data)<3600 &&//2
@@ -8853,23 +8933,31 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         !wallet.equalsIgnoreCase(wallet2)&&//4
                         PercentualeDifferenza.compareTo(new BigDecimal(2))==-1 &&//5
                         Sommaqta2.compareTo(MinimoInverso)<=0//7
-                        && Funzioni.isDepositoPrelievoClassificabile(id2,null,false)//il movimento deve essere tra quelli classificabili non fiat
-                        )     //6  
-                
+                        && Funzioni.isDepositoPrelievoClassificabile(id2,null,true)//il movimento deve essere tra quelli classificabili, crypto o fiat
+                        )     //6
+
                 {
+                    String tipo1=id.split("_")[4].trim();
+                    String tipo2=id2.split("_")[4].trim();
+                    //Un abbinamento accoppia solo movimenti della stessa famiglia: DC<->PC (crypto) o
+                    //DF<->PF (fiat), mai un lato crypto con un lato fiat
+                    boolean stessaFamiglia = (tipo1.equalsIgnoreCase("DC")||tipo1.equalsIgnoreCase("PC"))
+                            == (tipo2.equalsIgnoreCase("DC")||tipo2.equalsIgnoreCase("PC"));
                     String IDDeposito=null;
                     String IDPrelievo=null;
-                    if(id.split("_")[4].equalsIgnoreCase("DC")){
+                    if (stessaFamiglia){
+                    if(tipo1.equalsIgnoreCase("DC")||tipo1.equalsIgnoreCase("DF")){
                         IDDeposito=id;
                     }
-                    else if(id.split("_")[4].equalsIgnoreCase("PC")){
+                    else if(tipo1.equalsIgnoreCase("PC")||tipo1.equalsIgnoreCase("PF")){
                         IDPrelievo=id;
                     }
-                    if(id2.split("_")[4].equalsIgnoreCase("DC")){
+                    if(tipo2.equalsIgnoreCase("DC")||tipo2.equalsIgnoreCase("DF")){
                         IDDeposito=id2;
                     }
-                    else if(id2.split("_")[4].equalsIgnoreCase("PC")){
+                    else if(tipo2.equalsIgnoreCase("PC")||tipo2.equalsIgnoreCase("PF")){
                         IDPrelievo=id2;
+                    }
                     }
                     if (IDPrelievo!=null && IDDeposito!=null)
                         {
@@ -8894,16 +8982,20 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             if(Movimento[18].equalsIgnoreCase("")&&
                   Rete!=null&&
                   Movimento[0].split("_")[4].equalsIgnoreCase("DC")&&
-                  Movimento[7].trim().equalsIgnoreCase("getReward")){
-                
+                  Movimento[7].trim().equalsIgnoreCase("getReward")&&
+                  (soloSelezionati==null || soloSelezionati.contains(IDnc))){
+
                     Movimento[5] = "REWARD";
                     Movimento[18] = "DAI - Airdrop,Cashback,Rewards etc.. (plusvalenza)";
                     numeromodifiche++;
             }
         }
-        
+
         //FASE 3 : Cerco di Classificare i movimenti che entrano ed escono dalle piattaforme DEFI e le categorizzo
-        
+        //Saltata del tutto in modalità selezione: CreaMovimentiTrasferimentoAVaultNonPresidiati ricostruisce
+        //da sola l'intero gruppo di movimenti collegati allo stesso contratto (anche non selezionati),
+        //e non si presta a un sottoinsieme scelto dall'utente.
+        if (soloSelezionati==null) {
         //Se è un prelievo di un token LP lo classifico come mandato in un vault e poi di conseguenza vado a classificare anche tutti i rientri, calcolo le reward etc...
         for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
             //ad uno ad uno controllo tutti i movimenti non ancora categorizzati
@@ -8917,8 +9009,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //nonchè classifica tutti i movimenti di rientro
                 numeromodifiche=numeromodifiche+GUI_ClassificazioneMovimento.CreaMovimentiTrasferimentoAVaultNonPresidiati(IDnc);
             }
-                
-            
+
+
+        }
         }
         
         //FASE 4 : Cerco di classificare i movimenti delle piattoferme defi che riconosco come tali dai contratti (Completamente da vedere come fare la gestione)
@@ -8945,7 +9038,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             Rete2!=null&& Movimento2[18].equalsIgnoreCase("")&&
                             (Movimento2[7].contains("swapExactTokens")||Movimento[7].contains("swapExactTokens"))&&
                             IDnc.split("_")[4].equals("PC")&&
-                            IDnc2.split("_")[4].equals("DC")) {
+                            IDnc2.split("_")[4].equals("DC")&&
+                            (soloSelezionati==null || (soloSelezionati.contains(IDnc) && soloSelezionati.contains(IDnc2)))) {
                         //Se arrivo qua ho i due dovimenti di cui devo creare lo scambio
                         GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(IDnc,IDnc2);
                         //mando avanti di 2 le modifiche perchè ne ho classificati 2
@@ -8972,7 +9066,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     &&//Classificato come withdraw
                     Movimento[30].equalsIgnoreCase("0x5c7f8a570d578ed84e63fdfa7b1ee72deae1ae23")
                     &&//Arriva da contratto WCRO
-                    Funzioni.TrovaReteDaIMovimento(Movimento).equalsIgnoreCase("CRO")) //Rete Cronos
+                    Funzioni.TrovaReteDaIMovimento(Movimento).equalsIgnoreCase("CRO")//Rete Cronos
+                    &&
+                    (soloSelezionati==null || soloSelezionati.contains(IDnc)))
             {
                 //Creo un movimento di uscita di WCRO che poi verrà trasformato in scambio differito dal sistema
                 String MT[] = new String[Importazioni.ColonneTabella];
@@ -9007,7 +9103,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //NON DEVO FAR NULLA MA SEMPLICEMENTE GESTIRE LA CRONOS POS CHAIN CON IL WALLET CORRETTO NELLE IMPORTAZIONI
 
         //FASE 8 : Sistemo i token di debito AAVE (variableDebt) che non hanno prezzo di mercato
-        numeromodifiche = numeromodifiche + AAVE_SistemaTokenDiDebito();
+        numeromodifiche = numeromodifiche + AAVE_SistemaTokenDiDebito(soloSelezionati);
 
         if (numeromodifiche>0){
 
@@ -9019,7 +9115,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     + " coppie di transazioni, ricordarsi di salvare le modifiche!!", this);
         }
         else{
-            Messaggi.InfoMessage("Nessuna coppia trovata", "Non sono state trovare nuove coppie di transazioni da abbinare automaticamente", this);
+            //Se il movimento cercato è FIAT e la tabella non lo mostra, la classificazione automatica
+            //non lo vede: lavora solo sui movimenti attualmente caricati in tabella, non sull'intero archivio
+            String suggerimento = DepositiPrelievi_CheckBox_mostraFIAT.isSelected() ? "" :
+                    " Se cercavi un abbinamento tra movimenti FIAT, controlla che sia spuntata la casella"
+                    + " \"Mostra depositi/prelievi FIAT\": senza, quei movimenti non sono in tabella.";
+            Messaggi.InfoMessage("Nessuna coppia trovata", "Non sono state trovare nuove coppie di transazioni da abbinare automaticamente."+suggerimento, this);
         }
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
@@ -9051,11 +9152,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
      * - mint (DC) del token di debito -> "MINT TOKEN DI DEBITO", campo18="DCZ - MINT TOKEN DI DEBITO"
      * - burn (PC) del token di debito -> "BURN TOKEN DI DEBITO", campo18="PWN - BURN TOKEN DI DEBITO"
      *
+     * @param soloSelezionati se non {@code null}, limita la sistemazione ai movimenti con questo ID
      * @return numero di movimenti sistemati
      */
-    private int AAVE_SistemaTokenDiDebito(){
+    private int AAVE_SistemaTokenDiDebito(Set<String> soloSelezionati){
         int modifiche=0;
         for (String IDnc : Principale.DepositiPrelieviDaCategorizzare){
+            if (soloSelezionati!=null && !soloSelezionati.contains(IDnc)) continue;
             String Movimento[]=MappaCryptoWallet.get(IDnc);
             if (Movimento[18].equalsIgnoreCase("")){
                 String categoria=IDnc.split("_")[4];
@@ -10006,24 +10109,38 @@ GiacenzeaData_CompilaTabellaToken(true);
 
         boolean piuToken = nomiToken.size() > 1;
         String elencoToken = String.join("<br> ", nomiToken);
+        //Commissioni collegate che resterebbero senza movimento (il gas pagato per spostare il token)
+        Set<String> commissioniOrfane = CommissioniCollegate.CommissioniOrfane(idDaEliminare);
 
-        AppDialog.DialogResult result = AppDialog.builder(this)
+        AppDialog.Builder dialogo = AppDialog.builder(this)
                 .windowTitle("Eliminazione movimenti token SCAM")
                 .bodyTitle(piuToken ? "Eliminare tutti i movimenti dei token selezionati?" : "Eliminare tutti i movimenti del token?")
                 .showTitleInBody(true)
                 .theme()
                 .type(AppDialog.DialogType.WARNING)
                 .message("Stai per eliminare tutti i " + idDaEliminare.size() + " movimenti " + (piuToken ? "dei " + nomiToken.size() + " token: <br>" : "del token ") + elencoToken + ".")
-                .details("L'operazione rimuoverà definitivamente questi movimenti dall'archivio.<br>Premi <b>Salva</b> per rendere permanente la cancellazione.")
+                .details("L'operazione rimuoverà definitivamente questi movimenti dall'archivio.<br>Premi <b>Salva</b> per rendere permanente la cancellazione."
+                        + (commissioniOrfane.isEmpty() ? "" : "<br><br>" + (commissioniOrfane.size() == 1
+                                ? "C'è una commissione collegata che resterebbe senza movimento."
+                                : "Ci sono " + commissioniOrfane.size() + " commissioni collegate che resterebbero senza movimento.")
+                                + " Si possono eliminare insieme ai movimenti oppure lasciare."))
                 .action(AppDialog.DialogAction.builder("cancel", "Annulla")
                         .role(AppDialog.ActionRole.SECONDARY)
                         .build())
-                .action(AppDialog.DialogAction.builder("delete", "Elimina Movimenti")
+                .action(AppDialog.DialogAction.builder("delete", commissioniOrfane.isEmpty() ? "Elimina Movimenti" : "Elimina, ma lascia le commissioni")
                         .role(AppDialog.ActionRole.DANGER)
-                        .build())
-                .showDialog();
+                        .build());
+        if (!commissioniOrfane.isEmpty()) {
+            dialogo.action(AppDialog.DialogAction.builder("delete-commissioni", "Elimina anche le commissioni")
+                    .role(AppDialog.ActionRole.DANGER)
+                    .build());
+        }
+        AppDialog.DialogResult result = dialogo.showDialog();
 
-        if (result != null && result.isAction("delete")) {
+        if (result != null && result.isAction("delete-commissioni")) {
+            idDaEliminare.addAll(commissioniOrfane);
+        }
+        if (result != null && (result.isAction("delete") || result.isAction("delete-commissioni"))) {
             for (String ID : idDaEliminare) {
                 Funzioni.RimuoviMovimentazioneXID(ID);
             }
@@ -10139,7 +10256,15 @@ GiacenzeaData_CompilaTabellaToken(true);
         Window finestra = c != null ? SwingUtilities.getWindowAncestor(c) : null;
         if (finestra == null) finestra = this;
 
-        AppDialog.DialogResult result = AppDialog.builder(finestra)
+        //Commissioni collegate che resterebbero senza movimento: si chiede una volta sola, per tutte
+        Set<String> commissioniOrfane = CommissioniCollegate.CommissioniOrfane(daEliminare);
+        String dettagliCommissioni = commissioniOrfane.isEmpty() ? ""
+                : "<br><br>" + (commissioniOrfane.size() == 1
+                        ? "C'è una commissione collegata che resterebbe senza movimento."
+                        : "Ci sono " + commissioniOrfane.size() + " commissioni collegate che resterebbero senza movimento.")
+                        + " Si possono eliminare insieme ai movimenti oppure lasciare.";
+
+        AppDialog.Builder dialogo = AppDialog.builder(finestra)
                 .windowTitle(multipli ? "Cancellazione transazioni crypto" : "Cancellazione transazione")
                 .bodyTitle(multipli ? "Eliminare i movimenti selezionati?" : "Eliminare la transazione?")
                 .showTitleInBody(true)
@@ -10148,19 +10273,30 @@ GiacenzeaData_CompilaTabellaToken(true);
                 .message(multipli
                         ? "Sono stati selezionati " + daEliminare.size() + " movimenti."
                         : "Stai per eliminare la transazione con ID " + daEliminare.get(0) + ".")
-                .details(multipli
+                .details((multipli
                         ? "L'operazione eliminerà tutti i movimenti attualmente selezionati, "
                                 + "compresi gli eventuali collegamenti associati."
                         : "L'operazione rimuoverà anche gli eventuali collegamenti associati.")
+                        + dettagliCommissioni)
                 .action(AppDialog.DialogAction.builder("cancel", "Annulla")
                         .role(AppDialog.ActionRole.SECONDARY)
                         .build())
-                .action(AppDialog.DialogAction.builder("delete", multipli ? "Elimina selezionati" : "Elimina")
+                .action(AppDialog.DialogAction.builder("delete", !commissioniOrfane.isEmpty()
+                                ? "Elimina, ma lascia le commissioni"
+                                : multipli ? "Elimina selezionati" : "Elimina")
                         .role(AppDialog.ActionRole.DANGER)
-                        .build())
-                .showDialog();
+                        .build());
+        if (!commissioniOrfane.isEmpty()) {
+            dialogo.action(AppDialog.DialogAction.builder("delete-commissioni", "Elimina anche le commissioni")
+                    .role(AppDialog.ActionRole.DANGER)
+                    .build());
+        }
+        AppDialog.DialogResult result = dialogo.showDialog();
 
-        if (result != null && result.isAction("delete")) {
+        if (result != null && result.isAction("delete-commissioni")) {
+            daEliminare.addAll(commissioniOrfane);
+        }
+        if (result != null && (result.isAction("delete") || result.isAction("delete-commissioni"))) {
             int eliminati = 0;
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             try {
@@ -10651,6 +10787,14 @@ if (result.isAction("delete-all")) {
             Messaggi.SuccessMessage("Record eliminati", "Sono stati eliminati " + rimossi + " record dalla cache PrezziKO.", this);
         }
     }//GEN-LAST:event_Opzioni_Bottone_PuliziaPrezziKOActionPerformed
+
+    private void Opzioni_Bottone_CommissioniCollegateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_CommissioniCollegateActionPerformed
+        //Solo informativo: niente ricalcolo, basta rendere salvabile la modifica
+        if (Principale_CommissioniCollegate.AbbinaArchivioConConferma(this)) {
+            TransazioniCrypto_DaSalvare = true;
+            TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
+        }
+    }//GEN-LAST:event_Opzioni_Bottone_CommissioniCollegateActionPerformed
 
     private void Opzioni_Bottone_CompattazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_CompattazioneActionPerformed
         if (Principale_Opzioni_Pulizie.CompattaDatabase(this))
@@ -14196,6 +14340,22 @@ if (result != null && !result.isAction("cancel")) {
         }
     }//GEN-LAST:event_MenuItem_UnisciOmogeneiActionPerformed
 
+    private void MenuItem_CollegaCommissioniActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_CollegaCommissioniActionPerformed
+        //Solo informativo: niente ricalcolo, basta rendere salvabile la modifica
+        if (Principale_CommissioniCollegate.CollegaSelezione(PopUp_IDTransSelezionati, this)) {
+            TransazioniCrypto_DaSalvare = true;
+            TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
+        }
+    }//GEN-LAST:event_MenuItem_CollegaCommissioniActionPerformed
+
+    private void MenuItem_ScollegaCommissioniActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ScollegaCommissioniActionPerformed
+        List<String> selezione = PopUp_IDTransSelezionati.isEmpty() ? List.of(PopUp_IDTrans) : PopUp_IDTransSelezionati;
+        if (Principale_CommissioniCollegate.ScollegaSelezione(selezione, this)) {
+            TransazioniCrypto_DaSalvare = true;
+            TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
+        }
+    }//GEN-LAST:event_MenuItem_ScollegaCommissioniActionPerformed
+
     private void MenuItem_TraslaOrarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_TraslaOrarioActionPerformed
         // TODO add your handling code here:
         if (PopUp_IDTrans != null) {
@@ -15716,7 +15876,39 @@ if (result != null && !result.isAction("cancel")) {
     }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed
 
     private void DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
-        DepositiPrelievi_AssegnazioneAutomatica();
+        int righeSelezionate[] = Tabelle.Funzioni_getRigheSelezionate(DepositiPrelievi_Tabella);
+        Set<String> soloSelezionati = null;
+        //Se è selezionata più di una riga chiedo se limitare l'analisi ai soli movimenti selezionati:
+        //con 0 o 1 riga selezionata il comportamento resta quello di sempre, su tutta la tabella
+        if (righeSelezionate.length > 1) {
+            AppDialog.DialogResult result = AppDialog.builder(this)
+                    .windowTitle("Assegnazione Automatica")
+                    .bodyTitle("Applicare l'assegnazione automatica a tutti i movimenti in tabella o solo ai selezionati?")
+                    .showTitleInBody(true)
+                    .theme()
+                    .type(AppDialog.DialogType.INFO)
+                    .message("Nella tabella risultano " + righeSelezionate.length + " movimenti selezionati.")
+                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("all", "Tutti i movimenti")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("selection", "Solo i selezionati")
+                            .role(AppDialog.ActionRole.PRIMARY)
+                            .build())
+                    .showDialog();
+            if (result == null || result.isAction("cancel") || result.isClosedByWindow()) {
+                return;
+            }
+            if (result.isAction("selection")) {
+                soloSelezionati = new HashSet<>();
+                for (int riga : righeSelezionate) {
+                    soloSelezionati.add(DepositiPrelievi_Tabella.getModel().getValueAt(riga, 0).toString());
+                }
+            }
+        }
+        DepositiPrelievi_AssegnazioneAutomatica(soloSelezionati);
     }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
 
     private void DepositiPrelievi_TabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaKeyReleased
@@ -15881,91 +16073,14 @@ if (result != null && !result.isAction("cancel")) {
     }//GEN-LAST:event_TransazioniCrypto_Bottone_MovimentoModificaActionPerformed
 
     private void TransazioniCrypto_Bottone_MovimentoEliminaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_MovimentoEliminaActionPerformed
-        // TODO add your handling code here:
+        //Stessa strada del menu contestuale: Funzione_EliminaMovimenti è l'unica implementazione, e porta con
+        //sé ricalcolo, storico e la domanda sulle commissioni collegate che resterebbero orfane
         int[] righeSelezionate = Tabelle.Funzioni_getRigheSelezionate(TransazioniCryptoTabella);
-
-        if (righeSelezionate.length > 0) {
-
-            if (righeSelezionate.length > 1) {
-                AppDialog.DialogResult result = AppDialog.builder(this)
-                .windowTitle("Cancellazione transazioni crypto")
-                .bodyTitle("Eliminare i movimenti selezionati?")
-                .showTitleInBody(true)
-                .theme()
-                .type(AppDialog.DialogType.WARNING)
-                .message("Sono stati selezionati " + righeSelezionate.length + " movimenti.")
-                .details("L'operazione eliminerà tutti i movimenti attualmente selezionati.")
-                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
-                    .role(AppDialog.ActionRole.SECONDARY)
-                    .build())
-                .action(AppDialog.DialogAction.builder("delete-selected", "Elimina selezionati")
-                    .role(AppDialog.ActionRole.DANGER)
-                    .build())
-                .showDialog();
-
-                if (result.isAction("delete-selected")) {
-                    for (int i = 0; i < righeSelezionate.length; i++) {
-                        String ID = TransazioniCryptoTabella.getModel().getValueAt(righeSelezionate[i], 0).toString();
-                        Funzioni.RimuoviMovimentazioneXID(ID);
-                    }
-
-                    TabellaCryptodaAggiornare = true;
-
-                    SwingUtilities.invokeLater(() -> {
-                        AppDialog.builder(this)
-                        .windowTitle("Eliminazione completata")
-                        .bodyTitle("Movimenti eliminati")
-                        .showTitleInBody(true)
-                        .theme()
-                        .type(AppDialog.DialogType.SUCCESS)
-                        .message("I movimenti selezionati sono stati eliminati correttamente.")
-                        .details("Premi <b>Salva</b> per rendere permanente la cancellazione effettuata.")
-                        .primaryAction("ok", "OK")
-                        .showDialog();
-                    });
-                }
-
-            } else {
-                int rigaSelezionata = TransazioniCryptoTabella.getRowSorter()
-                .convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
-
-                String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaSelezionata, 0).toString();
-
-                AppDialog.DialogResult result = AppDialog.builder(this)
-                .windowTitle("Cancellazione transazione")
-                .bodyTitle("Eliminare la transazione?")
-                .showTitleInBody(true)
-                .theme()
-                .type(AppDialog.DialogType.WARNING)
-                .message("Stai per eliminare la transazione con ID " + IDTransazione + ".")
-                .details("L'operazione rimuoverà anche gli eventuali collegamenti associati.")
-                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
-                    .role(AppDialog.ActionRole.SECONDARY)
-                    .build())
-                .action(AppDialog.DialogAction.builder("delete", "Elimina")
-                    .role(AppDialog.ActionRole.DANGER)
-                    .build())
-                .showDialog();
-
-                if (result.isAction("delete")) {
-                    Funzioni.RimuoviMovimentazioneXID(IDTransazione);
-                    TabellaCryptodaAggiornare = true;
-
-                    SwingUtilities.invokeLater(() -> {
-                        AppDialog.builder(this)
-                        .windowTitle("Eliminazione completata")
-                        .bodyTitle("Transazione eliminata")
-                        .showTitleInBody(true)
-                        .theme()
-                        .type(AppDialog.DialogType.SUCCESS)
-                        .message("La transazione con ID " + IDTransazione + " è stata eliminata correttamente.")
-                        .details("Premi <b>Salva</b> per rendere permanente la cancellazione effettuata.")
-                        .primaryAction("ok", "OK")
-                        .showDialog();
-                    });
-                }
-            }
+        List<String> IDs = new ArrayList<>();
+        for (int riga : righeSelezionate) {
+            IDs.add(TransazioniCryptoTabella.getModel().getValueAt(riga, 0).toString());
         }
+        Funzione_EliminaMovimenti(IDs, TransazioniCryptoTabella);
     }//GEN-LAST:event_TransazioniCrypto_Bottone_MovimentoEliminaActionPerformed
 
     private void TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed
@@ -19127,6 +19242,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel Giacenzeadata_Walletb_Label;
     private javax.swing.JMenu MenuItem_ChiediIA;
     private javax.swing.JMenuItem MenuItem_ClassificaMovimento;
+    private javax.swing.JMenuItem MenuItem_CollegaCommissioni;
     private javax.swing.JMenuItem MenuItem_ConfermaPrezzoZero;
     private javax.swing.JMenuItem MenuItem_Copia;
     private javax.swing.JMenuItem MenuItem_CopiaID;
@@ -19141,6 +19257,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JMenuItem MenuItem_ModificaPrezzo;
     private javax.swing.JMenuItem MenuItem_ModificaReward;
     private javax.swing.JMenuItem MenuItem_RicalcolaPrezzi;
+    private javax.swing.JMenuItem MenuItem_ScollegaCommissioni;
     private javax.swing.JMenuItem MenuItem_SeparaMovimento;
     private javax.swing.JMenuItem MenuItem_TraslaOrario;
     private javax.swing.JMenuItem MenuItem_UnisciMovimenti;
@@ -19180,12 +19297,14 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JPanel Opzioni_Backup_Pannello;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
+    private javax.swing.JButton Opzioni_Bottone_CommissioniCollegate;
     private javax.swing.JButton Opzioni_Bottone_Compattazione;
     private javax.swing.JButton Opzioni_Bottone_DocumentiFonte;
     private javax.swing.JButton Opzioni_Bottone_PuliziaPrezziKO;
     private javax.swing.JPanel Opzioni_Calcolo_Pannello;
     private javax.swing.JPanel Opzioni_CardWallet_Pannello;
     private javax.swing.JComboBox<String> Opzioni_Combobox_CancellaTransazioniCryptoXwallet;
+    private javax.swing.JPanel Opzioni_CommissioniCollegate_Pannello;
     private javax.swing.JPanel Opzioni_Compattazione_Pannello;
     private javax.swing.JPanel Opzioni_Crypto_Pannello;
     private javax.swing.JPanel Opzioni_Donazioni;
@@ -19209,6 +19328,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollInfo;
     private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollTabella;
     private javax.swing.JTable Opzioni_GruppoWallet_Tabella;
+    private javax.swing.JLabel Opzioni_Label_CommissioniCollegate;
     private javax.swing.JLabel Opzioni_Label_StatoCompattazione;
     private javax.swing.JPanel Opzioni_PrezziKO_Pannello;
     private javax.swing.JLabel Opzioni_ProviderDefi_ApiKeyBlockscout_Label;

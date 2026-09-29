@@ -746,6 +746,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         }
 
         // Se ho accumulato movimenti nel TransazioneDefi, li elaboro con RitornaScambi
+        List<String[]> righeScambio = new ArrayList<>();
         if (haMovimentiDefi && !scambio.isEmpty()) {
             List<String[]> movScambio = Importazioni.RitornaScambi(
                     scambio, dataDiGruppo, cfg.nomeExchange, null);
@@ -761,6 +762,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                     }
                 }
                 risultato.addAll(movScambio);
+                righeScambio.addAll(movScambio);
             }
         }
 
@@ -807,6 +809,22 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 risultato.add(rtFee);
             }
         }
+        // Commissioni del gruppo ancora senza collegamento: quelle delle righe accumulate nello scambio
+        // (appena emesse qui sopra) e le righe di commissione a se' del CSV (causale COMMISSIONI fra le
+        // causali chiuse, es. la riga "Fee" di Binance). Le commissioni gia' collegate alla propria riga da
+        // costruisciMovimenti restano dove sono. Destinazione, nell'ordine: lo scambio ricostruito; se non
+        // c'e', i movimenti del gruppo ancora senza commissioni; solo se non ce ne sono, tutti i movimenti
+        // del gruppo, i cui gruppi di commissioni vengono allora fusi (Collega con ambito).
+        List<String[]> feeSenzaChiave = new ArrayList<>();
+        List<String[]> principaliSenzaChiave = new ArrayList<>();
+        for (String[] m : risultato) {
+            if (!CommissioniCollegate.Chiave(m).isEmpty()) continue;
+            if (CommissioniCollegate.isCommissione(m)) feeSenzaChiave.add(m);
+            else principaliSenzaChiave.add(m);
+        }
+        List<String[]> destinazione = !righeScambio.isEmpty() ? righeScambio
+                : !principaliSenzaChiave.isEmpty() ? principaliSenzaChiave : risultato;
+        CommissioniCollegate.Collega(destinazione, feeSenzaChiave, risultato);
 
         return risultato;
     }
@@ -1423,6 +1441,10 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 risultato.add(rtComm);
             }
         }
+
+        // Commissioni della riga collegate alla sola gamba principale: la speculare e' uno spostamento
+        // interno e non riceve la chiave (Collega ignora comunque le righe che non sono CM)
+        CommissioniCollegate.Collega(rt, risultato.toArray(new String[0][]));
 
         return risultato.isEmpty() ? null : risultato;
 

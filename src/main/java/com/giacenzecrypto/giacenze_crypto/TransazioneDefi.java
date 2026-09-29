@@ -1307,8 +1307,9 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               
               i++;
       }
-      
-      
+
+      //Il gas paga l'intera transazione: la commissione va collegata a tutti i movimenti che ha prodotto
+      CommissioniCollegate.CollegaGruppo(righe);
       return righe;
   }
 

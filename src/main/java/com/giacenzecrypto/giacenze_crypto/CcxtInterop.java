@@ -3243,6 +3243,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 Fee.Moneta = coin;
                 Fee.Tipo = "FIAT";
                 Fee.Qta = ValoreNegativo(feeamount);
+                String[] RTPrincipale = RT; //il movimento a cui appartiene la commissione che segue
                 RT = MovimentiCrypto.creaMovimento(Fee, null, Exchange, "Principale",
                         time, null, null, totMov, 2, null,
                         null, "A", null, "COMMISSIONE", null);
@@ -3251,6 +3252,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                     RT[39] = "A"; //Fonte dati A = API Exchange
                     Importazioni.RiempiVuotiArray(RT);
                     lista.add(RT);
+                    CommissioniCollegate.Collega(RTPrincipale, RT);
                 }
             }
         }
@@ -3368,6 +3370,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 //Adesso è il turno delle commissioni
                 if (inserisciFee) {
                     FEE.Qta=ValoreNegativo(FEE.Qta);
+                    String[] RTPrincipale = RT; //il movimento a cui appartiene la commissione che segue
                     RT = MovimentiCrypto.creaMovimento(FEE, null, Exchange, "Principale",
                             time, null, null, totMov, movCommissione, null,
                             null, "A", null, "COMMISSIONE", null);
@@ -3376,6 +3379,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                         RT[39] = "A"; //Fonte dati A = API Exchange
                         Importazioni.RiempiVuotiArray(RT);
                         lista.add(RT);
+                        CommissioniCollegate.Collega(RTPrincipale, RT);
                     }
                 }
             }
@@ -3488,6 +3492,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             Fee.Moneta=coin;
             Fee.Tipo=tipoMoneta;
             Fee.Qta=ValoreNegativo(fee);
+            String[] RTPrincipale = RT; //il movimento a cui appartiene la commissione che segue
             RT = MovimentiCrypto.creaMovimento(Fee, null, Exchange, "Principale",
                     time, null, null, totMov, 2, null,
                     "Rete di trasferimento : "+ network, "A", txId, "COMMISSIONE", null);
@@ -3497,6 +3502,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 RT[39] = "A"; //Fonte dati A = API Exchange
                 Importazioni.RiempiVuotiArray(RT);
                 lista.add(RT);
+                CommissioniCollegate.Collega(RTPrincipale, RT);
             }
         }
 
@@ -3596,6 +3602,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
 
             //SECONDA PARTE RELATIVA ALLE FEE
             mc.Qta=new BigDecimal(mc.Qta).abs().multiply(new BigDecimal(-1)).toPlainString();
+            String[] RTPrincipale = RT; //il movimento a cui appartiene la commissione che segue
             RT = MovimentiCrypto.creaMovimento(mc, null, Exchange, "Principale",
                     time, null, null, totMov, 2, null,
                     null, "A", null, "COMMISSIONE", null);
@@ -3604,6 +3611,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 RT[39] = "A"; //Fonte dati A = API Exchange
                 Importazioni.RiempiVuotiArray(RT);
                 lista.add(RT);
+                CommissioniCollegate.Collega(RTPrincipale, RT);
             }
         }
 
@@ -3695,6 +3703,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
 
             //SECONDA PARTE RELATIVA ALLE FEE
             mc.Qta=new BigDecimal(mc.Qta).abs().multiply(new BigDecimal(-1)).toPlainString();
+            String[] RTPrincipale = RT; //il movimento a cui appartiene la commissione che segue
             RT = MovimentiCrypto.creaMovimento(mc, null, Exchange, "Principale",
                     time, null, null, totMov, 2, null,
                     null, "A", null, "COMMISSIONE", null);
@@ -3704,6 +3713,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 RT[39] = "A"; //Fonte dati A = API Exchange
                 Importazioni.RiempiVuotiArray(RT);
                 lista.add(RT);
+                CommissioniCollegate.Collega(RTPrincipale, RT);
             }
         }
 

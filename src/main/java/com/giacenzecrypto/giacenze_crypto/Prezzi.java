@@ -1800,13 +1800,17 @@ public class Prezzi {
         if (Interruzione.Richiesta()) return null;
         String ok="ok";
         try {     
-            TimeUnit.SECONDS.sleep(1);
             URL url = new URI("https://tassidicambio.bancaditalia.it/terzevalute-wf-web/rest/v1.0/dailyTimeSeries?startDate="+DataIniziale+"&endDate="+DataFinale+"&baseCurrencyIsoCode=EUR&currencyIsoCode=USD").toURL();
                         //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
             if (Principale.Mappa_RichiesteAPIGiaEffettuate.get(url.toString())!=null){
                 return null;
             }
             Principale.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
+            //La pausa di cortesia verso l'API va DOPO il controllo sulle richieste gia' fatte. Prima stava
+            //in testa: quando una richiesta falliva (o era gia' stata fatta), l'opzione Data_TassiCambio_USDEUR
+            //non veniva scritta, CambioUSDEUR tornava qui a ogni conversione e ognuna pagava un secondo per
+            //poi uscire dal controllo qui sopra: 720 candele orarie di CoinMarketCap = 12 minuti di attesa.
+            TimeUnit.SECONDS.sleep(1);
             URLConnection connection = url.openConnection();
            // System.out.println(url);
             System.out.println("Recupero tassi di cambio Euro-Dollaro da Bancaditalia da data "+DataIniziale);

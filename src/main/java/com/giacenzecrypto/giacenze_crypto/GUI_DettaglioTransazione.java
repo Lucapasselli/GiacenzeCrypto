@@ -354,6 +354,11 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                  ModelloTabellaCrypto.addRow(Val);
              }
          }
+        //Commissioni collegate (campo 43): per un movimento le sue commissioni, per una commissione il
+        //movimento a cui appartiene. Solo informativo, vedi CommissioniCollegate
+        for (String[] Riga : Principale_CommissioniCollegate.RigheDettaglio(IDTransazione)) {
+            ModelloTabellaCrypto.addRow(Riga);
+        }
         Valore=Transazione[0];
         if (!Valore.isBlank()){
             Val=new String[]{"ID ",Valore};

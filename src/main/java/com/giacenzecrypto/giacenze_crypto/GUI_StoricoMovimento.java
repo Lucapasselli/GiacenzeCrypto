@@ -177,6 +177,10 @@ public class GUI_StoricoMovimento extends javax.swing.JDialog {
         //Il documento di origine si mostra come testo e non come collegamento: è la fotografia di un
         //riferimento che nel frattempo può essere stato eliminato.
         Riga("Documento di origine (id)", v[41], CampoModificato(v, vDopo, 41));
+        //La chiave del gruppo di commissioni collegate: un identificativo opaco, utile solo per vedere se
+        //una modifica l'ha cambiata (ad esempio un'unione che ha fuso due gruppi)
+        Riga("Gruppo commissioni collegate", v.length > CommissioniCollegate.CAMPO ? v[CommissioniCollegate.CAMPO] : "",
+                CampoModificato(v, vDopo, CommissioniCollegate.CAMPO));
 
         Tabella.repaint();
     }

@@ -160,6 +160,28 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_UnisciOmogeneiActionPerformed"/>
           </Events>
         </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="MenuItem_CollegaCommissioni">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/Images/24_Catena.png"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Collega commissioni ai movimenti"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_CollegaCommissioniActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="MenuItem_ScollegaCommissioni">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/Images/24_Separa.png"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Scollega commissioni"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_ScollegaCommissioniActionPerformed"/>
+          </Events>
+        </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="MenuItem_TraslaOrario">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
@@ -7325,6 +7347,59 @@
                             <Component class="javax.swing.JLabel" name="Opzioni_Label_StatoCompattazione">
                               <Properties>
                                 <Property name="text" type="java.lang.String" value=" "/>
+                              </Properties>
+                            </Component>
+                          </SubComponents>
+                        </Container>
+                        <Container class="javax.swing.JPanel" name="Opzioni_CommissioniCollegate_Pannello">
+                          <Constraints>
+                            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                              <JTabbedPaneConstraints tabName="Commissioni collegate">
+                                <Property name="tabTitle" type="java.lang.String" value="Commissioni collegate"/>
+                              </JTabbedPaneConstraints>
+                            </Constraint>
+                          </Constraints>
+
+                          <Layout>
+                            <DimensionLayout dim="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="Opzioni_Bottone_CommissioniCollegate" alignment="0" max="32767" attributes="0"/>
+                                          <Component id="Opzioni_Label_CommissioniCollegate" alignment="0" max="32767" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                            </DimensionLayout>
+                            <DimensionLayout dim="1">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="Opzioni_Label_CommissioniCollegate" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="Opzioni_Bottone_CommissioniCollegate" min="-2" pref="50" max="-2" attributes="0"/>
+                                      <EmptySpace pref="600" max="32767" attributes="0"/>
+                                  </Group>
+                              </Group>
+                            </DimensionLayout>
+                          </Layout>
+                          <SubComponents>
+                            <Component class="javax.swing.JButton" name="Opzioni_Bottone_CommissioniCollegate">
+                              <Properties>
+                                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                                  <Image iconType="3" name="/Images/24_Catena.png"/>
+                                </Property>
+                                <Property name="text" type="java.lang.String" value="Collega le commissioni dell&apos;archivio ai loro movimenti"/>
+                              </Properties>
+                              <Events>
+                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Bottone_CommissioniCollegateActionPerformed"/>
+                              </Events>
+                            </Component>
+                            <Component class="javax.swing.JLabel" name="Opzioni_Label_CommissioniCollegate">
+                              <Properties>
+                                <Property name="text" type="java.lang.String" value="&lt;html&gt;Collega ogni commissione al movimento a cui appartiene (stesso hash o id d&apos;ordine, oppure unico movimento nello stesso secondo sullo stesso wallet). Serve per le commissioni importate prima di questa funzione. Il collegamento &#xe8; solo informativo e non cambia nessun calcolo; le commissioni gi&#xe0; collegate non vengono toccate.&lt;/html&gt;"/>
                               </Properties>
                             </Component>
                           </SubComponents>

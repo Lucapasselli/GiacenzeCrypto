@@ -3435,6 +3435,8 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
         }
 
         //Se ci sono degli id duplicati questa funzione li rende univoci                
+        //Una riga del report fiscale e' una sola operazione: la sua commissione va al movimento che produce
+        CommissioniCollegate.CollegaGruppo(lista);
         lista=CreaListaConIDUnivoco(lista);  
         return lista;
     }   
@@ -3989,6 +3991,8 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
                                     
                                     }*/
         //Se ci sono degli id duplicati questa funzione li rende univoci                
+        //Le commissioni di Binance sono commissioni di scambio: vanno sullo scambio ricostruito se c'e'
+        CommissioniCollegate.CollegaGruppo(lista, lista2);
         lista=CreaListaConIDUnivoco(lista);  
         return lista;
     }   
@@ -4081,7 +4085,10 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
         String WalletPrincipale = "";
         String IDOriginale;
         TransazioneDefi Scambio = new TransazioneDefi();
+        List<String[]> CommissioniScambio = new ArrayList<>();
         for (int k = 0; k < numMovimenti; k++) {
+            int InizioRiga = lista.size();
+            boolean RigaNelloScambio = false;
             String RT[];
             String movimentoSplittato[] = listaMovimentidaConsolidare.get(k);
             data = movimentoSplittato[0];
@@ -4162,6 +4169,7 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
                     || (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO") && !Mon.Tipo.equals("FIAT"))) {
                 // serve solo per il calcolo della percentuale di cro da attivare
                 Scambio.InserisciMoneteCEX(Mon, WalletSecondario, CausaleOriginale, IDOriginale);
+                RigaNelloScambio = true;
 
                 // se è l'ultimo movimento allora creo anche le righe
             } else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO-INTERNO")) {
@@ -4219,6 +4227,12 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
                 }
 
             }
+            //Commissione della riga: va sui movimenti prodotti dalla riga stessa, oppure, se la riga e' una
+            //gamba di uno scambio, sullo scambio che RitornaScambi ricostruira' a fine ciclo
+            List<String[]> RigheDiK = new ArrayList<>(lista.subList(InizioRiga, lista.size()));
+            if (RigaNelloScambio) {
+                for (String[] r : RigheDiK) if (CommissioniCollegate.isCommissione(r)) CommissioniScambio.add(r);
+            } else CommissioniCollegate.CollegaGruppo(RigheDiK);
         }
 
         // A fine ciclo verifico se ho degli scambi da inserire e li inserisco
@@ -4226,6 +4240,8 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
         //  if (k == numMovimenti - 1) {
         List<String[]> lista2 = RitornaScambi(Scambio, data, WalletPrincipale, WalletPrincipale+"$IDE$");
         lista.addAll(lista2);
+        //Le commissioni delle righe confluite nello scambio appartengono allo scambio ricostruito
+        CommissioniCollegate.Collega(lista2, CommissioniScambio);
         
         //Se ci sono degli id duplicati questa funzione li rende univoci                
         lista=CreaListaConIDUnivoco(lista);  
@@ -4406,6 +4422,8 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
         lista.addAll(lista2);
         
         //Se ci sono degli id duplicati questa funzione li rende univoci                
+        //Commissioni del gruppo sullo scambio ricostruito, se c'e', altrimenti sugli altri movimenti
+        CommissioniCollegate.CollegaGruppo(lista, lista2);
         lista=CreaListaConIDUnivoco(lista);  
         return lista;
     }
@@ -4564,6 +4582,7 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
                     lista.add(RT);
                 }
 
+                String[] RTScambio = RT;
                 //==== PARTE DELLE COMMISSIONI ====
                 if (CTcommissioniNew) {
                     //Commissioni
@@ -4576,6 +4595,8 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
                         RT[7] = Tipologia;
                         lista.add(RT);
                     }
+                    //La commissione e' sulla stessa riga del CSV dello scambio: appartiene a lui
+                    CommissioniCollegate.Collega(RTScambio, RT);
                     //Se l'importazione è quella dal file completo devo gestire anche le fee
 
                 }

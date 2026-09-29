@@ -56,6 +56,8 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         initComponents();
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(TabellaWallets);
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Binance_Tabella);
+        Tabelle.ColoraTabellaSemplice(TabellaWallets);
+        Tabelle.ColoraTabellaSemplice(Binance_Tabella);
     }
 
 

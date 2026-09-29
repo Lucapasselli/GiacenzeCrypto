@@ -89,6 +89,17 @@ public class PopUpMenuVociSingoloMovimentoTest {
     }
 
     @Test
+    public void leVociDelleCommissioniCollegateEsistonoNelMenu() throws IOException {
+        Assumptions.assumeTrue(Files.isRegularFile(FORM),
+                "Principale.form non trovato: test eseguito fuori dalla radice del progetto");
+        Set<String> etichette = etichetteDelPopupDeiMovimenti();
+        //Abilitate e disabilitate per testo da Funzioni.PopUpMenu: un testo diverso non darebbe errori,
+        //la voce resterebbe semplicemente sempre attiva
+        assertTrue(etichette.contains(Funzioni.POPUP_VOCE_COLLEGA_COMMISSIONI), etichette.toString());
+        assertTrue(etichette.contains(Funzioni.POPUP_VOCE_SCOLLEGA_COMMISSIONI), etichette.toString());
+    }
+
+    @Test
     public void laDisattivazioneAgisceSuTutteLeVociElencate() {
         JPopupMenu pop = menuFinto();
 

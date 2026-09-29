@@ -74,8 +74,12 @@ public class Principale_Movimenti_SeparaUnisci {
      * ereditano lo stesso lignaggio e condividono quindi la storia del movimento da cui vengono — per
      * questo {@code MovimentiStorico.SalvaBuffer} non cancella un lignaggio ancora portato da un
      * movimento vivo.
+     *
+     * <p>Il 43 (chiave delle commissioni collegate, {@link CommissioniCollegate}) per lo stesso motivo: le
+     * due gambe di una separazione ereditano entrambe la chiave, ed è corretto, perché la commissione
+     * apparteneva all'operazione intera da cui entrambe vengono.
      */
-    private static final int[] CampiDaRiportare = {2, 7, 14, 23, 30, 31, 36, 37, 39, 41, 42};
+    private static final int[] CampiDaRiportare = {2, 7, 14, 23, 30, 31, 36, 37, 39, 41, 42, CommissioniCollegate.CAMPO};
 
     // =================================================================================================
     // ABILITAZIONE DELLE VOCI DI MENU
@@ -733,6 +737,11 @@ public class Principale_Movimenti_SeparaUnisci {
             return false;
         }
 
+        //Lo scambio porta la chiave del prelievo (o del deposito, se il prelievo non l'aveva): se avevano
+        //commissioni diverse, quelle del deposito passano allo stesso gruppo invece di restare orfane
+        CommissioniCollegate.FondiChiavi(CommissioniCollegate.Chiave(Scambio),
+                List.of(CommissioniCollegate.Chiave(Deposito)));
+
         LoggerGC.logInfo("Movimenti " + Prelievo[0] + " e " + Deposito[0] + " uniti nello scambio " + Scambio[0]);
         return true;
     }
@@ -1074,9 +1083,19 @@ public class Principale_Movimenti_SeparaUnisci {
                     + "mantenuto solo quello di un movimento, lo storico precedente degli altri andrà perso "
                     + "(le loro righe attuali resteranno comunque nello storico del movimento unito).<br>");
         }
+        //Commissioni collegate ciascuna a uno solo dei movimenti selezionati: si propone di unirle anche loro
+        List<List<String[]>> CommissioniDaUnire = CommissioniUnificabili(Gruppo);
+        int NumCommissioni = 0;
+        for (List<String[]> G : CommissioniDaUnire) NumCommissioni += G.size();
+        if (NumCommissioni > 0) {
+            Dettagli.append("<br>I movimenti selezionati hanno ").append(NumCommissioni)
+                    .append(" commissioni collegate, ognuna a uno solo di essi: possono essere unite anche loro, ")
+                    .append(CommissioniDaUnire.size() == 1 ? "in una sola commissione." : "in una commissione per moneta.")
+                    .append(" L'avvertenza sulla reimportazione vale anche per le commissioni unite.<br>");
+        }
         Dettagli.append("<br>Si vuole proseguire?");
 
-        AppDialog.DialogResult result = AppDialog.builder(owner)
+        AppDialog.Builder Dialogo = AppDialog.builder(owner)
                 .windowTitle("Unione movimenti")
                 .bodyTitle("Unire i movimenti selezionati in uno solo?")
                 .showTitleInBody(true)
@@ -1087,16 +1106,85 @@ public class Principale_Movimenti_SeparaUnisci {
                 .action(AppDialog.DialogAction.builder("cancel", "Annulla")
                         .role(AppDialog.ActionRole.SECONDARY)
                         .build())
-                .action(AppDialog.DialogAction.builder("unisci", "Unisci i movimenti")
+                .action(AppDialog.DialogAction.builder("unisci",
+                                NumCommissioni > 0 ? "Unisci solo i movimenti" : "Unisci i movimenti")
                         .role(AppDialog.ActionRole.DANGER)
-                        .build())
-                .showDialog();
+                        .build());
+        if (NumCommissioni > 0) {
+            Dialogo.action(AppDialog.DialogAction.builder("unisci-commissioni", "Unisci anche le commissioni")
+                    .role(AppDialog.ActionRole.DANGER)
+                    .build());
+        }
+        AppDialog.DialogResult result = Dialogo.showDialog();
 
-        if (result == null || !result.isAction("unisci")) {
+        if (result == null || !(result.isAction("unisci") || result.isAction("unisci-commissioni"))) {
             return false;
         }
 
-        return EseguiUnioneOmogenei(Gruppo, owner);
+        if (!EseguiUnioneOmogenei(Gruppo, owner)) return false;
+        if (result.isAction("unisci-commissioni")) {
+            //Le righe sono gli stessi array della mappa: la chiave è già quella del movimento unito
+            for (List<String[]> Commissioni : CommissioniDaUnire) EseguiUnioneOmogenei(Commissioni, owner);
+        }
+        return true;
+    }
+
+    /**
+     * Le commissioni che si possono unire insieme ai movimenti selezionati: quelle collegate
+     * ({@link CommissioniCollegate}) a <b>uno solo</b> dei movimenti del gruppo. Una commissione condivisa
+     * con un altro movimento, selezionato o no, resta com'è: unendola si attribuirebbe al movimento unito
+     * anche la parte che apparteneva all'altro.
+     *
+     * <p>Le commissioni trovate vengono divise in gruppi omogenei con le stesse regole dell'unione dei
+     * movimenti ({@link #TrovaGruppoOmogeneo}): commissioni in monete diverse restano separate, una per
+     * moneta, e un gruppo con una sola commissione non ha niente da unire.
+     *
+     * @param Gruppo movimenti che si stanno unendo
+     * @return i gruppi di commissioni unibili, vuoto se non ce ne sono
+     */
+    static List<List<String[]>> CommissioniUnificabili(List<String[]> Gruppo) {
+        List<String> Candidate = new ArrayList<>();
+        Set<String> ChiaviViste = new LinkedHashSet<>();
+        for (String M[] : Gruppo) {
+            String K = CommissioniCollegate.Chiave(M);
+            if (K.isEmpty() || CommissioniCollegate.isCommissione(M) || !ChiaviViste.add(K)) continue;
+            int Principali = 0;
+            List<String> Commissioni = new ArrayList<>();
+            for (String ID : CommissioniCollegate.Membri(K)) {
+                String V[] = MappaCryptoWallet.get(ID);
+                if (CommissioniCollegate.isCommissione(V)) Commissioni.add(ID);
+                else if (!"AU".equalsIgnoreCase(V[22])) Principali++;
+            }
+            if (Principali == 1) Candidate.addAll(Commissioni);
+        }
+
+        //Raggruppo per tipo, wallet e moneta, poi lascio decidere a TrovaGruppoOmogeneo (che controlla anche
+        //la vicinanza degli istanti): se il gruppo non passa, quelle commissioni restano come sono
+        List<List<String>> Insiemi = new ArrayList<>();
+        for (String ID : Candidate) {
+            String C[] = MappaCryptoWallet.get(ID);
+            boolean Uscita = MonetaValida(C[8], C[10]);
+            List<String> Destinazione = null;
+            for (List<String> Insieme : Insiemi) {
+                String P[] = MappaCryptoWallet.get(Insieme.get(0));
+                if (MonetaValida(P[8], P[10]) == Uscita && StessoTipo(P, C)
+                        && StessoWalletESottoWallet(P, C) && StessaMoneta(P, C, Uscita)) {
+                    Destinazione = Insieme;
+                    break;
+                }
+            }
+            if (Destinazione == null) {
+                Destinazione = new ArrayList<>();
+                Insiemi.add(Destinazione);
+            }
+            Destinazione.add(ID);
+        }
+        List<List<String[]>> Ris = new ArrayList<>();
+        for (List<String> Insieme : Insiemi) {
+            List<String[]> Omogeneo = TrovaGruppoOmogeneo(Insieme);
+            if (Omogeneo != null) Ris.add(Omogeneo);
+        }
+        return Ris;
     }
 
     /**
@@ -1188,6 +1276,11 @@ public class Principale_Movimenti_SeparaUnisci {
             return false;
         }
 
+        //Il movimento unito tiene una sola chiave delle commissioni collegate: le commissioni degli altri
+        //movimenti passano allo stesso gruppo, altrimenti resterebbero collegate a un movimento sparito
+        CommissioniCollegate.FondiChiavi(CommissioniCollegate.Chiave(Nuovo),
+                DistintiNonVuoti(Gruppo, CommissioniCollegate.CAMPO));
+
         //Storico: il movimento unito tiene un solo lignaggio e riceve una voce per ogni riga di partenza;
         //i lignaggi degli altri movimenti non sono più portati da nessuno e vanno ripuliti al salvataggio,
         //come per una cancellazione (altrimenti resterebbero nel database senza più un movimento collegato)
@@ -1213,9 +1306,10 @@ public class Principale_Movimenti_SeparaUnisci {
 
     /**
      * Campi di provenienza che, se vuoti sul movimento base, vengono presi dal primo movimento del gruppo
-     * che li ha: causale originale, ID/blocco, hash, address, documento di origine e lignaggio.
+     * che li ha: causale originale, ID/blocco, hash, address, documento di origine, lignaggio e chiave
+     * delle commissioni collegate.
      */
-    private static final int[] CampiProvenienzaUnione = {7, 14, 23, 24, 30, 36, 37, 39, 41, 42};
+    private static final int[] CampiProvenienzaUnione = {7, 14, 23, 24, 30, 36, 37, 39, 41, 42, CommissioniCollegate.CAMPO};
 
     /**
      * Output del motore delle plusvalenze, da svuotare sul movimento unito: stesso elenco di

@@ -1,15 +1,16 @@
 {
   "_commento": "Bybit - export 'Asset Change Details' del conto FUNDING (file 'AssetChangeDetails_fund_<UID>_<da>_<a>_N.csv'). La prima riga del file contiene UID/Company Name/Country, l'intestazione vera e' la seconda. Colonne: 0=Uid 1=Date & Time(UTC) 2=Coin 3=QTY (col segno; le quantita' piccole sono in notazione scientifica, es. 2.7E-7) 4=Type 5=Account Balance 6=Description.",
   "_commentoCausale": "La causale e' la colonna Description, non Type: Type e' generico ('Earn' copre interessi, sottoscrizioni, riscatti e rendimenti Launchpool), mentre Description distingue ('Easy Earn | Flexible Interest Distribution', 'Launchpool Yield', 'Transfer to Spot Account', ...).",
-  "_commentoConti": "Stesso nomeExchange e nomeWallet di 'Bybit Spot.json': i giroconti verso/da Spot, Unified Trading Account e Derivatives sono interni al wallet e vengono ignorati, cosi' come sottoscrizioni e riscatti di Easy Earn e Launchpool (la moneta resta dell'utente). Niente avviso sui derivati per i giroconti col conto Derivati: sono trasferimenti interni, non redditi. L'avviso va messo sulle causali dei proventi (PnL, funding fee) quando ci sara' una configurazione per l'export del conto Derivati.",
+  "_commentoConti": "Stesso nomeExchange e nomeWallet di 'Bybit Spot.json': i giroconti verso/da Spot, Unified Trading Account e Derivatives sono interni al wallet e vengono ignorati, cosi' come sottoscrizioni e riscatti di Easy Earn e Launchpool (la moneta resta dell'utente). Niente avviso sui derivati per i giroconti col conto Derivati: sono trasferimenti interni, non redditi. L'avviso sta sulle causali dei proventi (PnL, funding fee), in 'Bybit Derivati.json' e 'Bybit UTA.json'.",
   "_commentoLaunchpad": "'Launchpad Subscription' / 'Launchpad Subscription Refund' ignorati: la differenza fra MNT impegnati e restituiti e' il prezzo del token Launchpad, che arriva nel conto Spot come 'airdropAssetIncrease' (vedi il commento in 'Bybit Spot.json').",
-  "_commentoConsolidamento": "Ogni riga e' un movimento a se' (interessi giornalieri, rendimenti, depositi, prelievi): nessuno scambio da ricomporre.",
-  "versione": "1.001",
+  "_commentoConsolidamento": "Quasi ogni riga e' un movimento a se' (interessi giornalieri, rendimenti, depositi, prelievi: tutti in causaliChiuse). L'unico scambio e' 'BIT → MNT Auto-Conversion' (luglio 2023, migrazione del token BIT in MNT 1:1), con le due gambe su secondi consecutivi: da qui il raggruppamento per secondo con tolleranza di 1 s, limitata a quella causale tramite causaliDifferite.",
+  "_commento2023": "Causali viste solo nell'export 2023. 'ByStarter Subscription Freeze'/'Refund': USDT bloccati e poi restituiti per intero, ignorati. 'Transfer from Earn Account': giroconto dal vecchio conto Earn, che Bybit non esporta, ignorato come gli altri giroconti interni. La conversione BIT → MNT e' importata come scambio (permuta): se la si vuole trattare come semplice cambio di nome del token va sistemata a mano.",
+  "versione": "1.002",
   "centralizzato": true,
   "fontePrezzoPreferita": "bybit",
   "nomeExchange": "Bybit",
   "estrazione": "Funding - Asset Change Details (ATTENZIONE : in fase ALFA)",
-  "descrizione": "<html><div style='width:380px'>Bybit &ndash; export <b>Asset Change Details</b> del conto <b>Funding</b>: interessi Easy Earn, rendimenti Launchpool, depositi e prelievi. Va importato insieme a quello del conto Spot (configurazione a parte).</div></html>",
+  "descrizione": "<html><div style='width:380px'>Bybit &ndash; export <b>Asset Change Details</b> del conto <b>Funding</b>: interessi Easy Earn, rendimenti Launchpool, depositi e prelievi. Va importato insieme a quelli degli altri conti (Spot, Derivati, Unified Trading Account), ciascuno con la sua configurazione.</div></html>",
   "nomeWallet": "Principale",
   "separatore": ",",
   "encoding": "UTF-8",
@@ -24,9 +25,11 @@
     "moneta": 2,
     "quantita": 3
   },
-  "consolidaRigheStessaData": false,
-  "tolleranzaSecondiConsolidamento": 0,
-  "causaliDifferite": [],
+  "consolidaRigheStessaData": true,
+  "tolleranzaSecondiConsolidamento": 1,
+  "causaliDifferite": [
+    "BIT → MNT Auto-Conversion"
+  ],
   "mappaCausali": {
     "Easy Earn | Flexible Interest Distribution":  "EARN",
     "Launchpool Yield":                            "EARN",
@@ -43,6 +46,11 @@
     "Transfer from Unified Trading Account":       "IGNORA",
     "Transfer to Derivatives Account":             "IGNORA",
     "Transfer from Derivatives Account":           "IGNORA",
+    "Transfer from Earn Account":                  "IGNORA",
+    "Transfer to Earn Account":                    "IGNORA",
+    "ByStarter Subscription Freeze":               "IGNORA",
+    "ByStarter Subscription Refund":               "IGNORA",
+    "BIT → MNT Auto-Conversion":                   "SCAMBIO CRYPTO-CRYPTO",
     "Deposit":                                     "TRASFERIMENTO-CRYPTO",
     "Withdrawal":                                  "TRASFERIMENTO-CRYPTO"
   },

@@ -12250,6 +12250,23 @@ if (result.isAction("delete-all")) {
             }
             boolean stampaW = sceltaQuadro.isAction("quadro-w");
 
+            //Movimenti su derivati nell'anno (Derivati): il quadro li conta come cripto-attivita'. Solo un
+            //avviso, la stampa prosegue e porta il testo completo in una pagina dedicata.
+            String AvvisoDerivati = Derivati.MessaggioAvviso(AnnoDiCompetenza);
+            if (!AvvisoDerivati.isEmpty()) {
+                AppDialog.builder(this)
+                        .windowTitle("Avviso fiscale")
+                        .bodyTitle("Movimenti su derivati trattati come cripto-attività")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.WARNING)
+                        .message("Le giacenze del quadro " + (stampaW ? "W" : "RW") + " comprendono anche i movimenti su derivati.")
+                        .details(AvvisoDerivati)
+                        .action(AppDialog.DialogAction.builder("ok", "Ho capito")
+                                .role(AppDialog.ActionRole.PRIMARY).build())
+                        .showDialog();
+            }
+
             //Punto 4 : avviso se la parte FIAT e' inclusa ma manca il codice Stato estero su qualche rigo.
             if (RW_Opzioni_CheckBox_FiatInRW.isSelected()) {
                 java.util.List<String> fiatSenzaStato = new java.util.ArrayList<>();
@@ -12299,6 +12316,13 @@ if (result.isAction("delete-all")) {
             stampa.ApriDocumento();
             stampa.AggiungiCopertina(stampaW ? "Quadro W" : "Quadro RW", "Cripto-attività", AnnoDiCompetenza,
                     new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date()));
+            String NotaDerivati = Derivati.TestoAvvisoQuadro(AnnoDiCompetenza);
+            if (!NotaDerivati.isEmpty()) {
+                stampa.NuovaPagina();
+                stampa.ContestoPagina("Avviso derivati - anno "+AnnoDiCompetenza, false);
+                if (stampa.VesteGraficaAttiva()) stampa.AggiungiTitoloSezione("Movimenti su derivati", quadroScelto+" - anno d'imposta "+AnnoDiCompetenza);
+                stampa.AggiungiHtml(NotaDerivati);
+            }
             stampa.NuovaPagina();
             stampa.ContestoPagina(quadroScelto+" - cripto-attività - anno "+AnnoDiCompetenza+" - Foglio 1", !stampaW);
             int numeroRighe=RW_Tabella.getModel().getRowCount();
@@ -13091,6 +13115,9 @@ if (result.isAction("delete-all")) {
     }//GEN-LAST:event_RW_Bottone_Documentazione1ActionPerformed
 
     
+    /** Testo della colonna "Errori" della tabella RT per gli anni con movimenti su derivati. */
+    private static final String RT_ERRORE_DERIVATI = "Movimenti su derivati";
+
     private void RT_CalcolaRT(){
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         
@@ -13158,6 +13185,14 @@ if (result.isAction("delete-all")) {
                     }
                     default -> Val[va]=Valori[va].toPlainString();
                 }
+            }
+            //Movimenti su derivati nell'anno o prima (Derivati): non sono un errore da correggere ma un limite del
+            //programma, che li tratta come cripto-attivita'. Stanno nella stessa colonna perche' e' li' che
+            //l'utente guarda prima di stampare; il pulsante di stampa distingue le due cose.
+            if (Derivati.InfluisconoSullAnno(Val[0])) {
+                String gia = Val[6] == null ? "" : Val[6].replace("<html>", "").replace("</html>", "");
+                if (!gia.isEmpty() && !gia.endsWith("<br>")) gia = gia + "<br>";
+                Val[6] = "<html>" + gia + RT_ERRORE_DERIVATI + "</html>";
             }
             ModelloTabellaRT.addRow(Val);
         }
@@ -13959,8 +13994,10 @@ if (result != null && !result.isAction("cancel")) {
             String Vendite=RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 2).toString();
             String Costi=RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 1).toString();
             String Errori=RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 6).toString();
+            //La colonna porta anche "Movimenti su derivati", che non e' un errore da correggere: conta solo
+            //il resto (movimenti non classificati o senza prezzo)
             boolean err=false;
-            if (!Errori.isBlank())
+            if (!Errori.replace(RT_ERRORE_DERIVATI, "").replaceAll("<[^>]*>", "").isBlank())
             {
                 err=true;
                 String Testo = "<b>Attenzione</b><br><br>"
@@ -13975,6 +14012,20 @@ if (result != null && !result.isAction("cancel")) {
                         +"In quegli anni <b>vigevano regole diverse</b> il report potrebbe non essere corretto.<br>"
                         +"La stampa proseguirà ugualmente.<br>";
             Messaggi.WarningMessage("Anno scelto pre 2023",Testo,this);
+            }
+            String AvvisoDerivati = Derivati.MessaggioAvviso(String.valueOf(Anno));
+            if (!AvvisoDerivati.isEmpty()) {
+                AppDialog.builder(this)
+                        .windowTitle("Avviso fiscale")
+                        .bodyTitle("Movimenti su derivati trattati come cripto-attività")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.WARNING)
+                        .message("I valori del quadro T/RT comprendono anche i movimenti su derivati.")
+                        .details(AvvisoDerivati)
+                        .action(AppDialog.DialogAction.builder("ok", "Ho capito")
+                                .role(AppDialog.ActionRole.PRIMARY).build())
+                        .showDialog();
             }
                 RT_StampaRapporto(Anno,Vendite,Costi,err);
         }
@@ -16286,6 +16337,12 @@ if (result != null && !result.isAction("cancel")) {
                             Affinchè il dato sia affidabile è necessario correggere tutte le problematiche.
                                      """;
                         }
+                        //Movimenti su derivati nell'anno o prima: stessa riga di segnalazione sul modulo, il testo
+                        //completo va nelle note (Derivati.TestoAvvisoQuadro)
+                        String AvvisoDerivatiT = Derivati.TestoAvvisoQuadro(String.valueOf(Anno));
+                        if (!AvvisoDerivatiT.isEmpty()) {
+                            Errore = Errore + "ATTENZIONE : nell'anno o in quelli precedenti ci sono movimenti su derivati, trattati come cripto-attività. Vedere le note.\n";
+                        }
             //
             
             //Tabella Totali
@@ -16299,6 +16356,7 @@ if (result != null && !result.isAction("cancel")) {
             stampa.Piede(piede);
             stampa.ApriDocumento();
             stampa.AggiungiTestoCentrato("QUADRO T PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza+"\n\n",Font.BOLD,12);
+            if (!AvvisoDerivatiT.isEmpty()) stampa.AggiungiHtml(AvvisoDerivatiT);
 
             
             

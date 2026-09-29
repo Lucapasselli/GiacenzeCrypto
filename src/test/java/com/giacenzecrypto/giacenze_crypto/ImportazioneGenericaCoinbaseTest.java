@@ -316,14 +316,12 @@ class ImportazioneGenericaCoinbaseTest {
                 "per i Convert non si emette nessun movimento COMMISSIONI in euro");
         assertEquals(nota, m[21], "il campo Notes finisce in [21] anche per lo scambio consolidato");
 
-        // [15] dello scambio = valore della gamba PRIORITARIA (DammiMonetaPrioritaria), che con due
-        // cripto non prioritarie è la PRIMA, cioè quella in USCITA. Su questo file la gamba in uscita
-        // di un Convert ha sempre commissione 0 (la fee è addebitata sulla gamba in entrata), quindi
-        // Total - Fee coincide col Subtotal: 1.08597 -> "1.09". Il ricalcolo Total - Fee sulla gamba
-        // in ENTRATA incide su [15] solo quando è quella in entrata a diventare prioritaria
-        // (stablecoin / EUR / cripto ad alta capitalizzazione). Nota inoltre che per uno scambio
-        // cripto/cripto omogeneo post-2023 il motore LIFO (Tipologia 1) NON legge [15]: il costo di
-        // carico viene trasferito dalla moneta ceduta, plusvalenza 0.
-        assertEquals("1.09", m[15]);
+        // [15] dello scambio = valore della gamba in ENTRATA (DammiMonetaPrioritaria, dal 2026-09-29:
+        // circolare 30/E, valore normale della cripto-attivita' ricevuta). Per la gamba in entrata di un
+        // Convert il controvalore e' Total - Fee: 1.08241 - 0.022402 = 1.06. Fino al 2026-09-29 vinceva la
+        // gamba in uscita (1.08597 -> "1.09"). Nota che per uno scambio cripto/cripto omogeneo post-2023
+        // il motore LIFO (Tipologia 1) NON legge [15]: il costo di carico viene trasferito dalla moneta
+        // ceduta, plusvalenza 0.
+        assertEquals("1.06", m[15]);
     }
 }

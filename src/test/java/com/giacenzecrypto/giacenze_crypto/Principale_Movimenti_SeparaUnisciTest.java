@@ -585,6 +585,36 @@ class Principale_Movimenti_SeparaUnisciTest {
         assertEquals("19500.00", Vendita[15]);
     }
 
+    @Test
+    void fusione_dueGambeCriptoPrezzate_prendeIlPrezzoDellaMonetaRicevuta() {
+        //Regola del 2026-09-29 (circolare 30/E): vale la cripto ricevuta, cioe' il deposito
+        String Prelievo[] = movimento(DATA_ID + "_WalletTest_001_001_PC", "PRELIEVO CRYPTO",
+                "BTC", "Crypto", "-0.5", "", "", "", "20000.00");
+        String Deposito[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "8", "19500.00");
+
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiFusione(Prelievo, Deposito, null));
+
+        assertEquals("19500.00", MappaCryptoWallet.get(DATA_ID + "_WalletTest_001_001_SC")[15]);
+    }
+
+    @Test
+    void fusione_depositoQuotatoLontanoEPrelievoAlMinuto_prendeIlPrezzoDelPrelievo() {
+        //Eccezione sulla precisione: la quotazione della moneta ricevuta e' di 40 minuti prima, quella
+        //della moneta ceduta e' al minuto
+        long t = FunzioniDate.ConvertiDataIDinLong(DATA_ID);
+        String Prelievo[] = movimento(DATA_ID + "_WalletTest_001_001_PC", "PRELIEVO CRYPTO",
+                "ETH", "Crypto", "-0.5", "", "", "", "1500.00");
+        String Deposito[] = movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "TOKENDEFI", "Crypto", "8000", "1400.00");
+        Prelievo[40] = "ETH|" + t + "|3000|binance";
+        Deposito[40] = "TOKENDEFI|" + (t - 40 * 60_000L) + "|0.175|defillama";
+
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiFusione(Prelievo, Deposito, null));
+
+        assertEquals("1500.00", MappaCryptoWallet.get(DATA_ID + "_WalletTest_001_001_SC")[15]);
+    }
+
     // =============================================================================================
     // ANDATA E RITORNO
     // =============================================================================================
@@ -671,6 +701,38 @@ class Principale_Movimenti_SeparaUnisciTest {
 
         assertEquals("12", MappaCryptoWallet.get(IDOriginale)[41],
                 "l'andata e ritorno non deve far perdere il legame con il file di origine");
+    }
+
+    @Test
+    void separazioneEFusione_conservanoIlTipoDiDerivato() {
+        String Scambio[] = scambioCryptoCrypto();
+        String IDOriginale = Scambio[0];
+        Scambio[Derivati.CAMPO] = Derivati.DUAL;
+
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiSeparazione(Scambio));
+        assertEquals(Derivati.DUAL, Derivati.Tipo(MappaCryptoWallet.get(DATA_ID + "_WalletTest_001_001_PC")));
+        assertEquals(Derivati.DUAL, Derivati.Tipo(MappaCryptoWallet.get(DATA_ID + "_WalletTest_001A_001_DC")));
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiFusione(
+                MappaCryptoWallet.get(DATA_ID + "_WalletTest_001_001_PC"),
+                MappaCryptoWallet.get(DATA_ID + "_WalletTest_001A_001_DC"), null));
+
+        assertEquals(Derivati.DUAL, Derivati.Tipo(MappaCryptoWallet.get(IDOriginale)),
+                "un movimento su derivati non smette di esserlo perche' lo si separa e riunisce");
+    }
+
+    @Test
+    void unione_conservaIlTipoDiDerivato() {
+        String Primo[] = movimento(DATA_ID + "_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "3", "6000.00");
+        movimento(DATA_ID + "_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "5", "10000.00");
+        Primo[Derivati.CAMPO] = Derivati.PNL;
+        List<String[]> Gruppo = Principale_Movimenti_SeparaUnisci.TrovaGruppoOmogeneo(
+                List.of(DATA_ID + "_WalletTest_001_001_DC", DATA_ID + "_WalletTest_002_001_DC"));
+
+        assertTrue(Principale_Movimenti_SeparaUnisci.EseguiUnioneOmogenei(Gruppo, null));
+        assertEquals(1, MappaCryptoWallet.size());
+        assertEquals(Derivati.PNL, Derivati.Tipo(MappaCryptoWallet.values().iterator().next()));
     }
 
     // =============================================================================================

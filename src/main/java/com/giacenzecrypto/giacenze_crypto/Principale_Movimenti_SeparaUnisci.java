@@ -78,8 +78,12 @@ public class Principale_Movimenti_SeparaUnisci {
      * <p>Il 43 (chiave delle commissioni collegate, {@link CommissioniCollegate}) per lo stesso motivo: le
      * due gambe di una separazione ereditano entrambe la chiave, ed è corretto, perché la commissione
      * apparteneva all'operazione intera da cui entrambe vengono.
+     *
+     * <p>Il 44 (tipo di derivato, {@link Derivati}) perché è un dato di provenienza scritto dall'import:
+     * ricostruendo le gambe senza riportarlo, un movimento su derivati smetterebbe di esserlo.
      */
-    private static final int[] CampiDaRiportare = {2, 7, 14, 23, 30, 31, 36, 37, 39, 41, 42, CommissioniCollegate.CAMPO};
+    private static final int[] CampiDaRiportare = {2, 7, 14, 23, 30, 31, 36, 37, 39, 41, 42, CommissioniCollegate.CAMPO,
+        Derivati.CAMPO};
 
     // =================================================================================================
     // ABILITAZIONE DELLE VOCI DI MENU
@@ -789,8 +793,10 @@ public class Principale_Movimenti_SeparaUnisci {
 
     /**
      * Sceglie il prezzo del movimento di scambio tra quelli delle due gambe fuse, considerando solo le
-     * gambe effettivamente valorizzate (campo 32 = "SI"). Se lo sono entrambe, viene preferita quella la
-     * cui moneta {@link MovimentiCrypto#DammiMonetaPrioritaria} considera più affidabile.
+     * gambe effettivamente valorizzate (campo 32 = "SI"). Se lo sono entrambe decide
+     * {@link MovimentiCrypto#DammiMonetaPrioritaria} con la regola di tutto il programma: la gamba FIAT,
+     * altrimenti quella in entrata, salvo che il suo prezzo non sia preciso e quello dell'uscita sì.
+     * Prezzo e dati della quotazione (campo 40) vengono presi dai due movimenti, su copie delle monete.
      * @return il movimento da cui prendere prezzo e info prezzo, oppure {@code null} se nessuna delle
      *         due gambe è valorizzata
      */
@@ -799,9 +805,12 @@ public class Principale_Movimenti_SeparaUnisci {
         boolean DepositoPrezzato = Valorizzato(Deposito);
 
         if (PrelievoPrezzato && DepositoPrezzato) {
-            //Entrambe prezzate: uso la moneta che il programma considera più affidabile come riferimento
-            Moneta Prioritaria = MovimentiCrypto.DammiMonetaPrioritaria(MonetaOUT, MonetaIN);
-            if (Prioritaria == MonetaIN) return Deposito;
+            Moneta Uscita = ConPrezzoDelMovimento(MonetaOUT, Prelievo);
+            Moneta Entrata = ConPrezzoDelMovimento(MonetaIN, Deposito);
+            //Lo scambio nasce alla data della gamba piu' recente (IDConDataPiuRecente)
+            long Data = FunzioniDate.ConvertiDataIDinLong(IDConDataPiuRecente(Prelievo, Deposito).split("_")[0]);
+            Moneta Prioritaria = MovimentiCrypto.DammiMonetaPrioritaria(Uscita, Entrata, Data);
+            if (Prioritaria == Entrata) return Deposito;
             return Prelievo;
         }
         if (PrelievoPrezzato) return Prelievo;
@@ -821,6 +830,22 @@ public class Principale_Movimenti_SeparaUnisci {
      */
     private static String PrezzoSicuro(String Prezzo) {
         return MovimentiCrypto.PrezzoPrezzato(Prezzo) ? Prezzo : "0.00";
+    }
+
+    /**
+     * Copia della moneta con il prezzo del movimento ({@code [15]}) e, se il campo 40 lo riporta, fonte e
+     * orario della quotazione: servono a {@link MovimentiCrypto#DammiMonetaPrioritaria} per la regola della
+     * precisione. Un campo 40 senza orario ({@code "|||Fonte"}) resta un prezzo esplicito.
+     */
+    private static Moneta ConPrezzoDelMovimento(Moneta M, String Movimento[]) {
+        if (M == null) return null;
+        Moneta C = M.ClonaMoneta();
+        if (Movimento[40] != null && Movimento[40].split("\\|", -1).length == 4) {
+            C.InfoPrezzo = new Prezzi.InfoPrezzo(Movimento[40]);
+            C.InfoPrezzo.Qta = null;
+        }
+        C.Prezzo = Movimento[15];
+        return C;
     }
 
     /** @return {@code true} se il movimento è valorizzato (campo 32 = "SI") con un prezzo numerico */
@@ -1306,10 +1331,11 @@ public class Principale_Movimenti_SeparaUnisci {
 
     /**
      * Campi di provenienza che, se vuoti sul movimento base, vengono presi dal primo movimento del gruppo
-     * che li ha: causale originale, ID/blocco, hash, address, documento di origine, lignaggio e chiave
-     * delle commissioni collegate.
+     * che li ha: causale originale, ID/blocco, hash, address, documento di origine, lignaggio, chiave
+     * delle commissioni collegate e tipo di derivato.
      */
-    private static final int[] CampiProvenienzaUnione = {7, 14, 23, 24, 30, 36, 37, 39, 41, 42, CommissioniCollegate.CAMPO};
+    private static final int[] CampiProvenienzaUnione = {7, 14, 23, 24, 30, 36, 37, 39, 41, 42, CommissioniCollegate.CAMPO,
+        Derivati.CAMPO};
 
     /**
      * Output del motore delle plusvalenze, da svuotare sul movimento unito: stesso elenco di

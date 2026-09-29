@@ -1,5 +1,5 @@
 {
-  "versione": "1.013",
+  "versione": "1.014",
   "centralizzato":true,
   "fontePrezzoPreferita": "binance",
   "nomeExchange": "Binance",
@@ -31,6 +31,11 @@
   "Dual Savings Purchase",
   "Dual Savings Settlement"
   ],
+  "_commentoDerivati": "causaliDerivati marca i movimenti nel campo 44 (classe Derivati): solo identificazione, restano trattati come cripto-attivita'. Le stesse causali restano in causaliAllertaDerivati per le versioni del programma che non conoscono causaliDerivati.",
+  "causaliDerivati": {
+    "Dual Savings Purchase":   "DUAL",
+    "Dual Savings Settlement": "DUAL"
+  },
   "mappaCausali": {
     "Binance Card Cashback":                          "CASHBACK",
     "Card Cashback":                                  "CASHBACK",

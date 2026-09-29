@@ -1560,6 +1560,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     MovimentoCommissione[32] = MovimentoPrelievo[32]; // [32] copiato dal prelievo
                     MovimentoCommissione[40] = "";
                     MovimentoCommissione[41] = MovimentoPrelievo[41]; // documento di origine: descrive la stessa riga del prelievo
+                    Derivati.Marca(MovimentoCommissione, Derivati.Tipo(MovimentoPrelievo)); // tipo di derivato, stessa provenienza
                     //Se Qta prelievo maggiore di Qta Depositata
                     MappaCryptoWallet.put(IDCommissione, MovimentoCommissione);
                     MovimentoPrelievo[10]=new BigDecimal(MovimentoPrelievo[10]).subtract(new BigDecimal(MovimentoCommissione[10])).toPlainString();
@@ -1637,6 +1638,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     MovimentoReward[32] = MovimentoPrelievo[32]; // [32] copiato dal prelievo
                     MovimentoReward[40] = "";
                     MovimentoReward[41] = MovimentoDeposito[41]; // documento di origine: il reward nasce dal deposito
+                    Derivati.Marca(MovimentoReward, Derivati.Tipo(MovimentoDeposito)); // tipo di derivato, stessa provenienza
 
                     MappaCryptoWallet.put(IDReward, MovimentoReward);
                     MovimentoPrelievo[10]=new BigDecimal(MovimentoPrelievo[10]).subtract(new BigDecimal(MovimentoReward[13])).toPlainString();
@@ -2537,11 +2539,10 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
         MT1[15]=MovimentoPrelievo[15];
             
-            //Il prezzo segue il principio di cassa per cui dovrà essere preso nel momento in cui effettivamente mi airdroppano il token
-            //è quello il momento in cui ho effettivamente e definitivamente concluso l'operazione
-            
-            //Se è passato poco tempo invece significa che è semplicemente uno scambio che magari ci ha messo qualche minuto per arrivare,
-            //in quel caso posso prendere il prezzo della transazione
+            //Il prezzo si prende alla data del deposito, quando lo scambio si conclude, ed e' il valore della
+            //moneta RICEVUTA (circolare 30/E p. 50-51): DammiPrezzoTransazione sceglie la gamba in entrata dal
+            //2026-09-29. Prima sceglieva la gamba "piu' affidabile", spesso quella ceduta, che negli scambi a
+            //termine valutata alla data del deposito si allontana molto dal valore di cio' che si riceve.
             long DatalongDeposito=FunzioniDate.ConvertiDatainLongMinuto(MovimentoDeposito[1]);
             long DatalongPrelievo=FunzioniDate.ConvertiDatainLongMinuto(MovimentoPrelievo[1]);
             long DiffDate=DatalongDeposito-DatalongPrelievo;
@@ -2611,6 +2612,10 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             MT1[41]=MovimentoPrelievo[41];
             MS[41]=Funzioni.noData(MovimentoPrelievo[41])?MovimentoDeposito[41]:MovimentoPrelievo[41];
             MT2[41]=MovimentoDeposito[41];
+            //Tipo di derivato (campo 44, Derivati): stessa provenienza del documento di origine
+            Derivati.Marca(MT1,Derivati.Tipo(MovimentoPrelievo));
+            Derivati.Marca(MS,Derivati.isDerivato(MovimentoPrelievo)?Derivati.Tipo(MovimentoPrelievo):Derivati.Tipo(MovimentoDeposito));
+            Derivati.Marca(MT2,Derivati.Tipo(MovimentoDeposito));
             //Commissioni collegate (CommissioniCollegate): lo scambio è l'operazione a cui la commissione
             //appartiene davvero, quindi ne porta la chiave. Solo lo scambio, non i due trasferimenti, e
             //senza fondere i gruppi del prelievo e del deposito: MS è generato automaticamente e sparisce

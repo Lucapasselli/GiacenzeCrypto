@@ -407,7 +407,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 }
 
     /**
-     * Somma per {@code (giorno, moneta)} le righe le cui causali CSV sono elencate in
+     * Somma per {@code (giorno, moneta, causale)} le righe le cui causali CSV sono elencate in
      * {@code cfg.causaliConsolidaPerGiorno}, restituendo una sola riga sintetica per bucket (data e
      * altre colonne dalla prima riga del giorno, quantità sostituita dalla somma). Le righe non
      * interessate passano invariate. Il risultato è riordinato per data. Se la lista di causali è
@@ -437,7 +437,11 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 out.add(riga); // non consolidabile: lasciata singola
                 continue;
             }
-            String chiave = dataNorm.substring(0, 10) + "|" + cfg.normalizzaMoneta(safe(riga, cfg.colonnaMoneta));
+            //La causale fa parte della chiave: due causali diverse dello stesso giorno (il funding e il
+            //PnL dei derivati Bybit) restano due movimenti, ciascuno con la sua causale e il suo tipo di
+            //derivato. Con una sola causale in elenco (Bitget 'Interest') non cambia nulla.
+            String chiave = dataNorm.substring(0, 10) + "|" + cfg.normalizzaMoneta(safe(riga, cfg.colonnaMoneta))
+                    + "|" + causaleCSV.trim().toUpperCase();
             BigDecimal acc = somma.get(chiave);
             if (acc == null) {
                 somma.put(chiave, new BigDecimal(qtaStr));
@@ -612,6 +616,10 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         // Commissioni incontrate nel gruppo, emesse in coda: {moneta, qta assoluta, causale CSV, id originale}
         List<String[]> feeDaEmettere = new ArrayList<>();
 
+        // Tipo di derivato (campo 44) dello scambio ricomposto: basta una riga accumulata con causale
+        // derivata perche' lo scambio lo sia. Solo identificazione, vedi Derivati.
+        String tipoDerivatoScambio = "";
+
         for (String[] riga : gruppo) {
             String causaleCSV = cfg.getCausaleCSV(riga);
             String tipoMovimento = cfg.tipoMovimentoPerRiga(riga);
@@ -743,6 +751,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 
             scambio.InserisciMoneteCEX(mon, walletSec, causaleCSV, idOrig);
             haMovimentiDefi = true;
+            if (tipoDerivatoScambio.isEmpty()) tipoDerivatoScambio = cfg.tipoDerivato(causaleCSV);
         }
 
         // Se ho accumulato movimenti nel TransazioneDefi, li elaboro con RitornaScambi
@@ -761,6 +770,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                         }
                     }
                 }
+                for (String[] m : movScambio) Derivati.Marca(m, tipoDerivatoScambio);
                 risultato.addAll(movScambio);
                 righeScambio.addAll(movScambio);
             }
@@ -806,6 +816,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 if (rtFee.length > 39) {
                     rtFee[39] = "D";
                 }
+                if (!cfg.tipoDerivato(fee[2]).isEmpty()) Derivati.Marca(rtFee, Derivati.COMMISSIONE);
                 risultato.add(rtFee);
             }
         }
@@ -1116,6 +1127,11 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             wallet = walletOverride;
         }
 
+        // Tipo di derivato (campo 44): va su ogni movimento nato dalla riga, le commissioni come
+        // COMMISSIONE. Solo identificazione, nessun calcolo lo legge (vedi Derivati).
+        String tipoDerivato = cfg.tipoDerivato(causaleCSV);
+        String tipoDerivatoFee = tipoDerivato.isEmpty() ? "" : Derivati.COMMISSIONE;
+
         String tipoMovimento = tipoForzato != null ? tipoForzato : cfg.tipoMovimentoPerRiga(riga);
         if (tipoMovimento == null || tipoMovimento.isBlank()) {
             scarta("CAUSALE SCONOSCIUTA: " + causaleCSV, Arrays.toString(riga));
@@ -1327,6 +1343,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             if (rt.length > 39) {
                 rt[39] = "D";
             }
+            Derivati.Marca(rt, tipoDerivato);
             // Acquisto con pagamento esterno al saldo: stessa forma gia' prodotta dall'import
             // Crypto.com App (Importazioni.java, "Forzo il fatto che sia un acquisto crypto") -
             // la categoria nell'ID passa da _DC a _AC e campo5 diventa "ACQUISTO CRYPTO", campo18
@@ -1385,6 +1402,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             if (rtSpec != null) {
                 if (rtSpec.length > 7) rtSpec[7] = causaleCSV;
                 if (rtSpec.length > 39) rtSpec[39] = "D";
+                Derivati.Marca(rtSpec, tipoDerivato);
                 risultato.add(rtSpec);
             }
         }
@@ -1418,6 +1436,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 if (rtFee.length > 39) {
                     rtFee[39] = "D";
                 }
+                Derivati.Marca(rtFee, tipoDerivatoFee);
                 risultato.add(rtFee);
             }
         }
@@ -1438,6 +1457,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             if (rtComm != null) {
                 if (rtComm.length > 7) rtComm[7] = causaleCSV;
                 if (rtComm.length > 39) rtComm[39] = "D";
+                Derivati.Marca(rtComm, tipoDerivatoFee);
                 risultato.add(rtComm);
             }
         }
@@ -1900,13 +1920,30 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         /**
          * Causali CSV (testo grezzo, non quello mappato) per cui il programma non gestisce
          * correttamente il trattamento fiscale — tipicamente prodotti derivati/a termine (es. i Dual
-         * Investment di Binance) importati e trattati come una permuta cripto-cripto per
-         * approssimazione. Ogni riga che le incontra fa comparire, a fine importazione, un avviso in
+         * Investment di Binance, i perpetui di Bybit) importati e trattati come cripto-attività.
+         * Ogni riga che le incontra fa comparire, a fine importazione, un avviso in
          * {@link Importazioni_Resoconto} (vedi {@link Importazioni#SegnalaCausaleDerivato}):
          * indipendente dall'esito dell'abbinamento delle singole righe, serve solo a segnalare il
-         * limite del programma su quel tipo di operazione.
+         * limite del programma su quel tipo di operazione. Contiene anche tutte le chiavi di
+         * {@link #causaliDerivati}, aggiunte al caricamento.
          */
         public Set<String> causaliAllertaDerivati = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+
+        /**
+         * Causale CSV (testo grezzo) → tipo di derivato da scrivere nel campo {@link Derivati#CAMPO} dei
+         * movimenti che nascono da quella riga (le costanti di {@link Derivati}). Una causale qui dentro
+         * alza anche l'avviso di fine import. Le versioni del programma che non conoscono questa chiave
+         * la ignorano: per questo le configurazioni ripetono le stesse causali anche in
+         * {@code causaliAllertaDerivati}, che quelle versioni leggono.
+         */
+        public Map<String, String> causaliDerivati = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+        /** @return il tipo di derivato della causale, stringa vuota se la causale non è un derivato */
+        public String tipoDerivato(String causaleCSV) {
+            if (causaleCSV == null) return "";
+            String t = causaliDerivati.get(causaleCSV.trim());
+            return t == null ? "" : t.trim();
+        }
 
         // Causale composita (max 3 colonne concatenate con separatoreCausale)
         public int colonnaCausale2 = -1;
@@ -2015,6 +2052,13 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 JSONArray arr = root.getJSONArray("causaliAllertaDerivati");
                 for (int i = 0; i < arr.length(); i++) {
                     cfg.causaliAllertaDerivati.add(arr.getString(i));
+                }
+            }
+            if (root.has("causaliDerivati")) {
+                JSONObject cd = root.getJSONObject("causaliDerivati");
+                for (String k : cd.keySet()) {
+                    cfg.causaliDerivati.put(k, cd.getString(k));
+                    cfg.causaliAllertaDerivati.add(k);
                 }
             }
 

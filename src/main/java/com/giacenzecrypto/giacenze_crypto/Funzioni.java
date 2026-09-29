@@ -1219,7 +1219,8 @@ public static String GUIModificaPrezzo(Component c, Moneta MU, Moneta ME, String
     // ==============================================
     c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-    Prezzi.InfoPrezzo IPT = Prezzi.DammiPrezzoInfoTransazione(ME, MU, DataPrezzo, Rete, "");
+    //Uscita e poi entrata, come vuole DammiPrezzoInfoTransazione (che sceglie l'entrata)
+    Prezzi.InfoPrezzo IPT = Prezzi.DammiPrezzoInfoTransazione(MU, ME, DataPrezzo, Rete, "");
 
     if (ME == null) {
         ME = new Moneta();
@@ -1393,7 +1394,7 @@ public static String GUIModificaPrezzo(Component c, Moneta MU, Moneta ME, String
                   
             //PARTE 2    
             c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            Prezzi.InfoPrezzo IPT=Prezzi.DammiPrezzoInfoTransazione(ME, MU, DataPrezzo, Rete, "");
+            Prezzi.InfoPrezzo IPT=Prezzi.DammiPrezzoInfoTransazione(MU, ME, DataPrezzo, Rete, "");
             if (ME==null) 
             {
                 ME=new Moneta();

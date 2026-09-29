@@ -74,8 +74,9 @@ class PrezziEmoneyEuroTest {
     }
 
     @Test
-    void emoneyEuro_haPrioritaSulSimboloPrioritarioAbbinato() {
-        //Scambio EURe <-> BTC: il prezzo deve arrivare dall'EMoney in euro, non da BTC
+    void emoneyEuro_inEntrata_faIlPrezzoDelloScambio() {
+        //Scambio BTC -> EURe: l'EURe e' la gamba in entrata, quindi fa il prezzo (1:1 con l'euro). Fino al
+        //2026-09-29 vinceva perche' "prioritario" in quanto EMoney, ora perche' e' la moneta ricevuta.
         Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(moneta("BTC", "0.001"), moneta("EURe", "60"), DATA_2024_06_01, null, "");
 
         assertNotNull(IP);

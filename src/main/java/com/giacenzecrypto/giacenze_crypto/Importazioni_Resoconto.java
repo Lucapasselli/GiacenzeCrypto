@@ -381,12 +381,12 @@ private static final long serialVersionUID = 8L;
     private void MostraAvvisoDerivati() {
         AppDialog.builder(this)
                 .windowTitle("Avviso fiscale")
-                .bodyTitle("Movimenti trattati come permuta cripto-cripto per approssimazione")
+                .bodyTitle("Derivati trattati come cripto-attività")
                 .showTitleInBody(true)
                 .theme()
                 .type(AppDialog.DialogType.WARNING)
-                .message("Alcuni dei movimenti importati sono economicamente prodotti a termine/opzionari, "
-                        + "non semplici compravendite di cripto-attività a pronti.")
+                .message("Alcuni dei movimenti importati riguardano strumenti derivati: il programma li tratta "
+                        + "come cripto-attività, e non è corretto.")
                 .details(avvisoDerivati)
                 .action(AppDialog.DialogAction.builder("ok", "Ho capito")
                         .role(AppDialog.ActionRole.PRIMARY).build())

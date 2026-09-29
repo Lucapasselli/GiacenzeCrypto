@@ -32,7 +32,7 @@ class NoteCompilazioneTest {
         NoteCompilazione.W, NoteCompilazione.W8, NoteCompilazione.RW, NoteCompilazione.RW8,
         NoteCompilazione.FIAT, NoteCompilazione.FIAT_LOOKUP_FALLITI,
         NoteCompilazione.FIAT_CONTI_CORRENTI, NoteCompilazione.FIAT_IVAFE_LIQUIDITA,
-        NoteCompilazione.T, NoteCompilazione.RT
+        NoteCompilazione.T, NoteCompilazione.RT, NoteCompilazione.DERIVATI
     };
 
     private static Map<String, String> note() throws Exception {
@@ -148,12 +148,13 @@ class NoteCompilazioneTest {
         Pattern p = Pattern.compile("\\{(\\w+)\\}");
         //Le varianti datate vanno controllate come le altre : sono testo che finisce in stampa.
         for (String chiave : note.keySet()) {
-            //Le tre note FIAT condizionali ricevono un valore calcolato dal chiamante : quelle sono
-            //verificate a parte, qui restano fuori.
+            //Le tre note FIAT condizionali e l'avviso sui derivati ricevono un valore calcolato dal
+            //chiamante : quelle sono verificate a parte, qui restano fuori.
             String nuda = chiave.replaceAll("\\.\\d{4}$", "");
             if (nuda.equals(NoteCompilazione.FIAT_LOOKUP_FALLITI)
                     || nuda.equals(NoteCompilazione.FIAT_CONTI_CORRENTI)
-                    || nuda.equals(NoteCompilazione.FIAT_IVAFE_LIQUIDITA)) {
+                    || nuda.equals(NoteCompilazione.FIAT_IVAFE_LIQUIDITA)
+                    || nuda.equals(NoteCompilazione.DERIVATI)) {
                 continue;
             }
             String t = NoteCompilazione.SostituisciAnni(note.get(chiave), "2025");
@@ -173,6 +174,9 @@ class NoteCompilazioneTest {
                 Map.of("righi", "Wallet 01, Wallet 02"));
         assertTrue(r.contains("Wallet 01, Wallet 02"));
         assertFalse(r.contains("{righi}"));
+        String d = NoteCompilazione.Testo(NoteCompilazione.DERIVATI, "2025", Map.of("numero", "7", "precedenti", "3"));
+        assertTrue(d.contains("<b>7</b>") && d.contains("<b>3</b>"), "i conteggi dei movimenti su derivati non sono stati sostituiti");
+        assertFalse(d.contains("{numero}") || d.contains("{precedenti}"));
     }
 
     @Test

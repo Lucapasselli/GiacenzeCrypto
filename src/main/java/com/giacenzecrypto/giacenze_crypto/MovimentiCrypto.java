@@ -246,7 +246,7 @@ private static Map<String, String[]> creaMappaTipologie() {
         
         
         //========== GESTISCO IL PREZZO DELLA TRANSAZIONE ===========
-        Moneta MPR = DammiMonetaPrioritaria(Mon[0], Mon[1]);
+        Moneta MPR = DammiMonetaPrioritaria(Mon[0], Mon[1], Timestamp);
         //Se passo il prezzo della transazione uso quello
         
         //=== 1 - Controllo se passo il prezzo della transazione ===
@@ -438,70 +438,58 @@ static boolean PrezzoPrezzato(String Prezzo) {
     return true;
 }    
 
-    static Moneta DammiMonetaPrioritaria(Moneta Moneta1a, Moneta Moneta2a) {
-
-
- /*Questa funzione si divide in 4 punti fondamentali:
-        1 - Verifico che una delle 2 monete di scambio sia una Fiat e in quel caso prendo quello come prezzo della transazione anche perchè è il più affidabile
-        2 - Verifico se una delle 2 monete è USDT in quel caso prendo quello come valore in quanto USDT è una moneta di cui mi salvo tutti i prezzi storici
-        3 - Verifico se una delle 2 monete non faccia parte di uno specifico gruppo delle monete più capitalizzate presenti su binance, in quel caso prendo quello come
-        prezzo della transazione in quanto il prezzo risulta sicuramente più preciso di quello di una shitcoin o comunque di una moneta con bassa liquidità
-        4 - Prendo il prezzo della prima moneta disponibile essendo che l'affidabilità del prezzo è la stessa per entrambe le monete dello scambio      
-         */
-
+    /**
+     * La gamba il cui prezzo, già noto, fa il valore del movimento. Stessa regola di
+     * {@link Prezzi#DammiPrezzoInfoTransazione} (circolare 30/E, valore della cripto-attività ricevuta),
+     * nello stesso ordine di {@link Prezzi#OrdineGambe}:
+     * <ol>
+     *   <li>la gamba FIAT, anche senza prezzo (lo calcola poi {@code DammiPrezzoInfoTransazione}, esatto
+     *       per l'euro)</li>
+     *   <li>la gamba in entrata, se ha un prezzo diverso da zero e <b>preciso</b>
+     *       ({@link Prezzi#isPrezzoPreciso}: quotato entro 5 minuti dal movimento, oppure personalizzato o
+     *       esplicito, come il controvalore del CSV)</li>
+     *   <li>la gamba in uscita, alle stesse condizioni</li>
+     *   <li>poi, senza guardare la precisione, l'entrata e l'uscita con un prezzo diverso da zero</li>
+     *   <li>altrimenti la prima, nello stesso ordine, che porta un prezzo esplicito a zero</li>
+     * </ol>
+     * Restituisce {@code null} se nessuna gamba ha un prezzo: lo calcola allora
+     * {@code DammiPrezzoInfoTransazione} con la stessa regola. Fino al 2026-09-29 la scelta cadeva sulla
+     * gamba "più affidabile" (FIAT, USD, monete di {@link Prezzi#SimboliPrioritari}, poi la prima con un
+     * prezzo, cioè quella in uscita).
+     *
+     * <p>L'ordine degli argomenti non conta: {@code creaMovimento} li riceve come capita e l'entrata si
+     * riconosce dal segno della quantità.
+     */
+    static Moneta DammiMonetaPrioritaria(Moneta Moneta1a, Moneta Moneta2a, long Timestamp) {
         Moneta mon[] = new Moneta[]{Moneta1a, Moneta2a};
-
-        //PARTE 1 - ANALISI PRELIMINARE DATI
-
-    
-        //PARTE 2 - STABILISCO LA PRIORITA' DI ASSEGNAZIONE PREZZI SUI TOKEN
-        //(In caso in cui la transazioni presenti 2 token scelgo quale token determinerà iol prezzo della transazione con queasta priorità:)
-        //A - FIAT
-        //B - STABLECOIN
-        //C - Selezione di Crypto ad alta capitalizzazione (quindi con meno oscillazioni)
-        
-        //A - VERIFICO SE FIAT EURO (in quel caso prendo quel prezzo per la transazione che è il più accurato)
-        for (int k = 0; k < 2; k++) {
-            if (mon[k] != null && mon[k].Tipo.trim().equalsIgnoreCase("FIAT") && mon[k].Moneta.equalsIgnoreCase("EUR")) {
-                    return mon[k];
-            }
+        int ordine[] = Prezzi.OrdineGambe(mon);
+        for (int k : ordine) {
+            if (Prezzi.isGambaFiat(mon[k])) return mon[k];
+            if (PrezzoNonZero(mon[k]) && PrezzoPreciso(mon[k], Timestamp)) return mon[k];
         }
-        
-        //VERIFICO SE USD e prendo il prezzo da li
-            for (int k=0;k<2;k++){
-            if (mon[k] != null && mon[k].Moneta.equalsIgnoreCase("USD") && !mon[k].Tipo.trim().equalsIgnoreCase("NFT")&&mon[k].MonetaAddress == null) {
-                //a seconda se ho l'address o meno recupero il suo prezzo in maniera diversa
-                //anche perchè potrebbe essere che sia un token che si chiama usdt ma è scam              
-                return mon[k];
-            } 
-            }
-
-         //se non sono FIAT controllo se una delle coppie è USDT in quel caso prendo il prezzo di quello 
-        
-            //B e C - VERIFICO SE COPPIE PRIORITARIE
-            //ora scorro le coin principali per vedere se trovo corrispondenze e in quel caso ritorno il prezzo
-            //I simboli vengono interrogati per ordine di importanza ovvero nell'ordine in cui sono stati inseriti nella variabile
-        
-        for (String SimboloPrioritario : Prezzi.SimboliPrioritari) {
-            for (int k = 0; k < 2; k++) {
-                if (mon[k] != null && (mon[k].Moneta).toUpperCase().equals(SimboloPrioritario) && mon[k].Tipo.trim().equalsIgnoreCase("Crypto")) {
-                    //come prima cosa provo a vedere se ho un prezzo personalizzato e uso quello
-                    return mon[k];
-                }
-            }
+        for (int k : ordine) {
+            if (PrezzoNonZero(mon[k])) return mon[k];
         }
-        
-
-
-        //Se arrivo qua vuol dire che non ho trovato nessuna moneta prioritaria quindi prendo la prima di cui trovo il prezzo
-        for (int k = 0; k < 2; k++) {
-            if (mon[k] != null){
-                if (mon[k].Prezzo!=null&&Funzioni.isNumeric(mon[k].Prezzo, false)) return mon[k];
-                if (mon[k].InfoPrezzo!=null&&mon[k].InfoPrezzo.Qta!=null&&mon[k].InfoPrezzo.prezzoUnitario!=null) return mon[k];
-            }
+        for (int k : ordine) {
+            if (mon[k].Prezzo != null && Funzioni.isNumeric(mon[k].Prezzo, false)) return mon[k];
+            if (mon[k].InfoPrezzo != null && mon[k].InfoPrezzo.Qta != null && mon[k].InfoPrezzo.prezzoUnitario != null) return mon[k];
         }
         return null;
+    }
 
+    /**
+     * Il prezzo della moneta è preciso ({@link Prezzi#isPrezzoPreciso}). Senza InfoPrezzo il prezzo è un
+     * valore esplicito (controvalore del CSV, prezzo passato dal chiamante), quindi preciso.
+     */
+    private static boolean PrezzoPreciso(Moneta m, long Timestamp) {
+        return m.InfoPrezzo == null || Prezzi.isPrezzoPreciso(m.InfoPrezzo, Timestamp);
+    }
+
+    /** La moneta porta un prezzo diverso da zero, nell'InfoPrezzo o nel campo Prezzo. */
+    private static boolean PrezzoNonZero(Moneta m) {
+        if (m.InfoPrezzo != null && m.InfoPrezzo.Qta != null && m.InfoPrezzo.prezzoUnitario != null
+                && m.InfoPrezzo.prezzoUnitario.signum() != 0 && m.InfoPrezzo.Qta.signum() != 0) return true;
+        return m.Prezzo != null && Funzioni.isNumeric(m.Prezzo, false) && new BigDecimal(m.Prezzo).signum() != 0;
     }
 
     

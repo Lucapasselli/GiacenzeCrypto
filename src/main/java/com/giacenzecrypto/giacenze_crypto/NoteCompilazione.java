@@ -67,6 +67,8 @@ public class NoteCompilazione {
     public static final String FIAT_IVAFE_LIQUIDITA = "FIAT_IVAFE_LIQUIDITA";
     public static final String T = "T";
     public static final String RT = "RT";
+    /** Avviso stampato nei report W/RW e T/RT quando nell'anno ci sono movimenti su derivati ({@link Derivati}). */
+    public static final String DERIVATI = "DERIVATI";
 
     /**
      * Anno oltre il quale non si cercano varianti datate. E' l'anno di entrata in vigore del regime delle

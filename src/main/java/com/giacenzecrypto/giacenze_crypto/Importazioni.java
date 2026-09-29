@@ -300,13 +300,13 @@ public class Importazioni {
      * vuota se {@link #CausaliDerivatiSegnalate} è vuoto (nessuna causale a rischio incontrata). I tag
      * {@code <b>} evidenziano i punti salienti — è testo destinato a un {@code JLabel}/{@code JTextPane}
      * in modalità HTML, non testo semplice.
-     * <p>Il contenuto riflette l'analisi fatta sui Dual Investment di Binance: sono economicamente un
-     * contratto a termine/opzionario (diritto/obbligo di cedere o acquistare a un prezzo prefissato),
-     * che l'art. 67, comma 1, lett. c-quater) del TUIR e la Circolare Agenzia Entrate 30/E del
-     * 27/10/2023 (§2.3.2) inquadrano fra i redditi diversi di natura finanziaria — non fra le
-     * plusvalenze da cripto-attività di cui alla lett. c-sexies). Il programma non calcola i redditi da
-     * derivati: questi movimenti vengono comunque importati e trattati come una permuta cripto-cripto,
-     * un'approssimazione che può non riflettere il trattamento fiscale corretto.
+     * <p>Vale per ogni strumento derivato (perpetui e futures di Bybit, Dual Investment di Binance...):
+     * l'art. 67, comma 1, lett. c-quater) del TUIR e la Circolare Agenzia Entrate 30/E del 27/10/2023
+     * (§2.3.2) li inquadrano fra i redditi diversi di natura finanziaria, non fra le plusvalenze da
+     * cripto-attività della lett. c-sexies). Il programma non li gestisce ancora: i movimenti vengono
+     * marcati come derivati ({@link Derivati}) ma trattati come cripto-attività, cosa che l'avviso
+     * dichiara come non corretta. Fino al 2026-09-29 il testo parlava di "permuta cripto-cripto", che
+     * era vero solo per i Dual Investment e falso per i perpetui, importati come depositi/prelievi.
      * @return il testo HTML dell'avviso, o {@code ""} se non c'è nulla da segnalare
      */
     public static String TestoAvvisoDerivati() {
@@ -317,19 +317,20 @@ public class Importazioni {
             elenco.append(EscapeHtml(c));
         }
         return "Sono stati importati movimenti di tipo: <b>" + elenco + "</b>.\n\n"
-                + "Si tratta economicamente di un <b>prodotto a termine/opzionario</b> (un contratto che dà "
-                + "il diritto o l'obbligo di cedere o acquistare a un prezzo prefissato entro una scadenza), "
-                + "non di una semplice compravendita di cripto-attività a pronti.\n\n"
+                + "Si tratta di operazioni su <b>strumenti derivati</b> (contratti perpetui, futures, "
+                + "prodotti a termine come i Dual Investment), non di semplici compravendite di "
+                + "cripto-attività a pronti. Questi movimenti sono stati marcati come derivati.\n\n"
                 + "Secondo l'<b>art. 67, comma 1, lettera c-quater) del TUIR</b> e la <b>Circolare dell'Agenzia "
-                + "delle Entrate 30/E del 27/10/2023 (§2.3.2)</b>, i redditi da contratti derivati - anche "
-                + "quando hanno come sottostante cripto-attività - rientrano fra i <b>redditi diversi di "
-                + "natura finanziaria (quadro RT)</b>, <b>non sono compensabili</b> con plus/minusvalenze da "
-                + "cripto-attività e <b>non</b> rientrano fra le plusvalenze da cripto-attività della "
-                + "lettera c-sexies).\n\n"
-                + "Il programma <b>non gestisce il calcolo dei redditi da derivati</b>: questi movimenti "
-                + "vengono comunque importati e trattati come una permuta cripto-cripto, un'approssimazione "
-                + "che potrebbe non riflettere il corretto trattamento fiscale. Si consiglia di verificare "
-                + "con un professionista la qualificazione di questi importi.";
+                + "delle Entrate 30/E del 27/10/2023 (§2.3.2)</b>, i redditi da contratti derivati, anche "
+                + "quando hanno come sottostante cripto-attività, sono <b>redditi diversi di natura "
+                + "finanziaria</b>: si dichiarano in una sezione diversa del quadro RT/T, <b>non sono "
+                + "compensabili</b> con plus/minusvalenze da cripto-attività e i contratti esteri vanno nel "
+                + "quadro RW con un codice proprio.\n\n"
+                + "Il programma <b>non gestisce ancora i derivati</b>: questi movimenti sono <b>trattati come "
+                + "cripto-attività</b> (depositi e prelievi da classificare, scambi, commissioni) e concorrono "
+                + "a plusvalenze e giacenze cripto. <b>Non è corretto</b>, e le stampe dei quadri W/RW e T/RT "
+                + "lo segnalano per gli anni interessati. Si consiglia di verificare con un professionista "
+                + "la qualificazione di questi importi.";
     }
 
     /** Escape minimo per inserire testo non fidato (causali CSV) dentro l'HTML di {@link #TestoAvvisoDerivati()}. */

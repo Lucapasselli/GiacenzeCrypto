@@ -1,0 +1,70 @@
+{
+  "_commento": "Bybit - export 'Asset Change Details' del conto DERIVATI (file 'AssetChangeDetails_contract_<UID>_<da>_<a>_N.csv'), usato fino al passaggio all'Unified Trading Account. La prima riga del file contiene UID/Company Name/Country, l'intestazione vera e' la seconda. Colonne: 0=Time (UTC: i funding cadono alle 00/08/16) 1=Currency 2=Contract 3=Type 4=Direction 5=Quantity 6=Position 7=Filled Price 8=Funding 9=Fee Paid 10=Cash Flow 11=Change 12=Wallet Balance 13=Fee Rate 14=Trade ID 15=Order ID.",
+  "_commentoQuantita": "La quantita' e' 'Change', la variazione del saldo gia' al netto delle commissioni: sui derivati la commissione fa parte del risultato del contratto, quindi non si scorpora in un movimento COMMISSIONI (per questo non ci sono colonne fee). Il saldo progressivo 'Wallet Balance' torna sommando 'Change'.",
+  "_commentoDerivati": "Il programma non calcola i redditi da derivati. PnL e funding ('trade', 'funding') sono sommati per giorno, moneta e causale (migliaia di righe: un funding ogni 8 ore per posizione) e importati come deposito/prelievo da classificare, lo stesso trattamento dei Dual Investment di Binance: la giacenza torna, la qualificazione fiscale resta all'utente. Bonus, recupero dei bonus, rimborso commissioni e consegna ('bonusClaimed', 'bonusRecycle', 'feeRefund', 'delivery') restano righe singole, perche' fiscalmente non sono la stessa cosa del PnL. Tutte queste causali alzano l'avviso sui derivati a fine importazione e, tramite causaliDerivati, marcano i movimenti nel campo 44 (classe Derivati) con il loro tipo: solo identificazione, i movimenti restano trattati come cripto-attivita'. causaliAllertaDerivati ripete le stesse causali per le versioni che non conoscono causaliDerivati.",
+  "_commentoGiroconti": "'transferIn'/'transferOut' e 'upgradeUTATransferOutWithMargin' sono giroconti verso gli altri conti Bybit (Spot, Funding, UTA): stesso nomeExchange e nomeWallet delle altre configurazioni Bybit, quindi ignorati da entrambi i lati.",
+  "_commentoValutaVuota": "Le righe dei contratti inversi BTCUSD dei primi giorni del 2022 hanno Currency vuota (la moneta e' BTC): senza moneta non si possono importare e vengono saltate in silenzio (non compaiono nemmeno fra le righe scartate del resoconto). Sui dati visti l'effetto e' di pochi decimilionesimi di BTC.",
+  "versione": "1.000",
+  "centralizzato": true,
+  "fontePrezzoPreferita": "bybit",
+  "nomeExchange": "Bybit",
+  "estrazione": "Derivati - Asset Change Details (ATTENZIONE : in fase ALFA)",
+  "descrizione": "<html><div style='width:380px'>Bybit &ndash; export <b>Asset Change Details</b> del conto <b>Derivati</b> (contract). PnL e funding sono sommati per giorno e restano depositi/prelievi da classificare: il programma non calcola i redditi da derivati. Va importato insieme a quelli degli altri conti Bybit.</div></html>",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 2,
+  "rigaIntestazione": 2,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
+  "fuso": "UTC",
+  "colonne": {
+    "data": 0,
+    "causale": 3,
+    "moneta": 1,
+    "quantita": 11
+  },
+  "consolidaRigheStessaData": false,
+  "tolleranzaSecondiConsolidamento": 0,
+  "causaliConsolidaPerGiorno": [
+    "funding",
+    "trade"
+  ],
+  "causaliDifferite": [],
+  "causaliAllertaDerivati": [
+    "funding",
+    "trade",
+    "feeRefund",
+    "bonusClaimed",
+    "bonusRecycle",
+    "delivery"
+  ],
+  "causaliDerivati": {
+    "funding":       "FUNDING",
+    "trade":         "PNL",
+    "feeRefund":     "RIMBORSO_COMMISSIONI",
+    "bonusClaimed":  "BONUS",
+    "bonusRecycle":  "BONUS",
+    "delivery":      "CONSEGNA"
+  },
+  "mappaCausali": {
+    "funding":                          "TRASFERIMENTO-CRYPTO",
+    "trade":                            "TRASFERIMENTO-CRYPTO",
+    "feeRefund":                        "TRASFERIMENTO-CRYPTO",
+    "bonusClaimed":                     "TRASFERIMENTO-CRYPTO",
+    "bonusRecycle":                     "TRASFERIMENTO-CRYPTO",
+    "delivery":                         "TRASFERIMENTO-CRYPTO",
+    "transferIn":                       "IGNORA",
+    "transferOut":                      "IGNORA",
+    "upgradeUTATransferOutWithMargin":  "IGNORA"
+  },
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": [
+    "TRASFERIMENTO-CRYPTO"
+  ],
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

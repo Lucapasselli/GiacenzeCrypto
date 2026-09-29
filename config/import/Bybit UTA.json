@@ -1,0 +1,72 @@
+{
+  "_commento": "Bybit - export 'Asset Change Details' dell'UNIFIED TRADING ACCOUNT (file 'AssetChangeDetails_uta_<UID>_<da>_<a>_N.csv'), che sostituisce i conti Spot e Derivati dopo l'aggiornamento all'UTA. La prima riga del file contiene UID/Company Name/Country, l'intestazione vera e' la seconda. Colonne: 0=Uid 1=Currency 2=Contract 3=Type 4=Direction 5=Quantity 6=Position 7=Filled Price 8=Funding 9=Fee Paid 10=Cash Flow 11=Change 12=Wallet Balance 13=Action 14=Time(UTC).",
+  "_commentoCausale": "La causale e' 'Type|Action': Type da solo non distingue uno scambio spot ('TRADE|--') da un'apertura o chiusura di perpetuo ('TRADE|OPEN', 'TRADE|CLOSE'). 'SETTLEMENT|SETTLEMENT' e' il funding dei perpetui.",
+  "_commentoScambi": "Scambi spot: le gambe di un ordine stanno nello stesso secondo (piu' esecuzioni si sommano per moneta). La quantita' e' 'Change', al netto della commissione, che Bybit trattiene sempre sulla moneta ricevuta: con ricostruisciLordoSeFeeSuMonetaEntrata la gamba in entrata torna lorda e 'Fee Paid' diventa un movimento COMMISSIONI a parte, come nel conto Spot.",
+  "_commentoConversioni": "Le righe con Type '--' sono conversioni verso MNT fatte da Bybit (piccoli saldi e token Launchpool ricevuti dal Funding): una o piu' monete cedute e MNT ricevuto nello stesso secondo, quindi uno scambio. Una riga '--' rimasta senza controparte nel suo secondo diventa un deposito/prelievo da classificare. Sui dati visti ce ne sono due (USDT, dicembre 2024) di origine non chiarita: potrebbero essere movimenti di un altro prodotto Bybit che non ha export.",
+  "_commentoDerivati": "Perpetui ('TRADE|OPEN', 'TRADE|CLOSE', 'SETTLEMENT|SETTLEMENT') sommati per giorno, moneta e causale sul 'Change' (PnL e funding al netto delle commissioni, che sui derivati fanno parte del risultato: la somma per giorno azzera la colonna fee, quindi nessun movimento COMMISSIONI). Importati come deposito/prelievo da classificare, come in 'Bybit Derivati.json'; 'BONUS_RECOLLECT' (recupero di un bonus) resta riga singola. Tutte alzano l'avviso sui derivati e, tramite causaliDerivati, marcano i movimenti nel campo 44 (classe Derivati): solo identificazione, restano trattati come cripto-attivita'.",
+  "_commentoGiroconti": "'TRANSFER_IN'/'TRANSFER_OUT' sono giroconti con il Funding e gli altri conti Bybit: stesso nomeExchange e nomeWallet, ignorati da entrambi i lati.",
+  "versione": "1.000",
+  "centralizzato": true,
+  "fontePrezzoPreferita": "bybit",
+  "nomeExchange": "Bybit",
+  "estrazione": "Unified Trading Account - Asset Change Details (ATTENZIONE : in fase ALFA)",
+  "descrizione": "<html><div style='width:380px'>Bybit &ndash; export <b>Asset Change Details</b> dell'<b>Unified Trading Account</b>: scambi spot, conversioni in MNT e perpetui (sommati per giorno, da classificare). Va importato insieme a quelli degli altri conti Bybit.</div></html>",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 2,
+  "rigaIntestazione": 2,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
+  "fuso": "UTC",
+  "colonne": {
+    "data": 14,
+    "causale": 3,
+    "causale2": 13,
+    "moneta": 1,
+    "quantita": 11,
+    "monetaFee": 1,
+    "quantitaFee": 9
+  },
+  "separatoreCausale": "|",
+  "ricostruisciLordoSeFeeSuMonetaEntrata": true,
+  "consolidaRigheStessaData": true,
+  "tolleranzaSecondiConsolidamento": 0,
+  "causaliConsolidaPerGiorno": [
+    "TRADE|OPEN",
+    "TRADE|CLOSE",
+    "SETTLEMENT|SETTLEMENT"
+  ],
+  "causaliDifferite": [],
+  "causaliAllertaDerivati": [
+    "TRADE|OPEN",
+    "TRADE|CLOSE",
+    "SETTLEMENT|SETTLEMENT",
+    "BONUS_RECOLLECT|--"
+  ],
+  "causaliDerivati": {
+    "TRADE|OPEN":             "PNL",
+    "TRADE|CLOSE":            "PNL",
+    "SETTLEMENT|SETTLEMENT":  "FUNDING",
+    "BONUS_RECOLLECT|--":     "BONUS"
+  },
+  "mappaCausali": {
+    "TRADE|--":               "SCAMBIO CRYPTO-CRYPTO",
+    "--|--":                  "SCAMBIO CRYPTO-CRYPTO",
+    "TRANSFER_IN|--":         "IGNORA",
+    "TRANSFER_OUT|--":        "IGNORA",
+    "TRADE|OPEN":             "TRASFERIMENTO-CRYPTO",
+    "TRADE|CLOSE":            "TRASFERIMENTO-CRYPTO",
+    "SETTLEMENT|SETTLEMENT":  "TRASFERIMENTO-CRYPTO",
+    "BONUS_RECOLLECT|--":     "TRASFERIMENTO-CRYPTO"
+  },
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": [
+    "TRASFERIMENTO-CRYPTO"
+  ],
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

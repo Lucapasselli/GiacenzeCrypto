@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
- * Caratterizza {@code config/import/Bybit Spot.json} e {@code config/import/Bybit Funding.json}
- * (export "Asset Change Details", un file per conto). Righe sintetiche, nessun dato reale.
+ * Caratterizza le quattro config Bybit di {@code config/import/} (Spot, Funding, Derivati, UTA:
+ * export "Asset Change Details", un file per conto). Righe sintetiche, nessun dato reale.
  *
  * <p>Punti fissati:</p>
  * <ul>
@@ -27,7 +27,11 @@ import org.junit.jupiter.api.io.TempDir;
  *   <li>la riga Spot con Type vuoto non viene scartata ma diventa un prelievo da classificare;</li>
  *   <li>gli interessi del Funding in notazione scientifica ({@code 2.7E-7}) sono un'entrata
  *       (bug M7 su questo tracciato);</li>
- *   <li>sottoscrizioni/riscatti Earn, Launchpool e giroconti non producono movimenti.</li>
+ *   <li>sottoscrizioni/riscatti Earn, Launchpool e giroconti non producono movimenti;</li>
+ *   <li>derivati (conto Derivati e perpetui dell'UTA): PnL e funding sommati per giorno sulla
+ *       variazione di saldo, gia' netta di commissioni, quindi nessun movimento COMMISSIONI;</li>
+ *   <li>UTA: scambio spot con la gamba in entrata riportata al lordo e la fee a parte, conversioni
+ *       '--' in MNT come scambio.</li>
  * </ul>
  */
 class ImportazioneGenericaBybitTest {
@@ -73,8 +77,35 @@ class ImportazioneGenericaBybitTest {
         return new String[]{"1", time, coin, qty, type, "0", descr, "1.00"};
     }
 
+    private static ConfigurazioneImport derivati() throws Exception {
+        ConfigurazioneImport c = ConfigurazioneImport.carica("config/import/Bybit Derivati.json");
+        c.colonnaValoreEuro = 16;
+        return c;
+    }
+
+    private static ConfigurazioneImport uta() throws Exception {
+        ConfigurazioneImport c = ConfigurazioneImport.carica("config/import/Bybit UTA.json");
+        c.colonnaValoreEuro = 15;
+        return c;
+    }
+
+    /** Derivati: {@code Time,Currency,Contract,Type,Direction,Quantity,Position,Filled Price,Funding,
+     *  Fee Paid,Cash Flow,Change,Wallet Balance,Fee Rate,Trade ID,Order ID} + [16] */
+    private static String[] rigaDerivati(String time, String coin, String type, String fee, String change) {
+        return new String[]{time, coin, "BTCUSDT", type, "Open Long", "1", "1", "1", "0", fee, "0", change,
+            "0", "0", "", "", "1.00"};
+    }
+
+    /** UTA: {@code Uid,Currency,Contract,Type,Direction,Quantity,Position,Filled Price,Funding,Fee Paid,
+     *  Cash Flow,Change,Wallet Balance,Action,Time(UTC)} + [15] */
+    private static String[] rigaUta(String coin, String type, String fee, String change, String action, String time) {
+        return new String[]{"1", coin, "", type, "--", "0", "0", "0", "0", fee, "0", change, "0", action, time, "1.00"};
+    }
+
+    /** Stessa sequenza dell'import vero: somma per giorno, raggruppamento, consolidamento. */
     private static List<String[]> importa(List<String[]> righe, ConfigurazioneImport c) {
         List<String[]> movs = new ArrayList<>();
+        righe = ImportazioneGenerica.consolidaCausaliPerGiorno(righe, c);
         for (List<String[]> g : ImportazioneGenerica.raggruppaRighe(righe, c)) {
             movs.addAll(ImportazioneGenerica.consolidaGruppo(g, c, new ArrayList<>()));
         }
@@ -168,5 +199,136 @@ class ImportazioneGenericaBybitTest {
         spot.add(rigaSpot("internalAccountTransferDeposit", "USDT", "5", "2024-03-06 10:03:00"));
         spot.add(rigaSpot("Flexible Savings Subscription", "USDT", "-5", "2024-03-06 10:05:00"));
         assertTrue(importa(spot, spot()).isEmpty());
+    }
+
+    @Test
+    void configurazioniNuove_stessoExchangeEWallet() throws Exception {
+        ConfigurazioneImport s = spot(), d = derivati(), u = uta();
+        for (ConfigurazioneImport c : List.of(d, u)) {
+            assertEquals(s.nomeExchange, c.nomeExchange);
+            assertEquals(s.nomeWallet, c.nomeWallet);
+        }
+        assertEquals(4, java.util.stream.Stream.of(s, funding(), d, u).map(c -> c.estrazione).distinct().count());
+    }
+
+    @Test
+    void spot2022_launchpadEBot_nonIgnorati() throws Exception {
+        List<String[]> movs = importa(List.of(
+                rigaSpot("commitmentForLaunchpad", "BIT", "-1.5", "2022-10-05 11:00:00"),
+                rigaSpot("botTradingReduceAsset", "USDT", "-25", "2022-12-18 16:00:00"),
+                rigaSpot("userDeposit", "USDT", "40", "2022-12-12 10:00:00")), spot());
+        assertEquals(3, movs.size(), "il BIT impegnato nel Launchpad non torna: non si puo' ignorare");
+        assertEquals(List.of("DC", "PC", "PC"), movs.stream().map(ImportazioneGenericaBybitTest::categoria).sorted().toList());
+    }
+
+    @Test
+    void funding_conversioneBitMnt_gambeSuSecondiDiversi_unoScambio() throws Exception {
+        List<String[]> righe = new ArrayList<>();
+        righe.add(rigaFunding("2023-07-15 05:00:00", "BIT", "-300", "Convert", "BIT → MNT Auto-Conversion"));
+        righe.add(rigaFunding("2023-07-15 05:00:01", "MNT", "300", "Convert", "BIT → MNT Auto-Conversion"));
+        righe.add(rigaFunding("2023-07-15 05:00:01", "MNT", "0.5", "Earn", "Easy Earn | Flexible Interest Distribution"));
+
+        List<String[]> movs = importa(righe, funding());
+        assertEquals(2, movs.size(), "uno scambio + l'interesse, che resta un movimento a se'");
+        String[] sc = movs.stream().filter(m -> categoria(m).equals("SC")).findFirst().orElseThrow();
+        assertEquals("BIT", sc[8]);
+        assertEquals("MNT", sc[11]);
+        assertEquals(0, new BigDecimal(sc[13]).compareTo(new BigDecimal("300")), "l'interesse non entra nello scambio");
+    }
+
+    @Test
+    void derivati_pnlEFundingSommatiPerGiornoECausale_bonusASe_girocontiIgnorati_marcati() throws Exception {
+        List<String[]> righe = new ArrayList<>();
+        righe.add(rigaDerivati("2022-11-15 00:00:00", "USDT", "funding", "0.01", "-0.01"));
+        righe.add(rigaDerivati("2022-11-15 09:00:00", "USDT", "trade", "0.005", "-0.005"));
+        righe.add(rigaDerivati("2022-11-15 15:00:00", "USDT", "trade", "0.01", "-0.3"));
+        righe.add(rigaDerivati("2022-11-15 16:00:00", "USDT", "funding", "-0.02", "0.02"));
+        righe.add(rigaDerivati("2022-11-15 17:00:00", "USDT", "bonusClaimed", "0", "10"));
+        righe.add(rigaDerivati("2022-11-15 18:00:00", "USDT", "transferOut", "0", "-5"));
+
+        List<String[]> movs = importa(righe, derivati());
+        assertEquals(3, movs.size(), "un movimento per il PnL del giorno, uno per il funding, uno per il bonus");
+        assertTrue(movs.stream().noneMatch(m -> categoria(m).equals("CM")),
+                "la commissione e' gia' dentro Change: nessun movimento COMMISSIONI");
+        String[] pnl = movs.stream().filter(m -> Derivati.Tipo(m).equals(Derivati.PNL)).findFirst().orElseThrow();
+        assertEquals("PC", categoria(pnl));
+        assertEquals("USDT", pnl[8]);
+        assertEquals(0, new BigDecimal(pnl[10]).compareTo(new BigDecimal("-0.305")), "somma dei Change del PnL del giorno");
+        assertEquals("", pnl[18], "da classificare a mano: trattato come cripto-attivita'");
+        String[] funding = movs.stream().filter(m -> Derivati.Tipo(m).equals(Derivati.FUNDING)).findFirst().orElseThrow();
+        assertEquals("DC", categoria(funding));
+        assertEquals(0, new BigDecimal(funding[13]).compareTo(new BigDecimal("0.01")), "somma dei funding del giorno");
+        String[] bonus = movs.stream().filter(m -> Derivati.Tipo(m).equals(Derivati.BONUS)).findFirst().orElseThrow();
+        assertEquals(0, new BigDecimal(bonus[13]).compareTo(BigDecimal.TEN));
+    }
+
+    @Test
+    void uta_scambioSpot_lordoPiuCommissione() throws Exception {
+        List<String[]> righe = new ArrayList<>();
+        righe.add(rigaUta("USDT", "TRADE", "0", "-2", "--", "2024-12-10 11:00:00"));
+        righe.add(rigaUta("MNT", "TRADE", "-0.0018", "1.7982", "--", "2024-12-10 11:00:00"));
+
+        List<String[]> movs = importa(righe, uta());
+        assertEquals(2, movs.size(), "uno scambio + un movimento COMMISSIONI");
+        String[] sc = movs.stream().filter(m -> categoria(m).equals("SC")).findFirst().orElseThrow();
+        String[] fee = movs.stream().filter(m -> categoria(m).equals("CM")).findFirst().orElseThrow();
+        assertEquals("USDT", sc[8]);
+        assertEquals("MNT", sc[11]);
+        assertEquals(0, new BigDecimal(sc[13]).compareTo(new BigDecimal("1.8")), "Change + fee = quantita' lorda");
+        assertEquals("MNT", fee[8]);
+        assertEquals(0, new BigDecimal(fee[10]).compareTo(new BigDecimal("-0.0018")));
+    }
+
+    @Test
+    void uta_conversioneInMnt_unoScambio() throws Exception {
+        List<String[]> righe = new ArrayList<>();
+        righe.add(rigaUta("XION", "--", "0", "-0.5", "--", "2024-12-12 08:00:00"));
+        righe.add(rigaUta("MNT", "--", "0", "2", "--", "2024-12-12 08:00:00"));
+        righe.add(rigaUta("MNT", "TRANSFER_OUT", "0", "-2", "--", "2024-12-12 08:00:20"));
+
+        List<String[]> movs = importa(righe, uta());
+        assertEquals(1, movs.size(), "il giroconto verso il Funding e' ignorato");
+        assertEquals("SC", categoria(movs.get(0)));
+        assertEquals("XION", movs.get(0)[8]);
+        assertEquals("MNT", movs.get(0)[11]);
+    }
+
+    @Test
+    void uta_perpetui_sommatiPerGiorno_feeNonContataDueVolte() throws Exception {
+        List<String[]> righe = new ArrayList<>();
+        righe.add(rigaUta("USDT", "TRADE", "-0.0015", "-0.0015", "OPEN", "2024-11-28 16:00:30"));
+        righe.add(rigaUta("USDT", "TRADE", "-0.001", "-0.001", "OPEN", "2024-11-28 16:00:30"));
+        righe.add(rigaUta("USDT", "SETTLEMENT", "0", "-0.006", "SETTLEMENT", "2024-11-28 16:00:00"));
+
+        List<String[]> movs = importa(righe, uta());
+        assertEquals(2, movs.size(), "un movimento per il PnL e uno per il funding del giorno, nessuna COMMISSIONI a parte");
+        assertTrue(movs.stream().allMatch(m -> categoria(m).equals("PC")));
+        String[] pnl = movs.stream().filter(m -> Derivati.Tipo(m).equals(Derivati.PNL)).findFirst().orElseThrow();
+        assertEquals(0, new BigDecimal(pnl[10]).compareTo(new BigDecimal("-0.0025")),
+                "somma dei Change: la fee e' gia' dentro e non va sottratta una seconda volta");
+        String[] funding = movs.stream().filter(m -> Derivati.Tipo(m).equals(Derivati.FUNDING)).findFirst().orElseThrow();
+        assertEquals(0, new BigDecimal(funding[10]).compareTo(new BigDecimal("-0.006")));
+    }
+
+    @Test
+    void uta_scambioSpot_nonMarcatoComeDerivato() throws Exception {
+        List<String[]> righe = new ArrayList<>();
+        righe.add(rigaUta("USDT", "TRADE", "0", "-2", "--", "2024-12-10 11:00:00"));
+        righe.add(rigaUta("MNT", "TRADE", "-0.0018", "1.7982", "--", "2024-12-10 11:00:00"));
+        assertTrue(importa(righe, uta()).stream().noneMatch(Derivati::isDerivato),
+                "'TRADE|--' e' uno scambio spot, non un derivato: ne' lo scambio ne' la sua commissione");
+    }
+
+    @Test
+    void configurazioniDerivate_causaliDerivatiAlzanoAncheLAvviso() throws Exception {
+        for (ConfigurazioneImport c : List.of(derivati(), uta())) {
+            assertFalse(c.causaliDerivati.isEmpty());
+            for (String causale : c.causaliDerivati.keySet()) {
+                assertTrue(c.causaliAllertaDerivati.contains(causale), causale);
+                assertNotNull(c.mappaCausali.get(causale), "causale derivata non mappata: " + causale);
+            }
+        }
+        assertEquals(Derivati.PNL, derivati().tipoDerivato("trade"));
+        assertEquals("", spot().tipoDerivato("trade"), "il 'trade' dello Spot e' uno scambio a pronti");
     }
 }

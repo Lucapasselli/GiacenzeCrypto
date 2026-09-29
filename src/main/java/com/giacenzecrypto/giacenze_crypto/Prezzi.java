@@ -734,7 +734,9 @@ public class Prezzi {
             IPrezzo.Qta=new BigDecimal(Qta);
             if(DatabaseH2.PrezzoAddressChainPers_Leggi(DataOra + "_" + Address + "_" + Rete)==null)IPrezzo.Fonte="coingecko (Old)";
             else IPrezzo.Fonte="Personalizzato (Old)";
-            IPrezzo.timestamp=Datalong;
+            //Il vecchio archivio e' orario: l'orario della quotazione e' l'inizio dell'ora, non quello chiesto,
+            //altrimenti il prezzo risulterebbe preciso al minuto nella scelta della gamba (isPrezzoPreciso)
+            IPrezzo.timestamp=FunzioniDate.ConvertiDatainLongMinuto(DataOra+":00");
             IPrezzo.prezzoUnitario=new BigDecimal(risultato);
             return IPrezzo;
         }
@@ -2250,16 +2252,32 @@ public class Prezzi {
     }
     
     /**
-     * Determina il prezzo di riferimento (unitario e totale) per uno scambio tra due monete, scegliendo quale
-     * delle due usare come base secondo un ordine di affidabilità: 1) FIAT EUR (prezzo esatto, nessuna ricerca),
-     * 2) EMoney token denominati in euro (cambio fisso 1:1, fonte {@code "EURO"}), 3) USD (tramite {@link #CambioUSDEUR}),
-     * 4) monete tra {@link #SimboliPrioritari} (alta capitalizzazione,
-     * meno oscillazioni), 5) la prima delle due monete per cui si riesce a trovare un prezzo tramite
-     * {@link #CambioXXXEUR}. Le monete vengono clonate prima dell'elaborazione per non alterare gli oggetti
-     * originali, e normalizzate secondo {@link Principale#Mappa_AddressRete_Nome} quando l'indirizzo corrisponde
-     * a un token noto su una rete specifica.
-     * @param Moneta1a prima moneta dello scambio (uscita)
-     * @param Moneta2a seconda moneta dello scambio (entrata)
+     * Determina il prezzo di riferimento (unitario e totale) di un movimento a una o due monete, scegliendo
+     * quale gamba lo decide. La regola (dal 2026-09-29, decisione dell'utente) è quella della circolare
+     * AdE 30/E del 27/10/2023 (p. 50-51) per la permuta: si assume il valore normale della cripto-attività
+     * <b>ricevuta</b>, alla data in cui lo scambio si conclude. Quindi, nell'ordine di {@link #OrdineGambe}:
+     * <ol>
+     *   <li>se una gamba è FIAT decide lei: non è una permuta ma un acquisto o una vendita, e il
+     *       corrispettivo è l'importo in valuta (EUR esatto, USD col cambio Banca d'Italia, le altre valute
+     *       con la ricerca normale)</li>
+     *   <li>altrimenti la gamba in <b>entrata</b></li>
+     *   <li>se l'entrata non ha prezzo (o ha prezzo zero), la gamba in uscita</li>
+     * </ol>
+     * Con un'eccezione sulla <b>precisione</b> (anch'essa decisione dell'utente, stesso giorno): se il prezzo
+     * dell'entrata non è quotato entro {@link #PRECISIONE_PREZZO_MS} dal movimento e quello dell'uscita sì,
+     * vince l'uscita ({@link #isPrezzoPreciso}). Serve soprattutto in DeFi, dove un token poco liquido ha
+     * spesso solo quotazioni orarie.
+     * Fino al 2026-09-29 la scelta cadeva sulla gamba "più affidabile" (FIAT, EMT in euro, USD, monete di
+     * {@link #SimboliPrioritari}, poi la prima con un prezzo, cioè quella in uscita): negli scambi a termine
+     * (scambio differito) dava il valore della moneta ceduta alla data del deposito, lontano da quello della
+     * moneta ricevuta. I valori già salvati nei movimenti non vengono ricalcolati: la regola vale per i prezzi
+     * calcolati da qui in avanti (import, classificazione, rigenerazione manuale dei prezzi).
+     *
+     * <p>La singola gamba si prezza come prima ({@link #PrezzaGamba}): EUR esatto, EMT in euro 1:1, USD col
+     * cambio, altrimenti prezzo personalizzato o ricerca sulle fonti. Le monete vengono clonate per non
+     * alterare gli oggetti originali, e normalizzate secondo gli alias di {@link AliasPrezziToken}.
+     * @param Moneta1a gamba in uscita (l'entrata si riconosce comunque dal segno della quantità, vedi {@link #OrdineGambe})
+     * @param Moneta2a gamba in entrata, {@code null} per i movimenti a una moneta
      * @param Data data/ora della transazione in millisecondi epoch
      * @param Rete identificativo della blockchain/rete
      * @param fonte fonte prezzo da preferire nella ricerca nel database personale
@@ -2267,23 +2285,8 @@ public class Prezzi {
      */
     public static InfoPrezzo DammiPrezzoInfoTransazione(Moneta Moneta1a, Moneta Moneta2a, long Data, String Rete,String fonte) {
 
-        InfoPrezzo IP;
-        //
-         // tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
-        //  System.out.println("Tempo CambioXXXEUR : "+tempoOperazione+"ms");
- /*Questa funzione si divide in 5 punti fondamentali:
-        1 - Verifico che una delle 2 monete di scambio sia una Fiat e in quel caso prendo quello come prezzo della transazione anche perchè è il più affidabile
-        2 - Verifico se una delle 2 monete è un EMoney token denominato in euro (es. EURe): in quel caso il cambio è per definizione 1:1 con l'euro
-        3 - Verifico se una delle 2 monete è USDT in quel caso prendo quello come valore in quanto USDT è una moneta di cui mi salvo tutti i prezzi storici
-        4 - Verifico se una delle 2 monete non faccia parte di uno specifico gruppo delle monete più capitalizzate presenti su binance, in quel caso prendo quello come
-        prezzo della transazione in quanto il prezzo risulta sicuramente più preciso di quello di una shitcoin o comunque di una moneta con bassa liquidità
-        5 - Prendo il prezzo della prima moneta disponibile essendo che l'affidabilità del prezzo è la stessa per entrambe le monete dello scambio
-         */
-
         Moneta MonOri[] = new Moneta[]{Moneta1a, Moneta2a};
 
-        //PARTE 1 - ANALISI PRELIMINARE DATI
-        
         //A - Clono le monete in quanto altrimenti potrei andare ad alterarle nel corso del ciclo per la richiesta dei prezzi
         Moneta mon[] = new Moneta[2];
         //Se la moneta in questione non è valorizzata correttamente non la clono e quindi resterà null
@@ -2313,36 +2316,144 @@ public class Prezzi {
             }
         }
 
-    
-        //PARTE 2 - STABILISCO LA PRIORITA' DI ASSEGNAZIONE PREZZI SUI TOKEN
-        //(In caso in cui la transazioni presenti 2 token scelgo quale token determinerà iol prezzo della transazione con queasta priorità:)
-        //A - FIAT
-        //A bis - EMONEY TOKEN DENOMINATI IN EURO (cambio fisso 1:1)
-        //B - STABLECOIN
-        //C - Selezione di Crypto ad alta capitalizzazione (quindi con meno oscillazioni)
-        
-        //A - VERIFICO SE FIAT EURO (in quel caso prendo quel prezzo per la transazione che è il più accurato)
-        for (int k = 0; k < 2; k++) {
-            if (mon[k] != null && mon[k].Tipo.trim().equalsIgnoreCase("FIAT") && mon[k].Moneta.equalsIgnoreCase("EUR")) {
-                if(mon[k].Qta!=null){
-                    BigDecimal PrezzoTransazione = new BigDecimal(mon[k].Qta);
-                    PrezzoTransazione = PrezzoTransazione.abs().stripTrailingZeros();
-                    IP=new InfoPrezzo();
-                    IP.Moneta=mon[k].Moneta;
-                    IP.Qta=PrezzoTransazione;
-                    IP.Fonte="";
-                    IP.prezzoUnitario=new BigDecimal("1");
-                    IP.prezzoQta=PrezzoTransazione.abs();
-                    IP.timestamp=Data;   
-                    IP.OggettoMoneta=mon[k];
-               /*     tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
-          System.out.println("Tempo A : "+tempoOperazione+"ms");*/
-                    return IP;
-                }
+        //C - Le gambe nell'ordine della regola (FIAT, poi entrata, poi uscita), in tre passate:
+        //  1) la prima gamba con un prezzo PRECISO (entro PRECISIONE_PREZZO_MS dal movimento), la FIAT sempre
+        //  2) la prima gamba con un prezzo qualunque diverso da zero
+        //  3) il primo prezzo a zero, se nessuna gamba ne ha uno migliore
+        //Ogni gamba si prezza una volta sola: la seconda passata riusa quanto trovato dalla prima.
+        int ordine[] = OrdineGambe(mon);
+        InfoPrezzo Trovato[] = new InfoPrezzo[2];
+        boolean Cercato[] = new boolean[2];
+        for (int k : ordine) {
+            InfoPrezzo IP = PrezzoGambaUnaVolta(k, mon, AddressPrimaDellAlias, Data, Rete, fonte, Trovato, Cercato);
+            if (IP != null && IP.prezzoQta.signum() != 0 && (isGambaFiat(mon[k]) || isPrezzoPreciso(IP, Data))) return IP;
+        }
+        for (int k : ordine) {
+            InfoPrezzo IP = PrezzoGambaUnaVolta(k, mon, AddressPrimaDellAlias, Data, Rete, fonte, Trovato, Cercato);
+            if (IP != null && IP.prezzoQta.signum() != 0) return IP;
+        }
+        for (int k : ordine) {
+            if (Trovato[k] != null) return Trovato[k];
+        }
+        return null;
+    }
+
+    /** Prezzo della gamba {@code k}, cercato al primo uso e poi ricordato in {@code Trovato}. */
+    private static InfoPrezzo PrezzoGambaUnaVolta(int k, Moneta mon[], String AddressPrimaDellAlias[], long Data,
+            String Rete, String fonte, InfoPrezzo Trovato[], boolean Cercato[]) {
+        if (!Cercato[k]) {
+            Cercato[k] = true;
+            InfoPrezzo IP = PrezzaGamba(mon[k], AddressPrimaDellAlias[k], Data, Rete, fonte);
+            if (IP != null) {
+                IP.OggettoMoneta = mon[k];
+                if (IP.prezzoQta == null) IP.prezzoQta = IP.Qta.multiply(IP.prezzoUnitario).abs();
             }
+            Trovato[k] = IP;
+        }
+        return Trovato[k];
+    }
+
+    /**
+     * Distanza massima fra l'orario della quotazione e quello del movimento perché un prezzo conti come
+     * preciso nella scelta della gamba ({@link #DammiPrezzoInfoTransazione}).
+     */
+    public static final long PRECISIONE_PREZZO_MS = 5 * 60 * 1000L;
+
+    /**
+     * Il prezzo è abbastanza preciso da fare il valore di uno scambio: quotato entro
+     * {@link #PRECISIONE_PREZZO_MS} dall'orario del movimento. Contano come precisi anche il prezzo
+     * personalizzato (lo ha deciso l'utente per quel movimento) e il prezzo senza orario di quotazione,
+     * cioè un valore esplicito (controvalore del CSV dell'exchange, prezzo passato da chi crea il movimento)
+     * e non il risultato di una ricerca.
+     *
+     * <p>Serve alla regola della gamba in entrata: con i prezzi al minuto degli exchange la gamba ricevuta
+     * è quasi sempre precisa, ma in DeFi un token poco liquido ha spesso solo quotazioni orarie
+     * (DefiLlama, CoinGecko) e prenderlo al posto di una gamba in uscita quotata al minuto darebbe molti
+     * valori sbagliati. Se l'entrata non è precisa e l'uscita sì, vince l'uscita.
+     */
+    public static boolean isPrezzoPreciso(InfoPrezzo IP, long Data) {
+        if (IP == null) return false;
+        if (IP.Fonte != null && IP.Fonte.startsWith("Personalizzato")) return true;
+        if (IP.timestamp <= 0) return true;
+        return Math.abs(IP.timestamp - Data) <= PRECISIONE_PREZZO_MS;
+    }
+
+    /**
+     * Una moneta che per la scelta della gamba conta come valuta legale: tipo FIAT, oppure "USD" senza
+     * address (il dollaro di alcuni export arriva senza tipo). Una gamba FIAT decide il prezzo dello
+     * scambio, perché lo scambio è un acquisto o una vendita e non una permuta.
+     */
+    static boolean isGambaFiat(Moneta m) {
+        if (m == null || m.Moneta == null) return false;
+        String tipo = m.Tipo == null ? "" : m.Tipo.trim();
+        if (tipo.equalsIgnoreCase("FIAT")) return true;
+        return m.Moneta.equalsIgnoreCase("USD") && !tipo.equalsIgnoreCase("NFT") && m.MonetaAddress == null;
+    }
+
+    /**
+     * Ordine in cui provare le gambe di un movimento per il prezzo, come indici di {@code mon} (le gambe
+     * {@code null} sono escluse). Regola di {@link #DammiPrezzoInfoTransazione}: la gamba FIAT prima (fra due
+     * FIAT l'euro), poi quella in entrata, poi quella in uscita.
+     *
+     * <p>L'entrata si riconosce dal <b>segno</b> della quantità quando le due gambe hanno segni opposti,
+     * altrimenti dalla posizione (indice 1): non tutti i chiamanti passano le monete nello stesso ordine
+     * ({@code MovimentiCrypto.creaMovimento} riceve le gambe come capita e ne decide il verso proprio dal
+     * segno). Il segno si legge con {@code BigDecimal}, mai cercando un "-" nella stringa (bug M7).
+     */
+    static int[] OrdineGambe(Moneta[] mon) {
+        int entrata = 1;
+        int uscita = 0;
+        int s0 = SegnoQta(mon[0]);
+        int s1 = SegnoQta(mon[1]);
+        if (s0 > 0 && s1 < 0) {
+            entrata = 0;
+            uscita = 1;
+        }
+        java.util.List<Integer> ordine = new java.util.ArrayList<>();
+        //Prima le gambe FIAT, l'euro davanti alle altre valute
+        for (int k : new int[]{entrata, uscita}) {
+            if (isGambaFiat(mon[k]) && mon[k].Moneta.equalsIgnoreCase("EUR")) ordine.add(k);
+        }
+        for (int k : new int[]{entrata, uscita}) {
+            if (isGambaFiat(mon[k]) && !ordine.contains(k)) ordine.add(k);
+        }
+        for (int k : new int[]{entrata, uscita}) {
+            if (mon[k] != null && !ordine.contains(k)) ordine.add(k);
+        }
+        return ordine.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    /** Segno della quantità della moneta, 0 se assente o non numerica. */
+    private static int SegnoQta(Moneta m) {
+        if (m == null || m.Qta == null || !Funzioni.isNumeric(m.Qta, false)) return 0;
+        return new BigDecimal(m.Qta).signum();
+    }
+
+    /**
+     * Prezzo di una sola gamba, nel modo in cui il programma prezza una moneta: EUR FIAT esatto, EMT
+     * denominato in euro 1:1 (con il controllo antiscam su coingecko se ha address e rete), USD col cambio
+     * Banca d'Italia, altrimenti il prezzo personalizzato e poi la ricerca sulle fonti ({@link #CambioXXXEUR}).
+     * @return il prezzo trovato, oppure {@code null}
+     */
+    private static InfoPrezzo PrezzaGamba(Moneta m, String AddressPrimaDellAlias, long Data, String Rete, String fonte) {
+        if (m == null) return null;
+        InfoPrezzo IP;
+
+        //FIAT EURO: prezzo esatto, nessuna ricerca
+        if (m.Tipo.trim().equalsIgnoreCase("FIAT") && m.Moneta.equalsIgnoreCase("EUR")) {
+            if (m.Qta == null) return null;
+            BigDecimal PrezzoTransazione = new BigDecimal(m.Qta).abs().stripTrailingZeros();
+            IP = new InfoPrezzo();
+            IP.Moneta = m.Moneta;
+            IP.Qta = PrezzoTransazione;
+            IP.Fonte = "";
+            IP.prezzoUnitario = new BigDecimal("1");
+            IP.prezzoQta = PrezzoTransazione.abs();
+            IP.timestamp = Data;
+            return IP;
         }
 
-        //A bis - VERIFICO SE E' UN EMONEY TOKEN ANCORATO ALL'EURO (es. EURe)
+        //EMONEY TOKEN ANCORATO ALL'EURO (es. EURe)
         //Se il token è presente nell'elenco degli EMoney (tabella EMONEY del database personale),
         //la data del movimento è uguale o successiva alla data di decorrenza registrata per quel token
         //e il simbolo contiene "EUR", allora il token è moneta elettronica denominata in euro:
@@ -2350,114 +2461,56 @@ public class Prezzi {
         //Se il token ha sia address che rete, l'address deve essere riconosciuto anche da coingecko
         //(controllo antiscam: evita che un token omonimo non censito venga valorizzato 1:1).
         //NOTA: se il token ha l'address ma non la rete il controllo coingecko non è eseguibile e viene saltato.
-        for (int k = 0; k < 2; k++) {
-            if (mon[k] != null
-                    && mon[k].Qta != null
-                    && !mon[k].Qta.isBlank()
-                    && !mon[k].Tipo.trim().equalsIgnoreCase("NFT")
-                    && mon[k].Moneta.toUpperCase().contains("EUR")
-                    //stessa regola usata per la classificazione fiscale (Funzioni.RitornaTipoCrypto)
-                    && Funzioni.RitornaTipoCrypto(mon[k].Moneta, FunzioniDate.ConvertiDatadaLong(Data), "Crypto").equalsIgnoreCase("EMoney")) {
+        if (m.Qta != null
+                && !m.Qta.isBlank()
+                && !m.Tipo.trim().equalsIgnoreCase("NFT")
+                && m.Moneta.toUpperCase().contains("EUR")
+                //stessa regola usata per la classificazione fiscale (Funzioni.RitornaTipoCrypto)
+                && Funzioni.RitornaTipoCrypto(m.Moneta, FunzioniDate.ConvertiDatadaLong(Data), "Crypto").equalsIgnoreCase("EMoney")) {
 
-                //verifica coingecko solo se ho address e rete (query al database, quindi eseguita per ultima)
-                //la rete del token ha la precedenza su quella della transazione (l'address appartiene al token)
-                String ReteToken = (mon[k].Rete != null && !mon[k].Rete.isBlank()) ? mon[k].Rete : Rete;
-                boolean AddressValido = true;
-                if (mon[k].MonetaAddress != null && !mon[k].MonetaAddress.isBlank()
-                        && ReteToken != null && !ReteToken.isBlank()) {
-                    AddressValido = DatabaseH2.GestitiCoingecko_Leggi(mon[k].MonetaAddress + "_" + ReteToken) != null;
-                }
+            //verifica coingecko solo se ho address e rete (query al database, quindi eseguita per ultima)
+            //la rete del token ha la precedenza su quella della transazione (l'address appartiene al token)
+            String ReteToken = (m.Rete != null && !m.Rete.isBlank()) ? m.Rete : Rete;
+            boolean AddressValido = true;
+            if (m.MonetaAddress != null && !m.MonetaAddress.isBlank()
+                    && ReteToken != null && !ReteToken.isBlank()) {
+                AddressValido = DatabaseH2.GestitiCoingecko_Leggi(m.MonetaAddress + "_" + ReteToken) != null;
+            }
 
-                if (AddressValido) {
-                    BigDecimal Qta = new BigDecimal(mon[k].Qta);
-                    IP = new InfoPrezzo();
-                    IP.Moneta = mon[k].Moneta;
-                    IP.Qta = Qta;
-                    IP.Fonte = "EURO";
-                    IP.prezzoUnitario = BigDecimal.ONE;
-                    IP.prezzoQta = Qta.abs();
-                    IP.timestamp = Data;
-                    IP.OggettoMoneta = mon[k];
-                    return IP;
-                }
+            if (AddressValido) {
+                BigDecimal Qta = new BigDecimal(m.Qta);
+                IP = new InfoPrezzo();
+                IP.Moneta = m.Moneta;
+                IP.Qta = Qta;
+                IP.Fonte = "EURO";
+                IP.prezzoUnitario = BigDecimal.ONE;
+                IP.prezzoQta = Qta.abs();
+                IP.timestamp = Data;
+                return IP;
             }
         }
 
-        //B VERIFICO SE USD e prendo il prezzo da li
-            for (int k=0;k<2;k++){
-            if (mon[k] != null && mon[k].Moneta.equalsIgnoreCase("USD") && !mon[k].Tipo.trim().equalsIgnoreCase("NFT")&&mon[k].MonetaAddress == null) {
-                //a seconda se ho l'address o meno recupero il suo prezzo in maniera diversa
-                //anche perchè potrebbe essere che sia un token che si chiama usdt ma è scam
-                String DataDollaro=FunzioniDate.ConvertiDatadaLong(Data);
-                String PT = CambioUSDEUR("1", DataDollaro);                
-                if (PT != null) {
-                    BigDecimal PrezzoUnitario = new BigDecimal(PT).abs().stripTrailingZeros();
-                    IP=new InfoPrezzo();
-                    IP.Moneta=mon[k].Moneta;
-                    IP.Qta=new BigDecimal(mon[k].Qta);
-                    IP.Fonte="bancaditalia";
-                    IP.prezzoUnitario=PrezzoUnitario;
-                    IP.prezzoQta=PrezzoUnitario.multiply(new BigDecimal(mon[k].Qta).abs());
-                    IP.timestamp=Data;  
-                    IP.OggettoMoneta=mon[k];
-                /*    tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
-          System.out.println("Tempo B : "+tempoOperazione+"ms");*/
-                    return IP;
-                }
-            } 
-            }
-
-         //se non sono FIAT controllo se una delle coppie è USDT in quel caso prendo il prezzo di quello 
-        
-            //B e C - VERIFICO SE COPPIE PRIORITARIE
-            //ora scorro le coin principali per vedere se trovo corrispondenze e in quel caso ritorno il prezzo
-            //I simboli vengono interrogati per ordine di importanza ovvero nell'ordine in cui sono stati inseriti nella variabile
-        
-            for (String SimboloPrioritario : SimboliPrioritari) {
-                for (int k = 0; k < 2; k++) {
-                if (mon[k] != null && (mon[k].Moneta).toUpperCase().equals(SimboloPrioritario) && mon[k].Tipo.trim().equalsIgnoreCase("Crypto")) {
-                    //come prima cosa provo a vedere se ho un prezzo personalizzato e uso quello
-                            IP=PrezzoPersonalizzatoTokenConAlias(mon[k], AddressPrimaDellAlias[k], Rete, Data, fonte);
-                            if (IP==null) IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,fonte,true);
-                           /* tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
-          System.out.println("Tempo C : "+tempoOperazione+"ms");*/
-                            if (IP!=null)
-                            {
-                                IP.OggettoMoneta=mon[k];
-                                if(IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario).abs();
-                                
-                                return IP;
-                            }
-                    }
-                }
-            }
-        
-            //Se arrivo qua vuol dire che non ho trovato il prezzo tra le coppie prioritarie
-            //a questo punto controllo se ho l'address delle monetee controllo su coingecko.
-            //a questo punto la cerco tra tutte le coppie che binance riconosce
-
-            //PARTE 4 - Prendo il prezzo della prima moneta disponibile
-            for (int k = 0; k < 2; k++) {
-            if (mon[k] != null) {
-                //Se non ho l'address cerco su binance altrimenti cerco su coingecko
-
-                        IP=PrezzoPersonalizzatoTokenConAlias(mon[k], AddressPrimaDellAlias[k], Rete, Data, fonte);
-                        if (IP==null) IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,fonte,true);
-                     /*   tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
-          System.out.println("Tempo D : "+tempoOperazione+"ms");*/
-                        if (IP!=null)
-                        {
-                            IP.OggettoMoneta=mon[k];
-                            if(IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario).abs();
-                            
-                            return IP;
-                        }
+        //USD: cambio Banca d'Italia
+        if (m.Moneta.equalsIgnoreCase("USD") && !m.Tipo.trim().equalsIgnoreCase("NFT") && m.MonetaAddress == null) {
+            String DataDollaro = FunzioniDate.ConvertiDatadaLong(Data);
+            String PT = CambioUSDEUR("1", DataDollaro);
+            if (PT != null) {
+                BigDecimal PrezzoUnitario = new BigDecimal(PT).abs().stripTrailingZeros();
+                IP = new InfoPrezzo();
+                IP.Moneta = m.Moneta;
+                IP.Qta = new BigDecimal(m.Qta);
+                IP.Fonte = "bancaditalia";
+                IP.prezzoUnitario = PrezzoUnitario;
+                IP.prezzoQta = PrezzoUnitario.multiply(new BigDecimal(m.Qta).abs());
+                IP.timestamp = Data;
+                return IP;
             }
         }
 
-        //Se arrivo qua vuol dire che non ho trovato nessun prezzo quindi ritorno null
-        return null;
-
+        //Tutte le altre monete: prima il prezzo personalizzato, poi la ricerca sulle fonti
+        IP = PrezzoPersonalizzatoTokenConAlias(m, AddressPrimaDellAlias, Rete, Data, fonte);
+        if (IP == null) IP = CambioXXXEUR(m.Moneta, m.Qta, Data, m.MonetaAddress, Rete, fonte, true);
+        return IP;
     }
 
     

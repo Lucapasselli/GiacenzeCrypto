@@ -6,7 +6,9 @@
   "{annoPrec}": "anno d'imposta precedente",
   "{annoSucc}": "anno di presentazione della dichiarazione",
   "{righi}": "solo FIAT_LOOKUP_FALLITI : elenco dei righi non risolti",
-  "{totale}": "solo FIAT_CONTI_CORRENTI e FIAT_IVAFE_LIQUIDITA : totale IVAFE in euro"
+  "{totale}": "solo FIAT_CONTI_CORRENTI e FIAT_IVAFE_LIQUIDITA : totale IVAFE in euro",
+  "{numero}": "solo DERIVATI : numero dei movimenti su derivati nell'anno",
+  "{precedenti}": "solo DERIVATI : numero dei movimenti su derivati negli anni precedenti"
  },
  "avvertenza": "Gli anni scritti come cifre sono riferimenti a una regola (entrata in vigore del regime, anni delle minusvalenze riportabili) e NON vanno trasformati in segnaposto: non seguono l'anno della dichiarazione. Attenzione ai caratteri: il PDF usa i font base-14 di OpenPDF, che non disegnano le frecce. Le frecce gia' presenti nel testo (ereditate dalle note originali) non compaiono nella stampa: sostituirle con un trattino se si vuole vederle.",
  "centralizzato": true,
@@ -321,6 +323,28 @@
    "                RW6.<br>",
    "                <b>Totale IVAFE della parte FIAT</b> (conti correnti + liquidita') = <b>{totale}",
    "                euro</b>.<br>",
+   "                </font></html>"
+  ],
+  "DERIVATI": [
+   "",
+   "                <html><font size=\"2\" face=\"Courier New,Courier, mono\" >",
+   "                <br><b>ATTENZIONE : MOVIMENTI SU STRUMENTI DERIVATI</b><br>",
+   "                Nell'archivio ci sono movimenti che riguardano strumenti derivati (contratti perpetui,",
+   "                futures, Dual Investment e simili), riconosciuti al momento dell'importazione :",
+   "                <b>{numero}</b> nell'anno {anno} e <b>{precedenti}</b> negli anni precedenti.<br>",
+   "                Il programma <b>non gestisce ancora i derivati</b> : questi movimenti sono trattati come",
+   "                normali movimenti di cripto-attivita' e concorrono alle plusvalenze e alle giacenze",
+   "                cripto riportate in questo report, <b>anche quando sono di anni precedenti</b> (le",
+   "                cripto ricevute o pagate con i derivati restano nel calcolo del costo LIFO e nelle",
+   "                giacenze). <u>Non e' corretto</u>.<br>",
+   "                I redditi da contratti derivati, anche quando il sottostante e' una cripto-attivita',",
+   "                sono redditi diversi di natura finanziaria (art. 67, comma 1, lettera c-quater, del TUIR,",
+   "                circolare 30/E del 27/10/2023) : si determinano sommando differenziali, proventi e oneri",
+   "                (commissioni comprese), si dichiarano in una sezione diversa del quadro RT o T, non si",
+   "                compensano con le plusvalenze da cripto-attivita' e i contratti detenuti presso un",
+   "                intermediario estero vanno indicati nel quadro RW con un codice proprio.<br>",
+   "                I valori di questo report vanno quindi <b>verificati con un professionista</b> prima",
+   "                di riportarli in dichiarazione.<br>",
    "                </font></html>"
   ],
   "T": [

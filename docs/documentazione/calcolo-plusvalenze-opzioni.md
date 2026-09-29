@@ -8,6 +8,7 @@ title: Calcolo delle plusvalenze e opzioni
 - [Introduzione e normativa di riferimento](#introduzione-e-normativa-di-riferimento)
 - [Definizione di plusvalenza](#definizione-di-plusvalenza)
 - [Casi fiscalmente rilevanti](#casi-fiscalmente-rilevanti)
+- [Valore degli scambi](#valore-degli-scambi)
 - [Metodo di valutazione: LIFO](#metodo-di-valutazione-lifo)
 - [Esempi di calcolo con metodo LIFO](#esempi-di-calcolo-con-metodo-lifo)
 - [Plusvalenze globali o per gruppo wallet](#plusvalenze-globali-o-per-gruppo-wallet)
@@ -177,6 +178,36 @@ da detenzione e verranno quindi caricati a costo di carico zero.
 
 > **NB** — per il cashback non è attualmente prevista l'opzione di caricarlo a prezzo di mercato senza
 > che questo produca plusvalenza.
+
+## Valore degli scambi {#valore-degli-scambi}
+
+Ogni scambio ha un valore in euro, che diventa il corrispettivo della cripto-attività ceduta e il costo
+di carico di quella ricevuta. Quando lo scambio muove due monete, il programma deve scegliere quale delle
+due ne determina il valore.
+
+**Con una valuta legale da una parte** (acquisto o vendita) il valore è l'importo in valuta: l'importo
+in euro così com'è, quello in dollari convertito al cambio della Banca d'Italia.
+
+**Fra due cripto-attività** si usa il valore della cripto-attività **ricevuta**, rilevato al momento in
+cui lo scambio si conclude. È l'indicazione della circolare 30/E dell'Agenzia delle Entrate: «si assume
+come valore normale della cripto-attività ricevuta quella rilevabile sul sito attraverso il quale è
+avvenuto lo scambio alla data in cui lo stesso è concluso». Negli scambi differiti (la moneta esce oggi
+e quella acquistata arriva giorni o mesi dopo) è quindi il valore della moneta ricevuta alla data in cui
+arriva.
+
+Due eccezioni:
+
+- se la cripto-attività ricevuta non ha un prezzo, si usa quella ceduta.
+- se il prezzo della cripto-attività ricevuta non è **preciso**, cioè non è rilevato entro 5 minuti dal
+  momento dello scambio, mentre quello della cripto-attività ceduta lo è, si usa quella ceduta. Capita
+  soprattutto in DeFi, dove un token poco scambiato ha spesso solo un prezzo per ora: usarlo darebbe
+  molti valori sbagliati. Un prezzo inserito a mano, o riportato dal file dell'exchange, conta sempre
+  come preciso.
+
+> **NB** — la regola vale per i movimenti importati o riprezzati dalla versione 1.0.65 in avanti. I
+> movimenti già presenti mantengono il valore calcolato in precedenza, che sceglieva la moneta con il
+> prezzo ritenuto più affidabile (valuta, stablecoin, cripto-attività ad alta capitalizzazione). Chi vuole
+> applicare la regola anche a quelli può rigenerarne i prezzi.
 
 ## Metodo di valutazione: LIFO {#metodo-di-valutazione-lifo}
 

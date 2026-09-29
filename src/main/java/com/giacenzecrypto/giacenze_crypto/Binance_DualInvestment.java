@@ -216,6 +216,8 @@ public class Binance_DualInvestment {
             MTPurchase[23] = MovPurchase[23];
             MTPurchase[29] = MovPurchase[29];
         }
+        //Tipo di derivato (campo 44): le gambe generate appartengono alla stessa operazione Dual
+        Derivati.Marca(MTPurchase, Derivati.Tipo(MovPurchase));
         MappaCryptoWallet.put(IDMirrorPurchase, MTPurchase);
 
         MovPurchase[5] = "TRASFERIMENTO A DUAL INVESTMENT";
@@ -265,6 +267,7 @@ public class Binance_DualInvestment {
             MTSettlement[23] = MovSettlement[23];
             MTSettlement[29] = MovSettlement[29];
         }
+        Derivati.Marca(MTSettlement, Derivati.Tipo(MovSettlement));
         MappaCryptoWallet.put(IDMirrorSettlement, MTSettlement);
 
         String IDReward = "";
@@ -302,6 +305,7 @@ public class Binance_DualInvestment {
             if (MovSettlement.length > 29) {
                 MTReward[29] = MovSettlement[29];
             }
+            Derivati.Marca(MTReward, Derivati.Tipo(MovSettlement));
             MappaCryptoWallet.put(IDReward, MTReward);
         } else if (Reward.compareTo(BigDecimal.ZERO) < 0) {
             LoggerGC.ScriviErrore("Dual Investment: liquidato (" + QtaLiquidata + ") meno del sottoscritto ("

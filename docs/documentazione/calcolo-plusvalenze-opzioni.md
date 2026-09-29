@@ -202,7 +202,12 @@ Due eccezioni:
   momento dello scambio, mentre quello della cripto-attività ceduta lo è, si usa quella ceduta. Capita
   soprattutto in DeFi, dove un token poco scambiato ha spesso solo un prezzo per ora: usarlo darebbe
   molti valori sbagliati. Un prezzo inserito a mano, o riportato dal file dell'exchange, conta sempre
-  come preciso.
+  come preciso. Prima di considerare impreciso un prezzo, il programma cerca comunque se esiste un prezzo
+  al minuto per quella moneta.
+- se il prezzo scelto viene da **CoinMarketCap** e il valore che ne risulta si discosta di oltre il 10% da
+  quello dell'altra moneta dello scambio, si usa l'altra moneta (il confronto si fa solo se il prezzo
+  dell'altra moneta non viene anch'esso da CoinMarketCap). CoinMarketCap cerca le monete
+  per simbolo e a volte restituisce il prezzo di un token diverso con lo stesso nome.
 
 > **NB** — la regola vale per i movimenti importati o riprezzati dalla versione 1.0.65 in avanti. I
 > movimenti già presenti mantengono il valore calcolato in precedenza, che sceglieva la moneta con il

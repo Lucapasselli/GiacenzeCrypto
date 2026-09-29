@@ -322,6 +322,21 @@ public class TransazioneDefi {
      * proporzionale al proprio prezzo rispetto al totale (i token senza prezzo si dividono equamente il peso
      * residuo); altrimenti il peso viene distribuito equamente tra tutti i token dello stesso lato (entrata/uscita).
      */
+    /**
+     * Base su cui calcolare i pesi dei token di un lato: il valore della transazione, ma mai meno della somma
+     * dei valori già noti su quel lato. Senza questo limite un valore della transazione sottostimato (un
+     * prezzo sbagliato sull'altro lato, per esempio un omonimo di CoinMarketCap che vale quasi zero) dava a
+     * un token prezzato un peso maggiore di 1, tagliato a 1, e agli altri token peso zero: in una
+     * conversione di piccoli saldi tutta la moneta ricevuta finiva su una sola moneta ceduta.
+     */
+    private static BigDecimal BaseLato(Map<String, ValoriToken> Lato, BigDecimal ValoreTransazione) {
+        BigDecimal somma = BigDecimal.ZERO;
+        for (ValoriToken a : Lato.values()) {
+            if (a.Prezzo != null && Funzioni.isNumeric(a.Prezzo, false)) somma = somma.add(new BigDecimal(a.Prezzo).abs());
+        }
+        return somma.max(ValoreTransazione);
+    }
+
     public void AssegnaPesiaPartiTransazione() {
 
         //Prima di tutto scorro le 2 mappe e controllo se ce n'è almeno una di cui riesco a trovare il prezzo completo della transazione
@@ -419,7 +434,7 @@ public class TransazioneDefi {
 
                     }else   
                     {                 
-                        a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 20, RoundingMode.HALF_UP).toPlainString();
+                        a.Peso = new BigDecimal(a.Prezzo).divide(BaseLato(MappaTokenEntrata, ValoreTransazione), 20, RoundingMode.HALF_UP).toPlainString();
 
                         //Se a.peso è maggiore di pesoRimanente allora a.Peso=Pesorimanente
                         if (new BigDecimal(a.Peso).compareTo(PesoRimanente)==1){
@@ -455,7 +470,7 @@ public class TransazioneDefi {
                     }
                     else   
                     {                 
-                        a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 20, RoundingMode.HALF_UP).toPlainString();
+                        a.Peso = new BigDecimal(a.Prezzo).divide(BaseLato(MappaTokenUscita, ValoreTransazione), 20, RoundingMode.HALF_UP).toPlainString();
                         if (new BigDecimal(a.Peso).compareTo(PesoRimanente)==1){
                             a.Peso=PesoRimanente.toPlainString();
                         }

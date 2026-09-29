@@ -45,10 +45,16 @@ class ImportazioneGenericaBybitTest {
         VarStatiche.setWorkingDirectory(tempDir.toString() + "/");
         assertTrue(DatabaseH2.CreaoCollegaDatabase(),
                 "Impossibile creare il database H2 temporaneo per i test");
+        //Niente rete: una ricerca prezzi online scaricava Node dentro la cartella temporanea mentre JUnit la
+        //cancellava (errore di pulizia a fine test). Le righe sintetiche hanno gia' il loro controvalore.
+        Funzioni.ReteDisabilitataPerTest = true;
+        System.setProperty("prezzi.servizio.abilitato", "false");
     }
 
     @AfterAll
     static void chiudeDatabase() throws Exception {
+        Funzioni.ReteDisabilitataPerTest = false;
+        System.clearProperty("prezzi.servizio.abilitato");
         DatabaseH2.connection.close();
         DatabaseH2.connectionPersonale.close();
         DatabaseH2.connectionPrezzi.close();

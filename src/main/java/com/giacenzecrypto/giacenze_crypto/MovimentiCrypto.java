@@ -450,6 +450,10 @@ static boolean PrezzoPrezzato(String Prezzo) {
      *       esplicito, come il controvalore del CSV)</li>
      *   <li>la gamba in uscita, alle stesse condizioni</li>
      *   <li>poi, senza guardare la precisione, l'entrata e l'uscita con un prezzo diverso da zero</li>
+     *   <li>una gamba con un prezzo impreciso cerca prima il prezzo al minuto
+     *       ({@link Prezzi#CercaPrezzoPreciso}), che il vecchio archivio orario avrebbe nascosto</li>
+     *   <li>se la gamba scelta ha un prezzo di CoinMarketCap che si discosta di oltre il 10% dall'altra
+     *       gamba, prezzata da una fonte diversa, vince l'altra: quasi sicuramente è un omonimo</li>
      *   <li>altrimenti la prima, nello stesso ordine, che porta un prezzo esplicito a zero</li>
      * </ol>
      * Restituisce {@code null} se nessuna gamba ha un prezzo: lo calcola allora
@@ -463,12 +467,43 @@ static boolean PrezzoPrezzato(String Prezzo) {
     static Moneta DammiMonetaPrioritaria(Moneta Moneta1a, Moneta Moneta2a, long Timestamp) {
         Moneta mon[] = new Moneta[]{Moneta1a, Moneta2a};
         int ordine[] = Prezzi.OrdineGambe(mon);
+        Moneta Scelta = null;
         for (int k : ordine) {
             if (Prezzi.isGambaFiat(mon[k])) return mon[k];
-            if (PrezzoNonZero(mon[k]) && PrezzoPreciso(mon[k], Timestamp)) return mon[k];
+            if (!PrezzoNonZero(mon[k])) continue;
+            if (!PrezzoPreciso(mon[k], Timestamp) && ordine.length == 2) {
+                //Il prezzo arrivato con la moneta e' impreciso (tipicamente il vecchio archivio orario, letto
+                //prima della cache al minuto): prima di scartarlo cerco il prezzo al minuto
+                Prezzi.InfoPrezzo Preciso = Prezzi.CercaPrezzoPreciso(mon[k], Timestamp, mon[k].Rete, "");
+                if (Preciso != null) {
+                    mon[k].InfoPrezzo = Preciso;
+                    mon[k].Prezzo = Preciso.prezzoQta.toPlainString();
+                }
+            }
+            if (PrezzoPreciso(mon[k], Timestamp)) {
+                Scelta = mon[k];
+                break;
+            }
         }
-        for (int k : ordine) {
-            if (PrezzoNonZero(mon[k])) return mon[k];
+        if (Scelta == null) {
+            for (int k : ordine) {
+                if (PrezzoNonZero(mon[k])) {
+                    Scelta = mon[k];
+                    break;
+                }
+            }
+        }
+        if (Scelta != null) {
+            //Omonimi di CoinMarketCap (vedi Prezzi.ValoriTroppoDiversi): se il valore scelto viene da li' ed e'
+            //troppo lontano da quello dell'altra gamba, prendo l'altra
+            if (ordine.length == 2 && Prezzi.isFonteCoinMarketCap(Scelta.InfoPrezzo)) {
+                Moneta Altra = mon[ordine[0]] == Scelta ? mon[ordine[1]] : mon[ordine[0]];
+                if (PrezzoNonZero(Altra) && !Prezzi.isFonteCoinMarketCap(Altra.InfoPrezzo)
+                        && Prezzi.ValoriTroppoDiversi(ValoreMoneta(Scelta), ValoreMoneta(Altra))) {
+                    return Altra;
+                }
+            }
+            return Scelta;
         }
         for (int k : ordine) {
             if (mon[k].Prezzo != null && Funzioni.isNumeric(mon[k].Prezzo, false)) return mon[k];
@@ -483,6 +518,18 @@ static boolean PrezzoPrezzato(String Prezzo) {
      */
     private static boolean PrezzoPreciso(Moneta m, long Timestamp) {
         return m.InfoPrezzo == null || Prezzi.isPrezzoPreciso(m.InfoPrezzo, Timestamp);
+    }
+
+    /**
+     * Valore della moneta come lo calcola {@code creaMovimento}: quantità per prezzo unitario se c'è un
+     * InfoPrezzo completo, altrimenti il campo Prezzo.
+     */
+    private static BigDecimal ValoreMoneta(Moneta m) {
+        if (m.InfoPrezzo != null && m.InfoPrezzo.prezzoUnitario != null && m.Qta != null && Funzioni.isNumeric(m.Qta, false)) {
+            return new BigDecimal(m.Qta).multiply(m.InfoPrezzo.prezzoUnitario).abs();
+        }
+        if (m.Prezzo != null && Funzioni.isNumeric(m.Prezzo, false)) return new BigDecimal(m.Prezzo).abs();
+        return null;
     }
 
     /** La moneta porta un prezzo diverso da zero, nell'InfoPrezzo o nel campo Prezzo. */

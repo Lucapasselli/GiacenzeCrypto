@@ -281,4 +281,111 @@ class PrezziGambaEntrataTest {
             ps.executeUpdate();
         }
     }
+
+    // ---------------------------------------------------------------- gambe a zero, prezzo al minuto, omonimi CMC
+
+    @Test
+    void ordine_gambaAQuantitaZeroEsclusa() {
+        //Scambio a piu' monete: la moneta con peso zero riceve quantita' zero ma porta ancora l'InfoPrezzo
+        //dell'altra parte (un prelievo di SON finiva con la fonte di BIT)
+        assertArrayEquals(new int[]{0}, Prezzi.OrdineGambe(new Moneta[]{
+            moneta("SON", "-143.1", "Crypto"), moneta("BIT", "0", "Crypto")}));
+    }
+
+    @Test
+    void prezzate_gambaAQuantitaZeroConPrezzoNonConta() {
+        Moneta son = moneta("SON", "-143.1", "Crypto");
+        Moneta bit = prezzata("BIT", "0", "0.00");
+        bit.InfoPrezzo = quotazione(DATA, "CoinMarketCap");
+        assertNull(MovimentiCrypto.DammiMonetaPrioritaria(son, bit, DATA));
+    }
+
+    @Test
+    void prezzate_coinMarketCapTroppoDiversoDallAltraGamba_vinceLAltra() {
+        Moneta usdt = quotata("USDT", "-58.98", "52.06", DATA, "binance");
+        Moneta bit = quotata("BIT", "29.88", "0.00", DATA, "CoinMarketCap");
+        bit.InfoPrezzo.prezzoUnitario = new BigDecimal("0.0000281");
+        bit.Prezzo = "0.00084";
+        assertSame(usdt, MovimentiCrypto.DammiMonetaPrioritaria(usdt, bit, DATA),
+                "BIT da CoinMarketCap vale 0,00084 contro 52,06 dell'USDT: e' un omonimo");
+    }
+
+    @Test
+    void prezzate_coinMarketCapVicinoAllAltraGamba_resta() {
+        Moneta usdt = quotata("USDT", "-100", "92.00", DATA, "binance");
+        usdt.InfoPrezzo.prezzoUnitario = new BigDecimal("0.92");
+        Moneta tok = quotata("TOKEN", "10", "85.00", DATA, "CoinMarketCap");
+        tok.InfoPrezzo.prezzoUnitario = new BigDecimal("8.5");
+        assertSame(tok, MovimentiCrypto.DammiMonetaPrioritaria(usdt, tok, DATA), "85 contro 92: entro il 10%");
+    }
+
+    @Test
+    void prezzate_coinMarketCapSuEntrambeLeGambe_nessunConfronto() {
+        //Due prezzi della stessa fonte inaffidabile: non si sa quale sia sbagliato, resta l'entrata
+        Moneta ply = quotata("PLY", "-120.9", "0.15", DATA, "CoinMarketCap");
+        ply.InfoPrezzo.prezzoUnitario = new BigDecimal("0.00127");
+        Moneta bit = quotata("BIT", "0.4157", "0.00", DATA, "CoinMarketCap");
+        bit.InfoPrezzo.prezzoUnitario = new BigDecimal("0.0000037675");
+        assertSame(bit, MovimentiCrypto.DammiMonetaPrioritaria(ply, bit, DATA));
+    }
+
+    @Test
+    void valoriTroppoDiversi_sogliaDelDieciPerCento() {
+        assertFalse(Prezzi.ValoriTroppoDiversi(new BigDecimal("110"), new BigDecimal("100")));
+        assertFalse(Prezzi.ValoriTroppoDiversi(new BigDecimal("90"), new BigDecimal("100")));
+        assertTrue(Prezzi.ValoriTroppoDiversi(new BigDecimal("110.01"), new BigDecimal("100")));
+        assertTrue(Prezzi.ValoriTroppoDiversi(new BigDecimal("89.99"), new BigDecimal("100")));
+        assertTrue(Prezzi.ValoriTroppoDiversi(new BigDecimal("0.001"), new BigDecimal("52")));
+        assertFalse(Prezzi.ValoriTroppoDiversi(BigDecimal.ZERO, new BigDecimal("52")), "senza valore non si confronta");
+    }
+
+    @Test
+    void daCercare_coinMarketCapOmonimo_vinceLAltraGamba() throws Exception {
+        long istante = DATA_ORA + 20 * 60_000L;
+        scriviCacheFonte("TSTBIT", istante, "0.0000281", "CoinMarketCap");
+        scriviCache("TSTUSD", istante, "0.88");
+        Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(
+                moneta("TSTUSD", "-59", "Crypto"), moneta("TSTBIT", "29.88", "Crypto"), istante, null, "");
+        assertNotNull(IP);
+        assertEquals("TSTUSD", IP.Moneta);
+    }
+
+    @Test
+    void daCercare_uscitaConVecchioArchivioOrarioMaMinutoInCache_usaIlMinuto() throws Exception {
+        //Il caso USDT -> BIT del 19/01/2022 alle 18:27: USDT ha il vecchio archivio orario (18:00), letto per
+        //primo, ma in cache c'e' il prezzo al minuto; BIT ha solo una quotazione oraria
+        long istante = FunzioniDate.ConvertiDatainLongMinuto(FunzioniDate.ConvertiDatadaLongallOra(DATA_ORA) + ":27");
+        DatabaseH2.OLD_XXXEUR_Scrivi(FunzioniDate.ConvertiDatadaLongallOra(istante) + " TSTUSDT", "0.90", false);
+        scriviCache("TSTUSDT", istante, "0.88");
+        DatabaseH2.OLD_XXXEUR_Scrivi(FunzioniDate.ConvertiDatadaLongallOra(istante) + " TSTBIT2", "1.5", false);
+
+        Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(
+                moneta("TSTUSDT", "-100", "Crypto"), moneta("TSTBIT2", "58", "Crypto"), istante, null, "");
+        assertNotNull(IP);
+        assertEquals("TSTUSDT", IP.Moneta);
+        assertEquals(0, new BigDecimal("88").compareTo(IP.prezzoQta), "prezzo al minuto, non quello orario (90)");
+    }
+
+    @Test
+    void prezzate_uscitaConPrezzoOrarioMaMinutoInCache_usaIlMinuto() throws Exception {
+        long istante = FunzioniDate.ConvertiDatainLongMinuto(FunzioniDate.ConvertiDatadaLongallOra(DATA_ORA) + ":33");
+        scriviCache("TSTUSDT3", istante, "0.87");
+        Moneta usdt = quotata("TSTUSDT3", "-100", "90.00", istante - 33 * 60_000L, "DB Interno (Old)");
+        Moneta tok = quotata("TSTTOK3", "58", "88.00", istante - 33 * 60_000L, "DB Interno (Old)");
+        Moneta scelta = MovimentiCrypto.DammiMonetaPrioritaria(usdt, tok, istante);
+        assertSame(usdt, scelta, "l'entrata non ha un prezzo al minuto, l'uscita si'");
+        assertEquals(0, new BigDecimal("0.87").compareTo(scelta.InfoPrezzo.prezzoUnitario));
+    }
+
+    private static void scriviCacheFonte(String simbolo, long ts, String prezzo, String exchange) throws Exception {
+        String sql = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo, rete, address) "
+                + "KEY (timestamp, exchange, symbol, rete, address) VALUES (?, ?, ?, ?, '', '')";
+        try (java.sql.PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(sql)) {
+            ps.setLong(1, ts);
+            ps.setString(2, exchange);
+            ps.setString(3, simbolo);
+            ps.setBigDecimal(4, new BigDecimal(prezzo));
+            ps.executeUpdate();
+        }
+    }
 }

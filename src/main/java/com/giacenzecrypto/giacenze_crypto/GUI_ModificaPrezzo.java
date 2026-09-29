@@ -605,7 +605,8 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
                 //Riempio la tabella con i prezzi
                 for (Prezzi.InfoPrezzo IPl : ListaIP) {
                     String rigo[] = new String[9];
-                    rigo[0] = M.Moneta;
+                    //Con il nome, se la fonte lo conosce (omonimi CoinMarketCap): e' la moneta che finisce nel campo 40
+                    rigo[0] = Prezzi.InfoPrezzo.ConNome(M.Moneta, IPl.NomeMoneta);
                     rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
                     rigo[2] = M.Qta;
                     rigo[3] = IPl.Fonte;
@@ -786,7 +787,8 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
                 Prezzi.RecuperaTassidiCambiodaAddress_DefiLlama(FunzioniDate.ConvertiDatadaLong(data), address, rete, moneta);
             }
             ServizioPrezziClient.tentaRecupero(moneta, data);
-            Prezzi.RecuperaPrezziDaCoinMarketCap(moneta, data);
+            //Da "tutte le fonti" si scaricano anche gli omonimi di CoinMarketCap: l'utente sceglie quello giusto
+            Prezzi.RecuperaPrezziDaCoinMarketCap(moneta, data, true);
         }
     }
 
@@ -817,7 +819,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
                 Prezzi.RecuperaTassidiCambiodaAddress_DefiLlama(FunzioniDate.ConvertiDatadaLong(data), address, rete, nomeMoneta);
             }
             ServizioPrezziClient.tentaRecupero(nomeMoneta, data);
-            Prezzi.RecuperaPrezziDaCoinMarketCap(nomeMoneta, data);
+            Prezzi.RecuperaPrezziDaCoinMarketCap(nomeMoneta, data, true);
         }
     }
 

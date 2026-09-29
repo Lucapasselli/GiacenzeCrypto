@@ -17828,7 +17828,8 @@ try {
             BigDecimal PrzTotaleNonArrotondato = null;
             if (!Transazione[40].isBlank()) {
                 String VSplit[] = Transazione[40].split("\\|");
-                String MonRif = VSplit[0];
+                //Il simbolo nudo: nel campo 40 puo' essere seguito dal nome, "BIT (BitDAO)"
+                String MonRif = Prezzi.InfoPrezzo.SeparaNome(VSplit[0])[0];
                 String PrzUnitarioMonRif = VSplit[2];
 
                 if (!Transazione[8].isBlank() && Transazione[8].equalsIgnoreCase(MonRif)) {

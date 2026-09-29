@@ -144,6 +144,24 @@ public class Prezzi {
      * @return il prezzo calcolato, oppure {@code null} se non è stato possibile recuperarlo
      */
     public static String DammiPrezzoDaTransazione(String[] v,int decimali){
+        InfoPrezzo IP = DammiInfoPrezzoDaTransazione(v);
+        if (IP == null) return null;
+        return PrezzoQtaArrotondato(IP, decimali);
+    }
+
+    /**
+     * Come {@link #DammiPrezzoDaTransazione} ma restituisce tutto l'{@link InfoPrezzo}, da cui si scrive il
+     * campo 40 insieme al prezzo: chi riprezza un movimento deve aggiornare anche la fonte, altrimenti il
+     * dettaglio continua a mostrare quella del prezzo di prima.
+     * @return il prezzo, oppure {@code null} se non c'e'
+     */
+    /** Il prezzo complessivo di un {@link InfoPrezzo} arrotondato, come lo restituisce {@link #DammiPrezzoDaTransazione}. */
+    public static String PrezzoQtaArrotondato(InfoPrezzo IP, int decimali) {
+        if (IP.prezzoQta == null) IP.prezzoQta = IP.Qta.multiply(IP.prezzoUnitario).abs();
+        return IP.prezzoQta.setScale(decimali, RoundingMode.HALF_UP).abs().toPlainString();
+    }
+
+    public static InfoPrezzo DammiInfoPrezzoDaTransazione(String[] v){
         //Questa funzione ritorna null in caso di mancanza di prezzo
         //Da sistemare recuperando la fonte corretta per i prezzi
 
@@ -175,9 +193,7 @@ public class Prezzi {
             Monete[1].Tipo = v[12];
             Monete[1].Qta = v[13];
             Monete[1].Rete = Rete;
-            String Prezzo=DammiPrezzoTransazione(Monete[0],Monete[1],data,null, false, decimali, Rete,"");
-            //System.out.println(Prezzo);
-            return Prezzo;
+            return DammiPrezzoInfoTransazione(Monete[0],Monete[1],data, Rete,"");
             
     }
     
@@ -1573,7 +1589,9 @@ public class Prezzi {
     }     
           
     /**
-     * Scarica e memorizza la mappa symbol→id di CoinMarketCap nel database (cache 24h).
+     * Scarica e memorizza la mappa symbol→id di CoinMarketCap nel database (cache 24h), con tutte le monete di
+     * un simbolo (gli omonimi). Alla prima mappa scaricata in questo formato cancella dalla cache prezzi le
+     * righe CoinMarketCap dei simboli con omonimi, scaricate fino ad allora per la moneta col rank di oggi.
      */
     public static void RecuperaCoinsCoinMarketCap() {
         long adesso = System.currentTimeMillis();
@@ -1582,58 +1600,114 @@ public class Prezzi {
         if (dataUltimoScaricoString != null) {
             try { dataUltimoScarico = Long.parseLong(dataUltimoScaricoString); } catch (NumberFormatException ignored) {}
         }
-        if (adesso <= dataUltimoScarico + 86400000) return; // cache valida per 24h
+        //Una mappa scaricata con un formato precedente non vale, anche se ha meno di 24 ore (la prima versione
+        //degli omonimi si fermava alle prime 5.000 monete e lasciava fuori BitDAO)
+        boolean versioneAttuale = VERSIONE_MAPPA_CMC.equals(DatabaseH2.Opzioni_Leggi(OPZIONE_VERSIONE_MAPPA_CMC));
+        if (!versioneAttuale || adesso > dataUltimoScarico + 86400000) { // cache valida per 24h
+            if (!ScaricaMappaCoinMarketCap(adesso)) return;
+        }
+        //Fuori dallo scaricamento della mappa: la pulizia deve partire anche con una mappa ancora valida
+        //(fino al 2026-09-30 stava dentro, e con la mappa di meno di 24 ore non veniva mai raggiunta)
+        PuliziaOmonimiCoinMarketCapSeServe(adesso);
+    }
 
-        String apiUrl = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/map?listing_status=active&sort=cmc_rank&limit=5000";
-        OkHttpClient client = HTTP_CLIENT;
-        Request.Builder requestBuilder = new Request.Builder()
-                .url(apiUrl)
-                .header("Accept", "application/json");
+    /** Scarica la mappa CoinMarketCap e la salva; {@code false} se lo scaricamento non e' riuscito. */
+    private static boolean ScaricaMappaCoinMarketCap(long adesso) {
+
         String apiKey = Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_CoinMarketCap"));
-        if (!apiKey.isBlank()) requestBuilder.header("X-CMC_PRO_API_KEY", apiKey);
-        Request request = requestBuilder.build();
-
         System.out.println("RecuperaCoinsCoinMarketCap: scarico mappa token da CoinMarketCap");
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                System.out.println("RecuperaCoinsCoinMarketCap: risposta API non valida, codice " + response.code());
-                return;
+        try {
+            //L'API restituisce al massimo 5.000 monete per richiesta, ordinate per rank: le monete attive sono
+            //piu' di 8.000, e quelle oltre la 5.000a (BitDAO e' la 5.046a) restavano fuori. Si pagina.
+            JsonArray tutte = new JsonArray();
+            for (int start = 1; start < 100000; start += PAGINA_MAPPA_CMC) {
+                String apiUrl = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/map?listing_status=active&sort=cmc_rank"
+                        + "&start=" + start + "&limit=" + PAGINA_MAPPA_CMC;
+                Request.Builder requestBuilder = new Request.Builder().url(apiUrl).header("Accept", "application/json");
+                if (!apiKey.isBlank()) requestBuilder.header("X-CMC_PRO_API_KEY", apiKey);
+                JsonArray data;
+                try (Response response = HTTP_CLIENT.newCall(requestBuilder.build()).execute()) {
+                    if (!response.isSuccessful()) {
+                        System.out.println("RecuperaCoinsCoinMarketCap: risposta API non valida, codice " + response.code());
+                        return false;
+                    }
+                    String responseBody = response.body().string();
+                    if (VarCondivise.LogJsonPrezzi) {
+                        System.out.println(responseBody);
+                    }
+                    data = JsonParser.parseString(responseBody).getAsJsonObject().getAsJsonArray("data");
+                }
+                if (data == null) return false;
+                tutte.addAll(data);
+                if (data.size() < PAGINA_MAPPA_CMC) break;
             }
-            String responseBody = response.body().string();
-            if (VarCondivise.LogJsonPrezzi) {
-                System.out.println(responseBody);
-            }
-            JsonObject root = JsonParser.parseString(responseBody).getAsJsonObject();
-            JsonArray data = root.getAsJsonArray("data");
-            if (data == null) return;
 
-            List<String[]> gestiti = DeduplicaMappaCoinMarketCap(data);
+            List<String[]> gestiti = ElencoMappaCoinMarketCap(tutte);
             DatabaseH2.GestitiCoinMarketCap_ScriviNuovaTabella(gestiti);
             DatabaseH2.Opzioni_Scrivi("Data_Lista_CoinMarketCap", String.valueOf(adesso));
+            DatabaseH2.Opzioni_Scrivi(OPZIONE_VERSIONE_MAPPA_CMC, VERSIONE_MAPPA_CMC);
             System.out.println("RecuperaCoinsCoinMarketCap: salvati " + gestiti.size() + " token");
+            return true;
         } catch (Exception e) {
             System.out.println("RecuperaCoinsCoinMarketCap: errore - " + e.getMessage());
             LoggerGC.ScriviErrore(e);
+            return false;
         }
     }
 
+    private static final Object LOCK_PULIZIA_OMONIMI_CMC = new Object();
+
     /**
-     * Riduce la lista scaricata da CoinMarketCap a una riga per simbolo, pronta per
-     * {@code GESTITICOINMARKETCAP} dove {@code Symbol} è chiave primaria.
-     * <p>
-     * CoinMarketCap elenca token diversi con lo stesso simbolo (es. due USDF): i doppioni vanno
-     * scartati qui e non lasciati fallire in fase di scrittura. Si tiene quello con il rank
-     * migliore (numero più basso); i token senza rank perdono contro qualunque token classificato
-     * e a parità vince il primo, cioè l'ordine restituito dall'API (`sort=cmc_rank`).
+     * Una volta sola, con una mappa nel formato attuale: cancella dalla cache tutti i prezzi CoinMarketCap dei
+     * simboli con omonimi, scritti quando si prendeva sempre la moneta col rank migliore di oggi o si sceglieva
+     * per volume. Verranno riscaricati con la scelta giusta. Segnata come fatta solo se la cancellazione
+     * riesce: interrotta (es. chiusura del programma) si ripete alla prossima occasione.
+     */
+    static void PuliziaOmonimiCoinMarketCapSeServe(long adesso) {
+        synchronized (LOCK_PULIZIA_OMONIMI_CMC) {
+            if (DatabaseH2.Opzioni_Leggi(OPZIONE_OMONIMI_CMC_PULITI) != null) return;
+            if (!VERSIONE_MAPPA_CMC.equals(DatabaseH2.Opzioni_Leggi(OPZIONE_VERSIONE_MAPPA_CMC))) return;
+            List<String> ambigui = DatabaseH2.GestitiCoinMarketCap_SimboliAmbigui();
+            if (ambigui.isEmpty()) return; //mappa non ancora scaricata: niente da sapere su chi e' ambiguo
+            System.out.println("RecuperaCoinsCoinMarketCap: " + ambigui.size() + " simboli con omonimi, cancello i loro"
+                    + " prezzi CoinMarketCap gia' in cache (una volta sola, puo' richiedere un minuto)...");
+            int cancellate = DatabaseH2.PrezziCoinMarketCap_CancellaSimboli(ambigui);
+            if (cancellate >= 0) {
+                DatabaseH2.Opzioni_Scrivi(OPZIONE_OMONIMI_CMC_PULITI, String.valueOf(adesso));
+                System.out.println("RecuperaCoinsCoinMarketCap: cancellate " + cancellate + " righe, verranno riscaricate");
+            } else {
+                System.out.println("RecuperaCoinsCoinMarketCap: pulizia non riuscita, verra' ripetuta");
+            }
+        }
+    }
+
+    /** Monete per pagina della mappa CoinMarketCap: il massimo che l'API accetta. */
+    static final int PAGINA_MAPPA_CMC = 5000;
+
+    /** Opzione (database principale) con la versione del formato della mappa CoinMarketCap scaricata. */
+    static final String OPZIONE_VERSIONE_MAPPA_CMC = "CoinMarketCap_VersioneMappa";
+
+    /** Versione attuale del formato: 2 = tutti gli omonimi, tutte le pagine (2026-09-30). */
+    static final String VERSIONE_MAPPA_CMC = "2";
+
+    /** Opzione (database principale) che segna la pulizia una tantum dei prezzi CoinMarketCap degli omonimi. */
+    //"_2" dal 2026-09-30: la prima pulizia poteva essere segnata come fatta anche se interrotta, e la scelta per
+    //volume aveva salvato come buoni prezzi dell'omonimo sbagliato. Si ripete una volta, su tutte le fonti CMC.
+    static final String OPZIONE_OMONIMI_CMC_PULITI = "CoinMarketCap_OmonimiPuliti_2";
+
+    /**
+     * La lista scaricata da CoinMarketCap in righe per {@code GESTITICOINMARKETCAP}: <b>tutte</b> le monete
+     * attive, anche quelle con lo stesso simbolo (gli omonimi). Fino al 2026-09-29 se ne teneva una per
+     * simbolo, quella col rank migliore di oggi, e per i prezzi storici era il criterio sbagliato: BIT
+     * puntava a Biconomy Exchange Token (rank 4.096) invece che a BitDAO (rank 5.046, scivolato dopo la
+     * migrazione in MNT del 2023, ma nel 2022 una delle monete maggiori). La scelta fra omonimi si fa ora
+     * alla data, per volume ({@link #RecuperaPrezziDaCoinMarketCap}).
      *
      * @param data array {@code data} della risposta di {@code /v1/cryptocurrency/map}
-     * @return righe {@code [Symbol, Id]} senza simboli ripetuti, nell'ordine di prima comparsa
+     * @return righe {@code [Symbol, Id, Nome, Rango]}, una per moneta, senza ripetere la stessa moneta
      */
-    static List<String[]> DeduplicaMappaCoinMarketCap(JsonArray data) {
-        Map<String, String[]> perSimbolo = new LinkedHashMap<>();
-        Map<String, Integer> rankPerSimbolo = new HashMap<>();
-        int scartati = 0;
-        boolean rankTrovato = false;
+    static List<String[]> ElencoMappaCoinMarketCap(JsonArray data) {
+        Map<String, String[]> perMoneta = new LinkedHashMap<>();
         for (JsonElement el : data) {
             JsonObject coin = el.getAsJsonObject();
             JsonElement attivo = coin.get("is_active");
@@ -1641,22 +1715,11 @@ public class Prezzi {
             if (attivo != null && !attivo.isJsonNull() && attivo.getAsInt() != 1) continue;
             String symbol = coin.get("symbol").getAsString().toUpperCase().trim();
             String id = String.valueOf(coin.get("id").getAsInt());
-            int rank = RankCoinMarketCap(coin);
-            if (rank != Integer.MAX_VALUE) rankTrovato = true;
-            Integer rankPrecedente = rankPerSimbolo.get(symbol);
-            if (rankPrecedente != null) {
-                scartati++;
-                if (rank >= rankPrecedente) continue;
-            }
-            perSimbolo.put(symbol, new String[]{symbol, id});
-            rankPerSimbolo.put(symbol, rank);
+            JsonElement nome = coin.get("name");
+            String Nome = nome == null || nome.isJsonNull() ? "" : nome.getAsString().trim();
+            perMoneta.putIfAbsent(symbol + "|" + id, new String[]{symbol, id, Nome, String.valueOf(RankCoinMarketCap(coin))});
         }
-        if (scartati > 0) {
-            //se il rank non c'è la scelta degrada a "vince il primo": va detto, non subito in silenzio
-            System.out.println("RecuperaCoinsCoinMarketCap: " + scartati + " doppioni di simbolo scartati"
-                    + (rankTrovato ? "" : " (nessun rank nella risposta: tenuto il primo di ogni simbolo)"));
-        }
-        return new ArrayList<>(perSimbolo.values());
+        return new ArrayList<>(perMoneta.values());
     }
 
     /**
@@ -1679,12 +1742,53 @@ public class Prezzi {
         return Integer.MAX_VALUE;
     }
 
+    /** Fonte (colonna exchange della cache) dei prezzi CoinMarketCap: seguita dal nome della moneta fra parentesi. */
+    public static final String ETICHETTA_CMC = "CoinMarketCap";
+
+    /** Fonte dei prezzi di un omonimo scartato, salvati solo su richiesta: seguita dal nome fra parentesi. */
+    public static final String ETICHETTA_OMONIMO_CMC = "CoinMarketCap omonimo";
+
+    /** Una candela oraria dello storico di CoinMarketCap: apertura in USD, volume e capitalizzazione. */
+    static final class CandelaCmc {
+        final long ms;
+        final double openUsd;
+        final double volume;
+        final double marketCap;
+
+        CandelaCmc(long ms, double openUsd, double volume) {
+            this(ms, openUsd, volume, 0);
+        }
+
+        CandelaCmc(long ms, double openUsd, double volume, double marketCap) {
+            this.ms = ms;
+            this.openUsd = openUsd;
+            this.volume = volume;
+            this.marketCap = marketCap;
+        }
+    }
+
     /**
      * Scarica i prezzi storici da CoinMarketCap per il simbolo richiesto, li converte in EUR
-     * e li salva nel database prezzi (precisione oraria, finestra di ±15 giorni).
-     * Usato come fallback quando CCXT non trova il prezzo.
+     * e li salva nel database prezzi (precisione oraria, finestra di 30 giorni intorno alla data).
+     * Usato come fallback quando CCXT non trova il prezzo. Fra omonimi sceglie per volume, vedi
+     * {@link #RecuperaPrezziDaCoinMarketCap(String, long, boolean)}.
      */
     public static void RecuperaPrezziDaCoinMarketCap(String Crypto, long timestamp) {
+        RecuperaPrezziDaCoinMarketCap(Crypto, timestamp, false);
+    }
+
+    /**
+     * Come {@link #RecuperaPrezziDaCoinMarketCap(String, long)}. Se il simbolo ha più monete su CoinMarketCap
+     * (omonimi) scarica lo storico di tutte e tiene quella con il <b>volume</b> più alto nel periodo,
+     * salvata come {@code "CoinMarketCap (<nome>)"}, es. {@code "CoinMarketCap (BitDAO)"}: è quella che il resto
+     * del programma legge, e il nome dice all'utente quale moneta è stata usata. Il rank di oggi non dice
+     * niente sui prezzi del passato (BIT: BitDAO contro Biconomy).
+     *
+     * @param TuttiGliOmonimi {@code true} dalla sezione prezzi ("scarica da tutte le fonti"): salva anche gli
+     *        omonimi scartati, con l'etichetta {@link #ETICHETTA_OMONIMO_CMC} + nome, così l'utente li
+     *        vede fra le fonti e può scegliere. La ricerca automatica li ignora.
+     */
+    public static void RecuperaPrezziDaCoinMarketCap(String Crypto, long timestamp, boolean TuttiGliOmonimi) {
         try {
             Crypto = Crypto.toUpperCase().replaceAll("\\*", "").trim();
 
@@ -1698,93 +1802,217 @@ public class Prezzi {
             if (UntilVerifica > adesso) UntilVerifica = adesso;
             if (SinceVerifica > adesso) SinceVerifica = adesso - 3600000L;
 
-            if (managerRichieste.isAlreadyRequested("CoinMarketCap_" + Crypto, SinceVerifica, UntilVerifica)) return;
+            String chiaveRichiesta = (TuttiGliOmonimi ? "CoinMarketCapOmonimi_" : "CoinMarketCap_") + Crypto;
+            if (managerRichieste.isAlreadyRequested(chiaveRichiesta, SinceVerifica, UntilVerifica)) return;
 
             RecuperaCoinsCoinMarketCap();
-            Integer cmcId = DatabaseH2.GestitiCoinMarketCap_Leggi(Crypto);
+            List<DatabaseH2.MonetaCoinMarketCap> candidati = new ArrayList<>(DatabaseH2.GestitiCoinMarketCap_LeggiTutti(Crypto));
             //Riserva per le due stablecoin usate dalla conversione EUR del pre-scarico
             //(ConvertiStablecoinInEuro): i loro id CMC sono noti e stabili da anni, e senza
             //questa riserva la conversione smetterebbe di funzionare per chiunque non abbia
             //configurato una API key CoinMarketCap (la mappa dinamica si popola solo con quella).
-            if (cmcId == null) cmcId = ID_CMC_STABLECOIN.get(Crypto);
-            if (cmcId == null) {
+            if (candidati.isEmpty() && ID_CMC_STABLECOIN.get(Crypto) != null) {
+                candidati.add(new DatabaseH2.MonetaCoinMarketCap(ID_CMC_STABLECOIN.get(Crypto), Crypto, 0));
+            }
+            if (candidati.isEmpty()) {
                 System.out.println("RecuperaPrezziDaCoinMarketCap: " + Crypto + " non trovato nella mappa CMC");
                 return;
             }
 
-            managerRichieste.addRange("CoinMarketCap_" + Crypto, Since, Until);
-            TimeUnit.SECONDS.sleep(1);
+            managerRichieste.addRange(chiaveRichiesta, Since, Until);
 
-            long timeStart = Since / 1000;
-            long timeEnd = Until / 1000;
-            String apiUrl = "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical"
-                    + "?id=" + cmcId
-                    + "&timeStart=" + timeStart
-                    + "&timeEnd=" + timeEnd
-                    + "&interval=1h";
+            Map<Integer, List<CandelaCmc>> storici = new LinkedHashMap<>();
+            for (DatabaseH2.MonetaCoinMarketCap c : candidati) {
+                TimeUnit.SECONDS.sleep(1);
+                System.out.println("RecuperaPrezziDaCoinMarketCap: scarico prezzi " + Crypto + " (id=" + c.Id
+                        + (candidati.size() > 1 ? ", " + c.Nome : "") + ") per " + FunzioniDate.ConvertiDatadaLong(timestamp));
+                List<CandelaCmc> candele = ScaricaStoricoCoinMarketCap(c.Id, Since, Until);
+                if (candele != null && !candele.isEmpty()) storici.put(c.Id, candele);
+            }
+            if (storici.isEmpty()) return;
 
-            System.out.println("RecuperaPrezziDaCoinMarketCap: scarico prezzi " + Crypto + " (id=" + cmcId + ") per " + FunzioniDate.ConvertiDatadaLong(timestamp));
-
-            OkHttpClient client = HTTP_CLIENT;
-            Request request = new Request.Builder().url(apiUrl).header("Accept", "application/json").build();
-
-            try (Response response = client.newCall(request).execute()) {
-                if (!response.isSuccessful()) {
-                    System.out.println("RecuperaPrezziDaCoinMarketCap: risposta non valida codice " + response.code());
-                    return;
-                }
-                String responseBody = response.body().string();
-                if (VarCondivise.LogJsonPrezzi) {
-                    System.out.println(responseBody);
-                }
-                JsonObject root = JsonParser.parseString(responseBody).getAsJsonObject();
-                JsonObject dataObj = root.getAsJsonObject("data");
-                if (dataObj == null) return;
-                JsonArray quotes = dataObj.getAsJsonArray("quotes");
-                if (quotes == null || quotes.size() == 0) return;
-
-                String mergeSql = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo, rete, address) "
-                        + "KEY (timestamp, exchange, symbol, rete, address) VALUES (?, ?, ?, ?, ?, ?)";
-
-                try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(mergeSql)) {
-                    for (JsonElement el : quotes) {
-                        JsonObject candle = el.getAsJsonObject();
-                        String timeOpen = candle.get("timeOpen").getAsString();
-                        JsonObject quote = candle.getAsJsonObject("quote");
-                        if (quote == null) continue;
-
-                        double openUsd;
-                        try {
-                            openUsd = quote.get("open").getAsDouble();
-                            if (openUsd == 0) continue;
-                        } catch (Exception ex) {
-                            continue;
-                        }
-
-                        // timeOpen formato: "2026-06-15T20:00:00.000Z"
-                        long unixMs = Instant.parse(timeOpen).toEpochMilli();
-                        String datePart = timeOpen.substring(0, 10); // "yyyy-MM-dd"
-
-                        String prezzoEurStr = CambioUSDEUR(String.valueOf(openUsd), datePart);
-                        if (prezzoEurStr == null) continue;
-                        double prezzoEur = Double.parseDouble(prezzoEurStr);
-                        if (prezzoEur == 0) continue;
-
-                        ps.setLong(1, unixMs);
-                        ps.setString(2, "CoinMarketCap");
-                        ps.setString(3, Crypto);
-                        ps.setDouble(4, prezzoEur);
-                        ps.setString(5, "");
-                        ps.setString(6, "");
-                        ps.addBatch();
-                    }
-                    ps.executeBatch();
-                } catch (SQLException ex) {
-                    LoggerGC.ScriviErrore(ex);
+            int vincitore = ScegliOmonimo(storici);
+            if (candidati.size() > 1) {
+                String nomeScelto = candidati.stream().filter(c -> c.Id == vincitore).map(c -> c.Nome).findFirst().orElse("");
+                System.out.println("RecuperaPrezziDaCoinMarketCap: " + Crypto + " ha " + candidati.size()
+                        + " omonimi, scelto id=" + vincitore + " (" + nomeScelto + ")");
+            }
+            String nomeVincitore = candidati.stream().filter(c -> c.Id == vincitore).map(c -> c.Nome).findFirst().orElse("");
+            String fonteVincitore = EtichettaCmc(nomeVincitore);
+            //Nella finestra non devono restare prezzi "CoinMarketCap" di un'altra moneta: quelli senza nome
+            //(scritti prima del 2026-09-30, forse dell'omonimo sbagliato) o di un omonimo che su una finestra
+            //sovrapposta aveva vinto. Letti in ordine di fonte, verrebbero scelti prima di questi.
+            CancellaAltriPrezziCoinMarketCap(Crypto, storici.get(vincitore), fonteVincitore);
+            SalvaCandeleCoinMarketCap(storici.get(vincitore), Crypto, fonteVincitore);
+            if (TuttiGliOmonimi) {
+                for (DatabaseH2.MonetaCoinMarketCap c : candidati) {
+                    if (c.Id == vincitore || storici.get(c.Id) == null) continue;
+                    SalvaCandeleCoinMarketCap(storici.get(c.Id), Crypto, EtichettaOmonimoCmc(c.Nome));
                 }
             }
-        } catch (InterruptedException | IOException e) {
+        } catch (InterruptedException e) {
             LoggerGC.ScriviErrore(e);
+        }
+    }
+
+    /** Fonte della moneta scelta, es. {@code "CoinMarketCap (BitDAO)"}; senza nome resta {@code "CoinMarketCap"}. */
+    static String EtichettaCmc(String Nome) {
+        return ConNomeCmc(ETICHETTA_CMC, Nome);
+    }
+
+    /** Fonte di un omonimo scartato, es. {@code "CoinMarketCap omonimo (Biconomy Exchange Token)"}. */
+    static String EtichettaOmonimoCmc(String Nome) {
+        return ConNomeCmc(ETICHETTA_OMONIMO_CMC, Nome);
+    }
+
+    /** Prefisso + nome fra parentesi, al massimo 100 caratteri (la colonna exchange della cache). */
+    private static String ConNomeCmc(String Prefisso, String Nome) {
+        String nome = Nome == null ? "" : Nome.replace(";", "").replace("|", "").trim();
+        if (nome.isEmpty()) return Prefisso;
+        int spazio = 100 - Prefisso.length() - 3;
+        if (nome.length() > spazio) nome = nome.substring(0, spazio).trim();
+        return Prefisso + " (" + nome + ")";
+    }
+
+    /**
+     * Cancella, fra il primo e l'ultimo istante delle candele, i prezzi CoinMarketCap del simbolo che non
+     * sono della moneta scelta: quelli senza nome e quelli di un altro omonimo scelto in precedenza. Gli
+     * omonimi scartati restano. La chiave della cache comincia col timestamp, quindi la finestra usa l'indice.
+     */
+    static void CancellaAltriPrezziCoinMarketCap(String Crypto, List<CandelaCmc> Candele, String FonteScelta) {
+        if (Candele == null || Candele.isEmpty()) return;
+        long da = Long.MAX_VALUE, a = Long.MIN_VALUE;
+        for (CandelaCmc c : Candele) { da = Math.min(da, c.ms); a = Math.max(a, c.ms); }
+        String sql = "DELETE FROM PrezziNew WHERE timestamp BETWEEN ? AND ? AND symbol = ? AND rete = '' AND address = ''"
+                + " AND (exchange = ? OR exchange LIKE ?) AND exchange <> ?";
+        try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(sql)) {
+            ps.setLong(1, da);
+            ps.setLong(2, a);
+            ps.setString(3, Crypto);
+            ps.setString(4, ETICHETTA_CMC);
+            ps.setString(5, ETICHETTA_CMC + " (%");
+            ps.setString(6, FonteScelta);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+    /**
+     * Fra gli storici di più omonimi, quello della moneta che nel periodo contava davvero: la
+     * <b>capitalizzazione media</b> più alta; solo se nessuno ne ha una, il volume totale più alto. A parità
+     * vince il primo (l'ordine è quello del rank di oggi).
+     *
+     * <p>Il volume da solo non basta (verificato il 2026-09-30): ad aprile-maggio 2022 CoinMarketCap dava al
+     * token di Biconomy, che vale 0,00001 $, un volume superiore a BitDAO (39,5 contro 23,2 miliardi in un
+     * mese), gonfiato dall'exchange stesso, e la scelta cadeva sulla moneta sbagliata. La capitalizzazione di
+     * Biconomy e' invece 0 (offerta non verificata), quella di BitDAO circa 690 milioni.</p>
+     */
+    static int ScegliOmonimo(Map<Integer, List<CandelaCmc>> Storici) {
+        int migliore = -1;
+        double capMigliore = 0;
+        for (Map.Entry<Integer, List<CandelaCmc>> e : Storici.entrySet()) {
+            double somma = 0;
+            for (CandelaCmc c : e.getValue()) somma += c.marketCap;
+            double media = e.getValue().isEmpty() ? 0 : somma / e.getValue().size();
+            if (media > capMigliore) {
+                capMigliore = media;
+                migliore = e.getKey();
+            }
+        }
+        if (migliore != -1) return migliore;
+
+        double volumeMigliore = -1;
+        for (Map.Entry<Integer, List<CandelaCmc>> e : Storici.entrySet()) {
+            double volume = 0;
+            for (CandelaCmc c : e.getValue()) volume += c.volume;
+            if (volume > volumeMigliore) {
+                volumeMigliore = volume;
+                migliore = e.getKey();
+            }
+        }
+        return migliore;
+    }
+
+    /** Lo storico orario di una moneta CoinMarketCap fra le due date, oppure {@code null} se la richiesta fallisce. */
+    static List<CandelaCmc> ScaricaStoricoCoinMarketCap(int cmcId, long Since, long Until) {
+        String apiUrl = "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical"
+                + "?id=" + cmcId
+                + "&timeStart=" + (Since / 1000)
+                + "&timeEnd=" + (Until / 1000)
+                + "&interval=1h";
+        Request request = new Request.Builder().url(apiUrl).header("Accept", "application/json").build();
+        try (Response response = HTTP_CLIENT.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                System.out.println("RecuperaPrezziDaCoinMarketCap: risposta non valida codice " + response.code());
+                return null;
+            }
+            String responseBody = response.body().string();
+            if (VarCondivise.LogJsonPrezzi) {
+                System.out.println(responseBody);
+            }
+            return CandeleDaRispostaCoinMarketCap(responseBody);
+        } catch (Exception e) {
+            LoggerGC.ScriviErrore(e);
+            return null;
+        }
+    }
+
+    /** Le candele della risposta di {@code /data-api/v3/cryptocurrency/historical}; le candele a prezzo zero sono scartate. */
+    static List<CandelaCmc> CandeleDaRispostaCoinMarketCap(String responseBody) {
+        List<CandelaCmc> candele = new ArrayList<>();
+        JsonObject root = JsonParser.parseString(responseBody).getAsJsonObject();
+        JsonObject dataObj = root.getAsJsonObject("data");
+        if (dataObj == null) return candele;
+        JsonArray quotes = dataObj.getAsJsonArray("quotes");
+        if (quotes == null) return candele;
+        for (JsonElement el : quotes) {
+            JsonObject candle = el.getAsJsonObject();
+            JsonObject quote = candle.getAsJsonObject("quote");
+            if (quote == null) continue;
+            double openUsd;
+            try {
+                openUsd = quote.get("open").getAsDouble();
+            } catch (Exception ex) {
+                continue;
+            }
+            if (openUsd == 0) continue;
+            double volume = NumeroOZero(quote.get("volume"));
+            double marketCap = NumeroOZero(quote.get("marketCap"));
+            // timeOpen formato: "2026-06-15T20:00:00.000Z"
+            candele.add(new CandelaCmc(Instant.parse(candle.get("timeOpen").getAsString()).toEpochMilli(), openUsd, volume, marketCap));
+        }
+        return candele;
+    }
+
+    /** Il valore numerico di un campo JSON, 0 se assente, nullo o non numerico. */
+    private static double NumeroOZero(JsonElement e) {
+        if (e == null || e.isJsonNull()) return 0;
+        try { return e.getAsDouble(); } catch (Exception ignored) { return 0; }
+    }
+
+    /** Converte in EUR e salva le candele nella cache prezzi sotto l'etichetta indicata. */
+    private static void SalvaCandeleCoinMarketCap(List<CandelaCmc> Candele, String Crypto, String Etichetta) {
+        String mergeSql = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo, rete, address) "
+                + "KEY (timestamp, exchange, symbol, rete, address) VALUES (?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(mergeSql)) {
+            for (CandelaCmc c : Candele) {
+                String datePart = Instant.ofEpochMilli(c.ms).toString().substring(0, 10); // "yyyy-MM-dd"
+                String prezzoEurStr = CambioUSDEUR(String.valueOf(c.openUsd), datePart);
+                if (prezzoEurStr == null) continue;
+                double prezzoEur = Double.parseDouble(prezzoEurStr);
+                if (prezzoEur == 0) continue;
+                ps.setLong(1, c.ms);
+                ps.setString(2, Etichetta);
+                ps.setString(3, Crypto);
+                ps.setDouble(4, prezzoEur);
+                ps.setString(5, "");
+                ps.setString(6, "");
+                ps.addBatch();
+            }
+            ps.executeBatch();
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
         }
     }
 
@@ -2324,18 +2552,104 @@ public class Prezzi {
         int ordine[] = OrdineGambe(mon);
         InfoPrezzo Trovato[] = new InfoPrezzo[2];
         boolean Cercato[] = new boolean[2];
+        boolean dueGambe = ordine.length == 2;
+        InfoPrezzo Scelto = null;
+        int kScelto = -1;
         for (int k : ordine) {
             InfoPrezzo IP = PrezzoGambaUnaVolta(k, mon, AddressPrimaDellAlias, Data, Rete, fonte, Trovato, Cercato);
-            if (IP != null && IP.prezzoQta.signum() != 0 && (isGambaFiat(mon[k]) || isPrezzoPreciso(IP, Data))) return IP;
+            if (IP != null && IP.prezzoQta.signum() != 0 && !isGambaFiat(mon[k]) && !isPrezzoPreciso(IP, Data) && dueGambe) {
+                //Solo per la scelta fra due gambe: il vecchio archivio orario viene letto prima della cache al
+                //minuto (ordine voluto, fissato da PrezziOrdinePrioritaTest), quindi una moneta con il prezzo al
+                //minuto in cache risulterebbe imprecisa. Prima di dichiararla tale cerco il prezzo al minuto.
+                InfoPrezzo Preciso = CercaPrezzoPreciso(mon[k], Data, Rete, fonte);
+                if (Preciso != null) {
+                    IP = Preciso;
+                    Trovato[k] = Preciso;
+                }
+            }
+            if (IP != null && IP.prezzoQta.signum() != 0 && (isGambaFiat(mon[k]) || isPrezzoPreciso(IP, Data))) {
+                Scelto = IP;
+                kScelto = k;
+                break;
+            }
         }
-        for (int k : ordine) {
-            InfoPrezzo IP = PrezzoGambaUnaVolta(k, mon, AddressPrimaDellAlias, Data, Rete, fonte, Trovato, Cercato);
-            if (IP != null && IP.prezzoQta.signum() != 0) return IP;
+        if (Scelto == null) {
+            for (int k : ordine) {
+                InfoPrezzo IP = PrezzoGambaUnaVolta(k, mon, AddressPrimaDellAlias, Data, Rete, fonte, Trovato, Cercato);
+                if (IP != null && IP.prezzoQta.signum() != 0) {
+                    Scelto = IP;
+                    kScelto = k;
+                    break;
+                }
+            }
         }
-        for (int k : ordine) {
-            if (Trovato[k] != null) return Trovato[k];
+        if (Scelto == null) {
+            for (int k : ordine) {
+                if (Trovato[k] != null) return Trovato[k];
+            }
+            return null;
         }
-        return null;
+        //Omonimi di CoinMarketCap: se il prezzo scelto viene da li' e si discosta troppo da quello dell'altra
+        //gamba, e' quasi sicuramente il prezzo di un altro token con lo stesso simbolo. Il confronto ha senso
+        //solo se l'altra gamba NON viene anch'essa da CoinMarketCap.
+        if (dueGambe && isFonteCoinMarketCap(Scelto)) {
+            int altra = ordine[0] == kScelto ? ordine[1] : ordine[0];
+            InfoPrezzo Altro = PrezzoGambaUnaVolta(altra, mon, AddressPrimaDellAlias, Data, Rete, fonte, Trovato, Cercato);
+            if (Altro != null && !isFonteCoinMarketCap(Altro) && ValoriTroppoDiversi(Scelto.prezzoQta, Altro.prezzoQta)) {
+                return Altro;
+            }
+        }
+        return Scelto;
+    }
+
+    /**
+     * Scostamento oltre il quale il valore di una gamba prezzata da CoinMarketCap è considerato quello di un
+     * omonimo: più del 10% rispetto al valore dell'altra gamba dello stesso scambio (decisione dell'utente).
+     */
+    public static final BigDecimal SCOSTAMENTO_MAX_COINMARKETCAP = new BigDecimal("0.10");
+
+    /** Il prezzo viene da CoinMarketCap, che cerca per simbolo e confonde i token omonimi. */
+    public static boolean isFonteCoinMarketCap(InfoPrezzo IP) {
+        return IP != null && IP.Fonte != null && IP.Fonte.toLowerCase().contains("coinmarketcap");
+    }
+
+    /**
+     * Il valore {@code Sospetto} (quello da CoinMarketCap) si discosta dal valore {@code Riferimento}
+     * (l'altra gamba, da un'altra fonte) di più di {@link #SCOSTAMENTO_MAX_COINMARKETCAP}, in proporzione al
+     * riferimento. Un valore nullo o zero non permette il confronto.
+     */
+    public static boolean ValoriTroppoDiversi(BigDecimal Sospetto, BigDecimal Riferimento) {
+        if (Sospetto == null || Riferimento == null || Sospetto.signum() == 0 || Riferimento.signum() == 0) return false;
+        BigDecimal rif = Riferimento.abs();
+        return Sospetto.abs().subtract(rif).abs().compareTo(rif.multiply(SCOSTAMENTO_MAX_COINMARKETCAP)) > 0;
+    }
+
+    /**
+     * Un prezzo al minuto per una gamba che ha trovato solo una quotazione imprecisa: la ricerca normale
+     * ({@link #CambioXXXEUR} con {@code includiVecchi=true}) legge il vecchio archivio orario prima della
+     * cache al minuto. Qui si salta quell'archivio. Serve solo alla scelta della gamba di uno scambio: le
+     * valutazioni di una moneta sola (fine anno del quadro RW) restano sull'ordine di sempre.
+     * @return il prezzo, se preciso e diverso da zero, altrimenti {@code null}
+     */
+    static InfoPrezzo CercaPrezzoPreciso(Moneta m, long Data, String Rete, String fonte) {
+        if (m == null || isGambaFiat(m) || m.Moneta == null || m.Qta == null || DatabaseH2.connectionPrezzi == null) return null;
+        try {
+            Moneta c = m.ClonaMoneta();
+            String alias = AliasPrezziToken.Alias(c.MonetaAddress, Rete, Data);
+            if (alias != null) {
+                c.Moneta = alias;
+                c.MonetaAddress = null;
+            }
+            InfoPrezzo IP = CambioXXXEUR(c.Moneta, c.Qta, Data, c.MonetaAddress, Rete == null ? "" : Rete, fonte, false);
+            if (IP == null) return null;
+            if (IP.prezzoQta == null) IP.prezzoQta = IP.Qta.multiply(IP.prezzoUnitario).abs();
+            if (IP.prezzoQta.signum() == 0 || !isPrezzoPreciso(IP, Data)) return null;
+            IP.OggettoMoneta = m;
+            return IP;
+        } catch (Exception ex) {
+            LoggerGC.ScriviErrore(ex);
+            return null;
+        }
     }
 
     /** Prezzo della gamba {@code k}, cercato al primo uso e poi ricordato in {@code Trovato}. */
@@ -2409,6 +2723,12 @@ public class Prezzi {
             entrata = 0;
             uscita = 1;
         }
+        //Una gamba a quantita' zero (o senza quantita') non fa parte del movimento: capita negli scambi a piu'
+        //monete, dove una moneta con peso zero riceve quantita' zero ma porta ancora l'InfoPrezzo dell'altra
+        //parte. Se partecipasse alla scelta, un prelievo di SON finirebbe con la fonte di BIT.
+        Moneta usabili[] = new Moneta[2];
+        for (int k = 0; k < 2; k++) usabili[k] = SegnoQta(mon[k]) != 0 ? mon[k] : null;
+        mon = usabili;
         java.util.List<Integer> ordine = new java.util.ArrayList<>();
         //Prima le gambe FIAT, l'euro davanti alle altre valute
         for (int k : new int[]{entrata, uscita}) {
@@ -2824,6 +3144,7 @@ symbol=symbol.toUpperCase();
           AND (rete = ? OR ? = '')
           AND (address = ? OR ? = '')
           AND (exchange ILIKE ? OR ? = '')
+          AND exchange NOT LIKE 'CoinMarketCap%omonimo%'
         ORDER BY ABS(timestamp - ?) ASC, exchange ASC
         LIMIT 1
     """;
@@ -2868,6 +3189,7 @@ symbol=symbol.toUpperCase();
           AND (rete = ? OR ? = '')
           AND (address = ? OR ? = '')
           AND (exchange ILIKE ? OR ? = '')
+          AND exchange NOT LIKE 'CoinMarketCap%omonimo%'
         ORDER BY ABS(timestamp - ?) ASC, exchange ASC
         LIMIT 1
     """;
@@ -2880,7 +3202,10 @@ symbol=symbol.toUpperCase();
             ps.setString(6, rete == null ? "" : rete);
             ps.setString(7, address == null ? "" : address);
             ps.setString(8, address == null ? "" : address);
-            ps.setString(9, exchangePreferito);
+            //"CoinMarketCap" chiesto come fonte (es. dal [40] di un movimento prezzato prima del 2026-09-30)
+            //trova anche "CoinMarketCap (<nome>)": dal 2026-09-30 la fonte porta il nome della moneta
+            ps.setString(9, ETICHETTA_CMC.equalsIgnoreCase(exchangePreferito == null ? "" : exchangePreferito.trim())
+                    ? ETICHETTA_CMC + "%" : exchangePreferito);
             ps.setString(10, exchangePreferito);
             ps.setLong(11, timestampRiferimento);
 
@@ -2903,6 +3228,8 @@ symbol=symbol.toUpperCase();
     
 
     // Se non trovato o exchange non specificato → cerca in tutti gli exchange
+    //Gli omonimi di CoinMarketCap scartati (ETICHETTA_OMONIMO_CMC) sono in cache solo perche' l'utente possa
+    //sceglierli a mano dalla sezione prezzi: la ricerca automatica non li legge mai.
     String queryAll = """
         SELECT prezzo, exchange, timestamp
         FROM PrezziNew
@@ -2910,6 +3237,7 @@ symbol=symbol.toUpperCase();
           AND timestamp BETWEEN ? AND ?
           AND (rete = ? OR ? = '')
           AND (address = ? OR ? = '')
+          AND exchange NOT LIKE 'CoinMarketCap%omonimo%'
         ORDER BY ABS(timestamp - ?) ASC, exchange ASC
         LIMIT 1
     """;
@@ -4953,6 +5281,13 @@ public static class InfoPrezzo {
     public long timestamp;
     public BigDecimal Qta;
     public String Moneta;
+    /**
+     * Nome completo della moneta a cui il prezzo si riferisce, quando la fonte lo conosce: oggi solo
+     * CoinMarketCap, dove lo stesso simbolo puo' essere di piu' monete (BIT: BitDAO o Biconomy). Nel campo 40
+     * sta accanto al simbolo, {@code "BIT (BitDAO)"}, cosi' il dettaglio del movimento lo mostra come
+     * "moneta di riferimento" mentre {@link #Moneta} resta il simbolo nudo per i confronti con le gambe.
+     */
+    public String NomeMoneta;
     public Moneta OggettoMoneta;//Usato solo per salvasi i dati  dei valori delle monete di fine e inizio anno in RW (per la modifica prezzi)
 
 
@@ -4984,7 +5319,9 @@ public static class InfoPrezzo {
                 this.Fonte = iPr[3];
                 if (Principale.Funzioni_isNumeric(iPr[1], false))
                     this.timestamp = Long.parseLong(iPr[1]);
-                this.Moneta = iPr[0];
+                String[] SimboloENome = SeparaNome(iPr[0]);
+                this.Moneta = SimboloENome[0];
+                this.NomeMoneta = SimboloENome[1];
             }
         }
         
@@ -5014,10 +5351,47 @@ public static class InfoPrezzo {
         // costruttore è l'unico punto in cui l'exchange salvato diventa la Fonte mostrata
         // all'utente, quindi è anche l'unico punto in cui va tradotto per esteso.
         this.Fonte = ServizioPrezziClient.CODICE_FONTE.equals(exchange) ? ServizioPrezziClient.NOME_FONTE : exchange;
+        //Nella cache i prezzi CoinMarketCap portano il nome della moneta nella colonna exchange
+        //("CoinMarketCap (BitDAO)", "CoinMarketCap omonimo (Biconomy Exchange Token)"): e' li' che si distinguono
+        //gli omonimi. All'utente la fonte si mostra nuda e il nome va accanto alla moneta.
+        String NomeCmc = NomeDaFonteCoinMarketCap(exchange);
+        if (NomeCmc != null) {
+            this.Fonte = ETICHETTA_CMC;
+            this.NomeMoneta = NomeCmc;
+        }
         this.timestamp = timestamp;
         this.prezzoQta = prezzoQta;
         this.Qta = Qta;
         this.Moneta = Moneta;
+    }
+
+    /** Il simbolo seguito dal nome fra parentesi, se il nome e' noto: {@code "BIT (BitDAO)"}. */
+    public static String ConNome(String Simbolo, String Nome) {
+        if (Simbolo == null || Nome == null || Nome.isBlank()) return Simbolo;
+        return Simbolo + " (" + Nome.trim() + ")";
+    }
+
+    /** {@link #Moneta} con {@link #NomeMoneta} fra parentesi, come va scritta nel campo 40. */
+    public String MonetaConNome() {
+        return ConNome(this.Moneta, this.NomeMoneta);
+    }
+
+    /** {@code "BIT (BitDAO)"} diventa {@code {"BIT", "BitDAO"}}; un simbolo senza nome resta com'e' con nome {@code null}. */
+    static String[] SeparaNome(String MonetaCampo40) {
+        if (MonetaCampo40 != null && MonetaCampo40.endsWith(")")) {
+            int i = MonetaCampo40.indexOf(" (");
+            if (i > 0) return new String[]{MonetaCampo40.substring(0, i), MonetaCampo40.substring(i + 2, MonetaCampo40.length() - 1)};
+        }
+        return new String[]{MonetaCampo40, null};
+    }
+
+    /** Il nome della moneta da una fonte CoinMarketCap della cache, oppure {@code null} se la fonte non ne porta uno. */
+    static String NomeDaFonteCoinMarketCap(String Exchange) {
+        if (Exchange == null || !Exchange.endsWith(")")) return null;
+        for (String Prefisso : new String[]{ETICHETTA_OMONIMO_CMC + " (", ETICHETTA_CMC + " ("}) {
+            if (Exchange.startsWith(Prefisso)) return Exchange.substring(Prefisso.length(), Exchange.length() - 1);
+        }
+        return null;
     }
     public InfoPrezzo() {
 
@@ -5068,7 +5442,7 @@ public static class InfoPrezzo {
      * @return la rappresentazione compatta di questo {@link InfoPrezzo}
      */
     public String Ritorna40(){
-        return this.Moneta+"|"+this.timestamp+"|"+this.prezzoUnitario+"|"+this.Fonte;
+        return MonetaConNome()+"|"+this.timestamp+"|"+this.prezzoUnitario+"|"+this.Fonte;
     }
     
     

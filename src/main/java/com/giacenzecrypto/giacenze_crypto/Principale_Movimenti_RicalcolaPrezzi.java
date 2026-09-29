@@ -253,16 +253,22 @@ public class Principale_Movimenti_RicalcolaPrezzi {
                     progress.SetMassimo(movimenti.size());
                     progress.SetAvanzamento(0);
 
-                    //Nuovi prezzi raccolti a parte: i movimenti si toccano solo a operazione conclusa
+                    //Nuovi prezzi raccolti a parte: i movimenti si toccano solo a operazione conclusa.
+                    //Con il prezzo si aggiorna la sua fonte (campo 40): prima si cambiava solo il [15], e un prezzo
+                    //corretto restava descritto dalla fonte e dalla moneta di quello sbagliato.
                     Map<String[], String> nuoviPrezzi = new LinkedHashMap<>();
+                    Map<String[], String> nuoveFonti = new LinkedHashMap<>();
                     int i = 0;
                     for (String[] v : movimenti) {
                         if (Interrotto()) break;
                         i++;
                         progress.SetAvanzamento(i);
-                        String pr = Prezzi.DammiPrezzoDaTransazione(v, 2);
-                        if (pr == null) pr = "0.00";
-                        if (!v[15].equals(pr) && !pr.equals("0.00")) nuoviPrezzi.put(v, pr);
+                        Prezzi.InfoPrezzo IP = Prezzi.DammiInfoPrezzoDaTransazione(v);
+                        String pr = IP == null ? "0.00" : Prezzi.PrezzoQtaArrotondato(IP, 2);
+                        if (pr.equals("0.00")) continue;
+                        if (!v[15].equals(pr)) nuoviPrezzi.put(v, pr);
+                        String info40 = IP.Ritorna40();
+                        if (!info40.equals(v[40])) nuoveFonti.put(v, info40);
                     }
 
                     if (Interrotto()) {
@@ -296,7 +302,8 @@ public class Principale_Movimenti_RicalcolaPrezzi {
                         //Stessa convenzione del ricalcolo globale: si svuota, non si scrive "SI"
                         v[32] = "";
                     }
-                    modificato[0] = !nuoviPrezzi.isEmpty();
+                    for (Map.Entry<String[], String> e : nuoveFonti.entrySet()) e.getKey()[40] = e.getValue();
+                    modificato[0] = !nuoviPrezzi.isEmpty() || !nuoveFonti.isEmpty();
 
                     int senzaPrezzo = 0;
                     for (String[] v : movimenti) if (v[15].equals("0.00")) senzaPrezzo++;

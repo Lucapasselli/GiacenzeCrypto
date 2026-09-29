@@ -200,7 +200,18 @@ public class DatabaseH2 {
             createTableSQL = "CREATE TABLE IF NOT EXISTS GESTITICRYPTOHISTORY  (Symbol VARCHAR(255) PRIMARY KEY, Nome VARCHAR(255))";
             EseguiDDL(connection, createTableSQL);
 
-            createTableSQL = "CREATE TABLE IF NOT EXISTS GESTITICOINMARKETCAP (Symbol VARCHAR(255) PRIMARY KEY, CmcId INT)";
+            //Mappa simbolo -> id di CoinMarketCap con TUTTE le monete di un simbolo (gli omonimi), non piu' una
+            //sola: fra omonimi si sceglie alla data, per volume (Prezzi.RecuperaPrezziDaCoinMarketCap). La
+            //vecchia tabella (Symbol chiave) e' solo una cache giornaliera: la si butta e la si riscarica.
+            try (Statement stCmc = connection.createStatement()) {
+                if (TabellaSenzaColonna(stCmc, "GESTITICOINMARKETCAP", "NOME")) {
+                    stCmc.execute("DROP TABLE GESTITICOINMARKETCAP");
+                    stCmc.execute("DELETE FROM OPZIONI WHERE Opzione = 'Data_Lista_CoinMarketCap'");
+                }
+            } catch (SQLException ex) {
+                LoggerGC.ScriviErrore(ex);
+            }
+            createTableSQL = "CREATE TABLE IF NOT EXISTS GESTITICOINMARKETCAP " + SCHEMA_GESTITICOINMARKETCAP;
             EseguiDDL(connection, createTableSQL);
                        
             createTableSQL = "CREATE TABLE IF NOT EXISTS OPZIONI (Opzione VARCHAR(255) PRIMARY KEY, Valore VARCHAR(1000))";
@@ -2484,53 +2495,120 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         
       
         
+    /** Colonne della mappa CoinMarketCap: una riga per moneta, piu' righe per un simbolo con omonimi. */
+    static final String SCHEMA_GESTITICOINMARKETCAP =
+            "(Symbol VARCHAR(255), CmcId INT, Nome VARCHAR(255), Rango INT, PRIMARY KEY (Symbol, CmcId))";
+
+    /** Una moneta della mappa CoinMarketCap. */
+    public static final class MonetaCoinMarketCap {
+        public final int Id;
+        public final String Nome;
+        public final int Rango;
+
+        public MonetaCoinMarketCap(int Id, String Nome, int Rango) {
+            this.Id = Id;
+            this.Nome = Nome;
+            this.Rango = Rango;
+        }
+    }
+
     /**
-     * Legge l'ID CoinMarketCap associato a un simbolo (cache locale della lista dei token gestiti).
+     * Tutte le monete CoinMarketCap con il simbolo indicato, dalla migliore per rank di oggi. Più di una vuol
+     * dire omonimi: la scelta fra loro si fa alla data del prezzo, non qui.
      *
      * @param Symbol simbolo del token (confrontato in maiuscolo)
-     * @return l'ID CoinMarketCap, o {@code null} se il simbolo non è in {@code GESTITICOINMARKETCAP}
+     * @return le monete, lista vuota se il simbolo non è in {@code GESTITICOINMARKETCAP}
      */
-    public static Integer GestitiCoinMarketCap_Leggi(String Symbol) {
+    public static List<MonetaCoinMarketCap> GestitiCoinMarketCap_LeggiTutti(String Symbol) {
+        List<MonetaCoinMarketCap> ritorno = new ArrayList<>();
         try (PreparedStatement ps = connection.prepareStatement(
-                "SELECT CmcId FROM GESTITICOINMARKETCAP WHERE Symbol = ?")) {
+                "SELECT CmcId, Nome, Rango FROM GESTITICOINMARKETCAP WHERE Symbol = ? ORDER BY Rango ASC, CmcId ASC")) {
             ps.setString(1, Symbol.toUpperCase());
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt("CmcId");
+                while (rs.next()) ritorno.add(new MonetaCoinMarketCap(rs.getInt("CmcId"), rs.getString("Nome"), rs.getInt("Rango")));
             }
         } catch (SQLException ex) {
             LoggerGC.ScriviErrore(ex);
         }
-        return null;
+        return ritorno;
+    }
+
+    /**
+     * L'ID CoinMarketCap di un simbolo, il primo per rank di oggi se ci sono omonimi (per i prezzi
+     * storici usare {@link #GestitiCoinMarketCap_LeggiTutti} e scegliere alla data).
+     *
+     * @return l'ID, o {@code null} se il simbolo non è in {@code GESTITICOINMARKETCAP}
+     */
+    public static Integer GestitiCoinMarketCap_Leggi(String Symbol) {
+        List<MonetaCoinMarketCap> tutte = GestitiCoinMarketCap_LeggiTutti(Symbol);
+        return tutte.isEmpty() ? null : tutte.get(0).Id;
+    }
+
+    /** I simboli con più di una moneta nella mappa CoinMarketCap (gli omonimi). */
+    public static List<String> GestitiCoinMarketCap_SimboliAmbigui() {
+        List<String> ritorno = new ArrayList<>();
+        try (Statement st = connection.createStatement();
+                ResultSet rs = st.executeQuery("SELECT Symbol FROM GESTITICOINMARKETCAP GROUP BY Symbol HAVING COUNT(*) > 1")) {
+            while (rs.next()) ritorno.add(rs.getString(1));
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return ritorno;
     }
 
     /**
      * Ricrea da zero la tabella {@code GESTITICOINMARKETCAP} (drop + create) e la ripopola con
-     * l'elenco simbolo→ID CoinMarketCap, tipicamente scaricato via API, inserendo in batch.
+     * l'elenco delle monete CoinMarketCap, omonimi compresi, tipicamente scaricato via API.
      *
-     * @param gestiti elenco di righe {@code [Symbol, CmcId]} da salvare
+     * @param gestiti elenco di righe {@code [Symbol, CmcId, Nome, Rango]}
      */
     public static void GestitiCoinMarketCap_ScriviNuovaTabella(List<String[]> gestiti) {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute("DROP TABLE IF EXISTS GESTITICOINMARKETCAP");
-            stmt.execute("CREATE TABLE GESTITICOINMARKETCAP (Symbol VARCHAR(255) PRIMARY KEY, CmcId INT)");
+            stmt.execute("CREATE TABLE GESTITICOINMARKETCAP " + SCHEMA_GESTITICOINMARKETCAP);
         } catch (SQLException ex) {
             LoggerGC.ScriviErrore(ex);
             return;
         }
-        //MERGE e non INSERT: la tabella è appena stata ricreata, quindi l'unico conflitto possibile
-        //è un simbolo ripetuto dentro la stessa lista (CoinMarketCap ne ha diversi). Il chiamante
-        //li scarta già scegliendo il rank migliore, ma con INSERT un doppione sfuggito farebbe
-        //fallire il batch e riempirebbe il log di errori invece di limitarsi a sovrascriversi.
-        String insertSQL = "MERGE INTO GESTITICOINMARKETCAP (Symbol, CmcId) KEY (Symbol) VALUES (?, ?)";
+        //MERGE e non INSERT: una stessa moneta ripetuta nella risposta non deve far fallire il batch
+        String insertSQL = "MERGE INTO GESTITICOINMARKETCAP (Symbol, CmcId, Nome, Rango) KEY (Symbol, CmcId) VALUES (?, ?, ?, ?)";
         try (PreparedStatement ps = connection.prepareStatement(insertSQL)) {
             for (String[] entry : gestiti) {
                 ps.setString(1, entry[0].toUpperCase());
                 ps.setInt(2, Integer.parseInt(entry[1]));
+                ps.setString(3, entry.length > 2 ? entry[2] : "");
+                ps.setInt(4, entry.length > 3 ? Integer.parseInt(entry[3]) : Integer.MAX_VALUE);
                 ps.addBatch();
             }
             ps.executeBatch();
         } catch (SQLException ex) {
             LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+    /**
+     * Cancella dalla cache prezzi le righe di CoinMarketCap dei simboli indicati. Serve una volta sola, per i
+     * simboli con omonimi: fino al 2026-09-29 venivano scaricati per la moneta col rank migliore di oggi,
+     * spesso non quella del movimento (BIT: Biconomy invece di BitDAO). Cancellati, vengono riscaricati
+     * scegliendo l'omonimo per volume.
+     *
+     * @return quante righe sono state cancellate
+     */
+    public static int PrezziCoinMarketCap_CancellaSimboli(List<String> Simboli) {
+        //Restituisce -1 se la cancellazione non e' andata a buon fine (es. interrotta alla chiusura del
+        //programma): il chiamante non deve segnarla come fatta, altrimenti non si ripete piu'.
+        if (Simboli == null || Simboli.isEmpty()) return 0;
+        //Una sola DELETE con tutti i simboli: la chiave di PrezziNew comincia col timestamp, quindi ogni
+        //condizione su exchange/simbolo scorre l'intera tabella (decine di milioni di righe, mezzo minuto a
+        //passata). Una DELETE per simbolo, con centinaia di simboli, durava ore e bloccava il programma.
+        String segnaposto = String.join(",", java.util.Collections.nCopies(Simboli.size(), "?"));
+        try (PreparedStatement ps = connectionPrezzi.prepareStatement(
+                "DELETE FROM PrezziNew WHERE exchange LIKE 'CoinMarketCap%' AND symbol IN (" + segnaposto + ")")) {
+            for (int k = 0; k < Simboli.size(); k++) ps.setString(k + 1, Simboli.get(k).toUpperCase());
+            return ps.executeUpdate();
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+            return -1;
         }
     }
         

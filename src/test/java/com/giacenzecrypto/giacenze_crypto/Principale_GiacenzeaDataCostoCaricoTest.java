@@ -297,4 +297,153 @@ class Principale_GiacenzeaDataCostoCaricoTest {
         assertEquals("4000.00", costi.CostoDelleRimanenze("Gruppo : Wallet 02 ( alias )", chiave, "1"));
         assertEquals("5000.00", costi.CostoDelleRimanenze("Tutti", chiave, "2"));
     }
+
+    // ------------------------------------------------------------------
+    // Giacenze prima e dopo un movimento (dettaglio movimento)
+    // ------------------------------------------------------------------
+
+    private static Principale_GiacenzeaData.GiacenzeMoneta giacenza(String id, String moneta) {
+        for (Principale_GiacenzeaData.GiacenzeMoneta g : Principale_GiacenzeaData.GiacenzeAttornoAlMovimento(id)) {
+            if (g.Moneta.equals(moneta)) return g;
+        }
+        fail("Nessuna giacenza per " + moneta);
+        return null;
+    }
+
+    private static final int GLOBALE = Principale_GiacenzeaData.LIVELLO_GLOBALE;
+    private static final int GRUPPO = Principale_GiacenzeaData.LIVELLO_GRUPPO;
+    private static final int WALLET = Principale_GiacenzeaData.LIVELLO_WALLET;
+
+    @Test
+    void attornoAUnaVenditaLaGiacenzaPerdeIlLottoPiuRecente() {
+        acquisto("2024-01-01 10:00", "BTC", "1", "1000");
+        acquisto("2024-02-01 10:00", "BTC", "1", "2000");
+        //Nei dati reali la quantità in uscita è negativa, e le giacenze la sommano così com'è
+        String[] vendita = vendita("2024-03-01 10:00", "BTC", "-1", "2500");
+        //Un movimento successivo non deve entrare né nel "prima" né nel "dopo"
+        acquisto("2024-04-01 10:00", "BTC", "5", "9000");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        Principale_GiacenzeaData.GiacenzeMoneta btc = giacenza(vendita[0], "BTC");
+        assertEquals(0, new java.math.BigDecimal("2").compareTo(btc.QtaPrima[GLOBALE]));
+        assertEquals("3000.00", btc.CostoPrima[GLOBALE]);
+        assertEquals(0, java.math.BigDecimal.ONE.compareTo(btc.QtaDopo[GLOBALE]));
+        assertEquals("1000.00", btc.CostoDopo[GLOBALE]);
+        assertEquals(0, new java.math.BigDecimal("2500").compareTo(btc.PrezzoUnitario));
+        //Stesso wallet e stesso gruppo : i tre livelli coincidono
+        assertEquals(btc.QtaDopo[GLOBALE], btc.QtaDopo[WALLET]);
+        assertEquals(btc.CostoDopo[GLOBALE], btc.CostoDopo[GRUPPO]);
+
+        //La gamba in euro : solo quantità, nessun costo di carico
+        Principale_GiacenzeaData.GiacenzeMoneta eur = giacenza(vendita[0], "EUR");
+        assertTrue(eur.isFiat());
+        assertNull(eur.CostoDopo[GLOBALE]);
+    }
+
+    @Test
+    void unDepositoDaUnAltroGruppoSpostaIlCostoAlGruppoDiArrivo() {
+        DatabaseH2.Pers_Opzioni_Scrivi("PlusXWallet", "SI");
+        DatabaseH2.Pers_GruppoWallet_Scrivi("WalletA", "Wallet 01");
+        DatabaseH2.Pers_GruppoWallet_Scrivi("WalletB", "Wallet 02");
+
+        acquisto("2024-01-01 10:00", "WalletA", "BTC", "1", "1000");
+        String[] prelievo = movimento("2024-02-01 10:00", "WalletA", "PC", "PTW - Prelievo verso wallet proprio",
+                "TRASFERIMENTO", "BTC", "Crypto", "-1", "", "", "", "0.00");
+        String[] deposito = movimento("2024-02-01 10:01", "WalletB", "DC", "DTW - Deposito da wallet proprio",
+                "TRASFERIMENTO", "", "", "", "BTC", "Crypto", "1", "0.00");
+        prelievo[20] = deposito[0];
+        deposito[20] = prelievo[0];
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        Principale_GiacenzeaData.GiacenzeMoneta dep = giacenza(deposito[0], "BTC");
+        //Globale : fra prelievo e deposito il BTC è "in viaggio", le quantità sono sommate come in
+        //Giacenze a data e il prelievo l'ha già tolto. Arrivato, torna con il suo costo
+        assertEquals(0, dep.QtaPrima[GLOBALE].signum());
+        assertEquals(0, java.math.BigDecimal.ONE.compareTo(dep.QtaDopo[GLOBALE]));
+        assertEquals("1000.00", dep.CostoDopo[GLOBALE]);
+        //Gruppo di arrivo : da zero a 1 BTC con il suo costo
+        assertEquals(0, dep.QtaPrima[GRUPPO].signum());
+        assertEquals("0.00", dep.CostoPrima[GRUPPO]);
+        assertEquals(0, java.math.BigDecimal.ONE.compareTo(dep.QtaDopo[GRUPPO]));
+        assertEquals("1000.00", dep.CostoDopo[GRUPPO]);
+        assertEquals("1000.00", dep.CostoDopo[WALLET]);
+
+        //Sul prelievo il wallet si svuota subito, il costo lascia il gruppo solo al deposito
+        Principale_GiacenzeaData.GiacenzeMoneta pre = giacenza(prelievo[0], "BTC");
+        assertEquals(0, java.math.BigDecimal.ONE.compareTo(pre.QtaPrima[WALLET]));
+        assertEquals(0, pre.QtaDopo[WALLET].signum());
+        assertEquals("1000.00", pre.CostoPrima[GRUPPO]);
+    }
+
+    @Test
+    void unGiroContoDentroLoStessoGruppoMuoveIWalletMaNonIlGruppo() {
+        DatabaseH2.Pers_Opzioni_Scrivi("PlusXWallet", "SI");
+        DatabaseH2.Pers_GruppoWallet_Scrivi("WalletA", "Wallet 01");
+        DatabaseH2.Pers_GruppoWallet_Scrivi("WalletB", "Wallet 01");
+
+        acquisto("2024-01-01 10:00", "WalletA", "BTC", "2", "2000");
+        String[] prelievo = movimento("2024-02-01 10:00", "WalletA", "PC", "PTW - Prelievo verso wallet proprio",
+                "TRASFERIMENTO", "BTC", "Crypto", "-1", "", "", "", "0.00");
+        String[] deposito = movimento("2024-02-01 10:01", "WalletB", "DC", "DTW - Deposito da wallet proprio",
+                "TRASFERIMENTO", "", "", "", "BTC", "Crypto", "1", "0.00");
+        prelievo[20] = deposito[0];
+        deposito[20] = prelievo[0];
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        Principale_GiacenzeaData.GiacenzeMoneta dep = giacenza(deposito[0], "BTC");
+        //Prima del deposito il BTC è già uscito da WalletA : il gruppo ne ha 1, dopo di nuovo 2
+        assertEquals(0, java.math.BigDecimal.ONE.compareTo(dep.QtaPrima[GRUPPO]));
+        assertEquals(0, new java.math.BigDecimal("2").compareTo(dep.QtaDopo[GRUPPO]));
+        assertEquals(0, dep.QtaPrima[WALLET].signum());
+        assertEquals(0, java.math.BigDecimal.ONE.compareTo(dep.QtaDopo[WALLET]));
+        //Nessun costo si è mosso : la pila del gruppo è sempre quella dell'acquisto
+        assertEquals("2000.00", dep.CostoDopo[GRUPPO]);
+        assertEquals("1000.00", dep.CostoDopo[WALLET]);
+    }
+
+    /**
+     * Il lato che il test sul deposito non vede: il gruppo di partenza deve davvero perdere il lotto
+     * trasferito. Se la passata filtrata perdesse lo scarico della controparte, il gruppo di partenza
+     * leggerebbe ancora il lotto da 3000 invece di quello da 1000.
+     */
+    @Test
+    void ilGruppoDiPartenzaPerdeIlLottoTrasferito() {
+        DatabaseH2.Pers_Opzioni_Scrivi("PlusXWallet", "SI");
+        DatabaseH2.Pers_GruppoWallet_Scrivi("WalletA", "Wallet 01");
+        DatabaseH2.Pers_GruppoWallet_Scrivi("WalletB", "Wallet 02");
+
+        acquisto("2024-01-01 10:00", "WalletA", "BTC", "1", "1000");
+        acquisto("2024-01-15 10:00", "WalletA", "BTC", "1", "3000");
+        String[] prelievo = movimento("2024-02-01 10:00", "WalletA", "PC", "PTW - Prelievo verso wallet proprio",
+                "TRASFERIMENTO", "BTC", "Crypto", "-1", "", "", "", "0.00");
+        String[] deposito = movimento("2024-02-01 10:01", "WalletB", "DC", "DTW - Deposito da wallet proprio",
+                "TRASFERIMENTO", "", "", "", "BTC", "Crypto", "1", "0.00");
+        prelievo[20] = deposito[0];
+        deposito[20] = prelievo[0];
+        String[] successivo = acquisto("2024-03-01 10:00", "WalletA", "BTC", "1", "5000");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        Principale_GiacenzeaData.GiacenzeMoneta g = giacenza(successivo[0], "BTC");
+        assertEquals(0, java.math.BigDecimal.ONE.compareTo(g.QtaPrima[GRUPPO]));
+        assertEquals("1000.00", g.CostoPrima[GRUPPO]);
+        assertEquals("6000.00", g.CostoDopo[GRUPPO]);
+    }
+
+    @Test
+    void leRigheDelDettaglioSonoUnaPerMoneta() {
+        acquisto("2024-01-01 10:00", "BTC", "1", "1000");
+        //Nei dati reali la quantità in uscita è negativa, e le giacenze la sommano così com'è
+        String[] vendita = vendita("2024-03-01 10:00", "BTC", "-1", "2500");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        java.util.List<String[]> righe = Principale_GiacenzeaData.RigheDettaglio(vendita[0]);
+        assertEquals(2, righe.size());
+        assertEquals("Giacenze BTC", righe.get(0)[0]);
+        assertTrue(righe.get(0)[1].contains("€ 1000.00"), righe.get(0)[1]);
+    }
 }

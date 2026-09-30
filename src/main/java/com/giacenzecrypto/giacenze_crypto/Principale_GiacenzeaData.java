@@ -526,38 +526,91 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
             if (!(FunzioniDate.ConvertiDatainLong(v[1]) < DataRiferimento)) {
                 continue;
             }
-            String Rete = Funzioni.TrovaReteDaIMovimento(v);
-            String Gruppo = Costi.GruppoDelMovimento(v[3]);
-            String IDTS[] = v[0].split("_");
-            boolean MovimentoInterno = IDTS.length > 4 && IDTS[4].equalsIgnoreCase("TI");
+            ElaboraLotti(Costi, v, null);
+        }
+        return Costi;
+    }
 
-            //USCITA : scarico i lotti, tranne che per i movimenti interni e per i PTW (prelievi verso un
-            //wallet proprio), che vengono scaricati dal DTW corrispondente quando arrivano a destinazione
-            if (!v[9].isBlank() && !v[9].equalsIgnoreCase("FIAT") && !v[16].isBlank()
-                    && !v[18].contains("PTW") && !MovimentoInterno) {
-                Costi.TogliLotti(Gruppo, ChiaveRiga(v[8], v[9], v[26], Rete), v[10]);
-            }
+    /**
+     * Carica e scarica i lotti di un movimento sulle pile, con le regole descritte in
+     * {@link #CalcolaCostiCaricoRimanenze(long)}. È l'unico posto in cui queste regole stanno in questa
+     * classe: la passata di "Giacenze a data" e quella del dettaglio movimento
+     * ({@link #GiacenzeAttornoAlMovimento(String)}) passano entrambe di qui.
+     * <p>
+     * Il filtro sui simboli si applica a ogni singolo carico/scarico e non al movimento intero: un PTW e il
+     * suo DTW possono portare simboli diversi, e saltare il movimento perderebbe lo scarico della
+     * controparte. Rete e gruppo si calcolano solo quando un simbolo corrisponde, che è il motivo per cui
+     * la passata filtrata costa una frazione di quella completa.
+     * @param Simboli se non {@code null}, solo le monete con uno di questi simboli toccano le pile
+     */
+    private static void ElaboraLotti(CostiCaricoRimanenze Costi, String[] v, java.util.Set<String> Simboli) {
+        boolean Uscita = !v[9].isBlank() && !v[9].equalsIgnoreCase("FIAT") && !v[16].isBlank()
+                && !v[18].contains("PTW") && (Simboli == null || Simboli.contains(v[8]));
+        boolean Entrata = !v[12].isBlank() && !v[12].equalsIgnoreCase("FIAT") && !v[17].isBlank();
+        if (!Uscita && !Entrata) {
+            return;
+        }
+        String IDTS[] = v[0].split("_");
+        if (IDTS.length > 4 && IDTS[4].equalsIgnoreCase("TI")) {
+            //Movimento interno : non tocca le pile
+            return;
+        }
+        String Rete = null;
+        String Gruppo = null;
 
-            //ENTRATA : carico il lotto al costo di carico scritto dal motore delle plusvalenze
-            if (!v[12].isBlank() && !v[12].equalsIgnoreCase("FIAT") && !v[17].isBlank() && !MovimentoInterno) {
-                if (!v[18].contains("DTW")) {
+        //USCITA : scarico i lotti, tranne che per i movimenti interni e per i PTW (prelievi verso un
+        //wallet proprio), che vengono scaricati dal DTW corrispondente quando arrivano a destinazione
+        if (Uscita) {
+            Rete = Funzioni.TrovaReteDaIMovimento(v);
+            Gruppo = Costi.GruppoDelMovimento(v[3]);
+            Costi.TogliLotti(Gruppo, ChiaveRiga(v[8], v[9], v[26], Rete), v[10]);
+        }
+
+        //ENTRATA : carico il lotto al costo di carico scritto dal motore delle plusvalenze
+        if (Entrata) {
+            if (!v[18].contains("DTW")) {
+                if (Simboli == null || Simboli.contains(v[11])) {
+                    if (Gruppo == null) {
+                        Rete = Funzioni.TrovaReteDaIMovimento(v);
+                        Gruppo = Costi.GruppoDelMovimento(v[3]);
+                    }
                     Costi.InserisciLotto(Gruppo, ChiaveRiga(v[11], v[12], v[28], Rete), v[13], v[17], v[0]);
-                } else {
-                    //Deposito da un wallet proprio : se la controparte sta in un gruppo diverso il costo di
-                    //carico si sposta da quel gruppo a questo, altrimenti non si muove nulla
-                    String Controparte[] = Calcoli_PlusvalenzeNew.RitornaIDeGruppoControparteSeGruppoDiverso(v);
-                    if (Controparte[0] != null) {
-                        Costi.InserisciLotto(Gruppo, ChiaveRiga(v[11], v[12], v[28], Rete), v[13], v[17], v[0]);
-                        String Mov[] = MappaCryptoWallet.get(Controparte[0]);
-                        if (Mov != null) {
-                            String ReteControparte = Funzioni.TrovaReteDaIMovimento(Mov);
-                            Costi.TogliLotti(Controparte[1], ChiaveRiga(Mov[8], Mov[9], Mov[26], ReteControparte), Mov[10]);
+                }
+            } else {
+                //Deposito da un wallet proprio : se la controparte sta in un gruppo diverso il costo di
+                //carico si sposta da quel gruppo a questo, altrimenti non si muove nulla
+                String Mov[] = null;
+                boolean CaricoQui = Simboli == null || Simboli.contains(v[11]);
+                boolean ScaricoControparte = Simboli == null;
+                if (!ScaricoControparte) {
+                    //La controparte si guarda solo se il suo simbolo interessa : la ricerca costa
+                    for (String IdC : v[20].split(",")) {
+                        String C[] = IdC.isBlank() ? null : MappaCryptoWallet.get(IdC);
+                        if (C != null && C[18].contains("PTW") && Simboli.contains(C[8])) {
+                            ScaricoControparte = true;
                         }
+                    }
+                }
+                if (!CaricoQui && !ScaricoControparte) {
+                    return;
+                }
+                String Controparte[] = Calcoli_PlusvalenzeNew.RitornaIDeGruppoControparteSeGruppoDiverso(v);
+                if (Controparte[0] != null) {
+                    if (CaricoQui) {
+                        if (Gruppo == null) {
+                            Rete = Funzioni.TrovaReteDaIMovimento(v);
+                            Gruppo = Costi.GruppoDelMovimento(v[3]);
+                        }
+                        Costi.InserisciLotto(Gruppo, ChiaveRiga(v[11], v[12], v[28], Rete), v[13], v[17], v[0]);
+                    }
+                    Mov = MappaCryptoWallet.get(Controparte[0]);
+                    if (Mov != null && (Simboli == null || Simboli.contains(Mov[8]))) {
+                        String ReteControparte = Funzioni.TrovaReteDaIMovimento(Mov);
+                        Costi.TogliLotti(Controparte[1], ChiaveRiga(Mov[8], Mov[9], Mov[26], ReteControparte), Mov[10]);
                     }
                 }
             }
         }
-        return Costi;
     }
 
     /**
@@ -565,6 +618,267 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
      * movimento perché {@code Download.FineThread()} non è un semplice getter.
      */
     private static final int MOVIMENTI_PER_CONTROLLO_INTERRUZIONE = 2000;
+
+    /** Indici dei tre livelli in {@link GiacenzeMoneta#QtaPrima} e compagni. */
+    public static final int LIVELLO_GLOBALE = 0, LIVELLO_GRUPPO = 1, LIVELLO_WALLET = 2;
+
+    /**
+     * Giacenza di una moneta del movimento immediatamente prima e immediatamente dopo il movimento stesso,
+     * su tre livelli: tutti i wallet, il gruppo wallet del movimento, il wallet ({@code v[3]}) del movimento.
+     * I costi sono {@code null} per le monete FIAT, che non hanno pile LIFO.
+     */
+    public static final class GiacenzeMoneta {
+        public final String Moneta;
+        public final String Tipo;
+        public final String Chiave;
+        /** Prezzo unitario della moneta nel movimento stesso; {@code null} se il movimento non è valorizzato. */
+        public final BigDecimal PrezzoUnitario;
+        public final BigDecimal[] QtaPrima = {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+        public final BigDecimal[] QtaDopo = {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+        public final String[] CostoPrima = new String[3];
+        public final String[] CostoDopo = new String[3];
+
+        private GiacenzeMoneta(String Moneta, String Tipo, String Chiave, BigDecimal PrezzoUnitario) {
+            this.Moneta = Moneta;
+            this.Tipo = Tipo;
+            this.Chiave = Chiave;
+            this.PrezzoUnitario = PrezzoUnitario;
+        }
+
+        /** @return {@code true} se la moneta è FIAT (solo quantità, nessun costo di carico) */
+        public boolean isFiat() {
+            return Tipo != null && Tipo.equalsIgnoreCase("FIAT");
+        }
+    }
+
+    /**
+     * Le giacenze delle monete coinvolte in un movimento prima e dopo il movimento, per il dettaglio
+     * movimento. Una sola passata su {@link Principale#MappaCryptoWallet} fino al movimento (in ordine di
+     * ID, cioè nell'ordine del motore delle plusvalenze: una data di taglio confonderebbe i movimenti dello
+     * stesso secondo), limitata ai simboli del movimento.
+     * <p>
+     * Le quantità sono le stesse somme della tabella "Giacenze a data" (stessa chiave di riga, stesso
+     * criterio di gruppo e di wallet); i costi di carico sono le stesse pile di
+     * {@link #CalcolaCostiCaricoRimanenze(long)}, lette con {@link CostiCaricoRimanenze}. Ne ereditano
+     * quindi due approssimazioni, dichiarate e non nascoste:
+     * <ul>
+     * <li>il costo a livello di wallet è quello dei lotti più recenti del gruppo che coprono la giacenza
+     * del wallet, perché le pile esistono per gruppo e non per wallet;</li>
+     * <li>un prelievo verso un wallet proprio (PTW) non scarica i lotti del gruppo: lo fa il deposito
+     * corrispondente (DTW) all'arrivo, se la destinazione è in un altro gruppo.</li>
+     * </ul>
+     * I costi vengono da {@code v[16]}/{@code v[17]}, cioè dall'ultimo giro del motore delle plusvalenze:
+     * subito dopo una modifica non ancora ricalcolata sono quelli di prima della modifica.
+     * <p>
+     * Nessun prezzo viene cercato: il controvalore usa il prezzo unitario del movimento stesso, che per
+     * "prima" e "dopo" è lo stesso istante. Così la navigazione fra un movimento e l'altro non tocca mai
+     * la rete.
+     *
+     * @param ID ID del movimento
+     * @return una voce per moneta coinvolta (uscita, poi entrata), vuota se il movimento non esiste
+     */
+    public static List<GiacenzeMoneta> GiacenzeAttornoAlMovimento(String ID) {
+        List<GiacenzeMoneta> Ris = new ArrayList<>();
+        String[] Mov = MappaCryptoWallet.get(ID);
+        if (Mov == null) {
+            return Ris;
+        }
+        String ReteMov = Funzioni.TrovaReteDaIMovimento(Mov);
+        String Wallet = Mov[3].trim();
+        String Gruppo = Wallet.isEmpty() ? null : DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3], true);
+
+        Map<String, GiacenzeMoneta> Monete = new java.util.LinkedHashMap<>();
+        java.util.Set<String> Simboli = new java.util.HashSet<>();
+        int Gambe[][] = {{8, 9, 10, 26}, {11, 12, 13, 28}};
+        for (int[] g : Gambe) {
+            if (Mov[g[0]].isBlank()) {
+                continue;
+            }
+            String Chiave = ChiaveRiga(Mov[g[0]], Mov[g[1]], Mov[g[3]], ReteMov);
+            if (!Monete.containsKey(Chiave)) {
+                Monete.put(Chiave, new GiacenzeMoneta(Mov[g[0]], Mov[g[1]], Chiave,
+                        PrezzoUnitarioNelMovimento(Mov, Mov[g[0]], Mov[g[2]])));
+                Simboli.add(Mov[g[0]]);
+            }
+        }
+        if (Monete.isEmpty()) {
+            return Ris;
+        }
+
+        CostiCaricoRimanenze Costi = new CostiCaricoRimanenze();
+        Map<String, BigDecimal[]> Correnti = new java.util.HashMap<>();
+        for (String Chiave : Monete.keySet()) {
+            Correnti.put(Chiave, new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO});
+        }
+        for (String[] v : MappaCryptoWallet.headMap(ID, false).values()) {
+            SommaQuantita(v, Simboli, Correnti, Gruppo, Wallet);
+            ElaboraLotti(Costi, v, Simboli);
+        }
+        FotografaGiacenze(Monete, Correnti, Costi, Gruppo, Wallet, true);
+        SommaQuantita(Mov, Simboli, Correnti, Gruppo, Wallet);
+        ElaboraLotti(Costi, Mov, Simboli);
+        FotografaGiacenze(Monete, Correnti, Costi, Gruppo, Wallet, false);
+
+        Ris.addAll(Monete.values());
+        return Ris;
+    }
+
+    /** Aggiunge le quantità del movimento ai contatori dei tre livelli, con i criteri di "Giacenze a data". */
+    private static void SommaQuantita(String[] v, java.util.Set<String> Simboli,
+            Map<String, BigDecimal[]> Correnti, String Gruppo, String Wallet) {
+        boolean Uscita = !v[8].isBlank() && Simboli.contains(v[8]);
+        boolean Entrata = !v[11].isBlank() && Simboli.contains(v[11]);
+        if (!Uscita && !Entrata) {
+            return;
+        }
+        String Rete = Funzioni.TrovaReteDaIMovimento(v);
+        boolean StessoWallet = Wallet.equalsIgnoreCase(v[3].trim());
+        boolean StessoGruppo = Gruppo != null && !v[3].isBlank()
+                && Gruppo.equals(DatabaseH2.Pers_GruppoWallet_Leggi(v[3], true));
+        int Gambe[][] = {{8, 9, 10, 26}, {11, 12, 13, 28}};
+        for (int[] g : Gambe) {
+            if (v[g[0]].isBlank() || !Simboli.contains(v[g[0]])) {
+                continue;
+            }
+            BigDecimal Contatori[] = Correnti.get(ChiaveRiga(v[g[0]], v[g[1]], v[g[3]], Rete));
+            if (Contatori == null) {
+                continue;
+            }
+            BigDecimal Qta;
+            try {
+                Qta = new BigDecimal(v[g[2]].trim());
+            } catch (NumberFormatException ex) {
+                continue;
+            }
+            Contatori[LIVELLO_GLOBALE] = Contatori[LIVELLO_GLOBALE].add(Qta);
+            if (StessoGruppo) {
+                Contatori[LIVELLO_GRUPPO] = Contatori[LIVELLO_GRUPPO].add(Qta);
+            }
+            if (StessoWallet) {
+                Contatori[LIVELLO_WALLET] = Contatori[LIVELLO_WALLET].add(Qta);
+            }
+        }
+    }
+
+    /** Copia i contatori correnti e il costo delle rimanenze corrispondente nella parte "prima" o "dopo". */
+    private static void FotografaGiacenze(Map<String, GiacenzeMoneta> Monete, Map<String, BigDecimal[]> Correnti,
+            CostiCaricoRimanenze Costi, String Gruppo, String Wallet, boolean Prima) {
+        for (GiacenzeMoneta M : Monete.values()) {
+            BigDecimal Contatori[] = Correnti.get(M.Chiave);
+            BigDecimal Qta[] = Prima ? M.QtaPrima : M.QtaDopo;
+            String Costo[] = Prima ? M.CostoPrima : M.CostoDopo;
+            for (int l = 0; l < 3; l++) {
+                Qta[l] = Contatori[l].stripTrailingZeros();
+            }
+            if (M.isFiat()) {
+                continue;
+            }
+            Costo[LIVELLO_GLOBALE] = Costi.CostoDelleRimanenze("Tutti", M.Chiave, Qta[LIVELLO_GLOBALE].toPlainString());
+            Costo[LIVELLO_GRUPPO] = Gruppo == null ? null
+                    : Costi.CostoDelGruppo(Gruppo, M.Chiave, Qta[LIVELLO_GRUPPO].toPlainString());
+            Costo[LIVELLO_WALLET] = Wallet.isEmpty() ? null
+                    : Costi.CostoDelleRimanenze(Wallet, M.Chiave, Qta[LIVELLO_WALLET].toPlainString());
+        }
+    }
+
+    /**
+     * Prezzo unitario di una moneta nel movimento: quello della fonte in {@code v[40]} se la moneta è la
+     * moneta di riferimento del prezzo (non arrotondato), altrimenti valore del movimento diviso quantità.
+     * @return il prezzo, o {@code null} se il movimento non ha valore
+     */
+    static BigDecimal PrezzoUnitarioNelMovimento(String[] Mov, String Moneta, String Qta) {
+        if (!Mov[40].isBlank()) {
+            String VSplit[] = Mov[40].split("\\|", -1);
+            if (VSplit.length > 2 && Prezzi.InfoPrezzo.SeparaNome(VSplit[0])[0].equalsIgnoreCase(Moneta)) {
+                try {
+                    return new BigDecimal(VSplit[2].trim()).abs();
+                } catch (NumberFormatException ex) {
+                    //si ripiega sul valore del movimento
+                }
+            }
+        }
+        if (Mov[15].isBlank()) {
+            return null;
+        }
+        try {
+            BigDecimal Q = new BigDecimal(Qta.trim()).abs();
+            if (Q.signum() == 0) {
+                return null;
+            }
+            return new BigDecimal(Mov[15].trim()).abs()
+                    .divide(Q, VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP).stripTrailingZeros();
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Le righe {etichetta, valore HTML} della sezione giacenze del dettaglio movimento, una per moneta
+     * coinvolta, da {@link #GiacenzeAttornoAlMovimento(String)}.
+     * @param ID ID del movimento
+     * @return le righe, vuota se il movimento non muove nessuna moneta
+     */
+    public static List<String[]> RigheDettaglio(String ID) {
+        List<String[]> Righe = new ArrayList<>();
+        String[] Mov = MappaCryptoWallet.get(ID);
+        if (Mov == null) {
+            return Righe;
+        }
+        List<GiacenzeMoneta> Giacenze = GiacenzeAttornoAlMovimento(ID);
+        String Gruppo = Mov[3].isBlank() ? "" : DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3], true);
+        String Etichette[] = {"Tutti i wallet", Gruppo.isBlank() ? "" : "Gruppo " + Gruppo, Mov[3].trim()};
+        for (GiacenzeMoneta M : Giacenze) {
+            StringBuilder S = new StringBuilder("<html>");
+            S.append("Prezzo unitario nel movimento: <b>")
+                    .append(M.PrezzoUnitario == null ? "non disponibile" : "€ " + M.PrezzoUnitario.toPlainString())
+                    .append("</b>");
+            S.append("<table cellspacing=0 cellpadding=2>");
+            //Il nome del livello sta su una riga a tutta larghezza: un wallet DeFi arriva a 50 caratteri e
+            //come colonna allargherebbe la tabella oltre la cella, che la taglierebbe
+            int Colonne = M.isFiat() ? 3 : 5;
+            S.append("<tr><th></th><th align=right>Quantità</th>")
+                    .append("<th align=right>Controvalore</th>");
+            if (!M.isFiat()) {
+                S.append("<th align=right>Costo di carico</th><th align=right>Costo unitario</th>");
+            }
+            S.append("</tr>");
+            for (int l = 0; l < 3; l++) {
+                if (Etichette[l].isBlank()) {
+                    continue;
+                }
+                S.append("<tr><td colspan=").append(Colonne).append("><b>").append(Etichette[l]).append("</b></td></tr>");
+                RigaGiacenza(S, M, "prima", M.QtaPrima[l], M.CostoPrima[l]);
+                RigaGiacenza(S, M, "dopo", M.QtaDopo[l], M.CostoDopo[l]);
+            }
+            S.append("</table>");
+            if (Mov[18].contains("PTW") && !M.isFiat()) {
+                S.append("<i>Prelievo verso un wallet proprio: se la destinazione è in un altro gruppo,<br>")
+                        .append("il costo di carico lascia questo gruppo solo all'arrivo.</i>");
+            }
+            S.append("</html>");
+            Righe.add(new String[]{"Giacenze " + M.Moneta, S.toString()});
+        }
+        return Righe;
+    }
+
+    private static void RigaGiacenza(StringBuilder S, GiacenzeMoneta M, String Momento,
+            BigDecimal Qta, String Costo) {
+        S.append("<tr><td>&nbsp;&nbsp;").append(Momento).append("</td>");
+        S.append("<td align=right>").append(Qta.toPlainString()).append("</td>");
+        S.append("<td align=right>").append(M.PrezzoUnitario == null ? "n.d."
+                : "€ " + M.PrezzoUnitario.multiply(Qta).setScale(2, RoundingMode.HALF_UP).toPlainString())
+                .append("</td>");
+        if (!M.isFiat()) {
+            String Unitario = "-";
+            if (Costo != null && Qta.signum() > 0) {
+                Unitario = "€ " + new BigDecimal(Costo).divide(Qta, 10, RoundingMode.HALF_UP)
+                        .stripTrailingZeros().toPlainString();
+            }
+            S.append("<td align=right>").append(Costo == null ? "-" : "€ " + Costo).append("</td>");
+            S.append("<td align=right>").append(Unitario).append("</td>");
+        }
+        S.append("</tr>");
+    }
 
     /**
      * Compone la chiave con cui una moneta è identificata nella tabella "Giacenze a data", con la stessa
@@ -704,6 +1018,19 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
          * @return il costo di carico con due decimali; {@code "0.00"} se la giacenza è nulla o negativa (non ci sono rimanenze da valorizzare) o se non si trova nessun lotto
          */
         public String CostoDelleRimanenze(String Wallet, String Chiave, String Qta) {
+            return CostoDaiGruppi(GruppiInSelezione(Wallet), Chiave, Qta);
+        }
+
+        /**
+         * Come {@link #CostoDelleRimanenze(String, String, String)}, ma per un gruppo wallet indicato per
+         * nome ("Wallet 02"), senza passare dalla stringa della combo. Con {@code PlusXWallet} spenta la
+         * pila è una sola, esattamente come nella tabella "Giacenze a data".
+         */
+        public String CostoDelGruppo(String Gruppo, String Chiave, String Qta) {
+            return CostoDaiGruppi(PlusXWallet ? List.of(Gruppo) : Pile.keySet(), Chiave, Qta);
+        }
+
+        private String CostoDaiGruppi(Collection<String> Gruppi, String Chiave, String Qta) {
             BigDecimal Richiesta;
             try {
                 Richiesta = new BigDecimal(Qta.trim());
@@ -714,7 +1041,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                 return "0.00";
             }
             List<String[]> Lotti = new ArrayList<>();
-            for (String Gruppo : GruppiInSelezione(Wallet)) {
+            for (String Gruppo : Gruppi) {
                 Map<String, ArrayDeque<String[]>> PerChiave = Pile.get(Gruppo);
                 if (PerChiave == null) {
                     continue;

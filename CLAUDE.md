@@ -198,6 +198,11 @@ prodotto da `Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(DataRiferiment
   scritto. Le regole di carico/scarico (TI ignorati, PTW scaricato dal DTW di destinazione, DTW che
   scarica il gruppo di provenienza) sono quelle della PARTE 2 di `Calcoli_RT`: è la **terza** copia di
   quelle regole, dopo il motore e il quadro RT, e il javadoc lo dichiara invece di nasconderlo.
+- **Il dettaglio movimento usa le stesse pile** (`GiacenzeAttornoAlMovimento`, giacenze prima/dopo su
+  globale/gruppo/wallet): le regole stanno in `ElaboraLotti`, unica copia nella classe, e il dettaglio la
+  percorre fino al movimento con `headMap(ID)` — per ID, non per data, come il motore — filtrata sui
+  simboli del movimento. Il filtro va applicato a ogni carico/scarico e non al movimento intero, perché un
+  PTW e il suo DTW possono avere simboli diversi.
 
 ⚠️ La colonna ha spostato gli indici della tabella: *Errori* è la **7** e *InfoPrezzo* la **8**, sia nei
 lettori di `Principale` sia in `Tabelle.ColoraRigheTabella0GiacenzeaData`.

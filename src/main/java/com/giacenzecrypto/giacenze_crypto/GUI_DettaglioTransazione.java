@@ -40,6 +40,9 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
      
      private String IDdt=null;//ID del contesto attuale
 
+     /** Cresce a ogni compilazione: un calcolo delle giacenze arrivato dopo un cambio di movimento si scarta. */
+     private int GenerazioneGiacenze=0;
+
 
         /**
          * Popola la tabella di dettaglio del dialogo con tutti i campi rilevanti del movimento
@@ -299,6 +302,13 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             Val=new String[]{"Plusvalenza ",Valore};
             ModelloTabellaCrypto.addRow(Val);
         }
+
+        //Giacenze prima e dopo il movimento: una passata sulla mappa fino a questo movimento, qualche
+        //decina di millisecondi su un archivio da centomila movimenti. Si calcola in background e si
+        //inserisce qui al posto della riga di attesa, così le frecce restano immediate
+        int PosizioneGiacenze=ModelloTabellaCrypto.getRowCount();
+        ModelloTabellaCrypto.addRow(new String[]{"Giacenze","calcolo in corso..."});
+        CaricaGiacenzeInBackground(IDTransazione, PosizioneGiacenze);
         
 
         
@@ -398,6 +408,45 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
 
     }
     
+    /**
+     * Calcola in background le righe delle giacenze prima/dopo il movimento
+     * ({@link Principale_GiacenzeaData#RigheDettaglio(String)}) e le mette al posto della riga di attesa.
+     * Se nel frattempo è stato mostrato un altro movimento il risultato si scarta.
+     */
+    private void CaricaGiacenzeInBackground(String IDTransazione, int Posizione) {
+        int Generazione = ++GenerazioneGiacenze;
+        new SwingWorker<java.util.List<String[]>, Void>() {
+            @Override
+            protected java.util.List<String[]> doInBackground() {
+                return Principale_GiacenzeaData.RigheDettaglio(IDTransazione);
+            }
+
+            @Override
+            protected void done() {
+                if (Generazione != GenerazioneGiacenze) {
+                    return;
+                }
+                java.util.List<String[]> Righe;
+                try {
+                    Righe = get();
+                } catch (Exception ex) {
+                    LoggerGC.ScriviErrore(ex);
+                    Righe = java.util.List.of(new String[][]{{"Giacenze", "calcolo non riuscito"}});
+                }
+                DefaultTableModel Modello = (DefaultTableModel) Tabella.getModel();
+                if (Posizione >= Modello.getRowCount()) {
+                    return;
+                }
+                Modello.removeRow(Posizione);
+                int r = Posizione;
+                for (String[] Riga : Righe) {
+                    Modello.insertRow(r++, Riga);
+                }
+                Tabelle.updateRowHeights(Tabella);
+            }
+        }.execute();
+    }
+
     public GUI_DettaglioTransazione() {
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
@@ -432,6 +481,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         Bottone_MovSuccessivo = new javax.swing.JButton();
         TextPane_Titolo = new javax.swing.JTextPane();
         Bottone_Modifica = new javax.swing.JButton();
+        Bottone_ModificaPrezzo = new javax.swing.JButton();
 
         MenuItem_CopiaID.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Copia.png"))); // NOI18N
         MenuItem_CopiaID.setText("Copia ID Transazione");
@@ -569,6 +619,14 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             }
         });
 
+        Bottone_ModificaPrezzo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
+        Bottone_ModificaPrezzo.setText("Modifica Prezzo");
+        Bottone_ModificaPrezzo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_ModificaPrezzoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -585,6 +643,8 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                         .addComponent(Bottone_MovSuccessivo))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(Bottone_Modifica, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Bottone_ModificaPrezzo, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_DeFi, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -607,7 +667,8 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Bottone_DeFi)
                     .addComponent(Bottone_Storico)
-                    .addComponent(Bottone_Modifica))
+                    .addComponent(Bottone_Modifica)
+                    .addComponent(Bottone_ModificaPrezzo))
                 .addContainerGap())
         );
 
@@ -696,21 +757,36 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
     }//GEN-LAST:event_MenuItem_ModificaPrezzoMouseReleased
 
     private void MenuItem_ModificaPrezzoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaPrezzoActionPerformed
-        // TODO add your handling code here:
-        //   if(Funzioni.GUIModificaPrezzo(PopUp_Component,PopUp_IDTrans))Funzioni_AggiornaTutto();
+        ApriModificaPrezzo(IDdt);
+    }//GEN-LAST:event_MenuItem_ModificaPrezzoActionPerformed
+
+    private void Bottone_ModificaPrezzoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ModificaPrezzoActionPerformed
+        ApriModificaPrezzo(IDdt);
+    }//GEN-LAST:event_Bottone_ModificaPrezzoActionPerformed
+
+    /**
+     * Chiude il dettaglio, apre {@link GUI_ModificaPrezzo} sul movimento e, alla sua chiusura, riapre il
+     * dettaglio nella stessa posizione. Usato sia dal pulsante sia dalla voce del menu contestuale: per
+     * questo prende l'ID mostrato ({@code IDdt}) e non {@code Principale.PopUp_IDTrans}, che dopo una
+     * navigazione con le frecce, o senza aver mai aperto il menu, può riferirsi a un altro movimento.
+     * @param IDtrans ID del movimento di cui modificare il prezzo
+     */
+    private void ApriModificaPrezzo(String IDtrans) {
+        if (IDtrans == null || Principale.MappaCryptoWallet.get(IDtrans) == null) {
+            return;
+        }
         Component c=this;
         Download progress=new Download();
         progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
-        progress.setLocationRelativeTo(Principale.PopUp_Component);
-        String IDtrans=IDdt;
+        progress.setLocationRelativeTo(this);
         Point p = this.getLocation();
         this.dispose();
         Thread thread;
         thread = new Thread() {
-            /** Apre in background il dialogo {@link GUI_ModificaPrezzo} per il movimento selezionato. */
+            /** Apre in background il dialogo {@link GUI_ModificaPrezzo} per il movimento mostrato. */
             public void run() {
 
-                GUI_ModificaPrezzo t =new GUI_ModificaPrezzo(Principale.PopUp_IDTrans);
+                GUI_ModificaPrezzo t =new GUI_ModificaPrezzo(IDtrans);
                 t.setLocationRelativeTo(c);
                 t.setVisible(true);
                 progress.ChiudiFinestra();
@@ -718,23 +794,36 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         };
         thread.start();
         progress.setVisible(true);
-      /*  System.out.println(Principale.TabellaCryptodaAggiornare);
-        while (Principale.TabellaCryptodaAggiornare){
-            try {
-                TimeUnit.SECONDS.sleep(1);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(GUI_DettaglioTransazione.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }*/
          SwingUtilities.invokeLater(() -> {
+            //Il prezzo cambiato va nei costi di carico e nelle plusvalenze prima di riaprire il dettaglio,
+            //altrimenti il dettaglio mostrerebbe i valori dell'ultimo ricalcolo
+            AggiornaTuttoSeModificato();
             GUI_DettaglioTransazione t =new GUI_DettaglioTransazione();
                 t.AzzeraMap();
                 t.TransazioniCrypto_CompilaTextPaneDatiMovimento(IDtrans);
                 t.setLocation(p);
                 t.setVisible(true);
         });
-        
-    }//GEN-LAST:event_MenuItem_ModificaPrezzoActionPerformed
+    }
+
+    /**
+     * Se un movimento è stato modificato ({@link Principale#TabellaCryptodaAggiornare}) esegue subito
+     * l'aggiornamento completo della finestra principale, lo stesso che partirebbe al suo ritorno in primo
+     * piano, e abbassa il segnale così che quel ritorno non lo ripeta. Rispetta l'opzione del ricalcolo
+     * manuale delle plusvalenze, perché passa da {@code Funzioni_AggiornaTutto()}.
+     */
+    private static void AggiornaTuttoSeModificato() {
+        if (!TabellaCryptodaAggiornare) {
+            return;
+        }
+        for (java.awt.Frame f : java.awt.Frame.getFrames()) {
+            if (f instanceof Principale P && f.isDisplayable()) {
+                TabellaCryptodaAggiornare = false;
+                P.Funzioni_AggiornaTutto();
+                return;
+            }
+        }
+    }
 
     private void MenuItem_ModificaNoteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaNoteActionPerformed
         // TODO add your handling code here:
@@ -830,6 +919,9 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
               if (Messaggi.Personalizzati_SINO_ModificaMovimento(SwingUtilities.getWindowAncestor(c))) {
 
                   ID = GUI_ClassificazioneMovimento.RiportaTransazioniASituazioneIniziale(PartiCoinvolte, ID);
+                  //Il ripristino ha già cambiato l'archivio (movimenti automatici tolti, ID ripristinati),
+                  //anche se la modifica che segue venisse annullata
+                  TabellaCryptodaAggiornare = true;
 
                   //String id=mappa_ID.get(Riferimento);
                   Point p = this.getLocation();
@@ -841,8 +933,8 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                       ID = a.IDNuovo;
                   }
 
-                  //Quando finisco la modifica apro di nuovo la maschera con il movimento
-                  // CDC_Grafica.
+                  //Quando finisco la modifica apro di nuovo la maschera con il movimento, già ricalcolato
+                  AggiornaTuttoSeModificato();
                   GUI_DettaglioTransazione t = new GUI_DettaglioTransazione();
                   t.AzzeraMap();
                   t.TransazioniCrypto_CompilaTextPaneDatiMovimento(ID);
@@ -866,6 +958,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                // CDC_Grafica.
                String IDTr=ID;
                SwingUtilities.invokeLater(() -> {
+            AggiornaTuttoSeModificato();
             GUI_DettaglioTransazione t =new GUI_DettaglioTransazione();
                 t.AzzeraMap();
                 t.TransazioniCrypto_CompilaTextPaneDatiMovimento(IDTr);
@@ -918,6 +1011,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_DeFi;
     private javax.swing.JButton Bottone_Modifica;
+    private javax.swing.JButton Bottone_ModificaPrezzo;
     private javax.swing.JButton Bottone_MovPrecedente;
     private javax.swing.JButton Bottone_MovSuccessivo;
     private javax.swing.JButton Bottone_Storico;

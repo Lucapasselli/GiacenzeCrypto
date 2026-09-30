@@ -1,7 +1,11 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 import com.giacenzecrypto.giacenze_crypto.ImportazioneGenerica.ConfigurazioneImport;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.AfterAll;
@@ -14,8 +18,8 @@ import org.junit.jupiter.api.io.TempDir;
  * funzionalità generiche aggiunte a {@link ImportazioneGenerica} per supportarle (nessuna delle
  * config esistenti le usa, quindi il comportamento di default resta invariato):
  * <ul>
- *   <li>{@code separatoreValoreMoneta}: una cella "NUMERO;SIMBOLO" (Gate.io Spot Trade History
- *       impacchetta importo e moneta nella stessa colonna, es. "407.57;AME") si legge quando
+ *   <li>{@code separatoreValoreMoneta}: una cella "NUMERO SIMBOLO" (Gate.io Spot Trade History
+ *       impacchetta importo e moneta nella stessa colonna, es. "407.57 AME") si legge quando
  *       {@code moneta}/{@code quantita} (o {@code monetaUscita}/{@code quantitaUscita}, o
  *       {@code monetaFee}/{@code quantitaFee}) puntano alla STESSA colonna;</li>
  *   <li>{@code causaliScambiaGambe}: su una riga con entrambe le gambe già presenti, per le
@@ -29,13 +33,16 @@ import org.junit.jupiter.api.io.TempDir;
  * </ul>
  *
  * <p>Le config caricano dati sintetici (non i CSV reali dell'utente, che non vanno committati):
- * righe scritte a mano nella stessa forma grezza dell'export reale, incluso il carattere ';' al
- * posto dello spazio che il file dell'utente porta ovunque (vedi {@code _commentoFormato} nelle
- * config) e il TAB spurio che Gate.io inserisce dopo la 1a e la 6a colonna del trade history.</p>
+ * righe scritte a mano nella stessa forma grezza degli export originali di Gate.io, incluso il TAB
+ * che Gate.io lascia in coda alle celle 'No' e 'Deal price' del trade history. I test
+ * {@code fileReale_*} scrivono quelle righe su disco con encoding, BOM e fine riga degli export
+ * veri e le leggono con {@link ImportazioneGenerica#leggiCSV}, perche' gli errori di formato stanno
+ * proprio li'. La 1.000 delle config era stata scritta su un file passato da un editor che aveva
+ * sostituito ogni spazio con ';', e non leggeva gli export originali.</p>
  *
- * <p>Verificato anche contro i 3 CSV reali dell'utente (non committati): 35 trade -> 70
- * movimenti (35 scambi + 35 commissioni), 6 prelievi -> 12 movimenti, 3 depositi -> 3 movimenti,
- * nessuna riga scartata, importi e direzioni corretti su ogni riga.</p>
+ * <p>Verificato anche contro gli export originali dell'utente (non committati, 2026-09-30): 35
+ * trade -> 70 movimenti (35 scambi + 35 commissioni), 6 prelievi -> 12 movimenti, 2 depositi -> 2
+ * movimenti, un file depositi con la sola intestazione -> 0 righe, nessuna riga scartata.</p>
  */
 class ImportazioneGenericaGateIoTest {
 
@@ -74,9 +81,9 @@ class ImportazioneGenericaGateIoTest {
         return c;
     }
 
-    /** {@code No,Time,Trade type,Role,Market,Deal price,Deal amount;SIM,Total;SIM,Fee;SIM} + [9]=controvalore sintetico */
+    /** {@code No,Time,Trade type,Role,Market,Deal price,Deal amount SIM,Total SIM,Fee SIM} + [9]=controvalore sintetico */
     private static String[] rigaTrade(String no, String time, String tipo, String dealAmount, String total, String fee) {
-        return new String[]{no + "\t", time, tipo, "maker", "XXX/USDT", "0", dealAmount + "\t", total, fee, "1.00"};
+        return new String[]{no + "\t", time, tipo, "maker", "XXX/USDT", "0\t", dealAmount, total, fee, "1.00"};
     }
 
     // ---- colonne composte + scambio gambe -----------------------------------------------------
@@ -85,7 +92,7 @@ class ImportazioneGenericaGateIoTest {
     void configurazioneReale_trades() throws Exception {
         ConfigurazioneImport c = cfgTrades();
         assertEquals("Gate.io", c.nomeExchange);
-        assertEquals(";", c.separatoreValoreMoneta);
+        assertEquals(" ", c.separatoreValoreMoneta);
         assertTrue(c.causaliScambiaGambe.contains("Sell"));
         assertFalse(c.causaliScambiaGambe.contains("Buy"));
         assertEquals("SCAMBIO CRYPTO-CRYPTO", c.mappaCausali.get("Buy"));
@@ -95,7 +102,7 @@ class ImportazioneGenericaGateIoTest {
     @Test
     void buy_baseEntraQuotaEsce() throws Exception {
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
-                rigaTrade("1", "2024-01-15;10:00:00", "Buy", "0.001;BTC", "20.5;USDT", "0.02;POINT"),
+                rigaTrade("1", "2024-01-15 10:00:00", "Buy", "0.001 BTC", "20.5 USDT", "0.02 POINT"),
                 null, cfgTrades());
         assertNotNull(movs);
         assertEquals(2, movs.size(), "scambio + commissioni");
@@ -114,7 +121,7 @@ class ImportazioneGenericaGateIoTest {
     @Test
     void sell_baseEsceQuotaEntra_gambeScambiateRispettoAlBuy() throws Exception {
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
-                rigaTrade("2", "2024-01-16;11:00:00", "Sell", "0.001;BTC", "21;USDT", "0.021;USDT"),
+                rigaTrade("2", "2024-01-16 11:00:00", "Sell", "0.001 BTC", "21 USDT", "0.021 USDT"),
                 null, cfgTrades());
         assertNotNull(movs);
         assertEquals(2, movs.size());
@@ -135,7 +142,7 @@ class ImportazioneGenericaGateIoTest {
     /** {@code OrderID,Time,Network,Address,AddressName,TxID,Coin,Amount,Fee,Received,Status} */
     private static String[] rigaPrelievo(String id, String time, String coin, String amount, String fee) {
         return new String[]{id, time, "BTC", "bc1qxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "", "deadbeef",
-            coin, amount, fee, "0", "Success;;;", "1.00"};
+            coin, amount, fee, "0", "Success", "1.00"};
     }
 
     @Test
@@ -144,9 +151,9 @@ class ImportazioneGenericaGateIoTest {
         assertEquals(-1, c.colonnaCausale, "nessuna colonna causale affidabile in questo export");
 
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
-                rigaPrelievo("9001", "2024-02-01;09:00:00", "BTC", "1.5", "0.1"),
+                rigaPrelievo("9001", "2024-02-01 09:00:00", "BTC", "1.5", "0.1"),
                 null, c);
-        assertNotNull(movs, "'success;;;' riconosciuto via causalePerNota (contains, non match esatto)");
+        assertNotNull(movs, "'Success' riconosciuto via causalePerNota (contains, case-insensitive)");
         assertEquals(2, movs.size(), "prelievo + commissioni");
 
         String[] prelievo = movs.stream().filter(m -> !m[5].equalsIgnoreCase("COMMISSIONI")).findFirst().orElseThrow();
@@ -166,7 +173,7 @@ class ImportazioneGenericaGateIoTest {
     @Test
     void deposito_quantitaSempreForzataInEntrata() throws Exception {
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
-                rigaDeposito("9002", "2024-03-01;08:00:00", "BTC", "2.0"),
+                rigaDeposito("9002", "2024-03-01 08:00:00", "BTC", "2.0"),
                 null, cfgDeposits());
         assertNotNull(movs, "'credited' riconosciuto via causalePerNota");
         assertEquals(1, movs.size(), "nessuna colonna fee in questo export");
@@ -175,5 +182,87 @@ class ImportazioneGenericaGateIoTest {
         assertTrue(m[0].endsWith("_DC"), "DEPOSITO CRYPTO: " + m[0]);
         assertEquals("BTC", m[11]);
         assertEquals("2", m[13], "stripTrailingZeros: '2.0' -> '2'");
+    }
+
+    // ---- lettura dal file, nel formato degli export originali -----------------------------------
+
+    /** Scrive {@code righe} come farebbe Gate.io: BOM + encoding dato, fine riga dato. */
+    private static String scriviFile(String nome, String encoding, String fineRiga, String... righe) throws Exception {
+        Path f = tempDir.resolve(nome);
+        String testo = "\uFEFF" + String.join(fineRiga, righe) + fineRiga;
+        Files.write(f, testo.getBytes(encoding));
+        return f.toString();
+    }
+
+    /** Aggiunge a ogni riga letta il controvalore sintetico, come {@code colonnaValoreEuro} delle cfg*() si aspetta. */
+    private static List<String[]> conValore(List<String[]> righe) {
+        List<String[]> out = new ArrayList<>();
+        for (String[] r : righe) {
+            String[] c = Arrays.copyOf(r, r.length + 1);
+            c[r.length] = "1.00";
+            out.add(c);
+        }
+        return out;
+    }
+
+    @Test
+    void fileReale_trades_utf8ConBomETabInCoda() throws Exception {
+        String file = scriviFile("Spot_TradeHistory_2021.csv", "UTF-8", "\n",
+                "No,Time,Trade type,Role,Market,Deal price,Deal amount,Total,Fee",
+                "40982960158\t,2021-04-13 18:29:01,Buy,taker,GT/USDT,3.7459\t,0.259 GT,0.9701881 USDT,0.0019403762 POINT",
+                "98156856334\t,2021-11-28 10:00:27,Sell,taker,NFTX/USDT,98.69\t,0.013 NFTX,1.28297 USDT,0.00384891 USDT");
+        ConfigurazioneImport c = cfgTrades();
+        List<String[]> righe = ImportazioneGenerica.leggiCSV(file, c);
+        assertEquals(2, righe.size(), "nessuna riga scartata per data o formato");
+
+        List<String[]> movs = new ArrayList<>();
+        for (String[] r : conValore(righe)) movs.addAll(ImportazioneGenerica.costruisciMovimenti(r, null, c));
+        assertEquals(4, movs.size(), "2 scambi + 2 commissioni");
+
+        String[] buy = movs.stream().filter(m -> "GT".equals(m[11])).findFirst().orElseThrow();
+        assertEquals("0.259", buy[13]);
+        assertEquals("USDT", buy[8]);
+        assertEquals("-0.9701881", buy[10]);
+        String[] sell = movs.stream().filter(m -> "NFTX".equals(m[8])).findFirst().orElseThrow();
+        assertEquals("-0.013", sell[10]);
+        assertEquals("USDT", sell[11]);
+        assertEquals("1.28297", sell[13]);
+    }
+
+    @Test
+    void fileReale_prelievi_utf16leConBomECrlf() throws Exception {
+        String file = scriviFile("mywithdrawals_2024.csv", "UTF-16LE", "\r\n",
+                "Order ID\tTime\tNetwork\tAddress\tAddress Name\tTxID\tCoin\tAmount\tTrading Fee\tAmount Received\tStatus",
+                "62675616\t2024-09-04 22:11:38\tXLM\tGXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 1234567\t\tdeadbeef\tXLM\t22.55\t5.4\t17.15\tSuccess");
+        ConfigurazioneImport c = cfgWithdrawals();
+        List<String[]> righe = ImportazioneGenerica.leggiCSV(file, c);
+        assertEquals(1, righe.size());
+
+        List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(conValore(righe).get(0), null, c);
+        assertNotNull(movs);
+        assertEquals(2, movs.size(), "prelievo + commissioni");
+        String[] prelievo = movs.stream().filter(m -> !m[5].equalsIgnoreCase("COMMISSIONI")).findFirst().orElseThrow();
+        assertTrue(prelievo[0].endsWith("_PC"), prelievo[0]);
+        assertEquals("XLM", prelievo[8]);
+        assertEquals("-22.55", prelievo[10]);
+    }
+
+    @Test
+    void fileReale_depositi_utf16leConBomECrlf_ancheSoloIntestazione() throws Exception {
+        String intestazione = "Order ID\tTime\tAddress\tTxID\tCoin\tAmount\tStatus";
+        ConfigurazioneImport c = cfgDeposits();
+        assertTrue(ImportazioneGenerica.leggiCSV(
+                scriviFile("mydeposits_vuoto.csv", "UTF-16LE", "\r\n", intestazione), c).isEmpty(),
+                "un anno senza depositi: file con la sola intestazione, zero righe");
+
+        List<String[]> righe = ImportazioneGenerica.leggiCSV(scriviFile("mydeposits_2023.csv", "UTF-16LE", "\r\n",
+                intestazione, "168772221\t2023-12-28 09:36:34\taXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\tcafebabe\tFIRO\t0.837\tCredited"), c);
+        assertEquals(1, righe.size());
+        List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(conValore(righe).get(0), null, c);
+        assertNotNull(movs);
+        assertEquals(1, movs.size());
+        assertTrue(movs.get(0)[0].endsWith("_DC"), movs.get(0)[0]);
+        assertEquals("FIRO", movs.get(0)[11]);
+        assertEquals("0.837", movs.get(0)[13]);
     }
 }

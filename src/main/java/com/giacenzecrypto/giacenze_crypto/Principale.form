@@ -6917,7 +6917,6 @@
                                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                       <Component id="Opzioni_Varie_Bottone_ProblemiNoti" pref="229" max="32767" attributes="0"/>
                                       <Component id="Opzioni_Varie_Bottone_Disclaimer" max="32767" attributes="0"/>
-                                      <Component id="Opzioni_Varie_RicalcolaPrezzi" max="32767" attributes="0"/>
                                   </Group>
                                   <Component id="Opzioni_Varie_Checkbox_LogJsonDefi" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="Opzioni_Varie_Checkbox_LogJsonPrezzi" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -6934,8 +6933,6 @@
                               <Component id="Opzioni_Varie_Bottone_Disclaimer" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Opzioni_Varie_Bottone_ProblemiNoti" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="86" max="-2" attributes="0"/>
-                              <Component id="Opzioni_Varie_RicalcolaPrezzi" min="-2" pref="95" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
                               <Component id="Opzioni_Varie_Checkbox_LogJsonDefi" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -6962,14 +6959,6 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Bottone_ProblemiNotiActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JButton" name="Opzioni_Varie_RicalcolaPrezzi">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Ricalcola i prezzi delle transazioni"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_RicalcolaPrezziActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="Opzioni_Varie_Checkbox_LogJsonDefi">

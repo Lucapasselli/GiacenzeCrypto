@@ -89,7 +89,7 @@ class PrezziFlagValorizzatoTest {
     // ---- il percorso reale: il ricalcolo prezzi ---------------------------------------------------
 
     /**
-     * Riproduce quello che fa il ciclo di <i>Opzioni → Varie → Ricalcola i prezzi</i> su un movimento
+     * Riproduce quello che fa il ricalcolo dei prezzi dal menu contestuale dei movimenti su un movimento
      * importato senza prezzo: scrive il controvalore e svuota il flag. Fissa il fatto che le due
      * riparazioni siano ridondanti fra loro — con il flag svuotato si arriva a {@code "SI"} per il ramo
      * del ricontrollo, senza bisogno di quello dell'auto-riparazione.
@@ -99,7 +99,7 @@ class PrezziFlagValorizzatoTest {
         String[] m = movimento("NO", "0.00");
         assertFalse(Prezzi.isMovimentoPrezzato(m), "prima del ricalcolo è un errore \"senza prezzo\"");
 
-        //Le due righe del ciclo di Opzioni_Varie_RicalcolaPrezziActionPerformed
+        //Le due righe del ciclo di Principale_Movimenti_RicalcolaPrezzi
         m[15] = "102.00";
         m[32] = "";
 

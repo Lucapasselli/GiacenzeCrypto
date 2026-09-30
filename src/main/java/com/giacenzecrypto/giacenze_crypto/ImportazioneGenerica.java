@@ -265,7 +265,7 @@ public class ImportazioneGenerica {
      * @return lista delle righe valide già splittate in array di colonne
      * @throws IOException se si verifica un errore di lettura del file
      */
-    private static List<String[]> leggiCSV(String fileCSV, ConfigurazioneImport cfg) throws IOException {
+    static List<String[]> leggiCSV(String fileCSV, ConfigurazioneImport cfg) throws IOException {
         List<String> righeRaw = new ArrayList<>();
         List<String[]> risultato = new ArrayList<>();
         String sep = cfg.separatore;
@@ -1559,7 +1559,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
      * Legge una coppia quantita'/moneta, gestendo il caso "valore composto" (vedi
      * {@link ConfigurazioneImport#separatoreValoreMoneta}): se le due colonne configurate
      * coincidono, la cella e' "NUMERO&lt;separatore&gt;SIMBOLO" in un'unica cella (es. Gate.io
-     * "407.57;AME") e va spezzata sul primo separatore invece di leggere due colonne distinte.
+     * "407.57 AME") e va spezzata sul primo separatore invece di leggere due colonne distinte.
      *
      * @return {quantita' normalizzata, moneta normalizzata}
      */
@@ -1858,7 +1858,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         // Colonna/colonna: quando la cella di 'quantita' (o 'quantitaUscita', o 'quantitaFee') e'
         // nella stessa colonna configurata anche come 'moneta' (risp. 'monetaUscita'/'monetaFee'), il
         // valore grezzo e' "NUMERO<separatore>SIMBOLO" in un'unica cella (es. Gate.io Spot Trade
-        // History: "407.57;AME") invece di due colonne separate. Vuoto (default) = comportamento
+        // History: "407.57 AME", separatore " ") invece di due colonne separate. Vuoto (default) = comportamento
         // invariato, moneta e quantita' restano due colonne distinte come in tutte le altre config.
         public String separatoreValoreMoneta = "";
 

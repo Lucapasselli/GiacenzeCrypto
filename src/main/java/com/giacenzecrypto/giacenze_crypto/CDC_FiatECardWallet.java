@@ -508,4 +508,101 @@ public static String[] calcolaSaldiEMedia(
         return new EsitoFiatWallet(movimenti, nonInEuro, tipoSconosciuto);
     }
 
+    // =======================================================================
+    // Riconoscimento del file: App, Fiat Wallet o Card Wallet
+    // =======================================================================
+
+    /** Quale dei tre export dell'app Crypto.com e' un file. */
+    public enum TipoFileCDC {
+        /** Transazioni crypto dell'app: si importa da "Import da File", Crypto.com - App CSV */
+        APP,
+        /** Fiat Wallet: si carica dalla scheda "Fiat Wallet Crypto.com" */
+        FIAT_WALLET,
+        /** Card Wallet: si carica dalla scheda "Carta Crypto.com" */
+        CARD_WALLET,
+        /** Non ha l'intestazione degli export dell'app Crypto.com */
+        SCONOSCIUTO
+    }
+
+    /** Inizio dell'intestazione comune ai tre export dell'app Crypto.com. */
+    private static final String INTESTAZIONE_CDC = "timestamp (utc),transaction description";
+
+    /**
+     * Riconosce quale export dell'app Crypto.com e' il file, per avvisare chi carica il Fiat Wallet o la
+     * carta al posto delle transazioni crypto (l'import dell'App li prenderebbe come causali sconosciute).
+     * <p>I tre export hanno la stessa intestazione, quindi decidono prima il nome che gli da' Crypto.com
+     * ({@code crypto_}, {@code fiat_}, {@code card_transactions_record_...}) e poi, se il file e' stato
+     * rinominato, il contenuto della colonna "Transaction Kind" ({@code [9]}):
+     * <ul>
+     *   <li>vuota su tutte le righe: e' la carta, che quella colonna non la valorizza mai;</li>
+     *   <li>solo tipi del Fiat Wallet ({@code viban_*}, {@code *fiat_wallet*}) e almeno uno diverso da
+     *       {@code viban_purchase}: e' il Fiat Wallet. {@code viban_purchase} da solo non basta, perche'
+     *       compare anche fra le transazioni crypto (un acquisto pagato dal Fiat Wallet);</li>
+     *   <li>altrimenti, anche con zero righe, e' l'export dell'App.</li>
+     * </ul>
+     * E' un avviso, non un blocco: chi chiama lascia sempre la possibilita' di importare comunque.
+     *
+     * @param file il file scelto
+     * @return il tipo riconosciuto, {@link TipoFileCDC#SCONOSCIUTO} anche se il file non si legge
+     */
+    public static TipoFileCDC RiconosciFile(File file) {
+        String intestazione = null;
+        int righe = 0;
+        int senzaTipo = 0;
+        int tipiFiat = 0;
+        boolean fiatNonSoloAcquisti = false;
+        try (BufferedReader br = new BufferedReader(new FileReader(file, java.nio.charset.StandardCharsets.UTF_8))) {
+            String riga;
+            while ((riga = br.readLine()) != null) {
+                riga = riga.replace("﻿", "").trim();
+                if (riga.isEmpty()) {
+                    continue;
+                }
+                if (intestazione == null) {
+                    intestazione = riga.toLowerCase();
+                    continue;
+                }
+                String[] campi = riga.split(",", -1);
+                if (campi.length < 9 || !campi[0].trim().matches("\\d{4}-\\d{2}-\\d{2}.*")) {
+                    continue;
+                }
+                righe++;
+                String tipo = campi.length > 9 ? campi[9].trim().toLowerCase() : "";
+                if (tipo.isEmpty()) {
+                    senzaTipo++;
+                } else if (tipo.startsWith("viban_") || tipo.contains("fiat_wallet")) {
+                    tipiFiat++;
+                    if (!tipo.equals("viban_purchase")) {
+                        fiatNonSoloAcquisti = true;
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            LoggerGC.ScriviErrore(ex);
+            return TipoFileCDC.SCONOSCIUTO;
+        }
+        if (intestazione == null || !intestazione.startsWith(INTESTAZIONE_CDC)) {
+            return TipoFileCDC.SCONOSCIUTO;
+        }
+
+        String nome = file.getName().toLowerCase();
+        if (nome.startsWith("fiat_transactions_record")) {
+            return TipoFileCDC.FIAT_WALLET;
+        }
+        if (nome.startsWith("card_transactions_record")) {
+            return TipoFileCDC.CARD_WALLET;
+        }
+        if (nome.startsWith("crypto_transactions_record")) {
+            return TipoFileCDC.APP;
+        }
+
+        if (righe > 0 && senzaTipo == righe) {
+            return TipoFileCDC.CARD_WALLET;
+        }
+        if (righe > 0 && tipiFiat == righe && fiatNonSoloAcquisti) {
+            return TipoFileCDC.FIAT_WALLET;
+        }
+        return TipoFileCDC.APP;
+    }
+
 }

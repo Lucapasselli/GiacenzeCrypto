@@ -959,7 +959,6 @@ private static final long serialVersionUID = 3L;
         Opzioni_Varie = new javax.swing.JPanel();
         Opzioni_Varie_Bottone_Disclaimer = new javax.swing.JButton();
         Opzioni_Varie_Bottone_ProblemiNoti = new javax.swing.JButton();
-        Opzioni_Varie_RicalcolaPrezzi = new javax.swing.JButton();
         Opzioni_Varie_Checkbox_LogJsonDefi = new javax.swing.JCheckBox();
         Opzioni_Varie_Checkbox_LogJsonPrezzi = new javax.swing.JCheckBox();
         Opzioni_Varie_Bottone_InviaLog = new javax.swing.JButton();
@@ -5364,13 +5363,6 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        Opzioni_Varie_RicalcolaPrezzi.setText("Ricalcola i prezzi delle transazioni");
-        Opzioni_Varie_RicalcolaPrezzi.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Opzioni_Varie_RicalcolaPrezziActionPerformed(evt);
-            }
-        });
-
         Opzioni_Varie_Checkbox_LogJsonDefi.setText("Scrivi nel log i JSON scaricati durante l'importazione dei wallet DeFi");
         Opzioni_Varie_Checkbox_LogJsonDefi.setToolTipText("Attiva la registrazione nel file GiacenzeCrypto.log delle risposte JSON degli explorer (Etherscan, Solana, Bitcoin, Moralis). Utile per il debug, ma il log cresce molto rapidamente.");
         Opzioni_Varie_Checkbox_LogJsonDefi.addActionListener(new java.awt.event.ActionListener() {
@@ -5404,8 +5396,7 @@ private static final long serialVersionUID = 3L;
                 .addGroup(Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                         .addComponent(Opzioni_Varie_Bottone_ProblemiNoti, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                        .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(Opzioni_Varie_Checkbox_LogJsonDefi)
                     .addComponent(Opzioni_Varie_Checkbox_LogJsonPrezzi)
                     .addComponent(Opzioni_Varie_Bottone_InviaLog, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -5418,8 +5409,6 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Opzioni_Varie_Bottone_Disclaimer)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_Varie_Bottone_ProblemiNoti)
-                .addGap(86, 86, 86)
-                .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(Opzioni_Varie_Checkbox_LogJsonDefi)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -14206,112 +14195,6 @@ if (result != null && !result.isAction("cancel")) {
     
     }//GEN-LAST:event_MenuItem_EsportaTabellaActionPerformed
 
-    private void Opzioni_Varie_RicalcolaPrezziActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_RicalcolaPrezziActionPerformed
-        // TODO add your handling code here:
-        //this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        //Fase 2 Preparazione thead
-        String[] options = { "2015", "2016", "2017","2018", "2019", "2020","2021", "2022", "2023","2024", "2025","2026" };
-        JLabel label = new JLabel("<html>Scegli l'anno da cui partire per il ricalcolo dei prezzi.<br>"
-                + "Verranno ricalcolati i prezzi di tutte le movimentazioni crypto a partire dall'anno selezionato.<br>"
-                + "</html>");
-        JComboBox<String> comboBox = new JComboBox<>(options);
-
-        Object[] message = {
-            label,
-            comboBox
-        };
-        
-        int result = JOptionPane.showConfirmDialog(
-            this,                
-            message,            
-            "Scegli l'anno", 
-            JOptionPane.OK_CANCEL_OPTION
-        );
-        if (result == JOptionPane.OK_OPTION) {
-        int anno = Integer.parseInt((String) comboBox.getSelectedItem());
-   
-        //Creo una copia di backup nel caso in cui voglia recuperare i dati
-        Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet,true);
-        
-        
-        Download progress = new Download();
-        progress.setLocationRelativeTo(this);
-
-        Thread thread;
-        thread = new Thread() {
-            /** Ricalcola in background i prezzi di tutte le transazioni dall'anno scelto in poi, sostituendo quelli ancora vuoti o diversi dal nuovo valore trovato. */
-            public void run() {
-                //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
-                //in futuro dovrò mettere anche un limite per data e un limite per wallet
-                progress.Titolo("Ricalcolo prezzi in corso....");
-
-                //Pre-scarico: qui l'insieme dei movimenti da valorizzare e' noto in anticipo per
-                //intero, quindi conviene raccogliere le coppie (moneta, ora) che serviranno e
-                //chiederle a lotti invece di lasciare che il ciclo qui sotto lanci un processo Node
-                //per ogni quotazione mancante (~3.300 ms l'una, contro ~188 ms dentro un lotto).
-                //Non cambia QUALE prezzo viene scelto: riempie solo la cache che il ciclo interroga.
-                Prezzi.PreScaricaPrezzi(MappaCryptoWallet.values(), anno, progress);
-
-                //Il massimo va rimesso DOPO il pre-scarico, che usa la stessa finestra con un
-                //massimo diverso (il numero di quotazioni, non di movimenti).
-                progress.SetLabel("Ricalcolo prezzi in corso....");
-                progress.SetMassimo(MappaCryptoWallet.size());
-                BigDecimal diffPrezzi = BigDecimal.ZERO;
-                BigDecimal diffPrezziRilevanti = BigDecimal.ZERO;
-                BigDecimal nuoviPrezziTrovati = BigDecimal.ZERO;
-                int righiModificati=0;
-                int righiRilevantiModificati=0;
-                int nuoviPrezzi=0;
-                int i=0;
-                for (String[] trans : MappaCryptoWallet.values()) {
-                    int Annorif=Integer.parseInt(trans[0].substring(0, 4));
-                    i++;
-                    progress.SetAvanzamento(i);
-                    if (Annorif>=anno){
-                    String pr = "0.00";
-                    if (trans[14].isBlank()) {
-                        pr = Prezzi.DammiPrezzoDaTransazione(trans, 2);
-                        if (pr==null)pr="0.00";
-                    }
-                    if (!trans[15].equals(pr) && !pr.equals("0.00")) {
-                        //System.out.println(trans[15]+" - "+pr);
-                        if (trans[33].equals("S")) {
-                            righiRilevantiModificati++;
-                            diffPrezziRilevanti = diffPrezziRilevanti.subtract(new BigDecimal(trans[15])).add(new BigDecimal(pr));
-                        }
-                        if (trans[15].equals("0.00")) {
-                            nuoviPrezzi++;
-                            nuoviPrezziTrovati = nuoviPrezziTrovati.subtract(new BigDecimal(trans[15])).add(new BigDecimal(pr));
-                        }
-                            righiModificati++;
-                            diffPrezzi = diffPrezzi.subtract(new BigDecimal(trans[15])).add(new BigDecimal(pr));
-                        trans[15] = pr;
-                        //Il flag "prezzato" va rimesso in discussione insieme al prezzo: un movimento
-                        //nato senza prezzo porta [32]="NO", che vuol dire "gia' cercato, non chiedere
-                        //piu'", e resterebbe fra gli errori "senza prezzo" pur avendo ora un
-                        //controvalore. Si svuota invece di scrivere "SI": e' la convenzione gia' usata
-                        //dalla marcatura SCAM (GiacenzeaData_Funzione_IdentificaComeScam e simili), e
-                        //lascia la decisione all'unico punto che la prende, Prezzi.isMovimentoPrezzato,
-                        //che al prossimo caricamento della tabella vedra' [15] diverso da 0.00.
-                        trans[32] = "";
-                    }
-                }
-                }
-                String tex="Sono stati modificati <b>"+righiModificati+"</b> prezzi, per una differenza totale di <b>€ "+diffPrezzi+"</b><br>"+
-                                "di cui :<br>"+
-                               " - <b>"+nuoviPrezzi+ "</b> sono relativi all'attribuzione di un prezzo a prodotti che prima non lo avevano per un totale di <b>€ "+nuoviPrezziTrovati+"</b><br>"+
-                               " - <b>"+righiRilevantiModificati+ "</b> sono relativi a movimenti fiscalmente rilevanti per un totale di <b>€ "+diffPrezziRilevanti+"</b><br>";
-                Messaggi.SuccessMessage("Riepilogo", tex, progress);
-                progress.ChiudiFinestra();
-
-            }
-        };
-        thread.start();
-        progress.setVisible(true);
-        this.Funzioni_AggiornaTutto();
-        }
-    }//GEN-LAST:event_Opzioni_Varie_RicalcolaPrezziActionPerformed
-
     private void MenuItem_ModificaMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaMovimentoActionPerformed
         // TODO add your handling code here:
         if (PopUp_IDTrans!=null){
@@ -19419,7 +19302,6 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_LogJsonDefi;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_LogJsonPrezzi;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_TemaScuro;
-    private javax.swing.JButton Opzioni_Varie_RicalcolaPrezzi;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti;

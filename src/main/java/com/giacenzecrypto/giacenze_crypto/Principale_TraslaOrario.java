@@ -445,7 +445,7 @@ public class Principale_TraslaOrario {
     /**
      * Ricalcola il prezzo dei movimenti indicati al loro nuovo orario, sostituendo quello attuale.
      * Esegue in background (può fare I/O di rete) mostrando una finestra di avanzamento, sullo stesso
-     * schema di {@code Principale.Opzioni_Varie_RicalcolaPrezziActionPerformed}.
+     * schema di {@link Principale_Movimenti_RicalcolaPrezzi}.
      * @param NuoviID              ID (già traslati) dei movimenti su cui ricalcolare il prezzo
      * @param AncheIPersonalizzati se {@code false}, i movimenti con fonte prezzo "Personalizzato" vengono saltati
      */

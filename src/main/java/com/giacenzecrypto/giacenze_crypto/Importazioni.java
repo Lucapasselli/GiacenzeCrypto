@@ -1207,8 +1207,12 @@ public class Importazioni {
      * categorie interne e delega il consolidamento a {@link #Ex_CDCAPP_Consolida}.
      * @param fileCDCapp percorso del file CSV Crypto.com App da importare
      * @param SovrascriEsistenti se {@code true} sovrascrive i movimenti già presenti con lo stesso ID
+     * @param progressb finestra di avanzamento, può essere {@code null}: avanza una riga del file alla volta
+     *        (la parte lenta è la ricerca dei prezzi dentro {@link #Ex_CDCAPP_Consolida}) e il suo Interrompi
+     *        abbandona l'importazione senza scrivere nulla, come negli altri import da CSV
+     * @return {@code false} se l'importazione è stata interrotta o la mappa causali non è disponibile
      */
-    public static void Ex_CDCAPP_Importa(String fileCDCapp, boolean SovrascriEsistenti) {
+    public static boolean Ex_CDCAPP_Importa(String fileCDCapp, boolean SovrascriEsistenti, Download progressb) {
         //Da sistemare problema su prezzi della giornata odierna/precendere che vanno in loop
         //Da sistemare problema con conversione dust su secondi diversi che da problemi
         //Da sistemare problema con il nuovo stakin che non viene conteggiato (FATTO MA NON SO IL RITIRO DALLO STAKING con che causale sarà segnalato) bisognerà fare delle prove
@@ -1220,7 +1224,7 @@ public class Importazioni {
         Map<String, String> Mappa_Conversione_Causali = Ex_CDCAPP_MappaCausali();
         if (Mappa_Conversione_Causali == null) {
             SegnalaMappaCausaliNonDisponibile(MappeCausali.CRYPTOCOM_APP, null);
-            return;
+            return false;
         }
 
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
@@ -1242,7 +1246,13 @@ public class Importazioni {
             Collections.sort(righeFile);
             Collections.sort(righeFile);
 
+            if (progressb != null) progressb.SetMassimo(righeFile.size());
             for (int w = 0; w < righeFile.size(); w++) {
+                if (progressb != null) {
+                    //se è stata interrotta la finestra di progresso abbandono senza scrivere nulla
+                    if (progressb.FineThread()) return false;
+                    progressb.SetAvanzamento(w + 1);
+                }
 
                 riga = righeFile.get(w);
                 //System.out.println(riga);
@@ -1295,7 +1305,7 @@ public class Importazioni {
         if (TransazioniAggiunte > 0) {
             Principale.TabellaCryptodaAggiornare = true;
         }
-
+        return true;
     }
     
     /**

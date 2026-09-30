@@ -739,6 +739,179 @@ private VoceImport voceSelezionata() {
    
     
     
+    /**
+     * Apre la scelta dei file da importare partendo dall'ultima cartella usata, e la ricorda.
+     * @param multipla {@code true} per permettere di scegliere piu' file in una volta
+     * @return i file scelti (almeno uno), oppure {@code null} se l'utente ha annullato
+     */
+    private File[] ScegliFileDaImportare(boolean multipla) {
+        JFileChooser fc = new JFileChooser(DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione"));
+        fc.setMultiSelectionEnabled(multipla);
+        if (fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return null;
+        }
+        File[] files = multipla ? fc.getSelectedFiles() : new File[]{fc.getSelectedFile()};
+        if (files == null || files.length == 0 || files[0] == null) {
+            return null;
+        }
+        DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", files[0].getParent());
+        return files;
+    }
+
+    /**
+     * Controlla i file scelti per "Crypto.com - App CSV" prima di importarli: per ognuno che sembra il Fiat
+     * Wallet, la carta o nemmeno un export dell'app, dice dove va caricato e lascia scegliere se saltarlo o
+     * importarlo comunque (il riconoscimento puo' sbagliare, quindi non blocca mai).
+     * @param files i file scelti
+     * @return i file da importare, oppure {@code null} se non ne resta nessuno
+     */
+    private File[] FileCDCAppDaImportare(File[] files) {
+        java.util.List<File> daImportare = new ArrayList<>();
+        for (File file : files) {
+            CDC_FiatECardWallet.TipoFileCDC tipo = CDC_FiatECardWallet.RiconosciFile(file);
+            String messaggio = switch (tipo) {
+                case FIAT_WALLET -> "Il file \"" + file.getName() + "\" sembra l'estratto del Fiat Wallet di Crypto.com,\n"
+                        + "non quello delle transazioni crypto dell'App.\n\n"
+                        + "Il Fiat Wallet va caricato dalla scheda \"Fiat Wallet Crypto.com\",\n"
+                        + "con il pulsante \"Carica Dati Fiat Wallet\".\n"
+                        + "Importato qui, i suoi movimenti risulterebbero sconosciuti.";
+                case CARD_WALLET -> "Il file \"" + file.getName() + "\" sembra l'estratto della Carta Crypto.com,\n"
+                        + "non quello delle transazioni crypto dell'App.\n\n"
+                        + "La carta va caricata dalla scheda \"Carta Crypto.com\",\n"
+                        + "con il pulsante \"Carica Dati Carta\".\n"
+                        + "Importato qui, i suoi movimenti risulterebbero sconosciuti.";
+                case SCONOSCIUTO -> "Il file \"" + file.getName() + "\" non sembra un export dell'App Crypto.com:\n"
+                        + "manca l'intestazione \"Timestamp (UTC),Transaction Description,...\".\n\n"
+                        + "Controllare di aver scelto il file giusto, o il tipo di importazione giusto.";
+                default -> null;
+            };
+            if (messaggio == null) {
+                daImportare.add(file);
+                continue;
+            }
+            Object[] opzioni = {"Salta il file", "Importa comunque"};
+            int scelta = JOptionPane.showOptionDialog(this, messaggio, "File non riconosciuto",
+                    JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, opzioni, opzioni[0]);
+            if (scelta == 1) {
+                daImportare.add(file);
+            }
+        }
+        return daImportare.isEmpty() ? null : daImportare.toArray(new File[0]);
+    }
+
+    /** L'importazione di un singolo file: restituisce quello che restituisce {@link DocumentiFonte#EseguiImportDaFile}. */
+    private interface ImportDaFile {
+        boolean importa(File file, Download progressb);
+    }
+
+    /**
+     * Importa uno dopo l'altro i file scelti con lo stesso import, in background e con una sola finestra di
+     * avanzamento, e alla fine mostra un solo resoconto con la somma di tutti.
+     * <p>Ogni file resta un documento di origine a se' ({@code EseguiImportDaFile} per file), cosi' la
+     * deduplica, il campo [41] e l'eventuale cancellazione del documento funzionano come per un file solo.
+     * Un Interrompi ferma il file in corso e non fa partire i successivi.
+     * @param files i file da importare, nell'ordine in cui sono stati scelti
+     * @param ripristinaStdout {@code true} per gli import che a fine lavoro staccavano il log dalla finestra
+     * @param importazione l'import di un file
+     */
+    private void ImportaFileInSequenza(File[] files, boolean ripristinaStdout, ImportDaFile importazione) {
+        Component c = this;
+        Download progressb = new Download();
+        Bottone_SelezionaFile.setEnabled(false);
+        Bottone_Annulla.setEnabled(false);
+        Thread thread = new Thread() {
+            /** Esegue in background l'importazione dei file scelti. */
+            @Override
+            public void run() {
+                try {
+                    c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    RiepilogoImport riepilogo = new RiepilogoImport();
+                    for (int i = 0; i < files.length; i++) {
+                        if (riepilogo.interrotto || progressb.FineThread) {
+                            break;
+                        }
+                        if (files.length > 1) {
+                            progressb.setTitle("File " + (i + 1) + " di " + files.length + " - " + files[i].getName());
+                        }
+                        Importazioni.AzzeraContatori();
+                        boolean ok = importazione.importa(files[i], progressb);
+                        if (ok && Importazioni.TransazioniAggiunte > 0) {
+                            Principale.TabellaCryptodaAggiornare = true;
+                        }
+                        riepilogo.aggiungi(files[i]);
+                    }
+                    c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    riepilogo.mostra(c);
+                    if (ripristinaStdout) {
+                        progressb.RipristinaStdout();
+                    }
+                    dispose();
+                } catch (Exception ex) {
+                    LoggerGC.ScriviErrore(ex);
+                } finally {
+                    c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    Bottone_SelezionaFile.setEnabled(true);
+                    Bottone_Annulla.setEnabled(true);
+                    progressb.dispose();
+                }
+            }
+        };
+        progressb.SetThread(thread);
+        thread.start();
+        progressb.setDefaultCloseOperation(0);
+        progressb.setLocationRelativeTo(this);
+        progressb.setVisible(true);
+    }
+
+    /**
+     * Somma gli esiti di piu' file importati di seguito per mostrarne un solo resoconto.
+     * <p>Ogni import chiama {@link Importazioni#AzzeraContatori()}, che oltre ai contatori azzera anche le
+     * causali derivati segnalate e i giroconti FIAT abbinati: qui si raccolgono file per file e si rimettono
+     * al loro posto prima di aprire il resoconto, che li legge da li'. Con un file solo il resoconto e'
+     * identico a quello di prima della selezione multipla.
+     */
+    private static final class RiepilogoImport {
+        private final Importazioni.Esito esito = new Importazioni.Esito();
+        private final java.util.Set<String> derivati = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        private int giroconti = 0;
+        private int numeroFile = 0;
+        /** L'ultimo file e' stato interrotto dall'utente: i successivi non vanno importati. */
+        boolean interrotto = false;
+
+        /** Raccoglie l'esito dell'import appena finito, letto dai contatori statici. */
+        void aggiungi(File file) {
+            esito.Somma(Importazioni.Esito.daiContatori(file.getName()));
+            derivati.addAll(Importazioni.CausaliDerivatiSegnalate);
+            giroconti += GirocontiFiat.AbbinatiImportazione;
+            interrotto = DocumentiFonte.UltimoImportInterrotto;
+            numeroFile++;
+        }
+
+        /** Mostra il resoconto (modale) di tutti i file importati. */
+        void mostra(Component c) {
+            if (numeroFile == 0) {
+                return;
+            }
+            Importazioni.CausaliDerivatiSegnalate.clear();
+            Importazioni.CausaliDerivatiSegnalate.addAll(derivati);
+            GirocontiFiat.AbbinatiImportazione = giroconti;
+            DocumentiFonte.UltimoImportInterrotto = interrotto;
+            Importazioni_Resoconto res = new Importazioni_Resoconto();
+            if (numeroFile == 1) {
+                res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate,
+                        Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
+            } else {
+                //Somma() concatena le origini ("a.csv + b.csv + ..."): per il titolo basta il tipo di import
+                //e il numero di file, i nomi restano come intestazioni nell'elenco dei movimenti sconosciuti
+                String descrizione = DocumentiFonte.UltimaDescrizioneImport == null ? "" : DocumentiFonte.UltimaDescrizioneImport;
+                esito.Origine = (descrizione.isBlank() ? "" : descrizione + " ") + "(" + numeroFile + " file)";
+                res.ImpostaValori(esito);
+            }
+            res.setLocationRelativeTo(c);
+            res.setVisible(true);
+        }
+    }
+
     private void Bottone_SelezionaFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_SelezionaFileActionPerformed
 
         // boolean selezioneok[]=new boolean[]{false};
@@ -824,133 +997,78 @@ if (voce.isJson()) {
         return;
     }
 
-    Component c = this;
-    Download progressb = new Download();
-    Bottone_SelezionaFile.setEnabled(false);
-    Bottone_Annulla.setEnabled(false);
-
-    String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
-    JFileChooser fc = new JFileChooser(Directory);
-    int returnVal = fc.showOpenDialog(c);
-
-    //Se l'utente annulla la scelta del file getSelectedFile() è null: senza questa uscita anticipata
-    //la lettura del nome qui sotto sollevava una NullPointerException e i due pulsanti restavano
-    //disabilitati, lasciando la finestra inutilizzabile
-    if (returnVal != JFileChooser.APPROVE_OPTION) {
-        Bottone_SelezionaFile.setEnabled(true);
-        Bottone_Annulla.setEnabled(true);
-        progressb.dispose();
+    //Selezione multipla: si possono importare in una volta sola piu' file dello stesso formato
+    File[] files = ScegliFileDaImportare(true);
+    if (files == null) {
         return;
     }
 
-    // Risolvo il fuso orario se non specificato nel JSON
+    // Risolvo il fuso orario file per file, se non specificato nel JSON
     boolean PrioritaNomeFile=false;
     //Se c'e il ? affianco al fuso allora do priorità al fuso sul file invece che quello scritto
     if (fusoFinale[0].contains("?")){
         PrioritaNomeFile=true;
         fusoFinale[0]=fusoFinale[0].replace("?", "");
     }
-    String nomeFile = fc.getSelectedFile().getName();
-    String fusoFile = ImportazioneGenerica.estraiTZdaNomeFile(nomeFile);
-    if (PrioritaNomeFile&&fusoFile != null && !fusoFile.isBlank()){
-        fusoFinale[0] = fusoFile;
-    }
-    if (returnVal == JFileChooser.APPROVE_OPTION && fusoFinale[0].isBlank()) {
-        
-        if (fusoFile != null && !fusoFile.isBlank()) {
-            fusoFinale[0] = fusoFile;
+    //Il fuso si legge dal nome di ciascun file; se non c'e' ne' li' ne' nella configurazione si chiede una
+    //volta sola e vale per tutti i file che ne sono privi
+    final String[] fusoPerFile = new String[files.length];
+    String fusoScelto = null;
+    for (int i = 0; i < files.length; i++) {
+        String fusoFile = ImportazioneGenerica.estraiTZdaNomeFile(files[i].getName());
+        boolean fusoNelNome = fusoFile != null && !fusoFile.isBlank();
+        if (PrioritaNomeFile && fusoNelNome) {
+            fusoPerFile[i] = fusoFile;
+        } else if (!fusoFinale[0].isBlank()) {
+            fusoPerFile[i] = fusoFinale[0];
+        } else if (fusoNelNome) {
+            fusoPerFile[i] = fusoFile;
         } else {
-            String fusoScelto = AppDialog.showComboBoxDialog(
-                    this,
-                    "Fuso orario non specificato",
-                    "Seleziona il fuso orario",
-                    "Il fuso orario non è specificato nella configurazione né nel nome del file.\n\n"
-                    + "Selezionare il fuso orario corretto per i dati da importare:",
-                    "Fuso orario:",
-                    "UTC", "UTC+1", "UTC+2", "CET", "Europe/Rome"
-            );
             if (fusoScelto == null) {
-                Bottone_SelezionaFile.setEnabled(true);
-                Bottone_Annulla.setEnabled(true);
-                return;
+                fusoScelto = AppDialog.showComboBoxDialog(
+                        this,
+                        "Fuso orario non specificato",
+                        "Seleziona il fuso orario",
+                        "Il fuso orario non è specificato nella configurazione né nel nome del file.\n\n"
+                        + "Selezionare il fuso orario corretto per i dati da importare:",
+                        "Fuso orario:",
+                        "UTC", "UTC+1", "UTC+2", "CET", "Europe/Rome"
+                );
+                if (fusoScelto == null) {
+                    this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    return;
+                }
             }
-            fusoFinale[0] = fusoScelto;
+            fusoPerFile[i] = fusoScelto;
         }
     }
 
     final boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
+    final java.util.List<File> elenco = java.util.Arrays.asList(files);
 
-    Thread thread = new Thread() {
-        /** Esegue in background l'import generico configurato dal JSON selezionato. */
-        @Override
-        public void run() {
-            try {
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-
-                    String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
-                    DatabaseH2.Pers_Opzioni_Scrivi(
-                            "Directory_ImportazioniGestione",
-                            fc.getSelectedFile().getParent()
-                    );
-
-                    c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    Importazioni.AzzeraContatori();
-
-                    boolean ok = DocumentiFonte.EseguiImportDaFile(
-                            new File(FileDaImportare), DocumentiFonte.TIPO_CSV, new File(percorsoJson).getName(), progressb,
-                            () -> ImportazioneGenerica.importa(
-                                    FileDaImportare,
-                                    percorsoJson,
-                                    SovrascriEsistenti,
-                                    progressb,
-                                    nomeExchangeFinale[0],
-                                    fusoFinale[0]
-                            ));
-
-                    if (ok && Importazioni.TransazioniAggiunte > 0) {
-                        Principale.TabellaCryptodaAggiornare = true;
-                    }
-
-                    Importazioni_Resoconto res = new Importazioni_Resoconto();
-                    c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                    res.ImpostaValori(
-                            Importazioni.Transazioni,
-                            Importazioni.TransazioniAggiunte,
-                            Importazioni.TrasazioniScartate,
-                            Importazioni.TrasazioniSconosciute,
-                            Importazioni.movimentiSconosciuti
-                    );
-                    res.setLocationRelativeTo(c);
-                    res.setVisible(true);
-                    dispose();
-                }
-
-            } catch (Exception ex) {
-                LoggerGC.ScriviErrore(ex);
-
-            } finally {
-                Bottone_SelezionaFile.setEnabled(true);
-                Bottone_Annulla.setEnabled(true);
-                progressb.dispose();
-            }
-        }
-    };
-
-    progressb.SetThread(thread);
-    thread.start();
-    progressb.setDefaultCloseOperation(0);
-    progressb.setLocationRelativeTo(this);
-    progressb.setVisible(true);
+    ImportaFileInSequenza(files, false, (file, progressb) -> {
+        String FileDaImportare = file.getAbsolutePath();
+        String fuso = fusoPerFile[elenco.indexOf(file)];
+        return DocumentiFonte.EseguiImportDaFile(
+                file, DocumentiFonte.TIPO_CSV, new File(percorsoJson).getName(), progressb,
+                () -> ImportazioneGenerica.importa(
+                        FileDaImportare,
+                        percorsoJson,
+                        SovrascriEsistenti,
+                        progressb,
+                        nomeExchangeFinale[0],
+                        fuso
+                ));
+    });
 }
         
         else if (voce.isNativo(NAT_BINANCE_DUAL_INVESTMENT)) {
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
-            JFileChooser fc = new JFileChooser(Directory);
-            int returnVal = fc.showOpenDialog(this);
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
-                DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
+            //Un file solo: non e' un'importazione ma l'abbinamento dei contratti di un file di dettaglio,
+            //con un resoconto suo (ImpostaValoriDualInvestment) che non si somma su piu' file
+            File[] files = ScegliFileDaImportare(false);
+            if (files != null) {
+                String FileDaImportare = files[0].getAbsolutePath();
                 try {
                     Binance_DualInvestment.Esito esito = Binance_DualInvestment.Abbina(new File(FileDaImportare));
                     if (esito.abbinati > 0) {
@@ -972,79 +1090,29 @@ if (voce.isJson()) {
         }
 
         else if (voce.isNativo(NAT_CDC_APP)) {
-            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
-            JFileChooser fc = new JFileChooser(Directory);
-            int returnVal = fc.showOpenDialog(this);
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                //   selezioneok[0]=true;
-                String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
-                DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
-                //System.out.println(Directory);
-                boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
-                Importazioni.AzzeraContatori();
-                DocumentiFonte.EseguiImportDaFile(
-                        new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Crypto.com App CSV",
-                        () -> { Importazioni.Ex_CDCAPP_Importa(FileDaImportare, SovrascriEsistenti); return true; });
-                Importazioni_Resoconto res = new Importazioni_Resoconto();
-                res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
-                res.setLocationRelativeTo(this);
-                res.setVisible(true);
-                dispose();
+            File[] files = ScegliFileDaImportare(true);
+            if (files != null) {
+                //Controllo preventivo: Fiat Wallet e carta hanno la stessa intestazione dell'App, e caricati
+                //qui finiscono tutti fra le causali sconosciute
+                files = FileCDCAppDaImportare(files);
             }
-            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            if (files != null) {
+                boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
+                ImportaFileInSequenza(files, false, (file, progressb) -> DocumentiFonte.EseguiImportDaFile(
+                        file, DocumentiFonte.TIPO_CSV, "Crypto.com App CSV", progressb,
+                        () -> Importazioni.Ex_CDCAPP_Importa(file.getAbsolutePath(), SovrascriEsistenti, progressb)));
+            }
         } else if (voce.isNativo(NAT_CDC_EXCHANGE)) {
-            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
-            JFileChooser fc = new JFileChooser(Directory);
-            int returnVal = fc.showOpenDialog(this);
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                //   selezioneok[0]=true;
+            File[] files = ScegliFileDaImportare(true);
+            if (files != null) {
                 Component c = this;
-                Download progressb = new Download();
-                Bottone_SelezionaFile.setEnabled(false);
-                Bottone_Annulla.setEnabled(false);
-                Importazioni.AzzeraContatori();
-
-                Thread thread;
-                thread = new Thread() {
-                    /** Esegue in background l'import di un CSV Crypto.com Exchange. */
-                    public void run() {
-                        if (returnVal == JFileChooser.APPROVE_OPTION) {
-                            String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
-                            DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
-                            boolean SovrascriEsistenti = CheckBox_Sovrascrivi.isSelected();
-                            Importazioni.AzzeraContatori();
-                            boolean PrezzoZero = false;
-                            if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain")) {
-                                //in questo caso siccome cointracking sbaglia molto spesso i prezzi delle shitcoin imposto il prezzo a zero
-                                //su tutti gli scambi nel caso in cui binance non abbia i prezi corretti
-                                PrezzoZero = true;
-
-                            }
-                            final boolean PrezzoZeroF = PrezzoZero;
-                            DocumentiFonte.EseguiImportDaFile(
-                                    new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Crypto.com Exchange CSV", progressb,
-                                    () -> Importazioni.Ex_CryptoComExchange_Importa(FileDaImportare, SovrascriEsistenti, c, PrezzoZeroF, progressb));
-                            Importazioni_Resoconto res = new Importazioni_Resoconto();
-                            res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
-                            res.setLocationRelativeTo(c);
-                            res.setVisible(true);
-                            progressb.RipristinaStdout();
-                            dispose();
-                        }
-                        Bottone_SelezionaFile.setEnabled(true);
-                        Bottone_Annulla.setEnabled(true);
-                        progressb.dispose();
-
-                    }
-
-                };
-                progressb.SetThread(thread);
-                thread.start();
-                progressb.setDefaultCloseOperation(0);
-                progressb.setLocationRelativeTo(this);
-                progressb.setVisible(true);
+                boolean SovrascriEsistenti = CheckBox_Sovrascrivi.isSelected();
+                //in questo caso siccome cointracking sbaglia molto spesso i prezzi delle shitcoin imposto il prezzo a zero
+                //su tutti gli scambi nel caso in cui binance non abbia i prezi corretti
+                final boolean PrezzoZeroF = ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain");
+                ImportaFileInSequenza(files, true, (file, progressb) -> DocumentiFonte.EseguiImportDaFile(
+                        file, DocumentiFonte.TIPO_CSV, "Crypto.com Exchange CSV", progressb,
+                        () -> Importazioni.Ex_CryptoComExchange_Importa(file.getAbsolutePath(), SovrascriEsistenti, c, PrezzoZeroF, progressb)));
             }
             this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         } else if (voce.isNativo(NAT_COINTRACKING)) {
@@ -1089,58 +1157,19 @@ if (voce.isJson()) {
                 return;
             }
 
+            File[] files = ScegliFileDaImportare(true);
+            if (files == null) {
+                return;
+            }
             Component c = this;
-            Download progressb = new Download();
-            Bottone_SelezionaFile.setEnabled(false);
-            Bottone_Annulla.setEnabled(false);
-            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
-            JFileChooser fc = new JFileChooser(Directory);
-            int returnVal = fc.showOpenDialog(c);
-
-            Thread thread;
-            thread = new Thread() {
-                /** Esegue in background l'import di un CSV CoinTracking. */
-                public void run() {
-                    //  try {
-
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        //     selezioneok[0] = true;
-                        String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
-                        DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
-                        boolean SovrascriEsistenti = CheckBox_Sovrascrivi.isSelected();
-                        Importazioni.AzzeraContatori();
-                        boolean PrezzoZero = false;
-                        if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain")) {
-                            // nomewallet = Text_NomeWallet.getText().trim() + " " + ComboBox_Exchanges.getSelectedItem().toString().trim().substring(ComboBox_Exchanges.getSelectedItem().toString().indexOf("("), ComboBox_Exchanges.getSelectedItem().toString().indexOf(")") + 1);
-                            //in questo caso siccome cointracking sbaglia molto spesso i prezzi delle shitcoin imposto il prezzo a zero
-                            //su tutti gli scambi nel caso in cui binance non abbia i prezi corretti
-                            PrezzoZero = true;
-
-                        }
-                        final boolean PrezzoZeroF = PrezzoZero;
-                        DocumentiFonte.EseguiImportDaFile(
-                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "CoinTracking CSV", progressb,
-                                () -> Importazioni.Ex_CoinTracking_Importa(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZeroF, progressb));
-
-                        Importazioni_Resoconto res = new Importazioni_Resoconto();
-                        res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
-                        res.setLocationRelativeTo(c);
-                        res.setVisible(true);
-                        dispose();
-
-                    }
-                    Bottone_SelezionaFile.setEnabled(true);
-                    Bottone_Annulla.setEnabled(true);
-                    progressb.dispose();
-
-                }
-
-            };
-            progressb.SetThread(thread);
-            thread.start();
-            progressb.setDefaultCloseOperation(0);
-            progressb.setLocationRelativeTo(this);
-            progressb.setVisible(true);
+            boolean SovrascriEsistenti = CheckBox_Sovrascrivi.isSelected();
+            //in questo caso siccome cointracking sbaglia molto spesso i prezzi delle shitcoin imposto il prezzo a zero
+            //su tutti gli scambi nel caso in cui binance non abbia i prezi corretti
+            final boolean PrezzoZeroF = ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain");
+            final String NomeWalletF = NomeWallet;
+            ImportaFileInSequenza(files, false, (file, progressb) -> DocumentiFonte.EseguiImportDaFile(
+                    file, DocumentiFonte.TIPO_CSV, "CoinTracking CSV", progressb,
+                    () -> Importazioni.Ex_CoinTracking_Importa(file.getAbsolutePath(), SovrascriEsistenti, NomeWalletF, c, PrezzoZeroF, progressb)));
             /* else {
 
                 //QUA Devo gestire il joptionpane che mi avvisa di scegliere un exchange dalla lista
@@ -1194,59 +1223,19 @@ if (voce.isJson()) {
                 return;
             }
 
+            File[] files = ScegliFileDaImportare(true);
+            if (files == null) {
+                return;
+            }
             Component c = this;
-            Download progressb = new Download();
-            Bottone_SelezionaFile.setEnabled(false);
-            Bottone_Annulla.setEnabled(false);
-            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
-            JFileChooser fc = new JFileChooser(Directory);
-            int returnVal = fc.showOpenDialog(c);
-
-            Thread thread;
-            thread = new Thread() {
-                /** Esegue in background l'import di un CSV Tatax. */
-                public void run() {
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
-
-                        String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
-                        DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
-                        boolean SovrascriEsistenti = CheckBox_Sovrascrivi.isSelected();
-                        Importazioni.AzzeraContatori();
-
-                        boolean PrezzoZero = false;
-                        if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain")) {
-                            //in questo caso siccome cointracking sbaglia molto spesso i prezzi delle shitcoin imposto il prezzo a zero
-                            //su tutti gli scambi nel caso in cui binance non abbia i prezi corretti
-                            PrezzoZero = true;
-
-                        }
-
-                        final boolean PrezzoZeroF = PrezzoZero;
-                        DocumentiFonte.EseguiImportDaFile(
-                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Tatax CSV", progressb,
-                                () -> Importazioni.Ex_Tatax_Importa(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZeroF, progressb));
-
-                        Importazioni_Resoconto res = new Importazioni_Resoconto();
-                        res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
-                        res.setLocationRelativeTo(c);
-                        res.setVisible(true);
-
-                        progressb.RipristinaStdout();
-                        dispose();
-
-                    }
-                    Bottone_SelezionaFile.setEnabled(true);
-                    Bottone_Annulla.setEnabled(true);
-                    progressb.dispose();
-
-                }
-
-            };
-            progressb.SetThread(thread);
-            thread.start();
-            progressb.setDefaultCloseOperation(0);
-            progressb.setLocationRelativeTo(this);
-            progressb.setVisible(true);
+            boolean SovrascriEsistenti = CheckBox_Sovrascrivi.isSelected();
+            //in questo caso siccome cointracking sbaglia molto spesso i prezzi delle shitcoin imposto il prezzo a zero
+            //su tutti gli scambi nel caso in cui binance non abbia i prezi corretti
+            final boolean PrezzoZeroF = ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain");
+            final String NomeWalletF = NomeWallet;
+            ImportaFileInSequenza(files, true, (file, progressb) -> DocumentiFonte.EseguiImportDaFile(
+                    file, DocumentiFonte.TIPO_CSV, "Tatax CSV", progressb,
+                    () -> Importazioni.Ex_Tatax_Importa(file.getAbsolutePath(), SovrascriEsistenti, NomeWalletF, c, PrezzoZeroF, progressb)));
             /* else {
 
                 //QUA Devo gestire il joptionpane che mi avvisa di scegliere un exchange dalla lista
@@ -1259,143 +1248,35 @@ if (voce.isJson()) {
             }*/
 
         } else if (voce.isNativo(NAT_BINANCE_OLD)) {
+            File[] files = ScegliFileDaImportare(true);
+            if (files == null) {
+                return;
+            }
             Component c = this;
-            Download progressb = new Download();
-            Bottone_SelezionaFile.setEnabled(false);
-            Bottone_Annulla.setEnabled(false);
-            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
-            JFileChooser fc = new JFileChooser(Directory);
-            int returnVal = fc.showOpenDialog(c);
             boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
-            Thread thread;
-            thread = new Thread() {
-                /** Esegue in background l'import di un CSV Binance. */
-                public void run() {
-
-                    // JFileChooser fc = new JFileChooser();
-                    // int returnVal = fc.showOpenDialog(this);
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        //  selezioneok[0] = true;
-                        String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
-                        DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
-                        c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                        Importazioni.AzzeraContatori();
-                        DocumentiFonte.EseguiImportDaFile(
-                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Binance CSV (formato storico)", progressb,
-                                () -> Importazioni.Ex_Binance_Importa(FileDaImportare, SovrascriEsistenti, c, progressb));
-                        Importazioni_Resoconto res = new Importazioni_Resoconto();
-                        c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                        res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
-                        res.setLocationRelativeTo(c);
-                        res.setVisible(true);
-                        //  if (selezioneok[0]) {
-                        dispose();
-                        // }
-
-                    }
-                    Bottone_SelezionaFile.setEnabled(true);
-                    Bottone_Annulla.setEnabled(true);
-                    progressb.dispose();
-
-                }
-
-            };
-            thread.start();
-            progressb.setDefaultCloseOperation(0);
-            progressb.setLocationRelativeTo(this);
-            progressb.setVisible(true);
+            ImportaFileInSequenza(files, false, (file, progressb) -> DocumentiFonte.EseguiImportDaFile(
+                    file, DocumentiFonte.TIPO_CSV, "Binance CSV (formato storico)", progressb,
+                    () -> Importazioni.Ex_Binance_Importa(file.getAbsolutePath(), SovrascriEsistenti, c, progressb)));
         } else if (voce.isNativo(NAT_BINANCE_REPORT)) {
+            File[] files = ScegliFileDaImportare(true);
+            if (files == null) {
+                return;
+            }
             Component c = this;
-            Download progressb = new Download();
-            Bottone_SelezionaFile.setEnabled(false);
-            Bottone_Annulla.setEnabled(false);
-            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
-            JFileChooser fc = new JFileChooser(Directory);
-            int returnVal = fc.showOpenDialog(c);
             boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
-            Thread thread;
-            thread = new Thread() {
-                /** Esegue in background l'import di un Binance Tax Report. */
-                public void run() {
-
-                    // JFileChooser fc = new JFileChooser();
-                    // int returnVal = fc.showOpenDialog(this);
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        //  selezioneok[0] = true;
-                        String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
-                        DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
-                        c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                        Importazioni.AzzeraContatori();
-                        DocumentiFonte.EseguiImportDaFile(
-                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "Binance Financial Report", progressb,
-                                () -> Importazioni.Ex_BinanceTaxReport_Importa(FileDaImportare, SovrascriEsistenti, c, progressb));
-                        Importazioni_Resoconto res = new Importazioni_Resoconto();
-                        c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                        res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
-                        res.setLocationRelativeTo(c);
-                        res.setVisible(true);
-                        //  if (selezioneok[0]) {
-                        dispose();
-                        // }
-
-                    }
-                    Bottone_SelezionaFile.setEnabled(true);
-                    Bottone_Annulla.setEnabled(true);
-                    progressb.dispose();
-
-                }
-
-            };
-            thread.start();
-            progressb.setDefaultCloseOperation(0);
-            progressb.setLocationRelativeTo(this);
-            progressb.setVisible(true);
+            ImportaFileInSequenza(files, false, (file, progressb) -> DocumentiFonte.EseguiImportDaFile(
+                    file, DocumentiFonte.TIPO_CSV, "Binance Financial Report", progressb,
+                    () -> Importazioni.Ex_BinanceTaxReport_Importa(file.getAbsolutePath(), SovrascriEsistenti, c, progressb)));
         } else if (voce.isNativo(NAT_OKX_OLD)) {
+            File[] files = ScegliFileDaImportare(true);
+            if (files == null) {
+                return;
+            }
             Component c = this;
-            Download progressb = new Download();
-            Bottone_SelezionaFile.setEnabled(false);
-            Bottone_Annulla.setEnabled(false);
-            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
-            JFileChooser fc = new JFileChooser(Directory);
-            int returnVal = fc.showOpenDialog(c);
             boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
-            Thread thread;
-            thread = new Thread() {
-                /** Esegue in background l'import di un CSV OKX. */
-                public void run() {
-
-                    // JFileChooser fc = new JFileChooser();
-                    // int returnVal = fc.showOpenDialog(this);
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        //  selezioneok[0] = true;
-                        String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
-                        DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
-                        c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                        Importazioni.AzzeraContatori();
-                        DocumentiFonte.EseguiImportDaFile(
-                                new File(FileDaImportare), DocumentiFonte.TIPO_CSV, "OKX CSV (formato storico)", progressb,
-                                () -> Importazioni.Ex_OKX_Importa(FileDaImportare, SovrascriEsistenti, c, progressb));
-                        Importazioni_Resoconto res = new Importazioni_Resoconto();
-                        c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                        res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
-                        res.setLocationRelativeTo(c);
-                        res.setVisible(true);
-                        //  if (selezioneok[0]) {
-                        dispose();
-                        // }
-
-                    }
-                    Bottone_SelezionaFile.setEnabled(true);
-                    Bottone_Annulla.setEnabled(true);
-                    progressb.dispose();
-
-                }
-
-            };
-            thread.start();
-            progressb.setDefaultCloseOperation(0);
-            progressb.setLocationRelativeTo(this);
-            progressb.setVisible(true);
+            ImportaFileInSequenza(files, false, (file, progressb) -> DocumentiFonte.EseguiImportDaFile(
+                    file, DocumentiFonte.TIPO_CSV, "OKX CSV (formato storico)", progressb,
+                    () -> Importazioni.Ex_OKX_Importa(file.getAbsolutePath(), SovrascriEsistenti, c, progressb)));
         }
 
 

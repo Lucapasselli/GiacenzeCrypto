@@ -1091,15 +1091,29 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
             return CostoDaiGruppi(PlusXWallet ? List.of(Gruppo) : Pile.keySet(), Chiave, Qta);
         }
 
+        /**
+         * Come {@link #CostoDelleRimanenze(String, String, String)} ma senza arrotondare: serve a dividere
+         * il costo per la quantità (costo unitario) senza che un costo di pochi centesimi, arrotondato a
+         * due decimali, dia un unitario nullo su un token che vale frazioni di centesimo.
+         * @return il costo esatto; zero se la giacenza è nulla o negativa o non si trova nessun lotto
+         */
+        public BigDecimal CostoEsattoDelleRimanenze(String Wallet, String Chiave, String Qta) {
+            return CostoEsattoDaiGruppi(GruppiInSelezione(Wallet), Chiave, Qta);
+        }
+
         private String CostoDaiGruppi(Collection<String> Gruppi, String Chiave, String Qta) {
+            return CostoEsattoDaiGruppi(Gruppi, Chiave, Qta).setScale(2, RoundingMode.HALF_UP).toPlainString();
+        }
+
+        private BigDecimal CostoEsattoDaiGruppi(Collection<String> Gruppi, String Chiave, String Qta) {
             BigDecimal Richiesta;
             try {
                 Richiesta = new BigDecimal(Qta.trim());
             } catch (NumberFormatException | NullPointerException ex) {
-                return "0.00";
+                return BigDecimal.ZERO;
             }
             if (Richiesta.signum() <= 0) {
-                return "0.00";
+                return BigDecimal.ZERO;
             }
             List<String[]> Lotti = new ArrayList<>();
             for (String Gruppo : Gruppi) {
@@ -1133,7 +1147,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                     Richiesta = BigDecimal.ZERO;
                 }
             }
-            return Costo.setScale(2, RoundingMode.HALF_UP).toPlainString();
+            return Costo;
         }
 
         /**
@@ -1152,6 +1166,180 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
             String Gruppo = DatabaseH2.Pers_GruppoWallet_Leggi(Wallet, false);
             return Gruppo == null ? List.of() : List.of(Gruppo);
         }
+    }
+
+    /** Cifre significative con cui si mostra un valore unitario: un token da 1E-9 euro non deve diventare "0". */
+    private static final java.math.MathContext CIFRE_UNITARIO = new java.math.MathContext(8, RoundingMode.HALF_UP);
+
+    /**
+     * Testo di un valore unitario (prezzo o costo di una singola unità) per le tabelle di "Giacenze a
+     * data": otto cifre significative, mai in notazione scientifica, che {@code Double.toString} userebbe
+     * sui token con molti decimali.
+     * @return il testo, vuoto se il valore è {@code null}
+     */
+    public static String FormattaUnitario(Double Valore) {
+        if (Valore == null) {
+            return "";
+        }
+        BigDecimal R = BigDecimal.valueOf(Valore).round(CIFRE_UNITARIO).stripTrailingZeros();
+        return R.signum() == 0 ? "0" : R.toPlainString();
+    }
+
+    /**
+     * Le tre colonne derivate della riga della tabella principale di "Giacenze a data": valore unitario,
+     * costo unitario e differenza fra valore e costo di carico.
+     * <p>
+     * Restano vuote (<b>{@code null}</b>, non zero) quando non c'è nulla da confrontare: moneta FIAT (non ha
+     * pile LIFO), giacenza nulla o negativa (non ci sono rimanenze da valorizzare) e, per la differenza,
+     * token senza prezzo — altrimenti mostrerebbe come perdita l'intero costo di carico di un token che
+     * semplicemente non si riesce a valorizzare.
+     * <p>
+     * Il costo unitario divide il costo <b>esatto</b> delle rimanenze, non quello arrotondato a due
+     * decimali mostrato in tabella; la differenza invece usa i due numeri mostrati, così la colonna
+     * torna con quelle accanto.
+     *
+     * @param Tipo tipo della moneta (Crypto, FIAT, ...)
+     * @param Qta giacenza mostrata sulla riga
+     * @param PrezzoUnitario prezzo unitario alla data, {@code null} se il token non ha prezzo
+     * @param ValoreRiga valore della riga, come in tabella
+     * @param CostoRiga costo di carico della riga, come in tabella
+     * @param CostoEsatto costo di carico delle rimanenze non arrotondato
+     * @return {@code {valore unitario, costo unitario, differenza}}, ogni voce può essere {@code null}
+     */
+    public static Double[] ValoriDerivatiRiga(String Tipo, String Qta, BigDecimal PrezzoUnitario,
+            double ValoreRiga, double CostoRiga, BigDecimal CostoEsatto) {
+        Double Ris[] = new Double[3];
+        if (Tipo == null || Tipo.equalsIgnoreCase("FIAT")) {
+            return Ris;
+        }
+        BigDecimal Q;
+        try {
+            Q = new BigDecimal(Qta.trim());
+        } catch (NumberFormatException | NullPointerException ex) {
+            return Ris;
+        }
+        if (Q.signum() <= 0) {
+            return Ris;
+        }
+        if (PrezzoUnitario != null) {
+            Ris[0] = PrezzoUnitario.doubleValue();
+            Ris[2] = BigDecimal.valueOf(ValoreRiga).subtract(BigDecimal.valueOf(CostoRiga)).doubleValue();
+        }
+        if (CostoEsatto != null) {
+            Ris[1] = CostoEsatto.divide(Q, VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP).doubleValue();
+        }
+        return Ris;
+    }
+
+    /**
+     * La passata LIFO dietro la tabella dettaglio movimenti di "Giacenze a data": per ogni riga mostrata,
+     * il costo di carico della quantità che resta dopo quel movimento.
+     * <p>
+     * Stessa regola della tabella principale — <b>la passata non è filtrata per wallet, la lettura sì</b> —
+     * con le stesse pile ({@link #ElaboraLotti}): il chiamante fa scorrere <b>tutti</b> i movimenti
+     * anteriori alla data con {@link #Avanza(String[])}, nell'ordine della mappa (cioè per ID), e dopo
+     * ciascuno legge il costo delle rimanenze della selezione wallet con {@link #CostoResiduo(String)}.
+     * Filtrare i movimenti a monte toglierebbe dal flusso i giroconti interni, che non portano costo
+     * proprio e lasciano i lotti dov'erano. L'ultima riga mostrata coincide con la colonna "Costo Carico"
+     * della tabella principale per la stessa moneta.
+     * <p>
+     * Il gruppo wallet letto si risolve una volta sola alla costruzione: per un singolo wallet è una
+     * lettura del database che altrimenti si ripeterebbe a ogni riga.
+     */
+    public static final class CostiDettaglioToken {
+
+        private final CostiCaricoRimanenze Costi = new CostiCaricoRimanenze();
+        private final java.util.Set<String> Simboli;
+        private final String Chiave;
+        private final Collection<String> Gruppi;
+
+        /**
+         * @param Wallet selezione della combo wallet ("Tutti", un wallet, "Gruppo : X ( alias )")
+         * @param Moneta simbolo della moneta esaminata
+         * @param Tipo tipo della moneta, come sulla riga della tabella principale
+         * @param Address address del token, o vuoto
+         * @param Rete rete del token, o vuota
+         */
+        public CostiDettaglioToken(String Wallet, String Moneta, String Tipo, String Address, String Rete) {
+            Simboli = java.util.Set.of(Moneta);
+            Chiave = ChiaveRiga(Moneta, Tipo, Address, Rete);
+            //Con "Tutti" è la vista viva delle chiavi della pila: si aggiorna da sola man mano che i lotti arrivano
+            Gruppi = Costi.GruppiInSelezione(Wallet);
+        }
+
+        /** Carica e scarica i lotti del movimento, ignorando le monete diverse da quella esaminata. */
+        public void Avanza(String[] Movimento) {
+            ElaboraLotti(Costi, Movimento, Simboli);
+        }
+
+        /**
+         * @param QtaResidua giacenza della selezione dopo l'ultimo movimento passato ad {@link #Avanza(String[])}
+         * @return il costo di carico di quella quantità, con due decimali; {@code "0.00"} se è nulla o negativa
+         */
+        public String CostoResiduo(String QtaResidua) {
+            return Costi.CostoDaiGruppi(Gruppi, Chiave, QtaResidua);
+        }
+    }
+
+    /**
+     * Costo di carico della quantità mossa da un movimento, come l'ha scritto il motore delle plusvalenze:
+     * {@code v[17]} per la gamba in entrata, {@code v[16]} per quella in uscita.
+     * @param Movimento il movimento
+     * @param Entrata {@code true} per la gamba in entrata ({@code v[11]}-{@code v[13]}), {@code false} per quella in uscita
+     * @return il costo con due decimali; <b>vuoto</b> (non zero) se il motore non ne ha scritto uno — giroconti
+     * interni, PTW — o se la gamba è FIAT
+     */
+    public static String CostoCaricoMovimento(String[] Movimento, boolean Entrata) {
+        String Tipo = Movimento[Entrata ? 12 : 9];
+        String Costo = Movimento[Entrata ? 17 : 16];
+        if (Tipo.isBlank() || Tipo.equalsIgnoreCase("FIAT") || Costo.isBlank()) {
+            return "";
+        }
+        try {
+            return new BigDecimal(Costo.trim()).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+        } catch (NumberFormatException ex) {
+            return "";
+        }
+    }
+
+    /**
+     * Le quattro colonne dei costi di una riga della tabella dettaglio movimenti di "Giacenze a data".
+     * Non cerca nessun prezzo: la tabella si ricostruisce a ogni selezione e non deve toccare la rete.
+     * <ol start="0">
+     * <li>costo di carico della quantità mossa dal movimento ({@link #CostoCaricoMovimento});</li>
+     * <li>prezzo unitario nel movimento ({@link #PrezzoUnitarioNelMovimento});</li>
+     * <li>valore della quantità residua a quel prezzo unitario, cioè quanto varrebbe la giacenza residua se
+     * il prezzo fosse rimasto quello del movimento;</li>
+     * <li>costo di carico della quantità residua, dalle pile di {@link CostiDettaglioToken}.</li>
+     * </ol>
+     * Tutte vuote per una moneta FIAT, che non ha lotti.
+     *
+     * @param Costi la passata LIFO, già avanzata fino a questo movimento compreso
+     * @param Movimento il movimento della riga
+     * @param Entrata {@code true} se la riga è la gamba in entrata del movimento
+     * @param Qta quantità della gamba
+     * @param QtaResidua giacenza della selezione dopo il movimento
+     * @return le quattro colonne, mai {@code null}
+     */
+    public static String[] ColonneCostiDettaglio(CostiDettaglioToken Costi, String[] Movimento,
+            boolean Entrata, String Qta, String QtaResidua) {
+        String Ris[] = {"", "", "", ""};
+        String Tipo = Movimento[Entrata ? 12 : 9];
+        if (Tipo.isBlank() || Tipo.equalsIgnoreCase("FIAT")) {
+            return Ris;
+        }
+        Ris[0] = CostoCaricoMovimento(Movimento, Entrata);
+        BigDecimal Prezzo = PrezzoUnitarioNelMovimento(Movimento, Movimento[Entrata ? 11 : 8], Qta);
+        if (Prezzo != null) {
+            Ris[1] = FormattaUnitario(Prezzo.doubleValue());
+            try {
+                Ris[2] = Prezzo.multiply(new BigDecimal(QtaResidua.trim())).setScale(2, RoundingMode.HALF_UP).toPlainString();
+            } catch (NumberFormatException ex) {
+                //la quantità residua è già stata sommata come numero: non succede, ma la cella resta vuota
+            }
+        }
+        Ris[3] = Costi.CostoResiduo(QtaResidua);
+        return Ris;
     }
 
     //Queste 3 classi serviranno per sistemare la parte relativa al calcolo delle giacenzeadata

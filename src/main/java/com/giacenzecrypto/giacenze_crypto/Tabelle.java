@@ -338,7 +338,9 @@ public class Tabelle {
     
         /**
          * Applica alla tabella 0 (riepilogo) di "Giacenze a data" un renderer che alterna lo sfondo delle righe
-         * (in base al tema) e colora in rosso la colonna 7 (errori) e la colonna 4 quando contiene un valore negativo.
+         * (in base al tema) e colora in rosso la colonna 10 (errori) e la colonna 4 quando contiene un valore negativo.
+         * Le colonne 7 e 8 (valore e costo unitario) si scrivono senza notazione scientifica, la 9 (differenza
+         * valore - costo) è verde se positiva e rossa se negativa.
          * @param table la tabella a cui applicare il renderer
          * @return la stessa tabella passata, con il renderer applicato
          */
@@ -375,7 +377,7 @@ public class Tabelle {
                     c.setBackground(bg);
                     c.setForeground(rosso);
                 }
-                else if (col==7) {
+                else if (table.convertColumnIndexToModel(col)==10) {
                     c.setBackground(bg);
                     c.setForeground(rosso);
                 }
@@ -384,6 +386,17 @@ public class Tabelle {
                   c.setBackground(bg);
                   
 
+                }
+                //Colonne derivate : valore unitario (7), costo unitario (8), differenza valore - costo (9)
+                int colModello = table.convertColumnIndexToModel(col);
+                if ((colModello == 7 || colModello == 8) && value instanceof Double) {
+                    setText(Principale_GiacenzeaData.FormattaUnitario((Double) value));
+                } else if (colModello == 9 && value instanceof Double) {
+                    //BigDecimal e non Double.toString, che sopra i dieci milioni scrive in notazione scientifica
+                    setText(java.math.BigDecimal.valueOf((Double) value).toPlainString());
+                    if (!isSelected && !((Double) value).equals(0.0)) {
+                        c.setForeground(((Double) value) > 0 ? verdeScuro : rosso);
+                    }
                 }
                 return c;
             }
@@ -1574,7 +1587,13 @@ public static int[] Funzioni_getRigheSelezionate(JTable table) {
         new Thread(() -> {
             Map<Integer, String> valori = new HashMap<>();
 
+            //Colonne su cui una somma non ha senso (prezzi e costi unitari): la tabella le dichiara
+            //con la proprietà "ColonneSenzaSomma", un insieme di indici di colonna del modello
+            Object senzaSomma = table.getClientProperty("ColonneSenzaSomma");
             for (int col = 0; col < colCount; col++) {
+                if (senzaSomma instanceof java.util.Set && ((java.util.Set<?>) senzaSomma).contains(col)) {
+                    continue;
+                }
                 //Se nel frattempo è partito un ricalcolo più recente per questa tabella, questo
                 //lavoro è già superato: mi fermo subito invece di completare tutte le colonne.
                 //Il controllo è per colonna e non per cella: su tabelle grandi le celle sono

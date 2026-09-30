@@ -477,4 +477,172 @@ class Principale_GiacenzeaDataCostoCaricoTest {
         assertEquals("Giacenze BTC", righe.get(0)[0]);
         assertTrue(righe.get(0)[1].contains("€ 1000.00"), righe.get(0)[1]);
     }
+
+    // ------------------------------------------------------------------
+    // Colonne di costo della tabella dettaglio movimenti e colonne derivate della tabella principale
+    // ------------------------------------------------------------------
+
+    /**
+     * Fa scorrere i movimenti come il ciclo che riempie la tabella dettaglio: tutti i movimenti alla
+     * passata LIFO, e la quantità residua sommata solo per i movimenti del wallet scelto (o tutti).
+     * @return il costo di carico residuo dopo l'ultimo movimento, come lo leggerebbe l'ultima riga
+     */
+    private static String costoResiduoDopoUltimoMovimento(String wallet, String moneta) {
+        Principale_GiacenzeaData.CostiDettaglioToken passata =
+                new Principale_GiacenzeaData.CostiDettaglioToken(wallet, moneta, "Crypto", "", "");
+        java.math.BigDecimal qta = java.math.BigDecimal.ZERO;
+        String costo = "0.00";
+        for (String[] m : Principale.MappaCryptoWallet.values()) {
+            passata.Avanza(m);
+            boolean delWallet = wallet.equalsIgnoreCase("tutti") || wallet.equalsIgnoreCase(m[3]);
+            if (!delWallet) {
+                continue;
+            }
+            if (m[8].equals(moneta)) {
+                qta = qta.add(new java.math.BigDecimal(m[10]));
+            }
+            if (m[11].equals(moneta)) {
+                qta = qta.add(new java.math.BigDecimal(m[13]));
+            }
+            costo = passata.CostoResiduo(qta.toPlainString());
+        }
+        return costo;
+    }
+
+    /**
+     * L'ultima riga del dettaglio deve coincidere con la colonna "Costo Carico" della tabella principale,
+     * con "Tutti" e con un singolo wallet. Il caso del singolo wallet è quello che rompe una passata
+     * filtrata: WalletB riceve il BTC con un giroconto interno, che non porta costo con sé.
+     */
+    @Test
+    void lUltimaRigaDelDettaglioCoincideConLaTabellaPrincipale() {
+        acquisto("2024-01-01 10:00", "WalletA", "BTC", "1", "1000");
+        acquisto("2024-01-15 10:00", "WalletA", "BTC", "1", "3000");
+        String[] prelievo = movimento("2024-02-01 10:00", "WalletA", "PC", "PTW - Prelievo verso wallet proprio",
+                "TRASFERIMENTO", "BTC", "Crypto", "-1.5", "", "", "", "0.00");
+        String[] deposito = movimento("2024-02-01 10:01", "WalletB", "DC", "DTW - Deposito da wallet proprio",
+                "TRASFERIMENTO", "", "", "", "BTC", "Crypto", "1.5", "0.00");
+        prelievo[20] = deposito[0];
+        deposito[20] = prelievo[0];
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        long data = fineGiornata("2024-12-31");
+        assertEquals("4000.00", costo(data, "Tutti", "BTC", "2"));
+        assertEquals("4000.00", costoResiduoDopoUltimoMovimento("Tutti", "BTC"));
+        //WalletB ha 1.5 BTC : tutto il lotto da 3000 più metà di quello da 1000
+        assertEquals("3500.00", costo(data, "WalletB", "BTC", "1.5"));
+        assertEquals("3500.00", costoResiduoDopoUltimoMovimento("WalletB", "BTC"));
+    }
+
+    @Test
+    void lePilePassanoPerTuttiIMovimentiAncheQuelliDiAltriWallet() {
+        acquisto("2024-01-01 10:00", "WalletA", "BTC", "1", "1000");
+        acquisto("2024-02-01 10:00", "WalletB", "BTC", "1", "2000");
+        vendita("2024-03-01 10:00", "BTC", "-1", "2500");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        //La vendita è di TestWallet ma scarica la pila unica (PlusXWallet spenta): la riga di WalletA
+        //vede il proprio BTC al costo del lotto che resta, quello da 1000
+        assertEquals("1000.00", costoResiduoDopoUltimoMovimento("Tutti", "BTC"));
+        Principale_GiacenzeaData.CostiDettaglioToken passata =
+                new Principale_GiacenzeaData.CostiDettaglioToken("WalletA", "BTC", "Crypto", "", "");
+        String[] primo = Principale.MappaCryptoWallet.firstEntry().getValue();
+        passata.Avanza(primo);
+        assertEquals("1000.00", passata.CostoResiduo("1"));
+    }
+
+    @Test
+    void leColonneCostiDelDettaglioPerUnaRigaDiAcquistoEUnaDiVendita() {
+        String[] acq = acquisto("2024-01-01 10:00", "BTC", "2", "1000");
+        String[] ven = vendita("2024-03-01 10:00", "BTC", "-1", "2500");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        Principale_GiacenzeaData.CostiDettaglioToken passata =
+                new Principale_GiacenzeaData.CostiDettaglioToken("Tutti", "BTC", "Crypto", "", "");
+        passata.Avanza(acq);
+        //Costo del movimento, prezzo unitario, valore della qta residua, costo della qta residua
+        assertArrayEquals(new String[]{"1000.00", "500", "1000.00", "1000.00"},
+                Principale_GiacenzeaData.ColonneCostiDettaglio(passata, acq, true, "2", "2"));
+        passata.Avanza(ven);
+        //Venduto 1 BTC di 2 : il costo del movimento è quello del BTC uscito, resta la metà
+        String[] colVendita = Principale_GiacenzeaData.ColonneCostiDettaglio(passata, ven, false, "-1", "1");
+        assertEquals("500.00", colVendita[0]);
+        assertEquals("500.00", colVendita[3]);
+    }
+
+    @Test
+    void laGambaFiatNonHaColonneDiCosto() {
+        String[] acq = acquisto("2024-01-01 10:00", "BTC", "1", "1000");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        Principale_GiacenzeaData.CostiDettaglioToken passata =
+                new Principale_GiacenzeaData.CostiDettaglioToken("Tutti", "EUR", "FIAT", "", "");
+        passata.Avanza(acq);
+        //La gamba in uscita dell'acquisto è l'euro speso
+        assertArrayEquals(new String[]{"", "", "", ""},
+                Principale_GiacenzeaData.ColonneCostiDettaglio(passata, acq, false, "1000", "-1000"));
+    }
+
+    @Test
+    void lePilaDelDettaglioNonSiConfondeConUnaMonetaDiversa() {
+        acquisto("2024-01-01 10:00", "BTC", "1", "1000");
+        acquisto("2024-01-02 10:00", "ETH", "10", "500");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        assertEquals("1000.00", costoResiduoDopoUltimoMovimento("Tutti", "BTC"));
+        assertEquals("500.00", costoResiduoDopoUltimoMovimento("Tutti", "ETH"));
+    }
+
+    @Test
+    void ilCostoEsattoNonArrotondaEIlCostoMostratoSi() {
+        acquisto("2024-01-01 10:00", "SHIB", "1000000", "0.004");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        Principale_GiacenzeaData.CostiCaricoRimanenze costi =
+                Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(fineGiornata("2024-12-31"));
+        String chiave = Principale_GiacenzeaData.ChiaveRiga("SHIB", "Crypto", "", "");
+        assertEquals("0.00", costi.CostoDelleRimanenze("Tutti", chiave, "1000000"));
+        assertEquals(0, new java.math.BigDecimal("0.004").compareTo(
+                costi.CostoEsattoDelleRimanenze("Tutti", chiave, "1000000")));
+    }
+
+    @Test
+    void leColonneDerivateDellaTabellaPrincipale() {
+        java.math.BigDecimal costoEsatto = new java.math.BigDecimal("60");
+        Double[] d = Principale_GiacenzeaData.ValoriDerivatiRiga("Crypto", "2", new java.math.BigDecimal("50"),
+                100.0, 60.0, costoEsatto);
+        assertEquals(50.0, d[0]);
+        assertEquals(30.0, d[1]);
+        assertEquals(40.0, d[2]);
+
+        //Token senza prezzo : niente differenza, che sarebbe l'intero costo mostrato come perdita
+        d = Principale_GiacenzeaData.ValoriDerivatiRiga("Crypto", "2", null, 0.0, 60.0, costoEsatto);
+        assertNull(d[0]);
+        assertEquals(30.0, d[1]);
+        assertNull(d[2]);
+
+        //FIAT, giacenza nulla o negativa : nessuna colonna
+        for (Double[] vuoto : new Double[][]{
+            Principale_GiacenzeaData.ValoriDerivatiRiga("FIAT", "100", java.math.BigDecimal.ONE, 100.0, 0.0, java.math.BigDecimal.ZERO),
+            Principale_GiacenzeaData.ValoriDerivatiRiga("Crypto", "0", java.math.BigDecimal.ONE, 0.0, 0.0, java.math.BigDecimal.ZERO),
+            Principale_GiacenzeaData.ValoriDerivatiRiga("Crypto", "-3", java.math.BigDecimal.ONE, -3.0, 0.0, java.math.BigDecimal.ZERO)}) {
+            assertNull(vuoto[0]);
+            assertNull(vuoto[1]);
+            assertNull(vuoto[2]);
+        }
+    }
+
+    @Test
+    void ilValoreUnitarioNonSiScriveInNotazioneScientifica() {
+        assertEquals("0.0000000015", Principale_GiacenzeaData.FormattaUnitario(1.5E-9));
+        assertEquals("1234.5678", Principale_GiacenzeaData.FormattaUnitario(1234.5678));
+        assertEquals("0", Principale_GiacenzeaData.FormattaUnitario(0.0));
+        assertEquals("", Principale_GiacenzeaData.FormattaUnitario(null));
+    }
 }

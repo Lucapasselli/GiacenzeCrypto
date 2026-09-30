@@ -439,6 +439,9 @@ private static final long serialVersionUID = 3L;
         Tabelle.Tabelle_InizializzaHeader(CDC_FiatWallet_Tabella3);
         Tabelle.Tabelle_InizializzaHeader(GiacenzeaData_Tabella);
         Tabelle.Tabelle_InizializzaHeader(GiacenzeaData_TabellaDettaglioMovimenti);
+        //Valore/costo unitario (7, 8) e le quattro colonne di costo del dettaglio (13-16) : sommarli non ha senso
+        GiacenzeaData_Tabella.putClientProperty("ColonneSenzaSomma", java.util.Set.of(7, 8));
+        GiacenzeaData_TabellaDettaglioMovimenti.putClientProperty("ColonneSenzaSomma", java.util.Set.of(13, 14, 15, 16));
         Tabelle.Tabelle_InizializzaHeader(GestioneTokenScam_Tabella);
         Tabelle.Tabelle_InizializzaHeader(GestioneTokenScam_TabellaMovimenti);
         // Tabelle senza filtri: header semplice bold+centrato
@@ -2518,14 +2521,14 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Nome", "Rete", "Address Defi del Token", "Tipo", "Qta", "<html><center>Valore<br>(in Euro)</html>", "<html><center>Costo Carico<br>(in Euro)</html>", "Errori", "InfoPrezzo"
+                "Nome", "Rete", "Address Defi del Token", "Tipo", "Qta", "<html><center>Valore<br>(in Euro)</html>", "<html><center>Costo Carico<br>(in Euro)</html>", "<html><center>Valore<br>Unitario</html>", "<html><center>Costo<br>Unitario</html>", "<html><center>Differenza<br>Valore - Costo</html>", "Errori", "InfoPrezzo"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -2557,12 +2560,21 @@ private static final long serialVersionUID = 3L;
             GiacenzeaData_Tabella.getColumnModel().getColumn(5).setMinWidth(100);
             GiacenzeaData_Tabella.getColumnModel().getColumn(5).setPreferredWidth(100);
             GiacenzeaData_Tabella.getColumnModel().getColumn(5).setMaxWidth(100);
-            GiacenzeaData_Tabella.getColumnModel().getColumn(6).setMinWidth(110);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(6).setMinWidth(50);
             GiacenzeaData_Tabella.getColumnModel().getColumn(6).setPreferredWidth(110);
             GiacenzeaData_Tabella.getColumnModel().getColumn(6).setMaxWidth(110);
-            GiacenzeaData_Tabella.getColumnModel().getColumn(8).setMinWidth(0);
-            GiacenzeaData_Tabella.getColumnModel().getColumn(8).setPreferredWidth(0);
-            GiacenzeaData_Tabella.getColumnModel().getColumn(8).setMaxWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(7).setMinWidth(50);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(7).setPreferredWidth(90);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(7).setMaxWidth(110);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(8).setMinWidth(50);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(8).setPreferredWidth(90);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(8).setMaxWidth(110);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(9).setMinWidth(50);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(9).setPreferredWidth(110);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(9).setMaxWidth(130);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(11).setMinWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(11).setPreferredWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(11).setMaxWidth(0);
         }
         GiacenzeaData_Tabella.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_Tabella.getColumnModel().getTotalColumnWidth(), 42));
         Tabelle.ColoraRigheTabella0GiacenzeaData(GiacenzeaData_Tabella);
@@ -2588,11 +2600,11 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Data", "Wallet", "Moneta", "Address Moneta", "Tipo Movimento", "Quantita'", "Valore in Euro", "Qta Residua", "ID", "SaldiNegativiPrecedenti", "null", "null", "null"
+                "Data", "Wallet", "Moneta", "Address Moneta", "Tipo Movimento", "Quantita'", "Valore in Euro", "Qta Residua", "ID", "SaldiNegativiPrecedenti", "null", "null", "null", "<html><center>Costo Carico<br>Movimento</html>", "<html><center>Prezzo<br>Unitario</html>", "<html><center>Valore<br>Qta Residua</html>", "<html><center>Costo Carico<br>Qta Residua</html>"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -2633,6 +2645,14 @@ private static final long serialVersionUID = 3L;
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(12).setMinWidth(0);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(12).setPreferredWidth(0);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(12).setMaxWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(13).setMinWidth(90);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(13).setPreferredWidth(100);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(14).setMinWidth(80);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(14).setPreferredWidth(90);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(15).setMinWidth(90);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(15).setPreferredWidth(100);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(16).setMinWidth(90);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(16).setPreferredWidth(110);
         }
         GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), 42));
 
@@ -5622,14 +5642,14 @@ private static final long serialVersionUID = 3L;
                 .addContainerGap()
                 .addGroup(Opzioni_CommissioniCollegate_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Opzioni_Bottone_CommissioniCollegate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(Opzioni_Label_CommissioniCollegate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(Opzioni_Label_CommissioniCollegate))
                 .addContainerGap())
         );
         Opzioni_CommissioniCollegate_PannelloLayout.setVerticalGroup(
             Opzioni_CommissioniCollegate_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_CommissioniCollegate_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(Opzioni_Label_CommissioniCollegate)
+                .addComponent(Opzioni_Label_CommissioniCollegate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_Bottone_CommissioniCollegate, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(600, Short.MAX_VALUE))
@@ -8113,7 +8133,7 @@ private void SettaIcone(){
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
             int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
             String mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            String ErroreSegnalato = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 7).toString();
+            String ErroreSegnalato = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 10).toString();
             String Rete="";
             if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1)!=null)
                 {
@@ -8162,6 +8182,10 @@ private void SettaIcone(){
             //Adesso compilo i movimenti
             BigDecimal TotaleQta = new BigDecimal(0);
             boolean MostraSoloGiacNegative=GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative.isSelected();
+            //Le pile LIFO per il costo di carico della qta residua : scorrono TUTTI i movimenti, anche quelli
+            //che il filtro wallet qui sotto scarta (un giroconto interno non porta costo con sé)
+            Principale_GiacenzeaData.CostiDettaglioToken CostiResidui = new Principale_GiacenzeaData.CostiDettaglioToken(
+                    Wallet, mon, GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 3).toString(), Address, Rete);
             // do una sequenza alle giacenze negative trovate
             int NumNegativi=0;
             for (String[] movimento : MappaCryptoWallet.values()) {
@@ -8169,6 +8193,7 @@ private void SettaIcone(){
                 if (ReteMov==null)ReteMov="";
                 long DataMovimento = FunzioniDate.ConvertiDatainLong(movimento[1]);
                 if (DataMovimento < DataRiferimento) {
+                        CostiResidui.Avanza(movimento);
                         String gruppoWallet="";
                         if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].split("\\(")[0].trim();
                         String AddressU = movimento[26];
@@ -8190,7 +8215,8 @@ private void SettaIcone(){
                                 ) { 
                         if (movimento[8].equals(mon) && AddressU.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
-                            String riga[] = new String[10];
+                            //Le colonne 10-12 restano vuote (le usa solo il tooltip delle altre tabelle) e i costi stanno in coda
+                            String riga[] = new String[17];
                             riga[0] = Funzioni.getOradaID(movimento[0]);
                             riga[1] = movimento[3];
                             riga[2] = movimento[8];
@@ -8201,6 +8227,8 @@ private void SettaIcone(){
                             riga[7] = TotaleQta.toPlainString();
                             riga[8] = movimento[0];
                             riga[9] = "";
+                            System.arraycopy(Principale_GiacenzeaData.ColonneCostiDettaglio(CostiResidui, movimento,
+                                    false, movimento[10], riga[7]), 0, riga, 13, 4);
                             if (NumNegativi>0)riga[9] = "S";//Questo significa che ci sono movimenti con giacenza negativa prima di questo
                             if(riga[7].contains("-")){
                                 NumNegativi++;
@@ -8212,7 +8240,7 @@ private void SettaIcone(){
                         }
                         if (movimento[11].equals(mon) && AddressE.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
-                            String riga[] = new String[10];
+                            String riga[] = new String[17];
                             riga[0] = Funzioni.getOradaID(movimento[0]);
                             riga[1] = movimento[3];
                             riga[2] = movimento[11];
@@ -8223,6 +8251,8 @@ private void SettaIcone(){
                             riga[7] = TotaleQta.toPlainString();
                             riga[8] = movimento[0];
                             riga[9] = "";
+                            System.arraycopy(Principale_GiacenzeaData.ColonneCostiDettaglio(CostiResidui, movimento,
+                                    true, movimento[13], riga[7]), 0, riga, 13, 4);
                             if (NumNegativi>0)riga[9] = "S";//Questo significa che ci sono movimenti con giacenza negativa prima di questo
                             if(riga[7].contains("-")){
                                 NumNegativi++;
@@ -9417,8 +9447,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 BigDecimal Qta = new BigDecimal(GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 4).toString());
                 String Prezzo = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 5).toString();
                 String InfoPR="";
-                if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 8)!=null)
-                    InfoPR = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 8).toString();
+                if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 11)!=null)
+                    InfoPR = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 11).toString();
 
                 if (!Funzioni_WalletDeFi.isValidAddress(Address, Rete))Address=null;
 
@@ -14905,7 +14935,7 @@ if (result != null && !result.isAction("cancel")) {
                    return;
                }
 
-                GiacenzeaData_Tabella.getModel().setValueAt("", rigaselezionata, 7);
+                GiacenzeaData_Tabella.getModel().setValueAt("", rigaselezionata, 10);
                 //Una volta cambiato il prezzo aggiorno la tabella
             }
         }
@@ -17403,14 +17433,16 @@ try {
                     Moneta M1 = QtaCrypto.get(moneta);
                     String Rete = M1.Rete;
                     String Address = M1.MonetaAddress;
-                    Object riga[] = new Object[9];
+                    Object riga[] = new Object[12];
                     riga[0] = M1.Moneta;
                     riga[2] = Address;//qui ci va l'address della moneta se non sto analizzando i wallet nel complesso
                     riga[3] = M1.Tipo;
                     riga[4] = M1.Qta;
                     riga[1] = M1.Rete;
                     riga[6] = Double.valueOf(0);
-                    riga[7] = "";
+                    riga[10] = "";
+                    //Prezzo unitario alla data, null se il token non ha prezzo : serve alle colonne derivate
+                    BigDecimal PrezzoUnitario = null;
 
                     String Gruppo=Funzioni.getGruppoWalletXPrezzi(Wallet);
                     //System.out.println(Gruppo);
@@ -17430,11 +17462,12 @@ try {
                            // System.out.println(M1.Moneta+" - "+M1.Tipo+" - "+M1.Qta+" - "+M1.Rete+" - "+M1.MonetaAddress);
                             if (IP==null||IP.prezzoUnitario==null){
                                 riga[5]="0.00";
-                                riga[7]="Token senza prezzo";
+                                riga[10]="Token senza prezzo";
                             }else{
                                 IP.prezzoQta=IP.prezzoUnitario.multiply(new BigDecimal(M1.Qta)).abs();
                                 riga[5]=IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).toPlainString();
-                                riga[8]=IP.Ritorna40();
+                                riga[11]=IP.Ritorna40();
+                                PrezzoUnitario=IP.prezzoUnitario;
                             }
                         }
                         if (Funzioni.isNegativo(riga[4].toString()) && !riga[5].equals("0.00")) {
@@ -17443,9 +17476,16 @@ try {
                         //System.out.println(riga[4]);
                         riga[5] = Double.valueOf((String) riga[5]);
                         //Costo di carico dei lotti LIFO che coprono la giacenza appena mostrata
-                        riga[6] = Double.valueOf(CostiCarico.CostoDelleRimanenze(Wallet,
+                        BigDecimal CostoEsatto = CostiCarico.CostoEsattoDelleRimanenze(Wallet,
                                 Principale_GiacenzeaData.ChiaveRiga(M1.Moneta, M1.Tipo, Address, Rete),
-                                M1.Qta));
+                                M1.Qta);
+                        riga[6] = Double.valueOf(CostoEsatto.setScale(2, RoundingMode.HALF_UP).toPlainString());
+                        //Valore unitario, costo unitario e differenza valore - costo (vuoti se non calcolabili)
+                        Double Derivati[] = Principale_GiacenzeaData.ValoriDerivatiRiga(M1.Tipo, M1.Qta,
+                                PrezzoUnitario, (Double) riga[5], (Double) riga[6], CostoEsatto);
+                        riga[7] = Derivati[0];
+                        riga[8] = Derivati[1];
+                        riga[9] = Derivati[2];
 
                         if (CompiloTabella) {
                            // Object[] r = riga;

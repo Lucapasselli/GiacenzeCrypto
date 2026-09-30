@@ -36,7 +36,7 @@
               <Image iconType="3" name="/Images/24_Documento.png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Apri documento di origine"/>
-            <Property name="toolTipText" type="java.lang.String" value="Apre il file da cui il movimento è stato importato"/>
+            <Property name="toolTipText" type="java.lang.String" value="Apre il file da cui il movimento &#xe8; stato importato"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_DocumentoFonteActionPerformed"/>
@@ -111,7 +111,7 @@
                   <Component id="ScrollTabella" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Component id="Bottone_MovPrecedente" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="226" max="32767" attributes="0"/>
+                      <EmptySpace pref="432" max="32767" attributes="0"/>
                       <Component id="TextPane_Titolo" min="-2" pref="298" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="237" max="-2" attributes="0"/>
                       <Component id="Bottone_MovSuccessivo" min="-2" max="-2" attributes="0"/>
@@ -143,7 +143,7 @@
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="ScrollTabella" pref="473" max="32767" attributes="0"/>
+              <Component id="ScrollTabella" pref="579" max="32767" attributes="0"/>
               <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="Bottone_DeFi" alignment="3" min="-2" max="-2" attributes="0"/>

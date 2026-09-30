@@ -229,6 +229,21 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         if (!Valore.isBlank()){
             Val=new String[]{"Uscita: Costo Carico","€ "+Valore};
             ModelloTabellaCrypto.addRow(Val);
+            Valore=CostoUnitario(Transazione[16],Transazione[10]);
+            if (Valore!=null){
+                Val=new String[]{"Uscita: Costo Carico Unitario","€ "+Valore};
+                ModelloTabellaCrypto.addRow(Val);
+            }
+        }
+        //Il motore non ha scritto un costo (giroconto nello stesso gruppo, movimento interno, non
+        //classificato): se ne mostra uno solo informativo, calcolato in background con le giacenze
+        int PosizioneInformativo[]={-1,-1};
+        String IDTS[]=Transazione[0].split("_");
+        boolean MovimentoInterno=IDTS.length>4&&IDTS[4].equalsIgnoreCase("TI");
+        if (Transazione[16].isBlank()&&!Transazione[8].isBlank()&&!Transazione[9].isBlank()
+                &&!Transazione[9].equalsIgnoreCase("FIAT")){
+            PosizioneInformativo[0]=ModelloTabellaCrypto.getRowCount();
+            ModelloTabellaCrypto.addRow(new String[]{"Uscita: Costo Carico","calcolo in corso..."});
         }
         
         Valore=Transazione[11];
@@ -281,6 +296,17 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         if (!Valore.isBlank()){
             Val=new String[]{"Entrata: Costo Carico","€ "+Valore};
             ModelloTabellaCrypto.addRow(Val);
+            Valore=CostoUnitario(Transazione[17],Transazione[13]);
+            if (Valore!=null){
+                Val=new String[]{"Entrata: Costo Carico Unitario","€ "+Valore};
+                ModelloTabellaCrypto.addRow(Val);
+            }
+        }
+        if (Transazione[17].isBlank()&&!Transazione[11].isBlank()&&!Transazione[12].isBlank()
+                &&!Transazione[12].equalsIgnoreCase("FIAT")
+                &&(MovimentoInterno||Transazione[18].contains("DTW"))){
+            PosizioneInformativo[1]=ModelloTabellaCrypto.getRowCount();
+            ModelloTabellaCrypto.addRow(new String[]{"Entrata: Costo Carico","calcolo in corso..."});
         }
         
         Valore=Transazione[15];
@@ -308,7 +334,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         //inserisce qui al posto della riga di attesa, così le frecce restano immediate
         int PosizioneGiacenze=ModelloTabellaCrypto.getRowCount();
         ModelloTabellaCrypto.addRow(new String[]{"Giacenze","calcolo in corso..."});
-        CaricaGiacenzeInBackground(IDTransazione, PosizioneGiacenze);
+        CaricaGiacenzeInBackground(IDTransazione, PosizioneGiacenze, PosizioneInformativo);
         
 
         
@@ -409,16 +435,38 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
     }
     
     /**
-     * Calcola in background le righe delle giacenze prima/dopo il movimento
-     * ({@link Principale_GiacenzeaData#RigheDettaglio(String)}) e le mette al posto della riga di attesa.
-     * Se nel frattempo è stato mostrato un altro movimento il risultato si scarta.
+     * Costo di carico per unità della quantità mossa: il costo scritto dal motore delle plusvalenze
+     * ({@code v[16]} per l'uscita, {@code v[17]} per l'entrata) diviso la quantità della stessa gamba.
+     * @return il costo unitario senza zeri finali, {@code null} se costo o quantità non sono numeri o la quantità è zero
      */
-    private void CaricaGiacenzeInBackground(String IDTransazione, int Posizione) {
+    static String CostoUnitario(String Costo, String Qta) {
+        try {
+            BigDecimal Q = new BigDecimal(Qta.trim()).abs();
+            if (Q.signum() == 0) {
+                return null;
+            }
+            return new BigDecimal(Costo.trim()).abs().divide(Q, 10, RoundingMode.HALF_UP)
+                    .stripTrailingZeros().toPlainString();
+        } catch (NumberFormatException | NullPointerException ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Calcola in background le righe delle giacenze prima/dopo il movimento
+     * ({@link Principale_GiacenzeaData#CalcolaDettaglio(String)}) e i costi di carico informativi, e li
+     * mette al posto delle righe di attesa. Le righe si sostituiscono dall'ultima alla prima, così le
+     * posizioni di quelle più in alto restano valide. Se nel frattempo è stato mostrato un altro movimento
+     * il risultato si scarta.
+     * @param PosizioneInformativo righe di attesa del costo informativo di uscita e di entrata, -1 se assenti
+     */
+    private void CaricaGiacenzeInBackground(String IDTransazione, int Posizione, int PosizioneInformativo[]) {
         int Generazione = ++GenerazioneGiacenze;
-        new SwingWorker<java.util.List<String[]>, Void>() {
+        String Transazione[] = Principale.MappaCryptoWallet.get(IDTransazione);
+        new SwingWorker<Principale_GiacenzeaData.DettaglioGiacenze, Void>() {
             @Override
-            protected java.util.List<String[]> doInBackground() {
-                return Principale_GiacenzeaData.RigheDettaglio(IDTransazione);
+            protected Principale_GiacenzeaData.DettaglioGiacenze doInBackground() {
+                return Principale_GiacenzeaData.CalcolaDettaglio(IDTransazione);
             }
 
             @Override
@@ -427,8 +475,11 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                     return;
                 }
                 java.util.List<String[]> Righe;
+                String Informativo[] = {null, null};
                 try {
-                    Righe = get();
+                    Principale_GiacenzeaData.DettaglioGiacenze D = get();
+                    Righe = Principale_GiacenzeaData.RigheDettaglio(IDTransazione, D.Monete);
+                    Informativo = D.CostoInformativo;
                 } catch (Exception ex) {
                     LoggerGC.ScriviErrore(ex);
                     Righe = java.util.List.of(new String[][]{{"Giacenze", "calcolo non riuscito"}});
@@ -437,14 +488,37 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                 if (Posizione >= Modello.getRowCount()) {
                     return;
                 }
-                Modello.removeRow(Posizione);
-                int r = Posizione;
-                for (String[] Riga : Righe) {
-                    Modello.insertRow(r++, Riga);
+                SostituisciRiga(Modello, Posizione, Righe);
+                String Lati[] = {"Uscita", "Entrata"};
+                String Qta[] = {Transazione[10], Transazione[13]};
+                for (int l = 1; l >= 0; l--) {
+                    if (PosizioneInformativo[l] < 0) {
+                        continue;
+                    }
+                    java.util.List<String[]> RigheCosto = new java.util.ArrayList<>();
+                    if (Informativo[l] != null) {
+                        RigheCosto.add(new String[]{Lati[l] + ": Costo Carico",
+                            "<html>€ " + Informativo[l] + " <i>(solo informativo)</i></html>"});
+                        String Unitario = CostoUnitario(Informativo[l], Qta[l]);
+                        if (Unitario != null) {
+                            RigheCosto.add(new String[]{Lati[l] + ": Costo Carico Unitario",
+                                "<html>€ " + Unitario + " <i>(solo informativo)</i></html>"});
+                        }
+                    }
+                    SostituisciRiga(Modello, PosizioneInformativo[l], RigheCosto);
                 }
                 Tabelle.updateRowHeights(Tabella);
             }
         }.execute();
+    }
+
+    /** Toglie la riga di attesa in {@code Posizione} e ci inserisce al suo posto le righe date (anche nessuna). */
+    private static void SostituisciRiga(DefaultTableModel Modello, int Posizione, java.util.List<String[]> Righe) {
+        Modello.removeRow(Posizione);
+        int r = Posizione;
+        for (String[] Riga : Righe) {
+            Modello.insertRow(r++, Riga);
+        }
     }
 
     public GUI_DettaglioTransazione() {
@@ -786,24 +860,25 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             /** Apre in background il dialogo {@link GUI_ModificaPrezzo} per il movimento mostrato. */
             public void run() {
 
-                GUI_ModificaPrezzo t =new GUI_ModificaPrezzo(IDtrans);
+                //Il costruttore chiude la finestra di attesa appena le tabelle sono pronte
+                GUI_ModificaPrezzo t =new GUI_ModificaPrezzo(IDtrans, progress);
                 t.setLocationRelativeTo(c);
                 t.setVisible(true);
-                progress.ChiudiFinestra();
+                //Il dettaglio si riapre solo dopo la chiusura del dialogo (modale, setVisible è bloccante)
+                SwingUtilities.invokeLater(() -> {
+                    //Il prezzo cambiato va nei costi di carico e nelle plusvalenze prima di riaprire il dettaglio,
+                    //altrimenti il dettaglio mostrerebbe i valori dell'ultimo ricalcolo
+                    AggiornaTuttoSeModificato();
+                    GUI_DettaglioTransazione d =new GUI_DettaglioTransazione();
+                    d.AzzeraMap();
+                    d.TransazioniCrypto_CompilaTextPaneDatiMovimento(IDtrans);
+                    d.setLocation(p);
+                    d.setVisible(true);
+                });
             }
         };
         thread.start();
         progress.setVisible(true);
-         SwingUtilities.invokeLater(() -> {
-            //Il prezzo cambiato va nei costi di carico e nelle plusvalenze prima di riaprire il dettaglio,
-            //altrimenti il dettaglio mostrerebbe i valori dell'ultimo ricalcolo
-            AggiornaTuttoSeModificato();
-            GUI_DettaglioTransazione t =new GUI_DettaglioTransazione();
-                t.AzzeraMap();
-                t.TransazioniCrypto_CompilaTextPaneDatiMovimento(IDtrans);
-                t.setLocation(p);
-                t.setVisible(true);
-        });
     }
 
     /**

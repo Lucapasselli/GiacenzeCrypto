@@ -98,6 +98,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     static final String NAT_BINANCE_OLD    = "BINANCE_OLD";
     static final String NAT_BINANCE_REPORT = "BINANCE_REPORT";
     static final String NAT_BINANCE_DUAL_INVESTMENT = "BINANCE_DUAL_INVESTMENT";
+    static final String NAT_BYBIT_DEPOSITI_PRELIEVI = "BYBIT_DEPOSITI_PRELIEVI";
     static final String NAT_COINTRACKING   = "COINTRACKING";
     static final String NAT_TATAX_OLD      = "TATAX_OLD";
     static final String NAT_OKX_OLD        = "OKX_OLD";
@@ -303,6 +304,11 @@ private void raccogliEstrazioni() {
     aggiungiEstrazione(new VoceImport("Binance",      "Formato storico",  NAT_BINANCE_OLD,    null));
     aggiungiEstrazione(new VoceImport("Binance",      "Financial Report", NAT_BINANCE_REPORT, null));
     aggiungiEstrazione(new VoceImport("Binance",      "Dettaglio Dual Investment", NAT_BINANCE_DUAL_INVESTMENT, null));
+    aggiungiEstrazione(new VoceImport("Bybit",        "Dettaglio depositi e prelievi", NAT_BYBIT_DEPOSITI_PRELIEVI, null,
+            "<html><div style='width:380px'>Bybit &ndash; export <b>Withdraw &amp; Deposit History</b>"
+            + " (assetHistory_withdrawDepositHistory_...). Non aggiunge movimenti: completa i depositi e i"
+            + " prelievi gi&agrave; importati dagli Asset Change Details di Spot e Funding con hash della"
+            + " transazione, indirizzo e rete. Va quindi letto dopo di loro.</div></html>"));
     aggiungiEstrazione(new VoceImport("CoinTracking", "Formato storico",  NAT_COINTRACKING,   null));
     aggiungiEstrazione(new VoceImport("Tatax",        "Formato storico",  NAT_TATAX_OLD,      null));
     aggiungiEstrazione(new VoceImport("OKX",          "Formato storico",  NAT_OKX_OLD,        null));
@@ -1082,6 +1088,34 @@ if (voce.isJson()) {
                 } catch (Exception ex) {
                     LoggerGC.ScriviErrore(ex);
                     Messaggi.WarningMessage("Abbinamento Dual Investment",
+                            "Errore durante la lettura del file: " + ex.getMessage(), this);
+                }
+                dispose();
+            }
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+
+        else if (voce.isNativo(NAT_BYBIT_DEPOSITI_PRELIEVI)) {
+            //Come il Dual Investment: non crea movimenti, completa quelli gia' importati, con un
+            //resoconto suo. Piu' file insieme (uno per anno) danno un solo resoconto.
+            File[] files = ScegliFileDaImportare(true);
+            if (files != null) {
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                try {
+                    //Niente derivati qui: senza azzerarle il resoconto ripeterebbe l'avviso di un import precedente
+                    Importazioni.CausaliDerivatiSegnalate.clear();
+                    Bybit_DepositiPrelievi.Esito esito = Bybit_DepositiPrelievi.Arricchisci(files);
+                    if (esito.arricchiti > 0) {
+                        Principale.TabellaCryptodaAggiornare = true;
+                    }
+                    Importazioni_Resoconto res = new Importazioni_Resoconto();
+                    this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    res.ImpostaValoriBybitDepositiPrelievi(esito);
+                    res.setLocationRelativeTo(this);
+                    res.setVisible(true);
+                } catch (Exception ex) {
+                    LoggerGC.ScriviErrore(ex);
+                    Messaggi.WarningMessage("Depositi e prelievi Bybit",
                             "Errore durante la lettura del file: " + ex.getMessage(), this);
                 }
                 dispose();

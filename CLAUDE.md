@@ -424,6 +424,15 @@ aggregate sub-wallet balance — deliberately **not** reusing `CreaMovimentoTras
 to avoid risking their aggregate-balance/hash-based-reward logic for a case they were never designed
 for.
 
+**Bybit "Withdraw & Deposit History" (`Bybit_DepositiPrelievi`, 2026-09-30) enriches, it never
+imports.** Every row is already in the Spot/Funding Asset Change Details as a PC/DC to classify; the file
+only adds hash `[24]`, address `[30]` and the chain **in the note `[21]`** — never in `[34]`, which is the
+token's network and part of the coin's identity (lots, prices). Blank fields only, so re-reading is a
+no-op; unique candidate or nothing, filtered on the raw on-chain causali in `[7]`. Withdrawals are gross
+in Spot and net in this file: the network fee is deliberately **not** split off here, because classifying
+the transfer already creates the `CM` `AU` from the difference. Design in
+`nocommit/Documentazione/Analisi_Bybit_DepositiPrelievi.md`.
+
 **"Scambio differito"** (`SCAMBIO DIFFERITO`) recognises a withdrawal and a deposit on independent
 CSV rows, after the whole import is written, as the two halves of one exchange happening "behind the
 scenes" (Auto-Invest, Token Swap). `Importazioni.ConsolidaMovimentiDifferiti` matches them within a

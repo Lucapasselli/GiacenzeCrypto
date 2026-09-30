@@ -72,31 +72,6 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         
     }
     
-        public GUI_ModificaPrezzo(String ID) {
-        initComponents();
-        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_PrezzoAttuale);
-        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_Prezzi);
-        PrezzoT=null;
-        MU=null;
-        ME=null;
-        ModalitaRitorno=false;
-        ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
-        this.setIconImage(icon.getImage());  
-        
-        CaricaTabellaPrezzoAttualedaID(ID); 
-        CaricaTabellaPrezzi(ID);
-        //Qui sono io a chiudere la finestra di attesa tanto non devo ritornare nulla, il cambiamento viene fatto direttamente sul movimento
-        //Questa parteserve per forzare la finestra in primo piano
-        SwingUtilities.invokeLater(() -> {
-            this.toFront();
-            this.requestFocus();
-            this.requestFocusInWindow();
-            this.setAlwaysOnTop(true);
-            this.setAlwaysOnTop(false);
-        });
-        
-    }
-    
     public GUI_ModificaPrezzo(Moneta MU,Moneta ME, Prezzi.InfoPrezzo IPr, long TimeStamp,String Rete,String[] Ritorno,Download dow) {
         this.MU=MU;
         this.ME=ME;

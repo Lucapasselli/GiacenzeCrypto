@@ -678,10 +678,39 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
      * @return una voce per moneta coinvolta (uscita, poi entrata), vuota se il movimento non esiste
      */
     public static List<GiacenzeMoneta> GiacenzeAttornoAlMovimento(String ID) {
-        List<GiacenzeMoneta> Ris = new ArrayList<>();
+        return CalcolaDettaglio(ID).Monete;
+    }
+
+    /**
+     * Quello che il dettaglio movimento calcola con una passata: le giacenze prima/dopo di
+     * {@link #GiacenzeAttornoAlMovimento(String)} e il costo di carico informativo delle gambe su cui il
+     * motore delle plusvalenze non ne ha scritto uno.
+     */
+    public static final class DettaglioGiacenze {
+        public final List<GiacenzeMoneta> Monete = new ArrayList<>();
+        /**
+         * Costo di carico solo informativo della quantità mossa, {@code [0]} uscita e {@code [1]} entrata;
+         * {@code null} se il motore ha già scritto il costo ({@code v[16]}/{@code v[17]}) o se non ha senso.
+         * È il costo dei lotti più recenti che coprono la quantità, letti dalla pila del gruppo wallet
+         * (o dalla pila unica, con il LIFO globale) subito prima del movimento, senza toglierli: la stessa
+         * lettura che il motore fa per un PTW diretto a un altro gruppo. Per l'entrata vale solo sui
+         * trasferimenti (DTW, TI), perché il PTW non scarica la pila e i lotti in cima sono quelli partiti;
+         * un deposito non classificato non ha un costo da dedurre.
+         */
+        public final String[] CostoInformativo = new String[2];
+    }
+
+    /**
+     * Esegue la passata del dettaglio movimento, vedi {@link DettaglioGiacenze}.
+     * @param ID ID del movimento
+     * @return il risultato, vuoto se il movimento non esiste o non muove monete
+     */
+    public static DettaglioGiacenze CalcolaDettaglio(String ID) {
+        DettaglioGiacenze Dettaglio = new DettaglioGiacenze();
+        List<GiacenzeMoneta> Ris = Dettaglio.Monete;
         String[] Mov = MappaCryptoWallet.get(ID);
         if (Mov == null) {
-            return Ris;
+            return Dettaglio;
         }
         String ReteMov = Funzioni.TrovaReteDaIMovimento(Mov);
         String Wallet = Mov[3].trim();
@@ -702,7 +731,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
             }
         }
         if (Monete.isEmpty()) {
-            return Ris;
+            return Dettaglio;
         }
 
         CostiCaricoRimanenze Costi = new CostiCaricoRimanenze();
@@ -715,12 +744,38 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
             ElaboraLotti(Costi, v, Simboli);
         }
         FotografaGiacenze(Monete, Correnti, Costi, Gruppo, Wallet, true);
+        if (Gruppo != null) {
+            String IDTS[] = Mov[0].split("_");
+            boolean Interno = IDTS.length > 4 && IDTS[4].equalsIgnoreCase("TI");
+            if (Mov[16].isBlank() && isCrypto(Mov[8], Mov[9])) {
+                Dettaglio.CostoInformativo[0] = Costi.CostoDelGruppo(Gruppo,
+                        ChiaveRiga(Mov[8], Mov[9], Mov[26], ReteMov), QtaAssoluta(Mov[10]));
+            }
+            if (Mov[17].isBlank() && isCrypto(Mov[11], Mov[12]) && (Interno || Mov[18].contains("DTW"))) {
+                Dettaglio.CostoInformativo[1] = Costi.CostoDelGruppo(Gruppo,
+                        ChiaveRiga(Mov[11], Mov[12], Mov[28], ReteMov), QtaAssoluta(Mov[13]));
+            }
+        }
         SommaQuantita(Mov, Simboli, Correnti, Gruppo, Wallet);
         ElaboraLotti(Costi, Mov, Simboli);
         FotografaGiacenze(Monete, Correnti, Costi, Gruppo, Wallet, false);
 
         Ris.addAll(Monete.values());
-        return Ris;
+        return Dettaglio;
+    }
+
+    /** @return {@code true} se la gamba ha una moneta e non è FIAT */
+    private static boolean isCrypto(String Moneta, String Tipo) {
+        return !Moneta.isBlank() && !Tipo.isBlank() && !Tipo.equalsIgnoreCase("FIAT");
+    }
+
+    /** @return il valore assoluto della quantità, o {@code "0"} se non è un numero */
+    private static String QtaAssoluta(String Qta) {
+        try {
+            return new BigDecimal(Qta.trim()).abs().toPlainString();
+        } catch (NumberFormatException ex) {
+            return "0";
+        }
     }
 
     /** Aggiunge le quantità del movimento ai contatori dei tre livelli, con i criteri di "Giacenze a data". */
@@ -819,12 +874,18 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
      * @return le righe, vuota se il movimento non muove nessuna moneta
      */
     public static List<String[]> RigheDettaglio(String ID) {
+        return RigheDettaglio(ID, GiacenzeAttornoAlMovimento(ID));
+    }
+
+    /**
+     * Come {@link #RigheDettaglio(String)}, a partire da giacenze già calcolate.
+     */
+    public static List<String[]> RigheDettaglio(String ID, List<GiacenzeMoneta> Giacenze) {
         List<String[]> Righe = new ArrayList<>();
         String[] Mov = MappaCryptoWallet.get(ID);
         if (Mov == null) {
             return Righe;
         }
-        List<GiacenzeMoneta> Giacenze = GiacenzeAttornoAlMovimento(ID);
         String Gruppo = Mov[3].isBlank() ? "" : DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3], true);
         String Etichette[] = {"Tutti i wallet", Gruppo.isBlank() ? "" : "Gruppo " + Gruppo, Mov[3].trim()};
         for (GiacenzeMoneta M : Giacenze) {

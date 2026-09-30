@@ -433,6 +433,37 @@ class Principale_GiacenzeaDataCostoCaricoTest {
         assertEquals("6000.00", g.CostoDopo[GRUPPO]);
     }
 
+    /**
+     * Un giroconto nello stesso gruppo non ha costo di carico scritto dal motore: il dettaglio ne mostra
+     * uno informativo, il costo dei lotti più recenti che coprono la quantità mossa. Sul deposito i lotti
+     * sono ancora quelli, perché il prelievo verso un wallet proprio non scarica la pila.
+     */
+    @Test
+    void unGiroContoSenzaCostoNeHaUnoInformativo() {
+        acquisto("2024-01-01 10:00", "WalletA", "BTC", "1", "1000");
+        acquisto("2024-01-15 10:00", "WalletA", "BTC", "1", "3000");
+        String[] prelievo = movimento("2024-02-01 10:00", "WalletA", "PC", "PTW - Prelievo verso wallet proprio",
+                "TRASFERIMENTO", "BTC", "Crypto", "-1.5", "", "", "", "0.00");
+        String[] deposito = movimento("2024-02-01 10:01", "WalletB", "DC", "DTW - Deposito da wallet proprio",
+                "TRASFERIMENTO", "", "", "", "BTC", "Crypto", "1.5", "0.00");
+        prelievo[20] = deposito[0];
+        deposito[20] = prelievo[0];
+        String[] vendita = vendita("2024-03-01 10:00", "BTC", "-0.5", "2000");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        assertEquals("", prelievo[16]);
+        assertEquals("", deposito[17]);
+        //1.5 BTC : tutto il lotto da 3000 più metà di quello da 1000
+        Principale_GiacenzeaData.DettaglioGiacenze p = Principale_GiacenzeaData.CalcolaDettaglio(prelievo[0]);
+        assertEquals("3500.00", p.CostoInformativo[0]);
+        assertNull(p.CostoInformativo[1]);
+        assertEquals("3500.00", Principale_GiacenzeaData.CalcolaDettaglio(deposito[0]).CostoInformativo[1]);
+        //Dove il motore il costo l'ha scritto, niente costo informativo
+        assertNull(Principale_GiacenzeaData.CalcolaDettaglio(vendita[0]).CostoInformativo[0]);
+        assertEquals("2333.3333333333", GUI_DettaglioTransazione.CostoUnitario("3500.00", "-1.5"));
+    }
+
     @Test
     void leRigheDelDettaglioSonoUnaPerMoneta() {
         acquisto("2024-01-01 10:00", "BTC", "1", "1000");

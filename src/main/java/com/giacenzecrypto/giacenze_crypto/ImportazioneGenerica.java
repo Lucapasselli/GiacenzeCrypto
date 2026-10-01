@@ -315,6 +315,13 @@ public class ImportazioneGenerica {
                 scarta("DATA NON PARSABILE", r);
                 continue;
             }
+            if (cfg.colonnaCoppia >= 0) {
+                campi = espandiCoppia(campi, cfg);
+                if (campi == null) {
+                    scarta("COPPIA NON VALIDA", r);
+                    continue;
+                }
+            }
             risultato.add(campi);
         }
 
@@ -1556,6 +1563,31 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
     }
 
     /**
+     * Spezza la cella "BASE-QUOTE" (vedi {@link ConfigurazioneImport#colonnaCoppia}) in due colonne
+     * virtuali accodate alla riga, agli indici {@code colonnaCoppiaBase}/{@code colonnaCoppiaQuote}.
+     * Si fa alla lettura del file, e non dentro {@code costruisciMovimenti}, perche' la moneta della
+     * riga la leggono anche il raggruppamento, la raccolta dei prezzi e lo scambio gambe: da li' in poi
+     * sono colonne come le altre e nessuno di quei punti deve sapere che non stavano nel CSV.
+     *
+     * @return la riga allungata, oppure {@code null} se la cella non e' una coppia
+     */
+    private static String[] espandiCoppia(String[] campi, ConfigurazioneImport cfg) {
+        String cella = safe(campi, cfg.colonnaCoppia);
+        int idx = cella.indexOf(cfg.separatoreCoppia);
+        if (idx <= 0 || idx + cfg.separatoreCoppia.length() >= cella.length()) {
+            return null;
+        }
+        String[] nuova = Arrays.copyOf(campi, Math.max(campi.length,
+                Math.max(cfg.colonnaCoppiaBase, cfg.colonnaCoppiaQuote) + 1));
+        for (int i = campi.length; i < nuova.length; i++) {
+            nuova[i] = "";
+        }
+        nuova[cfg.colonnaCoppiaBase] = cella.substring(0, idx).trim();
+        nuova[cfg.colonnaCoppiaQuote] = cella.substring(idx + cfg.separatoreCoppia.length()).trim();
+        return nuova;
+    }
+
+    /**
      * Legge una coppia quantita'/moneta, gestendo il caso "valore composto" (vedi
      * {@link ConfigurazioneImport#separatoreValoreMoneta}): se le due colonne configurate
      * coincidono, la cella e' "NUMERO&lt;separatore&gt;SIMBOLO" in un'unica cella (es. Gate.io
@@ -1861,6 +1893,16 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         // History: "407.57 AME", separatore " ") invece di due colonne separate. Vuoto (default) = comportamento
         // invariato, moneta e quantita' restano due colonne distinte come in tutte le altre config.
         public String separatoreValoreMoneta = "";
+
+        // Coppia di trading in una sola cella ("KCS-ETH", KuCoin Spot), senza colonne moneta separate:
+        // 'colonnaCoppia' e' la colonna della coppia, 'separatoreCoppia' cio' che divide base e quota.
+        // La lettura del file accoda alla riga due colonne VIRTUALI, agli indici 'colonnaCoppiaBase' e
+        // 'colonnaCoppiaQuote' (da scegliere oltre l'ultima colonna vera del CSV), che la config usa poi
+        // come 'moneta'/'monetaUscita' normali. -1 (default) = nessuna espansione, config invariate.
+        public int colonnaCoppia = -1;
+        public String separatoreCoppia = "-";
+        public int colonnaCoppiaBase = -1;
+        public int colonnaCoppiaQuote = -1;
 
         // Causali per cui, su una riga che porta GIA' entrambe le gambe (moneta/quantita' +
         // monetaUscita/quantitaUscita), il ruolo entrata/uscita delle due colonne va scambiato prima
@@ -2182,6 +2224,16 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             }
             if (root.has("separatoreValoreMoneta")) {
                 cfg.separatoreValoreMoneta = root.getString("separatoreValoreMoneta");
+            }
+            if (root.has("coppia")) {
+                JSONObject cp = root.getJSONObject("coppia");
+                cfg.colonnaCoppia = cp.getInt("colonna");
+                cfg.separatoreCoppia = cp.optString("separatore", "-");
+                cfg.colonnaCoppiaBase = cp.getInt("base");
+                cfg.colonnaCoppiaQuote = cp.getInt("quote");
+                if (cfg.separatoreCoppia.isEmpty() || cfg.colonnaCoppiaBase < 0 || cfg.colonnaCoppiaQuote < 0) {
+                    throw new IllegalArgumentException("'coppia' richiede separatore non vuoto e colonne base/quote >= 0");
+                }
             }
             if (root.has("causaliScambiaGambe")) {
                 JSONArray arr = root.getJSONArray("causaliScambiaGambe");

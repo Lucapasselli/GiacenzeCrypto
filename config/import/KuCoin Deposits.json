@@ -1,0 +1,48 @@
+{
+  "_commento": "KuCoin - export 'Deposit List' (file 'Deposit List.csv'). UTF-8, separatore virgola. Colonne: 0=UID 1=Account Type 2=Time(UTC+00:00) 3=Coin 4=Amount 5=Fee (sempre 0 nei depositi) 6=Hash 7=Deposit Address 8=Transfer Network 9=Status 10=Remarks.",
+  "_commentoCausale": "Il file non ha nessuna colonna causale: OGNI riga e' per definizione un deposito. 'causale':-1 e 'causalePerNota' (con la colonna Status come nota) riconoscono la riga dal CONTAINS case-insensitive 'success': un depositato non riuscito non e' un movimento. 'versoForzato':'ENTRATA' forza il segno positivo.",
+  "_commentoID": "'idTransazione' e' l'Hash on-chain (colonna 6), univoco per riga.",
+  "_commentoFuso": "L'intestazione dice 'Time(UTC+00:00)': 'fuso':'UTC'.",
+  "_commentoFuturi": "I Futures ('Futures Orders_Completed Trades.csv') NON hanno una configurazione: il file elenca solo le esecuzioni dei contratti (LINKUSDTM buy/sell, contratti e prezzo), senza PnL realizzato, funding ne' saldo del margine. Per ricavare un risultato servirebbe abbinare apertura e chiusura di ogni posizione, cosa che una config non puo' fare; il solo dato di cassa vero sarebbero le commissioni in USDT. Il programma non calcola comunque i derivati (vedi Derivati): da decidere con l'utente come trattarli.",
+  "_commentoVersione": "Usa 'versoForzato', aggiunto a ImportazioneGenerica dalla 1.0.64.01. 'versioneMinimaApp' impedisce che questo file venga proposto su un'installazione precedente (vedi Importazioni_Gestione.raccogliEstrazioni). Le versioni gia' rilasciate non conoscono 'versioneMinimaApp' e lo proporrebbero comunque: per questo 'fornitore' dichiara nel nome da quale versione e' utilizzabile. 'fornitore' e' solo l'etichetta della finestra di import; il campo [3] dei movimenti resta 'nomeExchange' (KuCoin), che e' anche la chiave del gruppo wallet fiscale (Wallet 108 in RW_Predefiniti.json): cambiarlo sposterebbe i movimenti gia' importati in un altro gruppo e farebbe rientrare come doppioni quelli gia' presenti.",
+  "versione": "1.000",
+  "versioneMinimaApp": "1.0.64.01",
+  "centralizzato": false,
+  "fontePrezzoPreferita": "kucoin",
+  "fornitore": "KuCoin (utilizzabile dalla versione 1.0.64.01)",
+  "nomeExchange": "KuCoin",
+  "estrazione": "Deposit List",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 1,
+  "rigaIntestazione": 1,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
+  "fuso": "UTC",
+  "colonne": {
+    "idTransazione": 6,
+    "data": 2,
+    "causale": -1,
+    "moneta": 3,
+    "quantita": 4,
+    "note": 9
+  },
+  "versoForzato": "ENTRATA",
+  "causalePerNota": [
+    {
+      "notaContiene": "success",
+      "tipo": "TRASFERIMENTO-CRYPTO"
+    }
+  ],
+  "mappaCausali": {},
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": [
+    "TRASFERIMENTO-CRYPTO"
+  ],
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

@@ -1,0 +1,52 @@
+{
+  "_commento": "KuCoin - export 'Withdrawal List' (file 'Withdrawal List.csv'). UTF-8, separatore virgola. Colonne: 0=UID 1=Account Type 2=Time(UTC+00:00) 3=Coin 4=Amount 5=Fee (fee di rete, stessa moneta di Amount) 6=Hash 7=Withdrawal Address/Account 8=Transfer Network 9=Status 10=Remarks.",
+  "_commentoImporto": "'Amount' e' il NETTO arrivato a destinazione e la fee e' IN PIU': il saldo scende di Amount + Fee (verificato sul dataset di prova: i 602.49917764 HERO prelevati con fee 70 tornano solo se sul conto ne erano stati comprati 672.49917764). Diverso da Gate.io, dove Amount e' il lordo. Percio' 'ricostruisciLordoSeFeeSuMonetaUscita':false e la fee esce come movimento COMMISSIONI a se', in aggiunta all'Amount.",
+  "_commentoCausale": "Il file non ha nessuna colonna causale: OGNI riga e' un prelievo. Stessa tecnica di 'KuCoin Deposits.json': 'success' nella colonna Status (mappata come nota), 'versoForzato':'USCITA'.",
+  "_commentoID": "'idTransazione' e' l'Hash on-chain (colonna 6).",
+  "_commentoFuso": "L'intestazione dice 'Time(UTC+00:00)': 'fuso':'UTC'.",
+  "_commentoVersione": "Usa 'versoForzato', aggiunto a ImportazioneGenerica dalla 1.0.64.01. 'versioneMinimaApp' impedisce che questo file venga proposto su un'installazione precedente (vedi Importazioni_Gestione.raccogliEstrazioni). Le versioni gia' rilasciate non conoscono 'versioneMinimaApp' e lo proporrebbero comunque: per questo 'fornitore' dichiara nel nome da quale versione e' utilizzabile. 'fornitore' e' solo l'etichetta della finestra di import; il campo [3] dei movimenti resta 'nomeExchange' (KuCoin), che e' anche la chiave del gruppo wallet fiscale (Wallet 108 in RW_Predefiniti.json): cambiarlo sposterebbe i movimenti gia' importati in un altro gruppo e farebbe rientrare come doppioni quelli gia' presenti.",
+  "versione": "1.000",
+  "versioneMinimaApp": "1.0.64.01",
+  "centralizzato": false,
+  "fontePrezzoPreferita": "kucoin",
+  "fornitore": "KuCoin (utilizzabile dalla versione 1.0.64.01)",
+  "nomeExchange": "KuCoin",
+  "estrazione": "Withdrawal List",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 1,
+  "rigaIntestazione": 1,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
+  "fuso": "UTC",
+  "colonne": {
+    "idTransazione": 6,
+    "data": 2,
+    "causale": -1,
+    "moneta": 3,
+    "quantita": 4,
+    "monetaFee": 3,
+    "quantitaFee": 5,
+    "note": 9
+  },
+  "versoForzato": "USCITA",
+  "ricostruisciLordoSeFeeSuMonetaUscita": false,
+  "ricostruisciLordoSeFeeSuMonetaEntrata": false,
+  "causalePerNota": [
+    {
+      "notaContiene": "success",
+      "tipo": "TRASFERIMENTO-CRYPTO"
+    }
+  ],
+  "mappaCausali": {},
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": [
+    "TRASFERIMENTO-CRYPTO"
+  ],
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

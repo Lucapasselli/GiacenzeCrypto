@@ -204,8 +204,25 @@ prodotto da `Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(DataRiferiment
   simboli del movimento. Il filtro va applicato a ogni carico/scarico e non al movimento intero, perché un
   PTW e il suo DTW possono avere simboli diversi.
 
-⚠️ La colonna ha spostato gli indici della tabella: *Errori* è la **7** e *InfoPrezzo* la **8**, sia nei
-lettori di `Principale` sia in `Tabelle.ColoraRigheTabella0GiacenzeaData`.
+- **Colonne derivate della tabella principale** (*Valore unitario*, *Costo unitario*, *Differenza valore − costo*,
+  indici 7-9): restano **vuote, non zero**, per FIAT, giacenza ≤ 0 e — la differenza — token senza prezzo, che
+  altrimenti mostrerebbe l'intero costo come perdita. Il costo unitario divide il costo **esatto**
+  (`CostoEsattoDelleRimanenze`), non quello mostrato a due decimali, che su un token da frazioni di centesimo
+  darebbe zero. Tutto in `Principale_GiacenzeaData.ValoriDerivatiRiga`.
+- **Tabella dettaglio movimenti: quattro colonne di costo in coda** (indici **13-16**: costo di carico del
+  movimento da `v[16]`/`v[17]`, prezzo unitario, valore e costo di carico della qta residua). Stanno **in coda**
+  e non accanto a *Qta Residua* perché `Tabelle.ColoraRigheTabella1GiacenzeaData` è condiviso con la tabella dei
+  saldi negativi e con quella dei token SCAM e ha indici fissi (5, 7, 10-12), e perché la selezione e il popup
+  leggono l'ID alla colonna 8; le colonne 8-12 hanno larghezza zero, quindi a video si vedono subito dopo
+  *Qta Residua*. Il costo residuo è la stessa regola della principale (**passata non filtrata, lettura sì**):
+  `CostiDettaglioToken.Avanza` va chiamato su **tutti** i movimenti anteriori alla data, anche su quelli che il
+  filtro wallet scarta, altrimenti un giroconto interno fa sparire il costo. Nessuna ricerca di prezzo per riga
+  (la tabella si ricostruisce a ogni selezione): il prezzo è quello del movimento. Le colonne di costo e quelle
+  unitarie non si sommano nell'header (`putClientProperty("ColonneSenzaSomma", …)`, letta da
+  `Tabelle.Tabelle_getSommeColonne`). Fissato da `lUltimaRigaDelDettaglioCoincideConLaTabellaPrincipale`.
+
+⚠️ Le colonne derivate hanno spostato gli indici della tabella principale: *Errori* è la **10** e *InfoPrezzo*
+la **11** (prima 7 e 8), sia nei lettori di `Principale` sia in `Tabelle.ColoraRigheTabella0GiacenzeaData`.
 
 ### Filtri della tabella movimenti — due meccanismi, non uno
 
@@ -388,6 +405,16 @@ is still **not** counted as an error: the counter uses `isDepositoPrelievoClassi
 Pinned by `GirocontiFiatTest`.
 
 **`colonneControvalore.noteAcquistoDaSaldo` (`Coinbase CSV.json` ≥ v1.006) — Buy pagati con carta non devono movimentare euro.** For a causale in `causaliConMovimentoCommissione` (only `Buy`), `costruisciMovimenti` normally synthesises a FIAT-out leg of `Total − fee` (→ categoria `AC`) plus a separate `COMMISSIONI` movement. When `noteAcquistoDaSaldo` is set and the row's Notes are non-empty and contain **none** of its markers (`"EUR Wallet"`), the Buy was paid from outside the exchange balance (card, Apple/Google Pay, direct bank): both the synthetic FIAT leg and the `COMMISSIONI` movement are skipped, and the lone crypto-in movement has its ID categoria rewritten `_DC`→`_AC` with `campo5="ACQUISTO CRYPTO"` and **`campo18` left empty** — the exact shape the Crypto.com App importer already produces (`Importazioni.java`, "Forzo il fatto che sia un acquisto crypto"). `Calcoli_PlusvalenzeNew`'s `v[18].contains("DAC") || TipoID.equals("AC")` branch then loads it at full cost `campo[15]` (= `Total − fee`), plusvalenza 0, no EUR moved. Empty Notes → unchanged (synthesised FIAT leg). Pinned by `ImportazioneGenericaCoinbaseTest`.
+
+**`coppia` — a trading pair in one cell (`KuCoin Spot Trades.json`, 2026-10-01).** When the export has no coin
+column, only `KCS-ETH`, `"coppia": {colonna, separatore, base, quote}` makes `ImportazioneGenerica.leggiCSV` append two
+**virtual columns** to every row at the `base`/`quote` indices (pick them past the CSV's last real column), which the config then
+uses as ordinary `moneta`/`monetaUscita`. It is done at file-read time, not inside `costruisciMovimenti`, because grouping, price
+pre-collection and `causaliScambiaGambe` all read the coin from the row. A row whose cell has no separator is discarded
+(`COPPIA NON VALIDA`). Also worth knowing from the KuCoin exports: a withdrawal's `Amount` is the **net** and the fee is on top
+(the opposite of Gate.io), partial fills of one order are several identical rows and all of them enter on the first import (dedup
+is against the archive, not within the batch), and the Futures export has no config because it carries no PnL. Pinned by
+`ImportazioneGenericaKuCoinTest`.
 
 **`walletSpecularePerCausale`** emits a mirror leg (same coin, inverted quantity via
 `Moneta.InvertiQta()`, never `replace("-","")`) for causali that move a coin into an exchange

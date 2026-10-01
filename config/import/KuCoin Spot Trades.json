@@ -1,0 +1,58 @@
+{
+  "_commento": "KuCoin - export 'Spot Orders_Completed Trades' (file 'Spot Orders_Completed Trades.csv'). UTF-8, separatore virgola. Colonne: 0=UID 1=Account Type 2=Order ID 3=Symbol (coppia BASE-QUOTE, es. KCS-ETH) 4=Side (BUY/SELL) 5=Order Type 6=Avg. Filled Price 7=Filled Amount (quantita' della BASE) 8=Filled Volume (quantita' della QUOTA) 9=Filled Volume (USDT) 10=Filled Time(UTC+00:00) 11=Fee 12=Tax (sempre vuota) 13=Maker/Taker 14=Fee Currency 15=Account Mode.",
+  "_commentoCoppia": "La moneta non ha una colonna propria: sta nella coppia 'Symbol' ('KCS-ETH'). L'opzione 'coppia' spezza quella cella sul primo '-' e accoda alla riga due colonne VIRTUALI, la 16 (base) e la 17 (quota), oltre l'ultima colonna vera del CSV (la 15): 'moneta' (16) e 'monetaUscita' (17) le leggono come colonne normali. Se il CSV guadagnasse colonne, vanno spostati 'base' e 'quote' e di conseguenza 'moneta'/'monetaUscita'.",
+  "_commentoGambe": "'Filled Amount' (base) e 'Filled Volume' (quota) sono sempre POSITIVI cosi' come esportati: il verso dipende dalla causale (BUY: la base entra, la quota esce; SELL: il contrario). 'causaliScambiaGambe':['SELL'] scambia le due celle prima di ogni altra elaborazione, come nelle config Gate.io.",
+  "_commentoFee": "La fee e' nella colonna 'Fee Currency' (nei dati visti: la quota della coppia, o KCS quando si paga con lo sconto fee). 'Filled Volume' e' gia' il prezzo*quantita' lordo (verificato: 5.98977355 KCS * 0.001369 = 0.0082 ETH), la fee si aggiunge a parte: ricostruisciLordoSeFee*=false, la fee esce come movimento COMMISSIONI a se'.",
+  "_commentoOrdiniParziali": "Un ordine eseguito in piu' parti occupa piu' righe con lo stesso Order ID, anche con valori identici (sul dataset visto: 6 righe identiche dello stesso ordine TRX-KCS). Ogni riga diventa il suo scambio: la deduplica del re-import e' contro cio' che e' gia' in archivio e non fra le righe dello stesso file, quindi le righe identiche entrano tutte alla prima importazione.",
+  "_commentoFuso": "L'intestazione dice 'Time(UTC+00:00)': 'fuso':'UTC'.",
+  "_commentoDati": "Controllo di coerenza cronologico (saldo teorico moneta per moneta) su spot + depositi + prelievi del dataset di prova: diverse monete restano NEGATIVE a fine periodo (KCS, XLM, TRX, BTC, LINK...): questi export NON coprono da soli tutta la storia del conto (mancano probabilmente Earn, premi, conversioni, trasferimenti fra sotto-conti). Aspettarsi giacenze negative finche' non si importano anche quei movimenti. I Futures non sono coperti da nessuna config: vedi la nota in 'KuCoin Deposits.json'.",
+  "_commentoVersione": "Usa 'coppia', aggiunta a ImportazioneGenerica dopo la 1.0.64.05. 'versioneMinimaApp' impedisce che questo file venga proposto su un'installazione precedente (vedi Importazioni_Gestione.raccogliEstrazioni). Le versioni gia' rilasciate non conoscono 'versioneMinimaApp' e lo proporrebbero comunque: per questo 'fornitore' dichiara nel nome da quale versione e' utilizzabile. 'fornitore' e' solo l'etichetta della finestra di import; il campo [3] dei movimenti resta 'nomeExchange' (KuCoin), che e' anche la chiave del gruppo wallet fiscale (Wallet 108 in RW_Predefiniti.json): cambiarlo sposterebbe i movimenti gia' importati in un altro gruppo e farebbe rientrare come doppioni quelli gia' presenti.",
+  "versione": "1.000",
+  "versioneMinimaApp": "1.0.64.06",
+  "centralizzato": false,
+  "fontePrezzoPreferita": "kucoin",
+  "fornitore": "KuCoin (utilizzabile dalla versione 1.0.64.06)",
+  "nomeExchange": "KuCoin",
+  "estrazione": "Spot Orders - Completed Trades",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 1,
+  "rigaIntestazione": 1,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
+  "fuso": "UTC",
+  "coppia": {
+    "colonna": 3,
+    "separatore": "-",
+    "base": 16,
+    "quote": 17
+  },
+  "colonne": {
+    "idTransazione": 2,
+    "data": 10,
+    "causale": 4,
+    "moneta": 16,
+    "quantita": 7,
+    "monetaUscita": 17,
+    "quantitaUscita": 8,
+    "monetaFee": 14,
+    "quantitaFee": 11
+  },
+  "causaliScambiaGambe": [
+    "SELL"
+  ],
+  "ricostruisciLordoSeFeeSuMonetaUscita": false,
+  "ricostruisciLordoSeFeeSuMonetaEntrata": false,
+  "mappaCausali": {
+    "BUY": "SCAMBIO CRYPTO-CRYPTO",
+    "SELL": "SCAMBIO CRYPTO-CRYPTO"
+  },
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": [],
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

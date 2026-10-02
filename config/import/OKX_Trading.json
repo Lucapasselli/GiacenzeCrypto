@@ -1,7 +1,7 @@
 {
   "_commento": "OKX - export 'Trading History' del conto Trading unificato (file 'OKX Trading History_<periodo>~<hash>_N.csv'). Colonne: 0=id 1=Order id 2=Time 3=Trade Type 4=Symbol 5=Action 6=Amount 7=Trading Unit 8=Filled Price 9=PnL 10=Fee 11=Fee Unit 12=Position Change 13=Position Balance 14=Balance Change 15=Balance 16=Balance Unit. La prima riga del file contiene UID e tipo di account, l'intestazione vera e' la seconda.",
   "_commentoFuso": "Come per il Funding: il nome del file dice 'UTC0' ma gli orari sono nel fuso di visualizzazione dell'account (qui Europe/Rome), verificato confrontando le stesse operazioni scaricate via API. Se cambia il fuso impostato su OKX al momento dell'export, va cambiato anche qui.",
-  "versione": "1.001",
+  "versione": "1.002",
   "fontePrezzoPreferita": "okx",
   "nomeExchange": "OKX",
   "estrazione": "Trading",
@@ -34,10 +34,11 @@
   "consolidaRigheStessaData": true,
   "tolleranzaSecondiConsolidamento": 0,
   "causaliDifferite": [],
-  "_commentoCausali": "La causale e' composta da 'Trade Type' + '.' + 'Action', cosi' le righe 'Transfer' con Action vuota (che nel file sono coppie +/- della stessa moneta) restano riconoscibili invece di diventare una causale vuota. Tutte le righe Transfer sono giroconti interni a OKX e non vengono importate.",
+  "_commentoCausali": "La causale e' composta da 'Trade Type' + '.' + 'Action', cosi' le righe 'Transfer' con Action vuota (che nel file sono coppie +/- della stessa moneta) restano riconoscibili invece di diventare una causale vuota. Tutte le righe Transfer sono giroconti interni a OKX e non vengono importate. Le conversioni dell'app OKX (Convert, Symbol 'TAO-USDC-CONVERT') arrivano come Trade Type 'Spot' con Action VUOTA, quindi la causale e' 'Spot.' e vanno mappate come Buy/Sell: sono due righe con lo stesso Order id, una per gamba, e il verso lo da il segno di Balance Change (v1.002, segnalazione #11).",
   "mappaCausali": {
     "Spot.Buy":               "SCAMBIO CRYPTO-CRYPTO",
     "Spot.Sell":              "SCAMBIO CRYPTO-CRYPTO",
+    "Spot.":                  "SCAMBIO CRYPTO-CRYPTO",
     "Transfer.Transfer in":   "IGNORA",
     "Transfer.Transfer out":  "IGNORA",
     "Transfer.":              "IGNORA"

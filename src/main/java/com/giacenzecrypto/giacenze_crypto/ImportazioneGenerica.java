@@ -589,19 +589,19 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         if (gruppo.size() == 1) {
             String[] riga0 = gruppo.get(0);
             // Una riga ignorata non entra nell'archivio: niente avviso, come nel caso multi-riga sotto.
-            String tipoRiga0 = cfg.tipoMovimentoPerRiga(riga0);
+            String tipoRiga0 = cfg.tipoMovimentoNelGruppo(riga0, gruppo);
             boolean ignorata = "IGNORA".equalsIgnoreCase(tipoRiga0) || "NON CONSIDERARE".equalsIgnoreCase(tipoRiga0);
             if (!ignorata && cfg.causaliAllertaDerivati.contains(cfg.getCausaleCSV(riga0))) {
                 Importazioni.SegnalaCausaleDerivato(cfg.getCausaleCSV(riga0));
             }
-            List<String[]> movs = costruisciMovimenti(riga0, null, cfg);
+            List<String[]> movs = costruisciMovimenti(riga0, tipoRiga0, cfg);
             if (movs != null) {
                 risultato.addAll(movs);
                 // "SCAMBIO DIFFERITO" (autoinvest/asset recovery/token swap): il movimento principale
                 // (il primo di movs, prima di eventuali gambe fee/speculare) va accodato anche alla lista
                 // da riesaminare a fine import, per l'abbinamento automatico prelievo/deposito - vedi
                 // Importazioni.ConsolidaMovimentiDifferiti.
-                if (!movs.isEmpty() && "SCAMBIO DIFFERITO".equalsIgnoreCase(cfg.tipoMovimentoPerRiga(riga0))) {
+                if (!movs.isEmpty() && "SCAMBIO DIFFERITO".equalsIgnoreCase(tipoRiga0)) {
                     differiti.add(movs.get(0));
                 }
             }
@@ -629,7 +629,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
 
         for (String[] riga : gruppo) {
             String causaleCSV = cfg.getCausaleCSV(riga);
-            String tipoMovimento = cfg.tipoMovimentoPerRiga(riga);
+            String tipoMovimento = cfg.tipoMovimentoNelGruppo(riga, gruppo);
 
             if (tipoMovimento == null || tipoMovimento.isBlank()) {
                 scarta("CAUSALE SCONOSCIUTA: " + causaleCSV, Arrays.toString(riga));
@@ -665,7 +665,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             /*if (cfg.causaliChiuse.contains(causaleCSV) ||
                 (tipoMovimento != null && cfg.causaliChiuse.contains(tipoMovimento))) {*/
             if (cfg.causaliChiuse.contains(tipoMovimento)) {
-                List<String[]> movs = costruisciMovimenti(riga, null, cfg);
+                List<String[]> movs = costruisciMovimenti(riga, tipoMovimento, cfg);
                 if (movs != null) {
                     risultato.addAll(movs);
                     // Stesso motivo del caso "movimento singolo" sopra.
@@ -1075,7 +1075,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 if (moneta.equals("-")) continue;
                 if (moneta.equalsIgnoreCase("EUR") || moneta.equalsIgnoreCase("USD")) continue;
                 if (Funzioni.isSCAM(moneta)) continue;
-                if (Principale.Mappa_EMoney != null && Principale.Mappa_EMoney.get(moneta) != null) continue;
+                if (Prezzi.EMoneyAncoratoAdEuro(moneta, data)) continue;
 
                 String simbolo = AliasPrezziToken.StessoPrezzo(moneta, data).toUpperCase();
                 for (long inizioOra : oreDaCoprire) {
@@ -1796,6 +1796,48 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         //assente) e la colonna note contiene la sottostringa, il tipo interno diventa quello indicato.
         public List<RegolaCausaleNota> causalePerNota = new ArrayList<>();
 
+        //--- Tipo di ripiego per una causale rimasta SOLA nel suo gruppo -----------------------------
+        //Alcune causali sono la meta' di una coppia che il file non lega con un id (Bybit: il BIT
+        //impegnato nel Launchpad e il token ricevuto, a un secondo l'uno dall'altro, ma il token puo'
+        //anche arrivare da solo). Con una regola, la riga ha il tipo normale della mappaCausali se nel
+        //gruppo c'e' almeno una delle causali "con", altrimenti il tipo della regola.
+        public List<RegolaSeSola> tipoSeSola = new ArrayList<>();
+
+        /** Regola "se nel gruppo non c'e' nessuna delle causali {@code con}, la causale {@code causale} ha tipo {@code tipo}". */
+        public static final class RegolaSeSola {
+            public final String causale;
+            public final Set<String> con = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+            public final String tipo;
+            public RegolaSeSola(String causale, List<String> con, String tipo) {
+                this.causale = causale.trim();
+                for (String c : con) this.con.add(c.trim());
+                this.tipo = tipo;
+            }
+        }
+
+        /**
+         * Come {@link #tipoMovimentoPerRiga(String[])}, ma tenendo conto del gruppo di righe in cui la
+         * riga e' finita: una regola di {@code tipoSeSola} si applica solo se nessun'altra riga del
+         * gruppo ha una delle causali partner. Senza regole coincide con {@code tipoMovimentoPerRiga}.
+         */
+        public String tipoMovimentoNelGruppo(String[] riga, List<String[]> gruppo) {
+            if (!tipoSeSola.isEmpty()) {
+                String causale = getCausaleCSV(riga).trim();
+                for (RegolaSeSola r : tipoSeSola) {
+                    if (!r.causale.equalsIgnoreCase(causale)) continue;
+                    boolean haPartner = false;
+                    for (String[] altra : gruppo) {
+                        if (altra != riga && r.con.contains(getCausaleCSV(altra).trim())) {
+                            haPartner = true;
+                            break;
+                        }
+                    }
+                    if (!haPartner) return r.tipo;
+                }
+            }
+            return tipoMovimentoPerRiga(riga);
+        }
+
         /** Regola "se la nota contiene X (e la causale CSV è Y) allora il tipo è Z". */
         public static final class RegolaCausaleNota {
             public final String causale;      // null = qualsiasi causale
@@ -2174,6 +2216,18 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                             o.has("causale") ? o.getString("causale") : null,
                             o.optString("notaContiene", ""),
                             o.getString("tipo")));
+                }
+            }
+
+            if (root.has("tipoSeSola")) {
+                JSONArray arr = root.getJSONArray("tipoSeSola");
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject o = arr.getJSONObject(i);
+                    List<String> con = new ArrayList<>();
+                    JSONArray ac = o.getJSONArray("con");
+                    for (int j = 0; j < ac.length(); j++) con.add(ac.getString(j));
+                    cfg.tipoSeSola.add(new ConfigurazioneImport.RegolaSeSola(
+                            o.getString("causale"), con, o.getString("tipo")));
                 }
             }
 

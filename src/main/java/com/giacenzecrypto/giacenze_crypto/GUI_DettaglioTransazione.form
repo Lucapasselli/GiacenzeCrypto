@@ -112,9 +112,9 @@
                   <Component id="Pannello_Giacenze" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Component id="Bottone_MovPrecedente" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="432" max="32767" attributes="0"/>
-                      <Component id="TextPane_Titolo" min="-2" pref="298" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="237" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="TextPane_Titolo" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="Bottone_MovSuccessivo" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -125,7 +125,7 @@
                       <Component id="Bottone_DeFi" min="-2" pref="181" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="Bottone_Storico" min="-2" pref="181" max="-2" attributes="0"/>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="454" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -144,7 +144,7 @@
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="ScrollTabella" pref="360" max="32767" attributes="0"/>
+              <Component id="ScrollTabella" pref="477" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="Pannello_Giacenze" min="-2" pref="215" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>

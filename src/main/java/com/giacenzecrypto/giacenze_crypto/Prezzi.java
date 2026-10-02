@@ -2750,6 +2750,23 @@ public class Prezzi {
     }
 
     /**
+     * {@code true} se {@code moneta} all'{@code istante} e' un e-money token denominato in euro, cioe' valorizzato
+     * 1:1 senza cercarlo sulle fonti: il simbolo contiene "EUR" e la tabella EMONEY lo da' per e-money gia' alla
+     * data (stessa regola della classificazione fiscale, {@link Funzioni#RitornaTipoCrypto}).
+     *
+     * <p><b>Unica sorgente della regola</b> per {@link #PrezzaGamba} e per i pre-scarichi. Essere in
+     * {@code Mappa_EMoney} non basta: USDT, USDC e BUSD vi stanno (e-money dal 2000) ma non contengono "EUR",
+     * quindi la valorizzazione li cerca sugli exchange come ogni altra moneta. Fino al 2026-10-03 i pre-scarichi
+     * li saltavano per la sola presenza nella mappa, e ogni loro ora si riscaricava da sola con un processo
+     * Node (circa 3,3 s) invece di stare in un blocco da 100.
+     */
+    static boolean EMoneyAncoratoAdEuro(String moneta, long istante) {
+        return moneta != null
+                && moneta.toUpperCase().contains("EUR")
+                && Funzioni.RitornaTipoCrypto(moneta, FunzioniDate.ConvertiDatadaLong(istante), "Crypto").equalsIgnoreCase("EMoney");
+    }
+
+    /**
      * Prezzo di una sola gamba, nel modo in cui il programma prezza una moneta: EUR FIAT esatto, EMT
      * denominato in euro 1:1 (con il controllo antiscam su coingecko se ha address e rete), USD col cambio
      * Banca d'Italia, altrimenti il prezzo personalizzato e poi la ricerca sulle fonti ({@link #CambioXXXEUR}).
@@ -2784,9 +2801,7 @@ public class Prezzi {
         if (m.Qta != null
                 && !m.Qta.isBlank()
                 && !m.Tipo.trim().equalsIgnoreCase("NFT")
-                && m.Moneta.toUpperCase().contains("EUR")
-                //stessa regola usata per la classificazione fiscale (Funzioni.RitornaTipoCrypto)
-                && Funzioni.RitornaTipoCrypto(m.Moneta, FunzioniDate.ConvertiDatadaLong(Data), "Crypto").equalsIgnoreCase("EMoney")) {
+                && EMoneyAncoratoAdEuro(m.Moneta, Data)) {
 
             //verifica coingecko solo se ho address e rete (query al database, quindi eseguita per ultima)
             //la rete del token ha la precedenza su quella della transazione (l'address appartiene al token)
@@ -4661,7 +4676,7 @@ static List<RichiestaPrezzo> RaccogliRichiestePerMovimenti(java.util.Collection<
             if (moneta == null || moneta.isBlank()) continue;
             if (tipo != null && tipo.trim().equalsIgnoreCase("FIAT")) continue;
             if (Funzioni.isSCAM(moneta)) continue;
-            if (Principale.Mappa_EMoney != null && Principale.Mappa_EMoney.get(moneta) != null) continue;
+            if (EMoneyAncoratoAdEuro(moneta, data)) continue;
 
             String address = "";
             if (!rete.isBlank() && v.length > 28) {
@@ -4746,7 +4761,7 @@ public static int PreScaricaPrezziMonete(java.util.Collection<Moneta> monete, lo
         if (m == null || m.Moneta == null || m.Moneta.isBlank()) continue;
         if (m.Tipo != null && m.Tipo.trim().equalsIgnoreCase("FIAT")) continue;
         if (Funzioni.isSCAM(m.Moneta)) continue;
-        if (Principale.Mappa_EMoney != null && Principale.Mappa_EMoney.get(m.Moneta) != null) continue;
+        if (EMoneyAncoratoAdEuro(m.Moneta, data)) continue;
 
         String rete = m.Rete == null ? "" : m.Rete;
         if (!rete.isBlank() && Funzioni_WalletDeFi.isValidAddress(m.MonetaAddress, rete)) continue;

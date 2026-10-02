@@ -215,12 +215,22 @@ public final class Principale_CommissioniCollegate {
         return Fee && Principale;
     }
 
-    /** La selezione si può scollegare se almeno una riga ha una chiave. */
+    /**
+     * La selezione si può scollegare se almeno una riga ha una chiave da togliere. Un movimento di un
+     * contratto Dual Investment ({@link CommissioniCollegate#PREFISSO_DUAL}) non conta: il suo gruppo non
+     * è fatto di commissioni e non va dissolto da questa funzione. Una commissione che sta in quel gruppo
+     * invece sì, si può staccare.
+     */
     public static boolean isScollegabile(List<String> IDs) {
         for (String[] v : Righe(IDs)) {
-            if (!CommissioniCollegate.Chiave(v).isEmpty()) return true;
+            if (!CommissioniCollegate.Chiave(v).isEmpty() && !DelContrattoDual(v)) return true;
         }
         return false;
+    }
+
+    /** @return {@code true} se è un movimento (non una commissione) di un contratto Dual Investment */
+    private static boolean DelContrattoDual(String[] v) {
+        return CommissioniCollegate.isGruppoDual(CommissioniCollegate.Chiave(v)) && !CommissioniCollegate.isCommissione(v);
     }
 
     /**
@@ -307,11 +317,14 @@ public final class Principale_CommissioniCollegate {
         Set<String> Chiavi = new LinkedHashSet<>();
         for (String[] v : Righe(IDs)) {
             String K = CommissioniCollegate.Chiave(v);
-            if (K.isEmpty()) continue;
+            if (K.isEmpty() || DelContrattoDual(v)) continue;
             Chiavi.add(K);
             v[CommissioniCollegate.CAMPO] = "";
         }
         for (String K : Chiavi) {
+            //Il gruppo di un contratto Dual Investment non ha bisogno di commissioni per esistere:
+            //staccarne una non lo dissolve
+            if (CommissioniCollegate.isGruppoDual(K)) continue;
             boolean Fee = false, Principale = false;
             List<String[]> Membri = new ArrayList<>();
             for (String ID : CommissioniCollegate.Membri(K)) {
@@ -341,6 +354,7 @@ public final class Principale_CommissioniCollegate {
         String K = CommissioniCollegate.Chiave(Mov);
         if (K.isEmpty()) return Ris;
         boolean SonoCommissione = CommissioniCollegate.isCommissione(Mov);
+        boolean Dual = CommissioniCollegate.isGruppoDual(K);
         StringBuilder Commissioni = new StringBuilder();
         StringBuilder Movimenti = new StringBuilder();
         for (String Altro : CommissioniCollegate.Membri(K)) {
@@ -349,6 +363,16 @@ public final class Principale_CommissioniCollegate {
             StringBuilder Dest = CommissioniCollegate.isCommissione(v) ? Commissioni : Movimenti;
             if (Dest.length() > 0) Dest.append("<br>");
             Dest.append(Descrizione(v));
+            //In un contratto Dual i movimenti si somigliano (stessa moneta, importi vicini): la
+            //descrizione dice quale parte dell'operazione è
+            if (Dual && Dest == Movimenti && !Funzioni.noData(v[5])) Dest.append(" - ").append(v[5]);
+        }
+        if (Dual && !SonoCommissione) {
+            //Qui un gruppo senza commissioni è la situazione normale, non un collegamento rimasto a metà
+            Ris.add(new String[]{"Contratto Dual Investment " + K.substring(CommissioniCollegate.PREFISSO_DUAL.length()),
+                Movimenti.length() > 0 ? "<html>" + Movimenti + "</html>" : "nessun altro movimento"});
+            if (Commissioni.length() > 0) Ris.add(new String[]{"Commissioni collegate", "<html>" + Commissioni + "</html>"});
+            return Ris;
         }
         if (SonoCommissione) {
             Ris.add(new String[]{"Commissione del movimento",

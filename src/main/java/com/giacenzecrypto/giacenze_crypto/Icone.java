@@ -37,6 +37,8 @@ public class Icone {
     public static Icon Catena = new FlatSVGIcon("Images/Catena.svg", 24, 24);
     public static Icon Banana = new FlatSVGIcon("Images/Banana.svg", 24, 24);
     public static Icon Imbuto = new FlatSVGIcon("Images/Imbuto.svg", 24, 24);
+    /** L'imbuto pieno: un filtro attivo (l'imbuto vuoto e' "filtra", quello pieno e' "togli il filtro"). */
+    public static Icon ImbutoPieno = new FlatSVGIcon("Images/ImbutoPieno.svg", 24, 24);
     public static Icon Wallet = new FlatSVGIcon("Images/Wallet.svg", 24, 24);
     public static Icon ImbutoX = new FlatSVGIcon("Images/ImbutoX.svg", 24, 24);
     public static Icon Annulla = new FlatSVGIcon("Images/Annulla.svg", 24, 24);

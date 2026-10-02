@@ -99,6 +99,14 @@ public class Tabelle {
     private static final Map<JTable, AtomicInteger> versioniSomma = new ConcurrentHashMap<>();
     
     public static final Map<JTable, Map<Integer, RowFilter<DefaultTableModel, Integer>>> tableFilters = new HashMap<>();
+
+    /**
+     * Chi vuole sapere quando i filtri per colonna di una tabella cambiano <b>da dentro {@code Tabelle}</b>
+     * (il popup dell'header, {@link #Tabelle_ImpostaFiltroColonna}, {@link #Tabelle_RimuoviFiltroColonna})
+     * registra qui un {@link Runnable}. Serve alla scheda "Filtri" dei movimenti e al contatore sopra la
+     * tabella, che altrimenti non saprebbero nulla di un filtro scelto dal popup.
+     */
+    public static final Map<JTable, Runnable> tableFiltersListener = new HashMap<>();
     public static Map<JTable, Map<Integer, String>> SommaColonne = new HashMap<>();
     private static final Set<JTable> tabelleConFiltroColonne = new HashSet<>();
 
@@ -2000,15 +2008,7 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
                             if (selected.isEmpty() || selected.size() == mappa.size()) {
                                 activeFilters.remove(modelCol);
                             } else {
-                                RowFilter<DefaultTableModel, Integer> filter = new RowFilter<>() {
-                                    /** @return {@code true} se il valore della colonna filtrata è tra quelli selezionati nel popup */
-                                    @Override
-                                    public boolean include(RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry) {
-                                        Object cellValue = entry.getValue(modelCol);
-                                        return selected.contains(cellValue != null ? cellValue.toString() : "");
-                                    }
-                                };
-                                activeFilters.put(modelCol, filter);
+                                activeFilters.put(modelCol, new FiltroValori(modelCol, selected));
                             }
 
                             String filtrot = (filtro != null) ? filtro.getText() : "";
@@ -2016,6 +2016,7 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
                             popup.AzzeraTestoRicerca();
                             header.repaint();
                             popup.hide();
+                            NotificaFiltriColonna(table);
                         });
 
                         popup.setCancelAction(() -> {
@@ -2051,6 +2052,96 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
    
      
      
+    /**
+     * Il filtro per colonna "il valore della cella è uno di questi": quello che il popup dell'header
+     * costruisce con la selezione multipla, e che {@link #Tabelle_ImpostaFiltroColonna} costruisce da un
+     * valore solo.
+     *
+     * <p>&Egrave; una classe e non un {@link RowFilter} anonimo perch&eacute; chi mostra i filtri attivi (la
+     * scheda "Filtri" dei movimenti) deve poter leggere <b>quali</b> valori sono stati scelti: i filtri
+     * vivono solo in {@link #tableFilters}, e un secondo posto dove ricordare i valori verrebbe
+     * sovrascritto a ogni ricostruzione dei filtri.
+     */
+    public static final class FiltroValori extends RowFilter<DefaultTableModel, Integer> {
+        private final int colonna;
+        private final Set<String> valori;
+
+        /**
+         * @param colonna indice di <b>model</b> della colonna filtrata
+         * @param valori i valori ammessi, confrontati con il testo della cella; l'ordine si conserva
+         */
+        public FiltroValori(int colonna, java.util.Collection<String> valori) {
+            this.colonna = colonna;
+            this.valori = new LinkedHashSet<>(valori);
+        }
+
+        /** @return l'indice di model della colonna filtrata */
+        public int colonna() {
+            return colonna;
+        }
+
+        /** @return i valori ammessi, nell'ordine in cui sono stati scelti */
+        public List<String> valori() {
+            return new ArrayList<>(valori);
+        }
+
+        /** @return {@code true} se il valore della colonna filtrata è tra quelli ammessi */
+        @Override
+        public boolean include(RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+            Object cellValue = entry.getValue(colonna);
+            return valori.contains(cellValue != null ? cellValue.toString() : "");
+        }
+    }
+
+    /**
+     * Filtra una colonna su un insieme di valori, sostituendo l'eventuale filtro che la colonna aveva già
+     * (non lo estende: chi vuole aggiungere valori passa l'unione). Riapplica il filtro combinato, ridisegna
+     * l'header e avvisa chi si è registrato in {@link #tableFiltersListener}.
+     *
+     * @param table la tabella
+     * @param modelCol indice di <b>model</b> della colonna
+     * @param valori i valori ammessi; se vuoto il filtro della colonna viene tolto
+     * @param testoRicerca testo del campo di ricerca libero, che resta in AND con i filtri di colonna
+     */
+    public static void Tabelle_ImpostaFiltroColonna(JTable table, int modelCol,
+            java.util.Collection<String> valori, String testoRicerca) {
+        Map<Integer, RowFilter<DefaultTableModel, Integer>> filtri =
+                tableFilters.computeIfAbsent(table, k -> new HashMap<>());
+        if (valori == null || valori.isEmpty()) {
+            filtri.remove(modelCol);
+        } else {
+            filtri.put(modelCol, new FiltroValori(modelCol, valori));
+        }
+        RiapplicaFiltri(table, testoRicerca);
+    }
+
+    /**
+     * Toglie il filtro di <b>una</b> colonna, lasciando gli altri e la ricerca libera.
+     * @return {@code true} se la colonna aveva un filtro
+     */
+    public static boolean Tabelle_RimuoviFiltroColonna(JTable table, int modelCol, String testoRicerca) {
+        Map<Integer, RowFilter<DefaultTableModel, Integer>> filtri = tableFilters.get(table);
+        if (filtri == null || filtri.remove(modelCol) == null) return false;
+        RiapplicaFiltri(table, testoRicerca);
+        return true;
+    }
+
+    /** Riapplica il filtro combinato dopo che {@link #tableFilters} è cambiato, poi avvisa il listener. */
+    private static void RiapplicaFiltri(JTable table, String testoRicerca) {
+        if (table.getRowSorter() instanceof TableRowSorter) {
+            @SuppressWarnings("unchecked")
+            TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
+            Tabelle_applyCombinedFilter(table, sorter, testoRicerca);
+        }
+        table.getTableHeader().repaint();
+        NotificaFiltriColonna(table);
+    }
+
+    private static void NotificaFiltriColonna(JTable table) {
+        Runnable r = tableFiltersListener.get(table);
+        if (r != null) r.run();
+    }
+
     /**
      * Rimuove tutti i filtri per colonna attivi su una tabella (svuotando la relativa mappa in
      * {@link #tableFilters}), azzera il {@link RowFilter} del sorter e forza il repaint dell'header per

@@ -62,12 +62,22 @@ public class Binance_DualInvestment {
     static final String CAUSALE_PURCHASE = "Dual Savings Purchase";
     static final String CAUSALE_SETTLEMENT = "Dual Savings Settlement";
 
+    //Campo 18 che l'abbinamento lascia sul Purchase/Settlement, da cui si riconosce un contratto già abbinato
+    static final String CAMPO18_PURCHASE_STESSA_MONETA = "PTW - Trasferimento a Dual Investment";
+    static final String CAMPO18_SETTLEMENT_STESSA_MONETA = "DTW - Trasferimento da Dual Investment";
+    static final String CAMPO18_PURCHASE_DIFFERITO = "PTW - Scambio Differito";
+    static final String CAMPO18_SETTLEMENT_DIFFERITO = "DTW - Scambio Differito";
+
     private static final Pattern OFFSET_PATTERN = Pattern.compile("UTC([+-]\\d+)", Pattern.CASE_INSENSITIVE);
 
     /** Esito dell'abbinamento, per il resoconto mostrato all'utente. */
     public static class Esito {
         public int contrattiTotali = 0;
         public int abbinati = 0;
+        /** Contratti già abbinati da una versione precedente, a cui questo giro ha scritto il gruppo {@code DUAL-…}. */
+        public int aggiornati = 0;
+        /** Contratti già abbinati che portavano già il gruppo del contratto: nulla da fare. */
+        public int giaAPosto = 0;
         public int ambigui = 0;
         public int nonTrovati = 0;
         public int nonAncoraLiquidati = 0;
@@ -119,8 +129,15 @@ public class Binance_DualInvestment {
             long tsSub = convertiAEpocaUtc(campi[3].trim(), offsetOre);
             long tsSettle = convertiAEpocaUtc(campi[7].trim(), offsetOre);
 
-            CandidatoRisultato purchase = trovaCandidato(sub[1], sub[0], tsSub, true, giaUsati);
-            CandidatoRisultato settlement = trovaCandidato(settle[1], settle[0], tsSettle, false, giaUsati);
+            boolean stessaMoneta = sub[1].equalsIgnoreCase(settle[1]);
+            String chiave = CommissioniCollegate.ChiaveDual(campi[2]);
+            //Un contratto già abbinato ha i movimenti trasformati: il Purchase porta ancora la quantità
+            //sottoscritta, il Settlement a moneta uguale solo il capitale (il resto è finito nella reward)
+            CandidatoRisultato purchase = trovaCandidato(sub[1], sub[0], sub[0], tsSub, true, giaUsati, chiave,
+                    stessaMoneta ? CAMPO18_PURCHASE_STESSA_MONETA : CAMPO18_PURCHASE_DIFFERITO);
+            CandidatoRisultato settlement = trovaCandidato(settle[1], settle[0], stessaMoneta ? sub[0] : settle[0],
+                    tsSettle, false, giaUsati, chiave,
+                    stessaMoneta ? CAMPO18_SETTLEMENT_STESSA_MONETA : CAMPO18_SETTLEMENT_DIFFERITO);
 
             if (purchase.ambiguo || settlement.ambiguo) {
                 esito.ambigui++;
@@ -132,25 +149,72 @@ public class Binance_DualInvestment {
                 esito.nonTrovati++;
                 esito.dettagli.add("Prodotto " + campi[0] + " (id " + campi[2] + "): "
                         + (purchase.id == null ? "Purchase" : "Settlement") + " non trovato in archivio "
-                        + "(CSV principale non ancora importato, o già abbinato in un giro precedente)");
+                        + "(CSV principale non ancora importato, o già abbinato a un altro contratto)");
+                continue;
+            }
+            if (purchase.giaAbbinato != settlement.giaAbbinato) {
+                esito.nonTrovati++;
+                esito.dettagli.add("Prodotto " + campi[0] + " (id " + campi[2] + "): "
+                        + (purchase.giaAbbinato ? "Purchase già abbinato ma Settlement ancora da classificare"
+                                : "Settlement già abbinato ma Purchase ancora da classificare")
+                        + " - lasciato com'è, da rivedere a mano");
                 continue;
             }
 
-            if (sub[1].equalsIgnoreCase(settle[1])) {
+            //Gli array in mappa, presi prima: nel caso a moneta diversa la rinumerazione cambia gli ID ma
+            //riscrive gli stessi oggetti, e da [20] si risale ai movimenti generati
+            String[] RigaPurchase = MappaCryptoWallet.get(purchase.id);
+            String[] RigaSettlement = MappaCryptoWallet.get(settlement.id);
+            giaUsati.add(purchase.id);
+            giaUsati.add(settlement.id);
+            if (purchase.giaAbbinato) {
+                //Già abbinato da una versione precedente: i movimenti generati esistono e non vanno rifatti
+                //(raddoppierebbero le gambe speculari e ridurrebbero due volte la quantità del Settlement).
+                //Si completa solo il dato che allora non si scriveva, il gruppo del contratto.
+                if (MarcaContratto(campi[2], RigaPurchase, RigaSettlement)) esito.aggiornati++;
+                else esito.giaAPosto++;
+                continue;
+            }
+            if (stessaMoneta) {
                 CreaMovimentiDualInvestmentStessaMoneta(purchase.id, settlement.id);
             } else {
                 //Stesso sotto-wallet del caso a moneta uguale, così i movimenti sintetici di un Dual
                 //Investment si distinguono dagli altri scambi differiti (Auto-Invest ecc.)
                 GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(purchase.id, settlement.id, WALLET_DUAL_SAVINGS);
             }
-            giaUsati.add(purchase.id);
-            giaUsati.add(settlement.id);
+            MarcaContratto(campi[2], RigaPurchase, RigaSettlement);
             esito.abbinati++;
         }
         return esito;
     }
 
     static final String WALLET_DUAL_SAVINGS = "Dual Savings";
+
+    /**
+     * Scrive su tutti i movimenti di un contratto la stessa chiave di gruppo ({@code [43]}, vedi
+     * {@link CommissioniCollegate#ChiaveDual}): Purchase, Settlement e quelli che l'abbinamento ha generato
+     * (gambe sul sotto-wallet, reward, o i tre dello scambio differito), che si ritrovano da {@code [20]}.
+     * Così dal dettaglio di uno si vedono gli altri, senza toccare {@code [20]} che il motore delle
+     * plusvalenze legge. Solo informativo: nessun calcolo legge il campo.
+     *
+     * @param IdContratto id del contratto, colonna 3 del CSV di dettaglio; se vuoto non si scrive nulla
+     * @return {@code true} se almeno una riga ha cambiato chiave (false se il contratto era già marcato)
+     */
+    static boolean MarcaContratto(String IdContratto, String[] Purchase, String[] Settlement) {
+        String Chiave = CommissioniCollegate.ChiaveDual(IdContratto);
+        if (Chiave.isEmpty() || Purchase == null || Settlement == null) return false;
+        List<String[]> Righe = new ArrayList<>();
+        Righe.add(Purchase);
+        Righe.add(Settlement);
+        for (String ID : (Purchase[20] + "," + Settlement[20]).split(",")) {
+            String[] Generato = ID.isBlank() ? null : MappaCryptoWallet.get(ID.trim());
+            if (Generato != null && !Righe.contains(Generato)) Righe.add(Generato);
+        }
+        boolean Cambiata = false;
+        for (String[] v : Righe) if (!Chiave.equals(CommissioniCollegate.Chiave(v))) Cambiata = true;
+        CommissioniCollegate.CollegaOperazione(Chiave, Righe);
+        return Cambiata;
+    }
 
     /**
      * Abbina Purchase e Settlement di un contratto liquidato <b>nella stessa moneta sottoscritta</b>
@@ -221,7 +285,7 @@ public class Binance_DualInvestment {
         MappaCryptoWallet.put(IDMirrorPurchase, MTPurchase);
 
         MovPurchase[5] = "TRASFERIMENTO A DUAL INVESTMENT";
-        MovPurchase[18] = "PTW - Trasferimento a Dual Investment";
+        MovPurchase[18] = CAMPO18_PURCHASE_STESSA_MONETA;
         MovPurchase[20] = IDMirrorPurchase;
 
         // ── Gamba 2: Settlement -> capitale rientrato + eventuale reward separata ──
@@ -315,13 +379,15 @@ public class Binance_DualInvestment {
         MovSettlement[13] = QtaSottoscritta.stripTrailingZeros().toPlainString();
         MovSettlement[15] = ValoreCapitale;
         MovSettlement[5] = "TRASFERIMENTO DA DUAL INVESTMENT";
-        MovSettlement[18] = "DTW - Trasferimento da Dual Investment";
+        MovSettlement[18] = CAMPO18_SETTLEMENT_STESSA_MONETA;
         MovSettlement[20] = IDReward.isBlank() ? IDMirrorSettlement : IDMirrorSettlement + "," + IDReward;
     }
 
     private static class CandidatoRisultato {
         String id;
         boolean ambiguo;
+        /** Il movimento è già stato abbinato (campo 18 PTW/DTW del Dual Investment), non è da classificare. */
+        boolean giaAbbinato;
     }
 
     /**
@@ -332,13 +398,22 @@ public class Binance_DualInvestment {
      * @param tsCercato istante approssimato (epoca UTC) del contratto, per scegliere fra più candidati
      * @param purchase {@code true} per un Purchase (categoria PC), {@code false} per un Settlement (categoria DC)
      * @param giaUsati ID già assegnati a un altro contratto in questa stessa esecuzione
+     * @param quantitaGiaAbbinataStr quantità che porta il movimento <b>dopo</b> l'abbinamento (vedi sotto)
+     * @param chiaveContratto chiave {@code DUAL-…} del contratto cercato
+     * @param campo18GiaAbbinato campo 18 che il movimento porta se è già stato abbinato
+     * <p>Fra i candidati entrano anche i movimenti già abbinati da una versione precedente, riconosciuti dal
+     * campo 18: servono a completare il gruppo del contratto, che allora non si scriveva. Quelli che portano
+     * già il gruppo di un <i>altro</i> contratto sono esclusi, quello che porta proprio il gruppo cercato
+     * vince su ogni altro (un secondo giro dello stesso file non sceglie mai diversamente dal primo).
      */
-    private static CandidatoRisultato trovaCandidato(String moneta, String quantitaStr, long tsCercato,
-            boolean purchase, Set<String> giaUsati) {
+    private static CandidatoRisultato trovaCandidato(String moneta, String quantitaStr, String quantitaGiaAbbinataStr,
+            long tsCercato, boolean purchase, Set<String> giaUsati, String chiaveContratto, String campo18GiaAbbinato) {
         BigDecimal quantita = new BigDecimal(quantitaStr);
+        BigDecimal quantitaGiaAbbinata = new BigDecimal(quantitaGiaAbbinataStr);
         String causaleAttesa = purchase ? CAUSALE_PURCHASE : CAUSALE_SETTLEMENT;
         String migliore = null;
         long migliorScarto = Long.MAX_VALUE;
+        boolean migliorGiaAbbinato = false;
         int candidatiEntroTolleranza = 0;
 
         for (String[] mov : MappaCryptoWallet.values()) {
@@ -347,7 +422,11 @@ public class Binance_DualInvestment {
             boolean candidato = purchase
                     ? Importazioni.EPrelievoDaClassificare(mov)
                     : Importazioni.EDepositoDaClassificare(mov);
-            if (!candidato) continue;
+            boolean giaAbbinato = !candidato && campo18GiaAbbinato.equalsIgnoreCase(mov[18] == null ? "" : mov[18].trim());
+            if (!candidato && !giaAbbinato) continue;
+            String chiaveMov = CommissioniCollegate.Chiave(mov);
+            boolean chiavePropria = giaAbbinato && !chiaveContratto.isEmpty() && chiaveContratto.equals(chiaveMov);
+            if (giaAbbinato && CommissioniCollegate.isGruppoDual(chiaveMov) && !chiavePropria) continue;
 
             String monetaMov = purchase ? mov[8] : mov[11];
             String quantitaMov = purchase ? mov[10] : mov[13];
@@ -358,7 +437,7 @@ public class Binance_DualInvestment {
             } catch (Exception ex) {
                 continue;
             }
-            if (qtaMov.compareTo(quantita) != 0) continue;
+            if (qtaMov.compareTo(giaAbbinato ? quantitaGiaAbbinata : quantita) != 0) continue;
 
             // Il campo data visualizzato ([1]) non ha i secondi ("yyyy-MM-dd HH:mm"): ConvertiDatainLongSecondo
             // (che li richiede) falliva silenziosamente tornando 0 per ogni riga - da qui, prima di questa
@@ -369,10 +448,11 @@ public class Binance_DualInvestment {
             long tsMov = mov[0].length() >= 14
                     ? FunzioniDate.ConvertiDataIDinLong(mov[0].substring(0, 14))
                     : FunzioniDate.ConvertiDatainLongMinuto(mov[1]);
-            long scarto = Math.abs(tsMov - tsCercato);
+            long scarto = chiavePropria ? -1 : Math.abs(tsMov - tsCercato);
             if (scarto < migliorScarto) {
                 migliorScarto = scarto;
                 migliore = mov[0];
+                migliorGiaAbbinato = giaAbbinato;
                 candidatiEntroTolleranza = 1;
             } else if (scarto == migliorScarto) {
                 candidatiEntroTolleranza++;
@@ -389,6 +469,7 @@ public class Binance_DualInvestment {
             r.ambiguo = true;
         } else {
             r.id = migliore;
+            r.giaAbbinato = migliorGiaAbbinato;
         }
         return r;
     }

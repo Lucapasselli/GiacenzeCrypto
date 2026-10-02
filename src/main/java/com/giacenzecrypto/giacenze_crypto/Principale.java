@@ -451,6 +451,7 @@ private static final long serialVersionUID = 3L;
         Tabelle.Tabelle_InizializzaHeader(GestioneTokenScam_TabellaMovimenti);
         // Tabelle senza filtri: header semplice bold+centrato
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(TransazioniCrypto_Tabella_Dettagli);
+        FiltriMovimenti_InizializzaSchedaFiltriEDettaglio();
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(DepositiPrelievi_TabellaCorrelati);
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(SaldiNegativi_TabPrincipale);
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(SituazioneImport_Tabella1);
@@ -680,6 +681,10 @@ private static final long serialVersionUID = 3L;
         TransazioniCrypto_TabbedPane = new javax.swing.JTabbedPane();
         jScrollPane4 = new javax.swing.JScrollPane();
         TransazioniCrypto_Tabella_Dettagli = new javax.swing.JTable();
+        TransazioniCrypto_Pannello_Filtri = new javax.swing.JPanel();
+        TransazioniCrypto_Label_Filtri = new javax.swing.JLabel();
+        jScrollPane_Filtri = new javax.swing.JScrollPane();
+        TransazioniCrypto_Tabella_Filtri = new javax.swing.JTable();
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
@@ -1278,14 +1283,14 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "<html><center>ID<br>Transazione</html>", "<html><center>Data e Ora</html>", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico<br>Moneta Uscente</html>", "<html><center>Costo di Carico<br>Moneta Entrante</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "Blocco Transazione", "Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento con Plusvalenza", "Rete", "null", "null", "null", "Errori", "null", "Fonte Prezzi", "Alias Gruppo Wallet"
+                "<html><center>ID<br>Transazione</html>", "<html><center>Data e Ora</html>", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico<br>Moneta Uscente</html>", "<html><center>Costo di Carico<br>Moneta Entrante</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "Blocco Transazione", "Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento con Plusvalenza", "Rete", "null", "null", "null", "Errori", "null", "Fonte Prezzi", "Alias Gruppo Wallet", "Gruppo Collegato"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -1547,14 +1552,14 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Nome", "Valore"
+                "Filtra", "Nome", "Valore"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class
+                java.lang.Object.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false
+                false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -1573,12 +1578,64 @@ private static final long serialVersionUID = 3L;
         });
         jScrollPane4.setViewportView(TransazioniCrypto_Tabella_Dettagli);
         if (TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumnCount() > 0) {
-            TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(0).setMinWidth(200);
-            TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(0).setPreferredWidth(200);
-            TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(0).setMaxWidth(300);
+            TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(0).setResizable(false);
+            TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(0).setMinWidth(50);
+            TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(0).setPreferredWidth(50);
+            TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(0).setMaxWidth(50);
+            TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(1).setMinWidth(200);
+            TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(1).setPreferredWidth(200);
+            TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(1).setMaxWidth(300);
         }
 
         TransazioniCrypto_TabbedPane.addTab("Dettagli Riga", jScrollPane4);
+
+        TransazioniCrypto_Pannello_Filtri.setLayout(new java.awt.BorderLayout());
+
+        TransazioniCrypto_Label_Filtri.setText(" ");
+        TransazioniCrypto_Label_Filtri.setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 8, 6, 8));
+        TransazioniCrypto_Pannello_Filtri.add(TransazioniCrypto_Label_Filtri, java.awt.BorderLayout.NORTH);
+
+        TransazioniCrypto_Tabella_Filtri.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Origine", "Filtro", "Valori", "Elimina"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Object.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        TransazioniCrypto_Tabella_Filtri.setCellSelectionEnabled(true);
+        TransazioniCrypto_Tabella_Filtri.setRowHeight(26);
+        jScrollPane_Filtri.setViewportView(TransazioniCrypto_Tabella_Filtri);
+        if (TransazioniCrypto_Tabella_Filtri.getColumnModel().getColumnCount() > 0) {
+            TransazioniCrypto_Tabella_Filtri.getColumnModel().getColumn(0).setPreferredWidth(130);
+            TransazioniCrypto_Tabella_Filtri.getColumnModel().getColumn(0).setMaxWidth(180);
+            TransazioniCrypto_Tabella_Filtri.getColumnModel().getColumn(1).setPreferredWidth(200);
+            TransazioniCrypto_Tabella_Filtri.getColumnModel().getColumn(1).setMaxWidth(320);
+            TransazioniCrypto_Tabella_Filtri.getColumnModel().getColumn(2).setPreferredWidth(500);
+            TransazioniCrypto_Tabella_Filtri.getColumnModel().getColumn(3).setResizable(false);
+            TransazioniCrypto_Tabella_Filtri.getColumnModel().getColumn(3).setMinWidth(60);
+            TransazioniCrypto_Tabella_Filtri.getColumnModel().getColumn(3).setPreferredWidth(60);
+            TransazioniCrypto_Tabella_Filtri.getColumnModel().getColumn(3).setMaxWidth(60);
+        }
+
+        TransazioniCrypto_Pannello_Filtri.add(jScrollPane_Filtri, java.awt.BorderLayout.CENTER);
+
+        TransazioniCrypto_TabbedPane.addTab("Filtri", TransazioniCrypto_Pannello_Filtri);
 
         jLabel10.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
         jLabel10.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -14435,6 +14492,7 @@ if (result != null && !result.isAction("cancel")) {
     private void MenuItem_CollegaCommissioniActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_CollegaCommissioniActionPerformed
         //Solo informativo: niente ricalcolo, basta rendere salvabile la modifica
         if (Principale_CommissioniCollegate.CollegaSelezione(PopUp_IDTransSelezionati, this)) {
+            TransazioniCrypto_AggiornaColonnaGruppoCollegato();
             TransazioniCrypto_DaSalvare = true;
             TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
         }
@@ -14443,10 +14501,31 @@ if (result != null && !result.isAction("cancel")) {
     private void MenuItem_ScollegaCommissioniActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ScollegaCommissioniActionPerformed
         List<String> selezione = PopUp_IDTransSelezionati.isEmpty() ? List.of(PopUp_IDTrans) : PopUp_IDTransSelezionati;
         if (Principale_CommissioniCollegate.ScollegaSelezione(selezione, this)) {
+            TransazioniCrypto_AggiornaColonnaGruppoCollegato();
             TransazioniCrypto_DaSalvare = true;
             TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
         }
     }//GEN-LAST:event_MenuItem_ScollegaCommissioniActionPerformed
+
+    /**
+     * Riallinea la colonna 42 "Gruppo Collegato" del model con la chiave attuale in {@code v[43]}.
+     * La colonna è una copia fatta al caricamento: collega/scollega cambiano solo la mappa e, non
+     * ricalcolando niente, non ricaricano la tabella, che mostrerebbe la chiave di prima. Si tocca solo
+     * quel che è cambiato, così selezione e filtri restano come sono.
+     */
+    private void TransazioniCrypto_AggiornaColonnaGruppoCollegato() {
+        DefaultTableModel modello = (DefaultTableModel) TransazioniCryptoTabella.getModel();
+        if (modello.getColumnCount() <= 42) return;
+        for (int r = 0; r < modello.getRowCount(); r++) {
+            Object id = modello.getValueAt(r, 0);
+            String[] v = id == null ? null : MappaCryptoWallet.get(id.toString());
+            if (v == null) continue;
+            String chiave = v.length > CommissioniCollegate.CAMPO ? v[CommissioniCollegate.CAMPO] : "";
+            Object attuale = modello.getValueAt(r, 42);
+            if (!chiave.equals(attuale == null ? "" : attuale.toString())) modello.setValueAt(chiave, r, 42);
+        }
+        FiltriMovimenti_AggiornaIndicatori();
+    }
 
     private void MenuItem_TraslaOrarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_TraslaOrarioActionPerformed
         // TODO add your handling code here:
@@ -17928,13 +18007,17 @@ try {
         if (!Valore.isBlank()){
             Valore="<html><b>"+Valore+":"+secondi+"</html>";
             Val=new String[]{"Data e Ora ",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglio(ModelloTabellaCrypto, Val);
         }
         
         Valore=Transazione[3];
         if (!Valore.isBlank()){
-            Val=new String[]{"Exchange/Wallet ",Valore+" ("+Transazione[4]+")"};
-            ModelloTabellaCrypto.addRow(Val);
+            Val=new String[]{"Exchange ",Valore};
+            RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 3);
+            if (!Transazione[4].isBlank()){
+                Val=new String[]{"Dettaglio Wallet ",Transazione[4]};
+                RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 4);
+            }
         }
         
             Valore = Transazione[5];
@@ -17960,29 +18043,29 @@ try {
                     Val = new String[]{"Causale Movimento ", "<html><b>" + Valore + "</b> (" + Transazione[6] + ")<br>"
                             +"Trasferimento da <b>"+ WalletPrelievo+"</b> a <b>"+WalletDeposito+"</html>"};
                 }
-                ModelloTabellaCrypto.addRow(Val);
+                RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 5);
             }
         
         Valore=Transazione[31];
         if (!Valore.isBlank()){
             Val=new String[]{"Data e Ora fine trasferimento",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglio(ModelloTabellaCrypto, Val);
         } 
        /* Valore=Transazione[20];
         if (!Valore.isBlank()){
             Val=new String[]{"Movimenti Correlati ","<html>"+Valore.replaceAll(",", "<br>")+"</html>"};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglio(ModelloTabellaCrypto, Val);
         }*/
         Valore=Transazione[18];
         if (!Valore.isBlank()){
             Val=new String[]{"Dett. ",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 18);
         }
         
         Valore=Transazione[7];
         if (!Valore.isBlank()){
             Val=new String[]{"Causale Originale ",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 7);
         }
         
         Valore=Transazione[8];
@@ -17994,7 +18077,7 @@ try {
             Testo=Testo+"</html>";
             Val=new String[]{"Uscita: ",Testo};
             
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 8);
             
             if (!Transazione[15].isBlank()) {
                 if (new BigDecimal(Transazione[10]).compareTo(BigDecimal.ZERO) != 0) {
@@ -18007,31 +18090,31 @@ try {
                         Valore = "<html>€ " + ValUnitario.toPlainString() + "</html>";
                         Val = new String[]{"Valore Unitario " + Transazione[8], Valore};
                     }
-                    ModelloTabellaCrypto.addRow(Val);
+                    RigaDettaglio(ModelloTabellaCrypto, Val);
                 }
             }
         }
         Valore=Transazione[9];
         if (!Valore.isBlank()){
             Val=new String[]{"Uscita: Tipologia",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglio(ModelloTabellaCrypto, Val);
         }
       /*  Valore=Transazione[25];
         if (!Valore.isBlank()){
             Val=new String[]{"Uscita: Nome Completo",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglio(ModelloTabellaCrypto, Val);
         } */
         
         Valore=Transazione[26];
         if (!Valore.isBlank()){
             Val=new String[]{"Uscita: Address Token",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 26);
         } 
         
         Valore=Transazione[16];
         if (!Valore.isBlank()){
             Val=new String[]{"Uscita: Costo Carico","€ "+Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglio(ModelloTabellaCrypto, Val);
         }
         
         Valore=Transazione[11];
@@ -18042,7 +18125,7 @@ try {
             }
             Testo=Testo+"</html>";
             Val=new String[]{"Entrata: ",Testo};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 11);
             
             if (!Transazione[15].isBlank()) {
                 if (new BigDecimal(Transazione[13]).compareTo(BigDecimal.ZERO) != 0) {
@@ -18059,45 +18142,45 @@ try {
                     Valore = "<html>€ " + ValUnitario.toPlainString() + "</html>";
                     Val = new String[]{"Valore Unitario " + Transazione[11], Valore};
                 }
-                if(Val!=null)ModelloTabellaCrypto.addRow(Val);
+                if(Val!=null)RigaDettaglio(ModelloTabellaCrypto, Val);
                 }
             }
         }
         Valore=Transazione[12];
         if (!Valore.isBlank()){
             Val=new String[]{"Entrata: Tipologia",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglio(ModelloTabellaCrypto, Val);
         } 
       /*  Valore=Transazione[27];
         if (!Valore.isBlank()){
             Val=new String[]{"Entrata: Nome Completo",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglio(ModelloTabellaCrypto, Val);
         } */
         
         Valore=Transazione[28];
         if (!Valore.isBlank()){
             Val=new String[]{"Entrata: Address Token",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 28);
         } 
         
         Valore=Transazione[17];
         if (!Valore.isBlank()){
             Val=new String[]{"Entrata: Costo Carico","€ "+Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglio(ModelloTabellaCrypto, Val);
         }
         
         Valore=Transazione[15];
         if (!Valore.isBlank()){
             Valore="<html><b>€ "+Valore+"</html>";
             Val=new String[]{"Valore transazione ",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglio(ModelloTabellaCrypto, Val);
         }
         
         Valore=Transazione[19];
         if (!Valore.isBlank()){
             Valore="<html><b>€ "+Valore+"</html>";
             Val=new String[]{"Plusvalenza ",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglio(ModelloTabellaCrypto, Val);
         }
         
 
@@ -18105,50 +18188,74 @@ try {
         Valore=Transazione[29];
         if (!Valore.isBlank()){
             Val=new String[]{"BC: Timestamp",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglio(ModelloTabellaCrypto, Val);
         } 
         
         Valore=Transazione[23];
         if (!Valore.isBlank()){
             Val=new String[]{"BC: Numero Blocco",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglio(ModelloTabellaCrypto, Val);
         }        
 
         Valore=Transazione[24];
         if (!Valore.isBlank()){
             Val=new String[]{"BC: Hash Transazione",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 24);
         } 
 
         Valore=Transazione[30];
         if (!Valore.isBlank()){
             Val=new String[]{"BC: Address Controparte",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 30);
         } 
 
         Valore=Transazione[36];
         if (!Valore.isBlank()){
             Val=new String[]{"Address di Provenienza",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 36);
         } 
         
         Valore=Transazione[37];
         if (!Valore.isBlank()){
             Val=new String[]{"Address di Destinazione",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 37);
         } 
 
         Valore=Transazione[21];
         if (!Valore.isBlank()){
             Valore=("<html>"+Valore+"</html>");
             Val=new String[]{"Note ",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglio(ModelloTabellaCrypto, Val);
         }
         
+        Valore=Transazione[34];
+        if (!Valore.isBlank()&&!Valore.equals("N")){
+            Val=new String[]{"Rete ",Valore};
+            RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 34);
+        }
+
+        //Gruppo collegato (CommissioniCollegate, campo 43): il model lo espone nella colonna derivata 42.
+        //Si mostra una descrizione leggibile, e si filtra sul valore vero della cella.
+        Valore=String.valueOf(TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 42));
+        if (!Valore.isBlank()){
+            Val=new String[]{"Gruppo collegato ",CommissioniCollegate.Descrizione(Valore)};
+            RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 42);
+        }
+
+        //Documento di origine (campo 41, fuori dal model): si filtra con il criterio "Documento" della finestra Filtri
+        Valore=Transazione[41].trim();
+        if (!Valore.isBlank()){
+            String NomeDoc=FiltriMovimenti_NomeDocumento(Valore);
+            Object Riga[]={"Documento di origine ",NomeDoc.isBlank()?"n. "+Valore:NomeDoc+" (n. "+Valore+")",
+                new Principale_FiltriMovimenti.FiltroRiga(Principale_FiltriMovimenti.COLONNA_DOCUMENTO, Valore,
+                    "Mostra solo i movimenti di questo documento")};
+            RigaDettaglio(ModelloTabellaCrypto, Riga);
+        }
+
         Valore=Transazione[0];
         if (!Valore.isBlank()){
             Val=new String[]{"ID ",Valore};
-            ModelloTabellaCrypto.addRow(Val);
+            RigaDettaglio(ModelloTabellaCrypto, Val);
         }
         
         Valore=Transazione[40];
@@ -18156,19 +18263,19 @@ try {
             String VSplit[]=Valore.split("\\|",-1); 
             if (!VSplit[3].isBlank()){
                 Val=new String[]{"Info Prezzo : Fonte ",VSplit[3]};
-                ModelloTabellaCrypto.addRow(Val);
+                RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 40);
             }
             if (!VSplit[1].isBlank()){
                 Val=new String[]{"Info Prezzo : Orario Fonte ",FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(VSplit[1]))};
-                ModelloTabellaCrypto.addRow(Val);    
+                RigaDettaglio(ModelloTabellaCrypto, Val);    
             }
             if (!VSplit[0].isBlank()){
                 Val=new String[]{"Info Prezzo : Moneta di riferimento transazione",VSplit[0]};
-                ModelloTabellaCrypto.addRow(Val);           
+                RigaDettaglio(ModelloTabellaCrypto, Val);           
             }
             if (!VSplit[2].isBlank()){
                 Val=new String[]{"Info Prezzo : Prezzo unitario ","€ "+VSplit[2]};
-                ModelloTabellaCrypto.addRow(Val);
+                RigaDettaglio(ModelloTabellaCrypto, Val);
             }
         }
         
@@ -18438,6 +18545,7 @@ try {
                 ? javax.swing.BorderFactory.createEmptyBorder(3, 8, 3, 8) : righeLabelBorderDefault);
         TransazioniCrypto_RigheTabella_Label.revalidate();
         TransazioniCrypto_RigheTabella_Label.repaint();
+        FiltriMovimenti_AggiornaSchedaFiltri();
     }
 
     /**
@@ -18499,35 +18607,244 @@ try {
     }
 
     /**
-     * @return le righe che descrivono i filtri <b>di riga</b> attivi sulla tabella: il campo di ricerca e
-     * i filtri per colonna del tasto destro sull'header. Lista vuota se non ce ne sono.
+     * @return una riga per ogni filtro <b>di riga</b> attivo: il campo di ricerca (se non vuoto) e ciascuna
+     * colonna filtrata, con i valori scelti. Lista vuota se non ce ne sono.
      *
      * <p>Sono l'altra famiglia di filtri (vedi {@code Principale_FiltriMovimenti}): non stanno nel record
-     * dei criteri e non ricaricano nulla, ma nascondono righe esattamente come gli altri — e "Azzera
+     * dei criteri e non ricaricano nulla, ma nascondono righe esattamente come gli altri &mdash; e "Azzera
      * Filtri" li considera filtri, visto che li spegne insieme agli altri. Un tooltip che dicesse
      * "nessun filtro" mentre una colonna e' filtrata sarebbe una bugia.
      *
-     * <p>Dei filtri per colonna si possono mostrare solo i <i>nomi delle colonne</i>: {@code tableFilters}
-     * conserva dei {@code RowFilter} gia' costruiti, dai quali i valori scelti non sono piu' leggibili.
+     * <p>Dal 2026-10-02 ogni colonna e' un filtro a se', non una riga sola con tutti i nomi: e' cosi' che li
+     * conta la scheda "Filtri", e il numero del pulsante deve essere lo stesso. I valori scelti si leggono
+     * perche' il filtro per colonna e' {@code Tabelle.FiltroValori} e non piu' un {@code RowFilter} anonimo.
      */
     private java.util.List<String> FiltriMovimenti_AltriFiltriAttivi() {
         java.util.List<String> righe = new java.util.ArrayList<>();
-
-        String ricerca = TransazioniCryptoFiltro_Text.getText();
-        if (ricerca != null && !ricerca.isBlank()) righe.add("Ricerca nel testo : " + ricerca.trim());
-
-        java.util.Map<Integer, javax.swing.RowFilter<javax.swing.table.DefaultTableModel, Integer>> perColonna =
-                Tabelle.tableFilters.get(TransazioniCryptoTabella);
-        if (perColonna != null && !perColonna.isEmpty()) {
-            javax.swing.table.TableModel m = TransazioniCryptoTabella.getModel();
-            java.util.List<String> nomi = new java.util.ArrayList<>();
-            for (Integer col : new java.util.TreeSet<>(perColonna.keySet())) {
-                if (col != null && col >= 0 && col < m.getColumnCount()) nomi.add(m.getColumnName(col));
-            }
-            if (!nomi.isEmpty()) righe.add("Filtri per colonna : " + String.join(", ", nomi));
+        for (Principale_FiltriMovimenti.RigaFiltro r : FiltriMovimenti_RigheDiRiga()) {
+            righe.add(r.Nome() + " : " + r.Valori());
         }
-
         return righe;
+    }
+
+    /** I filtri di riga attivi (ricerca e colonne) con il modo di toglierli, per scheda e conteggio. */
+    private java.util.List<Principale_FiltriMovimenti.RigaFiltro> FiltriMovimenti_RigheDiRiga() {
+        return Principale_FiltriMovimenti.RigheDiRiga(
+                TransazioniCryptoFiltro_Text.getText(),
+                () -> {
+                    TransazioniCryptoFiltro_Text.setText("");
+                    Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
+                    ScriviNumeroRigheTabellaPrincipaleinLabel();
+                },
+                Tabelle.tableFilters.get(TransazioniCryptoTabella),
+                this::FiltriMovimenti_NomeColonna,
+                col -> Tabelle.Tabelle_RimuoviFiltroColonna(TransazioniCryptoTabella, col,
+                        TransazioniCryptoFiltro_Text.getText()));
+    }
+
+    /** @return il nome di una colonna di model della tabella movimenti, senza l'HTML dell'intestazione */
+    private String FiltriMovimenti_NomeColonna(int col) {
+        TableModel m = TransazioniCryptoTabella.getModel();
+        if (col < 0 || col >= m.getColumnCount()) return "Colonna " + col;
+        return org.jsoup.Jsoup.parse(String.valueOf(m.getColumnName(col))).text().trim();
+    }
+
+    // =================================================================================================
+    // SCHEDA "FILTRI" E FILTRO DA UNA RIGA DEI DETTAGLI
+    // =================================================================================================
+
+    /**
+     * Prepara le due cose che stanno accanto alla tabella dei movimenti, in codice dopo
+     * {@code initComponents()} (non rigenerato dal GUI Builder): l'icona imbuto sulle righe filtrabili
+     * dei dettagli (colonna 0 del model) e il comportamento della scheda "Filtri", i cui componenti
+     * sono nel {@code .form} come quelli di tutte le altre schede.
+     */
+    private void FiltriMovimenti_InizializzaSchedaFiltriEDettaglio() {
+        //Le icone sono SVG: si ricolorano da sole col tema, a differenza dei PNG di una tabella costruita
+        //dopo l'avvio
+        javax.swing.Icon imbuto = Icone.Imbuto instanceof com.formdev.flatlaf.extras.FlatSVGIcon f ? f.derive(16, 16) : Icone.Imbuto;
+        javax.swing.Icon imbutoPieno = Icone.ImbutoPieno instanceof com.formdev.flatlaf.extras.FlatSVGIcon f ? f.derive(16, 16) : Icone.ImbutoPieno;
+        javax.swing.Icon cestino = Icone.Cestino instanceof com.formdev.flatlaf.extras.FlatSVGIcon f ? f.derive(16, 16) : Icone.Cestino;
+
+        //--- Dettagli: l'imbuto sulle righe che hanno un valore filtrabile
+        //L'imbuto e' pieno se il filtro di quella riga e' attivo (un secondo clic lo toglie), vuoto altrimenti.
+        //Si decide a ogni disegno e non quando si riempiono i dettagli: i filtri cambiano da molte parti.
+        TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(0).setCellRenderer(RendererIconaTabella(
+                v -> v instanceof Principale_FiltriMovimenti.FiltroRiga f
+                        ? (FiltriMovimenti_FiltroDettaglioAttivo(f) ? imbutoPieno : imbuto) : null,
+                v -> v instanceof Principale_FiltriMovimenti.FiltroRiga f
+                        ? (FiltriMovimenti_FiltroDettaglioAttivo(f) ? "Filtro attivo: clic per toglierlo. " : "") + f.Tooltip() : null));
+        TransazioniCrypto_Tabella_Dettagli.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (!javax.swing.SwingUtilities.isLeftMouseButton(e)) return;
+                JTable t = TransazioniCrypto_Tabella_Dettagli;
+                int riga = t.rowAtPoint(e.getPoint());
+                if (riga < 0 || t.columnAtPoint(e.getPoint()) != 0) return;
+                if (t.getValueAt(riga, 0) instanceof Principale_FiltriMovimenti.FiltroRiga f) {
+                    FiltriMovimenti_FiltraDaDettaglio(f);
+                }
+            }
+        });
+        TransazioniCrypto_Tabella_Dettagli.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            @Override public void mouseMoved(java.awt.event.MouseEvent e) {
+                JTable t = TransazioniCrypto_Tabella_Dettagli;
+                int riga = t.rowAtPoint(e.getPoint());
+                boolean suIcona = riga >= 0 && t.columnAtPoint(e.getPoint()) == 0
+                        && t.getValueAt(riga, 0) instanceof Principale_FiltriMovimenti.FiltroRiga;
+                t.setCursor(suIcona ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) : Cursor.getDefaultCursor());
+            }
+        });
+
+        //--- Scheda "Filtri" (componenti, modello e larghezze colonne: in initComponents)
+        Tabelle.ColoraTabellaSemplice(TransazioniCrypto_Tabella_Filtri);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(TransazioniCrypto_Tabella_Filtri);
+        Tabelle.CopiaPulitadaTAG(TransazioniCrypto_Tabella_Filtri);
+        TransazioniCrypto_Tabella_Filtri.getColumnModel().getColumn(3).setCellRenderer(RendererIconaTabella(
+                v -> v instanceof Principale_FiltriMovimenti.RigaFiltro ? cestino : null,
+                v -> v instanceof Principale_FiltriMovimenti.RigaFiltro ? "Elimina questo filtro" : null));
+        TransazioniCrypto_Tabella_Filtri.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (!javax.swing.SwingUtilities.isLeftMouseButton(e)) return;
+                JTable t = TransazioniCrypto_Tabella_Filtri;
+                int riga = t.rowAtPoint(e.getPoint());
+                if (riga < 0 || t.columnAtPoint(e.getPoint()) != 3) return;
+                if (t.getValueAt(riga, 3) instanceof Principale_FiltriMovimenti.RigaFiltro r) {
+                    //Dopo l'evento: togliere un criterio ricarica la tabella, e il modello di questa
+                    //stessa tabella viene ricostruito mentre il clic e' ancora in corso
+                    javax.swing.SwingUtilities.invokeLater(r.Rimuovi());
+                }
+            }
+        });
+        TransazioniCrypto_Tabella_Filtri.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            @Override public void mouseMoved(java.awt.event.MouseEvent e) {
+                JTable t = TransazioniCrypto_Tabella_Filtri;
+                int riga = t.rowAtPoint(e.getPoint());
+                boolean suIcona = riga >= 0 && t.columnAtPoint(e.getPoint()) == 3;
+                t.setCursor(suIcona ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) : Cursor.getDefaultCursor());
+            }
+        });
+
+        //Un filtro scelto dal popup dell'header avviene dentro Tabelle: senza questo aggancio ne' la scheda
+        //ne' il contatore sopra la tabella ne saprebbero niente
+        Tabelle.tableFiltersListener.put(TransazioniCryptoTabella, this::FiltriMovimenti_AggiornaPulsante);
+    }
+
+    /**
+     * Il renderer di una cella con la sola icona, con lo stesso sfondo a righe alternate delle altre celle.
+     * Si prende da una tabella usa e getta passata a {@code ColoraTabellaSemplice}: il renderer predefinito
+     * della tabella vera e' condiviso da tutte le sue colonne, e metterci un'icona la lascerebbe sulle
+     * altre celle.
+     *
+     * @param iconaPerValore dal valore della cella all'icona; {@code null} se la cella non va decorata
+     * @param tooltipPerValore dal valore della cella al tooltip; {@code null} se la cella non va decorata
+     */
+    private static javax.swing.table.TableCellRenderer RendererIconaTabella(
+            java.util.function.Function<Object, javax.swing.Icon> iconaPerValore,
+            java.util.function.Function<Object, String> tooltipPerValore) {
+        JTable modello = Tabelle.ColoraTabellaSemplice(new JTable());
+        javax.swing.table.DefaultTableCellRenderer base =
+                (javax.swing.table.DefaultTableCellRenderer) modello.getDefaultRenderer(Object.class);
+        return (table, value, isSelected, hasFocus, row, col) -> {
+            String tip = tooltipPerValore.apply(value);
+            java.awt.Component c = base.getTableCellRendererComponent(table, "", isSelected, hasFocus, row, col);
+            base.setIcon(iconaPerValore.apply(value));
+            base.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+            base.setToolTipText(tip);
+            return c;
+        };
+    }
+
+    /**
+     * Aggiunge una riga ai dettagli. Il model ha la colonna dell'imbuto per prima (Filtra, Nome, Valore): chi
+     * costruisce le righe ragiona ancora per {nome, valore[, filtro]}, e l'ordine si decide solo qui.
+     */
+    private static void RigaDettaglio(DefaultTableModel Modello, Object[] Riga) {
+        Modello.addRow(new Object[]{Riga.length > 2 ? Riga[2] : null, Riga[0], Riga[1]});
+    }
+
+    /**
+     * Aggiunge ai dettagli una riga il cui valore e' filtrabile: nome e testo gia' pronti in {@code Val},
+     * piu' l'oggetto che dice cosa fa l'imbuto. Il valore da filtrare si legge dal <b>model della tabella
+     * movimenti</b> e non dal testo mostrato: il filtro per colonna confronta il testo della cella, e quello
+     * dei dettagli puo' essere HTML, composto o accorciato.
+     *
+     * @param RigaModello riga del movimento nel model della tabella movimenti
+     * @param Colonna colonna di model da filtrare
+     */
+    private void RigaDettaglioFiltrabile(DefaultTableModel Modello, String[] Val, int RigaModello, int Colonna) {
+        Object cella = TransazioniCryptoTabella.getModel().getValueAt(RigaModello, Colonna);
+        String valore = cella == null ? "" : cella.toString();
+        Principale_FiltriMovimenti.FiltroRiga f = valore.isBlank() ? null
+                : new Principale_FiltriMovimenti.FiltroRiga(Colonna, valore,
+                        "Mostra solo i movimenti con " + FiltriMovimenti_NomeColonna(Colonna) + " = " + valore);
+        Modello.addRow(new Object[]{f, Val[0], Val[1]});
+    }
+
+    /**
+     * L'imbuto di una riga dei dettagli: filtra la tabella movimenti sul valore di quella riga. Su una colonna
+     * gia' filtrata <b>sostituisce</b> il filtro (si chiede "proprio questo"), e gli altri filtri restano. Il
+     * documento di origine non e' una colonna del model: passa dal criterio "Documento" della finestra Filtri,
+     * che ricarica la tabella (e svuota i dettagli, perche' la selezione si perde).
+     */
+    private void FiltriMovimenti_FiltraDaDettaglio(Principale_FiltriMovimenti.FiltroRiga f) {
+        //Imbuto gia' pieno: il clic e' "togli questo filtro"
+        boolean daTogliere = FiltriMovimenti_FiltroDettaglioAttivo(f);
+        if (f.Colonna() == Principale_FiltriMovimenti.COLONNA_DOCUMENTO) {
+            FiltriCorrenti = FiltriCorrenti.ConDocumento(daTogliere ? Principale_FiltriMovimenti.DOC_TUTTI : f.Valore());
+            FiltriMovimenti_AggiornaPulsante();
+            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa();
+        } else if (daTogliere) {
+            Tabelle.Tabelle_RimuoviFiltroColonna(TransazioniCryptoTabella, f.Colonna(),
+                    TransazioniCryptoFiltro_Text.getText());
+        } else {
+            Tabelle.Tabelle_ImpostaFiltroColonna(TransazioniCryptoTabella, f.Colonna(),
+                    java.util.List.of(f.Valore()), TransazioniCryptoFiltro_Text.getText());
+        }
+    }
+
+    /** @return {@code true} se il filtro che farebbe l'imbuto di questa riga dei dettagli e' gia' attivo */
+    private boolean FiltriMovimenti_FiltroDettaglioAttivo(Principale_FiltriMovimenti.FiltroRiga f) {
+        return Principale_FiltriMovimenti.FiltroRigaAttivo(f, FiltriCorrenti.Documento(),
+                Tabelle.tableFilters.get(TransazioniCryptoTabella));
+    }
+
+    /**
+     * Ricompone la scheda "Filtri" dai criteri della finestra, dal campo di ricerca e dai filtri di colonna,
+     * e riporta il numero nel titolo della scheda (che e' fuori vista quando si guardano i dettagli).
+     * La chiama {@link #FiltriMovimenti_AggiornaIndicatori()}, il punto da cui passa ogni cambio di filtro.
+     */
+    private void FiltriMovimenti_AggiornaSchedaFiltri() {
+        if (TransazioniCrypto_Tabella_Filtri == null) return;
+        java.util.List<Principale_FiltriMovimenti.RigaFiltro> righe = new java.util.ArrayList<>(
+                Principale_FiltriMovimenti.RigheCaricamento(FiltriCorrenti, this::FiltriMovimenti_NomeDocumento,
+                        nuovo -> {
+                            FiltriCorrenti = nuovo;
+                            FiltriMovimenti_AggiornaPulsante();
+                            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa();
+                        }));
+        righe.addAll(FiltriMovimenti_RigheDiRiga());
+
+        DefaultTableModel modello = (DefaultTableModel) TransazioniCrypto_Tabella_Filtri.getModel();
+        modello.setRowCount(0);
+        for (Principale_FiltriMovimenti.RigaFiltro r : righe) {
+            modello.addRow(new Object[]{r.Origine(), r.Nome(), r.Valori(), r});
+        }
+        TransazioniCrypto_Label_Filtri.setText(righe.isEmpty() ? "Nessun filtro attivo."
+                : righe.size() + (righe.size() == 1 ? " filtro attivo." : " filtri attivi.")
+                + " Il bidone toglie il filtro; per una colonna toglie tutti i valori scelti su quella colonna.");
+        //Gli imbuti dei dettagli si decidono al disegno: dopo un cambio di filtro vanno ridisegnati
+        TransazioniCrypto_Tabella_Dettagli.repaint();
+        int indice = TransazioniCrypto_TabbedPane.indexOfComponent(TransazioniCrypto_Pannello_Filtri);
+        if (indice >= 0) {
+            //Con filtri attivi la linguetta si colora come il pulsante "Filtri..." e la banda sotto la tabella
+            //(ambra, testo bianco, grassetto): sta fuori vista quando si guardano i dettagli, e un contatore in
+            //un titolo normale non si nota. A filtri spenti torna com'era (colori null = quelli del tema).
+            boolean attivi = !righe.isEmpty();
+            TransazioniCrypto_TabbedPane.setTitleAt(indice, attivi
+                    ? "<html><b>Filtri (" + righe.size() + ")</b></html>" : "Filtri");
+            TransazioniCrypto_TabbedPane.setBackgroundAt(indice, attivi ? Tabelle.ambra : null);
+            TransazioniCrypto_TabbedPane.setForegroundAt(indice, attivi ? Color.WHITE : null);
+        }
     }
 
     /**
@@ -18816,9 +19133,9 @@ try {
                 //la riga vera e propria solo se la tabella è a video
                 if (costruisciRighe) {
                     Object[] z = Funzioni.Converti_String_Object(v);
-                    //z ha tanti elementi quanti v[] (45), ma il model ne ha 42: il resto viene
-                    //troncato da DefaultTableModel.justifyRows. Le posizioni 40/41 del *model* non
-                    //sono v[40]/v[41] "grezzi": sono state aggiunte in coda apposta (vedi
+                    //z ha tanti elementi quanti v[] (45), ma il model ne ha 43: il resto viene
+                    //troncato da DefaultTableModel.justifyRows. Le posizioni 40-42 del *model* non
+                    //sono v[40]-v[42] "grezzi": sono state aggiunte in coda apposta (vedi
                     //LayoutColonneMovimenti) per non spostare nessun indice esistente, quindi vanno
                     //sovrascritte qui prima di passare la riga.
                     //
@@ -18833,6 +19150,10 @@ try {
                     String[] aliasGruppoRiga = Mappa_GruppiAlias_XColonna.get(gruppoWallet);
                     z[41] = (aliasGruppoRiga != null && !Funzioni.noData(aliasGruppoRiga[1]))
                             ? aliasGruppoRiga[1] : gruppoWallet;
+                    //[42] "Gruppo Collegato": come la 41 non è v[42] (il lignaggio, che il model non
+                    //contiene) ma v[43], la chiave di CommissioniCollegate. Serve a filtrare: la ricerca e i
+                    //filtri di colonna agiscono sul model, e lì il campo 43 non c'era.
+                    z[42] = v.length > CommissioniCollegate.CAMPO ? v[CommissioniCollegate.CAMPO] : "";
                     ModelloTabellaCrypto.addRow(z);
                 }
             }
@@ -19605,7 +19926,10 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel TransazioniCrypto_RicalcolaPlusvalenze_Label;
     private javax.swing.JLabel TransazioniCrypto_RigheTabella_Label;
     private javax.swing.JScrollPane TransazioniCrypto_ScrollPane;
+    private javax.swing.JLabel TransazioniCrypto_Label_Filtri;
+    private javax.swing.JPanel TransazioniCrypto_Pannello_Filtri;
     private javax.swing.JTabbedPane TransazioniCrypto_TabbedPane;
+    private javax.swing.JTable TransazioniCrypto_Tabella_Filtri;
     private javax.swing.JTable TransazioniCrypto_Tabella_Dettagli;
     private javax.swing.JTextField TransazioniCrypto_Text_CostiCarico;
     private javax.swing.JTextField TransazioniCrypto_Text_Plusvalenza;
@@ -19652,6 +19976,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane_Filtri;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JScrollPane jScrollPane7;

@@ -148,23 +148,81 @@ public class Principale_FiltriMovimenti {
          */
         public java.util.List<String> Descrizione(java.util.function.UnaryOperator<String> NomeDocumento) {
             java.util.List<String> righe = new java.util.ArrayList<>();
+            for (Criterio c : Criteri(NomeDocumento)) righe.add(c.Testo());
+            return righe;
+        }
+
+        /**
+         * Un criterio attivo, per la scheda "Filtri" dei movimenti: cosa si legge in tabella e cosa diventa
+         * il record se lo si toglie.
+         *
+         * @param Nome nome del criterio ("Moneta", "Documento di origine"...)
+         * @param Valore il valore scelto, o la modalità per i criteri sì/no ("nascosti", "solo quelli")
+         * @param Testo la riga intera, quella che finisce nel tooltip del pulsante
+         * @param SenzaQuesto il record identico a questo ma con <b>quel solo</b> criterio al valore neutro;
+         *                    il chiamante lo rimette in {@code FiltriCorrenti} e ricarica la tabella
+         */
+        public record Criterio(String Nome, String Valore, String Testo, FiltriMovimenti SenzaQuesto) {
+        }
+
+        /**
+         * I criteri attivi, uno per elemento, nello stesso ordine di {@link #Attivi()}.
+         *
+         * <p><b>Ne ha sempre {@code Attivi()}</b>, e {@link #Descrizione} è costruita da qui: tooltip del
+         * pulsante, contatore e scheda "Filtri" leggono quindi la stessa lista e non possono divergere.
+         * Le date non sono criteri, per lo stesso motivo per cui {@code Attivi()} non le conta.
+         *
+         * @param NomeDocumento risolutore facoltativo da id di documento a nome, interrogato <b>solo</b> se
+         *                      il criterio sul documento è un id
+         */
+        public java.util.List<Criterio> Criteri(java.util.function.UnaryOperator<String> NomeDocumento) {
+            java.util.List<Criterio> r = new java.util.ArrayList<>();
 
             if (!Wallet.equalsIgnoreCase(TUTTI)) {
                 //La voce della combo ha due forme: un nome di wallet, oppure "Wallet : Gruppo (n)" che
                 //seleziona l'intero gruppo. Ripetere la voce grezza non sarebbe "scritto bene".
                 String gruppo = GruppoDaVoceWallet(Wallet);
-                righe.add(gruppo.isEmpty() ? "Wallet : " + Wallet : "Gruppo di wallet : " + gruppo);
+                String nome = gruppo.isEmpty() ? "Wallet" : "Gruppo di wallet";
+                String valore = gruppo.isEmpty() ? Wallet : gruppo;
+                r.add(new Criterio(nome, valore, nome + " : " + valore, new FiltriMovimenti(TUTTI, Token, Documento,
+                        DataInizio, DataFine, NascondiTrasferimentiInterni, NascondiTokenScam, SoloSenzaPrezzo, SoloLifoMancante)));
             }
-            if (!Token.equalsIgnoreCase(TUTTI)) righe.add("Moneta : " + Token);
+            if (!Token.equalsIgnoreCase(TUTTI)) {
+                r.add(new Criterio("Moneta", Token, "Moneta : " + Token, new FiltriMovimenti(Wallet, TUTTI, Documento,
+                        DataInizio, DataFine, NascondiTrasferimentiInterni, NascondiTokenScam, SoloSenzaPrezzo, SoloLifoMancante)));
+            }
             if (!Documento.equals(DOC_TUTTI)) {
-                righe.add("Documento di origine : " + DescrizioneDocumento(Documento, NomeDocumento));
+                String valore = DescrizioneDocumento(Documento, NomeDocumento);
+                r.add(new Criterio("Documento di origine", valore, "Documento di origine : " + valore,
+                        ConDocumento(DOC_TUTTI)));
             }
-            if (NascondiTrasferimentiInterni) righe.add("Trasferimenti interni nascosti");
-            if (NascondiTokenScam) righe.add("Token SCAM nascosti");
-            if (SoloSenzaPrezzo) righe.add("Solo i movimenti senza prezzo");
-            if (SoloLifoMancante) righe.add("Solo i movimenti con LiFo mancante");
+            if (NascondiTrasferimentiInterni) {
+                r.add(new Criterio("Trasferimenti interni", "nascosti", "Trasferimenti interni nascosti",
+                        new FiltriMovimenti(Wallet, Token, Documento, DataInizio, DataFine, false,
+                                NascondiTokenScam, SoloSenzaPrezzo, SoloLifoMancante)));
+            }
+            if (NascondiTokenScam) {
+                r.add(new Criterio("Token SCAM", "nascosti", "Token SCAM nascosti",
+                        new FiltriMovimenti(Wallet, Token, Documento, DataInizio, DataFine,
+                                NascondiTrasferimentiInterni, false, SoloSenzaPrezzo, SoloLifoMancante)));
+            }
+            if (SoloSenzaPrezzo) {
+                r.add(new Criterio("Movimenti senza prezzo", "solo quelli", "Solo i movimenti senza prezzo",
+                        new FiltriMovimenti(Wallet, Token, Documento, DataInizio, DataFine,
+                                NascondiTrasferimentiInterni, NascondiTokenScam, false, SoloLifoMancante)));
+            }
+            if (SoloLifoMancante) {
+                r.add(new Criterio("LiFo mancante", "solo quelli", "Solo i movimenti con LiFo mancante",
+                        new FiltriMovimenti(Wallet, Token, Documento, DataInizio, DataFine,
+                                NascondiTrasferimentiInterni, NascondiTokenScam, SoloSenzaPrezzo, false)));
+            }
+            return r;
+        }
 
-            return righe;
+        /** @return lo stesso record con un altro criterio sul documento di origine */
+        public FiltriMovimenti ConDocumento(String NuovoDocumento) {
+            return new FiltriMovimenti(Wallet, Token, NuovoDocumento, DataInizio, DataFine,
+                    NascondiTrasferimentiInterni, NascondiTokenScam, SoloSenzaPrezzo, SoloLifoMancante);
         }
 
         /** @return come {@link #Descrizione(java.util.function.UnaryOperator)}, con il solo id del documento */
@@ -297,5 +355,140 @@ public class Principale_FiltriMovimenti {
         if (criterio.equals(DOC_CON)) return haDocumento;
         if (criterio.equals(DOC_SENZA)) return !haDocumento;
         return haDocumento && campo41.trim().equals(criterio.trim());
+    }
+
+    // =================================================================================================
+    // ELENCO DEI FILTRI ATTIVI (scheda "Filtri") E FILTRO DA UNA RIGA DI DETTAGLIO
+    // =================================================================================================
+
+    /** Origine di un filtro nell'elenco: i criteri della finestra "Filtri...", che ricaricano la tabella. */
+    public static final String ORIGINE_CARICAMENTO = "Finestra Filtri";
+    /** Origine di un filtro nell'elenco: il campo di ricerca libero. */
+    public static final String ORIGINE_RICERCA = "Ricerca";
+    /** Origine di un filtro nell'elenco: il filtro di una colonna (header, tasto destro, o dal dettaglio). */
+    public static final String ORIGINE_COLONNA = "Colonna";
+
+    /** Valore di {@link FiltroRiga#Colonna} per il criterio sul documento di origine, che non è una colonna. */
+    public static final int COLONNA_DOCUMENTO = -1;
+
+    /**
+     * Una riga della scheda "Filtri": un filtro attivo e il modo di toglierlo.
+     *
+     * @param Origine {@link #ORIGINE_CARICAMENTO}, {@link #ORIGINE_RICERCA} o {@link #ORIGINE_COLONNA}
+     * @param Nome cosa si sta filtrando (il nome del criterio o della colonna)
+     * @param Valori i valori scelti, già leggibili
+     * @param Rimuovi toglie quel filtro e <b>solo</b> quello, ed esegue ciò che serve perché la tabella lo
+     *                rifletta (un ricaricamento per i criteri, il solo ricalcolo del filtro per il resto)
+     */
+    public record RigaFiltro(String Origine, String Nome, String Valori, Runnable Rimuovi) {
+        /** Una riga di elenco copiata dalla tabella non deve portarsi dietro l'oggetto. */
+        @Override
+        public String toString() {
+            return Nome + " : " + Valori;
+        }
+    }
+
+    /**
+     * Cosa fa l'icona imbuto di una riga della tabella dei dettagli: quale colonna della tabella movimenti
+     * filtrare, e su quale valore.
+     *
+     * <p>Il valore è <b>quello che sta nel model della tabella movimenti</b>, letto da lì dal chiamante, e non
+     * il testo mostrato nei dettagli (che può essere HTML, composto o accorciato): il filtro per colonna
+     * confronta il testo della cella, quindi un valore ricostruito dai campi del movimento non
+     * combacerebbe per le colonne derivate (40-42).
+     *
+     * @param Colonna indice di <b>model</b>, oppure {@link #COLONNA_DOCUMENTO}
+     * @param Valore il valore da filtrare; per il documento è il suo id
+     * @param Tooltip cosa farà il clic, già scritto per l'utente
+     */
+    public record FiltroRiga(int Colonna, String Valore, String Tooltip) {
+        /** La cella non deve finire negli appunti quando si copia la selezione della tabella. */
+        @Override
+        public String toString() {
+            return "";
+        }
+    }
+
+    /**
+     * Dice se l'imbuto di una riga dei dettagli è "acceso": il filtro che farebbe è proprio quello attivo.
+     * Acceso un secondo clic lo toglie. Per una colonna lo è solo se il filtro della colonna ammette
+     * <b>esattamente</b> quel valore: con più valori scelti (dal popup dell'header) il clic li sostituirebbe
+     * con uno solo, e l'imbuto resta vuoto per dirlo.
+     *
+     * @param F la riga dei dettagli
+     * @param DocumentoCorrente il criterio sul documento di origine ora in {@code FiltriCorrenti}
+     * @param FiltriColonna i filtri per colonna della tabella movimenti, come in {@code Tabelle.tableFilters}
+     */
+    public static boolean FiltroRigaAttivo(FiltroRiga F, String DocumentoCorrente,
+            java.util.Map<Integer, javax.swing.RowFilter<javax.swing.table.DefaultTableModel, Integer>> FiltriColonna) {
+        if (F == null) return false;
+        if (F.Colonna() == COLONNA_DOCUMENTO) {
+            return DocumentoCorrente != null && DocumentoCorrente.trim().equals(F.Valore().trim());
+        }
+        if (FiltriColonna == null) return false;
+        javax.swing.RowFilter<javax.swing.table.DefaultTableModel, Integer> r = FiltriColonna.get(F.Colonna());
+        return r instanceof Tabelle.FiltroValori fv && fv.valori().equals(java.util.List.of(F.Valore()));
+    }
+
+    /**
+     * Le righe dell'elenco dovute ai criteri della finestra "Filtri...".
+     *
+     * @param F i criteri correnti
+     * @param NomeDocumento risolutore facoltativo da id a nome del documento
+     * @param Imposta riceve il record senza il criterio tolto; il chiamante lo rimette in
+     *                {@code FiltriCorrenti} e ricarica la tabella
+     */
+    public static java.util.List<RigaFiltro> RigheCaricamento(FiltriMovimenti F,
+            java.util.function.UnaryOperator<String> NomeDocumento,
+            java.util.function.Consumer<FiltriMovimenti> Imposta) {
+        java.util.List<RigaFiltro> r = new java.util.ArrayList<>();
+        if (F == null) return r;
+        for (FiltriMovimenti.Criterio c : F.Criteri(NomeDocumento)) {
+            r.add(new RigaFiltro(ORIGINE_CARICAMENTO, c.Nome(), c.Valore(), () -> Imposta.accept(c.SenzaQuesto())));
+        }
+        return r;
+    }
+
+    /** Valori mostrati per un filtro di colonna: oltre un certo numero si accorcia, il resto sta nel conteggio. */
+    static final int VALORI_MAX_MOSTRATI = 6;
+
+    /**
+     * Le righe dell'elenco dovute ai filtri <b>di riga</b>: il campo di ricerca (se non vuoto) e una riga
+     * per ogni colonna filtrata. Non interroga nessun registro, quindi si può chiamare a ogni tasto
+     * premuto nel campo di ricerca.
+     *
+     * @param Ricerca testo del campo di ricerca
+     * @param PulisciRicerca svuota il campo di ricerca e riapplica i filtri
+     * @param FiltriColonna i filtri per colonna della tabella, come in {@code Tabelle.tableFilters}
+     * @param NomeColonna da indice di model al nome leggibile della colonna
+     * @param RimuoviColonna toglie il filtro della colonna indicata
+     */
+    public static java.util.List<RigaFiltro> RigheDiRiga(String Ricerca, Runnable PulisciRicerca,
+            java.util.Map<Integer, javax.swing.RowFilter<javax.swing.table.DefaultTableModel, Integer>> FiltriColonna,
+            java.util.function.IntFunction<String> NomeColonna,
+            java.util.function.IntConsumer RimuoviColonna) {
+        java.util.List<RigaFiltro> r = new java.util.ArrayList<>();
+        if (Ricerca != null && !Ricerca.isBlank()) {
+            r.add(new RigaFiltro(ORIGINE_RICERCA, "Ricerca nel testo", Ricerca.trim(), PulisciRicerca));
+        }
+        if (FiltriColonna != null) {
+            for (Integer col : new java.util.TreeSet<>(FiltriColonna.keySet())) {
+                if (col == null || col < 0) continue;
+                javax.swing.RowFilter<javax.swing.table.DefaultTableModel, Integer> f = FiltriColonna.get(col);
+                String valori = (f instanceof Tabelle.FiltroValori fv) ? ElencaValori(fv.valori()) : "(filtro attivo)";
+                String nome = NomeColonna.apply(col);
+                r.add(new RigaFiltro(ORIGINE_COLONNA, nome == null || nome.isBlank() ? "Colonna " + col : nome,
+                        valori, () -> RimuoviColonna.accept(col)));
+            }
+        }
+        return r;
+    }
+
+    /** @return i valori separati da virgola, o i primi {@link #VALORI_MAX_MOSTRATI} più "(+n)"; vuoto diventa "(vuoto)" */
+    static String ElencaValori(java.util.List<String> valori) {
+        java.util.List<String> v = new java.util.ArrayList<>();
+        for (String x : valori) v.add(x == null || x.isEmpty() ? "(vuoto)" : x);
+        if (v.size() <= VALORI_MAX_MOSTRATI) return String.join(", ", v);
+        return String.join(", ", v.subList(0, VALORI_MAX_MOSTRATI)) + "  (+" + (v.size() - VALORI_MAX_MOSTRATI) + ")";
     }
 }

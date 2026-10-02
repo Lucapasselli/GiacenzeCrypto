@@ -228,6 +228,35 @@ class ImportazioneGenericaBybitTest {
     }
 
     @Test
+    void launchpad_bitImpegnatoETokenRicevuto_unoScambio() throws Exception {
+        //Dati reali 2022: il token arriva nello stesso secondo o a un secondo dal BIT impegnato.
+        List<String[]> movs = importa(List.of(
+                rigaSpot("commitmentForLaunchpad", "BIT", "-0.110131", "2022-04-27 11:08:26"),
+                rigaSpot("airdropAssetIncrease", "APEX", "2.6796", "2022-04-27 11:08:27"),
+                rigaSpot("commitmentForLaunchpad", "BIT", "-0.686780", "2022-07-19 11:11:08"),
+                rigaSpot("airdropAssetIncrease", "SLG", "11.8615", "2022-07-19 11:11:08")), spot());
+        assertEquals(2, movs.size(), "una sottoscrizione = uno scambio BIT -> token, non due movimenti");
+        assertTrue(movs.stream().allMatch(m -> categoria(m).equals("SC")));
+        String[] apex = movs.stream().filter(m -> m[8].equals("BIT") && m[11].equals("APEX")).findFirst().orElseThrow();
+        assertEquals(0, new BigDecimal(apex[10]).abs().compareTo(new BigDecimal("0.110131")));
+    }
+
+    @Test
+    void launchpad_airdropSenzaBitVicino_restaAirdrop() throws Exception {
+        //Distribuzioni indipendenti (di norma alle 03:00), e quelle dal 2023 il cui impegno sta nel
+        //Funding: nel gruppo manca il commitmentForLaunchpad e la riga non diventa mezzo scambio.
+        List<String[]> movs = importa(List.of(
+                rigaSpot("airdropAssetIncrease", "STRM", "1.0866", "2022-04-28 00:02:07"),
+                rigaSpot("commitmentForLaunchpad", "BIT", "-0.483668", "2022-05-05 11:12:10"),
+                rigaSpot("airdropAssetIncrease", "PLY", "120.917", "2022-05-05 11:12:12")), spot());
+        assertEquals(3, movs.size());
+        long airdrop = movs.stream().filter(m -> categoria(m).equals("RW") || m[5].toUpperCase().contains("AIRDROP")).count();
+        assertEquals(2, airdrop, "STRM da solo e PLY a 2 secondi dal BIT sono airdrop");
+        assertEquals(1, movs.stream().filter(m -> m[8].equals("BIT")).count());
+        assertTrue(movs.stream().noneMatch(m -> categoria(m).equals("SC")), "nessuno scambio: i due non sono abbinati");
+    }
+
+    @Test
     void funding_conversioneBitMnt_gambeSuSecondiDiversi_unoScambio() throws Exception {
         List<String[]> righe = new ArrayList<>();
         righe.add(rigaFunding("2023-07-15 05:00:00", "BIT", "-300", "Convert", "BIT → MNT Auto-Conversion"));

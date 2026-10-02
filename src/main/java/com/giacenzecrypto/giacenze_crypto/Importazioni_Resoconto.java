@@ -176,13 +176,16 @@ private static final long serialVersionUID = 8L;
     public void ImpostaValoriDualInvestment(Binance_DualInvestment.Esito E) {
         Label_Titolo.setText("RESOCONTO ABBINAMENTO DUAL INVESTMENT");
         Label_TransTotali.setText("Contratti nel file :");
-        Label_TransImportate.setText("Abbinati :");
-        Label_TransScartate.setText("Non ancora liquidati :");
+        Label_TransImportate.setText("Abbinati o aggiornati :");
+        Label_TransScartate.setText("Non liquidati o già a posto :");
         Label_TransSconosciute.setText("Ambigui o non trovati in archivio :");
 
+        //Aggiornati: già abbinati da una versione precedente, a cui è stato scritto il gruppo del contratto
+        int aggiunti = E.abbinati + E.aggiornati;
+        int scartati = E.nonAncoraLiquidati + E.giaAPosto;
         this.Text_TransTotali.setText(String.valueOf(E.contrattiTotali));
-        this.Text_TransImportate.setText(String.valueOf(E.abbinati));
-        this.Text_TransScartate.setText(String.valueOf(E.nonAncoraLiquidati));
+        this.Text_TransImportate.setText(String.valueOf(aggiunti));
+        this.Text_TransScartate.setText(String.valueOf(scartati));
         //Un contratto ancora aperto non è un errore: colore neutro anche se diverso da zero.
         this.Text_TransScartate.setForeground(Color.BLACK);
         int nonAbbinati = E.ambigui + E.nonTrovati;
@@ -190,8 +193,8 @@ private static final long serialVersionUID = 8L;
         this.Text_TransSconosciute.setForeground(nonAbbinati == 0 ? Color.BLACK : Color.RED);
 
         this.cTotali = E.contrattiTotali;
-        this.cAggiunte = E.abbinati;
-        this.cScartate = E.nonAncoraLiquidati;
+        this.cAggiunte = aggiunti;
+        this.cScartate = scartati;
         this.cSconosciute = nonAbbinati;
         this.movimentiSconosciuti = String.join("\n", E.dettagli);
 

@@ -1077,7 +1077,8 @@ if (voce.isJson()) {
                 String FileDaImportare = files[0].getAbsolutePath();
                 try {
                     Binance_DualInvestment.Esito esito = Binance_DualInvestment.Abbina(new File(FileDaImportare));
-                    if (esito.abbinati > 0) {
+                    //Anche i contratti gia' abbinati a cui si e' scritto il gruppo: Funzioni_AggiornaTutto rende salvabile
+                    if (esito.abbinati > 0 || esito.aggiornati > 0) {
                         Principale.TabellaCryptodaAggiornare = true;
                     }
                     Importazioni_Resoconto res = new Importazioni_Resoconto();

@@ -3,10 +3,10 @@
   "_commentoConti": "Bybit esporta un file per conto (Spot, Funding, Derivatives, Unified Trading Account) e questa configurazione legge solo lo Spot: il Funding ha la sua ('Bybit Funding.json'). Stesso nomeExchange e stesso nomeWallet di proposito, cosi' i giroconti fra i conti Bybit sono interni allo stesso wallet e si possono ignorare da entrambi i lati. Dopo il passaggio all'Unified Trading Account il conto Spot si svuota con un giroconto finale e da li' in poi i movimenti stanno nell'export dell'UTA, che ha un tracciato diverso ('Bybit UTA.json'). Il conto Derivati ha la sua configurazione ('Bybit Derivati.json').",
   "_commentoScambi": "'trade' sono le due gambe di un ordine (stesso secondo, segni opposti), 'tradingFee' la commissione, riportata su una riga a parte e sempre nella moneta ricevuta: la quantita' di 'trade' e' LORDA (il saldo scende della fee sulla riga successiva), quindi la fee diventa un movimento COMMISSIONI senza ricostruire nulla. Piu' esecuzioni dello stesso ordine nello stesso secondo si sommano per moneta in un solo scambio.",
   "_commentoDust": "'smallBalanceIntoBITReduceAsset' (moneta ceduta) + 'convertSmallBalanceIntoBITIncreaseAssets' (MNT ricevuto) sono la conversione dei piccoli saldi in MNT: uno scambio. Le due gambe possono cadere su secondi consecutivi, da qui 'causaliDifferite' con tolleranza di 1 secondo, che vale solo per queste due causali (trade e giroconti restano a tolleranza zero).",
-  "_commentoAirdrop": "'airdropAssetIncrease' osservato solo come distribuzione dei token Launchpad: arriva nello stesso secondo del 'Launchpad Subscription Refund' del Funding, e la differenza fra MNT impegnati e MNT restituiti e' il prezzo pagato. Le due righe stanno in file diversi e il motore non puo' abbinarle: il token entra come AIRDROP (reddito al valore di mercato) e gli MNT spesi, ignorati nel Funding, restano in giacenza. Differenza di pochi MNT per distribuzione; chi vuole il trattamento esatto (permuta MNT->token) lo sistema a mano.",
+  "_commentoAirdrop": "'commitmentForLaunchpad' (BIT impegnati, uscita) e 'airdropAssetIncrease' (token del Launchpad ricevuto) sono le due meta' di una sottoscrizione e cadono nello stesso secondo o a un secondo di distanza: con 'tipoSeSola' diventano UNO SCAMBIO (BIT -> token, permuta). Il token puo' pero' arrivare anche da solo (distribuzioni senza BIT impegnati, di norma alle 03:00): in quel caso nel gruppo manca 'commitmentForLaunchpad' e la riga torna AIRDROP (reddito al valore di mercato). Dal 2023 i MNT impegnati stanno nel Funding ('Launchpad Subscription', ignorato) e qui arriva solo l'airdrop: resta AIRDROP, la differenza fra MNT impegnati e restituiti non e' abbinata e chi vuole la permuta esatta la sistema a mano. Un 'commitmentForLaunchpad' senza token vicino resta uno scambio a gamba sola (prelievo da classificare). Vedi il commento in 'Bybit Funding.json'.",
   "_commentoTipoVuoto": "Le righe con Type vuoto sono i prelievi on-chain del 2023-2024: corrispondono una per una all'export 'Withdraw & Deposit History' (assetHistory_withdrawDepositHistory_...), che pero' riporta l'importo AL NETTO della commissione di rete mentre qui e' al lordo. Mappate come TRASFERIMENTO-CRYPTO: prelievo da classificare a mano. Nel 2022 gli stessi movimenti hanno invece Type 'userDeposit'/'userWithdrawal'.",
-  "_commento2022": "Causali viste solo negli export 2022/2023. 'commitmentForLaunchpad': BIT impegnati per un Launchpad, SENZA riga di restituzione (a differenza della coppia Launchpad Subscription/Refund del Funding): uscita definitiva, quindi prelievo da classificare e non IGNORA, altrimenti la giacenza BIT resterebbe gonfiata. 'botTradingReduceAsset'/'botTradingIncreaseAsset': fondi mandati al trading bot e restituiti giorni dopo con il risultato (anche in un'altra moneta); l'export non contiene gli scambi interni del bot, quindi restano un prelievo e dei depositi da classificare.",
-  "versione": "1.001",
+  "_commento2022": "Causali viste solo negli export 2022/2023. 'commitmentForLaunchpad': BIT impegnati per un Launchpad, SENZA riga di restituzione (a differenza della coppia Launchpad Subscription/Refund del Funding): uscita definitiva, quindi non IGNORA (la giacenza BIT resterebbe gonfiata); si abbina al token ricevuto, vedi '_commentoAirdrop'. 'botTradingReduceAsset'/'botTradingIncreaseAsset': fondi mandati al trading bot e restituiti giorni dopo con il risultato (anche in un'altra moneta); l'export non contiene gli scambi interni del bot, quindi restano un prelievo e dei depositi da classificare.",
+  "versione": "1.002",
   "centralizzato": true,
   "fontePrezzoPreferita": "bybit",
   "nomeExchange": "Bybit",
@@ -30,21 +30,26 @@
   "tolleranzaSecondiConsolidamento": 1,
   "causaliDifferite": [
     "smallBalanceIntoBITReduceAsset",
-    "convertSmallBalanceIntoBITIncreaseAssets"
+    "convertSmallBalanceIntoBITIncreaseAssets",
+    "commitmentForLaunchpad",
+    "airdropAssetIncrease"
+  ],
+  "tipoSeSola": [
+    { "causale": "airdropAssetIncrease", "con": ["commitmentForLaunchpad"], "tipo": "AIRDROP" }
   ],
   "mappaCausali": {
     "trade":                                     "SCAMBIO CRYPTO-CRYPTO",
     "tradingFee":                                "COMMISSIONI",
     "smallBalanceIntoBITReduceAsset":            "SCAMBIO CRYPTO-CRYPTO",
     "convertSmallBalanceIntoBITIncreaseAssets":  "SCAMBIO CRYPTO-CRYPTO",
-    "airdropAssetIncrease":                      "AIRDROP",
+    "airdropAssetIncrease":                      "SCAMBIO CRYPTO-CRYPTO",
     "internalAccountTransferDeposit":            "IGNORA",
     "internalAccountTransferWithdrawal":         "IGNORA",
     "Flexible Savings Subscription":             "IGNORA",
     "Flexible Savings Principal Redemption":     "IGNORA",
     "userDeposit":                               "TRASFERIMENTO-CRYPTO",
     "userWithdrawal":                            "TRASFERIMENTO-CRYPTO",
-    "commitmentForLaunchpad":                    "TRASFERIMENTO-CRYPTO",
+    "commitmentForLaunchpad":                    "SCAMBIO CRYPTO-CRYPTO",
     "botTradingReduceAsset":                     "TRASFERIMENTO-CRYPTO",
     "botTradingIncreaseAsset":                   "TRASFERIMENTO-CRYPTO",
     "":                                          "TRASFERIMENTO-CRYPTO"

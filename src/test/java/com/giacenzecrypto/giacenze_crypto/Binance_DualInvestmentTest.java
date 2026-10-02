@@ -359,6 +359,284 @@ class Binance_DualInvestmentTest {
     // UTILITY DI PARSING
     // =============================================================================================
 
+    // =============================================================================================
+    // CHIAVE DI GRUPPO [43]: dal dettaglio di un movimento si vedono gli altri del contratto
+    // =============================================================================================
+
+    private static final String RIGA_STESSA_MONETA = "USDT/USDT,Buy Low,1232611,2022-05-12 08:24:50,Settled,"
+            + "100.00000000 USDT,28500,2022-05-24 10:33:41,29351.32,146.28%,102.00000000 USDT,Settled";
+
+    private static String[] purchaseStessaMoneta() {
+        String p[] = movimento("20220512062450_Binance_001_001_PC", "Dual Savings Purchase",
+                "USDT", "100.00000000", "2022-05-12 06:24:50");
+        String s[] = movimento("20220524083341_Binance_002_001_DC", "Dual Savings Settlement",
+                "USDT", "102.00000000", "2022-05-24 08:33:41");
+        MappaCryptoWallet.put(p[0], p);
+        MappaCryptoWallet.put(s[0], s);
+        return p;
+    }
+
+    @Test
+    void stessaMoneta_tuttiIMovimentiDelContrattoPortanoLaStessaChiave() throws Exception {
+        purchaseStessaMoneta();
+        Binance_DualInvestment.Abbina(new java.io.File(scriviDettaglio(RIGA_STESSA_MONETA)));
+
+        // Purchase, Settlement, le due gambe sul sotto-wallet e la reward: cinque movimenti
+        java.util.List<String[]> delContratto = MappaCryptoWallet.values().stream()
+                .filter(v -> "DUAL-1232611".equals(CommissioniCollegate.Chiave(v))).toList();
+        assertEquals(5, delContratto.size());
+        assertEquals(MappaCryptoWallet.size(), delContratto.size(), "nessun movimento resta fuori dal gruppo");
+    }
+
+    @Test
+    void monetaDiversa_cinqueMovimentiPortanoLaStessaChiave() throws Exception {
+        String purchase[] = movimento("20220512062450_Binance_001_001_PC", "Dual Savings Purchase",
+                "USDT", "100.00000000", "2022-05-12 06:24:50");
+        String settlement[] = movimento("20220524083341_Binance_002_001_DC", "Dual Savings Settlement",
+                "BTC", "0.00350000", "2022-05-24 08:33:41");
+        MappaCryptoWallet.put(purchase[0], purchase);
+        MappaCryptoWallet.put(settlement[0], settlement);
+        seedPrezzo("USDT", "2022-05-24 08:33:41");
+
+        Binance_DualInvestment.Abbina(new java.io.File(scriviDettaglio(
+                "USDT/BTC,Buy Low,1232611,2022-05-12 08:24:50,Settled,100.00000000 USDT,28500,"
+                + "2022-05-24 10:33:41,29351.32,146.28%,0.00350000 BTC,Settled")));
+
+        assertEquals(5, MappaCryptoWallet.size());
+        for (String[] v : MappaCryptoWallet.values()) {
+            assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(v), v[0]);
+        }
+    }
+
+    @Test
+    void contrattiDiversi_hannoChiaviDiverse() throws Exception {
+        purchaseStessaMoneta();
+        String p2[] = movimento("20220601062450_Binance_003_001_PC", "Dual Savings Purchase",
+                "USDT", "50.00000000", "2022-06-01 06:24:50");
+        String s2[] = movimento("20220610083341_Binance_004_001_DC", "Dual Savings Settlement",
+                "USDT", "51.00000000", "2022-06-10 08:33:41");
+        MappaCryptoWallet.put(p2[0], p2);
+        MappaCryptoWallet.put(s2[0], s2);
+
+        Binance_DualInvestment.Abbina(new java.io.File(scriviDettaglio(RIGA_STESSA_MONETA,
+                "USDT/USDT,Buy Low,1999999,2022-06-01 08:24:50,Settled,50.00000000 USDT,28500,"
+                + "2022-06-10 10:33:41,29351.32,146.28%,51.00000000 USDT,Settled")));
+
+        assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(MappaCryptoWallet.get("20220512062450_Binance_001_001_PC")));
+        assertEquals("DUAL-1999999", CommissioniCollegate.Chiave(MappaCryptoWallet.get(p2[0])));
+        assertEquals("DUAL-1999999", CommissioniCollegate.Chiave(MappaCryptoWallet.get(s2[0])));
+    }
+
+    @Test
+    void unaCommissioneGiaCollegataAlPurchase_restaNelGruppoDelContratto() throws Exception {
+        String p[] = purchaseStessaMoneta();
+        String fee[] = movimento("20220512062450_Binance_001_002_CM", "Dual Savings Purchase",
+                "USDT", "0.10000000", "2022-05-12 06:24:50");
+        String chiaveFee = "chiave-della-commissione";
+        p[CommissioniCollegate.CAMPO] = chiaveFee;
+        fee[CommissioniCollegate.CAMPO] = chiaveFee;
+        MappaCryptoWallet.put(fee[0], fee);
+
+        Binance_DualInvestment.Abbina(new java.io.File(scriviDettaglio(RIGA_STESSA_MONETA)));
+
+        assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(fee), "la commissione segue il suo movimento");
+        assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(p));
+        // Una commissione nel gruppo non lo rende un "gruppo di commissioni" da dissolvere
+        assertFalse(Principale_CommissioniCollegate.isScollegabile(java.util.List.of(p[0])));
+    }
+
+    @Test
+    void scollegaNonDissolveIlGruppoDiUnContratto() throws Exception {
+        String p[] = purchaseStessaMoneta();
+        Binance_DualInvestment.Abbina(new java.io.File(scriviDettaglio(RIGA_STESSA_MONETA)));
+
+        assertFalse(Principale_CommissioniCollegate.isScollegabile(java.util.List.of(p[0])));
+        Principale_CommissioniCollegate.Scollega(java.util.List.of(p[0]));
+        for (String[] v : MappaCryptoWallet.values()) {
+            assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(v), v[0]);
+        }
+    }
+
+    @Test
+    void ilDettaglioMostraGliAltriMovimentiDelContratto_senzaDireCheManchinoCommissioni() throws Exception {
+        String p[] = purchaseStessaMoneta();
+        String idSettlement = "20220524083341_Binance_002_001_DC";
+        Binance_DualInvestment.Abbina(new java.io.File(scriviDettaglio(RIGA_STESSA_MONETA)));
+
+        java.util.List<String[]> righe = Principale_CommissioniCollegate.RigheDettaglio(p[0]);
+        assertEquals(1, righe.size(), "nessuna riga sulle commissioni mancanti");
+        assertEquals("Contratto Dual Investment 1232611", righe.get(0)[0]);
+        assertTrue(righe.get(0)[1].contains(idSettlement), righe.get(0)[1]);
+        assertFalse(righe.get(0)[1].contains(p[0]), "il movimento non elenca se stesso");
+    }
+
+    @Test
+    void unaCommissioneNelGruppoSiVedeComeCommissioneCollegata() throws Exception {
+        String p[] = purchaseStessaMoneta();
+        String fee[] = movimento("20220512062450_Binance_001_002_CM", "Dual Savings Purchase",
+                "USDT", "0.10000000", "2022-05-12 06:24:50");
+        p[CommissioniCollegate.CAMPO] = "k";
+        fee[CommissioniCollegate.CAMPO] = "k";
+        MappaCryptoWallet.put(fee[0], fee);
+        Binance_DualInvestment.Abbina(new java.io.File(scriviDettaglio(RIGA_STESSA_MONETA)));
+
+        java.util.List<String[]> righe = Principale_CommissioniCollegate.RigheDettaglio(p[0]);
+        assertEquals("Contratto Dual Investment 1232611", righe.get(0)[0]);
+        assertEquals("Commissioni collegate", righe.get(1)[0]);
+        assertTrue(righe.get(1)[1].contains(fee[0]));
+    }
+
+    // =============================================================================================
+    // RIPASSARE IL FILE SU CONTRATTI GIA' ABBINATI (da una versione che non scriveva il gruppo)
+    // =============================================================================================
+
+    private static final String RIGA_B_STESSA_MONETA = "USDT/USDT,Buy Low,1999999,2022-06-01 08:24:50,Settled,"
+            + "100.00000000 USDT,28500,2022-06-10 10:33:41,29351.32,146.28%,102.00000000 USDT,Settled";
+
+    /** Riporta l'archivio allo stato di una versione precedente: abbinato, ma senza il gruppo del contratto. */
+    private static void togliLeChiavi() {
+        for (String[] v : MappaCryptoWallet.values()) v[CommissioniCollegate.CAMPO] = "";
+    }
+
+    private static String fotografia() {
+        StringBuilder sb = new StringBuilder();
+        for (String[] v : MappaCryptoWallet.values()) {
+            sb.append(String.join("|", v)).append('\n');
+        }
+        return sb.toString();
+    }
+
+    @Test
+    void ripassareIlFile_suContrattoGiaAbbinato_scriveSoloIlGruppo() throws Exception {
+        purchaseStessaMoneta();
+        String file = scriviDettaglio(RIGA_STESSA_MONETA);
+        Binance_DualInvestment.Abbina(new java.io.File(file));
+        togliLeChiavi();
+        int movimentiPrima = MappaCryptoWallet.size();
+        String s[] = MappaCryptoWallet.get("20220524083341_Binance_002_001_DC");
+        String qtaSettlementPrima = s[13];
+        String senzaChiavi = fotografia();
+
+        Binance_DualInvestment.Esito esito = Binance_DualInvestment.Abbina(new java.io.File(file));
+
+        assertEquals(0, esito.abbinati, "non va rifatto l'abbinamento");
+        assertEquals(1, esito.aggiornati, esito.dettagli.toString());
+        assertEquals(0, esito.nonTrovati);
+        assertEquals(movimentiPrima, MappaCryptoWallet.size(), "nessun movimento creato in più");
+        assertEquals(qtaSettlementPrima, MappaCryptoWallet.get(s[0])[13], "la quantità non va ridotta due volte");
+        for (String[] v : MappaCryptoWallet.values()) {
+            assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(v), v[0]);
+        }
+        //Oltre al campo 43 non cambia nulla: la fotografia coincide una volta tolta la chiave
+        togliLeChiavi();
+        assertEquals(senzaChiavi, fotografia());
+    }
+
+    @Test
+    void ripassareIlFile_suContrattoGiaAbbinatoAMonetaDiversa_scriveIlGruppo() throws Exception {
+        String purchase[] = movimento("20220512062450_Binance_001_001_PC", "Dual Savings Purchase",
+                "USDT", "100.00000000", "2022-05-12 06:24:50");
+        String settlement[] = movimento("20220524083341_Binance_002_001_DC", "Dual Savings Settlement",
+                "BTC", "0.00350000", "2022-05-24 08:33:41");
+        MappaCryptoWallet.put(purchase[0], purchase);
+        MappaCryptoWallet.put(settlement[0], settlement);
+        seedPrezzo("USDT", "2022-05-24 08:33:41");
+        String file = scriviDettaglio("USDT/BTC,Buy Low,1232611,2022-05-12 08:24:50,Settled,100.00000000 USDT,28500,"
+                + "2022-05-24 10:33:41,29351.32,146.28%,0.00350000 BTC,Settled");
+        Binance_DualInvestment.Abbina(new java.io.File(file));
+        togliLeChiavi();
+
+        Binance_DualInvestment.Esito esito = Binance_DualInvestment.Abbina(new java.io.File(file));
+
+        assertEquals(1, esito.aggiornati, esito.dettagli.toString());
+        assertEquals(5, MappaCryptoWallet.size());
+        for (String[] v : MappaCryptoWallet.values()) {
+            assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(v), v[0]);
+        }
+    }
+
+    @Test
+    void ripassareIlFile_unaTerzaVolta_nonCambiaNulla() throws Exception {
+        purchaseStessaMoneta();
+        String file = scriviDettaglio(RIGA_STESSA_MONETA);
+        Binance_DualInvestment.Abbina(new java.io.File(file));
+        String prima = fotografia();
+
+        Binance_DualInvestment.Esito esito = Binance_DualInvestment.Abbina(new java.io.File(file));
+
+        assertEquals(0, esito.abbinati);
+        assertEquals(0, esito.aggiornati);
+        assertEquals(1, esito.giaAPosto);
+        assertEquals(prima, fotografia());
+    }
+
+    @Test
+    void ripassareIlFile_conUnContrattoVecchioEUnoNuovoDiUgualiImporti_nonLiScambia() throws Exception {
+        //A abbinato da una versione precedente, B appena importato: stessa moneta e stessa quantità
+        purchaseStessaMoneta();
+        Binance_DualInvestment.Abbina(new java.io.File(scriviDettaglio(RIGA_STESSA_MONETA)));
+        togliLeChiavi();
+        String p2[] = movimento("20220601062450_Binance_003_001_PC", "Dual Savings Purchase",
+                "USDT", "100.00000000", "2022-06-01 06:24:50");
+        String s2[] = movimento("20220610083341_Binance_004_001_DC", "Dual Savings Settlement",
+                "USDT", "102.00000000", "2022-06-10 08:33:41");
+        MappaCryptoWallet.put(p2[0], p2);
+        MappaCryptoWallet.put(s2[0], s2);
+
+        //B prima di A nel file, per provare che l'ordine delle righe non conta
+        Binance_DualInvestment.Esito esito = Binance_DualInvestment.Abbina(new java.io.File(
+                scriviDettaglio(RIGA_B_STESSA_MONETA, RIGA_STESSA_MONETA)));
+
+        assertEquals(1, esito.abbinati, esito.dettagli.toString());
+        assertEquals(1, esito.aggiornati, esito.dettagli.toString());
+        assertEquals(0, esito.nonTrovati);
+        assertEquals(10, MappaCryptoWallet.size());
+        assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(MappaCryptoWallet.get("20220512062450_Binance_001_001_PC")));
+        assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(MappaCryptoWallet.get("20220524083341_Binance_002_001_DC")));
+        assertEquals("DUAL-1999999", CommissioniCollegate.Chiave(MappaCryptoWallet.get(p2[0])));
+        assertEquals("DUAL-1999999", CommissioniCollegate.Chiave(MappaCryptoWallet.get(s2[0])));
+        assertEquals(5, MappaCryptoWallet.values().stream()
+                .filter(v -> "DUAL-1999999".equals(CommissioniCollegate.Chiave(v))).count());
+    }
+
+    @Test
+    void ripassareIlFile_unaCommissioneGiaCollegataAlPurchase_restaNelGruppoDelContratto() throws Exception {
+        String p[] = purchaseStessaMoneta();
+        String file = scriviDettaglio(RIGA_STESSA_MONETA);
+        Binance_DualInvestment.Abbina(new java.io.File(file));
+        togliLeChiavi();
+        String fee[] = movimento("20220512062450_Binance_005_001_CM", "Dual Savings Purchase",
+                "USDT", "0.10000000", "2022-05-12 06:24:50");
+        MappaCryptoWallet.put(fee[0], fee);
+        CommissioniCollegate.Collega(MappaCryptoWallet.get(p[0]), fee);
+        assertFalse(CommissioniCollegate.Chiave(fee).isEmpty());
+
+        Binance_DualInvestment.Abbina(new java.io.File(file));
+
+        assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(fee), "la commissione segue il Purchase nel gruppo");
+    }
+
+    @Test
+    void ripassareIlFile_conPurchaseAbbinatoESettlementNo_nonToccaNulla() throws Exception {
+        purchaseStessaMoneta();
+        String file = scriviDettaglio(RIGA_STESSA_MONETA);
+        Binance_DualInvestment.Abbina(new java.io.File(file));
+        togliLeChiavi();
+        //Il Settlement torna da classificare: il contratto e' a meta'
+        String id = "20220524083341_Binance_002_001_DC";
+        String[] s = MappaCryptoWallet.get(id);
+        s[5] = "DEPOSITO CRYPTO";
+        s[13] = "102.00000000";
+        s[18] = "";
+        String prima = fotografia();
+
+        Binance_DualInvestment.Esito esito = Binance_DualInvestment.Abbina(new java.io.File(file));
+
+        assertEquals(1, esito.nonTrovati);
+        assertEquals(0, esito.aggiornati);
+        assertEquals(prima, fotografia());
+    }
+
     @Test
     void estraiOffset_riconosceIlFormatoSenzaParentesi() {
         assertEquals(2, Binance_DualInvestment.estraiOffset(

@@ -124,6 +124,27 @@ class ImportazioneGenericaPreScaricoRigheTest {
         assertTrue(richieste.isEmpty());
     }
 
+    /**
+     * Il difetto del 2026-10-03: USDT, USDC e BUSD stanno in EMONEY (e-money dal 2000) ma la valorizzazione
+     * li cerca sugli exchange, perche' ancora a 1:1 solo i token con "EUR" nel simbolo. Il pre-scarico li
+     * saltava per la sola presenza nella mappa, e ogni loro ora si riscaricava da sola con un processo Node.
+     */
+    @Test
+    void unEMoneyNonInEuroSiRaccogliMentreQuelloInEuroRestaFuori() {
+        Principale.Mappa_EMoney.put("USDT", "2000-01-01");
+        Principale.Mappa_EMoney.put("EURC", "2000-01-01");
+        try {
+            List<Prezzi.RichiestaPrezzo> richieste = ImportazioneGenerica.RaccogliRichiestePerRighe(
+                    List.<String[]>of(riga("2022-11-18 05:30:00", "USDT"),
+                            riga("2022-11-18 05:30:00", "EURC")), cfg());
+
+            assertEquals(Set.of("USDT"), simboliChiesti(richieste));
+        } finally {
+            Principale.Mappa_EMoney.remove("USDT");
+            Principale.Mappa_EMoney.remove("EURC");
+        }
+    }
+
     /** La colonna della commissione è una delle tre da guardare: dimenticarla costa richieste vere. */
     @Test
     void ancheLaMonetaDellaCommissioneVieneRaccolta() {

@@ -663,8 +663,8 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
         MenuItem_EsportaTabella = new javax.swing.JMenuItem();
         ScrollTabella = new javax.swing.JScrollPane();
-        Pannello_Giacenze = new javax.swing.JPanel();
         Tabella = new javax.swing.JTable();
+        Pannello_Giacenze = new javax.swing.JPanel();
         Bottone_DeFi = new javax.swing.JButton();
         Bottone_Storico = new javax.swing.JButton();
         Bottone_MovPrecedente = new javax.swing.JButton();
@@ -830,9 +830,9 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                     .addComponent(Pannello_Giacenze, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(Bottone_MovPrecedente)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 432, Short.MAX_VALUE)
-                        .addComponent(TextPane_Titolo, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(237, 237, 237)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(TextPane_Titolo)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_MovSuccessivo))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(Bottone_Modifica, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -842,7 +842,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                         .addComponent(Bottone_DeFi, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_Storico, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 454, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -855,7 +855,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                         .addComponent(Bottone_MovPrecedente)
                         .addComponent(Bottone_MovSuccessivo)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+                .addComponent(ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Pannello_Giacenze, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(8, 8, 8)

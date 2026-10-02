@@ -441,7 +441,12 @@ private static final long serialVersionUID = 3L;
         Tabelle.Tabelle_InizializzaHeader(GiacenzeaData_TabellaDettaglioMovimenti);
         //Valore/costo unitario (7, 8) e le quattro colonne di costo del dettaglio (13-16) : sommarli non ha senso
         GiacenzeaData_Tabella.putClientProperty("ColonneSenzaSomma", java.util.Set.of(7, 8));
-        GiacenzeaData_TabellaDettaglioMovimenti.putClientProperty("ColonneSenzaSomma", java.util.Set.of(13, 14, 15, 16));
+        GiacenzeaData_TabellaDettaglioMovimenti.putClientProperty("ColonneSenzaSomma", java.util.Set.of(13, 14, 15, 16, 17));
+        //Colonne della tabella dettaglio: le interne (ID, saldi negativi, "null") escono dalla vista e il costo di
+        //carico del movimento va prima della Qta Residua. La scelta salvata dell'utente si sovrappone in AggiornaSpunte()
+        LayoutColonneMovimenti.applica(GiacenzeaData_TabellaDettaglioMovimenti, null, LayoutColonneMovimenti.PROFILO_GIACENZE_DETTAGLIO);
+        //Solo Quantita' e Differenza valore - costo sono verdi/rosse, il resto della riga resta del colore normale
+        GiacenzeaData_TabellaDettaglioMovimenti.putClientProperty(Tabelle.PROP_COLORA_SOLO_QTA_E_DIFFERENZA, Boolean.TRUE);
         Tabelle.Tabelle_InizializzaHeader(GestioneTokenScam_Tabella);
         Tabelle.Tabelle_InizializzaHeader(GestioneTokenScam_TabellaMovimenti);
         // Tabelle senza filtri: header semplice bold+centrato
@@ -756,6 +761,7 @@ private static final long serialVersionUID = 3L;
         GiacenzeaData_CheckBox_NascondiScam = new javax.swing.JCheckBox();
         GiacenzeaData_Label_Aggiornare = new javax.swing.JLabel();
         GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative = new javax.swing.JCheckBox();
+        GiacenzeaData_Bottone_ColonneDettaglio = new javax.swing.JButton();
         GiacenzeaData_Bottone_ConfermaPrezzoZero = new javax.swing.JButton();
         GestioneTokenScam = new javax.swing.JPanel();
         GestioneTokenScam_ScrollPane = new javax.swing.JScrollPane();
@@ -2600,11 +2606,11 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Data", "Wallet", "Moneta", "Address Moneta", "Tipo Movimento", "Quantita'", "Valore in Euro", "Qta Residua", "ID", "SaldiNegativiPrecedenti", "null", "null", "null", "<html><center>Costo Carico<br>Movimento</html>", "<html><center>Prezzo<br>Unitario</html>", "<html><center>Valore<br>Qta Residua</html>", "<html><center>Costo Carico<br>Qta Residua</html>"
+                "Data", "Wallet", "Moneta", "Address Moneta", "Tipo Movimento", "Quantita'", "Valore in Euro", "Qta Residua", "ID", "SaldiNegativiPrecedenti", "null", "null", "null", "<html><center>Costo Carico<br>Movimento</html>", "<html><center>Prezzo<br>Unitario</html>", "<html><center>Valore<br>Qta Residua</html>", "<html><center>Costo Carico<br>Qta Residua</html>", "<html><center>Differenza<br>Valore - Costo</html>"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -2653,6 +2659,8 @@ private static final long serialVersionUID = 3L;
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(15).setPreferredWidth(100);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(16).setMinWidth(90);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(16).setPreferredWidth(110);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(17).setMinWidth(90);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(17).setPreferredWidth(110);
         }
         GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), 42));
 
@@ -2777,6 +2785,15 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        GiacenzeaData_Bottone_ColonneDettaglio.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
+        GiacenzeaData_Bottone_ColonneDettaglio.setText("Colonne...");
+        GiacenzeaData_Bottone_ColonneDettaglio.setToolTipText("Scegli quali colonne mostrare nella tabella dettaglio movimenti");
+        GiacenzeaData_Bottone_ColonneDettaglio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GiacenzeaData_Bottone_ColonneDettaglioActionPerformed(evt);
+            }
+        });
+
         GiacenzeaData_Bottone_ConfermaPrezzoZero.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_FrecciaSotto.png"))); // NOI18N
         GiacenzeaData_Bottone_ConfermaPrezzoZero.setText("Conferma prezzo ZERO");
         GiacenzeaData_Bottone_ConfermaPrezzoZero.setEnabled(false);
@@ -2807,6 +2824,8 @@ private static final long serialVersionUID = 3L;
                     .addGroup(GiacenzeaDataLayout.createSequentialGroup()
                         .addComponent(Giacenzeadata_Dettaglio_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(GiacenzeaData_Bottone_ColonneDettaglio)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative, javax.swing.GroupLayout.PREFERRED_SIZE, 223, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(GiacenzeaDataLayout.createSequentialGroup()
                         .addComponent(GiacenzeaData_Bottone_MovimentiDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2889,6 +2908,7 @@ private static final long serialVersionUID = 3L;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Giacenzeadata_Dettaglio_Label)
+                    .addComponent(GiacenzeaData_Bottone_ColonneDettaglio)
                     .addComponent(GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE)
@@ -6961,6 +6981,20 @@ private void SettaIcone(){
         } catch (Exception eLayoutColonne) {
             System.out.println("AggiornaSpunte: layout colonne movimenti non applicato : " + eLayoutColonne.getMessage());
         }
+        //Idem per la tabella dettaglio movimenti di "Giacenze a data"
+        try {
+            LayoutColonneMovimenti layoutDettaglio = LayoutColonneMovimenti.fromJson(
+                    DatabaseH2.Pers_Opzioni_Leggi(LayoutColonneMovimenti.OPZIONE_GIACENZE_DETTAGLIO),
+                    LayoutColonneMovimenti.PROFILO_GIACENZE_DETTAGLIO);
+            if (layoutDettaglio != null) {
+                LayoutColonneMovimenti.applica(GiacenzeaData_TabellaDettaglioMovimenti, layoutDettaglio,
+                        LayoutColonneMovimenti.PROFILO_GIACENZE_DETTAGLIO);
+                GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(
+                        GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), 42));
+            }
+        } catch (Exception eLayoutDettaglio) {
+            System.out.println("AggiornaSpunte: layout colonne dettaglio giacenze non applicato : " + eLayoutDettaglio.getMessage());
+        }
 
       //  System.out.println(RW_Opzioni_RilenvanteScambiFIAT.isSelected());
     }
@@ -8118,7 +8152,82 @@ private void SettaIcone(){
         
     }
     
+    /**
+     * Numero della costruzione corrente della tabella dettaglio movimenti. Il completamento dei prezzi in background
+     * ({@link #GiacenzeaData_CompletaPrezziDettaglio}) lo confronta con quello di quando è partito: se è cambiato la
+     * tabella è stata ricostruita e quel lavoro non deve più scrivere nulla.
+     */
+    private volatile int GiacenzeaData_GenerazioneDettaglio = 0;
+
+    /** Una riga del dettaglio rimasta senza prezzo con le fonti veloci: dove scrivere il completamento e da quali dati ricavarlo. */
+    private record RigaPrezzoDaCompletare(int RigaModello, String ID, boolean Entrata, String Qta, String QtaResidua, String Costo) {}
+
+    /**
+     * Cerca in background il prezzo delle righe del dettaglio che non lo avevano, e lo scrive nella tabella a blocchi.
+     * La ricerca (quotazione più vicina a finestre larghe) scandisce la cache dei prezzi e costa secondi su una
+     * tabella grande: farla durante la costruzione bloccava l'apertura del dettaglio.
+     */
+    private void GiacenzeaData_CompletaPrezziDettaglio(java.util.List<RigaPrezzoDaCompletare> Righe, int Generazione) {
+        if (Righe.isEmpty()) {
+            return;
+        }
+        Thread t = new Thread(() -> {
+            java.util.List<RigaPrezzoDaCompletare> Blocco = new java.util.ArrayList<>();
+            java.util.List<String[]> Valori = new java.util.ArrayList<>();
+            for (RigaPrezzoDaCompletare r : Righe) {
+                if (Generazione != GiacenzeaData_GenerazioneDettaglio) {
+                    return;
+                }
+                String[] Mov = MappaCryptoWallet.get(r.ID());
+                if (Mov == null) {
+                    continue;
+                }
+                String[] Ris = Principale_GiacenzeaData.CompletaPrezzoDettaglio(Mov, r.Entrata(), r.Qta(), r.QtaResidua(), r.Costo());
+                if (Ris != null) {
+                    Blocco.add(r);
+                    Valori.add(Ris);
+                }
+                if (Blocco.size() >= 40) {
+                    GiacenzeaData_ScriviPrezziDettaglio(new java.util.ArrayList<>(Blocco), new java.util.ArrayList<>(Valori), Generazione);
+                    Blocco.clear();
+                    Valori.clear();
+                }
+            }
+            GiacenzeaData_ScriviPrezziDettaglio(Blocco, Valori, Generazione);
+        }, "GiacenzeaData-PrezziDettaglio");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    /** Scrive un blocco di prezzi completati nel model, sul thread grafico, se la tabella è ancora quella di partenza. */
+    private void GiacenzeaData_ScriviPrezziDettaglio(java.util.List<RigaPrezzoDaCompletare> Blocco,
+            java.util.List<String[]> Valori, int Generazione) {
+        if (Blocco.isEmpty()) {
+            return;
+        }
+        SwingUtilities.invokeLater(() -> {
+            if (Generazione != GiacenzeaData_GenerazioneDettaglio) {
+                return;
+            }
+            DefaultTableModel Modello = (DefaultTableModel) GiacenzeaData_TabellaDettaglioMovimenti.getModel();
+            for (int i = 0; i < Blocco.size(); i++) {
+                RigaPrezzoDaCompletare r = Blocco.get(i);
+                //Il model può essere stato svuotato e riempito di nuovo senza passare di qui: si controlla che la riga sia la stessa
+                if (r.RigaModello() >= Modello.getRowCount() || !r.ID().equals(String.valueOf(Modello.getValueAt(r.RigaModello(), 8)))) {
+                    continue;
+                }
+                Modello.setValueAt(Valori.get(i)[0], r.RigaModello(), 14);
+                Modello.setValueAt(Valori.get(i)[1], r.RigaModello(), 15);
+                Modello.setValueAt(Valori.get(i)[2], r.RigaModello(), 17);
+            }
+        });
+    }
+
     private void GiacenzeaData_CompilaTabellaMovimenti() {
+        final int GenerazioneDettaglio = ++GiacenzeaData_GenerazioneDettaglio;
+        //Intervallo coperto dalla cache dei prezzi: i movimenti che stanno fuori non la interrogano nemmeno
+        Principale_GiacenzeaData.AggiornaCoperturaPrezzi();
+        java.util.List<RigaPrezzoDaCompletare> PrezziDaCompletare = new java.util.ArrayList<>();
         
         //Gestisco i bottoni
         GiacenzeaData_Bottone_RettificaQta.setEnabled(false);
@@ -8215,8 +8324,8 @@ private void SettaIcone(){
                                 ) { 
                         if (movimento[8].equals(mon) && AddressU.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
-                            //Le colonne 10-12 restano vuote (le usa solo il tooltip delle altre tabelle) e i costi stanno in coda
-                            String riga[] = new String[17];
+                            //Le colonne 10-12 restano vuote (le usa solo il tooltip delle altre tabelle) e le colonne dei costi stanno in coda
+                            String riga[] = new String[18];
                             riga[0] = Funzioni.getOradaID(movimento[0]);
                             riga[1] = movimento[3];
                             riga[2] = movimento[8];
@@ -8227,20 +8336,25 @@ private void SettaIcone(){
                             riga[7] = TotaleQta.toPlainString();
                             riga[8] = movimento[0];
                             riga[9] = "";
-                            System.arraycopy(Principale_GiacenzeaData.ColonneCostiDettaglio(CostiResidui, movimento,
-                                    false, movimento[10], riga[7]), 0, riga, 13, 4);
+                            String ColonneCosti[] = Principale_GiacenzeaData.ColonneCostiDettaglio(CostiResidui, movimento,
+                                    false, movimento[10], riga[7]);
+                            System.arraycopy(ColonneCosti, 0, riga, 13, 5);
                             if (NumNegativi>0)riga[9] = "S";//Questo significa che ci sono movimenti con giacenza negativa prima di questo
                             if(riga[7].contains("-")){
                                 NumNegativi++;
                             }
                             if(!MostraSoloGiacNegative||riga[7].contains("-"))
-                            {                     
+                            {
+                                if (Principale_GiacenzeaData.PrezzoDaCompletare(ColonneCosti)) {
+                                    PrezziDaCompletare.add(new RigaPrezzoDaCompletare(GiacenzeaData_ModelloTabella.getRowCount(),
+                                            movimento[0], false, movimento[10], riga[7], ColonneCosti[3]));
+                                }
                                 GiacenzeaData_ModelloTabella.addRow(riga);
                             }
                         }
                         if (movimento[11].equals(mon) && AddressE.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
-                            String riga[] = new String[17];
+                            String riga[] = new String[18];
                             riga[0] = Funzioni.getOradaID(movimento[0]);
                             riga[1] = movimento[3];
                             riga[2] = movimento[11];
@@ -8251,14 +8365,19 @@ private void SettaIcone(){
                             riga[7] = TotaleQta.toPlainString();
                             riga[8] = movimento[0];
                             riga[9] = "";
-                            System.arraycopy(Principale_GiacenzeaData.ColonneCostiDettaglio(CostiResidui, movimento,
-                                    true, movimento[13], riga[7]), 0, riga, 13, 4);
+                            String ColonneCosti[] = Principale_GiacenzeaData.ColonneCostiDettaglio(CostiResidui, movimento,
+                                    true, movimento[13], riga[7]);
+                            System.arraycopy(ColonneCosti, 0, riga, 13, 5);
                             if (NumNegativi>0)riga[9] = "S";//Questo significa che ci sono movimenti con giacenza negativa prima di questo
                             if(riga[7].contains("-")){
                                 NumNegativi++;
                             }
                             if(!MostraSoloGiacNegative||riga[7].contains("-"))
                             {
+                                if (Principale_GiacenzeaData.PrezzoDaCompletare(ColonneCosti)) {
+                                    PrezziDaCompletare.add(new RigaPrezzoDaCompletare(GiacenzeaData_ModelloTabella.getRowCount(),
+                                            movimento[0], true, movimento[13], riga[7], ColonneCosti[3]));
+                                }
                                 GiacenzeaData_ModelloTabella.addRow(riga);
                             }
                         }
@@ -8267,6 +8386,8 @@ private void SettaIcone(){
             }
             //coloro la tabella
             Tabelle.ColoraRigheTabella1GiacenzeaData(GiacenzeaData_TabellaDettaglioMovimenti);
+            //La tabella è già completa e visibile: i prezzi che richiedono la ricerca lenta arrivano dopo, in background
+            GiacenzeaData_CompletaPrezziDettaglio(PrezziDaCompletare, GenerazioneDettaglio);
         }
     }
     
@@ -11712,6 +11833,13 @@ if (result.isAction("delete-all")) {
                     LayoutColonneMovimenti.daTabella(TransazioniCryptoTabella).toJson());
         } catch (Exception eLayoutColonne) {
             System.out.println("formWindowClosing: salvataggio layout colonne movimenti fallito : " + eLayoutColonne.getMessage());
+        }
+        try {
+            DatabaseH2.Pers_Opzioni_Scrivi(LayoutColonneMovimenti.OPZIONE_GIACENZE_DETTAGLIO,
+                    LayoutColonneMovimenti.daTabella(GiacenzeaData_TabellaDettaglioMovimenti,
+                            LayoutColonneMovimenti.PROFILO_GIACENZE_DETTAGLIO).toJson());
+        } catch (Exception eLayoutDettaglio) {
+            System.out.println("formWindowClosing: salvataggio layout colonne dettaglio giacenze fallito : " + eLayoutDettaglio.getMessage());
         }
 
         //Dopo le Opzioni_Scrivi: la compattazione chiude i database, e quelle ci scrivono ancora
@@ -15959,6 +16087,36 @@ if (result != null && !result.isAction("cancel")) {
     }//GEN-LAST:event_TransazioniCrypto_Bottone_AzzeraFiltriActionPerformed
 
     /**
+     * Scelta delle colonne della tabella dettaglio movimenti di "Giacenze a data": stesso dialogo e stessa logica
+     * della tabella dei movimenti, con il profilo {@link LayoutColonneMovimenti#PROFILO_GIACENZE_DETTAGLIO}.
+     * Non ricarica le righe, cambia solo la vista.
+     */
+    private void GiacenzeaData_Bottone_ColonneDettaglioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_ColonneDettaglioActionPerformed
+        LayoutColonneMovimenti.Profilo profilo = LayoutColonneMovimenti.PROFILO_GIACENZE_DETTAGLIO;
+        GUI_ColonneMovimenti dlg = new GUI_ColonneMovimenti(this, GiacenzeaData_TabellaDettaglioMovimenti, profilo, "dettaglio movimenti");
+        dlg.setLocationRelativeTo(this);
+        dlg.setVisible(true);
+
+        if (dlg.isAnnullato()) {
+            return;
+        }
+        if (dlg.isRipristino()) {
+            LayoutColonneMovimenti.applica(GiacenzeaData_TabellaDettaglioMovimenti, null, profilo);
+            DatabaseH2.Pers_Opzioni_CancellaOpzione(profilo.opzione);
+        } else {
+            LayoutColonneMovimenti risultato = dlg.getRisultato();
+            LayoutColonneMovimenti.applica(GiacenzeaData_TabellaDettaglioMovimenti, risultato, profilo);
+            DatabaseH2.Pers_Opzioni_Scrivi(profilo.opzione, risultato.toJson());
+        }
+        GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(
+                GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), 42));
+        GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().revalidate();
+        GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().repaint();
+        GiacenzeaData_TabellaDettaglioMovimenti.revalidate();
+        GiacenzeaData_TabellaDettaglioMovimenti.repaint();
+    }//GEN-LAST:event_GiacenzeaData_Bottone_ColonneDettaglioActionPerformed
+
+    /**
      * Apre il dialogo di scelta delle colonne della tabella movimenti, poi applica e salva il
      * risultato. Non ricarica le righe: i dati non cambiano, cambia solo il {@code TableColumnModel}.
      * Vedi {@link LayoutColonneMovimenti}.
@@ -17246,7 +17404,9 @@ try {
         int rigaSelTabMov=GiacenzeaData_TabellaDettaglioMovimenti.getSelectedRow();
         String MovSelezionato="";        
         if (rigaSelTabMov!=-1){
-            MovSelezionato=GiacenzeaData_TabellaDettaglioMovimenti.getValueAt(rigaSelTabMov, 8).toString();
+            //L'ID (colonna 8 del model) non è in vista: si legge dal model, non con getValueAt(riga, 8) che è per indice di vista
+            MovSelezionato=GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(
+                    GiacenzeaData_TabellaDettaglioMovimenti.convertRowIndexToModel(rigaSelTabMov), 8).toString();
         }
         JScrollPane scrollPane = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, GiacenzeaData_TabellaDettaglioMovimenti);
         int scrollValueMovimenti = (scrollPane != null) ? scrollPane.getVerticalScrollBar().getValue() : 0;
@@ -17537,7 +17697,8 @@ try {
                     if (rigaSelTabMov!=-1){
                         //Adesso cerco di ripristinare la selezione sulla tabella movimenti se ancora disponibile
                         for(int k=0;k<GiacenzeaData_TabellaDettaglioMovimenti.getRowCount();k++){
-                            if (MovSelezionato.equals(GiacenzeaData_TabellaDettaglioMovimenti.getValueAt(k, 8).toString())){
+                            if (MovSelezionato.equals(GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(
+                                    GiacenzeaData_TabellaDettaglioMovimenti.convertRowIndexToModel(k), 8).toString())){
                                 //Riseleziono la riga
                                // Tabelle.Funzioni_PosizionaTabellasuRiga(GiacenzeaData_TabellaDettaglioMovimenti, k,true);
                                 Tabelle.Funzioni_RipristinaSelezioneEPosizione(GiacenzeaData_TabellaDettaglioMovimenti, k,scrollValueMovimenti);
@@ -19196,6 +19357,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JPanel GiacenzeaData;
     private javax.swing.JButton GiacenzeaData_Bottone_Calcola;
     private javax.swing.JButton GiacenzeaData_Bottone_CambiaNomeToken;
+    private javax.swing.JButton GiacenzeaData_Bottone_ColonneDettaglio;
     private javax.swing.JButton GiacenzeaData_Bottone_ConfermaPrezzoZero;
     private javax.swing.JButton GiacenzeaData_Bottone_GiacenzeExplorer;
     private javax.swing.JButton GiacenzeaData_Bottone_ModificaValore;

@@ -109,6 +109,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="ScrollTabella" alignment="0" max="32767" attributes="0"/>
+                  <Component id="Pannello_Giacenze" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Component id="Bottone_MovPrecedente" min="-2" max="-2" attributes="0"/>
                       <EmptySpace pref="432" max="32767" attributes="0"/>
@@ -143,7 +144,9 @@
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="ScrollTabella" pref="579" max="32767" attributes="0"/>
+              <Component id="ScrollTabella" pref="360" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="Pannello_Giacenze" min="-2" pref="215" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="Bottone_DeFi" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -196,6 +199,10 @@
           </Events>
         </Component>
       </SubComponents>
+    </Container>
+    <Container class="javax.swing.JPanel" name="Pannello_Giacenze">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
     </Container>
     <Component class="javax.swing.JButton" name="Bottone_DeFi">
       <Properties>

@@ -331,10 +331,10 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
 
         //Giacenze prima e dopo il movimento: una passata sulla mappa fino a questo movimento, qualche
         //decina di millisecondi su un archivio da centomila movimenti. Si calcola in background e si
-        //inserisce qui al posto della riga di attesa, così le frecce restano immediate
-        int PosizioneGiacenze=ModelloTabellaCrypto.getRowCount();
-        ModelloTabellaCrypto.addRow(new String[]{"Giacenze","calcolo in corso..."});
-        CaricaGiacenzeInBackground(IDTransazione, PosizioneGiacenze, PosizioneInformativo);
+        //mostra nei due riquadri sotto la tabella (uscita rossa, entrata verde), così le frecce restano
+        //immediate. Il pannello torna subito in attesa: non deve restare il risultato del movimento di prima
+        MostraGiacenzeMessaggio("Giacenze prima e dopo il movimento: calcolo in corso...");
+        CaricaGiacenzeInBackground(IDTransazione, PosizioneInformativo);
         
 
         
@@ -453,14 +453,14 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
     }
 
     /**
-     * Calcola in background le righe delle giacenze prima/dopo il movimento
-     * ({@link Principale_GiacenzeaData#CalcolaDettaglio(String)}) e i costi di carico informativi, e li
-     * mette al posto delle righe di attesa. Le righe si sostituiscono dall'ultima alla prima, così le
-     * posizioni di quelle più in alto restano valide. Se nel frattempo è stato mostrato un altro movimento
-     * il risultato si scarta.
+     * Calcola in background le giacenze prima/dopo il movimento
+     * ({@link Principale_GiacenzeaData#CalcolaDettaglio(String)}), le mostra nei riquadri sotto la tabella
+     * e mette i costi di carico informativi al posto delle righe di attesa della tabella. Le righe si
+     * sostituiscono dall'ultima alla prima, così le posizioni di quelle più in alto restano valide. Se nel
+     * frattempo è stato mostrato un altro movimento il risultato si scarta.
      * @param PosizioneInformativo righe di attesa del costo informativo di uscita e di entrata, -1 se assenti
      */
-    private void CaricaGiacenzeInBackground(String IDTransazione, int Posizione, int PosizioneInformativo[]) {
+    private void CaricaGiacenzeInBackground(String IDTransazione, int PosizioneInformativo[]) {
         int Generazione = ++GenerazioneGiacenze;
         String Transazione[] = Principale.MappaCryptoWallet.get(IDTransazione);
         new SwingWorker<Principale_GiacenzeaData.DettaglioGiacenze, Void>() {
@@ -474,25 +474,20 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                 if (Generazione != GenerazioneGiacenze) {
                     return;
                 }
-                java.util.List<String[]> Righe;
                 String Informativo[] = {null, null};
                 try {
                     Principale_GiacenzeaData.DettaglioGiacenze D = get();
-                    Righe = Principale_GiacenzeaData.RigheDettaglio(IDTransazione, D.Monete);
+                    MostraGiacenze(Principale_GiacenzeaData.TabelleDettaglio(IDTransazione, D.Monete));
                     Informativo = D.CostoInformativo;
                 } catch (Exception ex) {
                     LoggerGC.ScriviErrore(ex);
-                    Righe = java.util.List.of(new String[][]{{"Giacenze", "calcolo non riuscito"}});
+                    MostraGiacenzeMessaggio("Giacenze prima e dopo il movimento: calcolo non riuscito");
                 }
                 DefaultTableModel Modello = (DefaultTableModel) Tabella.getModel();
-                if (Posizione >= Modello.getRowCount()) {
-                    return;
-                }
-                SostituisciRiga(Modello, Posizione, Righe);
                 String Lati[] = {"Uscita", "Entrata"};
                 String Qta[] = {Transazione[10], Transazione[13]};
                 for (int l = 1; l >= 0; l--) {
-                    if (PosizioneInformativo[l] < 0) {
+                    if (PosizioneInformativo[l] < 0 || PosizioneInformativo[l] >= Modello.getRowCount()) {
                         continue;
                     }
                     java.util.List<String[]> RigheCosto = new java.util.ArrayList<>();
@@ -510,6 +505,126 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                 Tabelle.updateRowHeights(Tabella);
             }
         }.execute();
+    }
+
+    /** Rosso e verde dei riquadri: pieni e scuri, con testo bianco leggibile sia nel tema chiaro sia nello scuro. */
+    private static final java.awt.Color COLORE_USCITA = new java.awt.Color(0xC0392B);
+    private static final java.awt.Color COLORE_ENTRATA = new java.awt.Color(0x287D4C);
+    private static final java.awt.Color COLORE_ENTRAMBE = new java.awt.Color(0x546E7A);
+
+    /** Sostituisce il contenuto del pannello delle giacenze con una sola riga di testo (attesa, errore). */
+    private void MostraGiacenzeMessaggio(String Testo) {
+        javax.swing.JLabel Etichetta = new javax.swing.JLabel(Testo, javax.swing.SwingConstants.CENTER);
+        Pannello_Giacenze.removeAll();
+        Pannello_Giacenze.add(Etichetta, java.awt.BorderLayout.CENTER);
+        Pannello_Giacenze.setVisible(true);
+        Pannello_Giacenze.revalidate();
+        Pannello_Giacenze.repaint();
+    }
+
+    /**
+     * Mostra le giacenze di ogni moneta del movimento in un riquadro affiancato agli altri, uscita a
+     * sinistra e entrata a destra. Senza nessuna moneta il pannello sparisce e la tabella si riprende lo spazio.
+     */
+    private void MostraGiacenze(java.util.List<Principale_GiacenzeaData.TabellaGiacenzeMoneta> Tabelle) {
+        Pannello_Giacenze.removeAll();
+        if (Tabelle.isEmpty()) {
+            Pannello_Giacenze.setVisible(false);
+        } else {
+            javax.swing.JPanel Riquadri = new javax.swing.JPanel(new java.awt.GridLayout(1, Tabelle.size(), 8, 0));
+            for (Principale_GiacenzeaData.TabellaGiacenzeMoneta T : Tabelle) {
+                Riquadri.add(CreaRiquadroGiacenze(T));
+            }
+            Pannello_Giacenze.add(Riquadri, java.awt.BorderLayout.CENTER);
+            Pannello_Giacenze.setVisible(true);
+        }
+        Pannello_Giacenze.revalidate();
+        Pannello_Giacenze.repaint();
+    }
+
+    /**
+     * Un riquadro: barra del titolo colorata (rossa per la moneta in uscita, verde per quella in entrata,
+     * grigia se la stessa moneta è su tutti e due i lati), tabella con le giacenze prima e dopo e, se serve,
+     * l'avvertenza sul costo di carico. Si può selezionare e copiare con Ctrl+C come la tabella principale.
+     */
+    private javax.swing.JComponent CreaRiquadroGiacenze(Principale_GiacenzeaData.TabellaGiacenzeMoneta T) {
+        java.awt.Color Colore = T.Uscita && T.Entrata ? COLORE_ENTRAMBE : T.Uscita ? COLORE_USCITA : COLORE_ENTRATA;
+        String Lato = T.Uscita && T.Entrata ? "USCITA e ENTRATA" : T.Uscita ? "USCITA" : "ENTRATA";
+
+        javax.swing.JPanel Titolo = new javax.swing.JPanel(new java.awt.BorderLayout(12, 0));
+        Titolo.setBackground(Colore);
+        Titolo.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 8, 4, 8));
+        javax.swing.JLabel Nome = new javax.swing.JLabel(Lato + ": " + T.Moneta);
+        Nome.setForeground(java.awt.Color.WHITE);
+        Nome.setFont(Nome.getFont().deriveFont(java.awt.Font.BOLD));
+        javax.swing.JLabel Prezzo = new javax.swing.JLabel("prezzo unitario nel movimento: " + T.Prezzo);
+        Prezzo.setForeground(java.awt.Color.WHITE);
+        Titolo.add(Nome, java.awt.BorderLayout.WEST);
+        Titolo.add(Prezzo, java.awt.BorderLayout.EAST);
+
+        DefaultTableModel Modello = new DefaultTableModel(T.Intestazioni, 0) {
+            @Override
+            public boolean isCellEditable(int riga, int colonna) {
+                return false;
+            }
+        };
+        for (String[] Riga : T.Righe) {
+            Modello.addRow(Riga);
+        }
+        JTable Piccola = new JTable(Modello);
+        Piccola.setCellSelectionEnabled(true);
+        Piccola.setRowHeight(22);
+        Piccola.setShowGrid(false);
+        Piccola.setIntercellSpacing(new java.awt.Dimension(0, 0));
+        Piccola.getTableHeader().setReorderingAllowed(false);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Piccola);
+        Piccola.setDefaultRenderer(Object.class, new RendererGiacenze());
+        javax.swing.table.TableColumnModel Colonne = Piccola.getColumnModel();
+        //Il livello (nome del wallet) è la colonna che si taglia per prima: le si lascia più spazio
+        Colonne.getColumn(0).setMinWidth(110);
+        Colonne.getColumn(0).setPreferredWidth(150);
+        Colonne.getColumn(1).setMinWidth(52);
+        Colonne.getColumn(1).setPreferredWidth(52);
+        Colonne.getColumn(1).setMaxWidth(60);
+        for (int c = 2; c < Colonne.getColumnCount(); c++) {
+            Colonne.getColumn(c).setMinWidth(70);
+            Colonne.getColumn(c).setPreferredWidth(c == 2 ? 70 : c == 5 ? 92 : 85);
+        }
+        javax.swing.JScrollPane Scorri = new javax.swing.JScrollPane(Piccola);
+        Scorri.setBorder(null);
+
+        javax.swing.JPanel Riquadro = new javax.swing.JPanel(new java.awt.BorderLayout());
+        Riquadro.setBorder(javax.swing.BorderFactory.createLineBorder(Colore, 2));
+        Riquadro.add(Titolo, java.awt.BorderLayout.NORTH);
+        Riquadro.add(Scorri, java.awt.BorderLayout.CENTER);
+        if (!T.Nota.isBlank()) {
+            javax.swing.JLabel Nota = new javax.swing.JLabel("<html><i>" + T.Nota + "</i></html>");
+            Nota.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 8, 3, 8));
+            Riquadro.add(Nota, java.awt.BorderLayout.SOUTH);
+        }
+        return Riquadro;
+    }
+
+    /**
+     * Celle delle tabelle delle giacenze: numeri allineati a destra, riga "dopo" in grassetto, e uno sfondo
+     * alternato a ogni livello (tutti i wallet, gruppo, wallet) come nella tabella principale, così le coppie prima/dopo si distinguono.
+     * Il nome del livello, se troncato, compare per intero nel suggerimento.
+     */
+    private static final class RendererGiacenze extends javax.swing.table.DefaultTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable Tab, Object Valore, boolean Selezionata,
+                boolean Fuoco, int Riga, int Colonna) {
+            super.getTableCellRendererComponent(Tab, Valore, Selezionata, false, Riga, Colonna);
+            setHorizontalAlignment(Colonna >= 2 ? javax.swing.SwingConstants.RIGHT : javax.swing.SwingConstants.LEFT);
+            boolean Dopo = "dopo".equals(Tab.getValueAt(Riga, 1));
+            setFont(Tab.getFont().deriveFont(Dopo || Colonna == 0 ? java.awt.Font.BOLD : java.awt.Font.PLAIN));
+            setToolTipText(Valore == null || Valore.toString().isBlank() ? null : Valore.toString());
+            //Gli stessi colori della tabella principale, una fascia per ogni coppia prima/dopo
+            setBackground(Tab.isCellSelected(Riga, Colonna) ? Tabelle.SfondoSelezione(Riga)
+                    : Tabelle.SfondoRigaAlternata(Riga / 2));
+            return this;
+        }
     }
 
     /** Toglie la riga di attesa in {@code Posizione} e ci inserisce al suo posto le righe date (anche nessuna). */
@@ -548,6 +663,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
         MenuItem_EsportaTabella = new javax.swing.JMenuItem();
         ScrollTabella = new javax.swing.JScrollPane();
+        Pannello_Giacenze = new javax.swing.JPanel();
         Tabella = new javax.swing.JTable();
         Bottone_DeFi = new javax.swing.JButton();
         Bottone_Storico = new javax.swing.JButton();
@@ -650,6 +766,8 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             Tabella.getColumnModel().getColumn(0).setMaxWidth(200);
         }
 
+        Pannello_Giacenze.setLayout(new java.awt.BorderLayout());
+
         Bottone_DeFi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Catena.png"))); // NOI18N
         Bottone_DeFi.setText("Dettaglio DeFi");
         Bottone_DeFi.addActionListener(new java.awt.event.ActionListener() {
@@ -709,6 +827,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(ScrollTabella)
+                    .addComponent(Pannello_Giacenze, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(Bottone_MovPrecedente)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 432, Short.MAX_VALUE)
@@ -736,7 +855,9 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                         .addComponent(Bottone_MovPrecedente)
                         .addComponent(Bottone_MovSuccessivo)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 579, Short.MAX_VALUE)
+                .addComponent(ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Pannello_Giacenze, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(8, 8, 8)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Bottone_DeFi)
@@ -1096,6 +1217,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
     private javax.swing.JMenuItem MenuItem_EsportaTabella;
     private javax.swing.JMenuItem MenuItem_ModificaNote;
     private javax.swing.JMenuItem MenuItem_ModificaPrezzo;
+    private javax.swing.JPanel Pannello_Giacenze;
     private javax.swing.JPopupMenu PopupMenu;
     private javax.swing.JScrollPane ScrollTabella;
     private javax.swing.JTable Tabella;

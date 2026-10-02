@@ -465,17 +465,34 @@ class Principale_GiacenzeaDataCostoCaricoTest {
     }
 
     @Test
-    void leRigheDelDettaglioSonoUnaPerMoneta() {
+    void leTabelleDelDettaglioSonoUnaPerMonetaECollocanoLaGambaGiusta() {
         acquisto("2024-01-01 10:00", "BTC", "1", "1000");
         //Nei dati reali la quantità in uscita è negativa, e le giacenze la sommano così com'è
         String[] vendita = vendita("2024-03-01 10:00", "BTC", "-1", "2500");
 
         Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
 
-        java.util.List<String[]> righe = Principale_GiacenzeaData.RigheDettaglio(vendita[0]);
-        assertEquals(2, righe.size());
-        assertEquals("Giacenze BTC", righe.get(0)[0]);
-        assertTrue(righe.get(0)[1].contains("€ 1000.00"), righe.get(0)[1]);
+        java.util.List<Principale_GiacenzeaData.TabellaGiacenzeMoneta> tabelle =
+                Principale_GiacenzeaData.TabelleDettaglio(vendita[0]);
+        assertEquals(2, tabelle.size());
+        Principale_GiacenzeaData.TabellaGiacenzeMoneta btc = tabelle.get(0);
+        assertEquals("BTC", btc.Moneta);
+        assertTrue(btc.Uscita && !btc.Entrata);
+        Principale_GiacenzeaData.TabellaGiacenzeMoneta eur = tabelle.get(1);
+        assertTrue(eur.Entrata && !eur.Uscita);
+        //Crypto: livello, momento, quantità, controvalore, costo di carico, costo unitario
+        assertEquals(6, btc.Intestazioni.length);
+        //Livelli (tutti, eventuale gruppo, wallet) per due righe ciascuno: prima e dopo
+        assertEquals(0, btc.Righe.size() % 2);
+        String[] primaTutti = btc.Righe.get(0);
+        assertEquals("Tutti i wallet", primaTutti[0]);
+        assertEquals("prima", primaTutti[1]);
+        assertEquals("€ 1000.00", primaTutti[4]);
+        assertEquals("dopo", btc.Righe.get(1)[1]);
+        assertEquals("", btc.Righe.get(1)[0], "il nome del livello sta solo sulla riga prima");
+        //FIAT: niente pila LIFO, quindi niente colonne di costo
+        assertEquals(4, eur.Intestazioni.length);
+        assertEquals(4, eur.Righe.get(0).length);
     }
 
     // ------------------------------------------------------------------
@@ -563,14 +580,109 @@ class Principale_GiacenzeaDataCostoCaricoTest {
         Principale_GiacenzeaData.CostiDettaglioToken passata =
                 new Principale_GiacenzeaData.CostiDettaglioToken("Tutti", "BTC", "Crypto", "", "");
         passata.Avanza(acq);
-        //Costo del movimento, prezzo unitario, valore della qta residua, costo della qta residua
-        assertArrayEquals(new String[]{"1000.00", "500", "1000.00", "1000.00"},
+        //Costo del movimento, prezzo unitario, valore della qta residua, costo della qta residua, differenza
+        assertArrayEquals(new String[]{"1000.00", "500", "1000.00", "1000.00", "0.00"},
                 Principale_GiacenzeaData.ColonneCostiDettaglio(passata, acq, true, "2", "2"));
         passata.Avanza(ven);
         //Venduto 1 BTC di 2 : il costo del movimento è quello del BTC uscito, resta la metà
         String[] colVendita = Principale_GiacenzeaData.ColonneCostiDettaglio(passata, ven, false, "-1", "1");
         assertEquals("500.00", colVendita[0]);
         assertEquals("500.00", colVendita[3]);
+        //Residuo 1 BTC valutato a 2500 (prezzo della vendita) contro un costo di 500
+        assertEquals("2500.00", colVendita[2]);
+        assertEquals("2000.00", colVendita[4]);
+    }
+
+    /**
+     * Una ricompensa da frazioni di centesimo ha il valore salvato a "0.00": dividerlo darebbe un prezzo
+     * unitario di zero euro e azzererebbe il valore dell'intera giacenza residua (visto su ETH: 0,015 ETH a
+     * 0 euro accanto a un costo di 29,59). Il prezzo resta sconosciuto e le colonne di valore e differenza vuote,
+     * non zero.
+     */
+    @Test
+    void unMovimentoDaValoreZeroNonAzzeraIlValoreDellaGiacenzaResidua() {
+        String[] acq = acquisto("2024-01-01 10:00", "BTC", "2", "1000");
+        String[] ric = acquisto("2024-01-02 10:00", "BTC", "0.0000001", "0.00");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        Principale_GiacenzeaData.CostiDettaglioToken passata =
+                new Principale_GiacenzeaData.CostiDettaglioToken("Tutti", "BTC", "Crypto", "", "");
+        passata.Avanza(acq);
+        passata.Avanza(ric);
+        String[] col = Principale_GiacenzeaData.ColonneCostiDettaglio(passata, ric, true, "0.0000001", "2.0000001");
+        assertEquals("", col[1], "prezzo unitario");
+        assertEquals("", col[2], "valore qta residua");
+        assertEquals("1000.00", col[3], "costo qta residua");
+        assertEquals("", col[4], "differenza");
+    }
+
+    /**
+     * Per un importo minuscolo il prezzo non si ricava dal valore del movimento (due decimali) ma dal
+     * mercato nell'istante del movimento: qui un movimento vicino di valore adeguato, 500 euro per BTC.
+     */
+    @Test
+    void unImportoPiccoloPrendeIlPrezzoDiMercatoDelMomentoEnonQuelloRicavatoDalValore() {
+        String[] acq = acquisto("2024-01-01 10:00", "BTC", "2", "1000");
+        //0,0001 BTC valgono 0,05 euro a 500: nel movimento il valore è arrotondato a "0.07" (prezzo ricavato: 700)
+        String[] ric = acquisto("2024-01-01 10:02", "BTC", "0.0001", "0.07");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        Principale_GiacenzeaData.CostiDettaglioToken passata =
+                new Principale_GiacenzeaData.CostiDettaglioToken("Tutti", "BTC", "Crypto", "", "");
+        passata.Avanza(acq);
+        passata.Avanza(ric);
+        String[] col = Principale_GiacenzeaData.ColonneCostiDettaglio(passata, ric, true, "0.0001", "2.0001");
+        //La costruzione della riga non legge nulla: il prezzo di mercato arriva col completamento
+        assertEquals("", col[1], "prezzo unitario prima del completamento");
+        assertTrue(Principale_GiacenzeaData.PrezzoDaCompletare(col));
+        String[] completato = Principale_GiacenzeaData.CompletaPrezzoDettaglio(ric, true, "0.0001", "2.0001", col[3]);
+        assertNotNull(completato);
+        assertEquals("500", completato[0], "prezzo unitario");
+        assertEquals("1000.05", completato[1], "valore qta residua");
+        assertEquals("-0.02", completato[2], "differenza valore - costo (1000.05 di valore contro 1000.07 di costo)");
+    }
+
+    /**
+     * Le fonti veloci non cercano la quotazione più vicina (±1/6/24 ore, costosa): la riga resta da completare e
+     * la ricerca lenta, che gira in background, ha lo stesso risultato di una ricerca fatta tutta insieme.
+     */
+    @Test
+    void ilPrezzoMancanteSiCompletaSeparatamenteDallaCostruzioneDellaRiga() {
+        String[] acq = acquisto("2024-01-01 10:00", "BTC", "2", "1000");
+        String[] ric = acquisto("2024-01-02 10:00", "BTC", "0.0000001", "0.00");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        Principale_GiacenzeaData.CostiDettaglioToken passata =
+                new Principale_GiacenzeaData.CostiDettaglioToken("Tutti", "BTC", "Crypto", "", "");
+        passata.Avanza(acq);
+        passata.Avanza(ric);
+        String[] col = Principale_GiacenzeaData.ColonneCostiDettaglio(passata, ric, true, "0.0000001", "2.0000001");
+        assertTrue(Principale_GiacenzeaData.PrezzoDaCompletare(col));
+        //Senza nessuna quotazione disponibile nemmeno la ricerca lenta trova qualcosa
+        assertNull(Principale_GiacenzeaData.CompletaPrezzoDettaglio(ric, true, "0.0000001", "2.0000001", col[3]));
+        //Una riga con prezzo, o una moneta FIAT, non è da completare
+        String[] conPrezzo = Principale_GiacenzeaData.ColonneCostiDettaglio(passata, acq, true, "2", "2.0000001");
+        assertFalse(Principale_GiacenzeaData.PrezzoDaCompletare(conPrezzo));
+    }
+
+    @Test
+    void laDifferenzaValoreCostoRestaVuotaSeNonCiSonoRimanenze() {
+        String[] acq = acquisto("2024-01-01 10:00", "BTC", "1", "1000");
+        String[] ven = vendita("2024-03-01 10:00", "BTC", "-1", "2500");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        Principale_GiacenzeaData.CostiDettaglioToken passata =
+                new Principale_GiacenzeaData.CostiDettaglioToken("Tutti", "BTC", "Crypto", "", "");
+        passata.Avanza(acq);
+        passata.Avanza(ven);
+        String[] col = Principale_GiacenzeaData.ColonneCostiDettaglio(passata, ven, false, "-1", "0");
+        assertEquals("0.00", col[2]);
+        assertEquals("0.00", col[3]);
+        assertEquals("", col[4]);
     }
 
     @Test
@@ -583,7 +695,7 @@ class Principale_GiacenzeaDataCostoCaricoTest {
                 new Principale_GiacenzeaData.CostiDettaglioToken("Tutti", "EUR", "FIAT", "", "");
         passata.Avanza(acq);
         //La gamba in uscita dell'acquisto è l'euro speso
-        assertArrayEquals(new String[]{"", "", "", ""},
+        assertArrayEquals(new String[]{"", "", "", "", ""},
                 Principale_GiacenzeaData.ColonneCostiDettaglio(passata, acq, false, "1000", "-1000"));
     }
 

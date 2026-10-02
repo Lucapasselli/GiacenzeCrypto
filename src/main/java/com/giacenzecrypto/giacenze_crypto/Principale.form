@@ -2414,6 +2414,8 @@
                                   <Group type="102" attributes="0">
                                       <Component id="Giacenzeadata_Dettaglio_Label" min="-2" pref="163" max="-2" attributes="0"/>
                                       <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="GiacenzeaData_Bottone_ColonneDettaglio" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative" min="-2" pref="223" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" attributes="0">
@@ -2517,6 +2519,7 @@
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="Giacenzeadata_Dettaglio_Label" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="GiacenzeaData_Bottone_ColonneDettaglio" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -2722,7 +2725,7 @@
                               <Font name="Noto Sans" size="12" style="0"/>
                             </Property>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                              <Table columnCount="17" rowCount="0">
+                              <Table columnCount="18" rowCount="0">
                                 <Column editable="false" title="Data" type="java.lang.Object"/>
                                 <Column editable="false" title="Wallet" type="java.lang.Object"/>
                                 <Column editable="false" title="Moneta" type="java.lang.Object"/>
@@ -2740,6 +2743,7 @@
                                 <Column editable="false" title="&lt;html&gt;&lt;center&gt;Prezzo&lt;br&gt;Unitario&lt;/html&gt;" type="java.lang.Object"/>
                                 <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore&lt;br&gt;Qta Residua&lt;/html&gt;" type="java.lang.Object"/>
                                 <Column editable="false" title="&lt;html&gt;&lt;center&gt;Costo Carico&lt;br&gt;Qta Residua&lt;/html&gt;" type="java.lang.Object"/>
+                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Differenza&lt;br&gt;Valore - Costo&lt;/html&gt;" type="java.lang.Object"/>
                               </Table>
                             </Property>
                             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -2820,6 +2824,11 @@
                                   <Renderer/>
                                 </Column>
                                 <Column maxWidth="-1" minWidth="90" prefWidth="100" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="-1" minWidth="90" prefWidth="110" resizable="true">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>
@@ -3028,6 +3037,18 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_CheckBox_DettaglioFiltraQtaNegativeActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_ColonneDettaglio">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/Images/24_Tabella.png"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Colonne..."/>
+                        <Property name="toolTipText" type="java.lang.String" value="Scegli quali colonne mostrare nella tabella dettaglio movimenti"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_Bottone_ColonneDettaglioActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_ConfermaPrezzoZero">

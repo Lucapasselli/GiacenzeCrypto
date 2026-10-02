@@ -202,24 +202,53 @@ prodotto da `Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(DataRiferiment
   globale/gruppo/wallet): le regole stanno in `ElaboraLotti`, unica copia nella classe, e il dettaglio la
   percorre fino al movimento con `headMap(ID)` — per ID, non per data, come il motore — filtrata sui
   simboli del movimento. Il filtro va applicato a ogni carico/scarico e non al movimento intero, perché un
-  PTW e il suo DTW possono avere simboli diversi.
+  PTW e il suo DTW possono avere simboli diversi. In `GUI_DettaglioTransazione` si vedono in due riquadri sotto la
+  tabella (rosso uscita, verde entrata, `Pannello_Giacenze`), non più come righe HTML della tabella a due colonne:
+  il contenuto è `Principale_GiacenzeaData.TabelleDettaglio` (solo stringhe), i `JTable` si costruiscono in codice. ⚠️
+  L'altezza del pannello (215) sta **nel layout** (`.form` e `initComponents`): un `setPreferredSize` nel costruttore,
+  dopo la `pack()` di `initComponents`, non ridimensiona il dialogo.
 
 - **Colonne derivate della tabella principale** (*Valore unitario*, *Costo unitario*, *Differenza valore − costo*,
   indici 7-9): restano **vuote, non zero**, per FIAT, giacenza ≤ 0 e — la differenza — token senza prezzo, che
   altrimenti mostrerebbe l'intero costo come perdita. Il costo unitario divide il costo **esatto**
   (`CostoEsattoDelleRimanenze`), non quello mostrato a due decimali, che su un token da frazioni di centesimo
   darebbe zero. Tutto in `Principale_GiacenzeaData.ValoriDerivatiRiga`.
-- **Tabella dettaglio movimenti: quattro colonne di costo in coda** (indici **13-16**: costo di carico del
-  movimento da `v[16]`/`v[17]`, prezzo unitario, valore e costo di carico della qta residua). Stanno **in coda**
-  e non accanto a *Qta Residua* perché `Tabelle.ColoraRigheTabella1GiacenzeaData` è condiviso con la tabella dei
-  saldi negativi e con quella dei token SCAM e ha indici fissi (5, 7, 10-12), e perché la selezione e il popup
-  leggono l'ID alla colonna 8; le colonne 8-12 hanno larghezza zero, quindi a video si vedono subito dopo
-  *Qta Residua*. Il costo residuo è la stessa regola della principale (**passata non filtrata, lettura sì**):
-  `CostiDettaglioToken.Avanza` va chiamato su **tutti** i movimenti anteriori alla data, anche su quelli che il
-  filtro wallet scarta, altrimenti un giroconto interno fa sparire il costo. Nessuna ricerca di prezzo per riga
-  (la tabella si ricostruisce a ogni selezione): il prezzo è quello del movimento. Le colonne di costo e quelle
-  unitarie non si sommano nell'header (`putClientProperty("ColonneSenzaSomma", …)`, letta da
-  `Tabelle.Tabelle_getSommeColonne`). Fissato da `lUltimaRigaDelDettaglioCoincideConLaTabellaPrincipale`.
+- **Tabella dettaglio movimenti: cinque colonne di costo in coda al model** (indici **13-17**: costo di carico del
+  movimento da `v[16]`/`v[17]`, prezzo unitario, valore e costo di carico della qta residua, differenza valore − costo,
+  quest'ultima vuota se manca un termine o la giacenza residua è ≤ 0). Stanno **in coda al model** perché
+  `Tabelle.ColoraRigheTabella1GiacenzeaData` è condiviso con la tabella dei saldi negativi e con quella dei token SCAM e ha
+  indici fissi (5, 7, 10-12), e perché selezione e popup leggono l'ID alla colonna 8 **del model**; a video si riordinano
+  solo le colonne: l'ID e le altre interne (8-12) **non sono nella vista** (`LayoutColonneMovimenti.PROFILO_GIACENZE_DETTAGLIO`)
+  e il costo di carico del movimento (13) sta prima di *Qta Residua*. Conseguenza: qualunque lettura da questa tabella va
+  fatta con `getModel().getValueAt(convertRowIndexToModel(riga), N)`, mai con `getValueAt(riga, N)` (indice di vista), e
+  `ColoraRigheTabella1GiacenzeaData` converte la colonna in indice di model. L'utente sceglie quali colonne vedere col
+  pulsante *Colonne...* (stesso dialogo `GUI_ColonneMovimenti` e stessa classe `LayoutColonneMovimenti` della tabella
+  movimenti, parametrizzati da un `Profilo`; salvataggio in `personale.mv.db`, chiave `GiacenzeaData_Dettaglio_LayoutColonne`).
+  Colori: con `putClientProperty(Tabelle.PROP_COLORA_SOLO_QTA_E_DIFFERENZA, TRUE)` solo *Quantità* e *Differenza* sono
+  verdi/rosse (per segno), il resto resta del colore normale e *Qta Residua* ha il proprio.
+  - **Il prezzo unitario nullo non è un prezzo**: `v[15]` ha due decimali, una ricompensa da frazioni di centesimo vale
+    `0.00` e dividerla azzerava il valore dell'intera giacenza residua (visto su ETH, 0,015 ETH a 0 euro contro 29,59 di
+    costo). `PrezzoUnitarioNelMovimento` usa quindi, in ordine: `v[40]`; valore/quantità solo se il valore è ≥ 10 €; il
+    **prezzo di mercato all'istante del movimento** (cache personale/prezzi ±5 min, archivio orario `XXXEUR`, movimenti
+    vicini ≥ 10 €, quotazione più vicina entro ±1/6/24 h; mai la rete); valore/quantità se ≥ 1 €; altrimenti vuoto. Limite
+    noto: sul dataset reale ETH non ha quotazioni locali fra 2022-02-10 (fine dell'archivio orario) e 2025-02 (inizio della
+    cache al minuto): lì le ricompense minuscole restano senza prezzo.
+  - **Il prezzo di mercato non si cerca durante la costruzione della tabella**: la cache dei prezzi ha la chiave che comincia
+    col timestamp, quindi ogni finestra scandisce i prezzi di *tutte* le monete, e migliaia di righe valevano secondi (la
+    tabella si apriva con un ritardo visibile). `ColonneCostiDettaglio` usa solo le fonti che non leggono nulla
+    (`PrezzoUnitarioNelMovimento(…, false)`); le righe rimaste senza prezzo (`PrezzoDaCompletare`) si completano in
+    background da `Principale.GiacenzeaData_CompletaPrezziDettaglio` (`CompletaPrezzoDettaglio`), a blocchi, scrivendo nel
+    model sul thread grafico solo se `GiacenzeaData_GenerazioneDettaglio` è ancora quella di partenza e la riga è la stessa
+    (ID in colonna 8). `AggiornaCoperturaPrezzi()` (una `MIN/MAX` all'inizio di ogni costruzione) evita di interrogare la
+    cache per i movimenti fuori dal suo intervallo.
+  - Il costo residuo è la stessa regola della principale (**passata non filtrata, lettura sì**):
+    `CostiDettaglioToken.Avanza` va chiamato su **tutti** i movimenti anteriori alla data, anche su quelli che il filtro
+    wallet scarta, altrimenti un giroconto interno fa sparire il costo. `CostiCaricoRimanenze` tiene i totali di ogni pila
+    (`TotaliPila`) e i lotti già convertiti in `BigDecimal` (`LottiNumerici`): la lettura che copre tutta la pila — "Tutti"
+    o un gruppo intero — è la somma già pronta invece di una riconversione da testo di tutti i lotti a ogni riga (su BTC,
+    4.237 righe: da ~650 a ~100 ms). Le colonne di costo e quelle unitarie non si sommano nell'header
+    (`putClientProperty("ColonneSenzaSomma", …)`, letta da `Tabelle.Tabelle_getSommeColonne`). Fissato da
+    `lUltimaRigaDelDettaglioCoincideConLaTabellaPrincipale` e da `LayoutColonneGiacenzeDettaglioTest`.
 
 ⚠️ Le colonne derivate hanno spostato gli indici della tabella principale: *Errori* è la **10** e *InfoPrezzo*
 la **11** (prima 7 e 8), sia nei lettori di `Principale` sia in `Tabelle.ColoraRigheTabella0GiacenzeaData`.

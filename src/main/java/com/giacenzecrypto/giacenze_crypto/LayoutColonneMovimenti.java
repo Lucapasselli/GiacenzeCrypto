@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -35,6 +36,12 @@ import org.json.JSONObject;
  * l'ordine storici di {@code Principale.TransazioniCrypto_Funzioni_NascondiColonneTabellaCrypto()}.
  * La preferenza dell'utente è salvata in {@code personale.mv.db} sotto {@link #OPZIONE} come JSON
  * versionato: un JSON di schema diverso o corrotto viene ignorato e si torna al default.
+ *
+ * <p><b>Il meccanismo non è più solo della tabella movimenti</b>: ciò che dipende dalla tabella (quali colonne sono
+ * interne o fisse, l'ordine di default, il massimo indice, le larghezze base, la chiave in {@code personale.mv.db})
+ * sta in un {@link Profilo}. {@link #PROFILO_MOVIMENTI} è quello storico, {@link #PROFILO_GIACENZE_DETTAGLIO} quello della
+ * tabella dettaglio movimenti di "Giacenze a data". Ogni layout ricorda il proprio profilo; le funzioni senza profilo
+ * esplicito lavorano sul profilo dei movimenti, come prima.
  */
 public final class LayoutColonneMovimenti {
 
@@ -56,12 +63,85 @@ public final class LayoutColonneMovimenti {
     /** Indice di model massimo esistente (0-based): 40 = Fonte Prezzi, 41 = Alias Gruppo Wallet. */
     static final int COLONNA_MASSIMA = 41;
 
+    /**
+     * Ciò che distingue una tabella personalizzabile dall'altra. Gli indici sono sempre quelli del
+     * <b>model</b>, che non cambia mai.
+     */
+    public static final class Profilo {
+        /** Chiave in {@code personale.mv.db} dove si salva il layout. */
+        public final String opzione;
+        /** Indici mai offerti all'utente né mostrati (id, campi letti dai renderer). */
+        final List<Integer> interne;
+        /** Indici sempre visibili. */
+        final List<Integer> fisse;
+        /** Ordine di default delle colonne visibili. */
+        final List<Integer> ordineDefault;
+        /** Indice di model massimo esistente. */
+        final int colonnaMassima;
+        /** Riporta ogni colonna a una larghezza preferita ragionevole, subito dopo che le colonne sono state ricreate. */
+        final Consumer<TableColumnModel> larghezzeBase;
+
+        Profilo(String opzione, List<Integer> interne, List<Integer> fisse, List<Integer> ordineDefault,
+                int colonnaMassima, Consumer<TableColumnModel> larghezzeBase) {
+            this.opzione = opzione;
+            this.interne = interne;
+            this.fisse = fisse;
+            this.ordineDefault = ordineDefault;
+            this.colonnaMassima = colonnaMassima;
+            this.larghezzeBase = larghezzeBase;
+        }
+    }
+
+    /** La tabella dei movimenti della pagina principale. */
+    public static final Profilo PROFILO_MOVIMENTI = new Profilo(OPZIONE, COLONNE_INTERNE, COLONNE_FISSE,
+            ORDINE_DEFAULT, COLONNA_MASSIMA, LayoutColonneMovimenti::impostaLarghezzeBase);
+
+    /** Chiave in {@code personale.mv.db} del layout della tabella dettaglio movimenti di "Giacenze a data". */
+    public static final String OPZIONE_GIACENZE_DETTAGLIO = "GiacenzeaData_Dettaglio_LayoutColonne";
+
+    /**
+     * La tabella dettaglio movimenti di "Giacenze a data". Il model ha 18 colonne: 8-12 (ID, saldi negativi
+     * precedenti e tre colonne "null") sono interne e non vengono mai mostrate; Data, Quantità e Qta Residua sono
+     * fisse. Il costo di carico del movimento (13) sta <b>prima</b> della Qta Residua (7) pur essendo in coda al
+     * model: gli indici fissi di {@code Tabelle.ColoraRigheTabella1GiacenzeaData} e quelli letti da selezione e popup
+     * non si spostano, si riordina solo la vista.
+     */
+    public static final Profilo PROFILO_GIACENZE_DETTAGLIO = new Profilo(OPZIONE_GIACENZE_DETTAGLIO,
+            List.of(8, 9, 10, 11, 12), List.of(0, 5, 7),
+            List.of(0, 1, 2, 3, 4, 5, 6, 13, 7, 14, 15, 16, 17), 17,
+            cm -> {
+                preferita(cm, 0, 130);   // Data
+                preferita(cm, 1, 110);   // Wallet
+                preferita(cm, 2, 60);    // Moneta
+                preferita(cm, 3, 110);   // Address Moneta
+                preferita(cm, 4, 150);   // Tipo Movimento
+                preferita(cm, 5, 110);   // Quantita'
+                preferita(cm, 6, 100);   // Valore in Euro
+                preferita(cm, 7, 110);   // Qta Residua
+                preferita(cm, 13, 100);  // Costo Carico Movimento
+                preferita(cm, 14, 90);   // Prezzo Unitario
+                preferita(cm, 15, 100);  // Valore Qta Residua
+                preferita(cm, 16, 110);  // Costo Carico Qta Residua
+                preferita(cm, 17, 110);  // Differenza Valore - Costo
+            });
+
+    private final Profilo profilo;
     private final List<Integer> ordine;
     private final Map<Integer, Integer> larghezze;
 
     LayoutColonneMovimenti(List<Integer> ordine, Map<Integer, Integer> larghezze) {
+        this(PROFILO_MOVIMENTI, ordine, larghezze);
+    }
+
+    LayoutColonneMovimenti(Profilo profilo, List<Integer> ordine, Map<Integer, Integer> larghezze) {
+        this.profilo = profilo;
         this.ordine = new ArrayList<>(ordine);
         this.larghezze = new LinkedHashMap<>(larghezze);
+    }
+
+    /** @return il profilo della tabella a cui appartiene questo layout. */
+    public Profilo profilo() {
+        return profilo;
     }
 
     /** @return gli indici di model visibili, nell'ordine di vista. */
@@ -76,15 +156,23 @@ public final class LayoutColonneMovimenti {
 
     /** @return gli indici di model proponibili nel dialogo (tutti i non interni, in ordine di model). */
     static List<Integer> colonneOffribili() {
+        return colonneOffribili(PROFILO_MOVIMENTI);
+    }
+
+    static List<Integer> colonneOffribili(Profilo profilo) {
         List<Integer> l = new ArrayList<>();
-        for (int m = 0; m <= COLONNA_MASSIMA; m++) {
-            if (!COLONNE_INTERNE.contains(m)) l.add(m);
+        for (int m = 0; m <= profilo.colonnaMassima; m++) {
+            if (!profilo.interne.contains(m)) l.add(m);
         }
         return l;
     }
 
     static LayoutColonneMovimenti predefinito() {
-        return new LayoutColonneMovimenti(ORDINE_DEFAULT, Map.of());
+        return predefinito(PROFILO_MOVIMENTI);
+    }
+
+    static LayoutColonneMovimenti predefinito(Profilo profilo) {
+        return new LayoutColonneMovimenti(profilo, profilo.ordineDefault, Map.of());
     }
 
     String toJson() {
@@ -104,6 +192,11 @@ public final class LayoutColonneMovimenti {
 
     /** @return il layout descritto dal JSON, oppure {@code null} se assente, di schema diverso o non valido. */
     static LayoutColonneMovimenti fromJson(String s) {
+        return fromJson(s, PROFILO_MOVIMENTI);
+    }
+
+    /** @return il layout descritto dal JSON per il profilo indicato, oppure {@code null} se assente, di schema diverso o non valido. */
+    static LayoutColonneMovimenti fromJson(String s, Profilo profilo) {
         if (s == null || s.isBlank()) return null;
         try {
             JSONObject o = new JSONObject(s);
@@ -115,7 +208,7 @@ public final class LayoutColonneMovimenti {
             for (int i = 0; i < col.length(); i++) {
                 JSONObject c = col.getJSONObject(i);
                 int m = c.getInt("m");
-                if (m < 0 || m > COLONNA_MASSIMA || COLONNE_INTERNE.contains(m) || ord.contains(m)) continue;
+                if (m < 0 || m > profilo.colonnaMassima || profilo.interne.contains(m) || ord.contains(m)) continue;
                 ord.add(m);
                 if (c.has("w")) {
                     int w = c.getInt("w");
@@ -123,7 +216,7 @@ public final class LayoutColonneMovimenti {
                 }
             }
             if (ord.isEmpty()) return null;
-            return new LayoutColonneMovimenti(ord, larg);
+            return new LayoutColonneMovimenti(profilo, ord, larg);
         } catch (Exception e) {
             System.out.println("LayoutColonneMovimenti.fromJson : " + e.getMessage());
             return null;
@@ -132,18 +225,23 @@ public final class LayoutColonneMovimenti {
 
     /** Legge dalla tabella il layout attualmente in vista (ordine e larghezze correnti). */
     static LayoutColonneMovimenti daTabella(JTable tabella) {
+        return daTabella(tabella, PROFILO_MOVIMENTI);
+    }
+
+    /** Legge dalla tabella il layout attualmente in vista (ordine e larghezze correnti), per il profilo indicato. */
+    static LayoutColonneMovimenti daTabella(JTable tabella, Profilo profilo) {
         List<Integer> ord = new ArrayList<>();
         Map<Integer, Integer> larg = new LinkedHashMap<>();
         TableColumnModel cm = tabella.getColumnModel();
         for (int v = 0; v < cm.getColumnCount(); v++) {
             TableColumn c = cm.getColumn(v);
             int m = c.getModelIndex();
-            if (COLONNE_INTERNE.contains(m) || ord.contains(m)) continue;
+            if (profilo.interne.contains(m) || ord.contains(m)) continue;
             ord.add(m);
             larg.put(m, c.getWidth() > 0 ? c.getWidth() : c.getPreferredWidth());
         }
-        if (ord.isEmpty()) return predefinito();
-        return new LayoutColonneMovimenti(ord, larg);
+        if (ord.isEmpty()) return predefinito(profilo);
+        return new LayoutColonneMovimenti(profilo, ord, larg);
     }
 
     /**
@@ -155,11 +253,16 @@ public final class LayoutColonneMovimenti {
      * layout salvato le omettesse.
      */
     static void applica(JTable tabella, LayoutColonneMovimenti layout) {
-        if (layout == null) layout = predefinito();
+        applica(tabella, layout, PROFILO_MOVIMENTI);
+    }
+
+    /** Come {@link #applica(JTable, LayoutColonneMovimenti)} per un profilo qualunque; {@code layout == null} ripristina il default di quel profilo. */
+    static void applica(JTable tabella, LayoutColonneMovimenti layout, Profilo profilo) {
+        if (layout == null) layout = predefinito(profilo);
 
         tabella.setAutoCreateColumnsFromModel(false);
-        tabella.createDefaultColumnsFromModel();          // 40 colonne, viewIndex == modelIndex
-        impostaLarghezzeBase(tabella);
+        tabella.createDefaultColumnsFromModel();          // viewIndex == modelIndex
+        impostaLarghezzeBase(tabella, profilo);
         tabella.getTableHeader().setReorderingAllowed(true);
 
         TableColumnModel cm = tabella.getColumnModel();
@@ -167,9 +270,9 @@ public final class LayoutColonneMovimenti {
         // 1. quali colonne restano visibili, in quale ordine
         List<Integer> visibili = new ArrayList<>();
         for (int m : layout.ordine) {
-            if (m >= 0 && m <= COLONNA_MASSIMA && !COLONNE_INTERNE.contains(m) && !visibili.contains(m)) visibili.add(m);
+            if (m >= 0 && m <= profilo.colonnaMassima && !profilo.interne.contains(m) && !visibili.contains(m)) visibili.add(m);
         }
-        for (int f : COLONNE_FISSE) {
+        for (int f : profilo.fisse) {
             if (!visibili.contains(f)) visibili.add(f);
         }
 
@@ -210,7 +313,7 @@ public final class LayoutColonneMovimenti {
      * coincidono con quelli di model, perché le colonne sono appena state ricreate da
      * {@code createDefaultColumnsFromModel()}.
      */
-    private static void impostaLarghezzeBase(JTable tabella) {
+    private static void impostaLarghezzeBase(JTable tabella, Profilo profilo) {
         TableColumnModel cm = tabella.getColumnModel();
         for (int v = 0; v < cm.getColumnCount(); v++) {
             TableColumn c = cm.getColumn(v);
@@ -218,6 +321,11 @@ public final class LayoutColonneMovimenti {
             c.setMaxWidth(2000);
             c.setPreferredWidth(110);
         }
+        profilo.larghezzeBase.accept(cm);
+    }
+
+    /** Le larghezze preferite della tabella movimenti. */
+    private static void impostaLarghezzeBase(TableColumnModel cm) {
         preferita(cm, 1, 120);    // Data e Ora
         preferita(cm, 4, 90);     // Dettaglio Wallet
         preferita(cm, 8, 80);     // Moneta Ven./Trasf.

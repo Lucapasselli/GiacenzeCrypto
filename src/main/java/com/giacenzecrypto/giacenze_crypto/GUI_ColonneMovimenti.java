@@ -22,7 +22,7 @@ import org.jsoup.Jsoup;
 
 /**
  * Dialogo (senza {@code .form}, contenuto dinamico) per scegliere quali colonne mostrare nella
- * tabella dei movimenti. Spostare e ridimensionare le colonne si fa trascinando direttamente le
+ * tabella dei movimenti, o in un'altra tabella che abbia un {@link LayoutColonneMovimenti.Profilo}. Spostare e ridimensionare le colonne si fa trascinando direttamente le
  * intestazioni: qui si decide solo la visibilità, più il "Ripristina predefinito".
  *
  * <p>Non applica e non salva nulla: restituisce un {@link LayoutColonneMovimenti} (via
@@ -33,19 +33,30 @@ public class GUI_ColonneMovimenti extends JDialog {
 
     private final Map<Integer, JCheckBox> caselle = new LinkedHashMap<>();
     private final LayoutColonneMovimenti statoIniziale;
+    private final LayoutColonneMovimenti.Profilo profilo;
 
     private boolean annullato = true;
     private boolean ripristino = false;
     private LayoutColonneMovimenti risultato;
 
     public GUI_ColonneMovimenti(Window owner, javax.swing.JTable tabellaMovimenti) {
-        super(owner, "Colonne della tabella movimenti", ModalityType.APPLICATION_MODAL);
+        this(owner, tabellaMovimenti, LayoutColonneMovimenti.PROFILO_MOVIMENTI, "movimenti");
+    }
 
-        statoIniziale = LayoutColonneMovimenti.daTabella(tabellaMovimenti);
+    /**
+     * @param profilo il profilo della tabella (colonne interne, fisse, massimo indice)
+     * @param nomeTabella come si chiama la tabella nei testi del dialogo ("movimenti", "dettaglio movimenti")
+     */
+    public GUI_ColonneMovimenti(Window owner, javax.swing.JTable tabellaMovimenti,
+            LayoutColonneMovimenti.Profilo profilo, String nomeTabella) {
+        super(owner, "Colonne della tabella " + nomeTabella, ModalityType.APPLICATION_MODAL);
+        this.profilo = profilo;
+
+        statoIniziale = LayoutColonneMovimenti.daTabella(tabellaMovimenti, profilo);
         List<Integer> visibiliOra = statoIniziale.ordine();
         TableModel model = tabellaMovimenti.getModel();
 
-        JLabel intestazione = new JLabel("<html>Scegli le colonne da mostrare nella tabella dei movimenti.<br>"
+        JLabel intestazione = new JLabel("<html>Scegli le colonne da mostrare nella tabella " + nomeTabella + ".<br>"
                 + "Per spostarle o ridimensionarle trascina direttamente le intestazioni.</html>");
         intestazione.setBorder(BorderFactory.createEmptyBorder(12, 12, 8, 12));
 
@@ -53,10 +64,10 @@ public class GUI_ColonneMovimenti extends JDialog {
         lista.setLayout(new BoxLayout(lista, BoxLayout.Y_AXIS));
         lista.setBorder(BorderFactory.createEmptyBorder(4, 12, 4, 12));
 
-        for (int m : LayoutColonneMovimenti.colonneOffribili()) {
+        for (int m : LayoutColonneMovimenti.colonneOffribili(profilo)) {
             String nome = Jsoup.parse(String.valueOf(model.getColumnName(m))).text().trim();
             if (nome.isEmpty() || "null".equalsIgnoreCase(nome)) continue;
-            boolean fissa = LayoutColonneMovimenti.COLONNE_FISSE.contains(m);
+            boolean fissa = profilo.fisse.contains(m);
             JCheckBox cb = new JCheckBox(fissa ? nome + "  (sempre visibile)" : nome);
             cb.setSelected(fissa || visibiliOra.contains(m));
             cb.setEnabled(!fissa);
@@ -135,7 +146,7 @@ public class GUI_ColonneMovimenti extends JDialog {
         for (int m : ordine) {
             if (correnti.containsKey(m)) larghezze.put(m, correnti.get(m));
         }
-        return new LayoutColonneMovimenti(ordine, larghezze);
+        return new LayoutColonneMovimenti(profilo, ordine, larghezze);
     }
 
     public boolean isAnnullato() {

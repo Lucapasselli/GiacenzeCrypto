@@ -415,17 +415,44 @@ public class Tabelle {
          * @param table la tabella a cui applicare il renderer
          * @return la stessa tabella passata, con il renderer applicato
          */
+        /**
+         * Proprieta' della tabella ({@code putClientProperty}, valore {@code Boolean.TRUE}) che limita il colore
+         * verde/rosso di {@link #ColoraRigheTabella1GiacenzeaData} alle colonne Quantita' e Differenza valore - costo,
+         * lasciando le altre nel colore normale. Senza la proprieta' si colora tutta la riga col segno della Quantita'.
+         */
+        public static final String PROP_COLORA_SOLO_QTA_E_DIFFERENZA = "ColoraSoloQtaEDifferenza";
+
+        /**
+         * @param valore il testo di un importo, o {@code null}
+         * @param normale il colore da usare se l'importo manca, non e' un numero o e' zero
+         * @return verde scuro se positivo, rosso se negativo, altrimenti {@code normale}
+         */
+        static Color ColoreSegno(Object valore, Color normale) {
+            if (valore == null || valore.toString().isBlank()) {
+                return normale;
+            }
+            try {
+                int segno = new java.math.BigDecimal(valore.toString().trim()).signum();
+                return segno > 0 ? verdeScuro : segno < 0 ? rosso : normale;
+            } catch (NumberFormatException ex) {
+                return normale;
+            }
+        }
+
         public static JTable ColoraRigheTabella1GiacenzeaData(final JTable table) {
 
         DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
             @Override
             
             public Component getTableCellRendererComponent(JTable table,
-                    Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+                    Object value, boolean isSelected, boolean hasFocus, int row, int colVista) {
                 
              
-        Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+        Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, colVista);
 
+        //Gli indici qui sotto (7 = Qta Residua, 5 = Quantita') sono del MODEL: con le colonne nascoste o riordinate
+        //dall'utente l'indice di vista non coincide piu'
+        int col = table.convertColumnIndexToModel(colVista);
         int modelRow=row;
         if (table.getRowSorter()!=null){
             modelRow = table.getRowSorter().convertRowIndexToModel(row);
@@ -516,6 +543,12 @@ public class Tabelle {
                     return label;
                  //   setForeground(Color.black);
                 //  c.setBackground(bg2);
+                }
+            else if (Boolean.TRUE.equals(table.getClientProperty(PROP_COLORA_SOLO_QTA_E_DIFFERENZA))) {
+                    //Tabella dettaglio di "Giacenze a data": solo Quantita' (5) e Differenza valore - costo (17)
+                    //hanno un colore (verde se positivi, rosso se negativi), il resto resta del colore normale
+                    c.setBackground(bg);
+                    c.setForeground(ColoreSegno(col == 5 || col == 17 ? value : null, fore));
                 }
             else if (table.getModel().getColumnCount()>4 && !table.getModel().getValueAt(modelRow, 5).toString().contains("-")) {
                     setBackground(bg);

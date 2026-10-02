@@ -637,6 +637,10 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
         public final BigDecimal[] QtaDopo = {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
         public final String[] CostoPrima = new String[3];
         public final String[] CostoDopo = new String[3];
+        /** La moneta è la gamba in uscita del movimento. */
+        public boolean Uscita;
+        /** La moneta è la gamba in entrata del movimento (entrambe se la stessa moneta è su tutti e due i lati). */
+        public boolean Entrata;
 
         private GiacenzeMoneta(String Moneta, String Tipo, String Chiave, BigDecimal PrezzoUnitario) {
             this.Moneta = Moneta;
@@ -728,6 +732,12 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                 Monete.put(Chiave, new GiacenzeMoneta(Mov[g[0]], Mov[g[1]], Chiave,
                         PrezzoUnitarioNelMovimento(Mov, Mov[g[0]], Mov[g[2]])));
                 Simboli.add(Mov[g[0]]);
+            }
+            //Il primo giro dell'array è l'uscita (colonne 8-10), il secondo l'entrata (11-13)
+            if (g[0] == 8) {
+                Monete.get(Chiave).Uscita = true;
+            } else {
+                Monete.get(Chiave).Entrata = true;
             }
         }
         if (Monete.isEmpty()) {
@@ -837,108 +847,274 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
     }
 
     /**
-     * Prezzo unitario di una moneta nel movimento: quello della fonte in {@code v[40]} se la moneta è la
-     * moneta di riferimento del prezzo (non arrotondato), altrimenti valore del movimento diviso quantità.
-     * @return il prezzo, o {@code null} se il movimento non ha valore
+     * Valore del movimento ({@code v[15]}, salvato con due decimali) da cui in su dividerlo per la quantità dà
+     * un prezzo unitario affidabile: sotto i 10 euro l'arrotondamento al centesimo pesa più dello 0,05%, e per
+     * importi minuscoli (ricompense da frazioni di centesimo) il prezzo risulta sbagliato o addirittura zero.
+     */
+    private static final BigDecimal VALORE_MIN_PREZZO_DA_VALORE = new BigDecimal("10");
+    /**
+     * Primo e ultimo istante coperti dalla cache dei prezzi al minuto ({@code PrezziNew} di {@code prezzi.mv.db}), o
+     * {@code null} se non è stato calcolato. Serve a non interrogare la cache per un movimento che sta fuori dal suo
+     * intervallo: ogni interrogazione, anche a vuoto, costa circa 0,1 ms e per una tabella di migliaia di righe
+     * antecedenti la cache (su ETH: 2022-2025) sono centinaia di millisecondi buttati.
+     */
+    private static volatile long[] CoperturaPrezzi = null;
+
+    /**
+     * Rilegge l'intervallo coperto dalla cache dei prezzi. Va chiamata all'inizio di ogni costruzione della tabella
+     * dettaglio, non una volta sola: un import o un ricalcolo possono aver aggiunto prezzi fuori dall'intervallo
+     * precedente. Costa una {@code MIN/MAX} sulla prima colonna della chiave, cioè nulla.
+     */
+    public static void AggiornaCoperturaPrezzi() {
+        long[] Nuova = null;
+        try (java.sql.Statement St = DatabaseH2.connectionPrezzi.createStatement();
+                java.sql.ResultSet Rs = St.executeQuery("SELECT MIN(timestamp), MAX(timestamp) FROM PrezziNew")) {
+            if (Rs.next()) {
+                long Min = Rs.getLong(1);
+                boolean Vuota = Rs.wasNull();
+                long Max = Rs.getLong(2);
+                Nuova = Vuota ? new long[]{Long.MAX_VALUE, Long.MIN_VALUE} : new long[]{Min, Max};
+            }
+        } catch (Exception ex) {
+            //database non disponibile: nessuna copertura nota, si interroga sempre
+        }
+        CoperturaPrezzi = Nuova;
+    }
+
+    /** {@code false} solo se la copertura è nota e l'istante, con la finestra di ±{@code Minuti}, sta fuori. */
+    private static boolean CacheCopreIstante(long ts, long Minuti) {
+        long[] Copertura = CoperturaPrezzi;
+        if (Copertura == null) {
+            return true;
+        }
+        long Margine = Minuti * 60_000L;
+        return ts + Margine >= Copertura[0] && ts - Margine <= Copertura[1];
+    }
+
+    /** Finestre (minuti, ±) con cui si cerca la quotazione più vicina quando non c'è nulla nell'istante del movimento. */
+    private static final long[] FINESTRE_QUOTAZIONE_VICINA_MIN = {60, 360, 1440};
+    /** Valore minimo (euro) sotto il quale il rapporto valore/quantità non si usa nemmeno come ripiego: errore fino al 0,5%. */
+    private static final BigDecimal VALORE_MIN_PREZZO_RIPIEGO = BigDecimal.ONE;
+
+    /**
+     * Prezzo unitario di una moneta nel movimento, in ordine di affidabilità:
+     * <ol>
+     * <li>quello della fonte in {@code v[40]}, non arrotondato, se la moneta è la moneta di riferimento del prezzo;</li>
+     * <li>valore del movimento diviso quantità, ma solo se il valore è di almeno 10 euro;</li>
+     * <li>il <b>prezzo di mercato della moneta nell'istante del movimento</b>, letto dalle cache dei prezzi e
+     * dall'archivio orario storico (solo lettura, nessuna rete) o ricavato da un movimento vicino di valore adeguato;</li>
+     * <li>valore diviso quantità, come ultimo ripiego, se il valore è di almeno 1 euro.</li>
+     * </ol>
+     * Il motivo del terzo passo: il valore del movimento ({@code v[15]}) ha due decimali, quindi per importi
+     * piccoli il prezzo ricavato dividendo è sbagliato — una ricompensa di {@code 0.00000013} ETH vale
+     * {@code 0.00} e darebbe un prezzo di zero euro, che azzererebbe il valore di tutta la giacenza residua
+     * (0,015 ETH a 0 euro accanto a un costo di carico di 29,59). Un prezzo <b>nullo non è un prezzo</b>.
+     * @return il prezzo, o {@code null} se non si trova un prezzo affidabile
      */
     static BigDecimal PrezzoUnitarioNelMovimento(String[] Mov, String Moneta, String Qta) {
+        return PrezzoUnitarioNelMovimento(Mov, Moneta, Qta, true);
+    }
+
+    /**
+     * Come {@link #PrezzoUnitarioNelMovimento(String[], String, String)}, ma con {@code CercaMercato} {@code false}
+     * si ferma alle fonti che non leggono nulla (il prezzo in {@code v[40]} e il rapporto valore/quantità per valori di
+     * almeno 10 euro). Il prezzo di mercato costa letture di database per riga — e la quotazione più vicina a
+     * finestre larghe scandisce tutti i prezzi di tutte le monete (la chiave della cache comincia col timestamp, non
+     * col simbolo): su una tabella di migliaia di righe vale secondi. La tabella dettaglio movimenti costruisce
+     * quindi le righe con questa variante e completa i prezzi mancanti in background ({@link #CompletaPrezzoDettaglio}).
+     */
+    static BigDecimal PrezzoUnitarioNelMovimento(String[] Mov, String Moneta, String Qta, boolean CercaMercato) {
         if (!Mov[40].isBlank()) {
             String VSplit[] = Mov[40].split("\\|", -1);
             if (VSplit.length > 2 && Prezzi.InfoPrezzo.SeparaNome(VSplit[0])[0].equalsIgnoreCase(Moneta)) {
                 try {
-                    return new BigDecimal(VSplit[2].trim()).abs();
+                    BigDecimal PrezzoFonte = new BigDecimal(VSplit[2].trim()).abs();
+                    if (PrezzoFonte.signum() > 0) {
+                        return PrezzoFonte;
+                    }
                 } catch (NumberFormatException ex) {
                     //si ripiega sul valore del movimento
                 }
             }
         }
-        if (Mov[15].isBlank()) {
+        BigDecimal Q = null;
+        BigDecimal Valore = null;
+        try {
+            Q = new BigDecimal(Qta.trim()).abs();
+            Valore = new BigDecimal(Mov[15].trim()).abs();
+        } catch (NumberFormatException | NullPointerException ex) {
+            //valore o quantità non numerici: niente rapporto
+        }
+        BigDecimal Rapporto = null;
+        if (Q != null && Valore != null && Q.signum() > 0 && Valore.signum() > 0) {
+            Rapporto = Valore.divide(Q, VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP).stripTrailingZeros();
+            if (Valore.compareTo(VALORE_MIN_PREZZO_DA_VALORE) >= 0) {
+                return Rapporto;
+            }
+        }
+        if (!CercaMercato) {
+            //Solo ciò che non costa letture: il resto si completa dopo (PrezzoDaCompletare)
+            return null;
+        }
+        BigDecimal Mercato = PrezzoDiMercatoNelMomento(Mov, Moneta, Q, true);
+        if (Mercato != null) {
+            return Mercato;
+        }
+        if (Rapporto != null && Valore.compareTo(VALORE_MIN_PREZZO_RIPIEGO) >= 0) {
+            return Rapporto;
+        }
+        return null;
+    }
+
+    /**
+     * Il prezzo unitario di mercato della moneta alla data del movimento, senza passare dal valore del
+     * movimento: cache dei prezzi, poi movimenti vicini. Mai la rete: la tabella dettaglio si ricostruisce a
+     * ogni selezione.
+     * @return il prezzo, o {@code null} per le monete FIAT, se non si trova nulla o se le cache non sono leggibili
+     */
+    private static BigDecimal PrezzoDiMercatoNelMomento(String[] Mov, String Moneta, BigDecimal Q, boolean QuotazioneVicina) {
+        int Gamba;
+        if (Mov[8].equalsIgnoreCase(Moneta)) {
+            Gamba = 0;
+        } else if (Mov[11].equalsIgnoreCase(Moneta)) {
+            Gamba = 1;
+        } else {
+            return null;
+        }
+        String Tipo = Mov[Gamba == 0 ? 9 : 12];
+        if (Tipo.isBlank() || Tipo.equalsIgnoreCase("FIAT")) {
             return null;
         }
         try {
-            BigDecimal Q = new BigDecimal(Qta.trim()).abs();
-            if (Q.signum() == 0) {
+            long ts = FunzioniDate.ConvertiDatainLong(Mov[1]);
+            if (ts <= 0) {
                 return null;
             }
-            return new BigDecimal(Mov[15].trim()).abs()
-                    .divide(Q, VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP).stripTrailingZeros();
-        } catch (NumberFormatException ex) {
+            String Address = Mov[Gamba == 0 ? 26 : 28];
+            String Rete = Funzioni.TrovaReteDaIMovimento(Mov);
+            if (Rete == null) {
+                Rete = "";
+            }
+            boolean AddressValido = !Address.isBlank() && !Rete.isBlank() && Funzioni_WalletDeFi.isValidAddress(Address, Rete);
+            String AddressUsato = AddressValido ? Address : "";
+            String ReteUsata = AddressValido ? Rete : "";
+            BigDecimal Prezzo = PrezzoUnitarioDaCache(Moneta, AddressUsato, ReteUsata, ts, Q == null ? BigDecimal.ONE : Q, 5, true);
+            if (Prezzo == null && AddressUsato.isBlank()) {
+                //L'archivio orario dei prezzi storici, che copre i movimenti anteriori alle cache al minuto
+                String Orario = DatabaseH2.XXXEUR_Leggi(FunzioniDate.ConvertiDatadaLongallOra(ts) + " "
+                        + AliasPrezziToken.StessoPrezzo(Moneta, ts));
+                if (Orario != null && Funzioni.isNumeric(Orario, false)) {
+                    Prezzo = new BigDecimal(Orario);
+                }
+            }
+            if (Prezzo == null) {
+                Prezzo = PrezzoUnitarioDaMovimentiVicini(Moneta, AddressUsato, ts);
+            }
+            //Nessuna quotazione al minuto per quell'istante (le ricompense minuscole non hanno mai fatto
+            //scaricare i prezzi): la quotazione più vicina nel tempo, a finestre sempre più larghe
+            for (long Minuti : FINESTRE_QUOTAZIONE_VICINA_MIN) {
+                if (Prezzo != null || !QuotazioneVicina) {
+                    break;
+                }
+                Prezzo = PrezzoUnitarioDaCache(Moneta, AddressUsato, ReteUsata, ts, Q == null ? BigDecimal.ONE : Q, Minuti, true);
+            }
+            return Prezzo != null && Prezzo.signum() > 0 ? Prezzo : null;
+        } catch (Exception ex) {
+            //Il prezzo è solo un'informazione in più: cache non aperte (o un errore di lettura) lasciano la cella vuota
             return null;
         }
     }
 
     /**
-     * Le righe {etichetta, valore HTML} della sezione giacenze del dettaglio movimento, una per moneta
-     * coinvolta, da {@link #GiacenzeAttornoAlMovimento(String)}.
-     * @param ID ID del movimento
-     * @return le righe, vuota se il movimento non muove nessuna moneta
+     * Una moneta del movimento pronta per essere mostrata nel dettaglio movimento, senza nessuna
+     * dipendenza da Swing: il dialogo ne ricava un riquadro con una tabella.
      */
-    public static List<String[]> RigheDettaglio(String ID) {
-        return RigheDettaglio(ID, GiacenzeAttornoAlMovimento(ID));
+    public static final class TabellaGiacenzeMoneta {
+        /** Moneta, per il titolo del riquadro. */
+        public final String Moneta;
+        /** La moneta esce dal movimento. */
+        public final boolean Uscita;
+        /** La moneta entra nel movimento. */
+        public final boolean Entrata;
+        /** Prezzo unitario nel movimento già formattato ("€ 2500.00"), o {@code "non disponibile"}. */
+        public final String Prezzo;
+        /** Intestazioni delle colonne: livello, momento, quantità, controvalore e, per le crypto, i due costi. */
+        public final String[] Intestazioni;
+        /** Una riga per livello e momento (prima e dopo), con le stesse colonne delle intestazioni. */
+        public final List<String[]> Righe = new ArrayList<>();
+        /** Avvertenza sul costo di carico, vuota se non serve. */
+        public final String Nota;
+
+        private TabellaGiacenzeMoneta(GiacenzeMoneta M, String Prezzo, String[] Intestazioni, String Nota) {
+            this.Moneta = M.Moneta;
+            this.Uscita = M.Uscita;
+            this.Entrata = M.Entrata;
+            this.Prezzo = Prezzo;
+            this.Intestazioni = Intestazioni;
+            this.Nota = Nota;
+        }
     }
 
     /**
-     * Come {@link #RigheDettaglio(String)}, a partire da giacenze già calcolate.
+     * Le tabelle delle giacenze per il dettaglio movimento, una per moneta coinvolta (uscita, poi entrata).
+     * Ogni tabella ha tre livelli (tutti i wallet, gruppo, wallet del movimento: il gruppo manca se il wallet
+     * non ne ha) e per ciascuno la riga "prima" e quella "dopo". Il nome del livello è solo sulla riga "prima".
+     * @param ID ID del movimento
+     * @return le tabelle, vuota se il movimento non muove nessuna moneta
      */
-    public static List<String[]> RigheDettaglio(String ID, List<GiacenzeMoneta> Giacenze) {
-        List<String[]> Righe = new ArrayList<>();
+    public static List<TabellaGiacenzeMoneta> TabelleDettaglio(String ID) {
+        return TabelleDettaglio(ID, GiacenzeAttornoAlMovimento(ID));
+    }
+
+    /**
+     * Come {@link #TabelleDettaglio(String)}, a partire da giacenze già calcolate.
+     */
+    public static List<TabellaGiacenzeMoneta> TabelleDettaglio(String ID, List<GiacenzeMoneta> Giacenze) {
+        List<TabellaGiacenzeMoneta> Risultato = new ArrayList<>();
         String[] Mov = MappaCryptoWallet.get(ID);
         if (Mov == null) {
-            return Righe;
+            return Risultato;
         }
         String Gruppo = Mov[3].isBlank() ? "" : DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3], true);
         String Etichette[] = {"Tutti i wallet", Gruppo.isBlank() ? "" : "Gruppo " + Gruppo, Mov[3].trim()};
         for (GiacenzeMoneta M : Giacenze) {
-            StringBuilder S = new StringBuilder("<html>");
-            S.append("Prezzo unitario nel movimento: <b>")
-                    .append(M.PrezzoUnitario == null ? "non disponibile" : "€ " + M.PrezzoUnitario.toPlainString())
-                    .append("</b>");
-            S.append("<table cellspacing=0 cellpadding=2>");
-            //Il nome del livello sta su una riga a tutta larghezza: un wallet DeFi arriva a 50 caratteri e
-            //come colonna allargherebbe la tabella oltre la cella, che la taglierebbe
-            int Colonne = M.isFiat() ? 3 : 5;
-            S.append("<tr><th></th><th align=right>Quantità</th>")
-                    .append("<th align=right>Controvalore</th>");
-            if (!M.isFiat()) {
-                S.append("<th align=right>Costo di carico</th><th align=right>Costo unitario</th>");
+            String[] Intestazioni = M.isFiat()
+                    ? new String[]{"", "", "Quantità", "Valore"}
+                    : new String[]{"", "", "Quantità", "Valore", "Costo carico", "Costo unit."};
+            String Nota = "";
+            if (Mov[18].contains("PTW") && !M.isFiat()) {
+                Nota = "Prelievo verso un wallet proprio: se la destinazione è in un altro gruppo, "
+                        + "il costo di carico lascia questo gruppo solo all'arrivo.";
             }
-            S.append("</tr>");
+            TabellaGiacenzeMoneta T = new TabellaGiacenzeMoneta(M,
+                    M.PrezzoUnitario == null ? "non disponibile" : "€ " + M.PrezzoUnitario.toPlainString(),
+                    Intestazioni, Nota);
             for (int l = 0; l < 3; l++) {
                 if (Etichette[l].isBlank()) {
                     continue;
                 }
-                S.append("<tr><td colspan=").append(Colonne).append("><b>").append(Etichette[l]).append("</b></td></tr>");
-                RigaGiacenza(S, M, "prima", M.QtaPrima[l], M.CostoPrima[l]);
-                RigaGiacenza(S, M, "dopo", M.QtaDopo[l], M.CostoDopo[l]);
+                T.Righe.add(RigaGiacenza(M, Etichette[l], "prima", M.QtaPrima[l], M.CostoPrima[l]));
+                T.Righe.add(RigaGiacenza(M, "", "dopo", M.QtaDopo[l], M.CostoDopo[l]));
             }
-            S.append("</table>");
-            if (Mov[18].contains("PTW") && !M.isFiat()) {
-                S.append("<i>Prelievo verso un wallet proprio: se la destinazione è in un altro gruppo,<br>")
-                        .append("il costo di carico lascia questo gruppo solo all'arrivo.</i>");
-            }
-            S.append("</html>");
-            Righe.add(new String[]{"Giacenze " + M.Moneta, S.toString()});
+            Risultato.add(T);
         }
-        return Righe;
+        return Risultato;
     }
 
-    private static void RigaGiacenza(StringBuilder S, GiacenzeMoneta M, String Momento,
+    private static String[] RigaGiacenza(GiacenzeMoneta M, String Livello, String Momento,
             BigDecimal Qta, String Costo) {
-        S.append("<tr><td>&nbsp;&nbsp;").append(Momento).append("</td>");
-        S.append("<td align=right>").append(Qta.toPlainString()).append("</td>");
-        S.append("<td align=right>").append(M.PrezzoUnitario == null ? "n.d."
-                : "€ " + M.PrezzoUnitario.multiply(Qta).setScale(2, RoundingMode.HALF_UP).toPlainString())
-                .append("</td>");
-        if (!M.isFiat()) {
-            String Unitario = "-";
-            if (Costo != null && Qta.signum() > 0) {
-                Unitario = "€ " + new BigDecimal(Costo).divide(Qta, 10, RoundingMode.HALF_UP)
-                        .stripTrailingZeros().toPlainString();
-            }
-            S.append("<td align=right>").append(Costo == null ? "-" : "€ " + Costo).append("</td>");
-            S.append("<td align=right>").append(Unitario).append("</td>");
+        String Controvalore = M.PrezzoUnitario == null ? "n.d."
+                : "€ " + M.PrezzoUnitario.multiply(Qta).setScale(2, RoundingMode.HALF_UP).toPlainString();
+        if (M.isFiat()) {
+            return new String[]{Livello, Momento, Qta.toPlainString(), Controvalore};
         }
-        S.append("</tr>");
+        String Unitario = "-";
+        if (Costo != null && Qta.signum() > 0) {
+            Unitario = "€ " + new BigDecimal(Costo).divide(Qta, 10, RoundingMode.HALF_UP)
+                    .stripTrailingZeros().toPlainString();
+        }
+        return new String[]{Livello, Momento, Qta.toPlainString(), Controvalore,
+            Costo == null ? "-" : "€ " + Costo, Unitario};
     }
 
     /**
@@ -973,6 +1149,49 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
 
         /** Gruppo wallet → chiave di riga → pila dei lotti residui ({@code {quantità, costo, ID movimento}}). */
         private final Map<String, Map<String, ArrayDeque<String[]>>> Pile = new TreeMap<>();
+
+        /**
+         * Quantità e costo dei lotti già convertiti in {@link BigDecimal}, per identità del lotto. Il costo di una
+         * riga rilegge tutti i lotti della pila, e nel dettaglio movimenti lo fa per ogni riga: rifare la
+         * conversione da testo ogni volta costava più di tutto il resto della costruzione della tabella (su un
+         * token con centinaia di lotti, migliaia di righe). I lotti sono immutabili — un residuo parziale è un
+         * lotto nuovo — quindi la chiave per identità non può restare vecchia.
+         */
+        private final java.util.IdentityHashMap<String[], BigDecimal[]> LottiNumerici = new java.util.IdentityHashMap<>();
+
+        /**
+         * Quantità e costo totali di ciascuna pila ({@code {quantità, costo}}), aggiornati a ogni carico e scarico.
+         * Sono la scorciatoia della lettura più comune, quella che copre tutta la pila: con "Tutti" o con un gruppo
+         * intero la giacenza mostrata è l'intera pila e il costo è la somma di tutti i lotti, che altrimenti si
+         * ricalcolerebbe scorrendoli uno a uno ad ogni riga. Le somme di {@link BigDecimal} sono esatte, quindi il
+         * risultato coincide con quello dello scorrimento.
+         */
+        private final java.util.IdentityHashMap<ArrayDeque<String[]>, BigDecimal[]> TotaliPila = new java.util.IdentityHashMap<>();
+
+        private BigDecimal[] NumeriDelLotto(String[] Lotto) {
+            return LottiNumerici.computeIfAbsent(Lotto, l -> new BigDecimal[]{new BigDecimal(l[0]), new BigDecimal(l[1])});
+        }
+
+        /** Mette un lotto in cima alla pila tenendo aggiornati i totali. */
+        private void MettiLotto(ArrayDeque<String[]> Pila, String[] Lotto) {
+            Pila.push(Lotto);
+            BigDecimal[] N = NumeriDelLotto(Lotto);
+            BigDecimal[] T = TotaliPila.computeIfAbsent(Pila, p -> new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
+            T[0] = T[0].add(N[0]);
+            T[1] = T[1].add(N[1]);
+        }
+
+        /** Toglie il lotto in cima alla pila tenendo aggiornati i totali. */
+        private String[] PrendiLotto(ArrayDeque<String[]> Pila) {
+            String[] Lotto = Pila.pop();
+            BigDecimal[] N = NumeriDelLotto(Lotto);
+            BigDecimal[] T = TotaliPila.get(Pila);
+            if (T != null) {
+                T[0] = T[0].subtract(N[0]);
+                T[1] = T[1].subtract(N[1]);
+            }
+            return Lotto;
+        }
 
         /**
          * Copia dell'opzione {@code PlusXWallet}: se è spenta il motore delle plusvalenze usa una pila sola
@@ -1017,9 +1236,9 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
             } catch (NumberFormatException ex) {
                 CostoLotto = BigDecimal.ZERO;
             }
-            Pile.computeIfAbsent(Gruppo, k -> new TreeMap<>())
-                    .computeIfAbsent(Chiave, k -> new ArrayDeque<>())
-                    .push(new String[]{QtaLotto.toPlainString(), CostoLotto.toPlainString(), ID});
+            MettiLotto(Pile.computeIfAbsent(Gruppo, k -> new TreeMap<>())
+                    .computeIfAbsent(Chiave, k -> new ArrayDeque<>()),
+                    new String[]{QtaLotto.toPlainString(), CostoLotto.toPlainString(), ID});
         }
 
         /**
@@ -1047,9 +1266,10 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                 return;
             }
             while (Rimanente.signum() > 0 && !Pila.isEmpty()) {
-                String Lotto[] = Pila.pop();
-                BigDecimal QtaLotto = new BigDecimal(Lotto[0]);
-                BigDecimal CostoLotto = new BigDecimal(Lotto[1]);
+                String Lotto[] = PrendiLotto(Pila);
+                BigDecimal[] Numeri = NumeriDelLotto(Lotto);
+                BigDecimal QtaLotto = Numeri[0];
+                BigDecimal CostoLotto = Numeri[1];
                 if (QtaLotto.compareTo(Rimanente) <= 0) {
                     Rimanente = Rimanente.subtract(QtaLotto);
                 } else {
@@ -1058,7 +1278,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                             .divide(QtaLotto, VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP)
                             .multiply(QtaResidua)
                             .setScale(VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP);
-                    Pila.push(new String[]{QtaResidua.toPlainString(), CostoResiduo.toPlainString(), Lotto[2]});
+                    MettiLotto(Pila, new String[]{QtaResidua.toPlainString(), CostoResiduo.toPlainString(), Lotto[2]});
                     Rimanente = BigDecimal.ZERO;
                 }
             }
@@ -1116,6 +1336,8 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                 return BigDecimal.ZERO;
             }
             List<String[]> Lotti = new ArrayList<>();
+            BigDecimal QtaTotale = BigDecimal.ZERO;
+            BigDecimal CostoTotale = BigDecimal.ZERO;
             for (String Gruppo : Gruppi) {
                 Map<String, ArrayDeque<String[]>> PerChiave = Pile.get(Gruppo);
                 if (PerChiave == null) {
@@ -1124,7 +1346,16 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                 ArrayDeque<String[]> Pila = PerChiave.get(Chiave);
                 if (Pila != null) {
                     Lotti.addAll(Pila);
+                    BigDecimal[] T = TotaliPila.get(Pila);
+                    if (T != null) {
+                        QtaTotale = QtaTotale.add(T[0]);
+                        CostoTotale = CostoTotale.add(T[1]);
+                    }
                 }
+            }
+            //La giacenza copre l'intera pila: ogni lotto entra per intero, il costo è la somma di tutti
+            if (!Lotti.isEmpty() && Richiesta.compareTo(QtaTotale) >= 0) {
+                return CostoTotale;
             }
             //Dal più recente al più vecchio : l'ID comincia con yyyyMMddHHmmss, quindi l'ordine
             //alfabetico decrescente è già quello cronologico inverso richiesto dal LIFO
@@ -1135,8 +1366,9 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                 if (Richiesta.signum() <= 0) {
                     break;
                 }
-                BigDecimal QtaLotto = new BigDecimal(Lotto[0]);
-                BigDecimal CostoLotto = new BigDecimal(Lotto[1]);
+                BigDecimal[] Numeri = NumeriDelLotto(Lotto);
+                BigDecimal QtaLotto = Numeri[0];
+                BigDecimal CostoLotto = Numeri[1];
                 if (QtaLotto.compareTo(Richiesta) <= 0) {
                     Richiesta = Richiesta.subtract(QtaLotto);
                     Costo = Costo.add(CostoLotto);
@@ -1303,14 +1535,17 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
     }
 
     /**
-     * Le quattro colonne dei costi di una riga della tabella dettaglio movimenti di "Giacenze a data".
+     * Le cinque colonne dei costi di una riga della tabella dettaglio movimenti di "Giacenze a data".
      * Non cerca nessun prezzo: la tabella si ricostruisce a ogni selezione e non deve toccare la rete.
      * <ol start="0">
      * <li>costo di carico della quantità mossa dal movimento ({@link #CostoCaricoMovimento});</li>
      * <li>prezzo unitario nel movimento ({@link #PrezzoUnitarioNelMovimento});</li>
      * <li>valore della quantità residua a quel prezzo unitario, cioè quanto varrebbe la giacenza residua se
      * il prezzo fosse rimasto quello del movimento;</li>
-     * <li>costo di carico della quantità residua, dalle pile di {@link CostiDettaglioToken}.</li>
+     * <li>costo di carico della quantità residua, dalle pile di {@link CostiDettaglioToken};</li>
+     * <li>differenza fra il valore e il costo della quantità residua: <b>vuota</b>, non zero, se manca uno dei
+     * due, o se la giacenza residua è ≤ 0 (non ci sono rimanenze da valorizzare e un costo "0.00" farebbe
+     * comparire l'intero valore come utile — la stessa regola della tabella principale).</li>
      * </ol>
      * Tutte vuote per una moneta FIAT, che non ha lotti.
      *
@@ -1319,27 +1554,73 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
      * @param Entrata {@code true} se la riga è la gamba in entrata del movimento
      * @param Qta quantità della gamba
      * @param QtaResidua giacenza della selezione dopo il movimento
-     * @return le quattro colonne, mai {@code null}
+     * @return le cinque colonne, mai {@code null}
      */
     public static String[] ColonneCostiDettaglio(CostiDettaglioToken Costi, String[] Movimento,
             boolean Entrata, String Qta, String QtaResidua) {
-        String Ris[] = {"", "", "", ""};
+        String Ris[] = {"", "", "", "", ""};
         String Tipo = Movimento[Entrata ? 12 : 9];
         if (Tipo.isBlank() || Tipo.equalsIgnoreCase("FIAT")) {
             return Ris;
         }
         Ris[0] = CostoCaricoMovimento(Movimento, Entrata);
-        BigDecimal Prezzo = PrezzoUnitarioNelMovimento(Movimento, Movimento[Entrata ? 11 : 8], Qta);
-        if (Prezzo != null) {
-            Ris[1] = FormattaUnitario(Prezzo.doubleValue());
-            try {
-                Ris[2] = Prezzo.multiply(new BigDecimal(QtaResidua.trim())).setScale(2, RoundingMode.HALF_UP).toPlainString();
-            } catch (NumberFormatException ex) {
-                //la quantità residua è già stata sommata come numero: non succede, ma la cella resta vuota
-            }
-        }
         Ris[3] = Costi.CostoResiduo(QtaResidua);
+        //Qui solo le fonti che non leggono nulla: gli altri prezzi si completano dopo, in background (PrezzoDaCompletare)
+        CompletaColonnePrezzo(Ris, PrezzoUnitarioNelMovimento(Movimento, Movimento[Entrata ? 11 : 8], Qta, false), QtaResidua);
         return Ris;
+    }
+
+    /**
+     * Prezzo unitario, valore e differenza della quantità residua una volta noto il prezzo, e il costo residuo già
+     * in {@code Ris[3]}. Con prezzo {@code null} lascia vuote le tre colonne.
+     */
+    private static void CompletaColonnePrezzo(String[] Ris, BigDecimal Prezzo, String QtaResidua) {
+        if (Prezzo == null) {
+            return;
+        }
+        Ris[1] = FormattaUnitario(Prezzo.doubleValue());
+        try {
+            BigDecimal Residua = new BigDecimal(QtaResidua.trim());
+            Ris[2] = Prezzo.multiply(Residua).setScale(2, RoundingMode.HALF_UP).toPlainString();
+            if (Residua.signum() > 0 && !Ris[3].isEmpty()) {
+                Ris[4] = new BigDecimal(Ris[2]).subtract(new BigDecimal(Ris[3])).toPlainString();
+            }
+        } catch (NumberFormatException ex) {
+            //la quantità residua è già stata sommata come numero: non succede, ma le celle restano vuote
+        }
+    }
+
+    /**
+     * @param Colonne le cinque colonne di {@link #ColonneCostiDettaglio}
+     * @return {@code true} se la riga è una moneta con lotti ma il prezzo non si è trovato con le fonti immediate,
+     * quindi va cercato con {@link #CompletaPrezzoDettaglio}
+     */
+    public static boolean PrezzoDaCompletare(String[] Colonne) {
+        return !Colonne[3].isEmpty() && Colonne[1].isEmpty();
+    }
+
+    /**
+     * La ricerca del prezzo di una riga rimasta senza prezzo ({@link #PrezzoDaCompletare}): cache dei prezzi,
+     * archivio orario, movimenti vicini, quotazione più vicina a finestre di ±1, 6 e 24 ore. Pensata per girare in
+     * un thread di background.
+     *
+     * @param Movimento il movimento della riga
+     * @param Entrata {@code true} se la riga è la gamba in entrata
+     * @param Qta quantità della gamba
+     * @param QtaResidua giacenza residua della riga
+     * @param CostoResiduo costo di carico residuo già calcolato ({@code Ris[3]})
+     * @return {prezzo unitario, valore qta residua, differenza} (le stesse colonne 1, 2 e 4), o {@code null} se non
+     * si trova nessuna quotazione
+     */
+    public static String[] CompletaPrezzoDettaglio(String[] Movimento, boolean Entrata, String Qta, String QtaResidua,
+            String CostoResiduo) {
+        BigDecimal Prezzo = PrezzoUnitarioNelMovimento(Movimento, Movimento[Entrata ? 11 : 8], Qta, true);
+        if (Prezzo == null) {
+            return null;
+        }
+        String Ris[] = {"", "", "", CostoResiduo, ""};
+        CompletaColonnePrezzo(Ris, Prezzo, QtaResidua);
+        return new String[]{Ris[1], Ris[2], Ris[4]};
     }
 
     //Queste 3 classi serviranno per sistemare la parte relativa al calcolo delle giacenzeadata
@@ -1444,11 +1725,23 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
 
     /** Solo lettura delle cache: prezzi personalizzati (±60 min) e prezzi esatti (±5 min). Nessuna rete. */
     private static BigDecimal PrezzoUnitarioDaCache(String Moneta, String Address, String Rete, long ts, BigDecimal qta) {
+        return PrezzoUnitarioDaCache(Moneta, Address, Rete, ts, qta, 5, false);
+    }
+
+    /**
+     * Come sopra, ma con la finestra dei prezzi esatti allargata a ±{@code MinutiEsatti}: la quotazione più vicina
+     * vince. Con {@code UsaCopertura} la cache dei prezzi non si interroga se l'istante è fuori dal suo intervallo
+     * ({@link #AggiornaCoperturaPrezzi()}); i prezzi personalizzati si leggono sempre, sono pochi.
+     */
+    private static BigDecimal PrezzoUnitarioDaCache(String Moneta, String Address, String Rete, long ts, BigDecimal qta,
+            long MinutiEsatti, boolean UsaCopertura) {
         String simbolo = Address.isBlank()
                 ? AliasPrezziToken.StessoPrezzo(Moneta, ts)
                 : "";//con un address valido il simbolo non va passato, come fa CambioAddressEUR
         Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoDaDatabasePersonale(simbolo, ts, "", Rete, Address, 60, qta);
-        if (IP == null) IP = Prezzi.DammiPrezzoDaDatabase(simbolo, ts, "", Rete, Address, 5, qta);
+        if (IP == null && (!UsaCopertura || CacheCopreIstante(ts, MinutiEsatti))) {
+            IP = Prezzi.DammiPrezzoDaDatabase(simbolo, ts, "", Rete, Address, MinutiEsatti, qta);
+        }
         return PrezzoUnitarioDaInfoPrezzo(IP, qta);
     }
 

@@ -23,9 +23,14 @@ Ogni proprietà ha un valore predefinito. Se non la inserisci nel JSON, viene us
 "fontePrezzoPreferita": "",
 "fornitore": "...",
 "estrazione": "...",
+"descrizione": "",
+"versione": "",
+"versioneMinimaApp": "",
 "nomeWallet": "...",
 "testing": false,
 "separatore": ",",
+"separatoreValoreMoneta": "",
+"coppia": { ... },
 "encoding": "UTF-8",
 "righeIntestazione": 1,
 "rigaIntestazione": 1,
@@ -36,6 +41,7 @@ Ogni proprietà ha un valore predefinito. Se non la inserisci nel JSON, viene us
 "consolidaRigheStessaData": false,
 "tolleranzaSecondiConsolidamento": 2,
 "causaliDifferite": [],
+"causaliConsolidaPerGiorno": [],
 "minutiScambioDifferito": 15,
 "colonne": { ... },
 "raggruppamentoPerCausale": { ... },
@@ -45,6 +51,9 @@ Ogni proprietà ha un valore predefinito. Se non la inserisci nel JSON, viene us
 "causaliChiuse": [ ... ],
 "causaliUscita": [ ... ],
 "causaliEntrata": [ ... ],
+"versoForzato": "",
+"causaliScambiaGambe": [ ... ],
+"gambaDoppiaConSegnoSuUscita": false,
 "ricostruisciLordoSeFeeSuMonetaUscita": false,
 "ricostruisciLordoSeFeeSuMonetaEntrata": false,
 "rimuoviCaseSensitive": false,
@@ -52,6 +61,9 @@ Ogni proprietà ha un valore predefinito. Se non la inserisci nel JSON, viene us
 "rinominaMonete": { ... },
 "walletPerCausale": { ... },
 "walletSpecularePerCausale": { ... },
+"girocontoFiat": { ... },
+"causaliDerivati": { ... },
+"causaliAllertaDerivati": [ ... ],
 "campiExtra": { ... },
 "centralizzato": false,
 "separatoreCausale": ".",
@@ -70,6 +82,13 @@ Nome dell'exchange o della piattaforma sorgente. Se lasciato vuoto, il programma
 ```json
 "nomeExchange": "Binance"
 ```
+
+⚠️ **Non cambiarlo dopo aver importato dei movimenti.** Il nome finisce nel campo Exchange del movimento
+e il programma lo usa in due modi. Per riconoscere i duplicati quando reimporti lo stesso file, e per
+decidere a quale gruppo wallet appartiene il movimento nel calcolo fiscale. Se lo modifichi, i movimenti
+già in archivio non vengono più riconosciuti, quindi un nuovo import li duplica, e passano a un altro
+gruppo wallet, a meno che tu non li riunisca con un alias. `nomeWallet` invece non ha effetti fiscali e può
+essere cambiato liberamente.
 
 ### `fontePrezzoPreferita` {#fonteprezzopreferita}
 
@@ -124,6 +143,41 @@ ripetere** il nome del fornitore, che è già nella prima tendina.
 ```json
 "fornitore": "OKX",
 "estrazione": "Funding"
+```
+
+### `descrizione` {#descrizione}
+
+**Tipo:** stringa | **Default:** "" (nessun suggerimento)
+
+Testo libero che descrive la configurazione: da dove si scarica il file, cosa copre, quali sono i limiti
+noti. Non cambia in nessun modo l'importazione. Viene mostrato come suggerimento (tooltip) quando passi il
+mouse sulla voce nella finestra di importazione. Per andare a capo e limitare la larghezza conviene
+scriverlo in HTML, come fanno le configurazioni ufficiali.
+
+```json
+"descrizione": "<html><div style='width:380px'>Export CSV dei movimenti di conto. Gli interessi giornalieri sono sommati in un solo movimento.</div></html>"
+```
+
+### `versione` {#versione}
+
+**Tipo:** stringa | **Default:** ""
+
+Numero di revisione del file (per esempio `"1.002"`). Il programma non lo usa per importare: serve a chi
+mantiene la configurazione per capire quale revisione è installata, e conviene aumentarlo a ogni modifica
+se condividi il file con altri.
+
+### `versioneMinimaApp` {#versioneminimaapp}
+
+**Tipo:** stringa | **Default:** "" (nessun vincolo)
+
+Versione minima del programma che sa interpretare questa configurazione, per esempio `"1.0.64.06"`. Va
+indicata quando il file usa una funzione del formato aggiunta di recente (tra queste `separatoreValoreMoneta`,
+`causaliScambiaGambe`, `versoForzato`). Un'installazione più vecchia non propone la configurazione nella
+finestra di importazione, invece di proporla e poi leggerla male senza accorgersene. Se il vincolo non serve,
+lascia il campo vuoto.
+
+```json
+"versioneMinimaApp": "1.0.64.06"
 ```
 
 ## 2. Struttura fisica del CSV {#2-struttura-fisica-del-csv}
@@ -276,6 +330,48 @@ Quindi: "data": 0, "causale": 1, "moneta": 2 e così via.
 | quantitaUscita | Quantita in uscita (CSV con entrata e uscita sulla stessa riga). |
 | note | Colonna di testo libero da riportare nel campo Note del movimento. Serve anche a `causalePerNota` (vedi sezione 4). |
 
+### Importo e moneta nella stessa cella {#importo-e-moneta-nella-stessa-cella}
+
+**Tipo:** stringa | **Default:** "" (importo e moneta sono due colonne distinte)
+
+Alcuni export scrivono importo e simbolo insieme, per esempio `407.57 AME`. In questo caso indica lo
+stesso indice di colonna sia per `quantita` sia per `moneta` (e, se serve, per `quantitaUscita`/`monetaUscita`
+e `quantitaFee`/`monetaFee`), e in `separatoreValoreMoneta` il carattere che divide i due pezzi. Quando le
+due colonne coincidono il programma separa il numero dal simbolo usando quel carattere.
+
+```json
+"separatoreValoreMoneta": " ",
+"colonne": { "quantita": 5, "moneta": 5, "quantitaFee": 6, "monetaFee": 6 }
+```
+
+### Coppia di trading in una sola cella {#coppia}
+
+**Tipo:** oggetto `{ colonna, separatore, base, quote }` | **Default:** assente
+
+Alcuni export di trading non hanno colonne per le monete e riportano solo la coppia, per esempio `KCS-ETH`.
+Il blocco `coppia` dice dove si trova la coppia e come dividerla. Il programma aggiunge a ogni riga due
+**colonne virtuali** alle posizioni `base` e `quote`, che poi usi nelle `colonne` come una qualsiasi altra
+colonna (di solito `base` come `moneta` e `quote` come `monetaUscita`).
+
+| Campo | Descrizione |
+|---|---|
+| `colonna` | Indice della colonna che contiene la coppia. |
+| `separatore` | Carattere che divide base e quota. Default `-`. Non può essere vuoto. |
+| `base` | Indice della prima colonna virtuale. Scegli un numero **oltre l'ultima colonna vera** del CSV. |
+| `quote` | Indice della seconda colonna virtuale, stessa regola. |
+
+Una riga la cui cella non contiene il separatore viene scartata e segnalata come `COPPIA NON VALIDA`.
+
+```json
+"coppia": { "colonna": 3, "separatore": "-", "base": 16, "quote": 17 },
+"colonne": { "moneta": 16, "quantita": 7, "monetaUscita": 17, "quantitaUscita": 8 },
+"causaliScambiaGambe": ["SELL"]
+```
+
+L'esempio è quello di KuCoin: la coppia sta nella colonna 3, le colonne virtuali 16 e 17 vengono dopo
+l'ultima colonna vera, e le vendite (`SELL`) hanno i ruoli di entrata e uscita invertiti rispetto agli
+acquisti (vedi `causaliScambiaGambe`).
+
 ### Causale composita {#causale-composita}
 
 Alcuni CSV distribuiscono il tipo di operazione su più colonne. Si possono combinare fino a 3 colonne in una causale composita concatenate da separatoreCausale.
@@ -306,6 +402,30 @@ Alcuni CSV (es. Koinly, CoinTracking) riportano l'intero scambio su una sola rig
 "monetaUscita": 4, "quantitaUscita": 3,
 "monetaFee": 6, "quantitaFee": 5
 }
+```
+
+### `gambaDoppiaConSegnoSuUscita` {#gambadoppiaconsegnosuuscita}
+
+**Tipo:** booleano | **Default:** false
+
+Per gli export (tipico Nexo) in cui **ogni** riga ha due colonne moneta, ma solo quando le monete sono
+diverse si tratta di uno scambio. Quando la moneta di uscita coincide con quella principale (interessi,
+versamenti, prelievi...) la riga è un movimento a gamba singola e il verso sta nel segno della colonna di
+uscita. Con `true` il programma applica questa regola, altrimenti un accredito di interessi `NEXO → NEXO`
+diventerebbe un finto scambio. Se l'importo principale è zero si usa quello della colonna di uscita.
+
+### `causaliScambiaGambe` {#causaliscambiagambe}
+
+**Tipo:** array di causali CSV originali | **Default:** [] (nessuna)
+
+Per le righe che portano già entrambe le gambe, scambia il ruolo di entrata e uscita delle due colonne prima
+di ogni altra elaborazione. Serve quando l'export usa colonne dal ruolo fisso (per esempio "Deal amount" e
+"Total") ma la direzione reale dipende dalla causale: con `Buy` entra "Deal amount" ed esce "Total", con
+`Sell` accade il contrario. Elenca qui le causali per cui le colonne vanno invertite. Se moneta e quantità
+condividono la stessa cella (`separatoreValoreMoneta`) simbolo e importo si scambiano insieme.
+
+```json
+"causaliScambiaGambe": ["Sell"]
 ```
 
 ### `idGruppo` (nella sezione colonne) {#idgruppo-nella-sezione-colonne}
@@ -361,8 +481,8 @@ Traduce le causali originali del CSV nelle tipologie interne dell'applicazione. 
 
 ```json
 "mappaCausali": {
-"Deposit": "DEPOSITO-CRYPTO",
-"Withdrawal": "PRELIEVO-CRYPTO",
+"Deposit": "TRASFERIMENTO-CRYPTO",
+"Withdrawal": "TRASFERIMENTO-CRYPTO",
 "Trade": "SCAMBIO CRYPTO-CRYPTO",
 "Staking Rewards": "STAKING REWARDS",
 "Commission": "COMMISSIONI",
@@ -371,11 +491,29 @@ Traduce le causali originali del CSV nelle tipologie interne dell'applicazione. 
 }
 ```
 
-Per ignorare righe senza contarle come scarti, mappa su "IGNORA":
+Per ignorare righe senza contarle come scarti, mappa su "IGNORA" (vale anche "NON CONSIDERARE"):
 
 ```json
 "mappaCausali": { "Internal Transfer": "IGNORA" }
 ```
+
+**Tipologie interne che puoi usare come valore:**
+
+| Valore | Quando usarlo |
+|---|---|
+| `SCAMBIO CRYPTO-CRYPTO` | Scambio fra due monete. Anche `DUST-CONVERSION` per la conversione dei saldi minimi. |
+| `ACQUISTO CRYPTO` / `VENDITA CRYPTO` | Acquisto o vendita di crypto contro valuta FIAT. |
+| `DEPOSITO FIAT` / `PRELIEVO FIAT` | Versamento o prelievo di valuta FIAT. |
+| `TRASFERIMENTO-CRYPTO` | Deposito o prelievo di crypto. Il verso lo decide il segno della quantità, per questo **non esistono** tipologie separate per deposito e prelievo. |
+| `TRASFERIMENTO-CRYPTO-INTERNO` | Spostamento fra comparti dello stesso exchange. Non genera plusvalenze. |
+| `SCAMBIO DIFFERITO` | Metà di uno scambio che compare come due righe indipendenti (vedi sezione 6). |
+| `REWARD`, `ALTRE-REWARD`, `EARN`, `STAKING REWARDS`, `CASHBACK`, `AIRDROP` | Ricompense di vario tipo. |
+| `COMMISSIONI` | Commissione pagata come movimento a sé. |
+| `IGNORA` | Riga da saltare senza segnalarla come scartata. |
+
+Una causale non presente in `mappaCausali` (e non coperta da `causalePerNota`) fa scartare la riga, che
+compare fra i movimenti sconosciuti del resoconto con il testo `CAUSALE SCONOSCIUTA`. Per altri esempi apri
+le configurazioni ufficiali nella cartella `config/import/`.
 
 ### `causalePerNota` {#causalepernota}
 
@@ -410,11 +548,11 @@ Caso reale (Coinbase): i premi arrivano tutti come causale `Receive` e si ricono
 
 **Tipo:** array di stringhe (tipologie interne)
 
-Tipologie interne che devono essere trattate come movimenti singoli anche se condividono l'ID transazione con altre righe. Usa per staking, cashback, commissioni, depositi e prelievi.
+Tipologie interne che devono essere trattate come movimenti singoli anche se condividono l'ID transazione con altre righe. Usa per staking, cashback, commissioni, depositi e prelievi. Si indica la **tipologia interna** (il valore di `mappaCausali`), non la causale del CSV. In vecchie configurazioni la chiave si chiama `movimentoChiuso`, che il programma accetta ancora come sinonimo.
 
 ```json
 "causaliChiuse": [
-"DEPOSITO-CRYPTO","PRELIEVO-CRYPTO",
+"TRASFERIMENTO-CRYPTO",
 "STAKING REWARDS","CASHBACK","COMMISSIONI"
 ]
 ```
@@ -441,6 +579,19 @@ Le righe con queste causali avranno la quantità forzata positiva.
 
 ```json
 "causaliEntrata": ["Deposit","Trade Buy","Staking Rewards","Cashback"]
+```
+
+### `versoForzato` {#versoforzato}
+
+**Tipo:** stringa `"ENTRATA"` o `"USCITA"` | **Default:** "" (nessuna forzatura)
+
+Forza il verso di **ogni** riga del file, qualunque sia la causale. Serve per gli export divisi per
+direzione, come i file dei soli depositi o dei soli prelievi di Gate.io, in cui non c'è nessuna colonna
+causale affidabile da cui dedurre il verso. A differenza di `causaliUscita`/`causaliEntrata` non dipende dal
+testo della causale. Qualunque altro valore viene ignorato.
+
+```json
+"versoForzato": "ENTRATA"
 ```
 
 **Esempio pratico**
@@ -487,6 +638,21 @@ Se specificato, la tolleranza temporale viene applicata solo ai gruppi che conte
 
 ```json
 "causaliDifferite": ["Trade","Swap"]
+```
+
+### `causaliConsolidaPerGiorno` {#causaliconsolidapergiorno}
+
+**Tipo:** array di causali CSV originali | **Default:** [] (nessuna)
+
+Somma le righe con queste causali in **un solo movimento per giorno, moneta e causale**. È pensato per gli
+export che accreditano micro-interessi molte volte al giorno (un export Bitget ne conteneva 28.000): senza
+la somma l'archivio si riempie di decine di migliaia di movimenti minuscoli. Il movimento risultante prende
+la data del primo accredito del giorno e le altre colonne dalla prima riga, con la sola quantità sostituita
+dalla somma. La commissione della prima riga viene azzerata, perché non va attribuita all'intero giorno.
+Il giorno è quello del fuso del tuo sistema. La somma avviene prima del raggruppamento delle righe.
+
+```json
+"causaliConsolidaPerGiorno": ["Interest"]
 ```
 
 ### La causale `SCAMBIO DIFFERITO` e `minutiScambioDifferito` {#scambio-differito}
@@ -562,6 +728,7 @@ carico diventa **`totale − commissione`** (lo spread resta dentro), invece del
 | `valuta` | Indice colonna con la valuta di `totale`/`commissione` (es. la colonna "Price Currency" = `EUR`). Usata per la gamba FIAT sintetica e per il movimento commissione. |
 | `causali` | Causali CSV per cui applicare il ricalcolo `totale − commissione`. |
 | `causaliConMovimentoCommissione` | Sottoinsieme di `causali`: righe che portano la **sola gamba crypto in entrata**. Per queste viene **sintetizzata la gamba FIAT in uscita** di importo `totale − commissione` (l'operazione diventa un vero acquisto FIAT→crypto invece di un semplice deposito) e la commissione esce come **movimento `COMMISSIONI` a sé** nella valuta indicata. |
+| `noteAcquistoDaSaldo` | Elenco di testi (confronto senza distinzione fra maiuscole e minuscole) che, nella colonna `note`, indicano un acquisto pagato **dal saldo** dell'exchange (per Coinbase `"EUR Wallet"`). Vale solo per le causali di `causaliConMovimentoCommissione`. Se la nota non è vuota e **non** contiene nessuno di questi testi, l'acquisto è stato pagato con uno strumento esterno al saldo (carta, Apple Pay, Google Pay, bonifico diretto): in quel caso non si sintetizzano né la gamba FIAT né il movimento commissione, e resta il solo deposito crypto, caricato a costo pieno (`totale − commissione`) senza muovere euro. Nota vuota oppure elenco vuoto: comportamento normale. |
 
 Per le causali in `causali` ma **non** in `causaliConMovimentoCommissione` (es. gli scambi
 crypto/crypto, dove le monete sono già nette e la commissione è espressa solo in euro) viene corretto
@@ -574,7 +741,8 @@ solo il controvalore, senza movimento commissione aggiuntivo.
   "commissione": 9,
   "valuta": 5,
   "causali": ["Buy", "Convert"],
-  "causaliConMovimentoCommissione": ["Buy"]
+  "causaliConMovimentoCommissione": ["Buy"],
+  "noteAcquistoDaSaldo": ["EUR Wallet"]
 }
 ```
 
@@ -616,7 +784,7 @@ Rinomina un simbolo moneta. La rinomina avviene dopo la pulizia con rimuoviDaNom
 "rinominaMonete": { "IOTA": "MIOTA", "LUNA2": "LUNA", "WBTC": "BTC" }
 ```
 
-## 9. Wallet per causale {#9-wallet-per-causale}
+## 9. Wallet per causale e giroconti fra wallet {#9-wallet-per-causale}
 
 ### `walletPerCausale` {#walletpercausale}
 
@@ -652,7 +820,80 @@ Tre cose da sapere:
 
 - **Vale solo per le righe che muovono una moneta sola.** Su una riga che ne muove già due la gamba speculare non viene creata e l'importazione prosegue con il solo movimento normale.
 
-## 10. Campi extra {#10-campi-extra}
+### `girocontoFiat` {#girocontofiat}
+
+**Tipo:** oggetto | **Default:** assente
+
+Per gli **euro** (o un'altra valuta FIAT) spostati fra due wallet tuoi, per esempio da Coinbase ad
+Coinbase Pro. Nei CSV sono un prelievo FIAT su un wallet e un deposito FIAT sull'altro, indistinguibili da un
+bonifico dalla banca: chi conta i depositi FIAT per sapere quanto ha versato conta due volte gli stessi soldi,
+e il quadro RW li legge come apporto e prelievo. Con questo blocco, alla fine di ogni importazione, il
+programma cerca nell'**intero archivio** le coppie e le trasforma in un normale trasferimento fra wallet.
+La categoria resta deposito/prelievo FIAT, così il saldo si sposta davvero da un wallet all'altro.
+
+| Campo | Descrizione |
+|---|---|
+| `controparte` | `nomeExchange` dell'altro wallet del giroconto. |
+| `causali` | Causali CSV dei giroconti su **questo** wallet. |
+| `causaliControparte` | Causali CSV dei giroconti sul wallet controparte. |
+| `secondiTolleranza` | Scarto massimo in secondi fra le due gambe. Default 60. |
+
+```json
+"girocontoFiat": {
+  "controparte": "Coinbase",
+  "causali": ["deposit", "withdrawal"],
+  "causaliControparte": ["Exchange Deposit", "Exchange Withdrawal", "Pro Deposit", "Pro Withdrawal"],
+  "secondiTolleranza": 60
+}
+```
+
+Tre cose da sapere:
+
+- **Dichiara la regola in entrambe le configurazioni**, ognuna con le parti invertite. Così funziona in
+  qualunque ordine importi i due file e basta reimportare uno dei due per sistemare anche i movimenti già in
+  archivio.
+- **Una coppia viene riconosciuta solo se entrambe le causali CSV sono fra quelle dichiarate.** È questo che
+  tiene fuori un normale bonifico dalla banca (`Deposit` sul wallet retail), che non è un giroconto.
+- Importo uguale, segno opposto, stessa valuta e scarto di tempo entro la tolleranza. Una riga senza
+  controparte resta com'è. Lo stesso abbinamento si può fare a mano dalla classificazione del movimento.
+
+## 10. Derivati {#10-derivati}
+
+Il programma **non calcola i redditi da derivati** (futures, perpetui, opzioni, Dual Investment, art. 67 c-quater TUIR): li tratta come cripto-attività, e questo non è corretto sul piano fiscale. Le due chiavi seguenti servono a farli riconoscere e ad
+avvisare l'utente.
+
+### `causaliDerivati` {#causaliderivati}
+
+**Tipo:** oggetto causale CSV → tipo | **Default:** {}
+
+Per ogni causale elencata, i movimenti che nascono da quella riga ricevono nel campo Derivato un tipo che li
+identifica. Il tipo non cambia il calcolo, serve solo a riconoscerli e filtrarli. Una causale presente qui fa
+comparire anche l'avviso di fine importazione e l'avvertenza nelle stampe dei quadri W/RW e T/RT.
+
+I tipi usati dalle configurazioni ufficiali sono `PNL` (risultato realizzato), `FUNDING`, `BONUS`,
+`RIMBORSO_COMMISSIONI`, `CONSEGNA`, `DUAL` e `COMMISSIONE`.
+
+```json
+"causaliDerivati": {
+"funding": "FUNDING", "trade": "PNL", "feeRefund": "RIMBORSO_COMMISSIONI"
+}
+```
+
+### `causaliAllertaDerivati` {#causaliallertaderivati}
+
+**Tipo:** array di causali CSV originali | **Default:** []
+
+Fa comparire l'avviso sui derivati a fine importazione per le causali elencate, senza marcare i movimenti.
+Le causali di `causaliDerivati` entrano automaticamente anche qui. Le configurazioni ufficiali ripetono le
+stesse causali in **entrambe** le chiavi, perché le versioni del programma più vecchie ignorano
+`causaliDerivati` e leggono solo questa. Se scrivi una configurazione solo per la tua installazione basta
+`causaliDerivati`.
+
+```json
+"causaliAllertaDerivati": ["Dual Savings Purchase"]
+```
+
+## 11. Campi extra {#11-campi-extra}
 
 ### `campiExtra` {#campiextra}
 
@@ -664,7 +905,7 @@ Copia il contenuto di una colonna CSV in un campo specifico del movimento. Funzi
 "campiExtra": { "7": 9 }
 ```
 
-## 11. Centralizzato {#11-centralizzato}
+## 12. Centralizzato {#12-centralizzato}
 
 ### `centralizzato` {#centralizzato}
 
@@ -722,10 +963,10 @@ JSON:
 "consolidaRigheStessaData": false,
 "colonne": { "data": 0, "causale": 1, "moneta": 2, "quantita": 3 },
 "mappaCausali": {
-"Deposito": "DEPOSITO-CRYPTO", "Prelievo": "PRELIEVO-CRYPTO",
+"Deposito": "TRASFERIMENTO-CRYPTO", "Prelievo": "TRASFERIMENTO-CRYPTO",
 "Staking": "STAKING REWARDS"
 },
-"causaliChiuse": ["DEPOSITO-CRYPTO","PRELIEVO-CRYPTO","STAKING REWARDS"],
+"causaliChiuse": ["TRASFERIMENTO-CRYPTO","STAKING REWARDS"],
 "causaliEntrata": ["Deposito","Staking"],
 "causaliUscita": ["Prelievo"],
 "rimuoviDaNomeMoneta": [".STAKING?",".EARN?","@CRYPTO.COM"],
@@ -755,7 +996,7 @@ JSON:
 "monetaUscita": 4, "quantitaUscita": 3, "quantitaFee": 5, "monetaFee": 6
 },
 "mappaCausali": {
-"Deposito": "DEPOSITO-CRYPTO", "Prelievo": "PRELIEVO-CRYPTO",
+"Deposito": "TRASFERIMENTO-CRYPTO", "Prelievo": "TRASFERIMENTO-CRYPTO",
 "Operazione": "SCAMBIO CRYPTO-CRYPTO"
 },
 "ricostruisciLordoSeFeeSuMonetaUscita": false,
@@ -811,6 +1052,8 @@ JSON:
 
 - Se la colonna del totale include commissione **e** spread (Coinbase), usa colonneControvalore per scorporare la sola commissione dal costo di carico.
 
+- Se un acquisto può essere pagato anche con carta o bonifico diretto (Coinbase), usa `noteAcquistoDaSaldo` per non creare euro in uscita che non sono mai passati dal saldo.
+
 - Se la natura del movimento è scritta solo nel testo libero di una colonna (es. "from Coinbase Earn"), mappa colonne.note e aggiungi le regole in causalePerNota.
 
 - Se le gambe di uno stesso movimento condividono una colonna diversa da idGruppo ma non il timestamp esatto, usa raggruppamentoPerCausale.
@@ -820,6 +1063,20 @@ JSON:
 - Se una causale sposta una moneta in un comparto dell’exchange e una seconda causale la restituisce settimane dopo (depositi vincolati, Dual Investment), usa walletSpecularePerCausale.
 
 - Se le intestazioni CSV variano di versione in versione, usa autoDetectColonne con mappaAutoDetect.
+
+- Se importo e moneta stanno nella stessa cella (`407.57 AME`), usa `separatoreValoreMoneta`. Se c'è solo la coppia di trading (`KCS-ETH`), usa `coppia`.
+
+- Se il file contiene solo depositi o solo prelievi e non ha una colonna causale utile, usa `versoForzato`.
+
+- Se il verso delle due gambe dipende dalla causale (Buy/Sell sulle stesse colonne), usa `causaliScambiaGambe`. Se ogni riga ha due monete ma solo a volte è uno scambio, usa `gambaDoppiaConSegnoSuUscita`.
+
+- Se l'export accredita micro-interessi decine di volte al giorno, somma le righe con `causaliConsolidaPerGiorno`.
+
+- Se gli euro passano fra due tuoi wallet (Coinbase e Coinbase Pro), dichiara `girocontoFiat` in entrambe le configurazioni.
+
+- Se il file contiene derivati, elenca le causali in `causaliDerivati` per avere l'avviso e il marcatore.
+
+- Prima di condividere il file, compila `descrizione` e, se usa funzioni recenti, `versioneMinimaApp`.
 
 - Se il tipo di operazione è su più colonne, usa causale2/causale3 con separatoreCausale.
 

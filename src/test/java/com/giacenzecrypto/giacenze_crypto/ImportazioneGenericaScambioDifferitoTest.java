@@ -302,6 +302,32 @@ class ImportazioneGenericaScambioDifferitoTest {
         assertSame(risultato.get(0), differiti.get(0), "stesso oggetto riga: ScriviListaSuMappaCrypto lo rinumera in-place per entrambi");
     }
 
+    /**
+     * Dal 2024 Binance scrive la rata di un piano Auto-Invest come {@code Auto-Invest - Deduct Asset}
+     * (USDT −1), mentre la crypto acquistata resta {@code Auto-Invest Transaction}. Le due causali
+     * grezze sono diverse ma entrambe SCAMBIO DIFFERITO: l'abbinamento a valle non guarda la causale,
+     * solo prelievo/deposito, tempo e controvalore (v1.016).
+     */
+    @Test
+    void consolidaGruppo_autoInvestDeductAsset_finisceFraIDifferitiComePrelievo() throws Exception {
+        ConfigurazioneImport cfg = cfgBinanceVeloce();
+        assertEquals("SCAMBIO DIFFERITO", cfg.convertiCausale("Auto-Invest - Deduct Asset"));
+
+        List<String[]> differiti = new ArrayList<>();
+        List<String[]> righe = new ArrayList<>(List.of(
+                rigaBinance("2024-05-01 12:51:41", "Auto-Invest - Deduct Asset", "USDT", "-1"),
+                rigaBinance("2024-05-01 12:58:10", "Auto-Invest Transaction", "BTC", "0.0000168")));
+        List<String[]> movs = new ArrayList<>();
+        for (List<String[]> g : ImportazioneGenerica.raggruppaRighe(righe, cfg)) {
+            movs.addAll(ImportazioneGenerica.consolidaGruppo(g, cfg, differiti));
+        }
+
+        assertEquals(2, movs.size(), "due gambe singole, l'unione la fa ConsolidaMovimentiDifferiti");
+        assertEquals(2, differiti.size(), "entrambe vanno riesaminate come scambio differito");
+        assertTrue(movs.stream().anyMatch(m -> m[0].endsWith("_PC") && "USDT".equals(m[8])), "la rata e' un prelievo USDT");
+        assertTrue(movs.stream().anyMatch(m -> m[0].endsWith("_DC") && "BTC".equals(m[11])), "l'acquisto e' un deposito BTC");
+    }
+
     @Test
     void consolidaGruppo_causaleNonDifferita_nonTocca_differiti() throws Exception {
         ConfigurazioneImport cfg = cfgBinanceVeloce();

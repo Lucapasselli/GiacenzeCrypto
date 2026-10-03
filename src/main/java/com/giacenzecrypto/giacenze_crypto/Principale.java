@@ -198,6 +198,13 @@ private static final long serialVersionUID = 3L;
             new javax.swing.JComboBox<>(new String[]{Principale_FiltriMovimenti.TUTTI});
     private final javax.swing.JComboBox<String> ComboFiltroToken =
             new javax.swing.JComboBox<>(new String[]{Principale_FiltriMovimenti.TUTTI});
+    /**
+     * Tutti i movimenti dell'ultimo caricamento, con i dati che {@code Passa()} vuole già calcolati: il
+     * dialogo filtri li ripassa in memoria per ricalcolare le voci della combo Token a ogni criterio
+     * cambiato (vedi {@link Principale_FiltriMovimenti#MoneteFiltrabili}). Si sostituisce la lista intera a
+     * fine ciclo, mai la si svuota, perché il ciclo può girare fuori dal thread grafico.
+     */
+    private volatile java.util.List<Principale_FiltriMovimenti.MovimentoFiltrabile> FiltriMovimenti_Movimenti = new ArrayList<>();
     static public boolean GestioneTokenScamDaAggiornare=true;
     /**
      * Segnala che il tab "Gestione Documentale" mostra dati vecchi e va riletto quando torna visibile.
@@ -16230,12 +16237,22 @@ if (result != null && !result.isAction("cancel")) {
         long dataInizio = Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale);
         long dataFine = Funzioni_Date_ConvertiDatainLong(CDC_DataFinale);
 
-        //Le due combo servono al dialogo solo per copiarne gli elenchi: e' Funzione_AggiornaComboBox()
-        //a riempirle durante il caricamento della tabella, e rigenerarli nel dialogo vorrebbe dire due
-        //sorgenti della stessa lista.
-        GUI_FiltriMovimenti.Scelta scelta = GUI_FiltriMovimenti.Mostra(this,
-                FiltriMovimenti_Correnti(dataInizio, dataFine),
-                ComboFiltroWallet, ComboFiltroToken);
+        //La combo Wallet serve al dialogo solo per copiarne l'elenco: e' Funzione_AggiornaComboBox()
+        //a riempirla durante il caricamento della tabella.
+        //La combo Token invece mostra solo le monete dei movimenti che gli altri criteri del dialogo
+        //lasciano passare (anno della combo Periodo compreso), ricalcolate a ogni criterio cambiato. Di
+        //proposito non guarda mai ricerca e filtri di colonna: l'elenco dipende solo da quello che si vede
+        //nel dialogo, e non cambia a seconda di come ci si e' arrivati.
+        Principale_FiltriMovimenti.FiltriMovimenti correnti = FiltriMovimenti_Correnti(dataInizio, dataFine);
+        java.util.function.BiFunction<Principale_FiltriMovimenti.FiltriMovimenti, Integer, java.util.List<String>> vociToken =
+                (f, anno) -> {
+                    Principale_FiltriMovimenti.FiltriMovimenti g = (anno == null) ? f
+                            : f.ConPeriodo(Funzioni_Date_ConvertiDatainLong(anno + "-01-01"),
+                                    Funzioni_Date_ConvertiDatainLong(anno + "-12-31"));
+                    return Principale_FiltriMovimenti.VociToken(
+                            Principale_FiltriMovimenti.MoneteFiltrabili(FiltriMovimenti_Movimenti, g), f.Token());
+                };
+        GUI_FiltriMovimenti.Scelta scelta = GUI_FiltriMovimenti.Mostra(this, correnti, ComboFiltroWallet, vociToken);
 
         if (scelta == null) return;   //Annulla: non si tocca nulla, nemmeno la tabella
 
@@ -18489,7 +18506,8 @@ try {
      * ({@link #FiltriCorrenti}) o di riga (campo di ricerca e filtri per colonna, via
      * {@link #FiltriMovimenti_AltriFiltriAttivi()}). Due segnali, sopra e sotto la tabella:
      * <ul>
-     *   <li>il pulsante <i>Filtri...</i> diventa ambra, in grassetto, con testo "FILTRI ATTIVI (N)";
+     *   <li>il pulsante <i>Filtri...</i> passa in grassetto con testo "FILTRI ATTIVI (N)", senza cambiare
+     *       colore (l'ambra ce l'ha gia' la banda qui sotto);
      *       il pulsante <i>Azzera Filtri</i> passa in grassetto;</li>
      *   <li>la label del conteggio righe (sotto la tabella) diventa una banda ambra che dice quanti
      *       criteri e quante righe si stanno vedendo su quante in archivio, ed è cliccabile per azzerare.</li>
@@ -18509,10 +18527,9 @@ try {
         int archivio = MappaCryptoWallet.size();
 
         if (filtrato) {
+            //Il pulsante non cambia piu' colore (2026-10-03): la banda sotto la tabella e la scheda
+            //"Filtri" dei dettagli dicono gia' tutto; resta il numero, in grassetto.
             TransazioniCrypto_Bottone_Filtri.setText("FILTRI ATTIVI (" + tot + ")");
-            TransazioniCrypto_Bottone_Filtri.setOpaque(true);
-            TransazioniCrypto_Bottone_Filtri.setBackground(Tabelle.ambra);
-            TransazioniCrypto_Bottone_Filtri.setForeground(Color.WHITE);
             TransazioniCrypto_Bottone_Filtri.setFont(filtriFontDefault.deriveFont(java.awt.Font.BOLD));
             TransazioniCrypto_Bottone_AzzeraFiltri.setFont(filtriFontDefault.deriveFont(java.awt.Font.BOLD));
 
@@ -19000,6 +19017,9 @@ try {
         //sette condizioni scritte a mano dentro il ciclo, che rileggevano le caselle della barra per
         //ogni movimento: non erano verificabili senza schermo, pur decidendo cosa l'utente vede.
         Principale_FiltriMovimenti.FiltriMovimenti Filtri = FiltriMovimenti_Correnti(dataInizio, dataFine);
+        //Per la combo Token del dialogo filtri (vedi FiltriMovimenti_Movimenti)
+        java.util.List<Principale_FiltriMovimenti.MovimentoFiltrabile> MovimentiFiltrabili =
+                new ArrayList<>(MappaCryptoWallet.size());
 
         //Avanzamento della barra dello splash all'avvio: qui il totale è noto, quindi la frazione è
         //esatta. A programma avviato attivo() è falso e resta solo l'incremento del contatore.
@@ -19112,6 +19132,10 @@ try {
             //lettura del gruppo wallet e una scansione dei prezzi in piu'.
             boolean haPlusvalenza = "S".equals(v[33]);
 
+            //Qui, dopo i nomi personalizzati: sono quelli che Passa() confronta
+            MovimentiFiltrabili.add(new Principale_FiltriMovimenti.MovimentoFiltrabile(
+                    v, dataMovLong, gruppoWallet, haPrezzo, lifomancante));
+
             if (Filtri.Passa(v, dataMovLong, gruppoWallet, haPrezzo, lifomancante)) {
 
                 // Plusvalenza
@@ -19160,6 +19184,7 @@ try {
 
 
         }
+        FiltriMovimenti_Movimenti = MovimentiFiltrabili;
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
         TransazioniCrypto_Text_Plusvalenza.setText("€ " + Funzioni.formattaBigDecimal(Plusvalenza, true));

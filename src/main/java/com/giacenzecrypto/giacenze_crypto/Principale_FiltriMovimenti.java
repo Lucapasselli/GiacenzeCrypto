@@ -225,6 +225,18 @@ public class Principale_FiltriMovimenti {
                     NascondiTrasferimentiInterni, NascondiTokenScam, SoloSenzaPrezzo, SoloLifoMancante);
         }
 
+        /** @return lo stesso record con un altro criterio sulla moneta */
+        public FiltriMovimenti ConToken(String NuovoToken) {
+            return new FiltriMovimenti(Wallet, NuovoToken, Documento, DataInizio, DataFine,
+                    NascondiTrasferimentiInterni, NascondiTokenScam, SoloSenzaPrezzo, SoloLifoMancante);
+        }
+
+        /** @return lo stesso record con un altro intervallo di date */
+        public FiltriMovimenti ConPeriodo(long NuovaDataInizio, long NuovaDataFine) {
+            return new FiltriMovimenti(Wallet, Token, Documento, NuovaDataInizio, NuovaDataFine,
+                    NascondiTrasferimentiInterni, NascondiTokenScam, SoloSenzaPrezzo, SoloLifoMancante);
+        }
+
         /** @return come {@link #Descrizione(java.util.function.UnaryOperator)}, con il solo id del documento */
         public java.util.List<String> Descrizione() {
             return Descrizione(null);
@@ -482,6 +494,59 @@ public class Principale_FiltriMovimenti {
             }
         }
         return r;
+    }
+
+    /**
+     * Un movimento con i dati che {@link FiltriMovimenti#Passa} vuole già calcolati, conservati dal ciclo di
+     * caricamento della tabella. Servono al dialogo filtri per ricalcolare le monete a ogni criterio cambiato
+     * con una passata solo in memoria: rileggere gruppo wallet, prezzo e data per ogni movimento costerebbe
+     * quanto il caricamento. {@code V} &egrave; la riga della mappa, con i nomi personalizzati gi&agrave; applicati.
+     */
+    public record MovimentoFiltrabile(String[] V, long Data, String GruppoWallet, boolean HaPrezzo, boolean LifoMancante) {
+    }
+
+    /**
+     * @param Movimenti i movimenti conservati dall'ultimo caricamento (anche {@code null})
+     * @param F i criteri; quello sulla moneta viene <b>ignorato</b>, altrimenti con BTC scelto si vedrebbero
+     *          solo BTC e le sue controparti e non si potrebbe passare a un'altra moneta
+     * @return le monete (uscita ed entrata) dei movimenti che passano gli altri criteri
+     */
+    public static java.util.Set<String> MoneteFiltrabili(java.util.List<MovimentoFiltrabile> Movimenti, FiltriMovimenti F) {
+        java.util.Set<String> s = new java.util.HashSet<>();
+        if (Movimenti == null) return s;
+        FiltriMovimenti senzaToken = F.ConToken(TUTTI);
+        for (MovimentoFiltrabile m : Movimenti) {
+            if (senzaToken.Passa(m.V(), m.Data(), m.GruppoWallet(), m.HaPrezzo(), m.LifoMancante())) {
+                s.add(m.V()[8]);
+                s.add(m.V()[11]);
+            }
+        }
+        return s;
+    }
+
+    /**
+     * Le voci della combo Token del dialogo filtri: solo le monete dei movimenti che gli <b>altri</b>
+     * criteri lasciano passare (wallet, periodo, documento...), ordinate senza badare alle maiuscole,
+     * con {@link #TUTTI} in testa.
+     *
+     * <p>La moneta scelta adesso entra sempre, anche se nessun movimento la porta più: senza, il dialogo
+     * non la troverebbe fra le voci, resterebbe su "Tutti" e <i>Applica</i> toglierebbe il filtro sulla
+     * moneta senza che l'utente l'abbia toccato.
+     *
+     * @param Monete simboli raccolti dal chiamante; i vuoti (movimenti a una gamba sola) si scartano
+     * @param TokenCorrente la moneta del filtro attivo, oppure {@link #TUTTI}
+     * @return l'elenco da mostrare, mai vuoto
+     */
+    public static java.util.List<String> VociToken(java.util.Collection<String> Monete, String TokenCorrente) {
+        java.util.Set<String> s = new java.util.HashSet<>();
+        if (Monete != null) {
+            for (String m : Monete) if (m != null && !m.isBlank() && !m.equalsIgnoreCase(TUTTI)) s.add(m);
+        }
+        if (TokenCorrente != null && !TokenCorrente.isBlank() && !TokenCorrente.equalsIgnoreCase(TUTTI)) s.add(TokenCorrente);
+        java.util.List<String> l = new java.util.ArrayList<>(s);
+        l.sort(String.CASE_INSENSITIVE_ORDER);
+        l.add(0, TUTTI);
+        return l;
     }
 
     /** @return i valori separati da virgola, o i primi {@link #VALORI_MAX_MOSTRATI} più "(+n)"; vuoto diventa "(vuoto)" */

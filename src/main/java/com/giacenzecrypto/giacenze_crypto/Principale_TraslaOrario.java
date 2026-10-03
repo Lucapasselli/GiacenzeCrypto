@@ -5,6 +5,9 @@ import java.awt.Cursor;
 import java.awt.Window;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.zone.ZoneRules;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -46,9 +49,19 @@ import java.util.Set;
  * già avere l'orario giusto) spetta all'utente, selezionandola esplicitamente.</p>
  *
  * <p>Lo spostamento è aritmetica sull'istante assoluto (si somma il delta ai millisecondi epoch e si
- * riformatta nel fuso Europe/Rome), non sull'ora civile: è la scelta corretta per correggere "il fuso
- * usato in importazione era sbagliato di N ore fisse" — un'aritmetica sulle sole cifre di ora
- * darebbe risultati diversi a cavallo dei cambi ora legale di marzo/ottobre.</p>
+ * riformatta nel fuso Europe/Rome), non sull'ora civile. Con uno spostamento <b>fisso</b> questo
+ * corregge "il fuso usato in importazione era sbagliato di N ore costanti". Non basta quando il file
+ * importato aveva orari privi di fuso che seguivano (o ignoravano) il cambio dell'ora diversamente da
+ * come sono stati letti — un file in UTC letto come ora italiana è indietro di 1 ora d'inverno e di 2
+ * d'estate. Per questo lo spostamento può essere <b>stagionale</b>: un valore per i movimenti in ora
+ * solare e uno per quelli in ora legale. La stagione si decide <b>una volta sola, sull'istante
+ * originale del capofila</b> ({@link #isOraLegale}), con la stessa lettura dell'ID usata per lo
+ * spostamento, così che classificazione e aritmetica non possano divergere; i membri posseduti
+ * ereditano lo spostamento del capofila e non vengono classificati per conto loro (un gruppo si muove
+ * sempre unito). Uno spostamento nullo per una stagione è il caso normale (file sempre in UTC+1, giusto
+ * d'inverno): quei movimenti non vengono toccati affatto, niente storico né campi del motore svuotati.
+ * A ridosso della notte del cambio l'istante letto può cadere dal lato sbagliato: è un limite
+ * dichiarato all'utente nel riepilogo, non risolvibile senza sapere quale fuso usava il file.</p>
  *
  * @author lucap
  */
@@ -102,18 +115,51 @@ public class Principale_TraslaOrario {
 
         if (!ConfermaSeOrigineBlockchain(Traslabili, owner)) return false;
 
-        BigDecimal Ore = ChiediOre(owner);
-        if (Ore == null) return false;
+        String Modalita = ChiediModalita(owner);
+        if (Modalita == null) return false;
+        boolean Stagionale = Modalita.equals("stagionale");
 
-        long DeltaMillis;
-        try {
-            DeltaMillis = Ore.multiply(BigDecimal.valueOf(3_600_000L)).setScale(0, RoundingMode.HALF_UP).longValueExact();
-        } catch (ArithmeticException ex) {
-            Messaggi.WarningMessage("Valore non valido", "Lo spostamento indicato è troppo grande.", owner);
+        BigDecimal OreSolare;
+        BigDecimal OreLegale;
+        if (Stagionale) {
+            OreSolare = ChiediOre(owner, "Di quante ore traslare i movimenti in ora solare?",
+                    "Vale per i movimenti la cui data cade in ora solare, cioè dall'ultima domenica di ottobre "
+                    + "all'ultima domenica di marzo.",
+                    "Positivo per spostare avanti nel tempo, negativo per spostare indietro, 0 per lasciarli "
+                    + "come sono. Sono ammessi valori decimali (es. 0.5 per trenta minuti).\n\n"
+                    + "Esempi: file in UTC letto come ora italiana, indicare <b>1</b>. File in ora italiana letto "
+                    + "come UTC, indicare <b>-1</b>. File sempre in ora invernale italiana, indicare <b>0</b>.",
+                    "Ore da traslare in ora solare");
+            if (OreSolare == null) return false;
+            OreLegale = ChiediOre(owner, "Di quante ore traslare i movimenti in ora legale?",
+                    "Vale per i movimenti la cui data cade in ora legale, cioè dall'ultima domenica di marzo "
+                    + "all'ultima domenica di ottobre.",
+                    "Positivo per spostare avanti nel tempo, negativo per spostare indietro, 0 per lasciarli "
+                    + "come sono. Sono ammessi valori decimali (es. 0.5 per trenta minuti).\n\n"
+                    + "Esempi: file in UTC letto come ora italiana, indicare <b>2</b>. File in ora italiana letto "
+                    + "come UTC, indicare <b>-2</b>. File sempre in ora invernale italiana, indicare <b>1</b>.",
+                    "Ore da traslare in ora legale");
+            if (OreLegale == null) return false;
+        } else {
+            OreSolare = ChiediOre(owner, "Di quante ore traslare i movimenti selezionati?",
+                    "Indica lo spostamento da applicare all'orario dei movimenti selezionati.",
+                    "Positivo per spostare avanti nel tempo, negativo per spostare indietro. "
+                    + "Sono ammessi valori decimali (es. 5.5 per cinque ore e trenta minuti).",
+                    "Ore da traslare");
+            if (OreSolare == null) return false;
+            OreLegale = OreSolare;
+        }
+
+        Long DeltaSolare = OreInMillis(OreSolare, owner);
+        if (DeltaSolare == null) return false;
+        Long DeltaLegale = OreInMillis(OreLegale, owner);
+        if (DeltaLegale == null) return false;
+        if (DeltaSolare == 0 && DeltaLegale == 0) {
+            Messaggi.WarningMessage("Nessuno spostamento", "Il valore inserito corrisponde a uno spostamento nullo.", owner);
             return false;
         }
-        if (DeltaMillis == 0) {
-            Messaggi.WarningMessage("Nessuno spostamento", "Il valore inserito corrisponde a uno spostamento nullo.", owner);
+
+        if (Stagionale && !ConfermaRiepilogoStagionale(Traslabili, OreSolare, DeltaSolare, OreLegale, DeltaLegale, owner)) {
             return false;
         }
 
@@ -131,13 +177,15 @@ public class Principale_TraslaOrario {
         owner.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         Map<String, String> Traslati;
         try {
-            Traslati = EseguiTraslazioneConMappa(Traslabili, DeltaMillis);
+            Traslati = EseguiTraslazioneConMappa(Traslabili, DeltaSolare, DeltaLegale);
         } finally {
             owner.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
 
         if (Traslati.isEmpty()) return false;
-        LoggerGC.logInfo("Trasla Orario: " + Traslati.size() + " movimento/i traslato/i di " + Ore.toPlainString() + " ore");
+        LoggerGC.logInfo("Trasla Orario: " + Traslati.size() + " movimento/i traslato/i di "
+                + (Stagionale ? OreSolare.toPlainString() + " ore in ora solare e " + OreLegale.toPlainString() + " ore in ora legale"
+                        : OreSolare.toPlainString() + " ore"));
 
         if (RicalcolaPrezzi) {
             RicalcolaPrezziMovimenti(Traslati.values(), AncheIPersonalizzati, owner);
@@ -146,18 +194,64 @@ public class Principale_TraslaOrario {
         return true;
     }
 
-    /** Chiede all'utente di quante ore traslare i movimenti selezionati. @return il valore inserito, {@code null} se annullato o non valido */
-    private static BigDecimal ChiediOre(Window owner) {
+    /**
+     * Chiede se lo spostamento è uguale per tutti i movimenti o diverso fra ora solare e ora legale,
+     * spiegando con i casi tipici quando serve il secondo.
+     * @return {@code "fisso"}, {@code "stagionale"}, oppure {@code null} se annullato
+     */
+    private static String ChiediModalita(Window owner) {
         AppDialog.DialogResult result = AppDialog.builder(owner)
                 .windowTitle("Trasla Orario")
-                .bodyTitle("Di quante ore traslare i movimenti selezionati?")
+                .bodyTitle("Lo spostamento è sempre uguale?")
                 .showTitleInBody(true)
                 .theme()
                 .type(AppDialog.DialogType.INFO)
-                .message("Indica lo spostamento da applicare all'orario dei movimenti selezionati.")
-                .details("Positivo per spostare avanti nel tempo, negativo per spostare indietro. "
-                        + "Sono ammessi valori decimali (es. 5.5 per cinque ore e trenta minuti).")
-                .inputField("Ore da traslare", "0")
+                .message("Lo spostamento può essere lo stesso per tutti i movimenti, oppure diverso a seconda "
+                        + "che la data del movimento cada in ora solare o in ora legale.")
+                .details("Lo spostamento diverso serve quando il file importato riportava orari senza "
+                        + "l'indicazione del fuso, e quegli orari seguivano (o ignoravano) il cambio dell'ora in "
+                        + "modo diverso da come il programma li ha letti. In Italia l'ora legale va dall'ultima "
+                        + "domenica di marzo all'ultima domenica di ottobre: in quel periodo l'Italia è 2 ore avanti "
+                        + "rispetto all'UTC, nel resto dell'anno 1 ora sola.\n\n"
+                        + "<b>Casi tipici</b>\n"
+                        + "<b>1.</b> File con orari UTC letti come ora italiana: i movimenti risultano 1 ora indietro "
+                        + "d'inverno e 2 d'estate. Un acquisto fatto alle 12:00 italiane di luglio compare alle 10:00. "
+                        + "Da indicare: ora solare <b>+1</b>, ora legale <b>+2</b>.\n"
+                        + "<b>2.</b> File con orari italiani letti come UTC: i movimenti risultano 1 ora avanti "
+                        + "d'inverno e 2 d'estate. Da indicare: ora solare <b>-1</b>, ora legale <b>-2</b>.\n"
+                        + "<b>3.</b> File che usa sempre l'ora invernale italiana (UTC+1) senza mai passare all'ora "
+                        + "legale: d'inverno gli orari sono già giusti, d'estate sono 1 ora indietro. Da indicare: "
+                        + "ora solare <b>0</b>, ora legale <b>+1</b>.\n\n"
+                        + "Se invece l'orario è sbagliato dello stesso numero di ore in ogni stagione, basta lo "
+                        + "spostamento fisso.")
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("stagionale", "Diverso fra ora solare e legale")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("fisso", "Uguale per tutti")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .showDialog();
+
+        if (result == null) return null;
+        if (result.isAction("fisso")) return "fisso";
+        if (result.isAction("stagionale")) return "stagionale";
+        return null;
+    }
+
+    /** Chiede all'utente un numero di ore (anche decimale e negativo). @return il valore inserito, {@code null} se annullato o non valido */
+    private static BigDecimal ChiediOre(Window owner, String Titolo, String Messaggio, String Dettagli, String Etichetta) {
+        AppDialog.DialogResult result = AppDialog.builder(owner)
+                .windowTitle("Trasla Orario")
+                .bodyTitle(Titolo)
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message(Messaggio)
+                .details(Dettagli)
+                .inputField(Etichetta, "0")
                 .inputColumns(10)
                 .action(AppDialog.DialogAction.builder("cancel", "Annulla")
                         .role(AppDialog.ActionRole.SECONDARY)
@@ -176,6 +270,104 @@ public class Principale_TraslaOrario {
             return null;
         }
         return new BigDecimal(Valore);
+    }
+
+    /** @return le ore convertite in millisecondi, {@code null} (dopo averlo segnalato) se troppo grandi */
+    private static Long OreInMillis(BigDecimal Ore, Window owner) {
+        try {
+            return Ore.multiply(BigDecimal.valueOf(3_600_000L)).setScale(0, RoundingMode.HALF_UP).longValueExact();
+        } catch (ArithmeticException ex) {
+            Messaggi.WarningMessage("Valore non valido", "Lo spostamento indicato è troppo grande.", owner);
+            return null;
+        }
+    }
+
+    /**
+     * Mostra, calcolato sui movimenti realmente selezionati, quanti cadono in ora solare e quanti in ora
+     * legale, di quanto verrà spostato ciascun gruppo e un esempio prima/dopo per ognuno, e chiede conferma.
+     * @return {@code true} se l'utente conferma
+     */
+    private static boolean ConfermaRiepilogoStagionale(List<String> Traslabili, BigDecimal OreSolare, long DeltaSolare,
+            BigDecimal OreLegale, long DeltaLegale, Window owner) {
+        int NumSolare = 0;
+        int NumLegale = 0;
+        String EsempioSolare = null;
+        String EsempioLegale = null;
+        for (String ID : Traslabili) {
+            String Timestamp = ID.split("_")[0];
+            boolean Legale = isOraLegale(Timestamp);
+            long Delta = Legale ? DeltaLegale : DeltaSolare;
+            String Esempio = null;
+            if ((Legale ? EsempioLegale : EsempioSolare) == null && Delta != 0) {
+                long Millis = FunzioniDate.ConvertiDataIDinLong(Timestamp);
+                Esempio = "un movimento del " + DataLeggibile(Millis) + " diventa " + DataLeggibile(Millis + Delta);
+            }
+            if (Legale) {
+                NumLegale++;
+                if (EsempioLegale == null) EsempioLegale = Esempio;
+            } else {
+                NumSolare++;
+                if (EsempioSolare == null) EsempioSolare = Esempio;
+            }
+        }
+
+        int DaSpostare = (DeltaSolare != 0 ? NumSolare : 0) + (DeltaLegale != 0 ? NumLegale : 0);
+        if (DaSpostare == 0) {
+            Messaggi.WarningMessage("Nessuno spostamento",
+                    "Nessuno dei movimenti selezionati cade nella stagione per cui è stato indicato uno spostamento.", owner);
+            return false;
+        }
+
+        String Dettagli = RigaRiepilogo("In ora solare", NumSolare, OreSolare, DeltaSolare, EsempioSolare) + "\n"
+                + RigaRiepilogo("In ora legale", NumLegale, OreLegale, DeltaLegale, EsempioLegale) + "\n\n"
+                + "I movimenti della notte del cambio d'ora (ultima domenica di marzo e di ottobre, fra l'una e le "
+                + "quattro circa) vanno ricontrollati a mano: a ridosso del cambio l'orario sbagliato può farli "
+                + "cadere nella stagione sbagliata.";
+
+        AppDialog.DialogResult result = AppDialog.builder(owner)
+                .windowTitle("Trasla Orario")
+                .bodyTitle("Riepilogo della traslazione")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message("Verranno traslati " + DaSpostare + " dei " + Traslabili.size() + " movimenti selezionati.")
+                .details(Dettagli)
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("confirm", "Conferma")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .showDialog();
+        return result != null && result.isAction("confirm");
+    }
+
+    /** Una riga del riepilogo stagionale, per esempio "In ora legale: 12 movimenti, spostati di +2 ore (un movimento del ... diventa ...)". */
+    private static String RigaRiepilogo(String Stagione, int Numero, BigDecimal Ore, long Delta, String Esempio) {
+        String Riga = "<b>" + Stagione + ":</b> " + Numero + (Numero == 1 ? " movimento" : " movimenti");
+        if (Numero == 0) return Riga + ".";
+        if (Delta == 0) return Riga + ", lasciati invariati.";
+        String OreTesto = (Ore.signum() > 0 ? "+" : "") + Ore.stripTrailingZeros().toPlainString();
+        Riga += ", spostati di " + OreTesto + (Ore.abs().compareTo(BigDecimal.ONE) == 0 ? " ora" : " ore");
+        if (Esempio != null) Riga += " (" + Esempio + ")";
+        return Riga + ".";
+    }
+
+    /** @return la data/ora nel formato della tabella movimenti ({@code yyyy-MM-dd HH:mm}), fuso Europe/Rome */
+    private static String DataLeggibile(long Millis) {
+        String Data = FunzioniDate.ConvertiDatadaLongAlSecondo(Millis).trim();
+        return Data.substring(0, Data.length() - 3);
+    }
+
+    private static final ZoneRules REGOLE_ROMA = ZoneId.of("Europe/Rome").getRules();
+
+    /**
+     * @param TimestampID il primo segmento di un ID movimento ({@code yyyyMMddHHmmss}, ora di Roma)
+     * @return {@code true} se quell'istante cade in ora legale italiana. Usa la stessa lettura dell'ID
+     *         ({@link FunzioniDate#ConvertiDataIDinLong}) con cui poi si calcola lo spostamento
+     */
+    static boolean isOraLegale(String TimestampID) {
+        return REGOLE_ROMA.isDaylightSavings(Instant.ofEpochMilli(FunzioniDate.ConvertiDataIDinLong(TimestampID)));
     }
 
     /**
@@ -272,7 +464,16 @@ public class Principale_TraslaOrario {
      *         membri del gruppo trascinati con loro non sono contati separatamente)
      */
     static int EseguiTraslazione(List<String> IDs, long DeltaMillis) {
-        return EseguiTraslazioneConMappa(IDs, DeltaMillis).size();
+        return EseguiTraslazioneConMappa(IDs, DeltaMillis, DeltaMillis).size();
+    }
+
+    /**
+     * Come {@link #EseguiTraslazione(List, long)}, con uno spostamento diverso a seconda che il movimento
+     * (il capofila, vedi {@link #isOraLegale}) cada in ora solare o in ora legale. I movimenti della
+     * stagione con spostamento nullo non vengono toccati e non sono contati.
+     */
+    static int EseguiTraslazione(List<String> IDs, long DeltaSolare, long DeltaLegale) {
+        return EseguiTraslazioneConMappa(IDs, DeltaSolare, DeltaLegale).size();
     }
 
     /**
@@ -281,10 +482,10 @@ public class Principale_TraslaOrario {
      * ricalcolo prezzi.
      * @return mappa vecchio ID → nuovo ID dei soli movimenti capofila effettivamente traslati
      */
-    private static Map<String, String> EseguiTraslazioneConMappa(List<String> IDs, long DeltaMillis) {
+    private static Map<String, String> EseguiTraslazioneConMappa(List<String> IDs, long DeltaSolare, long DeltaLegale) {
         Map<String, String> VecchioANuovoCapofila = new LinkedHashMap<>();
         for (String ID : IDs) {
-            String NuovoID = TraslaGruppo(ID, DeltaMillis);
+            String NuovoID = TraslaGruppo(ID, DeltaSolare, DeltaLegale);
             if (NuovoID != null) VecchioANuovoCapofila.put(ID, NuovoID);
         }
         return VecchioANuovoCapofila;
@@ -296,15 +497,21 @@ public class Principale_TraslaOrario {
      * timestamp) coincide col suo — vedi il javadoc di classe per l'elenco dei casi. Gli altri membri
      * del gruppo (se presenti) restano fermi: viene solo riscritto il testo del loro {@code [20]} per
      * puntare ai nuovi ID.
+     * La stagione (ora solare/legale) si decide sul solo capofila: i membri posseduti si spostano con lui.
      * @return il nuovo ID assegnato a {@code ID}, o {@code null} se non è stato possibile traslarlo
      *         (già consumato da un passo precedente dello stesso batch, non più in mappa, non
-     *         traslabile, o impossibile generare un ID univoco per uno dei membri posseduti)
+     *         traslabile, spostamento nullo per la sua stagione, o impossibile generare un ID univoco
+     *         per uno dei membri posseduti)
      */
-    private static String TraslaGruppo(String ID, long DeltaMillis) {
+    private static String TraslaGruppo(String ID, long DeltaSolare, long DeltaLegale) {
         String Capofila[] = MappaCryptoWallet.get(ID);
         if (Capofila == null || NonTraslabile(Capofila)) return null;
 
         String TimestampOriginale = ID.split("_")[0];
+        //Uno spostamento nullo va escluso qui, prima di timbrare il lignaggio e svuotare i campi del
+        //motore: altrimenti un movimento rimasto fermo avrebbe una voce di storico e un ricalcolo inutile
+        long DeltaMillis = isOraLegale(TimestampOriginale) ? DeltaLegale : DeltaSolare;
+        if (DeltaMillis == 0) return null;
 
         //Gruppo completo, letto fresco dalla mappa: ID stesso più tutti gli ID citati nel suo [20].
         //Leggerlo qui (non da uno snapshot preso a inizio batch) è ciò che permette a un batch che

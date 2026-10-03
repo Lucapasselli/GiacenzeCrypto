@@ -16,9 +16,10 @@ import javax.swing.JComboBox;
  * <p>Due cose che non sono ovvie:
  *
  * <ul>
- *   <li><b>Le combo Wallet e Token non ricostruiscono i propri elenchi</b>: li copiano da quelle della
- *       barra, che {@code Principale.Funzione_AggiornaComboBox()} riempie durante il caricamento della
- *       tabella. Rigenerarli qui significherebbe due sorgenti della stessa lista, destinate a divergere.</li>
+ *   <li><b>Il dialogo non costruisce da s&eacute; gli elenchi.</b> Le voci Wallet le copia dalla combo che
+ *       {@code Principale.Funzione_AggiornaComboBox()} riempie durante il caricamento della tabella. Le
+ *       voci Token le chiede a {@code Principale} con i criteri impostati qui, all'apertura e di nuovo a ogni
+ *       criterio cambiato: sono solo le monete dei movimenti che gli altri criteri lasciano vedere.</li>
  *   <li><b>Il dialogo non applica nulla da s&eacute;.</b> Restituisce un {@link FiltriMovimenti} e chi lo ha
  *       aperto decide cosa farne: &egrave; ci&ograve; che permette a {@code Principale} di ricaricare la
  *       tabella <b>una volta sola</b>, mentre oggi ogni casella toccata nella barra ne fa ripartire una.</li>
@@ -61,6 +62,9 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
     private final long DataInizio;
     private final long DataFine;
 
+    /** Dati i criteri del dialogo e l'anno della combo Periodo ({@code null} = date invariate), le voci Token. */
+    private final java.util.function.BiFunction<FiltriMovimenti, Integer, List<String>> VociToken;
+
     /** Id del documento corrispondente a ciascuna voce della combo; {@code null} per le prime tre. */
     private final java.util.List<String> DocumentiPerVoce = new java.util.ArrayList<>();
 
@@ -70,20 +74,22 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
      * @param Proprietario finestra su cui centrare il dialogo
      * @param Correnti criteri attivi in questo momento, che il dialogo mostra come punto di partenza
      * @param ComboWallet la combo dei wallet della barra, da cui copiare le voci
-     * @param ComboToken la combo dei token della barra, da cui copiare le voci
+     * @param VociToken dati i criteri impostati nel dialogo e l'anno della combo Periodo ({@code null} se
+     *                  non scelto), le voci della combo Token; la moneta del record deve restare fra le voci
      * @return l'esito scelto, oppure {@code null} se l'utente ha annullato
      */
-    public static Scelta Mostra(Window Proprietario, FiltriMovimenti Correnti,
-            JComboBox<String> ComboWallet, JComboBox<String> ComboToken) {
-        GUI_FiltriMovimenti d = new GUI_FiltriMovimenti(Proprietario, Correnti, ComboWallet, ComboToken);
+    public static Scelta Mostra(Window Proprietario, FiltriMovimenti Correnti, JComboBox<String> ComboWallet,
+            java.util.function.BiFunction<FiltriMovimenti, Integer, List<String>> VociToken) {
+        GUI_FiltriMovimenti d = new GUI_FiltriMovimenti(Proprietario, Correnti, ComboWallet, VociToken);
         d.setLocationRelativeTo(Proprietario);
         d.setVisible(true);
         return d.Esito;
     }
 
-    private GUI_FiltriMovimenti(Window Proprietario, FiltriMovimenti Correnti,
-            JComboBox<String> ComboWallet, JComboBox<String> ComboToken) {
+    private GUI_FiltriMovimenti(Window Proprietario, FiltriMovimenti Correnti, JComboBox<String> ComboWallet,
+            java.util.function.BiFunction<FiltriMovimenti, Integer, List<String>> VociToken) {
         super(Proprietario, ModalityType.APPLICATION_MODAL);
+        this.VociToken = VociToken;
         //Le date entrano ed escono immutate: il dialogo non le espone, ma il record deve restare
         //completo, altrimenti chi un domani lo salvasse cosi' com'e' si ritroverebbe l'intervallo a zero.
         DataInizio = (Correnti == null) ? 0 : Correnti.DataInizio();
@@ -91,23 +97,41 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         initComponents();
 
         CopiaVoci(ComboWallet, ComboBox_Wallet);
-        CopiaVoci(ComboToken, ComboBox_Token);
         RiempiDocumenti();
         RiempiPeriodo();
 
         if (Correnti != null) {
             SelezionaOTieni(ComboBox_Wallet, Correnti.Wallet());
-            SelezionaOTieni(ComboBox_Token, Correnti.Token());
             SelezionaDocumento(Correnti.Documento());
             CheckBox_TrasferimentiInterni.setSelected(Correnti.NascondiTrasferimentiInterni());
             CheckBox_TokenScam.setSelected(Correnti.NascondiTokenScam());
             CheckBox_SenzaPrezzo.setSelected(Correnti.SoloSenzaPrezzo());
             CheckBox_LifoMancante.setSelected(Correnti.SoloLifoMancante());
         }
+        //Dopo gli altri criteri, che decidono quali monete offrire; gli ascoltatori dopo ancora, perche'
+        //impostare lo stato di partenza non deve ricalcolare l'elenco una volta per controllo.
+        AggiornaVociToken(Correnti == null ? Principale_FiltriMovimenti.TUTTI : Correnti.Token());
+        java.awt.event.ActionListener ricalcola =
+                e -> AggiornaVociToken(String.valueOf(ComboBox_Token.getSelectedItem()));
+        for (javax.swing.AbstractButton b : new javax.swing.AbstractButton[]{CheckBox_TrasferimentiInterni,
+                CheckBox_TokenScam, CheckBox_SenzaPrezzo, CheckBox_LifoMancante}) b.addActionListener(ricalcola);
+        for (JComboBox<?> c : new JComboBox<?>[]{ComboBox_Wallet, ComboBox_Documento, ComboBox_Periodo})
+            c.addActionListener(ricalcola);
 
         Icone.AdattaIconeAlTema(this);
         getRootPane().setDefaultButton(Bottone_Ok);
         pack();
+    }
+
+    /**
+     * Rifa le voci della combo Token con i criteri impostati adesso e riseleziona la moneta indicata,
+     * che {@code VociToken} tiene sempre fra le voci (altrimenti Applica toglierebbe il filtro da solo).
+     */
+    private void AggiornaVociToken(String TokenSelezionato) {
+        FiltriMovimenti f = Leggi(DataInizio, DataFine).ConToken(TokenSelezionato);
+        List<String> voci = (VociToken == null) ? List.of(Principale_FiltriMovimenti.TUTTI) : VociToken.apply(f, AnnoScelto());
+        ComboBox_Token.setModel(new DefaultComboBoxModel<>(voci.toArray(String[]::new)));
+        SelezionaOTieni(ComboBox_Token, TokenSelezionato);
     }
 
     /** Copia le voci e la selezione da una combo della barra a quella del dialogo. */

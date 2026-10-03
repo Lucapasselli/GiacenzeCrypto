@@ -137,7 +137,7 @@ class Principale_FiltriMovimentiTest {
         FiltriMovimenti soloBTC = new FiltriMovimenti(TUTTI, "BTC", DOC_TUTTI, 0, 99999999L,
                 false, false, false, false);
 
-        assertTrue(soloBTC.Passa(mov("Binance", "SCAMBIO CRYPTO", "BTC", "USDC", ""), 20240315L, "", true, false));
+        assertTrue(soloBTC.Passa(mov("Binance", "SCAMBIO CRYPTO", "BTC", "USDC", ""), 20240315L, "Wallet 01", true, false));
         assertTrue(soloBTC.Passa(mov("Binance", "SCAMBIO CRYPTO", "USDC", "BTC", ""), 20240315L, "", true, false));
         assertFalse(soloBTC.Passa(mov("Binance", "SCAMBIO CRYPTO", "ETH", "USDC", ""), 20240315L, "", true, false));
     }
@@ -191,7 +191,7 @@ class Principale_FiltriMovimentiTest {
                 "wallet sbagliato (con gruppo: vedi il difetto caratterizzato sopra)");
         assertFalse(f.Passa(mov("Binance", "SCAMBIO CRYPTO", "ETH", "USDC", "3"), 20240315L, "", true, false),
                 "token sbagliato");
-        assertFalse(f.Passa(mov("Binance", "SCAMBIO CRYPTO", "BTC", "USDC", ""), 20240315L, "", true, false),
+        assertFalse(f.Passa(mov("Binance", "SCAMBIO CRYPTO", "BTC", "USDC", ""), 20240315L, "Wallet 01", true, false),
                 "documento mancante");
         assertFalse(f.Passa(mov("Binance", "SCAMBIO CRYPTO", "BTC", "USDC", "3"), 20230315L, "", true, false),
                 "fuori intervallo");
@@ -297,6 +297,42 @@ class Principale_FiltriMovimentiTest {
         assertEquals(TUTTI, f.Wallet());
         assertEquals(TUTTI, f.Token());
         assertEquals(DOC_TUTTI, f.Documento());
-        assertTrue(f.Passa(mov("Binance", "SCAMBIO CRYPTO", "BTC", "USDC", ""), 20240315L, "", true, false));
+        assertTrue(f.Passa(mov("Binance", "SCAMBIO CRYPTO", "BTC", "USDC", ""), 20240315L, "Wallet 01", true, false));
+    }
+    // ==================== voci della combo Token del dialogo ====================
+
+    @Test
+    void leVociTokenSonoOrdinateSenzaVuotiConTuttiInTesta() {
+        assertEquals(java.util.List.of(TUTTI, "BTC", "sol", "USDC"),
+                VociToken(java.util.List.of("USDC", "", "BTC", "sol", "BTC", "Tutti"), TUTTI));
+    }
+
+    @Test
+    void laMonetaFiltrataRestaFraLeVociAncheSeNessunMovimentoLaPorta() {
+        //Senza, il dialogo si aprirebbe su "Tutti" e Applica toglierebbe il filtro sulla moneta.
+        assertEquals(java.util.List.of(TUTTI, "BTC", "ETH"), VociToken(java.util.List.of("BTC"), "ETH"));
+        assertEquals(java.util.List.of(TUTTI), VociToken(null, TUTTI));
+    }
+
+    @Test
+    void conTokenCambiaSoloLaMoneta() {
+        FiltriMovimenti f = new FiltriMovimenti("Binance", "BTC", DOC_CON, GEN, DIC, true, true, false, true);
+        FiltriMovimenti g = f.ConToken(TUTTI);
+        assertEquals(new FiltriMovimenti("Binance", TUTTI, DOC_CON, GEN, DIC, true, true, false, true), g);
+        assertTrue(g.Passa(mov("Binance", "SCAMBIO CRYPTO", "SOL", "USDC", "1"), 20240315L, "", true, true));
+        assertFalse(f.Passa(mov("Binance", "SCAMBIO CRYPTO", "SOL", "USDC", "1"), 20240315L, "", true, true));
+    }
+    @Test
+    void leMoneteFiltrabiliSeguonoGliAltriCriteriEIgnoranoLaMoneta() {
+        java.util.List<MovimentoFiltrabile> m = java.util.List.of(
+                new MovimentoFiltrabile(mov("Binance", "SCAMBIO CRYPTO", "BTC", "USDC", ""), 20240315L, "Wallet 01", true, false),
+                new MovimentoFiltrabile(mov("Binance", "SCAMBIO CRYPTO", "", "SOL", ""), 20240316L, "Wallet 01", true, false),
+                new MovimentoFiltrabile(mov("Kraken", "SCAMBIO CRYPTO", "ETH", "DOT", ""), 20240317L, "Wallet 02", true, false),
+                new MovimentoFiltrabile(mov("Binance", "SCAMBIO CRYPTO", "ADA", "EUR", ""), 20250101L, "Wallet 01", true, false));
+        //Con BTC scelto si vedono comunque le altre monete di Binance nel periodo: solo cosi' si puo' cambiarla
+        FiltriMovimenti f = new FiltriMovimenti("Binance", "BTC", DOC_TUTTI, GEN, DIC, false, false, false, false);
+        assertEquals(java.util.Set.of("BTC", "USDC", "SOL", ""), MoneteFiltrabili(m, f));
+        assertEquals(java.util.Set.of("ADA", "EUR"), MoneteFiltrabili(m, f.ConPeriodo(20250101L, 20251231L)));
+        assertTrue(MoneteFiltrabili(null, f).isEmpty());
     }
 }

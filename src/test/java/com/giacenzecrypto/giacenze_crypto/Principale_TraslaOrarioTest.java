@@ -543,4 +543,79 @@ class Principale_TraslaOrarioTest {
         assertNotNull(MappaCryptoWallet.get("20240331033000_WalletTest_001_001_DC"),
                 "01:30 + 1 ora a cavallo del cambio ora legale deve dare 03:30, non 02:30");
     }
+
+    // =============================================================================================
+    // SPOSTAMENTO DIVERSO FRA ORA SOLARE E ORA LEGALE
+    // =============================================================================================
+
+    @Test
+    void stagionale_unMovimentoInvernaleEUnoEstivoRicevonoSpostamentiDiversi() {
+        //Caso tipico: file con orari UTC letti come ora italiana, indietro di 1 ora d'inverno e di 2 d'estate
+        String Inverno[] = movimento("20240115103000_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "8", "20000.00");
+        String Estate[] = movimento("20240715103000_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "BTC", "Crypto", "1", "20000.00");
+
+        int Traslati = Principale_TraslaOrario.EseguiTraslazione(List.of(Inverno[0], Estate[0]), UN_ORA, 2 * UN_ORA);
+
+        assertEquals(2, Traslati);
+        assertNotNull(MappaCryptoWallet.get("20240115113000_WalletTest_001_001_DC"), "in ora solare si sposta di 1 ora");
+        assertNotNull(MappaCryptoWallet.get("20240715123000_WalletTest_002_001_DC"), "in ora legale si sposta di 2 ore");
+        assertEquals("2024-07-15 12:30", MappaCryptoWallet.get("20240715123000_WalletTest_002_001_DC")[1]);
+        assertEquals(String.valueOf(TIMESTAMP + 2 * UN_ORA), MappaCryptoWallet.get("20240715123000_WalletTest_002_001_DC")[29],
+                "l'istante on-chain segue lo spostamento della stagione del movimento");
+    }
+
+    @Test
+    void stagionale_unaStagioneConSpostamentoNullo_restaIntattaSenzaStorico() {
+        //File sempre in ora invernale italiana: d'inverno è giusto (0), d'estate è 1 ora indietro. Il
+        //movimento invernale non deve essere toccato affatto: niente nuovo ID, niente storico, niente
+        //campi del motore svuotati
+        String Inverno[] = movimento("20240115103000_WalletTest_001_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "ETH", "Crypto", "8", "20000.00");
+        Inverno[16] = "1000.00";
+        String Estate[] = movimento("20240715103000_WalletTest_002_001_DC", "DEPOSITO CRYPTO",
+                "", "", "", "BTC", "Crypto", "1", "20000.00");
+
+        int Traslati = Principale_TraslaOrario.EseguiTraslazione(List.of(Inverno[0], Estate[0]), 0, UN_ORA);
+
+        assertEquals(1, Traslati, "conta solo il movimento effettivamente spostato");
+        assertSame(Inverno, MappaCryptoWallet.get("20240115103000_WalletTest_001_001_DC"), "il movimento invernale resta lo stesso");
+        assertEquals("1000.00", Inverno[16], "i campi del motore del movimento fermo non vanno svuotati");
+        assertTrue(Inverno[MovimentiStorico.CAMPO_LIGNAGGIO].isBlank(), "il movimento fermo non va timbrato");
+        assertEquals(1, MovimentiStorico.VociInAttesa(), "solo il movimento spostato entra nello storico");
+        assertNotNull(MappaCryptoWallet.get("20240715113000_WalletTest_002_001_DC"));
+    }
+
+    @Test
+    void stagionale_ilMembroAUSegueLaStagioneDelCapofila() {
+        //Prelievo estivo con commissione automatica collegata: la commissione si sposta col capofila e
+        //con il suo stesso delta, senza essere classificata per conto suo
+        String Prelievo[] = movimento("20240715103000_WalletTest_001_001_PC", "PRELIEVO CRYPTO",
+                "BTC", "Crypto", "-0.50", "", "", "", "20000.00");
+        Prelievo[20] = "20240715103000_WalletTest_002_001_CM";
+        String Commissione[] = movimento("20240715103000_WalletTest_002_001_CM", "COMMISSIONE",
+                "BTC", "Crypto", "-0.01", "", "", "", "400.00");
+        Commissione[22] = "AU";
+        Commissione[20] = Prelievo[0];
+
+        Principale_TraslaOrario.EseguiTraslazione(List.of(Prelievo[0]), UN_ORA, 2 * UN_ORA);
+
+        String PrelievoTraslato[] = MappaCryptoWallet.get("20240715123000_WalletTest_001_001_PC");
+        String CommissioneTraslata[] = MappaCryptoWallet.get("20240715123000_WalletTest_002_001_CM");
+        assertNotNull(PrelievoTraslato);
+        assertNotNull(CommissioneTraslata, "la commissione si sposta di 2 ore come il prelievo");
+        assertEquals(CommissioneTraslata[0], PrelievoTraslato[20]);
+    }
+
+    @Test
+    void stagionale_laStagioneSiDecideSullOrarioAttualeDelMovimento() {
+        //Notte del 31/03/2024: alle 02:00 l'orologio italiano salta alle 03:00. L'01:30 è ancora ora
+        //solare, le 03:30 sono già ora legale. Fissa la regola scelta: conta l'istante del movimento
+        //cosi' come e' registrato ora, prima dello spostamento
+        assertFalse(Principale_TraslaOrario.isOraLegale("20240331013000"));
+        assertTrue(Principale_TraslaOrario.isOraLegale("20240331033000"));
+        assertTrue(Principale_TraslaOrario.isOraLegale("20241027013000"), "27/10/2024 01:30 è ancora ora legale");
+        assertFalse(Principale_TraslaOrario.isOraLegale("20241027033000"), "27/10/2024 03:30 è già ora solare");
+    }
 }

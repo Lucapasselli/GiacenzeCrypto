@@ -421,13 +421,11 @@ private static final long serialVersionUID = 3L;
         });
         // Tabelle con filtri: header completo applicato subito, Tabelle_FiltroColonne non lo rieseguirà
         Tabelle.Tabelle_InizializzaHeader(TransazioniCryptoTabella);
-        //"Gruppo Wallet" e' l'ultima colonna del modello (indice 10), portata in vista accanto a "Exchange / Wallet":
-        //si sposta solo la vista, cosi' gli indici di modello letti da Tabelle e dai gestori restano quelli di prima
-        DepositiPrelievi_Tabella.moveColumn(10, 3);
-        DepositiPrelievi_Tabella.getColumnModel().getColumn(3).setMinWidth(100);
-        DepositiPrelievi_Tabella.getColumnModel().getColumn(3).setPreferredWidth(140);
-        DepositiPrelievi_Tabella.getColumnModel().getColumn(3).setMaxWidth(300);
+        //Colonne della tabella depositi/prelievi: l'ID esce dalla vista e "Gruppo Wallet" (ultima del modello, 10) va
+        //accanto a "Exchange / Wallet". Si sposta solo la vista, cosi' gli indici di modello letti da Tabelle e dai
+        //gestori restano quelli di prima. La scelta salvata dell'utente si sovrappone in AggiornaSpunte()
         Tabelle.Tabelle_InizializzaHeader(DepositiPrelievi_Tabella);
+        LayoutColonneMovimenti.applica(DepositiPrelievi_Tabella, null, LayoutColonneMovimenti.PROFILO_DEPOSITI_PRELIEVI);
         Tabelle.Tabelle_InizializzaHeader(SaldiNegativi_TabellaDettaglioMovimenti);
         Tabelle.Tabelle_InizializzaHeader(RW_Tabella_Dettagli);
         Tabelle.Tabelle_InizializzaHeader(RT_Tabella_DettaglioMonete);
@@ -730,6 +728,7 @@ private static final long serialVersionUID = 3L;
         DepositiPrelievi_TabellaCorrelati = new javax.swing.JTable();
         jLabel21 = new javax.swing.JLabel();
         DepositiPrelievi_CheckBox_mostraFIAT = new javax.swing.JCheckBox();
+        DepositiPrelievi_Bottone_Colonne = new javax.swing.JButton();
         DepositiPrelievi_Bottone_ScamAuto = new javax.swing.JButton();
         SaldiNegativi = new javax.swing.JPanel();
         jScrollPane15 = new javax.swing.JScrollPane();
@@ -1898,11 +1897,11 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "ID_Transazione", "Data e Ora", "Exchange / Wallet", "Tipo Transazione", "Moneta", "<html><center>Qta</html>", "Dettaglio Trasferimento", "<html><center>Prezzo</html>", "Dett. Defi/CSV", "Controparte", "Gruppo Wallet"
+                "ID_Transazione", "Data e Ora", "Exchange / Wallet", "Tipo Transazione", "Moneta", "<html><center>Qta</html>", "Dettaglio Trasferimento", "<html><center>Prezzo</html>", "Dett. Defi/CSV", "Controparte", "Gruppo Wallet", "Note"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -2230,6 +2229,15 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        DepositiPrelievi_Bottone_Colonne.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
+        DepositiPrelievi_Bottone_Colonne.setText("Colonne...");
+        DepositiPrelievi_Bottone_Colonne.setToolTipText("Scegli quali colonne mostrare nella tabella dei depositi e prelievi");
+        DepositiPrelievi_Bottone_Colonne.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                DepositiPrelievi_Bottone_ColonneActionPerformed(evt);
+            }
+        });
+
         DepositiPrelievi_Bottone_ScamAuto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Banana.png"))); // NOI18N
         DepositiPrelievi_Bottone_ScamAuto.setText("<html>Identificazione SCAM automatica</html>");
         DepositiPrelievi_Bottone_ScamAuto.addActionListener(new java.awt.event.ActionListener() {
@@ -2261,7 +2269,9 @@ private static final long serialVersionUID = 3L;
                                 .addGap(18, 18, 18)
                                 .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(70, 70, 70)
-                                .addComponent(DepositiPrelievi_CheckBox_mostraFIAT, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                .addComponent(DepositiPrelievi_CheckBox_mostraFIAT, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(DepositiPrelievi_Bottone_Colonne)))
                         .addContainerGap())
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2293,7 +2303,8 @@ private static final long serialVersionUID = 3L;
                     .addComponent(DepositiPrelievi_Label_FiltroToken)
                     .addComponent(DepositiPrelievi_ComboBox_FiltroToken, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)
-                    .addComponent(DepositiPrelievi_CheckBox_mostraFIAT))
+                    .addComponent(DepositiPrelievi_CheckBox_mostraFIAT)
+                    .addComponent(DepositiPrelievi_Bottone_Colonne))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -7059,6 +7070,20 @@ private void SettaIcone(){
         } catch (Exception eLayoutDettaglio) {
             System.out.println("AggiornaSpunte: layout colonne dettaglio giacenze non applicato : " + eLayoutDettaglio.getMessage());
         }
+        //Idem per la tabella dei depositi/prelievi da classificare
+        try {
+            LayoutColonneMovimenti layoutDepPrel = LayoutColonneMovimenti.fromJson(
+                    DatabaseH2.Pers_Opzioni_Leggi(LayoutColonneMovimenti.OPZIONE_DEPOSITI_PRELIEVI),
+                    LayoutColonneMovimenti.PROFILO_DEPOSITI_PRELIEVI);
+            if (layoutDepPrel != null) {
+                LayoutColonneMovimenti.applica(DepositiPrelievi_Tabella, layoutDepPrel,
+                        LayoutColonneMovimenti.PROFILO_DEPOSITI_PRELIEVI);
+                DepositiPrelievi_Tabella.getTableHeader().setPreferredSize(new Dimension(
+                        DepositiPrelievi_Tabella.getColumnModel().getTotalColumnWidth(), 64));
+            }
+        } catch (Exception eLayoutDepPrel) {
+            System.out.println("AggiornaSpunte: layout colonne depositi/prelievi non applicato : " + eLayoutDepPrel.getMessage());
+        }
 
       //  System.out.println(RW_Opzioni_RilenvanteScambiFIAT.isSelected());
     }
@@ -8917,7 +8942,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         //Filtro Token
                         if (par.tokenVoluto.equalsIgnoreCase("Tutti") || v[8].equals(par.tokenVoluto) || v[11].equals(par.tokenVoluto)) {
 
-                            String riga[] = new String[11];
+                            String riga[] = new String[12];
                             riga[0] = v[0];
                             riga[1] = v[1];
                             riga[2] = v[3];
@@ -8942,6 +8967,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             riga[8] = v[7];
                             riga[9] = v[30];
                             riga[10] = GUI_ClassificazioneMovimento.AliasDelGruppo(gwallet, MappaAlias);
+                            riga[11] = v[21];
                             Funzioni.RiempiVuotiArray(riga);
                             righeTabella.add(riga);
                             //Se il movimento non è ancora categorizzato e non riguarda movimenti FIAT lo metto nella lista dei movimenti ancora non categorizzati
@@ -11904,6 +11930,13 @@ if (result.isAction("delete-all")) {
                             LayoutColonneMovimenti.PROFILO_GIACENZE_DETTAGLIO).toJson());
         } catch (Exception eLayoutDettaglio) {
             System.out.println("formWindowClosing: salvataggio layout colonne dettaglio giacenze fallito : " + eLayoutDettaglio.getMessage());
+        }
+        try {
+            DatabaseH2.Pers_Opzioni_Scrivi(LayoutColonneMovimenti.OPZIONE_DEPOSITI_PRELIEVI,
+                    LayoutColonneMovimenti.daTabella(DepositiPrelievi_Tabella,
+                            LayoutColonneMovimenti.PROFILO_DEPOSITI_PRELIEVI).toJson());
+        } catch (Exception eLayoutDepPrel) {
+            System.out.println("formWindowClosing: salvataggio layout colonne depositi/prelievi fallito : " + eLayoutDepPrel.getMessage());
         }
 
         //Dopo le Opzioni_Scrivi: la compattazione chiude i database, e quelle ci scrivono ancora
@@ -16203,6 +16236,35 @@ if (result != null && !result.isAction("cancel")) {
     }//GEN-LAST:event_GiacenzeaData_Bottone_ColonneDettaglioActionPerformed
 
     /**
+     * Scelta delle colonne della tabella dei depositi/prelievi da classificare: stesso dialogo della tabella dei
+     * movimenti, con il profilo {@link LayoutColonneMovimenti#PROFILO_DEPOSITI_PRELIEVI}. Cambia solo la vista.
+     */
+    private void DepositiPrelievi_Bottone_ColonneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_ColonneActionPerformed
+        LayoutColonneMovimenti.Profilo profilo = LayoutColonneMovimenti.PROFILO_DEPOSITI_PRELIEVI;
+        GUI_ColonneMovimenti dlg = new GUI_ColonneMovimenti(this, DepositiPrelievi_Tabella, profilo, "depositi e prelievi");
+        dlg.setLocationRelativeTo(this);
+        dlg.setVisible(true);
+
+        if (dlg.isAnnullato()) {
+            return;
+        }
+        if (dlg.isRipristino()) {
+            LayoutColonneMovimenti.applica(DepositiPrelievi_Tabella, null, profilo);
+            DatabaseH2.Pers_Opzioni_CancellaOpzione(profilo.opzione);
+        } else {
+            LayoutColonneMovimenti risultato = dlg.getRisultato();
+            LayoutColonneMovimenti.applica(DepositiPrelievi_Tabella, risultato, profilo);
+            DatabaseH2.Pers_Opzioni_Scrivi(profilo.opzione, risultato.toJson());
+        }
+        DepositiPrelievi_Tabella.getTableHeader().setPreferredSize(new Dimension(
+                DepositiPrelievi_Tabella.getColumnModel().getTotalColumnWidth(), 64));
+        DepositiPrelievi_Tabella.getTableHeader().revalidate();
+        DepositiPrelievi_Tabella.getTableHeader().repaint();
+        DepositiPrelievi_Tabella.revalidate();
+        DepositiPrelievi_Tabella.repaint();
+    }//GEN-LAST:event_DepositiPrelievi_Bottone_ColonneActionPerformed
+
+    /**
      * Apre il dialogo di scelta delle colonne della tabella movimenti, poi applica e salva il
      * risultato. Non ricarica le righe: i dati non cambiano, cambia solo il {@code TableColumnModel}.
      * Vedi {@link LayoutColonneMovimenti}.
@@ -18042,21 +18104,9 @@ try {
                 if (Transazione[20].isBlank()) {
                     Val = new String[]{"Causale Movimento ", "<html><b>" + Valore + "</b> (" + Transazione[6] + ")</html>"};
                 } else {
-                    String WalletPrelievo = "";
-                    String WalletDeposito = "";
-                    String Movimenti[] = (Transazione[20]+","+Transazione[0]).split(",");
-                    if (Movimenti.length < 3)//Sono in presenza di uno scambio differito
-                    {
-                        for (String IdM : Movimenti) {
-                            String Mov[] = Principale.MappaCryptoWallet.get(IdM);
-                            if (Mov[18].contains("PTW")) {
-                                WalletPrelievo = Mov[3];
-                            }
-                            if (Mov[18].contains("DTW")) {
-                                WalletDeposito = Mov[3];
-                            }
-                        }
-                    }
+                    String Wallets[] = GUI_DettaglioTransazione.WalletDelTrasferimento(Transazione);
+                    String WalletPrelievo = Wallets[0];
+                    String WalletDeposito = Wallets[1];
                     Val = new String[]{"Causale Movimento ", "<html><b>" + Valore + "</b> (" + Transazione[6] + ")<br>"
                             +"Trasferimento da <b>"+ WalletPrelievo+"</b> a <b>"+WalletDeposito+"</html>"};
                 }
@@ -19673,6 +19723,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JPanel DepositiPrelievi;
     private javax.swing.JButton DepositiPrelievi_Bottone_AssegnazioneAutomatica;
     private javax.swing.JButton DepositiPrelievi_Bottone_AssegnazioneManuale;
+    private javax.swing.JButton DepositiPrelievi_Bottone_Colonne;
     private javax.swing.JButton DepositiPrelievi_Bottone_CreaMovOpposto;
     private javax.swing.JButton DepositiPrelievi_Bottone_DettaglioDefi;
     private javax.swing.JButton DepositiPrelievi_Bottone_Documentazione;

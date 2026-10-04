@@ -138,21 +138,9 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                 if (Transazione[20].isBlank()) {
                     Val = new String[]{"Causale Movimento ", "<html><b>" + Valore + "</b> (" + Transazione[6] + ")</html>"};
                 } else {
-                    String WalletPrelievo = "";
-                    String WalletDeposito = "";
-                    String Movimenti[] = (Transazione[20]+","+Transazione[0]).split(",");
-                    if (Movimenti.length < 3)//Sono in presenza di uno scambio differito
-                    {
-                        for (String IdM : Movimenti) {
-                            String Mov[] = Principale.MappaCryptoWallet.get(IdM);
-                            if (Mov[18].contains("PTW")) {
-                                WalletPrelievo = Mov[3];
-                            }
-                            if (Mov[18].contains("DTW")) {
-                                WalletDeposito = Mov[3];
-                            }
-                        }
-                    }
+                    String Wallets[] = GUI_DettaglioTransazione.WalletDelTrasferimento(Transazione);
+                    String WalletPrelievo = Wallets[0];
+                    String WalletDeposito = Wallets[1];
                     Val = new String[]{"Causale Movimento ", "<html><b>" + Valore + "</b> (" + Transazione[6] + ")<br>"
                             +"Trasferimento da <b>"+ WalletPrelievo+"</b> a <b>"+WalletDeposito+"</html>"};
                 }
@@ -1225,4 +1213,36 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
     private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JPopupMenu.Separator jSeparator7;
     // End of variables declaration//GEN-END:variables
+
+    /**
+     * I due estremi di un trasferimento PTW/DTW, per la riga "Trasferimento da ... a ..." dei dettagli.
+     * <p>La controparte si cerca fra gli ID di {@code v[20]} con il marcatore opposto e la stessa moneta
+     * (uscente del PTW = entrante del DTW). Non basta prendere "l'unico altro ID": {@code v[20]} elenca anche la
+     * commissione di trasferimento creata dalla classificazione ({@code CM}), il reward di un rientro da Vault e,
+     * in uno scambio differito, le altre tre gambe con altri PTW/DTW. Fino al 2026-10-04 con più di un ID la riga
+     * restava "da  a " vuota, cioè su ogni trasferimento che aveva generato una commissione.
+     * @return {@code {walletPrelievo, walletDeposito}}, stringhe vuote se non determinabili
+     */
+    public static String[] WalletDelTrasferimento(String[] v) {
+        String WalletPrelievo = "";
+        String WalletDeposito = "";
+        boolean prelievo = v[18].contains("PTW");
+        if (prelievo) WalletPrelievo = v[3];
+        else if (v[18].contains("DTW")) WalletDeposito = v[3];
+        else return new String[]{WalletPrelievo, WalletDeposito};
+        for (String IdM : v[20].split(",")) {
+            String Mov[] = Principale.MappaCryptoWallet.get(IdM.trim());
+            if (Mov == null) continue;
+            if (prelievo && Mov[18].contains("DTW") && Mov[11].equals(v[8])) {
+                WalletDeposito = Mov[3];
+                break;
+            }
+            if (!prelievo && Mov[18].contains("PTW") && Mov[8].equals(v[11])) {
+                WalletPrelievo = Mov[3];
+                break;
+            }
+        }
+        return new String[]{WalletPrelievo, WalletDeposito};
+    }
+
 }

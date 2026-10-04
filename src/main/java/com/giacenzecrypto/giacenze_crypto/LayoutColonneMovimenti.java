@@ -128,6 +128,32 @@ public final class LayoutColonneMovimenti {
                 preferita(cm, 17, 110);  // Differenza Valore - Costo
             });
 
+    /** Chiave in {@code personale.mv.db} del layout della tabella dei depositi/prelievi da classificare. */
+    public static final String OPZIONE_DEPOSITI_PRELIEVI = "DepositiPrelievi_LayoutColonne";
+
+    /**
+     * La tabella della scheda Depositi/Prelievi. Il model ha 12 colonne: la 0 (ID) è interna, letta da selezione e
+     * popup; Data, Tipo Transazione, Moneta e Qta sono fisse (le ultime tre sono quelle che {@code Tabelle} colora
+     * per direzione). "Gruppo Wallet" (10) sta in vista accanto a "Exchange / Wallet" pur essendo in coda al model,
+     * "Note" (11, {@code v[21]}) è l'ultima.
+     */
+    public static final Profilo PROFILO_DEPOSITI_PRELIEVI = new Profilo(OPZIONE_DEPOSITI_PRELIEVI,
+            List.of(0), List.of(1, 3, 4, 5),
+            List.of(1, 2, 10, 3, 4, 5, 6, 7, 8, 9, 11), 11,
+            cm -> {
+                preferita(cm, 1, 120);   // Data e Ora
+                preferita(cm, 2, 300);   // Exchange / Wallet
+                preferita(cm, 3, 160);   // Tipo Transazione
+                preferita(cm, 4, 70);    // Moneta
+                preferita(cm, 5, 110);   // Qta
+                preferita(cm, 6, 160);   // Dettaglio Trasferimento
+                preferita(cm, 7, 80);    // Prezzo
+                preferita(cm, 8, 160);   // Dett. Defi/CSV
+                preferita(cm, 9, 160);   // Controparte
+                preferita(cm, 10, 140);  // Gruppo Wallet
+                preferita(cm, 11, 200);  // Note
+            });
+
     private final Profilo profilo;
     private final List<Integer> ordine;
     private final Map<Integer, Integer> larghezze;

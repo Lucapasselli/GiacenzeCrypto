@@ -1086,6 +1086,27 @@ if (voce.isJson()) {
                     res.ImpostaValoriDualInvestment(esito);
                     res.setLocationRelativeTo(this);
                     res.setVisible(true);
+                    //Contratti già abbinati sistemati da questo passaggio: non sono errori, ma la riparazione
+                    //aggiunge una permuta in un anno che può essere già stato dichiarato, e va detto
+                    if (esito.migrati > 0 || esito.riparati > 0) {
+                        StringBuilder testo = new StringBuilder();
+                        if (esito.migrati > 0) {
+                            testo.append("Contratti nella stessa moneta portati alla forma attuale: <b>").append(esito.migrati)
+                                    .append("</b>.<br>La reward ora sta sul sotto-wallet Dual Savings e il Settlement ")
+                                    .append("riporta l'intero importo liquidato. Nessun calcolo cambia.<br><br>");
+                        }
+                        if (esito.riparati > 0) {
+                            testo.append("Scambi differiti ricostruiti: <b>").append(esito.riparati).append("</b>.<br>")
+                                    .append("Erano stati sovrascritti da un altro contratto liquidato nello stesso secondo. ")
+                                    .append("Ogni ricostruzione aggiunge una permuta nell'anno indicato e toglie dal ")
+                                    .append("sotto-wallet Dual Savings un saldo che non esisteva. Possono quindi cambiare ")
+                                    .append("le plusvalenze di quell'anno, i costi delle cessioni successive e le giacenze ")
+                                    .append("di fine anno (quadro W/RW) da quell'anno in poi, anche in anni già dichiarati:<br>")
+                                    .append(String.join("<br>", esito.riparazioni)).append("<br><br>");
+                        }
+                        testo.append("Premi <b>Salva</b> nella sezione 'Transazioni Crypto' per rendere permanenti le modifiche.");
+                        Messaggi.InfoMessage("Contratti Dual Investment aggiornati", testo.toString(), this);
+                    }
                 } catch (Exception ex) {
                     LoggerGC.ScriviErrore(ex);
                     Messaggi.WarningMessage("Abbinamento Dual Investment",

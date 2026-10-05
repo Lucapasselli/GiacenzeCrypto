@@ -81,8 +81,14 @@ public class Binance_DualInvestment {
         public int ambigui = 0;
         public int nonTrovati = 0;
         public int nonAncoraLiquidati = 0;
+        /** Contratti a moneta uguale già abbinati nella forma precedente al 2026-10-05, portati alla forma attuale. */
+        public int migrati = 0;
+        /** Contratti a moneta diversa il cui scambio differito era stato sovrascritto da un altro (bug C17) e ricostruito. */
+        public int riparati = 0;
         /** Una riga per ogni contratto non abbinato (ambiguo o non trovato), per la diagnosi. */
         public List<String> dettagli = new ArrayList<>();
+        /** Una riga per ogni scambio ricostruito, con la data: aggiunge una permuta in quell'anno. */
+        public List<String> riparazioni = new ArrayList<>();
     }
 
     /**
@@ -131,11 +137,12 @@ public class Binance_DualInvestment {
 
             boolean stessaMoneta = sub[1].equalsIgnoreCase(settle[1]);
             String chiave = CommissioniCollegate.ChiaveDual(campi[2]);
-            //Un contratto già abbinato ha i movimenti trasformati: il Purchase porta ancora la quantità
-            //sottoscritta, il Settlement a moneta uguale solo il capitale (il resto è finito nella reward)
-            CandidatoRisultato purchase = trovaCandidato(sub[1], sub[0], sub[0], tsSub, true, giaUsati, chiave,
+            //Un contratto già abbinato porta ancora le quantità del file, con un'eccezione: il Settlement a
+            //moneta uguale abbinato prima del 2026-10-05 era ridotto al solo capitale (il resto stava nella reward)
+            CandidatoRisultato purchase = trovaCandidato(sub[1], sub[0], List.of(sub[0]), tsSub, true, giaUsati, chiave,
                     stessaMoneta ? CAMPO18_PURCHASE_STESSA_MONETA : CAMPO18_PURCHASE_DIFFERITO);
-            CandidatoRisultato settlement = trovaCandidato(settle[1], settle[0], stessaMoneta ? sub[0] : settle[0],
+            CandidatoRisultato settlement = trovaCandidato(settle[1], settle[0],
+                    stessaMoneta ? List.of(settle[0], sub[0]) : List.of(settle[0]),
                     tsSettle, false, giaUsati, chiave,
                     stessaMoneta ? CAMPO18_SETTLEMENT_STESSA_MONETA : CAMPO18_SETTLEMENT_DIFFERITO);
 
@@ -169,18 +176,80 @@ public class Binance_DualInvestment {
             giaUsati.add(settlement.id);
             if (purchase.giaAbbinato) {
                 //Già abbinato da una versione precedente: i movimenti generati esistono e non vanno rifatti
-                //(raddoppierebbero le gambe speculari e ridurrebbero due volte la quantità del Settlement).
-                //Si completa solo il dato che allora non si scriveva, il gruppo del contratto.
-                if (MarcaContratto(campi[2], RigaPurchase, RigaSettlement)) esito.aggiornati++;
+                //(raddoppierebbero le gambe speculari). Si completa quello che allora non si faceva: la forma
+                //attuale del caso a moneta uguale, lo scambio sovrascritto da un altro contratto (bug C17),
+                //il gruppo del contratto. La riparazione va PRIMA del gruppo: col [20] ancora sbagliato il
+                //gruppo di questo contratto finirebbe sui movimenti dell'altro.
+                boolean Cambiato = false;
+                if (stessaMoneta) {
+                    switch (AggiornaFormaStessaMoneta(RigaPurchase, RigaSettlement)) {
+                        case RIPARATO -> {
+                            esito.migrati++;
+                            Cambiato = true;
+                        }
+                        case FALLITO -> {
+                            //Tipicamente un contratto della forma vecchia da cui è stata eliminata la sola reward
+                            //(bug C18): il Settlement è ancora ridotto e il suo [20] punta a movimenti cancellati
+                            esito.nonTrovati++;
+                            esito.dettagli.add("Prodotto " + campi[0] + " (id " + campi[2] + "): contratto abbinato da "
+                                    + "una versione precedente con movimenti collegati mancanti o inattesi - da sistemare "
+                                    + "a mano (annullare la classificazione e riportare il Settlement all'importo liquidato "
+                                    + settle[0] + " " + settle[1] + ")");
+                            continue;
+                        }
+                        case NON_SERVE -> {
+                        }
+                    }
+                } else {
+                    switch (MovimentiCollegati.RiparaScambioDifferito(RigaPurchase, RigaSettlement, WALLET_DUAL_SAVINGS)) {
+                        case RIPARATO -> {
+                            esito.riparati++;
+                            esito.riparazioni.add("Contratto " + campi[2] + ": ricostruito lo scambio " + sub[1] + " -> "
+                                    + settle[1] + " del " + RigaSettlement[1]);
+                            Cambiato = true;
+                        }
+                        case FALLITO -> {
+                            //Il [20] cita ancora i movimenti dell'altro contratto: scrivere il gruppo adesso li
+                            //porterebbe in questo, quindi il contratto resta del tutto com'era
+                            esito.nonTrovati++;
+                            esito.dettagli.add("Prodotto " + campi[0] + " (id " + campi[2] + "): lo scambio "
+                                    + "differito era stato sovrascritto da un altro contratto e non si è potuto ricostruire "
+                                    + "- lasciato com'è, dettagli nel log");
+                            continue;
+                        }
+                        case NON_SERVE -> {
+                        }
+                    }
+                }
+                if (MarcaContratto(campi[2], RigaPurchase, RigaSettlement)) Cambiato = true;
+                if (Cambiato) esito.aggiornati++;
                 else esito.giaAPosto++;
                 continue;
             }
+            if (stessaMoneta && new BigDecimal(settle[0]).compareTo(new BigDecimal(sub[0])) < 0) {
+                //Con la stessa moneta un contratto non liquida meno del sottoscritto: se succede i dati non sono
+                //quelli attesi, e inventare movimenti sarebbe peggio che lasciarlo da classificare
+                esito.nonTrovati++;
+                esito.dettagli.add("Prodotto " + campi[0] + " (id " + campi[2] + "): liquidato meno del sottoscritto "
+                        + "nella stessa moneta - lasciato da classificare a mano");
+                continue;
+            }
             if (stessaMoneta) {
-                CreaMovimentiDualInvestmentStessaMoneta(purchase.id, settlement.id);
+                if (!CreaMovimentiDualInvestmentStessaMoneta(purchase.id, settlement.id)) {
+                    esito.nonTrovati++;
+                    esito.dettagli.add("Prodotto " + campi[0] + " (id " + campi[2] + "): impossibile creare i movimenti "
+                            + "del contratto - lasciato da classificare, dettagli nel log");
+                    continue;
+                }
             } else {
                 //Stesso sotto-wallet del caso a moneta uguale, così i movimenti sintetici di un Dual
                 //Investment si distinguono dagli altri scambi differiti (Auto-Invest ecc.)
-                GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(purchase.id, settlement.id, WALLET_DUAL_SAVINGS);
+                if (!GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(purchase.id, settlement.id, WALLET_DUAL_SAVINGS)) {
+                    esito.nonTrovati++;
+                    esito.dettagli.add("Prodotto " + campi[0] + " (id " + campi[2] + "): impossibile generare gli ID "
+                            + "dello scambio differito - lasciato da classificare, dettagli nel log");
+                    continue;
+                }
             }
             MarcaContratto(campi[2], RigaPurchase, RigaSettlement);
             esito.abbinati++;
@@ -201,14 +270,27 @@ public class Binance_DualInvestment {
      * @return {@code true} se almeno una riga ha cambiato chiave (false se il contratto era già marcato)
      */
     static boolean MarcaContratto(String IdContratto, String[] Purchase, String[] Settlement) {
-        String Chiave = CommissioniCollegate.ChiaveDual(IdContratto);
-        if (Chiave.isEmpty() || Purchase == null || Settlement == null) return false;
+        return MarcaConChiave(CommissioniCollegate.ChiaveDual(IdContratto), Purchase, Settlement);
+    }
+
+    /** Come {@link #MarcaContratto}, con la chiave {@code DUAL-} già nota (per esempio letta dal Purchase). */
+    static boolean MarcaConChiave(String Chiave, String[] Purchase, String[] Settlement) {
+        if (Chiave == null || Chiave.isEmpty() || Purchase == null || Settlement == null) return false;
         List<String[]> Righe = new ArrayList<>();
         Righe.add(Purchase);
         Righe.add(Settlement);
         for (String ID : (Purchase[20] + "," + Settlement[20]).split(",")) {
             String[] Generato = ID.isBlank() ? null : MappaCryptoWallet.get(ID.trim());
-            if (Generato != null && !Righe.contains(Generato)) Righe.add(Generato);
+            if (Generato == null || Righe.contains(Generato)) continue;
+            //Un movimento che porta il gruppo di un ALTRO contratto ci arriva solo da un [20] sbagliato (bug C17):
+            //prenderlo farebbe fondere i due contratti (CollegaOperazione fonde le chiavi che sostituisce)
+            String Sua = CommissioniCollegate.Chiave(Generato);
+            if (CommissioniCollegate.isGruppoDual(Sua) && !Sua.equals(Chiave)) {
+                LoggerGC.ScriviErrore("Dual Investment: " + Generato[0] + " appartiene a " + Sua + ", non a " + Chiave
+                        + " - lasciato fuori dal gruppo");
+                continue;
+            }
+            Righe.add(Generato);
         }
         boolean Cambiata = false;
         for (String[] v : Righe) if (!Chiave.equals(CommissioniCollegate.Chiave(v))) Cambiata = true;
@@ -225,39 +307,75 @@ public class Binance_DualInvestment {
      * wallet di {@link Principale_GiacenzeaData}) già usato per Vault/Piattaforma in
      * {@code GUI_ClassificazioneMovimento.CreaMovimentoTrasferimentoA/Da}:
      * <ul>
-     *   <li><b>Purchase</b> (prelievo dal wallet principale): resta invariato nella quantità, solo
-     *       campo5/campo18 diventano "PTW - Trasferimento a Dual Investment" e si crea la gamba
-     *       speculare in entrata sul sotto-wallet (stessa moneta, stessa quantità, segno invertito);</li>
-     *   <li><b>Settlement</b> (deposito sul wallet principale): la sua quantità viene <b>ridotta al solo
-     *       capitale sottoscritto</b> (il resto sarebbe una doppia conta, perché la gamba speculare sul
-     *       sotto-wallet muove solo il capitale) e diventa "DTW - Trasferimento da Dual Investment"; si
-     *       crea la gamba speculare in uscita sul sotto-wallet per lo stesso capitale, e — solo se la
-     *       liquidazione ha reso più del sottoscritto — un movimento REWARD indipendente sul wallet
-     *       principale per la differenza esatta, prezzata in proporzione al valore già calcolato
-     *       all'import per l'intero Settlement (stesso prezzo unitario, niente nuova ricerca prezzo).</li>
+     *   <li><b>Purchase</b> (prelievo dal wallet principale): campo 5/18 diventano "PTW - Trasferimento a
+     *       Dual Investment", quantità e valore restano quelli importati. Gamba speculare in entrata sul
+     *       sotto-wallet per la quantità sottoscritta;</li>
+     *   <li><b>reward</b>, solo se la liquidazione ha reso più del sottoscritto: la differenza esatta entra
+     *       <b>sul sotto-wallet</b>, prezzata in proporzione al valore già calcolato all'import per l'intero
+     *       Settlement (stesso prezzo unitario, nessuna nuova ricerca prezzo);</li>
+     *   <li><b>Settlement</b> (deposito sul wallet principale): campo 5/18 diventano "DTW - Trasferimento da
+     *       Dual Investment", quantità e valore restano quelli importati. Gamba speculare in uscita dal
+     *       sotto-wallet per l'<b>intero</b> liquidato, che il sotto-wallet ha: capitale più reward.</li>
      * </ul>
-     * A differenza del meccanismo generico Vault (che deduce la reward dal saldo aggregato del
-     * sotto-wallet, perché non conosce quale prelievo appartiene a quale deposito), qui la reward si
-     * calcola diretta dalla coppia di quantità esatte del contratto — note con certezza dal CSV di
-     * dettaglio — senza bisogno di quell'euristica.
+     *
+     * <p><b>Purchase e Settlement non vengono mai modificati nelle quantità</b> (dal 2026-10-05). Prima il
+     * Settlement era ridotto al capitale e la reward stava sul wallet principale: annullare la classificazione
+     * dal Settlement lasciava la quantità ridotta e perdeva la reward (bug C18), e il Settlement ridotto non
+     * coincideva più con la riga del CSV nella deduplica dei reimport. Ora annullare toglie solo i movimenti
+     * generati. Fiscalmente non cambia nulla: il sotto-wallet ha lo stesso exchange, quindi lo stesso gruppo
+     * wallet, e il LIFO vede la stessa reward con lo stesso valore nello stesso istante. I contratti abbinati
+     * prima si portano a questa forma con {@link #AggiornaFormaStessaMoneta}.
+     *
+     * <p>Tutti i movimenti del contratto formano <b>un solo gruppo {@code [20]}</b>, ognuno con l'elenco
+     * completo degli altri: annullare o eliminare uno qualunque riporta l'intero contratto allo stato
+     * importato, e ripassando il file di dettaglio lo si riabbina. Nello stesso gruppo wallet nessun lettore di
+     * {@code [20]} sposta costi.
+     *
+     * <p>Nel sotto-wallet la reward e l'uscita cadono nello stesso secondo: l'ID della reward ({@code 00} davanti
+     * al terzo segmento) ordina prima di quello dell'uscita ({@code 0}), così il controllo delle giacenze
+     * negative, che scorre la mappa per ID, non vede mai il sotto-wallet sotto zero.
+     *
      * @param IDPurchase ID del movimento di sottoscrizione (prelievo dal wallet principale)
      * @param IDSettlement ID del movimento di liquidazione (deposito sul wallet principale)
+     * @return {@code false} se non è stato fatto nulla: movimenti inesistenti, liquidato minore del
+     *         sottoscritto, o un ID dei movimenti generati già occupato
      */
-    static void CreaMovimentiDualInvestmentStessaMoneta(String IDPurchase, String IDSettlement) {
+    static boolean CreaMovimentiDualInvestmentStessaMoneta(String IDPurchase, String IDSettlement) {
         String[] MovPurchase = MappaCryptoWallet.get(IDPurchase);
         String[] MovSettlement = MappaCryptoWallet.get(IDSettlement);
+        if (MovPurchase == null || MovSettlement == null) return false;
 
-        // ── Gamba 1: Purchase -> gamba speculare in entrata sul sotto-wallet "Dual Savings" ──
+        BigDecimal QtaSottoscritta = new BigDecimal(MovPurchase[10]).abs();
+        BigDecimal QtaLiquidata = new BigDecimal(MovSettlement[13]).abs();
+        BigDecimal ValoreLiquidato = new BigDecimal(MovSettlement[15]);
+        BigDecimal Reward = QtaLiquidata.subtract(QtaSottoscritta);
         String[] IDSpezzatoP = MovPurchase[0].split("_");
+        String[] IDSpezzatoS = MovSettlement[0].split("_");
+        String IDMirrorPurchase = IDSpezzatoP[0] + "_" + IDSpezzatoP[1] + "_" + IDSpezzatoP[2] + "A_" + IDSpezzatoP[3] + "_DC";
+        String IDMirrorSettlement = IDSpezzatoS[0] + "_" + IDSpezzatoS[1] + "_0" + IDSpezzatoS[2] + "_" + IDSpezzatoS[3] + "_PC";
+        String IDReward = Reward.signum() > 0
+                ? IDSpezzatoS[0] + "_" + IDSpezzatoS[1] + "_00" + IDSpezzatoS[2] + "_" + IDSpezzatoS[3] + "_DC" : "";
+        if (Reward.signum() < 0) {
+            LoggerGC.ScriviErrore("Dual Investment: liquidato (" + QtaLiquidata + ") meno del sottoscritto ("
+                    + QtaSottoscritta + ") per " + IDSettlement + ", contratto non abbinato");
+            return false;
+        }
+        if (MappaCryptoWallet.containsKey(IDMirrorPurchase) || MappaCryptoWallet.containsKey(IDMirrorSettlement)
+                || (!IDReward.isEmpty() && MappaCryptoWallet.containsKey(IDReward))) {
+            LoggerGC.ScriviErrore("Dual Investment: ID dei movimenti generati già occupato per " + IDPurchase
+                    + " / " + IDSettlement + ", contratto non abbinato");
+            return false;
+        }
+
+        // ── Purchase -> gamba speculare in entrata sul sotto-wallet "Dual Savings" ──
         Moneta MonetaINSpec = new Moneta();
         MonetaINSpec.Moneta = MovPurchase[8];
         MonetaINSpec.Tipo = MovPurchase[9];
-        MonetaINSpec.Qta = new BigDecimal(MovPurchase[10]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
+        MonetaINSpec.Qta = QtaSottoscritta.stripTrailingZeros().toPlainString();
         if (MovPurchase.length > 29) {
             MonetaINSpec.NomeEsteso = MovPurchase[25];
             MonetaINSpec.MonetaAddress = MovPurchase[26];
         }
-        String IDMirrorPurchase = IDSpezzatoP[0] + "_" + IDSpezzatoP[1] + "_" + IDSpezzatoP[2] + "A_" + IDSpezzatoP[3] + "_DC";
         String[] MTPurchase = MovimentiCrypto.creaMovimento(
                 null, MonetaINSpec,
                 MovPurchase[3], WALLET_DUAL_SAVINGS,
@@ -282,64 +400,12 @@ public class Binance_DualInvestment {
         }
         //Tipo di derivato (campo 44): le gambe generate appartengono alla stessa operazione Dual
         Derivati.Marca(MTPurchase, Derivati.Tipo(MovPurchase));
-        MappaCryptoWallet.put(IDMirrorPurchase, MTPurchase);
 
-        MovPurchase[5] = "TRASFERIMENTO A DUAL INVESTMENT";
-        MovPurchase[18] = CAMPO18_PURCHASE_STESSA_MONETA;
-        MovPurchase[20] = IDMirrorPurchase;
-
-        // ── Gamba 2: Settlement -> capitale rientrato + eventuale reward separata ──
-        BigDecimal QtaSottoscritta = new BigDecimal(MovPurchase[10]).abs();
-        BigDecimal QtaLiquidata = new BigDecimal(MovSettlement[13]).abs();
-        BigDecimal ValoreLiquidato = new BigDecimal(MovSettlement[15]);
-        BigDecimal Reward = QtaLiquidata.subtract(QtaSottoscritta);
-
-        String[] IDSpezzatoS = MovSettlement[0].split("_");
-        Moneta MonetaOUTSpec = new Moneta();
-        MonetaOUTSpec.Moneta = MovSettlement[11];
-        MonetaOUTSpec.Tipo = MovSettlement[12];
-        MonetaOUTSpec.Qta = QtaSottoscritta.multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
-        if (MovSettlement.length > 29) {
-            MonetaOUTSpec.NomeEsteso = MovSettlement[27];
-            MonetaOUTSpec.MonetaAddress = MovSettlement[28];
-        }
-        // Valore della sola quota capitale, in proporzione al valore già calcolato per l'intero
-        // Settlement all'import - stesso prezzo unitario, nessuna nuova ricerca prezzo.
-        String ValoreCapitale = QtaSottoscritta.divide(QtaLiquidata, VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP)
-                .multiply(ValoreLiquidato).setScale(2, RoundingMode.HALF_UP).toPlainString();
-
-        String IDMirrorSettlement = IDSpezzatoS[0] + "_" + IDSpezzatoS[1] + "_0" + IDSpezzatoS[2] + "_" + IDSpezzatoS[3] + "_PC";
-        String[] MTSettlement = MovimentiCrypto.creaMovimento(
-                MonetaOUTSpec, null,
-                MovSettlement[3], WALLET_DUAL_SAVINGS,
-                FunzioniDate.ConvertiDataIDinLong(IDSpezzatoS[0]),
-                ValoreCapitale, null,
-                1, 1,
-                null, null, "AU",
-                MovSettlement.length > 29 ? MovSettlement[24] : null,
-                null, null
-        );
-        MTSettlement[0] = IDMirrorSettlement;
-        MTSettlement[1] = MovSettlement[1];
-        MTSettlement[2] = "1 di 1";
-        MTSettlement[5] = "TRASFERIMENTO INTERNO";
-        MTSettlement[15] = ValoreCapitale;
-        MTSettlement[18] = "PTW - Trasferimento Interno";
-        MTSettlement[32] = "";
-        MTSettlement[40] = "";
-        if (MovSettlement.length > 29) {
-            MTSettlement[23] = MovSettlement[23];
-            MTSettlement[29] = MovSettlement[29];
-        }
-        Derivati.Marca(MTSettlement, Derivati.Tipo(MovSettlement));
-        MappaCryptoWallet.put(IDMirrorSettlement, MTSettlement);
-
-        String IDReward = "";
-        if (Reward.compareTo(BigDecimal.ZERO) > 0) {
-            IDReward = IDSpezzatoS[0] + "_" + IDSpezzatoS[1] + "_00" + IDSpezzatoS[2] + "_" + IDSpezzatoS[3] + "_DC";
+        // ── Reward sul sotto-wallet, per la differenza esatta ──
+        String[] MTReward = null;
+        if (Reward.signum() > 0) {
             String ValoreReward = Reward.divide(QtaLiquidata, VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP)
                     .multiply(ValoreLiquidato).setScale(2, RoundingMode.HALF_UP).toPlainString();
-
             Moneta MonetaINReward = new Moneta();
             MonetaINReward.Moneta = MovSettlement[11];
             MonetaINReward.Tipo = MovSettlement[12];
@@ -348,9 +414,9 @@ public class Binance_DualInvestment {
                 MonetaINReward.NomeEsteso = MovSettlement[27];
                 MonetaINReward.MonetaAddress = MovSettlement[28];
             }
-            String[] MTReward = MovimentiCrypto.creaMovimento(
+            MTReward = MovimentiCrypto.creaMovimento(
                     null, MonetaINReward,
-                    MovSettlement[3], MovSettlement[4],
+                    MovSettlement[3], WALLET_DUAL_SAVINGS,
                     FunzioniDate.ConvertiDataIDinLong(IDSpezzatoS[0]),
                     ValoreReward, null,
                     1, 1,
@@ -362,25 +428,169 @@ public class Binance_DualInvestment {
             MTReward[2] = "1 di 1";
             MTReward[5] = "REWARD";
             MTReward[15] = ValoreReward;
-            MTReward[18] = "DAI - Reward Dual Investment";
-            MTReward[20] = IDMirrorSettlement;
+            MTReward[18] = CAMPO18_REWARD;
             MTReward[32] = "";
             MTReward[40] = "";
             if (MovSettlement.length > 29) {
                 MTReward[29] = MovSettlement[29];
             }
             Derivati.Marca(MTReward, Derivati.Tipo(MovSettlement));
-            MappaCryptoWallet.put(IDReward, MTReward);
-        } else if (Reward.compareTo(BigDecimal.ZERO) < 0) {
-            LoggerGC.ScriviErrore("Dual Investment: liquidato (" + QtaLiquidata + ") meno del sottoscritto ("
-                    + QtaSottoscritta + "), contratto in perdita - nessuna reward creata per " + IDSettlement);
         }
 
-        MovSettlement[13] = QtaSottoscritta.stripTrailingZeros().toPlainString();
-        MovSettlement[15] = ValoreCapitale;
+        // ── Settlement -> gamba speculare in uscita dal sotto-wallet per l'intero liquidato ──
+        Moneta MonetaOUTSpec = new Moneta();
+        MonetaOUTSpec.Moneta = MovSettlement[11];
+        MonetaOUTSpec.Tipo = MovSettlement[12];
+        MonetaOUTSpec.Qta = QtaLiquidata.negate().stripTrailingZeros().toPlainString();
+        if (MovSettlement.length > 29) {
+            MonetaOUTSpec.NomeEsteso = MovSettlement[27];
+            MonetaOUTSpec.MonetaAddress = MovSettlement[28];
+        }
+        String[] MTSettlement = MovimentiCrypto.creaMovimento(
+                MonetaOUTSpec, null,
+                MovSettlement[3], WALLET_DUAL_SAVINGS,
+                FunzioniDate.ConvertiDataIDinLong(IDSpezzatoS[0]),
+                MovSettlement[15], null,
+                1, 1,
+                null, null, "AU",
+                MovSettlement.length > 29 ? MovSettlement[24] : null,
+                null, null
+        );
+        MTSettlement[0] = IDMirrorSettlement;
+        MTSettlement[1] = MovSettlement[1];
+        MTSettlement[2] = "1 di 1";
+        MTSettlement[5] = "TRASFERIMENTO INTERNO";
+        MTSettlement[15] = MovSettlement[15];
+        MTSettlement[18] = "PTW - Trasferimento Interno";
+        MTSettlement[32] = "";
+        MTSettlement[40] = "";
+        if (MovSettlement.length > 29) {
+            MTSettlement[23] = MovSettlement[23];
+            MTSettlement[29] = MovSettlement[29];
+        }
+        Derivati.Marca(MTSettlement, Derivati.Tipo(MovSettlement));
+
+        MovPurchase[5] = "TRASFERIMENTO A DUAL INVESTMENT";
+        MovPurchase[18] = CAMPO18_PURCHASE_STESSA_MONETA;
         MovSettlement[5] = "TRASFERIMENTO DA DUAL INVESTMENT";
         MovSettlement[18] = CAMPO18_SETTLEMENT_STESSA_MONETA;
-        MovSettlement[20] = IDReward.isBlank() ? IDMirrorSettlement : IDMirrorSettlement + "," + IDReward;
+
+        List<String[]> Contratto = new ArrayList<>(List.of(MovPurchase, MTPurchase, MovSettlement, MTSettlement));
+        if (MTReward != null) Contratto.add(MTReward);
+        CollegaTutti(Contratto);
+        MappaCryptoWallet.put(IDMirrorPurchase, MTPurchase);
+        MappaCryptoWallet.put(IDMirrorSettlement, MTSettlement);
+        if (MTReward != null) MappaCryptoWallet.put(IDReward, MTReward);
+        return true;
+    }
+
+    /** Campo 18 della reward di un contratto a moneta uguale, da cui la si riconosce. */
+    static final String CAMPO18_REWARD = "DAI - Reward Dual Investment";
+
+    /**
+     * Scrive su ogni riga il {@code [20]} con gli ID di tutte le altre: il gruppo completo e simmetrico che
+     * l'annullamento della classificazione si aspetta.
+     * @return {@code true} se almeno un {@code [20]} è cambiato
+     */
+    private static boolean CollegaTutti(List<String[]> Righe) {
+        boolean Cambiato = false;
+        for (String[] v : Righe) {
+            StringBuilder Altri = new StringBuilder();
+            for (String[] a : Righe) {
+                if (a == v) continue;
+                if (Altri.length() > 0) Altri.append(',');
+                Altri.append(a[0]);
+            }
+            if (!Altri.toString().equals(v[20])) {
+                v[20] = Altri.toString();
+                Cambiato = true;
+            }
+        }
+        return Cambiato;
+    }
+
+    /** @return le righe in mappa degli ID elencati nei {@code [20]} indicati, senza doppioni; {@code null} se uno manca */
+    private static List<String[]> Collegati(String[]... Righe) {
+        List<String[]> Ris = new ArrayList<>();
+        for (String[] r : Righe) {
+            if (r[20] == null || r[20].isBlank()) continue;
+            for (String ID : r[20].split(",")) {
+                if (ID.isBlank()) continue;
+                String[] v = MappaCryptoWallet.get(ID.trim());
+                if (v == null) return null;
+                if (!Ris.contains(v) && !java.util.Arrays.asList(Righe).contains(v)) Ris.add(v);
+            }
+        }
+        return Ris;
+    }
+
+    /**
+     * Porta un contratto a moneta uguale già abbinato alla forma attuale di
+     * {@link #CreaMovimentiDualInvestmentStessaMoneta}. Prima del 2026-10-05 il Settlement era ridotto al
+     * capitale, la reward stava sul wallet principale, la gamba in uscita dal sotto-wallet portava solo il
+     * capitale e i {@code [20]} andavano in un verso solo (bug C18). Qui:
+     * <ul>
+     *   <li>il Settlement riprende l'intero liquidato, capitale più reward, e il valore somma dei due (al
+     *       centesimo: capitale e reward erano stati arrotondati ciascuno per conto suo);</li>
+     *   <li>la reward passa sul sotto-wallet {@link #WALLET_DUAL_SAVINGS}, con la stessa quantità e lo stesso
+     *       valore;</li>
+     *   <li>la gamba in uscita dal sotto-wallet porta l'intero liquidato;</li>
+     *   <li>i cinque movimenti formano un solo gruppo {@code [20]}.</li>
+     * </ul>
+     * Non cambia nessun risultato fiscale: tutto avviene nello stesso gruppo wallet, dove i trasferimenti
+     * interni non spostano costi e il motore non legge il valore del Settlement. Rilanciabile: su un contratto
+     * già nella forma attuale non fa nulla. Lavora solo sulle righe, senza il file di dettaglio, così lo si
+     * può richiamare anche da altri punti.
+     * @return {@link MovimentiCollegati.EsitoRiparazione#RIPARATO} se qualcosa è cambiato, {@link MovimentiCollegati.EsitoRiparazione#NON_SERVE} se era
+     *         già nella forma attuale, {@link MovimentiCollegati.EsitoRiparazione#FALLITO} se i movimenti collegati mancano o non sono
+     *         quelli attesi (nulla viene toccato)
+     */
+    static MovimentiCollegati.EsitoRiparazione AggiornaFormaStessaMoneta(String[] Purchase, String[] Settlement) {
+        if (Purchase == null || Settlement == null) return MovimentiCollegati.EsitoRiparazione.FALLITO;
+        List<String[]> Generati = Collegati(Purchase, Settlement);
+        if (Generati == null) {
+            LoggerGC.ScriviErrore("Dual Investment: contratto " + Purchase[0] + " / " + Settlement[0]
+                    + " con movimenti collegati mancanti, forma non aggiornata");
+            return MovimentiCollegati.EsitoRiparazione.FALLITO;
+        }
+        String[] Reward = null, MirrorUscita = null, MirrorEntrata = null;
+        for (String[] v : Generati) {
+            if (CAMPO18_REWARD.equalsIgnoreCase(v[18])) Reward = v;
+            else if (WALLET_DUAL_SAVINGS.equals(v[4]) && v[18].contains("PTW")) MirrorUscita = v;
+            else if (WALLET_DUAL_SAVINGS.equals(v[4]) && v[18].contains("DTW")) MirrorEntrata = v;
+        }
+        if (MirrorUscita == null || MirrorEntrata == null || Generati.size() != (Reward == null ? 2 : 3)) {
+            LoggerGC.ScriviErrore("Dual Investment: contratto " + Purchase[0] + " / " + Settlement[0]
+                    + " con movimenti collegati inattesi, forma non aggiornata");
+            return MovimentiCollegati.EsitoRiparazione.FALLITO;
+        }
+        boolean Cambiato = false;
+        if (Reward != null && !WALLET_DUAL_SAVINGS.equals(Reward[4])) {
+            //Forma precedente: il Settlement riprende la reward, che passa sul sotto-wallet
+            Settlement[13] = new BigDecimal(Settlement[13]).add(new BigDecimal(Reward[13])).toPlainString();
+            Settlement[15] = new BigDecimal(Settlement[15]).add(new BigDecimal(Reward[15]))
+                    .setScale(2, RoundingMode.HALF_UP).toPlainString();
+            Reward[4] = WALLET_DUAL_SAVINGS;
+            Cambiato = true;
+        }
+        //L'uscita dal sotto-wallet porta l'intero liquidato
+        BigDecimal Liquidato = new BigDecimal(Settlement[13]).abs();
+        if (new BigDecimal(MirrorUscita[10]).abs().compareTo(Liquidato) != 0
+                || !MirrorUscita[15].equals(Settlement[15])) {
+            MirrorUscita[10] = Liquidato.negate().toPlainString();
+            MirrorUscita[15] = Settlement[15];
+            Cambiato = true;
+        }
+        List<String[]> Contratto = new ArrayList<>(List.of(Purchase, MirrorEntrata, Settlement, MirrorUscita));
+        if (Reward != null) Contratto.add(Reward);
+        if (CollegaTutti(Contratto)) Cambiato = true;
+        return Cambiato ? MovimentiCollegati.EsitoRiparazione.RIPARATO : MovimentiCollegati.EsitoRiparazione.NON_SERVE;
+    }
+
+    /** @return {@code true} se {@code Qta} coincide numericamente con una delle quantità indicate */
+    private static boolean QuantitaFraQuelle(BigDecimal Qta, List<String> Quantita) {
+        for (String q : Quantita) if (Qta.compareTo(new BigDecimal(q)) == 0) return true;
+        return false;
     }
 
     private static class CandidatoRisultato {
@@ -398,7 +608,8 @@ public class Binance_DualInvestment {
      * @param tsCercato istante approssimato (epoca UTC) del contratto, per scegliere fra più candidati
      * @param purchase {@code true} per un Purchase (categoria PC), {@code false} per un Settlement (categoria DC)
      * @param giaUsati ID già assegnati a un altro contratto in questa stessa esecuzione
-     * @param quantitaGiaAbbinataStr quantità che porta il movimento <b>dopo</b> l'abbinamento (vedi sotto)
+     * @param quantitaGiaAbbinata quantità che il movimento può portare <b>dopo</b> l'abbinamento (vedi sotto):
+     *        più d'una solo per il Settlement a moneta uguale, ridotto al capitale prima del 2026-10-05
      * @param chiaveContratto chiave {@code DUAL-…} del contratto cercato
      * @param campo18GiaAbbinato campo 18 che il movimento porta se è già stato abbinato
      * <p>Fra i candidati entrano anche i movimenti già abbinati da una versione precedente, riconosciuti dal
@@ -406,10 +617,9 @@ public class Binance_DualInvestment {
      * già il gruppo di un <i>altro</i> contratto sono esclusi, quello che porta proprio il gruppo cercato
      * vince su ogni altro (un secondo giro dello stesso file non sceglie mai diversamente dal primo).
      */
-    private static CandidatoRisultato trovaCandidato(String moneta, String quantitaStr, String quantitaGiaAbbinataStr,
+    private static CandidatoRisultato trovaCandidato(String moneta, String quantitaStr, List<String> quantitaGiaAbbinata,
             long tsCercato, boolean purchase, Set<String> giaUsati, String chiaveContratto, String campo18GiaAbbinato) {
         BigDecimal quantita = new BigDecimal(quantitaStr);
-        BigDecimal quantitaGiaAbbinata = new BigDecimal(quantitaGiaAbbinataStr);
         String causaleAttesa = purchase ? CAUSALE_PURCHASE : CAUSALE_SETTLEMENT;
         String migliore = null;
         long migliorScarto = Long.MAX_VALUE;
@@ -437,7 +647,7 @@ public class Binance_DualInvestment {
             } catch (Exception ex) {
                 continue;
             }
-            if (qtaMov.compareTo(giaAbbinato ? quantitaGiaAbbinata : quantita) != 0) continue;
+            if (giaAbbinato ? !QuantitaFraQuelle(qtaMov, quantitaGiaAbbinata) : qtaMov.compareTo(quantita) != 0) continue;
 
             // Il campo data visualizzato ([1]) non ha i secondi ("yyyy-MM-dd HH:mm"): ConvertiDatainLongSecondo
             // (che li richiede) falliva silenziosamente tornando 0 per ogni riga - da qui, prima di questa

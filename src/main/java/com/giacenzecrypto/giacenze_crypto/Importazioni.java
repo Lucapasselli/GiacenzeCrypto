@@ -3588,10 +3588,13 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
                                 //Se la differenza tra il prezzo di prelievo e deposito è inferiore al 10% allora associo
                                 //i movimenti, li marco come già usati e passo al prossimo prelievo (break): un prelievo
                                 //si abbina al più a un deposito, e viceversa.
-                                    GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(riga[0], rigaConfronto[0]);
+                                //Se gli ID dello scambio non si possono generare la coppia resta com'era e si prova
+                                //il deposito successivo
+                                if (GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(riga[0], rigaConfronto[0])) {
                                     giaAssociati.add(riga[0]);
                                     giaAssociati.add(rigaConfronto[0]);
                                     break;
+                                }
                             }
                         }
                     }

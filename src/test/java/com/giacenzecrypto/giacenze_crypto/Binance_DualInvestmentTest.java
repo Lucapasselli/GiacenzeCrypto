@@ -177,19 +177,22 @@ class Binance_DualInvestmentTest {
         assertTrue(p[18].contains("PTW"), "il purchase deve restare un TI in uscita (PTW)");
         assertTrue(s[18].contains("DTW"), "il settlement deve restare un TI in entrata (DTW)");
 
-        // Il settlement, dopo lo sdoppiamento, porta solo il capitale (100), non l'intero liquidato (102).
-        assertEquals(0, new BigDecimal("100").compareTo(new BigDecimal(s[13])),
-                "il settlement deve riportare solo il capitale, il resto va alla reward");
+        // Dal 2026-10-05 (bug C18) il Settlement non viene ridotto: porta l'intero liquidato, come nel CSV.
+        // Prima portava solo il capitale e la reward stava sul wallet principale.
+        assertEquals("102.00000000", s[13], "il settlement resta com'era nel CSV");
+        assertEquals("1.00", s[15]);
+        assertEquals("100.00000000", p[10].replace("-", ""), "il purchase resta com'era nel CSV");
 
-        // Gamba speculare sul sotto-wallet "Dual Savings": uscita di 100 in corrispondenza del rientro.
+        // Gamba speculare sul sotto-wallet "Dual Savings": esce l'intero liquidato (capitale + reward).
         String idMirrorSettlement = idSettlement.split("_")[0] + "_" + idSettlement.split("_")[1]
                 + "_0" + idSettlement.split("_")[2] + "_" + idSettlement.split("_")[3] + "_PC";
         String[] mirrorSettlement = MappaCryptoWallet.get(idMirrorSettlement);
         assertNotNull(mirrorSettlement, "manca la gamba speculare del settlement sul sotto-wallet");
         assertEquals("Dual Savings", mirrorSettlement[4]);
-        assertEquals(0, new BigDecimal("-100").compareTo(new BigDecimal(mirrorSettlement[10])));
+        assertEquals(0, new BigDecimal("-102").compareTo(new BigDecimal(mirrorSettlement[10])));
+        assertEquals(s[15], mirrorSettlement[15]);
 
-        // Reward separata per la differenza (102 - 100 = 2), sul wallet principale (non sul sotto-wallet).
+        // Reward per la differenza (102 - 100 = 2), sul sotto-wallet: è lì che il contratto l'ha prodotta.
         String idReward = idSettlement.split("_")[0] + "_" + idSettlement.split("_")[1]
                 + "_00" + idSettlement.split("_")[2] + "_" + idSettlement.split("_")[3] + "_DC";
         String[] reward = MappaCryptoWallet.get(idReward);
@@ -197,7 +200,7 @@ class Binance_DualInvestmentTest {
         assertEquals("REWARD", reward[5]);
         assertTrue(reward[18].contains("DAI"), "la reward deve essere riconosciuta come deposito a costo (DAI)");
         assertEquals(s[3], reward[3]);
-        assertEquals(s[4], reward[4], "la reward arriva sul wallet reale, non sul sotto-wallet Dual Savings");
+        assertEquals("Dual Savings", reward[4], "la reward entra sul sotto-wallet, da cui esce col capitale");
         assertEquals(0, new BigDecimal("2").compareTo(new BigDecimal(reward[13])));
     }
 

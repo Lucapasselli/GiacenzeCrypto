@@ -1228,7 +1228,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                             if (descrizione.equalsIgnoreCase("TRASFERIMENTO TRA WALLET")) {
                                 CreaMovimentiTrasferimentosuWalletProprio(IDPrelievo, IDDeposito);
                             } else if (descrizione.equalsIgnoreCase("SCAMBIO CRYPTO DIFFERITO")) {
-                                CreaMovimentiScambioCryptoDifferito(IDPrelievo, IDDeposito);
+                                if (!CreaMovimentiScambioCryptoDifferito(IDPrelievo, IDDeposito)) return ScambioDifferitoNonCreato();
 
                             }
                         } else {
@@ -1238,7 +1238,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                             if (descrizione.equalsIgnoreCase("TRASFERIMENTO TRA WALLET")) {
                                 CreaMovimentiTrasferimentosuWalletProprio(IDPrelievo, IDDeposito);
                             } else if (descrizione.equalsIgnoreCase("SCAMBIO CRYPTO DIFFERITO")) {
-                                CreaMovimentiScambioCryptoDifferito(IDPrelievo, IDDeposito);
+                                if (!CreaMovimentiScambioCryptoDifferito(IDPrelievo, IDDeposito)) return ScambioDifferitoNonCreato();
 
                             }
 
@@ -1264,6 +1264,14 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
     
     
+    /** Avviso per uno scambio differito non creato (nessun ID univoco disponibile): i movimenti restano com'erano. */
+    private boolean ScambioDifferitoNonCreato() {
+        Messaggi.WarningMessage("Scambio differito non creato",
+                "Non è stato possibile generare gli identificativi dei movimenti dello scambio.<br>"
+                + "I due movimenti non sono stati abbinati, i dettagli sono nel log.", this);
+        return false;
+    }
+
     /** Vero se il deposito del giroconto FIAT non supera il prelievo (al più ne manca la commissione). */
     static boolean QtaGirocontoFiatAmmessa(String IDPrelievo, String IDDeposito) {
         String[] prelievo = MappaCryptoWallet.get(IDPrelievo);
@@ -2432,9 +2440,11 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
      * riferimenti incrociati e scritti in {@code MappaCryptoWallet}.
      * @param IDPrelievo ID del movimento di prelievo originale
      * @param IDDeposito ID del movimento di deposito originale (moneta diversa da quella prelevata)
+     * @return {@code false} se non è stato fatto nulla (movimenti inesistenti o nessun ID univoco
+     *         disponibile per i movimenti generati), vedi {@link #IDScambioDifferito}
      */
-    public static void CreaMovimentiScambioCryptoDifferito(String IDPrelievo,String IDDeposito){
-        CreaMovimentiScambioCryptoDifferito(IDPrelievo, IDDeposito, "Piattaforma di scambio");
+    public static boolean CreaMovimentiScambioCryptoDifferito(String IDPrelievo,String IDDeposito){
+        return CreaMovimentiScambioCryptoDifferito(IDPrelievo, IDDeposito, "Piattaforma di scambio");
     }
 
     /**
@@ -2443,18 +2453,30 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
      * (es. "Dual Savings" per i Dual Investment di Binance): il sotto-wallet [4] non entra nel
      * calcolo, che ragiona per exchange [3] / gruppo wallet e per campo 18.
      * @param WalletPiattaforma nome del sotto-wallet dei movimenti sintetici
+     * @return {@code false} se non è stato fatto nulla, vedi {@link #CreaMovimentiScambioCryptoDifferito(String, String)}
      */
-    public static void CreaMovimentiScambioCryptoDifferito(String IDPrelievo,String IDDeposito,String WalletPiattaforma){
+    public static boolean CreaMovimentiScambioCryptoDifferito(String IDPrelievo,String IDDeposito,String WalletPiattaforma){
         //come prima cosa devo generare un nuovo id per il prelievo
         //System.out.println("Creo 3 movimenti");
         String MovimentoPrelievo[]=MappaCryptoWallet.get(IDPrelievo);
         String MovimentoDeposito[]=MappaCryptoWallet.get(IDDeposito);
+        if (MovimentoPrelievo==null||MovimentoDeposito==null){
+            LoggerGC.ScriviErrore("Scambio differito: movimento non trovato ("+IDPrelievo+" / "+IDDeposito+"), nessuna modifica");
+            return false;
+        }
+        //Gli ID si decidono PRIMA di togliere i due movimenti dalla mappa: se uno non si può generare si
+        //rinuncia senza aver toccato nulla, come fa Trasla Orario
+        String[] ID=IDScambioDifferito(IDPrelievo, IDDeposito);
+        if (ID==null){
+            LoggerGC.ScriviErrore("Scambio differito: impossibile generare ID univoci per "+IDPrelievo+" / "+IDDeposito+", nessuna modifica");
+            return false;
+        }
                     //Rimuovo le movimentazioni perchè devo codificarle con altro id per metterle in ordine corretto
             //E' l'id infatti che da l'ordine alle transazioni
             //poi ricreo i movimenti ma con il nuovo ID
             Funzioni.RimuoviMovimentazioneXID(IDPrelievo);
             Funzioni.RimuoviMovimentazioneXID(IDDeposito);
-        
+
        // BigDecimal QtaPrelievoValoreAssoluto=new BigDecimal(MovimentoPrelievo[10]).stripTrailingZeros().abs();
        // BigDecimal QtaDepositoValoreAssoluto=new BigDecimal(MovimentoDeposito[13]).stripTrailingZeros().abs();
         //Vado avanti solo se la qta prelevata è maggiore o uguale di quelòla ricevuta
@@ -2467,25 +2489,16 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
          
         //System.out.println(IDPrelievo);
-        String IDTrasferimento1;
-        String IDScambio;
-        String IDTrasferimento2;
         String MT1[]=new String[Importazioni.ColonneTabella];
         String MS[]=new String[Importazioni.ColonneTabella];
         String MT2[]=new String[Importazioni.ColonneTabella];
-        String IDSpezzato[]=IDPrelievo.split("_");
-        boolean PrelievoFIAT=IDSpezzato[4].equalsIgnoreCase("PF");
-        MovimentoPrelievo[0]=IDSpezzato[0]+"_00"+IDSpezzato[1]+"_"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_"+IDSpezzato[4];
-        IDTrasferimento1=IDSpezzato[0]+"_01"+IDSpezzato[1]+"_"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_DC";
-        if (PrelievoFIAT)IDTrasferimento1=IDTrasferimento1.substring(0, IDTrasferimento1.length() - 1) + "F";
-        String IDSpezzatoDeposito[]=IDDeposito.split("_");
-        boolean DepositoFIAT=IDSpezzatoDeposito[4].equalsIgnoreCase("DF");
-        IDScambio=IDSpezzatoDeposito[0]+"_02"+IDSpezzato[1]+"_"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_SC";
-        IDTrasferimento2=IDSpezzatoDeposito[0]+"_03"+IDSpezzato[1]+"_"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_PC";
-        if (DepositoFIAT)IDTrasferimento2=IDTrasferimento2.substring(0, IDTrasferimento2.length() - 1) + "F";
-        MovimentoDeposito[0]=IDSpezzatoDeposito[0]+"_04"+IDSpezzatoDeposito[1]+"_"+IDSpezzatoDeposito[2]+"_"+IDSpezzatoDeposito[3]+"_"+IDSpezzatoDeposito[4];
-        if (DepositoFIAT)IDScambio=IDScambio.substring(0, IDScambio.length() - 2) + "VC";
-        if (PrelievoFIAT)IDScambio=IDScambio.substring(0, IDScambio.length() - 2) + "AC";
+        boolean PrelievoFIAT=IDPrelievo.split("_")[4].equalsIgnoreCase("PF");
+        boolean DepositoFIAT=IDDeposito.split("_")[4].equalsIgnoreCase("DF");
+        MovimentoPrelievo[0]=ID[0];
+        String IDTrasferimento1=ID[1];
+        String IDScambio=ID[2];
+        String IDTrasferimento2=ID[3];
+        MovimentoDeposito[0]=ID[4];
         MT1[0]=IDTrasferimento1;
         MS[0]=IDScambio;
         MT2[0]=IDTrasferimento2;
@@ -2636,11 +2649,47 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             MappaCryptoWallet.put(MovimentoDeposito[0], MovimentoDeposito);
 
       //   }
+        return true;
+    }
 
-        
-        
-                
-    }    
+    /**
+     * Gli ID dei cinque movimenti di uno scambio differito, nell'ordine prelievo rinumerato, trasferimento
+     * verso la piattaforma (MT1), scambio (MS), trasferimento dalla piattaforma (MT2), deposito rinumerato.
+     *
+     * <p>MS e MT2 prendono l'istante del <b>deposito</b> e la coda dell'ID del <b>prelievo</b>: due scambi
+     * differiti con lo stesso istante di deposito e prelievi con la stessa coda (per Binance la coda è quasi
+     * sempre la stessa, e i Dual Investment liquidano tutti allo stesso orario) davano lo stesso ID, e il
+     * secondo sovrascriveva in silenzio lo scambio del primo. Per questo i tre movimenti generati passano da
+     * {@link MovimentiCrypto#getIDUnivoco}, che incrementa il quarto segmento: l'ordine resta deciso dai
+     * prefissi {@code 01}/{@code 02}/{@code 03}. I due originali rinumerati ({@code 00}/{@code 04}) non ci
+     * passano: derivano da un ID già univoco, e l'annullamento della classificazione toglie il prefisso
+     * aspettandosi di ritrovare l'ID di partenza. Se uno di loro esiste già si rinuncia, per non
+     * sovrascriverlo.
+     *
+     * <p>Non modifica la mappa.
+     * @return i cinque ID, o {@code null} se non si possono generare (ID malformato, quarto segmento non
+     *         numerico o arrivato a 999, ID rinumerato già occupato)
+     */
+    static String[] IDScambioDifferito(String IDPrelievo, String IDDeposito) {
+        String IDSpezzato[]=IDPrelievo.split("_");
+        String IDSpezzatoDeposito[]=IDDeposito.split("_");
+        if (IDSpezzato.length<5||IDSpezzatoDeposito.length<5) return null;
+        boolean PrelievoFIAT=IDSpezzato[4].equalsIgnoreCase("PF");
+        boolean DepositoFIAT=IDSpezzatoDeposito[4].equalsIgnoreCase("DF");
+        String Coda="_"+IDSpezzato[2]+"_"+IDSpezzato[3];
+        String IDPrelievoNuovo=IDSpezzato[0]+"_00"+IDSpezzato[1]+Coda+"_"+IDSpezzato[4];
+        String IDTrasferimento1=IDSpezzato[0]+"_01"+IDSpezzato[1]+Coda+(PrelievoFIAT?"_DF":"_DC");
+        String CategoriaScambio=PrelievoFIAT?"_AC":DepositoFIAT?"_VC":"_SC";
+        String IDScambio=IDSpezzatoDeposito[0]+"_02"+IDSpezzato[1]+Coda+CategoriaScambio;
+        String IDTrasferimento2=IDSpezzatoDeposito[0]+"_03"+IDSpezzato[1]+Coda+(DepositoFIAT?"_PF":"_PC");
+        String IDDepositoNuovo=IDSpezzatoDeposito[0]+"_04"+IDSpezzatoDeposito[1]+"_"+IDSpezzatoDeposito[2]+"_"+IDSpezzatoDeposito[3]+"_"+IDSpezzatoDeposito[4];
+        if (MappaCryptoWallet.containsKey(IDPrelievoNuovo)||MappaCryptoWallet.containsKey(IDDepositoNuovo)) return null;
+        IDTrasferimento1=MovimentiCrypto.getIDUnivoco(MappaCryptoWallet, IDTrasferimento1);
+        IDScambio=MovimentiCrypto.getIDUnivoco(MappaCryptoWallet, IDScambio);
+        IDTrasferimento2=MovimentiCrypto.getIDUnivoco(MappaCryptoWallet, IDTrasferimento2);
+        if (IDTrasferimento1==null||IDScambio==null||IDTrasferimento2==null) return null;
+        return new String[]{IDPrelievoNuovo,IDTrasferimento1,IDScambio,IDTrasferimento2,IDDepositoNuovo};
+    }
     
     
     private void ComboBox_TipoMovimentoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_TipoMovimentoItemStateChanged

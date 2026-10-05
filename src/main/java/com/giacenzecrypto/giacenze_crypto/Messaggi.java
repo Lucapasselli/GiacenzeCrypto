@@ -380,8 +380,8 @@ public class Messaggi {
      
      
      /**
-      * Mostra un dialog con una scelta tra 4 tipologie di errore da correggere (movimento non classificato,
-      * transazione senza prezzo, parte del LIFO mancante, giacenze negative), mostrando il conteggio di
+      * Mostra un dialog con una scelta tra 5 tipologie di errore da correggere (movimento non classificato,
+      * transazione senza prezzo, parte del LIFO mancante, giacenze negative, movimenti collegati incoerenti), mostrando il conteggio di
       * ciascuna tipologia.
       *
       * <p>Le ultime due portano alla stessa scheda ma <b>non sono la stessa cosa</b>, e le etichette lo
@@ -393,10 +393,12 @@ public class Messaggi {
       * @param NumErroriMovNoPrezzo numero di transazioni senza prezzo
       * @param NumErroriStackLiFoMancante numero di errori con parte del LIFO mancante
       * @param NumErroriGiacenzeNegative numero di terne exchange/sotto-wallet/token con saldo negativo
+      * @param NumErroriMovimentiCollegati numero di movimenti collegati dalla classificazione in modo incoerente
+      *        ({@link MovimentiCollegati}): scambi differiti sovrascritti, contratti Dual da aggiornare, altri
       * @param win finestra parent del dialog
       * @return il risultato del dialog, da cui leggere l'azione scelta dall'utente tramite {@code isAction}
       */
-     public static AppDialog.DialogResult Personalizzati_Multi_ScegliErrori(int NumErroriMovSconosciuti,int NumErroriMovNoPrezzo,int NumErroriStackLiFoMancante,int NumErroriGiacenzeNegative,Window win) {
+     public static AppDialog.DialogResult Personalizzati_Multi_ScegliErrori(int NumErroriMovSconosciuti,int NumErroriMovNoPrezzo,int NumErroriStackLiFoMancante,int NumErroriGiacenzeNegative,int NumErroriMovimentiCollegati,Window win) {
          String testo = "Scegli quale tipologia di errore correggere.";
          AppDialog.DialogResult result = AppDialog.builder(win)
                  .windowTitle("Correzione errori")
@@ -419,6 +421,9 @@ public class Messaggi {
                          .role(AppDialog.ActionRole.PRIMARY)
                          .build())
                  .action(AppDialog.DialogAction.builder("GiacenzeNegative", "Giacenze negative (" + NumErroriGiacenzeNegative + ")")
+                         .role(AppDialog.ActionRole.PRIMARY)
+                         .build())
+                 .action(AppDialog.DialogAction.builder("MovimentiCollegati", "Movimenti collegati incoerenti (" + NumErroriMovimentiCollegati + ")")
                          .role(AppDialog.ActionRole.PRIMARY)
                          .build())
                  .showDialog();

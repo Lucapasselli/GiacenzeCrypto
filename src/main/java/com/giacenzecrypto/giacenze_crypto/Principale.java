@@ -278,6 +278,14 @@ private static final long serialVersionUID = 3L;
      */
     public int NumErroriGiacenzeNegative=0;
 
+    /**
+     * Movimenti collegati dalla classificazione ({@code [20]}) in modo incoerente: scambi differiti sovrascritti
+     * (bug C17), contratti Dual Investment nella forma precedente (bug C18), riferimenti a movimenti mancanti o
+     * non ricambiati. Calcolato da {@link MovimentiCollegati#Controlla} nel thread delle tabelle secondarie, come
+     * {@link #NumErroriGiacenzeNegative}, e per lo stesso motivo non azzerato a inizio caricamento.
+     */
+    public int NumErroriMovimentiCollegati=0;
+
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
     public static boolean InterrompiCiclo=false;
     
@@ -6580,18 +6588,18 @@ private void SettaIcone(){
     }
     
     /**
-     * Scrive testo, abilitazione e suggerimento del pulsante degli errori sommando i quattro contatori.
+     * Scrive testo, abilitazione e suggerimento del pulsante degli errori sommando i cinque contatori.
      *
      * <p>Sta in un metodo a sé perché i contatori <b>non nascono tutti nello stesso momento</b>: tre
      * sono calcolati dal ciclo di {@link #TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa}, il
-     * quarto ({@link #NumErroriGiacenzeNegative}) arriva dal thread delle tabelle secondarie, che
-     * finisce dopo. Aggiornare il pulsante in un punto solo lo lascerebbe indietro di una passata.
+     * quarto ({@link #NumErroriGiacenzeNegative}) e il quinto ({@link #NumErroriMovimentiCollegati})
+     * arrivano dal thread delle tabelle secondarie, che finisce dopo. Aggiornare il pulsante in un punto solo lo lascerebbe indietro di una passata.
      *
      * <p>Tocca Swing: va chiamato sull'EDT.
      */
     private void Errori_AggiornaPulsante(){
         int err = NumErroriMovNoPrezzo + NumErroriMovSconosciuti
-                + NumErroriStackLiFoMancante + NumErroriGiacenzeNegative;
+                + NumErroriStackLiFoMancante + NumErroriGiacenzeNegative + NumErroriMovimentiCollegati;
         if (err == 0) {
             Bottone_Errori.setEnabled(false);
             Bottone_Errori.setText("Errori (0)");
@@ -6637,6 +6645,7 @@ private void SettaIcone(){
                 Map<String, String[]> situazioneImport = SituazioneImport_Calcola(movimenti);
                 List<String> daCategorizzare = new ArrayList<>();
                 List<String[]> righeDP = DepositiPrelievi_Calcola(movimenti, parDP, daCategorizzare);
+                MovimentiCollegati.Esito collegati = MovimentiCollegati.Controlla(movimenti);
 
                 tempoOperazione = (System.currentTimeMillis() - tempoOperazione);
                 System.out.println("Tempo calcolo Tabelle secondarie : " + tempoOperazione + " millisec. (fuori dall'EDT)");
@@ -6659,6 +6668,7 @@ private void SettaIcone(){
                     NumErroriGiacenzeNegative = (int) saldiNegativi.stream()
                             .filter(s -> !Funzioni.isSCAM(s.split(";")[2]))
                             .count();
+                    NumErroriMovimentiCollegati = collegati.Totale();
                     Errori_AggiornaPulsante();
                 });
             }, "TabelleSecondarie").start();
@@ -9271,10 +9281,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             IDnc2.split("_")[4].equals("DC")&&
                             (soloSelezionati==null || (soloSelezionati.contains(IDnc) && soloSelezionati.contains(IDnc2)))) {
                         //Se arrivo qua ho i due dovimenti di cui devo creare lo scambio
-                        GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(IDnc,IDnc2);
                         //mando avanti di 2 le modifiche perchè ne ho classificati 2
-                        numeromodifiche++;
-                        numeromodifiche++;
+                        if (GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(IDnc,IDnc2)) {
+                            numeromodifiche++;
+                            numeromodifiche++;
+                        }
                         
                     }
                 }
@@ -9323,9 +9334,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 MT[29] = Movimento[29];
                 Importazioni.RiempiVuotiArray(MT);
                 MappaCryptoWallet.put(IDNuovoMov, MT);
-                GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(IDNuovoMov,IDnc);
-               // System.out.println("Trovato scambio con WCRO");
-                numeromodifiche++;
+                if (GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(IDNuovoMov,IDnc)) {
+                   // System.out.println("Trovato scambio con WCRO");
+                    numeromodifiche++;
+                } else {
+                    //Scambio non creato: il prelievo di WCRO appena inventato non resta orfano
+                    MappaCryptoWallet.remove(IDNuovoMov);
+                }
             }
         }
 
@@ -13745,7 +13760,7 @@ if (result.isAction("delete-all")) {
     }
     private void Funzioni_CorrezioneErroriPrincipali(){
 
-AppDialog.DialogResult result = Messaggi.Personalizzati_Multi_ScegliErrori(NumErroriMovSconosciuti, NumErroriMovNoPrezzo, NumErroriStackLiFoMancante, NumErroriGiacenzeNegative, this);
+AppDialog.DialogResult result = Messaggi.Personalizzati_Multi_ScegliErrori(NumErroriMovSconosciuti, NumErroriMovNoPrezzo, NumErroriStackLiFoMancante, NumErroriGiacenzeNegative, NumErroriMovimentiCollegati, this);
 
 if (result != null && !result.isAction("cancel")) {
 
@@ -13804,6 +13819,14 @@ if (result != null && !result.isAction("cancel")) {
                                 AnalisiCrypto.setSelectedComponent(SaldiNegativi);
                                 SaldiNegativi.requestFocus();
 
+                            }
+                            else if (result.isAction("MovimentiCollegati")) {
+                                //Ricostruire uno scambio cambia i calcoli: un solo ricalcolo alla fine, e nessun
+                                //secondo ricalcolo al ritorno del focus sulla finestra
+                                if (Principale_MovimentiCollegati.Gestisci(this)) {
+                                    Funzioni_AggiornaTutto();
+                                    TabellaCryptodaAggiornare = false;
+                                }
                             }
                     }
 

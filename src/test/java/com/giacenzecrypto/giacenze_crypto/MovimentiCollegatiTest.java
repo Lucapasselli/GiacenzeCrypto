@@ -178,10 +178,10 @@ class MovimentiCollegatiTest {
 
         assertEquals(0, controlla().Totale());
         for (String[] v : gruppoDi(pB)) {
-            assertEquals("DUAL-1055026", CommissioniCollegate.Chiave(v), v[0]);
+            assertEquals("DUAL-1055026", GruppoOperazione.ChiaveEffettiva(v), v[0]);
             if ("AU".equals(v[22])) assertEquals("Dual Savings", v[4]);
         }
-        for (String[] v : gruppoDi(pA)) assertEquals("DUAL-1005680", CommissioniCollegate.Chiave(v), v[0]);
+        for (String[] v : gruppoDi(pA)) assertEquals("DUAL-1005680", GruppoOperazione.ChiaveEffettiva(v), v[0]);
     }
 
     @Test
@@ -219,5 +219,100 @@ class MovimentiCollegatiTest {
 
         assertEquals(List.of(p[0]), new ArrayList<>(E.Altri));
         assertEquals(1, E.Totale());
+    }
+
+    // =============================================================================================
+    // CHIAVE DEL CONTRATTO DUAL SUI MOVIMENTI GENERATI
+    // =============================================================================================
+
+    private static void tuttiConLaChiave(String[] v, String Chiave) {
+        for (String[] m : gruppoDi(v)) assertEquals(Chiave, GruppoOperazione.ChiaveEffettiva(m), m[0]);
+    }
+
+    @Test
+    void contrattoAnnullatoERiassociatoAMano_laChiaveVaSuTuttiECinque() throws Exception {
+        //Lo scenario segnalato: abbinamento dal file, cancellazione di un generato (annulla il contratto),
+        //poi prelievo e deposito riassociati a mano come scambio differito
+        String[] p = movimento("20220512062450_Binance_001_001_PC", "Dual Savings Purchase", "USDT", "100.00000000", "2022-05-12 06:24:50", "100.00");
+        String[] s = movimento("20220524083341_Binance_002_001_DC", "Dual Savings Settlement", "BTC", "0.00350000", "2022-05-24 08:33:41", "100.00");
+        seedPrezzo("BTC", "2022-05-24 08:33:41");
+        seedPrezzo("USDT", "2022-05-24 08:33:41");
+        Path file = tempDir.resolve("dettaglio_" + System.nanoTime() + "_202609182038UTC+2.csv");
+        Files.writeString(file, "Product,Order Type,Product Id,Subscription Date,Type,Subscription Amount,Target Price,"
+                + "Settlement Date,Fixing Price,APY,Settlement Amount,Status\n"
+                + "USDT/BTC,Buy Low,1232611,2022-05-12 08:24:50,Settled,100.00000000 USDT,28500,2022-05-24 10:33:41,29351.32,"
+                + "146.28%,0.00350000 BTC,Settled\n");
+        assertEquals(1, Binance_DualInvestment.Abbina(file.toFile()).abbinati);
+        String generato = null;
+        for (String[] v : MappaCryptoWallet.values()) if ("AU".equals(v[22])) generato = v[0];
+        Funzioni.RimuoviMovimentazioneXID(generato);
+        assertEquals(2, MappaCryptoWallet.size());
+
+        assertTrue(GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(p[0], s[0]));
+
+        assertEquals(5, MappaCryptoWallet.size());
+        tuttiConLaChiave(p, "DUAL-1232611");
+        assertEquals(0, controlla().Totale());
+    }
+
+    @Test
+    void iGenerati_nonPortanoLaChiave_laRicavanoDalGruppo() throws Exception {
+        String[] p = movimento("20220512062450_Binance_001_001_PC", "", "USDT", "100", "2022-05-12 06:24:50", "100.00");
+        String[] s = movimento("20220524083341_Binance_002_001_DC", "", "BTC", "0.0035", "2022-05-24 08:33:41", "100.00");
+        seedPrezzo("BTC", "2022-05-24 08:33:41");
+        seedPrezzo("USDT", "2022-05-24 08:33:41");
+        GruppoOperazione.Scrivi(p, "DUAL-1232611");
+        GruppoOperazione.Scrivi(s, "DUAL-1232611");
+
+        assertTrue(GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(p[0], s[0]));
+
+        for (String[] m : gruppoDi(p)) {
+            if ("AU".equals(m[22])) assertEquals("", GruppoOperazione.Chiave(m), "la chiave scritta sta solo sugli originali: " + m[0]);
+            else assertEquals("DUAL-1232611", GruppoOperazione.Chiave(m));
+        }
+        tuttiConLaChiave(p, "DUAL-1232611");
+        assertEquals(5, GruppoOperazione.Membri("DUAL-1232611").size(), "i membri comprendono i generati");
+        assertEquals(0, controlla().Totale());
+    }
+
+    @Test
+    void trasferimentoFraMovimentiDelloStessoContratto_laCommissioneGenerataPrendeLaChiave() {
+        String[] p = movimento("20230101100000_Binance_001_001_PC", "", "USDT", "100.5", "2023-01-01 10:00:00", "100.50");
+        String[] d = movimento("20230101101000_Binance_002_001_DC", "", "USDT", "100", "2023-01-01 10:10:00", "100.00");
+        p[GruppoOperazione.CAMPO] = "DUAL-7";
+        d[GruppoOperazione.CAMPO] = "DUAL-7";
+
+        GUI_ClassificazioneMovimento.CreaMovimentiTrasferimentosuWalletProprio(p[0], d[0]);
+
+        assertEquals(3, MappaCryptoWallet.size(), "prelievo, deposito e commissione");
+        tuttiConLaChiave(p, "DUAL-7");
+    }
+
+    @Test
+    void chiaviDiverseOCommissioni_laRegolaNonScatta() throws Exception {
+        seedPrezzo("BTC", "2022-05-24 08:33:41");
+        seedPrezzo("USDT", "2022-05-24 08:33:41");
+        //Prelievo e deposito di due contratti diversi: nessuna chiave sui trasferimenti, nessuna segnalazione
+        String[] p = movimento("20220512062450_Binance_001_001_PC", "", "USDT", "100", "2022-05-12 06:24:50", "100.00");
+        String[] s = movimento("20220524083341_Binance_002_001_DC", "", "BTC", "0.0035", "2022-05-24 08:33:41", "100.00");
+        p[GruppoOperazione.CAMPO] = "DUAL-1";
+        s[GruppoOperazione.CAMPO] = "DUAL-2";
+        assertTrue(GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(p[0], s[0]));
+        for (String[] m : gruppoDi(p)) {
+            if ("AU".equals(m[22]) && !m[0].endsWith("_SC")) assertEquals("", GruppoOperazione.ChiaveEffettiva(m), m[0]);
+        }
+        assertEquals(0, controlla().Totale());
+
+        //Chiave di commissioni sul prelievo: lo scambio la eredita come prima, i trasferimenti no
+        MappaCryptoWallet.clear();
+        String[] p2 = movimento("20220512062450_Binance_001_001_PC", "", "USDT", "100", "2022-05-12 06:24:50", "100.00");
+        String[] s2 = movimento("20220524083341_Binance_002_001_DC", "", "BTC", "0.0035", "2022-05-24 08:33:41", "100.00");
+        p2[CommissioniCollegate.CAMPO] = "chiave-commissione";
+        assertTrue(GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(p2[0], s2[0]));
+        for (String[] m : gruppoDi(p2)) {
+            if (!"AU".equals(m[22])) continue;
+            assertEquals(m[0].endsWith("_SC") ? "chiave-commissione" : "", CommissioniCollegate.Chiave(m), m[0]);
+        }
+        assertEquals(0, controlla().Totale());
     }
 }

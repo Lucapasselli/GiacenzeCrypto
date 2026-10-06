@@ -2033,6 +2033,8 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             MT[23]=Movimento[23];
             MT[29]=Movimento[29];
         }
+        //Documento di origine: la gamba speculare nasce dal movimento, come i generati dello scambio differito
+        MT[41]=Movimento[41];
         MappaCryptoWallet.put(IDNuovoMov, MT);
         //fase 2: modifico il movimento originale aggiungendogli qualcosina
         Movimento[5]=Descrizione;
@@ -2410,9 +2412,12 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         if (Movimento.length>29){
             MT2[29]=Movimento[29];
         }
+        MT2[41]=Movimento[41];
         MappaCryptoWallet.put(IDMovCorrettivo, MT2);
         }
         MT[20]=ID+","+IDMovCorrettivo;
+        //Documento di origine: gamba speculare e reward correttiva nascono dal movimento
+        MT[41]=Movimento[41];
         MappaCryptoWallet.put(IDNuovoMov, MT);
         //fase 2: modifico il movimento originale aggiungendogli qualcosina
         Movimento[5]=Descrizione;
@@ -2790,27 +2795,17 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
         //In ritorno torno gli IDOriginali che nel frattempo potrebbero cambiare
         //if (IDPartiConvolte.length<2) return IDOri;
         String IDRitorno=IDOri;
-        BigDecimal QtaCommissione=null;
-        BigDecimal QtaReward=null;
-        BigDecimal PrezzoCommissione=null;
-        BigDecimal PrezzoReward=null;
 
-        
-        //1 - Cerco movimenti di commissione per recuperare il valore che andrà sommato al movimento originale una volta ripristinato
+        //1 - Recupero dalla commissione e dalla reward generate la qta e il prezzo che andranno restituiti al movimento
+        //di prelievo per far tornare tutto alla situazione originale, poi cancello tutti i movimenti generati
+        BigDecimal Generati[]=GeneratiDaCompensare(IDPartiConvolte);
+        BigDecimal QtaCommissione=Generati[0];
+        BigDecimal PrezzoCommissione=Generati[1];
+        BigDecimal QtaReward=Generati[2];
+        BigDecimal PrezzoReward=Generati[3];
         for (String ID:IDPartiConvolte){
-            //come prima cosa cerco movimenti AU classificati come CM (Commissione)
-            //Se lo trovo recupero i dati che mi servono e cancello la transazione
-            //i dati sono la qta e il prezzo che dovrò andare a sommarli al movimento di prelievo per far tornare tutto alla situazione originale
             String attuale[]=MappaCryptoWallet.get(ID);
-            if (ID.split("_")[4].equalsIgnoreCase("CM")&&attuale[22].equalsIgnoreCase("AU")){
-                QtaCommissione=new BigDecimal(attuale[10]);
-                PrezzoCommissione=new BigDecimal(attuale[15]);
-                MappaCryptoWallet.remove(ID);
-            }else if (ID.split("_")[4].equalsIgnoreCase("RW")&&attuale[22].equalsIgnoreCase("AU")){
-                QtaReward=new BigDecimal(attuale[13]);
-                PrezzoReward=new BigDecimal(attuale[15]);
-                MappaCryptoWallet.remove(ID);
-            }else if (attuale!=null&&attuale[22].equalsIgnoreCase("AU")){
+            if (attuale!=null&&attuale[22].equalsIgnoreCase("AU")){
                 MappaCryptoWallet.remove(ID);
             }
         }
@@ -2901,6 +2896,62 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
         //Ritorno il set con gli ID su cui devo fare le modifiche e una volta tornati allo stato originale
         return IDRitorno;
         //return IDsRitorno;
+    }
+
+    /**
+     * La commissione ({@code CM}) e la reward ({@code RW}) generate ({@code AU}) classificando un trasferimento fra
+     * wallet, fra i movimenti indicati: la classificazione le ha tolte o aggiunte alla quantità e al valore del
+     * prelievo, e annullarla le restituisce. Unica lettura per l'annullamento
+     * ({@link #RiportaTransazioniASituazioneIniziale(String[], String)}) e per la deduplica dei reimport
+     * ({@link #PrelievoPrimaDellaClassificazione}), che non possono divergere.
+     * @param IDPartiCoinvolte ID del gruppo (il prelievo e il suo campo 20)
+     * @return {qta commissione, valore commissione, qta reward, valore reward}, {@code null} dove manca
+     */
+    static BigDecimal[] GeneratiDaCompensare(String IDPartiCoinvolte[]) {
+        BigDecimal Ritorno[] = new BigDecimal[4];
+        for (String ID : IDPartiCoinvolte) {
+            String attuale[] = ID.isBlank() ? null : MappaCryptoWallet.get(ID);
+            if (attuale == null || !attuale[22].equalsIgnoreCase("AU")) continue;
+            String Spezzato[] = ID.split("_");
+            if (Spezzato.length < 5) continue;
+            if (Spezzato[4].equalsIgnoreCase("CM")) {
+                Ritorno[0] = new BigDecimal(attuale[10]);
+                Ritorno[1] = new BigDecimal(attuale[15]);
+            } else if (Spezzato[4].equalsIgnoreCase("RW")) {
+                Ritorno[2] = new BigDecimal(attuale[13]);
+                Ritorno[3] = new BigDecimal(attuale[15]);
+            }
+        }
+        return Ritorno;
+    }
+
+    /**
+     * Il prelievo com'era prima che la classificazione di un trasferimento gli togliesse la commissione o gli
+     * aggiungesse la reward generate: la stessa compensazione dell'annullamento, fatta su una copia. Serve alla
+     * deduplica dei reimport senza «sovrascrivi», che confronta la quantità con quella del file: con la quantità
+     * ridotta la riga del file non veniva riconosciuta e rientrava come doppione.
+     * @param Movimento un movimento qualunque dell'archivio
+     * @return una copia con la quantità originale, oppure {@code null} se non è un prelievo classificato o se la
+     *         classificazione non ne ha cambiato la quantità
+     */
+    static String[] PrelievoPrimaDellaClassificazione(String Movimento[]) {
+        if (Movimento == null || Movimento.length < 23 || Funzioni.noData(Movimento[20])
+                || "AU".equalsIgnoreCase(Movimento[22])) return null;
+        String Spezzato[] = Movimento[0].split("_");
+        if (Spezzato.length < 5 || !(Spezzato[4].equalsIgnoreCase("PC") || Spezzato[4].equalsIgnoreCase("PF"))) return null;
+        try {
+            BigDecimal Generati[] = GeneratiDaCompensare((Movimento[0] + "," + Movimento[20]).split(","));
+            if (Generati[0] == null && Generati[2] == null) return null;
+            BigDecimal Qta = new BigDecimal(Movimento[10]);
+            if (Generati[0] != null) Qta = Qta.add(Generati[0]);
+            //La reward si restituisce solo a un prelievo crypto, come nell'annullamento
+            if (Generati[2] != null && Spezzato[4].equalsIgnoreCase("PC")) Qta = Qta.add(Generati[2]);
+            String Copia[] = Movimento.clone();
+            Copia[10] = Qta.toPlainString();
+            return Copia;
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
     
     

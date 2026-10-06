@@ -286,6 +286,9 @@ private static final long serialVersionUID = 3L;
      */
     public int NumErroriMovimentiCollegati=0;
 
+    /** Operazione di ogni movimento (ID → chiave), calcolata a ogni caricamento della tabella movimenti. */
+    private Map<String, String> OperazioneDi = new HashMap<>();
+
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
     public static boolean InterrompiCiclo=false;
     
@@ -613,6 +616,8 @@ private static final long serialVersionUID = 3L;
         CDC_AggiornaGui();
         SplashAvvio.fase(SplashAvvio.Fase.FINE);
         FineCaricamentoDati=true;
+        //Dopo la setVisible della finestra (siamo dentro l'invokeLater che la crea e la mostra)
+        SwingUtilities.invokeLater(this::AvvisiAvvio);
          
 
        // Tabelle_InizializzaHeader(TransazioniCryptoTabella);
@@ -633,6 +638,24 @@ private static final long serialVersionUID = 3L;
      /*   public static void main(String[] args) {
         
     }*/
+
+    /**
+     * Gli avvisi da dare all'avvio, ad archivio caricato: le novità della versione al primo avvio dopo un aggiornamento,
+     * poi i bonus Binance Earn importati due volte (se ci sono e l'utente non ha chiesto di non vederlo più). Un avviso
+     * nuovo va aggiunto qui, in coda, e non con un altro {@code invokeLater}: un dialogo modale fa girare la coda degli
+     * eventi mentre è aperto, e due avvisi accodati a parte si aprirebbero uno sopra l'altro.
+     */
+    private void AvvisiAvvio() {
+        try {
+            GUI_NovitaVersione.MostraSeNuovaVersione(this, MappaCryptoWallet.isEmpty());
+            if (Principale_Opzioni_Pulizie.RicompenseEarnDoppie_Gestisci(this, true)) {
+                Funzioni_AggiornaTutto();
+                TabellaCryptodaAggiornare = false;
+            }
+        } catch (Exception ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
     
 
     /**
@@ -1010,6 +1033,9 @@ private static final long serialVersionUID = 3L;
         Opzioni_CommissioniCollegate_Pannello = new javax.swing.JPanel();
         Opzioni_Bottone_CommissioniCollegate = new javax.swing.JButton();
         Opzioni_Label_CommissioniCollegate = new javax.swing.JLabel();
+        Opzioni_RicompenseEarn_Pannello = new javax.swing.JPanel();
+        Opzioni_Bottone_RicompenseEarn = new javax.swing.JButton();
+        Opzioni_Label_RicompenseEarn = new javax.swing.JLabel();
         Opzioni_Pulizie_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
         Opzioni_Pulizie_DataChooser_Finale = new com.toedter.calendar.JDateChooser();
         jLabel18 = new javax.swing.JLabel();
@@ -1297,7 +1323,7 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "<html><center>ID<br>Transazione</html>", "<html><center>Data e Ora</html>", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico<br>Moneta Uscente</html>", "<html><center>Costo di Carico<br>Moneta Entrante</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "Blocco Transazione", "Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento con Plusvalenza", "Rete", "null", "null", "null", "Errori", "null", "Fonte Prezzi", "Alias Gruppo Wallet", "Gruppo Collegato"
+                "<html><center>ID<br>Transazione</html>", "<html><center>Data e Ora</html>", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico<br>Moneta Uscente</html>", "<html><center>Costo di Carico<br>Moneta Entrante</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "Blocco Transazione", "Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento con Plusvalenza", "Rete", "null", "null", "null", "Errori", "null", "Fonte Prezzi", "Alias Gruppo Wallet", "Operazione"
             }
         ) {
             Class[] types = new Class [] {
@@ -5760,6 +5786,39 @@ private static final long serialVersionUID = 3L;
 
         jTabbedPane2.addTab("Commissioni collegate", Opzioni_CommissioniCollegate_Pannello);
 
+        Opzioni_Bottone_RicompenseEarn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Cestino.png"))); // NOI18N
+        Opzioni_Bottone_RicompenseEarn.setText("Rimuovi i bonus Binance Earn importati due volte");
+        Opzioni_Bottone_RicompenseEarn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Bottone_RicompenseEarnActionPerformed(evt);
+            }
+        });
+
+        Opzioni_Label_RicompenseEarn.setText("<html>Dagli export del 2026 Binance scrive ogni bonus giornaliero di Simple Earn sia sul conto Earn (Rewards Income) sia sul conto Spot (Interest o Rewards), e fino alla configurazione di importazione 1.017 entravano tutte e due come reddito. La pulizia toglie solo le righe del conto Earn che hanno la gemella sul conto Spot, con la stessa moneta e quantità. Fino al Salva si può annullare. Dopo la pulizia possono comparire giacenze negative su Binance: sono le ricompense Real-Time APR, che Binance non esporta e vanno aggiunte a parte.</html>");
+
+        javax.swing.GroupLayout Opzioni_RicompenseEarn_PannelloLayout = new javax.swing.GroupLayout(Opzioni_RicompenseEarn_Pannello);
+        Opzioni_RicompenseEarn_Pannello.setLayout(Opzioni_RicompenseEarn_PannelloLayout);
+        Opzioni_RicompenseEarn_PannelloLayout.setHorizontalGroup(
+            Opzioni_RicompenseEarn_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_RicompenseEarn_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(Opzioni_RicompenseEarn_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Opzioni_Bottone_RicompenseEarn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Opzioni_Label_RicompenseEarn))
+                .addContainerGap())
+        );
+        Opzioni_RicompenseEarn_PannelloLayout.setVerticalGroup(
+            Opzioni_RicompenseEarn_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_RicompenseEarn_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Opzioni_Label_RicompenseEarn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Bottone_RicompenseEarn, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(600, Short.MAX_VALUE))
+        );
+
+        jTabbedPane2.addTab("Ricompense Binance doppie", Opzioni_RicompenseEarn_Pannello);
+
         Opzioni_Pulizie_DataChooser_Iniziale.setDateFormatString("yyyy-MM-dd");
         Opzioni_Pulizie_DataChooser_Iniziale.setFont(Opzioni_Pulizie_DataChooser_Iniziale.getFont().deriveFont(Opzioni_Pulizie_DataChooser_Iniziale.getFont().getStyle() | java.awt.Font.BOLD));
         Opzioni_Pulizie_DataChooser_Iniziale.setMinimumSize(new java.awt.Dimension(100, 31));
@@ -9332,6 +9391,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 MT[25] = "WCRO";
                 MT[26] = "0x5c7f8a570d578ed84e63fdfa7b1ee72deae1ae23";
                 MT[29] = Movimento[29];
+                //Documento di origine: il prelievo di WCRO è ricavato dal deposito di CRO
+                MT[41] = Movimento[41];
                 Importazioni.RiempiVuotiArray(MT);
                 MappaCryptoWallet.put(IDNuovoMov, MT);
                 if (GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(IDNuovoMov,IDnc)) {
@@ -10386,9 +10447,8 @@ GiacenzeaData_CompilaTabellaToken(true);
             idDaEliminare.addAll(commissioniOrfane);
         }
         if (result != null && (result.isAction("delete") || result.isAction("delete-commissioni"))) {
-            for (String ID : idDaEliminare) {
-                Funzioni.RimuoviMovimentazioneXID(ID);
-            }
+            //Per righe e non per ID, come la cancellazione dalla tabella movimenti (vedi Funzioni.RimuoviMovimenti)
+            Funzioni.RimuoviMovimenti(idDaEliminare);
             Funzioni_AggiornaTutto();
             GestioneTokenScam_CaricaTabellaPrincipale();
             Tabelle.Funzioni_PulisciTabella((DefaultTableModel) GestioneTokenScam_TabellaMovimenti.getModel());
@@ -10545,24 +10605,11 @@ GiacenzeaData_CompilaTabellaToken(true);
             int eliminati = 0;
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             try {
-                for (String ID : daEliminare) {
-                    //RimuoviMovimentazioneXID non fa nulla su un ID che non esiste più, e su selezione
-                    //multipla può capitare: rimuovendo un movimento collegato,
-                    //RiportaTransazioniASituazioneIniziale rinomina gli altri movimenti del suo gruppo.
-                    //Conto quindi soltanto quelli su cui l'operazione ha agito davvero, per non annunciare
-                    //più cancellazioni di quante ne siano avvenute
-                    if (MappaCryptoWallet.get(ID) != null) {
-                        //Il lignaggio va letto PRIMA della rimozione: dopo, il movimento non è più nella
-                        //mappa e la sua catena di versioni non sarebbe più raggiungibile
-                        String Lignaggio = MovimentiStorico.LignaggioDi(ID);
-                        Funzioni.RimuoviMovimentazioneXID(ID);
-                        //Solo accodamento, nessuna scrittura sul database: la cancellazione stessa è
-                        //provvisoria finché l'utente non salva, e lo storico deve seguire lo stesso
-                        //destino della modifica che descrive
-                        MovimentiStorico.AccodaCancellazione(Lignaggio);
-                        eliminati++;
-                    }
-                }
+                //Per righe e non per ID: rimuovendo un movimento collegato, RiportaTransazioniASituazioneIniziale
+                //rinomina gli altri movimenti del suo gruppo, e un ciclo sugli ID li saltava (il deposito di uno
+                //scambio differito selezionato insieme al prelievo restava). RimuoviMovimenti conta solo i movimenti
+                //rimossi davvero e accoda allo storico la cancellazione del loro lignaggio
+                eliminati = Funzioni.RimuoviMovimenti(daEliminare);
                 Funzioni_AggiornaTutto();
                 TabellaCryptodaAggiornare = false;
             } finally {
@@ -10939,8 +10986,6 @@ GiacenzeaData_CompilaTabellaToken(true);
 
                 int movimentiCancellati = Funzioni.CancellaMovimentazioniXWallet(wallet, timeStampIniziale, timeStampFinale);
 
-                movimentiCancellati += Funzioni.CancellaMovimentazioniXWallet(wallet, timeStampIniziale, timeStampFinale);
-
                 if (movimentiCancellati > 0) {
                     Opzioni_RicreaListaWalletDisponibili();
                     Funzioni_AggiornaTutto();
@@ -10986,8 +11031,6 @@ AppDialog.DialogResult result = AppDialog.builder(this)
 
 if (result.isAction("delete-all")) {
     int movimentiCancellati = Funzioni.CancellaMovimentazioniXWallet(null, timeStampIniziale, timeStampFinale);
-
-    movimentiCancellati += Funzioni.CancellaMovimentazioniXWallet(null, timeStampIniziale, timeStampFinale);
 
     if (movimentiCancellati > 0) {
         Opzioni_RicreaListaWalletDisponibili();
@@ -11040,6 +11083,14 @@ if (result.isAction("delete-all")) {
             TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
         }
     }//GEN-LAST:event_Opzioni_Bottone_CommissioniCollegateActionPerformed
+
+    private void Opzioni_Bottone_RicompenseEarnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_RicompenseEarnActionPerformed
+        //Un solo ricalcolo dopo la pulizia, che lascia il Salva all'utente come ogni cancellazione
+        if (Principale_Opzioni_Pulizie.RicompenseEarnDoppie_Gestisci(this, false)) {
+            Funzioni_AggiornaTutto();
+            TabellaCryptodaAggiornare = false;
+        }
+    }//GEN-LAST:event_Opzioni_Bottone_RicompenseEarnActionPerformed
 
     private void Opzioni_Bottone_CompattazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_CompattazioneActionPerformed
         if (Principale_Opzioni_Pulizie.CompattaDatabase(this))
@@ -14571,7 +14622,9 @@ if (result != null && !result.isAction("cancel")) {
     }//GEN-LAST:event_MenuItem_ScollegaCommissioniActionPerformed
 
     /**
-     * Riallinea la colonna 42 "Gruppo Collegato" del model con la chiave attuale in {@code v[43]}.
+     * Riallinea la colonna 42 "Operazione" del model con l'operazione calcolata ({@link OperazioniCalcolate}). Collega e
+     * scollega commissioni cambiano i legami, quindi l'operazione si ricalcola sull'intera mappa e si aggiornano tutte
+     * le righe, non solo quelle selezionate: unire o dividere due operazioni cambia la chiave anche di altri movimenti.
      * La colonna è una copia fatta al caricamento: collega/scollega cambiano solo la mappa e, non
      * ricalcolando niente, non ricaricano la tabella, che mostrerebbe la chiave di prima. Si tocca solo
      * quel che è cambiato, così selezione e filtri restano come sono.
@@ -14579,11 +14632,12 @@ if (result != null && !result.isAction("cancel")) {
     private void TransazioniCrypto_AggiornaColonnaGruppoCollegato() {
         DefaultTableModel modello = (DefaultTableModel) TransazioniCryptoTabella.getModel();
         if (modello.getColumnCount() <= 42) return;
+        OperazioneDi = OperazioniCalcolate.Calcola(MappaCryptoWallet);
         for (int r = 0; r < modello.getRowCount(); r++) {
             Object id = modello.getValueAt(r, 0);
             String[] v = id == null ? null : MappaCryptoWallet.get(id.toString());
             if (v == null) continue;
-            String chiave = v.length > CommissioniCollegate.CAMPO ? v[CommissioniCollegate.CAMPO] : "";
+            String chiave = OperazioneDi.getOrDefault(v[0], "");
             Object attuale = modello.getValueAt(r, 42);
             if (!chiave.equals(attuale == null ? "" : attuale.toString())) modello.setValueAt(chiave, r, 42);
         }
@@ -15328,6 +15382,13 @@ if (result != null && !result.isAction("cancel")) {
         if (DepositiPrelievi_Tabella.getSelectedRow() >= 0) {
             int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);
             String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            if (!Funzioni.isDuplicabile(MappaCryptoWallet.get(IDTransazione))) {
+                Messaggi.WarningMessage("Movimento collegato ad altri",
+                        "Questo movimento fa parte di un gruppo classificato (trasferimento, scambio differito, "
+                        + "contratto Dual Investment) e non può essere duplicato.<br>"
+                        + "Per duplicarlo annulla prima la classificazione.", this);
+                return;
+            }
             if(Funzioni.DuplicaMovimento(IDTransazione)){
                 //Aggiorno la tabella e mi riposiziono sulla riga prima di confermare: il messaggio dato
                 //per primo annunciava l'operazione conclusa con il ricalcolo ancora da fare
@@ -18324,11 +18385,11 @@ try {
             RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 34);
         }
 
-        //Gruppo collegato (CommissioniCollegate, campo 43): il model lo espone nella colonna derivata 42.
-        //Si mostra una descrizione leggibile, e si filtra sul valore vero della cella.
+        //Operazione (OperazioniCalcolate): il model la espone nella colonna derivata 42. Si mostra una descrizione
+        //leggibile con il numero dei movimenti, e si filtra sul valore vero della cella, che li fa vedere tutti
         Valore=String.valueOf(TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 42));
-        if (!Valore.isBlank()){
-            Val=new String[]{"Gruppo collegato ",CommissioniCollegate.Descrizione(Valore)};
+        if (!Valore.isBlank() && !Valore.equals("null")){
+            Val=new String[]{"Operazione ",OperazioniCalcolate.Descrizione(Valore, OperazioniCalcolate.Membri(OperazioneDi, Valore).size())};
             RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 42);
         }
 
@@ -18436,6 +18497,10 @@ try {
                                 Importazioni.RiempiVuotiArray(splittata);
                                 VersioneCambiata=true;
                             }
+                            //Dal 2026-10-05 la chiave dei contratti Dual Investment sta nel campo 45 e non più nel 43
+                            //delle commissioni collegate, e solo sui movimenti originali: le righe scritte prima si
+                            //sistemano qui. Fuori dal blocco di VersioneCambiata perché costa due confronti
+                            GruppoOperazione.MigraAllaFormaAttuale(splittata);
                             
                             
                             
@@ -18511,6 +18576,13 @@ try {
                     LoggerGC.ScriviErrore(ex);
                 }
 
+
+        //Documento di origine sui movimenti generati che ne erano senza (pregresso al 2026-10-05): solo memoria,
+        //nessun Salva, si rifà al prossimo avvio finché non si salva
+        long TempoDocumenti = System.currentTimeMillis();
+        int DocumentiCompletati = DocumentiFonte.CompletaDocumentoGenerati(MappaCryptoWallet);
+        System.out.println("Documento di origine completato su " + DocumentiCompletati + " movimenti generati in "
+                + (System.currentTimeMillis() - TempoDocumenti) + " millisec.");
 
         //Primo avvio con movimenti di un exchange noto -> associazione al gruppo wallet preconfigurato,
         //prima del calcolo così le plusvalenze/RW usano subito il gruppo giusto.
@@ -19008,6 +19080,9 @@ try {
         //ma la scheda mostrata è un'altra, che è il caso che questa ottimizzazione vuole coprire.
         final boolean costruisciRighe = !this.isShowing() || TransazioniCryptoTabella.isShowing();
         if (!costruisciRighe) TabellaMovimentiDaRicostruire = true;
+        //Operazione di ogni movimento per la colonna 42 (OperazioniCalcolate): sull'intera mappa, non sulle righe
+        //filtrate, e solo se le righe si costruiscono
+        if (costruisciRighe) OperazioneDi = OperazioniCalcolate.Calcola(MappaCryptoWallet);
       
        
        // Rimuovi il filtro dal TableRowSorter della tabella per velocizzare il caricamento della tabella con filtri attivi
@@ -19247,10 +19322,12 @@ try {
                     String[] aliasGruppoRiga = Mappa_GruppiAlias_XColonna.get(gruppoWallet);
                     z[41] = (aliasGruppoRiga != null && !Funzioni.noData(aliasGruppoRiga[1]))
                             ? aliasGruppoRiga[1] : gruppoWallet;
-                    //[42] "Gruppo Collegato": come la 41 non è v[42] (il lignaggio, che il model non
-                    //contiene) ma v[43], la chiave di CommissioniCollegate. Serve a filtrare: la ricerca e i
-                    //filtri di colonna agiscono sul model, e lì il campo 43 non c'era.
-                    z[42] = v.length > CommissioniCollegate.CAMPO ? v[CommissioniCollegate.CAMPO] : "";
+                    //[42] "Operazione": come la 41 non è v[42] (il lignaggio, che il model non contiene) ma
+                    //l'operazione calcolata (OperazioniCalcolate: unione di [20], [43], [45] e stesso [24]), con la
+                    //chiave del contratto Dual se c'è, altrimenti OP- e l'ID del primo movimento. Serve a filtrare:
+                    //la ricerca e i filtri di colonna agiscono sul model, e lì il campo 45 non c'è. Fino al
+                    //2026-10-05 mostrava v[43], che allora conteneva anche i contratti
+                    z[42] = OperazioneDi.getOrDefault(v[0], "");
                     ModelloTabellaCrypto.addRow(z);
                 }
             }
@@ -19862,6 +19939,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
     private javax.swing.JButton Opzioni_Bottone_CommissioniCollegate;
+    private javax.swing.JButton Opzioni_Bottone_RicompenseEarn;
     private javax.swing.JButton Opzioni_Bottone_Compattazione;
     private javax.swing.JButton Opzioni_Bottone_DocumentiFonte;
     private javax.swing.JButton Opzioni_Bottone_PuliziaPrezziKO;
@@ -19869,6 +19947,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JPanel Opzioni_CardWallet_Pannello;
     private javax.swing.JComboBox<String> Opzioni_Combobox_CancellaTransazioniCryptoXwallet;
     private javax.swing.JPanel Opzioni_CommissioniCollegate_Pannello;
+    private javax.swing.JPanel Opzioni_RicompenseEarn_Pannello;
     private javax.swing.JPanel Opzioni_Compattazione_Pannello;
     private javax.swing.JPanel Opzioni_Crypto_Pannello;
     private javax.swing.JPanel Opzioni_Donazioni;
@@ -19893,6 +19972,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollTabella;
     private javax.swing.JTable Opzioni_GruppoWallet_Tabella;
     private javax.swing.JLabel Opzioni_Label_CommissioniCollegate;
+    private javax.swing.JLabel Opzioni_Label_RicompenseEarn;
     private javax.swing.JLabel Opzioni_Label_StatoCompattazione;
     private javax.swing.JPanel Opzioni_PrezziKO_Pannello;
     private javax.swing.JLabel Opzioni_ProviderDefi_ApiKeyBlockscout_Label;

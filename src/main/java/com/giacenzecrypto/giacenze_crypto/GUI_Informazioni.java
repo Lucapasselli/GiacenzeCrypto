@@ -110,11 +110,16 @@ public class GUI_Informazioni extends JDialog {
         testata.add(titolo);
         testata.add(Box.createHorizontalGlue());
 
+        //Le novità e i bug corretti della versione in uso, la stessa finestra che si apre da sola al primo
+        //avvio dopo un aggiornamento (GUI_NovitaVersione)
+        JButton novita = new JButton("Novità di questa versione");
+        novita.addActionListener(e -> GUI_NovitaVersione.Mostra(this));
         JButton chiudi = new JButton("Chiudi");
         chiudi.addActionListener(e -> dispose());
         JPanel pulsanti = new JPanel();
         pulsanti.setLayout(new BoxLayout(pulsanti, BoxLayout.X_AXIS));
         pulsanti.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+        pulsanti.add(novita);
         pulsanti.add(Box.createHorizontalGlue());
         pulsanti.add(chiudi);
 
@@ -170,7 +175,8 @@ public class GUI_Informazioni extends JDialog {
         h.append("<p>I manuali e l'elenco delle novità di ogni versione si consultano dal browser: ")
          .append("<a href='").append(DocumentiAiuto.Url("")).append("'>documentazione</a> e ")
          .append("<a href='").append(DocumentiAiuto.Url(DocumentiAiuto.NOVITA_VERSIONI))
-         .append("'>novità delle versioni</a>.</p>");
+         .append("'>novità delle versioni</a>. Quelle della versione in uso si leggono anche dal pulsante ")
+         .append("<i>Novità di questa versione</i>, qui sotto.</p>");
 
         h.append("<h3>Dati e riservatezza</h3>");
         h.append("<p><b>Tutti i dati restano su questo dispositivo.</b> Movimenti, wallet, quotazioni e ")

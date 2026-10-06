@@ -301,4 +301,59 @@ public class Principale_Opzioni_Pulizie {
         return Valore < 0 ? "n.d." : Valore + "%";
     }
 
+    /**
+     * Bonus Simple Earn di Binance importati due volte ({@link RicompenseEarnDoppie}): mostra quanti sono e il loro
+     * valore, e su conferma toglie le righe del conto Earn. Non ricalcola nulla: se restituisce {@code true} il chiamante
+     * aggiorna tutto una volta sola e lascia all'utente il Salva, come per ogni cancellazione.
+     *
+     * @param owner finestra a cui appoggiare il dialogo
+     * @param DaAvvio {@code true} per l'avviso all'avvio: non compare se non ci sono doppioni o se l'utente ha chiesto di
+     *        non vederlo più, e offre la casella per chiederlo. Dal pulsante delle Opzioni la ricerca si fa sempre e dice
+     *        anche quando non trova nulla
+     * @return {@code true} se ha tolto dei movimenti
+     */
+    public static boolean RicompenseEarnDoppie_Gestisci(Window owner, boolean DaAvvio) {
+        if (DaAvvio && "SI".equals(DatabaseH2.Pers_Opzioni_Leggi(RicompenseEarnDoppie.OPZIONE_NON_MOSTRARE))) return false;
+        List<String[]> Doppie = RicompenseEarnDoppie.Trova(Principale.MappaCryptoWallet);
+        if (Doppie.isEmpty()) {
+            if (!DaAvvio) {
+                AppDialog.builder(owner)
+                        .windowTitle("Ricompense Binance Earn")
+                        .bodyTitle("Nessuna ricompensa doppia")
+                        .theme()
+                        .type(AppDialog.DialogType.INFO)
+                        .message("Nell'archivio non ci sono bonus Simple Earn di Binance importati due volte.")
+                        .primaryAction("ok", "Chiudi")
+                        .showDialog();
+            }
+            return false;
+        }
+        String Valore = String.format(java.util.Locale.ITALY, "%,.2f", RicompenseEarnDoppie.Valore(Doppie));
+        AppDialog.Builder Dialogo = AppDialog.builder(owner)
+                .windowTitle("Ricompense Binance Earn")
+                .bodyTitle("Ricompense Binance importate due volte")
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message("Trovati " + Doppie.size() + " bonus Simple Earn di Binance contati due volte, per circa "
+                        + Valore + " euro di reddito in più.")
+                .details("Dagli export del 2026 Binance scrive ogni bonus giornaliero di Simple Earn (Bonus Tiered APR) "
+                        + "due volte: sul conto Earn (Rewards Income) e sul conto Spot (Interest o Rewards), con la stessa "
+                        + "moneta e quantità. Fino alla configurazione di importazione Binance 1.017 entravano tutte e due "
+                        + "come reddito.\n\n"
+                        + "La pulizia toglie solo le righe del conto Earn che hanno la loro gemella sul conto Spot, che "
+                        + "resta. Fino al Salva l'operazione si può annullare con il pulsante Annulla.\n\n"
+                        + "Dopo la pulizia su Binance possono comparire giacenze negative: non sono un errore della pulizia. "
+                        + "Le ricompense Real-Time APR di Simple Earn non sono in nessun export di Binance (si vedono "
+                        + "nell'app, in Earn, Flexible, Rewards) e vanno aggiunte a parte. I doppioni ne coprivano una parte.")
+                .primaryAction("rimuovi", "Rimuovi i doppioni")
+                .secondaryAction("dopo", DaAvvio ? "Non ora" : "Annulla");
+        if (DaAvvio) Dialogo.checkBoxField("Non mostrare più questo avviso all'avvio");
+        AppDialog.DialogResult Risultato = Dialogo.showDialog();
+        if (DaAvvio && Risultato.isChecked()) {
+            DatabaseH2.Pers_Opzioni_Scrivi(RicompenseEarnDoppie.OPZIONE_NON_MOSTRARE, "SI");
+        }
+        if (!Risultato.isAction("rimuovi")) return false;
+        return RicompenseEarnDoppie.Rimuovi(Doppie) > 0;
+    }
+
 }

@@ -712,6 +712,52 @@ public class DocumentiFonte {
     //=== IL CAMPO [41]
     //=====================================================================================================
     /**
+     * Pregresso (2026-10-05): i movimenti generati da alcune classificazioni nascevano senza documento di origine
+     * (gambe e reward dei Dual Investment a moneta uguale, gambe speculari e reward dei trasferimenti verso e da
+     * piattaforma, il prelievo di WCRO dello scambio WCRO-CRO), e il filtro per documento li lasciava fuori. Ora lo
+     * copiano alla creazione dal movimento da cui nascono. Qui si completano quelli già in archivio, al caricamento:
+     * ogni generato ({@code AU}) senza documento prende quello dei movimenti originali del suo gruppo {@code [20]}
+     * (vedi {@link #DocumentoDaOriginali}). Non accende Salva e non ricalcola: il campo è fuori dall'impronta del
+     * motore, e se l'utente non salva si rifà all'apertura successiva. Una passata sulla mappa, con ricerche solo per
+     * i generati senza documento.
+     * @return quanti movimenti hanno ricevuto il documento
+     */
+    static int CompletaDocumentoGenerati(java.util.Map<String, String[]> Mappa) {
+        int n = 0;
+        for (String[] v : Mappa.values()) {
+            if (v == null || v.length <= 41 || v[22] == null || !v[22].equalsIgnoreCase("AU")) continue;
+            if (!Funzioni.noData(v[41]) || v[20] == null || v[20].isBlank()) continue;
+            String Documento = DocumentoDaOriginali(v, Mappa);
+            if (Documento != null) {
+                v[41] = Documento;
+                n++;
+            }
+        }
+        return n;
+    }
+
+    /**
+     * Il documento di origine che spetta a un movimento generato, dai movimenti originali (non {@code AU}) del suo
+     * gruppo {@code [20]}: quello dell'originale con lo stesso istante nell'ID, che è il movimento da cui il generato
+     * nasce (la stessa regola con cui Trasla Orario riconosce i movimenti nati da un altro). Se nessun originale ha lo
+     * stesso istante, quello comune a tutti gli originali; se sono diversi, nessuno.
+     * @return il valore del campo 41, o {@code null}
+     */
+    static String DocumentoDaOriginali(String[] v, java.util.Map<String, String[]> Mappa) {
+        String Istante = v[0].split("_")[0];
+        java.util.Set<String> Documenti = new java.util.LinkedHashSet<>();
+        String StessoIstante = null;
+        for (String ID : v[20].split(",")) {
+            String[] m = ID.isBlank() ? null : Mappa.get(ID.trim());
+            if (m == null || m.length <= 41 || "AU".equalsIgnoreCase(m[22]) || Funzioni.noData(m[41])) continue;
+            Documenti.add(m[41]);
+            if (StessoIstante == null && m[0].split("_")[0].equals(Istante)) StessoIstante = m[41];
+        }
+        if (StessoIstante != null) return StessoIstante;
+        return Documenti.size() == 1 ? Documenti.iterator().next() : null;
+    }
+
+    /**
      * Estrae l'id del documento dal campo {@code [41]} di un movimento.
      *
      * <p>Tollera un eventuale sotto-campo dopo {@code |} (il sotto-delimitatore convenzionale, già usato da

@@ -584,7 +584,7 @@
                         <Column editable="false" title="null" type="java.lang.Object"/>
                         <Column editable="false" title="Fonte Prezzi" type="java.lang.Object"/>
                         <Column editable="false" title="Alias Gruppo Wallet" type="java.lang.Object"/>
-                        <Column editable="false" title="Gruppo Collegato" type="java.lang.Object"/>
+                        <Column editable="false" title="Operazione" type="java.lang.Object"/>
                       </Table>
                     </Property>
                     <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -7563,6 +7563,59 @@
                             <Component class="javax.swing.JLabel" name="Opzioni_Label_CommissioniCollegate">
                               <Properties>
                                 <Property name="text" type="java.lang.String" value="&lt;html&gt;Collega ogni commissione al movimento a cui appartiene (stesso hash o id d&apos;ordine, oppure unico movimento nello stesso secondo sullo stesso wallet). Serve per le commissioni importate prima di questa funzione. Il collegamento &#xe8; solo informativo e non cambia nessun calcolo; le commissioni gi&#xe0; collegate non vengono toccate.&lt;/html&gt;"/>
+                              </Properties>
+                            </Component>
+                          </SubComponents>
+                        </Container>
+                        <Container class="javax.swing.JPanel" name="Opzioni_RicompenseEarn_Pannello">
+                          <Constraints>
+                            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                              <JTabbedPaneConstraints tabName="Ricompense Binance doppie">
+                                <Property name="tabTitle" type="java.lang.String" value="Ricompense Binance doppie"/>
+                              </JTabbedPaneConstraints>
+                            </Constraint>
+                          </Constraints>
+
+                          <Layout>
+                            <DimensionLayout dim="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="Opzioni_Bottone_RicompenseEarn" alignment="0" max="32767" attributes="0"/>
+                                          <Component id="Opzioni_Label_RicompenseEarn" alignment="0" max="32767" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                            </DimensionLayout>
+                            <DimensionLayout dim="1">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="Opzioni_Label_RicompenseEarn" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="Opzioni_Bottone_RicompenseEarn" min="-2" pref="50" max="-2" attributes="0"/>
+                                      <EmptySpace pref="600" max="32767" attributes="0"/>
+                                  </Group>
+                              </Group>
+                            </DimensionLayout>
+                          </Layout>
+                          <SubComponents>
+                            <Component class="javax.swing.JButton" name="Opzioni_Bottone_RicompenseEarn">
+                              <Properties>
+                                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                                  <Image iconType="3" name="/Images/24_Cestino.png"/>
+                                </Property>
+                                <Property name="text" type="java.lang.String" value="Rimuovi i bonus Binance Earn importati due volte"/>
+                              </Properties>
+                              <Events>
+                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Bottone_RicompenseEarnActionPerformed"/>
+                              </Events>
+                            </Component>
+                            <Component class="javax.swing.JLabel" name="Opzioni_Label_RicompenseEarn">
+                              <Properties>
+                                <Property name="text" type="java.lang.String" value="&lt;html&gt;Dagli export del 2026 Binance scrive ogni bonus giornaliero di Simple Earn sia sul conto Earn (Rewards Income) sia sul conto Spot (Interest o Rewards), e fino alla configurazione di importazione 1.017 entravano tutte e due come reddito. La pulizia toglie solo le righe del conto Earn che hanno la gemella sul conto Spot, con la stessa moneta e quantit&#xe0;. Fino al Salva si pu&#xf2; annullare. Dopo la pulizia possono comparire giacenze negative su Binance: sono le ricompense Real-Time APR, che Binance non esporta e vanno aggiunte a parte.&lt;/html&gt;"/>
                               </Properties>
                             </Component>
                           </SubComponents>

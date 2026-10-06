@@ -1,0 +1,39 @@
+{
+  "_commento": "Binance - storico Simple Earn Flessibile scaricato dall'app (Assets, Earn, Flexible, Rewards, icona di download): file 'Binance-Simple-Earn-Flexible-History-...(UTC0).csv', colonne 0=Time 1=Coin 2=Amount 3=Type.",
+  "_commentoPerche": "Serve per le 'Real-time APR Rewards', che nell'export normale delle transazioni Binance non compaiono in nessuna riga: maturano dentro il prodotto Flexible ed escono solo con i riscatti, che 'Binance CSV.json' ignora. Senza questo file l'archivio resta corto di quelle ricompense e dopo un prelievo totale Binance va in negativo. Verificato sull'archivio reale (2026-10-06): dal 4/5/2025 (prodotto vuoto) al 24/6/2026 i riscatti superano le sottoscrizioni di 23,64 USDC, di cui 12,96 sono le Real-time APR 2026 di questo file.",
+  "_commentoBonus": "Le 'Bonus Tiered APR Rewards' sono IGNORA: lo stesso bonus e' gia' nell'export normale come 'Simple Earn Flexible Interest' sul conto Spot (dal 2026 anche come 'Simple Earn Flexible - Rewards Income' sul conto Earn, a sua volta IGNORA in 'Binance CSV.json'). Totali verificati uguali al decimale.",
+  "_commentoData": "Le Real-time APR hanno solo il giorno, i Bonus anche l'ora: 'oraSeSoloData' mette 00:00:00 UTC. Non la fine della giornata: 23:59:59 UTC e' gia' il giorno dopo in ora italiana, e la ricompensa del 31/12 finirebbe nell'anno successivo; inoltre cadrebbe dopo un prelievo totale fatto la sera. 'oraSeSoloData' esiste dalla 1.0.64.08: 'versioneMinimaApp' impedisce che il file sia proposto prima, quando quelle righe sarebbero scartate.",
+  "versione": "1.000",
+  "versioneMinimaApp": "1.0.64.08",
+  "centralizzato": true,
+  "fontePrezzoPreferita": "binance",
+  "nomeExchange": "Binance",
+  "estrazione": "Simple Earn Flessibile - Real-time APR",
+  "descrizione": "<html><div style='width:380px'>Binance &ndash; storico <b>Simple Earn Flexible</b> scaricato dall'app (Assets, Earn, Flexible, Rewards). Importa solo le ricompense <b>Real-time APR</b>, che l'export normale delle transazioni non contiene. I Bonus Tiered APR sono gi&agrave; nell'export normale e vengono ignorati.</div></html>",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 1,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
+  "oraSeSoloData": "00:00:00",
+  "fuso": "UTC?",
+  "colonne": {
+    "data": 0,
+    "causale": 3,
+    "moneta": 1,
+    "quantita": 2
+  },
+  "consolidaRigheStessaData": false,
+  "mappaCausali": {
+    "Real-time APR Rewards": "EARN",
+    "Bonus Tiered APR Rewards": "IGNORA"
+  },
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": ["EARN"],
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

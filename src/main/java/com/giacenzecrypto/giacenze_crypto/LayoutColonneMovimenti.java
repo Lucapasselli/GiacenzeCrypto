@@ -30,7 +30,7 @@ import org.json.JSONObject;
  * esistente e usato da {@link Prezzi.InfoPrezzo#Ritorna40()} ma mai mostrato in questa tabella prima d'ora),
  * la 41 è **derivata** — non esiste in {@code v[]}, viene calcolata dal ciclo di caricamento risalendo dal
  * gruppo wallet di {@code v[3]} all'alias in {@code GRUPPO_ALIAS} — quindi non può ottenersi semplicemente
- * spuntando un campo esistente, a differenza di tutte le altre. Anche la 42 ("Gruppo Collegato") è una
+ * spuntando un campo esistente, a differenza di tutte le altre. Anche la 42 ("Operazione", prima "Gruppo Collegato") è una
  * colonna di model che non coincide con {@code v[42]}: mostra {@code v[43]}, la chiave di
  * {@code CommissioniCollegate} (commissioni e contratti Dual Investment), perché il model non contiene
  * i campi 40-44 e senza quella colonna né la ricerca né i filtri potrebbero trovarla.
@@ -63,7 +63,7 @@ public final class LayoutColonneMovimenti {
     /** Ordine di default delle colonne visibili: coincide con lo storico di NascondiColonneTabellaCrypto(). */
     static final List<Integer> ORDINE_DEFAULT = List.of(1, 3, 4, 5, 6, 8, 10, 11, 13, 15, 17, 19);
 
-    /** Indice di model massimo esistente (0-based): 40 = Fonte Prezzi, 41 = Alias Gruppo Wallet, 42 = Gruppo Collegato. */
+    /** Indice di model massimo esistente (0-based): 40 = Fonte Prezzi, 41 = Alias Gruppo Wallet, 42 = Operazione. */
     static final int COLONNA_MASSIMA = 42;
 
     /**
@@ -367,7 +367,7 @@ public final class LayoutColonneMovimenti {
         preferita(cm, 19, 100);   // Plusvalenza in EURO
         preferita(cm, 40, 100);   // Fonte Prezzi
         preferita(cm, 41, 120);   // Alias Gruppo Wallet
-        preferita(cm, 42, 150);   // Gruppo Collegato
+        preferita(cm, 42, 150);   // Operazione
     }
 
     private static void preferita(TableColumnModel cm, int modelIndex, int pref) {

@@ -31,8 +31,8 @@ import java.util.function.Function;
  *   <li><b>altri</b>: riferimenti a movimenti cancellati o non ricambiati per qualunque altra causa, da sistemare a
  *       mano annullando la classificazione.</li>
  * </ul>
- * Sugli archivi reali senza i due difetti il controllo non trova nulla: le forme legittime di {@code [20]} sono
- * tutte simmetriche.
+ * La chiave {@code DUAL-} dei contratti Dual Investment ({@code [45]}, {@link GruppoOperazione}) non c'entra: sta solo
+ * sui movimenti originali, e i generati la ricavano dal gruppo {@code [20]}.
  */
 public final class MovimentiCollegati {
 
@@ -195,8 +195,9 @@ public final class MovimentiCollegati {
     /**
      * Ripara sulla mappa viva gli scambi differiti sovrascritti dei prelievi indicati (da {@link Esito#ScambiSovrascritti}).
      * Il sotto-wallet dei movimenti ricostruiti è quello della loro entrata sulla piattaforma (MT1), che lo scambio
-     * conserva: "Dual Savings" per i Dual Investment, "Piattaforma di scambio" per gli altri. Un contratto Dual riceve
-     * di nuovo il suo gruppo {@code DUAL-} sui movimenti ricostruiti. Non ricalcola nulla: lo fa il chiamante, una volta.
+     * conserva: "Dual Savings" per i Dual Investment, "Piattaforma di scambio" per gli altri. La chiave del contratto
+     * Dual sta su prelievo e deposito, quindi i movimenti ricostruiti la ricavano dal gruppo senza scriverla. Non
+     * ricalcola nulla: lo fa il chiamante, una volta.
      */
     static List<Riparazione> RiparaScambiSovrascritti(Collection<String> Prelievi) {
         List<Riparazione> Ris = new ArrayList<>();
@@ -212,10 +213,6 @@ public final class MovimentiCollegati {
             }
             String Descrizione = "scambio " + p[8] + " -> " + s[11] + " del " + s[1] + " (" + p[3] + ")";
             EsitoRiparazione E = RiparaScambioDifferito(p, s, Wallet);
-            if (E == EsitoRiparazione.RIPARATO) {
-                String Chiave = CommissioniCollegate.Chiave(p);
-                if (CommissioniCollegate.isGruppoDual(Chiave)) Binance_DualInvestment.MarcaConChiave(Chiave, p, s);
-            }
             Ris.add(new Riparazione(ID, Descrizione, E));
         }
         return Ris;

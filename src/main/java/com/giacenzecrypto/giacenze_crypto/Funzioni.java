@@ -44,9 +44,11 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -118,16 +120,17 @@ public class Funzioni {
                             && DataMovimento < DataFinale) ||
                             (DataIniziale==0)&&(DataFinale==0)) {//Se data finale e iniziale sono a zero significa che non valgolo i limiti di date
                         Cancellare.add(v);
-                        movimentiCancellati++;
                     }
 
                 }
             }
-        Iterator<String> I=Cancellare.iterator();
-        while (I.hasNext()){
-            String daRimuovere=I.next().toString();
-            RimuoviMovimentazioneXID(daRimuovere);
-        }
+        //Per righe e non per ID: gli scambi differiti rinominano i loro movimenti quando se ne annulla la
+        //classificazione (vedi RimuoviMovimenti). Si contano le righe uscite davvero dall'archivio, compresi i
+        //movimenti generati che spariscono con il loro gruppo: prima i chiamanti lanciavano la funzione due volte
+        //per recuperare i depositi saltati, e il conteggio sommava i due giri
+        int RighePrima=Principale.MappaCryptoWallet.size();
+        RimuoviMovimenti(Cancellare);
+        movimentiCancellati=RighePrima-Principale.MappaCryptoWallet.size();
         
            // MappaCryptoWallet.clear();
    
@@ -151,6 +154,43 @@ public class Funzioni {
             }
             Principale.MappaCryptoWallet.remove(ID);
             } 
+         }
+
+         /**
+          * Rimuove più movimenti, seguendo le <b>righe</b> e non gli ID raccolti all'inizio.
+          *
+          * <p>Rimuovere un movimento classificato annulla la classificazione del suo gruppo
+          * ({@link #RimuoviMovimentazioneXID}), e in uno scambio differito l'annullamento <b>rinomina</b> gli altri
+          * movimenti del gruppo: il deposito perde il prefisso {@code 04} e torna all'ID di partenza. Un ciclo sugli ID
+          * raccolti prima non lo trovava più e lo saltava, quindi selezionando prelievo e deposito il deposito restava
+          * (bug corretto il 2026-10-05). Qui si raccolgono le righe stesse, gli oggetti in mappa: la rinomina cambia l'ID
+          * sulla stessa riga, e al momento di rimuoverla se ne legge l'ID attuale. Il confronto è di identità, non di
+          * contenuto, quindi un altro movimento con gli stessi dati non viene mai toccato. Una riga che nel frattempo non
+          * è più in mappa (un movimento generato, tolto insieme al gruppo di un'altra riga) si salta.
+          *
+          * <p>Per ogni movimento rimosso accoda allo storico delle modifiche la cancellazione del suo lignaggio, che
+          * diventa definitiva al salvataggio come la cancellazione stessa.
+          * @param IDs ID dei movimenti da rimuovere, come sono adesso
+          * @return quanti dei movimenti indicati sono stati rimossi davvero
+          */
+         public static int RimuoviMovimenti(Collection<String> IDs){
+            if (IDs == null) return 0;
+            Set<String[]> Viste = Collections.newSetFromMap(new IdentityHashMap<>());
+            List<String[]> Righe = new ArrayList<>();
+            for (String ID : IDs) {
+                String[] v = ID == null ? null : Principale.MappaCryptoWallet.get(ID);
+                if (v != null && Viste.add(v)) Righe.add(v);
+            }
+            int Rimossi = 0;
+            for (String[] v : Righe) {
+                String ID = v[0];
+                if (Principale.MappaCryptoWallet.get(ID) != v) continue;
+                String Lignaggio = MovimentiStorico.LignaggioDi(ID);
+                RimuoviMovimentazioneXID(ID);
+                MovimentiStorico.AccodaCancellazione(Lignaggio);
+                Rimossi++;
+            }
+            return Rimossi;
          }
         
         
@@ -2027,17 +2067,42 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
          }
         
     /**
+     * Un movimento che fa parte di un gruppo classificato ({@code [20]} non vuoto: trasferimento, scambio differito,
+     * contratto Dual) non si duplica. Il duplicato si dichiarerebbe parte di un gruppo che non lo cita, e per un
+     * deposito di un trasferimento fra gruppi wallet diversi il motore sposterebbe il costo di carico dal prelievo una
+     * seconda volta; la sua quantità può essere quella già ridotta della commissione, che resta dell'originale. Per
+     * duplicarlo si annulla prima la classificazione. Un movimento generato ({@code AU}) non si duplica comunque.
+     * @return {@code true} se il movimento si può duplicare
+     */
+    public static boolean isDuplicabile(String[] riga) {
+        if (riga == null) return false;
+        if (riga.length > 22 && riga[22] != null && riga[22].equalsIgnoreCase("AU")) return false;
+        return riga.length <= 20 || riga[20] == null || riga[20].isBlank();
+    }
+
+    /**
      * Duplica un movimento esistente in {@link Principale#MappaCryptoWallet}, assegnandogli un nuovo ID
      * ottenuto incrementando progressivamente il 4° segmento dell'ID originale (fino a 9 tentativi) finché
      * non se ne trova uno libero. Il duplicato viene marcato come aggiunto manualmente (campo 22 = {@code "M"}).
+     *
+     * <p>Il duplicato è un movimento <b>indipendente</b> (2026-10-05): non appartiene al gruppo delle commissioni né
+     * all'operazione dell'originale, e ha uno storico delle modifiche suo (lignaggio vuoto, prima condivideva quello
+     * dell'originale). Tiene la classificazione di un movimento singolo (una reward, un airdrop), che non dipende da
+     * nessun altro, e il documento di origine, da cui vengono i suoi dati. Un movimento che fa parte di un gruppo
+     * classificato invece non si duplica ({@link #isDuplicabile}).
      * @param ID identificativo del movimento da duplicare
-     * @return {@code true} se il duplicato è stato creato, {@code false} se l'ID non ha il formato atteso o non si trova un ID libero entro i tentativi previsti
+     * @return {@code true} se il duplicato è stato creato, {@code false} se il movimento non è duplicabile, se l'ID non ha il formato atteso o non si trova un ID libero entro i tentativi previsti
      */
     public static boolean DuplicaMovimento(String ID){
         String riga[]=Principale.MappaCryptoWallet.get(ID);
+        if (!isDuplicabile(riga)) return false;
         String nuovariga[]=riga.clone();
+        //Storico delle modifiche suo: con il lignaggio dell'originale le due catene si mescolerebbero
+        nuovariga[MovimentiStorico.CAMPO_LIGNAGGIO]="";
         //Il duplicato e' un movimento indipendente: non appartiene al gruppo di commissioni dell'originale
         if (nuovariga.length>CommissioniCollegate.CAMPO) nuovariga[CommissioniCollegate.CAMPO]="";
+        //Né alla stessa operazione (contratto Dual Investment)
+        GruppoOperazione.Scrivi(nuovariga, "");
         String IDori=nuovariga[0];
         String idSplit[]=IDori.split("_");
         if (idSplit.length>4){

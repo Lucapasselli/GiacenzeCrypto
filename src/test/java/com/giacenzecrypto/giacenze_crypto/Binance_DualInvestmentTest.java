@@ -386,9 +386,13 @@ class Binance_DualInvestmentTest {
 
         // Purchase, Settlement, le due gambe sul sotto-wallet e la reward: cinque movimenti
         java.util.List<String[]> delContratto = MappaCryptoWallet.values().stream()
-                .filter(v -> "DUAL-1232611".equals(CommissioniCollegate.Chiave(v))).toList();
+                .filter(v -> "DUAL-1232611".equals(GruppoOperazione.ChiaveEffettiva(v))).toList();
         assertEquals(5, delContratto.size());
         assertEquals(MappaCryptoWallet.size(), delContratto.size(), "nessun movimento resta fuori dal gruppo");
+        // La chiave è scritta solo su Purchase e Settlement: i generati la ricavano dal gruppo [20]
+        for (String[] v : MappaCryptoWallet.values()) {
+            assertEquals("AU".equals(v[22]) ? "" : "DUAL-1232611", GruppoOperazione.Chiave(v), v[0]);
+        }
     }
 
     @Test
@@ -407,7 +411,7 @@ class Binance_DualInvestmentTest {
 
         assertEquals(5, MappaCryptoWallet.size());
         for (String[] v : MappaCryptoWallet.values()) {
-            assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(v), v[0]);
+            assertEquals("DUAL-1232611", GruppoOperazione.ChiaveEffettiva(v), v[0]);
         }
     }
 
@@ -425,13 +429,13 @@ class Binance_DualInvestmentTest {
                 "USDT/USDT,Buy Low,1999999,2022-06-01 08:24:50,Settled,50.00000000 USDT,28500,"
                 + "2022-06-10 10:33:41,29351.32,146.28%,51.00000000 USDT,Settled")));
 
-        assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(MappaCryptoWallet.get("20220512062450_Binance_001_001_PC")));
-        assertEquals("DUAL-1999999", CommissioniCollegate.Chiave(MappaCryptoWallet.get(p2[0])));
-        assertEquals("DUAL-1999999", CommissioniCollegate.Chiave(MappaCryptoWallet.get(s2[0])));
+        assertEquals("DUAL-1232611", GruppoOperazione.ChiaveEffettiva(MappaCryptoWallet.get("20220512062450_Binance_001_001_PC")));
+        assertEquals("DUAL-1999999", GruppoOperazione.ChiaveEffettiva(MappaCryptoWallet.get(p2[0])));
+        assertEquals("DUAL-1999999", GruppoOperazione.ChiaveEffettiva(MappaCryptoWallet.get(s2[0])));
     }
 
     @Test
-    void unaCommissioneGiaCollegataAlPurchase_restaNelGruppoDelContratto() throws Exception {
+    void unaCommissioneGiaCollegataAlPurchase_restaCollegataAlPurchase() throws Exception {
         String p[] = purchaseStessaMoneta();
         String fee[] = movimento("20220512062450_Binance_001_002_CM", "Dual Savings Purchase",
                 "USDT", "0.10000000", "2022-05-12 06:24:50");
@@ -442,10 +446,16 @@ class Binance_DualInvestmentTest {
 
         Binance_DualInvestment.Abbina(new java.io.File(scriviDettaglio(RIGA_STESSA_MONETA)));
 
-        assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(fee), "la commissione segue il suo movimento");
-        assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(p));
-        // Una commissione nel gruppo non lo rende un "gruppo di commissioni" da dissolvere
-        assertFalse(Principale_CommissioniCollegate.isScollegabile(java.util.List.of(p[0])));
+        // Dal 2026-10-05 il contratto sta nel campo 45: la commissione non viene più fusa nel gruppo del contratto
+        // e resta collegata al movimento a cui appartiene, che in più porta l'identità del contratto
+        assertEquals(chiaveFee, CommissioniCollegate.Chiave(fee), "la commissione resta collegata al Purchase");
+        assertEquals(chiaveFee, CommissioniCollegate.Chiave(p));
+        assertEquals("DUAL-1232611", GruppoOperazione.ChiaveEffettiva(p));
+        assertEquals("", GruppoOperazione.ChiaveEffettiva(fee), "la commissione non è un movimento del contratto");
+        // Il collegamento della commissione si può togliere: il contratto non c'entra
+        assertTrue(Principale_CommissioniCollegate.isScollegabile(java.util.List.of(p[0])));
+        Principale_CommissioniCollegate.Scollega(java.util.List.of(p[0]));
+        assertEquals("DUAL-1232611", GruppoOperazione.ChiaveEffettiva(p), "scollegare la commissione non tocca il contratto");
     }
 
     @Test
@@ -456,7 +466,7 @@ class Binance_DualInvestmentTest {
         assertFalse(Principale_CommissioniCollegate.isScollegabile(java.util.List.of(p[0])));
         Principale_CommissioniCollegate.Scollega(java.util.List.of(p[0]));
         for (String[] v : MappaCryptoWallet.values()) {
-            assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(v), v[0]);
+            assertEquals("DUAL-1232611", GruppoOperazione.ChiaveEffettiva(v), v[0]);
         }
     }
 
@@ -466,9 +476,9 @@ class Binance_DualInvestmentTest {
         String idSettlement = "20220524083341_Binance_002_001_DC";
         Binance_DualInvestment.Abbina(new java.io.File(scriviDettaglio(RIGA_STESSA_MONETA)));
 
-        java.util.List<String[]> righe = Principale_CommissioniCollegate.RigheDettaglio(p[0]);
+        java.util.List<String[]> righe = OperazioniCalcolate.RigheDettaglio(p[0]);
         assertEquals(1, righe.size(), "nessuna riga sulle commissioni mancanti");
-        assertEquals("Contratto Dual Investment 1232611", righe.get(0)[0]);
+        assertEquals("Contratto Dual Investment 1232611 (5 movimenti)", righe.get(0)[0]);
         assertTrue(righe.get(0)[1].contains(idSettlement), righe.get(0)[1]);
         assertFalse(righe.get(0)[1].contains(p[0]), "il movimento non elenca se stesso");
     }
@@ -483,8 +493,9 @@ class Binance_DualInvestmentTest {
         MappaCryptoWallet.put(fee[0], fee);
         Binance_DualInvestment.Abbina(new java.io.File(scriviDettaglio(RIGA_STESSA_MONETA)));
 
-        java.util.List<String[]> righe = Principale_CommissioniCollegate.RigheDettaglio(p[0]);
-        assertEquals("Contratto Dual Investment 1232611", righe.get(0)[0]);
+        java.util.List<String[]> righe = OperazioniCalcolate.RigheDettaglio(p[0]);
+        assertTrue(righe.get(0)[0].startsWith("Contratto Dual Investment 1232611"), righe.get(0)[0]);
+        assertTrue(righe.get(0)[1].contains(fee[0]), "la commissione collegata al Purchase fa parte dell'operazione");
         assertEquals("Commissioni collegate", righe.get(1)[0]);
         assertTrue(righe.get(1)[1].contains(fee[0]));
     }
@@ -498,7 +509,7 @@ class Binance_DualInvestmentTest {
 
     /** Riporta l'archivio allo stato di una versione precedente: abbinato, ma senza il gruppo del contratto. */
     private static void togliLeChiavi() {
-        for (String[] v : MappaCryptoWallet.values()) v[CommissioniCollegate.CAMPO] = "";
+        for (String[] v : MappaCryptoWallet.values()) v[GruppoOperazione.CAMPO] = "";
     }
 
     private static String fotografia() {
@@ -528,7 +539,7 @@ class Binance_DualInvestmentTest {
         assertEquals(movimentiPrima, MappaCryptoWallet.size(), "nessun movimento creato in più");
         assertEquals(qtaSettlementPrima, MappaCryptoWallet.get(s[0])[13], "la quantità non va ridotta due volte");
         for (String[] v : MappaCryptoWallet.values()) {
-            assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(v), v[0]);
+            assertEquals("DUAL-1232611", GruppoOperazione.ChiaveEffettiva(v), v[0]);
         }
         //Oltre al campo 43 non cambia nulla: la fotografia coincide una volta tolta la chiave
         togliLeChiavi();
@@ -554,7 +565,7 @@ class Binance_DualInvestmentTest {
         assertEquals(1, esito.aggiornati, esito.dettagli.toString());
         assertEquals(5, MappaCryptoWallet.size());
         for (String[] v : MappaCryptoWallet.values()) {
-            assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(v), v[0]);
+            assertEquals("DUAL-1232611", GruppoOperazione.ChiaveEffettiva(v), v[0]);
         }
     }
 
@@ -594,16 +605,16 @@ class Binance_DualInvestmentTest {
         assertEquals(1, esito.aggiornati, esito.dettagli.toString());
         assertEquals(0, esito.nonTrovati);
         assertEquals(10, MappaCryptoWallet.size());
-        assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(MappaCryptoWallet.get("20220512062450_Binance_001_001_PC")));
-        assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(MappaCryptoWallet.get("20220524083341_Binance_002_001_DC")));
-        assertEquals("DUAL-1999999", CommissioniCollegate.Chiave(MappaCryptoWallet.get(p2[0])));
-        assertEquals("DUAL-1999999", CommissioniCollegate.Chiave(MappaCryptoWallet.get(s2[0])));
+        assertEquals("DUAL-1232611", GruppoOperazione.ChiaveEffettiva(MappaCryptoWallet.get("20220512062450_Binance_001_001_PC")));
+        assertEquals("DUAL-1232611", GruppoOperazione.ChiaveEffettiva(MappaCryptoWallet.get("20220524083341_Binance_002_001_DC")));
+        assertEquals("DUAL-1999999", GruppoOperazione.ChiaveEffettiva(MappaCryptoWallet.get(p2[0])));
+        assertEquals("DUAL-1999999", GruppoOperazione.ChiaveEffettiva(MappaCryptoWallet.get(s2[0])));
         assertEquals(5, MappaCryptoWallet.values().stream()
-                .filter(v -> "DUAL-1999999".equals(CommissioniCollegate.Chiave(v))).count());
+                .filter(v -> "DUAL-1999999".equals(GruppoOperazione.ChiaveEffettiva(v))).count());
     }
 
     @Test
-    void ripassareIlFile_unaCommissioneGiaCollegataAlPurchase_restaNelGruppoDelContratto() throws Exception {
+    void ripassareIlFile_unaCommissioneGiaCollegataAlPurchase_restaCollegataAlPurchase() throws Exception {
         String p[] = purchaseStessaMoneta();
         String file = scriviDettaglio(RIGA_STESSA_MONETA);
         Binance_DualInvestment.Abbina(new java.io.File(file));
@@ -616,7 +627,9 @@ class Binance_DualInvestmentTest {
 
         Binance_DualInvestment.Abbina(new java.io.File(file));
 
-        assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(fee), "la commissione segue il Purchase nel gruppo");
+        String chiaveFee = CommissioniCollegate.Chiave(fee);
+        assertEquals(chiaveFee, CommissioniCollegate.Chiave(MappaCryptoWallet.get(p[0])), "la commissione resta collegata al Purchase");
+        assertEquals("DUAL-1232611", GruppoOperazione.ChiaveEffettiva(MappaCryptoWallet.get(p[0])));
     }
 
     @Test

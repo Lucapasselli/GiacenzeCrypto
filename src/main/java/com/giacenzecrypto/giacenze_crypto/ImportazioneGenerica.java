@@ -1735,6 +1735,13 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         public int rigaIntestazione = 1;
         public boolean autoDetectColonne = false;
         public String formatoData = "yyyy-MM-dd HH:mm:ss";
+        /**
+         * Ora da aggiungere a una data che nel file ha solo il giorno ({@code "23:59:59"}), quando la stessa colonna ha
+         * altre righe con l'orario completo di {@link #formatoData}: per esempio lo storico Simple Earn di Binance, dove
+         * le Real-time APR hanno solo la data e i Bonus anche l'ora. Senza (default {@code null}) quelle righe non si
+         * leggono e vengono scartate. Si usa solo se la data non si legge con {@link #formatoData}.
+         */
+        public String oraSeSoloData = null;
         public String fuso = "UTC";
 
         // Indici colonne (-1 = non presente)
@@ -2111,6 +2118,9 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             if (root.has("formatoData")) {
                 cfg.formatoData = root.getString("formatoData");
             }
+            if (root.has("oraSeSoloData")) {
+                cfg.oraSeSoloData = root.getString("oraSeSoloData");
+            }
             if (root.has("fuso")) {
                 cfg.fuso = root.getString("fuso");
             }
@@ -2412,6 +2422,14 @@ private LocalDateTime parseDataRaw(String dataCSV) {
 
         return LocalDateTime.parse(s, fmt);
     } catch (Exception ex) {
+        //Una riga con il solo giorno, in un file in cui le altre hanno anche l'ora (vedi oraSeSoloData)
+        if (oraSeSoloData != null && !oraSeSoloData.isBlank() && !s.contains(" ")) {
+            try {
+                return LocalDateTime.parse(s + " " + oraSeSoloData.trim(), DateTimeFormatter.ofPattern(formatoData));
+            } catch (Exception ex2) {
+                return null;
+            }
+        }
         return null;
     }
 }

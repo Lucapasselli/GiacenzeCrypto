@@ -25,6 +25,7 @@ public class AppDialog extends JDialog {
     private JTextField inputField;
     private JTextArea textArea;
     private JComboBox<String> comboBox;
+    private JCheckBox checkBox;
 
     public enum ThemeMode {
         LIGHT, DARK
@@ -50,6 +51,8 @@ public class AppDialog extends JDialog {
     private final String actionId;
     private final CloseReason closeReason;
     private final String inputValue;
+    /** Stato della casella di {@link Builder#checkBoxField}, letto alla chiusura con qualunque azione o con la X. */
+    private boolean checked;
 
     public DialogResult(String actionId, CloseReason closeReason) {
         this(actionId, closeReason, null);
@@ -92,6 +95,11 @@ public class AppDialog extends JDialog {
     /** @return {@code true} se il dialog ha restituito un valore di input */
     public boolean hasInputValue() {
         return inputValue != null;
+    }
+
+    /** @return {@code true} se la casella di {@link Builder#checkBoxField} era spuntata alla chiusura del dialog */
+    public boolean isChecked() {
+        return checked;
     }
     
     
@@ -390,6 +398,9 @@ public class AppDialog extends JDialog {
         private String comboLabel;
         private String[] comboOptions = new String[0];
 
+        private boolean checkBoxEnabled = false;
+        private String checkBoxLabel;
+
         private final List<DialogAction> actions = new ArrayList<>();
 
         /**
@@ -402,6 +413,19 @@ public class AppDialog extends JDialog {
             this.comboEnabled = true;
             this.comboLabel = label;
             this.comboOptions = options != null ? options : new String[0];
+            return this;
+        }
+
+        /**
+         * Aggiunge al dialog una casella di spunta sotto il messaggio, per esempio "Non mostrare più questo avviso".
+         * Il suo stato si legge da {@link DialogResult#isChecked()} ed è registrato comunque si chiuda il dialog,
+         * anche con la X della finestra.
+         * @param label testo della casella
+         * @return questo builder, per il chaining
+         */
+        public Builder checkBoxField(String label) {
+            this.checkBoxEnabled = true;
+            this.checkBoxLabel = label;
             return this;
         }
 
@@ -664,6 +688,7 @@ public class AppDialog extends JDialog {
      */
     public DialogResult showDialog() {
         setVisible(true);
+        result.checked = checkBox != null && checkBox.isSelected();
         return result;
     }
 
@@ -836,6 +861,16 @@ public class AppDialog extends JDialog {
             comboBox.setAlignmentX(Component.LEFT_ALIGNMENT);
             comboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
             panel.add(comboBox);
+        }
+
+        if (config.checkBoxEnabled) {
+            panel.add(Box.createVerticalStrut(12));
+            checkBox = new JCheckBox(config.checkBoxLabel);
+            checkBox.setFont(theme.messageFont);
+            checkBox.setForeground(theme.textPrimary);
+            checkBox.setOpaque(false);
+            checkBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+            panel.add(checkBox);
         }
 
         return panel;

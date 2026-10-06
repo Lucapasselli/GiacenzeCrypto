@@ -110,7 +110,7 @@ class Binance_DualInvestmentFormaTest {
     /** La riga senza il gruppo del contratto ([43]), che resta per scelta anche dopo un annullamento. */
     private static String senzaGruppo(String[] v) {
         String[] c = v.clone();
-        c[CommissioniCollegate.CAMPO] = "";
+        c[GruppoOperazione.CAMPO] = "";
         return String.join("|", c);
     }
 
@@ -287,7 +287,7 @@ class Binance_DualInvestmentFormaTest {
         assertEquals(1, esito.aggiornati);
         assertEquals(5, MappaCryptoWallet.size());
         assertEquals(0, new BigDecimal("102").compareTo(new BigDecimal(s[13])));
-        for (String[] v : MappaCryptoWallet.values()) assertEquals("DUAL-1232611", CommissioniCollegate.Chiave(v), v[0]);
+        for (String[] v : MappaCryptoWallet.values()) assertEquals("DUAL-1232611", GruppoOperazione.ChiaveEffettiva(v), v[0]);
 
         Binance_DualInvestment.Esito ancora = abbina(RIGA_STESSA_MONETA);
         assertEquals(0, ancora.migrati);
@@ -416,7 +416,7 @@ class Binance_DualInvestmentFormaTest {
         assertEquals(5, b.size());
         for (String[] v : b) assertNotNull(v);
         assertGruppoCompleto(b);
-        for (String[] v : b) assertEquals("DUAL-1055026", CommissioniCollegate.Chiave(v), v[0]);
+        for (String[] v : b) assertEquals("DUAL-1055026", GruppoOperazione.ChiaveEffettiva(v), v[0]);
 
         Binance_DualInvestment.Esito ancora = abbina(RIGA_A, RIGA_B);
         assertEquals(0, ancora.riparati);

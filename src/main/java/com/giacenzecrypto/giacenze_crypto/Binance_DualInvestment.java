@@ -136,7 +136,7 @@ public class Binance_DualInvestment {
             long tsSettle = convertiAEpocaUtc(campi[7].trim(), offsetOre);
 
             boolean stessaMoneta = sub[1].equalsIgnoreCase(settle[1]);
-            String chiave = CommissioniCollegate.ChiaveDual(campi[2]);
+            String chiave = GruppoOperazione.ChiaveDual(campi[2]);
             //Un contratto già abbinato porta ancora le quantità del file, con un'eccezione: il Settlement a
             //moneta uguale abbinato prima del 2026-10-05 era ridotto al solo capitale (il resto stava nella reward)
             CandidatoRisultato purchase = trovaCandidato(sub[1], sub[0], List.of(sub[0]), tsSub, true, giaUsati, chiave,
@@ -260,41 +260,29 @@ public class Binance_DualInvestment {
     static final String WALLET_DUAL_SAVINGS = "Dual Savings";
 
     /**
-     * Scrive su tutti i movimenti di un contratto la stessa chiave di gruppo ({@code [43]}, vedi
-     * {@link CommissioniCollegate#ChiaveDual}): Purchase, Settlement e quelli che l'abbinamento ha generato
-     * (gambe sul sotto-wallet, reward, o i tre dello scambio differito), che si ritrovano da {@code [20]}.
-     * Così dal dettaglio di uno si vedono gli altri, senza toccare {@code [20]} che il motore delle
-     * plusvalenze legge. Solo informativo: nessun calcolo legge il campo.
+     * Scrive la chiave di operazione del contratto ({@link GruppoOperazione}, campo 45) su Purchase e Settlement, e
+     * solo su loro. I movimenti che l'abbinamento ha generato (gambe sul sotto-wallet, reward, o i tre dello scambio
+     * differito) non la portano: fanno parte del gruppo {@code [20]} di Purchase e Settlement e la ricavano da lì
+     * ({@link GruppoOperazione#ChiaveEffettiva}), così una riclassificazione non può lasciarla a metà. Solo informativo:
+     * nessun calcolo legge il campo.
+     *
+     * <p>Le commissioni collegate (campo 43) non si toccano: una commissione collegata al Purchase resta collegata al
+     * Purchase. Fino al 2026-10-05 la chiave del contratto stava nello stesso campo e la commissione veniva fusa nel
+     * gruppo del contratto, perdendo il movimento a cui apparteneva.
      *
      * @param IdContratto id del contratto, colonna 3 del CSV di dettaglio; se vuoto non si scrive nulla
      * @return {@code true} se almeno una riga ha cambiato chiave (false se il contratto era già marcato)
      */
     static boolean MarcaContratto(String IdContratto, String[] Purchase, String[] Settlement) {
-        return MarcaConChiave(CommissioniCollegate.ChiaveDual(IdContratto), Purchase, Settlement);
-    }
-
-    /** Come {@link #MarcaContratto}, con la chiave {@code DUAL-} già nota (per esempio letta dal Purchase). */
-    static boolean MarcaConChiave(String Chiave, String[] Purchase, String[] Settlement) {
-        if (Chiave == null || Chiave.isEmpty() || Purchase == null || Settlement == null) return false;
-        List<String[]> Righe = new ArrayList<>();
-        Righe.add(Purchase);
-        Righe.add(Settlement);
-        for (String ID : (Purchase[20] + "," + Settlement[20]).split(",")) {
-            String[] Generato = ID.isBlank() ? null : MappaCryptoWallet.get(ID.trim());
-            if (Generato == null || Righe.contains(Generato)) continue;
-            //Un movimento che porta il gruppo di un ALTRO contratto ci arriva solo da un [20] sbagliato (bug C17):
-            //prenderlo farebbe fondere i due contratti (CollegaOperazione fonde le chiavi che sostituisce)
-            String Sua = CommissioniCollegate.Chiave(Generato);
-            if (CommissioniCollegate.isGruppoDual(Sua) && !Sua.equals(Chiave)) {
-                LoggerGC.ScriviErrore("Dual Investment: " + Generato[0] + " appartiene a " + Sua + ", non a " + Chiave
-                        + " - lasciato fuori dal gruppo");
-                continue;
-            }
-            Righe.add(Generato);
-        }
+        String Chiave = GruppoOperazione.ChiaveDual(IdContratto);
+        if (Chiave.isEmpty() || Purchase == null || Settlement == null) return false;
         boolean Cambiata = false;
-        for (String[] v : Righe) if (!Chiave.equals(CommissioniCollegate.Chiave(v))) Cambiata = true;
-        CommissioniCollegate.CollegaOperazione(Chiave, Righe);
+        for (String[] v : new String[][]{Purchase, Settlement}) {
+            if (!Chiave.equals(GruppoOperazione.Chiave(v))) {
+                GruppoOperazione.Scrivi(v, Chiave);
+                Cambiata = true;
+            }
+        }
         return Cambiata;
     }
 
@@ -400,6 +388,8 @@ public class Binance_DualInvestment {
         }
         //Tipo di derivato (campo 44): le gambe generate appartengono alla stessa operazione Dual
         Derivati.Marca(MTPurchase, Derivati.Tipo(MovPurchase));
+        //Documento di origine: ogni generato prende quello del movimento da cui nasce
+        MTPurchase[41] = MovPurchase[41];
 
         // ── Reward sul sotto-wallet, per la differenza esatta ──
         String[] MTReward = null;
@@ -435,6 +425,7 @@ public class Binance_DualInvestment {
                 MTReward[29] = MovSettlement[29];
             }
             Derivati.Marca(MTReward, Derivati.Tipo(MovSettlement));
+            MTReward[41] = MovSettlement[41];
         }
 
         // ── Settlement -> gamba speculare in uscita dal sotto-wallet per l'intero liquidato ──
@@ -469,6 +460,7 @@ public class Binance_DualInvestment {
             MTSettlement[29] = MovSettlement[29];
         }
         Derivati.Marca(MTSettlement, Derivati.Tipo(MovSettlement));
+        MTSettlement[41] = MovSettlement[41];
 
         MovPurchase[5] = "TRASFERIMENTO A DUAL INVESTMENT";
         MovPurchase[18] = CAMPO18_PURCHASE_STESSA_MONETA;
@@ -634,9 +626,9 @@ public class Binance_DualInvestment {
                     : Importazioni.EDepositoDaClassificare(mov);
             boolean giaAbbinato = !candidato && campo18GiaAbbinato.equalsIgnoreCase(mov[18] == null ? "" : mov[18].trim());
             if (!candidato && !giaAbbinato) continue;
-            String chiaveMov = CommissioniCollegate.Chiave(mov);
+            String chiaveMov = GruppoOperazione.Chiave(mov);
             boolean chiavePropria = giaAbbinato && !chiaveContratto.isEmpty() && chiaveContratto.equals(chiaveMov);
-            if (giaAbbinato && CommissioniCollegate.isGruppoDual(chiaveMov) && !chiavePropria) continue;
+            if (giaAbbinato && GruppoOperazione.isContrattoDual(chiaveMov) && !chiavePropria) continue;
 
             String monetaMov = purchase ? mov[8] : mov[11];
             String quantitaMov = purchase ? mov[10] : mov[13];

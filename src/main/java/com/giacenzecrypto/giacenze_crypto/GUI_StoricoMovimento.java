@@ -134,6 +134,8 @@ public class GUI_StoricoMovimento extends javax.swing.JDialog {
                 "Unione con altri movimenti (riga di partenza)";
             case MovimentiStorico.OP_IN_PLACE ->
                 "Modifica dei dati (ID invariato)";
+            case MovimentiStorico.OP_SOVRASCRITTURA ->
+                "Sostituito dal file reimportato con \"sovrascrivi\"";
             default ->
                 Operazione;
         };
@@ -179,8 +181,10 @@ public class GUI_StoricoMovimento extends javax.swing.JDialog {
         Riga("Documento di origine (id)", v[41], CampoModificato(v, vDopo, 41));
         //La chiave del gruppo collegato (commissioni, oppure contratto Dual Investment): un identificativo
         //opaco, utile solo per vedere se una modifica l'ha cambiata (ad esempio un'unione che ha fuso due gruppi)
-        Riga("Gruppo collegato (commissioni, Dual Investment)", v.length > CommissioniCollegate.CAMPO ? v[CommissioniCollegate.CAMPO] : "",
+        Riga("Gruppo commissioni collegate", v.length > CommissioniCollegate.CAMPO ? v[CommissioniCollegate.CAMPO] : "",
                 CampoModificato(v, vDopo, CommissioniCollegate.CAMPO));
+        Riga("Operazione (contratto Dual Investment)", GruppoOperazione.Chiave(v),
+                CampoModificato(v, vDopo, GruppoOperazione.CAMPO));
 
         Tabella.repaint();
     }

@@ -41,6 +41,52 @@ private static final long serialVersionUID = 9L;
     transient List<String> Lista_NFT = new ArrayList<>();
     transient List<String> Lista_FIAT = new ArrayList<>();
     boolean ModificaMovimento=false;
+
+    /**
+     * Il movimento aperto si può cambiare solo in prezzo e note: è generato dal programma ({@code AU}) oppure
+     * fa parte di un gruppo classificato ({@code [20]} non vuoto). Vedi {@link #SoloPrezzoENote(String[])}.
+     */
+    boolean SoloPrezzoENote=false;
+
+    /** Suggerimento sui campi bloccati in modalità {@link #SoloPrezzoENote}. */
+    static final String SUGGERIMENTO_SOLO_PREZZO = "<html>Movimento generato dal programma o collegato ad altri movimenti:<br>"
+            + "si possono cambiare solo prezzo e note.<br>"
+            + "Per modificare il resto annulla prima la classificazione (Modifica movimento dalla tabella).</html>";
+
+    /**
+     * Un movimento generato dalla classificazione ({@code [22] = "AU"}) o che fa parte di un gruppo classificato
+     * ({@code [20]} non vuoto) si modifica solo in prezzo e note. Quantità, monete, wallet e data sono legati agli
+     * altri movimenti del gruppo: cambiarli qui, senza sciogliere il gruppo, lascia gruppi incoerenti (una gamba
+     * speculare con una quantità diversa dal movimento da cui è nata, la commissione di un trasferimento calcolata
+     * su un prelievo che non c'è più). La strada normale non passa di qui: {@code Funzione_ModificaMovimento}
+     * annulla prima la classificazione, e il dialogo si apre con {@code [20]} vuoto. Ci passano i generati, che non
+     * si sciolgono da soli, e la modifica proposta dalla tabella del quadro RW, pensata per il prezzo.
+     */
+    static boolean SoloPrezzoENote(String[] riga) {
+        if (riga == null) return false;
+        boolean Automatico = riga.length > 22 && riga[22] != null && riga[22].equalsIgnoreCase("AU");
+        boolean Collegato = riga.length > 20 && riga[20] != null && !riga[20].isBlank();
+        return Automatico || Collegato;
+    }
+
+    /**
+     * La modifica in modalità {@link #SoloPrezzoENote}: scrive sul movimento soltanto valore, note e informazioni
+     * sul prezzo, nient'altro, e la accoda allo storico come le altre modifiche sul posto.
+     * @param riga il movimento in mappa (modificato sul posto)
+     * @param Valore valore della transazione già normalizzato a due decimali
+     * @param Note note già normalizzate
+     * @param Valorizzato {@code true} se il movimento risulta valorizzato (campo 32 a "SI")
+     * @param Riga40 informazioni sul prezzo (campo 40)
+     */
+    static void ScriviSoloPrezzoENote(String[] riga, String Valore, String Note, boolean Valorizzato, String Riga40) {
+        String Lignaggio = MovimentiStorico.AssicuraLignaggio(riga);
+        MovimentiStorico.AccodaModifica(Lignaggio, riga[0], riga[0], Importazioni.SerializzaRiga(riga),
+                MovimentiStorico.OP_IN_PLACE);
+        riga[15] = Valore;
+        riga[21] = Note;
+        if (Valorizzato) riga[32] = "SI";
+        riga[40] = Riga40;
+    }
     String MovimentoRiportato[]=new String[Importazioni.ColonneTabella];
     String MonetaE="";
     String MonetaU="";
@@ -877,7 +923,22 @@ private static final long serialVersionUID = 9L;
             //che dovrò eseguire la cancellazione del vecchio elemento e l'inserimento del nuovo con un nuovo possibile IDTransazione
             //Per ora direi che è sufficiente dare la possibilita di variare i solo valore della transazione o le note
             //quindi
-            if (!riga[22].equals("M")&&!riga[7].equalsIgnoreCase("Rettifica Automatica")) {
+            SoloPrezzoENote = SoloPrezzoENote(riga);
+            if (SoloPrezzoENote) {
+                //Bloccati anche quelli che un movimento importato lascia liberi, compreso l'orario:
+                //cambiarlo ricalcolerebbe l'ID, cosa vietata su un generato e che su un collegato
+                //scioglierebbe il gruppo da qui, dove l'utente stava cambiando un prezzo
+                javax.swing.JComponent[] Bloccati = {Data_Datachooser, Ora_ComboBox, Minuto_ComboBox, Secondo_ComboBox,
+                    ID_TextField, Wallet_ComboBox, WalletDettaglio_ComboBox,
+                    MonetaUscitaTipo_ComboBox, MonetaUscita_ComboBox, MonetaUscitaQuantita_TextField, MonetaUscitaAddress_TextField,
+                    MonetaEntrataTipo_ComboBox, MonetaEntrata_ComboBox, MonetaEntrataQuantita_TextField, MonetaEntrataAddress_TextField};
+                for (javax.swing.JComponent C : Bloccati) {
+                    C.setEnabled(false);
+                    C.setToolTipText(SUGGERIMENTO_SOLO_PREZZO);
+                }
+                setTitle("Modifica movimento - solo prezzo e note");
+            }
+            else if (!riga[22].equals("M")&&!riga[7].equalsIgnoreCase("Rettifica Automatica")) {
                 this.Data_Datachooser.setEnabled(false);
                 //this.Ora_ComboBox.setEnabled(false);
                 //this.Minuto_ComboBox.setEnabled(false);
@@ -1470,6 +1531,11 @@ worker.execute();*/
         // CASO A — MODIFICA DI UN MOVIMENTO ESISTENTE (ModificaMovimento == true)
         // ════════════════════════════════════════════════════════════════════════════════════════
         if (ModificaMovimento) {
+            //Generato o collegato: solo prezzo e note, sul posto, qualunque cosa dicano gli altri campi
+            if (SoloPrezzoENote) {
+                ScriviSoloPrezzoENote(MovimentoRiportato, ValoreTransazione, Note, MovimentoValorizzato, Riga40);
+                return true;
+            }
             String IDtsOri[] = MovimentoRiportato[0].split("_"); // campi dell'ID originale
             String IDts[]    = ID.split("_");                    // campi dell'ID ricalcolato dalla GUI
 

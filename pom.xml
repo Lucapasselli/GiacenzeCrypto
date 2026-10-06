@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.giacenzecrypto</groupId>
     <artifactId>Giacenze_Crypto</artifactId>
-    <version>1.0.64.08</version>
+    <version>1.0.64.09</version>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -142,6 +142,16 @@
                 <targetPath>Varie</targetPath>
                 <includes>
                     <include>*.json</include>
+                </includes>
+            </resource>
+            <!-- Le novita' delle versioni (docs/documentazione/changelog.md, la pagina pubblicata su GitHub Pages)
+                 vanno anche nel jar: NovitaVersione ne mostra la sezione della versione al primo avvio dopo un
+                 aggiornamento, senza rete. Un'unica sorgente per la pagina e per il dialogo. -->
+            <resource>
+                <directory>docs/documentazione</directory>
+                <targetPath>Novita</targetPath>
+                <includes>
+                    <include>changelog.md</include>
                 </includes>
             </resource>
         </resources>

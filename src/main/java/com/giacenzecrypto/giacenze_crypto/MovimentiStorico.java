@@ -63,6 +63,13 @@ public class MovimentiStorico {
      */
     public static final String OP_IN_PLACE = "ModificaInPlace";
 
+    /**
+     * Operazione della voce scritta quando un reimport con «sovrascrivi esistenti» sostituisce un movimento che ha
+     * già uno storico: la riga del file eredita il lignaggio, e la voce conserva il movimento sostituito, così da
+     * "Versioni precedenti" si vede cosa la sovrascrittura ha scartato (decisione dell'utente, 2026-10-06).
+     */
+    public static final String OP_SOVRASCRITTURA = "SovrascritturaReimport";
+
     private MovimentiStorico() {
     }
 

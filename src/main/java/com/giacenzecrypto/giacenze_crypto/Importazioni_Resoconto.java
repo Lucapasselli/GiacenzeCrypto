@@ -91,6 +91,8 @@ private static final long serialVersionUID = 8L;
             //descrizione dell'ultimo documento: la si preferisce quando c'è.
             contestoDescrizione = E.Origine;
         }
+        //Il conteggio di più importazioni sommate prende il posto di quello dell'ultima, che il resoconto legge
+        Importazioni.ClassificazioniAnnullate = E.ClassificazioniAnnullate;
         ImpostaValori(E.Transazioni, E.Aggiunte, E.Scartate, E.Sconosciute, E.MovimentiSconosciuti);
     }
 
@@ -132,6 +134,11 @@ private static final long serialVersionUID = 8L;
         //Informativo, non un errore : i giroconti FIAT abbinati (GirocontiFiat), che su un reimport sono
         //l'unico effetto visibile dell'importazione
         String notaGiroconti = GirocontiFiat.TestoResoconto();
+        //Anche questa informativa: i movimenti classificati che «sovrascrivi esistenti» ha riportato da classificare
+        String notaClassificazioni = Importazioni.TestoClassificazioniAnnullate();
+        if (!notaClassificazioni.isEmpty()) {
+            notaGiroconti = notaGiroconti.isEmpty() ? notaClassificazioni : notaGiroconti + "<br><br>" + notaClassificazioni;
+        }
         if (!movScon.trim().equalsIgnoreCase("")){
             this.Bottone_CopiaAppunti.setEnabled(true);
             this.jScrollPane1.setVisible(true);

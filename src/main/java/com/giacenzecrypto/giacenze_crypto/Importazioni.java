@@ -157,7 +157,7 @@ public class Importazioni {
     public static int TransazioniAggiunte=0;
     public static int TrasazioniScartate=0;
     public static int TrasazioniSconosciute=0;
-    public static int ColonneTabella=45;
+    public static int ColonneTabella=46;
     /**
      * Id del documento di origine dell'importazione in corso, timbrato nel campo {@code [41]} di ogni movimento
      * che passa da {@link #ScriviListaSuMappaCrypto}; {@code 0} quando non c'è un documento da collegare.
@@ -172,6 +172,12 @@ public class Importazioni {
     public static int DocumentoFonteCorrente=0;
     //La mappa delle chain conterrà per ogni chain l'indirizzo del chain explorer e relativa api
     public static String movimentiSconosciuti="";
+    /**
+     * Movimenti classificati che l'importazione con «sovrascrivi esistenti» ha riportato da classificare,
+     * sostituendoli con la riga del file (vedi {@link #InserisciMovimentosuMappaCryptoWallet}). Informativo: il
+     * resoconto lo dice ({@link #TestoClassificazioniAnnullate}), perché altrimenti la perdita sarebbe invisibile.
+     */
+    public static int ClassificazioniAnnullate=0;
 
     /**
      * Causali CSV (testo grezzo) incontrate durante l'importazione corrente e presenti nella
@@ -213,6 +219,8 @@ public class Importazioni {
         public int Scartate = 0;
         public int Sconosciute = 0;
         public String MovimentiSconosciuti = "";
+        /** Movimenti classificati riportati da classificare dalla sovrascrittura, vedi {@link Importazioni#ClassificazioniAnnullate}. */
+        public int ClassificazioniAnnullate = 0;
 
         /** Esito vuoto, da riempire sommando quelli delle singole importazioni. */
         public Esito() {
@@ -244,9 +252,11 @@ public class Importazioni {
          */
         public static Esito daiContatori(String Origine) {
             //I nomi vanno qualificati: i campi di Esito hanno lo stesso nome dei contatori statici
-            return new Esito(Origine, Importazioni.Transazioni, Importazioni.TransazioniAggiunte,
+            Esito E = new Esito(Origine, Importazioni.Transazioni, Importazioni.TransazioniAggiunte,
                     Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute,
                     Importazioni.movimentiSconosciuti);
+            E.ClassificazioniAnnullate = Importazioni.ClassificazioniAnnullate;
+            return E;
         }
 
         /**
@@ -261,6 +271,7 @@ public class Importazioni {
             Aggiunte += Altro.Aggiunte;
             Scartate += Altro.Scartate;
             Sconosciute += Altro.Sconosciute;
+            ClassificazioniAnnullate += Altro.ClassificazioniAnnullate;
             if (!Origine.isBlank() && !Altro.Origine.isBlank()) Origine = Origine + " + " + Altro.Origine;
             else if (Origine.isBlank()) Origine = Altro.Origine;
             if (!Altro.MovimentiSconosciuti.isBlank()) {
@@ -281,7 +292,22 @@ public class Importazioni {
                 movimentiSconosciuti="";
                 CausaliDerivatiSegnalate.clear();
                 GirocontiFiat.AbbinatiImportazione=0;
+                ClassificazioniAnnullate=0;
             }
+
+    /**
+     * Nota del resoconto sui movimenti classificati che la sovrascrittura ha riportato da classificare, o stringa
+     * vuota se non ce ne sono.
+     */
+    public static String TestoClassificazioniAnnullate() {
+        if (ClassificazioniAnnullate <= 0) return "";
+        return "<b><center>MOVIMENTI TORNATI DA CLASSIFICARE : " + ClassificazioniAnnullate + "</b><br><br>"
+                + "<center>Con <i>Sovrascrivi esistenti</i> le righe del file hanno sostituito movimenti che erano già"
+                + " classificati (trasferimenti, scambi differiti, contratti Dual Investment, classificazioni manuali):"
+                + " la loro classificazione è stata annullata.<br>"
+                + "<center>Gli scambi differiti abbinati all'importazione si riabbinano da soli, i contratti Dual"
+                + " Investment ripassando il file di dettaglio, gli altri vanno classificati di nuovo.";
+    }
 
     /**
      * Segnala che l'importazione corrente ha incontrato una riga con una causale elencata in
@@ -1165,10 +1191,43 @@ public class Importazioni {
      * stesso ID esiste già, prima rimuove le eventuali associazioni di trasferimento che lo coinvolgevano
      * tramite {@link GUI_ClassificazioneMovimento#RiportaTransazioniASituazioneIniziale}, per evitare di
      * lasciare riferimenti incrociati non aggiornati.
+     *
+     * <p>Il movimento esistente si cerca anche nella forma <b>rinominata</b> dello scambio differito
+     * ({@link #IDRinominatoScambioDifferito}): classificando uno scambio differito prelievo e deposito prendono il
+     * prefisso {@code 00}/{@code 04} nell'ID, e un reimport con «sovrascrivi esistenti» non li trovava più con l'ID
+     * del file e li aggiungeva una seconda volta (bug corretto il 2026-10-05). Ritrovato, lo scambio si annulla come
+     * ogni altra classificazione: i generati spariscono, prelievo e deposito tornano all'ID di partenza, e la riga
+     * del file prende il posto del movimento. Si contano in {@link #ClassificazioniAnnullate} i movimenti originali
+     * che perdono la classificazione: gli altri del gruppo annullato, e il sostituito se la riga del file non porta la
+     * stessa classificazione.
      * @param Chiave ID del movimento (chiave nella mappa)
      * @param Valore riga di movimento da inserire
      */
     public static void InserisciMovimentosuMappaCryptoWallet(String Chiave, String[] Valore) {
+        InserisciMovimentosuMappaCryptoWallet(Chiave, Valore, false);
+    }
+
+    /**
+     * Come {@link #InserisciMovimentosuMappaCryptoWallet(String, String[])}.
+     * @param Sovrascrivendo {@code true} solo per un'importazione con «sovrascrivi esistenti»: allora il movimento
+     *        esistente si cerca anche nella forma rinominata dello scambio differito e nelle altre forme di
+     *        {@link FormeImportate}. Negli altri casi il chiamante ha già reso l'ID univoco e la riga è un movimento
+     *        nuovo: cercarla in un'altra forma la farebbe prendere per un movimento che ha soltanto lo stesso ID di
+     *        partenza, o la stessa chiave, e lo sostituirebbe
+     */
+    public static void InserisciMovimentosuMappaCryptoWallet(String Chiave, String[] Valore, boolean Sovrascrivendo) {
+        InserisciMovimentosuMappaCryptoWallet(Chiave, Valore,
+                Sovrascrivendo ? FormeImportate.Indice(java.util.List.<String[]>of(Valore)) : null);
+    }
+
+    /**
+     * Come {@link #InserisciMovimentosuMappaCryptoWallet(String, String[], boolean)}, con l'indice dei movimenti da
+     * sostituire costruito una volta per tutta l'importazione ({@link ScriviListaSuMappaCrypto}).
+     * @param Indice non {@code null} solo con «sovrascrivi esistenti»: se l'ID della riga non c'è in archivio, né nella
+     *        forma rinominata dello scambio differito, il movimento da sostituire si cerca per ID precedente nello storico
+     *        modifiche e per chiave logica (Trasla Orario, Modifica movimento, ID di una versione precedente)
+     */
+    static void InserisciMovimentosuMappaCryptoWallet(String Chiave, String[] Valore, FormeImportate.Indice Indice) {
        //QUA DOVRO' INSERIRE ANCHE L'EVENTUALE CAMBIO NOME DEL TOKEN
        //PER EVITARE DI FARLO AD OGNI CARICAMENTO DI TABELLA E AUMENTARE LA VELOCITA' MA LO VEDRO' CON CALMA PIU' AVANTI  
        //POSSO ANCHE GESTIRE L'EVENTUALE IDENTIFICAZIONE DI UN TOKEN SCAM (DA VEDERE CON CALMA)
@@ -1176,19 +1235,63 @@ public class Importazioni {
         String AddressEntrata=Valore[27];
         String Rete = Funzioni.TrovaReteDaID(Chiave);*/
 
-
-
         //Questa funzione inserisce il movimento in mappa ma prima di fare ciò elimina eventuali associazioni sul movimento precedente
-        //FASE 1 : VERIFICO SE IL MOVIMENTO ESISTE
-        if (MappaCryptoWallet.get(Chiave) != null) {
-            //FASE 2 : SE ESISTE IL MOVIMENTO ELIMINA EVENTUALI ASSOCIAZIONI VECCHIE SUL MOVIMENTO DA SOSTITUIRE
-            String PartiCoinvolte[] = (Chiave + "," + MappaCryptoWallet.get(Chiave)[20]).split(",");
-            //In questo caso devo solo eliminare le associazioni e non mi interessa se questo provoca un cambio di ID
-            //Lo dovesse provocare meglio vorrà dire che avrò sia il vecchio che il nuovo movimento
-            RiportaTransazioniASituazioneIniziale(PartiCoinvolte,Chiave);
+        //FASE 1 : VERIFICO SE IL MOVIMENTO ESISTE, anche con l'ID rinominato di uno scambio differito
+        String Esistente = Chiave;
+        String[] Vecchio = MappaCryptoWallet.get(Chiave);
+        if (Indice != null && Vecchio == null) {
+            String Rinominato = IDRinominatoScambioDifferito(Chiave);
+            Vecchio = Rinominato != null ? MappaCryptoWallet.get(Rinominato) : Indice.Trova(Valore);
+            if (Vecchio != null) Esistente = Vecchio[0];
         }
-        //FASE 3: Inserisocil movimento in mappa
+        if (Vecchio != null) {
+            //Con «sovrascrivi» un movimento che ha già uno storico lo passa alla riga del file, con una voce che conserva
+            //il movimento sostituito: da "Versioni precedenti" si vede cosa la sovrascrittura ha scartato. Va fotografato
+            //prima dell'annullamento, che svuota la classificazione. Una riga che porta già un lignaggio non si tocca
+            if (Indice != null && Valore != null && Valore.length > MovimentiStorico.CAMPO_LIGNAGGIO
+                    && Funzioni.noData(Valore[MovimentiStorico.CAMPO_LIGNAGGIO])
+                    && !Funzioni.noData(Vecchio[MovimentiStorico.CAMPO_LIGNAGGIO])) {
+                Valore[MovimentiStorico.CAMPO_LIGNAGGIO] = Vecchio[MovimentiStorico.CAMPO_LIGNAGGIO];
+                MovimentiStorico.AccodaModifica(Vecchio[MovimentiStorico.CAMPO_LIGNAGGIO], Chiave, Esistente,
+                        SerializzaRiga(Vecchio), MovimentiStorico.OP_SOVRASCRITTURA);
+            }
+            //FASE 2 : SE ESISTE IL MOVIMENTO ELIMINA EVENTUALI ASSOCIAZIONI VECCHIE SUL MOVIMENTO DA SOSTITUIRE
+            String PartiCoinvolte[] = (Esistente + "," + Vecchio[20]).split(",");
+            //Prima dell'annullamento, che svuota il campo 18: si contano i movimenti originali che perdono la
+            //classificazione, cioè gli altri del gruppo e il sostituito se la riga del file non la ripete
+            for (String ID : PartiCoinvolte) {
+                String[] m = ID.isBlank() ? null : MappaCryptoWallet.get(ID);
+                if (m == null || Funzioni.noData(m[18]) || "AU".equalsIgnoreCase(m[22])) continue;
+                if (m == Vecchio && Valore != null && Valore.length > 18 && Vecchio[18].equals(Valore[18])) continue;
+                ClassificazioniAnnullate++;
+            }
+            //Su uno scambio differito l'annullamento riporta il movimento al suo ID di partenza, cioè Chiave
+            RiportaTransazioniASituazioneIniziale(PartiCoinvolte,Esistente);
+            //Il sostituito può avere un ID diverso dalla riga del file (spostato, modificato, formato precedente):
+            //va tolto, l'annullamento lo ha lasciato nell'array con il suo ID attuale
+            if (MappaCryptoWallet.get(Vecchio[0]) == Vecchio) MappaCryptoWallet.remove(Vecchio[0]);
+        }
         MappaCryptoWallet.put(Chiave, Valore);
+    }
+
+    /**
+     * L'ID con cui un movimento importato si trova in archivio quando è un estremo di uno scambio differito
+     * classificato: lo stesso ID con {@code 00} (prelievo) o {@code 04} (deposito) davanti al secondo segmento, come lo
+     * scrive {@link GUI_ClassificazioneMovimento#IDScambioDifferito}. Si accetta solo se quel movimento è davvero un
+     * estremo di scambio differito (campo 18), per non confonderlo con un movimento qualunque.
+     * @return l'ID rinominato presente in archivio, o {@code null}
+     */
+    static String IDRinominatoScambioDifferito(String ID) {
+        if (ID == null) return null;
+        String[] s = ID.split("_");
+        if (s.length < 5) return null;
+        String[][] Forme = {{"00", "PTW - Scambio Differito"}, {"04", "DTW - Scambio Differito"}};
+        for (String[] F : Forme) {
+            String Candidato = s[0] + "_" + F[0] + s[1] + "_" + s[2] + "_" + s[3] + "_" + s[4];
+            String[] v = MappaCryptoWallet.get(Candidato);
+            if (v != null && v.length > 18 && F[1].equals(v[18])) return Candidato;
+        }
+        return null;
     }
     
     
@@ -1360,6 +1463,10 @@ public class Importazioni {
         }
         ritorno[1] = numI - lista.size();
         
+        //Con «sovrascrivi» il movimento da sostituire si cerca anche nelle forme che aveva prima di essere modificato:
+        //l'indice si costruisce una volta sola, prima di scrivere, e dà ogni movimento dell'archivio a una riga sola
+        FormeImportate.Indice Indice = SovrascriEsistenti ? FormeImportate.Indice(lista) : null;
+
         //===== 3 - OGNI MOVIMENTO DELLA LISTA VIENE CONTROLLATO ED INSERITO NELLA MAPPACRYPTO
         for (String mov[] : lista) {
             //Se non devo sovrascrivere i movimenti e trovo lo stesso id per qualche motivo nella lista allora cambio l'ID e lo rendo univoco           
@@ -1373,7 +1480,7 @@ public class Importazioni {
                 mov[41]=String.valueOf(IdDocumento);
             }
             if (mov[0]!=null){
-                InserisciMovimentosuMappaCryptoWallet(mov[0], mov);
+                InserisciMovimentosuMappaCryptoWallet(mov[0], mov, Indice);
                 ritorno[0]++;
             }else{
                 ritorno[1]++;
@@ -3040,10 +3147,12 @@ return filtrata;
  * 
  * IDENTIFICAZIONE DUPLICATO:
  * Un movimento è "duplicato" se ha IDENTICI:
- * - Data (da campo 0: "20250102_timestamp")
+ * - Istante al secondo (primo segmento del campo 0: "20250102143025_Binance_..."), non il solo giorno
  * - Exchange (campo 3) 
  * - Moneta Uscita + Qta Uscita (campi 8+10) SE qta!=0
  * - Moneta Entrata + Qta Entrata (campi 11+13) SE qta!=0
+ * Un prelievo classificato come trasferimento conta anche con la quantita' che aveva prima della
+ * classificazione ({@link GUI_ClassificazioneMovimento#PrelievoPrimaDellaClassificazione}).
  * 
  * @param lista Lista di nuovi movimenti da verificare contro MappaCryptoWallet
  * @return Lista contenente SOLO i movimenti nuovi (non presenti in MappaCryptoWallet)
@@ -3053,7 +3162,14 @@ public static List<String[]> F_ritornaSoloElementiNuovi(List<String[]> lista) {
     // Stream → HashSet: lookup O(1) invece di N confronti nested loops
     Set<String> movimentiEsistenti = Principale.MappaCryptoWallet.values().stream()
             .map(Importazioni::F_buildKeyMovimento)  // Trasforma ogni String[] → chiave univoca
-            .collect(Collectors.toSet());            // HashSet per lookup ultra-rapido
+            .collect(Collectors.toCollection(HashSet::new)); // HashSet per lookup ultra-rapido
+
+    // STEP 1-bis: le forme che un movimento aveva prima di essere modificato nel programma (prelievo prima della
+    // classificazione del trasferimento, versioni precedenti a Trasla Orario o a Modifica movimento) sono quelle che il
+    // file riporta ancora: se ne aggiungono le chiavi, altrimenti la riga del file rientrerebbe come doppione
+    for (String[] v : Principale.MappaCryptoWallet.values()) {
+        for (String[] Forma : FormeImportate.FormePrecedenti(v)) movimentiEsistenti.add(F_buildKeyMovimento(Forma));
+    }
 
     List<String[]> listaNew = new ArrayList<>();  // Risultato: solo elementi nuovi
 
@@ -3080,8 +3196,8 @@ public static List<String[]> F_ritornaSoloElementiNuovi(List<String[]> lista) {
  * @param riga Array String[] con 14+ campi del movimento
  * @return Chiave univoca "20250102|BINANCE|||BTC|1.234"
  */
-private static String F_buildKeyMovimento(String[] riga) {
-    String data = F_estraiData(riga[0]);     // Campo 0: "20250102_timestamp" → "20250102"
+static String F_buildKeyMovimento(String[] riga) {
+    String data = F_estraiData(riga[0]);     // Campo 0: "20250102143025_..." → "20250102143025"
     String exchange = F_safe(riga[3]);       // Campo 3: nome exchange
 
     // USCITA (campi 8=moneta, 10=qta): includi SOLO se qta != 0
@@ -3123,10 +3239,11 @@ private static String F_normalizzaQta(String s) {
 }
 
 /**
- * Estrae la DATA dal campo timestamp "20250102_14:30:25" → "20250102"
+ * Estrae dall'ID l'istante del movimento, il primo segmento "yyyyMMddHHmmss": "20250102143025_Binance_..." → "20250102143025".
+ * La chiave di deduplica confronta quindi l'istante al secondo, non il giorno.
  * 
- * @param valore Campo 0: "20250102_14:30:25" oppure solo "20250102"
- * @return Parte data "20250102" (prima del primo "_")
+ * @param valore Campo 0 (ID del movimento)
+ * @return tutto cio' che precede il primo "_", o il valore intero se non ce n'e'
  */
 private static String F_estraiData(String valore) {
     int pos = valore.indexOf('_');           // Trova primo "_"

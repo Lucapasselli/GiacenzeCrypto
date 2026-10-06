@@ -370,18 +370,9 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             ModelloTabellaCrypto.addRow(Val);
         }
         
-        String Valori[]=Transazione[20].split(",");
-         for (String Valori1 : Valori) {
-             Valore = Valori1;
-             if (!Valore.isBlank()){
-                 Valore=("<html>"+Valore+"</html>");
-                 Val=new String[]{"Movimenti Correlati ",Valore};
-                 ModelloTabellaCrypto.addRow(Val);
-             }
-         }
-        //Commissioni collegate (campo 43): per un movimento le sue commissioni, per una commissione il
-        //movimento a cui appartiene. Solo informativo, vedi CommissioniCollegate
-        for (String[] Riga : Principale_CommissioniCollegate.RigheDettaglio(IDTransazione)) {
+        //Operazione (OperazioniCalcolate): tutti gli altri movimenti dell'operazione, con quello che sono, al posto
+        //dell'elenco degli ID nudi di [20] ("Movimenti Correlati"); poi le commissioni collegate al movimento
+        for (String[] Riga : OperazioniCalcolate.RigheDettaglio(IDTransazione)) {
             ModelloTabellaCrypto.addRow(Riga);
         }
         Valore=Transazione[0];

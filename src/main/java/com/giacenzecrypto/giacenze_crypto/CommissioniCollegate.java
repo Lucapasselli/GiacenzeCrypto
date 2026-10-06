@@ -29,28 +29,17 @@ import java.util.UUID;
  * classificazione ({@code CM} marcato {@code AU}, legato al prelievo via {@code [20]}) non ricevono la
  * chiave, per scelta. Analisi completa in {@code nocommit/Documentazione/Analisi_Commissioni_Collegate.md}.
  *
- * <p><b>Lo stesso campo porta anche il gruppo di un'operazione senza commissioni</b> ({@link #PREFISSO_DUAL},
- * dal 2026-10-02): i movimenti di un contratto Dual Investment di Binance (Purchase, Settlement, le loro
- * gambe sul sotto-wallet e l'eventuale reward) portano {@code DUAL-<id contratto>}, così dal dettaglio di
- * uno si vedono gli altri. Le regole sono le stesse della chiave delle commissioni, con tre differenze:
- * la chiave non è casuale ma deriva dall'id del contratto, un'eventuale commissione che entra nel gruppo
- * ci resta, e {@code Principale_CommissioniCollegate.Scollega} non lo dissolve (un gruppo senza commissioni
- * è qui la situazione normale, non un collegamento rimasto a metà).
+ * <p>Il campo porta <b>solo</b> commissioni. Dal 2026-10-02 al 2026-10-05 portava anche la chiave dei contratti
+ * Dual Investment ({@code DUAL-<id>}), che ora sta in un campo suo ({@link GruppoOperazione}): nello stesso campo una
+ * commissione collegata al Purchase veniva fusa nel gruppo del contratto e perdeva il movimento a cui apparteneva. Le
+ * righe di quel periodo vengono spostate al caricamento ({@link GruppoOperazione#MigraAllaFormaAttuale}).
  */
 public final class CommissioniCollegate {
 
     /** Posizione della chiave di gruppo nella riga del movimento. */
     public static final int CAMPO = 43;
 
-    /** Prefisso della chiave di un contratto Dual Investment di Binance, seguito dall'id del contratto. */
-    public static final String PREFISSO_DUAL = "DUAL-";
-
     private CommissioniCollegate() {
-    }
-
-    /** @return {@code true} se la chiave è quella di un contratto Dual Investment e non di una commissione */
-    public static boolean isGruppoDual(String Chiave) {
-        return Chiave != null && Chiave.startsWith(PREFISSO_DUAL);
     }
 
     /** @return la chiave di gruppo del movimento, stringa vuota se non ne ha */
@@ -80,43 +69,14 @@ public final class CommissioniCollegate {
     }
 
     /**
-     * La chiave descritta per chi la legge: un contratto Dual Investment dice quale, un gruppo di
-     * commissioni dice quanti movimenti contiene (la chiave stessa è un UUID, illeggibile).
+     * La chiave descritta per chi la legge: un gruppo di commissioni dice quanti movimenti contiene (la chiave
+     * stessa è un UUID, illeggibile).
      * @return il testo, vuoto se la chiave è vuota
      */
     public static String Descrizione(String Chiave) {
         if (Chiave == null || Chiave.isBlank()) return "";
-        if (isGruppoDual(Chiave)) return "Contratto Dual Investment " + Chiave.substring(PREFISSO_DUAL.length());
         int n = Membri(Chiave).size();
         return "Gruppo commissioni (" + n + (n == 1 ? " movimento)" : " movimenti)");
-    }
-
-    /**
-     * La chiave del gruppo di un contratto Dual Investment. Il {@code ;} è tolto perché il file dei
-     * movimenti è delimitato da {@code ;} e {@code Scrivi_Movimenti_Crypto} lo cancella invece di
-     * proteggerlo: una chiave con il {@code ;} non coinciderebbe più dopo un salvataggio.
-     * @return la chiave, o stringa vuota se l'id del contratto è vuoto
-     */
-    public static String ChiaveDual(String IdContratto) {
-        if (IdContratto == null) return "";
-        String Id = IdContratto.replace(";", "").replaceAll("\\s+", "").trim();
-        return Id.isEmpty() ? "" : PREFISSO_DUAL + Id;
-    }
-
-    /**
-     * Scrive su tutte le righe indicate la stessa chiave di gruppo, senza commissioni di mezzo. Se una riga
-     * porta già un'altra chiave (tipicamente la commissione di Binance collegata al Purchase) quel gruppo
-     * viene fuso nel nuovo, come fa {@link #Collega}: la commissione resta collegata al contratto invece
-     * di rimanere con una chiave che nessun movimento porta più.
-     */
-    public static void CollegaOperazione(String Chiave, Collection<String[]> Righe) {
-        if (Chiave == null || Chiave.isBlank() || Righe == null) return;
-        Set<String> Vecchie = new LinkedHashSet<>();
-        for (String[] v : Righe) {
-            if (v != null && !Chiave(v).isEmpty() && !Chiave(v).equals(Chiave)) Vecchie.add(Chiave(v));
-        }
-        for (String[] v : Righe) Scrivi(v, Chiave);
-        FondiChiavi(Chiave, Vecchie);
     }
 
     /**

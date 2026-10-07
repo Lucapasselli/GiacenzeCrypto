@@ -1,7 +1,7 @@
 {
   "_commento": "OKX - export 'Trading History' del conto Trading unificato (file 'OKX Trading History_<periodo>~<hash>_N.csv'). Colonne: 0=id 1=Order id 2=Time 3=Trade Type 4=Symbol 5=Action 6=Amount 7=Trading Unit 8=Filled Price 9=PnL 10=Fee 11=Fee Unit 12=Position Change 13=Position Balance 14=Balance Change 15=Balance 16=Balance Unit. La prima riga del file contiene UID e tipo di account, l'intestazione vera e' la seconda.",
-  "_commentoFuso": "Come per il Funding: il nome del file dice 'UTC0' ma gli orari sono nel fuso di visualizzazione dell'account (qui Europe/Rome), verificato confrontando le stesse operazioni scaricate via API. Se cambia il fuso impostato su OKX al momento dell'export, va cambiato anche qui.",
-  "versione": "1.002",
+  "_commentoFuso": "Come per il Funding: il nome del file dice 'UTC0' ma gli orari sono nel fuso di visualizzazione dell'account (qui Europe/Rome), verificato confrontando le stesse operazioni scaricate via API. Se cambia il fuso impostato su OKX al momento dell'export, va cambiato anche qui. Dalla 1.003 (2026-10-07) vale solo per gli export che non dichiarano il fuso: quelli recenti hanno nella prima riga 'Time Zone:UTC+2' e fusoDaIntestazione fa usare quello, salvo che sia UTC+1 o UTC+2: quelli sono gli scostamenti di Europe/Rome, che resta perche' sa dell'ora legale.",
+  "versione": "1.003",
   "fontePrezzoPreferita": "okx",
   "nomeExchange": "OKX",
   "estrazione": "Trading",
@@ -13,6 +13,7 @@
   "autoDetectColonne": false,
   "formatoData": "yyyy-MM-dd HH:mm:ss",
   "fuso": "Europe/Rome",
+  "fusoDaIntestazione": "Time Zone:",
   "_commentoColonne": "La quantita' e' 'Balance Change' (14) e non 'Amount' (6): e' la variazione di saldo effettiva ed e' l'unica colonna con il segno, quindi l'unica da cui si capisce il verso della gamba ('Amount' e' sempre positivo). E' pero' gia' al netto della commissione (es. Amount 0.00034074 - Fee 0.00000023 = Balance Change 0.00034051), percio' le colonne Fee (10 = importo, 11 = moneta) vengono mappate e 'ricostruisciLordoSeFeeSuMonetaEntrata' riporta la quantita' al lordo: vedi _commentoFee. La moneta e' 'Balance Unit' (16), non 'Symbol' (4) che contiene la coppia.",
   "_commentoIdentificativi": "Due colonne con due ruoli distinti, da non confondere. 'idTransazione' (0 = id) dice CHI e' la riga: finisce nel campo [24] del movimento consolidato ed e' cio' su cui lavora la deduplica dell'import via API, quindi deve essere il billId, lo stesso identificativo che restituiscono le API. 'idGruppo' (1 = Order id) dice invece CON CHI sta: le gambe e i fill di uno stesso ordine hanno id diversi ma Order id uguale. Usare il solo id anche per raggruppare spezzerebbe ogni scambio in gambe isolate; usare il solo Order id anche come identificativo cambierebbe l'identita' dei movimenti gia' archiviati, che oggi portano la coppia di billId, e li farebbe rientrare tutti come nuovi. Vedi difetto C7 in Documentazione/Analisi_Bug_Criticita.md.",
   "colonne": {

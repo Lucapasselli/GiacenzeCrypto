@@ -259,6 +259,37 @@ public class Messaggi {
         return (result != null && result.isAction("attiva"));
     }
 
+    /**
+     * Conferma per accendere "Interessi Earn calcolati anche negli anni fino al 2025"
+     * ({@link OKX_InteressiEarn#OPZIONE_ANCHE_ANNI_PASSATI}): aggiunge movimenti negli anni passati. Dice cosa
+     * succede e lascia la scelta all'utente, senza consigli su come gestire quegli anni.
+     * @return {@code true} se l'utente conferma
+     */
+    public static boolean Personalizzati_SINO_InteressiEarnAnniPassati(Window win) {
+        AppDialog.DialogResult result = AppDialog.builder(win)
+                    .windowTitle("Interessi Earn fino al 2025")
+                    .bodyTitle("Registrare gli interessi ricostruiti anche negli anni fino al 2025?")
+                    .showTitleInBody(false)
+                    .theme()
+                    .type(AppDialog.DialogType.WARNING)
+                    .message("Al prossimo scaricamento OKX verranno aggiunti degli interessi negli anni fino al 2025.")
+                    .details("""
+                    OKX restituisce gli interessi Simple Earn solo per l'ultimo mese. Quelli più vecchi il programma li ricostruisce da saldo, sottoscrizioni e riscatti, e di norma li registra solo dal 2026 in poi.
+
+                    Con questa opzione li registra anche negli anni fino al 2025, e i calcoli di quegli anni cambiano di conseguenza. Se quegli interessi li hai già inseriti in altro modo, verrebbero contati due volte.
+
+                    Vuoi attivarla?
+                    """)
+                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build())
+                    .action(AppDialog.DialogAction.builder("attiva", "Attiva")
+                            .role(AppDialog.ActionRole.DANGER)
+                            .build())
+                    .showDialog();
+        return (result != null && result.isAction("attiva"));
+    }
+
     public static boolean Personalizzati_SINO_ModificaMovimento(Window win) {
         AppDialog.DialogResult result = AppDialog.builder(win)
                     .windowTitle("Conferma modifica")

@@ -1,7 +1,7 @@
 {
-  "versione": "1.001",
+  "versione": "1.002",
   "centralizzato": true,
-  "descrizione": "Causali OKX, condivise fra l'import del CSV storico (voce OKX_Old) e l'import via API/CCXT. v1.001: aggiunte 'ETH Staking subscription'/'ETH Staking swapping' (codici funding 137/138 di OKX_Tipi.json) come SCAMBIO CRYPTO-CRYPTO -> la sottoscrizione al prodotto 'ETH Staking' e' una permuta ETH->BETH, non un giroconto interno come 'Stake'/'Redeem staking' (che restano sulla stessa moneta).",
+  "descrizione": "Causali OKX, condivise fra l'import del CSV storico (voce OKX_Old) e l'import via API/CCXT. v1.001: aggiunte 'ETH Staking subscription'/'ETH Staking swapping' (codici funding 137/138 di OKX_Tipi.json) come SCAMBIO CRYPTO-CRYPTO -> la sottoscrizione al prodotto 'ETH Staking' e' una permuta ETH->BETH, non un giroconto interno come 'Stake'/'Redeem staking' (che restano sulla stessa moneta). v1.002: aggiunta 'Liquid Staking swapping' (codice funding 330) come SCAMBIO CRYPTO-CRYPTO: e' la conversione di una posizione On-chain Earn chiusa in un token di Liquid Staking (es. USDC -> LYUSDC), una permuta come ETH -> BETH. La gamba in uscita la ricostruisce l'import via API dallo storico degli ordini On-chain Earn. Aggiunta anche 'Simple Earn interessi ricostruiti' come REWARD (come 'Deposit yield'): sono gli interessi Simple Earn dei giorni che lo storico interessi di OKX (solo l'ultimo mese) non restituisce piu', ricostruiti dall'import via API da saldo, sottoscrizioni e riscatti.",
   "mappaCausali": {
     "": "NON CONSIDERARE",
     "Buy": "SCAMBIO CRYPTO-CRYPTO",
@@ -9,10 +9,12 @@
     "Crypto dust auto-transfer in": "REWARD",
     "deposit": "TRASFERIMENTO-CRYPTO",
     "Deposit yield": "REWARD",
+    "Simple Earn interessi ricostruiti": "REWARD",
     "ETH Staking subscription": "SCAMBIO CRYPTO-CRYPTO",
     "ETH Staking swapping": "SCAMBIO CRYPTO-CRYPTO",
     "Flash Deals Earnings": "REWARD",
     "From unified trading account": "NON CONSIDERARE",
+    "Liquid Staking swapping": "SCAMBIO CRYPTO-CRYPTO",
     "Mystery box bonus": "REWARD",
     "Received": "TRASFERIMENTO-CRYPTO",
     "Redeem staking": "TRASFERIMENTO-CRYPTO-INTERNO",

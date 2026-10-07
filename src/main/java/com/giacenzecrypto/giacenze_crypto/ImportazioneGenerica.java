@@ -68,6 +68,33 @@ public class ImportazioneGenerica {
 }
 
     /**
+     * Legge il fuso orario dichiarato in una riga di intestazione, nella forma {@code <etichetta><fuso>}: per
+     * gli export OKX {@code "UID:123,Account Type:Main,Time Zone:UTC+8"} con etichetta {@code "Time Zone:"}.
+     * Il valore finisce alla prima virgola o al primo punto e virgola. Accetta solo {@code UTC}/{@code GMT}
+     * con o senza scostamento ({@code UTC+8}, {@code UTC-3:30}) e lo restituisce normalizzato
+     * ({@code "UTC+08:00"}, {@code "UTC"}), che {@code risolviFuso} sa leggere. Restituisce {@code null} se
+     * l'etichetta non c'e' o il valore non e' un fuso riconosciuto: chi chiama tiene allora il fuso che aveva.
+     */
+    static String estraiFusoDaRigaIntestazione(String riga, String etichetta) {
+        if (riga == null || etichetta == null || etichetta.isBlank()) return null;
+        int i = riga.toLowerCase().indexOf(etichetta.toLowerCase());
+        if (i < 0) return null;
+        String v = riga.substring(i + etichetta.length()).split("[,;]", 2)[0].replace("\"", "").trim();
+        Matcher m = Pattern.compile("(?i)(?:UTC|GMT)(?:([+-])(\\d{1,2})(?::(\\d{2}))?)?").matcher(v);
+        if (!m.matches()) return null;
+        if (m.group(1) == null) return "UTC";
+        try {
+            int ore = Integer.parseInt(m.group(2));
+            int minuti = m.group(3) == null ? 0 : Integer.parseInt(m.group(3));
+            int segno = m.group(1).equals("-") ? -1 : 1;
+            ZoneOffset o = ZoneOffset.ofHoursMinutes(segno * ore, segno * minuti);
+            return o.equals(ZoneOffset.UTC) ? "UTC" : "UTC" + o.getId();
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    /**
      * Cerca nel nome del file pattern di fuso orario come UTC, UTC+1, UTC+2, CET.
      * Restituisce il pattern trovato (es. "UTC+1", "CET") oppure null.
      */
@@ -285,6 +312,12 @@ public class ImportazioneGenerica {
                     continue;
                 }
                 if (numRiga <= cfg.righeIntestazione) {
+                    //Il fuso scritto nel file vince su quello della configurazione e su quello scelto
+                    //all'import, salvo che sia uno degli scostamenti di quel fuso (vedi FusoCompatibile)
+                    String fusoFile = estraiFusoDaRigaIntestazione(riga, cfg.fusoDaIntestazione);
+                    if (fusoFile != null && !cfg.FusoCompatibile(fusoFile)) {
+                        cfg.fuso = fusoFile;
+                    }
                     if (numRiga == cfg.rigaIntestazione && cfg.autoDetectColonne) {
                         cfg.risolviColonneDaIntestazione(splitCsvRispettoVirgolette(riga, sep));
                     }
@@ -1743,6 +1776,13 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
          */
         public String oraSeSoloData = null;
         public String fuso = "UTC";
+        /**
+         * Etichetta con cui il file dichiara il proprio fuso in una riga di intestazione (es. {@code "Time Zone:"}
+         * negli export OKX, dove il fuso e' quello scelto dall'utente al momento dell'export). Se la trova,
+         * {@link ImportazioneGenerica#leggiCSV} sostituisce {@link #fuso} con quel valore; se manca (export
+         * vecchi) resta {@link #fuso}. Default {@code null}: nessuna ricerca.
+         */
+        public String fusoDaIntestazione = null;
 
         // Indici colonne (-1 = non presente)
         public int colonnaData = 0;
@@ -2124,6 +2164,9 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             if (root.has("fuso")) {
                 cfg.fuso = root.getString("fuso");
             }
+            if (root.has("fusoDaIntestazione")) {
+                cfg.fusoDaIntestazione = root.getString("fusoDaIntestazione");
+            }
             if (root.has("consolidaRigheStessaData")) {
                 cfg.consolidaRigheStessaData = root.getBoolean("consolidaRigheStessaData");
             }
@@ -2363,6 +2406,29 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             return cfg;
         }
         
+    /**
+     * Vero se lo scostamento fisso {@code fusoUtc} (nella forma di {@code estraiFusoDaRigaIntestazione}) e' uno
+     * di quelli che {@link #fuso} assume durante l'anno: per {@code Europe/Rome} sia {@code UTC+01:00} sia
+     * {@code UTC+02:00}. In quel caso si tiene {@link #fuso}, che sa dell'ora legale: un export che dichiara
+     * lo scostamento del giorno in cui e' stato fatto puo' contenere righe dell'altra stagione, e lo
+     * scostamento fisso le sposterebbe di un'ora. Non verificato su un export OKX con righe invernali.
+     */
+    boolean FusoCompatibile(String fusoUtc) {
+        try {
+            ZoneOffset dichiarato = fusoUtc.equalsIgnoreCase("UTC") ? ZoneOffset.UTC : ZoneOffset.of(fusoUtc.substring(3));
+            var regole = risolviFuso().getRules();
+            int anno = LocalDateTime.now().getYear();
+            for (int mese = 1; mese <= 12; mese++) {
+                if (regole.getOffset(LocalDateTime.of(anno, mese, 15, 12, 0)).equals(dichiarato)) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
     private ZoneId risolviFuso() {
     String f = fuso == null ? "" : fuso.trim();
     if (f.isBlank()) return ZoneId.systemDefault();

@@ -1,7 +1,7 @@
 {
-  "versione": "1.002",
+  "versione": "1.003",
   "centralizzato": true,
-  "descrizione": "Decodifica dei codici 'type' dei bill restituiti dalle API di OKX nelle stesse etichette testuali usate dall'export CSV; e' poi OKX.json a convertire l'etichetta nella categoria interna. Un valore puo' essere una stringa (etichetta fissa) oppure un oggetto {positivo, negativo}, e in tal caso l'etichetta viene scelta dal segno di balChg. I codici non elencati restano non mappati e finiscono nel riepilogo dei movimenti sconosciuti, con il codice grezzo e il campo notes in causale. I blocchi archivioInstType/archivioSubType traducono invece le colonne del CSV dell'archivio trimestrale nel codice 'type' equivalente: instType ha la precedenza, il confronto e' senza distinzione fra maiuscole e minuscole. v1.001: aggiunto il codice funding 328 (rendimenti da staking on-chain, es. 'SOL Staking earnings' nel campo notes) come 'Staking earnings' -> REWARD. v1.002: aggiunti i codici funding del prodotto 'ETH Staking' (sottoscrizione/redenzione contro BETH, non l'on-chain staking del 328): 137 'ETH Staking subscription' (ETH in uscita) e 138 'ETH Staking swapping' (BETH in entrata), che arrivano sempre sullo stesso istante e vanno consolidati come uno scambio ETH->BETH (mappati su SCAMBIO CRYPTO-CRYPTO in OKX.json, come Buy/Sell/Convert); 139 'Staking earnings' riusa l'etichetta gia' mappata a REWARD dal 328, notes 'ETH Staking earnings'.",
+  "descrizione": "Decodifica dei codici 'type' dei bill restituiti dalle API di OKX nelle stesse etichette testuali usate dall'export CSV; e' poi OKX.json a convertire l'etichetta nella categoria interna. Un valore puo' essere una stringa (etichetta fissa) oppure un oggetto {positivo, negativo}, e in tal caso l'etichetta viene scelta dal segno di balChg. I codici non elencati restano non mappati e finiscono nel riepilogo dei movimenti sconosciuti, con il codice grezzo e il campo notes in causale. I blocchi archivioInstType/archivioSubType traducono invece le colonne del CSV dell'archivio trimestrale nel codice 'type' equivalente: instType ha la precedenza, il confronto e' senza distinzione fra maiuscole e minuscole. v1.001: aggiunto il codice funding 328 (rendimenti da staking on-chain, es. 'SOL Staking earnings' nel campo notes) come 'Staking earnings' -> REWARD. v1.002: aggiunti i codici funding del prodotto 'ETH Staking' (sottoscrizione/redenzione contro BETH, non l'on-chain staking del 328): 137 'ETH Staking subscription' (ETH in uscita) e 138 'ETH Staking swapping' (BETH in entrata), che arrivano sempre sullo stesso istante e vanno consolidati come uno scambio ETH->BETH (mappati su SCAMBIO CRYPTO-CRYPTO in OKX.json, come Buy/Sell/Convert); 139 'Staking earnings' riusa l'etichetta gia' mappata a REWARD dal 328, notes 'ETH Staking earnings'. v1.003: aggiunto il codice funding 330 'Liquid Staking swapping', il token di Liquid Staking (es. LYUSDC) in entrata quando OKX converte una posizione On-chain Earn chiusa: la gamba in uscita non ha un bill (il capitale era gia' uscito dal Funding con il type 80, non considerato) e la ricostruisce il programma dallo storico degli ordini On-chain Earn, altrimenti il movimento resta fra gli sconosciuti. Aggiunti in archivioSubType i subType 201/203 (trasferimenti manuali da/verso una strategia di trading, gemelli dei 200/202 di sistema), che come loro sono giroconti interni (type 12).",
   "trading": {
     "1": { "positivo": "Transfer in", "negativo": "Transfer out" },
     "2": { "positivo": "Buy", "negativo": "Sell" },
@@ -27,7 +27,8 @@
     "311": { "positivo": "Transfer in", "negativo": "Transfer out" },
     "326": { "positivo": "Transfer in", "negativo": "Transfer out" },
     "327": { "positivo": "Transfer in", "negativo": "Transfer out" },
-    "328": "Staking earnings"
+    "328": "Staking earnings",
+    "330": "Liquid Staking swapping"
   },
   "archivioInstType": {
     "SPOT": "2"
@@ -36,7 +37,9 @@
     "11": "1",
     "12": "1",
     "200": "12",
+    "201": "12",
     "202": "12",
+    "203": "12",
     "290": "1"
   }
 }

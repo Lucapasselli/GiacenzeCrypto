@@ -1,4 +1,7 @@
-// DIAGNOSTICO - non e' collegato all'applicazione, si lancia a mano.
+// Lo lancia CcxtInterop dopo OKX_Bills.js, a ogni scaricamento OKX via API: savings_lending diventa i
+// rendimenti giornalieri di Simple Earn (convertOKXEarn), staking_storico serve a ricostruire la gamba in
+// uscita delle posizioni On-chain Earn convertite in un token di Liquid Staking (AbbinaLiquidStakingOnChain).
+// Nato come diagnostico, si puo' ancora lanciare a mano come descritto sotto.
 //
 // I rendimenti dei prodotti Earn di OKX NON compaiono ne' nei bill del conto Funding
 // (/api/v5/asset/bills) ne' in quelli del conto Trading, e nemmeno negli export CSV
@@ -11,9 +14,11 @@
 //   /api/v5/finance/staking-defi/orders-active  posizioni aperte di On-chain Earn / staking
 //   /api/v5/finance/staking-defi/orders-history storico ordini On-chain Earn, con i rendimenti
 //
-// Questo script li interroga tutti e quattro e stampa la risposta GREZZA, senza interpretarla:
-// serve a vedere che forma hanno davvero i dati (campi, unita' di misura, profondita' storica)
-// prima di decidere come importarli. Sono tutte chiamate di sola lettura.
+// In piu' scarica dal Funding le sottoscrizioni e i riscatti di Simple Earn (type 75/76) di tutto lo
+// storico, per ricostruire gli interessi che lo storico interessi non copre piu' (vedi flussiSimpleEarn).
+//
+// Questo script li interroga tutti e quattro e stampa la risposta GREZZA, senza interpretarla: la
+// interpreta il chiamante Java. Sono tutte chiamate di sola lettura.
 //
 // Uso, dalla cartella di lavoro (quella che contiene tools/node):
 //   NODE_PATH=tools/node/node_modules tools/node/<distribuzione>/bin/node \
@@ -21,9 +26,14 @@
 //
 // ATTENZIONE: le credenziali passate cosi' restano nella cronologia della shell.
 //
-// argv: exchangeId apiKey secret startDate(ms) tokens passphrase hostname
+// argv: exchangeId apiKey secret startDate(ms) tokens passphrase hostname [stakingCompleto]
+//
+// Con "stakingCompleto" come ultimo argomento lo storico degli ordini On-chain Earn si scarica tutto, pagina
+// per pagina, invece della sola pagina dei 100 piu' recenti. CcxtInterop lo chiede solo quando fra i bill c'e'
+// una conversione in un token di Liquid Staking (funding type 330), che va abbinata alla posizione di origine.
 
 const ccxt = require('ccxt');
+const { fetchBills } = require('./OKX_Bills.js');
 
 // Stessi domini regionali di OKX_Bills.js: una chiave creata su un'entita' regionale non esiste
 // sulle altre. Se il dominio e' gia' noto conviene passarlo come ultimo argomento.
@@ -121,8 +131,84 @@ async function storicoInteressi(exchange, startTime) {
   return { righe: out, completo: false };
 }
 
+// Lo storico degli ordini On-chain Earn pagina SOLO per ordId (`after` = ordini piu' vecchi dell'ordId dato) e
+// in ordine di creazione, mentre l'abbinamento dei bill 330 cerca la data di RISCATTO: una posizione aperta da
+// molto e chiusa ieri sta in fondo all'elenco. Per questo non ci si ferma a una data, si va fino all'ultima pagina.
+const MAX_PAGINE_STAKING = 50;   // 5000 ordini: oltre si dichiara lo storico incompleto
+
+/**
+ * Scarica lo storico degli ordini On-chain Earn. Senza `completo` chiede una sola pagina, come prima della
+ * paginazione. Restituisce sempre un array di ordini, piu' l'indicazione se lo storico e' arrivato in fondo.
+ */
+async function storicoStaking(exchange, completo) {
+  const out = [];
+  const visti = new Set();
+  let after;
+  const maxPagine = completo ? MAX_PAGINE_STAKING : 1;
+  for (let pagina = 1; pagina <= maxPagine; pagina++) {
+    const richiesta = { limit: '100' };
+    if (after !== undefined) richiesta.after = after;
+
+    let dati;
+    try {
+      const risposta = await exchange.privateGetFinanceStakingDefiOrdersHistory(richiesta);
+      dati = (risposta && Array.isArray(risposta.data)) ? risposta.data : [];
+    } catch (e) {
+      log(`On-chain Earn - storico ordini, errore alla pagina ${pagina}: ${e.message}`);
+      return { righe: out, completo: false };
+    }
+
+    let nuovi = 0;
+    let piuVecchio;
+    for (const o of dati) {
+      const id = String(o.ordId || '');
+      if (id !== '' && (piuVecchio === undefined || BigInt(id) < BigInt(piuVecchio))) piuVecchio = id;
+      if (id === '' || visti.has(id)) continue;
+      visti.add(id);
+      out.push(o);
+      nuovi++;
+    }
+    log(`On-chain Earn - storico ordini, pagina ${pagina}: +${nuovi} nuovi su ${dati.length}, tot=${out.length}`);
+
+    if (dati.length < 100) return { righe: out, completo: true };
+    if (!completo) return { righe: out, completo: false };
+    if (nuovi === 0 || piuVecchio === undefined || (after !== undefined && BigInt(piuVecchio) >= BigInt(after))) {
+      //Pagina ripetuta: l'endpoint non sta onorando `after`, e dichiararlo completo nasconderebbe gli ordini mancanti
+      log(`On-chain Earn - storico ordini: la paginazione non avanza, lo storico recuperato e' incompleto.`);
+      return { righe: out, completo: false };
+    }
+    after = piuVecchio;
+    await new Promise(r => setTimeout(r, 400));   // limite dell'endpoint: 3 richieste al secondo
+  }
+  log(`On-chain Earn - storico ordini: raggiunto il tetto di ${MAX_PAGINE_STAKING} pagine, storico incompleto.`);
+  return { righe: out, completo: false };
+}
+
+// Sottoscrizioni (75) e riscatti (76) di Simple Earn su TUTTO lo storico del Funding: servono a
+// CcxtInterop per ricostruire gli interessi dei giorni che lo storico interessi (un mese) non copre
+// piu'. Il saldo attuale piu' i riscatti meno le sottoscrizioni e' l'interesse maturato.
+// Il filtro `type` dell'endpoint non e' verificato: si ricontrolla qui ogni bill, e se ne arriva uno di
+// un altro tipo lo si scarta e lo si scrive nel log.
+const INIZIO_STORICO_FUNDING = Date.UTC(2021, 1, 1);   // febbraio 2021, come OKX_Bills.js
+
+async function flussiSimpleEarn(exchange) {
+  const out = [];
+  let completo = true;
+  for (const tipo of ['75', '76']) {
+    const r = await fetchBills(exchange, 'privateGetAssetBillsHistory', INIZIO_STORICO_FUNDING, Date.now(),
+      `Simple Earn - flussi type ${tipo}`, 'ts', undefined, { type: tipo });
+    if (!r.completo) completo = false;
+    let estranei = 0;
+    for (const b of r.bills) {
+      if (String(b.type) === tipo) out.push(b); else estranei++;
+    }
+    if (estranei > 0) log(`Simple Earn - flussi type ${tipo}: ${estranei} bill di altri tipi scartati, il filtro type non e' applicato dall'endpoint`);
+  }
+  return { righe: out, completo };
+}
+
 async function main() {
-  const [, , exchangeId, apiKey, secret, startDateArg = "0", tokensArg = "", passphrase = "", hostnameArg = ""] = process.argv;
+  const [, , exchangeId, apiKey, secret, startDateArg = "0", tokensArg = "", passphrase = "", hostnameArg = "", stakingArg = ""] = process.argv;
 
   const exchange = new (ccxt[exchangeId] || ccxt.okx)({
     apiKey,
@@ -151,18 +237,28 @@ async function main() {
       + (interessi.completo ? " (storico completo)" : " (INTERROTTO prima della fine)"));
   }
 
+  const staking = await storicoStaking(exchange, stakingArg.trim() === 'stakingCompleto');
+  const flussi = await flussiSimpleEarn(exchange);
+
   const risultato = {
     okx_hostname: host,
     savings_balance:      await chiama(exchange, 'privateGetFinanceSavingsBalance', {}, 'Simple Earn - saldo'),
     savings_lending:      interessi.righe,
     savings_lending_completo: interessi.completo,
     staking_attivi:       await chiama(exchange, 'privateGetFinanceStakingDefiOrdersActive', {}, 'On-chain Earn - posizioni aperte'),
-    staking_storico:      await chiama(exchange, 'privateGetFinanceStakingDefiOrdersHistory', { limit: '100' }, 'On-chain Earn - storico ordini')
+    staking_storico:      staking.righe,
+    staking_storico_completo: staking.completo,
+    savings_flussi:       flussi.righe,
+    savings_flussi_completo: flussi.completo
   };
 
   console.log(JSON.stringify(risultato, null, 2));
 }
 
-main().catch(err => {
-  console.log(JSON.stringify({ error: err.message }, null, 2));
-});
+if (require.main === module) {
+  main().catch(err => {
+    console.log(JSON.stringify({ error: err.message }, null, 2));
+  });
+}
+
+module.exports = { storicoStaking, flussiSimpleEarn };

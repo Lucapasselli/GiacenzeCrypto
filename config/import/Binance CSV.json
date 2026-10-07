@@ -1,5 +1,5 @@
 {
-  "versione": "1.017",
+  "versione": "1.018",
   "centralizzato":true,
   "fontePrezzoPreferita": "binance",
   "nomeExchange": "Binance",
@@ -36,6 +36,7 @@
     "Dual Savings Purchase":   "DUAL",
     "Dual Savings Settlement": "DUAL"
   },
+  "_commentoCashVoucher": "Dalla 1.018 (2026-10-07) 'Cash Voucher' e' REWARD (come 'Cash Voucher Distribution') e non piu' CASHBACK: sono ricompense (buoni accreditati in crypto), non rimborsi su una spesa. Vale per le importazioni da qui in avanti, i movimenti gia' importati restano come sono.",
   "_commentoRewardsIncome": "Dalla 1.017 (2026-10-06) 'Simple Earn Flexible - Rewards Income' e 'Simple Earn Locked - Rewards Income' (conto Earn, negli export dal 2026) sono IGNORA: registrano lo stesso Bonus Tiered APR che Binance paga sul conto Spot come 'Simple Earn Flexible Interest' / 'Simple Earn Locked Rewards' (stessa moneta e quantita', 0-2 ore dopo), e importarle tutte e due contava ogni bonus due volte. Verificato sullo storico Rewards dell'app (Assets, Earn, Flexible): il 'Bonus Tiered APR Rewards' coincide per ora e importo con la riga del conto Earn. Le 'Real-Time APR Rewards' invece non compaiono in nessuna riga dell'export: maturano dentro il prodotto ed escono solo con i riscatti, che qui sono IGNORA. Per questo l'archivio resta corto di quelle, e dopo un prelievo totale su Binance possono comparire giacenze negative: vanno aggiunte a parte. Attenzione: in una prima verifica le righe Earn sembravano necessarie proprio perche' coprivano in parte quel buco.",
   "mappaCausali": {
     "Binance Card Cashback":                          "CASHBACK",
@@ -68,7 +69,7 @@
     "NFT - Burn and Win":                             "REWARD",
     "Commission History":                             "ALTRE-REWARD",
 	"Asset - Transfer":                               "ALTRE-REWARD",
-	"Cash Voucher":                                   "CASHBACK",
+	"Cash Voucher":                                   "REWARD",
     "Launchpool Airdrop - System Distribution":       "AIRDROP",
     "Launchpool Airdrop - User Claim Distribution":   "AIRDROP",
     "Simple Earn Flexible Airdrop":                   "AIRDROP",

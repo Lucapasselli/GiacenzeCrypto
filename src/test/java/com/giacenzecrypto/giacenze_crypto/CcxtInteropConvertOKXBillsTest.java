@@ -167,6 +167,147 @@ class CcxtInteropConvertOKXBillsTest {
         assertEquals("REWARD", Importazioni.Ex_OKX_MappaCausali().get("Staking earnings"));
     }
 
+    /** Le due posizioni "Spark USDC" chiuse da OKX il 05/10/2026 alle 11:23:00, come le restituisce OKX_Earn.js */
+    private static final String STORICO_SPARK = """
+        [{"ordId":"10391249","ccy":"USDC","state":"3","protocol":"Spark USDC",
+          "investData":[{"ccy":"USDC","amt":"16.50423707"}],
+          "earningData":[{"ccy":"USDC","earningType":"0","realizedEarnings":"0.04403271"}],
+          "purchasedTime":"1788648822000","redeemedTime":"1791192180000"},
+         {"ordId":"10390503","ccy":"USDC","state":"3","protocol":"Spark USDC",
+          "investData":[{"ccy":"USDC","amt":"874.17246485"}],
+          "earningData":[{"ccy":"USDC","earningType":"0","realizedEarnings":"2.33226117"}],
+          "purchasedTime":"1788605552000","redeemedTime":"1791192180000"}]
+        """;
+
+    /** Il bill 330 dello stesso giorno: 890,67670192 LYUSDC accreditati alle 11:22:59, un secondo prima del riscatto */
+    private static final String BILL_LYUSDC = """
+        [{"billId":"200061000001","ccy":"LYUSDC","balChg":"890.67670192","type":"330",
+          "notes":"Liquid Staking swapping","ts":"1791192179000"}]
+        """;
+
+    /**
+     * La conversione di una posizione On-chain Earn in un token di Liquid Staking e' una permuta come ETH ->
+     * BETH, ma OKX registra solo il bill in entrata: il capitale era uscito dal Funding con il type 80, non
+     * considerato. La gamba in uscita si ricostruisce dalle posizioni chiuse in quel momento, una riga per
+     * posizione, sullo stesso istante del bill perche' lo scambio si raggruppa al secondo esatto.
+     */
+    @Test
+    void laConversioneDiUnaPosizioneOnChainEarnDiventaUnoScambioCompleto() {
+        List<String[]> righe = new java.util.ArrayList<>(CcxtInterop.convertOKXBills(bills(BILL_LYUSDC), "Funding"));
+        assertEquals("Liquid Staking swapping", righe.get(0)[4]);
+        assertEquals("SCAMBIO CRYPTO-CRYPTO", Importazioni.Ex_OKX_MappaCausali().get("Liquid Staking swapping"));
+
+        CcxtInterop.AbbinaLiquidStakingOnChain(righe, bills(STORICO_SPARK));
+
+        assertEquals(3, righe.size());
+        java.math.BigDecimal uscita = java.math.BigDecimal.ZERO;
+        for (String[] r : righe.subList(1, 3)) {
+            assertEquals("USDC", r[5]);
+            assertEquals("Liquid Staking swapping", r[4]);
+            assertEquals(righe.get(0)[0], r[0], "stesso istante del bill, altrimenti lo scambio non si forma");
+            assertTrue(r[14].startsWith("ONCHAIN-"));
+            uscita = uscita.add(new java.math.BigDecimal(r[6]));
+        }
+        assertEquals(0, uscita.compareTo(new java.math.BigDecimal("-890.67670192")),
+                "esce il capitale delle posizioni, non i rendimenti: quelli arrivano con il bill 328");
+        assertEquals(java.util.Set.of("ONCHAIN-10391249", "ONCHAIN-10390503"),
+                java.util.Set.of(righe.get(1)[14], righe.get(2)[14]));
+    }
+
+    /** Gli ID delle gambe ricostruite sono deterministici: uno scaricamento ripetuto produce lo stesso scambio */
+    @Test
+    void lAbbinamentoRipetutoDaGliStessiIdentificativi() {
+        List<String[]> prima = new java.util.ArrayList<>(CcxtInterop.convertOKXBills(bills(BILL_LYUSDC), "Funding"));
+        List<String[]> dopo = new java.util.ArrayList<>(CcxtInterop.convertOKXBills(bills(BILL_LYUSDC), "Funding"));
+        CcxtInterop.AbbinaLiquidStakingOnChain(prima, bills(STORICO_SPARK));
+        CcxtInterop.AbbinaLiquidStakingOnChain(dopo, bills(STORICO_SPARK));
+        assertEquals(prima.size(), dopo.size());
+        for (int i = 0; i < prima.size(); i++) {
+            assertArrayEquals(prima.get(i), dopo.get(i));
+        }
+    }
+
+    /**
+     * Senza le posizioni di origine il token non deve entrare come
+     * accredito senza contropartita: resta fra gli sconosciuti del resoconto.
+     */
+    @Test
+    void senzaPosizioneDiOrigineIlTokenRestaFraGliSconosciuti() {
+        List<String[]> righe = new java.util.ArrayList<>(CcxtInterop.convertOKXBills(bills(BILL_LYUSDC), "Funding"));
+        CcxtInterop.AbbinaLiquidStakingOnChain(righe, null);
+
+        assertEquals(1, righe.size());
+        assertEquals(CcxtInterop.CAUSALE_LIQUID_STAKING_SENZA_ORIGINE, righe.get(0)[4]);
+        assertNull(Importazioni.Ex_OKX_MappaCausali().get(righe.get(0)[4]));
+        Importazioni.Esito E = Importazioni.Ex_OKX_SoloCausaliSconosciute(righe, "OKX");
+        assertNotNull(E);
+        assertEquals(1, E.Sconosciute);
+    }
+
+    /**
+     * Lo storico completo degli ordini On-chain Earn si chiede solo se c'e' una conversione da abbinare: senza,
+     * lo script fa una sola chiamata come prima della paginazione.
+     */
+    @Test
+    void loStoricoOrdiniCompletoSiChiedeSoloConUnaConversioneDaAbbinare() {
+        List<String[]> righe = new java.util.ArrayList<>(CcxtInterop.convertOKXBills(bills(BILL_LYUSDC), "Funding"));
+        assertTrue(CcxtInterop.ContieneLiquidStaking(righe));
+
+        //Gia' abbinata: la gamba in uscita c'e', lo storico non serve piu' ma il bill in entrata resta
+        CcxtInterop.AbbinaLiquidStakingOnChain(righe, bills(STORICO_SPARK));
+        assertTrue(CcxtInterop.ContieneLiquidStaking(righe));
+
+        //Nessuna conversione fra i bill
+        List<String[]> senza = new java.util.ArrayList<>(righe);
+        senza.removeIf(r -> CcxtInterop.CAUSALE_LIQUID_STAKING_SWAPPING.equals(r[4]));
+        assertFalse(CcxtInterop.ContieneLiquidStaking(senza));
+        assertFalse(CcxtInterop.ContieneLiquidStaking(null));
+    }
+
+    /**
+     * Le conversioni senza posizione di origine tornano al chiamante, che avvisa l'utente: l'avviso cita data,
+     * quantita' e token, e dice se lo storico ordini era completo, perche' la causa cambia.
+     */
+    @Test
+    void leConversioniNonAbbinateVengonoSegnalate() {
+        List<String[]> righe = new java.util.ArrayList<>(CcxtInterop.convertOKXBills(bills(BILL_LYUSDC), "Funding"));
+        List<String[]> abbinate = CcxtInterop.AbbinaLiquidStakingOnChain(
+                new java.util.ArrayList<>(CcxtInterop.convertOKXBills(bills(BILL_LYUSDC), "Funding")), bills(STORICO_SPARK));
+        assertTrue(abbinate.isEmpty());
+
+        List<String[]> nonAbbinati = CcxtInterop.AbbinaLiquidStakingOnChain(righe, null);
+        assertEquals(1, nonAbbinati.size());
+        assertSame(righe.get(0), nonAbbinati.get(0));
+
+        String completo = CcxtInterop.TestoAvvisoLiquidStakingNonAbbinati(nonAbbinati, true);
+        String interrotto = CcxtInterop.TestoAvvisoLiquidStakingNonAbbinati(nonAbbinati, false);
+        for (String testo : List.of(completo, interrotto)) {
+            assertTrue(testo.contains(righe.get(0)[0]), testo);
+            assertTrue(testo.contains("890.67670192 LYUSDC"), testo);
+            assertFalse(testo.contains(";"), testo);
+        }
+        assertTrue(completo.contains("scaricato per intero"));
+        assertTrue(interrotto.contains("non è stato scaricato fino in fondo"));
+    }
+
+    /** Posizioni che non tornano esattamente con la quantita' ricevuta, o chiuse in un altro momento, non si abbinano */
+    @Test
+    void lePosizioniCheNonTornanoNonVengonoAbbinate() {
+        //Solo una delle due posizioni: la somma non torna
+        String unaSola = STORICO_SPARK.substring(0, STORICO_SPARK.indexOf("},\n") + 1) + "]";
+        List<String[]> righe = new java.util.ArrayList<>(CcxtInterop.convertOKXBills(bills(BILL_LYUSDC), "Funding"));
+        CcxtInterop.AbbinaLiquidStakingOnChain(righe, bills(unaSola));
+        assertEquals(1, righe.size());
+        assertEquals(CcxtInterop.CAUSALE_LIQUID_STAKING_SENZA_ORIGINE, righe.get(0)[4]);
+
+        //Riscattate un'ora dopo
+        String unOraDopo = STORICO_SPARK.replace("1791192180000", "1791195780000");
+        righe = new java.util.ArrayList<>(CcxtInterop.convertOKXBills(bills(BILL_LYUSDC), "Funding"));
+        CcxtInterop.AbbinaLiquidStakingOnChain(righe, bills(unOraDopo));
+        assertEquals(1, righe.size());
+        assertEquals(CcxtInterop.CAUSALE_LIQUID_STAKING_SENZA_ORIGINE, righe.get(0)[4]);
+    }
+
     /**
      * Il 30 vale solo sul conto Trading. Sul Funding i codici bassi hanno tutt'altro significato — il 2 è
      * un prelievo, non una vendita — quindi un 30 che arrivasse di là deve restare non mappato e finire

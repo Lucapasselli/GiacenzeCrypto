@@ -1247,6 +1247,10 @@
     "WBERA": {
       "prezzoDa": "BERA",
       "dal": "2026-01-01"
+    },
+    "LYUSDC": {
+      "prezzoDa": "USDC",
+      "dal": "2026-01-01"
     }
   }
 }

@@ -95,6 +95,19 @@ public class TipiOKXTest {
     }
 
     /**
+     * I trasferimenti manuali da e verso una strategia di trading (subType 201/203) sono gemelli di quelli di
+     * sistema (200/202): coppie di segno opposto sullo stesso istante, giroconti interni. Via API arrivano gia'
+     * come type 12; dall'archivio trimestrale, senza questa voce, sarebbero finiti fra gli sconosciuti.
+     */
+    @Test
+    public void iTrasferimentiManualiVersoLeStrategieSonoGirocontiAncheDallArchivio() {
+        TipiOKX t = TipiOKX.Carica();
+        assertNotNull(t);
+        assertEquals("12", t.TipoDaArchivio("-", "201"));
+        assertEquals("12", t.TipoDaArchivio("-", "203"));
+    }
+
+    /**
      * Le due forme del valore — etichetta fissa e coppia {@code positivo}/{@code negativo} — devono essere
      * entrambe accettate, perché il file è pensato per essere corretto a mano.
      */

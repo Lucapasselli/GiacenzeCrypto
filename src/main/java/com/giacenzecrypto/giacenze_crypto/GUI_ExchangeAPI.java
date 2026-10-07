@@ -58,6 +58,13 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Binance_Tabella);
         Tabelle.ColoraTabellaSemplice(TabellaWallets);
         Tabelle.ColoraTabellaSemplice(Binance_Tabella);
+        OKX_CheckBox_InteressiCalcolati.setSelected("SI".equalsIgnoreCase(
+                DatabaseH2.Pers_Opzioni_Leggi(OKX_InteressiEarn.OPZIONE_RICOSTRUZIONE)));
+        OKX_CheckBox_InteressiAnniPassati.setSelected("SI".equalsIgnoreCase(
+                DatabaseH2.Pers_Opzioni_Leggi(OKX_InteressiEarn.OPZIONE_ANCHE_ANNI_PASSATI)));
+        //Gli anni fino al 2025 riguardano solo gli interessi calcolati
+        OKX_CheckBox_InteressiAnniPassati.setEnabled(OKX_CheckBox_InteressiCalcolati.isSelected());
+        AggiornaWalletCarta();
     }
 
 
@@ -93,6 +100,11 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         Binance_Tabella = new javax.swing.JTable();
         Binance_BottoneAggiungi = new javax.swing.JButton();
         Binance_BottoneRimuovi = new javax.swing.JButton();
+        Pannello_OKX = new javax.swing.JPanel();
+        OKX_CheckBox_InteressiCalcolati = new javax.swing.JCheckBox();
+        OKX_CheckBox_InteressiAnniPassati = new javax.swing.JCheckBox();
+        OKX_Label_WalletCarta = new javax.swing.JLabel();
+        OKX_TextField_WalletCarta = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
@@ -343,6 +355,59 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         );
 
         jTabbedPane1.addTab("<html>Particolarita'<br>Binance</html>", Pannello_Binance);
+
+        OKX_CheckBox_InteressiCalcolati.setText("<html><b>Calcola gli interessi Earn che OKX non restituisce più : </b>OKX restituisce gli interessi Simple Earn solo per l'ultimo mese. Con questa casella il programma calcola quelli dei giorni mancanti da saldo, sottoscrizioni e riscatti (il totale di ogni periodo è esatto, la divisione per giorno è una stima) e li registra con la causale \"Simple Earn interessi ricostruiti\".<br>Senza, importa solo gli interessi restituiti dalle API di OKX. Vale dal prossimo scaricamento OKX.<br>(Spento di default)</html>");
+        OKX_CheckBox_InteressiCalcolati.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
+        OKX_CheckBox_InteressiCalcolati.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                OKX_CheckBox_InteressiCalcolatiActionPerformed(evt);
+            }
+        });
+
+        OKX_CheckBox_InteressiAnniPassati.setText("<html><b>Interessi Earn calcolati anche negli anni fino al 2025 : </b>Gli interessi calcolati con la casella qui sopra si registrano dal 2026 in poi. Con questa anche negli anni fino al 2025. Vale dal prossimo scaricamento OKX.<br>(Spento di default. Attivandolo cambiano i calcoli di quegli anni)</html>");
+        OKX_CheckBox_InteressiAnniPassati.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
+        OKX_CheckBox_InteressiAnniPassati.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                OKX_CheckBox_InteressiAnniPassatiActionPerformed(evt);
+            }
+        });
+
+        OKX_Label_WalletCarta.setFont(new java.awt.Font("Noto Sans", 1, 13)); // NOI18N
+        OKX_Label_WalletCarta.setText("Wallet della carta OKX su X Layer :");
+
+        OKX_TextField_WalletCarta.setEditable(false);
+        OKX_TextField_WalletCarta.setToolTipText("Individuato da solo dai trasferimenti dall'exchange verso la carta (bill 325)");
+
+        javax.swing.GroupLayout Pannello_OKXLayout = new javax.swing.GroupLayout(Pannello_OKX);
+        Pannello_OKX.setLayout(Pannello_OKXLayout);
+        Pannello_OKXLayout.setHorizontalGroup(
+            Pannello_OKXLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Pannello_OKXLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(Pannello_OKXLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(OKX_CheckBox_InteressiCalcolati, javax.swing.GroupLayout.DEFAULT_SIZE, 1015, Short.MAX_VALUE)
+                    .addComponent(OKX_CheckBox_InteressiAnniPassati, javax.swing.GroupLayout.DEFAULT_SIZE, 1015, Short.MAX_VALUE)
+                    .addGroup(Pannello_OKXLayout.createSequentialGroup()
+                        .addComponent(OKX_Label_WalletCarta)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(OKX_TextField_WalletCarta)))
+                .addContainerGap())
+        );
+        Pannello_OKXLayout.setVerticalGroup(
+            Pannello_OKXLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Pannello_OKXLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(OKX_CheckBox_InteressiCalcolati, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(OKX_CheckBox_InteressiAnniPassati, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(30, 30, 30)
+                .addGroup(Pannello_OKXLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(OKX_Label_WalletCarta)
+                    .addComponent(OKX_TextField_WalletCarta, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("<html>Particolarita'<br>OKX</html>", Pannello_OKX);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -599,7 +664,16 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
      * l'utente vede <b>una sola</b> finestra invece di una per exchange.
      * @param E esito complessivo, oppure {@code null} se nessuno scaricamento è arrivato in fondo
      */
+    /** Mostra il wallet della carta OKX individuato da {@link OKX_WalletCarta} durante uno scaricamento. */
+    private void AggiornaWalletCarta() {
+        String walletCarta = DatabaseH2.Pers_Opzioni_Leggi(OKX_WalletCarta.OPZIONE_WALLET);
+        OKX_TextField_WalletCarta.setText(walletCarta != null && !walletCarta.isBlank() ? walletCarta
+                : "non ancora individuato, lo trova da solo il primo scaricamento OKX con un trasferimento verso la carta");
+    }
+
     private void MostraResoconto(Importazioni.Esito E) {
+        //Lo scaricamento appena finito puo' aver individuato il wallet della carta
+        AggiornaWalletCarta();
         //Se nessuno scaricamento è arrivato all'importazione non c'è niente da riepilogare: l'interruzione
         //o l'errore hanno già mostrato il loro avviso.
         if (E == null) return;
@@ -776,6 +850,22 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         Binance_CaricaTabella();
     }//GEN-LAST:event_Binance_BottoneAggiungiActionPerformed
 
+    private void OKX_CheckBox_InteressiCalcolatiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OKX_CheckBox_InteressiCalcolatiActionPerformed
+        boolean attiva = OKX_CheckBox_InteressiCalcolati.isSelected();
+        DatabaseH2.Pers_Opzioni_Scrivi(OKX_InteressiEarn.OPZIONE_RICOSTRUZIONE, attiva ? "SI" : "NO");
+        OKX_CheckBox_InteressiAnniPassati.setEnabled(attiva);
+    }//GEN-LAST:event_OKX_CheckBox_InteressiCalcolatiActionPerformed
+
+    private void OKX_CheckBox_InteressiAnniPassatiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OKX_CheckBox_InteressiAnniPassatiActionPerformed
+        boolean attiva = OKX_CheckBox_InteressiAnniPassati.isSelected();
+        //Accenderla aggiunge redditi in anni forse gia' dichiarati: si chiede conferma, spegnerla no
+        if (attiva && !Messaggi.Personalizzati_SINO_InteressiEarnAnniPassati(this)) {
+            OKX_CheckBox_InteressiAnniPassati.setSelected(false);
+            return;
+        }
+        DatabaseH2.Pers_Opzioni_Scrivi(OKX_InteressiEarn.OPZIONE_ANCHE_ANNI_PASSATI, attiva ? "SI" : "NO");
+    }//GEN-LAST:event_OKX_CheckBox_InteressiAnniPassatiActionPerformed
+
     private void Binance_BottoneRimuoviActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Binance_BottoneRimuoviActionPerformed
         // TODO add your handling code here:
         if (Binance_Tabella.getSelectedRow() >= 0) {
@@ -914,8 +1004,13 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     private javax.swing.JLabel Label_IndirizzoWallet;
     private javax.swing.JLabel Label_IndirizzoWallet1;
     private javax.swing.JLabel Label_Passphrase;
+    private javax.swing.JCheckBox OKX_CheckBox_InteressiAnniPassati;
+    private javax.swing.JCheckBox OKX_CheckBox_InteressiCalcolati;
+    private javax.swing.JLabel OKX_Label_WalletCarta;
+    private javax.swing.JTextField OKX_TextField_WalletCarta;
     private javax.swing.JPanel Pannello_Binance;
     private javax.swing.JPanel Pannello_Chiavi;
+    private javax.swing.JPanel Pannello_OKX;
     private javax.swing.JScrollPane ScrollPaneTabellaWallets;
     private javax.swing.JTable TabellaWallets;
     private javax.swing.JTextField TextField_ApiKey;

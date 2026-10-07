@@ -159,8 +159,10 @@ async function risolviHostname(exchange, hostnamePreferito) {
  * temporale viene quindi applicato qui sui risultati.
  *
  * @param chiaveAfter 'billId' oppure 'ts': cosa mettere in `after` per la pagina successiva
+ * @param filtro parametri aggiunti a ogni richiesta (es. `{ type: '75' }`, usato da OKX_Earn.js). Il
+ *               chiamante non deve fidarsi che l'endpoint lo applichi: va ricontrollato sui risultati.
  */
-async function fetchBills(exchange, metodo, startTime, endTime, etichetta, chiaveAfter = 'billId', seedAfter = undefined) {
+async function fetchBills(exchange, metodo, startTime, endTime, etichetta, chiaveAfter = 'billId', seedAfter = undefined, filtro = {}) {
   const out = [];
   const seenIds = new Set();
   //Con seedAfter si riparte da dove una corsa precedente si e' fermata sul tetto di pagine, invece
@@ -182,7 +184,7 @@ async function fetchBills(exchange, metodo, startTime, endTime, etichetta, chiav
 
   while (pagina < MAX_PAGINE) {
     pagina++;
-    const request = { limit: String(LIMIT) };
+    const request = { ...filtro, limit: String(LIMIT) };
     if (after !== undefined) request.after = after;
 
     let risposta;
@@ -466,6 +468,10 @@ async function main() {
   console.log(JSON.stringify(risultato));
 }
 
-main().catch(err => {
+//OKX_Earn.js riusa fetchBills per sottoscrizioni e riscatti Simple Earn: caricato con require non deve
+//partire lo scaricamento.
+module.exports = { fetchBills };
+
+if (require.main === module) main().catch(err => {
   console.log(JSON.stringify({ okx_fundingBills: [], okx_tradingBills: [], okx_completo: false, okx_hostname: "", error: err.message }));
 });

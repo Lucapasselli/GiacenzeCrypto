@@ -1760,7 +1760,10 @@ public static Path getNodeExePath() {
                         + FunzioniDate.ConvertiDatadaLongAlSecondo(limiteEarn));
                 inizioGiornata = limiteEarn;
             }
-            JsonObject jsonEarn = fetchMovimento(exchangeId, apiKey, secret, inizioGiornata, "", "OKX_Earn", passphrase, hostnameOKX);
+            //Lo storico degli ordini On-chain Earn si scarica tutto solo se c'e' una conversione da abbinare:
+            //l'argomento in coda e' lo stesso posto che OKX_Bills.js usa per la ripresa
+            String argomentoStaking = ContieneLiquidStaking(righe) ? ARGOMENTO_STORICO_ONCHAIN_COMPLETO : "";
+            JsonObject jsonEarn = fetchMovimento(exchangeId, apiKey, secret, inizioGiornata, "", "OKX_Earn", passphrase, hostnameOKX, argomentoStaking);
 
             //Interruzione durante i rendimenti Earn: senza questo controllo il ramo "else" qui sotto la
             //scambiava per un'assenza di rendimenti - jsonEarn e' null tanto quando OKX non risponde quanto
@@ -1787,12 +1790,28 @@ public static Path getNodeExePath() {
                 System.out.println("Nessun rendimento Earn restituito da OKX: importazione interrotta.");
                 return null;
             }
+            //Gli interessi che lo storico non restituisce piu' sono un calcolo, non un dato dell'exchange: si
+            //ricostruiscono solo se l'utente lo ha scelto (OKX_InteressiEarn.OPZIONE_RICOSTRUZIONE)
+            boolean interessiCalcolati = "SI".equalsIgnoreCase(
+                    DatabaseH2.Pers_Opzioni_Leggi(OKX_InteressiEarn.OPZIONE_RICOSTRUZIONE));
             if (jsonEarn.has("savings_lending") && jsonEarn.get("savings_lending").isJsonArray()) {
                 List<String[]> re = convertOKXEarn(jsonEarn.getAsJsonArray("savings_lending"));
                 if (re == null) {
                     if (archivioDaRecuperare) ArchivioOKXAbbandonato();
                     JOptionPane.showConfirmDialog(null, "Scaricamento da "+exchangeId+" interrotto prima della fine.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                     return null;
+                }
+                //Il giorno piu' vecchio di una finestra tagliata dal limite di un mese arriva a meta': lo
+                //completa la ricostruzione qui sotto, se e' attiva. Senza, si tiene il dato ufficiale com'e'.
+                if (interessiCalcolati) {
+                    OKX_InteressiEarn.ScartaPrimoGiornoTroncato(re, inizioGiornata, OKX_InteressiEarn.MoneteRicostruibili(jsonEarn));
+                } else {
+                    String avvisoStorico = OKX_InteressiEarn.TestoAvvisoStoricoCorto(jsonEarn, inizioGiornata);
+                    if (!avvisoStorico.isEmpty()) {
+                        System.out.println(avvisoStorico);
+                        JOptionPane.showConfirmDialog(null, avvisoStorico, "Interessi Simple Earn",
+                                JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    }
                 }
                 righe.addAll(re);
                 if (jsonEarn.has("savings_lending_completo") && !jsonEarn.get("savings_lending_completo").getAsBoolean()) {
@@ -1806,6 +1825,59 @@ public static Path getNodeExePath() {
             } else {
                 //Risposta valida ma senza l'array: nessun prodotto Earn sul conto, non c'e' nulla da aggiungere
                 System.out.println("Nessun rendimento Earn restituito da OKX.");
+            }
+
+            //Interessi Simple Earn dei giorni che lo storico interessi (un mese) non restituisce piu': il totale
+            //di ogni periodo si ricava da saldo, sottoscrizioni e riscatti. Vedi OKX_InteressiEarn.
+            boolean interessiAncheAnniPassati = "SI".equalsIgnoreCase(
+                    DatabaseH2.Pers_Opzioni_Leggi(OKX_InteressiEarn.OPZIONE_ANCHE_ANNI_PASSATI));
+            OKX_InteressiEarn.Esito interessiRicostruiti = interessiCalcolati
+                    ? OKX_InteressiEarn.Ricostruisci(jsonEarn, righe, Principale.MappaCryptoWallet.values(),
+                            interessiAncheAnniPassati, inizioGiornata, System.currentTimeMillis())
+                    : new OKX_InteressiEarn.Esito();
+            righe.addAll(interessiRicostruiti.righe);
+            String avvisoInteressi = OKX_InteressiEarn.TestoAvviso(interessiRicostruiti);
+            if (!avvisoInteressi.isEmpty()) {
+                System.out.println(avvisoInteressi);
+                //Gli anni chiusi non registrati e le anomalie si ripresenterebbero a ogni scaricamento: si
+                //mostrano una volta sola, a meno che ci siano anche delle righe ricostruite da dichiarare
+                String firma = OKX_InteressiEarn.FirmaRipetibile(interessiRicostruiti);
+                if (!interessiRicostruiti.ricostruiti.isEmpty()
+                        || !firma.equals(DatabaseH2.Pers_Opzioni_Leggi(OKX_InteressiEarn.OPZIONE_ULTIMO_AVVISO))) {
+                    DatabaseH2.Pers_Opzioni_Scrivi(OKX_InteressiEarn.OPZIONE_ULTIMO_AVVISO, firma);
+                    JOptionPane.showConfirmDialog(null, avvisoInteressi, "Interessi Simple Earn",
+                            JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                }
+            }
+
+            //La conversione di una posizione On-chain Earn in un token di Liquid Staking (funding type 330)
+            //arriva con la sola gamba in entrata: quella in uscita si ricostruisce dallo storico degli ordini.
+            JsonArray stakingStorico = jsonEarn.has("staking_storico") && jsonEarn.get("staking_storico").isJsonArray()
+                    ? jsonEarn.getAsJsonArray("staking_storico") : null;
+            List<String[]> liquidStakingNonAbbinati = AbbinaLiquidStakingOnChain(righe, stakingStorico);
+            if (!liquidStakingNonAbbinati.isEmpty()) {
+                boolean storicoCompleto = jsonEarn.has("staking_storico_completo")
+                        && jsonEarn.get("staking_storico_completo").getAsBoolean();
+                JOptionPane.showConfirmDialog(null, TestoAvvisoLiquidStakingNonAbbinati(liquidStakingNonAbbinati, storicoCompleto),
+                        "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+            }
+
+            //Wallet della carta OKX: l'exchange lo alimenta con il bill 325, che non dice l'indirizzo. Lo si
+            //ricava dalla blockchain di X Layer (OKX_WalletCarta) e lo si salva, cosi' l'utente non deve cercarlo.
+            //Un errore qui non ferma l'importazione: il wallet si riprova al prossimo scaricamento con un 325.
+            List<OKX_WalletCarta.Trasferimento> versoCarta = OKX_WalletCarta.TrasferimentiVersoCarta(fundingBills);
+            if (!versoCarta.isEmpty()) {
+                progress.SetMessaggioAvanzamento("Wallet della carta OKX...");
+                OKX_WalletCarta.Esito carta = OKX_WalletCarta.Trova(versoCarta, OKX_WalletCarta.RpcXLayer());
+                for (String nota : carta.note()) System.out.println("Wallet carta OKX: " + nota);
+                if (carta.indirizzo() != null) {
+                    System.out.println("Wallet carta OKX su X Layer: " + carta.indirizzo());
+                    if (!carta.indirizzo().equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(OKX_WalletCarta.OPZIONE_WALLET))) {
+                        DatabaseH2.Pers_Opzioni_Scrivi(OKX_WalletCarta.OPZIONE_WALLET, carta.indirizzo());
+                        JOptionPane.showConfirmDialog(null, OKX_WalletCarta.TestoAvviso(carta.indirizzo()), "Carta OKX",
+                                JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    }
+                }
             }
 
             //Ultimo cancello prima di toccare la mappa dei movimenti: la conversione dei rendimenti e la
@@ -2007,12 +2079,13 @@ public static Path getNodeExePath() {
      * <tr><td>Funding</td><td>75</td><td>Simple Earn subscription</td><td>giroconto interno</td></tr>
      * <tr><td>Funding</td><td>76</td><td>Simple Earn redemption</td><td>giroconto interno</td></tr>
      * <tr><td>Funding</td><td>61</td><td>Convert (conversione rapida)</td><td>scambio</td></tr>
-     * <tr><td>Funding</td><td>80 / 82</td><td>Flash Deals sottoscrizione / riscatto</td><td>giroconto interno</td></tr>
+     * <tr><td>Funding</td><td>80 / 82</td><td>On-chain Earn (gia' Flash Deals) sottoscrizione / riscatto</td><td>giroconto interno</td></tr>
      * <tr><td>Funding</td><td>89</td><td>Flash Deals Earnings</td><td>provento</td></tr>
      * <tr><td>Funding</td><td>189</td><td>Mystery box bonus</td><td>provento</td></tr>
      * <tr><td>Funding</td><td>311</td><td>Transfer in from trading account</td><td>giroconto interno</td></tr>
      * <tr><td>Funding</td><td>326 / 327</td><td>Data migration out / in</td><td>giroconto interno</td></tr>
      * <tr><td>Funding</td><td>328</td><td>Staking earnings</td><td>provento</td></tr>
+     * <tr><td>Funding</td><td>330</td><td>Liquid Staking swapping</td><td>scambio, vedi {@link #AbbinaLiquidStakingOnChain}</td></tr>
      * </table>
      *
      * <p>Dal 03/08/2026 la tabella non è più ricavata solo per confronto con il CSV: l'endpoint
@@ -2054,7 +2127,11 @@ public static Path getNodeExePath() {
      *     Funding e il prodotto Earn dello stesso utente. Il 75 viene dal campo {@code notes} (03/08/2026).</li>
      * <li>{@code 80}/{@code 82} — sottoscrizione e riscatto dei "Flash Deals", che sono lo stesso meccanismo
      *     di Simple Earn con un altro nome: il capitale esce e rientra identico (380,59095613 USDT usciti il
-     *     30/12/2022 e rientrati il 06/01/2023). È un giroconto; il rendimento arriva a parte con il 89.</li>
+     *     30/12/2022 e rientrati il 06/01/2023). È un giroconto; il rendimento arriva a parte con il 89.
+     *     Dal 2026 il campo {@code notes} li chiama {@code "On-chain Earn subscription"}: e' lo stesso
+     *     meccanismo, il capitale resta dell'utente dentro il prodotto (es. le posizioni "Spark USDC").
+     *     Quando OKX chiude la posizione restituendo un'altra moneta non arriva l'82 ma il 330, vedi
+     *     {@link #AbbinaLiquidStakingOnChain}.</li>
      * <li>{@code 89} — il rendimento dei Flash Deals, accreditato in una moneta <b>diversa</b> da quella
      *     investita (93,84434534 MRST a fronte di USDT vincolati). È un provento, non un giroconto, e va
      *     trattato come gli interessi di Simple Earn.</li>
@@ -2202,6 +2279,183 @@ public static Path getNodeExePath() {
             lista.add(DatoRiga);
         }
         return lista;
+    }
+
+    /** Causale del token di Liquid Staking ricevuto quando OKX converte una posizione On-chain Earn (funding {@code type} 330). */
+    static final String CAUSALE_LIQUID_STAKING_SWAPPING = "Liquid Staking swapping";
+
+    /**
+     * Causale data al {@code type} 330 quando la posizione di origine non si trova. Non e' una chiave di
+     * {@code OKX.json}, quindi il movimento finisce fra gli sconosciuti del resoconto invece di entrare come
+     * un accredito senza contropartita.
+     */
+    static final String CAUSALE_LIQUID_STAKING_SENZA_ORIGINE = "Liquid Staking swapping senza posizione On-chain Earn di origine";
+
+    /** Scarto massimo fra il bill 330 e il {@code redeemedTime} dell'ordine On-chain Earn chiuso (sui dati reali: 1 secondo). */
+    static final long TOLLERANZA_RISCATTO_ONCHAIN_MS = 60_000L;
+
+    /**
+     * Ultimo argomento di {@code OKX_Earn.js} che chiede lo storico degli ordini On-chain Earn per intero invece
+     * della sola pagina dei 100 piu' recenti. L'endpoint pagina per ordId in ordine di creazione, mentre
+     * l'abbinamento cerca la data di riscatto, quindi non ci si puo' fermare a una data: si scorre fino in fondo.
+     */
+    static final String ARGOMENTO_STORICO_ONCHAIN_COMPLETO = "stakingCompleto";
+
+    /**
+     * @return {@code true} se fra le righe c'e' una conversione in un token di Liquid Staking ancora senza la
+     *         gamba in uscita, cioe' se serve lo storico completo degli ordini On-chain Earn
+     */
+    static boolean ContieneLiquidStaking(List<String[]> righe) {
+        if (righe == null) return false;
+        for (String[] riga : righe) {
+            if (CAUSALE_LIQUID_STAKING_SWAPPING.equals(riga[4]) && !Funzioni.isNegativo(riga[6])) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Testo dell'avviso per le conversioni in token di Liquid Staking rimaste senza posizione di origine. Distingue
+     * lo storico ordini scaricato per intero (la posizione non c'e' o non torna) da quello interrotto (la posizione
+     * puo' stare nella parte mancante), perche' il rimedio non e' lo stesso.
+     */
+    static String TestoAvvisoLiquidStakingNonAbbinati(List<String[]> nonAbbinati, boolean storicoCompleto) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("OKX ha convertito delle posizioni On-chain Earn in un token di Liquid Staking,\n")
+          .append("ma per questi accrediti non è stata trovata la posizione di origine:\n\n");
+        for (String[] riga : nonAbbinati) {
+            sb.append("   ").append(riga[0]).append("   ").append(riga[6]).append(" ").append(riga[5]).append("\n");
+        }
+        sb.append("\n");
+        if (storicoCompleto) {
+            sb.append("Lo storico degli ordini On-chain Earn è stato scaricato per intero: la posizione\n")
+              .append("non c'è oppure il suo capitale non coincide con la quantità ricevuta.\n\n");
+        } else {
+            sb.append("Lo storico degli ordini On-chain Earn non è stato scaricato fino in fondo (nel log\n")
+              .append("trovi il motivo): la posizione può stare nella parte mancante.\n\n");
+        }
+        sb.append("Questi accrediti non vengono importati, compaiono fra le causali sconosciute del\n")
+          .append("resoconto e uno scaricamento successivo non li riprende. Vanno inseriti a mano come\n")
+          .append("scambio fra la moneta della posizione e il token ricevuto, altrimenti le giacenze\n")
+          .append("restano sbagliate: la moneta della posizione risulta ancora presente e il token manca.");
+        return sb.toString();
+    }
+
+    /**
+     * Ricostruisce la gamba in uscita delle conversioni di una posizione On-chain Earn in un token di Liquid
+     * Staking (funding {@code type} 330), che OKX registra con il solo bill in entrata.
+     *
+     * <p>Il caso reale (05/10/2026): due posizioni "Spark USDC" da 874,17246485 e 16,50423707 USDC sono state
+     * chiuse da OKX alle 11:23:00 e convertite in 890,67670192 LYUSDC, accreditati alle 11:22:59 con un bill
+     * 330. Il capitale era uscito dal Funding alla sottoscrizione con il {@code type} 80, che e' un giroconto
+     * verso il prodotto e non viene considerato: per il programma quegli USDC sono quindi ancora in giacenza.
+     * Importare il solo LYUSDC li lascerebbe li' e aggiungerebbe 890 LYUSDC dal nulla. Come per il prodotto
+     * ETH Staking (137/138, ETH -> BETH) e' una permuta, e la gamba che manca e' il capitale delle posizioni.
+     *
+     * <p>Le posizioni si cercano nello storico degli ordini On-chain Earn ({@code staking_storico} di
+     * {@code OKX_Earn.js}): quelle chiuse entro {@link #TOLLERANZA_RISCATTO_ONCHAIN_MS} dal bill, in una moneta
+     * diversa da quella ricevuta, il cui capitale ({@code investData}) sommato sia <b>esattamente</b> la quantita'
+     * ricevuta e tutto nella stessa moneta. Ogni posizione diventa una riga in uscita con l'orario del bill
+     * (il raggruppamento dello scambio e' al secondo esatto) e l'ID deterministico {@code ONCHAIN-<ordId>},
+     * cosi' uno scaricamento ripetuto produce lo stesso scambio e la deduplica lo riconosce.
+     *
+     * <p>I rendimenti maturati nella posizione <b>non</b> si leggono da qui: OKX li accredita a parte, nel token
+     * ricevuto, con un bill "Liquid Staking earnings" (il 05/10/2026 alle 14:44, 2,40712633 LYUSDC contro
+     * 2,37629388 USDC di {@code realizedEarnings}), che e' gia' un REWARD. Leggerli anche qui li conterebbe due volte.
+     *
+     * <p>Lo storico arriva per intero quando fra i bill c'e' un 330 ({@link #ARGOMENTO_STORICO_ONCHAIN_COMPLETO}).
+     * Se le posizioni non si trovano il bill riceve {@link #CAUSALE_LIQUID_STAKING_SENZA_ORIGINE}, resta fra gli
+     * sconosciuti e viene restituito, perche' il chiamante avvisi l'utente. Se fra i bill c'e' gia' una gamba in
+     * uscita con la stessa causale sullo stesso istante non si aggiunge nulla.
+     *
+     * @param righe righe in formato intermedio a 19 campi; le gambe ricostruite vengono aggiunte in coda e la
+     *              causale dei bill non abbinati viene modificata sul posto
+     * @param stakingStorico ordini On-chain Earn restituiti da {@code OKX_Earn.js}, oppure {@code null}
+     * @return i bill 330 rimasti senza posizione di origine (lista vuota se tutti abbinati)
+     */
+    static List<String[]> AbbinaLiquidStakingOnChain(List<String[]> righe, JsonArray stakingStorico) {
+        List<String[]> nonAbbinati = new ArrayList<>();
+        if (righe == null) return nonAbbinati;
+        List<String[]> gambeUscita = new ArrayList<>();
+        Set<String> ordiniUsati = new HashSet<>();
+        for (String[] riga : righe) {
+            if (!CAUSALE_LIQUID_STAKING_SWAPPING.equals(riga[4]) || Funzioni.isNegativo(riga[6])) continue;
+            boolean uscitaPresente = false;
+            for (String[] altra : righe) {
+                if (altra != riga && altra[0].equals(riga[0]) && CAUSALE_LIQUID_STAKING_SWAPPING.equals(altra[4])
+                        && Funzioni.isNegativo(altra[6])) uscitaPresente = true;
+            }
+            if (uscitaPresente) continue;
+            List<String[]> gambe = GambeUscitaLiquidStaking(riga, stakingStorico, ordiniUsati);
+            if (gambe.isEmpty()) {
+                System.out.println("OKX: " + riga[0] + " " + riga[6] + " " + riga[5]
+                        + " da Liquid Staking senza posizione On-chain Earn di origine nello storico degli ordini");
+                riga[4] = CAUSALE_LIQUID_STAKING_SENZA_ORIGINE;
+                nonAbbinati.add(riga);
+            } else {
+                gambeUscita.addAll(gambe);
+            }
+        }
+        righe.addAll(gambeUscita);
+        return nonAbbinati;
+    }
+
+    /**
+     * @return le righe in uscita, una per posizione On-chain Earn chiusa insieme alla conversione descritta da
+     *         {@code riga}, oppure una lista vuota se le posizioni non tornano esattamente
+     */
+    private static List<String[]> GambeUscitaLiquidStaking(String[] riga, JsonArray stakingStorico, Set<String> ordiniUsati) {
+        List<String[]> gambe = new ArrayList<>();
+        if (stakingStorico == null || !Funzioni.isNumeric(riga[6], false)) return gambe;
+        long istante = FunzioniDate.ConvertiDatainLongSecondo(riga[0]);
+        BigDecimal ricevuto = new BigDecimal(riga[6]);
+
+        Map<String, BigDecimal> capitalePerOrdine = new LinkedHashMap<>();
+        Set<String> monete = new HashSet<>();
+        BigDecimal totale = BigDecimal.ZERO;
+        for (JsonElement el : stakingStorico) {
+            if (!el.isJsonObject()) continue;
+            JsonObject ordine = el.getAsJsonObject();
+            String ordId = ordine.has("ordId") ? ordine.get("ordId").getAsString() : "";
+            String riscatto = ordine.has("redeemedTime") ? ordine.get("redeemedTime").getAsString() : "";
+            if (ordId.isEmpty() || ordiniUsati.contains(ordId) || !Funzioni.isNumeric(riscatto, false)) continue;
+            if (Math.abs(Long.parseLong(riscatto) - istante) > TOLLERANZA_RISCATTO_ONCHAIN_MS) continue;
+            if (!ordine.has("investData") || !ordine.get("investData").isJsonArray()) continue;
+            for (JsonElement inv : ordine.getAsJsonArray("investData")) {
+                if (!inv.isJsonObject()) continue;
+                JsonObject capitale = inv.getAsJsonObject();
+                String ccy = capitale.has("ccy") ? capitale.get("ccy").getAsString() : "";
+                String amt = capitale.has("amt") ? capitale.get("amt").getAsString() : "";
+                if (ccy.isEmpty() || ccy.equalsIgnoreCase(riga[5]) || !Funzioni.isNumeric(amt, false)) continue;
+                BigDecimal q = new BigDecimal(amt);
+                if (q.signum() <= 0) continue;
+                monete.add(ccy.toUpperCase());
+                capitalePerOrdine.merge(ordId + "|" + ccy, q, BigDecimal::add);
+                totale = totale.add(q);
+            }
+        }
+        if (monete.size() != 1 || totale.compareTo(ricevuto) != 0) return gambe;
+
+        for (Map.Entry<String, BigDecimal> voce : capitalePerOrdine.entrySet()) {
+            String[] chiave = voce.getKey().split("\\|", 2);
+            ordiniUsati.add(chiave[0]);
+            String[] gamba = new String[19];
+            gamba[0]  = riga[0];                                                     //Stesso istante del bill: lo scambio si raggruppa al secondo
+            gamba[1]  = riga[1];
+            gamba[2]  = riga[2];
+            gamba[3]  = "";
+            gamba[4]  = CAUSALE_LIQUID_STAKING_SWAPPING;
+            gamba[5]  = chiave[1];
+            gamba[6]  = voce.getValue().negate().stripTrailingZeros().toPlainString();
+            gamba[11] = "";
+            gamba[12] = "";
+            gamba[13] = "";
+            gamba[14] = "ONCHAIN-" + chiave[0];                                      //Deterministico: la deduplica lo ritrova
+            gamba[15] = "NO";
+            gamba[16] = "";
+            Importazioni.RiempiVuotiArray(gamba);
+            gambe.add(gamba);
+        }
+        return gambe;
     }
 
     /**
@@ -2882,8 +3136,9 @@ public static Path getNodeExePath() {
     /**
      * Come {@link #fetchMovimento(String, String, String, long, String, String, String, String)}, ma passa
      * allo script anche il punto da cui riprendere uno scaricamento rimasto a metà.
-     * <p>Serve al solo {@code OKX_Bills.js}, che con questo cursore riparte da dove il tetto di pagine lo
+     * <p>Serve a {@code OKX_Bills.js}, che con questo cursore riparte da dove il tetto di pagine lo
      * aveva fermato invece di ripercorrere le pagine già scaricate — vedi {@link #OPZIONE_RIPRESA_BILLS_OKX}.
+     * {@code OKX_Earn.js} usa lo stesso posto per {@link #ARGOMENTO_STORICO_ONCHAIN_COMPLETO}.
      * <p>Anche questo argomento è aggiunto <b>in coda</b>, per la stessa ragione degli altri due: tutti gli
      * script destrutturano {@code process.argv} per posizione, e un argomento inserito in mezzo li
      * romperebbe tutti. Gli script che non lo prevedono ricevono un argomento in più e lo ignorano.

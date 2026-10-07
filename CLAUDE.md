@@ -529,6 +529,15 @@ pre-collection and `causaliScambiaGambe` all read the coin from the row. A row w
 is against the archive, not within the batch), and the Futures export has no config because it carries no PnL. Pinned by
 `ImportazioneGenericaKuCoinTest`.
 
+**`fusoDaIntestazione` — the file states its own time zone (OKX ≥ Funding 1.002 / Trading 1.003, 2026-10-07).** Recent OKX
+exports carry `Time Zone:UTC+8` in the first line: the zone chosen on OKX at export time, not necessarily Italy's (a real
+user's Funding was UTC+8 next to a Trading in UTC+2, and the fixed `Europe/Rome` shifted it by 6 h). With the key set,
+`leggiCSV` replaces `fuso` with the declared offset, **after** the per-file choice of `Importazioni_Gestione`, so it wins over
+both — unless it is one of the offsets the config's zone takes during the year (`ConfigurazioneImport.FusoCompatibile`):
+`UTC+2`/`UTC+1` keep `Europe/Rome`, which knows about DST. Whether OKX writes a fixed offset or today's offset for winter
+rows is **not verified** (no winter export available). Exports without the line keep the config's zone. Pinned by
+`ImportazioneGenericaOkxFusoTest`.
+
 **`tipoSeSola` — a causale that is half of a pair the file doesn't link (2026-10-03, Bybit Spot ≥ 1.002).** Bybit
 2022 writes the BIT committed to a Launchpad (`commitmentForLaunchpad`) and the token received
 (`airdropAssetIncrease`) as two unrelated rows within 1 s, but the token can also arrive alone and then it is a genuine
@@ -735,6 +744,38 @@ accounts (Funding/Trading) and even between `type` codes on each. An incomplete 
 would silently skip movements forever. The `after` parameter means a `billId` on Trading but a
 timestamp on Funding, and getting this wrong doesn't error, it silently truncates history (bug C8).
 
+**OKX Simple Earn interest can be reconstructed, not only downloaded** (`OKX_InteressiEarn`, 2026-10-07), but
+only with `OPZIONE_RICOSTRUZIONE` (*Exchange API → Particolarità OKX*), **off by default**: the program is fiscal,
+so by default it books only what the exchange API returns (user's choice). Off, nothing below runs except a
+notice when the returned history starts after the requested day (`TestoAvvisoStoricoCorto`).
+`finance/savings/lending-history` returns only the last month (720 hourly records) and the interest has no
+bill type, so a day that leaves the window before an import is lost, and the oldest day of a truncated window
+arrives half-full (dropped by `ScartaPrimoGiornoTroncato`, since its daily ID would block completing it). The
+per-period total is exact: current balance + redemptions − subscriptions, from the Funding bills 75/76 fetched
+over the whole history (`savings_flussi` of `OKX_Earn.js`, which reuses `OKX_Bills.fetchBills`), checked against
+OKX's `earnings` for the open period. The missing part is split over uncovered days by capital (an estimate),
+one REWARD per day keyed `EARN-<ccy>-<yyyymmdd>-RIC`, so a re-run adds nothing. Existing interest is recognised
+by the `EARN-` key, archive **and** current batch, never by causale. Days inside the window just downloaded get
+no share even without interest (OKX sends zero records, or none: BTC from 28/09/2026), but zero days of
+**past** windows leave no trace and can still receive a share. Days up to 2025
+(`PRIMO_GIORNO_SEMPRE_REGISTRATO`) are dropped **after** the split unless `OPZIONE_ANCHE_ANNI_PASSATI` (off by
+default, *Exchange API → Particolarità OKX*): from 2026 every download goes through the reconstruction, so the
+data are either absent or right, and they are always booked (the user's choice, 2026-10-07). On the user's archive the API flow counts (32 subscriptions, 27 redemptions, back to 2022) match the
+CSV-era Earn transfers plus the 2026 ones, so the old "Savings" product used the same type codes.
+
+**The OKX Card wallet is found on-chain, never asked to the user** (`OKX_WalletCarta`, 2026-10-07). The card
+spends from an "OKX Pay Wallet", an ERC-4337 smart-contract wallet on **X Layer** (chain id 196), funded by the
+Funding bill `type` 325 "Transfer from exchange to smart wallet", which carries no address or hash and is **not**
+in `asset/withdrawal-history` (checked). For each 325 bill the public node `rpc.xlayer.tech` (no key, `eth_getLogs`
+max 100 blocks, ~1 block/s) is searched from 2 min before to 15 min after for a transfer of the same coin and exact
+amount whose recipient answers `entryPoint()` with a known EntryPoint; several bills must agree, else nothing is
+chosen. The address is stored in the personal option `OKX_WalletCarta.OPZIONE_WALLET` and shown in *Exchange API →
+Particolarità OKX* — not in `WALLETS`, because the program does not support X Layer yet (Etherscan v2 and Routescan
+don't cover it). On the user's account the USDG went on to Aave V3 on X Layer (`aXlrUSDG`, rebasing). How to read
+X Layer without keys (public node capped at 100 blocks/`eth_getLogs` and ~5 req/s, so a state-bisection scan via
+Multicall3) and the questions still open until a real card payment exists are in
+`nocommit/Documentazione/Analisi_Carta_OKX_XLayer.md`.
+
 Full mechanics (quarter-list bounding by `startDate`, suspended-quarter recovery, `OKX_Tipi.json`
 data-driven type codes, CCXT rate-limit costs, bugs C8/C9/C12/C13/C14 in detail) in
 `nocommit/Documentazione/Analisi_Bug_Criticita.md`.
@@ -913,6 +954,7 @@ All the working `.md` documents (bug analyses, performance analyses, the change 
 | `nocommit/Documentazione/Analisi_Prezzi_Scaricamento_Costi.md` | why a price download costs ~40 requests per (coin, day), what the 8-exchange fan-out actually delivers, and the constraints (day marker, `fonte` ambiguity) any change must respect |
 | `nocommit/Documentazione/Pubblicazione_Flatpak.md` / `Pubblicazione_AUR.md` | packaging recipes and sandbox/workdir details for those two distros |
 | `nocommit/Documentazione/Test_Grafici_Automatici.md` | how to run automated GUI tests on the virtual display |
+| `nocommit/Documentazione/Analisi_Carta_OKX_XLayer.md` | OKX Card wallet on X Layer: observed flow, sources tried, public-node limits, state-bisection scan, open questions |
 
 **Write new technical `.md` documents there, not in `Documentazione/`.** The top-level `Documentazione/` folder is **historical** since 2026-08-18: the `.odt`/`.pdf`/`.txt` manuals that used to be the source now live as Markdown under `docs/documentazione/` (below), and the old files are kept only as a record of what was published before — do not update them. What is still live there is the material that never became a manual: `Documentazione/IstruzioniVarie.txt` (referenced elsewhere in this file), `MappatureImport.txt`, the `.pptx` presentations, `FormuleUtili.xlsx` and `Schemi.odg`.
 

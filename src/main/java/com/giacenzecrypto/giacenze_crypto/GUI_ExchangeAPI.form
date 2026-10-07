@@ -431,6 +431,85 @@
             </Component>
           </SubComponents>
         </Container>
+        <Container class="javax.swing.JPanel" name="Pannello_OKX">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="&lt;html&gt;Particolarita&apos;&lt;br&gt;OKX&lt;/html&gt;">
+                <Property name="tabTitle" type="java.lang.String" value="&lt;html&gt;Particolarita&apos;&lt;br&gt;OKX&lt;/html&gt;"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="OKX_CheckBox_InteressiCalcolati" pref="1015" max="32767" attributes="0"/>
+                          <Component id="OKX_CheckBox_InteressiAnniPassati" pref="1015" max="32767" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Component id="OKX_Label_WalletCarta" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="OKX_TextField_WalletCarta" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="OKX_CheckBox_InteressiCalcolati" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+                      <Component id="OKX_CheckBox_InteressiAnniPassati" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="OKX_Label_WalletCarta" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="OKX_TextField_WalletCarta" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JCheckBox" name="OKX_CheckBox_InteressiCalcolati">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Calcola gli interessi Earn che OKX non restituisce pi&#xf9; : &lt;/b&gt;OKX restituisce gli interessi Simple Earn solo per l&apos;ultimo mese. Con questa casella il programma calcola quelli dei giorni mancanti da saldo, sottoscrizioni e riscatti (il totale di ogni periodo &#xe8; esatto, la divisione per giorno &#xe8; una stima) e li registra con la causale &quot;Simple Earn interessi ricostruiti&quot;.&lt;br&gt;Senza, importa solo gli interessi restituiti dalle API di OKX. Vale dal prossimo scaricamento OKX.&lt;br&gt;(Spento di default)&lt;/html&gt;"/>
+                <Property name="verticalTextPosition" type="int" value="1"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="OKX_CheckBox_InteressiCalcolatiActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="OKX_CheckBox_InteressiAnniPassati">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Interessi Earn calcolati anche negli anni fino al 2025 : &lt;/b&gt;Gli interessi calcolati con la casella qui sopra si registrano dal 2026 in poi. Con questa anche negli anni fino al 2025. Vale dal prossimo scaricamento OKX.&lt;br&gt;(Spento di default. Attivandolo cambiano i calcoli di quegli anni)&lt;/html&gt;"/>
+                <Property name="verticalTextPosition" type="int" value="1"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="OKX_CheckBox_InteressiAnniPassatiActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="OKX_Label_WalletCarta">
+              <Properties>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Noto Sans" size="13" style="1"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Wallet della carta OKX su X Layer :"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="OKX_TextField_WalletCarta">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+                <Property name="toolTipText" type="java.lang.String" value="Individuato da solo dai trasferimenti dall&apos;exchange verso la carta (bill 325)"/>
+              </Properties>
+            </Component>
+          </SubComponents>
+        </Container>
       </SubComponents>
     </Container>
   </SubComponents>

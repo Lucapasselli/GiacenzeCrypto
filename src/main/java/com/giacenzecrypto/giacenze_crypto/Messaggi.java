@@ -469,6 +469,37 @@ public class Messaggi {
            * @param win finestra parent del dialog
            * @return il risultato del dialog, da cui leggere l'azione scelta dall'utente tramite {@code isAction}
            */
+          /**
+           * Avviso prima di marcare come SCAM un token che ha movimenti valorizzati: di solito i token scam non
+           * hanno prezzo, quindi si chiede conferma. Il valore dei movimenti non viene toccato.
+           * @param NomeMoneta simbolo del token
+           * @param win finestra parent del dialog
+           * @return il risultato del dialog, {@code continue-anyway} per proseguire
+           */
+          public static AppDialog.DialogResult Personalizzati_SINO_SCAMTokenValorizzato(String NomeMoneta,Window win) {
+         return AppDialog.builder(win)
+                        .windowTitle("Verifica movimenti")
+                        .bodyTitle("Token con prezzo")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.WARNING)
+                        .message("Il token " + NomeMoneta + " ha dei movimenti valorizzati.")
+                        .details("""
+                        Di solito i token scam non hanno prezzo.
+
+                        Il valore dei movimenti non viene azzerato: se va tolto, si corregge a mano sui movimenti.
+
+                        Sei sicuro di volerlo classificare come SCAM?
+                        """)
+                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                                .role(AppDialog.ActionRole.SECONDARY)
+                                .build())
+                        .action(AppDialog.DialogAction.builder("continue-anyway", "Continua comunque")
+                                .role(AppDialog.ActionRole.DANGER)
+                                .build())
+                        .showDialog();
+     }
+     
           public static AppDialog.DialogResult Personalizzati_SINO_SCAMMovimentiNonCongrui(String NomeMoneta,Window win) {
          AppDialog.DialogResult result = AppDialog.builder(win)
                         .windowTitle("Verifica movimenti")

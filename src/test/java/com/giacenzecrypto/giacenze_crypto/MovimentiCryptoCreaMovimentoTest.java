@@ -155,4 +155,29 @@ class MovimentiCryptoCreaMovimentoTest {
         assertEquals("VC", Mov[0].split("_")[4]);
         assertEquals("001", Mov[0].split("_")[2]);
     }
+
+    @Test
+    void rettificaFiat_conIdDelMovimentoSelezionato_eUnPrelievoODepositoFiatNonClassificato() {
+        //Forma usata da Principale_GiacenzeaData.CreaRettificaFiat: ID del movimento selezionato con la
+        //categoria PF/DF, spostato subito dopo (prelievo) o subito prima (deposito), nessun tipo esplicito.
+        String IDSelezionato = "20240315093000_Nexo_001_001_AC";
+        String IDPrelievo = MovimentiCrypto.IncDecID("20240315093000_Nexo_001_001_PF", 1, true);
+        String IDDeposito = MovimentiCrypto.IncDecID("20240315093000_Nexo_001_001_DF", 1, false);
+        String Prelievo[] = MovimentiCrypto.creaMovimento(fiat("EUR", "-12.5"), null, "Nexo", "Principale",
+                0, "12.50", null, 1, 1, IDPrelievo, "Rettifica<br>nota", "M", null, null, null);
+        String Deposito[] = MovimentiCrypto.creaMovimento(null, fiat("EUR", "12.5"), "Nexo", "Principale",
+                0, "12.50", null, 1, 1, IDDeposito, "Rettifica<br>nota", "M", null, null, null);
+
+        assertEquals("PF", Prelievo[0].split("_")[4]);
+        assertEquals("PRELIEVO FIAT", Prelievo[5]);
+        assertEquals("", Prelievo[18]);
+        assertEquals("-12.5", Prelievo[10]);
+        assertEquals("DF", Deposito[0].split("_")[4]);
+        assertEquals("DEPOSITO FIAT", Deposito[5]);
+        assertEquals("", Deposito[18]);
+        assertTrue(String.CASE_INSENSITIVE_ORDER.compare(Deposito[0], IDSelezionato) < 0,
+                "il deposito si ordina prima del movimento selezionato");
+        assertTrue(String.CASE_INSENSITIVE_ORDER.compare(Prelievo[0], IDSelezionato) > 0,
+                "il prelievo si ordina dopo il movimento selezionato");
+    }
 }

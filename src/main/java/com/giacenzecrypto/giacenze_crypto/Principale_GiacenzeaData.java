@@ -28,13 +28,91 @@ public class Principale_GiacenzeaData {
      * all'utente la nuova giacenza desiderata e generando un movimento artificiale di aggiustamento (deposito
      * o prelievo, a seconda che la nuova giacenza sia maggiore o minore di quella attuale). Se il token ha
      * giacenze negative precedenti, avvisa l'utente e richiede conferma esplicita prima di procedere.
-     * L'operazione è consentita solo per token di tipo {@code "Crypto"} e non è applicabile se il filtro
+     * L'operazione è consentita per i token di tipo {@code "Crypto"} e per le valute {@code "FIAT"} (per queste
+     * senza chiedere la classificazione, vedi {@link #CreaRettificaFiat}) e non è applicabile se il filtro
      * wallet è impostato su {@code "tutti"}.
      * @param TabMovimenti tabella da cui leggere la riga selezionata (moneta, giacenza attuale, ecc.)
      * @param Wallet nome del wallet corrente, oppure {@code "tutti"} per disabilitare l'operazione
      * @param owner finestra parent dei dialog
      * @return {@code true} se è stata effettuata una modifica, {@code false} se l'operazione è stata annullata o non applicabile
      */
+    /**
+     * Rettifica di una moneta FIAT: a differenza delle crypto non si chiede come classificare il movimento,
+     * perché per la valuta non c'è plusvalenza da decidere. Si crea un deposito FIAT (categoria DF) o un
+     * prelievo FIAT (PF) della differenza, subito dopo o subito prima del movimento selezionato come per le
+     * crypto, con la nota scelta dall'utente.
+     * @param mov movimento selezionato, da cui si prendono wallet, rete e posizione nel tempo
+     * @param Moneta simbolo della valuta
+     * @param AddressMoneta address della moneta nel movimento (di norma vuoto per le FIAT)
+     * @param TipoMoneta tipo della moneta, {@code FIAT}
+     * @param Qta quantità del movimento da creare, positiva per un deposito e negativa per un prelievo
+     * @param owner finestra parent dei dialog
+     * @return {@code true} se il movimento è stato inserito, {@code false} se l'utente ha annullato
+     */
+    private static boolean CreaRettificaFiat(String[] mov, String Moneta, String AddressMoneta, String TipoMoneta,
+            BigDecimal Qta, Window owner) {
+        boolean prelievo = Qta.signum() < 0;
+        String QtaAssoluta = Qta.abs().toPlainString();
+        String Descrizione = Moneta.equalsIgnoreCase("EUR")
+                ? QtaAssoluta + " " + Moneta
+                : DescrizioneQtaEValore(Moneta, AddressMoneta, Funzioni.TrovaReteDaIMovimento(mov), QtaAssoluta, mov[0], owner);
+
+        String Nota = AppDialog.showTextInputDialog(
+                owner,
+                "Nota movimento",
+                prelievo ? "Nuovo movimento di prelievo FIAT" : "Nuovo movimento di deposito FIAT",
+                "Per raggiungere la giacenza desiderata verrà generato un %s FIAT di %s.\n\nInserisci un'eventuale nota sul movimento."
+                        .formatted(prelievo ? "prelievo" : "deposito", Descrizione),
+                "Nota",
+                "Rettifica di Giacenza"
+        );
+        if (Nota == null) {
+            return false;
+        }
+        owner.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+        if (!Nota.contains("Rettifica")) {
+            Nota = "Rettifica<br>" + Nota;
+        }
+
+        String[] IDOriSplittato = mov[0].split("_");
+        IDOriSplittato[4] = prelievo ? "PF" : "DF";
+        //Il prelievo va subito dopo il movimento selezionato, il deposito subito prima, come per le crypto
+        String NuovoID = MovimentiCrypto.IncDecID(String.join("_", IDOriSplittato), 1, prelievo);
+
+        Moneta M1 = new Moneta();
+        M1.Moneta = Moneta;
+        M1.MonetaAddress = AddressMoneta;
+        M1.Qta = Qta.toPlainString();
+        M1.Tipo = TipoMoneta;
+        M1.Rete = Funzioni.TrovaReteDaIMovimento(mov);
+
+        //Senza tipo esplicito creaMovimento ricava DEPOSITO FIAT / PRELIEVO FIAT (DF / PF) dal tipo della moneta
+        String[] RT = MovimentiCrypto.creaMovimento(
+                prelievo ? M1 : null,
+                prelievo ? null : M1,
+                mov[3],
+                mov[4],
+                0,
+                null,
+                null,
+                1,
+                1,
+                NuovoID,
+                Nota,
+                "M",
+                null,
+                null,
+                null
+        );
+        if (RT == null) {
+            owner.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            return false;
+        }
+        MappaCryptoWallet.put(RT[0], RT);
+        return true;
+    }
+
     public static boolean GiacenzeaData_Funzione_SistemaQta(JTable TabMovimenti,String Wallet, Window owner) {
         
         boolean tuttook=false;
@@ -68,7 +146,8 @@ public class Principale_GiacenzeaData {
             BigDecimal QtaNuovoMovimento;
             
             if (Wallet==null || !Wallet.equalsIgnoreCase("tutti")){
-            if (TipoMoneta.equalsIgnoreCase("Crypto")){
+            boolean isFiat = TipoMoneta.equalsIgnoreCase("FIAT");
+            if (TipoMoneta.equalsIgnoreCase("Crypto") || isFiat){
             
             //========== MESSAGGIO INIZIALE, CHIEDO DI INSERIRE LA NUOVA GIACENZA =========
             
@@ -142,10 +221,30 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                         LoggerGC.ScriviErrore("QtaMovOrigine=0, esco dalla funzione");
                         return false;
                     }
+                    if (QtaNuovoMovimento.signum() == 0) {
+                        AppDialog.builder(owner)
+                                .windowTitle("Rettifica di Giacenza")
+                                .bodyTitle("Nessun movimento da creare")
+                                .showTitleInBody(true)
+                                .theme()
+                                .type(AppDialog.DialogType.INFO)
+                                .message("La giacenza alla data selezionata è già %s.".formatted(GiacenzaAttuale.toPlainString()))
+                                .primaryAction("ok", "OK")
+                                .showDialog();
+                        return false;
+                    }
+
+                    // ========== FIAT: NIENTE CLASSIFICAZIONE, SOLO DEPOSITO O PRELIEVO FIAT ==========
+                    if (isFiat) {
+                        if (!CreaRettificaFiat(mov, Moneta, AddressMoneta, TipoMoneta, QtaNuovoMovimento, owner)) {
+                            return false;
+                        }
+                        scelta = 1;
+                    }
                     //   BigDecimal ValoreUnitarioToken=ValoreMovOrigine.divide(QtaMovOrigine,DecimaliCalcoli+10, RoundingMode.HALF_UP).abs();
 
                     // ========== SE DEVO INSERIRE UN MOVIMENTO NEGATIVO CHIEDO COME CLASSIFICARLO ==========
-                    if (SQta.contains("-")) {
+                    else if (QtaNuovoMovimento.signum() < 0) {
                         scelta=0;
                         result = AppDialog.builder(owner)
                                 .windowTitle("Classificazione del movimento")
@@ -443,8 +542,8 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                             .showTitleInBody(true)
                             .theme()
                             .type(AppDialog.DialogType.WARNING)
-                            .message("Questo tipo di operazione è consentita solo per le Crypto.")
-                            .details("Per NFT e FIAT utilizzare l'inserimento manuale.")
+                            .message("Questo tipo di operazione è consentita solo per Crypto e FIAT.")
+                            .details("Per gli NFT utilizzare l'inserimento manuale.")
                             .primaryAction("ok", "OK")
                             .showDialog();
                 }

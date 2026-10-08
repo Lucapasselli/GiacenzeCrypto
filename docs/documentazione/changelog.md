@@ -27,7 +27,7 @@ I pacchetti pronti all'uso vengono pubblicati a ogni rilascio:
 In caso di problemi si può chiedere supporto sul
 [gruppo Telegram](https://t.me/+6kfy5mjov-I2ODY8).
 
-## Versione 1.0.65 {#versione-1065}
+## Versione 1.0.65 (in lavorazione) {#versione-1065}
 
 **Nuove implementazioni**
 
@@ -50,6 +50,11 @@ In caso di problemi si può chiedere supporto sul
 - **Novità della versione.** Al primo avvio dopo un aggiornamento si apre una finestra con le novità e i bug corretti della versione. Si può riaprire in qualunque momento dal pulsante *Novità di questa versione* della finestra *Informazioni*, che compare facendo clic sul titolo in alto.
 - **Colonna e dettaglio "Operazione".** I movimenti che fanno parte della stessa operazione (un trasferimento con la sua commissione, uno scambio differito, un contratto Dual Investment, i movimenti con lo stesso hash sullo stesso exchange) sono riconosciuti insieme. La colonna "Operazione", da mostrare con *Colonne...*, permette di filtrarli tutti con un clic, e nel dettaglio di un movimento la riga "Operazione" elenca gli altri, con il loro tipo e la classificazione.
 - Il **manuale del Quadro W/RW** è stato aggiornato con i periodi di detenzione, la liquidità presso intermediari esteri, i gruppi preconfigurati e la stampa. I PDF dei manuali hanno ora la stessa veste grafica delle stampe dei quadri.
+- **OKX via API, interessi di Simple Earn.** OKX restituisce lo storico degli interessi solo per l'ultimo mese: se lo storico ricevuto comincia dopo il giorno richiesto, un avviso a fine scaricamento lo segnala. In *Exchange API – Particolarità OKX* si può attivare il calcolo degli interessi mancanti (disattivato in modo predefinito). Il totale di ogni periodo si ricava da saldo, sottoscrizioni e riscatti ed è esatto, la ripartizione sui singoli giorni è invece una stima in proporzione al capitale. Una seconda casella estende il calcolo agli anni fino al 2025.
+- **OKX via API, posizioni On-chain Earn convertite in token di Liquid Staking.** Quando OKX converte una posizione On-chain Earn chiusa in un token di Liquid Staking (per esempio LYUSDC), il programma ricostruisce lo scambio dallo storico degli ordini, che ora viene letto per intero. Prima il movimento restava fra quelli non riconosciuti. LYUSDC viene prezzato come USDC.
+- **Carta OKX.** Il wallet usato dalla carta OKX (sulla rete X Layer, non ancora supportata dal programma) viene individuato dagli scaricamenti via API e mostrato in *Exchange API – Particolarità OKX*.
+- **Rettifica giacenza anche per le valute FIAT.** In *Giacenze a data* e in *Verifica Saldi Negativi* il pulsante di rettifica funziona ora anche per euro e altre valute. Non si sceglie nessuna classificazione: il programma crea un deposito FIAT o un prelievo FIAT della differenza, con una nota facoltativa come per le cripto.
+- **Token con prezzo classificabili come SCAM.** Un token che ha movimenti valorizzati si può ora identificare come SCAM, anche in blocco da *Depositi e Prelievi*. Prima il programma lo impediva, ora mostra un avviso che ricorda che di solito i token scam non hanno prezzo e chiede conferma. Il valore dei movimenti non viene azzerato.
 
 **Correzione di bug**
 
@@ -64,6 +69,9 @@ In caso di problemi si può chiedere supporto sul
 - **Eliminazione di più movimenti collegati.** Selezionando insieme il prelievo e il deposito di uno scambio differito, il deposito restava in archivio. Anche il numero dei movimenti cancellati insieme a un wallet è ora quello vero.
 - **Binance, bonus di Simple Earn contati due volte.** Negli export del 2026 Binance scrive ogni bonus giornaliero di Simple Earn ("Bonus Tiered APR") due volte, sul conto Earn ("Rewards Income") e sul conto Spot ("Interest" o "Rewards"), con la stessa moneta e quantità, e il programma li importava tutti e due come reddito. Ora si importa solo la riga del conto Spot, come negli anni precedenti. Per i bonus già importati, all'avvio un avviso propone di togliere i doppioni: solo le righe del conto Earn che hanno la gemella sul conto Spot, che resta. L'avviso si può non mostrare più, e la stessa pulizia è in *Opzioni – Pulizie – Ricompense Binance doppie*. Fino al salvataggio si può annullare. Dopo la pulizia possono comparire giacenze negative su Binance: le ricompense "Real-Time APR" di Simple Earn non compaiono in nessun export di Binance (si vedono nell'app, in *Earn – Flexible – Rewards*) e vanno aggiunte a parte.
 - **Documento di origine dei movimenti generati.** Le gambe e le ricompense create dai Dual Investment, dai trasferimenti verso piattaforme e dallo scambio WCRO-CRO prendono ora il documento del movimento da cui nascono, e il filtro per documento le mostra insieme agli altri. Quelle già in archivio vengono completate all'avvio.
+- **Importazione CSV di OKX, fuso orario.** Gli export recenti di OKX indicano nella prima riga il fuso scelto sul sito (per esempio UTC+8), e il programma ora lo usa. Prima gli orari venivano sempre letti come ora italiana, e un export fatto con un altro fuso finiva spostato di qualche ora. Se il file indica UTC+1 o UTC+2 resta l'ora italiana, che tiene conto dell'ora legale.
+- **OKX, conto Funding.** I rendimenti di BTC Yield+ e le righe "Rewards" vengono importati come ricompense, e la sottoscrizione di BTC Yield+ viene ignorata come le altre sottoscrizioni Earn. Prima finivano fra i movimenti non riconosciuti.
+- **Binance, "Cash Voucher".** Vengono importati come ricompensa e non più come cashback. I movimenti già importati restano come sono: si correggono a mano o reimportando il file con *Sovrascrivi esistenti*.
 
 ## Versione 1.0.64 {#versione-1064}
 

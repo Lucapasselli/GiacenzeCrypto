@@ -15474,7 +15474,7 @@ if (result != null && !result.isAction("cancel")) {
         final String Nome;
         final String Address;
         final String Rete;
-        /** Ha almeno un movimento in archivio valorizzato: i token SCAM non devono avere valore. */
+        /** Ha almeno un movimento in archivio valorizzato: si marca lo stesso, ma la conferma lo segnala. */
         boolean Valorizzato = false;
         /** Ha in archivio movimenti diversi dal semplice deposito/prelievo. */
         boolean NonCongruo = false;
@@ -15498,7 +15498,8 @@ if (result != null && !result.isAction("cancel")) {
      * con i token marcati e quelli lasciati normali, ciascuno con il proprio motivo.
      * </p>
      * Le regole che lasciano un token normale sono le stesse della funzione interattiva: movimenti già
-     * classificati, address o rete mancanti, token già SCAM, presenza di movimenti valorizzati.
+     * classificati, address o rete mancanti, token già SCAM. I token con movimenti valorizzati vengono
+     * marcati anch'essi, ma la conferma li elenca a parte con l'avviso che di solito i token scam non hanno prezzo.
      */
     private void DepositiPrelievi_ClassificaScamMassiva(String[] idSelezionati) {
 
@@ -15585,17 +15586,16 @@ if (result != null && !result.isAction("cancel")) {
                 }
             }
         }
-        for (TokenScamCandidato t : daVerificare.values()) {
-            if (t.Valorizzato) t.Motivo = "ha movimenti valorizzati";
-        }
 
         //4 - Un'unica domanda per tutta la selezione, comprese le eccezioni sui token non congrui
         List<TokenScamCandidato> daMarcare = new ArrayList<>();
         List<String> nomiNonCongrui = new ArrayList<>();
+        List<String> nomiValorizzati = new ArrayList<>();
         for (TokenScamCandidato t : token.values()) {
             if (t.Motivo != null) continue;
             daMarcare.add(t);
             if (t.NonCongruo) nomiNonCongrui.add(t.Nome);
+            if (t.Valorizzato) nomiValorizzati.add(t.Nome);
         }
 
         if (!daMarcare.isEmpty()) {
@@ -15612,6 +15612,14 @@ if (result != null && !result.isAction("cancel")) {
                         + " movimenti diversi dal semplice deposito o prelievo, e verranno marcati ugualmente. "
                         + "Se prosegui senza verificarli, i calcoli potrebbero risultare errati:<br>"
                         + DepositiPrelievi_ElencoPerDialog(nomiNonCongrui, 10);
+            }
+            if (!nomiValorizzati.isEmpty()) {
+                dettaglio = dettaglio + "<br><br><b>Attenzione:</b> " + nomiValorizzati.size()
+                        + (nomiValorizzati.size() == 1 ? " token ha" : " token hanno")
+                        + " movimenti valorizzati, mentre di solito i token scam non hanno prezzo. Sei sicuro di "
+                        + "volerli classificare come SCAM? Il valore dei movimenti non viene azzerato: se va tolto, "
+                        + "si corregge a mano sui movimenti.<br>"
+                        + DepositiPrelievi_ElencoPerDialog(nomiValorizzati, 10);
             }
 
             AppDialog.DialogResult result = AppDialog.builder(this)
@@ -15684,7 +15692,8 @@ if (result != null && !result.isAction("cancel")) {
         List<String> normali = new ArrayList<>();
         for (TokenScamCandidato t : token) {
             if (t.Motivo == null && !t.NuovoNome.isBlank()) {
-                marcati.add(t.NuovoNome + (t.NonCongruo ? " <i>(con movimenti non solo di deposito/prelievo)</i>" : ""));
+                marcati.add(t.NuovoNome + (t.NonCongruo ? " <i>(con movimenti non solo di deposito/prelievo)</i>" : "")
+                        + (t.Valorizzato ? " <i>(con movimenti valorizzati)</i>" : ""));
             } else if (t.Motivo != null) {
                 normali.add("<b>" + t.Nome + "</b> : " + t.Motivo);
             }
@@ -15699,8 +15708,7 @@ if (result != null && !result.isAction("cancel")) {
             if (!dettaglio.isEmpty()) dettaglio = dettaglio + "<br>";
             dettaglio = dettaglio + "<b>Token lasciati normali (" + normali.size() + ") :</b><br>"
                     + DepositiPrelievi_ElencoPerDialog(normali, 10)
-                    + "<br>Per i token valorizzati azzera prima il valore dei loro movimenti; per quelli senza "
-                    + "Address o Rete usa l'apposita funzione in \"Giacenze a Data\".";
+                    + "<br>Per i token senza Address o Rete usa l'apposita funzione in \"Giacenze a Data\".";
         }
         if (dettaglio.isEmpty()) return;
 
@@ -17016,23 +17024,18 @@ if (result != null && !result.isAction("cancel")) {
         //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
         String NuovoNome = NomeMoneta;
 
-        String Testo;
 
 //1 - Verifico se il token ha mai avuto Prezzo      
-        //Controllo nella tabella del dettaglio se il token ha mai avuto prezzo
-        //se non ha avuto mai prezzo permetto di identificare il token come scam
+        //Un token con movimenti valorizzati si può marcare come SCAM, ma solo dopo un avviso: di solito i
+        //token scam non hanno prezzo. Il valore dei movimenti resta com'è.
         for (String ID : IDMovimentiTokenGlobale) {
             String movimento[] = MappaCryptoWallet.get(ID);
-            //Controllo se il movimento è prezzato
-            //Qualora lo sia e la moneta deve essere classificata con SCAM (non il contratio)
-            //emetto un avviso ed esco dalla funzione
-            if (Prezzi.isMovimentoPrezzato(movimento) && Double.parseDouble(movimento[15]) != 0 && !Funzioni.isSCAM(NomeMoneta)) {
-                Testo = "<b>ATTENZIONE!!! :</b> Il Token <b>" + NomeMoneta + "</b> ha dei movimenti Valorizzati.<br><br>"
-                        + "I token scam non dovrebbero mai essere valorizzati!<br><br>"
-                        + "Se si vuole forzare l'assegnazione di questo token come scam bisogna prima portare a zero il valore dei movimenti che lo riguardano<br>";
-                Messaggi.WarningMessage("Verifica i movimenti", Testo, this);
-                return NuovoNome;
-
+            if (Prezzi.isMovimentoPrezzato(movimento) && Funzioni.isBigDecimalNonZero(movimento[15]) && !Funzioni.isSCAM(NomeMoneta)) {
+                AppDialog.DialogResult result = Messaggi.Personalizzati_SINO_SCAMTokenValorizzato(NomeMoneta, this);
+                if (result == null || !result.isAction("continue-anyway")) {
+                    return NuovoNome;
+                }
+                break;
             }
         }
 

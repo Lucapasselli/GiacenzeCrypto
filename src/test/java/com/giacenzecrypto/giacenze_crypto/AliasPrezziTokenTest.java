@@ -35,6 +35,22 @@ class AliasPrezziTokenTest {
         AliasPrezziToken.Carica();
     }
 
+    /**
+     * Il ricaricamento a sessione avviata (aggiornamento delle configurazioni da GitHub) sostituisce le mappe invece di
+     * svuotarle: chi le stava leggendo continua a vedere quelle di prima, intere, e chi le legge dopo vede le nuove.
+     */
+    @Test
+    void ilRicaricamentoSostituisceLeMappeSenzaSvuotareQuelleInUso() {
+        java.util.Map<String, String> primaStesso = Principale.Mappa_MoneteStessoPrezzo;
+        java.util.Map<String, String> primaAlias = Principale.Mappa_AddressRete_Nome;
+        int voci = primaStesso.size();
+        AliasPrezziToken.Carica();
+        assertNotSame(primaStesso, Principale.Mappa_MoneteStessoPrezzo);
+        assertNotSame(primaAlias, Principale.Mappa_AddressRete_Nome);
+        assertEquals(voci, primaStesso.size(), "la mappa vecchia non va toccata");
+        assertEquals("USDC", Principale.Mappa_MoneteStessoPrezzo.get("lyusdc"), "e resta senza distinzione di maiuscole");
+    }
+
     @Test
     void ogniVoceDelFileEValidaENessunaESaltata() {
         assertNotNull(tabelle);

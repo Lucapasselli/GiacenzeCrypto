@@ -128,7 +128,7 @@ private static final long serialVersionUID = 3L;
     static TreeMap<String, String[]> MappaCryptoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
     
     static Map<String, String[]> Mappa_ChainExplorer = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa delle chain per la defi
-    static Map<String, String> Mappa_AddressRete_Nome = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa che converte gli address di una rete in nome moneta per binance, serve per l'acquisizione dei prezzi in maniera più precisa
+    static volatile Map<String, String> Mappa_AddressRete_Nome = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Sostituita in blocco da AliasPrezziToken.Applica, mai modificata sul posto. Mappa che converte gli address di una rete in nome moneta per binance, serve per l'acquisizione dei prezzi in maniera più precisa
     static public Map<String, List<String[]>> Mappa_RW_ListeXGruppoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     /** Righi FIAT del quadro W/RW (valuta estera presso intermediario estero), tenuti separati da
      *  {@link #Mappa_RW_ListeXGruppoWallet} perché il path CRYPTO resti immutato. Popolata da
@@ -236,7 +236,7 @@ private static final long serialVersionUID = 3L;
     public static Set<String> setCryptovalute = new HashSet<>();
     
     
-    static public Map<String, String> Mappa_MoneteStessoPrezzo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static public volatile Map<String, String> Mappa_MoneteStessoPrezzo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Sostituita in blocco da AliasPrezziToken.Applica
     
     public transient Calcoli_RT.AnalisiPlus APlus;
     //true se l'ultimo RW_CalcolaRW e' arrivato in fondo; false se interrotto dall'utente col
@@ -649,6 +649,11 @@ private static final long serialVersionUID = 3L;
         try {
             GUI_NovitaVersione.MostraSeNuovaVersione(this, MappaCryptoWallet.isEmpty());
             if (Principale_Opzioni_Pulizie.RicompenseEarnDoppie_Gestisci(this, true)) {
+                Funzioni_AggiornaTutto();
+                TabellaCryptodaAggiornare = false;
+            }
+            //Movimenti scartati da scaricamenti precedenti che le mappe di oggi riconoscono (ScartiImport)
+            if (Principale_RecuperoScarti.Controlla(this, false)) {
                 Funzioni_AggiornaTutto();
                 TabellaCryptodaAggiornare = false;
             }
@@ -13795,7 +13800,24 @@ if (result.isAction("delete-all")) {
                 Riepiloga("import complete", aggiornati.get("import"));
                 Riepiloga("mappe causali",   aggiornati.get("importmappe"));
                 Riepiloga("varie",           aggiornati.get("varie"));
+                //Gli alias dei prezzi sono l'unico file di config/varie tenuto in memoria (gli altri si rileggono a
+                //ogni uso): se e' cambiato va ricaricato subito, o le importazioni di questa sessione lo ignorano
+                java.util.List<String> varie = aggiornati.get("varie");
+                if (varie != null && varie.contains(AliasPrezziToken.NOME + ".json")) {
+                    AliasPrezziToken.Carica();
+                    System.out.println("AggiornamentoConfig: alias dei prezzi ricaricati");
+                }
                 if (!Store) Riepiloga("loghi", aggiornati.get("loghi"));
+
+                //Mappe nuove: movimenti scartati in passato perche' sconosciuti potrebbero ora essere riconosciuti
+                //(ScartiImport). Il controllo aspetta che la finestra sia libera, cioe' senza dialoghi aperti sopra.
+                java.util.List<String> mappe = aggiornati.get("importmappe");
+                if (mappe != null && !mappe.isEmpty()) {
+                    SwingUtilities.invokeLater(() -> Principale_RecuperoScarti.ControllaQuandoLibero(Principale.this, () -> {
+                        Funzioni_AggiornaTutto();
+                        TabellaCryptodaAggiornare = false;
+                    }));
+                }
             }
 
             private void Riepiloga(String descrizione, java.util.List<String> aggiornati) {

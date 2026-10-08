@@ -765,6 +765,9 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         //resterebbe altrimenti in attesa che l'utente lo chiuda.
         PopolaTabella();
         MostraResoconto(Riepilogo);
+        //Dopo il resoconto: movimenti scartati da scaricamenti precedenti che le mappe ora riconoscono
+        //(vedi ScartiImport). Se ne aggiunge, il ricalcolo parte al ritorno sulla finestra principale.
+        Principale_RecuperoScarti.Controlla(this, true);
 
     }//GEN-LAST:event_Bottone_AggiornaActionPerformed
 
@@ -806,6 +809,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         }
         PopolaTabella();
         MostraResoconto(Riepilogo);
+        Principale_RecuperoScarti.Controlla(this, true);
 
     }//GEN-LAST:event_Bottone_AggiornaSelezionatiActionPerformed
 

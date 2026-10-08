@@ -292,6 +292,12 @@ public class Principale_DocumentiFonte {
             return EliminaDocumentoConMovimenti(Ids.get(0), owner);
         }
 
+        //Un documento senza movimenti puo' essere quello di uno scaricamento che ha solo scartato dei record
+        //sconosciuti: e' l'unico posto in cui quei record esistono ancora (vedi ScartiImport)
+        boolean conScarti = false;
+        for (int Id : Ids) {
+            if (ScartiImport.HaScarti(Id)) conScarti = true;
+        }
         AppDialog.DialogResult result = AppDialog.builder(owner)
                 .windowTitle("Conferma eliminazione")
                 .bodyTitle("Eliminazione dei documenti di origine")
@@ -303,7 +309,10 @@ public class Principale_DocumentiFonte {
                         + (Ids.size() == 1 ? " documento" : " documenti")
                         + ", copia del file e riga di registro.<br><br>"
                         + "Nessun movimento vi fa più riferimento, ma l'operazione non è reversibile : "
-                        + "il file originale non è più recuperabile dall'applicazione.")
+                        + "il file originale non è più recuperabile dall'applicazione."
+                        + (conScarti ? "<br><br><b>Attenzione</b> : contiene movimenti che all'importazione erano "
+                                + "sconosciuti e sono stati scartati. Finché il documento resta, il programma può "
+                                + "recuperarli quando saprà riconoscerli, eliminandolo non più." : ""))
                 .action(AppDialog.DialogAction.builder("cancel", "Annulla")
                         .role(AppDialog.ActionRole.SECONDARY)
                         .build())

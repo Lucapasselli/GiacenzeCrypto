@@ -597,6 +597,8 @@ public class DocumentiFonte {
         if (d != null && !Funzioni.noData(d.PercorsoRelativo)) {
             new File(CartellaDocumenti(), d.PercorsoRelativo).delete();
         }
+        //Gli scarti registrati puntano al documento per poter essere riletti: senza il file non c'e' piu' nulla
+        ScartiImport.CancellaDocumento(Id);
     }
 
     //=====================================================================================================

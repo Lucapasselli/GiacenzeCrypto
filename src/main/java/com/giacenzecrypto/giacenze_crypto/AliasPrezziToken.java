@@ -71,6 +71,11 @@ public class AliasPrezziToken {
      * senza alias i token noti tornerebbero a DefiLlama in silenzio, e il ripiego va almeno scritto nel log.
      */
     public static void Carica() {
+        //Chiamata all'avvio (VarCondivise.CompilaMappaChain) e di nuovo quando l'aggiornamento delle
+        //configurazioni, che gira in background, scarica un file nuovo: senza la seconda chiamata le voci
+        //arrivate in quella sessione restavano inattive fino al riavvio, e i movimenti importati nel frattempo
+        //venivano prezzati senza alias (visto l'08/10/2026: un reward LYUSDC rimasto senza prezzo, con la
+        //voce LYUSDC -> USDC gia' sul disco)
         Tabelle t = MappeCausali.CaricaConRipiego(NOME, MappeCausali.Cartella.VARIE, AliasPrezziToken::Interpreta);
         if (t == null) {
             LoggerGC.ScriviErrore("AliasPrezziToken: " + NOME + ".json non disponibile, uso l'elenco minimo interno");
@@ -84,10 +89,16 @@ public class AliasPrezziToken {
      * a confronto il file con l'elenco storico ({@link #Predefinite()}) senza passare dal disco.
      */
     static void Applica(Tabelle t) {
-        Principale.Mappa_AddressRete_Nome.clear();
-        Principale.Mappa_AddressRete_Nome.putAll(t.alias());
-        Principale.Mappa_MoneteStessoPrezzo.clear();
-        Principale.Mappa_MoneteStessoPrezzo.putAll(t.stessoPrezzo());
+        //Mappe nuove sostituite in un colpo, non svuotate e riempite: Carica() gira anche a sessione avviata,
+        //quando l'aggiornamento da GitHub porta un file nuovo, e un'importazione in corso puo' star leggendo gli
+        //alias proprio in quel momento. Fra clear() e putAll() avrebbe visto le mappe vuote (prezzi presi dalla
+        //moneta sbagliata), e una TreeMap modificata mentre la si scorre non da' garanzie.
+        Map<String, String> alias = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        alias.putAll(t.alias());
+        Map<String, String> stessoPrezzo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        stessoPrezzo.putAll(t.stessoPrezzo());
+        Principale.Mappa_AddressRete_Nome = alias;
+        Principale.Mappa_MoneteStessoPrezzo = stessoPrezzo;
         Map<String, String[]> riferimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         riferimenti.putAll(t.riferimenti());
         Riferimenti = riferimenti;

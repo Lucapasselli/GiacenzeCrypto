@@ -1406,8 +1406,12 @@ public static Path getNodeExePath() {
         }
         //Uno scaricamento che non aggiunge nulla (nessuna novità, interruzione, errore) butta via il proprio
         //NDJSON: il registro resterebbe altrimenti pieno di documenti a cui nessun movimento fa riferimento.
-        DocumentiFonte.ChiudiRegistrazione(new DocumentiFonte.Registrazione(IdSessione, true),
-                Esito == null ? 0 : Esito.Aggiunte);
+        //Non quello che ha scartato dei bill perché sconosciuti: e' l'unico posto in cui quei bill esistono
+        //ancora, e la data di partenza dei prossimi scaricamenti li ha gia' superati (vedi ScartiImport).
+        int Aggiunte = Esito == null ? 0 : Esito.Aggiunte;
+        if (Aggiunte > 0 || !ScartiImport.HaScarti(IdSessione)) {
+            DocumentiFonte.ChiudiRegistrazione(new DocumentiFonte.Registrazione(IdSessione, true), Aggiunte);
+        }
         return Esito;
     }
 
@@ -2361,6 +2365,12 @@ public static Path getNodeExePath() {
      * <p>I rendimenti maturati nella posizione <b>non</b> si leggono da qui: OKX li accredita a parte, nel token
      * ricevuto, con un bill "Liquid Staking earnings" (il 05/10/2026 alle 14:44, 2,40712633 LYUSDC contro
      * 2,37629388 USDC di {@code realizedEarnings}), che e' gia' un REWARD. Leggerli anche qui li conterebbe due volte.
+     *
+     * <p>Non e' l'unica forma del 330. Quando l'utente <b>sottoscrive direttamente</b> un prodotto di Liquid Staking
+     * (08/10/2026: 0,3745958 SOL in OKSOL, 1000 USDC in LYUSDC) OKX scrive anche la gamba in uscita, un bill 329
+     * "Liquid Staking subscription" nello stesso secondo: {@code OKX_Tipi.json} gli da' la stessa etichetta del 330
+     * proprio perche' qui sotto venga riconosciuto come uscita gia' presente, e allora non si cerca nessuna posizione.
+     * Prima della mappatura del 329 (v1.004) la ricerca falliva e finivano fra gli sconosciuti tutte e due le righe.
      *
      * <p>Lo storico arriva per intero quando fra i bill c'e' un 330 ({@link #ARGOMENTO_STORICO_ONCHAIN_COMPLETO}).
      * Se le posizioni non si trovano il bill riceve {@link #CAUSALE_LIQUID_STAKING_SENZA_ORIGINE}, resta fra gli

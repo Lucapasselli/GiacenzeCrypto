@@ -295,6 +295,24 @@ public class DatabaseH2 {
                 stmtDoc.execute("CREATE INDEX IF NOT EXISTS IDX_DOCUMENTIFONTE_HASH ON DOCUMENTIFONTE (Hash)");
             }
 
+            //Registro dei record grezzi che un'importazione ha scartato perche' sconosciuti (es. un codice
+            //type OKX non ancora mappato), e dei documenti gia' riletti alla loro ricerca: vedi ScartiImport.
+            //Stato: ATTESA (scartato, da riproporre quando le mappe lo riconosceranno), IGNORATO (l'utente
+            //ha detto di non recuperarlo). Chiave e' l'identita' del record grezzo, es. "Funding:<billId>".
+            createTableSQL = "CREATE TABLE IF NOT EXISTS SCARTI_IMPORT ("
+                    + "Origine VARCHAR(40) NOT NULL, "
+                    + "Chiave VARCHAR(200) NOT NULL, "
+                    + "IdDocumento INT, "
+                    + "Causale VARCHAR(255), "
+                    + "DataMovimento VARCHAR(19), "
+                    + "Stato VARCHAR(12), "
+                    + "PRIMARY KEY (Origine, Chiave))";
+            EseguiDDL(connectionPersonale, createTableSQL);
+            createTableSQL = "CREATE TABLE IF NOT EXISTS SCARTI_ANALISI ("
+                    + "IdDocumento INT PRIMARY KEY, "
+                    + "Impronta VARCHAR(64))";
+            EseguiDDL(connectionPersonale, createTableSQL);
+
             //Storico delle modifiche ai movimenti: una riga per ogni modifica manuale che ricalcola l'ID
             //(GUI_ModificaMovimento CASO A2), per ogni traslazione oraria e per ogni modifica in place.
             //RigaOriginale è la riga com'era PRIMA, serializzata come nel file movimenti.crypto.db.

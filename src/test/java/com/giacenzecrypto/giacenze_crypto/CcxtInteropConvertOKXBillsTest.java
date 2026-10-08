@@ -3,6 +3,7 @@ package com.giacenzecrypto.giacenze_crypto;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -242,6 +243,38 @@ class CcxtInteropConvertOKXBillsTest {
         Importazioni.Esito E = Importazioni.Ex_OKX_SoloCausaliSconosciute(righe, "OKX");
         assertNotNull(E);
         assertEquals(1, E.Sconosciute);
+    }
+
+    /** Sottoscrizione diretta di Liquid Staking (08/10/2026): 329 in uscita e 330 in entrata nello stesso secondo */
+    private static final String BILL_SOTTOSCRIZIONE_OKSOL = """
+        [{"billId":"200062491912","ccy":"SOL","balChg":"-0.3745958","type":"329",
+          "notes":"Liquid Staking subscription","ts":"1791478227000"},
+         {"billId":"200062491913","ccy":"OKSOL","balChg":"0.3745958","type":"330",
+          "notes":"Liquid Staking swapping","ts":"1791478227000"}]
+        """;
+
+    /**
+     * La sottoscrizione diretta di un prodotto di Liquid Staking porta <b>tutte e due</b> le gambe: la moneta in
+     * uscita e' il bill 329. Non va cercata nessuna posizione On-chain Earn (non ce n'e', e prima della mappatura
+     * del 329 il 330 finiva fra gli sconosciuti insieme a lui): le due righe sono gia' uno scambio SOL -> OKSOL.
+     */
+    @Test
+    void laSottoscrizioneDirettaDiLiquidStakingPortaGiaLaGambaInUscita() {
+        List<String[]> righe = new java.util.ArrayList<>(CcxtInterop.convertOKXBills(bills(BILL_SOTTOSCRIZIONE_OKSOL), "Funding"));
+        assertEquals(2, righe.size());
+        for (String[] r : righe) {
+            assertEquals("Liquid Staking swapping", r[4]);
+        }
+        List<String[]> nonAbbinati = CcxtInterop.AbbinaLiquidStakingOnChain(righe, null);
+        assertTrue(nonAbbinati.isEmpty(), "la gamba in uscita c'e' gia', nessuna ricostruzione e nessun avviso");
+        assertEquals(2, righe.size(), "nessuna gamba ricostruita in piu'");
+
+        Map<String, String> mappa = Importazioni.Ex_OKX_MappaCausali();
+        List<List<String[]>> gruppi = Importazioni.Ex_OKX_Raggruppa(Importazioni.Ex_OKX_Ordina(righe));
+        assertEquals(1, gruppi.size(), "stesso istante: un solo scambio");
+        for (String[] r : gruppi.get(0)) {
+            assertEquals("SCAMBIO CRYPTO-CRYPTO", mappa.get(r[4]));
+        }
     }
 
     /**

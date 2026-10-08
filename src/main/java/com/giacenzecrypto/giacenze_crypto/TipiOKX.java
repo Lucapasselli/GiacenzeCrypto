@@ -156,6 +156,28 @@ public class TipiOKX {
     }
 
     /**
+     * @return il contenuto della tabella come testo stabile (le mappe sono ordinate), da cui
+     *         {@link ScartiImport} ricava se la decodifica è cambiata dall'ultima volta che un documento è stato
+     *         riletto. Sul contenuto e non sulla versione del file: una correzione fatta a mano conta lo stesso.
+     */
+    String Impronta() {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, Voce> e : trading.entrySet()) {
+            sb.append("T|").append(e.getKey()).append('|').append(e.getValue().positivo).append('|').append(e.getValue().negativo).append('\n');
+        }
+        for (Map.Entry<String, Voce> e : funding.entrySet()) {
+            sb.append("F|").append(e.getKey()).append('|').append(e.getValue().positivo).append('|').append(e.getValue().negativo).append('\n');
+        }
+        for (Map.Entry<String, String> e : archivioInstType.entrySet()) {
+            sb.append("I|").append(e.getKey()).append('|').append(e.getValue()).append('\n');
+        }
+        for (Map.Entry<String, String> e : archivioSubType.entrySet()) {
+            sb.append("S|").append(e.getKey()).append('|').append(e.getValue()).append('\n');
+        }
+        return sb.toString();
+    }
+
+    /**
      * Converte il contenuto del file nella tabella.
      *
      * @param contenuto testo JSON del file

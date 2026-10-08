@@ -776,6 +776,27 @@ public class Importazioni {
             Map<String, String> Mappa_Conversione_Causali, List<String[]> listaScambiDifferiti) {
 
         List<String[]> listaCompleta = new ArrayList<>();
+        for (List<String[]> gruppo : Ex_OKX_Raggruppa(righeOrdinate)) {
+            listaCompleta.addAll(Ex_OKX_Consolida(gruppo, Mappa_Conversione_Causali, listaScambiDifferiti));
+        }
+        return listaCompleta;
+    }
+
+    /**
+     * Il raggruppamento di {@link #Ex_OKX_RaggruppaEConsolida} senza il consolidamento: i gruppi di righe che
+     * diventeranno movimenti, nell'ordine in cui verrebbero consolidati, già divisi per ordine
+     * ({@link #Ex_OKX_SuddividiPerOrdine}).
+     *
+     * <p>Separato perché serve anche a {@link ScartiImport}, che deve sapere quali bill finirebbero nello stesso
+     * movimento <b>senza</b> consolidare: il consolidamento cerca il prezzo di ogni riga, cioè va in rete.
+     * Legge solo l'orario {@code [0]}, la causale {@code [4]} e l'ordine {@code [13]}.
+     *
+     * @param righeOrdinate righe in formato intermedio a 19 campi, in ordine cronologico
+     * @return i gruppi, nessuno vuoto
+     */
+    static List<List<String[]>> Ex_OKX_Raggruppa(List<String[]> righeOrdinate) {
+
+        List<List<String[]>> gruppi = new ArrayList<>();
         List<String[]> listaMovimentidaConsolidare = new ArrayList<>();
         String ultimaData = "";
 
@@ -807,7 +828,7 @@ public class Importazioni {
                         if (rigaLista[4].equalsIgnoreCase("Sell")) trovatoSell = true;
                     }
                     if (trovatoSell && trovatoBuy) {
-                        listaCompleta.addAll(Ex_OKX_ConsolidaPerOrdine(listaMovimentidaConsolidare, Mappa_Conversione_Causali, listaScambiDifferiti));
+                        gruppi.addAll(Ex_OKX_SuddividiPerOrdine(listaMovimentidaConsolidare));
                         //una volta fatto tutto svuoto la lista movimenti e la preparo per il prossimo
                         listaMovimentidaConsolidare = new ArrayList<>();
                     }
@@ -815,9 +836,9 @@ public class Importazioni {
             } else if (DataMeno1Secondo.equalsIgnoreCase(ultimaData)
                     && DatoRiga[4].contains("Convert")) {//intercetto i movimenti che avvengono ad 1 secondo di distanza
                 listaMovimentidaConsolidare.add(DatoRiga);
-            } else //altrimenti consolido il movimento precedente
+            } else //altrimenti chiudo il gruppo precedente
             {
-                listaCompleta.addAll(Ex_OKX_ConsolidaPerOrdine(listaMovimentidaConsolidare, Mappa_Conversione_Causali, listaScambiDifferiti));
+                gruppi.addAll(Ex_OKX_SuddividiPerOrdine(listaMovimentidaConsolidare));
 
                 //una volta fatto tutto svuoto la lista movimenti e la preparo per il prossimo
                 listaMovimentidaConsolidare = new ArrayList<>();
@@ -826,8 +847,8 @@ public class Importazioni {
             ultimaData = orario;
         }
 
-        listaCompleta.addAll(Ex_OKX_ConsolidaPerOrdine(listaMovimentidaConsolidare, Mappa_Conversione_Causali, listaScambiDifferiti));
-        return listaCompleta;
+        gruppi.addAll(Ex_OKX_SuddividiPerOrdine(listaMovimentidaConsolidare));
+        return gruppi;
     }
 
     /**
@@ -896,15 +917,7 @@ public class Importazioni {
      * @return le stesse righe, ordinate cronologicamente e con {@code [3]} valorizzato
      */
     static List<String[]> Ex_OKX_OrdinaEClassifica(List<String[]> righe, Map<String, String> Mappa_Conversione_Causali) {
-        List<String[]> righeOrdinate = new ArrayList<>(righe);
-        righeOrdinate.sort((r1, r2) -> {
-            int cmp = r1[0].compareTo(r2[0]);
-            if (cmp != 0) return cmp;
-            if (Funzioni.isNumeric(r1[14], false) && Funzioni.isNumeric(r2[14], false)) {
-                return new BigDecimal(r1[14]).compareTo(new BigDecimal(r2[14]));
-            }
-            return r1[14].compareTo(r2[14]);
-        });
+        List<String[]> righeOrdinate = Ex_OKX_Ordina(righe);
 
         for (String riga[] : righeOrdinate) {
             String MovGenerico = Mappa_Conversione_Causali.get(riga[4]);
@@ -916,6 +929,27 @@ public class Importazioni {
                 riga[3] = MovGenerico;
             }
         }
+        return righeOrdinate;
+    }
+
+    /**
+     * L'ordinamento di {@link #Ex_OKX_OrdinaEClassifica}, da solo: per timestamp e, a parità, per billId
+     * numerico. Lo usa anche {@link ScartiImport}, che deve raggruppare le righe come l'import senza toccare i
+     * contatori dei movimenti sconosciuti.
+     *
+     * @param righe righe in formato intermedio a 19 campi, in ordine qualsiasi
+     * @return una nuova lista con gli stessi array, in ordine cronologico
+     */
+    static List<String[]> Ex_OKX_Ordina(List<String[]> righe) {
+        List<String[]> righeOrdinate = new ArrayList<>(righe);
+        righeOrdinate.sort((r1, r2) -> {
+            int cmp = r1[0].compareTo(r2[0]);
+            if (cmp != 0) return cmp;
+            if (Funzioni.isNumeric(r1[14], false) && Funzioni.isNumeric(r2[14], false)) {
+                return new BigDecimal(r1[14]).compareTo(new BigDecimal(r2[14]));
+            }
+            return r1[14].compareTo(r2[14]);
+        });
         return righeOrdinate;
     }
 
@@ -973,6 +1007,9 @@ public class Importazioni {
         }
 
         List<String[]> righeOrdinate = Ex_OKX_OrdinaEClassifica(righe, Mappa_Conversione_Causali);
+        //I bill scartati perche' sconosciuti si annotano adesso, finche' [2] dice ancora da quale conto
+        //vengono: subito sotto diventa "Principale" per tutti. Si registrano solo a scrittura avvenuta.
+        List<String[]> Sconosciute = ScartiImport.RigheSconosciute(righeOrdinate);
 
         //I movimenti scaricati da OKX finiscono tutti sul wallet "Principale": i conti Funding e Trading
         //non sono piu' due portafogli distinti, perche' i giroconti fra l'uno e l'altro sono causali
@@ -1027,6 +1064,13 @@ public class Importazioni {
 
         //questo lo faccio alla fine perchè vado ad agire direttamente sulla mappa già compilata
         ConsolidaMovimentiDifferiti(listaScambiDifferiti, false);
+
+        //Dopo la scrittura e non prima: un'importazione abbandonata non ha scartato nulla, alla corsa successiva
+        //gli stessi bill tornano. Registrati, invece, potranno essere recuperati dal documento quando le
+        //mappe li riconosceranno, anche se la data di partenza degli scaricamenti li ha ormai superati.
+        if (!AttesaConnessione.Abortita()) {
+            ScartiImport.Registra(ScartiImport.ORIGINE_OKX, DocumentoFonteCorrente, Sconosciute);
+        }
 
         if (TransazioniAggiunte > 0) Principale.TabellaCryptodaAggiornare = true;
         return InsScart;

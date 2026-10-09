@@ -221,6 +221,10 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
 
         Map<String, String> tokenAccountOwnerBatch = CostruisciMappaTokenAccountOwner(transactions);
 
+        //Prezzi di tutta l'importazione a gruppi (DefiLlama per i token SPL, exchange per SOL), prima che
+        //InserisciMonete li chieda uno per uno
+        PrezziImportDeFi.PreScarica(PrezziImportDeFi.RaccogliSolana(transactions, walletAddress), "import SOL", null);
+
         for (int i = 0; i < transactions.length(); i++) {
             int numMovimenti = 0;
             TransazioneDefi trans = new TransazioneDefi();

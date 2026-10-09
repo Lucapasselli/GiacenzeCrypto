@@ -691,15 +691,24 @@ initialised once, "SI" only on a new installation (`movimenti.crypto.db` absent 
 
 **Address tokens outside the CoinGecko list are priced by DefiLlama** (`PrezziDefiLlama`, 2026-10-09, user's rules):
 `CambioAddressEUR` no longer marks them KO before asking. A DefiLlama price is accepted if `confidence` > 0,9, otherwise
-only for listed tokens (as before, when confidence was ignored) — one rule, `PrezziDefiLlama.Ammesso`, for `/chart`
-and for the instant endpoint. `/chart` stays first (one call serves 500 hours of an import); `/prices/historical` is the
-fallback, because pool/vault tokens have a `/chart` point only every 3-5 hours and the cache is read at ±60 min. The
-batch for W/RW, T/RT and Giacenze a data (`PreScaricaMonete`, from `PreScaricaPrezziMonete`) asks **only tokens with no
-local price** (`Prezzi.HaPrezzoLocaleAddress`): the cache returns the quote closest to the instant, so a new DefiLlama
-row could otherwise displace the one an already-filed year was declared with. That is the whole protection of past
-declarations (no `dal` guard, user's choice). `PrezziKO` is untouched: the batch writes the cache, which is read before
-the KOs. ⚠️ The single path must skip DefiLlama for an instant the batch already asked (`GiaChiestoAllIstante`): `/chart`
-sleeps 2 s per call, and the ~110 junk BSC tokens of the user's archive took Giacenze a data from 26 s to 284 s. Measurements and decisions in `nocommit/Documentazione/Analisi_Prezzi_LP_DefiLlama.md`.
+only for listed tokens (as before, when confidence was ignored) — one rule, `PrezziDefiLlama.Ammesso`. **The only
+endpoint is `/batchHistorical`** (many tokens × their own instants per call, `searchWidth=1h` = one hour *per side*,
+URL refused above ~9 KB): `/chart` was dropped — pool/vault tokens have a point there only every 3-5 hours (the
+instant data is far denser), its 500-point cap is per *call*, and the old code slept 2 s per token. Prices are fetched
+in batches **before** valuation: EVM explorer and Moralis imports, Solana import, `PreScaricaPrezzi` (Ricalcola prezzi,
+Trasla orario) and `PreScaricaPrezziMonete` (W/RW, T/RT, Giacenze a data); `CambioAddressEUR` asks a single instant
+only if no batch did. Batches ask **only pairs with no local price and no KO** (`PreScaricaCoppie`): the cache returns
+the quote closest to the instant, so a new DefiLlama row could otherwise displace the one an already-filed year was
+declared with. That is the whole protection of past declarations (no `dal` guard, user's choice). ⚠️ The single path
+must skip DefiLlama for an instant a batch already asked (`GiaChiestoAllIstante`), or every unpriced token redoes its
+call: with `/chart` that took Giacenze a data from 26 s to 284 s. Import instants must match `TransazioneDefi`'s own
+round trip through text (`IstanteImport`). **DeFi imports pre-fetch the exchange prices too** (`PrezziImportDeFi`:
+one walk of the downloaded JSON gives the address pairs for DefiLlama and the symbol pairs — native coin when the tx
+moves value or the wallet pays the fee, tokens with an alias — for `Prezzi.PreScaricaPrezziSimboli`). That one drops
+pairs covered by personal prices or the old hourly `XXXEUR` archive (`CopertaDaPrezzoLocale`), which single-coin
+valuation reads before downloading and `FiltraRichiesteGiaCoperte` does not: without it the test wallet asked 218
+pairs instead of ~90. Measured on a real Cronos wallet (339 tx, 46 tokens, address prices removed from the cache):
+200-208 s before 2026-10-09, 52-79 s now, of which ~19 s explorer downloads and ~7 s the daily CoinGecko list. Measurements and decisions in `nocommit/Documentazione/Analisi_Prezzi_LP_DefiLlama.md`.
 
 **The remote path reads on-chain DEX prices (Fase 1-bis, 2026-08-25) and is opt-in — see `ServizioPrezziClient.OPZIONE_ABILITATO_DEFAULT`.** The old CCXT-based shared cache was retired entirely (all seven configured exchanges were confirmed, from their own published API terms, to forbid redistributing market data to third parties even for non-commercial use — see `nocommit/Documentazione/Analisi_VPS_Prezzi_Sito.md`). The replacement reads prices directly from DEX pool state (`ServizioPrezzi/src/onchain/`), which is nobody's market data. It was briefly switched on by default on 2026-08-26, once the `/v1/monete` transparency endpoint (below) made the service's coverage independently checkable, then reverted to disabled-by-default the same day at the user's request pending further testing — do not flip `OPZIONE_ABILITATO_DEFAULT` back to `"SI"` without asking. It's still a checkbox in *Opzioni → Opzioni di Calcolo* (`Prezzi_Opzioni_CheckBox_ServizioOnchain`), persisted as `ServizioPrezziClient.OPZIONE_ABILITATO` in `personale.mv.db`. Tests override it with the `prezzi.servizio.abilitato` system property.
 

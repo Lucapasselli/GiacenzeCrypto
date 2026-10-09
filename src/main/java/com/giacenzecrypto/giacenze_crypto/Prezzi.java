@@ -795,16 +795,12 @@ public class Prezzi {
             return null;
         }
 
-        //Provo prima su DefiLlama (nessun vincolo di 365gg): la serie oraria /chart, che con una chiamata
-        //serve tutti i movimenti vicini, e se non ha un punto entro l'ora l'istante preciso
-        //Se l'istante e' gia' stato chiesto (pre-scarico di gruppo), DefiLlama ha gia' risposto: non si richiede
-        if (IPrezzo == null && !PrezziDefiLlama.GiaChiestoAllIstante(Address, Rete, Datalong)) {
-            RecuperaTassidiCambiodaAddress_DefiLlama(DataGiorno, Address, Rete, Simbolo);
+        //Provo prima su DefiLlama (nessun vincolo di 365gg), all'istante esatto. Di norma l'ha gia' chiesto un
+        //pre-scarico di gruppo (import, ricalcolo, valorizzazione a una data): allora la risposta c'e' gia'
+        //stata, e se in cache non c'e' un prezzo DefiLlama non lo ha. La serie /chart non si usa piu'.
+        if (IPrezzo == null && !PrezziDefiLlama.GiaChiestoAllIstante(Address, Rete, Datalong)
+                && PrezziDefiLlama.ScaricaIstante(Datalong, Address, Rete)) {
             IPrezzo = DammiPrezzoDaDatabase("", Datalong, "", Rete, Address, 60, qta);
-            if (IPrezzo == null && PrezziDefiLlama.DaChiedereAllIstante(Address, Rete)
-                    && PrezziDefiLlama.ScaricaIstante(Datalong, Address, Rete)) {
-                IPrezzo = DammiPrezzoDaDatabase("", Datalong, "", Rete, Address, 60, qta);
-            }
             if (IPrezzo != null) {
                 IPrezzo.Moneta = Simbolo;
                 return IPrezzo;
@@ -2286,140 +2282,6 @@ public class Prezzi {
     public static void RitornaPrezzoDaInfoPrezzo()
     {
 
-    }
-
-    /**
-     * Scarica da DefiLlama le quotazioni orarie EUR di un token identificato dall'indirizzo di contratto,
-     * in una finestra di 500 ore, convertendo i prezzi in USD forniti dall'API tramite {@link #MappaConversioneUSDEUR}.
-     * A differenza di coingecko, non richiede che il token sia in una lista di "gestiti" e non ha vincoli sui
-     * 365 giorni. Non fa nulla se la rete non ha un nome DefiLlama configurato in {@link Principale#Mappa_ChainExplorer}.
-     * Evita richieste duplicate tramite {@link #managerRichieste}.
-     * @param DataIniziale data di riferimento per l'inizio della finestra, formato {@code yyyy-MM-dd}
-     * @param Address indirizzo di contratto del token
-     * @param Rete identificativo della blockchain/rete
-     * @param Simbolo simbolo della moneta (usato solo per i messaggi di log)
-     * @return {@code "ok"} se il recupero è andato a buon fine, altrimenti {@code null}
-     */
-    public static String RecuperaTassidiCambiodaAddress_DefiLlama(String DataIniziale, String Address, String Rete, String Simbolo) {
-        long SinceVerifica = FunzioniDate.ConvertiDatainLong(DataIniziale) - 3600000;
-        long UntilVerifica = FunzioniDate.ConvertiDatainLong(DataIniziale) + 3600000;
-        long dataAdesso1 = System.currentTimeMillis();
-        if (dataAdesso1 < UntilVerifica) UntilVerifica = dataAdesso1;
-        if (managerRichieste.isAlreadyRequested("DL_" + Address + "_" + Rete, SinceVerifica, UntilVerifica)) return null;
-        if (dataAdesso1 < SinceVerifica) return null;
-
-        if (Principale.Mappa_ChainExplorer.get(Rete) == null) return null;
-        String[] chainInfo = Principale.Mappa_ChainExplorer.get(Rete);
-        if (chainInfo.length < 5 || chainInfo[4] == null || chainInfo[4].isBlank()) return null;
-        String nomeReteDefiLlama = chainInfo[4];
-
-        RecuperaTassiCambioEURUSD();
-        if (MappaConversioneUSDEUR.isEmpty()) return null;
-
-        long dataAdesso = System.currentTimeMillis() / 1000;
-        long dataIni = (FunzioniDate.ConvertiDatainLong(DataIniziale) / 1000) - 86400;
-        // 500 ore = 1800000 secondi; se la data richiesta è nel futuro prossimo, estendo la finestra a ritroso
-        if ((dataAdesso - dataIni) < 1800000) {
-            dataIni = dataAdesso - 1800000;
-        }
-        long dataFin = dataIni + 1800000;
-
-        try {
-            TimeUnit.SECONDS.sleep(2);
-
-            String coin = nomeReteDefiLlama + ":" + Address;
-            String apiUrl = "https://coins.llama.fi/chart/" + coin + "?start=" + dataIni + "&span=500&period=1h";
-
-            System.out.println("Recupero prezzi token " + Simbolo + " con Address " + Address + " da DefiLlama su rete " + nomeReteDefiLlama
-                    + " da data " + FunzioniDate.ConvertiDatadaLongAlSecondo(dataIni * 1000));
-
-            OkHttpClient client = HTTP_CLIENT;
-            Request request = new Request.Builder().url(apiUrl).build();
-
-            try (Response response = client.newCall(request).execute()) {
-                if (!response.isSuccessful()) {
-                    System.out.println("Errore nel recupero dei prezzi del token " + Simbolo + " con Address " + Address + " da DefiLlama");
-                    managerRichieste.addRange("DL_" + Address + "_" + Rete, dataIni * 1000, dataFin * 1000);
-                    return null;
-                }
-
-                String responseBody = response.body().string();
-                if (VarCondivise.LogJsonPrezzi) {
-                    System.out.println(responseBody);
-                }
-                JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
-                JsonObject coins = json.getAsJsonObject("coins");
-
-                if (coins == null || coins.entrySet().isEmpty()) {
-                    managerRichieste.addRange("DL_" + Address + "_" + Rete, dataIni * 1000, dataFin * 1000);
-                    //Una serie vuota dice solo che in questa finestra non ci sono punti, non che DefiLlama
-                    //non conosca il token: l'istante preciso resta da chiedere
-                    return null;
-                }
-
-                JsonObject coinData = coins.entrySet().iterator().next().getValue().getAsJsonObject();
-                //Stessa regola della richiesta all'istante: fuori elenco coingecko serve affidabilita' > 0,9
-                Double affidabilita = (coinData.has("confidence") && !coinData.get("confidence").isJsonNull())
-                        ? coinData.get("confidence").getAsDouble() : null;
-                boolean ammesso = PrezziDefiLlama.Ammesso(affidabilita, PrezziDefiLlama.InElencoCoinGecko(Address, Rete));
-                PrezziDefiLlama.RegistraEsitoSerie(Address, Rete, ammesso);
-                if (!ammesso) {
-                    managerRichieste.addRange("DL_" + Address + "_" + Rete, dataIni * 1000, dataFin * 1000);
-                    return null;
-                }
-                JsonArray pricesArray = coinData.getAsJsonArray("prices");
-
-                if (pricesArray == null || pricesArray.size() == 0) {
-                    managerRichieste.addRange("DL_" + Address + "_" + Rete, dataIni * 1000, dataFin * 1000);
-                    return null;
-                }
-
-                String mergeSql = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo, rete, address) "
-                        + "KEY (timestamp, exchange, symbol, rete, address) VALUES (?, ?, ?, ?, ?, ?)";
-
-                try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(mergeSql)) {
-                    for (JsonElement element : pricesArray) {
-                        JsonObject priceObj = element.getAsJsonObject();
-                        long tsSeconds = priceObj.get("timestamp").getAsLong();
-                        long tsMillis = tsSeconds * 1000;
-                        double priceUSD = priceObj.get("price").getAsDouble();
-
-                        // Converto USD in EUR usando il tasso giornaliero
-                        String dataGiornoPrezzo = FunzioniDate.ConvertiDatadaLong(tsMillis);
-                        String rateStr = MappaConversioneUSDEUR.get(dataGiornoPrezzo);
-                        if (rateStr == null) {
-                            String dataTmp = dataGiornoPrezzo;
-                            for (int i = 0; i < 5 && rateStr == null; i++) {
-                                dataTmp = FunzioniDate.GiornoMenoUno(dataTmp);
-                                rateStr = MappaConversioneUSDEUR.get(dataTmp);
-                            }
-                        }
-                        if (rateStr == null) continue;
-
-                        double prezzoEUR = priceUSD * Double.parseDouble(rateStr);
-
-                        ps.setLong(1, tsMillis);
-                        ps.setString(2, "defillama");
-                        ps.setString(3, "");
-                        ps.setDouble(4, prezzoEUR);
-                        ps.setString(5, Rete);
-                        ps.setString(6, Address);
-                        ps.addBatch();
-                    }
-                    ps.executeBatch();
-                } catch (SQLException ex) {
-                    LoggerGC.ScriviErrore(ex);
-                }
-            }
-        } catch (IOException | InterruptedException ex) {
-            LoggerGC.ScriviErrore(ex);
-            return null;
-        }
-
-        System.out.println("Inserisco DL_" + Address + "_" + Rete + " nel manager richieste");
-        System.out.println("Since " + FunzioniDate.ConvertiDatadaLongAlSecondo(dataIni * 1000) + " - Until " + FunzioniDate.ConvertiDatadaLongAlSecondo(dataFin * 1000));
-        managerRichieste.addRange("DL_" + Address + "_" + Rete, dataIni * 1000, dataFin * 1000);
-        return "ok";
     }
 
 
@@ -4607,6 +4469,10 @@ static final int RICHIESTE_PER_BLOCCO = 100;
  * @return quante coppie (moneta, ora) sono state richieste
  */
 public static int PreScaricaPrezzi(java.util.Collection<String[]> movimenti, int annoMinimo, Download progress) {
+    //I token con address non passano dagli exchange (vedi la raccolta): si chiedono a DefiLlama, tutti
+    //insieme, agli istanti dei loro movimenti
+    PrezziDefiLlama.PreScaricaMovimenti(movimenti, annoMinimo, progress);
+
     List<RichiestaPrezzo> richieste = RaccogliRichiestePerMovimenti(movimenti, annoMinimo);
     if (richieste.isEmpty()) return 0;
 
@@ -4838,6 +4704,75 @@ public static int PreScaricaPrezziMonete(java.util.Collection<Moneta> monete, lo
     }
 
     return ScaricaRichiesteABlocchi(richieste, progress);
+}
+
+/** Un prezzo da exchange che servira': simbolo (quello che la valorizzazione cerchera') a un istante. */
+record SimboloIstante(String simbolo, long istante) {}
+
+/**
+ * Variante di {@link #PreScaricaPrezziMonete} per le <b>importazioni DeFi</b>: tante coppie (simbolo,
+ * istante), ognuna col suo istante. Prima ogni movimento della moneta della rete o di un token con alias
+ * lanciava il suo lotto Node da una richiesta: su un wallet Cronos di 339 transazioni erano 76 lotti, piu'
+ * di un minuto. Le esclusioni e le ore coperte sono quelle di {@link #PreScaricaPrezziMonete}, e come li'
+ * non si decide quale prezzo vince, solo quanto costa averlo.
+ *
+ * @param origine etichetta per il log
+ * @return quante coppie (moneta, ora) sono state richieste
+ */
+static int PreScaricaPrezziSimboli(java.util.Collection<SimboloIstante> coppie, Download progress, String origine) {
+    List<RichiestaPrezzo> richieste = RaccogliRichiestePerSimboli(coppie);
+    if (richieste.isEmpty()) return 0;
+    //Le importazioni DeFi prezzano una moneta sola con includiVecchi=true: prima di scaricare CambioXXXEUR
+    //legge i personalizzati e il vecchio archivio orario, che FiltraRichiesteGiaCoperte non guarda. Senza
+    //questo, sul wallet Cronos di prova (2021-2022) si chiedevano 218 coppie invece delle ~90 che servivano.
+    int prima = richieste.size();
+    richieste.removeIf(Prezzi::CopertaDaPrezzoLocale);
+    if (richieste.size() < prima) System.out.println("Pre-scarico prezzi (" + origine + "): " + (prima - richieste.size()) + " coppie gia' nei prezzi personalizzati o nel vecchio archivio orario");
+    if (richieste.isEmpty()) return 0;
+    richieste = FiltraRichiesteGiaCoperte(richieste, progress);
+    if (richieste.isEmpty()) return 0;
+    System.out.println("Pre-scarico prezzi (" + origine + "): " + richieste.size() + " coppie (moneta, ora) da chiedere");
+    if (progress != null) {
+        progress.SetLabel("Pre-scarico prezzi: " + richieste.size() + " quotazioni da recuperare...");
+        progress.SetMassimo(richieste.size());
+        progress.SetAvanzamento(0);
+    }
+    return ScaricaRichiesteABlocchi(richieste, progress);
+}
+
+/**
+ * I due passi di {@link #CambioXXXEUR} (con {@code includiVecchi}) che vengono prima della cache e della rete:
+ * prezzo personalizzato entro 60 minuti e vecchio archivio orario {@code XXXEUR}. Se uno dei due risponde,
+ * la valorizzazione non scarica nulla e la richiesta non serve.
+ */
+static boolean CopertaDaPrezzoLocale(RichiestaPrezzo r) {
+    if (DammiPrezzoDaDatabasePersonale(r.simbolo, r.istante, "", "", "", 60, BigDecimal.ONE) != null) return true;
+    return DatabaseH2.XXXEUR_Leggi(FunzioniDate.ConvertiDatadaLongallOra(r.istante) + " " + r.simbolo) != null;
+}
+
+/** La raccolta di {@link #PreScaricaPrezziSimboli}, senza rete: stesse regole del ciclo di {@link #PreScaricaPrezziMonete}. */
+static List<RichiestaPrezzo> RaccogliRichiestePerSimboli(java.util.Collection<SimboloIstante> coppie) {
+    List<RichiestaPrezzo> richieste = new ArrayList<>();
+    if (coppie == null || coppie.isEmpty()) return richieste;
+    long adessoMs = System.currentTimeMillis();
+    java.util.LinkedHashSet<String> chiavi = new java.util.LinkedHashSet<>();
+    for (SimboloIstante c : coppie) {
+        if (Interruzione.Richiesta()) break;
+        if (c == null || c.simbolo() == null || c.simbolo().isBlank()) continue;
+        long data = c.istante();
+        if (data > adessoMs || data < 1483225200000L) continue;
+        if (Funzioni.isSCAM(c.simbolo())) continue;
+        if (EMoneyAncoratoAdEuro(c.simbolo(), data)) continue;
+        String simbolo = AliasPrezziToken.StessoPrezzo(c.simbolo(), data).toUpperCase();
+        for (long inizioOra : OreDaCoprire(data)) {
+            if (inizioOra > adessoMs) continue;
+            if (chiavi.add(simbolo + "|" + inizioOra)) {
+                richieste.add(new RichiestaPrezzo(simbolo, inizioOra,
+                        Math.min(inizioOra + 3600000L - 1, adessoMs), data));
+            }
+        }
+    }
+    return richieste;
 }
 
 /**

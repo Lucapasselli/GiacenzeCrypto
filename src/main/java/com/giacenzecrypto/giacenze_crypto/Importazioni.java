@@ -5428,8 +5428,8 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
                 }
                 if (progressb!=null)progressb.ChiudiFinestra();
                 LoggerGC.ScriviErrore("Errore HTTP "+codiceRisposta+" durante l'importazione dei dati da "+urls+"\n"+messaggioErrore);
-                JOptionPane.showConfirmDialog(ccc, "Errore HTTP "+codiceRisposta+" durante l'importazione dei dati\n"+messaggioErrore+
-                        "\n"+"Riprovare in un secondo momento, le API dell'Explorer non rispondono correttamente.",
+                JOptionPane.showConfirmDialog(ccc, DeFi_TestoErroreExplorer(codiceRisposta, Risposta, messaggioErrore, Dominio,
+                        vespa != null && !vespa.isBlank()),
                         "Errore", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null);
                 return null;
             }
@@ -6282,6 +6282,10 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                         continueFetching=false;
                     }
 
+                    //Prezzi della pagina a gruppi (vedi il percorso explorer)
+                    PrezziImportDeFi.PreScarica(PrezziImportDeFi.RaccogliMoralis(results, walletAddress, Rete, MonetaRete),
+                            "import Moralis " + Rete, progressb);
+
                     // Elaboro ogni transazione
                     for (int i = 0; i < results.length(); i++) {
                         if (progressb.FineThread()) {
@@ -6590,6 +6594,40 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
         if (Rete.equalsIgnoreCase("SOL")) return "HELIUS";
         if (Rete.equalsIgnoreCase("BTC")) return "BITCOIN";
         return "ETHERSCAN";
+    }
+
+    /**
+     * Testo per l'utente quando l'explorer risponde con un errore HTTP durante lo scaricamento.
+     *
+     * <p>Caso a parte, verificato il 2026-10-09: senza ApiKey le istanze pubbliche Blockscout di ARB, BASE, POL e
+     * Robinhood rispondono 403 con una pagina di verifica Cloudflare ({@code cf-mitigated: challenge}), e la PRO
+     * API risponde {@code "Proceed with API key"}. Prima l'utente vedeva l'intera pagina HTML e l'invito a
+     * riprovare piu' tardi, che non serve: senza chiave non funzionera' mai. Con una ApiKey Blockscout salvata
+     * l'importazione passa dalla PRO API ({@link #DeFi_ProviderBlockscoutProUrl}).
+     *
+     * @param risposta corpo grezzo della risposta
+     * @param dettaglio dettaglio gia' estratto dal JSON di errore, o il corpo grezzo
+     * @param conChiave se la richiesta portava una ApiKey
+     */
+    static String DeFi_TestoErroreExplorer(int codice, String risposta, String dettaglio, String dominio, boolean conChiave) {
+        String corpo = risposta == null ? "" : risposta.trim();
+        boolean paginaWeb = corpo.startsWith("<");
+        boolean chiedeChiave = corpo.toLowerCase().contains("api key");
+        String host = dominio;
+        try {
+            host = java.net.URI.create(dominio).getHost();
+        } catch (RuntimeException ex) {
+            //dominio non valido come URI: si mostra com'e'
+        }
+        if ((codice == 401 || codice == 403) && !conChiave && (paginaWeb || chiedeChiave)) {
+            return "L'explorer " + host + " ha rifiutato la richiesta (HTTP " + codice + "): senza ApiKey non permette "
+                    + "di scaricare i movimenti di questa rete.\n"
+                    + "Inserire una ApiKey Blockscout in 'Opzioni' - 'ApiKey' e ripetere l'importazione.";
+        }
+        if (paginaWeb) dettaglio = "(l'explorer ha risposto con una pagina web invece che con i dati, "
+                + "probabilmente una verifica anti-bot)";
+        return "Errore HTTP " + codice + " durante l'importazione dei dati\n" + dettaglio
+                + "\nRiprovare in un secondo momento, le API dell'Explorer non rispondono correttamente.";
     }
 
     /**
@@ -7033,6 +7071,11 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                     transactionsTokenERC1155 = DeFi_PulisciJSONCronos(transactionsTokenERC1155, bloccoSoglia);
                     transactionsTxlistinternal = DeFi_PulisciJSONCronos(transactionsTxlistinternal, bloccoSoglia);
                 }
+
+                //Prezzi di tutta l'importazione a gruppi (DefiLlama per i token, exchange per la moneta della rete
+                //e i token con alias), prima che InserisciMonete li chieda uno per uno
+                PrezziImportDeFi.PreScarica(PrezziImportDeFi.RaccogliEVM(transactionsTxlist, transactionsTxlistinternal,
+                        transactionsTokentx, walletAddress, Rete, MonetaRete), "import " + Rete, progressb);
 
                 //   System.out.println(numeroTransTemp);
                 progressb.SetMassimo(numeroTrans);

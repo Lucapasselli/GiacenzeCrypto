@@ -759,8 +759,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
             if (monAlias != null) moneta = monAlias;
             if (Funzioni_WalletDeFi.isValidAddress(address, rete)) {
                 Prezzi.RecuperaTassidiCambiodaAddress_Coingecko(FunzioniDate.ConvertiDatadaLong(data), address, rete, moneta);
-                Prezzi.RecuperaTassidiCambiodaAddress_DefiLlama(FunzioniDate.ConvertiDatadaLong(data), address, rete, moneta);
-                //La serie oraria dei token di pool ha un punto ogni 3-5 ore: il prezzo all'istante colma il buco
+                //DefiLlama all'istante esatto (la serie /chart non si usa piu')
                 PrezziDefiLlama.ScaricaIstante(data, address, rete);
             }
             ServizioPrezziClient.tentaRecupero(moneta, data);
@@ -793,8 +792,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
             if (monAlias != null) nomeMoneta = monAlias;
             if (Funzioni_WalletDeFi.isValidAddress(address, rete)) {
                 Prezzi.RecuperaTassidiCambiodaAddress_Coingecko(FunzioniDate.ConvertiDatadaLong(data), address, rete, nomeMoneta);
-                Prezzi.RecuperaTassidiCambiodaAddress_DefiLlama(FunzioniDate.ConvertiDatadaLong(data), address, rete, nomeMoneta);
-                //La serie oraria dei token di pool ha un punto ogni 3-5 ore: il prezzo all'istante colma il buco
+                //DefiLlama all'istante esatto (la serie /chart non si usa piu')
                 PrezziDefiLlama.ScaricaIstante(data, address, rete);
             }
             ServizioPrezziClient.tentaRecupero(nomeMoneta, data);

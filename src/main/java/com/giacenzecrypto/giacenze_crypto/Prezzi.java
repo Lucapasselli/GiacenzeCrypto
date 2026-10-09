@@ -783,22 +783,38 @@ public class Prezzi {
         if (!Funzioni.CeConnessioneInternet() && !AttesaConnessione.Attendi()) return null;
 
         
-        //se il token non è gestito da coingecko e non è già nel database ritorno null
+        //Il token e' nell'elenco coingecko? Fino al 2026-10-09 chi non c'era veniva marcato irrecuperabile
+        //qui, prima di DefiLlama: i token di pool e vault (GM di GMX, vault Beefy) non arrivavano mai a un prezzo.
+        //Adesso DefiLlama si chiede sempre, e fuori elenco il suo prezzo vale solo con affidabilita' > 0,9
+        //(PrezziDefiLlama.Ammesso). Analisi in nocommit/Documentazione/Analisi_Prezzi_LP_DefiLlama.md
         RecuperaCoinsCoingecko();
-            String AddressNoPrezzo = DatabaseH2.GestitiCoingecko_Leggi(Address + "_" + Rete);
-            if (AddressNoPrezzo == null) {
-                PrezzoIrrecuperabileDaDB_Scrivi("",Datalong,Rete,Address);
-                return null;
-            }
-        
-        //Provo prima su DefiLlama (nessun vincolo di lista o limite di 365gg)
-        if (IPrezzo == null) {
+        boolean InElencoCoingecko = DatabaseH2.GestitiCoingecko_Leggi(Address + "_" + Rete) != null;
+        //Senza l'elenco, l'unica difesa da un token truffa con una pool vera e' l'affidabilita': uno gia' segnato non si chiede
+        if (!InElencoCoingecko && Funzioni.isSCAM(Simbolo)) {
+            PrezzoIrrecuperabileDaDB_Scrivi("",Datalong,Rete,Address);
+            return null;
+        }
+
+        //Provo prima su DefiLlama (nessun vincolo di 365gg): la serie oraria /chart, che con una chiamata
+        //serve tutti i movimenti vicini, e se non ha un punto entro l'ora l'istante preciso
+        //Se l'istante e' gia' stato chiesto (pre-scarico di gruppo), DefiLlama ha gia' risposto: non si richiede
+        if (IPrezzo == null && !PrezziDefiLlama.GiaChiestoAllIstante(Address, Rete, Datalong)) {
             RecuperaTassidiCambiodaAddress_DefiLlama(DataGiorno, Address, Rete, Simbolo);
             IPrezzo = DammiPrezzoDaDatabase("", Datalong, "", Rete, Address, 60, qta);
+            if (IPrezzo == null && PrezziDefiLlama.DaChiedereAllIstante(Address, Rete)
+                    && PrezziDefiLlama.ScaricaIstante(Datalong, Address, Rete)) {
+                IPrezzo = DammiPrezzoDaDatabase("", Datalong, "", Rete, Address, 60, qta);
+            }
             if (IPrezzo != null) {
                 IPrezzo.Moneta = Simbolo;
                 return IPrezzo;
             }
+        }
+
+        //Fuori elenco coingecko le altre fonti non hanno il token: irrecuperabile, come prima
+        if (!InElencoCoingecko) {
+            PrezzoIrrecuperabileDaDB_Scrivi("",Datalong,Rete,Address);
+            return null;
         }
 
         //Se ancora non trovo i prezzi vado a richiedere a coingecko i dati
@@ -852,7 +868,19 @@ public class Prezzi {
         //Se arrivo qua vuol dire che le ho provate tutte ma non riesco a trovare il prezzo del token
         return null;
     }
-    
+
+    /**
+     * Il token ha gia' un prezzo locale all'istante? Sono i primi tre passi di {@link #CambioAddressEUR}
+     * (personalizzati, vecchio archivio orario, cache a ±60 minuti), senza rete. Lo usa il pre-scarico
+     * DefiLlama per chiedere solo cio' che manca: vedi {@link PrezziDefiLlama#PreScaricaMonete}.
+     */
+    static boolean HaPrezzoLocaleAddress(long Datalong, String Address, String Rete) {
+        if (DammiPrezzoDaDatabasePersonale("", Datalong, "", Rete, Address, 60, BigDecimal.ONE) != null) return true;
+        String vecchio = DatabaseH2.PrezzoAddressChain_Leggi(FunzioniDate.ConvertiDatadaLongallOra(Datalong) + "_" + Address + "_" + Rete);
+        if (vecchio != null && !vecchio.equalsIgnoreCase("ND")) return true;
+        return DammiPrezzoDaDatabase("", Datalong, "", Rete, Address, 60, BigDecimal.ONE) != null;
+    }
+
     
     /**
      * Popola {@link Principale#Mappa_MoneteStessoPrezzo} con le coppie di token wrapped/nativi noti
@@ -2324,10 +2352,21 @@ public class Prezzi {
 
                 if (coins == null || coins.entrySet().isEmpty()) {
                     managerRichieste.addRange("DL_" + Address + "_" + Rete, dataIni * 1000, dataFin * 1000);
+                    //Una serie vuota dice solo che in questa finestra non ci sono punti, non che DefiLlama
+                    //non conosca il token: l'istante preciso resta da chiedere
                     return null;
                 }
 
                 JsonObject coinData = coins.entrySet().iterator().next().getValue().getAsJsonObject();
+                //Stessa regola della richiesta all'istante: fuori elenco coingecko serve affidabilita' > 0,9
+                Double affidabilita = (coinData.has("confidence") && !coinData.get("confidence").isJsonNull())
+                        ? coinData.get("confidence").getAsDouble() : null;
+                boolean ammesso = PrezziDefiLlama.Ammesso(affidabilita, PrezziDefiLlama.InElencoCoinGecko(Address, Rete));
+                PrezziDefiLlama.RegistraEsitoSerie(Address, Rete, ammesso);
+                if (!ammesso) {
+                    managerRichieste.addRange("DL_" + Address + "_" + Rete, dataIni * 1000, dataFin * 1000);
+                    return null;
+                }
                 JsonArray pricesArray = coinData.getAsJsonArray("prices");
 
                 if (pricesArray == null || pricesArray.size() == 0) {
@@ -4751,6 +4790,10 @@ public static int PreScaricaPrezziMonete(java.util.Collection<Moneta> monete, lo
     //cercano. Senza questi, una data limite produrrebbe richieste che nessuno userà.
     if (data > adessoMs || data < 1483225200000L) return 0;
 
+    //I token con address non passano dagli exchange (vedi sotto): i loro prezzi si chiedono a DefiLlama,
+    //tutti insieme, all'istante e solo per chi non ha gia' un prezzo locale
+    PrezziDefiLlama.PreScaricaMonete(monete, data, progress, origine);
+
     java.util.LinkedHashSet<Long> oreDaCoprire = OreDaCoprire(data);
 
     java.util.LinkedHashSet<String> chiavi = new java.util.LinkedHashSet<>();
@@ -4762,6 +4805,7 @@ public static int PreScaricaPrezziMonete(java.util.Collection<Moneta> monete, lo
         if (m.Tipo != null && m.Tipo.trim().equalsIgnoreCase("FIAT")) continue;
         if (Funzioni.isSCAM(m.Moneta)) continue;
         if (EMoneyAncoratoAdEuro(m.Moneta, data)) continue;
+        if (QtaZero(m)) continue;
 
         String rete = m.Rete == null ? "" : m.Rete;
         if (!rete.isBlank() && Funzioni_WalletDeFi.isValidAddress(m.MonetaAddress, rete)) continue;
@@ -4794,6 +4838,20 @@ public static int PreScaricaPrezziMonete(java.util.Collection<Moneta> monete, lo
     }
 
     return ScaricaRichiesteABlocchi(richieste, progress);
+}
+
+/**
+ * Moneta a quantita' zero: nessun chiamante del pre-scarico la valorizza (Giacenze a data salta le righe a
+ * "0", W/RW e T/RT le tolgono prima), quindi chiederne il prezzo e' solo tempo. Su "Giacenze a data" del
+ * 2024-03-20 dell'archivio reale erano 171 righe su 362. Una quantita' illeggibile non si scarta.
+ */
+static boolean QtaZero(Moneta m) {
+    if (m.Qta == null || m.Qta.isBlank()) return false;
+    try {
+        return new BigDecimal(m.Qta).signum() == 0;
+    } catch (NumberFormatException ex) {
+        return false;
+    }
 }
 
 /**

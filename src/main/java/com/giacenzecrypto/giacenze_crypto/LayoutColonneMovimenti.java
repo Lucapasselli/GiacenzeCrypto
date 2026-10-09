@@ -125,7 +125,7 @@ public final class LayoutColonneMovimenti {
                 preferita(cm, 14, 90);   // Prezzo Unitario
                 preferita(cm, 15, 100);  // Valore Qta Residua
                 preferita(cm, 16, 110);  // Costo Carico Qta Residua
-                preferita(cm, 17, 110);  // Differenza Valore - Costo
+                preferita(cm, 17, 110);  // Plus/Minus Latente Qta Residua
             });
 
     /** Chiave in {@code personale.mv.db} del layout della tabella dei depositi/prelievi da classificare. */

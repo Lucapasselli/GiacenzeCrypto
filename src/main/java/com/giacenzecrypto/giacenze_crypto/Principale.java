@@ -2720,7 +2720,7 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Data", "Wallet", "Moneta", "Address Moneta", "Tipo Movimento", "Quantita'", "Valore in Euro", "Qta Residua", "ID", "SaldiNegativiPrecedenti", "null", "null", "null", "<html><center>Costo Carico<br>Movimento</html>", "<html><center>Prezzo<br>Unitario</html>", "<html><center>Valore<br>Qta Residua</html>", "<html><center>Costo Carico<br>Qta Residua</html>", "<html><center>Differenza<br>Valore - Costo</html>"
+                "Data", "Wallet", "Moneta", "Address Moneta", "Tipo Movimento", "Quantita'", "Valore in Euro", "Qta Residua", "ID", "SaldiNegativiPrecedenti", "null", "null", "null", "<html><center>Costo Carico<br>Movimento</html>", "<html><center>Prezzo<br>Unitario</html>", "<html><center>Valore<br>Qta Residua</html>", "<html><center>Costo Carico<br>Qta Residua</html>", "<html><center>Plus/Minus Latente<br>Qta Residua</html>"
             }
         ) {
             boolean[] canEdit = new boolean [] {

@@ -760,6 +760,8 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
             if (Funzioni_WalletDeFi.isValidAddress(address, rete)) {
                 Prezzi.RecuperaTassidiCambiodaAddress_Coingecko(FunzioniDate.ConvertiDatadaLong(data), address, rete, moneta);
                 Prezzi.RecuperaTassidiCambiodaAddress_DefiLlama(FunzioniDate.ConvertiDatadaLong(data), address, rete, moneta);
+                //La serie oraria dei token di pool ha un punto ogni 3-5 ore: il prezzo all'istante colma il buco
+                PrezziDefiLlama.ScaricaIstante(data, address, rete);
             }
             ServizioPrezziClient.tentaRecupero(moneta, data);
             //Da "tutte le fonti" si scaricano anche gli omonimi di CoinMarketCap: l'utente sceglie quello giusto
@@ -792,6 +794,8 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
             if (Funzioni_WalletDeFi.isValidAddress(address, rete)) {
                 Prezzi.RecuperaTassidiCambiodaAddress_Coingecko(FunzioniDate.ConvertiDatadaLong(data), address, rete, nomeMoneta);
                 Prezzi.RecuperaTassidiCambiodaAddress_DefiLlama(FunzioniDate.ConvertiDatadaLong(data), address, rete, nomeMoneta);
+                //La serie oraria dei token di pool ha un punto ogni 3-5 ore: il prezzo all'istante colma il buco
+                PrezziDefiLlama.ScaricaIstante(data, address, rete);
             }
             ServizioPrezziClient.tentaRecupero(nomeMoneta, data);
             Prezzi.RecuperaPrezziDaCoinMarketCap(nomeMoneta, data, true);

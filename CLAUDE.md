@@ -689,6 +689,18 @@ A new entry added in year N gets `dal = N-01-01`. The option `AliasPrezzi_AncheA
 (*Opzioni di calcolo*, "Prezzi dagli exchange anche per gli anni già dichiarati") ignores every `dal`; it is
 initialised once, "SI" only on a new installation (`movimenti.crypto.db` absent or empty). Details in `nocommit/Documentazione/Analisi_Alias_Prezzi_Token_CCXT.md`.
 
+**Address tokens outside the CoinGecko list are priced by DefiLlama** (`PrezziDefiLlama`, 2026-10-09, user's rules):
+`CambioAddressEUR` no longer marks them KO before asking. A DefiLlama price is accepted if `confidence` > 0,9, otherwise
+only for listed tokens (as before, when confidence was ignored) — one rule, `PrezziDefiLlama.Ammesso`, for `/chart`
+and for the instant endpoint. `/chart` stays first (one call serves 500 hours of an import); `/prices/historical` is the
+fallback, because pool/vault tokens have a `/chart` point only every 3-5 hours and the cache is read at ±60 min. The
+batch for W/RW, T/RT and Giacenze a data (`PreScaricaMonete`, from `PreScaricaPrezziMonete`) asks **only tokens with no
+local price** (`Prezzi.HaPrezzoLocaleAddress`): the cache returns the quote closest to the instant, so a new DefiLlama
+row could otherwise displace the one an already-filed year was declared with. That is the whole protection of past
+declarations (no `dal` guard, user's choice). `PrezziKO` is untouched: the batch writes the cache, which is read before
+the KOs. ⚠️ The single path must skip DefiLlama for an instant the batch already asked (`GiaChiestoAllIstante`): `/chart`
+sleeps 2 s per call, and the ~110 junk BSC tokens of the user's archive took Giacenze a data from 26 s to 284 s. Measurements and decisions in `nocommit/Documentazione/Analisi_Prezzi_LP_DefiLlama.md`.
+
 **The remote path reads on-chain DEX prices (Fase 1-bis, 2026-08-25) and is opt-in — see `ServizioPrezziClient.OPZIONE_ABILITATO_DEFAULT`.** The old CCXT-based shared cache was retired entirely (all seven configured exchanges were confirmed, from their own published API terms, to forbid redistributing market data to third parties even for non-commercial use — see `nocommit/Documentazione/Analisi_VPS_Prezzi_Sito.md`). The replacement reads prices directly from DEX pool state (`ServizioPrezzi/src/onchain/`), which is nobody's market data. It was briefly switched on by default on 2026-08-26, once the `/v1/monete` transparency endpoint (below) made the service's coverage independently checkable, then reverted to disabled-by-default the same day at the user's request pending further testing — do not flip `OPZIONE_ABILITATO_DEFAULT` back to `"SI"` without asking. It's still a checkbox in *Opzioni → Opzioni di Calcolo* (`Prezzi_Opzioni_CheckBox_ServizioOnchain`), persisted as `ServizioPrezziClient.OPZIONE_ABILITATO` in `personale.mv.db`. Tests override it with the `prezzi.servizio.abilitato` system property.
 
 `CambioXXXEUR` tries a remote pull-through cache (`ServizioPrezziClient.tentaRecupero`) before the
@@ -975,6 +987,7 @@ All the working `.md` documents (bug analyses, performance analyses, the change 
 | `nocommit/Documentazione/Analisi_Prezzi_Scaricamento_Costi.md` | why a price download costs ~40 requests per (coin, day), what the 8-exchange fan-out actually delivers, and the constraints (day marker, `fonte` ambiguity) any change must respect |
 | `nocommit/Documentazione/Pubblicazione_Flatpak.md` / `Pubblicazione_AUR.md` | packaging recipes and sandbox/workdir details for those two distros |
 | `nocommit/Documentazione/Test_Grafici_Automatici.md` | how to run automated GUI tests on the virtual display |
+| `nocommit/Documentazione/Analisi_Prezzi_LP_DefiLlama.md` | automatic prices of pool/vault tokens from DefiLlama: archive measurements, endpoints, the user's rules (§8) |
 | `nocommit/Documentazione/Analisi_Carta_OKX_XLayer.md` | OKX Card wallet on X Layer: observed flow, sources tried, public-node limits, state-bisection scan, open questions |
 
 **Write new technical `.md` documents there, not in `Documentazione/`.** The top-level `Documentazione/` folder is **historical** since 2026-08-18: the `.odt`/`.pdf`/`.txt` manuals that used to be the source now live as Markdown under `docs/documentazione/` (below), and the old files are kept only as a record of what was published before — do not update them. What is still live there is the material that never became a manual: `Documentazione/IstruzioniVarie.txt` (referenced elsewhere in this file), `MappatureImport.txt`, the `.pptx` presentations, `FormuleUtili.xlsx` and `Schemi.odg`.

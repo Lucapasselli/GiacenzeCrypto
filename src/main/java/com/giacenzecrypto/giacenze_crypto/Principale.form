@@ -2854,7 +2854,7 @@
                                 <Column editable="false" title="&lt;html&gt;&lt;center&gt;Prezzo&lt;br&gt;Unitario&lt;/html&gt;" type="java.lang.Object"/>
                                 <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore&lt;br&gt;Qta Residua&lt;/html&gt;" type="java.lang.Object"/>
                                 <Column editable="false" title="&lt;html&gt;&lt;center&gt;Costo Carico&lt;br&gt;Qta Residua&lt;/html&gt;" type="java.lang.Object"/>
-                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Differenza&lt;br&gt;Valore - Costo&lt;/html&gt;" type="java.lang.Object"/>
+                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Plus/Minus Latente&lt;br&gt;Qta Residua&lt;/html&gt;" type="java.lang.Object"/>
                               </Table>
                             </Property>
                             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">

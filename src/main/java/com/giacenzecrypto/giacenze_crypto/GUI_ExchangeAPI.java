@@ -671,6 +671,61 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                 : "non ancora individuato, lo trova da solo il primo scaricamento OKX con un trasferimento verso la carta");
     }
 
+    /** Se fra le righe scaricate (tutte, o quelle selezionate) c'e' OKX e lo scaricamento non e' stato interrotto. */
+    private boolean ScaricatoOKX(TableModel model, int numeroRighi, int[] selezionate) {
+        if (Principale.InterrompiCiclo) return false;
+        int n = selezionate != null ? selezionate.length : numeroRighi;
+        for (int i = 0; i < n; i++) {
+            int vista = selezionate != null ? selezionate[i] : i;
+            Object exchange = model.getValueAt(TabellaWallets.convertRowIndexToModel(vista), 1);
+            if (exchange != null && exchange.toString().trim().equalsIgnoreCase("OKX")) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Dopo uno scaricamento OKX aggiorna anche il wallet della carta su X Layer ({@link Trans_XLayer#AggiornaWalletCarta}),
+     * se è stato individuato: così pagamenti, interessi e cashback arrivano insieme ai bill dell'exchange. Dopo il
+     * recupero degli scarti, perche' il wallet puo' essere stato appena trovato proprio da un bill 325 recuperato.
+     * Un messaggio solo se ha aggiunto movimenti o ha qualcosa da segnalare.
+     */
+    private void AggiornaWalletCartaOKX() {
+        String w = DatabaseH2.Pers_Opzioni_Leggi(OKX_WalletCarta.OPZIONE_WALLET);
+        if (w == null || w.isBlank() || DatabaseH2.Pers_Wallets_LeggiTabella().get(w.trim() + "_" + Trans_XLayer.RETE) == null) return;
+        final Trans_XLayer.EsitoCarta[] esito = {null};
+        Download progress = new Download();
+        progress.setIndeterminate(true);
+        progress.SetLabel("Aggiornamento del wallet della carta OKX su X Layer...");
+        progress.setLocationRelativeTo(this);
+        javax.swing.SwingWorker<Void, Void> worker = new javax.swing.SwingWorker<>() {
+            /** Scansione, prezzi e scrittura dei movimenti del wallet della carta */
+            @Override
+            protected Void doInBackground() {
+                try {
+                    esito[0] = Trans_XLayer.AggiornaWalletCarta(() -> progress.FineThread);
+                } catch (Exception ex) {
+                    LoggerGC.ScriviErrore(ex);
+                }
+                return null;
+            }
+
+            /** Chiude la finestra di avanzamento */
+            @Override
+            protected void done() {
+                progress.ChiudiFineLavoro();
+            }
+        };
+        worker.execute();
+        progress.setVisible(true);
+        Trans_XLayer.EsitoCarta e = esito[0];
+        if (e == null || (e.aggiunti() == 0 && e.avvisi().isEmpty() && e.completo())) return;
+        StringBuilder testo = new StringBuilder();
+        if (!e.completo()) testo.append("Aggiornamento non completato, nessun movimento importato: si riprova al prossimo scaricamento.");
+        else testo.append("Movimenti aggiunti: ").append(e.aggiunti()).append(e.aggiunti() > 0 ? ".<br><br>Ricordati di salvare." : ".");
+        for (String a : e.avvisi()) testo.append("<br>").append(a);
+        Messaggi.InfoMessage("Wallet della carta OKX", testo.toString(), this);
+    }
+
     private void MostraResoconto(Importazioni.Esito E) {
         //Lo scaricamento appena finito puo' aver individuato il wallet della carta
         AggiornaWalletCarta();
@@ -768,6 +823,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         //Dopo il resoconto: movimenti scartati da scaricamenti precedenti che le mappe ora riconoscono
         //(vedi ScartiImport). Se ne aggiunge, il ricalcolo parte al ritorno sulla finestra principale.
         Principale_RecuperoScarti.Controlla(this, true);
+        if (ScaricatoOKX(model, numeroRighi, null)) AggiornaWalletCartaOKX();
 
     }//GEN-LAST:event_Bottone_AggiornaActionPerformed
 
@@ -810,6 +866,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         PopolaTabella();
         MostraResoconto(Riepilogo);
         Principale_RecuperoScarti.Controlla(this, true);
+        if (ScaricatoOKX(model, 0, selectedRows)) AggiornaWalletCartaOKX();
 
     }//GEN-LAST:event_Bottone_AggiornaSelezionatiActionPerformed
 

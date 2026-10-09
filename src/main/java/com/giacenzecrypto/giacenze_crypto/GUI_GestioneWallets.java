@@ -187,7 +187,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         TextField_IndirizzoWallet.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
 
         ComboBox_Rete.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
-        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Arbitrum (ARB)", "Avalanche (AVAX)", "Base (BASE)", "Berachain (BERA)", "Binance Smart Chain (BSC)", "Bitcoin (BTC)", "Cronos Chain (CRO)", "Ethereum (ETH)", "Gnosis Chain (GNOSIS)", "Solana (SOL)", "Polygon (POL)", "Monad (MONAD)", "Linea (LINEA)", "Blast (BLAST)", "Unichain (UNICHAIN)", "World Chain (WORLD)", "Taiko (TAIKO)", "Abstract (ABSTRACT)", "Katana (KATANA)", "Sonic (SONIC)", "Mantle (MANTLE)", "Optimism (OP)", "HyperEVM (HYPEREVM)", "Ink (INK)", "Robinhood Chain (ROBINHOOD)" }));
+        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Arbitrum (ARB)", "Avalanche (AVAX)", "Base (BASE)", "Berachain (BERA)", "Binance Smart Chain (BSC)", "Bitcoin (BTC)", "Cronos Chain (CRO)", "Ethereum (ETH)", "Gnosis Chain (GNOSIS)", "Solana (SOL)", "Polygon (POL)", "Monad (MONAD)", "Linea (LINEA)", "Blast (BLAST)", "Unichain (UNICHAIN)", "World Chain (WORLD)", "Taiko (TAIKO)", "Abstract (ABSTRACT)", "Katana (KATANA)", "Sonic (SONIC)", "Mantle (MANTLE)", "Optimism (OP)", "HyperEVM (HYPEREVM)", "Ink (INK)", "Robinhood Chain (ROBINHOOD)", "X Layer (XLAYER)" }));
 
         Bottone_Aggiorna.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Aggiorna.png"))); // NOI18N
         Bottone_Aggiorna.addActionListener(new java.awt.event.ActionListener() {
@@ -545,15 +545,20 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                         String ReteW=st[34];
                         //String ReteW=Funzioni.TrovaReteDaID(st[0]);
                         String Dati[]=new String[]{Wallet,ReteW};
-                        if (!ReteW.equals("CRO"))Mappa_Wallet_Dati.put(WalletRete,Dati);
+                        //X Layer non ha un explorer da cui leggere il saldo di OKB (vedi Trans_XLayer)
+                        if (!ReteW.equals("CRO") && !ReteW.equals(Trans_XLayer.RETE))Mappa_Wallet_Dati.put(WalletRete,Dati);
                     }
+
+                    //Ricariche e cashback della carta OKX, se fra i movimenti c'e' il suo wallet su X Layer
+                    if (i > 0) OKX_CartaAbbina.Abbina();
 
                     //Adesso per ogni wallet coinvolto controllo le giacenze di fine importazione e sistemo in caso di discrepanze
                     //Salto la cronoschain perchè quella viene gestita a parte
                     String mess="Vuoi che venga controllata la giacenza del token di riferimento delle chain "
                          + "e in caso di differenze creato un movimento di rettifica?<br><br>"
                             + "Valida solo per reti gestite da etherscan (No BSC,AVA,BASE,CRO,SOL)";
-                    AppDialog.DialogResult result = AppDialog.builder(SwingUtilities.getWindowAncestor(c))
+                    //Nessuna rete da controllare (es. solo X Layer): la domanda non avrebbe effetto
+                    AppDialog.DialogResult result = Mappa_Wallet_Dati.isEmpty() ? null : AppDialog.builder(SwingUtilities.getWindowAncestor(c))
                     .windowTitle("Rettifiche movimenti")
                     .bodyTitle("Rettifiche movimenti")
                     .showTitleInBody(false)

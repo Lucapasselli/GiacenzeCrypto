@@ -86,6 +86,10 @@ public class VarCondivise {
         //discrepanze da chainid.network e da native_coin_id di CoinGecko. A differenza di HyperEVM/Ink,
         //GoPlus la supporta (vedi Principale.GOPLUS_CHAIN_ID): unica delle tre con il 10° punto compilato.
         String[] ROBINHOOD = new String[]{"", "", "ETH", "robinhood", "robinhood"};
+        //X Layer (chain id 196, gas OKB): nessun explorer gratuito con API, si legge dal nodo pubblico con la
+        //scansione per stati di Trans_XLayer, quindi [0] e' il nodo e non un explorer. Nata per il wallet della
+        //carta OKX (OKX_WalletCarta). CoinGecko "x-layer" e DefiLlama "xlayer" verificati il 09/10/2026.
+        String[] XLAYER = new String[]{OKX_WalletCarta.RPC_XLAYER, "", "OKB", "x-layer", "xlayer"};
         Principale.Mappa_ChainExplorer.put("CRO", CRO);
         Principale.Mappa_ChainExplorer.put("BSC", BSC);
         Principale.Mappa_ChainExplorer.put("ETH", ETH);
@@ -111,6 +115,7 @@ public class VarCondivise {
         Principale.Mappa_ChainExplorer.put("HYPEREVM", HYPEREVM);
         Principale.Mappa_ChainExplorer.put("INK", INK);
         Principale.Mappa_ChainExplorer.put("ROBINHOOD", ROBINHOOD);
+        Principale.Mappa_ChainExplorer.put(Trans_XLayer.RETE, XLAYER);
         //Gli alias address/rete -> moneta quotata sugli exchange non sono piu' scritti qui: stanno in
         //config/varie/AliasPrezziToken.json, aggiornabile senza una nuova versione (vedi AliasPrezziToken).
         AliasPrezziToken.Carica();
@@ -155,6 +160,7 @@ public class VarCondivise {
         Principale.MappaRetiSupportate.put("HYPEREVM", "");
         Principale.MappaRetiSupportate.put("INK", "");
         Principale.MappaRetiSupportate.put("ROBINHOOD", "");
+        Principale.MappaRetiSupportate.put(Trans_XLayer.RETE, "");
         Principale.MappaRetiSupportate.put("TRX", "");
         Principale.MappaRetiSupportate.put("SOL", "");
         Principale.MappaRetiSupportate.put("XLM", "");

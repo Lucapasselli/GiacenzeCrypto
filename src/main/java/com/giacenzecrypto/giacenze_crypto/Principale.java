@@ -1308,7 +1308,7 @@ private static final long serialVersionUID = 3L;
         });
         PopupMenu.add(MenuItem_EsportaTabella);
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowFocusListener(new java.awt.event.WindowFocusListener() {
             public void windowGainedFocus(java.awt.event.WindowEvent evt) {
                 formWindowGainedFocus(evt);
@@ -10873,15 +10873,17 @@ GiacenzeaData_CompilaTabellaToken(true);
     }//GEN-LAST:event_Opzioni_Emoney_Bottone_AggiungiActionPerformed
 
     private void Opzioni_Emoney_ImpostaEmoneyTokenStandardInTabella(int Metodo) {
-        String EmoneyMica[] = new String[]{"EURC", "EUROe", "EURQ", "USDQ", "EURCV", "EURI", "EURR", "EURe", "USDC", "USDR"};
+        //I MiCA compliant vengono da config/varie/EmoneyToken.json (EmoneyToken), lo stesso elenco dell'avviso del
+        //calcolo dei quadri: un EMT nuovo si aggiunge li', senza versione. Dubbie e stablecoin restano qui.
+        EmoneyToken.Elenco Elenco = EmoneyToken.Carica();
         String StableCoinDubbie[] = new String[]{"BUSD", "USDT", "PYUSD"};
         String StableCoin[] = new String[]{"DAI", "USDE", "FRAX", "EURT", "AEUR", "VEUR", "JEUR", "LUSD", "USD0", "USDS", "USDY"};
-        String Anno = "2023-01-01";
+        String Anno = Elenco != null ? Elenco.decorrenza() : "2023-01-01";
         //Metodo=0 -> Solo mica compliant
         //Metodo=1 -> Anche Stable dubbie
         //Metodo=2 -> Tutte le stable
-        if (Metodo >= 0) {
-            for (String mon : EmoneyMica) {
+        if (Metodo >= 0 && Elenco != null) {
+            for (String mon : Elenco.simboli()) {
                 DatabaseH2.Pers_Emoney_Scrivi(mon, Anno);
             }
         }
@@ -11210,6 +11212,7 @@ if (result.isAction("delete-all")) {
 
     private void RW_Bottone_CalcolaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_CalcolaActionPerformed
         // TODO add your handling code here:
+        Funzioni_ControllaEmoneyMancanti();
         RW_CalcolaRW();
         
        
@@ -11217,6 +11220,18 @@ if (result.isAction("delete-all")) {
 
 
     
+    /**
+     * Prima del calcolo di un quadro: token di moneta elettronica noti nei movimenti ma non nella sezione E-Money
+     * ({@link Principale_EmoneyMancanti}). Se l'utente li aggiunge si ricalcola tutto prima del quadro.
+     */
+    private void Funzioni_ControllaEmoneyMancanti() {
+        if (Principale_EmoneyMancanti.Controlla(this)) {
+            Opzioni_Emoney_CaricaTabellaEmoney();
+            Funzioni_AggiornaTutto();
+            TabellaCryptodaAggiornare = false;
+        }
+    }
+
     private void Funzioni_AggiornaPluvalenzeSeManuale(){
         if (Opzioni_GruppoWallet_CheckBox_PlusManuali.isSelected()){
             Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
@@ -11972,7 +11987,15 @@ if (result.isAction("delete-all")) {
                 """)
                         .primaryAction("OK", "SI")
                         .secondaryAction("close", "NO")
+                        .secondaryAction("annulla", "Annulla")
                         .showDialog();
+
+                //Annulla, o la X/Esc del dialogo: il programma resta aperto con i movimenti non salvati.
+                //Per questo la finestra e' DO_NOTHING_ON_CLOSE e l'uscita e' il System.exit in fondo.
+                if (result.isAction("annulla") || result.isClosedByWindow()) {
+                    System.out.println("Chiusura annullata");
+                    return;
+                }
 
                 if (result.isAction("OK")) {
                     Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet,false);
@@ -12015,6 +12038,8 @@ if (result.isAction("delete-all")) {
 
         LoggerGC.close();
         this.dispose();
+        //Prima lo faceva EXIT_ON_CLOSE dopo questo metodo; ora la finestra e' DO_NOTHING_ON_CLOSE
+        System.exit(0);
 
     }//GEN-LAST:event_formWindowClosing
 
@@ -13518,6 +13543,7 @@ if (result.isAction("delete-all")) {
     
     private void RT_Bottone_CalcolaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_CalcolaActionPerformed
         // TODO add your handling code here:
+        Funzioni_ControllaEmoneyMancanti();
         RT_CalcolaRT();
         
         
@@ -13780,6 +13806,12 @@ if (result.isAction("delete-all")) {
              * a {@code config/import/}.
              */
             public void run() {
+                //Per provare in locale una configurazione non ancora pubblicata: il confronto e' sullo sha, quindi
+                //qualunque modifica locale verrebbe sostituita dalla versione di GitHub pochi secondi dopo l'avvio
+                if (Boolean.getBoolean("config.nonAllineare")) {
+                    System.out.println("AggiornamentoConfig: saltato (-Dconfig.nonAllineare=true)");
+                    return;
+                }
                 //I loghi di exchange e blockchain vengono da CoinGecko e dalle favicon dei siti: sono
                 //immagini di terzi, e l'edizione Store non li distribuisce (policy 11.2 e termini
                 //CoinGecko, vedi nocommit/Documentazione/Analisi_API_Terze_Parti.md). Non serve altro:
@@ -14257,6 +14289,7 @@ if (result != null && !result.isAction("cancel")) {
     private String[] Opzioni_ProviderDefi_OpzioniPerChain(String rete) {
         if (rete.equalsIgnoreCase("SOL")) return new String[]{"HELIUS"};
         if (rete.equalsIgnoreCase("BTC")) return new String[]{"BITCOIN"};
+        if (rete.equalsIgnoreCase(Trans_XLayer.RETE)) return new String[]{"NODO PUBBLICO"};
         //BSC è l'unica chain senza nessun explorer Etherscan-compatibile gratuito: NodeReal (richiede
         //una ApiKey NodeReal gratuita) è proposto per primo perché è l'alternativa gratuita ed è anche
         //il default effettivo (DeFi_ProviderDefault), incondizionato dal 15/09/2026 — Moralis non ha
@@ -18612,6 +18645,8 @@ try {
         //Primo avvio con movimenti di un exchange noto -> associazione al gruppo wallet preconfigurato,
         //prima del calcolo così le plusvalenze/RW usano subito il gruppo giusto.
         AutoAssociaGruppiPreconfiguratiExchange();
+        //Wallet della carta OKX individuato prima che X Layer si importasse: va fra i wallet DeFi, nel gruppo di OKX
+        OKX_WalletCarta.RegistraSeIndividuato();
 
         SplashAvvio.fase(SplashAvvio.Fase.PLUSVALENZE);
         Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();

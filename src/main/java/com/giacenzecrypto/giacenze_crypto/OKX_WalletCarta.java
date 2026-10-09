@@ -199,7 +199,18 @@ final class OKX_WalletCarta {
         return Long.decode(rpc.chiama("eth_getBlockByNumber", parametri).getAsJsonObject().get("timestamp").getAsString());
     }
 
-    /** Nodo pubblico di X Layer via JSON-RPC. */
+    /** Intervallo minimo fra due richieste al nodo pubblico: regge circa 5 richieste al secondo, poi risponde 429. */
+    static final long INTERVALLO_MINIMO_MS = 250;
+    /** Tentativi su un rifiuto per troppe richieste, con attesa crescente (1 s, 2 s, ...). */
+    static final int TENTATIVI_LIMITE = 8;
+    private static final Object ULTIMA_RICHIESTA_LOCK = new Object();
+    private static long UltimaRichiesta = 0;
+
+    /**
+     * Nodo pubblico di X Layer via JSON-RPC. Le richieste sono distanziate di {@link #INTERVALLO_MINIMO_MS} (per
+     * tutto il programma, non per chiamante) e un "over rate limit" (HTTP 429 o errore JSON-RPC) viene ripetuto:
+     * la scansione per stati del wallet della carta ({@link Trans_XLayer}) fa decine di richieste di fila.
+     */
     static Rpc RpcXLayer() {
         OkHttpClient client = new OkHttpClient.Builder()
                 .connectTimeout(20, TimeUnit.SECONDS).readTimeout(60, TimeUnit.SECONDS).build();
@@ -210,23 +221,79 @@ final class OKX_WalletCarta {
             richiesta.addProperty("id", 1);
             richiesta.addProperty("method", metodo);
             richiesta.add("params", parametri);
-            Request r = new Request.Builder().url(RPC_XLAYER).post(RequestBody.create(richiesta.toString(), json)).build();
-            try (Response risposta = client.newCall(r).execute()) {
-                String corpo = risposta.body() != null ? risposta.body().string() : "";
-                if (!risposta.isSuccessful()) throw new Exception("HTTP " + risposta.code() + " " + corpo);
-                JsonObject j = JsonParser.parseString(corpo).getAsJsonObject();
-                if (j.has("error")) throw new Exception(j.get("error").toString());
-                return j.get("result");
+            Exception ultimo = null;
+            for (int tentativo = 0; tentativo < TENTATIVI_LIMITE; tentativo++) {
+                Attendi();
+                Request r = new Request.Builder().url(RPC_XLAYER).post(RequestBody.create(richiesta.toString(), json)).build();
+                try (Response risposta = client.newCall(r).execute()) {
+                    String corpo = risposta.body() != null ? risposta.body().string() : "";
+                    if (risposta.code() == 429 || (risposta.isSuccessful() && corpo.contains("rate limit"))) {
+                        ultimo = new Exception("HTTP " + risposta.code() + " " + corpo);
+                        Thread.sleep(1000L * (tentativo + 1));
+                        continue;
+                    }
+                    if (!risposta.isSuccessful()) throw new Exception("HTTP " + risposta.code() + " " + corpo);
+                    JsonObject j = JsonParser.parseString(corpo).getAsJsonObject();
+                    if (j.has("error")) throw new Exception(j.get("error").toString());
+                    return j.get("result");
+                }
             }
+            throw ultimo != null ? ultimo : new Exception("Nodo di X Layer: troppi tentativi");
         };
+    }
+
+    private static void Attendi() throws InterruptedException {
+        synchronized (ULTIMA_RICHIESTA_LOCK) {
+            long attesa = UltimaRichiesta + INTERVALLO_MINIMO_MS - System.currentTimeMillis();
+            if (attesa > 0) Thread.sleep(attesa);
+            UltimaRichiesta = System.currentTimeMillis();
+        }
     }
 
     /** Testo dell'avviso quando il wallet viene individuato per la prima volta (o cambia). */
     static String TestoAvviso(String indirizzo) {
         return "Individuato il wallet della carta OKX sulla rete X Layer:\n\n   " + indirizzo + "\n\n"
                 + "È il wallet a cui vanno i trasferimenti \"Transfer from exchange to smart wallet\".\n"
-                + "Il programma non importa ancora i movimenti di X Layer: l'indirizzo è salvato\n"
-                + "e lo trovi in Exchange API, scheda Particolarità OKX.";
+                + "È stato aggiunto ai wallet DeFi, nello stesso gruppo wallet di OKX:\n"
+                + "i suoi movimenti (pagamenti con la carta, cashback, interessi) si aggiornano\n"
+                + "da soli a ogni scaricamento OKX, oppure da Inserisci Wallet con Aggiorna.";
+    }
+
+    /** Opzione (personale.mv.db): l'ultimo indirizzo registrato fra i wallet DeFi, perche' lo si registri una volta sola. */
+    static final String OPZIONE_REGISTRATO = "OKX_WalletCarta_XLayer_Registrato";
+
+    /**
+     * Il wallet salvato nell'opzione, registrato fra i wallet DeFi se non lo è mai stato (avvio del programma): per
+     * chi lo aveva già individuato prima che X Layer si importasse. Una volta sola, così un wallet tolto a mano
+     * dall'elenco non ricompare a ogni avvio.
+     */
+    static void RegistraSeIndividuato() {
+        try {
+            if (DatabaseH2.connectionPersonale == null) return;
+            String indirizzo = DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_WALLET);
+            if (indirizzo != null && !indirizzo.isBlank() && !indirizzo.trim().equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_REGISTRATO))) {
+                Registra(indirizzo.trim());
+            }
+        } catch (Exception e) {
+            LoggerGC.ScriviErrore(e);
+        }
+    }
+
+    /**
+     * Registra il wallet della carta fra i wallet DeFi (rete X Layer, {@link Trans_XLayer}) e lo mette nel gruppo
+     * wallet di OKX se non ne ha già uno (scelta dell'utente del 2026-10-09: la carta è un pezzo del conto OKX). Un
+     * gruppo scelto a mano dall'utente non si tocca, e nessun gruppo nuovo viene creato.
+     */
+    static void Registra(String indirizzo) {
+        if (indirizzo == null || indirizzo.isBlank() || DatabaseH2.connectionPersonale == null) return;
+        if (DatabaseH2.Pers_Wallets_LeggiTabella().get(indirizzo + "_" + Trans_XLayer.RETE) == null) {
+            DatabaseH2.Pers_Wallets_Scrivi(indirizzo, Trans_XLayer.RETE);
+        }
+        String nome = indirizzo + " (" + Trans_XLayer.RETE + ")";
+        if (DatabaseH2.Pers_GruppoWallet_Leggi(nome, false) == null) {
+            DatabaseH2.Pers_GruppoWallet_Scrivi(nome, DatabaseH2.Pers_GruppoWallet_Leggi("OKX", true));
+        }
+        DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_REGISTRATO, indirizzo);
     }
 
     private static BigInteger Esadecimale(String h) {

@@ -1,7 +1,7 @@
 {
-  "versione": "1.002",
+  "versione": "1.003",
   "centralizzato": true,
-  "descrizione": "Causali OKX, condivise fra l'import del CSV storico (voce OKX_Old) e l'import via API/CCXT. v1.001: aggiunte 'ETH Staking subscription'/'ETH Staking swapping' (codici funding 137/138 di OKX_Tipi.json) come SCAMBIO CRYPTO-CRYPTO -> la sottoscrizione al prodotto 'ETH Staking' e' una permuta ETH->BETH, non un giroconto interno come 'Stake'/'Redeem staking' (che restano sulla stessa moneta). v1.002: aggiunta 'Liquid Staking swapping' (codice funding 330) come SCAMBIO CRYPTO-CRYPTO: e' la conversione di una posizione On-chain Earn chiusa in un token di Liquid Staking (es. USDC -> LYUSDC), una permuta come ETH -> BETH. La gamba in uscita la ricostruisce l'import via API dallo storico degli ordini On-chain Earn. Aggiunta anche 'Simple Earn interessi ricostruiti' come REWARD (come 'Deposit yield'): sono gli interessi Simple Earn dei giorni che lo storico interessi di OKX (solo l'ultimo mese) non restituisce piu', ricostruiti dall'import via API da saldo, sottoscrizioni e riscatti.",
+  "descrizione": "Causali OKX, condivise fra l'import del CSV storico (voce OKX_Old) e l'import via API/CCXT. v1.001: aggiunte 'ETH Staking subscription'/'ETH Staking swapping' (codici funding 137/138 di OKX_Tipi.json) come SCAMBIO CRYPTO-CRYPTO -> la sottoscrizione al prodotto 'ETH Staking' e' una permuta ETH->BETH, non un giroconto interno come 'Stake'/'Redeem staking' (che restano sulla stessa moneta). v1.002: aggiunta 'Liquid Staking swapping' (codice funding 330) come SCAMBIO CRYPTO-CRYPTO: e' la conversione di una posizione On-chain Earn chiusa in un token di Liquid Staking (es. USDC -> LYUSDC), una permuta come ETH -> BETH. La gamba in uscita la ricostruisce l'import via API dallo storico degli ordini On-chain Earn. Aggiunta anche 'Simple Earn interessi ricostruiti' come REWARD (come 'Deposit yield'): sono gli interessi Simple Earn dei giorni che lo storico interessi di OKX (solo l'ultimo mese) non restituisce piu', ricostruiti dall'import via API da saldo, sottoscrizioni e riscatti. v1.003: aggiunta 'Transfer to smart wallet' (codice funding 325) come TRASFERIMENTO-CRYPTO: e' l'invio dall'exchange al wallet della carta OKX su X Layer, un prelievo verso un wallet proprio da abbinare alla ricarica sul wallet della carta.",
   "mappaCausali": {
     "": "NON CONSIDERARE",
     "Buy": "SCAMBIO CRYPTO-CRYPTO",
@@ -26,6 +26,7 @@
     "Stake": "TRASFERIMENTO-CRYPTO-INTERNO",
     "Staking earnings": "REWARD",
     "To unified trading account": "NON CONSIDERARE",
+    "Transfer to smart wallet": "TRASFERIMENTO-CRYPTO",
     "Transfer in": "NON CONSIDERARE",
     "Transfer out": "NON CONSIDERARE",
     "withdrawal": "TRASFERIMENTO-CRYPTO"

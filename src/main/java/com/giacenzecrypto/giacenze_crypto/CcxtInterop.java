@@ -1550,8 +1550,11 @@ public static Path getNodeExePath() {
 
             
             //2 - RECUPERO I TOKEN COINVOLTI NELLE TRANSAZIONI PER CUI LA LORO SOMMA SIA DIVERSA DA ZERO
-            //Adesso che ho scaricato tutti i movimenti recupero la lista dei movimenti nel formato standard di GiacenzeCrypto
-            List<String[]> lista = getListaMovimenti(Jsons, exchangeId);
+            //Adesso che ho scaricato tutti i movimenti recupero la lista dei movimenti nel formato standard di GiacenzeCrypto.
+            //Conversione a secco, senza prezzi: qui servono solo le quantita' per scegliere i token dei trades, e i
+            //prezzi si scaricano tutti insieme al punto 4 (creaMovimento li cercava uno per riga, un processo Node per
+            //ogni prezzo mancante).
+            List<String[]> lista = Prezzi.SenzaValorizzare(() -> getListaMovimenti(Jsons, exchangeId));
 
 
             //Recupero la lista dei token con le varie somme e prendo solo quelli che hanno una somma diversa da zero
@@ -1614,8 +1617,27 @@ public static Path getNodeExePath() {
             j++;
             progress.SetMessaggioAvanzamento("Comunicazione con endpoint "+j+" di "+chiamate+" in corso...");
             JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, tok, "Binance_Trades");
-            lista.addAll(getListaMovimento(json, exchangeId));
+            lista.addAll(Prezzi.SenzaValorizzare(() -> getListaMovimento(json, exchangeId)));
             if (Principale.InterrompiCiclo||progress.ErroriNodeJS())
+                {
+                    JOptionPane.showConfirmDialog(null, "Scaricamento da "+exchangeId+" interrotto prima della fine.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                    return null;
+                }
+
+            //PREZZI: dalle righe a secco si sa quali coppie (moneta, istante) serviranno, e si scaricano a lotti con la
+            //stessa fonte che usera' creaMovimento (il nome dell'exchange). Poi la conversione vera, che le trova in
+            //cache: il prezzo scelto non cambia, cambia solo quanto costa averlo.
+            Prezzi.PreScaricaPrezziSimboli(Prezzi.SimboliDaMovimenti(lista), progress, "import " + exchangeId, exchangeId);
+            if (Principale.InterrompiCiclo || Interruzione.Richiesta())
+                {
+                    JOptionPane.showConfirmDialog(null, "Scaricamento da "+exchangeId+" interrotto prima della fine.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                    return null;
+                }
+            progress.SetLabel("Importazione in corso...");
+            progress.SetMessaggioAvanzamento("Conversione dei movimenti...");
+            lista = getListaMovimenti(Jsons, exchangeId);
+            lista.addAll(getListaMovimento(json, exchangeId));
+            if (Principale.InterrompiCiclo || Interruzione.Richiesta())
                 {
                     JOptionPane.showConfirmDialog(null, "Scaricamento da "+exchangeId+" interrotto prima della fine.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                     return null;
@@ -1878,6 +1900,7 @@ public static Path getNodeExePath() {
                     System.out.println("Wallet carta OKX su X Layer: " + carta.indirizzo());
                     if (!carta.indirizzo().equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(OKX_WalletCarta.OPZIONE_WALLET))) {
                         DatabaseH2.Pers_Opzioni_Scrivi(OKX_WalletCarta.OPZIONE_WALLET, carta.indirizzo());
+                        OKX_WalletCarta.Registra(carta.indirizzo());
                         JOptionPane.showConfirmDialog(null, OKX_WalletCarta.TestoAvviso(carta.indirizzo()), "Carta OKX",
                                 JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
                     }
@@ -1938,7 +1961,7 @@ public static Path getNodeExePath() {
                 return sconosciute;
             }
 
-            Importazioni.Ex_OKX_ImportaDaAPI(righe);
+            Importazioni.Ex_OKX_ImportaDaAPI(righe, progress);
             //Esito reale dei contatori appena valorizzati da Ex_OKX_ImportaDaAPI: va catturato QUI perche'
             //serve anche sul ramo di interruzione qui sotto, non solo sull'uscita riuscita in fondo.
             Importazioni.Esito esitoOKX = Importazioni.Esito.daiContatori(exchangeId);

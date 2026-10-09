@@ -40,7 +40,8 @@ import java.util.zip.GZIPInputStream;
  * ({@link DocumentiFonte}): li si riconverte con le mappe di oggi. Due tabelle in {@code personale.mv.db}:
  * <ul>
  *   <li>{@code SCARTI_IMPORT}: i record scartati, scritti da chi importa ({@link #Registra}) con stato
- *       {@code ATTESA}, oppure marcati {@code IGNORATO} quando l'utente rinuncia a recuperarli;</li>
+ *       {@code ATTESA}, marcati {@code IGNORATO} quando l'utente rinuncia a recuperarli e {@code RECUPERATO}
+ *       quando il recupero li ha scritti in archivio;</li>
  *   <li>{@code SCARTI_ANALISI}: per ogni documento, l'impronta delle mappe con cui è già stato riletto, così una
  *       rilettura si rifà solo quando le mappe cambiano.</li>
  * </ul>
@@ -57,7 +58,8 @@ import java.util.zip.GZIPInputStream;
  * {@link Importazioni#Ex_OKX_Raggruppa} le righe di scambio formano un'unità sola, ogni altra riga la propria
  * (è come le tratta {@code Ex_OKX_Consolida}). Un'unità con un bill già in archivio e uno scartato è
  * <i>mista</i>: l'archivio ne contiene una metà, aggiungere l'altra produrrebbe un doppione o una gamba orfana,
- * quindi la si segnala e basta.
+ * quindi la si segnala e basta. Mista vuol dire che manca davvero un bill registrato: un'unità recuperata, con tutti
+ * i suoi bill in archivio o marcata {@code RECUPERATO}, è importata e basta.
  *
  * <p>Il raggruppamento si fa senza consolidare, perché il consolidamento cerca il prezzo di ogni riga (rete);
  * solo i movimenti confermati passano dall'import vero ({@link #RecuperaOKX}).
@@ -74,6 +76,11 @@ public final class ScartiImport {
 
     static final String STATO_ATTESA = "ATTESA";
     static final String STATO_IGNORATO = "IGNORATO";
+    /**
+     * Scritto in archivio dal recupero. Senza, il record restava {@code ATTESA} e alla rilettura successiva (mappe
+     * cambiate) l'unità recuperata tornava come mista, "importata solo in parte, da sistemare a mano".
+     */
+    static final String STATO_RECUPERATO = "RECUPERATO";
 
     /**
      * Versione del rilettore OKX: entra nell'impronta, quindi alzarla fa rileggere tutti i documenti. Va alzata
@@ -196,6 +203,19 @@ public final class ScartiImport {
      * mappe in futuro. Vale anche per i candidati incerti, che nel registro non c'erano.
      */
     static void Ignora(Collection<Candidato> Candidati) {
+        Segna(Candidati, STATO_IGNORATO);
+    }
+
+    /**
+     * Segna come {@code RECUPERATO} i record dei candidati che il recupero ha scritto in archivio. Il registro è
+     * subito definitivo mentre i movimenti aspettano il Salva: se l'utente li scarta, l'unità torna assente e
+     * {@link #Valuta} la ripropone come certa.
+     */
+    static void SegnaRecuperati(Collection<Candidato> Candidati) {
+        Segna(Candidati, STATO_RECUPERATO);
+    }
+
+    private static void Segna(Collection<Candidato> Candidati, String Stato) {
         if (Candidati == null || Candidati.isEmpty() || DatabaseH2.connectionPersonale == null) {
             return;
         }
@@ -209,13 +229,13 @@ public final class ScartiImport {
                     ps.setInt(3, c.IdDocumento);
                     ps.setString(4, Taglia(r[4], 255));
                     ps.setString(5, Taglia(r[0], 19));
-                    ps.setString(6, STATO_IGNORATO);
+                    ps.setString(6, Stato);
                     ps.addBatch();
                 }
             }
             ps.executeBatch();
         } catch (Exception e) {
-            System.out.println("ScartiImport.Ignora : " + e.getMessage());
+            System.out.println("ScartiImport.Segna " + Stato + " : " + e.getMessage());
         }
     }
 
@@ -462,10 +482,13 @@ public final class ScartiImport {
     static Candidato Valuta(List<String[]> Unita, Map<String, String> Mappa, Set<String> Presenti, Map<String, String> Stati) {
         boolean presente = false;
         boolean registrato = false;
+        boolean registratoAssente = false;
+        boolean recuperato = false;
         boolean utile = false;
         boolean tuttiIgnorati = true;
         for (String[] r : Unita) {
-            if (Presenti.contains(r[14].trim())) {
+            boolean inArchivio = Presenti.contains(r[14].trim());
+            if (inArchivio) {
                 presente = true;
             }
             String cat = Mappa.get(r[4]);
@@ -480,15 +503,26 @@ public final class ScartiImport {
             }
             if (STATO_ATTESA.equals(stato)) {
                 registrato = true;
+                if (!inArchivio) {
+                    registratoAssente = true;
+                }
+            }
+            if (STATO_RECUPERATO.equals(stato)) {
+                recuperato = true;
             }
         }
         if (!utile || tuttiIgnorati) {
             return null;
         }
-        //Gia' in archivio: e' un problema solo se una sua parte era stata scartata. Senza registro un'unita'
-        //presente e' semplicemente importata (l'ordine in piu' fill di cui parla la nota di classe)
-        if (presente && !registrato) {
+        //Gia' in archivio: e' un problema solo se manca una sua parte scartata. Senza registro un'unita'
+        //presente e' semplicemente importata (l'ordine in piu' fill di cui parla la nota di classe), e lo e'
+        //anche quella i cui bill registrati sono tutti in archivio: la recuperata prima che esistesse RECUPERATO
+        if (presente && !registratoAssente) {
             return null;
+        }
+        //Recuperata e poi scartata col Salva: torna certa, come prima del recupero
+        if (!presente && recuperato) {
+            registrato = true;
         }
         Candidato c = new Candidato();
         c.Righe = Unita;
@@ -650,8 +684,20 @@ public final class ScartiImport {
      * @return i candidati di cui nessun bill compare nell'archivio
      */
     static List<Candidato> NonRecuperati(List<Candidato> Scelti, Map<String, String[]> Archivio) {
+        return PerEsito(Scelti, Archivio, false);
+    }
+
+    /**
+     * I candidati scelti che dopo il recupero l'archivio contiene: i loro record vanno segnati
+     * {@link #SegnaRecuperati}. Basta un bill per unità, come in {@link #NonRecuperati} di cui è il complemento.
+     */
+    static List<Candidato> Recuperati(List<Candidato> Scelti, Map<String, String[]> Archivio) {
+        return PerEsito(Scelti, Archivio, true);
+    }
+
+    private static List<Candidato> PerEsito(List<Candidato> Scelti, Map<String, String[]> Archivio, boolean Trovati) {
         Set<String> presenti = BillPresenti(Archivio);
-        List<Candidato> mancanti = new ArrayList<>();
+        List<Candidato> esito = new ArrayList<>();
         for (Candidato c : Scelti) {
             if (c.Misto) {
                 continue;
@@ -663,11 +709,11 @@ public final class ScartiImport {
                     break;
                 }
             }
-            if (!trovato) {
-                mancanti.add(c);
+            if (trovato == Trovati) {
+                esito.add(c);
             }
         }
-        return mancanti;
+        return esito;
     }
 
     private static String Taglia(String s, int max) {

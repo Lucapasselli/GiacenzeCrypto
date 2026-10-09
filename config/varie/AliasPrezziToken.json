@@ -2,7 +2,7 @@
   "formato": 1,
   "descrizione": [
     "Token che, su una certa rete, vanno prezzati come un'altra moneta quotata sugli exchange (CCXT, candele da 1 minuto) invece che per address (DefiLlama/CoinGecko, quotazioni orarie).",
-    "alias: chiave address+rete; prezzoDa e' il simbolo cercato sugli exchange; simboloToken e' il simbolo on-chain del token; tipo 'canonico' = emesso dall'emittente ufficiale su quella rete, 'bridged' = versione ponte.",
+    "alias: chiave address+rete; prezzoDa e' il simbolo cercato sugli exchange; simboloToken e' il simbolo on-chain del token; tipo 'canonico' = emesso dall'emittente ufficiale su quella rete, 'bridged' = versione ponte, 'ricevuta' = token di ricevuta di un protocollo (es. aToken di Aave) rimborsabile 1:1 nella moneta di prezzo, mai riferimento.",
     "riferimento: true = il token di riferimento per quella moneta su quella rete (il canonico, oppure il bridged dove un canonico non c'e'). Solo queste voci alimentano il controllo anti-impersonazione dei depositi/prelievi.",
     "stessoPrezzo: simbolo -> simbolo per le monete senza address valido (es. WETH da exchange quotato come ETH).",
     "dal: data (aaaa-mm-gg) da cui la voce vale; prima di quella data il token si prezza come se la voce non ci fosse. Serve a non cambiare i valori di anni gia' dichiarati: una voce aggiunta nell'anno N nasce con dal = N-01-01. Le voci senza dal valgono sempre. L'opzione 'anche per gli anni passati' fa ignorare tutte le date. In stessoPrezzo una voce con data si scrive {\"prezzoDa\": ..., \"dal\": ...}.",
@@ -1209,6 +1209,28 @@
       "riferimento": true,
       "fonte": "coingecko:usd-coin",
       "verificato": "developers.circle.com 2026-09-25",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "XLAYER",
+      "address": "0x4ae46a509f6b1d9056937ba4500cb143933d2dc8",
+      "simboloToken": "USDG",
+      "prezzoDa": "USDG",
+      "tipo": "canonico",
+      "riferimento": true,
+      "fonte": "docs.paxos.com/guides/stablecoin/usdg/mainnet",
+      "verificato": "symbol() sul nodo X Layer 2026-10-07, OKX quota USDG-EUR al minuto",
+      "dal": "2026-01-01"
+    },
+    {
+      "rete": "XLAYER",
+      "address": "0x228765a3c18065c923f23a0ccb6c7cefb3ea2223",
+      "simboloToken": "aXlrUSDG",
+      "prezzoDa": "USDG",
+      "tipo": "ricevuta",
+      "riferimento": false,
+      "nota": "aToken di Aave V3 (UNDERLYING_ASSET_ADDRESS = USDG), rimborsabile 1:1 in USDG: si prezza come USDG ma resta una moneta a se' nei movimenti e nel LIFO (scelta dell'utente del 2026-10-09)",
+      "verificato": "UNDERLYING_ASSET_ADDRESS() sul nodo X Layer 2026-10-07",
       "dal": "2026-01-01"
     }
   ],

@@ -251,6 +251,61 @@ class ScartiImportTest {
         assertTrue(dopo.Vuota());
     }
 
+    @Test
+    void unaRicompensaRecuperataNonTornaComeMistaAMappeCambiate() {
+        int doc = documento(List.of(bill("1001", "328", "OKSOL", "0.01", T0, null)), List.of());
+        registra(doc, "Funding:1001");
+        ScartiImport.Analisi a = ScartiImport.AnalizzaOKX(new TreeMap<>(), false);
+        assertEquals(1, a.Recuperabili.size());
+
+        //Recuperata: l'archivio la contiene, il registro e' ancora ATTESA (come prima di RECUPERATO)
+        Map<String, String[]> archivio = new TreeMap<>();
+        inArchivio(archivio, "1001");
+        assertTrue(ScartiImport.AnalizzaOKX(archivio, true).Vuota(),
+                "tutti i bill registrati sono in archivio: e' importata, non mista");
+    }
+
+    @Test
+    void unoScambioInPiuFillRecuperatoNonTornaComeMisto() {
+        int doc = documento(List.of(), List.of(
+                bill("1101", "2", "USDC", "-10", T0, "O9"),
+                bill("1102", "2", "BTC", "0.0001", T0, "O9"),
+                bill("1103", "2", "USDC", "-5", T0, "O9"),
+                bill("1104", "2", "BTC", "0.00005", T0, "O9")));
+        for (String b : List.of("1101", "1102", "1103", "1104")) {
+            registra(doc, "Trading:" + b);
+        }
+        ScartiImport.Analisi a = ScartiImport.AnalizzaOKX(new TreeMap<>(), false);
+        assertEquals(1, a.Recuperabili.size());
+
+        //Il movimento consolidato cita solo due dei quattro bill: senza RECUPERATO gli altri due sembrano mancanti
+        Map<String, String[]> archivio = new TreeMap<>();
+        inArchivio(archivio, "1101-1102");
+        assertEquals(1, ScartiImport.AnalizzaOKX(archivio, true).Misti.size());
+
+        List<ScartiImport.Candidato> recuperati = ScartiImport.Recuperati(a.Recuperabili, archivio);
+        assertEquals(1, recuperati.size());
+        assertTrue(ScartiImport.NonRecuperati(a.Recuperabili, archivio).isEmpty());
+        ScartiImport.SegnaRecuperati(recuperati);
+        assertEquals("RECUPERATO", ScartiImport.Stati(ScartiImport.ORIGINE_OKX).get("Trading:1103"));
+        assertTrue(ScartiImport.AnalizzaOKX(archivio, true).Vuota());
+    }
+
+    @Test
+    void unRecuperoScartatoColSalvaTornaCerto() {
+        int doc = documento(List.of(bill("1201", "328", "OKSOL", "0.01", T0, null)), List.of());
+        registra(doc, "Funding:1201");
+        ScartiImport.Analisi a = ScartiImport.AnalizzaOKX(new TreeMap<>(), false);
+        Map<String, String[]> archivio = new TreeMap<>();
+        inArchivio(archivio, "1201");
+        ScartiImport.SegnaRecuperati(ScartiImport.Recuperati(a.Recuperabili, archivio));
+
+        //L'utente non salva: l'archivio torna senza il movimento
+        ScartiImport.Analisi dopo = ScartiImport.AnalizzaOKX(new TreeMap<>(), true);
+        assertEquals(1, dopo.Recuperabili.size());
+        assertTrue(dopo.Recuperabili.get(0).Certo);
+    }
+
     /** Documento con una risposta OKX_Earn che porta lo storico On-chain Earn dato */
     private static int documentoConStorico(List<String> funding, String storico) {
         int id = DocumentiFonte.ApriSessione("OKX");

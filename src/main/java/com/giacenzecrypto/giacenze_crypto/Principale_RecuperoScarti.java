@@ -101,6 +101,8 @@ public final class Principale_RecuperoScarti {
             protected Void doInBackground() {
                 try {
                     Aggiunti[0] = ScartiImport.RecuperaOKX(Scelti);
+                    //Anche se interrotto: cio' che e' stato scritto e' recuperato, e da ATTESA tornerebbe come misto
+                    ScartiImport.SegnaRecuperati(ScartiImport.Recuperati(Scelti, Principale.MappaCryptoWallet));
                     //Dentro gli scope, finche' si sa ancora se l'utente ha interrotto o se la linea e' caduta: in
                     //quei casi cio' che manca resta in sospeso e torna al prossimo controllo. Altrimenti un'unita'
                     //confermata e non scritta si segna ignorata, o verrebbe riproposta per sempre.

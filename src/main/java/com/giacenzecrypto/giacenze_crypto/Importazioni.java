@@ -617,7 +617,7 @@ public class Importazioni {
                 }
             }
             //Il raggruppamento per orario e il consolidamento sono condivisi con l'import via API
-            listaCompleta.addAll(Ex_OKX_RaggruppaEConsolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali, listaScambiDifferiti));
+            listaCompleta.addAll(Ex_OKX_RaggruppaEConsolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali, listaScambiDifferiti, progressb));
 
 
          //   bure.close();
@@ -772,8 +772,67 @@ public class Importazioni {
         return sottogruppi;
     }
 
+    /**
+     * Scarica a lotti i prezzi che {@link #Ex_OKX_Consolida} cerchera' sulle righe a 19 campi, cosi' il consolidamento
+     * li trova in cache. Vale per le tre strade che consolidano righe OKX: scaricamento via API, CSV e recupero degli
+     * scarti. Non cambia quale prezzo viene scelto, solo quanto costa averlo: la fonte e' la stessa {@code "okx"} del
+     * consolidamento.
+     */
+    static void Ex_OKX_PreScaricaPrezzi(List<String[]> righe, Download progress) {
+        Prezzi.PreScaricaPrezziSimboli(Ex_OKX_SimboliDaPrezzare(righe), progress, "import OKX", "okx");
+        //Anche a zero richieste: il filtro della cache ha gia' cambiato l'etichetta, che resterebbe per tutto il consolidamento
+        if (progress != null) {
+            progress.SetLabel("Importazione in corso...");
+            progress.SetMessaggioAvanzamento("");
+        }
+    }
+
+    /**
+     * Le coppie (moneta, istante) che {@link #Ex_OKX_Consolida} prezzera': la moneta {@code [5]} di ogni riga e quella
+     * della commissione {@code [11]}, che diventa un movimento a se', all'istante {@code [0]}. Le valute
+     * ({@link Moneta#AssegnaTipoAuto}) e le quantita' nulle si saltano: le prime si prezzano col cambio, le seconde
+     * non si prezzano affatto ({@code Prezzi.OrdineGambe}).
+     */
+    static List<Prezzi.SimboloIstante> Ex_OKX_SimboliDaPrezzare(List<String[]> righe) {
+        List<Prezzi.SimboloIstante> coppie = new ArrayList<>();
+        if (righe == null) return coppie;
+        for (String[] r : righe) {
+            if (r == null || r.length < 13) continue;
+            long istante = FunzioniDate.ConvertiDatainLongSecondo(r[0]);
+            if (istante <= 0) continue;
+            if (Ex_OKX_DaPrezzare(r[5], r[6])) coppie.add(new Prezzi.SimboloIstante(r[5], istante));
+            if (Ex_OKX_DaPrezzare(r[11], r[12])) coppie.add(new Prezzi.SimboloIstante(r[11], istante));
+        }
+        return coppie;
+    }
+
+    /** Moneta non vuota, non valuta, con quantita' leggibile e diversa da zero. */
+    private static boolean Ex_OKX_DaPrezzare(String moneta, String qta) {
+        if (moneta == null || moneta.isBlank() || qta == null || qta.isBlank()) return false;
+        Moneta m = new Moneta();
+        m.Moneta = moneta;
+        m.AssegnaTipoAuto();
+        if (m.Tipo.equals("FIAT")) return false;
+        try {
+            return new BigDecimal(qta).signum() != 0;
+        } catch (NumberFormatException ex) {
+            return false;
+        }
+    }
+
     public static List<String[]> Ex_OKX_RaggruppaEConsolida(List<String[]> righeOrdinate,
             Map<String, String> Mappa_Conversione_Causali, List<String[]> listaScambiDifferiti) {
+        return Ex_OKX_RaggruppaEConsolida(righeOrdinate, Mappa_Conversione_Causali, listaScambiDifferiti, null);
+    }
+
+    /**
+     * Come sopra, con i prezzi scaricati a lotti <b>prima</b> del consolidamento ({@link #Ex_OKX_PreScaricaPrezzi}):
+     * {@link #Ex_OKX_Consolida} prezza una riga alla volta, e ogni prezzo mancante era un processo Node a se'.
+     * @param progress finestra di avanzamento facoltativa
+     */
+    static List<String[]> Ex_OKX_RaggruppaEConsolida(List<String[]> righeOrdinate,
+            Map<String, String> Mappa_Conversione_Causali, List<String[]> listaScambiDifferiti, Download progress) {
+        Ex_OKX_PreScaricaPrezzi(righeOrdinate, progress);
 
         List<String[]> listaCompleta = new ArrayList<>();
         for (List<String[]> gruppo : Ex_OKX_Raggruppa(righeOrdinate)) {
@@ -999,6 +1058,11 @@ public class Importazioni {
      * @return array {@code [movimenti inseriti, movimenti scartati]}
      */
     public static int[] Ex_OKX_ImportaDaAPI(List<String[]> righe) {
+        return Ex_OKX_ImportaDaAPI(righe, null);
+    }
+
+    /** Come {@link #Ex_OKX_ImportaDaAPI(List)}, con la finestra su cui mostrare il pre-scarico dei prezzi. */
+    public static int[] Ex_OKX_ImportaDaAPI(List<String[]> righe, Download progress) {
         AzzeraContatori();
         Map<String, String> Mappa_Conversione_Causali = Ex_OKX_MappaCausali();
         if (Mappa_Conversione_Causali == null) {
@@ -1030,7 +1094,7 @@ public class Importazioni {
         }
 
         List<String[]> listaScambiDifferiti = new ArrayList<>();
-        List<String[]> listaCompleta = Ex_OKX_RaggruppaEConsolida(righeOrdinate, Mappa_Conversione_Causali, listaScambiDifferiti);
+        List<String[]> listaCompleta = Ex_OKX_RaggruppaEConsolida(righeOrdinate, Mappa_Conversione_Causali, listaScambiDifferiti, progress);
 
         //INTERROMPI premuto durante il consolidamento, cioe' durante lo scaricamento dei prezzi: si esce
         //senza scrivere nulla. E' l'ultimo punto in cui si puo' farlo in modo pulito, perche' fin qui il
@@ -1071,6 +1135,9 @@ public class Importazioni {
         if (!AttesaConnessione.Abortita()) {
             ScartiImport.Registra(ScartiImport.ORIGINE_OKX, DocumentoFonteCorrente, Sconosciute);
         }
+
+        //Bill 325 appena arrivati (anche dal recupero degli scarti): abbinati alle ricariche sul wallet della carta
+        if (TransazioniAggiunte > 0) OKX_CartaAbbina.Abbina();
 
         if (TransazioniAggiunte > 0) Principale.TabellaCryptodaAggiornare = true;
         return InsScart;
@@ -6593,6 +6660,8 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
         if (Rete.equalsIgnoreCase("BSC")) return NodeRealDefi.PROVIDER;
         if (Rete.equalsIgnoreCase("SOL")) return "HELIUS";
         if (Rete.equalsIgnoreCase("BTC")) return "BITCOIN";
+        //Nessun explorer: nodo pubblico con la scansione per stati (Trans_XLayer)
+        if (Rete.equalsIgnoreCase(Trans_XLayer.RETE)) return "NODO PUBBLICO";
         return "ETHERSCAN";
     }
 
@@ -6819,7 +6888,30 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
             progressb.Titolo(avaTot+" di "+Portafogli.size()+" Importazione di " + walletAddress + "da explorer");
             //In caso di SOL devo passargli l'ultimo blocco disponibile, non il blocco+1
             if (!Rete.equalsIgnoreCase("SOL")) Blocco = String.valueOf(Integer.parseInt(Blocco) + 1);            
-            if (Rete.equalsIgnoreCase("SOL")) {
+            //X Layer prima dei controlli sulle ApiKey: si legge dal nodo pubblico, senza chiavi (Trans_XLayer)
+            if (Rete.equalsIgnoreCase(Trans_XLayer.RETE)) {
+                progressb.setIndeterminate(true);
+                progressb.SetLabel("Scansione di " + walletAddress + " (" + Rete + ") in corso...");
+                Trans_XLayer.Esito esito = Trans_XLayer.Scarica(walletAddress, Long.parseLong(Blocco),
+                        OKX_WalletCarta.RpcXLayer(), progressb::FineThread, DocumentoFonteCorrente);
+                progressb.setIndeterminate(false);
+                for (String avviso : esito.avvisi()) {
+                    LoggerGC.ScriviErrore("X Layer " + walletAddress + ": " + avviso);
+                }
+                if (!esito.completo()) {
+                    //Meglio niente che una parte: il blocco di partenza della prossima importazione e' l'ultimo
+                    //movimento scritto, e i movimenti non letti resterebbero indietro per sempre
+                    if (ccc != null && !progressb.FineThread()) JOptionPane.showConfirmDialog(ccc,
+                            "Scansione del wallet " + walletAddress + " su X Layer non completata, nessun movimento importato.\n"
+                            + String.join("\n", esito.avvisi()), "X Layer", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                } else {
+                    MappaTransazioniDefi.putAll(Trans_XLayer.ComeTransazioniDefi(walletAddress, esito.transazioni()));
+                    if (ccc != null && !esito.avvisi().isEmpty()) JOptionPane.showConfirmDialog(ccc,
+                            "Wallet " + walletAddress + " su X Layer:\n" + String.join("\n", esito.avvisi()),
+                            "X Layer", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                }
+            }
+            else if (Rete.equalsIgnoreCase("SOL")) {
 
                 try {
                     if (Trans_Solana.isApiKeyValida(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))) {

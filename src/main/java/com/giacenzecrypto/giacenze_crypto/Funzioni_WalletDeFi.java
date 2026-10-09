@@ -83,6 +83,7 @@ public class Funzioni_WalletDeFi {
         if (Rete.equalsIgnoreCase("HYPEREVM")) return "https://hyperevmscan.io/tx/" + Hash;
         if (Rete.equalsIgnoreCase("INK")) return "https://explorer.inkonchain.com/tx/" + Hash;
         if (Rete.equalsIgnoreCase("ROBINHOOD")) return "https://robinhoodchain.blockscout.com/tx/" + Hash;
+        if (Rete.equalsIgnoreCase("XLAYER")) return "https://www.oklink.com/x-layer/tx/" + Hash;
 
         return null;
     }
@@ -175,6 +176,10 @@ public class Funzioni_WalletDeFi {
                            //Stesso caso di Ink: solo Blockscout, nessun sito "-scan" a parte
                            Funzioni.ApriWeb("https://robinhoodchain.blockscout.com/address/"+Wallet+"?tab=token_transfers&token="+Address);
                         }
+                        else if(Rete.equalsIgnoreCase("XLAYER")){
+                           //OKLink non ha un filtro per token nell'URL: si apre la pagina dell'indirizzo
+                           Funzioni.ApriWeb("https://www.oklink.com/x-layer/address/"+Wallet);
+                        }
 
 
      }
@@ -263,6 +268,9 @@ public class Funzioni_WalletDeFi {
                         else if(Rete.equalsIgnoreCase("ROBINHOOD")){
                            Funzioni.ApriWeb("https://robinhoodchain.blockscout.com/address/"+Wallet+"?tab=tokens");
                         }
+                        else if(Rete.equalsIgnoreCase("XLAYER")){
+                           Funzioni.ApriWeb("https://www.oklink.com/x-layer/address/"+Wallet);
+                        }
                     }
 
      }
@@ -278,7 +286,7 @@ public class Funzioni_WalletDeFi {
      public static boolean isValidDefiWallet(String wallet) {
         //Questa funzione serve per sapere se una stringa wallet presente nella colonna wallet es 0x3423432aff4545 (ETH)
         //può essere considerata un wallet valido, si controllerà quindi l'indirizzo e se la rete è supportata
-        String RetiSupportate="||BSC||CRO||BASE||ARB||ETH||SOL||BERA||AVAX||POL||MONAD||BTC||GNOSIS||LINEA||BLAST||UNICHAIN||WORLD||TAIKO||ABSTRACT||KATANA||SONIC||MANTLE||OP||HYPEREVM||INK||ROBINHOOD||";
+        String RetiSupportate="||BSC||CRO||BASE||ARB||ETH||SOL||BERA||AVAX||POL||MONAD||BTC||GNOSIS||LINEA||BLAST||UNICHAIN||WORLD||TAIKO||ABSTRACT||KATANA||SONIC||MANTLE||OP||HYPEREVM||INK||ROBINHOOD||XLAYER||";
         String sWallet[]=wallet.split("\\(");
         String address;
         String Rete;

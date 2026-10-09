@@ -37,6 +37,13 @@ public class TransazioneDefi {
   private final Map<String, ValoriToken> MappaTokenTecniciEntrata;
   private final Map<String, ValoriToken> MappaTokenTecniciUscita;
   private boolean EccezioniApplicate;//true dopo che le eccezioni di EccezioniDefi sono già state applicate
+  /**
+   * Righe già costruite da chi importa, restituite tali e quali da {@link #RitornaRigheTabella}. Serve a X Layer
+   * ({@link Trans_XLayer}): qui i token si sommano per indirizzo, e nel pagamento con la carta gli interessi Aave e
+   * l'uscita dello stesso aToken si annullerebbero in un movimento solo. Costruite solo quando servono, perché
+   * {@code creaMovimento} cerca i prezzi e l'importazione controlla l'interruzione proprio in quel momento.
+   */
+  public java.util.function.Supplier<List<String[]>> RighePronte;
 
     public TransazioneDefi() {
         this.MappaToken = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -538,6 +545,7 @@ public class TransazioneDefi {
    * @return la lista di righe di movimento generate da questa transazione
    */
   public List<String[]> RitornaRigheTabella(){
+      if (RighePronte != null) return RighePronte.get();
       String RT[];
       //Correggo la transazione dai casi anomali noti prima di smistare e classificare i token
       ApplicaEccezioni();

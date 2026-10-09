@@ -2414,6 +2414,9 @@ public class Prezzi {
      */
     public static InfoPrezzo DammiPrezzoInfoTransazione(Moneta Moneta1a, Moneta Moneta2a, long Data, String Rete,String fonte) {
 
+        //Conversione "a secco" di un'importazione via API (vedi SenzaValorizzare): nessun prezzo, nessuna rete
+        if (SENZA_VALORIZZARE.get()) return null;
+
         Moneta MonOri[] = new Moneta[]{Moneta1a, Moneta2a};
 
         //A - Clono le monete in quanto altrimenti potrei andare ad alterarle nel corso del ciclo per la richiesta dei prezzi
@@ -4709,6 +4712,50 @@ public static int PreScaricaPrezziMonete(java.util.Collection<Moneta> monete, lo
 /** Un prezzo da exchange che servira': simbolo (quello che la valorizzazione cerchera') a un istante. */
 record SimboloIstante(String simbolo, long istante) {}
 
+/** Acceso solo dentro {@link #SenzaValorizzare}: {@link #DammiPrezzoInfoTransazione} risponde {@code null} senza cercare. */
+private static final ThreadLocal<Boolean> SENZA_VALORIZZARE = ThreadLocal.withInitial(() -> false);
+
+/**
+ * Esegue {@code lavoro} con la valorizzazione spenta su questo thread: {@link #DammiPrezzoInfoTransazione} (e quindi
+ * {@code MovimentiCrypto.creaMovimento}) non cerca prezzi e le righe escono a "0.00".
+ *
+ * <p>Serve alle importazioni via API che prezzano <b>dentro</b> la conversione (Binance): le si converte una prima
+ * volta a secco per sapere quali coppie (moneta, istante) serviranno, si scaricano quelle a lotti
+ * ({@link #PreScaricaPrezziSimboli}) e solo dopo si converte davvero, trovando i prezzi in cache. Le righe a secco
+ * vanno buttate: hanno il prezzo a zero e {@code [32]="NO"}.
+ */
+static <T> T SenzaValorizzare(java.util.function.Supplier<T> lavoro) {
+    boolean prima = SENZA_VALORIZZARE.get();
+    SENZA_VALORIZZARE.set(true);
+    try {
+        return lavoro.get();
+    } finally {
+        SENZA_VALORIZZARE.set(prima);
+    }
+}
+
+/**
+ * Le coppie (moneta, istante) che la valorizzazione cercherà su movimenti già formati senza indirizzi di token
+ * (exchange via API): le due gambe {@code [8]}/{@code [11]} all'istante di {@code [1]}, saltate le FIAT e, se una
+ * gamba è FIAT, anche l'altra, perché {@link #OrdineGambe} prezza il movimento con la valuta. SCAM, E-Money e
+ * normalizzazione del simbolo li fa {@link #RaccogliRichiestePerSimboli}.
+ */
+static List<SimboloIstante> SimboliDaMovimenti(java.util.Collection<String[]> movimenti) {
+    List<SimboloIstante> coppie = new ArrayList<>();
+    if (movimenti == null) return coppie;
+    for (String[] v : movimenti) {
+        if (v == null || v.length < 13) continue;
+        boolean fiat = "FIAT".equalsIgnoreCase(v[9] == null ? "" : v[9].trim()) && v[8] != null && !v[8].isBlank()
+                || "FIAT".equalsIgnoreCase(v[12] == null ? "" : v[12].trim()) && v[11] != null && !v[11].isBlank();
+        if (fiat) continue;
+        long istante = FunzioniDate.ConvertiDatainLongMinuto(v[1]);
+        if (istante <= 0) continue;
+        if (v[8] != null && !v[8].isBlank()) coppie.add(new SimboloIstante(v[8], istante));
+        if (v[11] != null && !v[11].isBlank()) coppie.add(new SimboloIstante(v[11], istante));
+    }
+    return coppie;
+}
+
 /**
  * Variante di {@link #PreScaricaPrezziMonete} per le <b>importazioni DeFi</b>: tante coppie (simbolo,
  * istante), ognuna col suo istante. Prima ogni movimento della moneta della rete o di un token con alias
@@ -4720,7 +4767,17 @@ record SimboloIstante(String simbolo, long istante) {}
  * @return quante coppie (moneta, ora) sono state richieste
  */
 static int PreScaricaPrezziSimboli(java.util.Collection<SimboloIstante> coppie, Download progress, String origine) {
-    List<RichiestaPrezzo> richieste = RaccogliRichiestePerSimboli(coppie);
+    return PreScaricaPrezziSimboli(coppie, progress, origine, "");
+}
+
+/**
+ * Come {@link #PreScaricaPrezziSimboli(java.util.Collection, Download, String)}, per chi valorizza con una fonte
+ * esplicita (le importazioni via API: {@code "okx"}, {@code "Binance"}). La fonte va passata <b>uguale</b> a quella
+ * del consumatore: decide da quale exchange parte la cascata del lotto e, come in {@link #CambioXXXEUR}, esclude
+ * i prezzi personalizzati dal controllo di ciò che è già coperto (con una fonte non vuota non vengono letti).
+ */
+static int PreScaricaPrezziSimboli(java.util.Collection<SimboloIstante> coppie, Download progress, String origine, String fonte) {
+    List<RichiestaPrezzo> richieste = RaccogliRichiestePerSimboli(coppie, ExchangeRiconosciuto(fonte));
     if (richieste.isEmpty()) return 0;
     //Le importazioni DeFi prezzano una moneta sola con includiVecchi=true: prima di scaricare CambioXXXEUR
     //legge i personalizzati e il vecchio archivio orario, che FiltraRichiesteGiaCoperte non guarda. Senza
@@ -4746,12 +4803,17 @@ static int PreScaricaPrezziSimboli(java.util.Collection<SimboloIstante> coppie, 
  * la valorizzazione non scarica nulla e la richiesta non serve.
  */
 static boolean CopertaDaPrezzoLocale(RichiestaPrezzo r) {
-    if (DammiPrezzoDaDatabasePersonale(r.simbolo, r.istante, "", "", "", 60, BigDecimal.ONE) != null) return true;
+    if (DammiPrezzoDaDatabasePersonale(r.simbolo, r.istante, r.exchangePreferito, "", "", 60, BigDecimal.ONE) != null) return true;
     return DatabaseH2.XXXEUR_Leggi(FunzioniDate.ConvertiDatadaLongallOra(r.istante) + " " + r.simbolo) != null;
 }
 
 /** La raccolta di {@link #PreScaricaPrezziSimboli}, senza rete: stesse regole del ciclo di {@link #PreScaricaPrezziMonete}. */
 static List<RichiestaPrezzo> RaccogliRichiestePerSimboli(java.util.Collection<SimboloIstante> coppie) {
+    return RaccogliRichiestePerSimboli(coppie, "");
+}
+
+/** @param exchangePreferito primo exchange della cascata, gia' passato da {@link #ExchangeRiconosciuto} */
+static List<RichiestaPrezzo> RaccogliRichiestePerSimboli(java.util.Collection<SimboloIstante> coppie, String exchangePreferito) {
     List<RichiestaPrezzo> richieste = new ArrayList<>();
     if (coppie == null || coppie.isEmpty()) return richieste;
     long adessoMs = System.currentTimeMillis();
@@ -4768,7 +4830,7 @@ static List<RichiestaPrezzo> RaccogliRichiestePerSimboli(java.util.Collection<Si
             if (inizioOra > adessoMs) continue;
             if (chiavi.add(simbolo + "|" + inizioOra)) {
                 richieste.add(new RichiestaPrezzo(simbolo, inizioOra,
-                        Math.min(inizioOra + 3600000L - 1, adessoMs), data));
+                        Math.min(inizioOra + 3600000L - 1, adessoMs), data, exchangePreferito));
             }
         }
     }

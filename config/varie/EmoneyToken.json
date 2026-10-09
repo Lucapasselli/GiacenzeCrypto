@@ -1,0 +1,18 @@
+{
+  "descrizione": "Token di moneta elettronica (EMT, regolamento MiCA) noti al programma. Servono a due cose: il pulsante che imposta i token standard nella sezione E-Money delle opzioni, e l'avviso che al calcolo dei quadri W/RW e T/RT propone di aggiungere alla sezione E-Money i token di questo elenco che compaiono nei movimenti e non ci sono. Distribuito col programma e riallineato a ogni avvio dal repository: un EMT nuovo si aggiunge qui, senza una nuova versione. Vedi EmoneyToken.java.",
+  "decorrenza": "2023-01-01",
+  "nota_decorrenza": "Data da cui i token aggiunti dal pulsante o dall'avviso sono trattati come E-Money nei calcoli: l'inizio del regime delle cripto-attivita' (legge 197/2022). Cambiarla cambia i risultati di tutti gli anni da quella data in poi.",
+  "emoneyToken": [
+    { "simbolo": "EURC", "emittente": "Circle" },
+    { "simbolo": "EUROe", "emittente": "Membrane Finance" },
+    { "simbolo": "EURQ", "emittente": "Quantoz" },
+    { "simbolo": "USDQ", "emittente": "Quantoz" },
+    { "simbolo": "EURCV", "emittente": "SG-Forge" },
+    { "simbolo": "EURI", "emittente": "Banking Circle" },
+    { "simbolo": "EURR", "emittente": "StablR" },
+    { "simbolo": "EURe", "emittente": "Monerium" },
+    { "simbolo": "USDC", "emittente": "Circle" },
+    { "simbolo": "USDR", "emittente": "StablR" },
+    { "simbolo": "USDG", "emittente": "Paxos", "aggiunto": "2026-10-09" }
+  ]
+}

@@ -104,6 +104,7 @@ public class GeneraLoghi {
         PIATTAFORMA_CHAIN.put("HyperEVM (HYPEREVM)", "hyperevm");
         PIATTAFORMA_CHAIN.put("Ink (INK)", "ink");
         PIATTAFORMA_CHAIN.put("Robinhood Chain (ROBINHOOD)", "robinhood");
+        PIATTAFORMA_CHAIN.put("X Layer (XLAYER)", "x-layer");
 
         MONETA_CHAIN.put("Bitcoin (BTC)", "bitcoin");
         MONETA_CHAIN.put("Cardano (ADA)", "cardano");

@@ -112,22 +112,52 @@ final class Trans_XLayer {
      */
     static Esito Scarica(String wallet, long bloccoDa, OKX_WalletCarta.Rpc rpc, java.util.function.BooleanSupplier interrotto,
             int idDocumento) {
+        return Scarica(wallet, bloccoDa, rpc, interrotto, idDocumento, null);
+    }
+
+    /**
+     * Come {@link #Scarica(String, long, OKX_WalletCarta.Rpc, java.util.function.BooleanSupplier, int)}, raccontando
+     * le fasi: ogni passo va nel log (lo stdout, che la finestra di scaricamento mostra) e, se c'è, in
+     * {@code avanzamento} come riga di stato. La scansione per stati può durare minuti senza trovare nulla, e senza
+     * questo la finestra restava ferma sulla stessa scritta.
+     *
+     * @param avanzamento riceve la riga di stato corrente; può essere {@code null}
+     */
+    static Esito Scarica(String wallet, long bloccoDa, OKX_WalletCarta.Rpc rpc, java.util.function.BooleanSupplier interrotto,
+            int idDocumento, java.util.function.Consumer<String> avanzamento) {
         String w = wallet.toLowerCase();
         List<String> avvisi = new ArrayList<>();
         List<Transazione> transazioni = new ArrayList<>();
+        Progresso p = new Progresso(avanzamento);
         try {
+            p.stato("X Layer: lettura dell'ultimo blocco dal nodo pubblico...");
             long ultimo = Long.decode(rpc.chiama("eth_blockNumber", new JsonArray()).getAsString());
-            if (bloccoDa > ultimo) return new Esito(transazioni, avvisi, true);
+            if (bloccoDa > ultimo) {
+                p.log("X Layer " + wallet + ": nessun blocco nuovo dopo il " + (bloccoDa - 1) + ".");
+                return new Esito(transazioni, avvisi, true);
+            }
             long da = Math.max(0, bloccoDa - 1);
+            p.log("X Layer " + wallet + ": scansione dal blocco " + bloccoDa + " al " + ultimo
+                    + " (" + (ultimo - da) + " blocchi), cercando dove cambia lo stato del wallet.");
+            p.inizioScansione(da, ultimo);
             List<long[]> finestre = new ArrayList<>();
             List<BigInteger> statoDa = Stato(w, da, rpc);
             List<BigInteger> statoA = Stato(w, ultimo, rpc);
-            Dividi(w, da, ultimo, statoDa, statoA, rpc, finestre, interrotto);
-            if (interrotto != null && interrotto.getAsBoolean()) return new Esito(transazioni, avvisi, false);
+            p.letture += 2;
+            Dividi(w, da, ultimo, statoDa, statoA, rpc, finestre, interrotto, p);
+            if (interrotto != null && interrotto.getAsBoolean()) {
+                p.log("X Layer: scansione interrotta.");
+                return new Esito(transazioni, avvisi, false);
+            }
+            p.log("X Layer: scansione finita, " + p.letture + " letture dello stato, "
+                    + finestre.size() + (finestre.size() == 1 ? " tratto cambiato." : " tratti cambiati."));
 
             //Hash delle transazioni, in ordine di blocco: i log di una transazione arrivano dalle due ricerche
             TreeMap<Long, TreeSet<String>> perBlocco = new TreeMap<>();
+            int nf = 0;
             for (long[] f : finestre) {
+                nf++;
+                p.stato("Lettura dei log: tratto " + nf + " di " + finestre.size() + " (blocchi " + f[0] + "-" + f[1] + ")");
                 if (f[2] != 0) {
                     avvisi.add("Movimento di OKB fra i blocchi " + f[0] + " e " + f[1] + ": i movimenti della moneta nativa non si importano.");
                 }
@@ -137,11 +167,21 @@ final class Trans_XLayer {
                             .add(Testo(log, "transactionHash").toLowerCase());
                 }
             }
+            int totaleTx = 0;
+            for (TreeSet<String> h : perBlocco.values()) totaleTx += h.size();
+            p.log("X Layer: " + totaleTx + (totaleTx == 1 ? " transazione" : " transazioni") + " da leggere.");
             Map<String, Token> metadati = new HashMap<>(TOKEN);
+            int nt = 0;
             for (Map.Entry<Long, TreeSet<String>> e : perBlocco.entrySet()) {
                 long ts = TempoBlocco(e.getKey(), rpc);
                 for (String hash : e.getValue()) {
-                    if (interrotto != null && interrotto.getAsBoolean()) return new Esito(transazioni, avvisi, false);
+                    if (interrotto != null && interrotto.getAsBoolean()) {
+                        p.log("X Layer: lettura delle transazioni interrotta.");
+                        return new Esito(transazioni, avvisi, false);
+                    }
+                    nt++;
+                    p.stato("Lettura della transazione " + nt + " di " + totaleTx + " ("
+                            + FunzioniDate.ConvertiDatadaLongAlSecondo(ts * 1000) + ")");
                     JsonArray par = new JsonArray();
                     par.add(hash);
                     JsonObject ricevuta = rpc.chiama("eth_getTransactionReceipt", par).getAsJsonObject();
@@ -151,9 +191,11 @@ final class Trans_XLayer {
                     if (!movimenti.isEmpty()) transazioni.add(new Transazione(hash, e.getKey(), ts, movimenti));
                 }
             }
+            p.log("X Layer: lette " + totaleTx + " transazioni, " + transazioni.size() + " con movimenti del wallet.");
             return new Esito(transazioni, avvisi, true);
         } catch (Exception ex) {
             LoggerGC.ScriviErrore(ex);
+            p.log("X Layer: errore del nodo, " + ex.getMessage());
             avvisi.add("Nodo di X Layer: " + ex.getMessage());
             return new Esito(transazioni, avvisi, false);
         }
@@ -164,17 +206,67 @@ final class Trans_XLayer {
      * foglia cambiato finisce in {@code finestre} come {@code {primo blocco, ultimo blocco, OKB cambiati ? 1 : 0}}.
      */
     private static void Dividi(String w, long da, long a, List<BigInteger> sDa, List<BigInteger> sA, OKX_WalletCarta.Rpc rpc,
-            List<long[]> finestre, java.util.function.BooleanSupplier interrotto) throws Exception {
-        if (sDa.equals(sA) || (interrotto != null && interrotto.getAsBoolean())) return;
+            List<long[]> finestre, java.util.function.BooleanSupplier interrotto, Progresso p) throws Exception {
+        if (interrotto != null && interrotto.getAsBoolean()) return;
+        if (sDa.equals(sA)) {
+            p.coperto(a, finestre.size());
+            return;
+        }
         if (a - da <= BLOCCHI_PER_RICHIESTA) {
             int okb = sDa.size() - 1;
             finestre.add(new long[]{da + 1, a, sDa.get(okb).equals(sA.get(okb)) ? 0 : 1});
+            p.log("X Layer: cambio di stato fra i blocchi " + (da + 1) + " e " + a + " (tratto " + finestre.size() + ").");
+            p.coperto(a, finestre.size());
             return;
         }
         long m = (da + a) >>> 1;
         List<BigInteger> sM = Stato(w, m, rpc);
-        Dividi(w, da, m, sDa, sM, rpc, finestre, interrotto);
-        Dividi(w, m, a, sM, sA, rpc, finestre, interrotto);
+        p.letture++;
+        Dividi(w, da, m, sDa, sM, rpc, finestre, interrotto, p);
+        Dividi(w, m, a, sM, sA, rpc, finestre, interrotto, p);
+    }
+
+    /**
+     * Racconto dello scaricamento: le righe di {@link #log} vanno nello stdout (il pannello di log della finestra di
+     * scaricamento) e anche nella riga di stato; quelle di {@link #stato} solo nella riga di stato, perché durante la
+     * bisezione sono centinaia. La percentuale della scansione è la parte di blocchi già esclusa o già divisa fino
+     * in fondo: la bisezione scende a sinistra per prima, quindi avanza in ordine di blocco.
+     */
+    private static final class Progresso {
+        private final java.util.function.Consumer<String> uscita;
+        int letture;
+        private long inizio, fine;
+        private int ultimaDecina = -1;
+
+        Progresso(java.util.function.Consumer<String> uscita) {
+            this.uscita = uscita;
+        }
+
+        void log(String testo) {
+            System.out.println(testo);
+            stato(testo);
+        }
+
+        void stato(String testo) {
+            if (uscita != null) uscita.accept(testo);
+        }
+
+        void inizioScansione(long da, long a) {
+            inizio = da;
+            fine = a;
+        }
+
+        /** La scansione ha chiuso tutto fino al blocco {@code blocco}. Nel log una riga ogni 10%. */
+        void coperto(long blocco, int tratti) {
+            int perc = fine > inizio ? (int) ((blocco - inizio) * 100 / (fine - inizio)) : 100;
+            String testo = "Scansione degli stati: " + perc + "% (blocco " + blocco + " di " + fine + "), "
+                    + letture + " letture, " + tratti + (tratti == 1 ? " tratto cambiato" : " tratti cambiati");
+            if (perc / 10 > ultimaDecina) {
+                ultimaDecina = perc / 10;
+                System.out.println("X Layer: s" + testo.substring(1));
+            }
+            stato(testo);
+        }
     }
 
     /** I log {@code Transfer} con il wallet come mittente o destinatario, di qualsiasi moneta, fra due blocchi. */
@@ -481,6 +573,11 @@ final class Trans_XLayer {
      * @param interrotto vero quando l'utente ha premuto Interrompi
      */
     static EsitoCarta AggiornaWalletCarta(java.util.function.BooleanSupplier interrotto) {
+        return AggiornaWalletCarta(interrotto, null);
+    }
+
+    /** Come {@link #AggiornaWalletCarta(java.util.function.BooleanSupplier)}; {@code avanzamento} riceve la riga di stato. */
+    static EsitoCarta AggiornaWalletCarta(java.util.function.BooleanSupplier interrotto, java.util.function.Consumer<String> avanzamento) {
         List<String> avvisi = new ArrayList<>();
         if (DatabaseH2.connectionPersonale == null) return new EsitoCarta(0, avvisi, true);
         String w = DatabaseH2.Pers_Opzioni_Leggi(OKX_WalletCarta.OPZIONE_WALLET);
@@ -494,12 +591,16 @@ final class Trans_XLayer {
         int aggiunti = 0;
         boolean completo = false;
         try {
-            Esito e = Scarica(w, ultimoBlocco + 1, OKX_WalletCarta.RpcXLayer(), interrotto, idDocumento);
+            Esito e = Scarica(w, ultimoBlocco + 1, OKX_WalletCarta.RpcXLayer(), interrotto, idDocumento, avanzamento);
             avvisi.addAll(e.avvisi());
             if (e.completo()) {
                 List<String[]> righe = new ArrayList<>();
+                int n = 0, tot = e.transazioni().size();
+                if (tot > 0) System.out.println("X Layer: ricerca dei prezzi per " + tot + (tot == 1 ? " transazione." : " transazioni."));
                 for (Transazione t : e.transazioni()) {
                     if (interrotto.getAsBoolean()) break;
+                    n++;
+                    if (avanzamento != null) avanzamento.accept("Prezzi della transazione " + n + " di " + tot);
                     righe.addAll(Righe(w, t));
                 }
                 if (!interrotto.getAsBoolean()) {

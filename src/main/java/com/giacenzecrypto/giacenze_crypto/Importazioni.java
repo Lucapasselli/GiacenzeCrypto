@@ -6893,7 +6893,8 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                 progressb.setIndeterminate(true);
                 progressb.SetLabel("Scansione di " + walletAddress + " (" + Rete + ") in corso...");
                 Trans_XLayer.Esito esito = Trans_XLayer.Scarica(walletAddress, Long.parseLong(Blocco),
-                        OKX_WalletCarta.RpcXLayer(), progressb::FineThread, DocumentoFonteCorrente);
+                        OKX_WalletCarta.RpcXLayer(), progressb::FineThread, DocumentoFonteCorrente,
+                        progressb::SetMessaggioAvanzamento);
                 progressb.setIndeterminate(false);
                 for (String avviso : esito.avvisi()) {
                     LoggerGC.ScriviErrore("X Layer " + walletAddress + ": " + avviso);

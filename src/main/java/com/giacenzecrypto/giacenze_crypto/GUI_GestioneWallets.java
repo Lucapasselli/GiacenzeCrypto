@@ -492,12 +492,16 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                     //fondo senza essere interrotta, così un'interruzione non lascia nessuna
                     //traccia parziale della sessione, esattamente come già avviene per la prima fase.
                     List<String[]> RigheDaScrivere = new ArrayList<>();
+                    int NumTrans = 0, TotTrans = MappaTransazioniDefi.size();
+                    if (TotTrans > 0) System.out.println("Classificazione e prezzi di " + TotTrans + " transazioni...");
                     outer:
                     for (TransazioneDefi v : MappaTransazioniDefi.values()) {
                         if (progress.FineThread()) {
                             interrotto = true;
                             break;
                         }
+                        NumTrans++;
+                        progress.SetMessaggioAvanzamento("Classificazione e prezzi: transazione " + NumTrans + " di " + TotTrans);
                         for (String[] st : v.RitornaRigheTabella()) {
                             if (progress.FineThread()) {
                                 interrotto = true;

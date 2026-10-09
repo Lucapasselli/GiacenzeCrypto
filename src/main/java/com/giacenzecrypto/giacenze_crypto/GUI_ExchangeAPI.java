@@ -702,7 +702,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             @Override
             protected Void doInBackground() {
                 try {
-                    esito[0] = Trans_XLayer.AggiornaWalletCarta(() -> progress.FineThread);
+                    esito[0] = Trans_XLayer.AggiornaWalletCarta(() -> progress.FineThread, progress::SetMessaggioAvanzamento);
                 } catch (Exception ex) {
                     LoggerGC.ScriviErrore(ex);
                 }

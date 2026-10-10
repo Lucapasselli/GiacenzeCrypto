@@ -5128,6 +5128,16 @@ static List<EsitoLotto> RecuperaPrezziDaCCXTLotto(List<RichiestaPrezzo> richiest
  */
 private static JsonElement EseguiLottoScript(List<RichiestaPrezzo> richieste, String exchanges, boolean tutti)
         throws IOException, InterruptedException {
+    return EseguiLottoScript(richieste, exchanges, tutti, "1m");
+}
+
+/**
+ * Come sopra, con le candele di {@code timeframe}. Restituisce solo il JSON: non scrive nulla in cache e non
+ * marca nulla, ed e' per questo che {@link PrezziGiornalieri} lo puo' usare con {@code "1d"} (un'apertura
+ * giornaliera in {@code PrezziNew} diventerebbe la quotazione piu' vicina di qualche valorizzazione fiscale).
+ */
+static JsonElement EseguiLottoScript(List<RichiestaPrezzo> richieste, String exchanges, boolean tutti, String timeframe)
+        throws IOException, InterruptedException {
     Path nodePath = CcxtInterop.getNodeExePath();
     Path scriptPath = Paths.get(VarStatiche.getPathRisorse() + "Scripts/Historical_Multi_Eur.js");
     CcxtInterop.ensureNodeInstalled();
@@ -5159,11 +5169,11 @@ private static JsonElement EseguiLottoScript(List<RichiestaPrezzo> richieste, St
             + (tutti ? " (tutti gli exchange)" : ""));
     JsonElement rootEl;
     try {
-        rootEl = ServizioNodePrezzi.Lotto(nodePath, scriptPath, exchangesEffettivi, payload, tutti,
+        rootEl = ServizioNodePrezzi.Lotto(nodePath, scriptPath, exchangesEffettivi, payload, tutti, timeframe,
                 TimeUnit.MINUTES.toMillis(CcxtInterop.TIMEOUT_SCRIPT_PREZZI_MINUTI));
     } catch (ServizioNodePrezzi.NonDisponibile nd) {
         System.err.println("Servizio prezzi non disponibile (" + nd.getMessage() + "): uso un processo singolo");
-        rootEl = LottoInProcessoSingolo(nodePath, scriptPath, exchangesEffettivi, payload.toString(), tutti);
+        rootEl = LottoInProcessoSingolo(nodePath, scriptPath, exchangesEffettivi, payload.toString(), tutti, timeframe);
     }
     if (rootEl == null) return null;
     if (!rootEl.isJsonArray()) {
@@ -5272,8 +5282,8 @@ public static void RecuperaPrezziDaCCXTTutti(java.util.Collection<String> simbol
  * @return l'output dello script gia' interpretato come JSON, oppure {@code null} se il processo e' fallito
  */
 private static JsonElement LottoInProcessoSingolo(Path nodePath, Path scriptPath, String exchanges, String json,
-        boolean tutti) throws IOException, InterruptedException {
-    List<String> argomenti = new ArrayList<>(List.of("--lotto", "--exchanges", exchanges, "--timeframe", "1m"));
+        boolean tutti, String timeframe) throws IOException, InterruptedException {
+    List<String> argomenti = new ArrayList<>(List.of("--lotto", "--exchanges", exchanges, "--timeframe", timeframe));
     if (tutti) argomenti.add("--tutti");
     ProcessBuilder pb = ServizioNodePrezzi.ProcessoScript(nodePath, scriptPath, argomenti);
     Process process = pb.start();

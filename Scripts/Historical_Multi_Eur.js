@@ -228,7 +228,7 @@ async function caricaMarkets(exchange) {
 // chiave per giorno le confonderebbe fra loro. Le giornate intere condividono comunque la cache
 // perche' `RecuperaPrezziDaCCXTGiornata` passa gli stessi estremi per ogni moneta di quel giorno.
 // Convenzioni identiche a `getMarketsSymbols`: stessa cartella, JSON semplice, eta' da mtime.
-function fileCacheConversione(exId, pair, since, until) {
+function fileCacheConversione(exId, pair, since, until, timeframe) {
     const tempDir = path.join(os.tmpdir(), 'GiacenzeCrypto');
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
     // Il "v2" e' un token di versione del CONTENUTO, non del formato del file: una finestra
@@ -237,12 +237,16 @@ function fileCacheConversione(exId, pair, since, until) {
     // Chi modifica `fetchHistorical` deve incrementare questo token.
     // v1 -> v2 il 2026-09-17 con la correzione di A9 (limite per chiamata da 1000 a 60): le serie
     // salvate prima potevano essere troncate o sfasate proprio per quel bug.
-    const nome = `conv_v2_${exId}_${pair.replace(/[^A-Za-z0-9]/g, '_')}_${since}_${until}.json`;
+    // Il timeframe entra nel nome solo se non e' quello al minuto, cosi' i file gia' salvati restano validi:
+    // senza, una serie giornaliera (grafico delle giacenze) verrebbe servita a una richiesta al minuto
+    // con gli stessi estremi, e una finestra chiusa non scade mai.
+    const suffisso = timeframe && timeframe !== '1m' ? `_${timeframe}` : '';
+    const nome = `conv_v2_${exId}_${pair.replace(/[^A-Za-z0-9]/g, '_')}_${since}_${until}${suffisso}.json`;
     return path.join(tempDir, nome);
 }
 
 async function fetchHistoricalConversione(ex, symbol, timeframe, since, until) {
-    const file = fileCacheConversione(ex.id, symbol, since, until);
+    const file = fileCacheConversione(ex.id, symbol, since, until, timeframe);
     // Una finestra che comprende "adesso" non e' chiusa: arrivano ancora candele nuove, quindi la
     // si rilegge solo entro pochi minuti. Una finestra interamente passata non cambia mai piu'.
     const finestraChiusa = until < Date.now();
@@ -341,7 +345,7 @@ async function trovaSerieConversione(ccxtLib, istanze, ordineEsplorazione, quote
 /** Wrapper di {@link trovaSerieConversione} con la memoria di modulo `serieConversioneMemo`: una
  * sola ricerca per (valuta, finestra), riusata da tutte le monete della stessa invocazione. */
 async function serieConversioneCondivisa(ccxtLib, istanze, ordineEsplorazione, quoteCcy, timeframe, since, until) {
-    const chiaveMemo = `${quoteCcy}|${since}|${until}`;
+    const chiaveMemo = `${quoteCcy}|${since}|${until}|${timeframe}`;
     if (serieConversioneMemo.has(chiaveMemo)) return serieConversioneMemo.get(chiaveMemo);
     const risultato = await trovaSerieConversione(ccxtLib, istanze, ordineEsplorazione, quoteCcy, timeframe, since, until);
     serieConversioneMemo.set(chiaveMemo, risultato);

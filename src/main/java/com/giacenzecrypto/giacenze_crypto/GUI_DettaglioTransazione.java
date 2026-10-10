@@ -42,6 +42,10 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
 
      /** Cresce a ogni compilazione: un calcolo delle giacenze arrivato dopo un cambio di movimento si scarta. */
      private int GenerazioneGiacenze=0;
+     /** Giacenze dell'archivio dell'ultimo movimento mostrato, {@code null} finche' non sono pronte. */
+     private java.util.List<Principale_GiacenzeaData.GiacenzeMoneta> UltimeMonete=null;
+     /** Saldi sulla blockchain dell'ultimo movimento mostrato (anche "in lettura"), {@code null} se non ne ha. */
+     private GiacenzeBlockchain.SaldiMovimento UltimiSaldi=null;
 
 
         /**
@@ -442,6 +446,12 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
     private void CaricaGiacenzeInBackground(String IDTransazione, int PosizioneInformativo[]) {
         int Generazione = ++GenerazioneGiacenze;
         String Transazione[] = Principale.MappaCryptoWallet.get(IDTransazione);
+        UltimeMonete = null;
+        //Wallet DeFi con blocco: le due righe della blockchain compaiono subito "in lettura" e si riempiono dopo
+        UltimiSaldi = GiacenzeBlockchain.InLettura(IDTransazione);
+        if (UltimiSaldi != null) {
+            CaricaSaldiBlockchainInBackground(IDTransazione, Generazione);
+        }
         new SwingWorker<Principale_GiacenzeaData.DettaglioGiacenze, Void>() {
             @Override
             protected Principale_GiacenzeaData.DettaglioGiacenze doInBackground() {
@@ -456,7 +466,8 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                 String Informativo[] = {null, null};
                 try {
                     Principale_GiacenzeaData.DettaglioGiacenze D = get();
-                    MostraGiacenze(Principale_GiacenzeaData.TabelleDettaglio(IDTransazione, D.Monete));
+                    UltimeMonete = D.Monete;
+                    MostraGiacenze(Principale_GiacenzeaData.TabelleDettaglio(IDTransazione, D.Monete, UltimiSaldi));
                     Informativo = D.CostoInformativo;
                 } catch (Exception ex) {
                     LoggerGC.ScriviErrore(ex);
@@ -482,6 +493,40 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                     SostituisciRiga(Modello, PosizioneInformativo[l], RigheCosto);
                 }
                 Tabelle.updateRowHeights(Tabella);
+            }
+        }.execute();
+    }
+
+    /**
+     * Legge dai nodi pubblici i saldi delle monete del movimento a fine del blocco precedente e del blocco del
+     * movimento ({@link GiacenzeBlockchain#LeggiAttornoAlMovimento}) e ridisegna i riquadri. La rete puo' metterci
+     * qualche secondo: le giacenze dell'archivio si mostrano prima, con le righe della blockchain "in lettura".
+     */
+    private void CaricaSaldiBlockchainInBackground(String IDTransazione, int Generazione) {
+        new SwingWorker<GiacenzeBlockchain.SaldiMovimento, Void>() {
+            @Override
+            protected GiacenzeBlockchain.SaldiMovimento doInBackground() {
+                return GiacenzeBlockchain.LeggiAttornoAlMovimento(IDTransazione, null);
+            }
+
+            @Override
+            protected void done() {
+                if (Generazione != GenerazioneGiacenze) {
+                    return;
+                }
+                try {
+                    GiacenzeBlockchain.SaldiMovimento S = get();
+                    for (String a : S == null ? java.util.List.<String>of() : S.avvisi()) {
+                        LoggerGC.logInfo("Dettaglio movimento, blockchain: " + a);
+                    }
+                    UltimiSaldi = S;
+                } catch (Exception ex) {
+                    LoggerGC.ScriviErrore(ex);
+                    UltimiSaldi = UltimiSaldi == null ? null : UltimiSaldi.NonLetti();
+                }
+                if (UltimeMonete != null) {
+                    MostraGiacenze(Principale_GiacenzeaData.TabelleDettaglio(IDTransazione, UltimeMonete, UltimiSaldi));
+                }
             }
         }.execute();
     }
@@ -537,8 +582,11 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         Nome.setForeground(java.awt.Color.WHITE);
         Nome.setFont(Nome.getFont().deriveFont(java.awt.Font.BOLD));
         javax.swing.JLabel Prezzo = new javax.swing.JLabel("prezzo unitario nel movimento: " + T.Prezzo);
+        Prezzo.setToolTipText("prezzo unitario nel movimento: " + T.Prezzo);
         Prezzo.setForeground(java.awt.Color.WHITE);
-        Titolo.add(Nome, java.awt.BorderLayout.WEST);
+        //Al centro e non a ovest: un nome lungo (gli LP portano l'indirizzo) si tronca invece di coprire il prezzo
+        Nome.setToolTipText(Lato + ": " + T.Moneta);
+        Titolo.add(Nome, java.awt.BorderLayout.CENTER);
         Titolo.add(Prezzo, java.awt.BorderLayout.EAST);
 
         DefaultTableModel Modello = new DefaultTableModel(T.Intestazioni, 0) {
@@ -551,6 +599,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             Modello.addRow(Riga);
         }
         JTable Piccola = new JTable(Modello);
+        Piccola.putClientProperty("Confronto", T.Confronto);
         Piccola.setCellSelectionEnabled(true);
         Piccola.setRowHeight(22);
         Piccola.setShowGrid(false);
@@ -573,11 +622,21 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         Scorri.setBorder(null);
 
         javax.swing.JPanel Riquadro = new javax.swing.JPanel(new java.awt.BorderLayout());
+        //I riquadri si dividono la larghezza del dialogo: senza questo il piu' largo (nome lungo di un LP, prezzo con
+        //molte cifre) imponeva la sua larghezza a tutti e il secondo usciva dal dialogo insieme alla freccia "avanti"
+        Riquadro.setPreferredSize(new java.awt.Dimension(100, 100));
+        Riquadro.setMinimumSize(new java.awt.Dimension(100, 100));
         Riquadro.setBorder(javax.swing.BorderFactory.createLineBorder(Colore, 2));
         Riquadro.add(Titolo, java.awt.BorderLayout.NORTH);
         Riquadro.add(Scorri, java.awt.BorderLayout.CENTER);
         if (!T.Nota.isBlank()) {
             javax.swing.JLabel Nota = new javax.swing.JLabel("<html><i>" + T.Nota + "</i></html>");
+            Nota.setToolTipText("<html>" + T.Nota + "</html>");
+            //Larga quanto il riquadro, al piu' due righe: la nota non deve allargare il riquadro (con due riquadri
+            //affiancati spingerebbe il secondo fuori dal dialogo). Il testo intero e' nel suggerimento
+            int Riga = Nota.getFontMetrics(Nota.getFont()).getHeight();
+            Nota.setPreferredSize(new java.awt.Dimension(10, 2 * Riga + 6));
+            Nota.setMinimumSize(new java.awt.Dimension(10, 2 * Riga + 6));
             Nota.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 8, 3, 8));
             Riquadro.add(Nota, java.awt.BorderLayout.SOUTH);
         }
@@ -602,6 +661,14 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             //Gli stessi colori della tabella principale, una fascia per ogni coppia prima/dopo
             setBackground(Tab.isCellSelected(Riga, Colonna) ? Tabelle.SfondoSelezione(Riga)
                     : Tabelle.SfondoRigaAlternata(Riga / 2));
+            //Righe della blockchain: quantita' verde se coincide con l'archivio del wallet allo stesso confine, rossa se no
+            //setForeground resta memorizzato nel renderer (unselectedForeground): va rimesso a ogni cella
+            if (!Tab.isCellSelected(Riga, Colonna)) setForeground(Tab.getForeground());
+            Object Confronto = Tab.getClientProperty("Confronto");
+            if (Colonna == 2 && !Tab.isCellSelected(Riga, Colonna) && Confronto instanceof java.util.List<?> L
+                    && Riga < L.size() && L.get(Riga) instanceof Boolean Uguale) {
+                setForeground(Uguale ? Tabelle.verdeScuro : Tabelle.rosso);
+            }
             return this;
         }
     }
@@ -836,7 +903,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Pannello_Giacenze, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(Pannello_Giacenze, javax.swing.GroupLayout.PREFERRED_SIZE, 290, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(8, 8, 8)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Bottone_DeFi)

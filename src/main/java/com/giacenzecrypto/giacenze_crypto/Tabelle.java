@@ -405,6 +405,11 @@ public class Tabelle {
                     if (!isSelected && !((Double) value).equals(0.0)) {
                         c.setForeground(((Double) value) > 0 ? verdeScuro : rosso);
                     }
+                } else if (colModello == 12 && !isSelected) {
+                    //Qta letta dalla blockchain : verde se coincide con la Qta dell'archivio (4), rossa se no
+                    Boolean Uguale = GiacenzeBlockchain.Coincide(
+                            table.getModel().getValueAt(table.convertRowIndexToModel(row), 4), value);
+                    if (Uguale != null) c.setForeground(Uguale ? verdeScuro : rosso);
                 }
                 return c;
             }
@@ -429,6 +434,13 @@ public class Tabelle {
          * lasciando le altre nel colore normale. Senza la proprieta' si colora tutta la riga col segno della Quantita'.
          */
         public static final String PROP_COLORA_SOLO_QTA_E_DIFFERENZA = "ColoraSoloQtaEDifferenza";
+
+        /**
+         * Proprieta' client della tabella dettaglio di "Giacenze a data": {@code Map<String, String>} ID del movimento →
+         * Qta Residua a fine del suo secondo, il termine di confronto della colonna 18 (Qta Blockchain), verde se
+         * coincide e rossa se no ({@link GiacenzeBlockchain#Coincide}).
+         */
+        public static final String PROP_CONFRONTO_BLOCKCHAIN = "ConfrontoBlockchain";
 
         /**
          * @param valore il testo di un importo, o {@code null}
@@ -457,6 +469,7 @@ public class Tabelle {
                 
              
         Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, colVista);
+        setToolTipText(null);
 
         //Gli indici qui sotto (7 = Qta Residua, 5 = Quantita') sono del MODEL: con le colonne nascoste o riordinate
         //dall'utente l'indice di vista non coincide piu'
@@ -557,6 +570,13 @@ public class Tabelle {
                     //hanno un colore (verde se positivi, rosso se negativi), il resto resta del colore normale
                     c.setBackground(bg);
                     c.setForeground(ColoreSegno(col == 5 || col == 17 ? value : null, fore));
+                    //Qta Blockchain: confronto con la Qta Residua a fine secondo (le righe di una transazione sono piu' d'una)
+                    if (col == 18 && table.getClientProperty(PROP_CONFRONTO_BLOCKCHAIN) instanceof java.util.Map<?, ?> Confronto) {
+                        Object Archivio = Confronto.get(String.valueOf(table.getModel().getValueAt(modelRow, 8)));
+                        Boolean Coincide = GiacenzeBlockchain.Coincide(Archivio, value);
+                        if (Coincide != null) c.setForeground(Coincide ? verdeScuro : rosso);
+                        if (Archivio != null) setToolTipText("Qta Residua a fine blocco nell'archivio: " + Archivio);
+                    }
                 }
             else if (table.getModel().getColumnCount()>4 && !table.getModel().getValueAt(modelRow, 5).toString().contains("-")) {
                     setBackground(bg);

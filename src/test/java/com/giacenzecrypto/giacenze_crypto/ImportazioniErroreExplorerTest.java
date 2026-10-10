@@ -41,6 +41,19 @@ class ImportazioniErroreExplorerTest {
     }
 
     @Test
+    void unaReteAPagamentoNonInvitaARiprovareNeAMettereLaChiaveGratuita() {
+        //Risposta reale della PRO API su Base con una ApiKey gratuita valida (2026-10-10)
+        String corpo = "{\"error\":\"Featured chain 8453 requires one of the following plans: Builder, Business, Pro\",\"source\":\"internal\"}";
+        String dettaglio = "Featured chain 8453 requires one of the following plans: Builder, Business, Pro";
+        String t = Importazioni.DeFi_TestoErroreExplorer(402, corpo, dettaglio, "https://api.blockscout.com/v2/api?chain_id=8453", true);
+        assertTrue(t.contains("api.blockscout.com"), t);
+        assertTrue(t.contains("piano a pagamento"), t);
+        assertTrue(t.contains(dettaglio), t);
+        assertFalse(t.contains("Riprovare in un secondo momento"), t);
+        assertFalse(t.contains("Inserire una ApiKey"), t);
+    }
+
+    @Test
     void unErroreQualunqueMantieneIlTestoDiPrima() {
         String t = Importazioni.DeFi_TestoErroreExplorer(500, "{}", "Errore interno: ", "https://eth.blockscout.com/api", false);
         assertEquals("Errore HTTP 500 durante l'importazione dei dati\nErrore interno: "

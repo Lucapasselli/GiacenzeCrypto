@@ -146,7 +146,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="ScrollTabella" pref="477" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="Pannello_Giacenze" min="-2" pref="215" max="-2" attributes="0"/>
+              <Component id="Pannello_Giacenze" min="-2" pref="290" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="Bottone_DeFi" alignment="3" min="-2" max="-2" attributes="0"/>

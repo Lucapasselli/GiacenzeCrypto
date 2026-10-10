@@ -119,6 +119,15 @@ final class ServizioNodePrezzi {
     /** Come {@link #Lotto(Path, Path, String, JsonArray, long)}, scegliendo se usare la cascata. */
     static JsonArray Lotto(Path nodePath, Path scriptPath, String exchanges, JsonArray richieste,
             boolean tutti, long timeoutMs) throws NonDisponibile {
+        return Lotto(nodePath, scriptPath, exchanges, richieste, tutti, "1m", timeoutMs);
+    }
+
+    /**
+     * Come sopra, con le candele di {@code timeframe} invece di quelle al minuto: {@code "1d"} lo usano solo i
+     * prezzi giornalieri del grafico delle giacenze ({@link PrezziGiornalieri}), che non finiscono nella cache.
+     */
+    static JsonArray Lotto(Path nodePath, Path scriptPath, String exchanges, JsonArray richieste,
+            boolean tutti, String timeframe, long timeoutMs) throws NonDisponibile {
         if (!LOCK.tryLock()) throw new NonDisponibile("occupato da un altro lotto");
         try {
             Istanza ist = istanzaViva(nodePath, scriptPath);
@@ -126,7 +135,7 @@ final class ServizioNodePrezzi {
             JsonObject messaggio = new JsonObject();
             messaggio.addProperty("id", id);
             messaggio.addProperty("exchanges", exchanges);
-            messaggio.addProperty("timeframe", "1m");
+            messaggio.addProperty("timeframe", timeframe);
             messaggio.addProperty("tutti", tutti);
             messaggio.add("richieste", richieste);
             try {

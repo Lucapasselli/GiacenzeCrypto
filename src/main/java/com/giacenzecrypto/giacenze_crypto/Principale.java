@@ -246,6 +246,8 @@ private static final long serialVersionUID = 3L;
     //Grafico della scheda "Dettagli x Tipologia" del quadro RT: istanziato dopo initComponents e
     //aggiunto a RT_Pannello_GraficoTipologia (contenitore disegnato dal GUI Builder).
     private transient RT_GraficoPlusvalenze RT_GraficoTipologia;
+    /** Grafico della giacenza e del valore della moneta selezionata in "Giacenze a data" (scheda accanto al dettaglio). */
+    private transient GiacenzeaData_Grafico GiacenzeaData_Grafico;
     
     public int NumErroriMovSconosciuti=0;
     public int NumErroriMovNoPrezzo=0;
@@ -448,6 +450,10 @@ private static final long serialVersionUID = 3L;
         RT_GraficoTipologia = new RT_GraficoPlusvalenze();
         RT_Pannello_GraficoTipologia.setLayout(new java.awt.BorderLayout());
         RT_Pannello_GraficoTipologia.add(RT_GraficoTipologia, java.awt.BorderLayout.CENTER);
+        //Scheda "Grafico" del dettaglio di Giacenze a data: il clic su un marcatore mostra il movimento nella tabella
+        GiacenzeaData_Grafico = new GiacenzeaData_Grafico();
+        GiacenzeaData_Grafico.setAlClicMovimento(this::GiacenzeaData_MostraMovimentoInTabella);
+        GiacenzeaData_Pannello_Grafico.add(GiacenzeaData_Grafico, java.awt.BorderLayout.CENTER);
         Tabelle.Tabelle_InizializzaHeader(CDC_CardWallet_Tabella1);
         Tabelle.Tabelle_InizializzaHeader(CDC_CardWallet_Tabella2);
         Tabelle.Tabelle_InizializzaHeader(CDC_FiatWallet_Tabella1);
@@ -456,8 +462,11 @@ private static final long serialVersionUID = 3L;
         Tabelle.Tabelle_InizializzaHeader(GiacenzeaData_Tabella);
         Tabelle.Tabelle_InizializzaHeader(GiacenzeaData_TabellaDettaglioMovimenti);
         //Valore/costo unitario (7, 8) e le quattro colonne di costo del dettaglio (13-16) : sommarli non ha senso
-        GiacenzeaData_Tabella.putClientProperty("ColonneSenzaSomma", java.util.Set.of(7, 8));
-        GiacenzeaData_TabellaDettaglioMovimenti.putClientProperty("ColonneSenzaSomma", java.util.Set.of(13, 14, 15, 16, 17));
+        GiacenzeaData_Tabella.putClientProperty("ColonneSenzaSomma", java.util.Set.of(7, 8, 12));
+        //Qta letta dalla blockchain (colonna 12 del model, in coda per non spostare Errori e InfoPrezzo) : a video
+        //subito dopo la Qta dell'archivio, larga zero finche' non si sceglie un singolo wallet DeFi
+        GiacenzeaData_Tabella.moveColumn(GiacenzeaData_Tabella.convertColumnIndexToView(12), 5);
+        GiacenzeaData_TabellaDettaglioMovimenti.putClientProperty("ColonneSenzaSomma", java.util.Set.of(13, 14, 15, 16, 17, 18));
         //Colonne della tabella dettaglio: le interne (ID, saldi negativi, "null") escono dalla vista e il costo di
         //carico del movimento va prima della Qta Residua. La scelta salvata dell'utente si sovrappone in AggiornaSpunte()
         LayoutColonneMovimenti.applica(GiacenzeaData_TabellaDettaglioMovimenti, null, LayoutColonneMovimenti.PROFILO_GIACENZE_DETTAGLIO);
@@ -789,8 +798,10 @@ private static final long serialVersionUID = 3L;
         GiacenzeaData_Totali_Label = new javax.swing.JLabel();
         GiacenzeaData_Totali_TextField = new javax.swing.JTextField();
         GiacenzeaData_Bottone_Calcola = new javax.swing.JButton();
+        GiacenzeaData_TabbedDettaglio = new javax.swing.JTabbedPane();
         GiacenzeaData_ScrollPaneDettaglioMovimenti = new javax.swing.JScrollPane();
         GiacenzeaData_TabellaDettaglioMovimenti = new javax.swing.JTable();
+        GiacenzeaData_Pannello_Grafico = new javax.swing.JPanel();
         Giacenzeadata_Dettaglio_Label = new javax.swing.JLabel();
         Giacenzeadata_Walleta_Label = new javax.swing.JLabel();
         GiacenzeaData_WalletEsame_Label = new javax.swing.JLabel();
@@ -2641,14 +2652,14 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Nome", "Rete", "Address Defi del Token", "Tipo", "Qta", "<html><center>Valore<br>(in Euro)</html>", "<html><center>Costo Carico<br>(in Euro)</html>", "<html><center>Valore<br>Unitario</html>", "<html><center>Costo<br>Unitario</html>", "<html><center>Differenza<br>Valore - Costo</html>", "Errori", "InfoPrezzo"
+                "Nome", "Rete", "Address Defi del Token", "Tipo", "Qta", "<html><center>Valore<br>(in Euro)</html>", "<html><center>Costo Carico<br>(in Euro)</html>", "<html><center>Valore<br>Unitario</html>", "<html><center>Costo<br>Unitario</html>", "<html><center>Plus/Minus<br>Latente</html>", "Errori", "InfoPrezzo", "<html><center>Qta<br>Blockchain</html>"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -2695,6 +2706,9 @@ private static final long serialVersionUID = 3L;
             GiacenzeaData_Tabella.getColumnModel().getColumn(11).setMinWidth(0);
             GiacenzeaData_Tabella.getColumnModel().getColumn(11).setPreferredWidth(0);
             GiacenzeaData_Tabella.getColumnModel().getColumn(11).setMaxWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(12).setMinWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(12).setPreferredWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(12).setMaxWidth(0);
         }
         GiacenzeaData_Tabella.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_Tabella.getColumnModel().getTotalColumnWidth(), 42));
         Tabelle.ColoraRigheTabella0GiacenzeaData(GiacenzeaData_Tabella);
@@ -2714,17 +2728,23 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        GiacenzeaData_TabbedDettaglio.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                GiacenzeaData_TabbedDettaglioStateChanged(evt);
+            }
+        });
+
         GiacenzeaData_TabellaDettaglioMovimenti.setFont(new java.awt.Font("Noto Sans", 0, 12)); // NOI18N
         GiacenzeaData_TabellaDettaglioMovimenti.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "Data", "Wallet", "Moneta", "Address Moneta", "Tipo Movimento", "Quantita'", "Valore in Euro", "Qta Residua", "ID", "SaldiNegativiPrecedenti", "null", "null", "null", "<html><center>Costo Carico<br>Movimento</html>", "<html><center>Prezzo<br>Unitario</html>", "<html><center>Valore<br>Qta Residua</html>", "<html><center>Costo Carico<br>Qta Residua</html>", "<html><center>Plus/Minus Latente<br>Qta Residua</html>"
+                "Data", "Wallet", "Moneta", "Address Moneta", "Tipo Movimento", "Quantita'", "Valore in Euro", "Qta Residua", "ID", "SaldiNegativiPrecedenti", "null", "null", "null", "<html><center>Costo Carico<br>Movimento</html>", "<html><center>Prezzo<br>Unitario</html>", "<html><center>Valore<br>Qta Residua</html>", "<html><center>Costo Carico<br>Qta Residua</html>", "<html><center>Plus/Minus Latente<br>Qta Residua</html>", "<html><center>Qta<br>Blockchain</html>"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -2775,8 +2795,15 @@ private static final long serialVersionUID = 3L;
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(16).setPreferredWidth(110);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(17).setMinWidth(90);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(17).setPreferredWidth(110);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(18).setMinWidth(30);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(18).setPreferredWidth(110);
         }
         GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), 42));
+
+        GiacenzeaData_TabbedDettaglio.addTab("Tabella", GiacenzeaData_ScrollPaneDettaglioMovimenti);
+
+        GiacenzeaData_Pannello_Grafico.setLayout(new java.awt.BorderLayout());
+        GiacenzeaData_TabbedDettaglio.addTab("Grafico", GiacenzeaData_Pannello_Grafico);
 
         Giacenzeadata_Dettaglio_Label.setText("Tabella dettaglio movimenti :");
 
@@ -2926,7 +2953,7 @@ private static final long serialVersionUID = 3L;
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jSeparator5)
                     .addComponent(GiacenzeaData_ScrollPane)
-                    .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti)
+                    .addComponent(GiacenzeaData_TabbedDettaglio)
                     .addGroup(GiacenzeaDataLayout.createSequentialGroup()
                         .addComponent(GiacenzeaData_Totali_Label)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -3025,7 +3052,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(GiacenzeaData_Bottone_ColonneDettaglio)
                     .addComponent(GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_TabbedDettaglio, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_Totali_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -8386,6 +8413,208 @@ private void SettaIcone(){
         });
     }
 
+    /**
+     * Mette in vista la colonna 18 del dettaglio (Qta Blockchain) subito dopo la Qta Residua, o la toglie. Non fa parte
+     * del layout scelto dall'utente ({@link LayoutColonneMovimenti#PROFILO_GIACENZE_DETTAGLIO} la tiene fra le interne):
+     * vuota per ogni wallet che non si confronta, occuperebbe spazio quasi sempre.
+     */
+    private void GiacenzeaData_MostraColonnaBlockchainDettaglio(boolean Mostra) {
+        GiacenzeaData_DettaglioConBlockchain = Mostra;
+        javax.swing.table.TableColumnModel cm = GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel();
+        int Vista = GiacenzeaData_TabellaDettaglioMovimenti.convertColumnIndexToView(18);
+        if (Mostra == (Vista >= 0)) return;
+        if (Mostra) {
+            javax.swing.table.TableColumn Colonna = new javax.swing.table.TableColumn(18, 110);
+            Colonna.setMinWidth(30);
+            Colonna.setHeaderValue(GiacenzeaData_TabellaDettaglioMovimenti.getModel().getColumnName(18));
+            cm.addColumn(Colonna);
+            cm.moveColumn(cm.getColumnCount() - 1, GiacenzeaData_TabellaDettaglioMovimenti.convertColumnIndexToView(7) + 1);
+        } else {
+            cm.removeColumn(cm.getColumn(Vista));
+        }
+        GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(cm.getTotalColumnWidth(), 42));
+        GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().revalidate();
+        GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().repaint();
+    }
+
+    /** Vero se la colonna Qta Blockchain del dettaglio e' in vista: un nuovo layout delle colonne la deve rimettere. */
+    private boolean GiacenzeaData_DettaglioConBlockchain = false;
+
+    /**
+     * Legge in background il saldo della moneta a fine dei blocchi delle righe del dettaglio e lo scrive nella colonna
+     * 18, prima quelli gia' in cache e poi gli altri a gruppi. Le righe di uno stesso secondo hanno lo stesso saldo e
+     * lo stesso termine di confronto, la Qta Residua a fine secondo, che il renderer legge dalla proprieta'
+     * {@link Tabelle#PROP_CONFRONTO_BLOCKCHAIN} (ID → quantita'). Scrive per indice di riga controllando l'ID in
+     * colonna 8, e scarta tutto se il dettaglio e' stato ricostruito.
+     */
+    private void GiacenzeaData_LeggiBlockchainDettaglio(String[] WalletBlockchain, GiacenzeBlockchain.Richiesta Moneta,
+            java.util.List<GiacenzeBlockchain.BloccoDettaglio> Blocchi, int Generazione) {
+        Map<String, String> Confronto = new java.util.HashMap<>();
+        DefaultTableModel Modello = (DefaultTableModel) GiacenzeaData_TabellaDettaglioMovimenti.getModel();
+        for (GiacenzeBlockchain.BloccoDettaglio b : Blocchi) {
+            for (int k = 0; k < b.righe().size(); k++) {
+                Confronto.put(b.id().get(k), b.archivio());
+                //Le righe senza blocco proprio (generate dalla classificazione) prendono quello del loro secondo
+                if (!GiacenzeBlockchain.IN_LETTURA.equals(Modello.getValueAt(b.righe().get(k), 18))) {
+                    Modello.setValueAt(GiacenzeBlockchain.IN_LETTURA, b.righe().get(k), 18);
+                }
+            }
+        }
+        GiacenzeaData_TabellaDettaglioMovimenti.putClientProperty(Tabelle.PROP_CONFRONTO_BLOCKCHAIN, Confronto);
+        GiacenzeaData_MostraColonnaBlockchainDettaglio(true);
+        if (Blocchi.isEmpty()) return;
+        java.util.List<Long> Numeri = new java.util.ArrayList<>();
+        for (GiacenzeBlockchain.BloccoDettaglio b : Blocchi) Numeri.add(b.blocco());
+        Thread t = new Thread(() -> {
+            java.util.List<String> Avvisi = new java.util.ArrayList<>();
+            java.util.Set<Long> Arrivati = new java.util.HashSet<>();
+            try {
+                GiacenzeBlockchain.LeggiAiBlocchi(WalletBlockchain[0], WalletBlockchain[1], Moneta, Numeri,
+                        () -> Generazione != GiacenzeaData_GenerazioneDettaglio, null, Saldi -> {
+                            Arrivati.addAll(Saldi.keySet());
+                            GiacenzeaData_ScriviBlockchainDettaglio(Blocchi, new java.util.HashMap<>(Saldi), Generazione);
+                        }, Avvisi);
+            } catch (Exception ex) {
+                LoggerGC.ScriviErrore(ex);
+            }
+            for (String a : Avvisi) LoggerGC.logInfo("Giacenze a data, dettaglio, blockchain: " + a);
+            //Quello che non e' arrivato (lettura interrotta o eccezione imprevista) non resta "lettura..." per sempre
+            Map<Long, String> Mancanti = new java.util.HashMap<>();
+            for (Long b : Numeri) if (!Arrivati.contains(b)) Mancanti.put(b, GiacenzeBlockchain.NON_DISPONIBILE);
+            if (!Mancanti.isEmpty()) GiacenzeaData_ScriviBlockchainDettaglio(Blocchi, Mancanti, Generazione);
+        }, "GiacenzeBlockchain-Dettaglio");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    /** Scrive nel model, sul thread grafico, i saldi arrivati, se il dettaglio e' ancora quello di partenza. */
+    private void GiacenzeaData_ScriviBlockchainDettaglio(java.util.List<GiacenzeBlockchain.BloccoDettaglio> Blocchi,
+            Map<Long, String> Saldi, int Generazione) {
+        SwingUtilities.invokeLater(() -> {
+            if (Generazione != GiacenzeaData_GenerazioneDettaglio) return;
+            DefaultTableModel Modello = (DefaultTableModel) GiacenzeaData_TabellaDettaglioMovimenti.getModel();
+            for (GiacenzeBlockchain.BloccoDettaglio b : Blocchi) {
+                String Testo = Saldi.get(b.blocco());
+                if (Testo == null) continue;
+                for (int k = 0; k < b.righe().size(); k++) {
+                    int r = b.righe().get(k);
+                    if (r < Modello.getRowCount() && b.id().get(k).equals(String.valueOf(Modello.getValueAt(r, 8)))) {
+                        Modello.setValueAt(Testo, r, 18);
+                    }
+                }
+            }
+        });
+    }
+
+    /** Le variazioni della giacenza dell'ultimo dettaglio costruito, per il grafico. */
+    private java.util.List<GraficoGiacenze.Variazione> GiacenzeaData_VariazioniGrafico = java.util.List.of();
+    /** La moneta del grafico, {Moneta, Tipo, Address, Rete}, o {@code null} se nessuna riga e' selezionata. */
+    private String[] GiacenzeaData_MonetaGrafico;
+    /** Fine del grafico: la data di riferimento del dettaglio, esclusa. */
+    private long GiacenzeaData_FineGrafico;
+    /** Generazione del dettaglio a cui appartengono le variazioni qui sopra. */
+    private int GiacenzeaData_GenerazioneVariazioni = -1;
+    /** Generazione del dettaglio per cui il grafico e' gia' stato calcolato (o e' in calcolo). */
+    private int GiacenzeaData_GenerazioneGrafico = -1;
+    /** Un thread solo per i valori del grafico: un clic su un'altra riga non accoda un secondo scaricamento in parallelo. */
+    private final java.util.concurrent.ExecutorService GiacenzeaData_EsecutoreGrafico =
+            java.util.concurrent.Executors.newSingleThreadExecutor(r -> {
+                Thread t = new Thread(r, "GiacenzeaData-Grafico");
+                t.setDaemon(true);
+                return t;
+            });
+
+    /** Una riga del dettaglio come variazione del grafico: il valore dopo il movimento e' quello della colonna della tabella. */
+    private static GraficoGiacenze.Variazione GiacenzeaData_VariazioneGrafico(String[] Movimento, String Qta,
+            BigDecimal QtaDopo, String ValoreResiduo, String Data) {
+        BigDecimal Valore = null;
+        if (ValoreResiduo != null && !ValoreResiduo.isBlank()) {
+            try {
+                Valore = new BigDecimal(ValoreResiduo.trim());
+            } catch (NumberFormatException ex) {
+                //la colonna non e' un numero: il valore lo calcola il grafico col prezzo del giorno
+            }
+        }
+        String Wallet = Movimento[4] == null || Movimento[4].isBlank() ? Movimento[3] : Movimento[3] + " / " + Movimento[4];
+        return new GraficoGiacenze.Variazione(GraficoGiacenze.IstanteDaID(Movimento[0]), Movimento[0],
+                new BigDecimal(Qta), QtaDopo, Valore, Data, Movimento[5], Wallet);
+    }
+
+    /**
+     * Consegna al grafico le variazioni del dettaglio appena costruito. Il calcolo dei valori parte subito se la
+     * scheda "Grafico" e' in vista, altrimenti quando ci si arriva ({@link #GiacenzeaData_AggiornaGrafico}).
+     */
+    private void GiacenzeaData_ImpostaGrafico(java.util.List<GraficoGiacenze.Variazione> Variazioni, String[] Moneta,
+            long Fine, int Generazione) {
+        GiacenzeaData_VariazioniGrafico = java.util.List.copyOf(Variazioni);
+        GiacenzeaData_MonetaGrafico = Moneta;
+        GiacenzeaData_FineGrafico = Fine;
+        GiacenzeaData_GenerazioneVariazioni = Generazione;
+        GiacenzeaData_AggiornaGrafico();
+    }
+
+    /**
+     * Ridisegna il grafico se la scheda e' in vista e i dati sono cambiati: la giacenza subito, il valore in
+     * background, prima con i soli prezzi locali e poi, se ne mancano, con quelli giornalieri scaricati
+     * ({@link PrezziGiornalieri}). Il lavoro si abbandona se nel frattempo il dettaglio e' stato ricostruito.
+     */
+    private void GiacenzeaData_AggiornaGrafico() {
+        if (GiacenzeaData_Grafico == null || GiacenzeaData_TabbedDettaglio.getSelectedComponent() != GiacenzeaData_Pannello_Grafico) {
+            return;
+        }
+        final int Generazione = GiacenzeaData_GenerazioneVariazioni;
+        if (Generazione == GiacenzeaData_GenerazioneGrafico) {
+            return;
+        }
+        GiacenzeaData_GenerazioneGrafico = Generazione;
+        final String[] Moneta = GiacenzeaData_MonetaGrafico;
+        final java.util.List<GraficoGiacenze.Variazione> Variazioni = GiacenzeaData_VariazioniGrafico;
+        final long Fine = GiacenzeaData_FineGrafico;
+        if (Moneta == null) {
+            GiacenzeaData_Grafico.pulisci("Seleziona una moneta nella tabella sopra per vedere il grafico");
+            return;
+        }
+        GiacenzeaData_Grafico.impostaSerie(GraficoGiacenze.SoloGiacenza(Variazioni, Fine), Moneta[0], "Calcolo dei valori in corso...");
+        java.util.function.BooleanSupplier Superato = () -> Generazione != GiacenzeaData_GenerazioneDettaglio;
+        GiacenzeaData_EsecutoreGrafico.submit(() -> {
+            try {
+                if (Superato.getAsBoolean()) return;
+                java.util.SortedSet<java.time.LocalDate> Giorni = GraficoGiacenze.GiorniDaPrezzare(Variazioni, Fine);
+                for (boolean Scarica : new boolean[]{false, true}) {
+                    Map<java.time.LocalDate, BigDecimal> Prezzi_ = PrezziGiornalieri.PrezziFineGiorno(Moneta[0], Moneta[1],
+                            Moneta[2], Moneta[3], Giorni, Scarica, Superato);
+                    if (Superato.getAsBoolean()) return;
+                    GraficoGiacenze.Serie Serie = GraficoGiacenze.Costruisci(Variazioni, Fine, Prezzi_::get);
+                    boolean Ultimo = Scarica || Serie.GiorniSenzaPrezzo() == 0;
+                    String Stato = !Ultimo ? "Scarico i prezzi giornalieri mancanti (" + Serie.GiorniSenzaPrezzo() + " giorni)..."
+                            : Serie.GiorniSenzaPrezzo() > 0 ? Serie.GiorniSenzaPrezzo()
+                                    + " giorni con giacenza senza prezzo: la linea del valore li salta" : "";
+                    SwingUtilities.invokeLater(() -> {
+                        if (!Superato.getAsBoolean()) GiacenzeaData_Grafico.impostaSerie(Serie, Moneta[0], Stato);
+                    });
+                    if (Ultimo) break;
+                }
+            } catch (RuntimeException ex) {
+                LoggerGC.ScriviErrore(ex);
+            }
+        });
+    }
+
+    /** Clic su un marcatore del grafico: torna alla tabella e seleziona la riga del movimento, se e' in vista. */
+    private void GiacenzeaData_MostraMovimentoInTabella(String ID) {
+        javax.swing.table.TableModel Modello = GiacenzeaData_TabellaDettaglioMovimenti.getModel();
+        for (int r = 0; r < Modello.getRowCount(); r++) {
+            if (!ID.equals(String.valueOf(Modello.getValueAt(r, 8)))) continue;
+            int Vista = GiacenzeaData_TabellaDettaglioMovimenti.convertRowIndexToView(r);
+            if (Vista < 0) return;
+            GiacenzeaData_TabbedDettaglio.setSelectedComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti);
+            GiacenzeaData_TabellaDettaglioMovimenti.setRowSelectionInterval(Vista, Vista);
+            GiacenzeaData_TabellaDettaglioMovimenti.scrollRectToVisible(GiacenzeaData_TabellaDettaglioMovimenti.getCellRect(Vista, 0, true));
+            GiacenzeaData_Bottone_RettificaQta.setEnabled(true);
+            return;
+        }
+    }
+
     private void GiacenzeaData_CompilaTabellaMovimenti() {
         final int GenerazioneDettaglio = ++GiacenzeaData_GenerazioneDettaglio;
         //Intervallo coperto dalla cache dei prezzi: i movimenti che stanno fuori non la interrogano nemmeno
@@ -8400,6 +8629,9 @@ private void SettaIcone(){
         DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) this.GiacenzeaData_TabellaDettaglioMovimenti.getModel();
         Tabelle.Funzioni_PulisciTabella(GiacenzeaData_ModelloTabella);
         Tabelle.Tabelle_FiltroColonne(GiacenzeaData_TabellaDettaglioMovimenti,null,popup);
+        //Proprieta' della colonna della blockchain: si decide una volta, a fine costruzione (togliere e rimettere la
+        //colonna a ogni clic ne perderebbe la larghezza scelta dall'utente)
+        GiacenzeaData_TabellaDettaglioMovimenti.putClientProperty(Tabelle.PROP_CONFRONTO_BLOCKCHAIN, null);
         
         //ANALISI E PROPOSTA
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
@@ -8451,6 +8683,13 @@ private void SettaIcone(){
                     DataRiferimento = DatadiOggi;
                 }
             }
+            //Singolo wallet DeFi, come la colonna della tabella principale: la Qta Residua si confronta con la blockchain
+            String[] WalletBlockchain = GiacenzeBlockchain.WalletDaLeggere(Wallet, SottoWallet, Mappa_Wallets_e_Dettagli.get(Wallet));
+            GiacenzeBlockchain.Richiesta MonetaBlockchain = WalletBlockchain == null ? null : GiacenzeBlockchain.RichiestaDettaglio(
+                    mon, GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 3).toString(), Address, Rete, WalletBlockchain[1]);
+            java.util.List<GiacenzeBlockchain.RigaDettaglio> RigheBlockchain = new java.util.ArrayList<>();
+            //Le variazioni della giacenza per il grafico: tutte, anche quelle che il filtro "solo negative" toglie dalla tabella
+            java.util.List<GraficoGiacenze.Variazione> VariazioniGrafico = new java.util.ArrayList<>();
             //Adesso compilo i movimenti
             BigDecimal TotaleQta = new BigDecimal(0);
             boolean MostraSoloGiacNegative=GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative.isSelected();
@@ -8488,7 +8727,7 @@ private void SettaIcone(){
                         if (movimento[8].equals(mon) && AddressU.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
                             //Le colonne 10-12 restano vuote (le usa solo il tooltip delle altre tabelle) e le colonne dei costi stanno in coda
-                            String riga[] = new String[18];
+                            String riga[] = new String[19];
                             riga[0] = Funzioni.getOradaID(movimento[0]);
                             riga[1] = movimento[3];
                             riga[2] = movimento[8];
@@ -8499,25 +8738,34 @@ private void SettaIcone(){
                             riga[7] = TotaleQta.toPlainString();
                             riga[8] = movimento[0];
                             riga[9] = "";
+                            //"lettura..." subito, senza un setValueAt per riga dopo: quasi tutte le righe di un wallet DeFi hanno il blocco
+                            riga[18] = MonetaBlockchain != null && GiacenzeBlockchain.BloccoMovimento(movimento) >= 0 ? GiacenzeBlockchain.IN_LETTURA : "";
                             String ColonneCosti[] = Principale_GiacenzeaData.ColonneCostiDettaglio(CostiResidui, movimento,
                                     false, movimento[10], riga[7]);
                             System.arraycopy(ColonneCosti, 0, riga, 13, 5);
+                            VariazioniGrafico.add(GiacenzeaData_VariazioneGrafico(movimento, movimento[10], TotaleQta, ColonneCosti[2], riga[0]));
                             if (NumNegativi>0)riga[9] = "S";//Questo significa che ci sono movimenti con giacenza negativa prima di questo
                             if(riga[7].contains("-")){
                                 NumNegativi++;
                             }
+                            int RigaModello = -1;
                             if(!MostraSoloGiacNegative||riga[7].contains("-"))
                             {
                                 if (Principale_GiacenzeaData.PrezzoDaCompletare(ColonneCosti)) {
                                     PrezziDaCompletare.add(new RigaPrezzoDaCompletare(GiacenzeaData_ModelloTabella.getRowCount(),
                                             movimento[0], false, movimento[10], riga[7], ColonneCosti[3]));
                                 }
+                                RigaModello = GiacenzeaData_ModelloTabella.getRowCount();
                                 GiacenzeaData_ModelloTabella.addRow(riga);
+                            }
+                            if (MonetaBlockchain != null) {
+                                RigheBlockchain.add(new GiacenzeBlockchain.RigaDettaglio(movimento[0],
+                                        GiacenzeBlockchain.BloccoMovimento(movimento), RigaModello, riga[7]));
                             }
                         }
                         if (movimento[11].equals(mon) && AddressE.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
-                            String riga[] = new String[18];
+                            String riga[] = new String[19];
                             riga[0] = Funzioni.getOradaID(movimento[0]);
                             riga[1] = movimento[3];
                             riga[2] = movimento[11];
@@ -8528,20 +8776,29 @@ private void SettaIcone(){
                             riga[7] = TotaleQta.toPlainString();
                             riga[8] = movimento[0];
                             riga[9] = "";
+                            //"lettura..." subito, senza un setValueAt per riga dopo: quasi tutte le righe di un wallet DeFi hanno il blocco
+                            riga[18] = MonetaBlockchain != null && GiacenzeBlockchain.BloccoMovimento(movimento) >= 0 ? GiacenzeBlockchain.IN_LETTURA : "";
                             String ColonneCosti[] = Principale_GiacenzeaData.ColonneCostiDettaglio(CostiResidui, movimento,
                                     true, movimento[13], riga[7]);
                             System.arraycopy(ColonneCosti, 0, riga, 13, 5);
+                            VariazioniGrafico.add(GiacenzeaData_VariazioneGrafico(movimento, movimento[13], TotaleQta, ColonneCosti[2], riga[0]));
                             if (NumNegativi>0)riga[9] = "S";//Questo significa che ci sono movimenti con giacenza negativa prima di questo
                             if(riga[7].contains("-")){
                                 NumNegativi++;
                             }
+                            int RigaModello = -1;
                             if(!MostraSoloGiacNegative||riga[7].contains("-"))
                             {
                                 if (Principale_GiacenzeaData.PrezzoDaCompletare(ColonneCosti)) {
                                     PrezziDaCompletare.add(new RigaPrezzoDaCompletare(GiacenzeaData_ModelloTabella.getRowCount(),
                                             movimento[0], true, movimento[13], riga[7], ColonneCosti[3]));
                                 }
+                                RigaModello = GiacenzeaData_ModelloTabella.getRowCount();
                                 GiacenzeaData_ModelloTabella.addRow(riga);
+                            }
+                            if (MonetaBlockchain != null) {
+                                RigheBlockchain.add(new GiacenzeBlockchain.RigaDettaglio(movimento[0],
+                                        GiacenzeBlockchain.BloccoMovimento(movimento), RigaModello, riga[7]));
                             }
                         }
                     }
@@ -8549,8 +8806,20 @@ private void SettaIcone(){
             }
             //coloro la tabella
             Tabelle.ColoraRigheTabella1GiacenzeaData(GiacenzeaData_TabellaDettaglioMovimenti);
+            GiacenzeaData_ImpostaGrafico(VariazioniGrafico, new String[]{mon,
+                GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 3).toString(), Address, Rete},
+                    DataRiferimento, GenerazioneDettaglio);
             //La tabella è già completa e visibile: i prezzi che richiedono la ricerca lenta arrivano dopo, in background
             GiacenzeaData_CompletaPrezziDettaglio(PrezziDaCompletare, GenerazioneDettaglio);
+            if (MonetaBlockchain != null) {
+                GiacenzeaData_LeggiBlockchainDettaglio(WalletBlockchain, MonetaBlockchain,
+                        GiacenzeBlockchain.BlocchiDettaglio(RigheBlockchain), GenerazioneDettaglio);
+            } else {
+                GiacenzeaData_MostraColonnaBlockchainDettaglio(false);
+            }
+        } else {
+            GiacenzeaData_MostraColonnaBlockchainDettaglio(false);
+            GiacenzeaData_ImpostaGrafico(java.util.List.of(), null, 0, GenerazioneDettaglio);
         }
     }
     
@@ -10267,6 +10536,11 @@ GiacenzeaData_CompilaTabellaToken(true);
         Funzioni_RichiamaPopUpdaTabella(GiacenzeaData_TabellaDettaglioMovimenti,evt,8);
        // Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_GiacenzeaData_TabellaDettaglioMovimentiMouseReleased
+
+    private void GiacenzeaData_TabbedDettaglioStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_GiacenzeaData_TabbedDettaglioStateChanged
+        //Il grafico si calcola solo quando lo si guarda: il dettaglio si ricostruisce a ogni clic sulla tabella sopra
+        GiacenzeaData_AggiornaGrafico();
+    }//GEN-LAST:event_GiacenzeaData_TabbedDettaglioStateChanged
 
     private void GiacenzeaData_CheckBox_MostraQtaZeroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_CheckBox_MostraQtaZeroActionPerformed
         // TODO add your handling code here:
@@ -14297,7 +14571,9 @@ if (result != null && !result.isAction("cancel")) {
         //compilata, quindi non è più un default sicuro per nessuno. Resta comunque selezionabile a
         //mano in questa combo per chi ha un abbonamento Moralis a pagamento.
         if (rete.equalsIgnoreCase("BSC")) return new String[]{NodeRealDefi.PROVIDER, "BLOCKSCOUT", "MORALIS"};
-        if (rete.equalsIgnoreCase("BASE") || rete.equalsIgnoreCase("AVAX")) return new String[]{"BLOCKSCOUT", "MORALIS"};
+        //BASE: dal 10/10/2026 Blockscout la da' solo a pagamento, il default sono i nodi pubblici (NodoPubblicoDefi)
+        if (rete.equalsIgnoreCase("BASE")) return new String[]{NodoPubblicoDefi.PROVIDER, "BLOCKSCOUT", "MORALIS"};
+        if (rete.equalsIgnoreCase("AVAX")) return new String[]{"BLOCKSCOUT", "MORALIS"};
         if (rete.equalsIgnoreCase("CRO")) return new String[]{"BLOCKSCOUT", "CRONOSCAN"};
         //Ink non è mai stata su Etherscan (nemmeno a pagamento, a differenza di OP/GNOSIS): offrire
         //ETHERSCAN qui punterebbe a Mappa_ChainExplorer.get("INK")[0], lasciato vuoto apposta perché
@@ -16374,6 +16650,11 @@ if (result != null && !result.isAction("cancel")) {
             LayoutColonneMovimenti.applica(GiacenzeaData_TabellaDettaglioMovimenti, risultato, profilo);
             DatabaseH2.Pers_Opzioni_Scrivi(profilo.opzione, risultato.toJson());
         }
+        //Il layout ricrea le colonne e toglie la 18, che non ne fa parte
+        if (GiacenzeaData_DettaglioConBlockchain) {
+            GiacenzeaData_DettaglioConBlockchain = false;
+            GiacenzeaData_MostraColonnaBlockchainDettaglio(true);
+        }
         GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(
                 GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), 42));
         GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().revalidate();
@@ -17671,6 +17952,74 @@ try {
     
 
       
+    /** Generazione della lettura delle giacenze dalla blockchain: una lettura superata non scrive nella tabella. */
+    private volatile int GiacenzeaData_GenerazioneBlockchain = 0;
+
+    /**
+     * Mostra o nasconde (larghezza zero) la colonna "Qta Blockchain" della tabella principale di "Giacenze a data".
+     * Si mostra solo quando la tabella e' di un singolo wallet DeFi di una rete leggibile (vedi
+     * {@link GiacenzeBlockchain#WalletDaLeggere}).
+     */
+    private void GiacenzeaData_MostraColonnaBlockchain(boolean Mostra) {
+        javax.swing.table.TableColumn Colonna = GiacenzeaData_Tabella.getColumnModel()
+                .getColumn(GiacenzeaData_Tabella.convertColumnIndexToView(12));
+        boolean Visibile = Colonna.getMaxWidth() > 0;
+        if (Visibile == Mostra) return;
+        if (Mostra) {
+            Colonna.setMaxWidth(Integer.MAX_VALUE);
+            Colonna.setMinWidth(60);
+            Colonna.setPreferredWidth(130);
+        } else {
+            Colonna.setMinWidth(0);
+            Colonna.setPreferredWidth(0);
+            Colonna.setMaxWidth(0);
+        }
+        Colonna.setHeaderValue(Mostra ? "<html><center>Qta<br>Blockchain</html>" : "");
+        GiacenzeaData_Tabella.getTableHeader().repaint();
+    }
+
+    /**
+     * Legge in background le giacenze del wallet dalla blockchain e le scrive nella colonna 12 delle righe
+     * corrispondenti (per chiave {@code Moneta;Tipo;Address;Rete}, non per indice: l'utente puo' ordinare o filtrare
+     * nel frattempo). Se nel frattempo la tabella e' stata ricalcolata il risultato si scarta.
+     */
+    /** @param DataRiferimento il limite (escluso) della tabella, {@code 0} se la data e' oggi: ultimo blocco, senza cache */
+    private void GiacenzeaData_LeggiGiacenzeBlockchain(String[] WalletBlockchain, long DataRiferimento,
+            java.util.List<GiacenzeBlockchain.Richiesta> Richieste, int Generazione) {
+        if (Richieste.isEmpty()) return;
+        Thread t = new Thread(() -> {
+            GiacenzeBlockchain.Esito Esito;
+            try {
+                Esito = GiacenzeBlockchain.Leggi(WalletBlockchain[0], WalletBlockchain[1], DataRiferimento, Richieste,
+                        () -> Generazione != GiacenzeaData_GenerazioneBlockchain, null);
+            } catch (Exception ex) {
+                LoggerGC.ScriviErrore(ex);
+                Map<String, String> Testi = new java.util.HashMap<>();
+                for (GiacenzeBlockchain.Richiesta r : Richieste) Testi.put(r.chiave(), GiacenzeBlockchain.NON_DISPONIBILE);
+                Esito = new GiacenzeBlockchain.Esito(Testi, -1, java.util.List.of(String.valueOf(ex.getMessage())));
+            }
+            for (String a : Esito.avvisi()) LoggerGC.logInfo("Giacenze a data, blockchain: " + a);
+            final GiacenzeBlockchain.Esito Risultato = Esito;
+            SwingUtilities.invokeLater(() -> {
+                if (Generazione != GiacenzeaData_GenerazioneBlockchain) return;
+                DefaultTableModel Modello = (DefaultTableModel) GiacenzeaData_Tabella.getModel();
+                for (int r = 0; r < Modello.getRowCount(); r++) {
+                    String Chiave = Principale_GiacenzeaData.ChiaveRiga(String.valueOf(Modello.getValueAt(r, 0)),
+                            String.valueOf(Modello.getValueAt(r, 3)),
+                            Modello.getValueAt(r, 2) == null ? null : Modello.getValueAt(r, 2).toString(),
+                            Modello.getValueAt(r, 1) == null ? null : Modello.getValueAt(r, 1).toString());
+                    String Testo = Risultato.testi().get(Chiave);
+                    if (Testo != null) Modello.setValueAt(Testo, r, 12);
+                    else if (GiacenzeBlockchain.IN_LETTURA.equals(Modello.getValueAt(r, 12))) {
+                        Modello.setValueAt(GiacenzeBlockchain.NON_DISPONIBILE, r, 12);
+                    }
+                }
+            });
+        }, "GiacenzeBlockchain");
+        t.setDaemon(true);
+        t.start();
+    }
+
     private Map<String, Object[]> GiacenzeaData_CompilaTabellaToken(boolean CompiloTabella) {
 
         //
@@ -17720,6 +18069,8 @@ try {
         DefaultTableModel GiacenzeaData_ModelloTabellaDettagli = (DefaultTableModel) GiacenzeaData_TabellaDettaglioMovimenti.getModel();
         if (CompiloTabella) {
             Tabelle.Funzioni_PulisciTabella(GiacenzeaData_ModelloTabellaDettagli);
+            //Con il dettaglio si svuota il grafico, e si fermano i lavori in background del dettaglio di prima
+            GiacenzeaData_ImpostaGrafico(java.util.List.of(), null, 0, ++GiacenzeaData_GenerazioneDettaglio);
         }       
         DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) GiacenzeaData_Tabella.getModel();  
         if (CompiloTabella) {
@@ -17746,6 +18097,8 @@ try {
                 progress.SetLabel("Calcolo Giazenze e  Prezzi in corso....");
 //progress.RipristinaStdout();
                 long DataRiferimento = 0;
+                //Vero se la data e' oggi o futura (limitata all'istante attuale) : sulla blockchain si legge l'ultimo blocco
+                boolean DataAdOggi = true;
                 //FASE 1 THREAD : RECUPERO LA DATA DI RIFERIMENTO
                 if (GiacenzeaData_Data_DataChooser.getDate() != null) {
                     //DA FARE : IMPEDIRE DI METTERE DATE FUTURE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -17756,87 +18109,17 @@ try {
                     // DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data)+86399000;
                     //DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data)+86340000;//Riferito alle 23:59 del giorno
                     long DatadiOggi = System.currentTimeMillis();
+                    DataAdOggi = DatadiOggi < DataRiferimento;
                     if (DatadiOggi < DataRiferimento) {
                         DataRiferimento = DatadiOggi;
                     }
                 }
                 //FASE 2 THREAD : CREO LA NUOVA MAPPA DI APPOGGIO PER L'ANALISI DEI TOKEN
-                Map<String, Moneta> QtaCrypto = new TreeMap<>();//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
-
                 String Wallet = GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString().trim();
                 String SottoWallet = GiacenzeaData_Wallet2_ComboBox.getSelectedItem().toString().trim();
-                for (String[] movimento : MappaCryptoWallet.values()) {
-                    //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
-                    //altrimenti non vado avanti
-                    String Rete = Funzioni.TrovaReteDaIMovimento(movimento);
-                  //  System.out.println(movimento[0]+" - "+Rete);
-                    //System.out.println(Rete);
-                    long DataMovimento = FunzioniDate.ConvertiDatainLong(movimento[1]);
-                    if (DataMovimento < DataRiferimento) {
-                        // adesso verifico il wallet
-                        String gruppoWallet = "";
-                        if (Wallet.contains("Gruppo :")) {
-                            gruppoWallet = Wallet.split(" : ")[1].split("\\(")[0].trim();
-                        }
-                        if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
-                                || (Wallet.equalsIgnoreCase(movimento[3].trim()) && SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
-                                || (Wallet.equalsIgnoreCase(movimento[3].trim()) && SottoWallet.equalsIgnoreCase(movimento[4].trim()))//Se wallet e sottowallet corrispondono a quelli analizzati proseguo
-                                || DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3],true).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
-                                ) {
-                            // GiacenzeaData_Wallet_ComboBox.getSelectedItem()
-                            //Faccio la somma dei movimenti in usicta
-                            Moneta Monete[] = new Moneta[2];//in questo array metto la moneta in entrata e quellain uscita
-                            //in paricolare la moneta in uscita nella posizione 0 e quella in entrata nella posizione 1
-                            Monete[0] = new Moneta();
-                            Monete[1] = new Moneta();
-                            Monete[0].MonetaAddress = movimento[26];
-                            Monete[1].MonetaAddress = movimento[28];
-                            //ovviamente gli address se non rispettano le 2 condizioni precedenti sono null
-                            Monete[0].Moneta = movimento[8];
-                            Monete[0].Tipo = movimento[9];
-                            Monete[0].Qta = movimento[10];
-                            Monete[0].Rete = Rete;
-                            Monete[1].Moneta = movimento[11];
-                            Monete[1].Tipo = movimento[12];
-                            Monete[1].Qta = movimento[13];
-                            Monete[1].Rete = Rete;
-                            //Se non c'è l'address della moneta allora la rete non la metto visto che non è importante
-                            //Stessa cosa se non ho la rete non mi serve mettere l'address
-                            if (Rete == null||Rete.isBlank()){
-                               Monete[0].MonetaAddress="";
-                               Monete[1].MonetaAddress="";
-                               Monete[0].Rete="";
-                               Monete[1].Rete="";
-                               Rete = "";
-                            }
-                            if(Monete[0].MonetaAddress.isBlank()&&Monete[1].MonetaAddress.isBlank()){
-                             /*  Rete = "";
-                               Monete[0].Rete="";
-                               Monete[1].Rete="";*/
-                            }
-
-                            //questo ciclo for serve per inserire i valori sia della moneta uscita che di quella entrata
-                            for (int a = 0; a < 2; a++) {
-                                //ANALIZZO MOVIMENTI
-                                if (!Monete[a].Moneta.isBlank() && QtaCrypto.get(Monete[a].Moneta + ";" + Monete[a].Tipo + ";" + Monete[a].MonetaAddress + ";" + Rete) != null) {
-                                    //Movimento già presente da implementare
-                                    Moneta M1 = QtaCrypto.get(Monete[a].Moneta + ";" + Monete[a].Tipo + ";" + Monete[a].MonetaAddress + ";" + Rete);
-                                    M1.Qta = new BigDecimal(M1.Qta)
-                                            .add(new BigDecimal(Monete[a].Qta)).stripTrailingZeros().toPlainString();
-
-                                } else if (!Monete[a].Moneta.isBlank()) {
-                                    //Movimento Nuovo da inserire
-                                    Moneta M1 = new Moneta();
-                                    M1.InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
-                                    M1.Rete = Rete;
-                                  //  System.out.println("KEY=" + Monete[a].Moneta + ";" + Monete[a].Tipo + ";" + Monete[a].MonetaAddress + ";" + Rete);
-                                    QtaCrypto.put(Monete[a].Moneta + ";" + Monete[a].Tipo + ";" + Monete[a].MonetaAddress + ";" + Rete, M1);
-
-                                }
-                            }
-                        }
-                    }
-                }
+                //La somma e' in Principale_GiacenzeaData.SommaQuantitaAData, la stessa che usano i test
+                Map<String, Moneta> QtaCrypto = Principale_GiacenzeaData.SommaQuantitaAData(MappaCryptoWallet.values(),
+                        DataRiferimento, Wallet, SottoWallet);
 
                 //Adesso elenco tutte le monete e le metto in tabella
                 progress.SetMassimo(QtaCrypto.size());
@@ -17863,6 +18146,13 @@ try {
                 progress.SetLabel("Calcolo Giazenze e  Prezzi in corso....");
                 progress.SetMassimo(QtaCrypto.size());
                 progress.SetAvanzamento(0);
+
+                //Singolo wallet DeFi : la colonna della giacenza letta dalla blockchain (null se non si confronta)
+                final String WalletBlockchain[] = CompiloTabella ? GiacenzeBlockchain.WalletDaLeggere(Wallet, SottoWallet,
+                        Mappa_Wallets_e_Dettagli.get(Wallet)) : null;
+                java.util.List<GiacenzeBlockchain.Richiesta> RichiesteBlockchain = new ArrayList<>();
+                final int GenerazioneBlockchain = ++GiacenzeaData_GenerazioneBlockchain;
+                SwingUtilities.invokeLater(() -> GiacenzeaData_MostraColonnaBlockchain(WalletBlockchain != null));
 
                 int i = 0;
                 BigDecimal TotEuro = new BigDecimal(0);
@@ -17893,7 +18183,7 @@ try {
                     Moneta M1 = QtaCrypto.get(moneta);
                     String Rete = M1.Rete;
                     String Address = M1.MonetaAddress;
-                    Object riga[] = new Object[12];
+                    Object riga[] = new Object[13];
                     riga[0] = M1.Moneta;
                     riga[2] = Address;//qui ci va l'address della moneta se non sto analizzando i wallet nel complesso
                     riga[3] = M1.Tipo;
@@ -17901,6 +18191,7 @@ try {
                     riga[1] = M1.Rete;
                     riga[6] = Double.valueOf(0);
                     riga[10] = "";
+                    riga[12] = "";
                     //Prezzo unitario alla data, null se il token non ha prezzo : serve alle colonne derivate
                     BigDecimal PrezzoUnitario = null;
 
@@ -17947,6 +18238,17 @@ try {
                         riga[8] = Derivati[1];
                         riga[9] = Derivati[2];
 
+                        //Giacenza sulla blockchain : la riga si segna "in lettura", la legge un thread a tabella pronta
+                        if (WalletBlockchain != null) {
+                            String ChiaveBlockchain = Principale_GiacenzeaData.ChiaveRiga(M1.Moneta, M1.Tipo, Address, Rete);
+                            GiacenzeBlockchain.Richiesta Richiesta = new GiacenzeBlockchain.Richiesta(ChiaveBlockchain,
+                                    M1.Moneta, M1.Tipo, Address);
+                            if (GiacenzeBlockchain.Classifica(M1.Moneta, M1.Tipo, Address,
+                                    GiacenzeBlockchain.Nativa(WalletBlockchain[1])) != GiacenzeBlockchain.TipoRiga.ESCLUSA) {
+                                riga[12] = GiacenzeBlockchain.IN_LETTURA;
+                                RichiesteBlockchain.add(Richiesta);
+                            }
+                        }
                         if (CompiloTabella) {
                            // Object[] r = riga;
                            // SwingUtilities.invokeLater(() -> {
@@ -17966,6 +18268,10 @@ try {
                 }
                 Giacenzeadata_Walleta_Label.setText(Wallet);
                 Giacenzeadata_Walletb_Label.setText(SottoWallet);
+                if (WalletBlockchain != null && !progress.FineThread()) {
+                    GiacenzeaData_LeggiGiacenzeBlockchain(WalletBlockchain, DataAdOggi ? 0 : DataRiferimento,
+                            RichiesteBlockchain, GenerazioneBlockchain);
+                }
                 
                 
 
@@ -18080,6 +18386,9 @@ try {
         String VecchioValoreTC=ComboFiltroWallet.getSelectedItem().toString();
         String VecchioValoreDP=DepositiPrelievi_ComboBox_FiltroWallet.getSelectedItem().toString();
         String VecchioValoreGD=GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString();
+        //Il sotto-wallet va ricordato adesso: svuotando e riempiendo la combo dei wallet passa per un attimo "Tutti",
+        //il suo listener ricostruisce la combo dei sotto-wallet senza quello scelto e il valore andrebbe perso
+        String VecchioValoreGD2=String.valueOf(GiacenzeaData_Wallet2_ComboBox.getSelectedItem());
         ComboFiltroWallet.removeAllItems();
         DepositiPrelievi_ComboBox_FiltroWallet.removeAllItems();
         GiacenzeaData_Wallet_ComboBox.removeAllItems();
@@ -18097,7 +18406,7 @@ try {
        /* if (VecchioTrovato){
             GiacenzeaData_Wallet_ComboBox.setSelectedItem(VecchioValoreGD);
         }*/
-        GiacenzeaData_Funzione_AggiornaComboBoxWallet2();
+        GiacenzeaData_Funzione_AggiornaComboBoxWallet2(VecchioValoreGD2);
         
         });
     }
@@ -18144,7 +18453,11 @@ try {
       
 
      private void GiacenzeaData_Funzione_AggiornaComboBoxWallet2() {
-         String VecchioValore=GiacenzeaData_Wallet2_ComboBox.getSelectedItem().toString();
+         GiacenzeaData_Funzione_AggiornaComboBoxWallet2(String.valueOf(GiacenzeaData_Wallet2_ComboBox.getSelectedItem()));
+     }
+
+     /** Riempie la combo dei sotto-wallet del wallet scelto e riseleziona {@code VecchioValore} se c'e' ancora. */
+     private void GiacenzeaData_Funzione_AggiornaComboBoxWallet2(String VecchioValore) {
          boolean VecchioTrovato=false;
            List<String> Lista=Mappa_Wallets_e_Dettagli.get(GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString());
            GiacenzeaData_Wallet2_ComboBox.removeAllItems();
@@ -19928,7 +20241,9 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel GiacenzeaData_Data_Label;
     private javax.swing.JLabel GiacenzeaData_Label_Aggiornare;
     private javax.swing.JScrollPane GiacenzeaData_ScrollPane;
+    private javax.swing.JPanel GiacenzeaData_Pannello_Grafico;
     private javax.swing.JScrollPane GiacenzeaData_ScrollPaneDettaglioMovimenti;
+    private javax.swing.JTabbedPane GiacenzeaData_TabbedDettaglio;
     private javax.swing.JTable GiacenzeaData_Tabella;
     private javax.swing.JTable GiacenzeaData_TabellaDettaglioMovimenti;
     private javax.swing.JLabel GiacenzeaData_Totali_Label;

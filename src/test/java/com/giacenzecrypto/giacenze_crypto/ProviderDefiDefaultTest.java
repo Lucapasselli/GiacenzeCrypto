@@ -32,10 +32,11 @@ public class ProviderDefiDefaultTest {
         //hanno un explorer Etherscan-compatibile pubblico e usabile senza chiave.
         assertEquals("BLOCKSCOUT", Importazioni.DeFi_ProviderDefault("OP"));
         assertEquals("https://optimism.blockscout.com/api", Importazioni.DeFi_ProviderBlockscoutUrl("OP"));
-        //BASE è uscita da Moralis il 14/09/2026 (che non pubblica più un piano gratuito): l'istanza
-        //Blockscout ufficiale funziona senza chiave, con un budget di 10 richieste ogni ~45 minuti per
-        //IP che una ApiKey Blockscout gratuita alza a 5 al secondo.
-        assertEquals("BLOCKSCOUT", Importazioni.DeFi_ProviderDefault("BASE"));
+        //BASE è uscita da Moralis il 14/09/2026 e da Blockscout il 10/10/2026 (la PRO API risponde 402 anche con
+        //la chiave gratuita, l'istanza è dietro la verifica Cloudflare): si legge dai nodi pubblici. L'URL
+        //Blockscout resta per chi la sceglie a mano con un piano a pagamento.
+        assertEquals(NodoPubblicoDefi.PROVIDER, Importazioni.DeFi_ProviderDefault("BASE"));
+        assertTrue(NodoPubblicoDefi.ReteSupportata("BASE"));
         assertEquals("https://base.blockscout.com/api", Importazioni.DeFi_ProviderBlockscoutUrl("BASE"));
         //AVAX non ha un'istanza Blockscout (la chain 43114 non è nel registro chains.blockscout.com):
         //l'endpoint Etherscan-compatibile è Routescan. Il nome del provider resta "BLOCKSCOUT" perché
@@ -86,6 +87,17 @@ public class ProviderDefiDefaultTest {
     }
 
     @Test
+    public void ogniChainConDefaultNodoPubblicoHaINodiConfigurati() {
+        //X Layer usa lo stesso nome di provider ma ha la sua classe (Trans_XLayer), scelta prima del provider
+        VarCondivise.CompilaMappaChain();
+        for (String Rete : Principale.Mappa_ChainExplorer.keySet()) {
+            if (!NodoPubblicoDefi.PROVIDER.equals(Importazioni.DeFi_ProviderDefault(Rete))
+                    || Rete.equalsIgnoreCase(Trans_XLayer.RETE)) continue;
+            assertTrue(NodoPubblicoDefi.ReteSupportata(Rete), "nessun nodo pubblico configurato per " + Rete);
+        }
+    }
+
+    @Test
     public void ogniChainConDefaultBlockscoutHaUnEndpointConfigurato() {
         //Senza URL l'importazione si ferma con un messaggio in log: un default BLOCKSCOUT senza
         //endpoint sarebbe una chain che non scarica più nulla.
@@ -100,6 +112,6 @@ public class ProviderDefiDefaultTest {
             assertNotNull(Url, "manca l'URL Blockscout per " + Rete);
             assertTrue(Url.startsWith("https://"), "URL Blockscout non valido per " + Rete + ": " + Url);
         }
-        assertTrue(Controllate >= 5, "attese almeno CRO, GNOSIS, OP, AVAX e BASE con default Blockscout, trovate " + Controllate);
+        assertTrue(Controllate >= 5, "attese almeno CRO, GNOSIS, OP, AVAX, INK e ROBINHOOD con default Blockscout, trovate " + Controllate);
     }
 }

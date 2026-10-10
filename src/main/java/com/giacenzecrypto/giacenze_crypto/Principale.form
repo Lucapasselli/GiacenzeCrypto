@@ -2512,7 +2512,7 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jSeparator5" alignment="0" max="32767" attributes="0"/>
                                   <Component id="GiacenzeaData_ScrollPane" alignment="0" max="32767" attributes="0"/>
-                                  <Component id="GiacenzeaData_ScrollPaneDettaglioMovimenti" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="GiacenzeaData_TabbedDettaglio" alignment="0" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Component id="GiacenzeaData_Totali_Label" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
@@ -2634,7 +2634,7 @@
                                   <Component id="GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="GiacenzeaData_ScrollPaneDettaglioMovimenti" pref="307" max="32767" attributes="0"/>
+                              <Component id="GiacenzeaData_TabbedDettaglio" pref="307" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="GiacenzeaData_Totali_Label" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
@@ -2700,7 +2700,7 @@
                           <Properties>
                             <Property name="autoCreateRowSorter" type="boolean" value="true"/>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                              <Table columnCount="12" rowCount="0">
+                              <Table columnCount="13" rowCount="0">
                                 <Column editable="false" title="Nome" type="java.lang.Object"/>
                                 <Column editable="false" title="Rete" type="java.lang.Object"/>
                                 <Column editable="false" title="Address Defi del Token" type="java.lang.Object"/>
@@ -2710,9 +2710,10 @@
                                 <Column editable="false" title="&lt;html&gt;&lt;center&gt;Costo Carico&lt;br&gt;(in Euro)&lt;/html&gt;" type="java.lang.Double"/>
                                 <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore&lt;br&gt;Unitario&lt;/html&gt;" type="java.lang.Double"/>
                                 <Column editable="false" title="&lt;html&gt;&lt;center&gt;Costo&lt;br&gt;Unitario&lt;/html&gt;" type="java.lang.Double"/>
-                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Differenza&lt;br&gt;Valore - Costo&lt;/html&gt;" type="java.lang.Double"/>
+                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Plus/Minus&lt;br&gt;Latente&lt;/html&gt;" type="java.lang.Double"/>
                                 <Column editable="false" title="Errori" type="java.lang.Object"/>
                                 <Column editable="false" title="InfoPrezzo" type="java.lang.Object"/>
+                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Qta&lt;br&gt;Blockchain&lt;/html&gt;" type="java.lang.Object"/>
                               </Table>
                             </Property>
                             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -2777,6 +2778,11 @@
                                   <Editor/>
                                   <Renderer/>
                                 </Column>
+                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
                               </TableColumnModel>
                             </Property>
                             <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
@@ -2823,146 +2829,179 @@
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_Bottone_CalcolaActionPerformed"/>
                       </Events>
                     </Component>
-                    <Container class="javax.swing.JScrollPane" name="GiacenzeaData_ScrollPaneDettaglioMovimenti">
-                      <AuxValues>
-                        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-                      </AuxValues>
+                    <Container class="javax.swing.JTabbedPane" name="GiacenzeaData_TabbedDettaglio">
+                      <Events>
+                        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="GiacenzeaData_TabbedDettaglioStateChanged"/>
+                      </Events>
 
-                      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
                       <SubComponents>
-                        <Component class="javax.swing.JTable" name="GiacenzeaData_TabellaDettaglioMovimenti">
-                          <Properties>
-                            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                              <Font name="Noto Sans" size="12" style="0"/>
-                            </Property>
-                            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                              <Table columnCount="18" rowCount="0">
-                                <Column editable="false" title="Data" type="java.lang.Object"/>
-                                <Column editable="false" title="Wallet" type="java.lang.Object"/>
-                                <Column editable="false" title="Moneta" type="java.lang.Object"/>
-                                <Column editable="false" title="Address Moneta" type="java.lang.Object"/>
-                                <Column editable="false" title="Tipo Movimento" type="java.lang.Object"/>
-                                <Column editable="false" title="Quantita&apos;" type="java.lang.Object"/>
-                                <Column editable="false" title="Valore in Euro" type="java.lang.Object"/>
-                                <Column editable="false" title="Qta Residua" type="java.lang.Object"/>
-                                <Column editable="false" title="ID" type="java.lang.Object"/>
-                                <Column editable="false" title="SaldiNegativiPrecedenti" type="java.lang.Object"/>
-                                <Column editable="false" title="null" type="java.lang.Object"/>
-                                <Column editable="false" title="null" type="java.lang.Object"/>
-                                <Column editable="false" title="null" type="java.lang.Object"/>
-                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Costo Carico&lt;br&gt;Movimento&lt;/html&gt;" type="java.lang.Object"/>
-                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Prezzo&lt;br&gt;Unitario&lt;/html&gt;" type="java.lang.Object"/>
-                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore&lt;br&gt;Qta Residua&lt;/html&gt;" type="java.lang.Object"/>
-                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Costo Carico&lt;br&gt;Qta Residua&lt;/html&gt;" type="java.lang.Object"/>
-                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Plus/Minus Latente&lt;br&gt;Qta Residua&lt;/html&gt;" type="java.lang.Object"/>
-                              </Table>
-                            </Property>
-                            <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
-                              <TableColumnModel selectionModel="0">
-                                <Column maxWidth="130" minWidth="130" prefWidth="130" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="-1" minWidth="-1" prefWidth="50" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="100" minWidth="100" prefWidth="100" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="-1" minWidth="90" prefWidth="100" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="-1" minWidth="80" prefWidth="90" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="-1" minWidth="90" prefWidth="100" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="-1" minWidth="90" prefWidth="110" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="-1" minWidth="90" prefWidth="110" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                              </TableColumnModel>
-                            </Property>
-                            <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
-                              <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
-                            </Property>
-                          </Properties>
-                          <Events>
-                            <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="GiacenzeaData_TabellaDettaglioMovimentiMouseReleased"/>
-                            <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="GiacenzeaData_TabellaDettaglioMovimentiKeyReleased"/>
-                          </Events>
-                          <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), 42));"/>
-                          </AuxValues>
-                        </Component>
+                      <Container class="javax.swing.JScrollPane" name="GiacenzeaData_ScrollPaneDettaglioMovimenti">
+                        <AuxValues>
+                          <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+                        </AuxValues>
+                        <Constraints>
+                          <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                            <JTabbedPaneConstraints tabName="Tabella">
+                              <Property name="tabTitle" type="java.lang.String" value="Tabella"/>
+                            </JTabbedPaneConstraints>
+                          </Constraint>
+                        </Constraints>
+
+                        <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                        <SubComponents>
+                          <Component class="javax.swing.JTable" name="GiacenzeaData_TabellaDettaglioMovimenti">
+                            <Properties>
+                              <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                                <Font name="Noto Sans" size="12" style="0"/>
+                              </Property>
+                              <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+                                <Table columnCount="19" rowCount="0">
+                                  <Column editable="false" title="Data" type="java.lang.Object"/>
+                                  <Column editable="false" title="Wallet" type="java.lang.Object"/>
+                                  <Column editable="false" title="Moneta" type="java.lang.Object"/>
+                                  <Column editable="false" title="Address Moneta" type="java.lang.Object"/>
+                                  <Column editable="false" title="Tipo Movimento" type="java.lang.Object"/>
+                                  <Column editable="false" title="Quantita&apos;" type="java.lang.Object"/>
+                                  <Column editable="false" title="Valore in Euro" type="java.lang.Object"/>
+                                  <Column editable="false" title="Qta Residua" type="java.lang.Object"/>
+                                  <Column editable="false" title="ID" type="java.lang.Object"/>
+                                  <Column editable="false" title="SaldiNegativiPrecedenti" type="java.lang.Object"/>
+                                  <Column editable="false" title="null" type="java.lang.Object"/>
+                                  <Column editable="false" title="null" type="java.lang.Object"/>
+                                  <Column editable="false" title="null" type="java.lang.Object"/>
+                                  <Column editable="false" title="&lt;html&gt;&lt;center&gt;Costo Carico&lt;br&gt;Movimento&lt;/html&gt;" type="java.lang.Object"/>
+                                  <Column editable="false" title="&lt;html&gt;&lt;center&gt;Prezzo&lt;br&gt;Unitario&lt;/html&gt;" type="java.lang.Object"/>
+                                  <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore&lt;br&gt;Qta Residua&lt;/html&gt;" type="java.lang.Object"/>
+                                  <Column editable="false" title="&lt;html&gt;&lt;center&gt;Costo Carico&lt;br&gt;Qta Residua&lt;/html&gt;" type="java.lang.Object"/>
+                                  <Column editable="false" title="&lt;html&gt;&lt;center&gt;Plus/Minus Latente&lt;br&gt;Qta Residua&lt;/html&gt;" type="java.lang.Object"/>
+                                  <Column editable="false" title="&lt;html&gt;&lt;center&gt;Qta&lt;br&gt;Blockchain&lt;/html&gt;" type="java.lang.Object"/>
+                                </Table>
+                              </Property>
+                              <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
+                                <TableColumnModel selectionModel="0">
+                                  <Column maxWidth="130" minWidth="130" prefWidth="130" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="-1" minWidth="-1" prefWidth="50" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="100" minWidth="100" prefWidth="100" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="-1" minWidth="90" prefWidth="100" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="-1" minWidth="80" prefWidth="90" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="-1" minWidth="90" prefWidth="100" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="-1" minWidth="90" prefWidth="110" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="-1" minWidth="90" prefWidth="110" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                  <Column maxWidth="-1" minWidth="30" prefWidth="110" resizable="true">
+                                    <Title/>
+                                    <Editor/>
+                                    <Renderer/>
+                                  </Column>
+                                </TableColumnModel>
+                              </Property>
+                              <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
+                                <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
+                              </Property>
+                            </Properties>
+                            <Events>
+                              <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="GiacenzeaData_TabellaDettaglioMovimentiMouseReleased"/>
+                              <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="GiacenzeaData_TabellaDettaglioMovimentiKeyReleased"/>
+                            </Events>
+                            <AuxValues>
+                              <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), 42));"/>
+                            </AuxValues>
+                          </Component>
+                        </SubComponents>
+                      </Container>
+                        <Container class="javax.swing.JPanel" name="GiacenzeaData_Pannello_Grafico">
+                          <Constraints>
+                            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                              <JTabbedPaneConstraints tabName="Grafico">
+                                <Property name="tabTitle" type="java.lang.String" value="Grafico"/>
+                              </JTabbedPaneConstraints>
+                            </Constraint>
+                          </Constraints>
+
+                          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
+                        </Container>
                       </SubComponents>
                     </Container>
                     <Component class="javax.swing.JLabel" name="Giacenzeadata_Dettaglio_Label">

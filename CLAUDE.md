@@ -233,7 +233,7 @@ prodotto da `Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(DataRiferiment
   PTW e il suo DTW possono avere simboli diversi. In `GUI_DettaglioTransazione` si vedono in due riquadri sotto la
   tabella (rosso uscita, verde entrata, `Pannello_Giacenze`), non più come righe HTML della tabella a due colonne:
   il contenuto è `Principale_GiacenzeaData.TabelleDettaglio` (solo stringhe), i `JTable` si costruiscono in codice. ⚠️
-  L'altezza del pannello (215) sta **nel layout** (`.form` e `initComponents`): un `setPreferredSize` nel costruttore,
+  L'altezza del pannello (290 dal 2026-10-10, per le righe *Blockchain*) sta **nel layout** (`.form` e `initComponents`): un `setPreferredSize` nel costruttore,
   dopo la `pack()` di `initComponents`, non ridimensiona il dialogo.
 
 - **Colonne derivate della tabella principale** (*Valore unitario*, *Costo unitario*, *Differenza valore − costo*,
@@ -280,6 +280,59 @@ prodotto da `Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(DataRiferiment
 
 ⚠️ Le colonne derivate hanno spostato gli indici della tabella principale: *Errori* è la **10** e *InfoPrezzo*
 la **11** (prima 7 e 8), sia nei lettori di `Principale` sia in `Tabelle.ColoraRigheTabella0GiacenzeaData`.
+
+**Colonna *Qta Blockchain*** (model **12**, in coda; a video subito dopo *Qta*, larga zero se non serve), 2026-10-10:
+con un singolo wallet DeFi EVM e sotto-wallet "Wallet", o "Tutti" se non ce ne sono altri (`GiacenzeBlockchain.WalletDaLeggere`) un thread, a tabella
+pronta, legge dai **nodi pubblici con lo stato storico** il saldo della moneta della rete e dei token delle righe (NFT
+esclusi) all'ultimo blocco con timestamp **strettamente minore** di `DataRiferimento`, lo stesso `<` di
+`SommaQuantitaAData`; scrive per chiave riga e scarta il risultato se la tabella è stata ricalcolata (generazione).
+Il renderer la colora per confronto numerico con *Qta* (`GiacenzeBlockchain.Coincide`). Tre cose non ovvie: **un saldo
+non letto è "n.d.", mai zero** (decodifica di `aggregate3` propria, perché quella di `Trans_XLayer` rende zero una
+chiamata fallita); i nodi di `GiacenzeBlockchain.NODI` sono solo quelli verificati il 10/10/2026 a due altezze contro
+gli altri nodi della rete, perché alcuni pubblici **rispondono 0x0 invece di un errore** per lo stato che non hanno
+(drpc su OP pre-Bedrock, Alchemy pubblico su World) e il nodo ufficiale di HyperEVM **ignora il blocco** e dà il saldo
+di oggi — un nodo nuovo va verificato così prima di aggiungerlo; prima di Multicall3 sulla rete si legge un saldo per
+chiamata. Blocco per (rete, istante) e saldi per blocco passato stanno in cache in `GIACENZEBLOCKCHAIN` (chiavi
+`BLOCCO|…` e `SALDO|…`, mai l'ultimo blocco). MONAD non ha nodi pubblici con lo storico: solo la data di oggi. Provato sui
+wallet reali: BASE, CRO e BSC al 31/12/2024 coincidono salvo SCAM, token "reflection" e differenze vere (quota L1 delle
+commissioni dell'era Moralis su BASE).
+**L'indirizzo sulla blockchain è il solo sotto-wallet `"Wallet"`** (`GiacenzeBlockchain.SOTTOWALLET_INDIRIZZO`, dove
+`TransazioneDefi` mette ogni movimento): "Piattaforma/DeFi", "Collaterale Bloccato" e "Piattaforma di scambio" li crea la
+classificazione e tengono monete che hanno lasciato l'indirizzo (farm, garanzie, scambio differito in corso). Confrontare
+con tutto il wallet faceva sembrare sbagliato ogni token messo in una farm. **Il dettaglio movimento** ha le stesse
+letture (`GiacenzeBlockchain.LeggiAttornoAlMovimento`, righe *Blockchain* prima/dopo nei riquadri, in background con la
+generazione del dialogo): saldo a fine blocco `v[23]-1` e `v[23]`, confrontato con l'archivio del sotto-wallet "Wallet"
+prima e dopo **tutto il secondo** del movimento, non prima e dopo il movimento, perché una transazione DeFi diventa
+spesso più movimenti (commissione, scambio, gambe interne) e il blocco li contiene tutti. ⚠️ I riquadri hanno larghezza
+preferita e minima fissate in `CreaRiquadroGiacenze`: senza, il più largo (nome di un LP, prezzo con molte cifre) la
+imponeva a tutti e il secondo usciva dal dialogo insieme alla freccia "avanti" (difetto che c'era già prima).
+**La tabella dettaglio movimenti** ha la stessa colonna in **model 18** (`GiacenzeBlockchain.LeggiAiBlocchi`, saldo a
+fine `v[23]` di ogni riga). Non è del layout dell'utente: `PROFILO_GIACENZE_DETTAGLIO` la tiene fra le interne, e
+`Principale.GiacenzeaData_MostraColonnaBlockchainDettaglio` la mette dopo *Qta Residua* o la toglie a fine costruzione,
+solo se cambia (rimetterla ne perderebbe la larghezza), e dopo *Colonne...*, che ricrea le colonne, così non resta vuota per i wallet che non si confrontano e un layout
+salvato non la nasconde. Le righe si confrontano **per secondo** dell'ID (`BlocchiDettaglio`), con il blocco più alto del
+secondo e la Qta Residua dopo l'ultima riga del secondo, anche se il filtro "solo negative" la nasconde: commissione e
+scambio della stessa transazione hanno una Qta Residua intermedia che sulla blockchain non è mai esistita. Il
+termine di confronto sta nella proprietà `Tabelle.PROP_CONFRONTO_BLOCKCHAIN` (ID → quantità), letta dal renderer. Un
+saldo per blocco (senza Multicall3, decimali una volta), cache prima di tutto, e al primo nodo che non risponde ci si
+ferma (ogni blocco rifarebbe i giri di attesa di `NodiPubblici`). *Sistema Qta Residua*
+(`GiacenzeaData_Funzione_SistemaQta`) precompila la giacenza con `GiacenzeBlockchain.GiacenzaPerAllineare`: Qta Residua
+della riga + (blockchain − archivio a fine secondo), perché la rettifica nasce nello stesso secondo del movimento scelto
+e sulla riga di mezzo di un blocco il saldo della blockchain non è la giacenza giusta.
+
+**Scheda *Grafico* del dettaglio** (2026-10-10): il dettaglio movimenti sta in `GiacenzeaData_TabbedDettaglio` (*Tabella* /
+*Grafico*). Le variazioni (`GraficoGiacenze.Variazione`) si raccolgono **nello stesso ciclo** che riempie la tabella, prima
+del filtro "solo negative": stesse righe e stesse giacenze della tabella. Il valore dopo il movimento è quello della colonna
+"valore qta residua" se c'è **alla costruzione**, altrimenti giacenza per prezzo di fine giornata: le righe che
+`GiacenzeaData_CompletaPrezziDettaglio` prezza dopo, in background, nel grafico restano col prezzo del giorno. Il calcolo parte solo con la scheda in vista, su un thread unico, ed è scartato dalla
+generazione del dettaglio. ⚠️ **I prezzi giornalieri non sono prezzi fiscali e non devono mai toccare `PrezziNew` né i
+marcatori**: un'apertura giornaliera alle 00:00 UTC diventerebbe la quotazione più vicina di qualche valorizzazione (la
+scheda allarga fino a ±24 h, il quadro RW legge la cache dal vivo) e un giorno marcato fermerebbe lo scaricamento al
+minuto. Per questo `PrezziGiornalieri` ha una tabella propria (`PrezziGiornalieri`, chiave moneta + giorno UTC, letta da
+nessun calcolo) e usa solo il JSON di `Prezzi.EseguiLottoScript(…, "1d")` e le funzioni pure di `PrezziDefiLlama`, mai
+`ScaricaCoppie`/`ScriviEsitoInCache`/`managerRichieste`. Fonti: archivio `XXXEUR`, poi candele giornaliere CCXT
+(apertura del giorno UTC dopo = chiusura) o `/chart?period=1d` di DefiLlama per i token con address senza alias. Il
+timeframe entra nel nome del file di cache conversione di `Historical_Multi_Eur.js` solo se diverso da `1m`.
 
 ### Filtri della tabella movimenti — due meccanismi, non uno
 
@@ -405,6 +458,19 @@ Liquidità codice 14 con l'opzione max-media: somma / **giorni del tratto** (`me
 media diventa la base di un'imposta proporzionale già rapportata ai giorni — con /365 i giorni
 contavano due volte e spezzare un rigo faceva pagare circa la metà (corretto il 2026-09-27).
 
+### Avviso degli E-Money mancanti al calcolo dei quadri
+
+I pulsanti *Calcola* dei quadri W/RW e T/RT (non i ricalcoli che partono da altrove, che lo riproporrebbero a ogni
+modifica) controllano se nei movimenti ci sono token di moneta elettronica noti che la sezione E-Money dell'utente non
+contiene (`Principale_EmoneyMancanti`, logica in `EmoneyToken`, 2026-10-09). L'elenco dei noti è
+`config/varie/EmoneyToken.json` (stessa strada delle note di compilazione, **senza** `"centralizzato"`: in
+`config/varie` un file centralizzato assente da GitHub verrebbe cancellato all'avvio) ed è l'**unico** elenco: anche il
+pulsante dei token standard delle opzioni lo legge (stablecoin "dubbie" e algoritmiche restano nel codice). Si contano
+solo i movimenti che l'aggiunta cambierebbe: dalla `decorrenza` del file (2023-01-01) in poi, gambe non FIAT, non SCAM,
+confronto con la sezione via `Funzioni.DataDecorrenzaEmoney` come nel motore. Il dialogo dice l'effetto (anni già
+dichiarati compresi), senza consigli. "Non ora" vale per la sessione, "Non proporli più" per i token di quel momento
+(opzione `EmoneyToken_NonProporre`). Sui dati di prova dell'utente ha trovato EURI di Binance (71 movimenti nel 2025).
+
 ### Le note di compilazione dei quadri stanno in un JSON, non nel codice
 
 I testi stampati in coda ai quadri W/RW e T/RT vivono in `config/varie/NoteCompilazione.json`,
@@ -463,6 +529,29 @@ Defines the canonical movement type map. Each raw label from an import (e.g. `ST
 - `Importazioni_Gestione.java` / `Importazioni_Resoconto.java` — Swing dialogs wrapping the import flow
 - Exchange-specific classes: `CDC_FiatECardWallet.java`, `BinanceTaxReportClient.java`, `CcxtInterop.java`
 - DeFi/blockchain: `Funzioni_WalletDeFi.java`, `TransazioneDefi.java`, `Trans_Solana.java`, `ERC20MetadataReader.java`
+
+**BASE is read from public RPC nodes, no API key (`NodoPubblicoDefi`, 2026-10-10).** Blockscout made Base paid that
+day (PRO API 402 "Featured chain 8453 requires one of the following plans" even with a free key, instance behind
+Cloudflare), and Etherscan/Routescan don't give it free either. The class is an **adapter like `NodeRealDefi`**
+(Etherscan-shaped rows for the five actions, B1-B5 untouched) built on the **state bisection of `Trans_XLayer`**
+(nonce + native balance + followed tokens' `balanceOf` in one Multicall3 call, split down to the single block, then
+block + 5 single-block `eth_getLogs` + receipts), whose ABI helpers it reuses. Generic per network: a network is one
+`Configurazione` in `RETI` (nodes per use: state/archive, logs, traces; curated tokens; wrapped native token). Things
+that are not obvious: the provider string `"NODO PUBBLICO"` is shared with X Layer, which the dispatcher matches by
+rete **before** the provider; txlist rows carry an extra `commissioneWei` (L2 gas + `l1Fee` + operator fee) that B1
+reads **only if present** — the old archive's Moralis-era fees lacked the L1 share and were patched by hashless
+COMMISSIONE rettifiche; WETH wrap/unwrap emit `Deposit`/`Withdrawal`, not `Transfer`, and are read only from
+`tokenAvvolti` (else WETH looks like a rebasing token); a token whose balance changes with no log is dropped from the
+state (rebasing/interest) or the bisection would descend to every block; tokens seen in logs are re-bisected from the
+start; wallets with code (ERC-4337, EIP-7702) are refused. **Known gap, accepted by the user**: a token received
+passively, outside the curated list and the archive's tokens for that wallet, and never moved, is not seen. Verified
+on the user's 3 Base wallets (copy of the archive deleted afterwards, tools in `nocommit/StrumentiTest/BaseNodoPubblico/`, results in `Analisi_Provider_BSC.md`):
+every non-SCAM hash of the archive found, and the "Giacenze a data" sums of the new rows equal the on-chain balances
+at every date tested, where the archive did not. **The user's decision (2026-10-10): the node is used only from now on** — BASE rows already in an archive are
+not replaced (they carry manual classifications), the next import resumes from the last imported block; do not
+propose re-downloading old history. Saved `PROVIDERDEFI` BASE→BLOCKSCOUT rows without a custom URL are
+deleted once (`ProviderDefi_MigraBaseSuNodoPubblico`). The quantity sum of "Giacenze a data" now lives in
+`Principale_GiacenzeaData.SommaQuantitaAData` (extracted unchanged so the comparison uses the tab's own code).
 
 **BTC multi-address wallets (`WalletBtcMultiIndirizzo`, 2026-09-28).** A BTC entry in `WALLETS` is
 one of three kinds, decided by the string itself: an extended key (addresses derived), a single
@@ -710,6 +799,16 @@ valuation reads before downloading and `FiltraRichiesteGiaCoperte` does not: wit
 pairs instead of ~90. Measured on a real Cronos wallet (339 tx, 46 tokens, address prices removed from the cache):
 200-208 s before 2026-10-09, 52-79 s now, of which ~19 s explorer downloads and ~7 s the daily CoinGecko list. Measurements and decisions in `nocommit/Documentazione/Analisi_Prezzi_LP_DefiLlama.md`.
 
+**Exchange API imports pre-fetch too** (2026-10-09), each with the **same price source as its consumer** (it picks the
+cascade's first exchange and, with a non-blank source, personal prices do not count as coverage, as in `CambioXXXEUR`).
+OKX: `Importazioni.Ex_OKX_PreScaricaPrezzi` reads the 19-field rows (`[5]` and fee `[11]`, source `okx`) inside
+`Ex_OKX_RaggruppaEConsolida`, so API, OKX CSV and scarti recovery all get it, but **not** `Ex_OKX_Raggruppa`, which the
+scarti analysis calls and must stay network-free. Binance prices inside `creaMovimento` while converting the JSON, so the
+conversion runs twice: first dry (`Prezzi.SenzaValorizzare`, a thread-local that makes `DammiPrezzoInfoTransazione`
+return `null`; it also covers the first conversion, which only computes the token list for the trades), then
+`PreScaricaPrezziSimboli(SimboliDaMovimenti(…), …, "Binance")`, then the real conversion. A new API importer that prices
+during conversion can reuse the same three steps.
+
 **The remote path reads on-chain DEX prices (Fase 1-bis, 2026-08-25) and is opt-in — see `ServizioPrezziClient.OPZIONE_ABILITATO_DEFAULT`.** The old CCXT-based shared cache was retired entirely (all seven configured exchanges were confirmed, from their own published API terms, to forbid redistributing market data to third parties even for non-commercial use — see `nocommit/Documentazione/Analisi_VPS_Prezzi_Sito.md`). The replacement reads prices directly from DEX pool state (`ServizioPrezzi/src/onchain/`), which is nobody's market data. It was briefly switched on by default on 2026-08-26, once the `/v1/monete` transparency endpoint (below) made the service's coverage independently checkable, then reverted to disabled-by-default the same day at the user's request pending further testing — do not flip `OPZIONE_ABILITATO_DEFAULT` back to `"SI"` without asking. It's still a checkbox in *Opzioni → Opzioni di Calcolo* (`Prezzi_Opzioni_CheckBox_ServizioOnchain`), persisted as `ServizioPrezziClient.OPZIONE_ABILITATO` in `personale.mv.db`. Tests override it with the `prezzi.servizio.abilitato` system property.
 
 `CambioXXXEUR` tries a remote pull-through cache (`ServizioPrezziClient.tentaRecupero`) before the
@@ -794,7 +893,9 @@ the analysis depends on: presence is judged per **unit** (what the import would 
 `Ex_OKX_Raggruppa` group together, every other row alone), never per bill, because a multi-fill order's `[24]` cites only
 some bill ids; a unit absent from the archive is **certain** only if registered, otherwise **uncertain** (it may be a
 movement the user deleted: on `test/2025`, 498 such units); a unit partly in the archive with a registered leg is **mixed**
-and only reported. The re-reading must repeat the import's own pre-processing of the rows: bill dedup and `AbbinaLiquidStakingOnChain` with the `staking_storico` of the document's `OKX_Earn` answers — without it a `type 330` looked like a recoverable swap with only its incoming leg (found on the reporting user's backup: 43 OKSOL from nothing). Any new step the import applies to the rows before `Ex_OKX_ImportaDaAPI` must be mirrored in `ScartiImport.LeggiRigheOKX` (and `VERSIONE_RILETTORE_OKX` bumped). The analysis never consolidates (that fetches prices): `Ex_OKX_Raggruppa` was split out of
+and only reported — "partly" meaning a registered bill really is missing: recovered units are marked `RECUPERATO`
+(until 2026-10-09 they stayed `ATTESA` and came back as mixed at the next map change, telling the user to fix correct
+movements), and a unit whose registered bills are all in the archive is imported, not mixed. The re-reading must repeat the import's own pre-processing of the rows: bill dedup and `AbbinaLiquidStakingOnChain` with the `staking_storico` of the document's `OKX_Earn` answers — without it a `type 330` looked like a recoverable swap with only its incoming leg (found on the reporting user's backup: 43 OKSOL from nothing). Any new step the import applies to the rows before `Ex_OKX_ImportaDaAPI` must be mirrored in `ScartiImport.LeggiRigheOKX` (and `VERSIONE_RILETTORE_OKX` bumped). The analysis never consolidates (that fetches prices): `Ex_OKX_Raggruppa` was split out of
 `Ex_OKX_RaggruppaEConsolida` for it, and only confirmed units go through `Ex_OKX_ImportaDaAPI`, with `[41]` = the original
 document. Recovery is **always confirmed** (`GUI_RecuperoScarti`; certain pre-ticked, uncertain not, unticked and mixed
 become `IGNORATO` and are never proposed again, "Chiedi più tardi" marks nothing). It runs after every API download
@@ -811,12 +912,37 @@ Funding bill `type` 325 "Transfer from exchange to smart wallet", which carries 
 in `asset/withdrawal-history` (checked). For each 325 bill the public node `rpc.xlayer.tech` (no key, `eth_getLogs`
 max 100 blocks, ~1 block/s) is searched from 2 min before to 15 min after for a transfer of the same coin and exact
 amount whose recipient answers `entryPoint()` with a known EntryPoint; several bills must agree, else nothing is
-chosen. The address is stored in the personal option `OKX_WalletCarta.OPZIONE_WALLET` and shown in *Exchange API →
-Particolarità OKX* — not in `WALLETS`, because the program does not support X Layer yet (Etherscan v2 and Routescan
-don't cover it). On the user's account the USDG went on to Aave V3 on X Layer (`aXlrUSDG`, rebasing). How to read
-X Layer without keys (public node capped at 100 blocks/`eth_getLogs` and ~5 req/s, so a state-bisection scan via
-Multicall3) and the questions still open until a real card payment exists are in
-`nocommit/Documentazione/Analisi_Carta_OKX_XLayer.md`.
+chosen. The address is stored in the personal option `OKX_WalletCarta.OPZIONE_WALLET`, shown in *Exchange API →
+Particolarità OKX*, and since 2026-10-09 also registered in `WALLETS` as rete `XLAYER`, in OKX's wallet group if it has
+none (`OKX_WalletCarta.Registra`: the user's choice, the card is part of the OKX account). Registration happens when the
+address is first found, and once at startup for an address found earlier (`OPZIONE_REGISTRATO`), so a wallet removed by
+hand does not come back. ⚠️ The API download searches only the 325 bills it downloads: a 325 that arrives through the
+scarti recovery (the real case: the 04/10 bill predates the 325 mapping) never passes there, so `OKX_CartaAbbina.Abbina`
+also searches the wallet from the archive's unpaired 325 rows when the option is empty.
+
+**X Layer is imported from the public node, not from an explorer** (`Trans_XLayer`, 2026-10-09). No free explorer
+covers it, so the wallet's **state** (ERC-4337 nonce, balances of the coins in `Trans_XLayer.TOKEN`, `scaledBalanceOf`
+of aTokens, OKB) is read with one `eth_call` to Multicall3 and bisected until a changed stretch is ≤ 100 blocks, where
+`eth_getLogs` runs: ~20 requests per movement whatever the time elapsed. Only the listed coins are seen and native OKB
+moves are only reported, so a generic X Layer wallet would be incomplete. `Mappa_ChainExplorer[0]` holds the node, not
+an explorer, and the DeFi dispatcher branches to it **before** every ApiKey check. Rows are built by the importer
+(`TransazioneDefi.RighePronte`), because `TransazioneDefi` sums tokens by address and in a card payment the Aave
+interest and the aToken spent would net into one movement. Classification, by the user's decisions (2026-10-09):
+Aave interest (`balanceIncrease` of the aToken `Mint`/`Burn`, **not** the `Transfer` from `0x0`) is a REWARD numbered
+before the movement of the same tx, so it sorts first and the LIFO consumes it; a card payment (`Claimed` event with
+the wallet as `from`, pulled by OKX's settlement contract **without** a UserOperation: the nonce does not move) is a
+CASHOUT at the settlement instant (cash principle) priced as USDG; everything else follows the shape of the tx. Top-ups
+and cashback arrive from the same OKX hot wallet, so `OKX_CartaAbbina` (run after every OKX import and recovery and
+after an X Layer update, whole archive, idempotent) pairs the 325 bill (OKX_Tipi 1.005 "Transfer to smart wallet") with
+the deposit of the same coin and amount (PTW/DTW), and marks as CASHBACK a deposit from an already-paired sender only
+once the OKX archive reaches past it. An OKX API download in *Exchange API* also updates the card wallet
+(`Trans_XLayer.AggiornaWalletCarta`, from the highest `[23]` of its rows, own "DeFi" source document, all or nothing),
+**after** the scarti recovery, because the wallet may have just been found from a recovered 325 (user's choice). aXlrUSDG is priced as USDG by an `alias` with `tipo: "ricevuta"`,
+`riferimento: false`: aliases only change the price, the movement keeps its own symbol and LIFO. Measurements, the real
+payment and the simulation are in `nocommit/Documentazione/Analisi_Carta_OKX_XLayer.md`.
+
+**Testing an unpublished `config/` change in the app needs `-Dconfig.nonAllineare=true`**: the startup alignment
+compares by git blob sha and overwrites any local edit with GitHub's copy seconds after launch.
 
 Full mechanics (quarter-list bounding by `startDate`, suspended-quarter recovery, `OKX_Tipi.json`
 data-driven type codes, CCXT rate-limit costs, bugs C8/C9/C12/C13/C14 in detail) in

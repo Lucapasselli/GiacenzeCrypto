@@ -21,7 +21,7 @@ class LayoutColonneGiacenzeDettaglioTest {
     private static JTable tabella() {
         return new JTable(new DefaultTableModel(new Object[0][0], new String[]{
             "Data", "Wallet", "Moneta", "Address", "Tipo", "Qta", "Valore", "Qta Residua", "ID", "Saldi", "null", "null", "null",
-            "Costo Mov", "Prezzo", "Valore Res", "Costo Res", "Differenza"}));
+            "Costo Mov", "Prezzo", "Valore Res", "Costo Res", "Differenza", "Qta Blockchain"}));
     }
 
     private static List<Integer> modelliInVista(JTable t) {
@@ -37,6 +37,18 @@ class LayoutColonneGiacenzeDettaglioTest {
         JTable t = tabella();
         LayoutColonneMovimenti.applica(t, null, PROFILO);
         assertEquals(List.of(0, 1, 2, 3, 4, 5, 6, 13, 7, 14, 15, 16, 17), modelliInVista(t));
+    }
+
+    @Test
+    void laQtaBlockchainNonEDelLayoutNeSiSalva() {
+        JTable t = tabella();
+        //Anche un layout salvato che la cita non la mette in vista: la gestisce Principale, solo per i wallet DeFi
+        LayoutColonneMovimenti.applica(t, LayoutColonneMovimenti.fromJson(
+                "{\"v\":1,\"col\":[{\"m\":0},{\"m\":18},{\"m\":7}]}", PROFILO), PROFILO);
+        assertEquals(List.of(0, 7, 5), modelliInVista(t));
+        t.getColumnModel().addColumn(new javax.swing.table.TableColumn(18, 110));
+        assertFalse(LayoutColonneMovimenti.daTabella(t, PROFILO).ordine().contains(18));
+        assertFalse(LayoutColonneMovimenti.colonneOffribili(PROFILO).contains(18));
     }
 
     @Test

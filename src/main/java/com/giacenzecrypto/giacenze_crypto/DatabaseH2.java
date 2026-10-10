@@ -110,6 +110,18 @@ public class DatabaseH2 {
                         "PRIMARY KEY (timestamp, symbol, rete, address)" +
                         ")");
 
+            //Prezzi giornalieri del grafico delle giacenze (PrezziGiornalieri): una quotazione per moneta e giorno UTC.
+            //Tabella a parte di proposito: in PrezziNew un'apertura giornaliera diventerebbe la quotazione piu'
+            //vicina di qualche valorizzazione fiscale. Nessun calcolo la legge. "moneta" e' il simbolo per le monete
+            //prezzate dagli exchange, "rete:address" per i token prezzati da DefiLlama.
+            EseguiDDL(connectionPrezzi, "CREATE TABLE IF NOT EXISTS PrezziGiornalieri (" +
+                        "moneta VARCHAR(300) NOT NULL, " +
+                        "giorno BIGINT NOT NULL, " +
+                        "prezzo DOUBLE NOT NULL, " +
+                        "fonte VARCHAR(100) NOT NULL, " +
+                        "PRIMARY KEY (moneta, giorno)" +
+                        ")");
+
             //Giorni (yyyyMMdd, fuso Europe/Rome) per cui le quotazioni dei 7 exchange CCXT sono
             //gia' state scaricate per intero: marcatore persistente usato da Prezzi.CambioXXXEUR
             //per non rilanciare Node a ogni richiesta. Il giorno corrente non viene mai scritto.
@@ -221,6 +233,7 @@ public class DatabaseH2 {
             createTableSQL = "CREATE TABLE IF NOT EXISTS PROVIDERDEFI (Rete VARCHAR(20) PRIMARY KEY, Provider VARCHAR(50), UrlCustom VARCHAR(500))";
             EseguiDDL(connection, createTableSQL);
             ProviderDefi_MigraGnosisSuBlockscout();
+            ProviderDefi_MigraBaseSuNodoPubblico();
 
             createTableSQL = "CREATE TABLE IF NOT EXISTS GIACENZEBLOCKCHAIN (Wallet_Blocco VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
             EseguiDDL(connectionPersonale, createTableSQL);
@@ -2956,6 +2969,40 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
             }
             if (Spostate > 0) {
                 LoggerGC.logInfo("Preferenza provider DeFi di GNOSIS spostata su Blockscout: Etherscan non sarà più gratuito per questa chain dal 01/09/2026.");
+            }
+            Opzioni_Scrivi(OPZIONE, VALORE);
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+    /**
+     * Migrazione una tantum: riporta BASE sul provider predefinito (i nodi pubblici, {@link NodoPubblicoDefi}) per chi
+     * aveva una riga BASE-&gt;BLOCKSCOUT salvata. Dal 10/10/2026 la PRO API di Blockscout risponde 402 su Base anche con
+     * la chiave gratuita, e la riga salvata vincerebbe sul nuovo default lasciando l'importazione rotta.
+     * <p>
+     * Stessa logica di {@link #ProviderDefi_MigraGnosisSuBlockscout}: il Salva delle preferenze scrive tutte le righe
+     * con l'URL di default in colonna, quindi si cancella la riga quando l'URL e' vuoto o e' quello di default, e si
+     * lascia stare chi ha indicato un'istanza Blockscout sua. Le righe MORALIS non si toccano: Moralis non e' piu'
+     * gratuito, ma chi lo ha scelto puo' avere un piano a pagamento.
+     */
+    private static void ProviderDefi_MigraBaseSuNodoPubblico() {
+        final String OPZIONE = "MigrazioneProviderDefi_Base";
+        final String VALORE = "SI-NODOPUBBLICO";
+        final String URL_DEFAULT = "https://base.blockscout.com/api";
+        try {
+            if (VALORE.equals(Opzioni_Leggi(OPZIONE))) {
+                return;
+            }
+            String sql = "DELETE FROM PROVIDERDEFI WHERE UPPER(Rete)='BASE' AND UPPER(Provider)='BLOCKSCOUT'"
+                    + " AND (UrlCustom IS NULL OR TRIM(UrlCustom)='' OR TRIM(UrlCustom)=?)";
+            int Spostate;
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setString(1, URL_DEFAULT);
+                Spostate = ps.executeUpdate();
+            }
+            if (Spostate > 0) {
+                LoggerGC.logInfo("Preferenza provider DeFi di BASE riportata sui nodi pubblici: Blockscout non e' piu' gratuito per questa chain dal 10/10/2026.");
             }
             Opzioni_Scrivi(OPZIONE, VALORE);
         } catch (SQLException ex) {

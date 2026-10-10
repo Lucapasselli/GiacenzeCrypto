@@ -5489,7 +5489,9 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
                 String messaggioErrore = Risposta.isBlank() ? "(nessun dettaglio nella risposta)" : Risposta;
                 try {
                     JSONObject jsonErrore = new JSONObject(Risposta);
-                    messaggioErrore = jsonErrore.optString("message","") + ": " + jsonErrore.optString("result","");
+                    //Blockscout PRO API risponde {"error": "..."} invece della coppia message/result
+                    messaggioErrore = jsonErrore.has("error") ? jsonErrore.optString("error", "")
+                            : jsonErrore.optString("message","") + ": " + jsonErrore.optString("result","");
                 } catch (Exception ignore) {
                     //body non in formato JSON: uso il testo grezzo già assegnato sopra
                 }
@@ -6656,7 +6658,11 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
         //   prescindere dalla chiave: il piano gratuito non esiste piu' per nessuno, quindi tenere
         //   Moralis come default per chi ha gia' una chiave non evita piu' un'interruzione silenziosa,
         //   la garantisce. NodeReal e' quindi il default incondizionato di BSC, come per BASE/AVAX.
-        if (Rete.equalsIgnoreCase("BASE") || Rete.equalsIgnoreCase("AVAX")) return "BLOCKSCOUT";
+        // - BASE (uscita da Blockscout il 10/10/2026): la PRO API risponde 402 "Featured chain 8453 requires one
+        //   of the following plans" anche con la chiave gratuita, l'istanza e' dietro la verifica Cloudflare,
+        //   Etherscan e Routescan non la danno gratis. Si legge dai nodi pubblici (NodoPubblicoDefi).
+        if (Rete.equalsIgnoreCase("BASE")) return NodoPubblicoDefi.PROVIDER;
+        if (Rete.equalsIgnoreCase("AVAX")) return "BLOCKSCOUT";
         if (Rete.equalsIgnoreCase("BSC")) return NodeRealDefi.PROVIDER;
         if (Rete.equalsIgnoreCase("SOL")) return "HELIUS";
         if (Rete.equalsIgnoreCase("BTC")) return "BITCOIN";
@@ -6674,6 +6680,9 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
      * riprovare piu' tardi, che non serve: senza chiave non funzionera' mai. Con una ApiKey Blockscout salvata
      * l'importazione passa dalla PRO API ({@link #DeFi_ProviderBlockscoutProUrl}).
      *
+     * <p>Dal 10/10/2026 nemmeno quella basta per BASE e POL: la PRO API risponde 402 ("Featured chain ... requires
+     * one of the following plans"), e il testo lo dice invece di invitare a riprovare.
+     *
      * @param risposta corpo grezzo della risposta
      * @param dettaglio dettaglio gia' estratto dal JSON di errore, o il corpo grezzo
      * @param conChiave se la richiesta portava una ApiKey
@@ -6687,6 +6696,14 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
             host = java.net.URI.create(dominio).getHost();
         } catch (RuntimeException ex) {
             //dominio non valido come URI: si mostra com'e'
+        }
+        //Dal 10/10/2026 la PRO API risponde 402 "Featured chain 8453 requires one of the following plans: Builder,
+        //Business, Pro" anche con una ApiKey gratuita valida: BASE e POL (137) sono passate ai soli piani a
+        //pagamento. Riprovare o inserire una chiave gratuita non serve, e va detto.
+        if (codice == 402 || corpo.toLowerCase().contains("requires one of the following plans")) {
+            return "L'explorer " + host + " ha rifiutato la richiesta (HTTP " + codice + "): per questa rete "
+                    + "Blockscout fornisce i dati solo con un piano a pagamento, la ApiKey gratuita non basta.\n"
+                    + "Dettaglio del server: " + dettaglio;
         }
         if ((codice == 401 || codice == 403) && !conChiave && (paginaWeb || chiedeChiave)) {
             return "L'explorer " + host + " ha rifiutato la richiesta (HTTP " + codice + "): senza ApiKey non permette "
@@ -6936,7 +6953,8 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
 
             } 
             else if ((Rete.equalsIgnoreCase("BSC")||Rete.equalsIgnoreCase("BASE")||Rete.equalsIgnoreCase("AVAX"))
-                    && !Provider.equals("BLOCKSCOUT") && !Provider.equals(NodeRealDefi.PROVIDER)) {
+                    && !Provider.equals("BLOCKSCOUT") && !Provider.equals(NodeRealDefi.PROVIDER)
+                    && !Provider.equals(NodoPubblicoDefi.PROVIDER)) {
 
                     //Se ho dei portafogli non gestiti da etherscan li passo alla funzione che si occupa di cercare i dati su Moralis
             String moralisApiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Moralis");
@@ -7047,6 +7065,7 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
 
             }
             else if (!Provider.equals("BLOCKSCOUT") && !Provider.equals(NodeRealDefi.PROVIDER)
+                    && !Provider.equals(NodoPubblicoDefi.PROVIDER)
                     && !Rete.equalsIgnoreCase("CRO")&&!Funzioni.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))){
                 //Stessa distinzione applicata a Moralis/NodeReal/Cronos (bug segnalato 2026-09-15): chiave
                 //assente e chiave presente-ma-verifica-fallita sono casi diversi e non vanno confusi
@@ -7081,6 +7100,9 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                 } else if (Provider.equals("BLOCKSCOUT")) {
                     apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Blockscout");
                     Indirizzo = DeFi_ProviderBlockscoutUrl(Rete);
+                } else if (Provider.equals(NodoPubblicoDefi.PROVIDER)) {
+                    //Nodi pubblici: nessuna chiave, gli indirizzi stanno in NodoPubblicoDefi.RETI
+                    apiKey = "";
                 } else if (Provider.equals(NodeRealDefi.PROVIDER)) {
                     //NodeReal non ha un "dominio explorer": l'endpoint lo compone NodeRealDefi dalla rete
                     //e dalla chiave, che sta in un segmento di percorso e non in un parametro
@@ -7103,6 +7125,7 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                 Object Risposta[];
                 if (usaCronoscanLegacy)Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "txlist", Blocco, apiKey, ccc, progressb);
                 else if (Provider.equals(NodeRealDefi.PROVIDER)) Risposta = NodeRealDefi.Scarica(apiKey, Rete, walletAddress, "txlist", Blocco, ccc, progressb);
+                else if (Provider.equals(NodoPubblicoDefi.PROVIDER)) Risposta = NodoPubblicoDefi.Scarica(Rete, walletAddress, "txlist", Blocco, ccc, progressb);
                 else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "txlist", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
@@ -7114,6 +7137,7 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                 progressb.SetMessaggioAvanzamento("Preparazione fase 2 di 5");
                 if (usaCronoscanLegacy)Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "tokentx", Blocco, apiKey, ccc, progressb);
                 else if (Provider.equals(NodeRealDefi.PROVIDER)) Risposta = NodeRealDefi.Scarica(apiKey, Rete, walletAddress, "tokentx", Blocco, ccc, progressb);
+                else if (Provider.equals(NodoPubblicoDefi.PROVIDER)) Risposta = NodoPubblicoDefi.Scarica(Rete, walletAddress, "tokentx", Blocco, ccc, progressb);
                 else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "tokentx", Blocco, apiKey, ccc, progressb);
                  if (Risposta == null) {
                     return null;//se in errore termino il ciclo
@@ -7125,6 +7149,7 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                 progressb.SetMessaggioAvanzamento("Preparazione fase 3 di 5");
                 if (usaCronoscanLegacy)Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "tokennfttx", Blocco, apiKey, ccc, progressb);
                 else if (Provider.equals(NodeRealDefi.PROVIDER)) Risposta = NodeRealDefi.Scarica(apiKey, Rete, walletAddress, "tokennfttx", Blocco, ccc, progressb);
+                else if (Provider.equals(NodoPubblicoDefi.PROVIDER)) Risposta = NodoPubblicoDefi.Scarica(Rete, walletAddress, "tokennfttx", Blocco, ccc, progressb);
                 else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "tokennfttx", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
@@ -7136,6 +7161,7 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                 progressb.SetMessaggioAvanzamento("Preparazione fase 4 di 5");
                 if (usaCronoscanLegacy)Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "token1155tx", Blocco, apiKey, ccc, progressb);
                 else if (Provider.equals(NodeRealDefi.PROVIDER)) Risposta = NodeRealDefi.Scarica(apiKey, Rete, walletAddress, "token1155tx", Blocco, ccc, progressb);
+                else if (Provider.equals(NodoPubblicoDefi.PROVIDER)) Risposta = NodoPubblicoDefi.Scarica(Rete, walletAddress, "token1155tx", Blocco, ccc, progressb);
                 else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "token1155tx", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
@@ -7147,6 +7173,7 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                 progressb.SetMessaggioAvanzamento("Preparazione fase 5 di 5");
                 if (usaCronoscanLegacy)Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "txlistinternal", Blocco, apiKey, ccc, progressb);
                 else if (Provider.equals(NodeRealDefi.PROVIDER)) Risposta = NodeRealDefi.Scarica(apiKey, Rete, walletAddress, "txlistinternal", Blocco, ccc, progressb);
+                else if (Provider.equals(NodoPubblicoDefi.PROVIDER)) Risposta = NodoPubblicoDefi.Scarica(Rete, walletAddress, "txlistinternal", Blocco, ccc, progressb);
                 else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "txlistinternal", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
@@ -7206,7 +7233,11 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                     trans.Wallet = walletAddress;
                     BigDecimal gasUsed = new BigDecimal(transaction.getString("gasUsed"));
                     BigDecimal gasPrice = new BigDecimal(transaction.getString("gasPrice"));
-                    String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
+                    //I nodi pubblici (NodoPubblicoDefi) mandano la commissione intera in "commissioneWei": sulle reti
+                    //OP-stack gasUsed x gasPrice non comprende la quota L1. Gli altri provider non hanno il campo.
+                    BigDecimal commissioneWei = transaction.has("commissioneWei") ? new BigDecimal(transaction.getString("commissioneWei"))
+                            : gasUsed.multiply(gasPrice);
+                    String qtaCommissione = commissioneWei.multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
                     trans.QtaCommissioni = null;
                     //trans.QtaCommissioni = "-" + qtaCommissione;
                     //Blockscout, a differenza di Etherscan, non sempre include "functionName" nella risposta

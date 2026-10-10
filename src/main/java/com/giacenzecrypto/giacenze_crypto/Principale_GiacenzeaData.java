@@ -144,6 +144,27 @@ public class Principale_GiacenzeaData {
             BigDecimal GiacenzaAttuale = new BigDecimal(GiacenzaAttualeS);
             BigDecimal GiacenzaVoluta = new BigDecimal(0);
             BigDecimal QtaNuovoMovimento;
+
+            //Dettaglio di "Giacenze a data" con la colonna della blockchain: se il saldo letto e' diverso si propone la
+            //giacenza che allinea l'archivio, a fine del secondo del movimento, al saldo a fine blocco
+            String TestoBlockchain = "";
+            if (TabMovimenti.getModel().getColumnCount() > 18
+                    && TabMovimenti.getClientProperty(Tabelle.PROP_CONFRONTO_BLOCKCHAIN) instanceof Map<?, ?> Confronto) {
+                Object Archivio = Confronto.get(IDTrans);
+                Object Blockchain = TabMovimenti.getModel().getValueAt(rigaselezionata, 18);
+                BigDecimal Proposta = GiacenzeBlockchain.GiacenzaPerAllineare(GiacenzaAttualeS, Archivio, Blockchain);
+                if (Proposta != null) {
+                    GiacenzaVoluta = Proposta;
+                    TestoBlockchain = """
+
+                        Sulla blockchain, alla fine del blocco di questo movimento, la giacenza è <b>%s</b>, \
+                        nell'archivio, dopo tutti i movimenti dello stesso blocco, è %s. \
+                        Il campo propone la giacenza che le fa coincidere%s.
+                        """.formatted(Blockchain.toString().trim(), Archivio.toString().trim(),
+                            new BigDecimal(Archivio.toString().trim()).compareTo(GiacenzaAttuale) == 0 ? ""
+                            : " (il blocco ha altri movimenti dopo questo, che restano come sono)");
+                }
+            }
             
             if (Wallet==null || !Wallet.equalsIgnoreCase("tutti")){
             boolean isFiat = TipoMoneta.equalsIgnoreCase("FIAT");
@@ -165,7 +186,7 @@ public class Principale_GiacenzeaData {
         .details("""
                 Indica nel campo sottostante la giacenza che il token %s
                 dovrà avere al termine dell'operazione.
-                """.formatted(Moneta))
+                """.formatted(Moneta) + TestoBlockchain)
         .inputField("Nuova giacenza", GiacenzaVoluta.toPlainString())
         .inputColumns(18)
         .action(AppDialog.DialogAction.builder("cancel", "Annulla")
@@ -1141,8 +1162,13 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
         public final String[] Intestazioni;
         /** Una riga per livello e momento (prima e dopo), con le stesse colonne delle intestazioni. */
         public final List<String[]> Righe = new ArrayList<>();
-        /** Avvertenza sul costo di carico, vuota se non serve. */
+        /** Avvertenze (costo di carico, righe della blockchain), vuota se non serve. */
         public final String Nota;
+        /**
+         * Per ogni riga di {@link #Righe}: per quelle della blockchain se la quantita' coincide con la giacenza
+         * dell'archivio del wallet allo stesso confine, {@code null} per le altre e per quelle non confrontabili.
+         */
+        public final List<Boolean> Confronto = new ArrayList<>();
 
         private TabellaGiacenzeMoneta(GiacenzeMoneta M, String Prezzo, String[] Intestazioni, String Nota) {
             this.Moneta = M.Moneta;
@@ -1169,6 +1195,16 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
      * Come {@link #TabelleDettaglio(String)}, a partire da giacenze già calcolate.
      */
     public static List<TabellaGiacenzeMoneta> TabelleDettaglio(String ID, List<GiacenzeMoneta> Giacenze) {
+        return TabelleDettaglio(ID, Giacenze, null);
+    }
+
+    /**
+     * Come {@link #TabelleDettaglio(String, List)}, con in coda le due righe della giacenza sulla blockchain (fine
+     * del blocco precedente e fine del blocco del movimento) per le monete che le hanno.
+     * @param Blockchain i saldi letti o in lettura, {@code null} se il movimento non li ha
+     */
+    public static List<TabellaGiacenzeMoneta> TabelleDettaglio(String ID, List<GiacenzeMoneta> Giacenze,
+            GiacenzeBlockchain.SaldiMovimento Blockchain) {
         List<TabellaGiacenzeMoneta> Risultato = new ArrayList<>();
         String[] Mov = MappaCryptoWallet.get(ID);
         if (Mov == null) {
@@ -1185,8 +1221,22 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                 Nota = "Prelievo verso un wallet proprio: se la destinazione è in un altro gruppo, "
                         + "il costo di carico lascia questo gruppo solo all'arrivo.";
             }
+            boolean ConBlockchain = Blockchain != null && Blockchain.Contiene(M.Chiave);
+            if (ConBlockchain && !Blockchain.inLettura()) {
+                //Breve: la nota e' una riga sola sotto un riquadro stretto (il testo intero e' nel suggerimento)
+                //Il colore confronta il sotto-wallet dell'indirizzo prima e dopo tutto il secondo del movimento: il blocco
+                //contiene anche gli altri movimenti della stessa transazione (commissione, scambio...)
+                String NotaChain = "Blockchain a fine blocco " + (Blockchain.blocco() - 1) + " e " + Blockchain.blocco()
+                        + ", confrontata col sotto-wallet " + GiacenzeBlockchain.SOTTOWALLET_INDIRIZZO
+                        + (Blockchain.altriMovimenti() > 0 ? " (con gli altri " + Blockchain.altriMovimenti()
+                                + " movimenti del blocco)" : "")
+                        + ": " + Blockchain.Archivio(M.Chiave, false).stripTrailingZeros().toPlainString() + " / "
+                        + Blockchain.Archivio(M.Chiave, true).stripTrailingZeros().toPlainString() + ".";
+                Nota = Nota.isEmpty() ? NotaChain : Nota + " " + NotaChain;
+            }
             TabellaGiacenzeMoneta T = new TabellaGiacenzeMoneta(M,
-                    M.PrezzoUnitario == null ? "non disponibile" : "€ " + M.PrezzoUnitario.toPlainString(),
+                    M.PrezzoUnitario == null ? "non disponibile" : "€ " + M.PrezzoUnitario
+                            .round(new java.math.MathContext(10, RoundingMode.HALF_UP)).stripTrailingZeros().toPlainString(),
                     Intestazioni, Nota);
             for (int l = 0; l < 3; l++) {
                 if (Etichette[l].isBlank()) {
@@ -1194,6 +1244,30 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                 }
                 T.Righe.add(RigaGiacenza(M, Etichette[l], "prima", M.QtaPrima[l], M.CostoPrima[l]));
                 T.Righe.add(RigaGiacenza(M, "", "dopo", M.QtaDopo[l], M.CostoDopo[l]));
+                T.Confronto.add(null);
+                T.Confronto.add(null);
+            }
+            if (ConBlockchain) {
+                for (boolean Dopo : new boolean[]{false, true}) {
+                    String Qta = Blockchain.Testo(M.Chiave, Dopo);
+                    String Controvalore = "";
+                    try {
+                        if (M.PrezzoUnitario != null) {
+                            Controvalore = "€ " + M.PrezzoUnitario.multiply(new BigDecimal(Qta))
+                                    .setScale(2, RoundingMode.HALF_UP).toPlainString();
+                        }
+                    } catch (NumberFormatException ex) {
+                        //quantita' non letta: nessun controvalore
+                    }
+                    String[] Riga = new String[Intestazioni.length];
+                    java.util.Arrays.fill(Riga, M.isFiat() ? "" : "-");
+                    Riga[0] = Dopo ? "" : "Blockchain";
+                    Riga[1] = Dopo ? "dopo" : "prima";
+                    Riga[2] = Qta;
+                    Riga[3] = Controvalore;
+                    T.Righe.add(Riga);
+                    T.Confronto.add(Blockchain.inLettura() ? null : Blockchain.Coincide(M.Chiave, Dopo));
+                }
             }
             Risultato.add(T);
         }
@@ -1753,6 +1827,93 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
         String wallet = "";
         String sottoWallet = "";
         boolean interrotto = false;
+    }
+
+    /**
+     * Le quantita' per moneta della scheda "Giacenze a data", prima di prezzi e costi: somma le gambe in uscita e in
+     * entrata dei movimenti anteriori a {@code DataRiferimento} che passano il filtro di wallet e sotto-wallet (o
+     * del gruppo, se {@code Wallet} e' {@code "Gruppo : ..."}). La chiave e' {@code Moneta;Tipo;Address;Rete}.
+     * Estratta tale e quale da {@code Principale.GiacenzeaData_CompilaTabellaToken} il 10/10/2026 perche' anche
+     * il confronto delle giacenze di BASE (nodo pubblico contro archivio) usasse la stessa somma della scheda.
+     *
+     * @param DataRiferimento istante escluso (la scheda passa la mezzanotte del giorno dopo la data scelta)
+     */
+    public static Map<String, Moneta> SommaQuantitaAData(java.util.Collection<String[]> Movimenti, long DataRiferimento,
+            String Wallet, String SottoWallet) {
+        Map<String, Moneta> QtaCrypto = new java.util.TreeMap<>();//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
+        for (String[] movimento : Movimenti) {
+            //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
+            //altrimenti non vado avanti
+            String Rete = Funzioni.TrovaReteDaIMovimento(movimento);
+          //  System.out.println(movimento[0]+" - "+Rete);
+            //System.out.println(Rete);
+            long DataMovimento = FunzioniDate.ConvertiDatainLong(movimento[1]);
+            if (DataMovimento < DataRiferimento) {
+                // adesso verifico il wallet
+                String gruppoWallet = "";
+                if (Wallet.contains("Gruppo :")) {
+                    gruppoWallet = Wallet.split(" : ")[1].split("\\(")[0].trim();
+                }
+                if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
+                        || (Wallet.equalsIgnoreCase(movimento[3].trim()) && SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
+                        || (Wallet.equalsIgnoreCase(movimento[3].trim()) && SottoWallet.equalsIgnoreCase(movimento[4].trim()))//Se wallet e sottowallet corrispondono a quelli analizzati proseguo
+                        || DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3],true).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
+                        ) {
+                    // GiacenzeaData_Wallet_ComboBox.getSelectedItem()
+                    //Faccio la somma dei movimenti in usicta
+                    Moneta Monete[] = new Moneta[2];//in questo array metto la moneta in entrata e quellain uscita
+                    //in paricolare la moneta in uscita nella posizione 0 e quella in entrata nella posizione 1
+                    Monete[0] = new Moneta();
+                    Monete[1] = new Moneta();
+                    Monete[0].MonetaAddress = movimento[26];
+                    Monete[1].MonetaAddress = movimento[28];
+                    //ovviamente gli address se non rispettano le 2 condizioni precedenti sono null
+                    Monete[0].Moneta = movimento[8];
+                    Monete[0].Tipo = movimento[9];
+                    Monete[0].Qta = movimento[10];
+                    Monete[0].Rete = Rete;
+                    Monete[1].Moneta = movimento[11];
+                    Monete[1].Tipo = movimento[12];
+                    Monete[1].Qta = movimento[13];
+                    Monete[1].Rete = Rete;
+                    //Se non c'è l'address della moneta allora la rete non la metto visto che non è importante
+                    //Stessa cosa se non ho la rete non mi serve mettere l'address
+                    if (Rete == null||Rete.isBlank()){
+                       Monete[0].MonetaAddress="";
+                       Monete[1].MonetaAddress="";
+                       Monete[0].Rete="";
+                       Monete[1].Rete="";
+                       Rete = "";
+                    }
+                    if(Monete[0].MonetaAddress.isBlank()&&Monete[1].MonetaAddress.isBlank()){
+                     /*  Rete = "";
+                       Monete[0].Rete="";
+                       Monete[1].Rete="";*/
+                    }
+
+                    //questo ciclo for serve per inserire i valori sia della moneta uscita che di quella entrata
+                    for (int a = 0; a < 2; a++) {
+                        //ANALIZZO MOVIMENTI
+                        if (!Monete[a].Moneta.isBlank() && QtaCrypto.get(Monete[a].Moneta + ";" + Monete[a].Tipo + ";" + Monete[a].MonetaAddress + ";" + Rete) != null) {
+                            //Movimento già presente da implementare
+                            Moneta M1 = QtaCrypto.get(Monete[a].Moneta + ";" + Monete[a].Tipo + ";" + Monete[a].MonetaAddress + ";" + Rete);
+                            M1.Qta = new BigDecimal(M1.Qta)
+                                    .add(new BigDecimal(Monete[a].Qta)).stripTrailingZeros().toPlainString();
+
+                        } else if (!Monete[a].Moneta.isBlank()) {
+                            //Movimento Nuovo da inserire
+                            Moneta M1 = new Moneta();
+                            M1.InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
+                            M1.Rete = Rete;
+                          //  System.out.println("KEY=" + Monete[a].Moneta + ";" + Monete[a].Tipo + ";" + Monete[a].MonetaAddress + ";" + Rete);
+                            QtaCrypto.put(Monete[a].Moneta + ";" + Monete[a].Tipo + ";" + Monete[a].MonetaAddress + ";" + Rete, M1);
+
+                        }
+                    }
+                }
+            }
+        }
+        return QtaCrypto;
     }
 
     /** Soglia minima (in euro) del valore di un movimento perché il suo prezzo unitario sia considerato affidabile. */

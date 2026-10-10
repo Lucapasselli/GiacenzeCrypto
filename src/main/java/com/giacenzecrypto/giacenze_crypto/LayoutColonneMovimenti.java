@@ -103,14 +103,15 @@ public final class LayoutColonneMovimenti {
     public static final String OPZIONE_GIACENZE_DETTAGLIO = "GiacenzeaData_Dettaglio_LayoutColonne";
 
     /**
-     * La tabella dettaglio movimenti di "Giacenze a data". Il model ha 18 colonne: 8-12 (ID, saldi negativi
+     * La tabella dettaglio movimenti di "Giacenze a data". Il model ha 19 colonne: 8-12 (ID, saldi negativi
      * precedenti e tre colonne "null") sono interne e non vengono mai mostrate; Data, Quantità e Qta Residua sono
-     * fisse. Il costo di carico del movimento (13) sta <b>prima</b> della Qta Residua (7) pur essendo in coda al
+     * fisse. La 18 (Qta Blockchain) non è del layout: la mette in vista e la toglie {@code Principale}, solo quando il
+     * wallet si può confrontare con la blockchain, quindi non si offre e non si salva. Il costo di carico del movimento (13) sta <b>prima</b> della Qta Residua (7) pur essendo in coda al
      * model: gli indici fissi di {@code Tabelle.ColoraRigheTabella1GiacenzeaData} e quelli letti da selezione e popup
      * non si spostano, si riordina solo la vista.
      */
     public static final Profilo PROFILO_GIACENZE_DETTAGLIO = new Profilo(OPZIONE_GIACENZE_DETTAGLIO,
-            List.of(8, 9, 10, 11, 12), List.of(0, 5, 7),
+            List.of(8, 9, 10, 11, 12, 18), List.of(0, 5, 7),
             List.of(0, 1, 2, 3, 4, 5, 6, 13, 7, 14, 15, 16, 17), 17,
             cm -> {
                 preferita(cm, 0, 130);   // Data

@@ -443,6 +443,12 @@ public class Tabelle {
         public static final String PROP_CONFRONTO_BLOCKCHAIN = "ConfrontoBlockchain";
 
         /**
+         * Proprieta' della tabella dettaglio di "Giacenze a data": da dove viene la colonna 18, {@code "OKX"} per le
+         * giacenze dell'exchange ({@link GiacenzeExchange}), assente per la blockchain. Cambia solo il suggerimento.
+         */
+        public static final String PROP_FONTE_CONFRONTO = "FonteConfronto";
+
+        /**
          * @param valore il testo di un importo, o {@code null}
          * @param normale il colore da usare se l'importo manca, non e' un numero o e' zero
          * @return verde scuro se positivo, rosso se negativo, altrimenti {@code normale}
@@ -575,7 +581,9 @@ public class Tabelle {
                         Object Archivio = Confronto.get(String.valueOf(table.getModel().getValueAt(modelRow, 8)));
                         Boolean Coincide = GiacenzeBlockchain.Coincide(Archivio, value);
                         if (Coincide != null) c.setForeground(Coincide ? verdeScuro : rosso);
-                        if (Archivio != null) setToolTipText("Qta Residua a fine blocco nell'archivio: " + Archivio);
+                        if (Archivio != null) setToolTipText(table.getClientProperty(PROP_FONTE_CONFRONTO) instanceof String Fonte
+                                ? "Qta Residua a fine secondo nell'archivio: " + Archivio + " (giacenza di " + Fonte + " alla stessa ora)"
+                                : "Qta Residua a fine blocco nell'archivio: " + Archivio);
                     }
                 }
             else if (table.getModel().getColumnCount()>4 && !table.getModel().getValueAt(modelRow, 5).toString().contains("-")) {
@@ -1829,8 +1837,10 @@ public static TableCellRenderer Tabelle_creaNuovoHeaderRenderer(
         Map<Integer, String> colSums = SommaColonne.get(table);
         String somma = (colSums != null) ? colSums.get(modelCol) : null;
 
-        // Testo header
-        String titolo = table.getColumnName(col);
+        // Testo header: quello della colonna se impostato (di norma e' il nome del model; la colonna di confronto
+        // di "Giacenze a data" lo cambia fra Blockchain e il nome dell'exchange), altrimenti il nome del model
+        Object intestazione = table.getColumnModel().getColumn(col).getHeaderValue();
+        String titolo = intestazione instanceof String t && !t.isBlank() ? t : table.getColumnName(col);
 
         if (somma != null&&!somma.isBlank()) {
             if (!titolo.toLowerCase().startsWith("<html>")) {

@@ -8419,14 +8419,25 @@ private void SettaIcone(){
      * vuota per ogni wallet che non si confronta, occuperebbe spazio quasi sempre.
      */
     private void GiacenzeaData_MostraColonnaBlockchainDettaglio(boolean Mostra) {
+        GiacenzeaData_MostraColonnaBlockchainDettaglio(Mostra, null);
+    }
+
+    /** @param Fonte il nome dell'exchange, {@code null} per la blockchain (l'intestazione del model) */
+    private void GiacenzeaData_MostraColonnaBlockchainDettaglio(boolean Mostra, String Fonte) {
         GiacenzeaData_DettaglioConBlockchain = Mostra;
         javax.swing.table.TableColumnModel cm = GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel();
         int Vista = GiacenzeaData_TabellaDettaglioMovimenti.convertColumnIndexToView(18);
+        Object Intestazione = Fonte == null ? GiacenzeaData_TabellaDettaglioMovimenti.getModel().getColumnName(18) : "Qta " + Fonte;
+        //L'intestazione si rimette anche se la colonna resta: da un wallet DeFi a OKX cambia la fonte
+        if (Mostra && Vista >= 0) {
+            cm.getColumn(Vista).setHeaderValue(Intestazione);
+            GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().repaint();
+        }
         if (Mostra == (Vista >= 0)) return;
         if (Mostra) {
             javax.swing.table.TableColumn Colonna = new javax.swing.table.TableColumn(18, 110);
             Colonna.setMinWidth(30);
-            Colonna.setHeaderValue(GiacenzeaData_TabellaDettaglioMovimenti.getModel().getColumnName(18));
+            Colonna.setHeaderValue(Intestazione);
             cm.addColumn(Colonna);
             cm.moveColumn(cm.getColumnCount() - 1, GiacenzeaData_TabellaDettaglioMovimenti.convertColumnIndexToView(7) + 1);
         } else {
@@ -8615,6 +8626,52 @@ private void SettaIcone(){
         }
     }
 
+    /**
+     * Le giacenze di OKX nel dettaglio movimenti: per ogni secondo delle righe, la giacenza a fine secondo ricostruita
+     * dai bill ({@link GiacenzeExchange#OKX()}), confrontata dal renderer con la Qta Residua a fine secondo come per
+     * la blockchain. Nessuna rete: il lavoro in background e' solo la lettura dei documenti, la prima volta.
+     */
+    private void GiacenzeaData_LeggiExchangeDettaglio(String Moneta, java.util.List<GiacenzeBlockchain.BloccoDettaglio> Secondi,
+            int Generazione) {
+        Map<String, String> Confronto = new java.util.HashMap<>();
+        for (GiacenzeBlockchain.BloccoDettaglio b : Secondi) {
+            for (String id : b.id()) Confronto.put(id, b.archivio());
+        }
+        GiacenzeaData_TabellaDettaglioMovimenti.putClientProperty(Tabelle.PROP_CONFRONTO_BLOCKCHAIN, Confronto);
+        GiacenzeaData_TabellaDettaglioMovimenti.putClientProperty(Tabelle.PROP_FONTE_CONFRONTO, GiacenzeExchange.OKX);
+        GiacenzeaData_MostraColonnaBlockchainDettaglio(true, GiacenzeExchange.OKX);
+        Thread t = new Thread(() -> {
+            java.util.List<String> Testi = new java.util.ArrayList<>();
+            try {
+                GiacenzeExchange.StoricoOKX s = GiacenzeExchange.OKX();
+                for (GiacenzeBlockchain.BloccoDettaglio b : Secondi) {
+                    if (Generazione != GiacenzeaData_GenerazioneDettaglio) return;
+                    String id = b.id().get(0);
+                    long FineSecondo = FunzioniDate.ConvertiDataIDinLong(id.substring(0, Math.min(14, id.length()))) + 1000;
+                    Testi.add(s == null ? GiacenzeBlockchain.NON_DISPONIBILE : s.Testo(Moneta, FineSecondo));
+                }
+            } catch (RuntimeException ex) {
+                LoggerGC.ScriviErrore(ex);
+            }
+            SwingUtilities.invokeLater(() -> {
+                if (Generazione != GiacenzeaData_GenerazioneDettaglio) return;
+                DefaultTableModel Modello = (DefaultTableModel) GiacenzeaData_TabellaDettaglioMovimenti.getModel();
+                for (int i = 0; i < Secondi.size(); i++) {
+                    GiacenzeBlockchain.BloccoDettaglio b = Secondi.get(i);
+                    String Testo = i < Testi.size() ? Testi.get(i) : GiacenzeBlockchain.NON_DISPONIBILE;
+                    for (int k = 0; k < b.righe().size(); k++) {
+                        int r = b.righe().get(k);
+                        if (r < Modello.getRowCount() && b.id().get(k).equals(String.valueOf(Modello.getValueAt(r, 8)))) {
+                            Modello.setValueAt(Testo, r, 18);
+                        }
+                    }
+                }
+            });
+        }, "GiacenzeExchange-Dettaglio");
+        t.setDaemon(true);
+        t.start();
+    }
+
     private void GiacenzeaData_CompilaTabellaMovimenti() {
         final int GenerazioneDettaglio = ++GiacenzeaData_GenerazioneDettaglio;
         //Intervallo coperto dalla cache dei prezzi: i movimenti che stanno fuori non la interrogano nemmeno
@@ -8632,6 +8689,7 @@ private void SettaIcone(){
         //Proprieta' della colonna della blockchain: si decide una volta, a fine costruzione (togliere e rimettere la
         //colonna a ogni clic ne perderebbe la larghezza scelta dall'utente)
         GiacenzeaData_TabellaDettaglioMovimenti.putClientProperty(Tabelle.PROP_CONFRONTO_BLOCKCHAIN, null);
+        GiacenzeaData_TabellaDettaglioMovimenti.putClientProperty(Tabelle.PROP_FONTE_CONFRONTO, null);
         
         //ANALISI E PROPOSTA
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
@@ -8687,6 +8745,10 @@ private void SettaIcone(){
             String[] WalletBlockchain = GiacenzeBlockchain.WalletDaLeggere(Wallet, SottoWallet, Mappa_Wallets_e_Dettagli.get(Wallet));
             GiacenzeBlockchain.Richiesta MonetaBlockchain = WalletBlockchain == null ? null : GiacenzeBlockchain.RichiestaDettaglio(
                     mon, GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 3).toString(), Address, Rete, WalletBlockchain[1]);
+            //Wallet OKX (tutti i sotto-wallet): la stessa colonna, con la giacenza di OKX a fine di ogni secondo dai bill scaricati
+            final boolean ConfrontoOKX = MonetaBlockchain == null
+                    && GiacenzeExchange.OKX.equals(GiacenzeExchange.ExchangeDaLeggere(Wallet, SottoWallet))
+                    && GiacenzeExchange.OKXDisponibile();
             java.util.List<GiacenzeBlockchain.RigaDettaglio> RigheBlockchain = new java.util.ArrayList<>();
             //Le variazioni della giacenza per il grafico: tutte, anche quelle che il filtro "solo negative" toglie dalla tabella
             java.util.List<GraficoGiacenze.Variazione> VariazioniGrafico = new java.util.ArrayList<>();
@@ -8739,7 +8801,7 @@ private void SettaIcone(){
                             riga[8] = movimento[0];
                             riga[9] = "";
                             //"lettura..." subito, senza un setValueAt per riga dopo: quasi tutte le righe di un wallet DeFi hanno il blocco
-                            riga[18] = MonetaBlockchain != null && GiacenzeBlockchain.BloccoMovimento(movimento) >= 0 ? GiacenzeBlockchain.IN_LETTURA : "";
+                            riga[18] = ConfrontoOKX || MonetaBlockchain != null && GiacenzeBlockchain.BloccoMovimento(movimento) >= 0 ? GiacenzeBlockchain.IN_LETTURA : "";
                             String ColonneCosti[] = Principale_GiacenzeaData.ColonneCostiDettaglio(CostiResidui, movimento,
                                     false, movimento[10], riga[7]);
                             System.arraycopy(ColonneCosti, 0, riga, 13, 5);
@@ -8758,9 +8820,9 @@ private void SettaIcone(){
                                 RigaModello = GiacenzeaData_ModelloTabella.getRowCount();
                                 GiacenzeaData_ModelloTabella.addRow(riga);
                             }
-                            if (MonetaBlockchain != null) {
+                            if (MonetaBlockchain != null || ConfrontoOKX) {
                                 RigheBlockchain.add(new GiacenzeBlockchain.RigaDettaglio(movimento[0],
-                                        GiacenzeBlockchain.BloccoMovimento(movimento), RigaModello, riga[7]));
+                                        ConfrontoOKX ? 0 : GiacenzeBlockchain.BloccoMovimento(movimento), RigaModello, riga[7]));
                             }
                         }
                         if (movimento[11].equals(mon) && AddressE.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
@@ -8777,7 +8839,7 @@ private void SettaIcone(){
                             riga[8] = movimento[0];
                             riga[9] = "";
                             //"lettura..." subito, senza un setValueAt per riga dopo: quasi tutte le righe di un wallet DeFi hanno il blocco
-                            riga[18] = MonetaBlockchain != null && GiacenzeBlockchain.BloccoMovimento(movimento) >= 0 ? GiacenzeBlockchain.IN_LETTURA : "";
+                            riga[18] = ConfrontoOKX || MonetaBlockchain != null && GiacenzeBlockchain.BloccoMovimento(movimento) >= 0 ? GiacenzeBlockchain.IN_LETTURA : "";
                             String ColonneCosti[] = Principale_GiacenzeaData.ColonneCostiDettaglio(CostiResidui, movimento,
                                     true, movimento[13], riga[7]);
                             System.arraycopy(ColonneCosti, 0, riga, 13, 5);
@@ -8796,9 +8858,9 @@ private void SettaIcone(){
                                 RigaModello = GiacenzeaData_ModelloTabella.getRowCount();
                                 GiacenzeaData_ModelloTabella.addRow(riga);
                             }
-                            if (MonetaBlockchain != null) {
+                            if (MonetaBlockchain != null || ConfrontoOKX) {
                                 RigheBlockchain.add(new GiacenzeBlockchain.RigaDettaglio(movimento[0],
-                                        GiacenzeBlockchain.BloccoMovimento(movimento), RigaModello, riga[7]));
+                                        ConfrontoOKX ? 0 : GiacenzeBlockchain.BloccoMovimento(movimento), RigaModello, riga[7]));
                             }
                         }
                     }
@@ -8814,6 +8876,8 @@ private void SettaIcone(){
             if (MonetaBlockchain != null) {
                 GiacenzeaData_LeggiBlockchainDettaglio(WalletBlockchain, MonetaBlockchain,
                         GiacenzeBlockchain.BlocchiDettaglio(RigheBlockchain), GenerazioneDettaglio);
+            } else if (ConfrontoOKX) {
+                GiacenzeaData_LeggiExchangeDettaglio(mon, GiacenzeBlockchain.BlocchiDettaglio(RigheBlockchain), GenerazioneDettaglio);
             } else {
                 GiacenzeaData_MostraColonnaBlockchainDettaglio(false);
             }
@@ -16653,7 +16717,9 @@ if (result != null && !result.isAction("cancel")) {
         //Il layout ricrea le colonne e toglie la 18, che non ne fa parte
         if (GiacenzeaData_DettaglioConBlockchain) {
             GiacenzeaData_DettaglioConBlockchain = false;
-            GiacenzeaData_MostraColonnaBlockchainDettaglio(true);
+            //La colonna torna con la sua fonte: OKX se il dettaglio la confronta con l'exchange
+            GiacenzeaData_MostraColonnaBlockchainDettaglio(true,
+                    GiacenzeaData_TabellaDettaglioMovimenti.getClientProperty(Tabelle.PROP_FONTE_CONFRONTO) instanceof String f ? f : null);
         }
         GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(
                 GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), 42));
@@ -17961,9 +18027,17 @@ try {
      * {@link GiacenzeBlockchain#WalletDaLeggere}).
      */
     private void GiacenzeaData_MostraColonnaBlockchain(boolean Mostra) {
+        GiacenzeaData_MostraColonnaBlockchain(Mostra, "Blockchain");
+    }
+
+    /** @param Fonte da dove viene la giacenza confrontata: "Blockchain", o il nome dell'exchange */
+    private void GiacenzeaData_MostraColonnaBlockchain(boolean Mostra, String Fonte) {
         javax.swing.table.TableColumn Colonna = GiacenzeaData_Tabella.getColumnModel()
                 .getColumn(GiacenzeaData_Tabella.convertColumnIndexToView(12));
         boolean Visibile = Colonna.getMaxWidth() > 0;
+        //L'intestazione si rimette anche se la visibilita' non cambia: da un wallet DeFi a OKX la colonna resta, la fonte no
+        Colonna.setHeaderValue(Mostra ? GiacenzeExchange.Intestazione(Fonte) : "");
+        GiacenzeaData_Tabella.getTableHeader().repaint();
         if (Visibile == Mostra) return;
         if (Mostra) {
             Colonna.setMaxWidth(Integer.MAX_VALUE);
@@ -17974,8 +18048,58 @@ try {
             Colonna.setPreferredWidth(0);
             Colonna.setMaxWidth(0);
         }
-        Colonna.setHeaderValue(Mostra ? "<html><center>Qta<br>Blockchain</html>" : "");
-        GiacenzeaData_Tabella.getTableHeader().repaint();
+    }
+
+    /**
+     * Legge in background le giacenze dell'exchange ({@link GiacenzeExchange}) e le scrive nella colonna 12, come
+     * {@link #GiacenzeaData_LeggiGiacenzeBlockchain}: OKX dai bill gia' scaricati alla data, Binance adesso.
+     */
+    private void GiacenzeaData_LeggiGiacenzeExchange(String Exchange, long DataRiferimento,
+            java.util.List<GiacenzeBlockchain.Richiesta> Richieste, int Generazione) {
+        if (Richieste.isEmpty()) return;
+        Thread t = new Thread(() -> {
+            Map<String, String> Testi = new java.util.HashMap<>();
+            java.util.List<String> Avvisi = new java.util.ArrayList<>();
+            try {
+                if (GiacenzeExchange.OKX.equals(Exchange)) {
+                    GiacenzeExchange.StoricoOKX s = GiacenzeExchange.OKX();
+                    for (GiacenzeBlockchain.Richiesta r : Richieste) {
+                        Testi.put(r.chiave(), s == null ? GiacenzeBlockchain.NON_DISPONIBILE : s.Testo(r.moneta(), DataRiferimento));
+                    }
+                } else {
+                    Map<String, BigDecimal> Saldi = GiacenzeExchange.SaldiBinance(Avvisi);
+                    for (GiacenzeBlockchain.Richiesta r : Richieste) {
+                        BigDecimal q = Saldi == null ? null : Saldi.getOrDefault(r.moneta(), BigDecimal.ZERO);
+                        Testi.put(r.chiave(), q == null ? GiacenzeBlockchain.NON_DISPONIBILE : q.toPlainString());
+                    }
+                }
+            } catch (RuntimeException ex) {
+                LoggerGC.ScriviErrore(ex);
+            }
+            for (String a : Avvisi) LoggerGC.logInfo("Giacenze a data, " + Exchange + ": " + a);
+            GiacenzeaData_ScriviColonnaConfronto(Testi, Generazione);
+        }, "GiacenzeExchange");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    /** Scrive nella colonna 12, per chiave di riga, le giacenze lette; le righe rimaste "in lettura" diventano n.d. */
+    private void GiacenzeaData_ScriviColonnaConfronto(Map<String, String> Testi, int Generazione) {
+        SwingUtilities.invokeLater(() -> {
+            if (Generazione != GiacenzeaData_GenerazioneBlockchain) return;
+            DefaultTableModel Modello = (DefaultTableModel) GiacenzeaData_Tabella.getModel();
+            for (int r = 0; r < Modello.getRowCount(); r++) {
+                String Chiave = Principale_GiacenzeaData.ChiaveRiga(String.valueOf(Modello.getValueAt(r, 0)),
+                        String.valueOf(Modello.getValueAt(r, 3)),
+                        Modello.getValueAt(r, 2) == null ? null : Modello.getValueAt(r, 2).toString(),
+                        Modello.getValueAt(r, 1) == null ? null : Modello.getValueAt(r, 1).toString());
+                String Testo = Testi.get(Chiave);
+                if (Testo != null) Modello.setValueAt(Testo, r, 12);
+                else if (GiacenzeBlockchain.IN_LETTURA.equals(Modello.getValueAt(r, 12))) {
+                    Modello.setValueAt(GiacenzeBlockchain.NON_DISPONIBILE, r, 12);
+                }
+            }
+        });
     }
 
     /**
@@ -17999,22 +18123,7 @@ try {
                 Esito = new GiacenzeBlockchain.Esito(Testi, -1, java.util.List.of(String.valueOf(ex.getMessage())));
             }
             for (String a : Esito.avvisi()) LoggerGC.logInfo("Giacenze a data, blockchain: " + a);
-            final GiacenzeBlockchain.Esito Risultato = Esito;
-            SwingUtilities.invokeLater(() -> {
-                if (Generazione != GiacenzeaData_GenerazioneBlockchain) return;
-                DefaultTableModel Modello = (DefaultTableModel) GiacenzeaData_Tabella.getModel();
-                for (int r = 0; r < Modello.getRowCount(); r++) {
-                    String Chiave = Principale_GiacenzeaData.ChiaveRiga(String.valueOf(Modello.getValueAt(r, 0)),
-                            String.valueOf(Modello.getValueAt(r, 3)),
-                            Modello.getValueAt(r, 2) == null ? null : Modello.getValueAt(r, 2).toString(),
-                            Modello.getValueAt(r, 1) == null ? null : Modello.getValueAt(r, 1).toString());
-                    String Testo = Risultato.testi().get(Chiave);
-                    if (Testo != null) Modello.setValueAt(Testo, r, 12);
-                    else if (GiacenzeBlockchain.IN_LETTURA.equals(Modello.getValueAt(r, 12))) {
-                        Modello.setValueAt(GiacenzeBlockchain.NON_DISPONIBILE, r, 12);
-                    }
-                }
-            });
+            GiacenzeaData_ScriviColonnaConfronto(Esito.testi(), Generazione);
         }, "GiacenzeBlockchain");
         t.setDaemon(true);
         t.start();
@@ -18152,7 +18261,14 @@ try {
                         Mappa_Wallets_e_Dettagli.get(Wallet)) : null;
                 java.util.List<GiacenzeBlockchain.Richiesta> RichiesteBlockchain = new ArrayList<>();
                 final int GenerazioneBlockchain = ++GiacenzeaData_GenerazioneBlockchain;
-                SwingUtilities.invokeLater(() -> GiacenzeaData_MostraColonnaBlockchain(WalletBlockchain != null));
+                //Wallet OKX o Binance (tutti i sotto-wallet): la stessa colonna confronta con le giacenze dell'exchange.
+                //OKX alla data scelta, dai bill gia' scaricati; Binance solo ad oggi, perche' non ha uno storico dei saldi
+                String ExchangeScelto = CompiloTabella && WalletBlockchain == null ? GiacenzeExchange.ExchangeDaLeggere(Wallet, SottoWallet) : null;
+                if (GiacenzeExchange.OKX.equals(ExchangeScelto) && GiacenzeExchange.OKX() == null) ExchangeScelto = null;
+                if (GiacenzeExchange.BINANCE.equals(ExchangeScelto) && (!DataAdOggi || !GiacenzeExchange.BinanceConfigurato())) ExchangeScelto = null;
+                final String ExchangeConfronto = ExchangeScelto;
+                SwingUtilities.invokeLater(() -> GiacenzeaData_MostraColonnaBlockchain(WalletBlockchain != null || ExchangeConfronto != null,
+                        ExchangeConfronto == null ? "Blockchain" : ExchangeConfronto));
 
                 int i = 0;
                 BigDecimal TotEuro = new BigDecimal(0);
@@ -18248,6 +18364,10 @@ try {
                                 riga[12] = GiacenzeBlockchain.IN_LETTURA;
                                 RichiesteBlockchain.add(Richiesta);
                             }
+                        } else if (ExchangeConfronto != null) {
+                            riga[12] = GiacenzeBlockchain.IN_LETTURA;
+                            RichiesteBlockchain.add(new GiacenzeBlockchain.Richiesta(
+                                    Principale_GiacenzeaData.ChiaveRiga(M1.Moneta, M1.Tipo, Address, Rete), M1.Moneta, M1.Tipo, Address));
                         }
                         if (CompiloTabella) {
                            // Object[] r = riga;
@@ -18271,6 +18391,8 @@ try {
                 if (WalletBlockchain != null && !progress.FineThread()) {
                     GiacenzeaData_LeggiGiacenzeBlockchain(WalletBlockchain, DataAdOggi ? 0 : DataRiferimento,
                             RichiesteBlockchain, GenerazioneBlockchain);
+                } else if (ExchangeConfronto != null && !progress.FineThread()) {
+                    GiacenzeaData_LeggiGiacenzeExchange(ExchangeConfronto, DataRiferimento, RichiesteBlockchain, GenerazioneBlockchain);
                 }
                 
                 

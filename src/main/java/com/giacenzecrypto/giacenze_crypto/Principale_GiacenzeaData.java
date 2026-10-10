@@ -105,11 +105,41 @@ public class Principale_GiacenzeaData {
                 null,
                 null
         );
-        if (RT == null) {
+        if (RT == null || !RendiUnivocoIDRettifica(RT, mov[0], prelievo)) {
             owner.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             return false;
         }
         MappaCryptoWallet.put(RT[0], RT);
+        return true;
+    }
+
+    /**
+     * Rende univoco l'ID di un movimento di rettifica appena costruito, prima di inserirlo nella mappa.
+     * {@link MovimentiCrypto#IncDecID} verifica l'unicità sull'ID con la categoria provvisoria (DC/PC), ma
+     * {@code creaMovimento} la sostituisce con quella del tipo scelto (EARN diventa RW, COMMISSIONE CM...): una
+     * seconda rettifica sullo stesso movimento riprendeva così l'ID della prima e la sovrascriveva. Se l'ID
+     * finale è già occupato lo si ricalcola dal movimento di riferimento con la categoria definitiva, così il
+     * nuovo movimento resta subito prima (o subito dopo) il movimento selezionato.
+     * @param RT movimento costruito, il cui ID {@code RT[0]} viene corretto se necessario
+     * @param IDRiferimento ID del movimento selezionato nella tabella
+     * @param Dopo {@code true} se il movimento va subito dopo quello di riferimento, {@code false} subito prima
+     * @return {@code false} se non si riesce a trovare un ID libero
+     */
+    static boolean RendiUnivocoIDRettifica(String[] RT, String IDRiferimento, boolean Dopo) {
+        if (MappaCryptoWallet.get(RT[0]) == null) {
+            return true;
+        }
+        String[] Parti = IDRiferimento.split("_");
+        if (Parti.length < 5) {
+            return false;
+        }
+        Parti[4] = RT[0].substring(RT[0].lastIndexOf('_') + 1);
+        String ID = MovimentiCrypto.IncDecID(String.join("_", Parti), 1, Dopo);
+        if (ID == null || MappaCryptoWallet.get(ID) != null) {
+            LoggerGC.ScriviErrore("Rettifica di giacenza: nessun ID libero per " + RT[0]);
+            return false;
+        }
+        RT[0] = ID;
         return true;
     }
 
@@ -153,7 +183,18 @@ public class Principale_GiacenzeaData {
                 Object Archivio = Confronto.get(IDTrans);
                 Object Blockchain = TabMovimenti.getModel().getValueAt(rigaselezionata, 18);
                 BigDecimal Proposta = GiacenzeBlockchain.GiacenzaPerAllineare(GiacenzaAttualeS, Archivio, Blockchain);
-                if (Proposta != null) {
+                if (Proposta != null && TabMovimenti.getClientProperty(Tabelle.PROP_FONTE_CONFRONTO) instanceof String Fonte) {
+                    //Giacenza dell'exchange (OKX) alla fine del secondo del movimento: stessa proposta, altre parole
+                    GiacenzaVoluta = Proposta;
+                    TestoBlockchain = """
+
+                        Su %s, alla fine del secondo di questo movimento, la giacenza è <b>%s</b>, \
+                        nell'archivio, dopo tutti i movimenti dello stesso secondo, è %s. \
+                        Il campo propone la giacenza che le fa coincidere%s.
+                        """.formatted(Fonte, Blockchain.toString().trim(), Archivio.toString().trim(),
+                            new BigDecimal(Archivio.toString().trim()).compareTo(GiacenzaAttuale) == 0 ? ""
+                            : " (nello stesso secondo ci sono altri movimenti dopo questo, che restano come sono)");
+                } else if (Proposta != null) {
                     GiacenzaVoluta = Proposta;
                     TestoBlockchain = """
 
@@ -388,6 +429,10 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                                     null
                             );
 
+                            if (!RendiUnivocoIDRettifica(RT2, RTOri[0], true)) {
+                                owner.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                                return false;
+                            }
                             MappaCryptoWallet.put(RT2[0], RT2);
                         }
                     }
@@ -509,6 +554,10 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                                     null
                             );
 
+                            if (!RendiUnivocoIDRettifica(RT1, RTOri[0], false)) {
+                                owner.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                                return false;
+                            }
                             MappaCryptoWallet.put(RT1[0], RT1);
                         }
                     }

@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest#nomeDelMetodo
 
-# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.64.11)
+# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.64.12)
 java -jar target/Giacenze_Crypto-<version>-jar-with-dependencies.jar --NoJarPath --workdir ./test/2025/
 ```
 
@@ -319,6 +319,21 @@ ferma (ogni blocco rifarebbe i giri di attesa di `NodiPubblici`). *Sistema Qta R
 (`GiacenzeaData_Funzione_SistemaQta`) precompila la giacenza con `GiacenzeBlockchain.GiacenzaPerAllineare`: Qta Residua
 della riga + (blockchain − archivio a fine secondo), perché la rettifica nasce nello stesso secondo del movimento scelto
 e sulla riga di mezzo di un blocco il saldo della blockchain non è la giacenza giusta.
+
+**La stessa colonna per OKX e Binance** (`GiacenzeExchange`, 2026-10-10): col wallet dell'exchange e sotto-wallet "Tutti"
+l'intestazione diventa "Qta OKX"/"Qta Binance" (il renderer delle intestazioni di `Tabelle` usa il valore della colonna se
+impostato). **OKX** dai `bal` dei bill già scaricati (documenti di origine NDJSON, nessuna rete), alla data e nel dettaglio
+riga per riga a fine secondo. Tre regole trovate sui dati reali, da non perdere: un conto ha **più catene di saldo per
+moneta** (ogni bot di trading ha il suo saldo, il conto è la somma; un bill va nella catena dove `ultimo + balChg = bal`);
+la catena si ordina per **`billId`, non per orario** (OKX data a volte un bill un secondo dopo pur avendolo registrato
+prima, e per orario resta una giacenza fantasma); le monete **in Earn** non sono nel `bal` e si aggiungono come capitale
+(75/76/80/81/82, minimo zero a ogni passo, On-chain chiusi al `redeemedTime` dello storico ordini). Gli interessi maturati
+in Earn non ci sono, quindi in quel caso la cella dice "(in Earn)" e non si colora. Una moneta senza nessun bill vale zero solo se
+almeno uno scaricamento ha chiesto tutta la storia (`startDate` prima del 2018, `INIZIO_STORIA_COMPLETA`): con soli
+scaricamenti incrementali (anni prima da CSV) è `n.d.`, non un falso "0" che inviterebbe a rettificare. **Binance solo ad oggi**: lo snapshot
+giornaliero copre l'ultimo mese e solo lo Spot (documentazione ufficiale), mentre l'archivio unisce Spot, Funding ed Earn;
+`Binance_Saldi.js` legge i saldi attuali, una sezione fallita annulla il totale. Diagnosi e misure in
+`nocommit/Documentazione/Analisi_Giacenze_Exchange.md`.
 
 **Scheda *Grafico* del dettaglio** (2026-10-10): il dettaglio movimenti sta in `GiacenzeaData_TabbedDettaglio` (*Tabella* /
 *Grafico*). Le variazioni (`GraficoGiacenze.Variazione`) si raccolgono **nello stesso ciclo** che riempie la tabella, prima

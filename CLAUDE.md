@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest#nomeDelMetodo
 
-# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.64.03)
+# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.64.11)
 java -jar target/Giacenze_Crypto-<version>-jar-with-dependencies.jar --NoJarPath --workdir ./test/2025/
 ```
 

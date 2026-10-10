@@ -123,6 +123,16 @@ public class AliasPrezziToken {
     }
 
     /**
+     * Il token e' nell'elenco degli alias, a qualunque data? Per l'opzione che tiene i token DeFi lontani dagli
+     * exchange ({@link Prezzi#OPZIONE_DEFI_SOLO_DEFILLAMA_COINGECKO}): un token in elenco e' dichiarato uguale
+     * alla moneta degli exchange, quindi resta escluso dall'opzione anche prima del suo {@code dal}, dove si
+     * comporta come ha sempre fatto.
+     */
+    static boolean InElenco(String address, String rete) {
+        return Principale.Mappa_AddressRete_Nome.containsKey(address + "_" + rete);
+    }
+
+    /**
      * Il simbolo con cui prezzare un token con address alla data indicata, oppure {@code null} se il token
      * non ha alias <b>a quella data</b> (non in elenco, oppure {@code istante} precedente al suo {@code dal}
      * con l'opzione spenta): in quel caso il prezzo si cerca per address, come prima dell'alias.

@@ -65,6 +65,28 @@ public class Prezzi {
     static Map<String, String> MappaConversioneSwapTransIDCoins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     
     //di seguito le coppie prioritarie ovvero quelle che hanno precedneza all'atto della ricerca dei prezzi rispetto alle altre
+    /**
+     * Opzione (personale.mv.db, "SI"/"NO", spenta di default): un token con address valido sulla sua rete prende il
+     * prezzo solo dalle fonti per address (DefiLlama, coingecko) e non ripiega sugli exchange per simbolo, che puo'
+     * trovare un omonimo. Restano esclusi i token di {@code config/varie/AliasPrezziToken.json}. Vedi
+     * {@link #AddressAmmessoSugliExchange}.
+     */
+    public static final String OPZIONE_DEFI_SOLO_DEFILLAMA_COINGECKO = "PrezziDefi_SoloDefiLlamaCoingecko";
+
+    static boolean DefiSoloDefiLlamaCoingecko() {
+        return "SI".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_DEFI_SOLO_DEFILLAMA_COINGECKO, "NO"));
+    }
+
+    /**
+     * Un token cercato per address puo' ripiegare sul prezzo degli exchange per simbolo? E' il caso delle monete
+     * di {@link #SimboliPrioritari} e dei prezzi piu' vecchi di un anno, che coingecko non da'. Con l'opzione
+     * {@link #OPZIONE_DEFI_SOLO_DEFILLAMA_COINGECKO} no, salvo che l'address sia nell'elenco degli alias, a
+     * qualunque data (vedi {@link AliasPrezziToken#InElenco}).
+     */
+    static boolean AddressAmmessoSugliExchange(boolean SoloDefiLlamaCoingecko, String Address, String Rete) {
+        return !SoloDefiLlamaCoingecko || AliasPrezziToken.InElenco(Address, Rete);
+    }
+
     static String[] SimboliPrioritari=new String []{"EURI","EURC","EURCV","EUROe","EURQ","EURR","EURe","USDT","USDC","BUSD","USDE","DAI","TUSD","BTC",
         "ETH","BNB","SOL","LTC","ADA","XRP","XLM","PAX","TRX","ATOM","POL","CRO","MON"};
 
@@ -704,7 +726,8 @@ public class Prezzi {
     /**
      * Recupera il prezzo in EUR di un token identificato dal suo indirizzo di contratto, provando in ordine:
      * cache dei prezzi personalizzati, vecchio database, nuovo database, DefiLlama, quotazioni exchange
-     * (per le coppie in {@link #SimboliPrioritari} o per prezzi più vecchi di un anno) e infine coingecko.
+     * (per le coppie in {@link #SimboliPrioritari} o per prezzi più vecchi di un anno, non con l'opzione
+     * {@link #OPZIONE_DEFI_SOLO_DEFILLAMA_COINGECKO}) e infine coingecko.
      * Se l'indirizzo non è valido per la rete indicata, delega direttamente a {@link #CambioXXXEUR} tramite simbolo.
      * I tentativi falliti vengono registrati come irrecuperabili tramite {@link #PrezzoIrrecuperabileDaDB_Scrivi}
      * per evitare richieste ripetute inutili.
@@ -815,17 +838,23 @@ public class Prezzi {
 
         //Se ancora non trovo i prezzi vado a richiedere a coingecko i dati
         if (IPrezzo == null) {
+                //Con l'opzione "solo DefiLlama/coingecko" gli exchange (cercati per simbolo, quindi esposti agli
+                //omonimi) non si interrogano, salvo per i token dell'elenco alias
+                boolean ExchangeAmmessi = AddressAmmessoSugliExchange(DefiSoloDefiLlamaCoingecko(), Address, Rete);
             
                 //Se la moneta è codificata da coingecko (Quindi so che non è scam) e corrisponde ad una delle monete principali
                 //Prendo il suo prezzo dagli exchange per risparmiare tempo e richieste.
                 for (String SimboloP : SimboliPrioritari) {
-                    if ((Simbolo).toUpperCase().equals(SimboloP)) {
+                    if (ExchangeAmmessi && (Simbolo).toUpperCase().equals(SimboloP)) {
                         IPrezzo=CambioXXXEUR(Simbolo, Qta, Datalong,"","","",true);
                         if (IPrezzo!=null)return IPrezzo;
                     }
                 }
                 long adesso = System.currentTimeMillis();
                 if ((adesso - Datalong) > Long.parseLong("31536000000")) {
+                    //Gli exchange esclusi dall'opzione: niente prezzo, ma nemmeno PrezziKO, che resterebbe anche
+                    //dopo aver spento l'opzione e impedirebbe di cercarlo (lo toglie solo "Ricalcola prezzi")
+                    if (!ExchangeAmmessi) return null;
                     //Se arrivo qua il prezzo non è in memoria e 
                     //se cerco di recuperare prezzi più vecchi di 365gg li vado a cercare dagli exchange visto che coingecko non li fornisce
                     IPrezzo=CambioXXXEUR(Simbolo, Qta, Datalong,"","","",true);

@@ -6545,6 +6545,7 @@
                                                   <Component id="Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
                                                   <Component id="Prezzi_Opzioni_CheckBox_ServizioOnchain" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
                                                   <Component id="Prezzi_Opzioni_CheckBox_AliasAnniPassati" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
+                                                  <Component id="Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
                                                   <Component id="Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
                                               </Group>
                                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -6571,6 +6572,8 @@
                               <Component id="Prezzi_Opzioni_CheckBox_ServizioOnchain" min="-2" pref="54" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Prezzi_Opzioni_CheckBox_AliasAnniPassati" min="-2" pref="69" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama" min="-2" pref="69" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti" min="-2" pref="54" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -6701,6 +6704,14 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Prezzi_Opzioni_CheckBox_AliasAnniPassatiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Prezzi dei token DeFi solo da DefiLlama e coingecko : &lt;/b&gt;Un token cercato per address (contratto) non prende pi&#xf9; il prezzo dagli exchange per simbolo, che pu&#xf2; appartenere a un&apos;altra moneta con lo stesso nome. Restano esclusi i token che l&apos;elenco degli alias dichiara uguali a una moneta degli exchange (es. WETH, USDC)&lt;br&gt;(Non attivo di default. Con l&apos;opzione attiva i token pi&#xf9; vecchi di un anno che DefiLlama non quota restano senza prezzo, e i valori di fine anno gi&#xe0; calcolati nel quadro RW possono cambiare)&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Prezzi_Opzioni_CheckBox_DefiSoloDefiLlamaActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti">

@@ -995,6 +995,7 @@ private static final long serialVersionUID = 3L;
         Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale = new javax.swing.JCheckBox();
         Prezzi_Opzioni_CheckBox_ServizioOnchain = new javax.swing.JCheckBox();
         Prezzi_Opzioni_CheckBox_AliasAnniPassati = new javax.swing.JCheckBox();
+        Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti = new javax.swing.JCheckBox();
         Opzioni_RW_Pannello = new javax.swing.JPanel();
         RW_Opzioni_CheckBox_LiFoComplessivo = new javax.swing.JCheckBox();
@@ -5149,6 +5150,13 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama.setText("<html><b>Prezzi dei token DeFi solo da DefiLlama e coingecko : </b>Un token cercato per address (contratto) non prende più il prezzo dagli exchange per simbolo, che può appartenere a un'altra moneta con lo stesso nome. Restano esclusi i token che l'elenco degli alias dichiara uguali a una moneta degli exchange (es. WETH, USDC)<br>(Non attivo di default. Con l'opzione attiva i token più vecchi di un anno che DefiLlama non quota restano senza prezzo, e i valori di fine anno già calcolati nel quadro RW possono cambiare)</html>");
+        Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Prezzi_Opzioni_CheckBox_DefiSoloDefiLlamaActionPerformed(evt);
+            }
+        });
+
         Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti.setText("<html><b>Scambi cripto-cripto : </b>Considera sempre fiscalmente rilevante lo scambio tra cripto, anche tra monete con le medesime caratteristiche e funzioni (es. stablecoin verso stablecoin): calcola plusvalenza e nuovo costo di carico<br>(Non attivo di default: di norma lo scambio tra cripto con medesime caratteristiche e funzioni non genera plusvalenza)</html>");
         Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -5183,6 +5191,7 @@ private static final long serialVersionUID = 3L;
                                     .addComponent(Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Prezzi_Opzioni_CheckBox_ServizioOnchain, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Prezzi_Opzioni_CheckBox_AliasAnniPassati, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
@@ -5202,6 +5211,8 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Prezzi_Opzioni_CheckBox_ServizioOnchain, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Prezzi_Opzioni_CheckBox_AliasAnniPassati, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -6925,6 +6936,9 @@ private void SettaIcone(){
         //Alias prezzi anche per gli anni gia' dichiarati: al primo avvio di questa versione si accende solo se
         //l'installazione e' nuova (nessun archivio movimenti), vedi AliasPrezziToken.InizializzaOpzione
         Prezzi_Opzioni_CheckBox_AliasAnniPassati.setSelected(AliasPrezziToken.InizializzaOpzione());
+
+        //Token DeFi senza ripiego sugli exchange: spenta salvo esplicito "SI" (Prezzi.OPZIONE_DEFI_SOLO_DEFILLAMA_COINGECKO)
+        Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama.setSelected(Prezzi.DefiSoloDefiLlamaCoingecko());
 
         String Plusvalenze_NoPlusvalenzeCommissioni=DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_NoPlusvalenzeCommissioni");
         if(Plusvalenze_NoPlusvalenzeCommissioni==null)
@@ -15411,6 +15425,12 @@ if (result != null && !result.isAction("cancel")) {
         if (RW_Tabella.getRowCount() > 0) RW_Label_SegnalaRicalcolo.setVisible(true);
     }//GEN-LAST:event_Prezzi_Opzioni_CheckBox_AliasAnniPassatiActionPerformed
 
+    private void Prezzi_Opzioni_CheckBox_DefiSoloDefiLlamaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Prezzi_Opzioni_CheckBox_DefiSoloDefiLlamaActionPerformed
+        DatabaseH2.Pers_Opzioni_Scrivi(Prezzi.OPZIONE_DEFI_SOLO_DEFILLAMA_COINGECKO, Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama.isSelected() ? "SI" : "NO");
+        //Il quadro RW valorizza dal vivo: quello a video e' stato calcolato con l'altra regola
+        if (RW_Tabella.getRowCount() > 0) RW_Label_SegnalaRicalcolo.setVisible(true);
+    }//GEN-LAST:event_Prezzi_Opzioni_CheckBox_DefiSoloDefiLlamaActionPerformed
+
     private void Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed
         // TODO add your handling code here:
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -20509,6 +20529,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JCheckBox Plusvalenze_Opzioni_NonConsiderareMovimentiNC;
     private javax.swing.JPopupMenu PopupMenu;
     private javax.swing.JCheckBox Prezzi_Opzioni_CheckBox_AliasAnniPassati;
+    private javax.swing.JCheckBox Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama;
     private javax.swing.JCheckBox Prezzi_Opzioni_CheckBox_ServizioOnchain;
     private javax.swing.JPanel RT;
     private javax.swing.JButton RT_Bottone_Calcola;

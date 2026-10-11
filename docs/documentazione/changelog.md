@@ -27,7 +27,7 @@ I pacchetti pronti all'uso vengono pubblicati a ogni rilascio:
 In caso di problemi si può chiedere supporto sul
 [gruppo Telegram](https://t.me/+6kfy5mjov-I2ODY8).
 
-## Versione 1.0.65 (in lavorazione) {#versione-1065}
+## Versione 1.0.65 {#versione-1065}
 
 **Nuove implementazioni**
 
@@ -79,9 +79,13 @@ In caso di problemi si può chiedere supporto sul
 - La **guida ai file JSON di importazione personalizzati** è stata completata con tutte le chiavi che il programma legge, e corretta negli esempi.
 - **Giacenze a data: confronto con le giacenze di OKX e Binance.** Scegliendo il wallet OKX o Binance (con il dettaglio "Tutti"), la colonna usata per la blockchain mostra la giacenza secondo l'exchange, verde se coincide con quella calcolata dai movimenti e rossa se no. Per OKX il dato viene dagli scaricamenti via API già fatti, senza nuove richieste, e vale per qualunque data coperta dagli scaricamenti, anche nel dettaglio dei movimenti, riga per riga. Le monete in Earn sono comprese, ma OKX non fornisce gli interessi maturati nel frattempo: in quei periodi la cella riporta "(in Earn)" e non si colora. Per Binance il confronto è possibile solo con la data di oggi, perché Binance non conserva lo storico dei saldi: si leggono i saldi attuali di Spot, Funding e Simple Earn tramite le API configurate. Restano fuori i Dual Investment in corso.
 - **Giacenze a data: grafico della giacenza e del valore.** Il dettaglio dei movimenti di una moneta ha ora due schede, *Tabella* (quella di sempre) e *Grafico*. Il grafico mostra la giacenza della moneta nel tempo e il suo valore in euro, sia a fine di ogni giorno sia subito dopo ogni movimento. Su ogni variazione della giacenza c'è un triangolo, verde se la moneta entra e rosso se esce: passandoci sopra con il mouse si vede il movimento che l'ha causata (data, tipo, wallet, quantità e giacenza dopo), e con un clic lo si ritrova selezionato nella tabella. Con la rotella del mouse si ingrandisce un periodo, trascinando ci si sposta, con un doppio clic si torna a tutto il periodo. I prezzi giornalieri vengono scaricati la prima volta in sottofondo dagli exchange (dalla serie di DefiLlama per i token con indirizzo) e poi restano memorizzati. Servono solo al grafico: non cambiano nessun valore dei calcoli e delle dichiarazioni.
+- **Classificazione movimenti: i filtri di associazione si ricordano.** I due elenchi in fondo alla finestra (escursione in percentuale sul valore e in giorni) conservano l'ultima scelta e la ripropongono alla classificazione successiva.
+- **Rinomina di un token senza indirizzo o rete.** Il messaggio di conferma dice ora a quali movimenti si applicherà (tutti i wallet, un wallet con i suoi sotto-wallet o un gruppo), quanti sono, e ricorda che la rinomina non resta valida per le importazioni future.
 
 **Correzione di bug**
 
+- **Scambio differito, movimenti proposti.** Nella finestra di classificazione l'intervallo di date dei movimenti proposti era spostato: mancavano quelli nelle 24 ore precedenti e comparivano alcuni oltre il limite scelto. Ora l'intervallo va da 24 ore prima fino al numero di giorni indicato dopo il movimento.
+- **Installazione di ccxt, avvisi di npm.** Le comunicazioni di npm che non sono errori (per esempio la disponibilità di una nuova versione) comparivano nella finestra degli errori. Ora vanno fra i messaggi normali.
 - **Quadro W/RW con l'opzione A**: se un gruppo nasceva durante l'anno con un deposito in euro, quegli euro entravano nel valore iniziale del rigo cripto.
 - **Quadro W/RW, gruppi col bollo con "mostra solo giacenza"**: una giacenza negativa veniva conteggiata come valore positivo, gonfiando il rigo invece di segnalare l'errore.
 - Un **prezzo personalizzato** salvato per un token con indirizzo non veniva più riletto quando il token è fra quelli prezzati come una moneta equivalente.

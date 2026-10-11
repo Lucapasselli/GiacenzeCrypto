@@ -147,6 +147,14 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
 
     
     
+    //I due filtri in fondo alla finestra (escursione sul valore e sui giorni) si ricordano fra una classificazione
+    //e l'altra: l'ultima scelta dell'utente viene riproposta alla successiva (personale.mv.db)
+    static final String OPZIONE_ESCURSIONE_PERCENTUALE="Classificazione_EscursionePercentuale";
+    static final String OPZIONE_ESCURSIONE_GIORNI="Classificazione_EscursioneGiorni";
+    //Vero mentre si rimettono i valori salvati: i combo non devono né risalvare né ricompilare le tabelle
+    //(la combo del tipo di movimento in quel momento non ha ancora un modello)
+    private boolean RipristinoFiltriInCorso=false;
+
     static String IDTrans="";
     static Set<String> IDsTrans=new HashSet<>();
     boolean ModificaEffettuata=false;
@@ -159,6 +167,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         this.setIconImage(icon.getImage());
         this.setTitle("Classificazione Movimento");
         initComponents();
+        RipristinaFiltriAssociazione();
         PortaColonnaGruppoAccantoAlWallet();
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(jTable1);
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_MovimentiAbbinati);
@@ -251,6 +260,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         this.setIconImage(icon.getImage());
         this.setTitle("Classificazione Movimento");
         initComponents();
+        RipristinaFiltriAssociazione();
         PortaColonnaGruppoAccantoAlWallet();
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(jTable1);
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_MovimentiAbbinati);
@@ -2722,8 +2732,8 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
     private void ComboBox_EscursioneMassimaPercentualeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_EscursioneMassimaPercentualeItemStateChanged
         // TODO add your handling code here:
-     if (evt.getStateChange() == ItemEvent.SELECTED) {
-       // Object selectedItem = evt.getItem();
+     if (evt.getStateChange() == ItemEvent.SELECTED && !RipristinoFiltriInCorso) {
+        DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_ESCURSIONE_PERCENTUALE, evt.getItem().toString());
         ComboBox_TipoMovimentoItemStateChanged(evt);
       //  System.out.println("Elemento selezionato: " + selectedItem);
     }
@@ -2733,13 +2743,37 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
     private void ComboBox_EscursioneMassimaGiorniItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_EscursioneMassimaGiorniItemStateChanged
         // TODO add your handling code here:
-        if (evt.getStateChange() == ItemEvent.SELECTED) {
-       // Object selectedItem = evt.getItem();
+        if (evt.getStateChange() == ItemEvent.SELECTED && !RipristinoFiltriInCorso) {
+        DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_ESCURSIONE_GIORNI, evt.getItem().toString());
         ComboBox_TipoMovimentoItemStateChanged(evt);
       //  System.out.println("Elemento selezionato: " + selectedItem);
     }
     }//GEN-LAST:event_ComboBox_EscursioneMassimaGiorniItemStateChanged
                                       
+    private void RipristinaFiltriAssociazione(){
+        RipristinoFiltriInCorso=true;
+        try {
+            RipristinaSelezione(ComboBox_EscursioneMassimaPercentuale, OPZIONE_ESCURSIONE_PERCENTUALE);
+            RipristinaSelezione(ComboBox_EscursioneMassimaGiorni, OPZIONE_ESCURSIONE_GIORNI);
+        } catch (Exception ex) {
+            LoggerGC.ScriviErrore("Classificazione: filtri salvati non letti: "+ex.getMessage());
+        } finally {
+            RipristinoFiltriInCorso=false;
+        }
+    }
+
+    /** Seleziona il valore salvato se è fra quelli offerti dalla combo, altrimenti lascia il predefinito. */
+    private static void RipristinaSelezione(javax.swing.JComboBox<String> combo, String opzione){
+        String salvato=DatabaseH2.Pers_Opzioni_Leggi(opzione);
+        if (salvato==null) return;
+        for (int i=0;i<combo.getItemCount();i++){
+            if (combo.getItemAt(i).equals(salvato.trim())){
+                combo.setSelectedIndex(i);
+                return;
+            }
+        }
+    }
+
     private void TransferSI(){
                   Tabella_MovimentiAbbinati.setEnabled(true);
                   jLabel3.setEnabled(true);
@@ -2957,6 +2991,24 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
     
 
     /**
+     * Intervallo in cui deve cadere la data di un movimento candidato come controparte di uno scambio
+     * differito: il deposito segue il prelievo, quindi con un prelievo attuale si cerca da 24 ore prima fino a
+     * {@code giorniMs} dopo, con un deposito attuale da {@code giorniMs} prima fino a 24 ore dopo. Prima del
+     * 2026-10-11 la data del candidato veniva spostata di {@code giorniMs} e poi confrontata con un intervallo
+     * già spostato: il risultato era [attuale, attuale + giorni + 24 ore] (o il suo speculare), cioè i
+     * candidati nelle 24 ore "dalla parte sbagliata" mancavano e quelli oltre il limite dei giorni comparivano.
+     * @param prelievoAttuale vero se il movimento che si sta classificando è un prelievo
+     * @param dataOraAttuale data del movimento attuale in millisecondi
+     * @param giorniMs escursione massima scelta dall'utente, in millisecondi
+     * @return {minimo, massimo} della data del candidato, estremi inclusi
+     */
+    static long[] FinestraScambioDifferito(boolean prelievoAttuale, long dataOraAttuale, long giorniMs) {
+        final long Giorno = 86400000L;
+        if (prelievoAttuale) return new long[]{dataOraAttuale - Giorno, dataOraAttuale + giorniMs};
+        return new long[]{dataOraAttuale - giorniMs, dataOraAttuale + Giorno};
+    }
+
+    /**
      * Popola la tabella dei movimenti potenzialmente associabili al movimento {@code ID}, in base al
      * tipo di classificazione selezionata in {@code ComboBox_TipoMovimento} ("trasferimento tra
      * wallet" o "scambio differito"). Cerca tra tutti i movimenti non ancora generati
@@ -3081,24 +3133,19 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
         }else if (ComboBox_TipoMovimento.getSelectedItem()!=null&&ComboBox_TipoMovimento.getSelectedItem().toString().contains("SCAMBIO CRYPTO DIFFERITO")) {
            // System.out.println("Differito");
            
-           long DataMinima;
-           long DataMassima;
-           //long Mese=Long.parseLong("2592000000");
+           //Intervallo in cui deve cadere la data del candidato (non quella del movimento attuale)
+           long FinestraMin;
+           long FinestraMax;
             if (TipoMovimentoAttuale.equalsIgnoreCase("PC")) {
                 MonetaAttuale = attuale[8].trim();
-              //  QtaAttuale = new BigDecimal(attuale[10]).stripTrailingZeros();
-                //TipoMovimentoRichiesto = "DC";
                 SetMovimentiRichiesti = Set.of("DC", "DF");
-                    DataMinima=DataOraAttuale-Giorni;
-                    DataMassima=DataOraAttuale+ 86400000;
             } else {
                 MonetaAttuale = attuale[11].trim();
-              //  QtaAttuale = new BigDecimal(attuale[13]).stripTrailingZeros();
-                //TipoMovimentoRichiesto = "PC";
                 SetMovimentiRichiesti = Set.of("PC", "PF");
-                DataMinima=DataOraAttuale- 86400000;
-                DataMassima=DataOraAttuale+Giorni;
             }
+            long[] Finestra = FinestraScambioDifferito(TipoMovimentoAttuale.equalsIgnoreCase("PC"), DataOraAttuale, Giorni);
+            FinestraMin = Finestra[0];
+            FinestraMax = Finestra[1];
             //In questo caso i movimenti per essere accettati bisogna che abbiano le seguenti carattaristiche
             //1 - Devono essere del tipo movimento opposto a quello del movimento evidenziato
             //2 - Devono essere di una moneta con nome differente (questo limite lo tolgo)
@@ -3117,18 +3164,18 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                     {
                         QtanoABS = new BigDecimal(v[13]);
                         Moneta = v[11].trim();
-                        DataOra = FunzioniDate.ConvertiDatainLongMinuto(v[1])-Giorni;
+                        DataOra = FunzioniDate.ConvertiDatainLongMinuto(v[1]);
 
                     } else if (TipoMovimento.equalsIgnoreCase("PC")||TipoMovimento.equalsIgnoreCase("PF"))
                     {
                         QtanoABS = new BigDecimal(v[10]);
-                        DataOra = FunzioniDate.ConvertiDatainLongMinuto(v[1])+Giorni;
+                        DataOra = FunzioniDate.ConvertiDatainLongMinuto(v[1]);
                         Moneta = v[8].trim();
                     }
                     if (Moneta != null && QtanoABS!=null
                            // && !MonetaAttuale.equalsIgnoreCase(Moneta)  //TOLGO MOMENTANEAMENTE QUESTO FILTRO, DA VALUTARE CON CALMA
-                            && DataOra <= (DataMassima)
-                            && DataOra >= (DataMinima)
+                            && DataOra <= FinestraMax
+                            && DataOra >= FinestraMin
                             ) 
                     {
                                             

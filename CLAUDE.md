@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest#nomeDelMetodo
 
-# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.64.12)
+# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.64.13)
 java -jar target/Giacenze_Crypto-<version>-jar-with-dependencies.jar --NoJarPath --workdir ./test/2025/
 ```
 
@@ -813,6 +813,16 @@ pairs covered by personal prices or the old hourly `XXXEUR` archive (`CopertaDaP
 valuation reads before downloading and `FiltraRichiesteGiaCoperte` does not: without it the test wallet asked 218
 pairs instead of ~90. Measured on a real Cronos wallet (339 tx, 46 tokens, address prices removed from the cache):
 200-208 s before 2026-10-09, 52-79 s now, of which ~19 s explorer downloads and ~7 s the daily CoinGecko list. Measurements and decisions in `nocommit/Documentazione/Analisi_Prezzi_LP_DefiLlama.md`.
+
+**Option: DeFi tokens priced only by DefiLlama/CoinGecko** (`Prezzi.OPZIONE_DEFI_SOLO_DEFILLAMA_COINGECKO`, *Opzioni di
+calcolo*, off by default, 2026-10-10). `CambioAddressEUR` had two fallbacks to the exchanges **by symbol** for a token
+in the CoinGecko list (symbol in `SimboliPrioritari`, or price older than 365 days, which CoinGecko does not give),
+exposed to homonyms. With the option on both are skipped (`AddressAmmessoSugliExchange`): a priority symbol goes on to
+CoinGecko, an old price comes only from DefiLlama, which is asked first and has no time limit (missing only if DefiLlama has none). Three choices worth keeping: the exemption is "address in the alias list **at any
+date**" (`AliasPrezziToken.InElenco`, not `Alias(…, istante)`), so before its `dal` a listed token behaves as always;
+it is checked inside `CambioAddressEUR`, because `CambioXXXEUR` hands a valid address there before any alias; and a
+price blocked by the option writes **no** `PrezziKO` (it would outlive switching the option off). Native coins and
+invalid addresses never reach that code. It moves live RW year-end values, hence `RW_Label_SegnalaRicalcolo` on toggle.
 
 **Exchange API imports pre-fetch too** (2026-10-09), each with the **same price source as its consumer** (it picks the
 cascade's first exchange and, with a non-blank source, personal prices do not count as coverage, as in `CambioXXXEUR`).

@@ -17686,10 +17686,14 @@ if (nomi[0] != null && !nomi[0].equalsIgnoreCase(NomeMoneta)) {
     details = """
             Nome originale alla prima importazione: %s
 
+            Il token ha address e rete, quindi la rinomina viene salvata nel database e vale per TUTTI i wallet, indipendentemente dal wallet selezionato, e anche per le importazioni future.
+
             I nomi dei token sono case-sensitive, quindi ad esempio BTC è diverso da Btc o btc.
             """.formatted(nomi[0]);
 } else {
     details = """
+            Il token ha address e rete, quindi la rinomina viene salvata nel database e vale per TUTTI i wallet, indipendentemente dal wallet selezionato, e anche per le importazioni future.
+
             I nomi dei token sono case-sensitive, quindi ad esempio BTC è diverso da Btc o btc.
             """;
 }
@@ -17741,17 +17745,26 @@ if (result != null && result.isAction("rename-token")) {
         else {
             //Quello per wallet serve quando invece non ho i dati sopra e voglio operare solo sul wallet selezionato
             Set<String> IDMovimentiTokenWallet=Funzione_ElencoIDMovimentiTokeneWalletSelezionato(Wallet,"Tutti",NomeMoneta,Rete,Address);
-            String message = "Come vuoi rinominare il token " + NomeMoneta + " relativo al wallet " + Wallet + "?";
+            //Descrivo l'ambito della rinomina in base alla selezione del combo Wallet
+            String ambito;
+            if (Wallet.equalsIgnoreCase("tutti")) {
+                ambito = "in TUTTI i wallet";
+            } else if (Wallet.contains("Gruppo :")) {
+                ambito = "nei soli wallet del gruppo \"" + Wallet.split(" : ")[1].split("\\(")[0].trim() + "\"";
+            } else {
+                ambito = "nel solo wallet \"" + Wallet + "\" (tutti i suoi sotto-wallet)";
+            }
+            String message = "Come vuoi rinominare il token " + NomeMoneta + "?";
 
 String details = """
-        Il token non ha address o rete valorizzati.
+        Il token non ha address o rete valorizzati, quindi non può essere ricordato nel database.
 
-        Verranno quindi rinominati tutti i token appartenenti al wallet %s attualmente presenti in archivio.
+        In base alla selezione attuale (%s), il programma rinominerà il token "%s" %s: sono coinvolti %d movimenti attualmente presenti in archivio. I movimenti degli altri wallet non verranno modificati.
 
-        I movimenti futuri del token dovranno essere rinominati da questa stessa funzione.
+        Il nome verrà cambiato solo sui movimenti già importati: le importazioni future del token riporteranno il nome originale e andranno rinominate di nuovo da questa stessa funzione.
 
         I nomi dei token sono case-sensitive, quindi ad esempio BTC è diverso da Btc o btc.
-        """.formatted(Wallet);
+        """.formatted(Wallet, NomeMoneta, ambito, IDMovimentiTokenWallet.size());
 
 AppDialog.DialogResult result = AppDialog.builder(this)
         .windowTitle("Rinomina token")

@@ -541,8 +541,18 @@ public class CcxtInterop {
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
          BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
         String line;
+        // stderr in un thread a parte: leggerlo dopo stdout bloccherebbe npm se riempie il buffer dell'altro flusso
+        Thread lettoreErr = new Thread(() -> {
+            try {
+                String riga;
+                while ((riga = errReader.readLine()) != null) scriviRigaStderrNpm(riga);
+            } catch (IOException ex) {
+                // il processo e' terminato o e' stato interrotto dal watchdog: nulla da leggere
+            }
+        }, "npm-stderr");
+        lettoreErr.start();
         while ((line = reader.readLine()) != null) System.out.println("[npm] " + line);
-        while ((line = errReader.readLine()) != null) System.err.println("[npm-err] " + line);
+        lettoreErr.join();
     }
 
     int exitCode = process.waitFor();
@@ -750,8 +760,18 @@ public class CcxtInterop {
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
          BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
         String line;
+        // stderr in un thread a parte: leggerlo dopo stdout bloccherebbe npm se riempie il buffer dell'altro flusso
+        Thread lettoreErr = new Thread(() -> {
+            try {
+                String riga;
+                while ((riga = errReader.readLine()) != null) scriviRigaStderrNpm(riga);
+            } catch (IOException ex) {
+                // il processo e' terminato o e' stato interrotto dal watchdog: nulla da leggere
+            }
+        }, "npm-stderr");
+        lettoreErr.start();
         while ((line = reader.readLine()) != null) System.out.println("[npm] " + line);
-        while ((line = errReader.readLine()) != null) System.err.println("[npm-err] " + line);
+        lettoreErr.join();
     }
 
     int exitCode = process.waitFor();
@@ -763,6 +783,19 @@ public class CcxtInterop {
 }
     
     
+    /**
+     * Inoltra una riga che npm scrive su stderr. npm usa stderr anche per le comunicazioni che non sono errori
+     * ({@code npm notice} per l'aggiornamento disponibile, {@code npm warn}): nella finestra degli errori
+     * traevano in inganno, quindi solo le righe {@code npm error} (o senza prefisso riconoscibile, per non
+     * perdere un errore) vanno su {@code System.err}. Le altre vanno su {@code System.out}, e finiscono comunque nel log.
+     */
+    private static void scriviRigaStderrNpm(String riga) {
+        String r = riga.trim();
+        boolean informativa = r.startsWith("npm notice") || r.startsWith("npm warn");
+        if (informativa) System.out.println("[npm] " + riga);
+        else System.err.println("[npm-err] " + riga);
+    }
+
     /** @return il percorso dell'eseguibile {@code npm} della distribuzione Node.js gestita da questa classe */
     public static Path getNpmPath() {
         if (NODE_ESTERNO != null) {

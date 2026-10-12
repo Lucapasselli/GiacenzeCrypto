@@ -178,11 +178,11 @@ public String GetTipologia(){
 
 /**
  * Deduce e imposta automaticamente la tipologia della moneta: {@code FIAT} se il simbolo è tra
- * {@code EUR}/{@code USD}/{@code TRY}/{@code GBP}, altrimenti {@code Crypto}.
+ * dell'elenco {@code fiat} di {@code config/varie/Simboli.json} (oggi {@code EUR}/{@code USD}/{@code TRY}/{@code GBP}),
+ * altrimenti {@code Crypto}.
  */
 public void AssegnaTipoAuto(){
-    Set<String> valute = Set.of("EUR", "USD", "TRY","GBP");
-    if (valute.contains(Moneta)) {
+    if (ListeSimboli.Fiat().contains(Moneta)) {
                 Tipo = "FIAT";
             } else {
                 Tipo = "Crypto";

@@ -1288,23 +1288,8 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
     //  (Stato estero, identificativo, note, fonte) sono colonne del rigo FIAT del periodo.
     // ============================================================================
 
-    /**
-     * Exchange noti : {@code {id normalizzato, nome visualizzato}}. Ordine <b>stabile</b> : è quello che
-     * lega un nome sorgente di movimento al suo gruppo wallet preconfigurato
-     * (indice 0 → {@code "Wallet " + GRUPPO_PRECONF_BASE}, indice 1 → il successivo, ...) — vedi
-     * {@link Principale_GruppiWalletRW#exchangeIdDaSorgente} / {@code gruppoPreconfigurato}.
-     */
-    static final String[][] EXCHANGE_NOTI = {
-        {"binance", "Binance"}, {"coinbase", "Coinbase"}, {"kraken", "Kraken"},
-        {"cryptocom", "Crypto.com"}, {"okx", "OKX"}, {"bitpanda", "Bitpanda"},
-        {"bitget", "Bitget"}, {"kucoin", "KuCoin"}, {"bybit", "Bybit"},
-        {"revolut", "Revolut"}, {"nexo", "Nexo"}, {"bitstamp", "Bitstamp"},
-        {"gemini", "Gemini"}, {"bitfinex", "Bitfinex"},
-        {"gateio", "Gate.io"}
-    };
-
-    /** Numero del primo gruppo wallet preconfigurato : {@code "Wallet 101"} ↔ {@code EXCHANGE_NOTI[0]}. */
-    static final int GRUPPO_PRECONF_BASE = 101;
+    //Gli exchange noti e i loro gruppi wallet preconfigurati (Wallet 101...) non stanno piu' qui: vengono da
+    //config/importmappe/RW_Predefiniti.json (vedi DatiPredefinitiRW e Principale_GruppiWalletRW.gruppoPreconfigurato).
 
     // ---- GRUPPO_PERIODO_RW ----
 

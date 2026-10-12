@@ -11226,10 +11226,10 @@ GiacenzeaData_CompilaTabellaToken(true);
 
     private void Opzioni_Emoney_ImpostaEmoneyTokenStandardInTabella(int Metodo) {
         //I MiCA compliant vengono da config/varie/EmoneyToken.json (EmoneyToken), lo stesso elenco dell'avviso del
-        //calcolo dei quadri: un EMT nuovo si aggiunge li', senza versione. Dubbie e stablecoin restano qui.
+        //calcolo dei quadri: un EMT nuovo si aggiunge li', senza versione. Dubbie e stablecoin vengono da config/varie/Simboli.json (ListeSimboli).
         EmoneyToken.Elenco Elenco = EmoneyToken.Carica();
-        String StableCoinDubbie[] = new String[]{"BUSD", "USDT", "PYUSD"};
-        String StableCoin[] = new String[]{"DAI", "USDE", "FRAX", "EURT", "AEUR", "VEUR", "JEUR", "LUSD", "USD0", "USDS", "USDY"};
+        String StableCoinDubbie[] = ListeSimboli.StablecoinDubbie();
+        String StableCoin[] = ListeSimboli.StablecoinAltre();
         String Anno = Elenco != null ? Elenco.decorrenza() : "2023-01-01";
         //Metodo=0 -> Solo mica compliant
         //Metodo=1 -> Anche Stable dubbie
@@ -14190,6 +14190,17 @@ if (result.isAction("delete-all")) {
                 if (varie != null && varie.contains(AliasPrezziToken.NOME + ".json")) {
                     AliasPrezziToken.Carica();
                     System.out.println("AggiornamentoConfig: alias dei prezzi ricaricati");
+                }
+                if (varie != null && varie.contains(ListeSimboli.NOME + ".json")) {
+                    Prezzi.RicaricaSimboliPrioritari();
+                    ListeSimboli.RicaricaFiat();
+                    System.out.println("AggiornamentoConfig: liste di simboli ricaricate");
+                }
+                //Gli exchange noti (gruppi wallet e grafie dei nomi) sono in RW_Predefiniti.json, tenuto in memoria
+                java.util.List<String> mappeAgg = aggiornati.get("importmappe");
+                if (mappeAgg != null && mappeAgg.contains(DatiPredefinitiRW.NOME + ".json")) {
+                    Principale_GruppiWalletRW.RicaricaExchangeNoti();
+                    System.out.println("AggiornamentoConfig: exchange noti ricaricati");
                 }
                 if (!Store) Riepiloga("loghi", aggiornati.get("loghi"));
 

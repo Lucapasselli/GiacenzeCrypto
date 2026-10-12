@@ -458,7 +458,7 @@ static boolean PrezzoPrezzato(String Prezzo) {
      * </ol>
      * Restituisce {@code null} se nessuna gamba ha un prezzo: lo calcola allora
      * {@code DammiPrezzoInfoTransazione} con la stessa regola. Fino al 2026-09-29 la scelta cadeva sulla
-     * gamba "più affidabile" (FIAT, USD, monete di {@link Prezzi#SimboliPrioritari}, poi la prima con un
+     * gamba "più affidabile" (FIAT, USD, monete di {@link Prezzi#SimboliPrioritari()}, poi la prima con un
      * prezzo, cioè quella in uscita).
      *
      * <p>L'ordine degli argomenti non conta: {@code creaMovimento} li riceve come capita e l'entrata si

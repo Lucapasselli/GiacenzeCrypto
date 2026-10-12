@@ -79,7 +79,7 @@ public class Prezzi {
 
     /**
      * Un token cercato per address puo' ripiegare sul prezzo degli exchange per simbolo? E' il caso delle monete
-     * di {@link #SimboliPrioritari} e dei prezzi piu' vecchi di un anno, che coingecko non da'. Con l'opzione
+     * di {@link #SimboliPrioritari()} e dei prezzi piu' vecchi di un anno, che coingecko non da'. Con l'opzione
      * {@link #OPZIONE_DEFI_SOLO_DEFILLAMA_COINGECKO} no, salvo che l'address sia nell'elenco degli alias, a
      * qualunque data (vedi {@link AliasPrezziToken#InElenco}).
      */
@@ -87,8 +87,25 @@ public class Prezzi {
         return !SoloDefiLlamaCoingecko || AliasPrezziToken.InElenco(Address, Rete);
     }
 
-    static String[] SimboliPrioritari=new String []{"EURI","EURC","EURCV","EUROe","EURQ","EURR","EURe","USDT","USDC","BUSD","USDE","DAI","TUSD","BTC",
-        "ETH","BNB","SOL","LTC","ADA","XRP","XLM","PAX","TRX","ATOM","POL","CRO","MON"};
+    private static volatile String[] simboliPrioritari;
+
+    /**
+     * Monete quotate per prime sugli exchange, da {@code config/varie/Simboli.json} ({@link ListeSimboli}). Lette
+     * al primo uso e di nuovo da {@link #RicaricaSimboliPrioritari()} quando l'aggiornamento in background porta
+     * un file nuovo.
+     */
+    static String[] SimboliPrioritari() {
+        String[] s = simboliPrioritari;
+        if (s == null) {
+            s = ListeSimboli.CaricaPrioritari();
+            simboliPrioritari = s;
+        }
+        return s;
+    }
+
+    static void RicaricaSimboliPrioritari() {
+        simboliPrioritari = ListeSimboli.CaricaPrioritari();
+    }
 
     
     //Variabile che mi serve per capire se ho già interrorgato le api ad un certo timestamp
@@ -726,7 +743,7 @@ public class Prezzi {
     /**
      * Recupera il prezzo in EUR di un token identificato dal suo indirizzo di contratto, provando in ordine:
      * cache dei prezzi personalizzati, vecchio database, nuovo database, DefiLlama, quotazioni exchange
-     * (per le coppie in {@link #SimboliPrioritari} o per prezzi più vecchi di un anno, non con l'opzione
+     * (per le coppie in {@link #SimboliPrioritari()} o per prezzi più vecchi di un anno, non con l'opzione
      * {@link #OPZIONE_DEFI_SOLO_DEFILLAMA_COINGECKO}) e infine coingecko.
      * Se l'indirizzo non è valido per la rete indicata, delega direttamente a {@link #CambioXXXEUR} tramite simbolo.
      * I tentativi falliti vengono registrati come irrecuperabili tramite {@link #PrezzoIrrecuperabileDaDB_Scrivi}
@@ -844,8 +861,8 @@ public class Prezzi {
             
                 //Se la moneta è codificata da coingecko (Quindi so che non è scam) e corrisponde ad una delle monete principali
                 //Prendo il suo prezzo dagli exchange per risparmiare tempo e richieste.
-                for (String SimboloP : SimboliPrioritari) {
-                    if (ExchangeAmmessi && (Simbolo).toUpperCase().equals(SimboloP)) {
+                for (String SimboloP : SimboliPrioritari()) {
+                    if (ExchangeAmmessi && Simbolo.equalsIgnoreCase(SimboloP)) {
                         IPrezzo=CambioXXXEUR(Simbolo, Qta, Datalong,"","","",true);
                         if (IPrezzo!=null)return IPrezzo;
                     }
@@ -2426,7 +2443,7 @@ public class Prezzi {
      * vince l'uscita ({@link #isPrezzoPreciso}). Serve soprattutto in DeFi, dove un token poco liquido ha
      * spesso solo quotazioni orarie.
      * Fino al 2026-09-29 la scelta cadeva sulla gamba "più affidabile" (FIAT, EMT in euro, USD, monete di
-     * {@link #SimboliPrioritari}, poi la prima con un prezzo, cioè quella in uscita): negli scambi a termine
+     * {@link #SimboliPrioritari()}, poi la prima con un prezzo, cioè quella in uscita): negli scambi a termine
      * (scambio differito) dava il valore della moneta ceduta alla data del deposito, lontano da quello della
      * moneta ricevuta. I valori già salvati nei movimenti non vengono ricalcolati: la regola vale per i prezzi
      * calcolati da qui in avanti (import, classificazione, rigenerazione manuale dei prezzi).

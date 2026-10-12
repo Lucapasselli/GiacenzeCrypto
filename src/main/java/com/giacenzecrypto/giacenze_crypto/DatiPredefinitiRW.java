@@ -43,17 +43,23 @@ public class DatiPredefinitiRW {
     /** Nome del file in {@code config/importmappe/}, senza estensione. */
     public static final String NOME = "RW_Predefiniti";
 
-    /** Un exchange noto : id + nome + gruppo wallet preconfigurato. */
+    /**
+     * Un exchange noto : id + nome + gruppo wallet preconfigurato + le grafie alternative con cui il suo nome compare
+     * nel campo {@code [3]} dei movimenti ({@code nomiSorgente}, minuscole: "okex", "nexo pro"). Il nome visualizzato e
+     * l'id sono riconosciuti comunque. Un nome che NON e' qui (es. "Coinbase Pro") resta un wallet a se'.
+     */
     public static final class ExchangePredef {
 
         public final String id;
         public final String nome;
         public final String gruppo;
+        public final List<String> nomiSorgente;
 
-        ExchangePredef(String id, String nome, String gruppo) {
+        ExchangePredef(String id, String nome, String gruppo, List<String> nomiSorgente) {
             this.id = id;
             this.nome = nome;
             this.gruppo = gruppo;
+            this.nomiSorgente = nomiSorgente;
         }
     }
 
@@ -202,7 +208,17 @@ public class DatiPredefinitiRW {
                         LoggerGC.ScriviErrore("DatiPredefinitiRW: l'exchange " + id + " ha periodiFiscali "
                                 + "ma nessun gruppo wallet in " + nome + ", li ignoro");
                     }
-                    exchange.add(new ExchangePredef(id, ex.optString("nome", id), gruppo));
+                    List<String> nomiSorgente = new ArrayList<>();
+                    JSONArray nsArr = ex.optJSONArray("nomiSorgente");
+                    if (nsArr != null) {
+                        for (int j = 0; j < nsArr.length(); j++) {
+                            String ns = nsArr.optString(j, "").trim().toLowerCase();
+                            if (!ns.isEmpty()) {
+                                nomiSorgente.add(ns);
+                            }
+                        }
+                    }
+                    exchange.add(new ExchangePredef(id, ex.optString("nome", id), gruppo, nomiSorgente));
                 }
             }
 

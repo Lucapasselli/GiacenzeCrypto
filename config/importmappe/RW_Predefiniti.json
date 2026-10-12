@@ -1,6 +1,6 @@
 {
   "_commento": "Dati predefiniti del quadro W/RW per gruppo wallet: elenco exchange noti, gruppi wallet preconfigurati e i loro periodi di detenzione. I 'periodiFiscali' scritti sotto un exchange sono righi FIAT del suo 'gruppo': lo Stato estero, l'identificativo fiscale, le note e la fonte sono colonne del periodo di detenzione, non piu' di una tabella a parte (dal 2026-09-09 le tabelle EXCHANGE_ANAGRAFICA / EXCHANGE_PERIODO / GRUPPO_RIFERIMENTO_ESTERO non esistono piu'). Caricato all'avvio come le mappe causali (copia nel jar sotto /ImportMappe/, sync da repo in config/importmappe/, vedi DatiPredefinitiRW). Il reconcile all'avvio tocca SOLO le righe con Origine SISTEMA: le righe inserite o modificate a mano (Origine UTENTE, o NULL sui DB pre-esistenti) non vengono mai modificate ne' cancellate. La 'chiave' di ogni periodo e' la sua identita' stabile fra un aggiornamento e l'altro. L'identificativo ISEE non si mette qui: e' sempre inserito a mano e il reconcile non lo tocca. Il campo opzionale 'contoCorrente' (SI/NO) di un periodo FIAT indica che l'intermediario estero e' una banca e il conto valuta e' un vero conto corrente estero: codice individuazione bene 1, IVAFE in misura fissa 34,20 euro sul valore medio di giacenza (calcolo in Calcoli_RW_Fiat.applicaContoCorrente).",
-  "versione": "2026-09-25",
+  "versione": "2026-10-12",
   "exchange": [
     {
       "id": "binance",
@@ -62,6 +62,7 @@
       "id": "cryptocom",
       "nome": "Crypto.com",
       "gruppo": "Wallet 104",
+      "nomiSorgente": ["crypto.com app", "crypto.com exchange", "crypto com", "cdc"],
       "periodiFiscali": [
         {
           "chiave": "cryptocom-mica",
@@ -81,6 +82,7 @@
       "id": "okx",
       "nome": "OKX",
       "gruppo": "Wallet 105",
+      "nomiSorgente": ["okex"],
       "periodiFiscali": [
         {
           "chiave": "okx-mica",
@@ -182,6 +184,7 @@
       "id": "nexo",
       "nome": "Nexo",
       "gruppo": "Wallet 111",
+      "nomiSorgente": ["nexo pro"],
       "periodiFiscali": []
     },
     {

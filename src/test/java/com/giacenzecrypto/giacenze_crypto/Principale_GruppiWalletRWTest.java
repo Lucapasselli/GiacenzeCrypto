@@ -531,7 +531,7 @@ class Principale_GruppiWalletRWTest {
     }
 
     @Test
-    void gruppoPreconfigurato_indiceStabileDaEXCHANGE_NOTI() {
+    void gruppoPreconfigurato_daRW_Predefiniti() {
         assertEquals("Wallet 101", Principale_GruppiWalletRW.gruppoPreconfigurato("binance"));
         assertEquals("Wallet 102", Principale_GruppiWalletRW.gruppoPreconfigurato("coinbase"));
         assertEquals("Wallet 104", Principale_GruppiWalletRW.gruppoPreconfigurato("cryptocom"));

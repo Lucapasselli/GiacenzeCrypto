@@ -105,6 +105,13 @@ Single source of truth for:
 
 The `<build><resources>` block in `pom.xml` is deliberately split into **two** `<resource>` entries on the same directory: the first with `<filtering>true</filtering>` and `<include>**/version.properties</include>`, the second without filtering and with the mirror `<exclude>`. The split is not cosmetic — almost every other resource is a binary image (PNG/SVG under `Images/`, `Temi/`, splash, logo) and indiscriminate filtering would corrupt them. Keep both blocks: without the filtered one `leggiVersione()` sees the literal `${…}` (it guards with `startsWith("${")`) and falls back to `"sconosciuta"`, which then shows in the window title. For the same reason the shade plugin's `ManifestResourceTransformer` must keep `<manifestEntries><SplashScreen-Image>splash.png</SplashScreen-Image></manifestEntries>`, or `SplashAvvio.splashNativo()` gets `null` from `SplashScreen.getSplashScreen()` and the native splash never appears. Both had gone missing from `pom.xml` and were restored on 2026-07-30.
 
+**Known exchanges and their wallet groups live in `RW_Predefiniti.json`, not in code (2026-10-12).** The `exchange` array gives each
+exchange `id`, `nome`, `gruppo` (`Wallet 1xx`, explicit: no more index arithmetic from a table in `DatabaseH2`) and optional
+`nomiSorgente` (lowercase spellings of its name in field `[3]`: `"okex"`, `"nexo pro"`...). `Principale_GruppiWalletRW` reads it once
+(`exchangeNoti()`, `RicaricaExchangeNoti()` after the background config update brings a new copy). A source name that no
+exchange lists (Coinbase Pro, GDAX) stays a wallet of its own. Adding an exchange or a spelling is a JSON edit only; older app
+versions ignore `nomiSorgente`. `DatiPredefinitiRWTest` checks ids/groups are unique and every spelling maps back.
+
 ### Data storage: what is and isn't a database
 
 The `.db` extension is used for **both** H2 databases and plain text files — do not assume a `.db` path is SQL.
@@ -642,7 +649,7 @@ missing, i.e. a cancelled order), read as `quantitaUscita`. `Nexo Pro Trades.jso
 (gross − fee = what the Pro then moved to the Savings). `Nexo Pro Depositi e Prelievi.json` (DnWHistory, config-only,
 `centralizzato: true`) imports DEPOSIT/WITHDRAW as `TRASFERIMENTO-CRYPTO`. Both use `nomeExchange` **"Nexo Pro"** (its own
 `[3]`, so its own re-import dedup key) but the **same wallet group as Nexo** (Wallet 111, the user's choice 2026-10-12):
-`Principale_GruppiWalletRW.SORGENTE_A_EXCHANGE` maps `"nexo pro"` to `nexo`, so the Savings↔Pro transfers are internal and
+`RW_Predefiniti.json` lists `"nomiSorgente": ["nexo pro"]` under `nexo`, so the Savings↔Pro transfers are internal and
 never touch the LIFO (unlike Coinbase Pro, kept apart on purpose). Both configs need 1.0.65.01 for that reason. **The
 Savings↔Pro pairing needs no code and no version**: the *Assegnazione Automatica* button (`DepositiPrelievi_
 AssegnazioneAutomatica`, phase 1) already pairs PC/DC of two different wallets (same coin, opposite sign, < 1 h with
@@ -1167,6 +1174,7 @@ All the working `.md` documents (bug analyses, performance analyses, the change 
 | `nocommit/Documentazione/Test_Grafici_Automatici.md` | how to run automated GUI tests on the virtual display |
 | `nocommit/Documentazione/Analisi_Prezzi_LP_DefiLlama.md` | automatic prices of pool/vault tokens from DefiLlama: archive measurements, endpoints, the user's rules (§8) |
 | `nocommit/Documentazione/Analisi_Carta_OKX_XLayer.md` | OKX Card wallet on X Layer: observed flow, sources tried, public-node limits, state-bisection scan, open questions |
+| `nocommit/Documentazione/Analisi_Configurazione_Esterna.md` | what is still hardcoded and could move to `config/` JSON files (chains, public nodes, per-year tax parameters, states, form layouts, runtime versions), in priority order |
 
 **Write new technical `.md` documents there, not in `Documentazione/`.** The top-level `Documentazione/` folder is **historical** since 2026-08-18: the `.odt`/`.pdf`/`.txt` manuals that used to be the source now live as Markdown under `docs/documentazione/` (below), and the old files are kept only as a record of what was published before — do not update them. What is still live there is the material that never became a manual: `Documentazione/IstruzioniVarie.txt` (referenced elsewhere in this file), `MappatureImport.txt`, the `.pptx` presentations, `FormuleUtili.xlsx` and `Schemi.odg`.
 

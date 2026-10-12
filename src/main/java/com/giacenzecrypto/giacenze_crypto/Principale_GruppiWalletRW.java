@@ -808,26 +808,46 @@ public class Principale_GruppiWalletRW {
      */
     private static final String OPZIONE_AUTOGRUPPO_INIZIALIZZATO = "EXCHANGE_AUTOGRUPPO_INIZIALIZZATO";
 
-    /** Nome sorgente del movimento (campo {@code [3]}) normalizzato → id exchange di {@link DatabaseH2#EXCHANGE_NOTI}. */
-    private static final Map<String, String> SORGENTE_A_EXCHANGE = creaMappaSorgenti();
+    /**
+     * Gli exchange noti, con il loro gruppo wallet e le grafie del nome sorgente, letti da
+     * {@code RW_Predefiniti.json} (non piu' da una tabella nel codice: un exchange nuovo o una grafia in piu' si
+     * distribuiscono con l'aggiornamento delle config, senza una nuova versione). Si legge una volta e si riazzera con
+     * {@link #RicaricaExchangeNoti()} quando l'aggiornamento in background porta un file nuovo.
+     */
+    private static volatile DatiPredefinitiRW exchangeNoti = null;
+    /** Nome sorgente del movimento (campo {@code [3]}) normalizzato → id exchange noto. */
+    private static volatile Map<String, String> sorgenteAExchange = null;
 
-    private static Map<String, String> creaMappaSorgenti() {
-        Map<String, String> m = new HashMap<>();
-        for (String[] e : DatabaseH2.EXCHANGE_NOTI) {
-            m.put(e[0], e[0]);                          // id stesso ("okx")
-            m.put(normalizzaSorgente(e[1]), e[0]);      // nome visualizzato ("crypto.com" → cryptocom)
+    /** Scarta la copia in memoria degli exchange noti: la prossima lettura rilegge {@code RW_Predefiniti.json}. */
+    public static synchronized void RicaricaExchangeNoti() {
+        exchangeNoti = null;
+        sorgenteAExchange = null;
+    }
+
+    private static synchronized DatiPredefinitiRW exchangeNoti() {
+        if (exchangeNoti == null) {
+            exchangeNoti = DatiPredefinitiRW.Carica();
         }
-        // varianti note viste negli import e nell'inserimento manuale
-        m.put("crypto.com app", "cryptocom");
-        m.put("crypto.com exchange", "cryptocom");
-        m.put("crypto com", "cryptocom");
-        m.put("cdc", "cryptocom");
-        m.put("okex", "okx");
-        // il Nexo Pro e' un altro conto ma lo stesso intestatario, e i trasferimenti col Savings devono restare
-        // interni al gruppo (campo [3] diverso solo per la deduplica del re-import)
-        m.put("nexo pro", "nexo");
-        // "coinbase pro" / "gdax" restano volutamente FUORI : l'applicazione li tiene come wallet a sé.
-        return m;
+        return exchangeNoti;
+    }
+
+    private static synchronized Map<String, String> sorgenti() {
+        if (sorgenteAExchange == null) {
+            Map<String, String> m = new HashMap<>();
+            DatiPredefinitiRW d = exchangeNoti();
+            if (d != null) {
+                for (DatiPredefinitiRW.ExchangePredef e : d.exchange()) {
+                    m.put(normalizzaSorgente(e.id), e.id);       // id stesso ("okx")
+                    m.put(normalizzaSorgente(e.nome), e.id);     // nome visualizzato ("crypto.com" → cryptocom)
+                    for (String ns : e.nomiSorgente) {           // grafie viste negli import ("okex", "nexo pro", ...)
+                        m.put(normalizzaSorgente(ns), e.id);
+                    }
+                }
+            }
+            // "coinbase pro" / "gdax" restano volutamente FUORI : l'applicazione li tiene come wallet a sé.
+            sorgenteAExchange = m;
+        }
+        return sorgenteAExchange;
     }
 
     private static String normalizzaSorgente(String s) {
@@ -836,7 +856,7 @@ public class Principale_GruppiWalletRW {
 
     /** Id exchange corrispondente al nome sorgente {@code [3]} del movimento, o {@code ""} se non riconosciuto. */
     public static String exchangeIdDaSorgente(String nomeSorgente) {
-        String id = SORGENTE_A_EXCHANGE.get(normalizzaSorgente(nomeSorgente));
+        String id = sorgenti().get(normalizzaSorgente(nomeSorgente));
         return id == null ? "" : id;
     }
 
@@ -846,12 +866,9 @@ public class Principale_GruppiWalletRW {
             return "";
         }
         String id = exchangeId.trim();
-        for (int i = 0; i < DatabaseH2.EXCHANGE_NOTI.length; i++) {
-            if (DatabaseH2.EXCHANGE_NOTI[i][0].equalsIgnoreCase(id)) {
-                return "Wallet " + (DatabaseH2.GRUPPO_PRECONF_BASE + i);
-            }
-        }
-        return "";
+        DatiPredefinitiRW d = exchangeNoti();
+        DatiPredefinitiRW.ExchangePredef e = d == null ? null : d.exchangePerId(id);
+        return e == null ? "" : e.gruppo;
     }
 
     /** Nomi già registrati nel marcatore {@value #OPZIONE_AUTOGRUPPO_FATTI} (uno per riga). */
@@ -1208,11 +1225,18 @@ public class Principale_GruppiWalletRW {
         return chiaveDefault != null && !chiaveDefault.isBlank() ? "Modificato" : "Manuale";
     }
 
-    /** {@code true} se il nome gruppo è uno dei preconfigurati {@code Wallet 101..}{@code (101 + numero exchange noti - 1)}. */
+    /** {@code true} se il nome gruppo è il gruppo preconfigurato di un exchange noto (da {@code RW_Predefiniti.json}). */
     public static boolean gruppoEPredefinito(String gruppo) {
-        Integer n = numeroGruppo(gruppo);
-        return n != null && n >= DatabaseH2.GRUPPO_PRECONF_BASE
-                && n < DatabaseH2.GRUPPO_PRECONF_BASE + DatabaseH2.EXCHANGE_NOTI.length;
+        DatiPredefinitiRW d = exchangeNoti();
+        if (d == null || gruppo == null) {
+            return false;
+        }
+        for (DatiPredefinitiRW.ExchangePredef e : d.exchange()) {
+            if (e.gruppo.equalsIgnoreCase(gruppo.trim())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Provenienza del gruppo per la colonna "Origine" della tabella "Gruppi Wallet". */

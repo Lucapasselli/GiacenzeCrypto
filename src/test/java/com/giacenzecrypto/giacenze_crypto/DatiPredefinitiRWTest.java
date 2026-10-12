@@ -45,19 +45,39 @@ class DatiPredefinitiRWTest {
     }
 
     @Test
-    void ogniExchangeNoto_haLaSuaVoceConIlGruppoGiusto() {
-        //EXCHANGE_NOTI decide in quale "Wallet 1xx" finiscono i movimenti di un exchange; il JSON dà a
-        //quel gruppo nome e dati fiscali. Un exchange aggiunto solo al primo lascerebbe il gruppo senza
-        //nome (è successo con Gate.io)
+    void ogniExchangeNoto_haIdENomeEGruppoUnici_eLeGrafieTornanoAlSuoId() {
+        //L'elenco degli exchange noti e' solo il JSON (non c'e' piu' una tabella nel codice da tenere allineata):
+        //il gruppo wallet preconfigurato di un exchange e' quello scritto nel suo "gruppo", e ogni grafia del nome
+        //sorgente ("okex", "nexo pro", ...) deve riportare all'exchange che la dichiara
         DatiPredefinitiRW p = DatiPredefinitiRW.Carica();
         assertNotNull(p);
-        assertEquals(DatabaseH2.EXCHANGE_NOTI.length, p.exchange().size(),
-                "EXCHANGE_NOTI e RW_Predefiniti.json devono elencare gli stessi exchange");
-        for (String[] ex : DatabaseH2.EXCHANGE_NOTI) {
-            DatiPredefinitiRW.ExchangePredef voce = p.exchangePerId(ex[0]);
-            assertNotNull(voce, "manca in RW_Predefiniti.json: " + ex[0]);
-            assertEquals(Principale_GruppiWalletRW.gruppoPreconfigurato(ex[0]), voce.gruppo, ex[0]);
+        java.util.Set<String> id = new java.util.HashSet<>();
+        java.util.Set<String> gruppi = new java.util.HashSet<>();
+        for (DatiPredefinitiRW.ExchangePredef ex : p.exchange()) {
+            assertTrue(id.add(ex.id.toLowerCase()), "id duplicato: " + ex.id);
+            assertFalse(ex.gruppo.isBlank(), "exchange senza gruppo wallet: " + ex.id);
+            assertTrue(gruppi.add(ex.gruppo), "due exchange nello stesso gruppo: " + ex.gruppo);
+            assertEquals(ex.gruppo, Principale_GruppiWalletRW.gruppoPreconfigurato(ex.id), ex.id);
+            assertTrue(Principale_GruppiWalletRW.gruppoEPredefinito(ex.gruppo), ex.gruppo);
+            assertEquals(ex.id, Principale_GruppiWalletRW.exchangeIdDaSorgente(ex.nome), ex.nome);
+            for (String ns : ex.nomiSorgente) {
+                assertEquals(ex.id, Principale_GruppiWalletRW.exchangeIdDaSorgente(ns), ns);
+            }
         }
+    }
+
+    @Test
+    void nomiSorgente_vengonoLettiDalJson() {
+        DatiPredefinitiRW p = DatiPredefinitiRW.Carica();
+        assertNotNull(p);
+        assertTrue(p.exchangePerId("nexo").nomiSorgente.contains("nexo pro"));
+        assertTrue(p.exchangePerId("okx").nomiSorgente.contains("okex"));
+        assertTrue(p.exchangePerId("cryptocom").nomiSorgente.containsAll(
+                java.util.List.of("crypto.com app", "crypto.com exchange", "crypto com", "cdc")));
+        DatiPredefinitiRW q = DatiPredefinitiRW.Interpreta(
+                "{\"exchange\":[{\"id\":\"xx\",\"nome\":\"Xx\",\"gruppo\":\"Wallet 200\","
+                + "\"nomiSorgente\":[\" Xx Pro \",\"\"]}]}", "prova");
+        assertEquals(java.util.List.of("xx pro"), q.exchangePerId("xx").nomiSorgente);
     }
 
     @Test

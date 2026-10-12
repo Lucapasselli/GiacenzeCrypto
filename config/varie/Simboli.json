@@ -1,0 +1,22 @@
+{
+  "descrizione": "Liste di simboli che il programma tratta in modo particolare. Distribuito col programma e riallineato a ogni avvio dal repository: un simbolo si aggiunge qui, senza una nuova versione. Vedi ListeSimboli.java.",
+  "prioritari": {
+    "descrizione": "Monete di cui, trovate per address nell'elenco di CoinGecko (quindi non SCAM), si chiede il prezzo direttamente agli exchange invece che a CoinGecko/DefiLlama: stablecoin, euro-token e monete principali, quotate al minuto. Il confronto ignora maiuscole e minuscole (EUROe, EURe, come sono scritti dagli emittenti, valgono quanto EUROE ed EURE). Cambia i prezzi dei movimenti importati da quel momento, non quelli gia' salvati.",
+    "simboli": [
+      "EURI", "EURC", "EURCV", "EUROe", "EURQ", "EURR", "EURe", "USDT", "USDC", "BUSD", "USDE", "DAI", "TUSD", "BTC",
+      "ETH", "BNB", "SOL", "LTC", "ADA", "XRP", "XLM", "PAX", "TRX", "ATOM", "POL", "CRO", "MON"
+    ]
+  },
+  "fiat": {
+    "descrizione": "Valute FIAT: una moneta con uno di questi simboli (scritto esattamente cosi', maiuscolo) e' di tipo FIAT, ogni altra e' Crypto. Il tipo e' letto da Moneta.AssegnaTipoAuto e lo usano i motori (gambe FIAT contro crypto). Aggiungere una valuta cambia come sono classificati i movimenti che la usano da quel momento. Non vale per le liste proprie dei singoli importer (per esempio quella del rapporto fiscale Binance).",
+    "simboli": ["EUR", "USD", "TRY", "GBP"]
+  },
+  "stablecoinDubbie": {
+    "descrizione": "Secondo livello del pulsante dei token standard della sezione E-Money (Opzioni): stablecoin di cui e' dubbio che siano moneta elettronica (come USDT). Si aggiungono ai MiCA compliant di EmoneyToken.json scegliendo «MiCA compliant + dubbie» e sono incluse da «Tutte le stablecoin». Il pulsante le scrive nella sezione E-Money dell'utente con la decorrenza di EmoneyToken.json: non cambia nulla finche' l'utente non lo preme.",
+    "simboli": ["BUSD", "USDT", "PYUSD"]
+  },
+  "stablecoinAltre": {
+    "descrizione": "Terzo livello dello stesso pulsante («Tutte le stablecoin»): le altre stablecoin, comprese quelle algoritmiche o crypto-collateralizzate, che si aggiungono a MiCA compliant e dubbie. Stesse regole di stablecoinDubbie.",
+    "simboli": ["DAI", "USDE", "FRAX", "EURT", "AEUR", "VEUR", "JEUR", "LUSD", "USD0", "USDS", "USDY"]
+  }
+}

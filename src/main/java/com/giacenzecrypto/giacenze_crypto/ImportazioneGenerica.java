@@ -1620,13 +1620,30 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             return null;
         }
         String[] nuova = Arrays.copyOf(campi, Math.max(campi.length,
-                Math.max(cfg.colonnaCoppiaBase, cfg.colonnaCoppiaQuote) + 1));
+                Math.max(Math.max(cfg.colonnaCoppiaBase, cfg.colonnaCoppiaQuote), cfg.colonnaCoppiaImporto) + 1));
         for (int i = campi.length; i < nuova.length; i++) {
             nuova[i] = "";
         }
         nuova[cfg.colonnaCoppiaBase] = cella.substring(0, idx).trim();
         nuova[cfg.colonnaCoppiaQuote] = cella.substring(idx + cfg.separatoreCoppia.length()).trim();
+        if (cfg.colonnaCoppiaImporto >= 0) {
+            nuova[cfg.colonnaCoppiaImporto] = prodottoQuantitaPrezzo(
+                    safe(campi, cfg.colonnaCoppiaImportoQta), safe(campi, cfg.colonnaCoppiaImportoPrezzo));
+        }
         return nuova;
+    }
+
+    /**
+     * Prodotto esatto quantita' x prezzo, come testo senza zeri finali ("19.985"), o stringa vuota se uno dei due
+     * fattori manca o non e' un numero (vedi {@link ConfigurazioneImport#colonnaCoppiaImporto}).
+     */
+    static String prodottoQuantitaPrezzo(String quantita, String prezzo) {
+        String q = normalizzaNumero(quantita);
+        String p = normalizzaNumero(prezzo);
+        if (q.isBlank() || p.isBlank() || !Funzioni.isNumeric(q, false) || !Funzioni.isNumeric(p, false)) {
+            return "";
+        }
+        return new BigDecimal(q).multiply(new BigDecimal(p)).stripTrailingZeros().toPlainString();
     }
 
     /**
@@ -2001,6 +2018,14 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         public String separatoreCoppia = "-";
         public int colonnaCoppiaBase = -1;
         public int colonnaCoppiaQuote = -1;
+        // Facoltativo, dentro 'coppia': export che dichiarano la sola quantita' della base e il prezzo di
+        // esecuzione, senza l'importo della quota (Nexo Pro: 'filledAmount' e 'executedPrice'). La lettura del
+        // file accoda una terza colonna VIRTUALE, 'colonnaCoppiaImporto', col prodotto quantita' x prezzo;
+        // la config la legge poi come 'quantitaUscita' (o 'quantita', dopo causaliScambiaGambe). Vuota se uno
+        // dei due fattori manca o non e' un numero (ordine annullato). -1 (default) = nessuna colonna.
+        public int colonnaCoppiaImporto = -1;
+        public int colonnaCoppiaImportoQta = -1;
+        public int colonnaCoppiaImportoPrezzo = -1;
 
         // Causali per cui, su una riga che porta GIA' entrambe le gambe (moneta/quantita' +
         // monetaUscita/quantitaUscita), il ruolo entrata/uscita delle due colonne va scambiato prima
@@ -2349,6 +2374,15 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 cfg.colonnaCoppiaQuote = cp.getInt("quote");
                 if (cfg.separatoreCoppia.isEmpty() || cfg.colonnaCoppiaBase < 0 || cfg.colonnaCoppiaQuote < 0) {
                     throw new IllegalArgumentException("'coppia' richiede separatore non vuoto e colonne base/quote >= 0");
+                }
+                if (cp.has("importoQuote")) {
+                    JSONObject iq = cp.getJSONObject("importoQuote");
+                    cfg.colonnaCoppiaImporto = iq.getInt("colonna");
+                    cfg.colonnaCoppiaImportoQta = iq.getInt("quantita");
+                    cfg.colonnaCoppiaImportoPrezzo = iq.getInt("prezzo");
+                    if (cfg.colonnaCoppiaImporto < 0 || cfg.colonnaCoppiaImportoQta < 0 || cfg.colonnaCoppiaImportoPrezzo < 0) {
+                        throw new IllegalArgumentException("'coppia.importoQuote' richiede colonna/quantita/prezzo >= 0");
+                    }
                 }
             }
             if (root.has("causaliScambiaGambe")) {

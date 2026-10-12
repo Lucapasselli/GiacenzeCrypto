@@ -1,0 +1,45 @@
+{
+  "_commento": "Nexo Pro - export 'DnWHistory' (depositi e prelievi del Nexo Pro). UTF-8, separatore virgola. Colonne: 0=timestamp 1=amount 2=asset 3=side (DEPOSIT/WITHDRAW). Nessun id e nessuna fee: la deduplica del re-import e' sulla chiave logica (istante al secondo, exchange, moneta, quantita').",
+  "_commentoCausale": "Il 'side' e' la causale: DEPOSIT = entrata, WITHDRAW = uscita, entrambi TRASFERIMENTO-CRYPTO (categoria DC/PC, da classificare). Sono sempre trasferimenti da/verso il Savings Nexo: sul Savings i corrispondenti sono i 'Transfer To/From Pro Wallet' dell'export 'Nexo CSV'. 'amount' e' sempre positivo.",
+  "_commentoAbbinamento": "L'abbinamento col Savings non e' in questa config: la funzione 'Assegnazione Automatica' dei depositi/prelievi lo fa gia' (stessa moneta, importo uguale, segno opposto, wallet diverso, entro un'ora): sul dataset 2023-2025 i trasferimenti del Savings e quelli del Pro cadono entro pochi secondi uno dall'altro.",
+  "_commentoData": "Timestamp con millisecondi in UTC ('2023-04-06 13:11:20.95': le frazioni hanno 1, 2 o 3 cifre, da qui le tre sezioni facoltative del pattern).",
+  "_commentoVersione": "Non usa nuove opzioni di import, ma il gruppo wallet del Nexo Pro (lo stesso del Nexo) esiste solo dalla 1.0.65.01: 'versioneMinimaApp' impedisce che il file venga proposto su un'installazione precedente, dove il Pro finirebbe in 'Wallet 99' (vedi Importazioni_Gestione.raccogliEstrazioni). Le versioni gia' rilasciate non conoscono 'versioneMinimaApp': per questo 'fornitore' dichiara nel nome da quale versione e' utilizzabile.",
+  "versione": "1.000",
+  "versioneMinimaApp": "1.0.65.01",
+  "centralizzato": false,
+  "fornitore": "Nexo Pro (utilizzabile dalla versione 1.0.65.01)",
+  "nomeExchange": "Nexo Pro",
+  "estrazione": "Depositi e Prelievi (DnWHistory)",
+  "descrizione": "<html><div style='width:380px'>Nexo Pro &ndash; export <b>DnWHistory</b> (depositi e prelievi del Pro). Sono i trasferimenti di fondi da e verso il Savings Nexo: diventano deposito/prelievo cripto da abbinare ai corrispondenti <i>Transfer To/From Pro Wallet</i> dell'export Nexo, a mano o con l'assegnazione automatica.</div></html>",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 1,
+  "rigaIntestazione": 1,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd HH:mm:ss[.SSS][.SS][.S]",
+  "fuso": "UTC",
+  "colonne": {
+    "data": 0,
+    "causale": 3,
+    "moneta": 2,
+    "quantita": 1
+  },
+  "mappaCausali": {
+    "DEPOSIT": "TRASFERIMENTO-CRYPTO",
+    "WITHDRAW": "TRASFERIMENTO-CRYPTO"
+  },
+  "causaliUscita": [
+    "WITHDRAW"
+  ],
+  "causaliEntrata": [
+    "DEPOSIT"
+  ],
+  "causaliChiuse": [
+    "TRASFERIMENTO-CRYPTO"
+  ],
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

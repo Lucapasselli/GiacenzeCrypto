@@ -1,0 +1,66 @@
+{
+  "_commento": "Nexo Pro - export 'nexo_pro_trade' (storico degli ordini del Nexo Pro). UTF-8, separatore virgola. Colonne: 0=id 1=timestamp 2=pair (BASE/QUOTE, es. BTC/USDT) 3=side (buy/sell) 4=type 5=price 6=executedPrice 7=triggerPrice 8=requestedAmount 9=filledAmount 10=tradingFee 11=feeCurrency 12=status 13=orderId.",
+  "_commentoCoppia": "La moneta sta nella coppia 'pair' ('BTC/USDT'): 'coppia' la spezza sulla '/' e accoda tre colonne VIRTUALI oltre l'ultima vera (la 13): 14=base, 15=quota e 16=importo della quota. Il file NON dice quanti USDT sono stati spesi: dichiara solo 'filledAmount' (base) e 'executedPrice', e 'importoQuote' calcola 16 = filledAmount x executedPrice. Verificato sull'export del 2023: la somma dei quattro acquisti (68,0599 USDT) coincide al milionesimo con gli USDT netti passati dal Savings al Pro.",
+  "_commentoGambe": "'filledAmount' e il prodotto sono sempre POSITIVI: il verso lo da il 'side' (buy: la base entra e la quota esce; sell: il contrario, come in KuCoin Spot via 'causaliScambiaGambe'). La causale e' composta side + '.' + status (colonna 12): solo 'completed' diventa uno scambio, 'cancelled' (nessuna esecuzione, filledAmount vuoto) e' IGNORA. Uno status mai visto resta fra i movimenti sconosciuti del resoconto invece di sparire.",
+  "_commentoFee": "'tradingFee' e' espressa nella moneta di 'feeCurrency' (BTC sugli acquisti, 0,2% della base): e' trattenuta dalla quantita' ricevuta. La quantita' principale resta quella lorda 'filledAmount' e la fee esce come movimento COMMISSIONI a parte (le commissioni sulle cripto-attivita' non sono deducibili, art. 68 c.9-bis TUIR, circ. 30/E del 27/10/23): lorda - fee = netto, che e' proprio quanto il Pro ha poi trasferito al Savings (0,0023952 BTC sul dataset visto). Per questo i due flag 'ricostruisciLordo...' sono spenti.",
+  "_commentoData": "Il timestamp ha i millisecondi ('2023-04-17 13:17:03.715'), in UTC come l'export Nexo del Savings (i trasferimenti Savings-Pro coincidono al secondo). Le frazioni possono avere 1, 2 o 3 cifre, per questo il pattern ha tre sezioni facoltative: ogni sezione che non combacia viene saltata.",
+  "_commentoWallet": "'nomeExchange' e' 'Nexo Pro' e non 'Nexo': il Pro e' un altro conto e il campo [3] e' la chiave della deduplica del re-import, che non deve confondersi con quella del Savings. Il gruppo wallet pero' e' lo STESSO del Nexo (Wallet 111): 'Principale_GruppiWalletRW' riconosce 'nexo pro' come variante di 'nexo', quindi i passaggi di fondi fra Savings e Pro restano interni al gruppo e non toccano il LIFO. Il passaggio USDT/BTC fra Savings e Pro si abbina con la funzione di classificazione dei depositi/prelievi (pulsante 'Assegnazione Automatica'): i trasferimenti del Savings sono nell'import 'Nexo CSV' e quelli del Pro in 'Nexo Pro Depositi e Prelievi'.",
+  "_commentoVersione": "Usa 'coppia.importoQuote' e il gruppo wallet del Nexo Pro, entrambi aggiunti a ImportazioneGenerica/Principale_GruppiWalletRW dopo la 1.0.65: 'versioneMinimaApp' impedisce che questo file venga proposto su un'installazione precedente (vedi Importazioni_Gestione.raccogliEstrazioni). Le versioni gia' rilasciate non conoscono 'versioneMinimaApp' e lo proporrebbero comunque: per questo 'fornitore' dichiara nel nome da quale versione e' utilizzabile.",
+  "versione": "1.000",
+  "versioneMinimaApp": "1.0.65.01",
+  "centralizzato": false,
+  "fornitore": "Nexo Pro (utilizzabile dalla versione 1.0.65.01)",
+  "nomeExchange": "Nexo Pro",
+  "estrazione": "Storico ordini (nexo_pro_trade)",
+  "descrizione": "<html><div style='width:380px'>Nexo Pro &ndash; export <b>nexo_pro_trade</b> (storico degli ordini). Ogni ordine eseguito diventa uno scambio cripto&ndash;cripto, con la commissione come movimento a parte; gli ordini annullati sono ignorati. Gli importi in USDT sono calcolati come quantit&agrave; &times; prezzo di esecuzione. Il passaggio di fondi fra il Savings Nexo e il Pro si importa dal file <i>Depositi e Prelievi</i> e si abbina poi a mano o con l'assegnazione automatica.</div></html>",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 1,
+  "rigaIntestazione": 1,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd HH:mm:ss[.SSS][.SS][.S]",
+  "fuso": "UTC",
+  "coppia": {
+    "colonna": 2,
+    "separatore": "/",
+    "base": 14,
+    "quote": 15,
+    "importoQuote": {
+      "colonna": 16,
+      "quantita": 9,
+      "prezzo": 6
+    }
+  },
+  "colonne": {
+    "idTransazione": 0,
+    "data": 1,
+    "causale": 3,
+    "causale2": 12,
+    "moneta": 14,
+    "quantita": 9,
+    "monetaUscita": 15,
+    "quantitaUscita": 16,
+    "monetaFee": 11,
+    "quantitaFee": 10
+  },
+  "separatoreCausale": ".",
+  "causaliScambiaGambe": [
+    "sell.completed"
+  ],
+  "ricostruisciLordoSeFeeSuMonetaUscita": false,
+  "ricostruisciLordoSeFeeSuMonetaEntrata": false,
+  "mappaCausali": {
+    "buy.completed": "SCAMBIO CRYPTO-CRYPTO",
+    "sell.completed": "SCAMBIO CRYPTO-CRYPTO",
+    "buy.cancelled": "IGNORA",
+    "sell.cancelled": "IGNORA"
+  },
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": [],
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

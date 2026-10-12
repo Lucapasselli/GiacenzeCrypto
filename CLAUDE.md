@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest#nomeDelMetodo
 
-# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.65)
+# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.65.01)
 java -jar target/Giacenze_Crypto-<version>-jar-with-dependencies.jar --NoJarPath --workdir ./test/2025/
 ```
 
@@ -632,6 +632,24 @@ pre-collection and `causaliScambiaGambe` all read the coin from the row. A row w
 (the opposite of Gate.io), partial fills of one order are several identical rows and all of them enter on the first import (dedup
 is against the archive, not within the batch), and the Futures export has no config because it carries no PnL. Pinned by
 `ImportazioneGenericaKuCoinTest`.
+
+**`coppia.importoQuote` and the Nexo Pro configs (2026-10-12).** The Nexo Pro order history (`nexo_pro_trade`) gives
+`filledAmount` (base) and `executedPrice` but **no quote amount**, so `coppia` accepts an optional
+`importoQuote: {colonna, quantita, prezzo}` that appends a third virtual column = quantity × price (empty if a factor is
+missing, i.e. a cancelled order), read as `quantitaUscita`. `Nexo Pro Trades.json` (`centralizzato: false`,
+`versioneMinimaApp` 1.0.65.01 because it needs this code) composes the causale as `side.status` (column 12 via
+`causale2`) so only `completed` becomes a swap; the fee is in the base currency and is kept as a separate `COMMISSIONI`
+(gross − fee = what the Pro then moved to the Savings). `Nexo Pro Depositi e Prelievi.json` (DnWHistory, config-only,
+`centralizzato: true`) imports DEPOSIT/WITHDRAW as `TRASFERIMENTO-CRYPTO`. Both use `nomeExchange` **"Nexo Pro"** (its own
+`[3]`, so its own re-import dedup key) but the **same wallet group as Nexo** (Wallet 111, the user's choice 2026-10-12):
+`Principale_GruppiWalletRW.SORGENTE_A_EXCHANGE` maps `"nexo pro"` to `nexo`, so the Savings↔Pro transfers are internal and
+never touch the LIFO (unlike Coinbase Pro, kept apart on purpose). Both configs need 1.0.65.01 for that reason. **The
+Savings↔Pro pairing needs no code and no version**: the *Assegnazione Automatica* button (`DepositiPrelievi_
+AssegnazioneAutomatica`, phase 1) already pairs PC/DC of two different wallets (same coin, opposite sign, < 1 h with
+**minute** resolution, quantities within 2%): on the real 2023-2025 files 16 of 18 transfers pair, the two of 12/03/2025
+do not because the Pro file writes that day one hour later than Nexo (exactly 3600 s, not < 3600) and are paired by
+hand. The Nexo CSV is real UTC (its daily interest steps 06:00→05:00 exactly on the EU DST dates, i.e. it is paid at 07:00 Rome
+time); the Pro `DnWHistory` is UTC for the 2023 rows but CET (UTC+1) for the 2025 ones, so one `fuso` cannot fit the file. `GirocontiFiat` is FIAT-only and stays so. Pinned by `ImportazioneGenericaNexoProTest`.
 
 **`fusoDaIntestazione` — the file states its own time zone (OKX ≥ Funding 1.002 / Trading 1.003, 2026-10-07).** Recent OKX
 exports carry `Time Zone:UTC+8` in the first line: the zone chosen on OKX at export time, not necessarily Italy's (a real

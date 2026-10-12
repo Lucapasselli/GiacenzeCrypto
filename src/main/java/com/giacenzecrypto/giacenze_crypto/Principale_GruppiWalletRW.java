@@ -823,6 +823,9 @@ public class Principale_GruppiWalletRW {
         m.put("crypto com", "cryptocom");
         m.put("cdc", "cryptocom");
         m.put("okex", "okx");
+        // il Nexo Pro e' un altro conto ma lo stesso intestatario, e i trasferimenti col Savings devono restare
+        // interni al gruppo (campo [3] diverso solo per la deduplica del re-import)
+        m.put("nexo pro", "nexo");
         // "coinbase pro" / "gdax" restano volutamente FUORI : l'applicazione li tiene come wallet a sé.
         return m;
     }

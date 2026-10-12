@@ -609,6 +609,16 @@ class Principale_GruppiWalletRWTest {
     }
 
     @Test
+    void nexoPro_staNelGruppoDelNexo() {
+        assertEquals("nexo", Principale_GruppiWalletRW.exchangeIdDaSorgente("Nexo Pro"));
+        assertEquals("nexo", Principale_GruppiWalletRW.exchangeIdDaSorgente("Nexo"));
+
+        assertTrue(Principale_GruppiWalletRW.autoAssociaGruppiPreconfigurati(java.util.List.of("Nexo Pro")));
+        assertEquals(Principale_GruppiWalletRW.gruppoPreconfigurato("nexo"),
+                DatabaseH2.Pers_GruppoWallet_Leggi("Nexo Pro", false));
+    }
+
+    @Test
     void autoAssocia_nomeNonRiconosciuto_ignorato_eNonInquinaIlMarcatore() {
         assertFalse(Principale_GruppiWalletRW.autoAssociaGruppiPreconfigurati(
                 java.util.List.of("Un CSV custom", "Coinbase Pro")));

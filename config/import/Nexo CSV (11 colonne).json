@@ -6,11 +6,11 @@
   "_commentoData": "'Date / Time (UTC)' -> pattern 'yyyy-MM-dd H:mm:ss', fuso UTC come dichiara l'intestazione. 'H' e non 'HH': nel formato dal 2026-09 Nexo non mette piu' lo zero davanti alle ore da 0 a 9 ('2025-12-30 8:55:28'), mentre minuti/secondi/giorno/mese restano sempre a due cifre. Con 'HH' (rigido, 2 cifre esatte in DateTimeFormatter, a differenza del vecchio SimpleDateFormat) l'85% circa delle righe falliva 'DATA NON PARSABILE' anche dopo aver corretto gli indici di colonna. 'H' accetta sia '8' che '08', quindi resta compatibile con l'export precedente.",
   "_commentoNote": "'note': 9 -> la colonna Details finisce nel campo note del movimento (per i 'Top up' esterni e' l'hash della transazione on-chain). 'causalePerNota': i 'Top up Crypto' il cui Details indica un premio promozionale ('Campaign Rewards', 'Welcome Bonus', 'Cash-back Promo') sono reddito, non un semplice deposito: vengono riclassificati come REWARD/CASHBACK (categoria RW) invece che come deposito cripto a costo di carico pari al valore di mercato.",
   "_commentoFee": "'monetaFee'/'quantitaFee' (colonne 8/7) SONO mappate: le commissioni sulle cripto-attivita' non sono deducibili (art. 68 c.9-bis TUIR, circolare 30/E del 27/10/23), quindi non si puo' semplicemente ignorarle o scalarle dal costo di carico dello scambio. E' stato verificato sui 2 'Exchange' con una fee reale nell'export usato per questa analisi (su 3707 righe), confrontando con lo storico dei prezzi Binance al secondo della transazione, che 'Input Amount' e' gia' il TOTALE addebitato sul wallet (es. 10 NEXO), di cui solo una parte (9,003 NEXO) e' davvero confluita nello scambio - il cambio implicito Output/(Input-Fee) coincide col tasso di mercato dell'epoca (spread ~2-3%), mentre Output/Input da solo implicherebbe uno spread implausibile (~12% e ~4%). Per questo 'ricostruisciLordoSeFeeSuMonetaUscita': true e' corretto QUI nonostante il nome: la formula (qtaNetta + fee, es. -10 + 0,997 = -9,003) non sta 'portando al lordo' nel senso della nota aperta del metodo (CSV che darebbe il netto), sta scorporando dal totale gia' comprensivo la sola parte confluita nello scambio, lasciando la fee alla riga COMMISSIONI separata che il motore emette automaticamente quando 'quantitaFee' e' valorizzata. Somma dei due movimenti: 9,003 + 0,997 = 10 NEXO, uguale a 'Input Amount' - nessuna cripto persa o duplicata nelle rimanenze. 'ricostruisciLordoSeFeeSuMonetaEntrata' resta false: mai osservata una fee sul lato Output.",
-  "versione": "1.002",
+  "versione": "1.003",
   "centralizzato": true,
   "nomeExchange": "Nexo",
   "estrazione": "CSV 11 colonne (ATTENZIONE : in fase ALFA)",
-  "descrizione": "<html><div style='width:380px'>Nexo &ndash; export CSV delle transazioni, formato dal 2026-09 (con le colonne Fee/Fee Currency, 11 in totale). Interessi (anche a termine) come EARN, <i>Exchange</i> come scambio cripto&ndash;cripto, il cashback 0,5% come CASHBACK, top&ndash;up e prelievi come trasferimento cripto. Il controvalore &egrave; ricavato in euro dall'app (nel file &egrave; in USD). I movimenti tra Savings, Term e Pro Wallet sono interni e non vengono importati. Per un export precedente a 9 colonne (senza Fee/Fee Currency) usare invece la voce &quot;CSV 9 colonne&quot;.</div></html>",
+  "descrizione": "<html><div style='width:380px'>Nexo &ndash; export CSV delle transazioni, formato dal 2026-09 (con le colonne Fee/Fee Currency, 11 in totale). Interessi (anche a termine) come EARN, <i>Exchange</i> come scambio cripto&ndash;cripto, il cashback 0,5% come CASHBACK, top&ndash;up e prelievi come trasferimento cripto. Il controvalore &egrave; ricavato in euro dall'app (nel file &egrave; in USD). I movimenti tra Savings e Term Wallet sono interni e non vengono importati; i trasferimenti verso e dal Nexo Pro sono importati come prelievi e depositi. Per un export precedente a 9 colonne (senza Fee/Fee Currency) usare invece la voce &quot;CSV 9 colonne&quot;.</div></html>",
   "nomeWallet": "Principale",
   "separatore": ",",
   "encoding": "UTF-8",
@@ -36,7 +36,7 @@
   "consolidaRigheStessaData": false,
   "tolleranzaSecondiConsolidamento": 0,
   "causaliDifferite": [],
-  "_commentoCausali": "Nexo Savings e Nexo Pro sono trattati come lo stesso wallet 'Principale': i 'Transfer From/To Pro Wallet' e i term deposit (Locking/Unlocking) sono giroconti interni -> IGNORA. 'Exchange Deposited On' e' la riga gemella di 'Deposit To Exchange' (stesso EUR->EURX, stesso istante) -> IGNORA per non contare due volte. 'Exchange Cashback' e' il rimborso 0,5% sullo swap -> CASHBACK. 'Fixed Term Interest' e 'Interest' -> EARN. 'Top up Crypto'/'Withdrawal' -> deposito/prelievo cripto, MA un 'Top up Crypto' con Details promozionale ('Campaign Rewards', 'Welcome Bonus', 'Cash-back Promo') e' un premio -> REWARD/CASHBACK (vedi 'causalePerNota').",
+  "_commentoCausali": "I term deposit (Locking/Unlocking) sono giroconti interni tra Savings e Term Wallet -> IGNORA. 'Transfer From/To Pro Wallet' NON sono interni: il Nexo Pro e' un altro prodotto e i suoi scambi (es. USDT -> BTC) non compaiono in questo export, quindi chi manda USDT al Pro e ne riceve BTC avrebbe saldi sbagliati. Sono importati come prelievo/deposito cripto (TRASFERIMENTO-CRYPTO), da classificare a mano se serve. 'Exchange Deposited On' e' la riga gemella di 'Deposit To Exchange' (stesso EUR->EURX, stesso istante) -> IGNORA per non contare due volte. 'Exchange Cashback' e' il rimborso 0,5% sullo swap -> CASHBACK. 'Fixed Term Interest' e 'Interest' -> EARN. 'Top up Crypto'/'Withdrawal' -> deposito/prelievo cripto, MA un 'Top up Crypto' con Details promozionale ('Campaign Rewards', 'Welcome Bonus', 'Cash-back Promo') e' un premio -> REWARD/CASHBACK (vedi 'causalePerNota').",
   "mappaCausali": {
     "Interest":                 "EARN",
     "Fixed Term Interest":      "EARN",
@@ -49,8 +49,8 @@
     "Exchange Deposited On":    "IGNORA",
     "Locking Term Deposit":     "IGNORA",
     "Unlocking Term Deposit":   "IGNORA",
-    "Transfer From Pro Wallet": "IGNORA",
-    "Transfer To Pro Wallet":   "IGNORA"
+    "Transfer From Pro Wallet": "TRASFERIMENTO-CRYPTO",
+    "Transfer To Pro Wallet":   "TRASFERIMENTO-CRYPTO"
   },
   "causalePerNota": [
     { "causale": "Top up Crypto", "notaContiene": "Campaign Rewards", "tipo": "REWARD" },

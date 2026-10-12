@@ -1225,6 +1225,9 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         Moneta mOUT = null;
         Moneta mIN = null;
         BigDecimal qtaPrimaria = null;
+        // Riga a gamba singola con la stessa moneta su Input e Output e l'importo letto dalla colonna
+        // principale (vedi sotto): quell'importo e' gia' al netto della fee, quindi non va ricostruito il lordo.
+        boolean importoGiaNettoDiFee = false;
 
         // Lato principale letto da moneta/quantita
         if (!qtaStr.isBlank() && Funzioni.isNumeric(qtaStr, false)) {
@@ -1266,6 +1269,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 if (cfg.gambaDoppiaConSegnoSuUscita && stessaMoneta) {
                     mOUT = null;
                     mIN = null;
+                    importoGiaNettoDiFee = qtaPrimaria != null && qtaPrimaria.signum() != 0;
                     BigDecimal importo = (qtaPrimaria != null && qtaPrimaria.signum() != 0 ? qtaPrimaria : qOut).abs();
                     if (qOut.signum() != 0 && importo.signum() != 0) {
                         Moneta m = new Moneta();
@@ -1342,8 +1346,13 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         BigDecimal qtaFeeBD = BigDecimal.ZERO;
         if (haFee) {
             qtaFeeBD = new BigDecimal(qtaFee).abs();
-            ricostruisciLordoConFee(mOUT, monetaFee, qtaFeeBD, cfg);
-            ricostruisciLordoConFee(mIN, monetaFee, qtaFeeBD, cfg);
+            // Prelievo Nexo con fee (Input -0,00579117, Output 0,00572711, Fee 0,00006406): Output e' gia'
+            // il netto inviato, Input il totale addebitato. Sottrarre la fee una seconda volta faceva
+            // sparire 0,00006406 dalle rimanenze (PRELIEVO + COMMISSIONI = Output - Fee invece di Input).
+            if (!importoGiaNettoDiFee) {
+                ricostruisciLordoConFee(mOUT, monetaFee, qtaFeeBD, cfg);
+                ricostruisciLordoConFee(mIN, monetaFee, qtaFeeBD, cfg);
+            }
         }
 
         // Gamba speculare (walletSpecularePerCausale): stesso importo a segno invertito su un altro

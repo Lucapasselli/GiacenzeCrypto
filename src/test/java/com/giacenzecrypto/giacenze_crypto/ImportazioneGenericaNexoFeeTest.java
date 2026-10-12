@@ -121,4 +121,43 @@ class ImportazioneGenericaNexoFeeTest {
         assertEquals(1, movs.size(), "senza una fee reale non deve comparire nessuna riga COMMISSIONI");
         assertEquals("SC", movs.get(0)[0].split("_")[4]);
     }
+
+    @Test
+    void prelievoConFee_BTC_prelievoNettoPiuCommissioneTornanoAlTotaleAddebitato() throws Exception {
+        // Riga reale (2026-06-30): Input -0.00579117 BTC (totale addebitato), Output 0.00572711 (netto
+        // inviato), fee 0.00006406 BTC. Output e' gia' al netto: la fee non va sottratta due volte.
+        String[] riga = {"NXTtest", "Withdrawal", "BTC", "-0.00579117", "BTC", "0.00572711",
+            "$339.70", "0.00006406", "BTC", "approved / BTC withdrawal", "2026-06-30 18:51:56"};
+
+        List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(riga, null, cfg());
+        assertNotNull(movs);
+        assertEquals(2, movs.size(), "prelievo + commissione: " + movs.stream().map(m -> m[0]).toList());
+
+        BigDecimal prelievo = quantitaCategoria(movs, "PC", "BTC");
+        BigDecimal commissione = quantitaCategoria(movs, "CM", "BTC");
+
+        assertEquals(0, new BigDecimal("-0.00572711").compareTo(prelievo));
+        assertEquals(0, new BigDecimal("-0.00006406").compareTo(commissione));
+        assertEquals(0, new BigDecimal("-0.00579117").compareTo(prelievo.add(commissione)),
+                "prelievo + commissione deve tornare all'Input Amount (il totale addebitato)");
+    }
+
+    @Test
+    void trasferimentiVersoENexoPro_sonoPrelievoEDeposito() throws Exception {
+        // Righe reali (2023): USDT mandati al Nexo Pro e BTC tornati dal Pro. Lo scambio fatto nel Pro non e'
+        // nell'export, quindi non sono giroconti interni da ignorare.
+        String[] verso = {"NXTtest", "Transfer To Pro Wallet", "USDT", "-20", "USDT", "20", "$20",
+            "-", "-", "approved / USDT Transfer from Savings Wallet to Nexo Pro Wallet", "2023-04-21 21:02:16"};
+        List<String[]> movsVerso = ImportazioneGenerica.costruisciMovimenti(verso, null, cfg());
+        assertNotNull(movsVerso);
+        assertEquals(1, movsVerso.size());
+        assertEquals(0, new BigDecimal("-20").compareTo(quantitaCategoria(movsVerso, "PC", "USDT")));
+
+        String[] dal = {"NXTtest", "Transfer From Pro Wallet", "BTC", "0.000499", "BTC", "0.000499", "$14",
+            "-", "-", "approved / BTC Transfer from Nexo Pro Wallet to Savings Wallet", "2023-03-23 15:03:47"};
+        List<String[]> movsDal = ImportazioneGenerica.costruisciMovimenti(dal, null, cfg());
+        assertNotNull(movsDal);
+        assertEquals(1, movsDal.size());
+        assertEquals(0, new BigDecimal("0.000499").compareTo(quantitaCategoria(movsDal, "DC", "BTC")));
+    }
 }

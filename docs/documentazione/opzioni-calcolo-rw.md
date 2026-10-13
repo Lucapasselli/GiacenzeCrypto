@@ -923,7 +923,7 @@ I pulsanti **Stampa Report PDF** e **Crea Excel con i Dettagli** della scheda **
 insieme tre file: il PDF del **Quadro W** (per chi presenta il modello 730), il PDF del **Quadro RW** (per chi
 presenta il modello Redditi Persone Fisiche) e l'Excel con il prospetto di dettaglio. I tre file nascono dallo
 stesso calcolo e vengono conservati nell'[archivio delle dichiarazioni](#archivio-delle-dichiarazioni): il
-primo pulsante apre poi il PDF del Quadro RW, il secondo l'Excel. Se dall'ultimo calcolo sono cambiati movimenti
+primo pulsante chiede quale dei due quadri aprire, il secondo apre l'Excel. Se dall'ultimo calcolo sono cambiati movimenti
 o opzioni, il quadro viene ricalcolato prima di generare i file.
 
 L'Excel contiene un foglio di riepilogo con tutti i righi del quadro e, per ogni gruppo wallet, quattro fogli:

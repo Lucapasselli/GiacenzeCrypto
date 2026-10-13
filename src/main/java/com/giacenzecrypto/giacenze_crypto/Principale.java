@@ -4152,7 +4152,7 @@ private static final long serialVersionUID = 3L;
 
         RW_Bottone_Stampa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_PDF.png"))); // NOI18N
         RW_Bottone_Stampa.setText("Stampa Report PDF");
-        RW_Bottone_Stampa.setToolTipText("Genera e archivia insieme i PDF dei quadri W e RW e l'Excel di dettaglio, poi apre il PDF del quadro RW");
+        RW_Bottone_Stampa.setToolTipText("Genera e archivia insieme i PDF dei quadri W e RW e l'Excel di dettaglio, poi apre il quadro scelto (W o RW)");
         RW_Bottone_Stampa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RW_Bottone_StampaActionPerformed(evt);
@@ -4581,7 +4581,7 @@ private static final long serialVersionUID = 3L;
 
         RT_Bottone_Stampa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_PDF.png"))); // NOI18N
         RT_Bottone_Stampa.setText("Stampa Report PDF (periodo selezionato)");
-        RT_Bottone_Stampa.setToolTipText("Genera e archivia insieme i PDF dei quadri T e RT e l'Excel di dettaglio dell'anno selezionato, poi apre il PDF del quadro RT");
+        RT_Bottone_Stampa.setToolTipText("Genera e archivia insieme i PDF dei quadri T e RT e l'Excel di dettaglio dell'anno selezionato, poi apre il quadro scelto (T o RT)");
         RT_Bottone_Stampa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RT_Bottone_StampaActionPerformed(evt);
@@ -11703,6 +11703,21 @@ if (result.isAction("delete-all")) {
     
     }
     
+    /**
+     * Svuota le tabelle del quadro W/RW senza ricalcolare, quando i valori mostrati non sono più dell'anno
+     * scelto: nessun rigo di un anno resta sotto l'intestazione di un altro.
+     */
+    private void RW_SvuotaQuadro() {
+        Tabelle.Funzioni_PulisciTabella((DefaultTableModel) RW_Tabella.getModel());
+        Tabelle.Funzioni_PulisciTabella((DefaultTableModel) RW_Tabella_Dettagli.getModel());
+        Tabelle.Funzioni_PulisciTabella((DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel());
+        RW_Bottone_CorreggiErrore.setEnabled(false);
+        RW_Bottone_IdentificaScam.setEnabled(false);
+        RW_Label_SegnalaRicalcolo.setVisible(false);
+        RW_Label_Definitiva.setVisible(false);
+        RW_Label_SegnalaErrori.setText("");
+    }
+
     private void RW_CalcolaRW() {
         // TODO add your handling code here:
         //Come prima cosa faccio un pò di pulizia
@@ -13055,6 +13070,17 @@ if (result.isAction("delete-all")) {
         }
         String AnnoDiCompetenza=RW_Anno_ComboBox.getSelectedItem().toString();
 
+        //Si generano sempre tutti e due i quadri: la scelta riguarda solo quale PDF aprire alla fine
+        boolean apriW = false;
+        if (!ApriExcel) {
+            int quadro = Dichiarazioni_ScegliQuadroDaAprire("W", "RW",
+                    "- Quadro W : per chi presenta il Modello 730.\n- Quadro RW : per chi presenta il Modello Redditi Persone Fisiche.");
+            if (quadro < 0) {
+                return;
+            }
+            apriW = quadro == 0;
+        }
+
             //Movimenti su derivati nell'anno (Derivati): il quadro li conta come cripto-attivita'. Solo un
             //avviso, la stampa prosegue e porta il testo completo in una pagina dedicata.
             String AvvisoDerivati = Derivati.MessaggioAvviso(AnnoDiCompetenza);
@@ -13128,7 +13154,7 @@ if (result.isAction("delete-all")) {
             } catch (IOException | RuntimeException ex) {
                 throw new IOException("errore nell'Excel di dettaglio: " + ex, ex);
             }
-        }, ApriExcel ? fileExcel : fileRW, this);
+        }, ApriExcel ? fileExcel : apriW ? fileW : fileRW, this);
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         ArchivioDichiarazioni_Aggiorna();
     }
@@ -13949,7 +13975,9 @@ if (result.isAction("delete-all")) {
                        "Gli anni precedenti al 2023 seguivano regole diverse<br>Potrebbe essere che i dati prodotti non siano corretti.<br>";
                Messaggi.WarningMessage("Anno pre 2023", Testo, this);
            }
-           RW_CalcolaRW();
+           //Il calcolo non parte da solo (scelta dell'utente): si svuota il quadro, che e' dell'anno di prima,
+           //e lo si rifa' con "Calcola". La stampa, trovando la tabella vuota, ricalcola comunque da se'.
+           RW_SvuotaQuadro();
            
            }
     }//GEN-LAST:event_RW_Anno_ComboBoxItemStateChanged
@@ -17327,6 +17355,17 @@ if (result != null && !result.isAction("cancel")) {
                         .showDialog();
             }
 
+        //Si generano sempre tutti e due i quadri: la scelta riguarda solo quale PDF aprire alla fine
+        boolean apriT = false;
+        if (!ApriExcel) {
+            int quadro = Dichiarazioni_ScegliQuadroDaAprire("T", "RT",
+                    "- Quadro T : per chi presenta il Modello 730.\n- Quadro RT : per chi presenta il Modello Redditi Persone Fisiche.");
+            if (quadro < 0) {
+                return;
+            }
+            apriT = quadro == 0;
+        }
+
         Principale_RT_Tipologie.DatiTipologie tipologie = Principale_RT_Tipologie.Calcola(AnnoS);
         Dichiarazioni.Dichiarazione bozza = RT_BozzaDichiarazione(m, rigo, tipologie);
 
@@ -17357,7 +17396,7 @@ if (result != null && !result.isAction("cancel")) {
             } catch (IOException | RuntimeException ex) {
                 throw new IOException("errore nell'Excel di dettaglio: " + ex, ex);
             }
-        }, ApriExcel ? fileExcel : fileRT, this);
+        }, ApriExcel ? fileExcel : apriT ? fileT : fileRT, this);
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         ArchivioDichiarazioni_Aggiorna();
         RT_ControllaDefinitive();
@@ -17474,6 +17513,35 @@ if (result != null && !result.isAction("cancel")) {
         Etichetta.setToolTipText("<html>" + Dettaglio + "<br>Il confronto completo si fa dall'archivio delle dichiarazioni"
                 + " (pulsante Confronta). Clic per aprirlo.</html>");
         Etichetta.setVisible(true);
+    }
+
+    /**
+     * Chiede quale dei due quadri aprire alla fine della generazione (W o RW, T o RT): vengono generati e
+     * archiviati comunque entrambi, insieme all'Excel.
+     *
+     * @return {@code 0} il primo, {@code 1} il secondo, {@code -1} se l'utente annulla
+     */
+    private int Dichiarazioni_ScegliQuadroDaAprire(String Primo, String Secondo, String Dettagli) {
+        AppDialog.DialogResult r = AppDialog.builder(this)
+                .windowTitle("Stampa quadro " + Primo + "/" + Secondo)
+                .bodyTitle("Quale quadro vuoi aprire?")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message("Vengono generati e archiviati sempre entrambi i quadri, " + Primo + " e " + Secondo
+                        + ", insieme all'Excel di dettaglio. Alla fine si apre quello scelto.")
+                .details(Dettagli)
+                .action(AppDialog.DialogAction.builder("annulla", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY).build())
+                .action(AppDialog.DialogAction.builder("secondo", "Quadro " + Secondo)
+                        .role(AppDialog.ActionRole.SECONDARY).build())
+                .action(AppDialog.DialogAction.builder("primo", "Quadro " + Primo)
+                        .role(AppDialog.ActionRole.PRIMARY).build())
+                .showDialog();
+        if (r == null || r.isAction("annulla") || r.isClosedByWindow()) {
+            return -1;
+        }
+        return r.isAction("primo") ? 0 : 1;
     }
 
     /** Porta in primo piano la scheda dell'archivio delle dichiarazioni. */
@@ -20100,6 +20168,8 @@ try {
         //esatta. A programma avviato attivo() è falso e resta solo l'incremento del contatore.
         final double MovimentiTotali = Math.max(1, MappaCryptoWallet.size());
         long MovimentiEsaminati = 0;
+        //Solo per la riga di diagnostica in fondo (TabellaMovimenti_LogStato)
+        int MovimentiPassati = 0;
 
         for (String[] v : MappaCryptoWallet.values()) {
             if (++MovimentiEsaminati % 2000 == 0) {
@@ -20212,6 +20282,7 @@ try {
                     v, dataMovLong, gruppoWallet, haPrezzo, lifomancante));
 
             if (Filtri.Passa(v, dataMovLong, gruppoWallet, haPrezzo, lifomancante)) {
+                MovimentiPassati++;
 
                 // Plusvalenza
                 if (Funzioni_isNumeric(valorePlusvalenza, false)) {
@@ -20334,10 +20405,73 @@ try {
         tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
         
         System.out.println("Tempo caricamento tabelle : "+tempoOperazione+" millisec.");
-        
-        
-        
-    }    
+        TabellaMovimenti_LogStato(MovimentiPassati, costruisciRighe, aggiornaTabelleSecondarie,
+                SwingUtilities.isEventDispatchThread());
+
+
+    }
+
+    /**
+     * Scrive nel log, dopo ogni caricamento della tabella movimenti, lo stato che decide cosa l'utente vede:
+     * movimenti in archivio e passati dai criteri, righe del model e della vista, date, criteri della finestra
+     * Filtri, ricerca, filtri di colonna, sorter e area visibile. Nasce da una segnalazione (2026-10-13) di
+     * tabella vuota anche dopo "Azzera Filtri", risolta solo riavviando, non riprodotta: il log allegato
+     * registrava i pulsanti ma non lo stato, e non permetteva di distinguere un criterio rimasto acceso
+     * (model vuoto), un sorter guasto (model pieno, vista vuota) o un problema di disegno (vista piena,
+     * griglia vuota).
+     *
+     * <p>La parte grafica si legge con {@code invokeLater}, cioè dopo che il ricaricamento è stato
+     * impaginato: letta subito, altezza e area visibile sarebbero quelle di prima.
+     *
+     * @param passati movimenti che hanno superato i criteri di caricamento
+     * @param righeCostruite {@code false} se la scheda non era a video e le righe sono state rimandate
+     * @param secondarie {@code false} per la ricostruzione al ritorno sulla scheda
+     * @param suEDT se il caricamento è stato chiamato dal thread grafico
+     */
+    private void TabellaMovimenti_LogStato(int passati, boolean righeCostruite, boolean secondarie, boolean suEDT) {
+        final int archivio = MappaCryptoWallet.size();
+        final String date = CDC_DataIniziale + ".." + CDC_DataFinale
+                + (FiltriMovimenti_DataIniziale_Precedente != null
+                        ? " (prima del Periodo: " + FiltriMovimenti_DataIniziale_Precedente + ".."
+                                + FiltriMovimenti_DataFinale_Precedente + ")" : "");
+        final java.util.List<String> criteri = FiltriCorrenti.Descrizione(null);
+        final String ricerca = TransazioniCryptoFiltro_Text.getText();
+        Runnable scrivi = () -> {
+            try {
+                JTable t = TransazioniCryptoTabella;
+                RowSorter<?> rs = t.getRowSorter();
+                Object rowFilter = rs instanceof javax.swing.DefaultRowSorter<?, ?> d ? d.getRowFilter() : null;
+                Map<Integer, RowFilter<DefaultTableModel, Integer>> colonne = Tabelle.tableFilters.get(t);
+                StringBuilder fc = new StringBuilder();
+                if (colonne != null) {
+                    for (Map.Entry<Integer, RowFilter<DefaultTableModel, Integer>> e : new TreeMap<>(colonne).entrySet()) {
+                        if (fc.length() > 0) fc.append(", ");
+                        fc.append(e.getKey()).append(e.getValue() instanceof Tabelle.FiltroValori fv
+                                ? "=" + fv.valori().size() + " valori" : "=?");
+                    }
+                }
+                Rectangle vis = t.getVisibleRect();
+                System.out.println("Tabella movimenti: archivio " + archivio + ", passati " + passati
+                        + ", model " + t.getModel().getRowCount()
+                        + ", vista " + (rs != null ? rs.getViewRowCount() : t.getRowCount())
+                        + (righeCostruite ? "" : ", RIGHE RIMANDATE (scheda non a video)")
+                        + (secondarie ? "" : ", ricostruzione al ritorno sulla scheda")
+                        + (suEDT ? "" : ", CHIAMATA FUORI DALL'EDT")
+                        + " | date " + date
+                        + " | criteri " + (criteri.isEmpty() ? "nessuno" : String.join("; ", criteri))
+                        + " | ricerca " + (ricerca.isEmpty() ? "vuota" : "\"" + ricerca + "\"")
+                        + " | colonne " + (fc.length() == 0 ? "nessuna" : fc)
+                        + " | sorter " + (rs == null ? "assente" : rs.getClass().getSimpleName()
+                                + (rowFilter != null ? " con filtro" : " senza filtro")
+                                + ", ordinamento " + rs.getSortKeys().size())
+                        + " | grafica: colonne a video " + t.getColumnCount() + ", altezza " + t.getHeight()
+                        + ", area visibile y=" + vis.y + " h=" + vis.height + ", a video " + t.isShowing());
+            } catch (Exception ex) {
+                System.out.println("Tabella movimenti: diagnostica non riuscita: " + ex);
+            }
+        };
+        SwingUtilities.invokeLater(scrivi);
+    }
     
 /**
  * Ricostruisce e riapplica alla tabella un {@link TableRowSorter} che combina (in AND) tutti i

@@ -5046,7 +5046,7 @@
                           <Image iconType="3" name="/Images/24_PDF.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Stampa Report PDF"/>
-                        <Property name="toolTipText" type="java.lang.String" value="Genera e archivia insieme i PDF dei quadri W e RW e l&apos;Excel di dettaglio, poi apre il PDF del quadro RW"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Genera e archivia insieme i PDF dei quadri W e RW e l&apos;Excel di dettaglio, poi apre il quadro scelto (W o RW)"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Bottone_StampaActionPerformed"/>
@@ -5803,7 +5803,7 @@
                           <Image iconType="3" name="/Images/24_PDF.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Stampa Report PDF (periodo selezionato)"/>
-                        <Property name="toolTipText" type="java.lang.String" value="Genera e archivia insieme i PDF dei quadri T e RT e l&apos;Excel di dettaglio dell&apos;anno selezionato, poi apre il PDF del quadro RT"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Genera e archivia insieme i PDF dei quadri T e RT e l&apos;Excel di dettaglio dell&apos;anno selezionato, poi apre il quadro scelto (T o RT)"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RT_Bottone_StampaActionPerformed"/>

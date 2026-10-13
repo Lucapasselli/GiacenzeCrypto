@@ -513,6 +513,18 @@ con **due PDF e un Excel** (W e RW, oppure T e RT, sempre entrambi: la scelta W/
   dice l'effetto, mai cosa fare. Segnare una definitiva crea un backup (opzioni predefinite) il cui nome va nel manifest
   (`Backup`): cancellarlo dal pannello backup chiede una conferma in piu' (`Dichiarazioni.BackupDelleDefinitive`).
   Gli allegati (`Allegati`, prefisso `Allegato - `) hanno lo SHA-256 come i file generati ma non entrano nell'impronta.
+- **Documenti di origine** (`Dichiarazioni.RaccogliDocumenti`/`CopiaDocumenti`, 2026-10-13, scelte dell'utente): `Genera`
+  chiede, dopo il controllo della ristampa identica, se copiare i documenti `[41]` dei movimenti (spuntati quelli con
+  movimenti nell'anno, a scelta anche quelli con movimenti solo negli anni prima, mai quelli solo degli anni dopo),
+  scompattati **così come scaricati** (NDJSON compresi) in `Documenti di origine/Anno <N>/` e `.../Anni precedenti/`,
+  nome `<gruppo (alias)> - <[3]> - <periodo> - doc <id> - <nome originale>` (max 120 caratteri per il limite di percorso
+  di Windows, indirizzi accorciati), più `Indice documenti.csv` con i movimenti dell'anno senza documento. Stanno nel
+  manifest (`documenti`, `documentiInclusi`, `movimentiSenzaDocumento`) e **fuori** da `Totali`/`Righi`/`Opzioni`/`Errori`:
+  li' cambierebbero impronta e confronto con la definitiva a ogni import. File sorgente mancante o illeggibile = riga
+  nell'indice, errore di scrittura = nessuna dichiarazione. Backup, ripristino ed esportazione scendono nella sottocartella
+  (`Backup_Restore.PercorsoDichiarazioneValido`: annidamento ammesso solo sotto `Documenti di origine`, le versioni
+  precedenti saltano quelle voci). Le impronte dei file sono in cache per percorso+lunghezza+data (`Sha256Memo`), perche'
+  il pannello verifica tutto a ogni ricarica.
 - **Continuita' solo a richiesta** (decisione dell'utente): con un metodo diverso da "solo valori di inizio e fine anno"
   o con opzioni diverse il valore finale di un anno e l'iniziale del successivo differiscono per costruzione.
 - PDF ed Excel sono di sola lettura e hanno lo SHA-256 nel manifest; i file di blocco di LibreOffice/Office restano fuori

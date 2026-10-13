@@ -39,12 +39,14 @@ final class RicaricaConfig {
                 ListeSimboli.RicaricaFiat();
             }, "liste di simboli"),
             new Voce("varie", StatiEsteri.NOME, StatiEsteri::Ricarica, "stati esteri"),
+            new Voce("varie", VersioniRuntime.NOME, VersioniRuntime::Ricarica, "versioni di Node e CCXT"),
             new Voce("importmappe", DatiPredefinitiRW.NOME, Principale_GruppiWalletRW::RicaricaExchangeNoti, "exchange noti"));
 
     /** I file che si rileggono a ogni uso (nessuna cache): un file nuovo ha effetto da solo. Formato {@code cartella/nome}. */
     static final Set<String> LETTI_A_OGNI_USO = Set.of(
             "varie/" + NoteCompilazione.NOME,
             "varie/" + EmoneyToken.NOME,
+            "varie/" + ParametriAbbinamento.NOME,
             "importmappe/" + MappeCausali.BINANCE_OLD,
             "importmappe/" + MappeCausali.BINANCE_FINANCIAL_REPORT,
             "importmappe/" + MappeCausali.OKX,

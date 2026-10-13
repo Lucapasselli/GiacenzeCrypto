@@ -1,0 +1,12 @@
+{
+  "descrizione": "Parametri numerici di funzioni automatiche, separati dalla logica perche' sono tolleranze e non regole. Distribuito col programma e riallineato a ogni avvio dal repository. Vedi ParametriAbbinamento.java.",
+  "abbinamentoDepositiPrelievi": {
+    "descrizione": "Pulsante «Assegnazione Automatica» di Depositi/Prelievi, fase 1: abbina un prelievo e un deposito di due wallet diversi come giroconto fra wallet propri (PTW/DTW). Due righe si abbinano solo se: stessa moneta, wallet diversi, una in entrata e una in uscita, distanza fra le date STRETTAMENTE minore di finestraSecondi (il confronto e' fatto al minuto), quantita' ricevuta non superiore a quella inviata salvo la tolleranza inversa, e differenza fra le due quantita' minore di differenzaMassimaPercentuale. Aumentare un valore abbina piu' movimenti in automatico: ognuno diventa un giroconto che non tocca il LIFO, quindi un abbinamento sbagliato nasconde un'uscita o un'entrata vera.",
+    "finestraSecondi": 3600,
+    "differenzaMassimaPercentuale": 2,
+    "tolleranzaInversaDivisore": 10000,
+    "nota_tolleranzaInversaDivisore": "Una coppia crypto si abbina anche se il deposito supera il prelievo, purche' di meno di quantita/divisore (10000 = 0,01%). Per le coppie FIAT l'eccedenza non e' mai ammessa, qualunque sia il valore.",
+    "perExchange": [],
+    "nota_perExchange": "Eccezioni alla sola finestra, per un exchange le cui date arrivano sfalsate (fusi diversi fra file). Voce: {\"exchange\": \"Nexo\", \"finestraSecondi\": 3660}. Il nome e' quello del campo Exchange del movimento ([3]), senza distinzione di maiuscole. Se uno dei due movimenti e' di quell'exchange vale la finestra piu' larga fra quella generale e quelle delle eccezioni che lo riguardano."
+  }
+}

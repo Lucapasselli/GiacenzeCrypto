@@ -1,0 +1,11 @@
+{
+  "descrizione": "Versioni di Node.js e di CCXT che il programma scarica e usa per le importazioni da exchange e per i prezzi. Distribuito col programma e riallineato a ogni avvio dal repository: un aggiornamento (per esempio quando uno script comincia a usare un metodo che la versione di CCXT in uso non ha, come nel bug C14 del 2026-09) non richiede una nuova versione del programma. Vedi VersioniRuntime.java. Gli indirizzi di scaricamento (nodejs.org, npm) restano nel codice: qui c'e' solo il numero. Non vale per i pacchetti flatpak e MSIX, che portano Node e CCXT dentro il pacchetto e non li scaricano.",
+  "node": {
+    "versione": "v24.7.0",
+    "nota": "Con la v davanti, come nell'indirizzo di nodejs.org/dist. Cambiarla fa scaricare una distribuzione nuova (circa 100 MB) in tools/ al primo uso e reinstallare CCXT; le cartelle delle versioni precedenti restano su disco."
+  },
+  "ccxt": {
+    "versione": "4.5.77",
+    "nota": "Se la versione installata e' diversa viene reinstallata con npm al primo uso. Gli script in Scripts/ sono provati con la versione che sta qui: una versione nuova va provata prima di pubblicarla."
+  }
+}

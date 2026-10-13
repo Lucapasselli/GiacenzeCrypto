@@ -34,10 +34,17 @@ import org.json.JSONObject;
 
 public class CcxtInterop {
     
-    public static final String NODE_VERSION = "v24.7.0";
+    /**
+     * Versione di Node.js in uso, da {@code config/varie/Runtime.json} ({@link VersioniRuntime}): non e' piu' una costante
+     * perche' aggiornarla non deve voler dire una versione nuova del programma. Non si usa nei pacchetti che portano
+     * Node dentro ({@link #NODE_ESTERNO}).
+     */
+    public static String nodeVersion() {
+        return VersioniRuntime.versioni().node();
+    }
 
     /**
-     * Versione di CCXT pinnata, sullo stesso principio di {@link #NODE_VERSION}: {@link #installCcxt()}
+     * Versione di CCXT pinnata, sullo stesso principio di {@link #nodeVersion()}: {@link #installCcxt()}
      * la confronta con quella effettivamente presente in {@code node_modules/ccxt/package.json} e
      * reinstalla se non coincidono, invece di limitarsi a verificare che la cartella esista.
      * <p>
@@ -50,7 +57,9 @@ public class CcxtInterop {
      * funzionante, un utente del genere non ha modo di capire da solo che a mancare e' una libreria mai
      * vista: da qui il pin, aggiornato a mano quando serve (bug **C14**).
      */
-    public static final String CCXT_VERSION = "4.5.77";
+    public static String ccxtVersion() {
+        return VersioniRuntime.versioni().ccxt();
+    }
 
     /**
      * Radice di una distribuzione Node.js <b>fornita dal pacchetto</b> invece che scaricata dall'app,
@@ -424,7 +433,7 @@ public class CcxtInterop {
 
     
     /**
-     * Verifica che la distribuzione standalone di Node.js ({@link #NODE_VERSION}) sia presente nella cartella
+     * Verifica che la distribuzione standalone di Node.js ({@link #nodeVersion()}) sia presente nella cartella
      * {@code tools/node} della directory di lavoro; se manca, la scarica dal sito ufficiale (rilevando
      * automaticamente sistema operativo e architettura) e la estrae.
      * @throws IOException in caso di errore di rete o di estrazione dell'archivio
@@ -450,11 +459,11 @@ public class CcxtInterop {
             extension = "tar.xz";
         }
 
-        String filename = "node-" + NODE_VERSION + "-" + platform + "." + extension;
-        String url = "https://nodejs.org/dist/" + NODE_VERSION + "/" + filename;
+        String filename = "node-" + nodeVersion() + "-" + platform + "." + extension;
+        String url = "https://nodejs.org/dist/" + nodeVersion() + "/" + filename;
         
         //Verifico se è presente una specifica versione di node, qualora non lo sia scarico la nuova
-        if (Files.exists(Paths.get(getNodeDir().toString()+"/node-" + NODE_VERSION + "-" + platform))) {
+        if (Files.exists(Paths.get(getNodeDir().toString()+"/node-" + nodeVersion() + "-" + platform))) {
            // System.out.println("✅ Node.js già presente");
             return;
         }
@@ -480,7 +489,7 @@ public class CcxtInterop {
     
     
     /**
-     * Installa (o aggiorna a {@link #CCXT_VERSION}) la libreria Node.js CCXT in {@code node_modules}
+     * Installa (o aggiorna a {@link #ccxtVersion()}) la libreria Node.js CCXT in {@code node_modules}
      * tramite {@code npm install}, usando la distribuzione Node.js gestita da {@link #getNodeExePath()}.
      * @throws IOException in caso di errore di avvio/lettura del processo npm
      * @throws InterruptedException se il thread viene interrotto durante l'attesa del processo
@@ -509,7 +518,7 @@ public class CcxtInterop {
     Path ccxtDir = nodeModulesDir.resolve("ccxt");
 
     String versioneInstallata = versioneCcxtInstallata(ccxtDir);
-    if (Files.exists(ccxtDir) && Files.isDirectory(ccxtDir) && CCXT_VERSION.equals(versioneInstallata)) {
+    if (Files.exists(ccxtDir) && Files.isDirectory(ccxtDir) && ccxtVersion().equals(versioneInstallata)) {
         //System.out.println("CCXT già installato in: " + ccxtDir);
         return;
     }
@@ -519,9 +528,9 @@ public class CcxtInterop {
 
 
     System.out.println(versioneInstallata == null
-            ? "Installo ccxt " + CCXT_VERSION + "..."
-            : "Aggiorno ccxt da " + versioneInstallata + " a " + CCXT_VERSION + "...");
-    ProcessBuilder builder = new ProcessBuilder(npmPath.toString(), "install", "ccxt@" + CCXT_VERSION);
+            ? "Installo ccxt " + ccxtVersion() + "..."
+            : "Aggiorno ccxt da " + versioneInstallata + " a " + ccxtVersion() + "...");
+    ProcessBuilder builder = new ProcessBuilder(npmPath.toString(), "install", "ccxt@" + ccxtVersion());
     System.out.println(VarStatiche.getWorkingDirectory() + "tools/node");
     builder.directory(getNodeDir().toFile());
     //builder.directory(nodeModulesDir.toFile());
@@ -560,7 +569,7 @@ public class CcxtInterop {
         throw new RuntimeException("npm install ccxt interrotto: nessuna risposta entro "
                 + TIMEOUT_NPM_INSTALL_MINUTI + " minuti (probabile problema di connessione)");
     if (exitCode != 0) throw new RuntimeException("npm install ccxt fallito");
-    System.out.println("ccxt " + CCXT_VERSION + " installato con successo");
+    System.out.println("ccxt " + ccxtVersion() + " installato con successo");
 }
 
     /**
@@ -576,7 +585,7 @@ public class CcxtInterop {
      * del tutto estraneo a quest'app puo' finire nei log dell'utente come un warning incomprensibile —
      * osservato il 2026-09-04: {@code npm warn Unknown user config "allow-scripts"}, una chiave che
      * questa applicazione non imposta mai. L'installazione di ccxt e' interna e deterministica (vedi
-     * {@link #CCXT_VERSION}) e non deve dipendere da configurazioni npm messe li' per altri scopi.
+     * {@link #ccxtVersion()}) e non deve dipendere da configurazioni npm messe li' per altri scopi.
      * <p>
      * I due placeholder devono essere **file distinti**, non lo stesso percorso riusato per entrambi i
      * ruoli: l'npm bundlato con Node {@code v24.7.0} rifiuta di caricare lo stesso file sotto due ruoli
@@ -807,9 +816,9 @@ public class CcxtInterop {
         }
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("win")) {
-            return getNodeDir().resolve("node-" + NODE_VERSION + "-win-x64").resolve("npm.cmd");
+            return getNodeDir().resolve("node-" + nodeVersion() + "-win-x64").resolve("npm.cmd");
         } else {
-            return getNodeDir().resolve("node-" + NODE_VERSION + "-" + (os.contains("mac") ? "darwin-x64" : "linux-x64"))
+            return getNodeDir().resolve("node-" + nodeVersion() + "-" + (os.contains("mac") ? "darwin-x64" : "linux-x64"))
                            .resolve("bin").resolve("npm");
         }
     }
@@ -827,14 +836,14 @@ public static Path getNodeExePath() {
     // es. nodejs/node-v18.20.3-win-x64/node.exe oppure nodejs/node-v18.20.3-linux-x64/bin/node
     String baseName;
     if (os.contains("win")) {
-        baseName = "node-" + NODE_VERSION + "-win-x64";
+        baseName = "node-" + nodeVersion() + "-win-x64";
         return getNodeDir().resolve(baseName).resolve("node.exe");
     } else if (os.contains("mac")) {
-        baseName = "node-" + NODE_VERSION + "-darwin-x64";
+        baseName = "node-" + nodeVersion() + "-darwin-x64";
         return getNodeDir().resolve(baseName).resolve("bin").resolve("node");
     } else {
         // Linux
-        baseName = "node-" + NODE_VERSION + "-linux-x64";
+        baseName = "node-" + nodeVersion() + "-linux-x64";
         return getNodeDir().resolve(baseName).resolve("bin").resolve("node");
     }
 }

@@ -9520,11 +9520,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
        // Importazioni.ConvertiScambiLPinDepositiPrelievi();
         int numeromodifiche=0;
+        //Le tolleranze della fase 1 (finestra, differenza massima, tolleranza inversa) stanno in config/varie/Parametri.json
+        //(ParametriAbbinamento), lette a ogni pressione del pulsante. Se non sono disponibili la fase 1 si salta: nessun
+        //abbinamento automatico e' meglio di uno con tolleranze inventate
+        ParametriAbbinamento.Parametri ParAbb=ParametriAbbinamento.Carica();
         DefaultTableModel ModelloTabella1DepositiPrelievi = (DefaultTableModel) this.DepositiPrelievi_Tabella.getModel();
         //SituazioneImport_Tabella1.
         int numeroRighe=ModelloTabella1DepositiPrelievi.getRowCount();
         //int numeroRighe=Principale.DepositiPrelieviDaCategorizzare.size();
-        for (int i=0;i<numeroRighe;i++){
+        for (int i=0;ParAbb!=null&&i<numeroRighe;i++){
             //System.out.println(ModelloTabella1DepositiPrelievi.getValueAt(i, 1));
             String id=ModelloTabella1DepositiPrelievi.getValueAt(i, 0).toString();
             //String id=Principale.DepositiPrelieviDaCategorizzare.get(i);
@@ -9573,16 +9577,16 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 BigDecimal Sommaqta=Sommaqta2.abs();
                 //La minimo inverso serve per indicare che anche se la differenza tra l'ingresso e le uscite è positiva (ho ricevuto più del depositato)
                 //Posso comunque classificare il movimento se la differenza è inferiore di 100000 volte al valore della transazione ovvero 0,001%
-                BigDecimal MinimoInverso= unaGambaFiat ? BigDecimal.ZERO : new BigDecimal(qta).abs().divide(new BigDecimal(10000));
+                BigDecimal MinimoInverso= unaGambaFiat ? BigDecimal.ZERO : ParAbb.tolleranzaInversa(new BigDecimal(qta));
                 BigDecimal PercentualeDifferenza=new BigDecimal(100);
                 if (Double.parseDouble(qta)!=0){
                     PercentualeDifferenza=Sommaqta.divide(new BigDecimal(qta),4,RoundingMode.HALF_UP).multiply(new BigDecimal(100)).abs();
                     }
                 if (MappaCryptoWallet.get(id2)[18].equalsIgnoreCase("")&&//1
-                        Funzioni_Date_DifferenzaDateSecondi(data2,data)<3600 &&//2
+                        Funzioni_Date_DifferenzaDateSecondi(data2,data)<ParAbb.finestraPer(MappaCryptoWallet.get(id)[3],MappaCryptoWallet.get(id2)[3]) &&//2
                         moneta.equals(moneta2)&&//3
                         !wallet.equalsIgnoreCase(wallet2)&&//4
-                        PercentualeDifferenza.compareTo(new BigDecimal(2))==-1 &&//5
+                        PercentualeDifferenza.compareTo(ParAbb.differenzaMassimaPercentuale())==-1 &&//5
                         Sommaqta2.compareTo(MinimoInverso)<=0//7
                         && Funzioni.isDepositoPrelievoClassificabile(id2,null,true)//il movimento deve essere tra quelli classificabili, crypto o fiat
                         )     //6

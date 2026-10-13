@@ -5603,7 +5603,7 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
         String Valore = DatabaseH2.GiacenzeWalletMonetaBlockchain_Leggi(walletAddress + "_CRO_CRO_" + Blocco);
         if (Valore == null)
          try {
-            String urls = "https://cronos.org/explorer/api?module=account&action=eth_get_balance&address=" + walletAddress + "&block=" + Blocco;
+            String urls = IndirizziServizi.Url(IndirizziServizi.CRONOS_EXPLORER) + "?module=account&action=eth_get_balance&address=" + walletAddress + "&block=" + Blocco;
 
            // System.out.println(urls);
             System.out.println("Controllo giacenze CRO su blocco "+ Blocco + " per il Wallet "+ walletAddress);

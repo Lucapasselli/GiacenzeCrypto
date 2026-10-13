@@ -295,7 +295,7 @@ esclusi) all'ultimo blocco con timestamp **strettamente minore** di `DataRiferim
 `SommaQuantitaAData`; scrive per chiave riga e scarta il risultato se la tabella è stata ricalcolata (generazione).
 Il renderer la colora per confronto numerico con *Qta* (`GiacenzeBlockchain.Coincide`). Tre cose non ovvie: **un saldo
 non letto è "n.d.", mai zero** (decodifica di `aggregate3` propria, perché quella di `Trans_XLayer` rende zero una
-chiamata fallita); i nodi di `GiacenzeBlockchain.NODI` sono solo quelli verificati il 10/10/2026 a due altezze contro
+chiamata fallita); i nodi (`nodiStorico` di `config/varie/Reti.json`, letti da `GiacenzeBlockchain.Nodi`) sono solo quelli verificati il 10/10/2026 a due altezze contro
 gli altri nodi della rete, perché alcuni pubblici **rispondono 0x0 invece di un errore** per lo stato che non hanno
 (drpc su OP pre-Bedrock, Alchemy pubblico su World) e il nodo ufficiale di HyperEVM **ignora il blocco** e dà il saldo
 di oggi — un nodo nuovo va verificato così prima di aggiungerlo; prima di Multicall3 sulla rete si legge un saldo per
@@ -536,7 +536,7 @@ Quattro cose non ovvie:
   infatti non si stampano, coi font base-14 di OpenPDF). Spostarle non ha tolto una garanzia; al suo
   posto c'e' `NoteCompilazioneTest`, che verifica chiavi, assenza di orfane e segnaposto risolti.
 
-**Ogni file di `config/varie` e `config/importmappe` tenuto in memoria va nel registro `RicaricaConfig.VOCI`** (cartella, nome, funzione di ricarica); se si rilegge a ogni uso va in `LETTI_A_OGNI_USO`. `RicaricaConfigTest` scandisce le due cartelle e fallisce per un file che non sta in nessuno dei due, e per uno che non e' in `MappeCausali.FILE_VARIE`/`FILE_DI_SISTEMA` (non verrebbe installato): e' la difesa contro «voce nuova inattiva fino al riavvio». Il thread di aggiornamento di `Principale` chiama solo `RicaricaConfig.Ricarica(aggiornati)`. `Simboli.json` (simboli prioritari dei prezzi, valute FIAT di `Moneta`, stablecoin del pulsante E-Money; confronto dei prioritari senza distinzione di maiuscole dal 2026-10-12) e `StatiEsteri.json` (Tabella 10 e privilegiati del D.M. 4/5/1999: **cambiare un `privilegiato` cambia l'aliquota IVAFE**, senza versione) sono due file di questo tipo; **nessuno dei due ha una lista di ripiego nel codice** (sarebbe una seconda copia da tenere allineata): il default e' la copia nel jar, che l'aggiornamento non sovrascrive mai (solo la copia in `workdir/config/` si riallinea da GitHub). Un file di `varie`/`importmappe` puo' dichiarare al primo livello `"versioneMinimaApp"`: una versione piu' vecchia non lo legge e usa il jar (`MappeCausali.CaricaConRipiego`). Serve solo quando cambia il significato di un file gia' letto dalle versioni installate (un file nuovo le versioni vecchie lo ignorano), e protegge soltanto le versioni che contengono il controllo.
+**Ogni file di `config/varie` e `config/importmappe` tenuto in memoria va nel registro `RicaricaConfig.VOCI`** (cartella, nome, funzione di ricarica); se si rilegge a ogni uso va in `LETTI_A_OGNI_USO`. `RicaricaConfigTest` scandisce le due cartelle e fallisce per un file che non sta in nessuno dei due, e per uno che non e' in `MappeCausali.FILE_VARIE`/`FILE_DI_SISTEMA` (non verrebbe installato): e' la difesa contro «voce nuova inattiva fino al riavvio». Il thread di aggiornamento di `Principale` chiama solo `RicaricaConfig.Ricarica(aggiornati)`. `Simboli.json` (simboli prioritari dei prezzi, valute FIAT di `Moneta`, stablecoin del pulsante E-Money; confronto dei prioritari senza distinzione di maiuscole dal 2026-10-12) e `StatiEsteri.json` (Tabella 10 e privilegiati del D.M. 4/5/1999: **cambiare un `privilegiato` cambia l'aliquota IVAFE**, senza versione) sono due file di questo tipo; **nessuno dei due ha una lista di ripiego nel codice** (sarebbe una seconda copia da tenere allineata): il default e' la copia nel jar, che l'aggiornamento non sovrascrive mai (solo la copia in `workdir/config/` si riallinea da GitHub). Un file di `varie`/`importmappe` puo' dichiarare al primo livello `"versioneMinimaApp"`: una versione piu' vecchia non lo legge e usa il jar (`MappeCausali.CaricaConRipiego`). Serve solo quando cambia il significato di un file gia' letto dalle versioni installate (un file nuovo le versioni vecchie lo ignorano), e protegge soltanto le versioni che contengono il controllo. Anche `Reti.json` e `IndirizziServizi.json` sono nel registro (vedi "Adding a new EVM-compatible blockchain").
 
 `Parametri.json` (tolleranze della fase 1 di *Assegnazione Automatica*: finestra, differenza massima, tolleranza inversa, eccezioni `perExchange` che allargano solo la finestra; **i default sono quelli che erano nel codice e un test li fissa**, cambiarli cambia quali giroconti si abbinano da soli) si rilegge a ogni pressione del pulsante (`ParametriAbbinamento`). `Runtime.json` (versioni di Node e CCXT, solo il numero validato come `v1.2.3`/`1.2.3`: `CcxtInterop.nodeVersion()/ccxtVersion()` via `VersioniRuntime`, in registro per la ricarica) non vale per flatpak/MSIX, che portano Node dentro (`NODE_ESTERNO`): lì le versioni non si leggono mai e quelle dei workflow di pacchetto restano fisse; una versione nuova va provata con gli script prima di pubblicarla e lascia su disco il Node precedente.
 
@@ -562,7 +562,7 @@ Cloudflare), and Etherscan/Routescan don't give it free either. The class is an 
 (Etherscan-shaped rows for the five actions, B1-B5 untouched) built on the **state bisection of `Trans_XLayer`**
 (nonce + native balance + followed tokens' `balanceOf` in one Multicall3 call, split down to the single block, then
 block + 5 single-block `eth_getLogs` + receipts), whose ABI helpers it reuses. Generic per network: a network is one
-`Configurazione` in `RETI` (nodes per use: state/archive, logs, traces; curated tokens; wrapped native token). Things
+`nodoPubblico` entry of `config/varie/Reti.json`, read by `NodoPubblicoDefi.ConfigurazioneRete` (nodes per use: state/archive, logs, traces; curated tokens; wrapped native token). Things
 that are not obvious: the provider string `"NODO PUBBLICO"` is shared with X Layer, which the dispatcher matches by
 rete **before** the provider; txlist rows carry an extra `commissioneWei` (L2 gas + `l1Fee` + operator fee) that B1
 reads **only if present** — the old archive's Moralis-era fees lacked the L1 share and were patched by hashless
@@ -681,6 +681,21 @@ swap through `causaliDifferite`'s 1 s window). The decision is per **group**, ma
 type is then passed to `costruisciMovimenti` as `tipoForzato`, never recomputed. The fallback type must be in
 `causaliChiuse` (AIRDROP is), or the lone row is swallowed by the swap accumulator. Not a pairing engine: it only sees the
 rows `raggruppaRighe` already put together, so a pair further apart than the tolerance stays two rows.
+
+**Three stateless row primitives (2026-10-13): `fusoPerPeriodo`, `colonneCalcolate`, `regoleRiga`.** All in
+`ImportazioneGenerica.leggiCSV`, applied per row in a fixed order after the date check: `coppia`, then calculated columns (may
+use the pair's virtual columns), then row rules (may read calculated columns); without the keys a row is unchanged.
+`fusoPerPeriodo` (`[{da, a, fuso}]`, ISO days, inclusive, no overlaps) picks the zone from the row's **written** date and
+wins over `fusoDaIntestazione`, the per-file choice and `fuso`; every date conversion goes through `risolviFuso(LocalDate)`,
+so movement, sort and price see the same instant. ⚠️ Adding it to a config that is already in use moves the instant of
+already-imported rows, and the re-import dedup key holds the instant to the second: every such row would be imported again
+as a duplicate. So it is **not** applied to `Nexo Pro Depositi e Prelievi.json`, and should only go into new configs.
+`colonneCalcolate` (`prodotto`/`quoziente`/`somma`/`differenza` of two columns into a virtual one, `BigDecimal`,
+`toPlainString` because of M7, empty if an operand is missing or the divisor is zero) generalises `coppia.importoQuote`,
+which stays as it is. `regoleRiga`: one condition on one column (`uguale`/`contiene` case-insensitive, or `vuota`) and one
+action (`imposta` a constant into a column, or `scarta`, which goes to the import summary as "REGOLA DI RIGA"); a rule may
+not write the date column (checked at load and again after autodetect). Deliberately not a rules language. A config using
+any of the three needs a `versioneMinimaApp` that contains this code. Pinned by `ImportazioneGenericaPrimitiveRigaTest`.
 
 **`walletSpecularePerCausale`** emits a mirror leg (same coin, inverted quantity via
 `Moneta.InvertiQta()`, never `replace("-","")`) for causali that move a coin into an exchange
@@ -975,7 +990,7 @@ scarti recovery (the real case: the 04/10 bill predates the 325 mapping) never p
 also searches the wallet from the archive's unpaired 325 rows when the option is empty.
 
 **X Layer is imported from the public node, not from an explorer** (`Trans_XLayer`, 2026-10-09). No free explorer
-covers it, so the wallet's **state** (ERC-4337 nonce, balances of the coins in `Trans_XLayer.TOKEN`, `scaledBalanceOf`
+covers it, so the wallet's **state** (ERC-4337 nonce, balances of the coins in `tokenNodo` of the XLAYER entry of `Reti.json`, read by `Trans_XLayer.Monete()`, `scaledBalanceOf`
 of aTokens, OKB) is read with one `eth_call` to Multicall3 and bisected until a changed stretch is ≤ 100 blocks, where
 `eth_getLogs` runs: ~20 requests per movement whatever the time elapsed. Only the listed coins are seen and native OKB
 moves are only reported, so a generic X Layer wallet would be incomplete. `Mappa_ChainExplorer[0]` holds the node, not
@@ -1074,15 +1089,22 @@ Code added **after** `initComponents()` in constructors (table header setup, ext
 
 ## Adding a new EVM-compatible blockchain
 
-Per `Documentazione/IstruzioniVarie.txt`, when adding a new EVM chain:
-1. Add to `Mappa_ChainExplorer` in `VarCondivise.CompilaMappaChain()` with etherscan v2 chainid URL
-2. Update `Funzioni_WalletDeFi.isValidDefiWallet()`
-3. Update `Funzioni_WalletDeFi.ApriSituazioneWallet()`
-4. Update `Funzioni_WalletDeFi.ApriMovimentiWallet()`
-5. Update `Funzioni_WalletDeFi.UrlExplorerTx()` — the per-chain explorer URLs, previously inline in `ApriExplorer()`, now live there and are shared with "Chiedi a IA"
-6. Add to `GUI_GestioneWallets.java`
+**Since 2026-10-13 a chain is a voce of `config/varie/Reti.json`** (`Reti`, in the reload registry): `id`, `nome` (the label
+`"nome (id)"` is also the logo key), `defi`, `chainidEtherscan`, `simbolo`, `coingecko`/`defillama`, the three browser
+pages (`urlTransazione`, `urlTokenWallet`, `urlWallet` with `{hash}`/`{wallet}`/`{token}`), `nodiStorico`/`senzaStorico`.
+From it come both combos, `isValidDefiWallet`, the explorer links, `Mappa_ChainExplorer`, `MappaRetiSupportate` and the
+historical-state nodes; `BASE` also carries `nodoPubblico` (import nodes and tokens) and `XLAYER` `tokenNodo` (card tokens,
+order matters). For a chain covered by Etherscan V2 that is all (checked 2026-10-13: Moralis, the provider table and the price paths derive the chain from these maps), except the optional `GOPLUS_CHAIN_ID` entry if GoPlus covers it. **The explorer API URL is never written in the file**: it
+receives the user's ApiKey, so `Reti.Rete.api()` builds it from `chainidEtherscan`, and the non-Etherscan ones
+(`CRO`, `SOL`, `BTC`, `XLAYER`) are in `Reti.API_NON_ETHERSCAN`. Still in code, on purpose (behaviour or keys):
+`Importazioni.DeFi_ProviderDefault`, `DeFi_ProviderBlockscoutUrl`, `CHAIN_ID_BLOCKSCOUT_PRO`,
+`Principale.Opzioni_ProviderDefi_OpzioniPerChain`, `Principale.GOPLUS_CHAIN_ID`, and `GeneraLoghi` (dev tool). A node
+added to `nodiStorico`/`nodoPubblico` must be verified at two heights first (some public nodes answer `0x0` instead of an
+error). `ChainConfigurazioneCompletaTest` and `RetiTest` check the rest.
 
-Etherscan v2 chain IDs are listed in `Documentazione/IstruzioniVarie.txt`.
+Keyless public services (DefiLlama, Banca d'Italia, mempool, public Coinbase/Binance candles, CMC historical data, GoPlus,
+Cronos explorer) take their base URL from `config/varie/IndirizziServizi.json` (`IndirizziServizi.Url`, https, host and
+path only). Endpoints that carry a key or a signature stay in code for the same reason as above.
 
 ## Packaging & distribution
 

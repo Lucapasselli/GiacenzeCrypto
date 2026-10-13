@@ -20,7 +20,7 @@ import java.util.function.BooleanSupplier;
  * stessa parte nei due conti. Se la data e' oggi si legge l'ultimo blocco.
  *
  * <p><b>Un saldo non letto non e' mai zero</b>: un nodo senza storico, una chiamata fallita o un contratto che non
- * risponde danno {@link #NON_DISPONIBILE}. Per questo i nodi di {@link #NODI} sono solo quelli verificati il 10/10/2026
+ * risponde danno {@link #NON_DISPONIBILE}. Per questo i nodi di {@link #Nodi} (in config/varie/Reti.json) sono solo quelli verificati il 10/10/2026
  * a due altezze diverse contro gli altri nodi della stessa rete: alcuni nodi pubblici rispondono {@code 0x0} invece di
  * un errore per lo stato che non hanno (drpc su OP prima di Bedrock, Alchemy pubblico su World Chain), e il nodo
  * ufficiale di HyperEVM ignora il blocco e restituisce sempre il saldo di oggi. Quei nodi qui non ci sono.
@@ -39,45 +39,24 @@ public class GiacenzeBlockchain {
     static final int CHIAMATE_PER_LOTTO = 200;
 
     /**
-     * Nodi con lo stato storico, rete per rete (verificati il 10/10/2026: saldo a meta' e a un quinto della catena
-     * uguale fra i nodi elencati, diverso da quello di oggi). BASE e XLAYER non sono qui: usano gli stessi nodi della
-     * loro importazione ({@link #Nodi}). MONAD non ha nessun nodo pubblico con lo storico: solo la giacenza di oggi.
+     * Nodi con lo stato storico, rete per rete: {@code nodiStorico} di {@code config/varie/Reti.json} (verificati il
+     * 10/10/2026: saldo a meta' e a un quinto della catena uguale fra i nodi elencati, diverso da quello di oggi). BASE usa
+     * gli stessi nodi della sua importazione ({@code nodoPubblico}). MONAD non ha nessun nodo pubblico con lo storico
+     * ({@code senzaStorico}): solo la giacenza di oggi.
+     *
+     * @return i nodi della rete, vuoto se la rete non si legge (SOL, BTC, reti non EVM)
      */
-    static final Map<String, List<String>> NODI = Map.ofEntries(
-            Map.entry("ETH", List.of("https://mainnet.gateway.tenderly.co", "https://eth-mainnet.public.blastapi.io",
-                    "https://eth.drpc.org")),
-            Map.entry("BSC", List.of("https://bsc-mainnet.public.blastapi.io")),
-            Map.entry("ARB", List.of("https://arbitrum.gateway.tenderly.co", "https://arbitrum-one.public.blastapi.io")),
-            Map.entry("POL", List.of("https://polygon.gateway.tenderly.co", "https://polygon.drpc.org")),
-            Map.entry("AVAX", List.of("https://avalanche.gateway.tenderly.co", "https://api.avax.network/ext/bc/C/rpc")),
-            Map.entry("CRO", List.of("https://evm.cronos.org", "https://cronos.drpc.org")),
-            Map.entry("OP", List.of("https://mainnet.optimism.io")),
-            Map.entry("GNOSIS", List.of("https://rpc.gnosischain.com", "https://gnosis.gateway.tenderly.co")),
-            Map.entry("LINEA", List.of("https://rpc.linea.build", "https://linea.gateway.tenderly.co")),
-            Map.entry("BLAST", List.of("https://rpc.blast.io")),
-            Map.entry("UNICHAIN", List.of("https://mainnet.unichain.org", "https://unichain.gateway.tenderly.co")),
-            Map.entry("WORLD", List.of("https://worldchain-mainnet.gateway.tenderly.co", "https://worldchain.drpc.org")),
-            Map.entry("TAIKO", List.of("https://rpc.mainnet.taiko.xyz", "https://taiko.drpc.org")),
-            Map.entry("ABSTRACT", List.of("https://api.mainnet.abs.xyz", "https://abstract.drpc.org")),
-            Map.entry("KATANA", List.of("https://rpc.katana.network", "https://katana.drpc.org")),
-            Map.entry("SONIC", List.of("https://rpc.soniclabs.com", "https://sonic.gateway.tenderly.co")),
-            Map.entry("MANTLE", List.of("https://rpc.mantle.xyz", "https://mantle.drpc.org")),
-            Map.entry("HYPEREVM", List.of("https://hyperliquid.drpc.org")),
-            Map.entry("INK", List.of("https://rpc-gel.inkonchain.com", "https://ink.gateway.tenderly.co")),
-            Map.entry("ROBINHOOD", List.of("https://robinhood.drpc.org")),
-            Map.entry("BERA", List.of("https://rpc.berachain.com", "https://berachain.gateway.tenderly.co")),
-            Map.entry("MONAD", List.of("https://rpc.monad.xyz", "https://monad.drpc.org")));
+    static List<String> Nodi(String Rete) {
+        Reti.Rete r = Reti.Get(Rete);
+        if (r == null) return List.of();
+        if (r.nodoPubblico() != null) return r.nodoPubblico().nodiStato();
+        return r.nodiStorico();
+    }
 
     /** Reti i cui nodi pubblici non hanno lo stato storico: si legge solo l'ultimo blocco. */
-    static final java.util.Set<String> SENZA_STORICO = java.util.Set.of("MONAD");
-
-    /** @return i nodi della rete, vuoto se la rete non si legge (SOL, BTC, reti non EVM) */
-    static List<String> Nodi(String Rete) {
-        if (Rete == null) return List.of();
-        String r = Rete.toUpperCase();
-        if (NodoPubblicoDefi.RETI.containsKey(r)) return NodoPubblicoDefi.RETI.get(r).nodiStato();
-        if (r.equals(Trans_XLayer.RETE)) return List.of(OKX_WalletCarta.RPC_XLAYER, "https://xlayer.drpc.org");
-        return NODI.getOrDefault(r, List.of());
+    static boolean SenzaStorico(String Rete) {
+        Reti.Rete r = Reti.Get(Rete);
+        return r != null && r.senzaStorico();
     }
 
     /** @return {@code true} se le giacenze della rete si leggono dalla blockchain */
@@ -200,7 +179,7 @@ public class GiacenzeBlockchain {
         try {
             if (Oggi) {
                 Blocco = Long.decode(rpc.chiama("eth_blockNumber", new JsonArray()).getAsString());
-            } else if (SENZA_STORICO.contains(Rete.toUpperCase())) {
+            } else if (SenzaStorico(Rete)) {
                 avvisi.add("I nodi pubblici di " + Rete + " non hanno le giacenze passate: si leggono solo quelle di oggi.");
                 return new Esito(testi, -1, avvisi);
             } else {
@@ -433,7 +412,7 @@ public class GiacenzeBlockchain {
             Dopo.put(r.chiave(), NON_DISPONIBILE);
         }
         List<String> avvisi = new ArrayList<>();
-        if (SENZA_STORICO.contains(w[1])) {
+        if (SenzaStorico(w[1])) {
             avvisi.add("I nodi pubblici di " + w[1] + " non hanno le giacenze passate.");
         } else {
             if (nodo == null) {
@@ -573,7 +552,7 @@ public class GiacenzeBlockchain {
         if (Tipo == TipoRiga.ESCLUSA || Blocchi.isEmpty()) return;
         String Fine = Tipo == TipoRiga.NATIVA ? "NATIVA" : Moneta.address().trim().toLowerCase();
         List<Long> Ordinati = new ArrayList<>(new java.util.TreeSet<>(Blocchi));
-        if (SENZA_STORICO.contains(Rete.toUpperCase())) {
+        if (SenzaStorico(Rete)) {
             avvisi.add("I nodi pubblici di " + Rete + " non hanno le giacenze passate.");
             Map<Long, String> m = new LinkedHashMap<>();
             for (long b : Ordinati) m.put(b, NON_DISPONIBILE);

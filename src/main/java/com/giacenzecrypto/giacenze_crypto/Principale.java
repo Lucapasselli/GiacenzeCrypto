@@ -16357,12 +16357,12 @@ if (result != null && !result.isAction("cancel")) {
         String url;
         String chiaveRisultato = address.toLowerCase();
         if (isSolana) {
-            url = "https://api.gopluslabs.io/api/v1/solana/token_security?contract_addresses=" + address;
+            url = IndirizziServizi.Url(IndirizziServizi.GOPLUS) + "/api/v1/solana/token_security?contract_addresses=" + address;
             chiaveRisultato = address;
         } else {
             String chainId = GOPLUS_CHAIN_ID.get(rete.toUpperCase());
             if (chainId == null) return null; //rete non supportata da GoPlusLabs, non verificabile
-            url = "https://api.gopluslabs.io/api/v1/token_security/" + chainId + "?contract_addresses=" + address;
+            url = IndirizziServizi.Url(IndirizziServizi.GOPLUS) + "/api/v1/token_security/" + chainId + "?contract_addresses=" + address;
         }
 
         OkHttpClient client = HTTP_CLIENT;

@@ -199,36 +199,8 @@
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
           <Font name="Noto Sans" size="14" style="0"/>
         </Property>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="27">
-            <StringItem index="0" value="--- nessuna selezione ---"/>
-            <StringItem index="1" value="Arbitrum (ARB)"/>
-            <StringItem index="2" value="Avalanche (AVAX)"/>
-            <StringItem index="3" value="Base (BASE)"/>
-            <StringItem index="4" value="Berachain (BERA)"/>
-            <StringItem index="5" value="Binance Smart Chain (BSC)"/>
-            <StringItem index="6" value="Bitcoin (BTC)"/>
-            <StringItem index="7" value="Cronos Chain (CRO)"/>
-            <StringItem index="8" value="Ethereum (ETH)"/>
-            <StringItem index="9" value="Gnosis Chain (GNOSIS)"/>
-            <StringItem index="10" value="Solana (SOL)"/>
-            <StringItem index="11" value="Polygon (POL)"/>
-            <StringItem index="12" value="Monad (MONAD)"/>
-            <StringItem index="13" value="Linea (LINEA)"/>
-            <StringItem index="14" value="Blast (BLAST)"/>
-            <StringItem index="15" value="Unichain (UNICHAIN)"/>
-            <StringItem index="16" value="World Chain (WORLD)"/>
-            <StringItem index="17" value="Taiko (TAIKO)"/>
-            <StringItem index="18" value="Abstract (ABSTRACT)"/>
-            <StringItem index="19" value="Katana (KATANA)"/>
-            <StringItem index="20" value="Sonic (SONIC)"/>
-            <StringItem index="21" value="Mantle (MANTLE)"/>
-            <StringItem index="22" value="Optimism (OP)"/>
-            <StringItem index="23" value="HyperEVM (HYPEREVM)"/>
-            <StringItem index="24" value="Ink (INK)"/>
-            <StringItem index="25" value="Robinhood Chain (ROBINHOOD)"/>
-            <StringItem index="26" value="X Layer (XLAYER)"/>
-          </StringArray>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="new javax.swing.DefaultComboBoxModel&lt;&gt;(Reti.EtichetteComboWallet())" type="code"/>
         </Property>
       </Properties>
       <AuxValues>

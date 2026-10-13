@@ -77,7 +77,7 @@ class Trans_XLayerTest {
     private static List<Trans_XLayer.Movimento> classifica(JsonObject... logs) {
         JsonArray a = new JsonArray();
         for (JsonObject l : logs) a.add(l);
-        return Trans_XLayer.Classifica(W, a, new HashMap<>(Trans_XLayer.TOKEN), null, new ArrayList<>());
+        return Trans_XLayer.Classifica(W, a, new HashMap<>(Trans_XLayer.Monete()), null, new ArrayList<>());
     }
 
     // ------------------------------------------------------------------
@@ -249,7 +249,7 @@ class Trans_XLayerTest {
 
         static List<BigInteger> zeri() {
             List<BigInteger> z = new ArrayList<>();
-            for (int i = 0; i < Trans_XLayer.TOKEN.size() + 2; i++) z.add(BigInteger.ZERO);
+            for (int i = 0; i < Trans_XLayer.Monete().size() + 2; i++) z.add(BigInteger.ZERO);
             return z;
         }
 
@@ -307,7 +307,7 @@ class Trans_XLayerTest {
     @Test
     void laScansionePerStatiTrovaLeTransazioniConPocheRichieste() {
         Nodo nodo = new Nodo(70_000_000L);
-        int iUSDG = 1, iAUSDG = Trans_XLayer.TOKEN.size();   //nonce in 0, aXlrUSDG ultimo dei token
+        int iUSDG = 1, iAUSDG = Trans_XLayer.Monete().size();   //nonce in 0, aXlrUSDG ultimo dei token
         nodo.transazione(40_000_123L, "0x01", iUSDG, 111_590_000, transfer(USDG, HOT, W, 111_590_000));
         nodo.transazione(40_000_300L, "0x02", iAUSDG, 110_416_470,
                 transfer(USDG, W, POOL, 111_590_000), transfer(AUSDG, ZERO, W, 111_589_999), mint(AUSDG, POOL, W, 111_589_999, 0));

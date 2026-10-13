@@ -58,34 +58,9 @@ public class Funzioni_WalletDeFi {
      public static String UrlExplorerTx(String Rete, String Hash) {
         if (Rete == null || Hash == null || Hash.isBlank()) return null;
 
-        if (Rete.equalsIgnoreCase("BSC")) return "https://bscscan.com/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("CRO")) return "https://cronoscan.com/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("ETH")) return "https://etherscan.io/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("BASE")) return "https://basescan.org/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("ARB")) return "https://arbiscan.io/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("SOL")) return "https://solscan.io/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("BERA")) return "https://berascan.com/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("AVAX")) return "https://avascan.info/blockchain/c/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("BTC")) return "https://mempool.space/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("POL")) return "https://polygonscan.com/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("MONAD")) return "https://monadscan.com/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("GNOSIS")) return "https://gnosisscan.io/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("LINEA")) return "https://lineascan.build/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("BLAST")) return "https://blastscan.io/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("UNICHAIN")) return "https://uniscan.xyz/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("WORLD")) return "https://worldscan.org/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("TAIKO")) return "https://taikoscan.io/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("ABSTRACT")) return "https://abscan.org/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("KATANA")) return "https://katanascan.com/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("SONIC")) return "https://sonicscan.org/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("MANTLE")) return "https://mantlescan.xyz/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("OP")) return "https://optimistic.etherscan.io/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("HYPEREVM")) return "https://hyperevmscan.io/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("INK")) return "https://explorer.inkonchain.com/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("ROBINHOOD")) return "https://robinhoodchain.blockscout.com/tx/" + Hash;
-        if (Rete.equalsIgnoreCase("XLAYER")) return "https://www.oklink.com/x-layer/tx/" + Hash;
-
-        return null;
+        //Gli indirizzi stanno in config/varie/Reti.json (urlTransazione)
+        Reti.Rete r = Reti.Get(Rete);
+        return r == null ? null : Reti.Url(r.urlTransazione(), Hash, null, null);
     }
      
      /**
@@ -96,92 +71,14 @@ public class Funzioni_WalletDeFi {
       * @param Rete identificativo della blockchain/rete
       */
      public static void ApriMovimentiWallet(String Wallet,String Address,String Rete){
-           
-            
-                
-                        if (Rete.equalsIgnoreCase("BSC")){
-                            Funzioni.ApriWeb("https://bscscan.com/token/"+Address +"?a="+ Wallet);
-                           }
-                        else if(Rete.equalsIgnoreCase("CRO")){
-                           Funzioni.ApriWeb("https://cronoscan.com/token/"+Address +"?a="+ Wallet); 
-                        }
-                        else if(Rete.equalsIgnoreCase("ETH")){
-                           Funzioni.ApriWeb("https://etherscan.io/token/"+Address +"?a="+ Wallet); 
-                        }
-                        else if(Rete.equalsIgnoreCase("BASE")){
-                           Funzioni.ApriWeb("https://basescan.org/token/"+Address +"?a="+ Wallet); 
-                        }
-                        else if(Rete.equalsIgnoreCase("ARB")){
-                           Funzioni.ApriWeb("https://arbiscan.io/token/"+Address +"?a="+ Wallet); 
-                        }
-                        else if(Rete.equalsIgnoreCase("SOL")){
-                           Funzioni.ApriWeb("https://solscan.io/token/"+Address +"?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("BERA")){
-                           Funzioni.ApriWeb("https://berascan.com/token/"+Address +"?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("BTC")){
-                           Funzioni.ApriWeb("https://mempool.space/address/"+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("POL")){
-                           Funzioni.ApriWeb("https://polygonscan.com/token/"+Address +"?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("MONAD")){
-                           Funzioni.ApriWeb("https://monadscan.com/token/"+Address +"?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("GNOSIS")){
-                           Funzioni.ApriWeb("https://gnosisscan.io/token/"+Address +"?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("LINEA")){
-                           Funzioni.ApriWeb("https://lineascan.build/token/"+Address +"?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("BLAST")){
-                           Funzioni.ApriWeb("https://blastscan.io/token/"+Address +"?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("UNICHAIN")){
-                           Funzioni.ApriWeb("https://uniscan.xyz/token/"+Address +"?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("WORLD")){
-                           Funzioni.ApriWeb("https://worldscan.org/token/"+Address +"?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("TAIKO")){
-                           Funzioni.ApriWeb("https://taikoscan.io/token/"+Address +"?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("ABSTRACT")){
-                           Funzioni.ApriWeb("https://abscan.org/token/"+Address +"?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("KATANA")){
-                           Funzioni.ApriWeb("https://katanascan.com/token/"+Address +"?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("SONIC")){
-                           Funzioni.ApriWeb("https://sonicscan.org/token/"+Address +"?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("MANTLE")){
-                           Funzioni.ApriWeb("https://mantlescan.xyz/token/"+Address +"?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("OP")){
-                           Funzioni.ApriWeb("https://optimistic.etherscan.io/token/"+Address +"?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("HYPEREVM")){
-                           Funzioni.ApriWeb("https://hyperevmscan.io/token/"+Address +"?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("INK")){
-                           //Ink ha solo un explorer Blockscout (nessun sito "-scan" della famiglia
-                           //Etherscan, a differenza di GNOSIS/OP): l'URL segue quindi la convenzione
-                           //Blockscout (tab sull'indirizzo, filtrato per token), non quella "?a=" usata
-                           //sopra per le chain Etherscan-compatibili
-                           Funzioni.ApriWeb("https://explorer.inkonchain.com/address/"+Wallet+"?tab=token_transfers&token="+Address);
-                        }
-                        else if(Rete.equalsIgnoreCase("ROBINHOOD")){
-                           //Stesso caso di Ink: solo Blockscout, nessun sito "-scan" a parte
-                           Funzioni.ApriWeb("https://robinhoodchain.blockscout.com/address/"+Wallet+"?tab=token_transfers&token="+Address);
-                        }
-                        else if(Rete.equalsIgnoreCase("XLAYER")){
-                           //OKLink non ha un filtro per token nell'URL: si apre la pagina dell'indirizzo
-                           Funzioni.ApriWeb("https://www.oklink.com/x-layer/address/"+Wallet);
-                        }
+        String url = UrlMovimentiWallet(Wallet, Address, Rete);
+        if (url != null) Funzioni.ApriWeb(url);
+     }
 
-
+     /** Pagina dei movimenti di un token per un wallet ({@code urlTokenWallet} di Reti.json), {@code null} se la rete non la prevede. */
+     static String UrlMovimentiWallet(String Wallet,String Address,String Rete){
+        Reti.Rete r = Reti.Get(Rete);
+        return r == null ? null : Reti.Url(r.urlTokenWallet(), null, Wallet, Address);
      }
      
           /**
@@ -191,88 +88,14 @@ public class Funzioni_WalletDeFi {
            * @param Rete identificativo della blockchain/rete
            */
           public static void ApriSituazioneWallet(String Wallet,String Rete){
-           
-            
-               if (Desktop.isDesktopSupported()) {
-                        if (Rete.equalsIgnoreCase("BSC")){
-                            Funzioni.ApriWeb("https://bscscan.com/tokenholdings?a="+ Wallet);
-                           }
-                        else if(Rete.equalsIgnoreCase("CRO")){
-                           Funzioni.ApriWeb("https://cronoscan.com/tokenholdings?a="+ Wallet); 
-                        }
-                        else if(Rete.equalsIgnoreCase("ETH")){
-                           Funzioni.ApriWeb("https://etherscan.io/tokenholdings?a="+ Wallet); 
-                        }
-                        else if(Rete.equalsIgnoreCase("BASE")){
-                           Funzioni.ApriWeb("https://basescan.org/tokenholdings?a="+ Wallet); 
-                        }
-                        else if(Rete.equalsIgnoreCase("ARB")){
-                           Funzioni.ApriWeb("https://arbiscan.io/tokenholdings?a="+ Wallet); 
-                        }
-                        else if(Rete.equalsIgnoreCase("BERA")){
-                           Funzioni.ApriWeb("https://berascan.com/tokenholdings?a="+ Wallet); 
-                        }
-                        else if(Rete.equalsIgnoreCase("SOL")){
-                           Funzioni.ApriWeb("https://solscan.io/account/"+ Wallet+"#portfolio");
-                        }
-                        else if(Rete.equalsIgnoreCase("BTC")){
-                           Funzioni.ApriWeb("https://mempool.space/address/"+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("POL")){
-                           Funzioni.ApriWeb("https://polygonscan.com/tokenholdings?a="+ Wallet); 
-                        }
-                        else if(Rete.equalsIgnoreCase("MONAD")){
-                           Funzioni.ApriWeb("https://monadscan.com/tokenholdings?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("GNOSIS")){
-                           Funzioni.ApriWeb("https://gnosisscan.io/tokenholdings?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("LINEA")){
-                           Funzioni.ApriWeb("https://lineascan.build/tokenholdings?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("BLAST")){
-                           Funzioni.ApriWeb("https://blastscan.io/tokenholdings?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("UNICHAIN")){
-                           Funzioni.ApriWeb("https://uniscan.xyz/tokenholdings?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("WORLD")){
-                           Funzioni.ApriWeb("https://worldscan.org/tokenholdings?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("TAIKO")){
-                           Funzioni.ApriWeb("https://taikoscan.io/tokenholdings?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("ABSTRACT")){
-                           Funzioni.ApriWeb("https://abscan.org/tokenholdings?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("KATANA")){
-                           Funzioni.ApriWeb("https://katanascan.com/tokenholdings?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("SONIC")){
-                           Funzioni.ApriWeb("https://sonicscan.org/tokenholdings?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("MANTLE")){
-                           Funzioni.ApriWeb("https://mantlescan.xyz/tokenholdings?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("OP")){
-                           Funzioni.ApriWeb("https://optimistic.etherscan.io/tokenholdings?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("HYPEREVM")){
-                           Funzioni.ApriWeb("https://hyperevmscan.io/tokenholdings?a="+ Wallet);
-                        }
-                        else if(Rete.equalsIgnoreCase("INK")){
-                           //Blockscout non ha una route "tokenholdings" globale come Etherscan: la
-                           //tendina token è un tab della pagina indirizzo, vedi nota in ApriMovimentiWallet
-                           Funzioni.ApriWeb("https://explorer.inkonchain.com/address/"+Wallet+"?tab=tokens");
-                        }
-                        else if(Rete.equalsIgnoreCase("ROBINHOOD")){
-                           Funzioni.ApriWeb("https://robinhoodchain.blockscout.com/address/"+Wallet+"?tab=tokens");
-                        }
-                        else if(Rete.equalsIgnoreCase("XLAYER")){
-                           Funzioni.ApriWeb("https://www.oklink.com/x-layer/address/"+Wallet);
-                        }
-                    }
+               String url = UrlSituazioneWallet(Wallet, Rete);
+               if (url != null && Desktop.isDesktopSupported()) Funzioni.ApriWeb(url);
+     }
 
+     /** Pagina delle giacenze di un wallet ({@code urlWallet} di Reti.json), {@code null} se la rete non la prevede. */
+     static String UrlSituazioneWallet(String Wallet,String Rete){
+        Reti.Rete r = Reti.Get(Rete);
+        return r == null ? null : Reti.Url(r.urlWallet(), null, Wallet, null);
      }
      
      
@@ -286,14 +109,14 @@ public class Funzioni_WalletDeFi {
      public static boolean isValidDefiWallet(String wallet) {
         //Questa funzione serve per sapere se una stringa wallet presente nella colonna wallet es 0x3423432aff4545 (ETH)
         //può essere considerata un wallet valido, si controllerà quindi l'indirizzo e se la rete è supportata
-        String RetiSupportate="||BSC||CRO||BASE||ARB||ETH||SOL||BERA||AVAX||POL||MONAD||BTC||GNOSIS||LINEA||BLAST||UNICHAIN||WORLD||TAIKO||ABSTRACT||KATANA||SONIC||MANTLE||OP||HYPEREVM||INK||ROBINHOOD||XLAYER||";
         String sWallet[]=wallet.split("\\(");
         String address;
         String Rete;
         if (sWallet.length==2){
             address=sWallet[0].trim();
             Rete=sWallet[1].replace(")", "").trim();
-            if (RetiSupportate.contains("||"+Rete+"||"))return isValidAddress(address, Rete);
+            //Reti con explorer integrato: "defi" in config/varie/Reti.json (maiuscole come prima)
+            if (Rete.equals(Rete.toUpperCase()) && Reti.isDefi(Rete))return isValidAddress(address, Rete);
         }
         return false;
     }

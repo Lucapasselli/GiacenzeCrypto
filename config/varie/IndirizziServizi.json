@@ -1,0 +1,13 @@
+{
+  "_nota": "Indirizzi base dei servizi pubblici interrogati senza chiave: solo https, solo host e percorso, senza barra finale. Gli indirizzi che ricevono una ApiKey o una firma dell'utente restano nel codice e non si possono cambiare da qui.",
+  "indirizzi": {
+    "defillama": "https://coins.llama.fi",
+    "bancaditalia": "https://tassidicambio.bancaditalia.it",
+    "mempool": "https://mempool.space/api",
+    "coinbase": "https://api.exchange.coinbase.com",
+    "coinmarketcapDati": "https://api.coinmarketcap.com",
+    "goplus": "https://api.gopluslabs.io",
+    "binancePubblico": "https://api.binance.com",
+    "cronosExplorer": "https://cronos.org/explorer/api"
+  }
+}

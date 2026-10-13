@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
  * <ul>
  *   <li>senza {@code MappaRetiSupportate} la rete viene azzerata nel percorso prezzi e il prezzo per
  *       contratto non parte;</li>
- *   <li>senza la voce in {@code Importazioni_Gestione.BlockChain} la chain non è scegliibile
+ *   <li>senza la voce in {@code Reti.EtichetteImport()} la chain non è scegliibile
  *       nell'importazione;</li>
  *   <li>senza la voce in {@code GeneraLoghi.PIATTAFORMA_CHAIN} i token di quella chain restano senza
  *       logo, perché il generatore non sa da dove scaricarlo;</li>
@@ -92,18 +92,6 @@ public class ChainConfigurazioneCompletaTest {
         return m.find() ? m.group(1) : null;
     }
 
-    private static List<String> StringheDiUnArrayJava(String sorgente, String ancora) {
-        int inizio = sorgente.indexOf(ancora);
-        assertTrue(inizio >= 0, "in " + SORGENTE_COMBO.getFileName() + " non c'è più il blocco " + ancora);
-        int fine = sorgente.indexOf("}", inizio);
-        assertTrue(fine > inizio, "il blocco " + ancora + " non risulta chiuso");
-
-        List<String> valori = new ArrayList<>();
-        Matcher m = Pattern.compile("\"([^\"]*)\"").matcher(sorgente.substring(inizio, fine));
-        while (m.find()) valori.add(m.group(1));
-        return valori;
-    }
-
     // ---------------------------------------------------------------------------------------------
 
     @Test
@@ -139,45 +127,31 @@ public class ChainConfigurazioneCompletaTest {
 
     @Test
     public void OgniChainESceglibileNellaFinestraDiImportazione() {
-        Map<String, String> perCodice = EtichettePerCodice(Importazioni_Gestione.BlockChain);
+        Map<String, String> perCodice = EtichettePerCodice(Reti.EtichetteImport());
         for (String rete : RetiConExplorer()) {
             assertTrue(perCodice.containsKey(rete),
-                    "la rete " + rete + " non è nell'elenco Importazioni_Gestione.BlockChain: non si "
+                    "la rete " + rete + " non è nell'elenco Reti.EtichetteImport(): non si "
                     + "potrebbe scegliere in importazione");
         }
     }
 
     @Test
-    public void LeDueTendineDelleRetiDiconoLaStessaCosa() throws IOException {
-        String sorgente = Files.readString(SORGENTE_COMBO, StandardCharsets.UTF_8);
-        List<String> daJava = StringheDiUnArrayJava(sorgente, "ComboBox_Rete.setModel(");
-
+    public void LaTendinaDelleRetiNascedaRetiJson() throws IOException {
+        //Il .form costruisce la tendina con Reti.EtichetteComboWallet(): se tornasse un elenco scritto a mano, le
+        //reti nuove di Reti.json non comparirebbero nella creazione del wallet
         String form = Files.readString(FORM_COMBO, StandardCharsets.UTF_8);
         int inizio = form.indexOf("<Component class=\"javax.swing.JComboBox\" name=\"ComboBox_Rete\">");
         assertTrue(inizio >= 0, "in GUI_GestioneWallets.form non c'è più il ComboBox_Rete");
-        int fine = form.indexOf("</Component>", inizio);
-        String blocco = form.substring(inizio, fine);
-
-        List<String> daForm = new ArrayList<>();
-        Matcher m = Pattern.compile("<StringItem index=\"\\d+\" value=\"([^\"]*)\"").matcher(blocco);
-        while (m.find()) daForm.add(m.group(1));
-
-        //Il .form è la sorgente di verità del Designer: se le due liste divergono, la prossima
-        //riapertura in NetBeans rigenera initComponents() e le modifiche fatte a mano spariscono
-        assertEquals(daForm, daJava, "l'elenco delle reti nel .form e quello in initComponents() non coincidono");
-
-        Matcher c = Pattern.compile("<StringArray count=\"(\\d+)\"").matcher(blocco);
-        assertTrue(c.find(), "manca l'attributo count dello StringArray delle reti");
-        assertEquals(daForm.size(), Integer.parseInt(c.group(1)),
-                "l'attributo count dello StringArray non corrisponde al numero di voci");
+        String blocco = form.substring(inizio, form.indexOf("</Component>", inizio));
+        assertTrue(blocco.contains("Reti.EtichetteComboWallet()"), "la tendina delle reti del .form non legge Reti.json");
+        assertTrue(Files.readString(SORGENTE_COMBO, StandardCharsets.UTF_8)
+                .contains("ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(Reti.EtichetteComboWallet()));"),
+                "initComponents() non costruisce la tendina come il .form");
     }
 
     @Test
-    public void OgniChainESceglibileAllaCreazioneDelWallet() throws IOException {
-        String sorgente = Files.readString(SORGENTE_COMBO, StandardCharsets.UTF_8);
-        Map<String, String> perCodice = EtichettePerCodice(
-                StringheDiUnArrayJava(sorgente, "ComboBox_Rete.setModel(").toArray(String[]::new));
-
+    public void OgniChainESceglibileAllaCreazioneDelWallet() {
+        Map<String, String> perCodice = EtichettePerCodice(Reti.EtichetteComboWallet());
         for (String rete : RetiConExplorer()) {
             assertTrue(perCodice.containsKey(rete),
                     "la rete " + rete + " non è nella tendina di GUI_GestioneWallets: non si potrebbe "
@@ -187,10 +161,8 @@ public class ChainConfigurazioneCompletaTest {
 
     @Test
     public void LEtichettaDiUnaReteEIdenticaOvunque() throws Exception {
-        Map<String, String> daImport = EtichettePerCodice(Importazioni_Gestione.BlockChain);
-        String sorgente = Files.readString(SORGENTE_COMBO, StandardCharsets.UTF_8);
-        Map<String, String> daWallet = EtichettePerCodice(
-                StringheDiUnArrayJava(sorgente, "ComboBox_Rete.setModel(").toArray(String[]::new));
+        Map<String, String> daImport = EtichettePerCodice(Reti.EtichetteImport());
+        Map<String, String> daWallet = EtichettePerCodice(Reti.EtichetteComboWallet());
 
         //L'etichetta non è una didascalia: è la chiave con cui GeneraLoghi trova la piattaforma e con
         //cui LoghiImport ricava il nome del file del logo. Due grafie diverse compilano entrambe e
@@ -207,7 +179,7 @@ public class ChainConfigurazioneCompletaTest {
     public void OgniChainSaDoveProcurarsiILoghi() throws Exception {
         Map<String, String> piattaforme = MappaPrivata(GeneraLoghi.class, "PIATTAFORMA_CHAIN");
         Map<String, String> monete = MappaPrivata(GeneraLoghi.class, "MONETA_CHAIN");
-        Map<String, String> perCodice = EtichettePerCodice(Importazioni_Gestione.BlockChain);
+        Map<String, String> perCodice = EtichettePerCodice(Reti.EtichetteImport());
 
         for (String rete : RetiConExplorer()) {
             String etichetta = perCodice.get(rete);

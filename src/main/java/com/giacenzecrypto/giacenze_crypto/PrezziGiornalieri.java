@@ -357,7 +357,7 @@ final class PrezziGiornalieri {
                 if (Annullato.getAsBoolean()) return Ris;
                 long Punti = Math.min(PUNTI_DEFILLAMA, Math.min(t[1], OggiUTC) - Da + 1);
                 if (Punti <= 0) break;
-                String Url = "https://coins.llama.fi/chart/" + F.Chiave() + "?start=" + (Da * GIORNO_MS / 1000)
+                String Url = IndirizziServizi.Url(IndirizziServizi.DEFILLAMA) + "/chart/" + F.Chiave() + "?start=" + (Da * GIORNO_MS / 1000)
                         + "&span=" + Punti + "&period=1d";
                 String Corpo;
                 try (Response r = HTTP.newCall(new Request.Builder().url(Url).build()).execute()) {

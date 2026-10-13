@@ -33,7 +33,7 @@ import org.json.JSONObject;
 /**
  * Provider DeFi senza chiavi API per le reti EVM che non hanno piu' nessun explorer gratuito: si legge dai nodi
  * pubblici. Oggi solo BASE (dal 10/10/2026 Blockscout la da' solo a pagamento, Etherscan anche, Routescan non la
- * copre: misure in {@code nocommit/Documentazione/Analisi_Provider_BSC.md}). Le reti stanno in {@link #RETI}: una
+ * copre: misure in {@code nocommit/Documentazione/Analisi_Provider_BSC.md}). Le reti stanno in {@code config/varie/Reti.json} ({@link #ConfigurazioneRete}): una
  * rete nuova e' una {@link Configurazione} in piu', non una classe in piu'.
  *
  * <p><b>Come {@link NodeRealDefi}, e' un adattatore</b>: {@link #Scarica} restituisce le righe di ciascuna delle
@@ -112,42 +112,22 @@ public final class NodoPubblicoDefi {
             List<String> tokenNoti, List<String> tokenAvvolti) {}
 
     /**
-     * Le reti. BASE, misure del 10/10/2026: stato storico su base.org, Tenderly e Blast (40 letture su 40 ciascuno),
-     * drpc limita (28 su 40) e resta di riserva; {@code eth_getLogs} il nodo ufficiale non lo da' mai; le tracce solo
-     * drpc, una transazione per volta. I token sono i principali della rete, simbolo e decimali letti sul nodo.
+     * La configurazione di una rete: {@code nodoPubblico} della voce in {@code config/varie/Reti.json}. BASE, misure del
+     * 10/10/2026: stato storico su base.org, Tenderly e Blast (40 letture su 40 ciascuno), drpc limita (28 su 40) e resta
+     * di riserva; {@code eth_getLogs} il nodo ufficiale non lo da' mai; le tracce solo drpc, una transazione per volta. I
+     * token sono i principali della rete, simbolo e decimali letti sul nodo. Un nodo nuovo va verificato a due altezze
+     * prima di metterlo nel file: questi nodi producono movimenti importati.
+     *
+     * @return la configurazione, o {@code null} se la rete non si scarica dai nodi pubblici
      */
-    static final Map<String, Configurazione> RETI = Map.of(
-            "BASE", new Configurazione("BASE",
-                    List.of("https://mainnet.base.org", "https://base.gateway.tenderly.co",
-                            "https://base-mainnet.public.blastapi.io", "https://base.drpc.org"),
-                    List.of("https://base.gateway.tenderly.co", "https://base.drpc.org",
-                            "https://base-mainnet.public.blastapi.io"),
-                    List.of("https://base.drpc.org"),
-                    List.of("0x833589fcd6edb6e08f4c7c32d4f71b54bda02913", //USDC
-                            "0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca", //USDbC
-                            "0x4200000000000000000000000000000000000006", //WETH
-                            "0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22", //cbETH
-                            "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf", //cbBTC
-                            "0x50c5725949a6f0c72e6c4a641f24049a917db0cb", //DAI
-                            "0x940181a94a35a4569e4529a3cdfb74e38fd98631", //AERO
-                            "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2", //USDT
-                            "0x60a3e35cc302bfa44cb288bc5a4f316fdb1adb42", //EURC
-                            "0xc1cba3fcea344f92d9239c08c0568f6f2f0ee452", //wstETH
-                            "0x04c0599ae5a44757c0af6f9ec3b93da8976c150a", //weETH
-                            "0xb6fe221fe9eef5aba221c348ba20a1bf5e73624c", //rETH
-                            "0x4ed4e862860bed51a9570b96d89af5e1b0efefed", //DEGEN
-                            "0x532f27101965dd16442e59d40670faf5ebb142e4", //BRETT
-                            "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b", //VIRTUAL
-                            "0x820c137fa70c8691f0e44dc420a5e53c168921dc", //USDS
-                            "0xecac9c5f704e954931349da37f60e39f515c11c1", //LBTC
-                            "0x1111111111166b7fe7bd91427724b487980afc69", //ZORA
-                            "0x236aa50979d5f3de3bd1eeb40e81137f22ab794b", //tBTC
-                            "0x22e6966b799c4d5b13be962e1d117b56327fda66"), //SNX
-                    List.of("0x4200000000000000000000000000000000000006"))); //WETH
+    static Configurazione ConfigurazioneRete(String Rete) {
+        Reti.Rete r = Reti.Get(Rete);
+        return r == null ? null : r.nodoPubblico();
+    }
 
     /** @return {@code true} se la rete si scarica dai nodi pubblici */
     public static boolean ReteSupportata(String Rete) {
-        return Rete != null && RETI.containsKey(Rete.toUpperCase());
+        return ConfigurazioneRete(Rete) != null;
     }
 
     //=====================================================================================================
@@ -237,7 +217,7 @@ public final class NodoPubblicoDefi {
      */
     static Esito Scansiona(String Rete, String wallet, long bloccoDa, boolean tokenDallArchivio,
             BooleanSupplier interrotto, Consumer<String> avanzamento, int idDocumento) {
-        Configurazione conf = RETI.get(Rete.toUpperCase());
+        Configurazione conf = ConfigurazioneRete(Rete);
         if (conf == null) {
             return new Esito(new JSONArray(), new JSONArray(), new JSONArray(), new JSONArray(), new JSONArray(),
                     List.of("Rete " + Rete + " non gestita dai nodi pubblici."), false, 0, 0);

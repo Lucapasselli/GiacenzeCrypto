@@ -77,7 +77,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         for (int i = 0; i < etichetteCombo.length; i++) {
             etichetteCombo[i] = ComboBox_Rete.getItemAt(i);
         }
-        LoghiPerRete = LoghiImport.MappaLoghiRete(etichetteCombo, Importazioni_Gestione.BlockChain);
+        LoghiPerRete = LoghiImport.MappaLoghiRete(etichetteCombo, Reti.EtichetteImport());
 
         ComboBox_Rete.setRenderer(new LoghiImport.RenderComboConLogo());
 
@@ -187,7 +187,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         TextField_IndirizzoWallet.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
 
         ComboBox_Rete.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
-        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Arbitrum (ARB)", "Avalanche (AVAX)", "Base (BASE)", "Berachain (BERA)", "Binance Smart Chain (BSC)", "Bitcoin (BTC)", "Cronos Chain (CRO)", "Ethereum (ETH)", "Gnosis Chain (GNOSIS)", "Solana (SOL)", "Polygon (POL)", "Monad (MONAD)", "Linea (LINEA)", "Blast (BLAST)", "Unichain (UNICHAIN)", "World Chain (WORLD)", "Taiko (TAIKO)", "Abstract (ABSTRACT)", "Katana (KATANA)", "Sonic (SONIC)", "Mantle (MANTLE)", "Optimism (OP)", "HyperEVM (HYPEREVM)", "Ink (INK)", "Robinhood Chain (ROBINHOOD)", "X Layer (XLAYER)" }));
+        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(Reti.EtichetteComboWallet()));
 
         Bottone_Aggiorna.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Aggiorna.png"))); // NOI18N
         Bottone_Aggiorna.addActionListener(new java.awt.event.ActionListener() {

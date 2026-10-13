@@ -43,12 +43,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     static String Wallets[]=new String[]{"----------","*Nome Personalizzato*",
     "BitBox","Citcoin Core Client","Blochchain.com","Electrum","Exodus","Gate Hub","Ledger Live","Mycellum","Trezor"};
     
-    static String BlockChain[]=new String[]{"----------",
-    "Arbitrum (ARB)","Avalanche (AVAX)","Base (BASE)","Berachain (BERA)","Bitcoin (BTC)","Cardano (ADA)","Binance Chain (BNB)","Binance Smart Chain (BSC)",
-    "Cronos Chain (CRO)","Dash (DASH)","Dogecoin (DOGE)","Polkadot (DOT)","Eos (EOS)","Ethereum (ETH)",
-    "Fantom (FTM)","Gnosis Chain (GNOSIS)","Litecoin (LTC)","Terra Classic (LUNA)","Polygon (POL)","Tron (TRX)","Solana (SOL)","Monad (MONAD)",
-    "Stellar (XLM)","Ripple (XRP)","Zcash (ZEC)",
-    "Linea (LINEA)","Blast (BLAST)","Unichain (UNICHAIN)","World Chain (WORLD)","Taiko (TAIKO)","Abstract (ABSTRACT)","Katana (KATANA)","Sonic (SONIC)","Mantle (MANTLE)","Optimism (OP)","HyperEVM (HYPEREVM)","Ink (INK)","Robinhood Chain (ROBINHOOD)","X Layer (XLAYER)"};
+    //Le reti della voce "Transazioni BlockChain" stanno in config/varie/Reti.json: Reti.EtichetteImport()
     
     static String NomeWallet="";
 
@@ -1368,7 +1363,7 @@ if (voce.isJson()) {
             TextPane_Attenzione.setEnabled(true);
             ComboBox_Exchanges.setEnabled(true);
             Label_NomeExchange.setEnabled(true);
-            ComboBox_Exchanges.setModel(new DefaultComboBoxModel<>(ordinaVoci(BlockChain)));
+            ComboBox_Exchanges.setModel(new DefaultComboBoxModel<>(ordinaVoci(Reti.EtichetteImport())));
             Bottone_SelezionaFile.setEnabled(false);
 
         }

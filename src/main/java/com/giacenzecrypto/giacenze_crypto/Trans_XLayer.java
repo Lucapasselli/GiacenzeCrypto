@@ -25,7 +25,7 @@ import java.util.TreeSet;
  * il tratto si divide a metà fino a 100 blocchi, e lì si chiedono i log. Circa 20 richieste per movimento,
  * qualunque sia il tempo trascorso.
  *
- * <p>Limiti, voluti: si vedono solo le monete dell'elenco {@link #TOKEN} (una moneta fuori elenco compare solo se
+ * <p>Limiti, voluti: si vedono solo le monete dell'elenco {@link #Monete} (una moneta fuori elenco compare solo se
  * cade in un tratto già aperto da un altro cambiamento) e i movimenti di OKB nativo non si importano (si segnala il
  * cambio di saldo). Per il wallet della carta basta; un wallet X Layer qualsiasi resterebbe incompleto.
  *
@@ -75,19 +75,15 @@ final class Trans_XLayer {
     record Token(String indirizzo, String simbolo, String nome, int decimali, boolean aToken) {}
 
     /**
-     * Monete lette nello stato del wallet. Simboli e decimali verificati con {@code symbol()}/{@code decimals()} sul
-     * nodo (07/10/2026). USD₮0 si chiama USDT0: il carattere ₮ non c'è nel font dell'applicazione.
+     * Monete lette nello stato del wallet: {@code tokenNodo} della voce XLAYER di {@code config/varie/Reti.json}, chiave
+     * l'indirizzo minuscolo, nell'ordine del file (l'ordine e' quello dei risultati della chiamata Multicall3). Simboli e
+     * decimali verificati con {@code symbol()}/{@code decimals()} sul nodo (07/10/2026). USD₮0 si chiama USDT0: il
+     * carattere ₮ non c'è nel font dell'applicazione.
      */
-    static final Map<String, Token> TOKEN = Elenco(
-            new Token("0x4ae46a509f6b1d9056937ba4500cb143933d2dc8", "USDG", "Global Dollar", 6, false),
-            new Token("0x74b7f16337b8972027f6196a17a631ac6de26d22", "USDC", "USD Coin", 6, false),
-            new Token("0x1e4a5963abfd975d8c9021ce480b42188849d41d", "USDT", "Tether USD", 6, false),
-            new Token("0x779ded0c9e1022225f8e0630b35a9b54be713736", "USDT0", "USDT0", 6, false),
-            new Token("0x228765a3c18065c923f23a0ccb6c7cefb3ea2223", "aXlrUSDG", "Aave XLayer USDG", 6, true));
-
-    private static Map<String, Token> Elenco(Token... t) {
+    static Map<String, Token> Monete() {
+        Reti.Rete r = Reti.Get(RETE);
         Map<String, Token> m = new LinkedHashMap<>();
-        for (Token x : t) m.put(x.indirizzo(), x);
+        if (r != null) for (Token x : r.tokenNodo()) m.put(x.indirizzo(), x);
         return java.util.Collections.unmodifiableMap(m);
     }
 
@@ -170,7 +166,7 @@ final class Trans_XLayer {
             int totaleTx = 0;
             for (TreeSet<String> h : perBlocco.values()) totaleTx += h.size();
             p.log("X Layer: " + totaleTx + (totaleTx == 1 ? " transazione" : " transazioni") + " da leggere.");
-            Map<String, Token> metadati = new HashMap<>(TOKEN);
+            Map<String, Token> metadati = new HashMap<>(Monete());
             int nt = 0;
             for (Map.Entry<Long, TreeSet<String>> e : perBlocco.entrySet()) {
                 long ts = TempoBlocco(e.getKey(), rpc);
@@ -304,21 +300,27 @@ final class Trans_XLayer {
     static List<BigInteger> Stato(String w, long blocco, OKX_WalletCarta.Rpc rpc) throws Exception {
         JsonObject chiamata = new JsonObject();
         chiamata.addProperty("to", MULTICALL3);
-        chiamata.addProperty("data", DatiStato(w));
+        //Una sola lettura dell'elenco: una ricarica di Reti.json fra le due non deve disallineare i valori
+        Map<String, Token> monete = Monete();
+        chiamata.addProperty("data", DatiStato(w, monete));
         JsonArray par = new JsonArray();
         par.add(chiamata);
         par.add("0x" + Long.toHexString(blocco));
         List<BigInteger> valori = DecodificaAggregate3(rpc.chiama("eth_call", par).getAsString());
-        int attesi = TOKEN.size() + 2;
+        int attesi = monete.size() + 2;
         while (valori.size() < attesi) valori.add(BigInteger.ZERO);
         return valori;
     }
 
     /** Dati di {@code aggregate3} per lo stato: nonce, saldi delle monete (scalati per gli aToken), OKB. */
     static String DatiStato(String w) {
+        return DatiStato(w, Monete());
+    }
+
+    static String DatiStato(String w, Map<String, Token> monete) {
         List<String[]> chiamate = new ArrayList<>();
         chiamate.add(new String[]{ENTRYPOINT_V07, SEL_GET_NONCE + Parola(w) + Parola("0")});
-        for (Token t : TOKEN.values()) {
+        for (Token t : monete.values()) {
             chiamate.add(new String[]{t.indirizzo(), (t.aToken() ? SEL_SCALED_BALANCE_OF : SEL_BALANCE_OF) + Parola(w)});
         }
         chiamate.add(new String[]{MULTICALL3, SEL_GET_ETH_BALANCE + Parola(w)});

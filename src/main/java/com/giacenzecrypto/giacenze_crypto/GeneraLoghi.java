@@ -397,7 +397,7 @@ public class GeneraLoghi {
             perMoneta.put(c.optString("id", ""), c.optString("image", ""));
         }
 
-        for (String voce : Importazioni_Gestione.BlockChain) {
+        for (String voce : Reti.EtichetteImport()) {
             if (voce.trim().startsWith("-") || voce.trim().startsWith("*")) {
                 continue;
             }

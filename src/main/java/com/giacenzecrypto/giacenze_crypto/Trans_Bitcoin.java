@@ -29,7 +29,7 @@ import org.bitcoinj.script.ScriptBuilder;
  */
 public class Trans_Bitcoin {
 
-    private static final String MEMPOOL_API = "https://mempool.space/api";
+    //mempool.space: indirizzo in config/varie/IndirizziServizi.json
     private static final String UNISAT_API  = "https://open-api.unisat.io";
     private static final int    UNISAT_PAGE = 100;
 
@@ -172,7 +172,7 @@ public class Trans_Bitcoin {
      * Interroga l'API mempool.space per ottenere il numero di transazioni di un indirizzo.
      */
     private static int getAddressTxCount(String address) {
-        String url = MEMPOOL_API + "/address/" + address;
+        String url = IndirizziServizi.Url(IndirizziServizi.MEMPOOL) + "/address/" + address;
         Request request = new Request.Builder().url(url).get().build();
         try (Response response = httpClient.newCall(request).execute()) {
             if (response.body() != null) {
@@ -204,7 +204,7 @@ public class Trans_Bitcoin {
         boolean hasMore = true;
 
         while (hasMore) {
-            String url = MEMPOOL_API + "/address/" + address + "/txs/chain";
+            String url = IndirizziServizi.Url(IndirizziServizi.MEMPOOL) + "/address/" + address + "/txs/chain";
             if (lastTxId != null) url += "/" + lastTxId;
 
             Request request = new Request.Builder().url(url).get().build();

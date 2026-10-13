@@ -1381,7 +1381,7 @@ public class Prezzi {
         for (int i = 0; i < ArraydataIni.size(); i++) {
 
             try {
-                String apiUrl = "https://api.binance.com/api/v3/klines?symbol=EURUSDT&interval=1h&startTime=" + ArraydataIni.get(i) + "&endTime=" + ArraydataFin.get(i) + "&limit=1000";
+                String apiUrl = IndirizziServizi.Url(IndirizziServizi.BINANCE_PUBBLICO) + "/api/v3/klines?symbol=EURUSDT&interval=1h&startTime=" + ArraydataIni.get(i) + "&endTime=" + ArraydataFin.get(i) + "&limit=1000";
                 URL url = new URI(apiUrl).toURL();
                 //System.out.println(url);
                             //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
@@ -1578,7 +1578,7 @@ public class Prezzi {
         long dataFin = FunzioniDate.ConvertiDatainLong(DataIniziale) + Long.parseLong("864000000");
         long timestampIniziale = FunzioniDate.ConvertiDatainLong(DataIniziale);
 
-            String apiUrl = "https://api.exchange.coinbase.com/products/" + Crypto + "-USD/candles?granularity=3600&start=" + timestampIniziale + "&end=" + dataFin;
+            String apiUrl = IndirizziServizi.Url(IndirizziServizi.COINBASE) + "/products/" + Crypto + "-USD/candles?granularity=3600&start=" + timestampIniziale + "&end=" + dataFin;
             //System.out.println(apiUrl);
             
             try {
@@ -2006,7 +2006,7 @@ public class Prezzi {
 
     /** Lo storico orario di una moneta CoinMarketCap fra le due date, oppure {@code null} se la richiesta fallisce. */
     static List<CandelaCmc> ScaricaStoricoCoinMarketCap(int cmcId, long Since, long Until) {
-        String apiUrl = "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical"
+        String apiUrl = IndirizziServizi.Url(IndirizziServizi.COINMARKETCAP_DATI) + "/data-api/v3/cryptocurrency/historical"
                 + "?id=" + cmcId
                 + "&timeStart=" + (Since / 1000)
                 + "&timeEnd=" + (Until / 1000)
@@ -2100,7 +2100,7 @@ public class Prezzi {
         if (Interruzione.Richiesta()) return null;
         String ok="ok";
         try {     
-            URL url = new URI("https://tassidicambio.bancaditalia.it/terzevalute-wf-web/rest/v1.0/dailyTimeSeries?startDate="+DataIniziale+"&endDate="+DataFinale+"&baseCurrencyIsoCode=EUR&currencyIsoCode=USD").toURL();
+            URL url = new URI(IndirizziServizi.Url(IndirizziServizi.BANCA_ITALIA) + "/terzevalute-wf-web/rest/v1.0/dailyTimeSeries?startDate="+DataIniziale+"&endDate="+DataFinale+"&baseCurrencyIsoCode=EUR&currencyIsoCode=USD").toURL();
                         //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
             if (Principale.Mappa_RichiesteAPIGiaEffettuate.get(url.toString())!=null){
                 return null;
@@ -2818,7 +2818,7 @@ public class Prezzi {
         }
         if (adesso > (dataUltimoScarico + 86400000)) {
             try {
-                String apiUrl = "https://api.exchange.coinbase.com/products";
+                String apiUrl = IndirizziServizi.Url(IndirizziServizi.COINBASE) + "/products";
                 URL url = new URI(apiUrl).toURL();
                 URLConnection connection = url.openConnection();
                 System.out.println("Recupero coppie gestite da Coinbase");

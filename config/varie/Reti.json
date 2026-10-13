@@ -1,0 +1,535 @@
+{
+  "_nota": [
+    "Reti blockchain riconosciute dal programma, nell'ordine della tendina di Gestione Wallet (la finestra di importazione le ordina per nome).",
+    "nome: l'etichetta e' 'nome (id)' ed e' anche la chiave dei loghi. defi: rete con explorer integrato (wallet DeFi inseribili). Senza defi la rete e' solo riconosciuta.",
+    "chainidEtherscan: l'indirizzo delle API (Etherscan V2) lo costruisce il programma da questo numero, mai da un indirizzo scritto qui, perche' a quelle API va la ApiKey dell'utente. Le reti con API diverse (CRO, SOL, BTC, XLAYER) restano nel codice.",
+    "urlTransazione/urlTokenWallet/urlWallet: pagine aperte nel browser, segnaposto {hash} {wallet} {token}.",
+    "nodiStorico: nodi pubblici con lo stato storico per la colonna Qta Blockchain. Un nodo nuovo va verificato PRIMA a due altezze contro gli altri nodi della rete: alcuni rispondono 0x0 invece di un errore per lo stato che non hanno, e uno sbagliato fa sembrare giuste giacenze sbagliate. senzaStorico: solo la giacenza di oggi.",
+    "nodoPubblico (BASE): nodi e token usati per IMPORTARE i movimenti (NodoPubblicoDefi), stessa verifica a due altezze. tokenNodo (XLAYER): monete lette nello stato del wallet della carta OKX, simbolo e decimali letti sul nodo, l'ordine conta."
+  ],
+  "reti": [
+    {
+      "id": "ARB",
+      "nome": "Arbitrum",
+      "defi": true,
+      "chainidEtherscan": 42161,
+      "simbolo": "ETH",
+      "coingecko": "arbitrum-one",
+      "defillama": "arbitrum",
+      "urlTransazione": "https://arbiscan.io/tx/{hash}",
+      "urlTokenWallet": "https://arbiscan.io/token/{token}?a={wallet}",
+      "urlWallet": "https://arbiscan.io/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://arbitrum.gateway.tenderly.co",
+        "https://arbitrum-one.public.blastapi.io"
+      ]
+    },
+    {
+      "id": "AVAX",
+      "nome": "Avalanche",
+      "defi": true,
+      "chainidEtherscan": 43114,
+      "simbolo": "AVAX",
+      "coingecko": "avalanche",
+      "defillama": "avax",
+      "urlTransazione": "https://avascan.info/blockchain/c/tx/{hash}",
+      "nodiStorico": [
+        "https://avalanche.gateway.tenderly.co",
+        "https://api.avax.network/ext/bc/C/rpc"
+      ]
+    },
+    {
+      "id": "BASE",
+      "nome": "Base",
+      "defi": true,
+      "chainidEtherscan": 8453,
+      "simbolo": "ETH",
+      "coingecko": "base",
+      "defillama": "base",
+      "urlTransazione": "https://basescan.org/tx/{hash}",
+      "urlTokenWallet": "https://basescan.org/token/{token}?a={wallet}",
+      "urlWallet": "https://basescan.org/tokenholdings?a={wallet}",
+      "nodoPubblico": {
+        "nodiStato": [
+          "https://mainnet.base.org",
+          "https://base.gateway.tenderly.co",
+          "https://base-mainnet.public.blastapi.io",
+          "https://base.drpc.org"
+        ],
+        "nodiLog": [
+          "https://base.gateway.tenderly.co",
+          "https://base.drpc.org",
+          "https://base-mainnet.public.blastapi.io"
+        ],
+        "nodiTracce": [
+          "https://base.drpc.org"
+        ],
+        "tokenNoti": [
+          "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca",
+          "0x4200000000000000000000000000000000000006",
+          "0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22",
+          "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+          "0x50c5725949a6f0c72e6c4a641f24049a917db0cb",
+          "0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+          "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2",
+          "0x60a3e35cc302bfa44cb288bc5a4f316fdb1adb42",
+          "0xc1cba3fcea344f92d9239c08c0568f6f2f0ee452",
+          "0x04c0599ae5a44757c0af6f9ec3b93da8976c150a",
+          "0xb6fe221fe9eef5aba221c348ba20a1bf5e73624c",
+          "0x4ed4e862860bed51a9570b96d89af5e1b0efefed",
+          "0x532f27101965dd16442e59d40670faf5ebb142e4",
+          "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
+          "0x820c137fa70c8691f0e44dc420a5e53c168921dc",
+          "0xecac9c5f704e954931349da37f60e39f515c11c1",
+          "0x1111111111166b7fe7bd91427724b487980afc69",
+          "0x236aa50979d5f3de3bd1eeb40e81137f22ab794b",
+          "0x22e6966b799c4d5b13be962e1d117b56327fda66"
+        ],
+        "tokenAvvolti": [
+          "0x4200000000000000000000000000000000000006"
+        ]
+      }
+    },
+    {
+      "id": "BERA",
+      "nome": "Berachain",
+      "defi": true,
+      "chainidEtherscan": 80094,
+      "simbolo": "BERA",
+      "coingecko": "berachain",
+      "defillama": "berachain",
+      "urlTransazione": "https://berascan.com/tx/{hash}",
+      "urlTokenWallet": "https://berascan.com/token/{token}?a={wallet}",
+      "urlWallet": "https://berascan.com/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://rpc.berachain.com",
+        "https://berachain.gateway.tenderly.co"
+      ]
+    },
+    {
+      "id": "BSC",
+      "nome": "Binance Smart Chain",
+      "defi": true,
+      "chainidEtherscan": 56,
+      "simbolo": "BNB",
+      "coingecko": "binance-smart-chain",
+      "defillama": "bsc",
+      "urlTransazione": "https://bscscan.com/tx/{hash}",
+      "urlTokenWallet": "https://bscscan.com/token/{token}?a={wallet}",
+      "urlWallet": "https://bscscan.com/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://bsc-mainnet.public.blastapi.io"
+      ]
+    },
+    {
+      "id": "BTC",
+      "nome": "Bitcoin",
+      "defi": true,
+      "simbolo": "BTC",
+      "coingecko": "bitcoin",
+      "defillama": "bitcoin",
+      "urlTransazione": "https://mempool.space/tx/{hash}",
+      "urlTokenWallet": "https://mempool.space/address/{wallet}",
+      "urlWallet": "https://mempool.space/address/{wallet}"
+    },
+    {
+      "id": "CRO",
+      "nome": "Cronos Chain",
+      "defi": true,
+      "simbolo": "CRO",
+      "coingecko": "cronos",
+      "defillama": "cronos",
+      "urlTransazione": "https://cronoscan.com/tx/{hash}",
+      "urlTokenWallet": "https://cronoscan.com/token/{token}?a={wallet}",
+      "urlWallet": "https://cronoscan.com/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://evm.cronos.org",
+        "https://cronos.drpc.org"
+      ]
+    },
+    {
+      "id": "ETH",
+      "nome": "Ethereum",
+      "defi": true,
+      "chainidEtherscan": 1,
+      "simbolo": "ETH",
+      "coingecko": "ethereum",
+      "defillama": "ethereum",
+      "urlTransazione": "https://etherscan.io/tx/{hash}",
+      "urlTokenWallet": "https://etherscan.io/token/{token}?a={wallet}",
+      "urlWallet": "https://etherscan.io/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://mainnet.gateway.tenderly.co",
+        "https://eth-mainnet.public.blastapi.io",
+        "https://eth.drpc.org"
+      ]
+    },
+    {
+      "id": "GNOSIS",
+      "nome": "Gnosis Chain",
+      "defi": true,
+      "chainidEtherscan": 100,
+      "simbolo": "XDAI",
+      "coingecko": "xdai",
+      "defillama": "xdai",
+      "urlTransazione": "https://gnosisscan.io/tx/{hash}",
+      "urlTokenWallet": "https://gnosisscan.io/token/{token}?a={wallet}",
+      "urlWallet": "https://gnosisscan.io/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://rpc.gnosischain.com",
+        "https://gnosis.gateway.tenderly.co"
+      ]
+    },
+    {
+      "id": "SOL",
+      "nome": "Solana",
+      "defi": true,
+      "simbolo": "SOL",
+      "coingecko": "solana",
+      "defillama": "solana",
+      "urlTransazione": "https://solscan.io/tx/{hash}",
+      "urlTokenWallet": "https://solscan.io/token/{token}?a={wallet}",
+      "urlWallet": "https://solscan.io/account/{wallet}#portfolio"
+    },
+    {
+      "id": "POL",
+      "nome": "Polygon",
+      "defi": true,
+      "chainidEtherscan": 137,
+      "simbolo": "POL",
+      "coingecko": "polygon-pos",
+      "defillama": "polygon",
+      "urlTransazione": "https://polygonscan.com/tx/{hash}",
+      "urlTokenWallet": "https://polygonscan.com/token/{token}?a={wallet}",
+      "urlWallet": "https://polygonscan.com/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://polygon.gateway.tenderly.co",
+        "https://polygon.drpc.org"
+      ]
+    },
+    {
+      "id": "MONAD",
+      "nome": "Monad",
+      "defi": true,
+      "chainidEtherscan": 143,
+      "simbolo": "MON",
+      "coingecko": "monad",
+      "defillama": "monad",
+      "urlTransazione": "https://monadscan.com/tx/{hash}",
+      "urlTokenWallet": "https://monadscan.com/token/{token}?a={wallet}",
+      "urlWallet": "https://monadscan.com/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://rpc.monad.xyz",
+        "https://monad.drpc.org"
+      ],
+      "senzaStorico": true
+    },
+    {
+      "id": "LINEA",
+      "nome": "Linea",
+      "defi": true,
+      "chainidEtherscan": 59144,
+      "simbolo": "ETH",
+      "coingecko": "linea",
+      "defillama": "linea",
+      "urlTransazione": "https://lineascan.build/tx/{hash}",
+      "urlTokenWallet": "https://lineascan.build/token/{token}?a={wallet}",
+      "urlWallet": "https://lineascan.build/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://rpc.linea.build",
+        "https://linea.gateway.tenderly.co"
+      ]
+    },
+    {
+      "id": "BLAST",
+      "nome": "Blast",
+      "defi": true,
+      "chainidEtherscan": 81457,
+      "simbolo": "ETH",
+      "coingecko": "blast",
+      "defillama": "blast",
+      "urlTransazione": "https://blastscan.io/tx/{hash}",
+      "urlTokenWallet": "https://blastscan.io/token/{token}?a={wallet}",
+      "urlWallet": "https://blastscan.io/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://rpc.blast.io"
+      ]
+    },
+    {
+      "id": "UNICHAIN",
+      "nome": "Unichain",
+      "defi": true,
+      "chainidEtherscan": 130,
+      "simbolo": "ETH",
+      "coingecko": "unichain",
+      "defillama": "unichain",
+      "urlTransazione": "https://uniscan.xyz/tx/{hash}",
+      "urlTokenWallet": "https://uniscan.xyz/token/{token}?a={wallet}",
+      "urlWallet": "https://uniscan.xyz/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://mainnet.unichain.org",
+        "https://unichain.gateway.tenderly.co"
+      ]
+    },
+    {
+      "id": "WORLD",
+      "nome": "World Chain",
+      "defi": true,
+      "chainidEtherscan": 480,
+      "simbolo": "ETH",
+      "coingecko": "world-chain",
+      "defillama": "world-chain",
+      "urlTransazione": "https://worldscan.org/tx/{hash}",
+      "urlTokenWallet": "https://worldscan.org/token/{token}?a={wallet}",
+      "urlWallet": "https://worldscan.org/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://worldchain-mainnet.gateway.tenderly.co",
+        "https://worldchain.drpc.org"
+      ]
+    },
+    {
+      "id": "TAIKO",
+      "nome": "Taiko",
+      "defi": true,
+      "chainidEtherscan": 167000,
+      "simbolo": "ETH",
+      "coingecko": "taiko",
+      "defillama": "taiko",
+      "urlTransazione": "https://taikoscan.io/tx/{hash}",
+      "urlTokenWallet": "https://taikoscan.io/token/{token}?a={wallet}",
+      "urlWallet": "https://taikoscan.io/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://rpc.mainnet.taiko.xyz",
+        "https://taiko.drpc.org"
+      ]
+    },
+    {
+      "id": "ABSTRACT",
+      "nome": "Abstract",
+      "defi": true,
+      "chainidEtherscan": 2741,
+      "simbolo": "ETH",
+      "coingecko": "abstract",
+      "defillama": "abstract",
+      "urlTransazione": "https://abscan.org/tx/{hash}",
+      "urlTokenWallet": "https://abscan.org/token/{token}?a={wallet}",
+      "urlWallet": "https://abscan.org/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://api.mainnet.abs.xyz",
+        "https://abstract.drpc.org"
+      ]
+    },
+    {
+      "id": "KATANA",
+      "nome": "Katana",
+      "defi": true,
+      "chainidEtherscan": 747474,
+      "simbolo": "ETH",
+      "coingecko": "katana",
+      "defillama": "katana",
+      "urlTransazione": "https://katanascan.com/tx/{hash}",
+      "urlTokenWallet": "https://katanascan.com/token/{token}?a={wallet}",
+      "urlWallet": "https://katanascan.com/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://rpc.katana.network",
+        "https://katana.drpc.org"
+      ]
+    },
+    {
+      "id": "SONIC",
+      "nome": "Sonic",
+      "defi": true,
+      "chainidEtherscan": 146,
+      "simbolo": "S",
+      "coingecko": "sonic",
+      "defillama": "sonic",
+      "urlTransazione": "https://sonicscan.org/tx/{hash}",
+      "urlTokenWallet": "https://sonicscan.org/token/{token}?a={wallet}",
+      "urlWallet": "https://sonicscan.org/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://rpc.soniclabs.com",
+        "https://sonic.gateway.tenderly.co"
+      ]
+    },
+    {
+      "id": "MANTLE",
+      "nome": "Mantle",
+      "defi": true,
+      "chainidEtherscan": 5000,
+      "simbolo": "MNT",
+      "coingecko": "mantle",
+      "defillama": "mantle",
+      "urlTransazione": "https://mantlescan.xyz/tx/{hash}",
+      "urlTokenWallet": "https://mantlescan.xyz/token/{token}?a={wallet}",
+      "urlWallet": "https://mantlescan.xyz/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://rpc.mantle.xyz",
+        "https://mantle.drpc.org"
+      ]
+    },
+    {
+      "id": "OP",
+      "nome": "Optimism",
+      "defi": true,
+      "chainidEtherscan": 10,
+      "simbolo": "ETH",
+      "coingecko": "optimistic-ethereum",
+      "defillama": "optimism",
+      "urlTransazione": "https://optimistic.etherscan.io/tx/{hash}",
+      "urlTokenWallet": "https://optimistic.etherscan.io/token/{token}?a={wallet}",
+      "urlWallet": "https://optimistic.etherscan.io/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://mainnet.optimism.io"
+      ]
+    },
+    {
+      "id": "HYPEREVM",
+      "nome": "HyperEVM",
+      "defi": true,
+      "chainidEtherscan": 999,
+      "simbolo": "HYPE",
+      "coingecko": "hyperevm",
+      "defillama": "hyperliquid",
+      "urlTransazione": "https://hyperevmscan.io/tx/{hash}",
+      "urlTokenWallet": "https://hyperevmscan.io/token/{token}?a={wallet}",
+      "urlWallet": "https://hyperevmscan.io/tokenholdings?a={wallet}",
+      "nodiStorico": [
+        "https://hyperliquid.drpc.org"
+      ]
+    },
+    {
+      "id": "INK",
+      "nome": "Ink",
+      "defi": true,
+      "simbolo": "ETH",
+      "coingecko": "ink",
+      "defillama": "ink",
+      "urlTransazione": "https://explorer.inkonchain.com/tx/{hash}",
+      "urlTokenWallet": "https://explorer.inkonchain.com/address/{wallet}?tab=token_transfers&token={token}",
+      "urlWallet": "https://explorer.inkonchain.com/address/{wallet}?tab=tokens",
+      "nodiStorico": [
+        "https://rpc-gel.inkonchain.com",
+        "https://ink.gateway.tenderly.co"
+      ]
+    },
+    {
+      "id": "ROBINHOOD",
+      "nome": "Robinhood Chain",
+      "defi": true,
+      "simbolo": "ETH",
+      "coingecko": "robinhood",
+      "defillama": "robinhood",
+      "urlTransazione": "https://robinhoodchain.blockscout.com/tx/{hash}",
+      "urlTokenWallet": "https://robinhoodchain.blockscout.com/address/{wallet}?tab=token_transfers&token={token}",
+      "urlWallet": "https://robinhoodchain.blockscout.com/address/{wallet}?tab=tokens",
+      "nodiStorico": [
+        "https://robinhood.drpc.org"
+      ]
+    },
+    {
+      "id": "XLAYER",
+      "nome": "X Layer",
+      "defi": true,
+      "simbolo": "OKB",
+      "coingecko": "x-layer",
+      "defillama": "xlayer",
+      "urlTransazione": "https://www.oklink.com/x-layer/tx/{hash}",
+      "urlTokenWallet": "https://www.oklink.com/x-layer/address/{wallet}",
+      "urlWallet": "https://www.oklink.com/x-layer/address/{wallet}",
+      "nodiStorico": [
+        "https://rpc.xlayer.tech",
+        "https://xlayer.drpc.org"
+      ],
+      "tokenNodo": [
+        {
+          "indirizzo": "0x4ae46a509f6b1d9056937ba4500cb143933d2dc8",
+          "simbolo": "USDG",
+          "nome": "Global Dollar",
+          "decimali": 6,
+          "aToken": false
+        },
+        {
+          "indirizzo": "0x74b7f16337b8972027f6196a17a631ac6de26d22",
+          "simbolo": "USDC",
+          "nome": "USD Coin",
+          "decimali": 6,
+          "aToken": false
+        },
+        {
+          "indirizzo": "0x1e4a5963abfd975d8c9021ce480b42188849d41d",
+          "simbolo": "USDT",
+          "nome": "Tether USD",
+          "decimali": 6,
+          "aToken": false
+        },
+        {
+          "indirizzo": "0x779ded0c9e1022225f8e0630b35a9b54be713736",
+          "simbolo": "USDT0",
+          "nome": "USDT0",
+          "decimali": 6,
+          "aToken": false
+        },
+        {
+          "indirizzo": "0x228765a3c18065c923f23a0ccb6c7cefb3ea2223",
+          "simbolo": "aXlrUSDG",
+          "nome": "Aave XLayer USDG",
+          "decimali": 6,
+          "aToken": true
+        }
+      ]
+    },
+    {
+      "id": "ADA",
+      "nome": "Cardano"
+    },
+    {
+      "id": "BNB",
+      "nome": "Binance Chain"
+    },
+    {
+      "id": "DASH",
+      "nome": "Dash"
+    },
+    {
+      "id": "DOGE",
+      "nome": "Dogecoin"
+    },
+    {
+      "id": "DOT",
+      "nome": "Polkadot"
+    },
+    {
+      "id": "EOS",
+      "nome": "Eos"
+    },
+    {
+      "id": "FTM",
+      "nome": "Fantom"
+    },
+    {
+      "id": "LTC",
+      "nome": "Litecoin"
+    },
+    {
+      "id": "LUNA",
+      "nome": "Terra Classic"
+    },
+    {
+      "id": "TRX",
+      "nome": "Tron"
+    },
+    {
+      "id": "XLM",
+      "nome": "Stellar"
+    },
+    {
+      "id": "XRP",
+      "nome": "Ripple"
+    },
+    {
+      "id": "ZEC",
+      "nome": "Zcash"
+    }
+  ]
+}

@@ -72,7 +72,10 @@ public class PrezziDefiLlama {
 
     static final String EXCHANGE = "defillama";
 
-    private static final String URL_BASE = "https://coins.llama.fi/batchHistorical?coins=";
+    /** Indirizzo da config/varie/IndirizziServizi.json, letto a ogni uso (un cambio vale senza riavvio). */
+    private static String UrlBase() {
+        return IndirizziServizi.Url(IndirizziServizi.DEFILLAMA) + "/batchHistorical?coins=";
+    }
 
     /** Prima data per cui si cercano prezzi, come in {@link Prezzi#CambioXXXEUR} (01/01/2017). */
     private static final long ANNO_2017 = 1483225200000L;
@@ -216,7 +219,7 @@ public class PrezziDefiLlama {
      * cifre e la virgola). Un token con molti istanti puo' finire su piu' blocchi.
      */
     static List<Map<String, List<Long>>> Blocchi(Map<String, TreeSet<Long>> istanti) {
-        int fisso = URL_BASE.length() + "&searchWidth=1h".length() + 6;
+        int fisso = UrlBase().length() + "&searchWidth=1h".length() + 6;
         List<Map<String, List<Long>>> blocchi = new ArrayList<>();
         Map<String, List<Long>> corrente = new LinkedHashMap<>();
         int lunghezza = fisso;
@@ -244,7 +247,7 @@ public class PrezziDefiLlama {
             for (long i : e.getValue()) secondi.add(i / 1000);
             coins.add(e.getKey(), secondi);
         }
-        return URL_BASE + URLEncoder.encode(coins.toString(), StandardCharsets.UTF_8) + "&searchWidth=1h";
+        return UrlBase() + URLEncoder.encode(coins.toString(), StandardCharsets.UTF_8) + "&searchWidth=1h";
     }
 
     /**

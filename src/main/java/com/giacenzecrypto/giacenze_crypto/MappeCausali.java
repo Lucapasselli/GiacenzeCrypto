@@ -68,7 +68,8 @@ public class MappeCausali {
      * moneta elettronica noti ({@link EmoneyToken}).
      */
     static final String[] FILE_VARIE = new String[]{
-        NoteCompilazione.NOME, AliasPrezziToken.NOME, EmoneyToken.NOME, ListeSimboli.NOME, StatiEsteri.NOME, ParametriAbbinamento.NOME, VersioniRuntime.NOME
+        NoteCompilazione.NOME, AliasPrezziToken.NOME, EmoneyToken.NOME, ListeSimboli.NOME, StatiEsteri.NOME, ParametriAbbinamento.NOME, VersioniRuntime.NOME,
+        Reti.NOME, IndirizziServizi.NOME
     };
 
     /**

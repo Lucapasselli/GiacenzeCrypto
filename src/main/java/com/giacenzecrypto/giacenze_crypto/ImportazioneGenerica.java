@@ -331,6 +331,7 @@ public class ImportazioneGenerica {
         }
 
         // FASE 2 – splitto e valido
+        cfg.ControllaRegoleRiga(); //l'autodetect puo' aver spostato la colonna della data
         for (String r : righeRaw) {
             String[] campi = splitCsvRispettoVirgolette(r, sep);
             if (campi.length <= cfg.colonnaData) {
@@ -348,12 +349,32 @@ public class ImportazioneGenerica {
                 scarta("DATA NON PARSABILE", r);
                 continue;
             }
+            //Trasformazioni della riga, in quest'ordine: coppia, colonne calcolate (possono usare le colonne della
+            //coppia), regole di riga (possono leggere le colonne calcolate). Senza le chiavi la riga resta com'e'.
             if (cfg.colonnaCoppia >= 0) {
                 campi = espandiCoppia(campi, cfg);
                 if (campi == null) {
                     scarta("COPPIA NON VALIDA", r);
                     continue;
                 }
+            }
+            for (ConfigurazioneImport.ColonnaCalcolata c : cfg.colonneCalcolate) {
+                campi = conColonna(campi, c.colonna());
+                campi[c.colonna()] = calcola(c.operazione(), safe(campi, c.a()), safe(campi, c.b()));
+            }
+            boolean scartata = false;
+            for (ConfigurazioneImport.RegolaRiga g : cfg.regoleRiga) {
+                if (!g.vale(campi)) continue;
+                if (g.scarta()) {
+                    scartata = true;
+                    break;
+                }
+                campi = conColonna(campi, g.colonnaImposta());
+                campi[g.colonnaImposta()] = g.valore();
+            }
+            if (scartata) {
+                scarta("REGOLA DI RIGA", r);
+                continue;
             }
             risultato.add(campi);
         }
@@ -1633,6 +1654,42 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         return nuova;
     }
 
+    /** La riga allungata con celle vuote fino a contenere l'indice {@code colonna}. */
+    private static String[] conColonna(String[] campi, int colonna) {
+        if (colonna < campi.length) return campi;
+        String[] nuova = Arrays.copyOf(campi, colonna + 1);
+        for (int i = campi.length; i < nuova.length; i++) nuova[i] = "";
+        return nuova;
+    }
+
+    /**
+     * Una colonna calcolata (vedi {@link ConfigurazioneImport#colonneCalcolate}): risultato esatto, sempre in notazione
+     * normale ({@code toPlainString}, mai {@code 2.5E-9}, che verrebbe letto come quantita' in uscita, bug M7), o
+     * stringa vuota se un operando manca o non e' un numero, o il divisore e' zero.
+     */
+    static String calcola(String operazione, String a, String b) {
+        String x = normalizzaNumero(a);
+        String y = normalizzaNumero(b);
+        if (x.isBlank() || y.isBlank() || !Funzioni.isNumeric(x, false) || !Funzioni.isNumeric(y, false)) {
+            return "";
+        }
+        BigDecimal p = new BigDecimal(x), q = new BigDecimal(y);
+        BigDecimal r;
+        switch (operazione) {
+            case "prodotto" -> r = p.multiply(q);
+            case "somma" -> r = p.add(q);
+            case "differenza" -> r = p.subtract(q);
+            case "quoziente" -> {
+                if (q.signum() == 0) return "";
+                r = p.divide(q, java.math.MathContext.DECIMAL128);
+            }
+            default -> {
+                return "";
+            }
+        }
+        return r.signum() == 0 ? "0" : r.stripTrailingZeros().toPlainString();
+    }
+
     /**
      * Prodotto esatto quantita' x prezzo, come testo senza zeri finali ("19.985"), o stringa vuota se uno dei due
      * fattori manca o non e' un numero (vedi {@link ConfigurazioneImport#colonnaCoppiaImporto}).
@@ -1809,6 +1866,43 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
          * vecchi) resta {@link #fuso}. Default {@code null}: nessuna ricerca.
          */
         public String fusoDaIntestazione = null;
+
+        /**
+         * Fuso di un intervallo di date (chiave {@code fusoPerPeriodo}): per i file che cambiano fuso nel tempo (il
+         * DnWHistory di Nexo Pro e' UTC nel 2023 e ora locale nel 2025). Si sceglie dalla data della riga cosi' come
+         * e' scritta, estremi compresi, e <b>vince</b> su tutto il resto ({@link #fusoDaIntestazione}, scelta
+         * all'import, {@link #fuso}) solo per quelle righe. Vuoto (default) = nessun effetto.
+         */
+        public record FusoPeriodo(java.time.LocalDate da, java.time.LocalDate a, String fuso) {}
+        public List<FusoPeriodo> fusoPerPeriodo = new ArrayList<>();
+
+        /**
+         * Colonna VIRTUALE calcolata da due colonne della riga (chiave {@code colonneCalcolate}), accodata alla
+         * lettura del file dopo la {@code coppia}: si applicano in ordine, quindi una puo' usare quelle prima.
+         * Operazioni: {@code prodotto}, {@code quoziente}, {@code somma}, {@code differenza}. Cella vuota se un
+         * operando manca o non e' un numero, o se il divisore e' zero.
+         */
+        public record ColonnaCalcolata(int colonna, String operazione, int a, int b) {}
+        public List<ColonnaCalcolata> colonneCalcolate = new ArrayList<>();
+
+        /**
+         * Regola su una riga (chiave {@code regoleRiga}), applicata alla lettura del file dopo le colonne calcolate:
+         * una condizione sola su una colonna ({@code uguale} o {@code contiene}, senza distinzione di maiuscole, o
+         * {@code vuota}) e un'azione sola, scrivere un valore fisso in una colonna o scartare la riga (che finisce fra
+         * gli scarti del resoconto). Non e' un linguaggio di regole e non deve diventarlo: niente catene, niente
+         * altre colonne nel valore. Non puo' scrivere la colonna della data.
+         */
+        public record RegolaRiga(int colonna, String uguale, String contiene, Boolean vuota, int colonnaImposta,
+                String valore, boolean scarta) {
+
+            boolean vale(String[] riga) {
+                String c = safe(riga, colonna).trim();
+                if (vuota != null) return c.isEmpty() == vuota;
+                if (uguale != null) return c.equalsIgnoreCase(uguale);
+                return c.toLowerCase().contains(contiene.toLowerCase());
+            }
+        }
+        public List<RegolaRiga> regoleRiga = new ArrayList<>();
 
         // Indici colonne (-1 = non presente)
         public int colonnaData = 0;
@@ -2201,6 +2295,58 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             if (root.has("fusoDaIntestazione")) {
                 cfg.fusoDaIntestazione = root.getString("fusoDaIntestazione");
             }
+            if (root.has("fusoPerPeriodo")) {
+                JSONArray arr = root.getJSONArray("fusoPerPeriodo");
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject o = arr.getJSONObject(i);
+                    java.time.LocalDate da = java.time.LocalDate.parse(o.getString("da").trim());
+                    java.time.LocalDate a = java.time.LocalDate.parse(o.getString("a").trim());
+                    String f = o.getString("fuso").trim();
+                    if (a.isBefore(da) || ConfigurazioneImport.Zona(f) == null) {
+                        throw new IllegalArgumentException("'fusoPerPeriodo' richiede da <= a e un fuso valido: " + o);
+                    }
+                    for (ConfigurazioneImport.FusoPeriodo p : cfg.fusoPerPeriodo) {
+                        if (!a.isBefore(p.da()) && !da.isAfter(p.a())) {
+                            throw new IllegalArgumentException("'fusoPerPeriodo': periodi sovrapposti " + p.da() + "/" + p.a() + " e " + da + "/" + a);
+                        }
+                    }
+                    cfg.fusoPerPeriodo.add(new ConfigurazioneImport.FusoPeriodo(da, a, f));
+                }
+            }
+            if (root.has("colonneCalcolate")) {
+                JSONArray arr = root.getJSONArray("colonneCalcolate");
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject o = arr.getJSONObject(i);
+                    String op = o.getString("operazione").trim().toLowerCase();
+                    int col = o.getInt("colonna"), a = o.getInt("a"), b = o.getInt("b");
+                    if (col < 0 || a < 0 || b < 0 || !Set.of("prodotto", "quoziente", "somma", "differenza").contains(op)) {
+                        throw new IllegalArgumentException("'colonneCalcolate' richiede colonna/a/b >= 0 e un'operazione fra prodotto, quoziente, somma, differenza: " + o);
+                    }
+                    cfg.colonneCalcolate.add(new ConfigurazioneImport.ColonnaCalcolata(col, op, a, b));
+                }
+            }
+            if (root.has("regoleRiga")) {
+                JSONArray arr = root.getJSONArray("regoleRiga");
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject o = arr.getJSONObject(i);
+                    int col = o.getInt("colonna");
+                    String uguale = o.has("uguale") ? o.getString("uguale").trim() : null;
+                    String contiene = o.has("contiene") ? o.getString("contiene").trim() : null;
+                    Boolean vuota = o.has("vuota") ? o.getBoolean("vuota") : null;
+                    int condizioni = (uguale != null ? 1 : 0) + (contiene != null ? 1 : 0) + (vuota != null ? 1 : 0);
+                    boolean scarta = o.optBoolean("scarta", false);
+                    JSONObject imp = o.optJSONObject("imposta");
+                    if (col < 0 || condizioni != 1 || (contiene != null && contiene.isEmpty()) || scarta == (imp != null)) {
+                        throw new IllegalArgumentException("'regoleRiga' richiede una colonna, una sola condizione (uguale, contiene, vuota) e una sola azione (imposta o scarta): " + o);
+                    }
+                    int colImp = imp != null ? imp.getInt("colonna") : -1;
+                    if (imp != null && colImp < 0) {
+                        throw new IllegalArgumentException("'regoleRiga': 'imposta' richiede una colonna >= 0: " + o);
+                    }
+                    cfg.regoleRiga.add(new ConfigurazioneImport.RegolaRiga(col, uguale, contiene, vuota, colImp,
+                            imp != null ? imp.getString("valore") : null, scarta));
+                }
+            }
             if (root.has("consolidaRigheStessaData")) {
                 cfg.consolidaRigheStessaData = root.getBoolean("consolidaRigheStessaData");
             }
@@ -2445,6 +2591,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 JSONObject mad = root.getJSONObject("mappaAutoDetect");
                 for (String k : mad.keySet()) cfg.mappaAutoDetect.put(k, mad.getString(k));
             }
+            cfg.ControllaRegoleRiga();
 
             return cfg;
         }
@@ -2469,6 +2616,46 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             return false;
         } catch (Exception ex) {
             return false;
+        }
+    }
+
+    /** Una regola che scrive la colonna della data sposterebbe l'istante del movimento: si rifiuta (anche dopo l'autodetect). */
+    void ControllaRegoleRiga() {
+        for (RegolaRiga r : regoleRiga) {
+            if (!r.scarta() && r.colonnaImposta() == colonnaData) {
+                throw new IllegalArgumentException("'regoleRiga': 'imposta' non puo' scrivere la colonna della data (" + colonnaData + ")");
+            }
+        }
+    }
+
+    /** Il fuso della riga: quello di {@link #fusoPerPeriodo} se la data ci cade, altrimenti {@link #fuso}. */
+    private ZoneId risolviFuso(java.time.LocalDate giorno) {
+        for (FusoPeriodo p : fusoPerPeriodo) {
+            if (!giorno.isBefore(p.da()) && !giorno.isAfter(p.a())) {
+                ZoneId z = Zona(p.fuso());
+                if (z != null) return z;
+            }
+        }
+        return risolviFuso();
+    }
+
+    /** Il fuso scritto in una configurazione ({@code UTC}, {@code UTC+2}, {@code Europe/Rome}), {@code null} se non valido. */
+    static ZoneId Zona(String fuso) {
+        String f = fuso == null ? "" : fuso.trim();
+        if (f.isBlank()) return null;
+        try {
+            if (f.equalsIgnoreCase("UTC")) return ZoneOffset.UTC;
+            String up = f.toUpperCase();
+            if (up.startsWith("UTC+") || up.startsWith("UTC-") || up.startsWith("GMT+") || up.startsWith("GMT-")) {
+                String offset = f.substring(3).trim();
+                if (offset.matches("[+-]\\d")) {
+                    offset = offset.charAt(0) + "0" + offset.charAt(1);
+                }
+                return ZoneOffset.of(offset);
+            }
+            return ZoneId.of(f);
+        } catch (Exception ex) {
+            return null;
         }
     }
 
@@ -2554,7 +2741,7 @@ public long convertiDataInMillis(String dataCSV) {
         LocalDateTime ldt = parseDataRaw(dataCSV);
         if (ldt == null) return 0L;
 
-        ZoneId zonaOrigine = risolviFuso();
+        ZoneId zonaOrigine = risolviFuso(ldt.toLocalDate());
         ZonedDateTime zdt = ldt.atZone(zonaOrigine);
 
         return zdt.toInstant().toEpochMilli();
@@ -2574,7 +2761,7 @@ public String normalizzaData(String dataCSV) {
         LocalDateTime ldt = parseDataRaw(dataCSV);
         if (ldt == null) return null;
 
-        ZoneId zonaOrigine = risolviFuso();
+        ZoneId zonaOrigine = risolviFuso(ldt.toLocalDate());
         ZoneId zonaDestinazione = ZoneId.systemDefault();
 
         LocalDateTime convertita = ldt.atZone(zonaOrigine)

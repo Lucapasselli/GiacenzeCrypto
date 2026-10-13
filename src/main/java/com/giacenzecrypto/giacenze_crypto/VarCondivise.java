@@ -37,87 +37,12 @@ public class VarCondivise {
      * {@link Principale#Mappa_AddressRete_Nome} (e {@link Principale#Mappa_MoneteStessoPrezzo}) con i token
      * noti da prezzare sugli exchange, letti da {@code config/varie/AliasPrezziToken.json} tramite
      * {@link AliasPrezziToken#Carica()}.
-     * Da chiamare una volta all'avvio dell'applicazione. Per aggiungere una nuova chain EVM vedi
-     * {@code Documentazione/IstruzioniVarie.txt}.
+     * Da chiamare una volta all'avvio dell'applicazione. Una nuova chain EVM coperta da Etherscan V2 e' una
+     * voce di {@code config/varie/Reti.json} (vedi {@link Reti}).
      */
     public static void CompilaMappaChain() {
-        //indirizzoExplorer,api,coin commissioni,nomeEndpointCoingecko,nomeEndpointDefiLlama
-        //System.out.println("Compilo Mappe integrate nel codice");
-        String[] BSC = new String[]{"https://api.etherscan.io/v2/api?chainid=56", "", "BNB", "binance-smart-chain", "bsc"};
-        String[] CRO = new String[]{"https://explorer-api.cronos.org/mainnet/api/v2", "", "CRO", "cronos", "cronos"};
-        String[] ETH = new String[]{"https://api.etherscan.io/v2/api?chainid=1", "", "ETH", "ethereum", "ethereum"};
-        String[] BASE = new String[]{"https://api.etherscan.io/v2/api?chainid=8453", "", "ETH", "base", "base"};
-        String[] ARB = new String[]{"https://api.etherscan.io/v2/api?chainid=42161", "", "ETH", "arbitrum-one", "arbitrum"};
-        String[] BERA = new String[]{"https://api.etherscan.io/v2/api?chainid=80094", "", "BERA", "berachain", "berachain"};
-        String[] AVAX = new String[]{"https://api.etherscan.io/v2/api?chainid=43114", "", "AVAX", "avalanche", "avax"};
-        String[] SOL = new String[]{"https://solscan.io/", "", "SOL", "solana", "solana"};
-        String[] POL = new String[]{"https://api.etherscan.io/v2/api?chainid=137", "", "POL", "polygon-pos", "polygon"};
-        String[] MONAD = new String[]{"https://api.etherscan.io/v2/api?chainid=143", "", "MON", "monad", "monad"};
-        String[] BTC = new String[]{"https://mempool.space/api", "", "BTC", "bitcoin", "bitcoin"};
-        String[] GNOSIS = new String[]{"https://api.etherscan.io/v2/api?chainid=100", "", "XDAI", "xdai", "xdai"};
-        //Chain L2 con ETH come moneta di gas: nessuna moneta nuova da prezzare, vedi nocommit/Documentazione/Analisi_Chain_Aggiungibili.md
-        String[] LINEA = new String[]{"https://api.etherscan.io/v2/api?chainid=59144", "", "ETH", "linea", "linea"};
-        String[] BLAST = new String[]{"https://api.etherscan.io/v2/api?chainid=81457", "", "ETH", "blast", "blast"};
-        String[] UNICHAIN = new String[]{"https://api.etherscan.io/v2/api?chainid=130", "", "ETH", "unichain", "unichain"};
-        String[] WORLD = new String[]{"https://api.etherscan.io/v2/api?chainid=480", "", "ETH", "world-chain", "world-chain"};
-        String[] TAIKO = new String[]{"https://api.etherscan.io/v2/api?chainid=167000", "", "ETH", "taiko", "taiko"};
-        String[] ABSTRACT = new String[]{"https://api.etherscan.io/v2/api?chainid=2741", "", "ETH", "abstract", "abstract"};
-        String[] KATANA = new String[]{"https://api.etherscan.io/v2/api?chainid=747474", "", "ETH", "katana", "katana"};
-        //Chain con moneta di gas propria: il prezzo di S e MNT passa dal percorso "simbolo" (exchange/CoinGecko)
-        //e non da quello "address su chain", perché la moneta nativa non ha un indirizzo di contratto
-        String[] SONIC = new String[]{"https://api.etherscan.io/v2/api?chainid=146", "", "S", "sonic", "sonic"};
-        String[] MANTLE = new String[]{"https://api.etherscan.io/v2/api?chainid=5000", "", "MNT", "mantle", "mantle"};
-        //OP non è nel piano gratuito di Etherscan V2, quindi il provider predefinito è Blockscout
-        //(DeFi_ProviderDefault). Qui resta comunque l'endpoint Etherscan, come per GNOSIS: chi ha una
-        //chiave a pagamento può riportare la chain su ETHERSCAN dalle preferenze e continua a funzionare
-        String[] OP = new String[]{"https://api.etherscan.io/v2/api?chainid=10", "", "ETH", "optimistic-ethereum", "optimism"};
-        //Gas token HYPE confermato da tre fonti indipendenti (25/08/2026): documentazione ufficiale
-        //Hyperliquid ("HYPE is the native gas token on the HyperEVM"), hyperevmscan.io (bilanci in HYPE)
-        //e CoinGecko asset_platforms (native_coin_id "hyperliquid"). NON è deducibile da chainid.network:
-        //lì il chainid 999 collide con Wanchain Testnet (WAN), vedi Analisi_Chain_Aggiungibili.md §8.
-        String[] HYPEREVM = new String[]{"https://api.etherscan.io/v2/api?chainid=999", "", "HYPE", "hyperevm", "hyperliquid"};
-        //Ink NON è su Etherscan V2 (né piano gratuito né a pagamento, verificato su chainlist e su
-        //docs.etherscan.io/supported-chains): [0] resta vuoto apposta, non c'è nessun endpoint Etherscan
-        //da preservare come per OP/GNOSIS. Il provider è sempre BLOCKSCOUT sul suo explorer ufficiale
-        //(DeFi_ProviderDefault, Opzioni_ProviderDefi_OpzioniPerChain in Principale.java).
-        String[] INK = new String[]{"", "", "ETH", "ink", "ink"};
-        //Robinhood Chain: L2 su stack Arbitrum, mainnet dal 01/07/2026, NON su Etherscan V2 (stesso
-        //caso di Ink: [0] vuoto apposta, nessun endpoint da preservare). Gas token ETH confermato senza
-        //discrepanze da chainid.network e da native_coin_id di CoinGecko. A differenza di HyperEVM/Ink,
-        //GoPlus la supporta (vedi Principale.GOPLUS_CHAIN_ID): unica delle tre con il 10° punto compilato.
-        String[] ROBINHOOD = new String[]{"", "", "ETH", "robinhood", "robinhood"};
-        //X Layer (chain id 196, gas OKB): nessun explorer gratuito con API, si legge dal nodo pubblico con la
-        //scansione per stati di Trans_XLayer, quindi [0] e' il nodo e non un explorer. Nata per il wallet della
-        //carta OKX (OKX_WalletCarta). CoinGecko "x-layer" e DefiLlama "xlayer" verificati il 09/10/2026.
-        String[] XLAYER = new String[]{OKX_WalletCarta.RPC_XLAYER, "", "OKB", "x-layer", "xlayer"};
-        Principale.Mappa_ChainExplorer.put("CRO", CRO);
-        Principale.Mappa_ChainExplorer.put("BSC", BSC);
-        Principale.Mappa_ChainExplorer.put("ETH", ETH);
-        Principale.Mappa_ChainExplorer.put("BASE", BASE);
-        Principale.Mappa_ChainExplorer.put("ARB", ARB);
-        Principale.Mappa_ChainExplorer.put("SOL", SOL);
-        Principale.Mappa_ChainExplorer.put("BTC", BTC);
-        Principale.Mappa_ChainExplorer.put("BERA", BERA);
-        Principale.Mappa_ChainExplorer.put("AVAX", AVAX);
-        Principale.Mappa_ChainExplorer.put("POL", POL);
-        Principale.Mappa_ChainExplorer.put("MONAD", MONAD);
-        Principale.Mappa_ChainExplorer.put("GNOSIS", GNOSIS);
-        Principale.Mappa_ChainExplorer.put("LINEA", LINEA);
-        Principale.Mappa_ChainExplorer.put("BLAST", BLAST);
-        Principale.Mappa_ChainExplorer.put("UNICHAIN", UNICHAIN);
-        Principale.Mappa_ChainExplorer.put("WORLD", WORLD);
-        Principale.Mappa_ChainExplorer.put("TAIKO", TAIKO);
-        Principale.Mappa_ChainExplorer.put("ABSTRACT", ABSTRACT);
-        Principale.Mappa_ChainExplorer.put("KATANA", KATANA);
-        Principale.Mappa_ChainExplorer.put("SONIC", SONIC);
-        Principale.Mappa_ChainExplorer.put("MANTLE", MANTLE);
-        Principale.Mappa_ChainExplorer.put("OP", OP);
-        Principale.Mappa_ChainExplorer.put("HYPEREVM", HYPEREVM);
-        Principale.Mappa_ChainExplorer.put("INK", INK);
-        Principale.Mappa_ChainExplorer.put("ROBINHOOD", ROBINHOOD);
-        Principale.Mappa_ChainExplorer.put(Trans_XLayer.RETE, XLAYER);
-        //Gli alias address/rete -> moneta quotata sugli exchange non sono piu' scritti qui: stanno in
-        //config/varie/AliasPrezziToken.json, aggiornabile senza una nuova versione (vedi AliasPrezziToken).
+        //Le reti stanno in config/varie/Reti.json (vedi Reti): una rete Etherscan V2 nuova non tocca piu' il codice
+        Reti.CompilaMappaChain();
         AliasPrezziToken.Carica();
     }
 
@@ -127,46 +52,7 @@ public class VarCondivise {
      * Da chiamare una volta all'avvio dell'applicazione.
      */
     public static void CompilaMappaRetiSupportate() {
-        Principale.MappaRetiSupportate.put("ARB", "");
-        Principale.MappaRetiSupportate.put("AVAX", "");
-        Principale.MappaRetiSupportate.put("BASE", "");
-        Principale.MappaRetiSupportate.put("BERA", "");
-        Principale.MappaRetiSupportate.put("ADA", "");
-        Principale.MappaRetiSupportate.put("BNB", "");
-        Principale.MappaRetiSupportate.put("BSC", "");
-        Principale.MappaRetiSupportate.put("BTC", "");
-        Principale.MappaRetiSupportate.put("CRO", "");
-        Principale.MappaRetiSupportate.put("DASH", "");
-        Principale.MappaRetiSupportate.put("DOGE", "");
-        Principale.MappaRetiSupportate.put("DOT", "");
-        Principale.MappaRetiSupportate.put("EOS", "");
-        Principale.MappaRetiSupportate.put("ETH", "");
-        Principale.MappaRetiSupportate.put("FTM", "");
-        Principale.MappaRetiSupportate.put("GNOSIS", "");
-        Principale.MappaRetiSupportate.put("LTC", "");
-        Principale.MappaRetiSupportate.put("LUNA", "");
-        Principale.MappaRetiSupportate.put("POL", "");
-        Principale.MappaRetiSupportate.put("MONAD", "");
-        Principale.MappaRetiSupportate.put("LINEA", "");
-        Principale.MappaRetiSupportate.put("BLAST", "");
-        Principale.MappaRetiSupportate.put("UNICHAIN", "");
-        Principale.MappaRetiSupportate.put("WORLD", "");
-        Principale.MappaRetiSupportate.put("TAIKO", "");
-        Principale.MappaRetiSupportate.put("ABSTRACT", "");
-        Principale.MappaRetiSupportate.put("KATANA", "");
-        Principale.MappaRetiSupportate.put("SONIC", "");
-        Principale.MappaRetiSupportate.put("MANTLE", "");
-        Principale.MappaRetiSupportate.put("OP", "");
-        Principale.MappaRetiSupportate.put("HYPEREVM", "");
-        Principale.MappaRetiSupportate.put("INK", "");
-        Principale.MappaRetiSupportate.put("ROBINHOOD", "");
-        Principale.MappaRetiSupportate.put(Trans_XLayer.RETE, "");
-        Principale.MappaRetiSupportate.put("TRX", "");
-        Principale.MappaRetiSupportate.put("SOL", "");
-        Principale.MappaRetiSupportate.put("XLM", "");
-        Principale.MappaRetiSupportate.put("XRP", "");
-        Principale.MappaRetiSupportate.put("ZEC", "");
-        //Funzione da scrivere
+        Reti.CompilaMappaRetiSupportate();
     }
    
     

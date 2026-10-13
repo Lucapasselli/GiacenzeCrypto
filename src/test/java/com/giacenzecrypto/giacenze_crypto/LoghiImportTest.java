@@ -79,7 +79,7 @@ public class LoghiImportTest {
         //Se un file cambia nome o non viene committato l'icona sparisce senza che nulla vada in errore.
         //L'elenco è quello da cui GeneraLoghi produce i PNG: una rete aggiunta alla sola combo dei
         //wallet non avrebbe nessun logo, ed è questo il test che lo fa notare
-        for (String etichetta : Importazioni_Gestione.BlockChain) {
+        for (String etichetta : Reti.EtichetteImport()) {
             if (etichetta.startsWith("-")) continue;
             assertTrue(new File(VarStatiche.getCartella_ConfigLoghi(), LoghiImport.Slug(etichetta) + ".png").isFile(),
                     "manca il logo della blockchain " + etichetta);

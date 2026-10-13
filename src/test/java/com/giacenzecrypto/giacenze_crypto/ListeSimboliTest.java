@@ -3,6 +3,8 @@ package com.giacenzecrypto.giacenze_crypto;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,10 +17,14 @@ class ListeSimboliTest {
     }
 
     @Test
-    void ilFileHaEsattamenteLaListaCheEraNelCodice() throws Exception {
-        //Stesso contenuto e stesso ordine di Prezzi.SimboliPrioritari prima dello spostamento: nessun prezzo cambia
-        assertArrayEquals(ListeSimboli.PRIORITARI_PREDEFINITI, ListeSimboli.InterpretaPrioritari(file(), ListeSimboli.NOME));
-        assertEquals(27, ListeSimboli.PRIORITARI_PREDEFINITI.length);
+    void ilFileHaLeVociIndispensabili() throws Exception {
+        //Non si confronta con una copia nel codice (non c'e'): il file si puo' modificare, ma queste voci reggono i motori
+        List<String> prioritari = Arrays.asList(ListeSimboli.Interpreta(file(), ListeSimboli.NOME, "prioritari"));
+        for (String s : List.of("USDT", "USDC", "BTC", "ETH", "EUROe", "EURe")) assertTrue(prioritari.contains(s), s);
+        List<String> fiat = Arrays.asList(ListeSimboli.Interpreta(file(), ListeSimboli.NOME, "fiat"));
+        for (String s : List.of("EUR", "USD", "TRY", "GBP")) assertTrue(fiat.contains(s), s);
+        assertTrue(Arrays.asList(ListeSimboli.Interpreta(file(), ListeSimboli.NOME, "stablecoinDubbie")).contains("USDT"));
+        assertTrue(Arrays.asList(ListeSimboli.Interpreta(file(), ListeSimboli.NOME, "stablecoinAltre")).contains("DAI"));
     }
 
     @Test
@@ -44,7 +50,7 @@ class ListeSimboliTest {
     }
 
     @Test
-    void SimboliPrioritariSenzaFileUtilizzabileRipiegaSuiPredefiniti() {
+    void SimboliPrioritariSiLeggonoDalFile() {
         String[] s = Prezzi.SimboliPrioritari();
         assertNotNull(s);
         assertTrue(Arrays.asList(s).contains("USDT"));
@@ -63,9 +69,9 @@ class ListeSimboliTest {
     }
 
     @Test
-    void leValuteFiatDelFileSonoQuelleCheEranoNelCodice() throws Exception {
-        assertArrayEquals(ListeSimboli.FIAT_PREDEFINITE, ListeSimboli.Interpreta(file(), ListeSimboli.NOME, "fiat"));
-        assertEquals(java.util.Set.of("EUR", "USD", "TRY", "GBP"), ListeSimboli.Fiat());
+    void leValuteFiatInMemoriaVengonoDalFile() {
+        assertTrue(ListeSimboli.Fiat().containsAll(Set.of("EUR", "USD", "TRY", "GBP")));
+        assertFalse(ListeSimboli.Fiat().contains("BTC"));
     }
 
     @Test
@@ -85,12 +91,9 @@ class ListeSimboliTest {
     }
 
     @Test
-    void leStablecoinDelFileSonoQuelleCheEranoInPrincipale() throws Exception {
-        assertArrayEquals(ListeSimboli.STABLECOIN_DUBBIE_PREDEFINITE,
-                ListeSimboli.Interpreta(file(), ListeSimboli.NOME, "stablecoinDubbie"));
-        assertArrayEquals(ListeSimboli.STABLECOIN_ALTRE_PREDEFINITE,
-                ListeSimboli.Interpreta(file(), ListeSimboli.NOME, "stablecoinAltre"));
-        assertArrayEquals(ListeSimboli.STABLECOIN_DUBBIE_PREDEFINITE, ListeSimboli.StablecoinDubbie());
-        assertArrayEquals(ListeSimboli.STABLECOIN_ALTRE_PREDEFINITE, ListeSimboli.StablecoinAltre());
+    void leStablecoinSiLeggonoDalFile() {
+        assertTrue(Arrays.asList(ListeSimboli.StablecoinDubbie()).contains("BUSD"));
+        assertTrue(Arrays.asList(ListeSimboli.StablecoinAltre()).contains("FRAX"));
     }
+
 }

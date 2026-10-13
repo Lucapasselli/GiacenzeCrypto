@@ -14184,24 +14184,9 @@ if (result.isAction("delete-all")) {
                 Riepiloga("import complete", aggiornati.get("import"));
                 Riepiloga("mappe causali",   aggiornati.get("importmappe"));
                 Riepiloga("varie",           aggiornati.get("varie"));
-                //Gli alias dei prezzi sono l'unico file di config/varie tenuto in memoria (gli altri si rileggono a
-                //ogni uso): se e' cambiato va ricaricato subito, o le importazioni di questa sessione lo ignorano
-                java.util.List<String> varie = aggiornati.get("varie");
-                if (varie != null && varie.contains(AliasPrezziToken.NOME + ".json")) {
-                    AliasPrezziToken.Carica();
-                    System.out.println("AggiornamentoConfig: alias dei prezzi ricaricati");
-                }
-                if (varie != null && varie.contains(ListeSimboli.NOME + ".json")) {
-                    Prezzi.RicaricaSimboliPrioritari();
-                    ListeSimboli.RicaricaFiat();
-                    System.out.println("AggiornamentoConfig: liste di simboli ricaricate");
-                }
-                //Gli exchange noti (gruppi wallet e grafie dei nomi) sono in RW_Predefiniti.json, tenuto in memoria
-                java.util.List<String> mappeAgg = aggiornati.get("importmappe");
-                if (mappeAgg != null && mappeAgg.contains(DatiPredefinitiRW.NOME + ".json")) {
-                    Principale_GruppiWalletRW.RicaricaExchangeNoti();
-                    System.out.println("AggiornamentoConfig: exchange noti ricaricati");
-                }
+                //I file tenuti in memoria (alias dei prezzi, liste di simboli, exchange noti) vanno ricaricati subito,
+                //o le importazioni di questa sessione ignorano la copia nuova. Il registro e' in RicaricaConfig.
+                RicaricaConfig.Ricarica(aggiornati);
                 if (!Store) Riepiloga("loghi", aggiornati.get("loghi"));
 
                 //Mappe nuove: movimenti scartati in passato perche' sconosciuti potrebbero ora essere riconosciuti

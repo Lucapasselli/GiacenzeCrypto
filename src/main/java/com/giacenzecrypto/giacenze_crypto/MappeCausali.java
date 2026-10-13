@@ -68,7 +68,7 @@ public class MappeCausali {
      * moneta elettronica noti ({@link EmoneyToken}).
      */
     static final String[] FILE_VARIE = new String[]{
-        NoteCompilazione.NOME, AliasPrezziToken.NOME, EmoneyToken.NOME, ListeSimboli.NOME
+        NoteCompilazione.NOME, AliasPrezziToken.NOME, EmoneyToken.NOME, ListeSimboli.NOME, StatiEsteri.NOME
     };
 
     /**
@@ -156,7 +156,15 @@ public class MappeCausali {
      * @param cartella dove cercare il file su disco e nel jar
      */
     static <T> T CaricaConRipiego(String nome, Cartella cartella, Analizzatore<T> analizzatore) {
-        T tabella = analizzatore.Interpreta(LeggiTesto(PercorsoSuDisco(nome, cartella)), nome);
+        String suDisco = LeggiTesto(PercorsoSuDisco(nome, cartella));
+        if (RichiedeVersionePiuNuova(suDisco)) {
+            //Il file aggiornato dal repository usa un formato piu' recente di questa versione: non lo si legge, vale la
+            //copia nel jar, che e' quella con cui questa versione e' stata provata
+            LoggerGC.logInfo("Config \"" + nome + "\" su disco richiede almeno la versione " + VersioneMinimaDichiarata(suDisco)
+                    + " (questa e' la " + VarStatiche.Versione + "): uso la copia nel jar.");
+            suDisco = null;
+        }
+        T tabella = analizzatore.Interpreta(suDisco, nome);
         if (tabella != null) {
             return tabella;
         }
@@ -213,6 +221,26 @@ public class MappeCausali {
     }
 
     /** @return il percorso del file nella cartella di {@code config/} indicata */
+    /**
+     * La {@code versioneMinimaApp} dichiarata al primo livello del file, o {@code ""}. Una chiave opzionale di ogni file di
+     * {@code config/varie} e {@code config/importmappe} (tutti oggetti JSON), da scrivere quando si cambia il significato
+     * di un file che le versioni gia' installate leggono: una chiave aggiunta, che quelle ignorerebbero applicando il file
+     * a meta'. Vale solo per le versioni che contengono questo controllo, cioe' dalla prossima in poi.
+     */
+    static String VersioneMinimaDichiarata(String contenuto) {
+        if (contenuto == null || !contenuto.contains("versioneMinimaApp")) return "";
+        try {
+            return new JSONObject(contenuto).optString("versioneMinimaApp", "").trim();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /** @return {@code true} se il file dichiara una versione minima piu' recente di questa (vedi {@link #VersioneMinimaDichiarata}) */
+    static boolean RichiedeVersionePiuNuova(String contenuto) {
+        return !Funzioni.VersioneAppAlmeno(VarStatiche.Versione, VersioneMinimaDichiarata(contenuto));
+    }
+
     private static Path PercorsoSuDisco(String nome, Cartella cartella) {
         return Paths.get(cartella.disco(), nome + ".json");
     }

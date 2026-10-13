@@ -16,14 +16,14 @@ class StatiEsteriTest {
     void elenco_codiciATreCifreSenzaDuplicati() {
         Set<String> codici = new HashSet<>();
         Set<String> nomi = new HashSet<>();
-        for (String[] r : StatiEsteri.ELENCO) {
+        for (String[] r : StatiEsteri.elenco()) {
             assertEquals(2, r.length);
             assertTrue(r[0].matches("\\d{3}"), "codice non a 3 cifre: " + r[0]);
             assertFalse(r[1].isBlank(), "nome vuoto per " + r[0]);
             assertTrue(codici.add(r[0]), "codice duplicato: " + r[0]);
             assertTrue(nomi.add(r[1]), "nome duplicato: " + r[1]);
         }
-        assertTrue(StatiEsteri.ELENCO.length > 240, "elenco troppo corto: " + StatiEsteri.ELENCO.length);
+        assertTrue(StatiEsteri.elenco().length > 240, "elenco troppo corto: " + StatiEsteri.elenco().length);
         // alcuni riferimenti noti della Tabella 10
         assertEquals("LUSSEMBURGO", StatiEsteri.nome("092"));
         assertEquals("MALTA", StatiEsteri.nome("105"));
@@ -33,7 +33,7 @@ class StatiEsteriTest {
 
     @Test
     void etichetta_eCodiceDaEtichetta_sonoInverse() {
-        for (String[] r : StatiEsteri.ELENCO) {
+        for (String[] r : StatiEsteri.elenco()) {
             assertEquals(r[0], StatiEsteri.codiceDaEtichetta(StatiEsteri.etichetta(r[0])));
         }
         assertEquals("", StatiEsteri.codiceDaEtichetta(StatiEsteri.VOCE_VUOTA));
@@ -47,10 +47,10 @@ class StatiEsteriTest {
         String[] senzaLegacy = StatiEsteri.etichetteCombo("");
         assertEquals(StatiEsteri.VOCE_VUOTA, senzaLegacy[0]);
         assertTrue(senzaLegacy[1].startsWith(StatiEsteri.CODICE_ITALIA), "la 2a voce e' l'Italia");
-        assertEquals(StatiEsteri.ELENCO.length + 2, senzaLegacy.length); // vuota + Italia + elenco
+        assertEquals(StatiEsteri.elenco().length + 2, senzaLegacy.length); // vuota + Italia + elenco
 
         String[] conLegacy = StatiEsteri.etichetteCombo("999");
-        assertEquals(StatiEsteri.ELENCO.length + 3, conLegacy.length);
+        assertEquals(StatiEsteri.elenco().length + 3, conLegacy.length);
         assertEquals("999 (non in elenco)", conLegacy[conLegacy.length - 1]);
     }
 
@@ -77,7 +77,7 @@ class StatiEsteriTest {
     @Test
     void ogniCodicePrivilegiatoEsisteNellaTabella10() {
         java.util.Set<String> noti = new java.util.HashSet<>();
-        for (String[] v : StatiEsteri.ELENCO) noti.add(v[0]);
+        for (String[] v : StatiEsteri.elenco()) noti.add(v[0]);
         for (String c : StatiEsteri.codiciPrivilegiati()) {
             assertTrue(noti.contains(c), "codice " + c + " assente dalla Tabella 10");
         }
@@ -122,4 +122,31 @@ class StatiEsteriTest {
         assertTrue(StatiEsteri.isPrivilegiato(" 103 "));  // HONG KONG
     }
 
+
+    @Test
+    void ilFileHaTuttiGliStatiEIPrivilegiatiDiPrima() throws Exception {
+        String contenuto = java.nio.file.Files.readString(java.nio.file.Path.of("config/varie/" + StatiEsteri.NOME + ".json"));
+        StatiEsteri.Dati d = StatiEsteri.Interpreta(contenuto, StatiEsteri.NOME);
+        assertNotNull(d);
+        assertEquals(272, d.elenco().length, "le voci della Tabella 10 che erano nel codice");
+        assertEquals(58, d.privilegiati().size(), "i codici del D.M. 4/5/1999 che erano nel codice");
+        assertEquals("ABU DHABI", d.elenco()[0][1], "stesso ordine del codice");
+        assertTrue(d.privilegiati().containsAll(java.util.List.of("238", "239", "240", "241", "242", "243", "244")), "i sette emirati");
+        assertFalse(d.privilegiati().contains("071"), "la Svizzera non e' piu' nell'elenco");
+        assertTrue(java.util.Arrays.asList(MappeCausali.FILE_VARIE).contains(StatiEsteri.NOME));
+        assertFalse(contenuto.contains("\"centralizzato\""), "un file centralizzato non ancora pubblicato verrebbe cancellato all'avvio");
+    }
+
+    @Test
+    void unContenutoNonValidoNonSiInterpreta() {
+        assertNull(StatiEsteri.Interpreta(null, "x"));
+        assertNull(StatiEsteri.Interpreta("non json", "x"));
+        assertNull(StatiEsteri.Interpreta("{\"stati\":[]}", "x"));
+        assertNull(StatiEsteri.Interpreta("{\"stati\":[{\"codice\":\"12\",\"nome\":\"A\"}]}", "x"), "codice a 2 cifre");
+        assertNull(StatiEsteri.Interpreta("{\"stati\":[{\"codice\":\"012\",\"nome\":\" \"}]}", "x"), "nome vuoto");
+        assertNull(StatiEsteri.Interpreta("{\"stati\":[{\"codice\":\"012\",\"nome\":\"A\"},{\"codice\":\"012\",\"nome\":\"B\"}]}", "x"), "codice doppio");
+        StatiEsteri.Dati d = StatiEsteri.Interpreta("{\"stati\":[{\"codice\":\"012\",\"nome\":\"A\",\"privilegiato\":true},{\"codice\":\"013\",\"nome\":\"B\"}]}", "x");
+        assertEquals(2, d.elenco().length);
+        assertEquals(java.util.Set.of("012"), d.privilegiati());
+    }
 }

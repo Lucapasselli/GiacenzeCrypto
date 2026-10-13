@@ -9,15 +9,18 @@ import org.json.JSONObject;
 /**
  * Le liste di simboli che il programma tratta in modo particolare, lette da {@code config/varie/Simboli.json}.
  *
- * <p>Oggi contiene i simboli prioritari dei prezzi ({@link Prezzi#SimboliPrioritari()}) e le valute FIAT
+ * <p>Contiene i simboli prioritari dei prezzi ({@link Prezzi#SimboliPrioritari()}), le valute FIAT
  * ({@link Moneta#AssegnaTipoAuto()}) e le stablecoin non MiCA del pulsante dei token standard della sezione E-Money
  * ({@code stablecoinDubbie}, {@code stablecoinAltre}); altre liste si aggiungeranno come chiavi nuove dello stesso file.
  *
  * <p>È un file e non un array nel codice per la stessa ragione delle note di compilazione e degli alias dei prezzi:
  * una moneta nuova da quotare per prima non deve voler dire una versione nuova. Le liste restano in memoria e si
- * rileggono dopo l'aggiornamento in background ({@link Prezzi#RicaricaSimboliPrioritari()}). Se il file manca o non è
- * valido vale la lista di {@link #PRIORITARI_PREDEFINITI}, la stessa che era nel codice: un prezzo non deve cambiare
- * perché un file è sparito.
+ * rileggono dopo l'aggiornamento in background ({@link RicaricaConfig}).
+ *
+ * <p><b>Nel codice non c'è nessuna copia delle liste</b>: sarebbe una seconda parte da tenere allineata, e un file
+ * modificato non coinciderebbe più con essa. Il default è la copia nel jar ({@link MappeCausali#CaricaConRipiego}),
+ * che vale anche quando il file su disco non è valido o chiede una versione più recente del programma. Se manca anche
+ * quella l'installazione è rotta: lo si scrive nel log e la lista resta vuota.
  */
 final class ListeSimboli {
 
@@ -26,41 +29,11 @@ final class ListeSimboli {
     /** Nome del file in {@code config/varie/}, senza estensione. */
     static final String NOME = "Simboli";
 
-    /** La lista che era scritta in {@code Prezzi}, per il caso in cui il file non sia disponibile da nessuna parte. */
-    static final String[] PRIORITARI_PREDEFINITI = {"EURI", "EURC", "EURCV", "EUROe", "EURQ", "EURR", "EURe", "USDT",
-        "USDC", "BUSD", "USDE", "DAI", "TUSD", "BTC", "ETH", "BNB", "SOL", "LTC", "ADA", "XRP", "XLM", "PAX", "TRX",
-        "ATOM", "POL", "CRO", "MON"};
-
-    /** Le valute FIAT che erano scritte in {@code Moneta.AssegnaTipoAuto}, per il caso in cui il file non sia disponibile. */
-    static final String[] FIAT_PREDEFINITE = {"EUR", "USD", "TRY", "GBP"};
-
-    /** Le stablecoin «dubbie» e le altre che erano scritte in {@code Principale}, come ripiego. */
-    static final String[] STABLECOIN_DUBBIE_PREDEFINITE = {"BUSD", "USDT", "PYUSD"};
-    static final String[] STABLECOIN_ALTRE_PREDEFINITE = {"DAI", "USDE", "FRAX", "EURT", "AEUR", "VEUR", "JEUR", "LUSD", "USD0",
-        "USDS", "USDY"};
-
     private static volatile Set<String> fiat;
 
-    /** @return le stablecoin dubbie del file, oppure quelle predefinite (lette a ogni chiamata: si usano a un clic) */
-    static String[] StablecoinDubbie() {
-        return CaricaLista("stablecoinDubbie", STABLECOIN_DUBBIE_PREDEFINITE);
-    }
-
-    /** @return le stablecoin non MiCA né dubbie del file, oppure quelle predefinite */
-    static String[] StablecoinAltre() {
-        return CaricaLista("stablecoinAltre", STABLECOIN_ALTRE_PREDEFINITE);
-    }
-
-    private static String[] CaricaLista(String chiave, String[] predefinita) {
-        String[] lette = MappeCausali.CaricaConRipiego(NOME, MappeCausali.Cartella.VARIE,
-                (contenuto, nome) -> Interpreta(contenuto, nome, chiave));
-        return lette != null ? lette : predefinita.clone();
-    }
-
-    /** @return i simboli prioritari del file (disco, poi copia nel jar), oppure quelli predefiniti */
+    /** @return i simboli prioritari del file (disco, poi copia nel jar) */
     static String[] CaricaPrioritari() {
-        String[] letti = MappeCausali.CaricaConRipiego(NOME, MappeCausali.Cartella.VARIE, ListeSimboli::InterpretaPrioritari);
-        return letti != null ? letti : PRIORITARI_PREDEFINITI.clone();
+        return CaricaLista("prioritari");
     }
 
     /** @return i simboli, oppure {@code null} se il contenuto non è valido o la lista è vuota */
@@ -68,11 +41,19 @@ final class ListeSimboli {
         return Interpreta(contenuto, nome, "prioritari");
     }
 
-    /** @return le valute FIAT del file, oppure quelle predefinite */
+    /** @return le stablecoin dubbie del file (lette a ogni chiamata: si usano a un clic) */
+    static String[] StablecoinDubbie() {
+        return CaricaLista("stablecoinDubbie");
+    }
+
+    /** @return le stablecoin non MiCA né dubbie del file */
+    static String[] StablecoinAltre() {
+        return CaricaLista("stablecoinAltre");
+    }
+
+    /** @return le valute FIAT del file */
     static Set<String> CaricaFiat() {
-        String[] lette = MappeCausali.CaricaConRipiego(NOME, MappeCausali.Cartella.VARIE,
-                (contenuto, nome) -> Interpreta(contenuto, nome, "fiat"));
-        return Set.of(lette != null ? lette : FIAT_PREDEFINITE);
+        return Set.of(CaricaLista("fiat"));
     }
 
     /**
@@ -90,6 +71,12 @@ final class ListeSimboli {
 
     static void RicaricaFiat() {
         fiat = CaricaFiat();
+    }
+
+    private static String[] CaricaLista(String chiave) {
+        String[] lette = MappeCausali.CaricaConRipiego(NOME, MappeCausali.Cartella.VARIE,
+                (contenuto, nome) -> Interpreta(contenuto, nome, chiave));
+        return lette != null ? lette : new String[0];
     }
 
     /** @return i simboli della lista {@code chiave}, oppure {@code null} se il contenuto non è valido o la lista è vuota */

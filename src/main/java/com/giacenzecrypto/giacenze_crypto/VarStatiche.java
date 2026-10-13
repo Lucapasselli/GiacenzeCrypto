@@ -274,6 +274,16 @@ public class VarStatiche {
         return getWorkingDirectory() + "DocumentiFonte/";
     }
 
+    /**
+     * @return il percorso della cartella {@code Dichiarazioni/} nella directory di lavoro, l'archivio dei
+     *         quadri W/RW e T/RT generati (una sottocartella per stampa, vedi {@link Dichiarazioni}).
+     *         <p>Fuori da {@code Temporanei/} e {@code Backup/} per lo stesso motivo di
+     *         {@link #getCartella_DocumentiFonte()}: una dichiarazione non deve scadere.
+     */
+    public static String getCartella_Dichiarazioni() {
+        return getWorkingDirectory() + "Dichiarazioni/";
+    }
+
     /** @return il percorso del file di configurazione dei chatbot usati dalla funzione "Chiedi a IA" */
     public static String getFile_ChatbotIA() {
         return getWorkingDirectory() + "ChatbotIA.json";

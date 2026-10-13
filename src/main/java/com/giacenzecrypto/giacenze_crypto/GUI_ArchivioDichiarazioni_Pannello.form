@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.8" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+  </AuxValues>
+
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="ScrollPane_Elenco" pref="1160" max="32767" attributes="0"/>
+                  <Component id="ScrollPane_Dettaglio" pref="1160" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Component id="Label_Dettaglio" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="Label_Riepilogo" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="Bottone_ApriPdf" min="-2" pref="122" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_ApriExcel" min="-2" pref="122" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_ApriCartella" min="-2" pref="122" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Definitiva" min="-2" pref="122" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Nota" min="-2" pref="122" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Allegati" min="-2" pref="122" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Continuita" min="-2" pref="122" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Confronta" min="-2" pref="122" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Esporta" min="-2" pref="122" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Elimina" min="-2" pref="122" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Aggiorna" min="-2" pref="122" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="ScrollPane_Elenco" pref="280" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="Label_Dettaglio" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="Label_Riepilogo" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="ScrollPane_Dettaglio" min="-2" pref="420" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="Bottone_ApriPdf" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                  <Component id="Bottone_ApriExcel" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                  <Component id="Bottone_ApriCartella" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                  <Component id="Bottone_Definitiva" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                  <Component id="Bottone_Nota" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                  <Component id="Bottone_Allegati" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                  <Component id="Bottone_Continuita" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                  <Component id="Bottone_Confronta" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                  <Component id="Bottone_Esporta" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                  <Component id="Bottone_Elimina" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                  <Component id="Bottone_Aggiorna" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Container class="javax.swing.JScrollPane" name="ScrollPane_Elenco">
+      <AuxValues>
+        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JTable" name="Tabella_Elenco">
+          <Properties>
+            <Property name="autoCreateRowSorter" type="boolean" value="true"/>
+            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+              <Table columnCount="10" rowCount="0">
+                <Column editable="false" title="Anno" type="java.lang.String"/>
+                <Column editable="false" title="Quadri" type="java.lang.String"/>
+                <Column editable="false" title="Definitiva" type="java.lang.Boolean"/>
+                <Column editable="false" title="Generata il" type="java.lang.String"/>
+                <Column editable="false" title="Valore finale / Plusvalenze" type="java.lang.String"/>
+                <Column editable="false" title="Imposta / Corrispettivi" type="java.lang.String"/>
+                <Column editable="false" title="Errori" type="java.lang.String"/>
+                <Column editable="false" title="File" type="java.lang.String"/>
+                <Column editable="false" title="Versione" type="java.lang.String"/>
+                <Column editable="false" title="Nota" type="java.lang.String"/>
+              </Table>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" value="Un clic sulla colonna Definitiva la mette o la toglie"/>
+          </Properties>
+          <Events>
+            <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Tabella_ElencoMouseClicked"/>
+          </Events>
+        </Component>
+      </SubComponents>
+    </Container>
+    <Component class="javax.swing.JLabel" name="Label_Dettaglio">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Dettaglio della dichiarazione selezionata (doppio clic su un file per aprirlo)"/>
+      </Properties>
+    </Component>
+    <Container class="javax.swing.JScrollPane" name="ScrollPane_Dettaglio">
+      <AuxValues>
+        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JTable" name="Tabella_Dettaglio">
+          <Properties>
+            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+              <Table columnCount="2" rowCount="0">
+                <Column editable="false" title="Voce" type="java.lang.String"/>
+                <Column editable="false" title="Valore" type="java.lang.String"/>
+              </Table>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Tabella_DettaglioMouseClicked"/>
+          </Events>
+        </Component>
+      </SubComponents>
+    </Container>
+    <Component class="javax.swing.JLabel" name="Label_Riepilogo">
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_ApriPdf">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_PDF.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Apri PDF"/>
+        <Property name="toolTipText" type="java.lang.String" value="Apre uno dei PDF della dichiarazione selezionata"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_ApriPdfActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_ApriExcel">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Tabella.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Apri Excel"/>
+        <Property name="toolTipText" type="java.lang.String" value="Apre l'Excel di dettaglio della dichiarazione selezionata"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_ApriExcelActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_ApriCartella">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Documento.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Cartella"/>
+        <Property name="toolTipText" type="java.lang.String" value="Apre la cartella con i file della dichiarazione selezionata"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_ApriCartellaActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Definitiva">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Classifica.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Definitiva"/>
+        <Property name="toolTipText" type="java.lang.String" value="Segna (o toglie) la dichiarazione presentata per quell'anno: una sola per anno e per quadro"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_DefinitivaActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Nota">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Modifica.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Nota"/>
+        <Property name="toolTipText" type="java.lang.String" value="Una nota libera, ad esempio data di invio o protocollo telematico"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_NotaActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Allegati">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Incolla.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Allegati"/>
+        <Property name="toolTipText" type="java.lang.String" value="Allega un file alla dichiarazione, per esempio la ricevuta di presentazione, o ne toglie uno"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_AllegatiActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Continuita">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Catena.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Continuit&#xe0;"/>
+        <Property name="toolTipText" type="java.lang.String" value="Confronta i valori finali della definitiva W/RW dell'anno prima con i valori iniziali di quella selezionata"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_ContinuitaActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Confronta">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_FrecceContrapposte.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Confronta"/>
+        <Property name="toolTipText" type="java.lang.String" value="Mostra le differenze fra due dichiarazioni dello stesso quadro (selezionarne due)"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_ConfrontaActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Esporta">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Upload.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Esporta"/>
+        <Property name="toolTipText" type="java.lang.String" value="Salva in uno zip i file della dichiarazione selezionata, ad esempio per il commercialista"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_EsportaActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Elimina">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Cestino.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Elimina"/>
+        <Property name="toolTipText" type="java.lang.String" value="Cancella le dichiarazioni selezionate e i loro file"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_EliminaActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Aggiorna">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Aggiorna.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Aggiorna"/>
+        <Property name="toolTipText" type="java.lang.String" value="Rilegge l'archivio delle dichiarazioni"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_AggiornaActionPerformed"/>
+      </Events>
+    </Component>
+  </SubComponents>
+</Form>

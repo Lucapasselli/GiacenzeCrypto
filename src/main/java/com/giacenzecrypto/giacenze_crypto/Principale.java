@@ -130,6 +130,12 @@ private static final long serialVersionUID = 3L;
     static Map<String, String[]> Mappa_ChainExplorer = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa delle chain per la defi
     static volatile Map<String, String> Mappa_AddressRete_Nome = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Sostituita in blocco da AliasPrezziToken.Applica, mai modificata sul posto. Mappa che converte gli address di una rete in nome moneta per binance, serve per l'acquisizione dei prezzi in maniera più precisa
     static public Map<String, List<String[]>> Mappa_RW_ListeXGruppoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    /**
+     * Le giacenze di inizio e fine periodo dell'ultimo calcolo W/RW ({@code Calcoli_RW_Giacenze}) e il loro anno:
+     * l'Excel della dichiarazione le riporta tali e quali, invece di ricalcolarle e riprezzarle.
+     */
+    private transient Map<String, List<String[]>> RW_FotografiaGiacenze = null;
+    private transient String RW_FotografiaAnno = "";
     /** Righi FIAT del quadro W/RW (valuta estera presso intermediario estero), tenuti separati da
      *  {@link #Mappa_RW_ListeXGruppoWallet} perché il path CRYPTO resti immutato. Popolata da
      *  {@code Calcoli_RW_Fiat.generaRighiFiat} in coda a {@code Calcoli_RW.AggiornaRWFR} (Fase 3). */
@@ -566,6 +572,11 @@ private static final long serialVersionUID = 3L;
         TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(false);
         this.RT_Label_Avviso.setVisible(false);
         this.RW_Label_SegnalaRicalcolo.setVisible(false);
+        this.RW_Label_Definitiva.setVisible(false);
+        this.RT_Label_Definitiva.setVisible(false);
+        //Si cliccano per aprire l'archivio delle dichiarazioni (cursore qui e non nel .form)
+        this.RW_Label_Definitiva.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        this.RT_Label_Definitiva.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         this.GiacenzeaData_Label_Aggiornare.setVisible(false);
         //Optioni_Export_Wallets_Combobox=GiacenzeaData_Wallet_ComboBox;
     
@@ -916,6 +927,7 @@ private static final long serialVersionUID = 3L;
         RW_Bottone_Stampa = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         RW_Label_SegnalaRicalcolo = new javax.swing.JLabel();
+        RW_Label_Definitiva = new javax.swing.JLabel();
         RT = new javax.swing.JPanel();
         jScrollPane11 = new javax.swing.JScrollPane();
         RT_Tabella_Principale = new javax.swing.JTable();
@@ -936,10 +948,13 @@ private static final long serialVersionUID = 3L;
         RT_Tabella_TipologiaMovimenti = new javax.swing.JTable();
         RT_Pannello_GraficoTipologia = new javax.swing.JPanel();
         RT_Label_Avviso = new javax.swing.JLabel();
+        RT_Label_Definitiva = new javax.swing.JLabel();
         RT_Bottone_Documentazione = new javax.swing.JButton();
         RT_Bottone_Stampa = new javax.swing.JButton();
+        RT_Bottone_Excel = new javax.swing.JButton();
         RT_Bottone_CorreggiErrori = new javax.swing.JButton();
         RT_CheckBox_EscludiAnnoCorrente = new javax.swing.JCheckBox();
+        ArchivioDichiarazioni = new javax.swing.JPanel();
         Normativa = new javax.swing.JPanel();
         Opzioni = new javax.swing.JPanel();
         Opzioni_TabbedPane = new javax.swing.JTabbedPane();
@@ -4137,6 +4152,7 @@ private static final long serialVersionUID = 3L;
 
         RW_Bottone_Stampa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_PDF.png"))); // NOI18N
         RW_Bottone_Stampa.setText("Stampa Report PDF");
+        RW_Bottone_Stampa.setToolTipText("Genera e archivia insieme i PDF dei quadri W e RW e l'Excel di dettaglio, poi apre il PDF del quadro RW");
         RW_Bottone_Stampa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RW_Bottone_StampaActionPerformed(evt);
@@ -4145,6 +4161,7 @@ private static final long serialVersionUID = 3L;
 
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
         jButton2.setText("Crea Excel con i Dettagli");
+        jButton2.setToolTipText("Genera e archivia insieme l'Excel di dettaglio e i PDF dei quadri W e RW, poi apre l'Excel");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
@@ -4154,6 +4171,16 @@ private static final long serialVersionUID = 3L;
         RW_Label_SegnalaRicalcolo.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         RW_Label_SegnalaRicalcolo.setForeground(Tabelle.rosso);
         RW_Label_SegnalaRicalcolo.setText("Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere \"Calcola\" per aggiornare.");
+
+        RW_Label_Definitiva.setFont(new java.awt.Font("Noto Sans", 1, 13)); // NOI18N
+        RW_Label_Definitiva.setForeground(Tabelle.rosso);
+        RW_Label_Definitiva.setText("Valori diversi dalla dichiarazione definitiva");
+        RW_Label_Definitiva.setToolTipText("Clic per aprire l'archivio delle dichiarazioni");
+        RW_Label_Definitiva.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                RW_Label_DefinitivaMouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout RWLayout = new javax.swing.GroupLayout(RW);
         RW.setLayout(RWLayout);
@@ -4197,6 +4224,8 @@ private static final long serialVersionUID = 3L;
             .addGroup(RWLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(RW_Label_Definitiva)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(RW_Bottone_Documentazione)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -4219,6 +4248,7 @@ private static final long serialVersionUID = 3L;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel7)
+                    .addComponent(RW_Label_Definitiva)
                     .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jButton2)
                         .addComponent(RW_Bottone_Stampa)
@@ -4531,6 +4561,16 @@ private static final long serialVersionUID = 3L;
         RT_Label_Avviso.setForeground(Tabelle.rosso);
         RT_Label_Avviso.setText("Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere \"Calcola\" per aggiornare.");
 
+        RT_Label_Definitiva.setFont(new java.awt.Font("Noto Sans", 1, 13)); // NOI18N
+        RT_Label_Definitiva.setForeground(Tabelle.rosso);
+        RT_Label_Definitiva.setText("Valori diversi dalla dichiarazione definitiva");
+        RT_Label_Definitiva.setToolTipText("Clic per aprire l'archivio delle dichiarazioni");
+        RT_Label_Definitiva.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                RT_Label_DefinitivaMouseClicked(evt);
+            }
+        });
+
         RT_Bottone_Documentazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
         RT_Bottone_Documentazione.setText("Vedi Documentazione sulle Plusvalenze");
         RT_Bottone_Documentazione.addActionListener(new java.awt.event.ActionListener() {
@@ -4541,9 +4581,19 @@ private static final long serialVersionUID = 3L;
 
         RT_Bottone_Stampa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_PDF.png"))); // NOI18N
         RT_Bottone_Stampa.setText("Stampa Report PDF (periodo selezionato)");
+        RT_Bottone_Stampa.setToolTipText("Genera e archivia insieme i PDF dei quadri T e RT e l'Excel di dettaglio dell'anno selezionato, poi apre il PDF del quadro RT");
         RT_Bottone_Stampa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RT_Bottone_StampaActionPerformed(evt);
+            }
+        });
+
+        RT_Bottone_Excel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
+        RT_Bottone_Excel.setText("Crea Excel con i Dettagli");
+        RT_Bottone_Excel.setToolTipText("Genera e archivia insieme l'Excel di dettaglio e i PDF dei quadri T e RT dell'anno selezionato, poi apre l'Excel");
+        RT_Bottone_Excel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RT_Bottone_ExcelActionPerformed(evt);
             }
         });
 
@@ -4575,11 +4625,17 @@ private static final long serialVersionUID = 3L;
                     .addGroup(RTLayout.createSequentialGroup()
                         .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(RT_Bottone_Documentazione, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(RT_Bottone_Stampa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(RTLayout.createSequentialGroup()
+                                .addComponent(RT_Bottone_Stampa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(RT_Bottone_Excel)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(RT_Label_Avviso, javax.swing.GroupLayout.PREFERRED_SIZE, 795, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(RT_CheckBox_EscludiAnnoCorrente))
+                            .addGroup(RTLayout.createSequentialGroup()
+                                .addComponent(RT_CheckBox_EscludiAnnoCorrente)
+                                .addGap(18, 18, 18)
+                                .addComponent(RT_Label_Definitiva)))
                         .addGap(18, 18, 18)
                         .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(RT_Bottone_CorreggiErrori, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -4596,6 +4652,8 @@ private static final long serialVersionUID = 3L;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(RT_Bottone_Stampa, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(RT_Bottone_Excel, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(RT_Label_Definitiva)
                     .addComponent(RT_Bottone_CorreggiErrori)
                     .addComponent(RT_CheckBox_EscludiAnnoCorrente))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -4606,6 +4664,25 @@ private static final long serialVersionUID = 3L;
         );
 
         Dichiarazioni_TabbedPane.addTab("RT & Analisi P&L", RT);
+
+        ArchivioDichiarazioni.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                ArchivioDichiarazioniComponentShown(evt);
+            }
+        });
+
+        javax.swing.GroupLayout ArchivioDichiarazioniLayout = new javax.swing.GroupLayout(ArchivioDichiarazioni);
+        ArchivioDichiarazioni.setLayout(ArchivioDichiarazioniLayout);
+        ArchivioDichiarazioniLayout.setHorizontalGroup(
+            ArchivioDichiarazioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 1465, Short.MAX_VALUE)
+        );
+        ArchivioDichiarazioniLayout.setVerticalGroup(
+            ArchivioDichiarazioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 856, Short.MAX_VALUE)
+        );
+
+        Dichiarazioni_TabbedPane.addTab("Archivio dichiarazioni", ArchivioDichiarazioni);
 
         Normativa.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -9893,8 +9970,35 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         //era già quello selezionato.
         if (Dichiarazioni_TabbedPane.getSelectedComponent() == Normativa) {
             NormativaComponentShown(evt);
+        } else if (Dichiarazioni_TabbedPane.getSelectedComponent() == ArchivioDichiarazioni) {
+            ArchivioDichiarazioniComponentShown(evt);
         }
     }//GEN-LAST:event_DichiarazioniComponentShown
+
+    /**
+     * Il pannello del tab "Archivio dichiarazioni", creato alla prima apertura come quello del backup: il
+     * costruttore legge l'archivio e verifica i file, lavoro che all'avvio sarebbe fatto per niente.
+     */
+    private GUI_ArchivioDichiarazioni_Pannello ArchivioDichiarazioni_Pannello = null;
+
+    private void ArchivioDichiarazioniComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_ArchivioDichiarazioniComponentShown
+        if (ArchivioDichiarazioni_Pannello == null) {
+            ArchivioDichiarazioni_Pannello = new GUI_ArchivioDichiarazioni_Pannello();
+            ArchivioDichiarazioni.setLayout(new java.awt.BorderLayout());
+            ArchivioDichiarazioni.add(ArchivioDichiarazioni_Pannello, java.awt.BorderLayout.CENTER);
+            ArchivioDichiarazioni.revalidate();
+            ArchivioDichiarazioni.repaint();
+        } else {
+            ArchivioDichiarazioni_Pannello.Ricarica();
+        }
+    }//GEN-LAST:event_ArchivioDichiarazioniComponentShown
+
+    /** Dopo una generazione: se il pannello dell'archivio esiste già, si rilegge. */
+    private void ArchivioDichiarazioni_Aggiorna() {
+        if (ArchivioDichiarazioni_Pannello != null) {
+            ArchivioDichiarazioni_Pannello.Ricarica();
+        }
+    }
 
     /**
      * Il pannello della gestione documentale montato nel tab, creato alla prima apertura.
@@ -11645,6 +11749,8 @@ if (result.isAction("delete-all")) {
                 //nel ciclo principale ed esce restituendo false se viene premuto.
                 //Trovo le giacenze di inizio e fine anno
                 Map<String, List<String[]>> MappaListaGiacenzeInizioFine=Funzioni.RW_GiacenzeInizioFineAnno(RW_Anno_ComboBox.getSelectedItem().toString());
+                RW_FotografiaGiacenze = MappaListaGiacenzeInizioFine;
+                RW_FotografiaAnno = RW_Anno_ComboBox.getSelectedItem().toString();
                 // Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
                 RW_ElaborazioneCompletata = Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString(), progress);
                 if (!RW_ElaborazioneCompletata) {
@@ -11693,6 +11799,7 @@ if (result.isAction("delete-all")) {
             Messaggi.WarningMessage("Elaborazione terminata dall'utente", "", this);
         }
         this.RW_Label_SegnalaRicalcolo.setVisible(false);
+        RW_ControllaDefinitiva();
         RW_Tabella.requestFocus();
 
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -12902,49 +13009,51 @@ if (result.isAction("delete-all")) {
     }//GEN-LAST:event_OpzioniRewards_JCB_PDD_RewardActionPerformed
 
     
-    private void RW_StampaRapporto(){
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                try {
-            // TODO add your handling code here:
-           
-            
-            
-            //Tabella Totali
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-            LocalDateTime now = LocalDateTime.now();
-            String DataOra=now.format(formatter);
-            String AnnoDiCompetenza=RW_Anno_ComboBox.getSelectedItem().toString();
-            int anno=Integer.parseInt(AnnoDiCompetenza);
-
-            //Punto 5 : si stampa un solo quadro per volta. Chiedo all'utente quale.
-            //La scelta va fatta PRIMA di creare Stampe : il costruttore apre gia' il file di output,
-            //e un annullamento successivo lascerebbe un PDF vuoto in Temporanei.
-            AppDialog.DialogResult sceltaQuadro = AppDialog.builder(this)
-                    .windowTitle("Stampa quadro W/RW")
-                    .bodyTitle("Quale quadro vuoi stampare?")
+    /**
+     * Genera e archivia la dichiarazione W/RW dell'anno selezionato: {@code Quadro_W_<anno>.pdf},
+     * {@code Quadro_RW_<anno>.pdf} e {@code Dettaglio_RW_<anno>.xlsx}, tutti dallo stesso calcolo, in una
+     * cartella di {@code Dichiarazioni/} (vedi {@link Principale_Dichiarazioni#Genera}). La chiamano sia
+     * "Stampa Report" sia "Excel": cambia solo il file aperto alla fine.
+     *
+     * <p>Tutti i dialoghi (quadro vuoto, derivati, Stato estero mancante) stanno qui, prima di aprire
+     * qualsiasi file: chi scrive i file non deve potersi fermare a metà lasciando un PDF che sembra buono.
+     *
+     * @param ApriExcel {@code true} per aprire alla fine l'Excel, {@code false} il PDF del quadro RW
+     */
+    private void RW_GeneraDichiarazione(boolean ApriExcel) {
+        //Quadro mai calcolato, o non piu' allineato a movimenti e opzioni: si ricalcola, altrimenti i file
+        //archiviati non corrisponderebbero ai dati. Conta il model e non la vista.
+        if (RW_Tabella.getModel().getRowCount() == 0 || RW_Label_SegnalaRicalcolo.isVisible()) {
+            RW_CalcolaRW();
+            if (!RW_ElaborazioneCompletata) {
+                return;
+            }
+        }
+        if (RW_Tabella.getModel().getRowCount() == 0) {
+            AppDialog.DialogResult result = AppDialog.builder(this)
+                    .windowTitle("Quadro RW vuoto")
+                    .bodyTitle("Archiviare un report vuoto?")
                     .showTitleInBody(true)
                     .theme()
                     .type(AppDialog.DialogType.INFO)
-                    .message("Il report contiene un solo quadro per volta, con le relative note e la relativa parte FIAT.")
+                    .message("Non ci sono movimenti da stampare.")
                     .details("""
-                    - Quadro W : per chi presenta il Modello 730.
-                    - Quadro RW : per chi presenta il Modello Redditi Persone Fisiche.
+                    Puoi proseguire comunque.
+
+                    Verranno generati e archiviati i report vuoti insieme alle istruzioni di compilazione.
                     """)
-                    .action(AppDialog.DialogAction.builder("annulla", "Annulla")
+                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
                             .role(AppDialog.ActionRole.SECONDARY)
                             .build())
-                    .action(AppDialog.DialogAction.builder("quadro-rw", "Quadro RW")
-                            .role(AppDialog.ActionRole.SECONDARY)
-                            .build())
-                    .action(AppDialog.DialogAction.builder("quadro-w", "Quadro W")
+                    .action(AppDialog.DialogAction.builder("print-empty-rw", "Prosegui comunque")
                             .role(AppDialog.ActionRole.PRIMARY)
                             .build())
                     .showDialog();
-            if (sceltaQuadro == null || sceltaQuadro.isAction("annulla")) {
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            if (result == null || !result.isAction("print-empty-rw")) {
                 return;
             }
-            boolean stampaW = sceltaQuadro.isAction("quadro-w");
+        }
+        String AnnoDiCompetenza=RW_Anno_ComboBox.getSelectedItem().toString();
 
             //Movimenti su derivati nell'anno (Derivati): il quadro li conta come cripto-attivita'. Solo un
             //avviso, la stampa prosegue e porta il testo completo in una pagina dedicata.
@@ -12956,7 +13065,7 @@ if (result.isAction("delete-all")) {
                         .showTitleInBody(true)
                         .theme()
                         .type(AppDialog.DialogType.WARNING)
-                        .message("Le giacenze del quadro " + (stampaW ? "W" : "RW") + " comprendono anche i movimenti su derivati.")
+                        .message("Le giacenze dei quadri W e RW comprendono anche i movimenti su derivati.")
                         .details(AvvisoDerivati)
                         .action(AppDialog.DialogAction.builder("ok", "Ho capito")
                                 .role(AppDialog.ActionRole.PRIMARY).build())
@@ -12997,13 +13106,163 @@ if (result.isAction("delete-all")) {
                                     .build())
                             .showDialog();
                     if (avvisoStato == null || !avvisoStato.isAction("continua")) {
-                        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         return;
                     }
                 }
             }
 
-            Stampe stampa=new Stampe(VarStatiche.getCartella_Temporanei()+"RW_"+AnnoDiCompetenza+"_"+DataOra+".pdf");
+        //W e RW si generano sempre tutti e due: sono la stessa dichiarazione per il 730 e per Redditi PF,
+        //e averli entrambi evita che la definitiva archiviata sia quella del modello sbagliato
+        Dichiarazioni.Dichiarazione bozza = RW_BozzaDichiarazione(AnnoDiCompetenza);
+        String fileW = "Quadro_W_" + AnnoDiCompetenza + ".pdf";
+        String fileRW = "Quadro_RW_" + AnnoDiCompetenza + ".pdf";
+        String fileExcel = "Dettaglio_RW_" + AnnoDiCompetenza + ".xlsx";
+        Principale_Dichiarazioni.Genera(bozza, java.util.List.of(fileW, fileRW, fileExcel), cartella -> {
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            RW_ScriviPdf(new File(cartella, fileW).getPath(), true);
+            RW_ScriviPdf(new File(cartella, fileRW).getPath(), false);
+            try {
+                Map<String, List<String[]>> fotografia = AnnoDiCompetenza.equals(RW_FotografiaAnno) && RW_FotografiaGiacenze != null
+                        ? RW_FotografiaGiacenze : Funzioni.RW_GiacenzeInizioFineAnno(AnnoDiCompetenza);
+                Principale_Dichiarazioni.RW_CreaExcel(RW_Tabella.getModel(), AnnoDiCompetenza, new File(cartella, fileExcel), fotografia);
+            } catch (IOException | RuntimeException ex) {
+                throw new IOException("errore nell'Excel di dettaglio: " + ex, ex);
+            }
+        }, ApriExcel ? fileExcel : fileRW, this);
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        ArchivioDichiarazioni_Aggiorna();
+    }
+
+    /** Il testo di una cella, senza HTML. */
+    private static String Dichiarazioni_Testo(Object Valore) {
+        return Valore == null ? "" : org.jsoup.Jsoup.parse(Valore.toString()).text().trim();
+    }
+
+    /** Il valore numerico di una cella, zero se non è un numero. */
+    private static BigDecimal Dichiarazioni_Numero(Object Valore) {
+        try {
+            return new BigDecimal(Dichiarazioni_Testo(Valore));
+        } catch (NumberFormatException ex) {
+            return BigDecimal.ZERO;
+        }
+    }
+
+    /**
+     * La fotografia dei valori del quadro W/RW così come stanno in {@code RW_Tabella} (model), da archiviare
+     * nel manifest insieme ai file: righi, totali delle crypto, errori e opzioni di calcolo.
+     */
+    private Dichiarazioni.Dichiarazione RW_BozzaDichiarazione(String Anno) {
+        Dichiarazioni.Dichiarazione d = new Dichiarazioni.Dichiarazione();
+        //Nome qualificato: in Principale "Dichiarazioni" e' anche il pannello del tab omonimo
+        d.Fam = com.giacenzecrypto.giacenze_crypto.Dichiarazioni.Famiglia.RW;
+        d.Anno = Anno;
+        javax.swing.table.TableModel m = RW_Tabella.getModel();
+        BigDecimal iniziale = BigDecimal.ZERO;
+        BigDecimal finale = BigDecimal.ZERO;
+        BigDecimal ic = BigDecimal.ZERO;
+        java.util.List<String> conErrori = new java.util.ArrayList<>();
+        for (int i = 0; i < m.getRowCount(); i++) {
+            String nome = Dichiarazioni_Testo(m.getValueAt(i, 0));
+            String natura = RW_FiatNaturaRiga(i);
+            String errori = Dichiarazioni_Testo(m.getValueAt(i, 4));
+            Map<String, String> rigo = new java.util.LinkedHashMap<>();
+            rigo.put("Rigo", nome);
+            rigo.put("Natura", natura);
+            rigo.put("Periodo", RW_PeriodoStampa(i));
+            rigo.put("Valore iniziale", Dichiarazioni_Testo(m.getValueAt(i, 1)));
+            rigo.put("Valore finale", Dichiarazioni_Testo(m.getValueAt(i, 2)));
+            rigo.put("Giorni", Dichiarazioni_Testo(m.getValueAt(i, 3)));
+            rigo.put("IC dovuta", Dichiarazioni_Testo(m.getValueAt(i, 5)));
+            rigo.put("Bollo pagato", Dichiarazioni_Testo(m.getValueAt(i, 7)));
+            rigo.put("Stato estero", m.getColumnCount() > 9 ? Dichiarazioni_Testo(m.getValueAt(i, 9)) : "");
+            rigo.put("Errori", errori);
+            d.Righi.add(rigo);
+            if (errori.toUpperCase().contains("ERROR")) {
+                conErrori.add(nome);
+            }
+            if (!"FIAT".equalsIgnoreCase(natura)) {
+                iniziale = iniziale.add(Dichiarazioni_Numero(m.getValueAt(i, 1)));
+                finale = finale.add(Dichiarazioni_Numero(m.getValueAt(i, 2)));
+                //Come il totale IC del PDF: somma dei valori arrotondati all'unita'
+                ic = ic.add(Dichiarazioni_Numero(m.getValueAt(i, 5)).setScale(0, RoundingMode.HALF_UP));
+            }
+        }
+        d.Totali.put("Righi", String.valueOf(m.getRowCount()));
+        d.Totali.put(Principale_Dichiarazioni.TOT_RW_INIZIALE, iniziale.setScale(2, RoundingMode.HALF_UP).toPlainString());
+        d.Totali.put(Principale_Dichiarazioni.TOT_RW_FINALE, finale.setScale(2, RoundingMode.HALF_UP).toPlainString());
+        d.Totali.put(Principale_Dichiarazioni.TOT_RW_IC, ic.toPlainString());
+        if (Derivati.InfluisconoSullAnno(Anno)) {
+            d.Totali.put("Avviso", "Movimenti su derivati trattati come cripto-attività");
+        }
+        if (!conErrori.isEmpty()) {
+            d.Errori = "errori da correggere nei righi " + String.join(", ", conErrori);
+        }
+
+        Map<String, String> o = d.Opzioni;
+        String metodo;
+        if (RW_Opzioni_RilevanteSoloValoriIniFin.isSelected()) metodo = Principale_Dichiarazioni.METODO_RW_SOLO_VALORI_INIZIO_FINE;
+        else if (RW_Opzioni_RilenvanteScambiFIAT.isSelected()) metodo = "Media ponderata, periodo chiuso dalle conversioni in FIAT";
+        else if (RW_Opzioni_RilevanteScambiRilevanti.isSelected()) metodo = "Media ponderata, periodo chiuso dagli scambi fiscalmente rilevanti";
+        else if (RW_Opzioni_RilenvanteTuttigliScambi.isSelected()) metodo = "Media ponderata, periodo chiuso da ogni scambio";
+        else metodo = "";
+        o.put(Principale_Dichiarazioni.OPZIONE_METODO_RW, metodo);
+        o.put("LiFo", RW_Opzioni_CheckBox_LiFoComplessivo.isSelected() ? "sulla totalità dei wallet" : "per gruppo wallet");
+        o.put("LiFo sui sub-movimenti", RW_Opzioni_CheckBox_LiFoSubMovimenti.isSelected() ? "Sì" : "No");
+        o.put("Reward nel valore iniziale solo se rilevanti", RW_Opzioni_CheckBox_StakingZero.isSelected() ? "Sì" : "No");
+        o.put("Giacenze di inizio e fine anno se il bollo è pagato", RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.isSelected() ? "Sì" : "No");
+        o.put("Trasferimenti tra wallet", RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo.isSelected()
+                ? "chiudono il periodo e ne aprono uno nuovo"
+                : RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine.isSelected()
+                        ? "valore iniziale sul wallet di origine" : "non conteggiati");
+        o.put("Liquidità FIAT nel quadro", RW_Opzioni_CheckBox_FiatInRW.isSelected() ? "Sì" : "No");
+        if (RW_Opzioni_CheckBox_FiatInRW.isSelected()) {
+            o.put("Liquidità codice 14", RW_Opzioni_Radio_Liquidita_SoloMonitoraggio.isSelected() ? "solo monitoraggio" : "IVAFE liquidata");
+            o.put("Valore finale della liquidità", RW_Opzioni_CheckBox_FiatValoreFinaleMaxMedia.isSelected()
+                    ? "maggiore fra giacenza media e saldo finale" : "saldo a fine periodo");
+            o.put("Rigo spezzato sugli apporti", RW_Opzioni_CheckBox_FiatSpezzaApporti.isSelected()
+                    ? "Sì, soglia " + RW_Opzioni_Text_FiatSogliaApporti.getText().trim() : "No");
+            o.put("Rigo spezzato sui prelievi", RW_Opzioni_CheckBox_FiatSpezzaPrelievi.isSelected()
+                    ? "Sì, soglia " + RW_Opzioni_Text_FiatSogliaPrelievi.getText().trim() : "No");
+        }
+        Dichiarazioni_OpzioniComuni(o);
+        return d;
+    }
+
+    /** Opzioni che entrano sia nel quadro W/RW sia nel T/RT: reward rilevanti, E-Money, fonti dei prezzi. */
+    private void Dichiarazioni_OpzioniComuni(Map<String, String> o) {
+        java.util.List<String> reward = new java.util.ArrayList<>();
+        if (OpzioniRewards_JCB_PDD_CashBack.isSelected()) reward.add("Cashback");
+        if (OpzioniRewards_JCB_PDD_Staking.isSelected()) reward.add("Staking");
+        if (OpzioniRewards_JCB_PDD_Airdrop.isSelected()) reward.add("Airdrop");
+        if (OpzioniRewards_JCB_PDD_Earn.isSelected()) reward.add("Earn");
+        if (OpzioniRewards_JCB_PDD_Reward.isSelected()) reward.add("Altre reward");
+        o.put("Reward fiscalmente rilevanti", reward.isEmpty() ? "nessuna" : String.join(", ", reward));
+        o.put("Cashback come FIAT", OpzioniRewards_CashBackComeFIAT.isSelected()
+                ? "dal " + OpzioniRewards_CashBackComeFIAT_ComboBox.getSelectedItem() : "No");
+        java.util.List<String> emoney = new java.util.ArrayList<>();
+        for (Map.Entry<String, String> e : Mappa_EMoney.entrySet()) {
+            emoney.add(e.getKey() + " dal " + e.getValue());
+        }
+        o.put("Token E-Money", emoney.isEmpty() ? "nessuno" : String.join(", ", emoney));
+        o.put("Prezzi dagli exchange anche per gli anni già dichiarati",
+                "SI".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(AliasPrezziToken.OPZIONE_ANCHE_ANNI_PASSATI, "NO")) ? "Sì" : "No");
+        o.put("Token DeFi prezzati solo da DefiLlama e CoinGecko",
+                "SI".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(Prezzi.OPZIONE_DEFI_SOLO_DEFILLAMA_COINGECKO, "NO")) ? "Sì" : "No");
+    }
+
+    /**
+     * Scrive il PDF del quadro W ({@code stampaW}) o RW dell'anno selezionato, dai valori di
+     * {@code RW_Tabella}. Nessun dialogo: li fa prima {@link #RW_GeneraDichiarazione}.
+     *
+     * @param Percorso il file da scrivere
+     * @param stampaW {@code true} per il quadro W, {@code false} per il quadro RW
+     * @throws IOException se il PDF non risulta scritto o la stampa si interrompe
+     */
+    private void RW_ScriviPdf(String Percorso, boolean stampaW) throws IOException {
+                try {
+            String AnnoDiCompetenza=RW_Anno_ComboBox.getSelectedItem().toString();
+            int anno=Integer.parseInt(AnnoDiCompetenza);
+            Stampe stampa=new Stampe(Percorso);
             String quadroScelto = stampaW ? "QUADRO W" : "QUADRO RW";
             //String piede="Stampa generata da "+this.getTitle()+"  - https://sourceforge.net/projects/giacenze-crypto-com";
             //Veste grafica del report : sostituisce Piede(), che stamperebbe anche sulla copertina.
@@ -13413,12 +13672,12 @@ if (result.isAction("delete-all")) {
             // monitoraggio). Numerazione W/RW che prosegue da quella cripto (punto 21).
             RW_StampaParteFiat(stampa, anno, AnnoDiCompetenza, numeroRighe, totRigheW, totRigheRW, stampaW);
 
-            stampa.ScriviPDF();
-
-        } catch (FileNotFoundException ex) {
-            LoggerGC.ScriviErrore(ex);
+            if (!stampa.ScriviPDF(false)) {
+                throw new IOException("il PDF del quadro " + (stampaW ? "W" : "RW") + " non risulta scritto");
+            }
+        } catch (RuntimeException ex) {
+            throw new IOException("errore nel PDF del quadro " + (stampaW ? "W" : "RW") + ": " + ex, ex);
         }
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
 
     /**
@@ -13669,45 +13928,8 @@ if (result.isAction("delete-all")) {
 
 
     private void RW_Bottone_StampaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_StampaActionPerformed
-        // TODO add your handling code here:
-        //Come prima cosa rielaboro il quadro per essee sicuro che sia tutto aggiornato
-
-        if (RW_Tabella.getRowCount() == 0) {
-            // Se non trovo dati come prima cosa provo ad elaborare il quadro
-            RW_CalcolaRW();
-
-            if (RW_Tabella.getRowCount() == 0) {
-                AppDialog.DialogResult result = AppDialog.builder(this)
-                        .windowTitle("Quadro RW vuoto")
-                        .bodyTitle("Stampare un report vuoto?")
-                        .showTitleInBody(true)
-                        .theme()
-                        .type(AppDialog.DialogType.INFO)
-                        .message("Non ci sono movimenti da stampare.")
-                        .details("""
-                        Puoi proseguire comunque con la stampa.
-
-                        Verrà generato un report vuoto insieme alle istruzioni di compilazione.
-                        """)
-                        .action(AppDialog.DialogAction.builder("cancel", "Annulla")
-                                .role(AppDialog.ActionRole.SECONDARY)
-                                .build())
-                        .action(AppDialog.DialogAction.builder("print-empty-rw", "Stampa comunque")
-                                .role(AppDialog.ActionRole.PRIMARY)
-                                .build())
-                        .showDialog();
-
-                if (result != null && result.isAction("print-empty-rw")) {
-                    RW_StampaRapporto();
-                }
-
-            } else {
-                RW_StampaRapporto();
-            }
-        } else {
-            RW_StampaRapporto();
-        }
-
+        //Genera W, RW ed Excel insieme e li archivia (Principale_Dichiarazioni.Genera): apre il PDF del quadro RW
+        RW_GeneraDichiarazione(false);
     }//GEN-LAST:event_RW_Bottone_StampaActionPerformed
 
     private void GiacenzeaData_Bottone_GiacenzeExplorerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_GiacenzeExplorerActionPerformed
@@ -13777,14 +13999,8 @@ if (result.isAction("delete-all")) {
     }//GEN-LAST:event_RW_Opzioni_Radio_TrasferimentiNonConteggiatiActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
-        if (RW_Tabella.getRowCount() == 0) {
-            // Se non trovo dati come prima cosa provo ad elaborare il quadro
-            RW_CalcolaRW();           
-        }
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        Funzioni.RW_CreaExcel(RW_Tabella, RW_Anno_ComboBox.getSelectedItem().toString());
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        //Stessa generazione di "Stampa Report": PDF ed Excel nascono sempre insieme. Apre l'Excel
+        RW_GeneraDichiarazione(true);
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void RW_Opzioni_CheckBox_LiFoSubMovimentiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_LiFoSubMovimentiActionPerformed
@@ -13893,6 +14109,7 @@ if (result.isAction("delete-all")) {
             ModelloTabellaRT.addRow(Val);
         }
         Tabelle.updateRowHeights(RT_Tabella_Principale);
+        RT_ControllaDefinitive();
                 }
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
@@ -14702,61 +14919,22 @@ if (result != null && !result.isAction("cancel")) {
     }//GEN-LAST:event_Opzioni_ApiKey_Etherscan_LabelSitoMouseExited
 
     private void RT_Bottone_StampaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_StampaActionPerformed
-        // TODO add your handling code here:
-        int rigoSelezionato=RT_Tabella_Principale.getSelectedRow();
-        if (RT_Tabella_Principale.getRowCount() == 0) {
-            // Se non trovo dati come prima cosa provo ad elaborare il quadro
-                String Testo = "<b>Attenzione</b><br><br>Per proseguire premere '<b>Calcola</b>' per generare i righi con i dati.<br>"
-                        +"Selezionare quindi il rigo corrispondente all'anno desiderato e premere su '<b>Stampa Report</b>'.<br>";
-                Messaggi.WarningMessage("Calcoli ancora da effettuare",Testo,this);
-        } 
-        else if (rigoSelezionato==-1){
-                String Testo = "<b>Attenzione</b><br><br>"
-                        +" Selezionare prima il rigo corrispondente all'anno desiderato, quindi premere su '<b>Stampa Report</b>'.<br>";
-                Messaggi.WarningMessage("Nessun rigo selezionato",Testo,this);
-     
-        }
-        else {
-            int Anno=Integer.parseInt(RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 0).toString());
-            String Vendite=RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 2).toString();
-            String Costi=RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 1).toString();
-            String Errori=RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 6).toString();
-            //La colonna porta anche "Movimenti su derivati", che non e' un errore da correggere: conta solo
-            //il resto (movimenti non classificati o senza prezzo)
-            boolean err=false;
-            if (!Errori.replace(RT_ERRORE_DERIVATI, "").replaceAll("<[^>]*>", "").isBlank())
-            {
-                err=true;
-                String Testo = "<b>Attenzione</b><br><br>"
-                        +"Ci sono dei movimenti rilevanti senza prezzo e/o movimenti non classificati.<br>"
-                        +"E' opportuno correggerli (Pulsante 'Correggi Errori') affinchè i valori risultino corretti.<br>"
-                        +"La stampa proseguirà ugualmente.<br>";
-                Messaggi.WarningMessage("Errori da correggere",Testo,this);
-            }
-            if (Anno<2023){
-            String Testo = "<b>Attenzione</b><br><br>"
-                        +"E' stato scelto un anno inferiore al 2023.<br>"
-                        +"In quegli anni <b>vigevano regole diverse</b> il report potrebbe non essere corretto.<br>"
-                        +"La stampa proseguirà ugualmente.<br>";
-            Messaggi.WarningMessage("Anno scelto pre 2023",Testo,this);
-            }
-            String AvvisoDerivati = Derivati.MessaggioAvviso(String.valueOf(Anno));
-            if (!AvvisoDerivati.isEmpty()) {
-                AppDialog.builder(this)
-                        .windowTitle("Avviso fiscale")
-                        .bodyTitle("Movimenti su derivati trattati come cripto-attività")
-                        .showTitleInBody(true)
-                        .theme()
-                        .type(AppDialog.DialogType.WARNING)
-                        .message("I valori del quadro T/RT comprendono anche i movimenti su derivati.")
-                        .details(AvvisoDerivati)
-                        .action(AppDialog.DialogAction.builder("ok", "Ho capito")
-                                .role(AppDialog.ActionRole.PRIMARY).build())
-                        .showDialog();
-            }
-                RT_StampaRapporto(Anno,Vendite,Costi,err);
-        }
+        //Genera T, RT ed Excel insieme e li archivia (Principale_Dichiarazioni.Genera)
+        RT_GeneraDichiarazione(false);
     }//GEN-LAST:event_RT_Bottone_StampaActionPerformed
+
+    private void RT_Bottone_ExcelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_ExcelActionPerformed
+        //Stessa generazione di "Stampa Report PDF": PDF ed Excel nascono sempre insieme. Apre l'Excel
+        RT_GeneraDichiarazione(true);
+    }//GEN-LAST:event_RT_Bottone_ExcelActionPerformed
+
+    private void RW_Label_DefinitivaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RW_Label_DefinitivaMouseClicked
+        Dichiarazioni_ApriArchivio();
+    }//GEN-LAST:event_RW_Label_DefinitivaMouseClicked
+
+    private void RT_Label_DefinitivaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RT_Label_DefinitivaMouseClicked
+        Dichiarazioni_ApriArchivio();
+    }//GEN-LAST:event_RT_Label_DefinitivaMouseClicked
 
     private void Opzioni_ApiKey_Coingecko_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coingecko_TextFieldKeyReleased
         // TODO add your handling code here:
@@ -17062,19 +17240,257 @@ if (result != null && !result.isAction("cancel")) {
         }
     }
     
-    private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){
-         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        // Anno=Anno-1;
+    /**
+     * Genera e archivia la dichiarazione T/RT dell'anno selezionato in {@code RT_Tabella_Principale}:
+     * {@code Quadro_T_<anno>.pdf}, {@code Quadro_RT_<anno>.pdf} e {@code Dettaglio_RT_<anno>.xlsx}, tutti
+     * dallo stesso calcolo (vedi {@link Principale_Dichiarazioni#Genera}).
+     *
+     * @param ApriExcel {@code true} per aprire alla fine l'Excel, {@code false} il PDF del quadro RT
+     */
+    private void RT_GeneraDichiarazione(boolean ApriExcel) {
+        javax.swing.table.TableModel m = RT_Tabella_Principale.getModel();
+        int rigoVista = RT_Tabella_Principale.getSelectedRow();
+        if (m.getRowCount() == 0) {
+                String Testo = "<b>Attenzione</b><br><br>Per proseguire premere '<b>Calcola</b>' per generare i righi con i dati.<br>"
+                        +"Selezionare quindi il rigo corrispondente all'anno desiderato e premere su '<b>Stampa Report</b>'.<br>";
+                Messaggi.WarningMessage("Calcoli ancora da effettuare",Testo,this);
+                return;
+        }
+        if (rigoVista == -1) {
+                String Testo = "<b>Attenzione</b><br><br>"
+                        +" Selezionare prima il rigo corrispondente all'anno desiderato, quindi premere su '<b>Stampa Report</b>'.<br>";
+                Messaggi.WarningMessage("Nessun rigo selezionato",Testo,this);
+                return;
+        }
+        String AnnoS = m.getValueAt(RT_Tabella_Principale.convertRowIndexToModel(rigoVista), 0).toString();
+        //Calcolo non piu' allineato a movimenti e opzioni (o mai completato): si rifa', e il rigo si ritrova
+        //per anno, non per posizione
+        if (RT_Label_Avviso.isVisible() || APlus == null) {
+            RT_CalcolaRT();
+            if (APlus == null) {
+                return;
+            }
+            m = RT_Tabella_Principale.getModel();
+        }
+        int rigo = -1;
+        for (int i = 0; i < m.getRowCount(); i++) {
+            if (AnnoS.equals(m.getValueAt(i, 0).toString())) {
+                rigo = i;
+                break;
+            }
+        }
+        if (rigo == -1) {
+            Messaggi.WarningMessage("Anno non trovato", "Dopo il ricalcolo l'anno " + AnnoS + " non è più presente.", this);
+            return;
+        }
+        int vista = RT_Tabella_Principale.convertRowIndexToView(rigo);
+        if (vista >= 0) {
+            RT_Tabella_Principale.setRowSelectionInterval(vista, vista);
+        }
 
+            int Anno=Integer.parseInt(AnnoS);
+            String Vendite=m.getValueAt(rigo, 2).toString();
+            String Costi=m.getValueAt(rigo, 1).toString();
+            String Errori=m.getValueAt(rigo, 6).toString();
+            //La colonna porta anche "Movimenti su derivati", che non e' un errore da correggere: conta solo
+            //il resto (movimenti non classificati o senza prezzo)
+            String ErroriVeri = Errori.replace(RT_ERRORE_DERIVATI, "").replace("<br>", " ").replaceAll("<[^>]*>", "").trim();
+            boolean err=false;
+            if (!ErroriVeri.isBlank())
+            {
+                err=true;
+                String Testo = "<b>Attenzione</b><br><br>"
+                        +"Ci sono dei movimenti rilevanti senza prezzo e/o movimenti non classificati.<br>"
+                        +"E' opportuno correggerli (Pulsante 'Correggi Errori') affinchè i valori risultino corretti.<br>"
+                        +"La stampa proseguirà ugualmente.<br>";
+                Messaggi.WarningMessage("Errori da correggere",Testo,this);
+            }
+            if (Anno<2023){
+            String Testo = "<b>Attenzione</b><br><br>"
+                        +"E' stato scelto un anno inferiore al 2023.<br>"
+                        +"In quegli anni <b>vigevano regole diverse</b> il report potrebbe non essere corretto.<br>"
+                        +"La stampa proseguirà ugualmente.<br>";
+            Messaggi.WarningMessage("Anno scelto pre 2023",Testo,this);
+            }
+            String AvvisoDerivati = Derivati.MessaggioAvviso(String.valueOf(Anno));
+            if (!AvvisoDerivati.isEmpty()) {
+                AppDialog.builder(this)
+                        .windowTitle("Avviso fiscale")
+                        .bodyTitle("Movimenti su derivati trattati come cripto-attività")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.WARNING)
+                        .message("I valori del quadro T/RT comprendono anche i movimenti su derivati.")
+                        .details(AvvisoDerivati)
+                        .action(AppDialog.DialogAction.builder("ok", "Ho capito")
+                                .role(AppDialog.ActionRole.PRIMARY).build())
+                        .showDialog();
+            }
+
+        Principale_RT_Tipologie.DatiTipologie tipologie = Principale_RT_Tipologie.Calcola(AnnoS);
+        Dichiarazioni.Dichiarazione bozza = RT_BozzaDichiarazione(m, rigo, tipologie);
+
+        String[] intestazione = new String[m.getColumnCount()];
+        Object[] riga = new Object[m.getColumnCount()];
+        for (int c = 0; c < m.getColumnCount(); c++) {
+            intestazione[c] = m.getColumnName(c);
+            riga[c] = m.getValueAt(rigo, c);
+        }
+        javax.swing.table.TableModel mm = RT_Tabella_DettaglioMonete.getModel();
+        String[] intestazioneMonete = new String[mm.getColumnCount()];
+        for (int c = 0; c < mm.getColumnCount(); c++) {
+            intestazioneMonete[c] = mm.getColumnName(c);
+        }
+        java.util.List<Object[]> monete = APlus.RitornaTabellaAnno(AnnoS);
+
+        String fileT = "Quadro_T_" + AnnoS + ".pdf";
+        String fileRT = "Quadro_RT_" + AnnoS + ".pdf";
+        String fileExcel = "Dettaglio_RT_" + AnnoS + ".xlsx";
+        final boolean errFinale = err;
+        Principale_Dichiarazioni.Genera(bozza, java.util.List.of(fileT, fileRT, fileExcel), cartella -> {
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            RT_ScriviPdf(new File(cartella, fileT).getPath(), Anno, Vendite, Costi, errFinale, true);
+            RT_ScriviPdf(new File(cartella, fileRT).getPath(), Anno, Vendite, Costi, errFinale, false);
+            try {
+                Principale_Dichiarazioni.RT_CreaExcel(new File(cartella, fileExcel), AnnoS, intestazione, riga,
+                        intestazioneMonete, monete, tipologie, Principale_RT_Tipologie.MovimentiRilevanti(AnnoS));
+            } catch (IOException | RuntimeException ex) {
+                throw new IOException("errore nell'Excel di dettaglio: " + ex, ex);
+            }
+        }, ApriExcel ? fileExcel : fileRT, this);
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        ArchivioDichiarazioni_Aggiorna();
+        RT_ControllaDefinitive();
+    }
+
+    /**
+     * La fotografia dei valori T/RT di un anno, dal rigo {@code Rigo} (model) di {@code RT_Tabella_Principale}:
+     * totali del rigo, plusvalenze per tipologia, errori e opzioni di calcolo.
+     */
+    private Dichiarazioni.Dichiarazione RT_BozzaDichiarazione(javax.swing.table.TableModel m, int Rigo,
+            Principale_RT_Tipologie.DatiTipologie Tipologie) {
+        String Errori = m.getValueAt(Rigo, 6) == null ? "" : m.getValueAt(Rigo, 6).toString();
+        Dichiarazioni.Dichiarazione bozza = new Dichiarazioni.Dichiarazione();
+        bozza.Fam = com.giacenzecrypto.giacenze_crypto.Dichiarazioni.Famiglia.RT;
+        bozza.Anno = m.getValueAt(Rigo, 0).toString();
+        bozza.Totali.put(Principale_Dichiarazioni.TOT_RT_COSTI, Dichiarazioni_Testo(m.getValueAt(Rigo, 1)));
+        bozza.Totali.put(Principale_Dichiarazioni.TOT_RT_CORRISPETTIVI, Dichiarazioni_Testo(m.getValueAt(Rigo, 2)));
+        bozza.Totali.put(Principale_Dichiarazioni.TOT_RT_PLUS, Dichiarazioni_Testo(m.getValueAt(Rigo, 3)));
+        bozza.Totali.put("Plusvalenze latenti", Dichiarazioni_Testo(m.getValueAt(Rigo, 4)));
+        bozza.Totali.put("Valore di fine anno", Dichiarazioni_Testo(m.getValueAt(Rigo, 5)));
+        if (Errori.contains(RT_ERRORE_DERIVATI)) {
+            bozza.Totali.put("Avviso", "Movimenti su derivati trattati come cripto-attività");
+        }
+        bozza.Errori = Errori.replace(RT_ERRORE_DERIVATI, "").replace("<br>", " ").replaceAll("<[^>]*>", "").trim();
+        for (Map.Entry<String, BigDecimal[]> e : Tipologie.perTipologia.entrySet()) {
+            Map<String, String> r = new java.util.LinkedHashMap<>();
+            r.put("Tipologia", e.getKey());
+            r.put("Plusvalenza", Principale_RT_Tipologie.somma(e.getValue()).setScale(2, RoundingMode.HALF_UP).toPlainString());
+            bozza.Righi.add(r);
+        }
+        Map<String, String> o = bozza.Opzioni;
+        o.put("LiFo", Opzioni_GruppoWallet_CheckBox_PlusXWallet.isSelected() ? "per gruppo wallet" : "sulla totalità dei wallet");
+        o.put("Scambi fra cripto-attività con medesime caratteristiche", Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti.isSelected()
+                ? "fiscalmente rilevanti" : "non rilevanti");
+        Dichiarazioni_OpzioniComuni(o);
+        return bozza;
+    }
+
+    /**
+     * Dopo ogni calcolo T/RT: per ogni anno con una dichiarazione T/RT definitiva confronta i valori appena
+     * calcolati con quelli archiviati, e se differiscono lo dice l'etichetta rossa accanto ai pulsanti. Solo
+     * l'effetto (cosa è cambiato), nessuna indicazione su cosa fare.
+     */
+    private void RT_ControllaDefinitive() {
+        RT_Label_Definitiva.setVisible(false);
+        if (APlus == null) {
+            return;
+        }
+        javax.swing.table.TableModel m = RT_Tabella_Principale.getModel();
+        java.util.List<String> anni = new java.util.ArrayList<>();
+        StringBuilder dettaglio = new StringBuilder();
+        for (int i = 0; i < m.getRowCount(); i++) {
+            String anno = m.getValueAt(i, 0).toString();
+            Dichiarazioni.Dichiarazione def = com.giacenzecrypto.giacenze_crypto.Dichiarazioni.Definitiva(
+                    com.giacenzecrypto.giacenze_crypto.Dichiarazioni.Famiglia.RT, anno);
+            if (def == null) {
+                continue;
+            }
+            java.util.List<String[]> diff = com.giacenzecrypto.giacenze_crypto.Dichiarazioni.Confronta(
+                    def, RT_BozzaDichiarazione(m, i, Principale_RT_Tipologie.Calcola(anno)));
+            if (!diff.isEmpty()) {
+                anni.add(anno);
+                dettaglio.append(Dichiarazioni_TestoDifferenze(anno, def, diff));
+            }
+        }
+        Dichiarazioni_MostraEtichetta(RT_Label_Definitiva, anni, dettaglio);
+    }
+
+    /**
+     * Dopo ogni calcolo W/RW: confronta i valori dell'anno con la sua dichiarazione W/RW definitiva, se c'è
+     * (stessa logica di {@link #RT_ControllaDefinitive}).
+     */
+    private void RW_ControllaDefinitiva() {
+        RW_Label_Definitiva.setVisible(false);
+        if (!RW_ElaborazioneCompletata || RW_Anno_ComboBox.getSelectedItem() == null) {
+            return;
+        }
+        String anno = RW_Anno_ComboBox.getSelectedItem().toString();
+        Dichiarazioni.Dichiarazione def = com.giacenzecrypto.giacenze_crypto.Dichiarazioni.Definitiva(
+                com.giacenzecrypto.giacenze_crypto.Dichiarazioni.Famiglia.RW, anno);
+        if (def == null) {
+            return;
+        }
+        java.util.List<String[]> diff = com.giacenzecrypto.giacenze_crypto.Dichiarazioni.Confronta(def, RW_BozzaDichiarazione(anno));
+        if (diff.isEmpty()) {
+            return;
+        }
+        Dichiarazioni_MostraEtichetta(RW_Label_Definitiva, java.util.List.of(anno),
+                new StringBuilder(Dichiarazioni_TestoDifferenze(anno, def, diff)));
+    }
+
+    /** Le prime differenze di un anno, per il suggerimento dell'etichetta. */
+    private static String Dichiarazioni_TestoDifferenze(String Anno, Dichiarazioni.Dichiarazione Def, java.util.List<String[]> Diff) {
+        StringBuilder sb = new StringBuilder("<b>").append(Anno).append("</b>, definitiva del ").append(Def.Creata)
+                .append(": ").append(Diff.size()).append(Diff.size() == 1 ? " differenza" : " differenze").append("<br>");
+        int n = 0;
+        for (String[] d : Diff) {
+            if (n++ == 12) {
+                sb.append("&nbsp;&nbsp;...<br>");
+                break;
+            }
+            sb.append("&nbsp;&nbsp;").append(d[0]).append(": ").append(d[1].isBlank() ? "(vuoto)" : d[1])
+                    .append(" nella definitiva, ").append(d[2].isBlank() ? "(vuoto)" : d[2]).append(" ora<br>");
+        }
+        return sb.toString();
+    }
+
+    private static void Dichiarazioni_MostraEtichetta(javax.swing.JLabel Etichetta, java.util.List<String> Anni, StringBuilder Dettaglio) {
+        if (Anni.isEmpty()) {
+            Etichetta.setVisible(false);
+            return;
+        }
+        Etichetta.setText("Valori diversi dalla dichiarazione definitiva " + String.join(", ", Anni));
+        Etichetta.setToolTipText("<html>" + Dettaglio + "<br>Il confronto completo si fa dall'archivio delle dichiarazioni"
+                + " (pulsante Confronta). Clic per aprirlo.</html>");
+        Etichetta.setVisible(true);
+    }
+
+    /** Porta in primo piano la scheda dell'archivio delle dichiarazioni. */
+    private void Dichiarazioni_ApriArchivio() {
+        Dichiarazioni_TabbedPane.setSelectedComponent(ArchivioDichiarazioni);
+    }
+
+    /**
+     * Scrive il PDF del quadro T ({@code QuadroT}) o RT di un anno: note di compilazione, modulo compilato e
+     * opzioni scelte per il calcolo. Nessun dialogo: li fa prima {@link #RT_GeneraDichiarazione}.
+     *
+     * @throws IOException se il PDF non risulta scritto o la stampa si interrompe
+     */
+    private void RT_ScriviPdf(String Percorso, int Anno, String Vendite, String Costo, boolean Errori, boolean QuadroT) throws IOException {
                 try {
-            // TODO add your handling code here:
                                    String Errore = "";
                         if (Errori) {
-                          /*  Errore = """
-                            <html><font size="1" face="Courier New,Courier, mono" >
-                            <b>ATTENZIONE :</b> Sono presenti movimenti non classificati o senza prezzo nell'anno in corso o quelli precedenti.<br>
-                            Affinchè il dato sia affidabile è necessario correggere tutte le problematiche.
-                                     """;*/
                             Errore = """
                             ATTENZIONE : Sono presenti movimenti non classificati o senza prezzo nell'anno in corso o quelli precedenti.
                             Affinchè il dato sia affidabile è necessario correggere tutte le problematiche.
@@ -17086,58 +17502,40 @@ if (result != null && !result.isAction("cancel")) {
                         if (!AvvisoDerivatiT.isEmpty()) {
                             Errore = Errore + "ATTENZIONE : nell'anno o in quelli precedenti ci sono movimenti su derivati, trattati come cripto-attività. Vedere le note.\n";
                         }
-            //
-            
-            //Tabella Totali
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-            LocalDateTime now = LocalDateTime.now();
-            String DataOra=now.format(formatter);  
-            Stampe stampa=new Stampe(VarStatiche.getCartella_Temporanei()+"RT_"+Anno+"_"+DataOra+".pdf");
+
+            Stampe stampa=new Stampe(Percorso);
             String AnnoDiCompetenza=String.valueOf(Anno);
-            //String piede="Stampa generata da "+this.getTitle()+"  - https://sourceforge.net/projects/giacenze-crypto-com";
-            String piede="Stampa generata da "+VarStatiche.Titolo+VarStatiche.RiferimentoStampe()+"                        REPORT x QUADRO T/RT Anno "+AnnoDiCompetenza;
+            String quadro = QuadroT ? "T" : "RT";
+            String piede="Stampa generata da "+VarStatiche.Titolo+VarStatiche.RiferimentoStampe()+"                        REPORT x QUADRO "+quadro+" Anno "+AnnoDiCompetenza;
             stampa.Piede(piede);
             stampa.ApriDocumento();
-            stampa.AggiungiTestoCentrato("QUADRO T PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza+"\n\n",Font.BOLD,12);
+            stampa.AggiungiTestoCentrato("QUADRO "+quadro+" PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza+"\n\n",Font.BOLD,12);
             if (!AvvisoDerivatiT.isEmpty()) stampa.AggiungiHtml(AvvisoDerivatiT);
 
-            
-            
-
-                String immagineT=VarStatiche.getPathImmagini()+"QuadroT_2024.jpg";
+            String immagineT=VarStatiche.getPathImmagini()+"QuadroT_2024.jpg";
             String PdfT2025=VarStatiche.getPathImmagini()+"QuadroT_2025.pdf";
-            String PdfRT2025=VarStatiche.getPathImmagini()+"QuadroRT_2025.pdf";  
-            String PdfRT2025p2=VarStatiche.getPathImmagini()+"QuadroRT_2025_2.pdf"; 
-                        
-                        
-                    
+            String PdfRT2025=VarStatiche.getPathImmagini()+"QuadroRT_2025.pdf";
+            String PdfRT2025p2=VarStatiche.getPathImmagini()+"QuadroRT_2025_2.pdf";
+            String testo;
+          if (QuadroT) {
                     stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO T\n\n", Font.BOLD, 12);
                     //Quale testo vale per quest'anno lo decide il file delle note, non un if qui : la
                     //variante "T.2025" copre il 2025 e gli anni dopo, la chiave nuda gli anni prima.
-                    String testo = NoteCompilazione.Testo(NoteCompilazione.T, AnnoDiCompetenza);
+                    testo = NoteCompilazione.Testo(NoteCompilazione.T, AnnoDiCompetenza);
                     stampa.AggiungiHtml(testo);
-                    
-                    
+
                     //Stampa Quadro T
             stampa.NuovaPagina();
-            
-            //if (Anno>2024)immagineT="Immagini/QuadroT_"+AnnoDiCompetenza+".jpg";
-
             if (Anno<2025){
                 stampa.AggiungiT(immagineT, Vendite, Costo, Errore,AnnoDiCompetenza);
             }else{
                 stampa.AggiungiT2025(PdfT2025, Vendite, Costo, Errore,AnnoDiCompetenza);
-            }            
-                        
-            
-            stampa.NuovaPagina();
-            stampa.AggiungiTestoCentrato("QUADRO RT PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza+"\n\n",Font.BOLD,12);
+            }
+          } else {
             stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO RT\n\n", Font.BOLD, 12);
             testo = NoteCompilazione.Testo(NoteCompilazione.RT, AnnoDiCompetenza);
-            stampa.AggiungiHtml(testo);            
-                        
-                    
-                    
+            stampa.AggiungiHtml(testo);
+
                     stampa.NuovaPagina();
                     String immagineRT=VarStatiche.getPathImmagini()+"QuadroRT_2024.jpg";
                     if (Anno<2025){
@@ -17147,6 +17545,7 @@ if (result != null && !result.isAction("cancel")) {
                         stampa.NuovaPagina();
                         stampa.AggiungiRT2025p2(PdfRT2025p2, Vendite, Costo, Errore,AnnoDiCompetenza);
                     }
+          }
                     
                     //Adesso creo un booleano che mi dica se per quest'anno posso considerare il cashback alla stregua di quello fiat
                     //Quindi deve essere selezionato il campo apposito e la data specificata deve essere uguale o inferiore all'anno di competenza
@@ -17253,12 +17652,12 @@ if (result != null && !result.isAction("cancel")) {
                                 }
                 stampa.AggiungiHtml(testo);
             
-            stampa.ScriviPDF();
-            
-        } catch (FileNotFoundException ex) {
-            LoggerGC.ScriviErrore(ex);
+            if (!stampa.ScriviPDF(false)) {
+                throw new IOException("il PDF del quadro " + quadro + " non risulta scritto");
+            }
+        } catch (RuntimeException ex) {
+            throw new IOException("errore nel PDF del quadro " + (QuadroT ? "T" : "RT") + ": " + ex, ex);
         }
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
     
     private void Opzioni_ApiKey_ControllaPulsanti(){
@@ -20280,6 +20679,7 @@ public static void ripristinaFiltri(JTable table) {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTabbedPane AnalisiCrypto;
+    private javax.swing.JPanel ArchivioDichiarazioni;
     private javax.swing.JPanel Analisi_Crypto;
     private javax.swing.JButton Bottone_Errori;
     private javax.swing.JButton Bottone_Titolo;
@@ -20551,9 +20951,11 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JButton RT_Bottone_Documentazione1;
     private javax.swing.JButton RT_Bottone_ModificaGiacenza;
     private javax.swing.JButton RT_Bottone_ModificaPrezzo;
+    private javax.swing.JButton RT_Bottone_Excel;
     private javax.swing.JButton RT_Bottone_Stampa;
     private javax.swing.JCheckBox RT_CheckBox_EscludiAnnoCorrente;
     private javax.swing.JLabel RT_Label_Avviso;
+    private javax.swing.JLabel RT_Label_Definitiva;
     private javax.swing.JPanel RT_PannelloTipologie;
     private javax.swing.JPanel RT_PannelloToken;
     private javax.swing.JPanel RT_Pannello_GraficoTipologia;
@@ -20574,6 +20976,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JButton RW_Bottone_Stampa;
     private javax.swing.JCheckBox RW_CheckBox_VediSoloErrori;
     private javax.swing.JLabel RW_Label_SegnalaErrori;
+    private javax.swing.JLabel RW_Label_Definitiva;
     private javax.swing.JLabel RW_Label_SegnalaRicalcolo;
     private javax.swing.ButtonGroup RW_Liquidita;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_FiatInRW;

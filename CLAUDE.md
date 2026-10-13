@@ -192,6 +192,7 @@ This extraction is already under way — it is a deliberate, incremental refacto
 | `Principale_QuadroRW.java` | the CRYPTO rows of the Quadro W/RW summary table (`RighiCrypto`): one row per wallet group and per CRYPTO holding period, bollo of the period, year-end/period snapshot for bollo periods. Extracted from `RW_CalcolaRW` on 2026-09-26 when rows became per period |
 | `Principale_Movimenti_SeparaUnisci.java` | three popup operations on movements: splitting one two-coin movement into an independent deposit + withdrawal, merging an unclassified deposit + withdrawal back into a single swap, and merging N already-classified movements of the same type/coin/wallet into one by summing their quantities |
 | `Principale_MovimentiCollegati.java` | the "Movimenti collegati incoerenti" entry of the Errori button: shows what `MovimentiCollegati.Controlla` found and rebuilds overwritten deferred swaps on request. The logic itself is in `MovimentiCollegati` (no Swing), shared with `Binance_DualInvestment` |
+| `Principale_Dichiarazioni.java` | the declaration archive: joint generation of a declaration's files (`Genera`), the T/RT Excel, the actions of the *Archivio dichiarazioni* panel. Storage and rules in `Dichiarazioni` (no Swing) |
 | `Principale_CommissioniCollegate.java` | the linked-fee operations of phase 3: one-shot, re-runnable pairing of the archive's fees (*Opzioni → Commissioni collegate*), manual *Collega/Scollega commissioni* from the movements popup, the rows shown in the movement detail. None of them recomputes anything — they only turn on *Salva* |
 
 **These rules are provisional**: they simply describe what the two existing classes already do, and are still to be reviewed and agreed with the user — open points include whether dialogs and wait cursors belong in the extracted classes at all, and whether shared state should keep being reached through the static maps or be passed in instead. Until that review happens, mirror the existing pattern rather than inventing a different one.
@@ -479,6 +480,44 @@ Conto corrente (codice 1): somma dei saldi / **365** sempre (`GIORNI_GIACENZA_ME
 Liquidità codice 14 con l'opzione max-media: somma / **giorni del tratto** (`mediaPeriodo`), perché la
 media diventa la base di un'imposta proporzionale già rapportata ai giorni — con /365 i giorni
 contavano due volte e spezzare un rigo faceva pagare circa la metà (corretto il 2026-09-27).
+
+### L'archivio delle dichiarazioni (`Dichiarazioni/`)
+
+Ogni stampa dei quadri e' una dichiarazione archiviata (2026-10-13): una cartella `Dichiarazioni/<anno>_<RW|RT>_<data>/`
+con **due PDF e un Excel** (W e RW, oppure T e RT, sempre entrambi: la scelta W/RW non si chiede piu') e un
+`manifest.json`. Cose da non rompere:
+
+- **Un solo flusso per due pulsanti.** *Stampa Report PDF* e *Crea Excel con i Dettagli* chiamano entrambi
+  `Principale.RW_GeneraDichiarazione` (T/RT: `RT_GeneraDichiarazione`), che ricalcola se il quadro non e' aggiornato
+  (`RW_Label_SegnalaRicalcolo`, `RT_Label_Avviso`, sempre sul **model**), fa tutti i dialoghi **prima**, poi
+  `Principale_Dichiarazioni.Genera` scrive i file in una cartella `.in_corso_*` dentro l'archivio e la rinomina solo se
+  tutti i file ci sono e i PDF si rileggono (`Stampe.PdfValido`, perche' gli `Aggiungi*` di `Stampe` intercettano i
+  propri errori). Altrimenti non resta niente. Gli scrittori (`RW_ScriviPdf`, `RT_ScriviPdf`, `Principale_Dichiarazioni.RW_CreaExcel`
+  e `RT_CreaExcel`) non hanno dialoghi e lanciano eccezione a ogni errore.
+- **L'Excel W/RW e' per gruppo wallet, non per rigo** (riepilogo di tutti i righi, poi Calcoli/Giacenze/Liquidita'/
+  Movimenti di ogni gruppo): ogni riga di dettaglio porta il periodo che contiene la sua data di fine, come nel quadro.
+  Le giacenze sono **la stessa fotografia** del calcolo (`Principale.RW_FotografiaGiacenze`, salvata da `RW_CalcolaRW`),
+  non un secondo calcolo: fino al 2026-10-13 usava `Funzioni.RW_GiacenzeaData` (euro e negative comprese, prezzi
+  richiesti di nuovo), tolta. La liquidita' viene da `Mappa_RW_ListeXGruppoWallet_Fiat`.
+- **Il manifest e' l'unica fonte**, compresi definitiva e nota: non c'e' una tabella in `personale.mv.db`, perche' il
+  ripristino riscrive il DB mentre le cartelle delle dichiarazioni si **aggiungono soltanto** (`Backup_Restore.
+  EstraiDichiarazioni`: una cartella gia' presente non si tocca, nessuna si cancella). Una definitiva per anno e
+  famiglia, se un ripristino ne porta due vince quella segnata per ultima (`Dichiarazioni.Elenco`).
+- **I valori archiviati sono la fotografia della tabella** (righi, totali, errori, opzioni di calcolo), presa prima di
+  scrivere i file: servono al pannello senza aprire i PDF e all'impronta che riconosce una ristampa identica. Un'opzione
+  nuova che cambia i valori dei quadri va aggiunta anche in `RW_BozzaDichiarazione`/`Dichiarazioni_OpzioniComuni`,
+  altrimenti due dichiarazioni diverse sembrano calcolate con le stesse opzioni (e la *Continuita'* le confronta).
+- **Definitiva diversa dai dati**: dopo ogni calcolo (`RW_ControllaDefinitiva` in fondo a `RW_CalcolaRW`,
+  `RT_ControllaDefinitive` in fondo a `RT_CalcolaRT`) la fotografia appena calcolata si confronta con quella della
+  definitiva (`Dichiarazioni.Confronta`, numeri come numeri) e l'etichetta rossa `RW_Label_Definitiva`/`RT_Label_Definitiva`
+  dice l'effetto, mai cosa fare. Segnare una definitiva crea un backup (opzioni predefinite) il cui nome va nel manifest
+  (`Backup`): cancellarlo dal pannello backup chiede una conferma in piu' (`Dichiarazioni.BackupDelleDefinitive`).
+  Gli allegati (`Allegati`, prefisso `Allegato - `) hanno lo SHA-256 come i file generati ma non entrano nell'impronta.
+- **Continuita' solo a richiesta** (decisione dell'utente): con un metodo diverso da "solo valori di inizio e fine anno"
+  o con opzioni diverse il valore finale di un anno e l'iniziale del successivo differiscono per costruzione.
+- PDF ed Excel sono di sola lettura e hanno lo SHA-256 nel manifest; i file di blocco di LibreOffice/Office restano fuori
+  da backup ed esportazione. In `Principale` il pannello del tab si chiama `Dichiarazioni` come la classe: nelle
+  espressioni serve il nome qualificato (`com.giacenzecrypto.giacenze_crypto.Dichiarazioni.Famiglia.RW`).
 
 ### Avviso degli E-Money mancanti al calcolo dei quadri
 

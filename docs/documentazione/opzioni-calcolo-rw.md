@@ -18,6 +18,7 @@ title: Opzioni di calcolo del Quadro RW
 - [Liquidità presso intermediari esteri](#liquidita-presso-intermediari-esteri)
 - [Valori di inizio e fine anno](#valori-di-inizio-e-fine-anno)
 - [Stampa del quadro](#stampa-del-quadro)
+- [Archivio delle dichiarazioni](#archivio-delle-dichiarazioni)
 - [Gestione degli errori](#gestione-degli-errori)
 
 ## Introduzione {#introduzione}
@@ -918,13 +919,19 @@ viene valorizzato alle 00:00 del 1° gennaio successivo. Alcune regole particola
 
 ## Stampa del quadro {#stampa-del-quadro}
 
-Il pulsante **Stampa Report PDF** della scheda **RW/W** chiede quale quadro stampare:
+I pulsanti **Stampa Report PDF** e **Crea Excel con i Dettagli** della scheda **RW/W** producono sempre
+insieme tre file: il PDF del **Quadro W** (per chi presenta il modello 730), il PDF del **Quadro RW** (per chi
+presenta il modello Redditi Persone Fisiche) e l'Excel con il prospetto di dettaglio. I tre file nascono dallo
+stesso calcolo e vengono conservati nell'[archivio delle dichiarazioni](#archivio-delle-dichiarazioni): il
+primo pulsante apre poi il PDF del Quadro RW, il secondo l'Excel. Se dall'ultimo calcolo sono cambiati movimenti
+o opzioni, il quadro viene ricalcolato prima di generare i file.
 
-![La scelta del quadro da stampare](immagini/opzioni-calcolo-rw/27.png)
-
-Il **Quadro W** è per chi presenta il modello 730, il **Quadro RW** per chi presenta il modello Redditi
-Persone Fisiche. Il report contiene un solo quadro per volta, con copertina, i righi del quadro, le note di
-compilazione e il riepilogo delle opzioni scelte per il calcolo.
+L'Excel contiene un foglio di riepilogo con tutti i righi del quadro e, per ogni gruppo wallet, quattro fogli:
+*Calcoli* (le righe di dettaglio, ciascuna con il periodo del rigo a cui appartiene: la loro somma dà i valori
+del rigo), *Giacenze* (le giacenze di inizio e fine di ogni periodo, calcolate come nel quadro), *Liquidità*
+(solo se il gruppo ha liquidità presso un intermediario estero: giacenza media, valore dichiarato, codice bene,
+Stato estero e IVAFE) e *Movimenti* (i movimenti dell'anno del gruppo). Ogni PDF contiene un solo quadro, con
+copertina, i righi del quadro, le note di compilazione e il riepilogo delle opzioni scelte per il calcolo.
 
 ![Un foglio del quadro RW con due righi di periodo](immagini/opzioni-calcolo-rw/28.png)
 
@@ -939,6 +946,36 @@ compilazione e il riepilogo delle opzioni scelte per il calcolo.
 
 Le **note di compilazione** stampate in coda ai quadri sono scaricate da internet e aggiornate a ogni avvio
 del programma: una correzione alle istruzioni non richiede una nuova versione.
+
+### Archivio delle dichiarazioni {#archivio-delle-dichiarazioni}
+
+Ogni stampa resta nella scheda **Dichiarazioni** – **Archivio dichiarazioni**, insieme a quelle del quadro T/RT
+(che producono allo stesso modo, con i pulsanti *Stampa Report PDF* e *Crea Excel con i Dettagli* della scheda **RT**, il PDF del Quadro T, quello del Quadro RT e un Excel di dettaglio). Selezionando
+una dichiarazione nell'elenco, nella parte sotto compaiono i totali, i righi con i loro valori, gli errori
+presenti al momento della stampa, le opzioni di calcolo usate e lo stato dei file. I file sono di sola lettura e
+il programma controlla che non siano stati modificati o cancellati. Un doppio clic su un file lo apre.
+
+- **Definitiva**: per ogni anno si può segnare la dichiarazione presentata, una per il quadro W/RW e una per
+  il quadro T/RT, con un clic sulla colonna *Definitiva* o con il pulsante omonimo. Segnandola viene creato
+  anche un backup dei dati, collegato alla dichiarazione e indicato nel dettaglio: permette di ricostruire i
+  dati da cui nascono i valori dichiarati, e cancellarlo da *Opzioni – Backup / Ripristino* chiede una
+  conferma in più. Dopo ogni calcolo dei quadri, se i valori di un anno sono diversi da quelli della sua
+  definitiva compare una scritta rossa accanto ai pulsanti di stampa: il suggerimento elenca le differenze e
+  un clic apre l'archivio.
+- **Nota**: un testo libero, per esempio la data di invio e il numero di protocollo.
+- **Allegati**: file da conservare con la dichiarazione, per esempio la ricevuta di presentazione.
+- **Confronta**: selezionate due dichiarazioni dello stesso quadro, mostra voce per voce i valori, gli errori
+  e le opzioni che cambiano.
+- **Continuità**: confronta i valori finali della dichiarazione W/RW definitiva dell'anno prima con i valori
+  iniziali di quella selezionata. Il confronto si fa solo se le due dichiarazioni sono state calcolate con le
+  stesse opzioni e con l'opzione A (solo valori di inizio e fine anno): con le altre opzioni i due valori
+  sono diversi per costruzione.
+- **Esporta** salva la dichiarazione in un file zip, **Elimina** la cancella (se è la definitiva viene chiesta
+  una conferma in più).
+
+Una nuova stampa identica all'ultima archiviata per lo stesso anno propone di aprire quella invece di
+crearne una copia. Le dichiarazioni sono comprese nei backup, e il ripristino di un backup le aggiunge senza
+mai sovrascrivere o cancellare quelle già presenti.
 
 ## Gestione degli Errori {#gestione-degli-errori}
 

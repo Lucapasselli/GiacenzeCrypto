@@ -432,6 +432,8 @@ public class Backup_Restore {
         public String UltimoMovimento = "";
         public int Documenti;
         public long DocumentiByte;
+        /** Cartelle dell'archivio delle dichiarazioni salvate ({@link Dichiarazioni}). */
+        public int Dichiarazioni;
         public int FileSupporto;
         public final Map<String, String> Impostazioni = new TreeMap<>();
         /** Valore di {@code Calcoli_PlusvalenzeNew.OpzioniRicalcolo.Epoca()} al momento del backup. */
@@ -542,6 +544,9 @@ public class Backup_Restore {
             m.Documenti = (int) doc[0];
             m.DocumentiByte = doc[1];
             m.DimensioneOriginale += doc[1];
+            long[] dich = ScriviDichiarazioni(out);
+            m.Dichiarazioni = (int) dich[0];
+            m.DimensioneOriginale += dich[1];
             if (Interrotto(progress)) {
                 return null;
             }
@@ -732,6 +737,85 @@ public class Backup_Restore {
             out.setLevel(Deflater.BEST_SPEED);
         }
         return new long[]{n, byteTotali};
+    }
+
+    /** Prefisso nello zip dell'archivio delle dichiarazioni: {@code dichiarazioni/<cartella>/<file>}. */
+    static final String PREFISSO_DICHIARAZIONI = "dichiarazioni/";
+
+    /**
+     * Copia l'archivio delle dichiarazioni, una cartella per dichiarazione. Le cartelle temporanee di una
+     * generazione in corso o interrotta (che cominciano con un punto) restano fuori.
+     *
+     * @return {@code {numero di dichiarazioni, byte occupati}}
+     */
+    private static long[] ScriviDichiarazioni(ZipOutputStream out) throws IOException {
+        File[] cartelle = Dichiarazioni.Radice().listFiles(File::isDirectory);
+        if (cartelle == null) {
+            return new long[]{0, 0};
+        }
+        long n = 0, byteTotali = 0;
+        for (File c : cartelle) {
+            if (c.getName().startsWith(".") || !new File(c, Dichiarazioni.NOME_MANIFEST).isFile()) {
+                continue;
+            }
+            File[] file = c.listFiles(File::isFile);
+            if (file == null) {
+                continue;
+            }
+            for (File f : file) {
+                if (Dichiarazioni.FileDiBlocco(f.getName())) {
+                    continue;
+                }
+                ScriviVoce(out, PREFISSO_DICHIARAZIONI + c.getName() + "/" + f.getName(), Files.readAllBytes(f.toPath()));
+                byteTotali += f.length();
+            }
+            n++;
+        }
+        return new long[]{n, byteTotali};
+    }
+
+    /**
+     * Ripristina le dichiarazioni del backup che <b>non ci sono già</b>: una cartella già presente non si
+     * tocca (può avere una nota o un segno di definitiva più recenti del backup) e nessuna dichiarazione
+     * locale viene cancellata. Sono documenti fiscali: un ripristino può solo aggiungerne. Se così una
+     * definitiva compare due volte per lo stesso anno, {@link Dichiarazioni#Elenco()} lascia quella segnata
+     * per ultima.
+     *
+     * @return quante dichiarazioni sono state aggiunte
+     */
+    static int EstraiDichiarazioni(ZipFile z, File Radice) throws IOException {
+        Map<String, List<ZipEntry>> perCartella = new LinkedHashMap<>();
+        for (ZipEntry e : Collections.list(z.entries())) {
+            if (e.isDirectory() || !e.getName().startsWith(PREFISSO_DICHIARAZIONI)) {
+                continue;
+            }
+            String[] parti = e.getName().substring(PREFISSO_DICHIARAZIONI.length()).split("/", -1);
+            //Esattamente cartella/file, e nessun segmento che possa uscire dall'archivio
+            if (parti.length != 2 || !SegmentoSicuro(parti[0]) || !SegmentoSicuro(parti[1])) {
+                continue;
+            }
+            perCartella.computeIfAbsent(parti[0], k -> new ArrayList<>()).add(e);
+        }
+        int aggiunte = 0;
+        for (Map.Entry<String, List<ZipEntry>> c : perCartella.entrySet()) {
+            File dest = new File(Radice, c.getKey());
+            if (dest.exists()) {
+                continue;
+            }
+            if (!dest.mkdirs()) {
+                throw new IOException("Impossibile creare " + dest);
+            }
+            for (ZipEntry e : c.getValue()) {
+                String nome = e.getName().substring(e.getName().lastIndexOf('/') + 1);
+                Files.write(new File(dest, nome).toPath(), Leggi(z, e));
+            }
+            aggiunte++;
+        }
+        return aggiunte;
+    }
+
+    private static boolean SegmentoSicuro(String s) {
+        return !s.isEmpty() && !s.startsWith(".") && !s.contains("\\") && !s.contains("..");
     }
 
     // =================================================================================================
@@ -1430,6 +1514,12 @@ public class Backup_Restore {
                 int n = EstraiCartella(z, "documenti/", new File(VarStatiche.getCartella_DocumentiFonte()));
                 esito.Dettaglio.add(n + " documenti di origine ripristinati");
             }
+            //Le dichiarazioni si aggiungono sempre, qualunque gruppo sia stato scelto: un ripristino non
+            //toglie e non sovrascrive mai una dichiarazione archiviata (vedi EstraiDichiarazioni)
+            int dich = EstraiDichiarazioni(z, Dichiarazioni.Radice());
+            if (dich > 0) {
+                esito.Dettaglio.add(dich + " dichiarazioni archiviate aggiunte");
+            }
             if (Gruppi.contains(Gruppo.OPZIONI_CALCOLO)) {
                 int n = 0;
                 for (Map.Entry<String, String> cc : CartelleConfig().entrySet()) {
@@ -1519,6 +1609,7 @@ public class Backup_Restore {
                 .put("primo", m.PrimoMovimento)
                 .put("ultimo", m.UltimoMovimento));
         o.put("documenti", new JSONObject().put("numero", m.Documenti).put("byte", m.DocumentiByte));
+        o.put("dichiarazioni", new JSONObject().put("numero", m.Dichiarazioni));
         o.put("fileSupporto", m.FileSupporto);
         o.put("impostazioni", new JSONObject(m.Impostazioni));
         o.put("epocaRicalcolo", m.EpocaRicalcolo);
@@ -1564,6 +1655,10 @@ public class Backup_Restore {
         if (d != null) {
             m.Documenti = d.optInt("numero", 0);
             m.DocumentiByte = d.optLong("byte", 0);
+        }
+        JSONObject dich = o.optJSONObject("dichiarazioni");
+        if (dich != null) {
+            m.Dichiarazioni = dich.optInt("numero", 0);
         }
         m.FileSupporto = o.optInt("fileSupporto", 0);
         JSONObject imp = o.optJSONObject("impostazioni");

@@ -175,11 +175,29 @@ public class Principale_RT_Tipologie {
      * svuotato dal chiamante prima della chiamata.
      */
     public static void PopolaMovimenti(DefaultTableModel modello, String anno, String tipologia) {
-        if (anno == null || anno.isEmpty() || tipologia == null) {
+        if (tipologia == null) {
             return;
         }
-        boolean cercaVuota = TIPOLOGIA_VUOTA.equals(tipologia);
+        for (Object[] r : Movimenti(anno, tipologia)) {
+            modello.addRow(r);
+        }
+    }
+
+    /**
+     * @return tutti i movimenti fiscalmente rilevanti dell'{@code anno}, di ogni tipologia, ordinati per
+     *         data, con le colonne {@link #COLONNE_MOVIMENTI} (per l'Excel del quadro T/RT)
+     */
+    public static List<Object[]> MovimentiRilevanti(String anno) {
+        return Movimenti(anno, null);
+    }
+
+    /** I movimenti rilevanti dell'anno della tipologia indicata, o di tutte con {@code tipologia} null. */
+    private static List<Object[]> Movimenti(String anno, String tipologia) {
         List<Object[]> righe = new ArrayList<>();
+        if (anno == null || anno.isEmpty()) {
+            return righe;
+        }
+        boolean cercaVuota = TIPOLOGIA_VUOTA.equals(tipologia);
         for (String[] v : MappaCryptoWallet.values()) {
             if (v.length <= 33 || !"S".equals(v[33])) {
                 continue;
@@ -189,7 +207,7 @@ public class Principale_RT_Tipologie {
                 continue;
             }
             String tip = v[5] == null ? "" : v[5].trim();
-            boolean match = cercaVuota ? tip.isEmpty() : tip.equals(tipologia);
+            boolean match = tipologia == null || (cercaVuota ? tip.isEmpty() : tip.equals(tipologia));
             if (!match) {
                 continue;
             }
@@ -200,9 +218,7 @@ public class Principale_RT_Tipologie {
             });
         }
         righe.sort(Comparator.comparing(r -> String.valueOf(r[0])));
-        for (Object[] r : righe) {
-            modello.addRow(r);
-        }
+        return righe;
     }
 
     /** @return la somma dei 12 valori mensili. */

@@ -107,22 +107,50 @@ public class Stampe {
 
     /** Chiude il documento e lo scrive su disco, poi lo apre con l'applicazione predefinita del sistema se disponibile. */
     public void ScriviPDF(){
+        ScriviPDF(true);
+     }
+
+    /**
+     * Chiude il documento e lo scrive su disco.
+     *
+     * @param Apri {@code true} per aprirlo poi con l'applicazione predefinita del sistema
+     * @return {@code true} se il file risulta scritto e rileggibile come PDF con almeno una pagina.
+     *         Serve all'archivio delle dichiarazioni, che registra i file solo se sono validi: gli
+     *         {@code Aggiungi*} di questa classe intercettano i propri errori, quindi l'assenza di
+     *         eccezioni da sola non dimostra niente.
+     */
+    public boolean ScriviPDF(boolean Apri){
     try {
       doc.close();
       writer.close();
       File file = new File(FilePDF);
-      if(Desktop.isDesktopSupported()&&file.exists())//check if Desktop is supported by Platform or not  
-{  
-    Desktop desktop = Desktop.getDesktop();  
-    desktop.open(file);              //opens the specified file  
-}  
+      boolean valido = PdfValido(file);
+      if(Apri&&valido&&Desktop.isDesktopSupported())//check if Desktop is supported by Platform or not
+{
+    Desktop desktop = Desktop.getDesktop();
+    desktop.open(file);              //opens the specified file
+}
+      return valido;
     } catch (DocumentException  e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
-    }     catch (IOException ex) {
+    }     catch (IOException | RuntimeException ex) {
               Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
           }
+      return false;
      }
+
+    /** @return {@code true} se il file esiste e si rilegge come PDF con almeno una pagina */
+    public static boolean PdfValido(File f) {
+        if (f == null || !f.isFile() || f.length() == 0) {
+            return false;
+        }
+        try (com.lowagie.text.pdf.PdfReader r = new com.lowagie.text.pdf.PdfReader(f.getAbsolutePath())) {
+            return r.getNumberOfPages() > 0;
+        } catch (IOException | RuntimeException e) {
+            return false;
+        }
+    }
     
     /** Forza l'inizio di una nuova pagina nel documento PDF. */
     public void NuovaPagina(){

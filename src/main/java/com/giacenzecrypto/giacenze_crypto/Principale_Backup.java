@@ -530,6 +530,36 @@ public class Principale_Backup {
         if (r == null || !r.isAction("elimina")) {
             return false;
         }
+        //Un backup creato segnando una dichiarazione definitiva e' quello da cui si ricostruiscono i valori
+        //dichiarati: conferma in piu', con l'elenco delle dichiarazioni che lo citano
+        Map<String, Dichiarazioni.Dichiarazione> collegati = Dichiarazioni.BackupDelleDefinitive();
+        List<String> citati = new ArrayList<>();
+        for (File f : Archivi) {
+            Dichiarazioni.Dichiarazione d = collegati.get(f.getName());
+            if (d != null) {
+                citati.add(f.getName() + " : dichiarazione " + d.Fam.Etichetta + " " + d.Anno + " del " + d.Creata);
+            }
+        }
+        if (!citati.isEmpty()) {
+            AppDialog.DialogResult r2 = AppDialog.builder(owner)
+                    .windowTitle("Conferma eliminazione")
+                    .bodyTitle("Backup collegati a dichiarazioni definitive")
+                    .showTitleInBody(true)
+                    .theme()
+                    .type(AppDialog.DialogType.WARNING)
+                    .message("")
+                    .details("Questi backup sono stati creati segnando una dichiarazione come definitiva e"
+                            + " contengono i dati da cui nascono i valori dichiarati:<br><br>"
+                            + String.join("<br>", citati))
+                    .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY).build())
+                    .action(AppDialog.DialogAction.builder("elimina", "Elimina comunque")
+                            .role(AppDialog.ActionRole.DANGER).build())
+                    .showDialog();
+            if (r2 == null || !r2.isAction("elimina")) {
+                return false;
+            }
+        }
         int eliminati = 0;
         for (File f : Archivi) {
             if (Backup_Restore.Elimina(f)) {
@@ -613,6 +643,14 @@ public class Principale_Backup {
         righe.add(new Object[]{"Documenti di origine", m.Documenti + " ("
             + Backup_Restore.DimensioneLeggibile(m.DocumentiByte) + ")"});
         righe.add(new Object[]{"File di configurazione", String.valueOf(m.FileSupporto)});
+        righe.add(new Object[]{"Dichiarazioni archiviate", String.valueOf(m.Dichiarazioni)});
+        if (m.Archivio != null) {
+            Dichiarazioni.Dichiarazione d = Dichiarazioni.BackupDelleDefinitive().get(m.Archivio.getName());
+            if (d != null) {
+                righe.add(new Object[]{"Collegato alla dichiarazione definitiva",
+                    d.Fam.Etichetta + " " + d.Anno + " del " + d.Creata});
+            }
+        }
         righe.add(new Object[]{"Prezzi", DescrizionePrezzi(m)});
         righe.add(new Object[]{"Chiavi API incluse", m.ChiaviApi ? "sì" : "no"});
         righe.add(new Object[]{"Cache token analizzati", m.CacheToken ? "sì" : "no"});

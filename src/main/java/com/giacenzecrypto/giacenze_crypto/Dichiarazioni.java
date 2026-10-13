@@ -22,7 +22,8 @@ import org.json.JSONObject;
 
 /**
  * L'archivio delle dichiarazioni generate: una cartella per ogni stampa dei quadri W/RW o T/RT, con i
- * PDF, l'Excel di dettaglio e un {@code manifest.json} che descrive cosa contengono.
+ * PDF, l'Excel di dettaglio, a scelta le copie dei documenti di origine dei movimenti
+ * ({@link #CARTELLA_DOCUMENTI}) e un {@code manifest.json} che descrive cosa contengono.
  *
  * <p>Logica pura, senza Swing: la generazione dei file sta in {@code Principale} (che ha i dati dei
  * quadri), i dialoghi in {@link Principale_Dichiarazioni}, la parte grafica in
@@ -125,6 +126,16 @@ public final class Dichiarazioni {
         public String Backup = "";
         /** File allegati dall'utente (ricevuta, modello inviato): nome nella cartella → SHA-256. */
         public final Map<String, String> Allegati = new LinkedHashMap<>();
+        /**
+         * Documenti di origine copiati nella dichiarazione (vedi {@link #CopiaDocumenti}): percorso relativo
+         * alla cartella, con {@code /}, → SHA-256. Comprende l'indice. Come gli allegati, non entrano
+         * nell'impronta né nel confronto: due stampe con gli stessi valori restano la stessa dichiarazione.
+         */
+        public final Map<String, String> Documenti = new LinkedHashMap<>();
+        /** Quali documenti di origine sono stati inclusi ({@link #INCLUSI_ANNO}...), vuoto se la dichiarazione non li prevedeva. */
+        public String DocumentiInclusi = "";
+        /** Movimenti dell'anno senza documento di origine al momento della generazione, {@code -1} se non rilevato. */
+        public int MovimentiSenzaDocumento = -1;
 
         /** @return il nome della cartella, che fa da identificativo; vuoto per una bozza */
         public String Id() {
@@ -234,6 +245,9 @@ public final class Dichiarazioni {
             //che li apre lo dice). Il manifest resta scrivibile per definitiva e nota.
             for (String nome : FileAttesi) {
                 new File(dest, nome).setReadOnly();
+            }
+            for (String rel : Bozza.Documenti.keySet()) {
+                new File(dest, rel).setReadOnly();
             }
             return Bozza;
         } catch (IOException | RuntimeException e) {
@@ -543,6 +557,7 @@ public final class Dichiarazioni {
         Map<String, StatoFile> esito = new LinkedHashMap<>();
         Map<String, String> tutti = new LinkedHashMap<>(D.File);
         tutti.putAll(D.Allegati);
+        tutti.putAll(D.Documenti);
         for (Map.Entry<String, String> e : tutti.entrySet()) {
             File f = new File(D.Cartella, e.getKey());
             if (!f.isFile()) {
@@ -550,7 +565,7 @@ public final class Dichiarazioni {
                 continue;
             }
             try {
-                esito.put(e.getKey(), e.getValue().equalsIgnoreCase(Sha256(f)) ? StatoFile.INTEGRO : StatoFile.ALTERATO);
+                esito.put(e.getKey(), e.getValue().equalsIgnoreCase(Sha256Memo(f)) ? StatoFile.INTEGRO : StatoFile.ALTERATO);
             } catch (IOException ex) {
                 esito.put(e.getKey(), StatoFile.MANCANTE);
             }
@@ -671,6 +686,288 @@ public final class Dichiarazioni {
     }
 
     // =================================================================================================
+    // DOCUMENTI DI ORIGINE
+    // =================================================================================================
+    /** Sottocartella della dichiarazione con le copie dei documenti di origine dei movimenti. */
+    public static final String CARTELLA_DOCUMENTI = "Documenti di origine";
+    /** Dentro {@link #CARTELLA_DOCUMENTI}: i documenti che hanno movimenti solo negli anni prima. */
+    public static final String CARTELLA_PRECEDENTI = "Anni precedenti";
+    /** Dentro {@link #CARTELLA_DOCUMENTI}: l'elenco dei documenti, apribile con un foglio di calcolo. */
+    public static final String NOME_INDICE = "Indice documenti.csv";
+    /** Valori di {@link Dichiarazione#DocumentiInclusi}. */
+    public static final String INCLUSI_ANNO = "anno";
+    public static final String INCLUSI_TUTTI = "tutti";
+    public static final String INCLUSI_NESSUNO = "nessuno";
+    /** Lunghezza massima del nome di un documento copiato: il percorso intero deve restare sotto i 260 caratteri di Windows. */
+    static final int LUNGHEZZA_MAX_NOME = 120;
+
+    /** @return la sottocartella dei documenti con movimenti nell'anno d'imposta */
+    public static String CartellaAnno(String Anno) {
+        return "Anno " + Anno;
+    }
+
+    /** Un documento di origine e quello che dicono di lui i movimenti che vi puntano. */
+    public static final class DocumentoDiOrigine {
+
+        public int Id;
+        /** {@code null} se il registro non ha più quell'id. */
+        public DocumentiFonte.Documento Registro;
+        public final java.util.TreeSet<String> Gruppi = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        public final java.util.TreeSet<String> Wallet = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        /** Giorno del primo e dell'ultimo movimento ({@code yyyyMMdd}), su tutti i suoi movimenti. */
+        public String PrimaData = "";
+        public String UltimaData = "";
+        public int MovimentiAnno;
+        public int MovimentiTotali;
+
+        /** @return il nome originale del file, o un nome di ripiego se il registro non lo conosce più */
+        public String NomeOriginale() {
+            return Registro != null && !Registro.NomeOriginale.isBlank() ? Registro.NomeOriginale : "documento " + Id;
+        }
+    }
+
+    /** Esito di {@link #RaccogliDocumenti}. */
+    public static final class DocumentiDiOrigine {
+
+        /** Documenti con almeno un movimento nell'anno d'imposta. */
+        public final List<DocumentoDiOrigine> Anno = new ArrayList<>();
+        /** Documenti con movimenti solo negli anni prima. */
+        public final List<DocumentoDiOrigine> Precedenti = new ArrayList<>();
+        /** Movimenti dell'anno senza documento di origine (importati prima di {@code [41]}, inseriti a mano...). */
+        public int MovimentiAnnoSenzaDocumento;
+    }
+
+    /**
+     * Sceglie i documenti di origine che riguardano una dichiarazione, da tutti i movimenti (non da quelli
+     * filtrati): quelli con movimenti nell'anno, e a parte quelli con movimenti solo negli anni prima, da cui
+     * vengono costo di carico e giacenze iniziali. I documenti con movimenti solo negli anni dopo restano fuori.
+     *
+     * @param Movimenti le righe dei movimenti ({@code [0]} ID che comincia con {@code yyyyMMdd}, {@code [3]}
+     *        wallet, {@code [41]} documento)
+     * @param Anno l'anno d'imposta
+     * @param GruppoDiWallet wallet ({@code [3]}) → gruppo wallet
+     * @param Registro id → riga del registro dei documenti, {@code null} se non c'è più
+     */
+    public static DocumentiDiOrigine RaccogliDocumenti(java.util.Collection<String[]> Movimenti, String Anno,
+            java.util.function.Function<String, String> GruppoDiWallet,
+            java.util.function.IntFunction<DocumentiFonte.Documento> Registro) {
+        DocumentiDiOrigine esito = new DocumentiDiOrigine();
+        Map<Integer, DocumentoDiOrigine> perId = new java.util.TreeMap<>();
+        for (String[] v : Movimenti) {
+            if (v == null || v.length == 0 || v[0] == null || v[0].length() < 8) {
+                continue;
+            }
+            String giorno = v[0].substring(0, 8);
+            String anno = giorno.substring(0, 4);
+            int id = v.length > 41 ? DocumentiFonte.IdDaCampo41(v[41]) : 0;
+            if (id <= 0) {
+                if (anno.equals(Anno)) {
+                    esito.MovimentiAnnoSenzaDocumento++;
+                }
+                continue;
+            }
+            DocumentoDiOrigine d = perId.computeIfAbsent(id, k -> {
+                DocumentoDiOrigine n = new DocumentoDiOrigine();
+                n.Id = k;
+                return n;
+            });
+            d.MovimentiTotali++;
+            if (anno.equals(Anno)) {
+                d.MovimentiAnno++;
+            }
+            if (d.PrimaData.isEmpty() || giorno.compareTo(d.PrimaData) < 0) {
+                d.PrimaData = giorno;
+            }
+            if (d.UltimaData.isEmpty() || giorno.compareTo(d.UltimaData) > 0) {
+                d.UltimaData = giorno;
+            }
+            String wallet = v.length > 3 && v[3] != null ? v[3].trim() : "";
+            if (!wallet.isEmpty()) {
+                d.Wallet.add(wallet);
+                String g = GruppoDiWallet.apply(wallet);
+                if (g != null && !g.isBlank()) {
+                    d.Gruppi.add(g.trim());
+                }
+            }
+        }
+        for (DocumentoDiOrigine d : perId.values()) {
+            if (d.MovimentiAnno > 0) {
+                esito.Anno.add(d);
+            } else if (d.PrimaData.substring(0, 4).compareTo(Anno) < 0) {
+                esito.Precedenti.add(d);
+            } else {
+                continue;
+            }
+            d.Registro = Registro.apply(d.Id);
+        }
+        return esito;
+    }
+
+    /**
+     * Il nome della copia di un documento nella dichiarazione, che dice da solo a cosa appartiene:
+     * {@code Wallet 04 (Binance) - Binance - 2025-01-03_2025-12-28 - doc 12 - export.csv}. Un documento
+     * con più gruppi o più wallet lo dice ({@code Più gruppi}, {@code Più wallet}), gli indirizzi si accorciano,
+     * e il nome originale si tronca (estensione esclusa) oltre {@link #LUNGHEZZA_MAX_NOME}: l'id lo tiene univoco.
+     *
+     * @param AliasGruppo gruppo → alias, vuoto se non ne ha
+     */
+    static String NomeDocumento(DocumentoDiOrigine d, java.util.function.Function<String, String> AliasGruppo) {
+        String gruppo;
+        if (d.Gruppi.size() == 1) {
+            gruppo = d.Gruppi.first();
+            String alias = AliasGruppo.apply(gruppo);
+            if (alias != null && !alias.isBlank()) {
+                gruppo = gruppo + " (" + alias.trim() + ")";
+            }
+        } else {
+            gruppo = d.Gruppi.isEmpty() ? "Senza gruppo" : "Più gruppi";
+        }
+        String wallet = d.Wallet.size() == 1 ? AccorciaIndirizzi(d.Wallet.first())
+                : d.Wallet.isEmpty() ? "Senza wallet" : "Più wallet";
+        String prefisso = PulisciNome(gruppo) + " - " + PulisciNome(wallet) + " - "
+                + GiornoIso(d.PrimaData) + "_" + GiornoIso(d.UltimaData) + " - doc " + d.Id + " - ";
+        String originale = PulisciNome(d.NomeOriginale());
+        int spazio = LUNGHEZZA_MAX_NOME - prefisso.length();
+        if (originale.length() > spazio) {
+            int punto = originale.lastIndexOf('.');
+            String est = punto > 0 && originale.length() - punto <= 10 ? originale.substring(punto) : "";
+            String base = originale.substring(0, originale.length() - est.length());
+            base = base.substring(0, Math.max(1, Math.min(base.length(), spazio - est.length()))).strip();
+            originale = base + est;
+        }
+        return prefisso + originale;
+    }
+
+    /** Toglie i caratteri che un nome di file non ammette (Windows compreso) e i punti/spazi finali. */
+    static String PulisciNome(String s) {
+        String r = s == null ? "" : s.replaceAll("[<>:\"/\\\\|?*\\p{Cntrl}]", "_").strip();
+        while (r.endsWith(".")) {
+            r = r.substring(0, r.length() - 1).strip();
+        }
+        return r.isEmpty() ? "_" : r;
+    }
+
+    /** Ogni parola più lunga di 24 caratteri (un indirizzo) diventa {@code primi6..ultimi4}. */
+    static String AccorciaIndirizzi(String s) {
+        StringBuilder sb = new StringBuilder();
+        for (String p : s.split(" ", -1)) {
+            if (sb.length() > 0) {
+                sb.append(' ');
+            }
+            sb.append(p.length() > 24 ? p.substring(0, 6) + ".." + p.substring(p.length() - 4) : p);
+        }
+        return sb.toString();
+    }
+
+    private static String GiornoIso(String yyyyMMdd) {
+        return yyyyMMdd.length() >= 8
+                ? yyyyMMdd.substring(0, 4) + "-" + yyyyMMdd.substring(4, 6) + "-" + yyyyMMdd.substring(6, 8)
+                : yyyyMMdd;
+    }
+
+    /**
+     * Copia i documenti di origine scelti nella cartella (temporanea) della dichiarazione, scompattati e con
+     * il nome di {@link #NomeDocumento}, in {@code Documenti di origine/Anno <anno>/} e, se richiesto,
+     * {@code Documenti di origine/Anni precedenti/}, più l'indice {@link #NOME_INDICE}.
+     *
+     * <p>Un documento il cui file conservato manca o non si legge non ferma la generazione: resta nell'indice
+     * con il suo stato. Un errore nello <b>scrivere</b> la copia invece sì (eccezione): la dichiarazione
+     * nasce intera oppure non nasce.
+     *
+     * @param Conservato id → il {@code .gz} in {@code DocumentiFonte/}, {@code null} se non c'è più
+     * @return percorso relativo ({@code /}) → SHA-256 di ogni file scritto, indice compreso; vuoto se non
+     *         c'era niente da copiare
+     * @throws IOException se una copia o l'indice non si scrivono
+     */
+    public static Map<String, String> CopiaDocumenti(File Cartella, DocumentiDiOrigine D, String Anno,
+            boolean AncheAnniPrecedenti, java.util.function.Function<String, String> AliasGruppo,
+            java.util.function.IntFunction<File> Conservato) throws IOException {
+        Map<String, String> scritti = new LinkedHashMap<>();
+        List<String[]> indice = new ArrayList<>();
+        List<Object[]> lavori = new ArrayList<>();
+        for (DocumentoDiOrigine d : D.Anno) {
+            lavori.add(new Object[]{CartellaAnno(Anno), d});
+        }
+        if (AncheAnniPrecedenti) {
+            for (DocumentoDiOrigine d : D.Precedenti) {
+                lavori.add(new Object[]{CARTELLA_PRECEDENTI, d});
+            }
+        }
+        if (lavori.isEmpty()) {
+            return scritti;
+        }
+        for (Object[] l : lavori) {
+            String sotto = (String) l[0];
+            DocumentoDiOrigine d = (DocumentoDiOrigine) l[1];
+            String nome = NomeDocumento(d, AliasGruppo);
+            String rel = CARTELLA_DOCUMENTI + "/" + sotto + "/" + nome;
+            String stato;
+            String sha = "";
+            byte[] contenuto = null;
+            File gz = d.Registro == null ? null : Conservato.apply(d.Id);
+            if (gz == null) {
+                stato = d.Registro == null ? "non più nel registro dei documenti" : "file non più presente";
+            } else {
+                try (InputStream in = new java.util.zip.GZIPInputStream(Files.newInputStream(gz.toPath()))) {
+                    contenuto = in.readAllBytes();
+                    stato = "copiato";
+                } catch (IOException e) {
+                    stato = "file non leggibile (" + e.getMessage() + ")";
+                }
+            }
+            if (contenuto != null) {
+                File dest = new File(Cartella, rel);
+                Files.createDirectories(dest.getParentFile().toPath());
+                Files.write(dest.toPath(), contenuto);
+                sha = Sha256(contenuto);
+                scritti.put(rel, sha);
+            } else {
+                nome = "";
+            }
+            DocumentiFonte.Documento r = d.Registro;
+            indice.add(new String[]{sotto, nome, String.valueOf(d.Id), d.NomeOriginale(),
+                r == null ? "" : r.Tipo, r == null ? "" : r.Origine,
+                r == null || r.DataImport <= 0 ? "" : LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(r.DataImport),
+                        java.time.ZoneId.systemDefault()).format(FMT_LEGGIBILE),
+                String.join(", ", d.Gruppi), String.join(", ", d.Wallet), GiornoIso(d.PrimaData), GiornoIso(d.UltimaData),
+                String.valueOf(d.MovimentiAnno), String.valueOf(d.MovimentiTotali), stato, sha});
+        }
+        StringBuilder csv = new StringBuilder().append((char) 0xFEFF);
+        RigaCsv(csv, new String[]{"Cartella", "File nella dichiarazione", "Id documento", "Nome originale", "Tipo",
+            "Origine", "Importato il", "Gruppi wallet", "Wallet", "Primo movimento", "Ultimo movimento",
+            "Movimenti nell'anno " + Anno, "Movimenti totali", "Stato", "SHA-256"});
+        for (String[] r : indice) {
+            RigaCsv(csv, r);
+        }
+        csv.append("\r\n");
+        RigaCsv(csv, new String[]{"Movimenti dell'anno " + Anno + " senza documento di origine",
+            String.valueOf(D.MovimentiAnnoSenzaDocumento)});
+        byte[] b = csv.toString().getBytes(StandardCharsets.UTF_8);
+        String relIndice = CARTELLA_DOCUMENTI + "/" + NOME_INDICE;
+        File fIndice = new File(Cartella, relIndice);
+        Files.createDirectories(fIndice.getParentFile().toPath());
+        Files.write(fIndice.toPath(), b);
+        scritti.put(relIndice, Sha256(b));
+        return scritti;
+    }
+
+    /** Una riga CSV col separatore {@code ;} (quello che un foglio di calcolo italiano apre da sé). */
+    private static void RigaCsv(StringBuilder sb, String[] valori) {
+        for (int i = 0; i < valori.length; i++) {
+            String v = valori[i] == null ? "" : valori[i];
+            if (i > 0) {
+                sb.append(';');
+            }
+            if (v.contains(";") || v.contains("\"") || v.contains("\n") || v.contains("\r")) {
+                sb.append('"').append(v.replace("\"", "\"\"")).append('"');
+            } else {
+                sb.append(v);
+            }
+        }
+        sb.append("\r\n");
+    }
+
+    // =================================================================================================
     // INTERNI
     // =================================================================================================
     /** Lascia definitiva una sola dichiarazione per anno e famiglia: quella segnata per ultima. */
@@ -750,6 +1047,9 @@ public final class Dichiarazioni {
         o.put("opzioni", Coppie(D.Opzioni));
         o.put("file", Coppie(D.File));
         o.put("allegati", Coppie(D.Allegati));
+        o.put("documenti", Coppie(D.Documenti));
+        o.put("documentiInclusi", D.DocumentiInclusi);
+        o.put("movimentiSenzaDocumento", D.MovimentiSenzaDocumento);
         return o;
     }
 
@@ -776,6 +1076,9 @@ public final class Dichiarazioni {
         LeggiCoppie(o.optJSONArray("opzioni"), d.Opzioni);
         LeggiCoppie(o.optJSONArray("file"), d.File);
         LeggiCoppie(o.optJSONArray("allegati"), d.Allegati);
+        LeggiCoppie(o.optJSONArray("documenti"), d.Documenti);
+        d.DocumentiInclusi = o.optString("documentiInclusi");
+        d.MovimentiSenzaDocumento = o.optInt("movimentiSenzaDocumento", -1);
         return d;
     }
 
@@ -820,6 +1123,25 @@ public final class Dichiarazioni {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    /**
+     * Impronte già calcolate, per percorso: valida finché il file ha la stessa lunghezza e la stessa data di
+     * modifica. Il pannello verifica tutti i file di tutte le dichiarazioni a ogni ricarica, e con i documenti
+     * di origine sarebbero megabyte da rileggere ogni volta.
+     */
+    private static final Map<String, String[]> CACHE_SHA = new java.util.concurrent.ConcurrentHashMap<>();
+
+    static String Sha256Memo(File f) throws IOException {
+        String chiave = f.getAbsolutePath();
+        String firma = f.length() + "|" + f.lastModified();
+        String[] c = CACHE_SHA.get(chiave);
+        if (c != null && c[0].equals(firma)) {
+            return c[1];
+        }
+        String h = Sha256(f);
+        CACHE_SHA.put(chiave, new String[]{firma, h});
+        return h;
     }
 
     private static String Sha256(byte[] dati) {

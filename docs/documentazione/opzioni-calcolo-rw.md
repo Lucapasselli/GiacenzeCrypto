@@ -973,6 +973,21 @@ il programma controlla che non siano stati modificati o cancellati. Un doppio cl
 - **Esporta** salva la dichiarazione in un file zip, **Elimina** la cancella (se è la definitiva viene chiesta
   una conferma in più).
 
+**Documenti di origine.** Prima di generare i file il programma chiede se includere nella dichiarazione anche
+le copie dei documenti da cui nascono i movimenti: i file CSV importati e le risposte JSON/NDJSON scaricate
+dagli exchange e dalle blockchain, così come sono stati ricevuti. È spuntata la casella dei documenti con
+movimenti nell'anno della dichiarazione, mentre quella di tutti gli anni fino a quello della dichiarazione
+aggiunge anche i documenti con movimenti solo negli anni precedenti, da cui nascono costo di carico e giacenze
+iniziali. I documenti con movimenti solo negli anni successivi non vengono inclusi. Le copie stanno nella
+sottocartella *Documenti di origine* (in *Anno 2025* e *Anni precedenti*) e il loro nome dice a cosa
+appartengono: gruppo wallet con il suo alias, exchange o wallet, periodo dei movimenti, numero del documento e
+nome originale, per esempio `Wallet 04 (Binance) - Binance - 2025-01-03_2025-12-28 - doc 12 - export.csv`. Il file
+*Indice documenti.csv* li elenca tutti, con origine, data di importazione e numero di movimenti, e riporta
+quanti movimenti dell'anno non hanno un documento di origine (per esempio quelli importati prima che il
+programma conservasse i file, o inseriti a mano). Anche le copie sono di sola lettura e vengono controllate
+come PDF ed Excel. Nel dettaglio della dichiarazione una riga le riassume e un doppio clic apre la loro
+cartella.
+
 Una nuova stampa identica all'ultima archiviata per lo stesso anno propone di aprire quella invece di
 crearne una copia. Le dichiarazioni sono comprese nei backup, e il ripristino di un backup le aggiunge senza
 mai sovrascrivere o cancellare quelle già presenti.

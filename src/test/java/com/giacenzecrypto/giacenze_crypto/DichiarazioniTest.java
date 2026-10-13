@@ -312,6 +312,164 @@ class DichiarazioniTest {
         }
     }
 
+    // ---------------------------------------------------------------- documenti di origine
+
+    /** Un movimento ridotto ai campi che servono: ID con la data, wallet {@code [3]}, documento {@code [41]}. */
+    private static String[] mov(String data, String wallet, String doc) {
+        String[] v = new String[46];
+        java.util.Arrays.fill(v, "");
+        v[0] = data + "000000_" + wallet + "_1_1_DC";
+        v[3] = wallet;
+        v[41] = doc;
+        return v;
+    }
+
+    private static DocumentiFonte.Documento registro(int id, String nome) {
+        DocumentiFonte.Documento d = new DocumentiFonte.Documento();
+        d.Id = id;
+        d.NomeOriginale = nome;
+        d.Tipo = DocumentiFonte.TIPO_CSV;
+        d.Origine = "Prova";
+        return d;
+    }
+
+    private static Dichiarazioni.DocumentiDiOrigine raccogli() {
+        List<String[]> movimenti = List.of(
+                mov("20240310", "Binance", "1"),
+                mov("20250105", "Binance", "1"),
+                mov("20251228", "Binance", "1"),
+                mov("20230601", "Coinbase", "2"),
+                mov("20260102", "Binance", "3"),
+                mov("20250701", "Kraken", ""),
+                mov("20240701", "Kraken", ""));
+        Map<String, String> gruppi = Map.of("Binance", "Wallet 04", "Coinbase", "Wallet 07", "Kraken", "Wallet 09");
+        return Dichiarazioni.RaccogliDocumenti(movimenti, "2025", gruppi::get,
+                id -> registro(id, id == 1 ? "export.csv" : "storico.csv"));
+    }
+
+    @Test
+    void iDocumentiSiDividonoFraAnnoEAnniPrecedenti() {
+        Dichiarazioni.DocumentiDiOrigine d = raccogli();
+        assertEquals(1, d.Anno.size());
+        assertEquals(1, d.Anno.get(0).Id);
+        assertEquals(2, d.Anno.get(0).MovimentiAnno);
+        assertEquals(3, d.Anno.get(0).MovimentiTotali);
+        assertEquals("20240310", d.Anno.get(0).PrimaData);
+        //Il documento 3 ha movimenti solo nel 2026: fuori
+        assertEquals(1, d.Precedenti.size());
+        assertEquals(2, d.Precedenti.get(0).Id);
+        //Senza documento conta solo il movimento del 2025
+        assertEquals(1, d.MovimentiAnnoSenzaDocumento);
+    }
+
+    @Test
+    void ilNomeDiceGruppoWalletPeriodoEDocumento() {
+        Dichiarazioni.DocumentoDiOrigine d = raccogli().Anno.get(0);
+        assertEquals("Wallet 04 (Binance) - Binance - 2024-03-10_2025-12-28 - doc 1 - export.csv",
+                Dichiarazioni.NomeDocumento(d, g -> "Wallet 04".equals(g) ? "Binance" : ""));
+
+        Dichiarazioni.DocumentoDiOrigine lungo = new Dichiarazioni.DocumentoDiOrigine();
+        lungo.Id = 77;
+        lungo.Registro = registro(77, "x".repeat(200) + ".ndjson");
+        lungo.Gruppi.add("Wallet 01");
+        lungo.Gruppi.add("Wallet 02");
+        lungo.Wallet.add("0x" + "ab".repeat(20) + " (BSC)");
+        lungo.PrimaData = "20250101";
+        lungo.UltimaData = "20250102";
+        String n = Dichiarazioni.NomeDocumento(lungo, g -> "");
+        assertTrue(n.length() <= Dichiarazioni.LUNGHEZZA_MAX_NOME, n);
+        assertTrue(n.startsWith("Più gruppi - 0xabab..abab (BSC) - 2025-01-01_2025-01-02 - doc 77 - xxx"), n);
+        assertTrue(n.endsWith(".ndjson"), n);
+
+        assertEquals("a_b_c", Dichiarazioni.PulisciNome("a:b?c. "));
+    }
+
+    private File gz(String nome, String testo) throws IOException {
+        File f = new File(radice.getParentFile(), "doc_" + System.nanoTime() + "_" + nome + ".gz");
+        try (java.util.zip.GZIPOutputStream out = new java.util.zip.GZIPOutputStream(new FileOutputStream(f))) {
+            out.write(testo.getBytes(StandardCharsets.UTF_8));
+        }
+        f.deleteOnExit();
+        return f;
+    }
+
+    @Test
+    void iDocumentiSiCopianoScompattatiConIndiceEIntegrita() throws IOException {
+        Dichiarazioni.DocumentiDiOrigine docs = raccogli();
+        File gz1 = gz("export", "data;qta\n2025-01-05;1\n");
+        File tmp = Dichiarazioni.NuovaCartellaTemporanea();
+        Files.writeString(tmp.toPath().resolve("a.pdf"), "pdf");
+        Dichiarazioni.Dichiarazione b = bozza(Dichiarazioni.Famiglia.RW, "2025", "1");
+        String improntaSenza = b.Impronta();
+        //Il documento 2 (anni precedenti) non ha piu' il file conservato: resta nell'indice, non ferma niente
+        b.Documenti.putAll(Dichiarazioni.CopiaDocumenti(tmp, docs, "2025", true, g -> "", id -> id == 1 ? gz1 : null));
+        b.DocumentiInclusi = Dichiarazioni.INCLUSI_TUTTI;
+        b.MovimentiSenzaDocumento = docs.MovimentiAnnoSenzaDocumento;
+        assertEquals(improntaSenza, b.Impronta());
+        Dichiarazioni.Dichiarazione d = Dichiarazioni.Registra(tmp, b, List.of("a.pdf"));
+
+        String rel = Dichiarazioni.CARTELLA_DOCUMENTI + "/" + Dichiarazioni.CartellaAnno("2025")
+                + "/Wallet 04 - Binance - 2024-03-10_2025-12-28 - doc 1 - export.csv";
+        assertEquals(2, d.Documenti.size());
+        File copia = new File(d.Cartella, rel);
+        assertEquals("data;qta\n2025-01-05;1\n", Files.readString(copia.toPath()));
+        assertFalse(copia.canWrite());
+        String indice = Files.readString(new File(d.Cartella, Dichiarazioni.CARTELLA_DOCUMENTI + "/" + Dichiarazioni.NOME_INDICE).toPath());
+        assertTrue(indice.contains("file non più presente"));
+        assertTrue(indice.contains("senza documento di origine;1"));
+
+        Dichiarazioni.Dichiarazione letta = Dichiarazioni.Leggi(d.Cartella);
+        assertEquals(d.Documenti, letta.Documenti);
+        assertEquals(Dichiarazioni.INCLUSI_TUTTI, letta.DocumentiInclusi);
+        assertEquals(1, letta.MovimentiSenzaDocumento);
+        assertEquals(Dichiarazioni.StatoFile.INTEGRO, Dichiarazioni.VerificaIntegrita(letta).get(rel));
+
+        copia.setWritable(true);
+        Files.writeString(copia.toPath(), "modificato");
+        assertEquals(Dichiarazioni.StatoFile.ALTERATO, Dichiarazioni.VerificaIntegrita(letta).get(rel));
+    }
+
+    @Test
+    void soloLAnnoSeNonSiChiedonoGliAnniPrecedenti() throws IOException {
+        File gz1 = gz("export", "a");
+        File gz2 = gz("storico", "b");
+        File tmp = Dichiarazioni.NuovaCartellaTemporanea();
+        Map<String, String> scritti = Dichiarazioni.CopiaDocumenti(tmp, raccogli(), "2025", false, g -> "",
+                id -> id == 1 ? gz1 : gz2);
+        assertEquals(2, scritti.size());
+        assertFalse(new File(tmp, Dichiarazioni.CARTELLA_DOCUMENTI + "/" + Dichiarazioni.CARTELLA_PRECEDENTI).exists());
+    }
+
+    @Test
+    void ilBackupPortaConSeIDocumentiDiOrigine() throws IOException {
+        File zip = new File(radice.getParentFile(), "backup_doc_" + System.nanoTime() + ".zip");
+        String c = Backup_Restore.PREFISSO_DICHIARAZIONI + "2025_RW_20260101000000/";
+        String doc = Dichiarazioni.CARTELLA_DOCUMENTI + "/";
+        try {
+            try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zip))) {
+                voce(out, c + Dichiarazioni.NOME_MANIFEST,
+                        Dichiarazioni.ManifestAJson(bozza(Dichiarazioni.Famiglia.RW, "2025", "1")).toString());
+                voce(out, c + doc + Dichiarazioni.NOME_INDICE, "indice");
+                voce(out, c + doc + "Anno 2025/Più gruppi - doc 1 - a.csv", "a");
+                //Fuori dalla cartella dei documenti, o con segmenti pericolosi: scartati
+                voce(out, c + "altro/b.csv", "b");
+                voce(out, c + doc + "../../fuori.csv", "x");
+                voce(out, c + doc + "Anno 2025/x/y/troppo.csv", "x");
+            }
+            try (ZipFile z = new ZipFile(zip)) {
+                assertEquals(1, Backup_Restore.EstraiDichiarazioni(z, radice));
+            }
+            File dest = new File(radice, "2025_RW_20260101000000");
+            assertEquals("a", Files.readString(new File(dest, doc + "Anno 2025/Più gruppi - doc 1 - a.csv").toPath()));
+            assertTrue(new File(dest, doc + Dichiarazioni.NOME_INDICE).isFile());
+            assertFalse(new File(dest, "altro").exists());
+            assertFalse(new File(radice, "fuori.csv").exists());
+            assertFalse(new File(dest, doc + "Anno 2025/x").exists());
+        } finally {
+            zip.delete();
+        }
+    }
+
     private static void voce(ZipOutputStream out, String nome, String testo) throws IOException {
         out.putNextEntry(new ZipEntry(nome));
         out.write(testo.getBytes(StandardCharsets.UTF_8));

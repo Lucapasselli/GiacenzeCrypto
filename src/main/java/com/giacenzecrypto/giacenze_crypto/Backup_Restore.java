@@ -743,8 +743,9 @@ public class Backup_Restore {
     static final String PREFISSO_DICHIARAZIONI = "dichiarazioni/";
 
     /**
-     * Copia l'archivio delle dichiarazioni, una cartella per dichiarazione. Le cartelle temporanee di una
-     * generazione in corso o interrotta (che cominciano con un punto) restano fuori.
+     * Copia l'archivio delle dichiarazioni, una cartella per dichiarazione, con la sottocartella dei documenti
+     * di origine ({@link Dichiarazioni#CARTELLA_DOCUMENTI}). Le cartelle temporanee di una generazione in
+     * corso o interrotta (che cominciano con un punto) restano fuori.
      *
      * @return {@code {numero di dichiarazioni, byte occupati}}
      */
@@ -758,16 +759,17 @@ public class Backup_Restore {
             if (c.getName().startsWith(".") || !new File(c, Dichiarazioni.NOME_MANIFEST).isFile()) {
                 continue;
             }
-            File[] file = c.listFiles(File::isFile);
-            if (file == null) {
-                continue;
+            List<java.nio.file.Path> file;
+            try (java.util.stream.Stream<java.nio.file.Path> s = Files.walk(c.toPath())) {
+                file = s.filter(Files::isRegularFile).sorted().toList();
             }
-            for (File f : file) {
-                if (Dichiarazioni.FileDiBlocco(f.getName())) {
+            for (java.nio.file.Path f : file) {
+                if (Dichiarazioni.FileDiBlocco(f.getFileName().toString())) {
                     continue;
                 }
-                ScriviVoce(out, PREFISSO_DICHIARAZIONI + c.getName() + "/" + f.getName(), Files.readAllBytes(f.toPath()));
-                byteTotali += f.length();
+                String rel = c.toPath().relativize(f).toString().replace(File.separatorChar, '/');
+                ScriviVoce(out, PREFISSO_DICHIARAZIONI + c.getName() + "/" + rel, Files.readAllBytes(f));
+                byteTotali += Files.size(f);
             }
             n++;
         }
@@ -790,8 +792,7 @@ public class Backup_Restore {
                 continue;
             }
             String[] parti = e.getName().substring(PREFISSO_DICHIARAZIONI.length()).split("/", -1);
-            //Esattamente cartella/file, e nessun segmento che possa uscire dall'archivio
-            if (parti.length != 2 || !SegmentoSicuro(parti[0]) || !SegmentoSicuro(parti[1])) {
+            if (!PercorsoDichiarazioneValido(parti)) {
                 continue;
             }
             perCartella.computeIfAbsent(parti[0], k -> new ArrayList<>()).add(e);
@@ -806,12 +807,31 @@ public class Backup_Restore {
                 throw new IOException("Impossibile creare " + dest);
             }
             for (ZipEntry e : c.getValue()) {
-                String nome = e.getName().substring(e.getName().lastIndexOf('/') + 1);
-                Files.write(new File(dest, nome).toPath(), Leggi(z, e));
+                String rel = e.getName().substring(PREFISSO_DICHIARAZIONI.length() + c.getKey().length() + 1);
+                File f = new File(dest, rel);
+                Files.createDirectories(f.getParentFile().toPath());
+                Files.write(f.toPath(), Leggi(z, e));
             }
             aggiunte++;
         }
         return aggiunte;
+    }
+
+    /**
+     * {@code cartella/file}, oppure un file dentro la sottocartella dei documenti di origine
+     * ({@code cartella/Documenti di origine/file} o {@code .../Anno 2025/file}); nessun segmento che possa
+     * uscire dall'archivio. Le versioni precedenti accettano solo la prima forma e saltano le altre.
+     */
+    static boolean PercorsoDichiarazioneValido(String[] parti) {
+        if (parti.length < 2 || parti.length > 4) {
+            return false;
+        }
+        for (String p : parti) {
+            if (!SegmentoSicuro(p)) {
+                return false;
+            }
+        }
+        return parti.length == 2 || Dichiarazioni.CARTELLA_DOCUMENTI.equals(parti[1]);
     }
 
     private static boolean SegmentoSicuro(String s) {

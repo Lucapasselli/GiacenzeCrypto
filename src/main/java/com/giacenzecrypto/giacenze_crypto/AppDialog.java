@@ -25,7 +25,8 @@ public class AppDialog extends JDialog {
     private JTextField inputField;
     private JTextArea textArea;
     private JComboBox<String> comboBox;
-    private JCheckBox checkBox;
+    /** Le caselle di {@link Builder#checkBoxField}, nell'ordine in cui sono state aggiunte. */
+    private final List<JCheckBox> checkBoxes = new ArrayList<>();
 
     public enum ThemeMode {
         LIGHT, DARK
@@ -53,6 +54,8 @@ public class AppDialog extends JDialog {
     private final String inputValue;
     /** Stato della casella di {@link Builder#checkBoxField}, letto alla chiusura con qualunque azione o con la X. */
     private boolean checked;
+    /** Stato di tutte le caselle, nell'ordine di aggiunta (vedi {@link #isChecked(int)}). */
+    private boolean[] checkedAll = new boolean[0];
 
     public DialogResult(String actionId, CloseReason closeReason) {
         this(actionId, closeReason, null);
@@ -100,6 +103,14 @@ public class AppDialog extends JDialog {
     /** @return {@code true} se la casella di {@link Builder#checkBoxField} era spuntata alla chiusura del dialog */
     public boolean isChecked() {
         return checked;
+    }
+
+    /**
+     * @param indice posizione della casella, nell'ordine in cui le ha aggiunte {@link Builder#checkBoxField}
+     * @return {@code true} se quella casella era spuntata alla chiusura del dialog, {@code false} se non esiste
+     */
+    public boolean isChecked(int indice) {
+        return indice >= 0 && indice < checkedAll.length && checkedAll[indice];
     }
     
     
@@ -398,8 +409,8 @@ public class AppDialog extends JDialog {
         private String comboLabel;
         private String[] comboOptions = new String[0];
 
-        private boolean checkBoxEnabled = false;
-        private String checkBoxLabel;
+        private final List<String> checkBoxLabels = new ArrayList<>();
+        private final List<Boolean> checkBoxSelected = new ArrayList<>();
 
         private final List<DialogAction> actions = new ArrayList<>();
 
@@ -424,8 +435,20 @@ public class AppDialog extends JDialog {
          * @return questo builder, per il chaining
          */
         public Builder checkBoxField(String label) {
-            this.checkBoxEnabled = true;
-            this.checkBoxLabel = label;
+            return checkBoxField(label, false);
+        }
+
+        /**
+         * Aggiunge una casella di spunta, gia' spuntata se {@code selected}. Chiamato piu' volte aggiunge piu'
+         * caselle, una sotto l'altra: lo stato di ognuna si legge da {@link DialogResult#isChecked(int)}, quello
+         * della prima anche da {@link DialogResult#isChecked()}.
+         * @param label testo della casella
+         * @param selected stato iniziale
+         * @return questo builder, per il chaining
+         */
+        public Builder checkBoxField(String label, boolean selected) {
+            this.checkBoxLabels.add(label);
+            this.checkBoxSelected.add(selected);
             return this;
         }
 
@@ -688,7 +711,11 @@ public class AppDialog extends JDialog {
      */
     public DialogResult showDialog() {
         setVisible(true);
-        result.checked = checkBox != null && checkBox.isSelected();
+        result.checkedAll = new boolean[checkBoxes.size()];
+        for (int i = 0; i < checkBoxes.size(); i++) {
+            result.checkedAll[i] = checkBoxes.get(i).isSelected();
+        }
+        result.checked = result.checkedAll.length > 0 && result.checkedAll[0];
         return result;
     }
 
@@ -863,13 +890,14 @@ public class AppDialog extends JDialog {
             panel.add(comboBox);
         }
 
-        if (config.checkBoxEnabled) {
-            panel.add(Box.createVerticalStrut(12));
-            checkBox = new JCheckBox(config.checkBoxLabel);
+        for (int i = 0; i < config.checkBoxLabels.size(); i++) {
+            panel.add(Box.createVerticalStrut(i == 0 ? 12 : 4));
+            JCheckBox checkBox = new JCheckBox(config.checkBoxLabels.get(i), config.checkBoxSelected.get(i));
             checkBox.setFont(theme.messageFont);
             checkBox.setForeground(theme.textPrimary);
             checkBox.setOpaque(false);
             checkBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+            checkBoxes.add(checkBox);
             panel.add(checkBox);
         }
 

@@ -334,6 +334,8 @@ public class GUI_ArchivioDichiarazioni_Pannello extends javax.swing.JPanel {
         String voce = String.valueOf(Tabella_Dettaglio.getModel().getValueAt(Tabella_Dettaglio.convertRowIndexToModel(riga), 0));
         if (voce.startsWith("File ")) {
             Principale_Dichiarazioni.ApriFile(new File(d.Cartella, voce.substring(5)), Proprietario());
+        } else if (voce.equals(Principale_Dichiarazioni.RIGA_DOCUMENTI)) {
+            Principale_Dichiarazioni.ApriFile(new File(d.Cartella, Dichiarazioni.CARTELLA_DOCUMENTI), Proprietario());
         }
     }//GEN-LAST:event_Tabella_DettaglioMouseClicked
 

@@ -18,8 +18,9 @@ env:
   PROJECT_NAME: Giacenze_Crypto
   JAVA_VERSION: 24
   JAVA_DISTRIBUTION: temurin
-  # Deve restare allineata a CcxtInterop.NODE_VERSION: e' la stessa distribuzione che l'applicazione
-  # scaricherebbe da se' negli altri pacchetti.
+  # Deve restare allineata a "nodeVersion" di config/varie/Runtime.json (CcxtInterop.nodeVersion()): e' la
+  # stessa distribuzione che l'applicazione scaricherebbe da se' negli altri pacchetti. Il pacchetto MSIX non
+  # legge quel file (Node e' incluso, NODE_ESTERNO): un aggiornamento va fatto a mano anche qui.
   NODE_VERSION: v24.7.0
 
 # A differenza di aur.yml e flatpak.yml non c'e' nessun input "solo_prova" da cui difendersi: questo

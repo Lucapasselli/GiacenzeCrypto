@@ -94,6 +94,16 @@ public final class Principale_Dichiarazioni {
             }
         }
 
+        //Documenti di origine dei movimenti: si chiede quali includere prima di scrivere qualsiasi file
+        Dichiarazioni.DocumentiDiOrigine documenti = Dichiarazioni.RaccogliDocumenti(
+                Principale.MappaCryptoWallet.values(), Bozza.Anno,
+                w -> DatabaseH2.Pers_GruppoWallet_Leggi(w, true), DocumentiFonte::Leggi);
+        Bozza.MovimentiSenzaDocumento = documenti.MovimentiAnnoSenzaDocumento;
+        int scelta = ScegliDocumenti(documenti, Bozza.Anno, owner);
+        if (scelta < 0) {
+            return null;
+        }
+
         File temporanea = null;
         Dichiarazioni.Dichiarazione registrata;
         try {
@@ -103,6 +113,21 @@ public final class Principale_Dichiarazioni {
                 if (nome.toLowerCase().endsWith(".pdf") && !Stampe.PdfValido(new File(temporanea, nome))) {
                     throw new IOException("il file " + nome + " non risulta un PDF valido");
                 }
+            }
+            Bozza.Documenti.clear();
+            Bozza.DocumentiInclusi = Dichiarazioni.INCLUSI_NESSUNO;
+            if (scelta > 0) {
+                Map<String, String[]> alias = DatabaseH2.Pers_GruppoAlias_LeggiTabella();
+                try {
+                    Bozza.Documenti.putAll(Dichiarazioni.CopiaDocumenti(temporanea, documenti, Bozza.Anno, scelta == 2,
+                            g -> {
+                                String[] a = alias.get(g);
+                                return a != null && a.length > 1 ? a[1] : "";
+                            }, DocumentiFonte::FileConservato));
+                } catch (IOException e) {
+                    throw new IOException("errore nella copia dei documenti di origine: " + e.getMessage(), e);
+                }
+                Bozza.DocumentiInclusi = scelta == 2 ? Dichiarazioni.INCLUSI_TUTTI : Dichiarazioni.INCLUSI_ANNO;
             }
             registrata = Dichiarazioni.Registra(temporanea, Bozza, FileAttesi);
         } catch (Exception e) {
@@ -119,6 +144,76 @@ public final class Principale_Dichiarazioni {
             ApriFile(new File(registrata.Cartella, DaAprire), owner);
         }
         return registrata;
+    }
+
+    /**
+     * Chiede quali documenti di origine includere: quelli con movimenti nell'anno (spuntata) e, a scelta,
+     * anche quelli con movimenti solo negli anni prima. Se non ce n'è nessuno non chiede niente.
+     *
+     * @return {@code 0} nessuno, {@code 1} quelli dell'anno, {@code 2} tutti gli anni fino a quello della
+     *         dichiarazione, {@code -1} se l'utente annulla
+     */
+    private static int ScegliDocumenti(Dichiarazioni.DocumentiDiOrigine D, String Anno, Window owner) {
+        if (D.Anno.isEmpty() && D.Precedenti.isEmpty()) {
+            return 0;
+        }
+        String dettagli = "Copie dei file importati (CSV, JSON, NDJSON) da cui nascono i movimenti, così come sono"
+                + " stati scaricati, nella sottocartella <i>" + Dichiarazioni.CARTELLA_DOCUMENTI + "</i>. Il nome di"
+                + " ogni copia dice gruppo wallet, exchange o wallet e periodo, e un indice li elenca tutti."
+                + "<br><br>I documenti con movimenti solo negli anni successivi al " + Anno + " non vengono inclusi.";
+        if (D.MovimentiAnnoSenzaDocumento > 0) {
+            dettagli += "<br><br>" + D.MovimentiAnnoSenzaDocumento + " movimenti del " + Anno
+                    + " non hanno un documento di origine (importati prima che venisse conservato, o inseriti a mano).";
+        }
+        AppDialog.Builder b = AppDialog.builder(owner)
+                .windowTitle("Documenti di origine")
+                .bodyTitle("Includere i documenti di origine dei movimenti?")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message("")
+                .details(dettagli);
+        int caselle = 0;
+        int casellaAnno = -1;
+        int casellaTutti = -1;
+        if (!D.Anno.isEmpty()) {
+            b.checkBoxField("Documenti con movimenti del " + Anno + " (" + DescriviDocumenti(D.Anno) + ")", true);
+            casellaAnno = caselle++;
+        }
+        if (!D.Precedenti.isEmpty()) {
+            b.checkBoxField("Tutti gli anni fino al " + Anno + ": anche i documenti con movimenti solo negli anni"
+                    + " precedenti (" + DescriviDocumenti(D.Precedenti) + ")", false);
+            casellaTutti = caselle;
+        }
+        AppDialog.DialogResult r = b
+                .action(AppDialog.DialogAction.builder("annulla", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY).build())
+                .action(AppDialog.DialogAction.builder("prosegui", "Prosegui")
+                        .role(AppDialog.ActionRole.PRIMARY).build())
+                .showDialog();
+        if (r == null || !r.isAction("prosegui")) {
+            return -1;
+        }
+        if (casellaTutti >= 0 && r.isChecked(casellaTutti)) {
+            return 2;
+        }
+        return casellaAnno >= 0 && r.isChecked(casellaAnno) ? 1 : 0;
+    }
+
+    /** {@code "12 file, 3,4 MB"}: la dimensione è quella dei file scompattati, come verranno copiati. */
+    private static String DescriviDocumenti(List<Dichiarazioni.DocumentoDiOrigine> Elenco) {
+        long byteTotali = 0;
+        for (Dichiarazioni.DocumentoDiOrigine d : Elenco) {
+            byteTotali += DocumentiFonte.DimensioneOriginale(d.Id);
+        }
+        return Elenco.size() + " file, " + Dimensione(byteTotali);
+    }
+
+    private static String Dimensione(long Byte) {
+        if (Byte < 1024 * 1024) {
+            return Math.max(1, Math.round(Byte / 1024.0)) + " KB";
+        }
+        return String.format(java.util.Locale.ITALY, "%.1f MB", Byte / (1024.0 * 1024.0));
     }
 
     private static boolean TuttiIntegri(Dichiarazioni.Dichiarazione D) {
@@ -590,7 +685,7 @@ public final class Principale_Dichiarazioni {
                 .theme()
                 .type(AppDialog.DialogType.WARNING)
                 .message("")
-                .details("Vengono cancellati i PDF, l'Excel e la nota."
+                .details("Vengono cancellati i PDF, l'Excel, i documenti di origine copiati, gli allegati e la nota."
                         + "<br><br>L'operazione non è reversibile, salvo ripristinare un backup che le contiene.")
                 .action(AppDialog.DialogAction.builder("annulla", "Annulla")
                         .role(AppDialog.ActionRole.SECONDARY).build())
@@ -768,19 +863,23 @@ public final class Principale_Dichiarazioni {
         javax.swing.JOptionPane.showMessageDialog(owner, p, "Confronto fra dichiarazioni", javax.swing.JOptionPane.PLAIN_MESSAGE);
     }
 
-    /** Scrive nello zip i file della cartella della dichiarazione (manifest compreso). */
+    /** Scrive nello zip i file della cartella della dichiarazione (manifest e documenti di origine compresi). */
     static void ScriviZip(Dichiarazioni.Dichiarazione D, File Zip) throws IOException {
-        File[] file = D.Cartella.listFiles(File::isFile);
-        if (file == null) {
+        if (!D.Cartella.isDirectory()) {
             throw new IOException("cartella non leggibile: " + D.Cartella);
         }
+        List<java.nio.file.Path> file;
+        try (java.util.stream.Stream<java.nio.file.Path> s = Files.walk(D.Cartella.toPath())) {
+            file = s.filter(Files::isRegularFile).sorted().toList();
+        }
         try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(Zip))) {
-            for (File f : file) {
-                if (Dichiarazioni.FileDiBlocco(f.getName())) {
+            for (java.nio.file.Path f : file) {
+                if (Dichiarazioni.FileDiBlocco(f.getFileName().toString())) {
                     continue;
                 }
-                out.putNextEntry(new ZipEntry(D.Id() + "/" + f.getName()));
-                out.write(Files.readAllBytes(f.toPath()));
+                String rel = D.Cartella.toPath().relativize(f).toString().replace(File.separatorChar, '/');
+                out.putNextEntry(new ZipEntry(D.Id() + "/" + rel));
+                out.write(Files.readAllBytes(f));
                 out.closeEntry();
             }
         }
@@ -895,6 +994,9 @@ public final class Principale_Dichiarazioni {
         return righe;
     }
 
+    /** Voce del dettaglio con il riepilogo dei documenti di origine: un doppio clic apre la loro cartella. */
+    static final String RIGA_DOCUMENTI = "Documenti di origine";
+
     /** Totali scritti dalla generazione W/RW e letti dall'elenco. */
     public static final String TOT_RW_INIZIALE = "Valore iniziale complessivo (crypto)";
     public static final String TOT_RW_FINALE = "Valore finale complessivo (crypto)";
@@ -950,8 +1052,36 @@ public final class Principale_Dichiarazioni {
             }
             righe.add(new Object[]{"Rigo " + n++ + " - " + nome, sb.toString()});
         }
+        //I documenti di origine possono essere decine: una riga di riepilogo, e una per file solo se non e' integro
+        int documenti = 0;
+        int documentiDaVerificare = 0;
+        List<Object[]> righeDocumenti = new ArrayList<>();
         for (Map.Entry<String, Dichiarazioni.StatoFile> e : Dichiarazioni.VerificaIntegrita(D).entrySet()) {
-            righe.add(new Object[]{"File " + e.getKey(), e.getValue().Descrizione});
+            if (!D.Documenti.containsKey(e.getKey())) {
+                righe.add(new Object[]{"File " + e.getKey(), e.getValue().Descrizione});
+                continue;
+            }
+            documenti++;
+            if (e.getValue() != Dichiarazioni.StatoFile.INTEGRO) {
+                documentiDaVerificare++;
+                righeDocumenti.add(new Object[]{"File " + e.getKey(), e.getValue().Descrizione});
+            }
+        }
+        if (!D.DocumentiInclusi.isBlank()) {
+            String inclusi = switch (D.DocumentiInclusi) {
+                case Dichiarazioni.INCLUSI_ANNO -> "quelli con movimenti del " + D.Anno;
+                case Dichiarazioni.INCLUSI_TUTTI -> "quelli con movimenti del " + D.Anno + " e degli anni precedenti";
+                default -> "nessuno";
+            };
+            String testo = documenti == 0 ? "nessuno incluso"
+                    : documenti + " file (indice compreso), inclusi " + inclusi
+                    + (documentiDaVerificare == 0 ? ", tutti integri" : ", " + documentiDaVerificare + " da verificare")
+                    + ". Doppio clic per aprire la cartella";
+            righe.add(new Object[]{RIGA_DOCUMENTI, testo});
+            righe.addAll(righeDocumenti);
+        }
+        if (D.MovimentiSenzaDocumento > 0) {
+            righe.add(new Object[]{"Movimenti dell'anno senza documento di origine", String.valueOf(D.MovimentiSenzaDocumento)});
         }
         for (Map.Entry<String, String> e : D.Opzioni.entrySet()) {
             righe.add(new Object[]{"Opzione: " + e.getKey(), e.getValue()});

@@ -42,6 +42,7 @@ Ogni proprietà ha un valore predefinito. Se non la inserisci nel JSON, viene us
 "tolleranzaSecondiConsolidamento": 2,
 "causaliDifferite": [],
 "causaliConsolidaPerGiorno": [],
+"causaliAnnullamento": { ... },
 "minutiScambioDifferito": 15,
 "colonne": { ... },
 "raggruppamentoPerCausale": { ... },
@@ -653,6 +654,24 @@ Il giorno è quello del fuso del tuo sistema. La somma avviene prima del raggrup
 
 ```json
 "causaliConsolidaPerGiorno": ["Interest"]
+```
+
+### `causaliAnnullamento` {#causaliannullamento}
+
+**Tipo:** oggetto causale dell'annullamento → causale annullata | **Default:** {} (nessuna)
+
+Alcuni export riportano un prelievo e, più tardi, il suo annullamento con la moneta che torna indietro
+(Bybit: `Withdrawal` e poi `Withdrawal Canceled`). Per ogni riga di annullamento il programma cerca, fra le
+righe precedenti dello stesso file, la più recente con la causale annullata, la stessa moneta e la stessa
+quantità di segno opposto: se la trova, **nessuna delle due righe viene importata**, perché la moneta non è
+mai uscita dal wallet. Se non la trova (il prelievo sta in un export precedente, oppure l'importo restituito
+è diverso) l'annullamento viene importato secondo `mappaCausali`, quindi va mappato anche lì. Lo stesso
+avviene se il prelievo è già nell'archivio da un'importazione precedente: il prelievo viene scartato come
+già esistente e l'annullamento importato, così la giacenza resta corretta. L'abbinamento
+avviene prima di ogni altra elaborazione delle righe.
+
+```json
+"causaliAnnullamento": { "Withdrawal Canceled": "Withdrawal" }
 ```
 
 ### La causale `SCAMBIO DIFFERITO` e `minutiScambioDifferito` {#scambio-differito}

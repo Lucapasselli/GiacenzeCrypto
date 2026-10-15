@@ -46,18 +46,10 @@ Tests live in `src/test/java/` (same package as production code, to reach packag
 | `SegnoQuantitaM7Test` | `Funzioni.isNegativo()`, `Moneta.InvertiQta()` and CEX in/out classification (bug M7) |
 | `CcxtInteropConvertOKXBillsTest` | `CcxtInterop.convertOKXBills()` — OKX API bills → the 19-field intermediate rows shared with the OKX CSV import |
 
-**Static H2 connections leak between test classes, and `IsolamentoConnessioniH2` contains it** (2026-10-05).
-The 45 classes that open a temporary DB close it in `@AfterAll` but leave the closed `Connection` in
-`DatabaseH2`'s static fields, with the working directory still pointing at their deleted `@TempDir`. A later
-class that opens no DB (`Principale_Movimenti_SeparaUnisciTest`) then passed the `connectionPrezzi == null`
-guard of `Prezzi.CercaPrezzoPreciso`, failed on the closed cache, fell back to the network and downloaded
-Node (~237 MB) into the deleted directory, recreating it: one orphan `/tmp/junit*` per suite run, until `/tmp`
-(a RAM tmpfs here) was full and the import tests failed with "Spazio esaurito sul device". The extension,
-autodetected for every class (`src/test/resources/junit-platform.properties` +
-`META-INF/services/org.junit.jupiter.api.extension.Extension`), nulls closed connections before and after
-each class, so such a class behaves as when run alone. A new test class that needs a DB must still open its
-own. A few classes (Dual Investment, Gate.io, KuCoin, Nexo imports) still download Node into their own
-`@TempDir` on every run, which is network and time, not a leak.
+**Static H2 connections leak between test classes, and `IsolamentoConnessioniH2` contains it**: closed `Connection`s stayed in
+`DatabaseH2`'s static fields and a later class fell back to the network, downloading Node into a deleted `@TempDir` until `/tmp`
+was full. The extension (autodetected, `junit-platform.properties` + `META-INF/services/…Extension`) nulls closed connections
+before and after each class. A new test class that needs a DB must still open its own. Details: `nocommit/Documentazione/Dettagli_Test.md`.
 
 **Golden master** (`CalcoliPlusvalenzeNewGoldenMasterTest`) needs the private dataset `test/Dichiarazione 2025/` (`movimenti.crypto.db` + `personale.mv.db`), which is deliberately **not** in git. It self-skips via JUnit `Assumptions` when the dataset is missing — a "skipped" result on a fresh clone is expected, not a failure. On its first run with the dataset present it writes the baseline `nocommit/GoldenMaster/plusvalenze.golden` and aborts as skipped; run again to actually compare. It copies the personal DB into a `@TempDir`, so the real dataset is never opened or locked. When a diff is **expected** (new movements imported, or a bug fix that deliberately changes results), verify every difference is explainable, delete the baseline file, and re-run to regenerate it.
 
@@ -121,276 +113,91 @@ Flat files in `workingDirectory`, reached through `VarStatiche` getters:
 - `cambioUSDEUR.db`, `crypto.com.fiatwallet.db`, `crypto.com.cardwallet.db`, `crypto.com.dati.db`, `crypto.com.fiatwallet.tipimovimentiPers.db`
 
 ### Database layer (`DatabaseH2.java`)
-Three embedded H2 connections managed as static fields, all opened by `CreaoCollegaDatabase()`, which also creates/migrates every table:
-- `connection` → `database.mv.db` — session options plus token/exchange registries and metadata caches (`OPZIONI`, `GESTITIBINANCE`, `GESTITICOINBASE`, `GESTITICOINGECKO`, `GESTITICOINMARKETCAP`, `GESTITICRYPTOHISTORY`, `TOKENSOLANA`, `RINOMINATOKEN`, `PROVIDERDEFI`, `GOPLUSSECURITY`, …). It does **not** hold the movements.
-- `connectionPersonale` → `personale.mv.db` — user preferences and user-owned data: `OPZIONI`, `PrezziNew` (manually entered prices), `WALLETS`, `WALLETGRUPPO`, `GRUPPO_ALIAS` (wallet groups for Quadro RW), `EXCHANGEAPI` (API keys), `EMONEY`, `GIACENZEBLOCKCHAIN`, `EXCHANGETOKENS`
-- `connectionPrezzi` → `prezzi.mv.db` — fetched market price cache (`PrezziNew`, `PrezziKO`), opened with custom H2 tuning flags (`AUTO_COMPACT_FILL_RATE=0`, `RETENTION_TIME=0`, large `CACHE_SIZE`)
 
-The app enforces single-instance via H2's file locking — `CreaoCollegaDatabase()` returns `false` if another session holds the lock.
-
-**The price DB's tuning flags (`AUTO_COMPACT_FILL_RATE=0`, `RETENTION_TIME=0`) are why it has to be
-compacted on command** — replaced pages are never reused, so `prezzi.mv.db` bloats over time (measured:
-2.847 MB of file for 565 MB of data). `DatabaseH2.CompattaPrezzi/CompattaPrincipale(boolean Riapri)`
-run `SHUTDOWN DEFRAG` without deleting a row; error **90121** while releasing the statement is
-expected, not a failure. The connection object is **replaced, not reset** — nothing may cache
-`connectionPrezzi` in a field or hold a `PreparedStatement` across the call. Full mechanics
-(why the lock is per-file, `LeggiStatoCompattazione()` cost, why the estimate under-reports the
-recoverable space) in `nocommit/Documentazione/Analisi_DB_Prezzi_Manutenzione.md`, which also covers
-why deleting unreachable rows is deliberately not done (phases 2/3, deferred).
-
-**Settings persistence** uses a key-value `OPZIONI` table in each database:
-- `DatabaseH2.Opzioni_Scrivi/Leggi` — writes/reads from `database.mv.db` (session state)
-- `DatabaseH2.Pers_Opzioni_Scrivi/Leggi` — writes/reads from `personale.mv.db` (user preferences)
-
-Settings are restored at startup in `Principale.AggiornaSpunte()`, called from the constructor after `initComponents()`.
-
-**The personal `PrezziNew` (in `connectionPersonale`) is not the same shape as the price cache**: since 2026-09-17 it has an extra `gruppo VARCHAR DEFAULT 'TUTTI' NOT NULL` column, and its primary key is `(timestamp, exchange, symbol, rete, address, gruppo)` — one column longer than the cache's. Before that date the wallet group was glued into `exchange` as `"Personalizzato (TUTTI)"` and the reader had to match it by substring. The migration lives in `CreaoCollegaDatabase`, guarded by `TabellaSenzaColonna`, and its step order is forced by H2: key columns must be `NOT NULL` (error 90023) while `ADD COLUMN … DEFAULT` creates a nullable one, so `SET NOT NULL` goes between the backfill and the new key. The table must never be dropped and recreated the way `MOVIMENTI_STORICO` was — it holds the user's hand-entered year-end prices, which is what Quadro RW is built on. `gruppo` is always `'TUTTI'` today (`Funzioni.getGruppoWalletXPrezzi` returns that constant); the column exists so that a future per-wallet-group price preference needs no further schema change. Note the asymmetry, which **looks like a bug and is a deliberate decision**: `DammiPrezzoDaDatabasePersonale` has a real `else`, so a caller passing a non-blank source (every import path) gets **no** personalised price at all. Left as is on purpose — personalised prices are looked up on the exact timestamp and the user corrects a wrong price on the movement itself, so the case does not arise in practice, while "fixing" it would change values on already-imported movements.
-
-**PrezziKO table** (in `connectionPrezzi`): caches tokens/dates where price lookup failed. Schema: `symbol VARCHAR, timestamp BIGINT, rete VARCHAR, address VARCHAR`. Written by `Prezzi.PrezzoIrrecuperabileDaDB_Scrivi()`, queried by `Prezzi.PrezzoIrrecuperabileDaDB_Leggi()`.
+Three embedded H2 connections, static fields, all opened by `CreaoCollegaDatabase()` (which also creates/migrates every table;
+returns `false` if another session holds the file lock):
+- `connection` → `database.mv.db`: session options and token/exchange registries and metadata caches. **Not** the movements.
+- `connectionPersonale` → `personale.mv.db`: user preferences and user-owned data (`OPZIONI`, `PrezziNew` of hand-entered
+  prices, `WALLETS`, `WALLETGRUPPO`, `GRUPPO_ALIAS`, `EXCHANGEAPI`, `EMONEY`, `GIACENZEBLOCKCHAIN`, `EXCHANGETOKENS`, ...).
+- `connectionPrezzi` → `prezzi.mv.db`: fetched price cache (`PrezziNew`, `PrezziKO`), custom tuning flags
+  (`AUTO_COMPACT_FILL_RATE=0`, `RETENTION_TIME=0`).
+Settings: `Opzioni_Scrivi/Leggi` (database.mv.db) and `Pers_Opzioni_Scrivi/Leggi` (personale.mv.db), restored in `Principale.AggiornaSpunte()`.
+Traps:
+- **The price DB must be compacted on command** (`CompattaPrezzi/CompattaPrincipale(Riapri)`, `SHUTDOWN DEFRAG`; error 90121 is
+  expected). The connection object is **replaced**: never cache `connectionPrezzi` in a field or hold a `PreparedStatement`
+  across the call. Deleting unreachable rows is deliberately not done.
+- **The personal `PrezziNew` has an extra `gruppo` column** and a key one column longer than the cache's. It holds the user's
+  year-end prices (Quadro RW is built on them): never drop and recreate it. `DammiPrezzoDaDatabasePersonale` ignoring the
+  personalised price for a non-blank source is a **deliberate decision**, not a bug.
+- `PrezziKO` (in `connectionPrezzi`) caches tokens/dates where the price lookup failed.
+Dettagli: `nocommit/Documentazione/Dettagli_DatabaseH2.md`, `Analisi_DB_Prezzi_Manutenzione.md`.
 
 ### Main window (`Principale.java`)
-The central JFrame. Holds several critical static maps that other classes read:
-- `MappaCryptoWallet` — all loaded crypto movements
-- `Mappa_ChainExplorer` — chain name → API endpoint config
-- `Mappa_AddressRete_Nome` — token contract address → canonical symbol
-- `MappaRetiSupportate` — set of supported chain identifiers
 
-These maps are populated at startup by `VarCondivise.CompilaMappaChain()` and `VarCondivise.CompilaMappaRetiSupportate()`.
-
-**Mass operations must not reuse the single-item function in a loop.** Each interactive function opens a dialog, and every time the main window regains focus on its close, `TabellaCryptodaAggiornare` triggers a full `Funzioni_AggiornaTutto()` — so a loop over a large selection recomputes everything once per item. The pattern established by the bulk SCAM removal (`Principale.java`, "Rimozione stato SCAM") is: a `…SenzaConferma` variant of the operation, one modal `Download` progress window kept open for the whole run with the loop on a separate thread, then a single `Funzioni_AggiornaTutto()` at the end followed by `TabellaCryptodaAggiornare = false`, so the next focus regain does not repeat it.
-
-Two more statics carry the context of the movements popup menu: `PopUp_IDTrans` (ID of the **first** selected row) and `PopUp_IDTransSelezionati` (IDs of **all** selected rows, added for the split/merge menu items). Both are filled in `Funzioni_RichiamaPopUpdaTabella` before the menu opens. The invariant is easy to break: **every** table that opens that popup must repopulate the list, otherwise the menu acts on the previous table's selection — which is why `GUI_DettaglioTransazione`, which has its own popup and its own `Funzioni_RichiamaPopUpdaTabella`, had to be aligned too.
-
-**I contatori del pulsante "Errori" sono cinque e non nascono tutti insieme.** Tre (`NumErroriMovNoPrezzo`, `NumErroriMovSconosciuti`, `NumErroriStackLiFoMancante`) li calcola il ciclo di `TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa`; il quarto, `NumErroriGiacenzeNegative`, e il quinto, `NumErroriMovimentiCollegati` (2026-10-05), arrivano dal thread di `Funzione_CaricaTabelleSecondarieInBackgroud`, che finisce **dopo**. Per questo il testo del pulsante sta in `Errori_AggiornaPulsante()`, chiamato da tutti e due i punti: da uno solo mostrerebbe sempre il conteggio della passata precedente, e zero al primo caricamento.
-
-**"Movimenti collegati incoerenti" (quinto contatore) controlla i `[20]`, non un calcolo.** `MovimentiCollegati.Controlla`
-(logica pura, gira sulla copia della collezione nel thread in background, 10-30 ms su 20.000 movimenti) verifica che
-ogni riferimento di `[20]` punti a un movimento esistente che lo ricambia: tutte le forme legittime sono simmetriche,
-e sugli archivi reali dell'utente il controllo dà zero. Le eccezioni sono di tre tipi: scambio differito sovrascritto
-(bug C17, il prelievo cita generati che citano un altro prelievo, riparabile con *Ricostruisci gli scambi*),
-contratto Dual a moneta uguale nella forma precedente (bug C18, versi unici per costruzione: si converte ripassando
-il file di dettaglio, quindi **non** va contato fra gli "altri"), altri riferimenti rotti (a mano, annullando la
-classificazione). Il dialogo (`Principale_MovimentiCollegati.Gestisci`) rifà il controllo sulla mappa viva prima di
-riparare, e un solo `Funzioni_AggiornaTutto()` segue le riparazioni. Una nuova forma di classificazione che scriva
-`[20]` in un verso solo comparirebbe qui come errore: o la si scrive simmetrica, o la si dichiara in
-`MovimentiCollegati.FormaPrecedenteDual`. La chiave `DUAL-` in `[45]` invece non si conta e non può
-essere incompleta: sta solo sui movimenti originali, e i generati la ricavano dal loro gruppo `[20]`
-(`GruppoOperazione.ChiaveEffettiva`). Un dato in un posto solo: il gruppo lo dice `[20]`, l'identità `[45]`.
-
-**"Giacenze negative" non è un doppione di "parte del LiFo mancante"**, anche se le due voci del dialogo portano alla stessa scheda. La prima viene da `Funzioni.ControllaSaldiNegativi`, che ragiona per **exchange + sotto-wallet** (`[3];[4];token`); la seconda conta i movimenti con la lettera `A` in `v[38]`, scritta dal motore delle plusvalenze e quindi ragionata per **gruppo wallet**. Un trasferimento interno azzera esplicitamente quella `A`, perciò un comparto svuotato a forza di giroconti (es. un sotto-wallet alimentato via `walletSpecularePerCausale`) produce la prima e non la seconda. Le etichette del dialogo devono continuare a distinguerle. `ControllaSaldiNegativi` scorre `MappaCryptoWallet` nell'ordine della mappa, che è una `TreeMap` sull'ID il cui prefisso è `yyyyMMddHHmmss`: il conteggio è quindi **cronologico a prescindere dall'ordine in cui i CSV sono stati importati**, e un rientro caricato prima della sua uscita viene segnalato finché manca l'altra riga.
+Central JFrame holding the static maps other classes read: `MappaCryptoWallet` (all movements), `Mappa_ChainExplorer`,
+`Mappa_AddressRete_Nome`, `MappaRetiSupportate` (populated at startup by `VarCondivise.CompilaMappaChain()` /
+`CompilaMappaRetiSupportate()`). Traps:
+- **Mass operations must not reuse the single-item function in a loop**: every dialog close refocuses the main window and
+  `TabellaCryptodaAggiornare` triggers a full `Funzioni_AggiornaTutto()`. Pattern (bulk SCAM removal): a `…SenzaConferma`
+  variant, one modal `Download` progress window with the loop on another thread, a single `Funzioni_AggiornaTutto()` at the end,
+  then `TabellaCryptodaAggiornare = false`.
+- `PopUp_IDTrans` (first selected row) and `PopUp_IDTransSelezionati` (all) must be refilled by **every** table that opens the
+  movements popup in `Funzioni_RichiamaPopUpdaTabella` (including `GUI_DettaglioTransazione`), or the menu acts on the previous selection.
+- I cinque contatori del pulsante "Errori" non nascono insieme: tre dal ciclo di `TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa`,
+  due (`NumErroriGiacenzeNegative`, `NumErroriMovimentiCollegati`) dal thread di `Funzione_CaricaTabelleSecondarieInBackgroud`:
+  il testo sta in `Errori_AggiornaPulsante()`, chiamato da entrambi i punti.
+- "Movimenti collegati incoerenti" controlla i `[20]` (simmetria): una nuova classificazione che scriva `[20]` in un verso solo
+  compare come errore, o la si scrive simmetrica o la si dichiara in `MovimentiCollegati.FormaPrecedenteDual`.
+- "Giacenze negative" (`Funzioni.ControllaSaldiNegativi`, per exchange + sotto-wallet) **non è un doppione** di "parte del LiFo
+  mancante" (lettera `A` in `v[38]`, per gruppo wallet): le etichette del dialogo devono continuare a distinguerle.
+  Il dialogo del LiFo (`Principale_LifoMancante`) conta i depositi che stanno nella giacenza ma non nella pila, e
+  `CausaleDepositoRiconosciuta` è una **copia** della catena dei depositi di `ElaboraMovimento`: un ramo nuovo nel motore va
+  aggiunto anche lì (`Principale_LifoMancanteTest` lo verifica).
+Dettagli: `nocommit/Documentazione/Dettagli_Principale_GUI.md`.
 
 ### Separating GUI from operational logic (ongoing refactor)
 
-`Principale.java` is ~16 000 lines and its `.form` is over 500 KB, because GUI and business logic grew together in the same file. **The direction of travel is to keep the two as separate as possible**: `Principale` should hold the Swing wiring, and the operational logic of each tab should live in its own companion class.
-
-This extraction is already under way — it is a deliberate, incremental refactor, not accidental structure:
-
-| Class | Holds |
-|---|---|
-| `Principale_GiacenzeaData.java` | operational logic of the "Giacenze a data" tab |
-| `Principale_Opzioni_Pulizie.java` | data-cleanup operations from the options tab |
-| `Principale_QuadroRW.java` | the CRYPTO rows of the Quadro W/RW summary table (`RighiCrypto`): one row per wallet group and per CRYPTO holding period, bollo of the period, year-end/period snapshot for bollo periods. Extracted from `RW_CalcolaRW` on 2026-09-26 when rows became per period |
-| `Principale_Movimenti_SeparaUnisci.java` | three popup operations on movements: splitting one two-coin movement into an independent deposit + withdrawal, merging an unclassified deposit + withdrawal back into a single swap, and merging N already-classified movements of the same type/coin/wallet into one by summing their quantities |
-| `Principale_MovimentiCollegati.java` | the "Movimenti collegati incoerenti" entry of the Errori button: shows what `MovimentiCollegati.Controlla` found and rebuilds overwritten deferred swaps on request. The logic itself is in `MovimentiCollegati` (no Swing), shared with `Binance_DualInvestment` |
-| `Principale_Dichiarazioni.java` | the declaration archive: joint generation of a declaration's files (`Genera`), the T/RT Excel, the actions of the *Archivio dichiarazioni* panel. Storage and rules in `Dichiarazioni` (no Swing) |
-| `Principale_CommissioniCollegate.java` | the linked-fee operations of phase 3: one-shot, re-runnable pairing of the archive's fees (*Opzioni → Commissioni collegate*), manual *Collega/Scollega commissioni* from the movements popup, the rows shown in the movement detail. None of them recomputes anything — they only turn on *Salva* |
-
-**These rules are provisional**: they simply describe what the two existing classes already do, and are still to be reviewed and agreed with the user — open points include whether dialogs and wait cursors belong in the extracted classes at all, and whether shared state should keep being reached through the static maps or be passed in instead. Until that review happens, mirror the existing pattern rather than inventing a different one.
-
-Follow the shape of the existing extractions when moving code:
-
-- Name the class `Principale_<Tab or area>`, in the same package.
-- Methods are `public static`; the class holds **no Swing fields** and no reference to `Principale`. Whatever it needs is passed in — the `JTable` to read the selection from, a `Window owner` to parent dialogs, a wallet name, etc. (`GiacenzeaData_Funzione_SistemaQta(JTable, String Wallet, Window owner)`).
-- Shared state is reached the same way as before, via the static maps (`import static Principale.MappaCryptoWallet`).
-- The extracted method returns what the GUI needs in order to react — typically a `boolean` "something changed". **Refreshing tables stays in `Principale`**, so the event handler collapses to a thin delegation:
-
-  ```java
-  if (Principale_GiacenzeaData.GiacenzeaData_Funzione_SistemaQta(
-          GiacenzeaData_TabellaDettaglioMovimenti, Giacenzeadata_Walleta_Label.getText().trim(), this))
-      GiacenzeaData_CompilaTabellaToken(true);
-  ```
-
-- The split is pragmatic, not strict MVC: the extracted classes still open `AppDialog` confirmations and set wait cursors, using the `Window` passed in. What must **not** stay in `Principale` is the operational work itself.
-
-When adding a feature to a tab that already has a companion class, put the logic there rather than growing `Principale`. **Extracting further areas is planned work to be done together with the user — do not undertake a broad migration of existing code unprompted.**
+`Principale.java` is ~16.000 lines because GUI and logic grew together. **Direction of travel: `Principale` holds the Swing
+wiring, each tab's operational logic lives in a companion class `Principale_<Tab or area>`** (existing: `_GiacenzeaData`,
+`_Opzioni_Pulizie`, `_QuadroRW`, `_Movimenti_SeparaUnisci`, `_MovimentiCollegati`, `_Dichiarazioni`, `_CommissioniCollegate`,
+`_FiltriMovimenti`, `_GruppiWalletRW`, `_EmoneyMancanti`, `_RecuperoScarti`...). Mirror the existing pattern (provisional rules):
+- methods `public static`, **no Swing fields**, no reference to `Principale`; what is needed is passed in (the `JTable`, a
+  `Window owner`, a wallet name); shared state via the static maps (`import static Principale.MappaCryptoWallet`);
+- the method returns what the GUI needs to react (typically a `boolean` "something changed"): **refreshing tables stays in
+  `Principale`**, so the handler is a thin delegation;
+- pragmatic, not strict MVC: extracted classes still open `AppDialog` confirmations and set wait cursors using the `Window`.
+When adding a feature to a tab that has a companion class, put the logic there. **Extracting further areas is planned work to
+do with the user: do not undertake a broad migration unprompted.** Table of what each class holds: `nocommit/Documentazione/Dettagli_Principale_GUI.md`.
 
 ### Il costo di carico delle rimanenze in "Giacenze a data"
 
-La colonna accanto a "Valore (in Euro)" è il costo di carico LIFO della giacenza mostrata sulla riga,
-prodotto da `Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(DataRiferimento)`. Tre cose non ovvie:
-
-- **La passata non è filtrata per wallet, la lettura sì.** Le quantità della tabella si possono filtrare
-  a monte perché sommare è locale; il LIFO no. Soprattutto, **un giroconto interno non porta con sé
-  nessun costo** — `Calcoli_PlusvalenzeNew` lascia `v[16]` e `v[17]` vuoti quando la controparte è dello
-  stesso gruppo — quindi una pila costruita sui soli movimenti del wallet selezionato mostrerebbe
-  giacenze positive a costo zero per ogni moneta arrivata da un giroconto. Fissato da
-  `unaMonetaArrivataConUnGiroContoInternoConservaIlSuoCostoDiCarico`.
-- **La pila è per gruppo wallet come nel motore, ma la moneta è la chiave della riga**
-  (`Moneta;Tipo;Address;Rete`) e non il solo simbolo: due righe con lo stesso simbolo su reti diverse
-  leggerebbero altrimenti lo stesso lotto due volte. In lettura i lotti dei gruppi in gioco si uniscono e
-  si riordinano per ID del movimento (che comincia con `yyyyMMddHHmmss`, quindi è già cronologico), così
-  "Tutti", un gruppo e un singolo wallet sono la stessa lettura ad ampiezze diverse.
-- **I costi non si ricalcolano**: i lotti si caricano con `v[17]`, che il motore delle plusvalenze ha già
-  scritto. Le regole di carico/scarico (TI ignorati, PTW scaricato dal DTW di destinazione, DTW che
-  scarica il gruppo di provenienza) sono quelle della PARTE 2 di `Calcoli_RT`: è la **terza** copia di
-  quelle regole, dopo il motore e il quadro RT, e il javadoc lo dichiara invece di nasconderlo.
-- **Il dettaglio movimento usa le stesse pile** (`GiacenzeAttornoAlMovimento`, giacenze prima/dopo su
-  globale/gruppo/wallet): le regole stanno in `ElaboraLotti`, unica copia nella classe, e il dettaglio la
-  percorre fino al movimento con `headMap(ID)` — per ID, non per data, come il motore — filtrata sui
-  simboli del movimento. Il filtro va applicato a ogni carico/scarico e non al movimento intero, perché un
-  PTW e il suo DTW possono avere simboli diversi. In `GUI_DettaglioTransazione` si vedono in due riquadri sotto la
-  tabella (rosso uscita, verde entrata, `Pannello_Giacenze`), non più come righe HTML della tabella a due colonne:
-  il contenuto è `Principale_GiacenzeaData.TabelleDettaglio` (solo stringhe), i `JTable` si costruiscono in codice. ⚠️
-  L'altezza del pannello (290 dal 2026-10-10, per le righe *Blockchain*) sta **nel layout** (`.form` e `initComponents`): un `setPreferredSize` nel costruttore,
-  dopo la `pack()` di `initComponents`, non ridimensiona il dialogo.
-
-- **Colonne derivate della tabella principale** (*Valore unitario*, *Costo unitario*, *Differenza valore − costo*,
-  indici 7-9): restano **vuote, non zero**, per FIAT, giacenza ≤ 0 e — la differenza — token senza prezzo, che
-  altrimenti mostrerebbe l'intero costo come perdita. Il costo unitario divide il costo **esatto**
-  (`CostoEsattoDelleRimanenze`), non quello mostrato a due decimali, che su un token da frazioni di centesimo
-  darebbe zero. Tutto in `Principale_GiacenzeaData.ValoriDerivatiRiga`.
-- **Tabella dettaglio movimenti: cinque colonne di costo in coda al model** (indici **13-17**: costo di carico del
-  movimento da `v[16]`/`v[17]`, prezzo unitario, valore e costo di carico della qta residua, differenza valore − costo,
-  quest'ultima vuota se manca un termine o la giacenza residua è ≤ 0). Stanno **in coda al model** perché
-  `Tabelle.ColoraRigheTabella1GiacenzeaData` è condiviso con la tabella dei saldi negativi e con quella dei token SCAM e ha
-  indici fissi (5, 7, 10-12), e perché selezione e popup leggono l'ID alla colonna 8 **del model**; a video si riordinano
-  solo le colonne: l'ID e le altre interne (8-12) **non sono nella vista** (`LayoutColonneMovimenti.PROFILO_GIACENZE_DETTAGLIO`)
-  e il costo di carico del movimento (13) sta prima di *Qta Residua*. Conseguenza: qualunque lettura da questa tabella va
-  fatta con `getModel().getValueAt(convertRowIndexToModel(riga), N)`, mai con `getValueAt(riga, N)` (indice di vista), e
-  `ColoraRigheTabella1GiacenzeaData` converte la colonna in indice di model. L'utente sceglie quali colonne vedere col
-  pulsante *Colonne...* (stesso dialogo `GUI_ColonneMovimenti` e stessa classe `LayoutColonneMovimenti` della tabella
-  movimenti, parametrizzati da un `Profilo`; salvataggio in `personale.mv.db`, chiave `GiacenzeaData_Dettaglio_LayoutColonne`).
-  Colori: con `putClientProperty(Tabelle.PROP_COLORA_SOLO_QTA_E_DIFFERENZA, TRUE)` solo *Quantità* e *Differenza* sono
-  verdi/rosse (per segno), il resto resta del colore normale e *Qta Residua* ha il proprio.
-  - **Il prezzo unitario nullo non è un prezzo**: `v[15]` ha due decimali, una ricompensa da frazioni di centesimo vale
-    `0.00` e dividerla azzerava il valore dell'intera giacenza residua (visto su ETH, 0,015 ETH a 0 euro contro 29,59 di
-    costo). `PrezzoUnitarioNelMovimento` usa quindi, in ordine: `v[40]`; valore/quantità solo se il valore è ≥ 10 €; il
-    **prezzo di mercato all'istante del movimento** (cache personale/prezzi ±5 min, archivio orario `XXXEUR`, movimenti
-    vicini ≥ 10 €, quotazione più vicina entro ±1/6/24 h; mai la rete); valore/quantità se ≥ 1 €; altrimenti vuoto. Limite
-    noto: sul dataset reale ETH non ha quotazioni locali fra 2022-02-10 (fine dell'archivio orario) e 2025-02 (inizio della
-    cache al minuto): lì le ricompense minuscole restano senza prezzo.
-  - **Il prezzo di mercato non si cerca durante la costruzione della tabella**: la cache dei prezzi ha la chiave che comincia
-    col timestamp, quindi ogni finestra scandisce i prezzi di *tutte* le monete, e migliaia di righe valevano secondi (la
-    tabella si apriva con un ritardo visibile). `ColonneCostiDettaglio` usa solo le fonti che non leggono nulla
-    (`PrezzoUnitarioNelMovimento(…, false)`); le righe rimaste senza prezzo (`PrezzoDaCompletare`) si completano in
-    background da `Principale.GiacenzeaData_CompletaPrezziDettaglio` (`CompletaPrezzoDettaglio`), a blocchi, scrivendo nel
-    model sul thread grafico solo se `GiacenzeaData_GenerazioneDettaglio` è ancora quella di partenza e la riga è la stessa
-    (ID in colonna 8). `AggiornaCoperturaPrezzi()` (una `MIN/MAX` all'inizio di ogni costruzione) evita di interrogare la
-    cache per i movimenti fuori dal suo intervallo.
-  - Il costo residuo è la stessa regola della principale (**passata non filtrata, lettura sì**):
-    `CostiDettaglioToken.Avanza` va chiamato su **tutti** i movimenti anteriori alla data, anche su quelli che il filtro
-    wallet scarta, altrimenti un giroconto interno fa sparire il costo. `CostiCaricoRimanenze` tiene i totali di ogni pila
-    (`TotaliPila`) e i lotti già convertiti in `BigDecimal` (`LottiNumerici`): la lettura che copre tutta la pila — "Tutti"
-    o un gruppo intero — è la somma già pronta invece di una riconversione da testo di tutti i lotti a ogni riga (su BTC,
-    4.237 righe: da ~650 a ~100 ms). Le colonne di costo e quelle unitarie non si sommano nell'header
-    (`putClientProperty("ColonneSenzaSomma", …)`, letta da `Tabelle.Tabelle_getSommeColonne`). Fissato da
-    `lUltimaRigaDelDettaglioCoincideConLaTabellaPrincipale` e da `LayoutColonneGiacenzeDettaglioTest`.
-
-⚠️ Le colonne derivate hanno spostato gli indici della tabella principale: *Errori* è la **10** e *InfoPrezzo*
-la **11** (prima 7 e 8), sia nei lettori di `Principale` sia in `Tabelle.ColoraRigheTabella0GiacenzeaData`.
-
-**Colonna *Qta Blockchain*** (model **12**, in coda; a video subito dopo *Qta*, larga zero se non serve), 2026-10-10:
-con un singolo wallet DeFi EVM e sotto-wallet "Wallet", o "Tutti" se non ce ne sono altri (`GiacenzeBlockchain.WalletDaLeggere`) un thread, a tabella
-pronta, legge dai **nodi pubblici con lo stato storico** il saldo della moneta della rete e dei token delle righe (NFT
-esclusi) all'ultimo blocco con timestamp **strettamente minore** di `DataRiferimento`, lo stesso `<` di
-`SommaQuantitaAData`; scrive per chiave riga e scarta il risultato se la tabella è stata ricalcolata (generazione).
-Il renderer la colora per confronto numerico con *Qta* (`GiacenzeBlockchain.Coincide`). Tre cose non ovvie: **un saldo
-non letto è "n.d.", mai zero** (decodifica di `aggregate3` propria, perché quella di `Trans_XLayer` rende zero una
-chiamata fallita); i nodi (`nodiStorico` di `config/varie/Reti.json`, letti da `GiacenzeBlockchain.Nodi`) sono solo quelli verificati il 10/10/2026 a due altezze contro
-gli altri nodi della rete, perché alcuni pubblici **rispondono 0x0 invece di un errore** per lo stato che non hanno
-(drpc su OP pre-Bedrock, Alchemy pubblico su World) e il nodo ufficiale di HyperEVM **ignora il blocco** e dà il saldo
-di oggi — un nodo nuovo va verificato così prima di aggiungerlo; prima di Multicall3 sulla rete si legge un saldo per
-chiamata. Blocco per (rete, istante) e saldi per blocco passato stanno in cache in `GIACENZEBLOCKCHAIN` (chiavi
-`BLOCCO|…` e `SALDO|…`, mai l'ultimo blocco). MONAD non ha nodi pubblici con lo storico: solo la data di oggi. Provato sui
-wallet reali: BASE, CRO e BSC al 31/12/2024 coincidono salvo SCAM, token "reflection" e differenze vere (quota L1 delle
-commissioni dell'era Moralis su BASE).
-**L'indirizzo sulla blockchain è il solo sotto-wallet `"Wallet"`** (`GiacenzeBlockchain.SOTTOWALLET_INDIRIZZO`, dove
-`TransazioneDefi` mette ogni movimento): "Piattaforma/DeFi", "Collaterale Bloccato" e "Piattaforma di scambio" li crea la
-classificazione e tengono monete che hanno lasciato l'indirizzo (farm, garanzie, scambio differito in corso). Confrontare
-con tutto il wallet faceva sembrare sbagliato ogni token messo in una farm. **Il dettaglio movimento** ha le stesse
-letture (`GiacenzeBlockchain.LeggiAttornoAlMovimento`, righe *Blockchain* prima/dopo nei riquadri, in background con la
-generazione del dialogo): saldo a fine blocco `v[23]-1` e `v[23]`, confrontato con l'archivio del sotto-wallet "Wallet"
-prima e dopo **tutto il secondo** del movimento, non prima e dopo il movimento, perché una transazione DeFi diventa
-spesso più movimenti (commissione, scambio, gambe interne) e il blocco li contiene tutti. ⚠️ I riquadri hanno larghezza
-preferita e minima fissate in `CreaRiquadroGiacenze`: senza, il più largo (nome di un LP, prezzo con molte cifre) la
-imponeva a tutti e il secondo usciva dal dialogo insieme alla freccia "avanti" (difetto che c'era già prima).
-**La tabella dettaglio movimenti** ha la stessa colonna in **model 18** (`GiacenzeBlockchain.LeggiAiBlocchi`, saldo a
-fine `v[23]` di ogni riga). Non è del layout dell'utente: `PROFILO_GIACENZE_DETTAGLIO` la tiene fra le interne, e
-`Principale.GiacenzeaData_MostraColonnaBlockchainDettaglio` la mette dopo *Qta Residua* o la toglie a fine costruzione,
-solo se cambia (rimetterla ne perderebbe la larghezza), e dopo *Colonne...*, che ricrea le colonne, così non resta vuota per i wallet che non si confrontano e un layout
-salvato non la nasconde. Le righe si confrontano **per secondo** dell'ID (`BlocchiDettaglio`), con il blocco più alto del
-secondo e la Qta Residua dopo l'ultima riga del secondo, anche se il filtro "solo negative" la nasconde: commissione e
-scambio della stessa transazione hanno una Qta Residua intermedia che sulla blockchain non è mai esistita. Il
-termine di confronto sta nella proprietà `Tabelle.PROP_CONFRONTO_BLOCKCHAIN` (ID → quantità), letta dal renderer. Un
-saldo per blocco (senza Multicall3, decimali una volta), cache prima di tutto, e al primo nodo che non risponde ci si
-ferma (ogni blocco rifarebbe i giri di attesa di `NodiPubblici`). *Sistema Qta Residua*
-(`GiacenzeaData_Funzione_SistemaQta`) precompila la giacenza con `GiacenzeBlockchain.GiacenzaPerAllineare`: Qta Residua
-della riga + (blockchain − archivio a fine secondo), perché la rettifica nasce nello stesso secondo del movimento scelto
-e sulla riga di mezzo di un blocco il saldo della blockchain non è la giacenza giusta.
-
-**La stessa colonna per OKX e Binance** (`GiacenzeExchange`, 2026-10-10): col wallet dell'exchange e sotto-wallet "Tutti"
-l'intestazione diventa "Qta OKX"/"Qta Binance" (il renderer delle intestazioni di `Tabelle` usa il valore della colonna se
-impostato). **OKX** dai `bal` dei bill già scaricati (documenti di origine NDJSON, nessuna rete), alla data e nel dettaglio
-riga per riga a fine secondo. Tre regole trovate sui dati reali, da non perdere: un conto ha **più catene di saldo per
-moneta** (ogni bot di trading ha il suo saldo, il conto è la somma; un bill va nella catena dove `ultimo + balChg = bal`);
-la catena si ordina per **`billId`, non per orario** (OKX data a volte un bill un secondo dopo pur avendolo registrato
-prima, e per orario resta una giacenza fantasma); le monete **in Earn** non sono nel `bal` e si aggiungono come capitale
-(75/76/80/81/82, minimo zero a ogni passo, On-chain chiusi al `redeemedTime` dello storico ordini). Gli interessi maturati
-in Earn non ci sono, quindi in quel caso la cella dice "(in Earn)" e non si colora. Una moneta senza nessun bill vale zero solo se
-almeno uno scaricamento ha chiesto tutta la storia (`startDate` prima del 2018, `INIZIO_STORIA_COMPLETA`): con soli
-scaricamenti incrementali (anni prima da CSV) è `n.d.`, non un falso "0" che inviterebbe a rettificare. **Binance solo ad oggi**: lo snapshot
-giornaliero copre l'ultimo mese e solo lo Spot (documentazione ufficiale), mentre l'archivio unisce Spot, Funding ed Earn;
-`Binance_Saldi.js` legge i saldi attuali, una sezione fallita annulla il totale. Diagnosi e misure in
-`nocommit/Documentazione/Analisi_Giacenze_Exchange.md`.
-
-**Scheda *Grafico* del dettaglio** (2026-10-10): il dettaglio movimenti sta in `GiacenzeaData_TabbedDettaglio` (*Tabella* /
-*Grafico*). Le variazioni (`GraficoGiacenze.Variazione`) si raccolgono **nello stesso ciclo** che riempie la tabella, prima
-del filtro "solo negative": stesse righe e stesse giacenze della tabella. Il valore dopo il movimento è quello della colonna
-"valore qta residua" se c'è **alla costruzione**, altrimenti giacenza per prezzo di fine giornata: le righe che
-`GiacenzeaData_CompletaPrezziDettaglio` prezza dopo, in background, nel grafico restano col prezzo del giorno. Il calcolo parte solo con la scheda in vista, su un thread unico, ed è scartato dalla
-generazione del dettaglio. ⚠️ **I prezzi giornalieri non sono prezzi fiscali e non devono mai toccare `PrezziNew` né i
-marcatori**: un'apertura giornaliera alle 00:00 UTC diventerebbe la quotazione più vicina di qualche valorizzazione (la
-scheda allarga fino a ±24 h, il quadro RW legge la cache dal vivo) e un giorno marcato fermerebbe lo scaricamento al
-minuto. Per questo `PrezziGiornalieri` ha una tabella propria (`PrezziGiornalieri`, chiave moneta + giorno UTC, letta da
-nessun calcolo) e usa solo il JSON di `Prezzi.EseguiLottoScript(…, "1d")` e le funzioni pure di `PrezziDefiLlama`, mai
-`ScaricaCoppie`/`ScriviEsitoInCache`/`managerRichieste`. Fonti: archivio `XXXEUR`, poi candele giornaliere CCXT
-(apertura del giorno UTC dopo = chiusura) o `/chart?period=1d` di DefiLlama per i token con address senza alias. Il
-timeframe entra nel nome del file di cache conversione di `Historical_Multi_Eur.js` solo se diverso da `1m`.
+Il costo di carico LIFO accanto a "Valore (in Euro)" lo produce `Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze`. Invarianti:
+- **La passata non è filtrata per wallet, la lettura sì**: un giroconto interno non porta con sé nessun costo (`v[16]`/`v[17]`
+  vuoti), quindi una pila costruita sul solo wallet selezionato mostrerebbe giacenze a costo zero. `CostiDettaglioToken.Avanza`
+  va chiamato su **tutti** i movimenti anteriori alla data. Pila per gruppo wallet, chiave di riga `Moneta;Tipo;Address;Rete`.
+- **I costi non si ricalcolano**: lotti da `v[17]`. Le regole di carico/scarico (`ElaboraLotti`) sono la **terza** copia dopo il
+  motore e la PARTE 2 di `Calcoli_RT`.
+- Colonne derivate della principale (7-9) **vuote, non zero** per FIAT, giacenza ≤ 0 e (la differenza) token senza prezzo.
+  *Errori* è la **10**, *InfoPrezzo* l'**11**.
+- Tabella dettaglio: costi in coda al model (**13-17**, blockchain **18**), l'ID è alla colonna 8 **del model**. Ogni lettura va
+  fatta con `getModel().getValueAt(convertRowIndexToModel(riga), N)`, mai `getValueAt(riga, N)`.
+- Il prezzo unitario nullo non è un prezzo (`v[15]` ha due decimali). Il prezzo di mercato **non si cerca durante la costruzione
+  della tabella**: si completa in background (`CompletaPrezzoDettaglio`, scartato se la generazione è cambiata).
+- *Qta Blockchain* / *Qta OKX* / *Qta Binance*: un saldo non letto è **"n.d.", mai zero**; i nodi `nodiStorico` si aggiungono solo
+  dopo averli verificati a due altezze (alcuni rispondono `0x0`); si confronta il solo sotto-wallet `"Wallet"`.
+- Scheda *Grafico*: i prezzi giornalieri **non sono prezzi fiscali** e non toccano mai `PrezziNew` né i marcatori (tabella propria `PrezziGiornalieri`).
+- L'altezza del pannello giacenze del dettaglio sta nel layout (`.form` e `initComponents`), non in un `setPreferredSize`.
+Dettagli completi: `nocommit/Documentazione/Dettagli_GiacenzeaData.md`, `Analisi_Giacenze_Exchange.md`.
 
 ### Filtri della tabella movimenti — due meccanismi, non uno
 
-Sulla tabella dei movimenti agiscono **due** famiglie di filtri, e confonderle porta a scrivere
-codice che non funziona: i **filtri di riga** (`RowFilter` Swing — colonne dell'header, campo di
-ricerca) agiscono su un modello già costruito; i **filtri di caricamento** (wallet/gruppo, token,
-documento di origine, date, TI, SCAM, senza prezzo, LiFo mancante) decidono quali righe esistono e
-vivono in `Principale_FiltriMovimenti.FiltriMovimenti.Passa()` — cambiarli costa un ricaricamento.
-
-Il documento di origine **non può** essere un `RowFilter`: il modello dichiara 40 colonne ma
-`Converti_String_Object` produce 46 elementi, e `DefaultTableModel.justifyRows` tronca ogni riga a
-`getColumnCount()` — i campi `[40]`-`[45]` non entrano mai nel modello. `Passa()` non legge nulla per
-conto proprio: riceve dati già calcolati dal ciclo di caricamento. Il dialogo `GUI_FiltriMovimenti`
-scrive un unico record (`FiltriCorrenti`) e ricarica una volta sola — la barra non ha più nessun
-controllo di filtro oltre a ricerca/Filtri…/Azzera Filtri.
-
-**La scheda «Filtri» e l'imbuto dei dettagli** (2026-10-02). Nel pannello a schede accanto ai dettagli del movimento
-(`TransazioniCrypto_TabbedPane`) la scheda *Filtri* elenca **tutti** i filtri attivi, uno per riga, con un bidone che toglie
-*quel* filtro: i criteri della finestra *Filtri…* (il bidone ricarica la tabella), il campo di ricerca, e **una riga per ogni
-colonna filtrata** (il bidone toglie tutti i valori di quella colonna). La lista è una sola
-(`Principale_FiltriMovimenti.RigheCaricamento` + `RigheDiRiga`, testata senza GUI) e da lì derivano scheda, tooltip e numero del
-pulsante, che non possono divergere: per questo `FiltriMovimenti.Descrizione` è costruita da `Criteri()`, e ogni colonna filtrata
-conta 1 (prima tutte insieme contavano 1). Il filtro per colonna è `Tabelle.FiltroValori`, **non più un `RowFilter` anonimo**: i
-valori scelti vivono solo lì, in `tableFilters`, e un secondo posto dove ricordarli verrebbe sovrascritto a ogni ricostruzione.
-Chi sta dentro `Tabelle` (il popup dell'header) avvisa `Tabelle.tableFiltersListener`, che `Principale` aggancia ad
-`AggiornaPulsante`: prima di questo il popup non aggiornava né la banda né il contatore. La scheda si ricompone da
-`FiltriMovimenti_AggiornaIndicatori`, il punto da cui passa ogni cambio (ricarica, digitazione nella ricerca, focus alla finestra).
-Le righe filtrabili dei dettagli (terza colonna *Filtra*, `RigaDettaglioFiltrabile`) filtrano la colonna di model **sul valore letto
-dal model della tabella movimenti, non dal testo mostrato** (che può essere HTML o composto) e **sostituiscono** il filtro che la
-colonna aveva già; l'imbuto è **pieno** (`Icone.ImbutoPieno`) quando il filtro della riga è proprio quello attivo (`FiltroRigaAttivo`: per una colonna solo se ammette *esattamente* quel valore, con più valori scelti dal popup resta vuoto) e un secondo clic lo toglie — lo stato si decide a ogni disegno del renderer, non al riempimento dei dettagli, perché i filtri cambiano da molte parti e `AggiornaSchedaFiltri` ridisegna la tabella; il documento di origine (`[41]`, fuori dal model) passa dal criterio *Documento* e quindi ricarica la tabella.
-`Tabelle.java` è CRLF: le modifiche vanno fatte preservando i fine riga.
-
-Meccanica completa (perché i due `RowFilter` non applicano nulla da soli, `GroupLayout` da
-ricostruire e non modificare a righe, il difetto noto sul wallet singolo senza gruppo) in
-`nocommit/Documentazione/Analisi_Filtri_Movimenti.md`.
+I **filtri di riga** (`RowFilter`: colonne dell'header, campo di ricerca) agiscono su un modello già costruito; i **filtri di
+caricamento** (wallet/gruppo, token, documento di origine, date, TI, SCAM, senza prezzo, LiFo mancante) decidono quali righe
+esistono, vivono in `Principale_FiltriMovimenti.FiltriMovimenti.Passa()` e cambiarli costa un ricaricamento. Il documento di
+origine **non può** essere un `RowFilter` (il model dichiara 40 colonne, `Converti_String_Object` ne produce 46). Il filtro per
+colonna è `Tabelle.FiltroValori` (i valori vivono solo in `tableFilters`). La scheda *Filtri* e l'imbuto dei dettagli derivano da
+**una lista sola** (`RigheCaricamento` + `RigheDiRiga`) e si ricompongono da `FiltriMovimenti_AggiornaIndicatori`.
+`Tabelle.java` è CRLF. Dettagli: `nocommit/Documentazione/Dettagli_FiltriMovimenti.md`, `Analisi_Filtri_Movimenti.md`.
 
 ### The movement row model — read this before touching any calculation
 
@@ -400,29 +207,28 @@ A movement is **not** a class: it is a `String[]` of `Importazioni.ColonneTabell
 - `[0]` is the ID; its last `_XX` segment is the **categoria** (read by `Calcoli_PlusvalenzeNew` as `IDTS[4]`). `[5]` is the transaction-type description, `[18]` the subtype/marker.
 - `nocommit/Documentazione/Analisi_Campo5_Campo18_Categoria.md` is the reference for which campo5/campo18/categoria combinations are legal and where each is produced.
 - `[42]` is the **lignaggio**: a random `UUID` written the first time a movement is modified by hand, and the key of its modification history (`MOVIMENTI_STORICO`). Blank means "never modified manually". It must be **copied verbatim** by anything that rebuilds a movement — that is why it is deliberately absent from `MovimentiCrypto.CampiNonCopiabiliVerbatim` and present in `Principale_Movimenti_SeparaUnisci.CampiDaRiportare`; dropping it orphans that movement's history. See `MovimentiStorico` and `nocommit/Documentazione/Analisi_Storico_Modifiche_Movimenti.md`, section "v6".
-- `[43]` is the **linked-fee group key** (`CommissioniCollegate`, 2026-09-29): one opaque value written on a fee (`CM`) **and** on the movement(s) it belongs to — a shared key, not a pointer, because `[0]` changes in half the program (Trasla Orario, Modifica Movimento, classification, scambio differito, Separa/Unisci). Written at import (DeFi gas on every row of the tx, generic CSV per row/order, OKX per bill or on the rebuilt swap, Binance/CoinTracking/ccxt). **Informative only**: no engine reads it, it is outside `Impronta` and the golden master; it exists for future derivatives, where fees are deducted — spot fees are not. Same copy rules as `[42]`: absent from `CampiNonCopiabiliVerbatim`, present in `CampiDaRiportare` and `CampiProvenienzaUnione`. Merges fuse the groups (`FondiChiavi`), deletions ask once whether to delete fees left with no movement (`CommissioniOrfane`). Transfer fees created by classification (`CM` `AU`) deliberately get no key. **Fees only**: from 2026-09-29 to 2026-10-05 the field also held the Dual Investment contract key, which fused a fee linked to the Purchase into the contract group (losing which movement it belonged to) and needed five `isGruppoDual` exceptions; the contract key now lives in `[45]`, and rows of that period are moved on load (`GruppoOperazione.MigraAllaFormaAttuale`). Existing archives are paired by hand (`Principale_CommissioniCollegate.AbbinaArchivio`: same `[24]`+`[3]` within an hour, else the **only** movement in the same second on the same `[3]`; ambiguous cases are left alone by agreement — on the real dataset that links ~79% of fees, the rest being mostly gas-only DeFi txs). Design in `nocommit/Documentazione/Analisi_Commissioni_Collegate.md`.
-- `[44]` is the **derivative marker** (`Derivati`, 2026-09-29): a short type (`PNL`, `FUNDING`, `BONUS`, `COMMISSIONE`, `DUAL`...) written by the generic import from the config key `causaliDerivati` (causale → type), blank on every other movement. **Identification only**: no engine reads it, derivatives are still computed as crypto-attività — wrong on purpose until the user has studied the fiscal cases, and said so by the end-of-import warning (`Importazioni.TestoAvvisoDerivati`) and by the W/RW and T/RT prints (`Derivati.TestoAvvisoQuadro`, note key `DERIVATI`, plus "Movimenti su derivati" in the RT table's *Errori* column, which the print button does not count as an error). Do **not** put derivative markers in campo 18 before the engine handles them: `ElaboraMovimento` silently skips a DC/PC whose campo 18 it does not know. Copy rules as `[43]`. Configs keep the same causali in `causaliAllertaDerivati` too, for installed versions that ignore `causaliDerivati`. The full design for when derivatives are handled (c-quater, RT sez. II-A, RW codice 9) is in `nocommit/Documentazione/Analisi_Derivati.md`. The row was widened to 46 for `[45]` on 2026-10-05 (a known, already-handled operation: `Importazioni.ColonneTabella`, padding on load, `Backup_Compatibilita`). The load pads every older row, which sets `VersioneCambiata` and rewrites the movements file at startup with a backup, so the move of the contract keys is saved without the user pressing *Salva*. A backup made with 46 columns is refused by versions that handle 45.
-- `[45]` is the **operation key** (`GruppoOperazione`, 2026-10-05): «these movements are the same operation». Today only `Binance_DualInvestment.Abbina` writes it, `DUAL-<id contratto>` (`GruppoOperazione.ChiaveDual`, id from column 3 of the detail CSV), and **only on Purchase and Settlement**. **One fact, one place** (the user's choice, 2026-10-05): the group (who is linked to whom) is `[20]`, the identity is `[45]`, so a generated movement (`AU`: mirror legs, reward, the three deferred-swap movements) never carries the key and **derives** it from the originals of its `[20]` group (`GruppoOperazione.ChiaveEffettiva`; none if they carry different keys). It is one of the inputs of the **computed operation** (`OperazioniCalcolate`, see the paragraph after this list), which is what column 42 and the movement detail show. For a few hours on 2026-10-05 the key was propagated to generated rows instead, and could be left incomplete by a manual reclassification (3 of 5): the load removes keys on generated rows (`GruppoOperazione.MigraAllaFormaAttuale`). It is where saved groups of other operations will go. It is separate from `[43]` on purpose (see above): a fee keeps its own link to its movement, and the movement also carries the contract identity, no fusion. It is **not** `[20]` either: the engine reads `[20]` to pair PTW/DTW (`Calcoli_PlusvalenzeNew`), `Impronta` hashes it, and undoing a classification cleans every ID listed there. **Informative only**, outside `Impronta` and the golden master. It is an **identity**: it stays on Purchase/Settlement when their classification is undone (re-passing the file finds them by it). Copy rules as `[42]`/`[43]` (`CampiDaRiportare`, `CampiProvenienzaUnione`), a duplicate drops it. **Filtering:** the table model stops at `v[39]` plus derived tail columns, so operations are shown through the derived model column **42 "Operazione"** ("Gruppo Collegato" until 2026-10-05; hidden by default, offered in *Colonne...*; `z[42]` = the computed operation key in the loading loop; like column 41 "Alias Gruppo Wallet" which is not `v[41]` either) — the search box matches every model column, hidden ones included, so typing `DUAL-` or a contract id finds the whole contract, and the column's header filter selects one operation exactly. `LayoutColonneMovimenti.COLONNA_MASSIMA` is 42; any new tail column needs `Principale.form` (the `<Column>` entry **and** the `columnCount` attribute of `<Table>`: left at 42 with 43 columns, the GUI Builder refuses to load the model), **all three** arrays of the model in `initComponents` (header names, `types`, `canEdit` — forgetting `types` made `getColumnClass` throw `Index 42 out of bounds` and the app did not start, which no unit test sees: launch the app on the virtual display after touching them), the loop and that constant. Contracts matched before 2026-10-02 have no key, and re-passing the detail file fills it in: `Abbina` also accepts Purchase/Settlement that are *already* matched, recognised by campo 18 (`PTW/DTW - Trasferimento a/da Dual Investment` same coin, `PTW/DTW - Scambio Differito` different coin) and by the quantity they carry *after* matching (same coin: the Settlement holds the whole settled amount, or only the capital if matched before 2026-10-05), and on those only writes the key (`MarcaContratto`), after converting/repairing them (see the Dual paragraph under "Import pipeline") — never re-runs the matching, which would double the mirror legs. A candidate keyed to another contract is excluded, one keyed to this contract wins; a half-matched contract is reported and left alone.
-- **Duplicating a movement** (`Funzioni.DuplicaMovimento`, *Duplica* in Depositi/Prelievi) makes an independent
-  movement: no `[42]` lignaggio (it used to share the original's history chain), no `[43]`/`[45]`, but it keeps a
-  single-movement classification and `[41]`. A member of a classified group (`[20]` not blank) or a generated `AU`
-  row is refused (`Funzioni.isDuplicabile`): the copy would claim a group that does not cite it, and a cross-group
-  DTW copy would move the cost basis a second time.
-- Short rows are padded to 46 and blank-filled via `Importazioni.RiempiVuotiArray()` on load.
-
-**The operation of a movement is computed, never stored** (`OperazioniCalcolate`, 2026-10-05, user's choice). Two
-movements are in the same operation if linked, even through others, by `[20]` (classification group), `[43]` (fee
-link), `[45]` (identity) or the same `[24]` on the same `[3]` within an hour (non-`AU` rows, values of at least 4
-characters — `-` and `_` are used as placeholders by the thousand on real data — and at most 20 rows per value).
-Shown with the `[45]` identity of a member if any (`DUAL-…`), else `OP-` + the first member's ID: display and filter
-only, recomputed at every table load, never to be saved or cited (that ID changes when the movement does). Computed
-on the **whole** map, never on the filtered rows, in `TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa` (only
-when the rows are built) and in `TransazioniCrypto_AggiornaColonnaGruppoCollegato`. Union-find on the row objects
-(identity), with `[20]` IDs looked up in the case-insensitive map: a first version keyed on lowercased ID strings cost
-216 ms on 102.000 movements, this one 61 ms (5 ms on the user's 24.000). Nothing stored means the past is covered,
-undoing/deleting/unlinking dissolves operations by itself, and no engine is affected. The movement detail
-(`OperazioniCalcolate.RigheDettaglio`) lists the other members with type and classification, then the fee rows;
-it replaced the bare `[20]` IDs ("Movimenti Correlati").
+- `[43]` is the **linked-fee group key** (`CommissioniCollegate`): one shared key written on a fee (`CM`) **and** on the
+  movement(s) it belongs to. **Informative only** (no engine reads it, outside `Impronta` and the golden master). **Fees
+  only**: the Dual contract key lives in `[45]`.
+- `[44]` is the **derivative marker** (`Derivati`, type from the config key `causaliDerivati`), identification only: derivatives
+  are still computed as crypto-attività, wrong on purpose and warned. **Do not** put derivative markers in campo 18:
+  `ElaboraMovimento` silently skips a DC/PC whose campo 18 it does not know.
+- `[45]` is the **operation key** (`GruppoOperazione`): today only `Binance_DualInvestment.Abbina` writes it, `DUAL-<id>`, on
+  Purchase and Settlement. A generated movement never carries it and **derives** it from its `[20]` group (`ChiaveEffettiva`):
+  the group is `[20]`, the identity `[45]`. Separate from `[43]` and from `[20]` (the engine reads `[20]`, `Impronta` hashes
+  it). Informative only.
+- Copy rules of `[42]`/`[43]`/`[45]`: absent from `MovimentiCrypto.CampiNonCopiabiliVerbatim`, present in
+  `Principale_Movimenti_SeparaUnisci.CampiDaRiportare` and `CampiProvenienzaUnione`. *Duplica* (`Funzioni.DuplicaMovimento`)
+  drops them and refuses group members and generated `AU` rows (`isDuplicabile`).
+- Short rows are padded to 46 via `Importazioni.RiempiVuotiArray()` on load (this sets `VersioneCambiata`); a backup made with 46
+  columns is refused by versions that handle 45.
+- The table model stops at `v[39]` plus derived tail columns; operations are shown through the derived column **42
+  "Operazione"**. A new tail column needs `Principale.form` (the `<Column>` **and** the `columnCount` of `<Table>`), **all three**
+  arrays in `initComponents` (names, `types`, `canEdit`: a missing `types` makes the app not start, no unit test sees it, launch
+  it on the virtual display), the loading loop and `LayoutColonneMovimenti.COLONNA_MASSIMA`.
+- **The operation of a movement is computed, never stored** (`OperazioniCalcolate`): union-find over `[20]`, `[43]`, `[45]` and
+  the same `[24]` on the same `[3]` within an hour. Display and filter only; never save or cite its ID.
+Full text of these points: `nocommit/Documentazione/Dettagli_ModelloRigaMovimento.md`.
 
 **Never decide the direction of a movement from a `-` inside the quantity string.** Quantities are stored as strings and `BigDecimal.toString()` spontaneously emits scientific notation for small values (`2.5E-9`, common on tokens with many decimals), so `Qta.contains("-")` reads a **positive** quantity as an outgoing one. Since campo 5, campo 18 and the categoria are derived from that in/out split, the effect is a reversed fiscal classification — bug **M7**, fixed on 2026-07-31 across `MovimentiCrypto.creaMovimento`, `TransazioneDefi` and `Importazioni`. Use `Funzioni.isNegativo(String)`, which tests `new BigDecimal(v).signum() < 0` and intentionally falls back to the old textual test for non-numeric values. For the same reason `Moneta.InvertiQta()` only flips the leading sign and must never `replace("-","")`, which would also delete the exponent's sign and turn `1.5E-8` into `1.5E8`.
 
@@ -449,151 +255,40 @@ discards fingerprints and checkpoints, so a transient failure cannot become perm
 
 ### I periodi di detenzione del quadro W/RW
 
-`GRUPPO_PERIODO_RW` (`personale.mv.db`) è la tabella unica per come un gruppo wallet ha detenuto
-crypto e valuta estera nel tempo, un rigo per periodo, `TipoRigo` CRYPTO o FIAT. Logica in
-`Principale_GruppiWalletRW`, GUI in `GUI_PeriodiDetenzioneRW` + `GUI_ModificaPeriodoDetenzione`. I
-dati fiscali dell'intermediario (Stato estero, identificativi, conto corrente) vivono **solo** sul
-rigo FIAT; una data di inizio mancante non significa più "dal primo movimento" ma si risolve da
-`finestreEffettive` contro gli altri periodi. Il pulsante *Salva* non c'è più: ogni operazione
-(aggiunta, modifica, rimozione, ripristino) scrive subito via `salvaAdesso()`. Dettagli completi
-(schema storico a 4 tabelle, `IdentificativoISEE`, `intervalliFiat`, `StatiEsteri.CODICE_ITALIA`,
-meccanica IVAFE sul conto corrente estero, eccezione Crypto.com App per la parte FIAT, validazione
-di `salvaAdesso`) in `nocommit/Documentazione/Analisi_QuadroRW_Periodi_IVAFE.md`.
+`GRUPPO_PERIODO_RW` (`personale.mv.db`) è la tabella unica dei periodi di detenzione per gruppo wallet, un rigo per periodo,
+`TipoRigo` CRYPTO o FIAT (logica in `Principale_GruppiWalletRW`, GUI `GUI_PeriodiDetenzioneRW`/`GUI_ModificaPeriodoDetenzione`).
+I dati dell'intermediario vivono **solo** sul rigo FIAT; ogni operazione scrive subito via `salvaAdesso()` (niente *Salva*).
+Codice bene 14: IVAFE o solo monitoraggio è una scelta dell'utente. Le due giacenze medie FIAT hanno divisori diversi (conto
+corrente /365, liquidità /giorni del tratto): **non è un doppione da unificare**. Dettagli: `Dettagli_Quadri_RW_RT.md`,
+`Analisi_QuadroRW_Periodi_IVAFE.md`, `Analisi_QuadroRW_Codice14.md`.
 
-**Codice bene 14 (liquidità)**: l'IVAFE ordinaria 0,20% si liquida oppure il rigo resta "solo
-monitoraggio", a scelta dell'utente (`Calcoli_RW_Fiat.OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO`, opzione
-in *Opzioni → Opzioni Calcolo RW/W*) — non più una scelta silenziosa del programma. L'aliquota è il
-4‰ per gli Stati "privilegiati" del D.M. 4/5/1999 dal 2024 in poi, altrimenti 2‰; la barratura della
-colonna 21 sul modulo stampato resta manuale. Analisi legale e di implementazione complete in
-`nocommit/Documentazione/Analisi_QuadroRW_Codice14.md`.
+### L'archivio delle dichiarazioni (`Dichiarazioni/`) e l'avviso E-Money
 
-**Rigo di liquidità spezzato sugli apporti (circ. 12/E/2016 § 14.1)** e, a scelta, sui prelievi:
-`Calcoli_RW_Fiat.OPZIONE_SPEZZA_SU_APPORTI/PRELIEVI` + soglia (default spente, 500 €). Un apporto è
-deciso dalla **natura** della gamba (`NaturaGamba`: entrata di un `DF`, `viban_deposit` del Fiat Wallet),
-mai dal segno — una vendita di crypto porta euro ma non è un apporto. Il motore ignora i tagli in solo
-monitoraggio e sui tratti conto corrente, qualunque cosa dica la GUI. Meccanica nella sezione finale
-dello stesso documento.
+Ogni stampa è una dichiarazione archiviata: `Dichiarazioni/<anno>_<RW|RT>_<data>/` con due PDF, un Excel e `manifest.json`. Da non rompere:
+- Un solo flusso per i due pulsanti (`RW_GeneraDichiarazione`/`RT_GeneraDichiarazione`): i dialoghi **prima**, poi
+  `Principale_Dichiarazioni.Genera` scrive in `.in_corso_*` e rinomina solo se tutto è valido; gli scrittori non hanno dialoghi e lanciano eccezione.
+- Il **manifest è l'unica fonte** (nessuna tabella nel DB: il ripristino aggiunge cartelle, non le cancella). I valori archiviati
+  sono la fotografia della tabella: **un'opzione nuova che cambia i valori dei quadri va aggiunta anche in
+  `RW_BozzaDichiarazione`/`Dichiarazioni_OpzioniComuni`**. L'Excel W/RW usa la stessa fotografia del calcolo (`RW_FotografiaGiacenze`).
+- Dopo ogni calcolo `RW_ControllaDefinitiva`/`RT_ControllaDefinitive` confronta con la definitiva e l'etichetta rossa dice l'effetto, mai cosa fare.
+- I documenti di origine copiati stanno **fuori** da `Totali`/`Righi`/`Opzioni`/`Errori`. La Continuità solo a richiesta.
+- Avviso E-Money (`Principale_EmoneyMancanti`, `EmoneyToken`, elenco in `config/varie/EmoneyToken.json`): solo sui pulsanti *Calcola*.
+Dettagli: `nocommit/Documentazione/Dettagli_Quadri_RW_RT.md`.
 
-**Le due giacenze medie della parte FIAT hanno divisori diversi, e non è un doppione da unificare.**
-Conto corrente (codice 1): somma dei saldi / **365** sempre (`GIORNI_GIACENZA_MEDIA_ANNUA`, provv. AdE
-28/05/2015 punto 3.1), perché l'IVAFE è fissa e la media decide solo colonna 8 e soglia dei 5.000 €.
-Liquidità codice 14 con l'opzione max-media: somma / **giorni del tratto** (`mediaPeriodo`), perché la
-media diventa la base di un'imposta proporzionale già rapportata ai giorni — con /365 i giorni
-contavano due volte e spezzare un rigo faceva pagare circa la metà (corretto il 2026-09-27).
+### Le note di compilazione dei quadri e i file di `config/`
 
-### L'archivio delle dichiarazioni (`Dichiarazioni/`)
-
-Ogni stampa dei quadri e' una dichiarazione archiviata (2026-10-13): una cartella `Dichiarazioni/<anno>_<RW|RT>_<data>/`
-con **due PDF e un Excel** (W e RW, oppure T e RT, sempre entrambi: la scelta W/RW non si chiede piu') e un
-`manifest.json`. Cose da non rompere:
-
-- **Un solo flusso per due pulsanti.** *Stampa Report PDF* e *Crea Excel con i Dettagli* chiamano entrambi
-  `Principale.RW_GeneraDichiarazione` (T/RT: `RT_GeneraDichiarazione`), che ricalcola se il quadro non e' aggiornato
-  (`RW_Label_SegnalaRicalcolo`, `RT_Label_Avviso`, sempre sul **model**), fa tutti i dialoghi **prima**, poi
-  `Principale_Dichiarazioni.Genera` scrive i file in una cartella `.in_corso_*` dentro l'archivio e la rinomina solo se
-  tutti i file ci sono e i PDF si rileggono (`Stampe.PdfValido`, perche' gli `Aggiungi*` di `Stampe` intercettano i
-  propri errori). Altrimenti non resta niente. Gli scrittori (`RW_ScriviPdf`, `RT_ScriviPdf`, `Principale_Dichiarazioni.RW_CreaExcel`
-  e `RT_CreaExcel`) non hanno dialoghi e lanciano eccezione a ogni errore.
-- **L'Excel W/RW e' per gruppo wallet, non per rigo** (riepilogo di tutti i righi, poi Calcoli/Giacenze/Liquidita'/
-  Movimenti di ogni gruppo): ogni riga di dettaglio porta il periodo che contiene la sua data di fine, come nel quadro.
-  Le giacenze sono **la stessa fotografia** del calcolo (`Principale.RW_FotografiaGiacenze`, salvata da `RW_CalcolaRW`),
-  non un secondo calcolo: fino al 2026-10-13 usava `Funzioni.RW_GiacenzeaData` (euro e negative comprese, prezzi
-  richiesti di nuovo), tolta. La liquidita' viene da `Mappa_RW_ListeXGruppoWallet_Fiat`.
-- **Il manifest e' l'unica fonte**, compresi definitiva e nota: non c'e' una tabella in `personale.mv.db`, perche' il
-  ripristino riscrive il DB mentre le cartelle delle dichiarazioni si **aggiungono soltanto** (`Backup_Restore.
-  EstraiDichiarazioni`: una cartella gia' presente non si tocca, nessuna si cancella). Una definitiva per anno e
-  famiglia, se un ripristino ne porta due vince quella segnata per ultima (`Dichiarazioni.Elenco`).
-- **I valori archiviati sono la fotografia della tabella** (righi, totali, errori, opzioni di calcolo), presa prima di
-  scrivere i file: servono al pannello senza aprire i PDF e all'impronta che riconosce una ristampa identica. Un'opzione
-  nuova che cambia i valori dei quadri va aggiunta anche in `RW_BozzaDichiarazione`/`Dichiarazioni_OpzioniComuni`,
-  altrimenti due dichiarazioni diverse sembrano calcolate con le stesse opzioni (e la *Continuita'* le confronta).
-- **Definitiva diversa dai dati**: dopo ogni calcolo (`RW_ControllaDefinitiva` in fondo a `RW_CalcolaRW`,
-  `RT_ControllaDefinitive` in fondo a `RT_CalcolaRT`) la fotografia appena calcolata si confronta con quella della
-  definitiva (`Dichiarazioni.Confronta`, numeri come numeri) e l'etichetta rossa `RW_Label_Definitiva`/`RT_Label_Definitiva`
-  dice l'effetto, mai cosa fare. Segnare una definitiva crea un backup (opzioni predefinite) il cui nome va nel manifest
-  (`Backup`): cancellarlo dal pannello backup chiede una conferma in piu' (`Dichiarazioni.BackupDelleDefinitive`).
-  Gli allegati (`Allegati`, prefisso `Allegato - `) hanno lo SHA-256 come i file generati ma non entrano nell'impronta.
-- **Documenti di origine** (`Dichiarazioni.RaccogliDocumenti`/`CopiaDocumenti`, 2026-10-13, scelte dell'utente): `Genera`
-  chiede, dopo il controllo della ristampa identica, se copiare i documenti `[41]` dei movimenti (spuntati quelli con
-  movimenti nell'anno, a scelta anche quelli con movimenti solo negli anni prima, mai quelli solo degli anni dopo),
-  scompattati **così come scaricati** (NDJSON compresi) in `Documenti di origine/Anno <N>/` e `.../Anni precedenti/`,
-  nome `<gruppo (alias)> - <[3]> - <periodo> - doc <id> - <nome originale>` (max 120 caratteri per il limite di percorso
-  di Windows, indirizzi accorciati), più `Indice documenti.csv` con i movimenti dell'anno senza documento. Stanno nel
-  manifest (`documenti`, `documentiInclusi`, `movimentiSenzaDocumento`) e **fuori** da `Totali`/`Righi`/`Opzioni`/`Errori`:
-  li' cambierebbero impronta e confronto con la definitiva a ogni import. File sorgente mancante o illeggibile = riga
-  nell'indice, errore di scrittura = nessuna dichiarazione. Backup, ripristino ed esportazione scendono nella sottocartella
-  (`Backup_Restore.PercorsoDichiarazioneValido`: annidamento ammesso solo sotto `Documenti di origine`, le versioni
-  precedenti saltano quelle voci). Le impronte dei file sono in cache per percorso+lunghezza+data (`Sha256Memo`), perche'
-  il pannello verifica tutto a ogni ricarica.
-- **Continuita' solo a richiesta** (decisione dell'utente): con un metodo diverso da "solo valori di inizio e fine anno"
-  o con opzioni diverse il valore finale di un anno e l'iniziale del successivo differiscono per costruzione.
-- PDF ed Excel sono di sola lettura e hanno lo SHA-256 nel manifest; i file di blocco di LibreOffice/Office restano fuori
-  da backup ed esportazione. In `Principale` il pannello del tab si chiama `Dichiarazioni` come la classe: nelle
-  espressioni serve il nome qualificato (`com.giacenzecrypto.giacenze_crypto.Dichiarazioni.Famiglia.RW`).
-
-### Avviso degli E-Money mancanti al calcolo dei quadri
-
-I pulsanti *Calcola* dei quadri W/RW e T/RT (non i ricalcoli che partono da altrove, che lo riproporrebbero a ogni
-modifica) controllano se nei movimenti ci sono token di moneta elettronica noti che la sezione E-Money dell'utente non
-contiene (`Principale_EmoneyMancanti`, logica in `EmoneyToken`, 2026-10-09). L'elenco dei noti è
-`config/varie/EmoneyToken.json` (stessa strada delle note di compilazione, **senza** `"centralizzato"`: in
-`config/varie` un file centralizzato assente da GitHub verrebbe cancellato all'avvio) ed è l'**unico** elenco: anche il
-pulsante dei token standard delle opzioni lo legge (stablecoin "dubbie" e algoritmiche restano nel codice). Si contano
-solo i movimenti che l'aggiunta cambierebbe: dalla `decorrenza` del file (2023-01-01) in poi, gambe non FIAT, non SCAM,
-confronto con la sezione via `Funzioni.DataDecorrenzaEmoney` come nel motore. Il dialogo dice l'effetto (anni già
-dichiarati compresi), senza consigli. "Non ora" vale per la sessione, "Non proporli più" per i token di quel momento
-(opzione `EmoneyToken_NonProporre`). Sui dati di prova dell'utente ha trovato EURI di Binance (71 movimenti nel 2025).
-
-### Le note di compilazione dei quadri stanno in un JSON, non nel codice
-
-I testi stampati in coda ai quadri W/RW e T/RT vivono in `config/varie/NoteCompilazione.json`,
-letti da `NoteCompilazione.java`. Sono istruzioni fiscali: cambiano con la modulistica, e finche'
-stavano nei blocchi di testo di `Principale`/`Stampe` correggere una riga sbagliata voleva dire
-pubblicare una versione. Il file segue la strada delle mappe causali e di `TipiOKX` — copia di default
-nel jar (`config/varie/` **e'** la sorgente del `/Varie/` del jar, vedi il `<resource>` del pom; non sta
-in `config/importmappe/`, che e' solo per le mappe dell'import), installata al primo avvio da
-`MappeCausali.InstallaDefaultSeMancanti()` e riallineata a ogni apertura da
-`Funzioni.AggiornamentoConfigDaRepositoryUnicaChiamata`. Il nome e' in `MappeCausali.FILE_VARIE`; la
-strada disco→jar e' la stessa delle mappe, scelta con l'enum `MappeCausali.Cartella` (`MAPPE`/`VARIE`).
-Quattro cose non ovvie:
-
-- **Gli anni della dichiarazione sono segnaposto**, `{anno}` / `{annoPrec}` / `{annoSucc}`, risolti alla
-  stampa. Scritti come cifre il file sarebbe da riscrivere ogni gennaio, cioe' esattamente il problema
-  che si voleva togliere. Restano cifre vere gli anni che citano una **regola** (l'entrata in vigore del
-  regime nel 2023, gli anni delle minusvalenze riportabili): quelli non seguono l'anno della
-  dichiarazione. Tre note ricevono anche un valore calcolato dal chiamante (`{righi}`, `{totale}`).
-- **Una nota puo' avere delle varianti datate, e valgono «da quell'anno in avanti».** Oltre alla chiave
-  nuda il file accetta `W8.2024`, `T.2025`: `NoteCompilazione.ChiaveApplicabile` prende la variante piu'
-  recente che non superi l'anno d'imposta e ripiega sulla chiave nuda, che e' quindi il testo valido
-  *prima* della prima variante. Sotto `ANNO_PRIMA_VARIANTE` (2023) non si cerca: li' comincia il regime
-  delle cripto-attivita' e per gli anni prima il programma avverte gia' che il report puo' sbagliare.
-  Il ripiego e' a cascata e non «anno esatto o niente» perche' altrimenti la chiave nuda dovrebbe essere
-  due testi insieme — quello degli anni piu' vecchi della prima variante e quello degli anni piu' recenti
-  dell'ultima — e le annualita' in cui l'istruzione non e' cambiata andrebbero ricopiate tutte.
-  ⚠️ Conseguenza: correggere solo il 2024 richiede **due** chiavi, `W8.2024` con la correzione e
-  `W8.2025` col testo di prima, altrimenti la correzione si porta dietro anche gli anni successivi.
-  **Per questo il quadro T/RT non si sceglie piu' con un `if (Anno<2025)` nel codice**: quel bivio era la
-  coppia `T_ANTE_2025`/`T_2025`, diventata `T` + `T.2025`, e i quattro involucri `Stampe.NoteCompilazione*`
-  sono spariti con lui. Un secondo meccanismo che fa la stessa cosa e' solo il posto da cui i due
-  divergono.
-- **Il ripiego e' visibile, non silenzioso.** `MappeCausali.CaricaConRipiego` prova disco poi jar; se
-  manca anche quella, o manca la chiave, `Testo()` restituisce un avviso che finisce **nel report**. Una
-  nota che sparisce in silenzio da un documento fiscale e' peggio di una che dichiara di mancare.
-- **Il blocco "OPZIONI SCELTE PER IL CALCOLO" e' rimasto nel codice**, di proposito: non e' una nota ma
-  un resoconto, si compone dalle caselle spuntate e dall'elenco E-Money dell'utente. Nel file sarebbero
-  finiti frammenti che senza il codice non significano nulla.
-- **`FontApplicazioneTest` non copriva queste stringhe nemmeno prima**: quel test salta i blocchi di
-  testo proprio perche' sono le note fiscali, che finiscono nel PDF e contengono frecce a decine (che
-  infatti non si stampano, coi font base-14 di OpenPDF). Spostarle non ha tolto una garanzia; al suo
-  posto c'e' `NoteCompilazioneTest`, che verifica chiavi, assenza di orfane e segnaposto risolti.
-
-**Ogni file di `config/varie` e `config/importmappe` tenuto in memoria va nel registro `RicaricaConfig.VOCI`** (cartella, nome, funzione di ricarica); se si rilegge a ogni uso va in `LETTI_A_OGNI_USO`. `RicaricaConfigTest` scandisce le due cartelle e fallisce per un file che non sta in nessuno dei due, e per uno che non e' in `MappeCausali.FILE_VARIE`/`FILE_DI_SISTEMA` (non verrebbe installato): e' la difesa contro «voce nuova inattiva fino al riavvio». Il thread di aggiornamento di `Principale` chiama solo `RicaricaConfig.Ricarica(aggiornati)`. `Simboli.json` (simboli prioritari dei prezzi, valute FIAT di `Moneta`, stablecoin del pulsante E-Money; confronto dei prioritari senza distinzione di maiuscole dal 2026-10-12) e `StatiEsteri.json` (Tabella 10 e privilegiati del D.M. 4/5/1999: **cambiare un `privilegiato` cambia l'aliquota IVAFE**, senza versione) sono due file di questo tipo; **nessuno dei due ha una lista di ripiego nel codice** (sarebbe una seconda copia da tenere allineata): il default e' la copia nel jar, che l'aggiornamento non sovrascrive mai (solo la copia in `workdir/config/` si riallinea da GitHub). Un file di `varie`/`importmappe` puo' dichiarare al primo livello `"versioneMinimaApp"`: una versione piu' vecchia non lo legge e usa il jar (`MappeCausali.CaricaConRipiego`). Serve solo quando cambia il significato di un file gia' letto dalle versioni installate (un file nuovo le versioni vecchie lo ignorano), e protegge soltanto le versioni che contengono il controllo. Anche `Reti.json` e `IndirizziServizi.json` sono nel registro (vedi "Adding a new EVM-compatible blockchain").
-
-`Parametri.json` (tolleranze della fase 1 di *Assegnazione Automatica*: finestra, differenza massima, tolleranza inversa, eccezioni `perExchange` che allargano solo la finestra; **i default sono quelli che erano nel codice e un test li fissa**, cambiarli cambia quali giroconti si abbinano da soli) si rilegge a ogni pressione del pulsante (`ParametriAbbinamento`). `Runtime.json` (versioni di Node e CCXT, solo il numero validato come `v1.2.3`/`1.2.3`: `CcxtInterop.nodeVersion()/ccxtVersion()` via `VersioniRuntime`, in registro per la ricarica) non vale per flatpak/MSIX, che portano Node dentro (`NODE_ESTERNO`): lì le versioni non si leggono mai e quelle dei workflow di pacchetto restano fisse; una versione nuova va provata con gli script prima di pubblicarla e lascia su disco il Node precedente.
-
-**La direzione e' questa**: a regime le cose piccole si gestiscono da file di configurazione su GitHub
-aggiornati all'avvio, e il versionamento resta per correzioni di bug e nuove funzioni. Quando serve
-aggiungere un file di questo tipo, il giro e' quello descritto qui sopra — non inventarne un altro.
+- I testi stampati in coda ai quadri vivono in `config/varie/NoteCompilazione.json` (`NoteCompilazione.java`), non nel codice.
+  Gli anni sono segnaposto `{anno}`/`{annoPrec}`/`{annoSucc}`; una chiave datata (`W8.2024`, `T.2025`) vale «da quell'anno in
+  avanti» e ripiega sulla chiave nuda, quindi correggere solo il 2024 richiede **due** chiavi (`W8.2024` e `W8.2025` col testo di
+  prima). Il quadro T/RT non si sceglie con un `if (Anno<…)` nel codice. Una nota mancante dichiara di mancare **nel report**.
+  Il blocco "OPZIONI SCELTE PER IL CALCOLO" resta nel codice. `NoteCompilazioneTest`.
+- **Ogni file di `config/varie`/`config/importmappe` tenuto in memoria va nel registro `RicaricaConfig.VOCI`** (o in
+  `LETTI_A_OGNI_USO`): `RicaricaConfigTest` fallisce altrimenti. Va anche in `MappeCausali.FILE_VARIE`/`FILE_DI_SISTEMA` per essere installato.
+- `Simboli.json` e `StatiEsteri.json` (cambiare un `privilegiato` cambia l'aliquota IVAFE, senza versione) non hanno liste di
+  ripiego nel codice: il default è la copia nel jar. `"versioneMinimaApp"` al primo livello fa usare il jar alle versioni vecchie.
+  `Parametri.json` (default fissati da un test) e `Runtime.json` (versioni di Node e CCXT) hanno note nel file di dettaglio.
+- La direzione: le cose piccole da file di configurazione su GitHub aggiornati all'avvio, il versionamento per bug e nuove funzioni.
+Dettagli: `nocommit/Documentazione/Dettagli_Configurazione_Note.md`.
 
 ### Movement types (`MovimentiCrypto.java`)
 Defines the canonical movement type map. Each raw label from an import (e.g. `STAKING REWARDS`, `DUST-CONVERSION`) is normalised to a short code (e.g. `RW`, `SC`). Understand these codes before touching import or calculation code.
@@ -601,522 +296,94 @@ Defines the canonical movement type map. Each raw label from an import (e.g. `ST
 **Whenever a code change adds or modifies a campo5/campo18/categoria combination** (new movement classification, new marker, new auto-assignment rule, etc.), update `nocommit/Documentazione/Analisi_Campo5_Campo18_Categoria.md` to document the new combination in the same style as the existing tables/notes.
 
 ### Import pipeline
-- `Importazioni.java` — dispatcher and shared utilities; routes each file type to a handler
-- `ImportazioneGenerica.java` — JSON-configured import for arbitrary CSV formats (config files in `ImportConfig/`)
-- `Importazioni_Gestione.java` / `Importazioni_Resoconto.java` — Swing dialogs wrapping the import flow
-- Exchange-specific classes: `CDC_FiatECardWallet.java`, `BinanceTaxReportClient.java`, `CcxtInterop.java`
-- DeFi/blockchain: `Funzioni_WalletDeFi.java`, `TransazioneDefi.java`, `Trans_Solana.java`, `ERC20MetadataReader.java`
-
-**BASE is read from public RPC nodes, no API key (`NodoPubblicoDefi`, 2026-10-10).** Blockscout made Base paid that
-day (PRO API 402 "Featured chain 8453 requires one of the following plans" even with a free key, instance behind
-Cloudflare), and Etherscan/Routescan don't give it free either. The class is an **adapter like `NodeRealDefi`**
-(Etherscan-shaped rows for the five actions, B1-B5 untouched) built on the **state bisection of `Trans_XLayer`**
-(nonce + native balance + followed tokens' `balanceOf` in one Multicall3 call, split down to the single block, then
-block + 5 single-block `eth_getLogs` + receipts), whose ABI helpers it reuses. Generic per network: a network is one
-`nodoPubblico` entry of `config/varie/Reti.json`, read by `NodoPubblicoDefi.ConfigurazioneRete` (nodes per use: state/archive, logs, traces; curated tokens; wrapped native token). Things
-that are not obvious: the provider string `"NODO PUBBLICO"` is shared with X Layer, which the dispatcher matches by
-rete **before** the provider; txlist rows carry an extra `commissioneWei` (L2 gas + `l1Fee` + operator fee) that B1
-reads **only if present** — the old archive's Moralis-era fees lacked the L1 share and were patched by hashless
-COMMISSIONE rettifiche; WETH wrap/unwrap emit `Deposit`/`Withdrawal`, not `Transfer`, and are read only from
-`tokenAvvolti` (else WETH looks like a rebasing token); a token whose balance changes with no log is dropped from the
-state (rebasing/interest) or the bisection would descend to every block; tokens seen in logs are re-bisected from the
-start; wallets with code (ERC-4337, EIP-7702) are refused. **Known gap, accepted by the user**: a token received
-passively, outside the curated list and the archive's tokens for that wallet, and never moved, is not seen. Verified
-on the user's 3 Base wallets (copy of the archive deleted afterwards, tools in `nocommit/StrumentiTest/BaseNodoPubblico/`, results in `Analisi_Provider_BSC.md`):
-every non-SCAM hash of the archive found, and the "Giacenze a data" sums of the new rows equal the on-chain balances
-at every date tested, where the archive did not. **The user's decision (2026-10-10): the node is used only from now on** — BASE rows already in an archive are
-not replaced (they carry manual classifications), the next import resumes from the last imported block; do not
-propose re-downloading old history. Saved `PROVIDERDEFI` BASE→BLOCKSCOUT rows without a custom URL are
-deleted once (`ProviderDefi_MigraBaseSuNodoPubblico`). The quantity sum of "Giacenze a data" now lives in
-`Principale_GiacenzeaData.SommaQuantitaAData` (extracted unchanged so the comparison uses the tab's own code).
-
-**BTC multi-address wallets (`WalletBtcMultiIndirizzo`, 2026-09-28).** A BTC entry in `WALLETS` is
-one of three kinds, decided by the string itself: an extended key (addresses derived), a single
-address, or a **name** whose addresses live in `WALLET_BTC_INDIRIZZI` (`personale.mv.db`) — resolved in
-`Trans_Bitcoin.IndirizziDaScansionare`. `Trans_Bitcoin.isNomeWalletValido` is what keeps a name from
-being mistaken for the other two (`isExtendedKey` only checks the prefix). Grouping at import, not via
-`GRUPPO_ALIAS`, is the point: `analizza` classifies in/out against the address *set*, so per-address
-imports turn change outputs into fake withdrawals + deposits. Changing the list of an already-imported
-wallet re-reads only the history of the added/removed addresses — only transactions touching them can
-change meaning — and only **up to the wallet's highest imported `v[23]`**: adding a newer transaction
-would move the incremental import's restart point past other addresses' unread ones. A transaction that
-touched the old set but has no rows was deleted by the user and must not be resurrected. The plan is
-computed from `Trans_Bitcoin.Analisi` without building `TransazioneDefi`, because `InserisciMonete`
-already fetches prices. Known gap: the address list is persisted immediately while movement changes
-wait for *Salva*, so discarding them leaves list and movements out of step.
-
-**In a generic-CSV config, `nomeExchange` becomes movement field `[3]` and `nomeWallet` field `[4]` — and `[3]` is load-bearing twice over.** `costruisciMovimenti` calls `creaMovimento(mOUT, mIN, exchange, wallet, …)` with `exchange = nomeExchange` in the `Wallet` slot: `[3] = nomeExchange`, `[4] = nomeWallet`. Field `[3]` is then the exchange key in the re-import dedup (`Importazioni.F_buildKeyMovimento` = `yyyyMMddHHmmss|[3]|monetaU|qtaU|monetaE|qtaE`, the instant to the second taken from the ID, not the day) **and** the key of the fiscal wallet-group lookup (`Calcoli_PlusvalenzeNew` reads `DatabaseH2.Pers_GruppoWallet_Leggi(v[3])`). So changing a config's `nomeExchange` re-imports every already-stored movement of that source as a duplicate (different `[3]`), and moves those movements into a different wallet group unless a `GRUPPO_ALIAS` re-unites them. `nomeWallet` (`[4]`) is fiscally inert — like the OKX note above. The two `config/import/Coinbase*.json` use this on purpose: retail keeps `nomeExchange` "Coinbase", `Coinbase Pro GDAX.json` v2.000 sets it to "Coinbase Pro" so GDAX is a distinct wallet/group, and the retail↔Pro giroconti (`Pro/Exchange Deposit/Withdrawal` → `TRASFERIMENTO-CRYPTO`, and the GDAX `deposit`/`withdrawal` in crypto → auto `DC`/`PC`) are left with blank `campo18` for manual *Classifica Movimento* pairing. That config also drops the old `type.unit` composite causale (`causale2`/`separatoreCausale`): one bare causale per `type`, EUR-vs-crypto on `deposit`/`withdrawal` resolved by `RitornaTipologiaTransazione` from the coin's FIAT/Crypto type. Pinned by `ImportazioneGenericaCoinbaseProGdaxTest`.
-
-**Binance Simple Earn rewards: what the export contains and what it doesn't** (2026-10-06, verified on the user's data
-and on the app's *Earn – Flexible – Rewards* history). Every daily **Bonus Tiered APR** is in the Spot account as
-`Simple Earn Flexible Interest` / `Simple Earn Locked Rewards` and, in exports from 2026, a second time in the Earn
-account as `… - Rewards Income`, same coin and amount, 0-2 h earlier: `Binance CSV.json` ≥ 1.017 sets the Earn rows to
-IGNORA (reason in `_commentoRewardsIncome`), and `RicompenseEarnDoppie` removes those already imported (startup warning
-with "non mostrare più", `RicompenseEarnDoppie.OPZIONE_NON_MOSTRARE`, and *Opzioni – Pulizie – Ricompense Binance
-doppie*). The **Real-Time APR** rewards are in **no** export row: they accrue inside the product and come out only in
-redemption amounts, which the import ignores (subscriptions/redemptions are IGNORA, Spot and Earn are one pool), so an
-archive is short of them and a full withdrawal shows negative balances. ⚠️ A balance check alone is misleading here: the
-doubled Earn rows partly filled that gap, which is why they first looked like real credits. What decides is a stretch
-between two full withdrawals (product empty at both ends): redemptions minus subscriptions there is the hidden
-Real-Time APR (Feb-May 2025: 1.07 USDC, with no Earn row at all). The Real-Time APR come from a **separate file** downloaded from the
-app (*Assets – Earn – Flexible – Rewards*, download icon: `Time,Coin,Amount,Type`), imported by
-`config/import/Binance Simple Earn Flexible.json` (Real-time → EARN, Bonus → IGNORA). Its Real-time rows have the
-date only: the generic import's `oraSeSoloData` (2026-10-06, `ConfigurazioneImport.oraSeSoloData`, used by
-`parseDataRaw` only when the full `formatoData` fails) sets them at 00:00:00 UTC — not end of day, which is already the
-next day in Italian time and would move the 31/12 reward into the next tax year. Verified on the user's archive: 443
-rows, 12.96 USDC in Jan-Jun 2026, re-import adds nothing, the USDC gap drops from 23.64 to 10.69 (the 2025 Real-Time
-APR, outside that file).
-
-**`girocontoFiat` — euro moved between two of the user's own wallets (`GirocontiFiat`, 2026-09-28).**
-The GDAX EUR `deposit`s are not direct SEPA transfers: each one is the other half of a retail
-`Exchange Deposit`/`Pro Deposit`. Left alone, the pair is an unrelated PF + DF, so a "deposito FIAT"
-filter double-counts the money and `Calcoli_RW_Fiat` reads both halves as apporto/prelievo. At the end
-of every generic import, `GirocontiFiat.Abbina` scans the **whole** archive and pairs them as PTW/DTW,
-through the manual classification function. The categoria stays PF/DF so the balance really moves
-between wallets. The rule is declared **mirrored in both configs**, so import order doesn't matter and
-re-importing either file fixes existing data. A pair needs both raw causali `[7]` in the declared sets:
-that is what keeps a bank `Deposit` out. `Calcoli_RW_Fiat.isGirocontoStessoGruppo` makes the legs
-INTERNA only when the counterpart is in the **same** wallet group. Towards another group the euro
-really enters another rapporto, so there it stays an apporto. The same pairing can be done by hand:
-`GUI_ClassificazioneMovimento` offers PF/DF only "nessuna selezione" and the giroconto, and refuses a
-deposit larger than the withdrawal, which would otherwise become a euro reward. An unclassified PF/DF
-is still **not** counted as an error: the counter uses `isDepositoPrelievoClassificabile(…, false)`.
-Pinned by `GirocontiFiatTest`.
-
-**`colonneControvalore.noteAcquistoDaSaldo` (`Coinbase CSV.json` ≥ v1.006) — Buy pagati con carta non devono movimentare euro.** For a causale in `causaliConMovimentoCommissione` (only `Buy`), `costruisciMovimenti` normally synthesises a FIAT-out leg of `Total − fee` (→ categoria `AC`) plus a separate `COMMISSIONI` movement. When `noteAcquistoDaSaldo` is set and the row's Notes are non-empty and contain **none** of its markers (`"EUR Wallet"`), the Buy was paid from outside the exchange balance (card, Apple/Google Pay, direct bank): both the synthetic FIAT leg and the `COMMISSIONI` movement are skipped, and the lone crypto-in movement has its ID categoria rewritten `_DC`→`_AC` with `campo5="ACQUISTO CRYPTO"` and **`campo18` left empty** — the exact shape the Crypto.com App importer already produces (`Importazioni.java`, "Forzo il fatto che sia un acquisto crypto"). `Calcoli_PlusvalenzeNew`'s `v[18].contains("DAC") || TipoID.equals("AC")` branch then loads it at full cost `campo[15]` (= `Total − fee`), plusvalenza 0, no EUR moved. Empty Notes → unchanged (synthesised FIAT leg). Pinned by `ImportazioneGenericaCoinbaseTest`.
-
-**`coppia` — a trading pair in one cell (`KuCoin Spot Trades.json`, 2026-10-01).** When the export has no coin
-column, only `KCS-ETH`, `"coppia": {colonna, separatore, base, quote}` makes `ImportazioneGenerica.leggiCSV` append two
-**virtual columns** to every row at the `base`/`quote` indices (pick them past the CSV's last real column), which the config then
-uses as ordinary `moneta`/`monetaUscita`. It is done at file-read time, not inside `costruisciMovimenti`, because grouping, price
-pre-collection and `causaliScambiaGambe` all read the coin from the row. A row whose cell has no separator is discarded
-(`COPPIA NON VALIDA`). Also worth knowing from the KuCoin exports: a withdrawal's `Amount` is the **net** and the fee is on top
-(the opposite of Gate.io), partial fills of one order are several identical rows and all of them enter on the first import (dedup
-is against the archive, not within the batch), and the Futures export has no config because it carries no PnL. Pinned by
-`ImportazioneGenericaKuCoinTest`.
-
-**`coppia.importoQuote` and the Nexo Pro configs (2026-10-12).** The Nexo Pro order history (`nexo_pro_trade`) gives
-`filledAmount` (base) and `executedPrice` but **no quote amount**, so `coppia` accepts an optional
-`importoQuote: {colonna, quantita, prezzo}` that appends a third virtual column = quantity × price (empty if a factor is
-missing, i.e. a cancelled order), read as `quantitaUscita`. `Nexo Pro Trades.json` (`centralizzato: false`,
-`versioneMinimaApp` 1.0.65.01 because it needs this code) composes the causale as `side.status` (column 12 via
-`causale2`) so only `completed` becomes a swap; the fee is in the base currency and is kept as a separate `COMMISSIONI`
-(gross − fee = what the Pro then moved to the Savings). `Nexo Pro Depositi e Prelievi.json` (DnWHistory, config-only,
-`centralizzato: true`) imports DEPOSIT/WITHDRAW as `TRASFERIMENTO-CRYPTO`. Both use `nomeExchange` **"Nexo Pro"** (its own
-`[3]`, so its own re-import dedup key) but the **same wallet group as Nexo** (Wallet 111, the user's choice 2026-10-12):
-`RW_Predefiniti.json` lists `"nomiSorgente": ["nexo pro"]` under `nexo`, so the Savings↔Pro transfers are internal and
-never touch the LIFO (unlike Coinbase Pro, kept apart on purpose). Both configs need 1.0.65.01 for that reason. **The
-Savings↔Pro pairing needs no code and no version**: the *Assegnazione Automatica* button (`DepositiPrelievi_
-AssegnazioneAutomatica`, phase 1) already pairs PC/DC of two different wallets (same coin, opposite sign, < 1 h with
-**minute** resolution, quantities within 2%): on the real 2023-2025 files 16 of 18 transfers pair, the two of 12/03/2025
-do not because the Pro file writes that day one hour later than Nexo (exactly 3600 s, not < 3600) and are paired by
-hand. The Nexo CSV is real UTC (its daily interest steps 06:00→05:00 exactly on the EU DST dates, i.e. it is paid at 07:00 Rome
-time); the Pro `DnWHistory` is UTC for the 2023 rows but CET (UTC+1) for the 2025 ones, so one `fuso` cannot fit the file. `GirocontiFiat` is FIAT-only and stays so. Pinned by `ImportazioneGenericaNexoProTest`.
-
-**`fusoDaIntestazione` — the file states its own time zone (OKX ≥ Funding 1.002 / Trading 1.003, 2026-10-07).** Recent OKX
-exports carry `Time Zone:UTC+8` in the first line: the zone chosen on OKX at export time, not necessarily Italy's (a real
-user's Funding was UTC+8 next to a Trading in UTC+2, and the fixed `Europe/Rome` shifted it by 6 h). With the key set,
-`leggiCSV` replaces `fuso` with the declared offset, **after** the per-file choice of `Importazioni_Gestione`, so it wins over
-both — unless it is one of the offsets the config's zone takes during the year (`ConfigurazioneImport.FusoCompatibile`):
-`UTC+2`/`UTC+1` keep `Europe/Rome`, which knows about DST. Whether OKX writes a fixed offset or today's offset for winter
-rows is **not verified** (no winter export available). Exports without the line keep the config's zone. Pinned by
-`ImportazioneGenericaOkxFusoTest`.
-
-**`tipoSeSola` — a causale that is half of a pair the file doesn't link (2026-10-03, Bybit Spot ≥ 1.002).** Bybit
-2022 writes the BIT committed to a Launchpad (`commitmentForLaunchpad`) and the token received
-(`airdropAssetIncrease`) as two unrelated rows within 1 s, but the token can also arrive alone and then it is a genuine
-airdrop. A rule `{causale, con:[partners], tipo}` gives the row `tipo` only when **no other row of its group** has a
-causale in `con`; otherwise the normal `mappaCausali` type applies (here `SCAMBIO CRYPTO-CRYPTO`, so the pair becomes one
-swap through `causaliDifferite`'s 1 s window). The decision is per **group**, made by
-`ConfigurazioneImport.tipoMovimentoNelGruppo`, which `consolidaGruppo` uses instead of `tipoMovimentoPerRiga` — the same
-type is then passed to `costruisciMovimenti` as `tipoForzato`, never recomputed. The fallback type must be in
-`causaliChiuse` (AIRDROP is), or the lone row is swallowed by the swap accumulator. Not a pairing engine: it only sees the
-rows `raggruppaRighe` already put together, so a pair further apart than the tolerance stays two rows.
-
-**Three stateless row primitives (2026-10-13): `fusoPerPeriodo`, `colonneCalcolate`, `regoleRiga`.** All in
-`ImportazioneGenerica.leggiCSV`, applied per row in a fixed order after the date check: `coppia`, then calculated columns (may
-use the pair's virtual columns), then row rules (may read calculated columns); without the keys a row is unchanged.
-`fusoPerPeriodo` (`[{da, a, fuso}]`, ISO days, inclusive, no overlaps) picks the zone from the row's **written** date and
-wins over `fusoDaIntestazione`, the per-file choice and `fuso`; every date conversion goes through `risolviFuso(LocalDate)`,
-so movement, sort and price see the same instant. ⚠️ Adding it to a config that is already in use moves the instant of
-already-imported rows, and the re-import dedup key holds the instant to the second: every such row would be imported again
-as a duplicate. So it is **not** applied to `Nexo Pro Depositi e Prelievi.json`, and should only go into new configs.
-`colonneCalcolate` (`prodotto`/`quoziente`/`somma`/`differenza` of two columns into a virtual one, `BigDecimal`,
-`toPlainString` because of M7, empty if an operand is missing or the divisor is zero) generalises `coppia.importoQuote`,
-which stays as it is. `regoleRiga`: one condition on one column (`uguale`/`contiene` case-insensitive, or `vuota`) and one
-action (`imposta` a constant into a column, or `scarta`, which goes to the import summary as "REGOLA DI RIGA"); a rule may
-not write the date column (checked at load and again after autodetect). Deliberately not a rules language. A config using
-any of the three needs a `versioneMinimaApp` that contains this code. Pinned by `ImportazioneGenericaPrimitiveRigaTest`.
-
-**`walletSpecularePerCausale`** emits a mirror leg (same coin, inverted quantity via
-`Moneta.InvertiQta()`, never `replace("-","")`) for causali that move a coin into an exchange
-sub-compartment and return it later with a yield. The counterparty is the same wallet group on
-purpose — the transfer must **not** touch the LIFO stack. The causale must also be in `causaliChiuse`,
-or a multi-row group loses everything: **`causaliChiuse`** decides whether two legs of a group merge
-into one movement or stay split, independently of `raggruppaRighe`'s row grouping
-(`TRASFERIMENTO-CRYPTO` is closed, `SCAMBIO CRYPTO-CRYPTO` is not). It is **not** what Binance Dual
-Investment uses today — those stay plain `TRASFERIMENTO-CRYPTO` (categoria PC/DC, campo18 blank),
-abbinati by hand or via `Binance_DualInvestment.Abbina()` from the "Advanced Earn - Dual Investment
-History" detail CSV, since that file carries a contract id the normal transaction export doesn't. Any
-config can list causali in `causaliAllertaDerivati` (same raw-causale matching as `causaliDifferite`)
-to raise a fiscal disclaimer in `Importazioni_Resoconto` at the end of import — the program doesn't
-compute derivative income (art. 67 c-quater TUIR) and treats these movements as crypto-attività, which
-the warning states is not correct. `causaliDerivati` (causale → type) also marks them in `[44]` and
-implies the warning. Full mechanics in `nocommit/Documentazione/Analisi_Import_Meccanismi.md`.
-
-**`Binance_DualInvestment.Abbina()` treats a matched contract differently depending on whether the
-settlement coin equals the subscribed coin.** Different coin (e.g. subscribed USDT, settled BTC) is a
-genuine permuta and goes through `GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito`
-(five synthetic movements, both endpoints renumbered). Same coin — the common case, principal +
-interest settled back in the subscribed currency — would make that same swap permute the *entire*
-settled amount instead of only the excess, so it goes through
-`Binance_DualInvestment.CreaMovimentiDualInvestmentStessaMoneta` instead: Purchase and Settlement keep
-their own IDs **and their imported quantity and value** (only campo 5/18/20 change, not renumbered), the
-subscribed quantity enters the `Dual Savings` sub-wallet, the exact excess enters it too as an
-independent `REWARD` (priced on the Settlement's per-unit value already computed at import, no new price
-lookup), and the **whole** settled amount leaves it (PTW/DTW markers, same wallet group ⇒ invisible to
-the LIFO stack, see the "costo di carico" note above). All movements of the contract form **one
-symmetric `[20]` group**, so undoing or deleting any of them restores Purchase and Settlement exactly as
-imported, and re-passing the file re-matches. This is the form since 2026-10-05 (bug C18): before, the
-Settlement was **reduced** to the capital and the reward sat on the main wallet, with one-way `[20]`, so
-undoing from the Settlement lost the reward and the reduced Settlement no longer matched its CSV row in
-the re-import dedup. Re-passing the detail file converts old-form contracts (`AggiornaFormaStessaMoneta`,
-engine results unchanged, verified on a real dataset) and rebuilds a different-coin contract whose swap
-was overwritten by bug C17 (`MovimentiCollegati.RiparaScambioDifferito`: only the loser's own rows are undone and redone,
-with a rollback that copies the old content back into the same arrays). Both work on the rows alone, no
-file needed, so another trigger can reuse them. A contract settling below the subscription in the same
-coin is not matched. In the sub-wallet the reward's ID (`00` before the third segment) sorts before the
-exit's (`0`), so the per-ID negative-balance check never sees it below zero. Unlike the generic Vault mechanism, the reward here is
-exact from the contract's own two quantities (known from the detail CSV), not inferred from an
-aggregate sub-wallet balance — deliberately **not** reusing `CreaMovimentoTrasferimentoA/Da` themselves,
-to avoid risking their aggregate-balance/hash-based-reward logic for a case they were never designed
-for.
-
-**Bybit "Withdraw & Deposit History" (`Bybit_DepositiPrelievi`, 2026-09-30) enriches, it never
-imports.** Every row is already in the Spot/Funding Asset Change Details as a PC/DC to classify; the file
-only adds hash `[24]`, address `[30]` and the chain **in the note `[21]`** — never in `[34]`, which is the
-token's network and part of the coin's identity (lots, prices). Blank fields only, so re-reading is a
-no-op; unique candidate or nothing, filtered on the raw on-chain causali in `[7]`. Withdrawals are gross
-in Spot and net in this file: the network fee is deliberately **not** split off here, because classifying
-the transfer already creates the `CM` `AU` from the difference. Design in
-`nocommit/Documentazione/Analisi_Bybit_DepositiPrelievi.md`.
-
-**"Scambio differito"** (`SCAMBIO DIFFERITO`) recognises a withdrawal and a deposit on independent
-CSV rows, after the whole import is written, as the two halves of one exchange happening "behind the
-scenes" (Auto-Invest, Token Swap). `Importazioni.ConsolidaMovimentiDifferiti` matches them within a
-configurable time/value tolerance and splits the pair into five movements through a synthetic
-platform, priced at the deposit date. The "already exists" dedup check must run **before** writing,
-not after, or the automatic pairing never fires on a normal import. The swap (MS) and the exit leg (MT2)
-take the **deposit's** timestamp and the **withdrawal's** ID tail, so two swaps settled in the same second
-used to get the same ID and the second silently overwrote the first (bug C17, two Dual contracts lost their
-permuta on a real dataset). `GUI_ClassificazioneMovimento.IDScambioDifferito` now computes all five IDs
-**before** removing the originals and makes the three generated ones unique with `getIDUnivoco`; if it
-cannot, `CreaMovimentiScambioCryptoDifferito` returns `false` having touched nothing, and every caller must
-check it. Because undoing a deferred swap **renames** its endpoints, never remove several movements with a loop
-over IDs collected beforehand: the deposit, renamed by the removal of its withdrawal, was skipped and survived
-(fixed 2026-10-05). Use `Funzioni.RimuoviMovimenti`, which collects the row objects and reads each one's current
-ID at removal time (identity, not content), and also queues the history deletion of its lignaggio; the movements
-table, the SCAM token tab and `CancellaMovimentazioniXWallet` use it (the callers of the latter used to call it
-twice as a workaround). The BTC address-set re-read keeps its own loop on purpose: it carries the lignaggio over
-to the rebuilt rows. The same renaming made a re-import with «sovrascrivi esistenti» add both endpoints again (the
-file's ID no longer matched): `Importazioni.InserisciMovimentosuMappaCryptoWallet(…, Sovrascrivendo=true)` now also
-looks for the renamed form (`IDRinominatoScambioDifferito`, only if campo 18 confirms a deferred-swap endpoint),
-undoes the swap like any other overwritten classification and puts the file row in its place. **Only when
-overwriting**: every other caller has already made the ID unique, so a renamed match there would be a different
-movement that merely shares the original ID. Overwritten classifications are counted
-(`Importazioni.ClassificazioniAnnullate`, carried by `Esito` across files) and reported in the import summary.
-**A re-import must recognise a movement that no longer has the file's form** (`FormeImportate`, 2026-10-06): a
-withdrawal whose quantity a transfer classification changed (generated fee `CM` or reward `RW`), a movement moved by
-Trasla Orario or edited by hand (other instant, ID or quantity), a movement imported by an older version with another
-ID format (`_1_1_RW` vs `_001_001_RW`). `FormeImportate.FormePrecedenti` lists the earlier forms: the withdrawal before
-classification (`GUI_ClassificazioneMovimento.PrelievoPrimaDellaClassificazione`, whose arithmetic `GeneratiDaCompensare`
-is shared with the undo, so they cannot diverge) and every version in the modification history (`MovimentiStorico.Versioni`,
-unsaved buffer included). Without «sovrascrivi» their keys join the dedup set (the key holds the instant **to the
-second**, so even a 1 s shift used to re-import the row). With «sovrascrivi», when the file row's ID is not in the map
-(nor its deferred-swap renamed form), `FormeImportate.Indice`, built once per import in `ScriviListaSuMappaCrypto`,
-finds the row to replace by earlier ID, then by key of any form; each archive row goes to one file row only (partial
-fills with identical keys), generated `AU` rows are never taken, and rows that some file row finds by its own ID are
-excluded up front. «Sovrascrivi» overwrites everything by the user's decision (2026-10-06): the file row replaces the
-moved or hand-corrected movement and undoes the classifications of what it replaces. A replaced movement that has a
-lignaggio hands it to the file row, with a history entry (`MovimentiStorico.OP_SOVRASCRITTURA`) holding the replaced
-row, so *Versioni precedenti* shows what the overwrite discarded (user's choice, 2026-10-06; before, the history was
-orphaned). Only with «sovrascrivi», and never over a file row that already carries a lignaggio. Limit: the lignaggio exists
-since 2026-09-16, so a movement edited before has no history and still re-enters (on the user's 2026 archive 555 `M`
-rows, none with lignaggio; one of them, edited by 1 s, is a real case). Already-affected archives are found by the fifth Errori counter and repaired by
-`MovimentiCollegati.RiparaScambioDifferito` (also called when the Dual detail file is re-passed). The two renumbered originals (`00`/`04`) are deliberately not made unique: undoing the
-classification strips the prefix expecting the original ID back.
-
-**Field `[32]`** ("prezzato") has three states, not two: `"SI"` priced, `""`/`null` needs
-re-checking (the SCAM-unmark convention), `"NO"` already tried, don't ask again — a movement can
-contradictorily hold `"NO"` with a non-zero price, which `Prezzi.isMovimentoPrezzato` now corrects.
-
-**`AttesaConnessione`** (2026-09-12): if the network drops mid-import, the import retries three times
-over nine minutes and then **aborts entirely rather than writing partial, unpriced data** — a dropped
-line previously wrote thousands of movements at `0.00` silently, distinguishable from "no price
-exists" only by a counter.
-
-Full mechanics of all four in `nocommit/Documentazione/Analisi_Import_Meccanismi.md`.
+- `Importazioni.java` — dispatcher and shared utilities; `ImportazioneGenerica.java` — JSON-configured import for arbitrary
+  CSV formats (`config/import/`); `Importazioni_Gestione` / `Importazioni_Resoconto` — the Swing wrapping; exchange-specific
+  classes (`CDC_FiatECardWallet`, `BinanceTaxReportClient`, `CcxtInterop`); DeFi/blockchain (`Funzioni_WalletDeFi`,
+  `TransazioneDefi`, `Trans_Solana`, `ERC20MetadataReader`).
+- **BASE is read from public RPC nodes** (`NodoPubblicoDefi`, config in `Reti.json`), used **from now on only**: do not propose
+  re-downloading old history. Wallets with code (ERC-4337, EIP-7702) are refused.
+- **In a generic-CSV config `nomeExchange` becomes `[3]` and `nomeWallet` `[4]`, and `[3]` is load-bearing twice**: it is part
+  of the re-import dedup key (`F_buildKeyMovimento`, instant to the second) **and** of the wallet-group lookup. Changing a
+  config's `nomeExchange` re-imports everything as duplicates and moves the movements to another group.
+- Config primitives with traps: `fusoPerPeriodo` (never add to a config already in use: moves the instant, duplicates on
+  re-import), `fusoDaIntestazione`, `colonneCalcolate`, `regoleRiga`, `coppia`/`importoQuote`, `tipoSeSola`,
+  `noteAcquistoDaSaldo`, `walletSpecularePerCausale` (the causale must also be in `causaliChiuse`), `causaliAllertaDerivati` /
+  `causaliDerivati`. A config using new code needs a `versioneMinimaApp`.
+- `girocontoFiat` (`GirocontiFiat`): euro moved between two own wallets paired as PTW/DTW; declare the rule mirrored in both configs.
+- Binance Simple Earn, Dual Investment (`Binance_DualInvestment.Abbina`, same coin vs different coin, bug C18),
+  Bybit deposits/withdrawals enrichment: see the details file.
+- **Scambio differito**: never remove several movements with a loop over IDs collected beforehand, use `Funzioni.RimuoviMovimenti`;
+  `GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito` returns `false` having touched nothing if it cannot make the
+  IDs unique, and every caller must check it (bug C17). A re-import must recognise a movement that no longer has the file's form
+  (`FormeImportate`).
+- Field `[32]` ("prezzato") has three states: `"SI"`, `""`/`null` (re-check), `"NO"` (don't ask again).
+- `AttesaConnessione`: after three retries over nine minutes the import **aborts rather than writing unpriced data**.
+Full mechanics: `nocommit/Documentazione/Dettagli_Import.md` and `Analisi_Import_Meccanismi.md`.
 
 ### Price fetching (`Prezzi.java`)
-Queries several exchanges in parallel via OkHttp. Prices are cached in `connectionPrezzi`. Exchange access via CCXT goes through the Node layer below.
 
-**Which leg prices a two-coin movement (2026-09-29, user's decision):** the FIAT leg if there is one (a purchase or sale: the corrispettivo is the currency amount), otherwise the **incoming** leg, and the outgoing one only if the incoming has no price or a zero price. This is circ. AdE 30/E p. 50-51 ("valore normale della cripto-attività ricevuta... alla data in cui lo scambio è concluso", fallback art. 9 c.3 TUIR). The same order (`Prezzi.OrdineGambe`) drives both places that choose: `Prezzi.DammiPrezzoInfoTransazione` (price to look up) and `MovimentiCrypto.DammiMonetaPrioritaria` (legs already priced by the importer). **Precision exception** (same day, user's decision): if the incoming leg's price is not quoted within `Prezzi.PRECISIONE_PREZZO_MS` (5 minutes) of the movement and the outgoing leg's is, the outgoing leg wins — mainly for DeFi, where illiquid tokens often have only hourly quotes (DefiLlama/CoinGecko) while the coin given has minute candles. `Prezzi.isPrezzoPreciso` measures `|InfoPrezzo.timestamp − movement time|`, so every source must store the **quote** time, not the requested one (the old hourly archives use the start of the hour: "coingecko (Old)" wrongly used the requested time until 2026-09-29). A personalised price and a price without a quote time (explicit value: CSV controvalore, price passed by the caller, `"|||Fonte"` in `[40]`) count as precise. The unit of precision is the whole three-pass order in `DammiPrezzoInfoTransazione` (precise, then any non-zero, then zero), mirrored in `DammiMonetaPrioritaria(…, Timestamp)`; Separa/Unisci feeds it the legs' `[15]`/`[40]`, otherwise the unpriced `Moneta` objects made the outgoing leg win every fusion. Three more rules (same day, found on a real Bybit import): (1) legs with a **zero or missing quantity** are excluded from the choice (`OrdineGambe`) — in multi-coin swaps a zero-weight leg keeps the other side's InfoPrezzo, so a SON withdrawal showed BIT as its price source; (2) before declaring a leg imprecise, `Prezzi.CercaPrezzoPreciso` looks it up again with `includiVecchi=false`, because `CambioXXXEUR` reads the old hourly archive **before** the minute cache (order pinned by `PrezziOrdinePrioritaTest` for past declarations) — only inside the two-leg choice, so single-coin valuations (RW year-end) keep the old order; (3) **CoinMarketCap homonyms**: if the chosen price comes from CoinMarketCap and its value deviates by more than `SCOSTAMENTO_MAX_COINMARKETCAP` (10%) from the other leg's, and the other leg is **not** priced by CoinMarketCap too, the other leg wins (`Prezzi.ValoriTroppoDiversi`). Root cause, fixed the same day: the CoinMarketCap map kept one id per symbol by **today's** rank (BIT -> Biconomy 11500 instead of BitDAO 11221, which fell in rank after the MNT migration). `GESTITICOINMARKETCAP` now holds **every** coin of a symbol (key Symbol+CmcId, with name and rank; the old one-row-per-symbol table is dropped on startup and re-downloaded), and `Prezzi.RecuperaPrezziDaCoinMarketCap` downloads every homonym and stores the one with the **highest average market cap in the window**, volume only if no candidate has one (`ScegliOmonimo`; volume alone picked Biconomy over BitDAO in Apr-May 2022 — CMC reports a wash-traded volume above BitDAO's for a token at $0.00001, with market cap 0) under a cache source that names the coin, `"CoinMarketCap (BitDAO)"` (`Prezzi.EtichettaCmc`, since 2026-09-30, for every symbol, homonyms or not) — **the name lives in the cache's exchange column only**: the `InfoPrezzo` cache constructor turns it into `Fonte = "CoinMarketCap"` + `NomeMoneta`, and `Ritorna40` writes it next to the symbol, so `[40]` reads `BIT (BitDAO)|ts|price|CoinMarketCap` (the user's choice: shown as "Moneta di riferimento"). `InfoPrezzo.Moneta` stays the bare symbol because half the program compares it with the legs; anything reading `[40]`'s first field raw must go through `InfoPrezzo.SeparaNome`, first deleting in that window any other non-homonym CoinMarketCap row of the symbol (`CancellaAltriPrezziCoinMarketCap`: the bare `"CoinMarketCap"` of before and another coin that won an overlapping window would otherwise be read first, `ORDER BY exchange`). A caller asking for source `"CoinMarketCap"` (the `[40]` of an older movement) matches `CoinMarketCap%`. From the prices section ("all sources", `TuttiGliOmonimi=true`) the losers are stored too, as `"CoinMarketCap omonimo (<name>)"` (shown to the user as plain CoinMarketCap + the name), so the user can pick one; `DammiPrezzoDaDatabase` excludes `CoinMarketCap%omonimo%` (which also covers the 2026-09-29 label), the list shown by `GUI_ModificaPrezzo` does not. On the first map in the new format **all** CoinMarketCap cache rows (`LIKE 'CoinMarketCap%'`) of every ambiguous symbol are deleted once (option `CoinMarketCap_OmonimiPuliti_2`, checked on **every** `RecuperaCoinsCoinMarketCap` call, not only after a map download (inside it, a map younger than 24 h meant it never ran), and written **only if the DELETE succeeded** — the first version wrote it even when the delete was cancelled at shutdown, so the wrong rows stayed forever), so they are re-downloaded right — with **one** `DELETE … IN (…)`: the cache key starts with `timestamp`, so any condition on symbol is a full scan (~36 s on 48M rows), and the first version's one-DELETE-per-symbol loop over ~800 symbols froze the app for hours. The map is downloaded in pages of 5.000 (`Prezzi.PAGINA_MAPPA_CMC`, `start=`), since active coins are >8.000 and BitDAO is rank 5.046; a map in an older format is re-downloaded even within 24 h (`OPZIONE_VERSIONE_MAPPA_CMC`) — this also changes RW year-end values read live from the cache, by the user's decision. Details in `nocommit/Documentazione/Analisi_Prezzo_Gamba_Scambi.md`. Related fix in `TransazioneDefi.AssegnaPesiaPartiTransazione`: a side's weight base is never less than the sum of that side's known values (`BaseLato`), otherwise an underestimated transaction value gave one priced coin a weight capped at 1 and every other coin zero. The incoming leg is recognised by the **sign** of the quantity, because `creaMovimento` receives the legs in arbitrary order (`TransazioneDefi` passes the incoming one first). EMT in euro are crypto-attività here (permuta, circ. 30/E p. 49): they follow the incoming-leg rule and are priced 1:1 only when they are the chosen leg. Before, the choice was the "most reliable" leg (FIAT, EMT, USD, `SimboliPrioritari`, then the outgoing one), which in deferred swaps valued the coin given at the deposit date. **Stored values are not recomputed**: the rule applies to prices computed from now on (import, classification, manual re-pricing), so both golden masters are unchanged. Measured effect on the real dataset in `nocommit/Documentazione/Analisi_Prezzo_Gamba_Scambi.md`.
-
-**Token alias for exchange pricing live in `config/varie/AliasPrezziToken.json`** (since 2026-09-25,
-read by `AliasPrezziToken.Carica()` from `VarCondivise.CompilaMappaChain()`, and **again** when the background config update downloads a new copy — it is the only `config/varie` file held in memory, and before 2026-10-08 a new entry stayed inactive until restart, leaving that session's imports unpriced; `Applica` swaps in new maps, never clears the live ones): `alias` fills
-`Principale.Mappa_AddressRete_Nome` (WETH on Base → ETH, USDC.e → USDC: priced via CCXT at 1-minute
-resolution instead of hourly DefiLlama/CoinGecko), `stessoPrezzo` fills `Mappa_MoneteStessoPrezzo`.
-Three non-obvious points: the file **changes fiscal numbers without a version bump** (Quadro RW values
-31/12 live), so edit it as a fiscal change; an alias nulls the address, so a hand-entered price saved
-by address+rete is read first by `Prezzi.PrezzoPersonalizzatoTokenConAlias` — keep that ahead of any
-alias move; only `riferimento: true` entries (the canonical token, or the bridged one where no canonical exists —
-USDT on BSC) feed the automatic SCAM marking of `AliasPrezziToken.MotivoImpersonazione`, and a
-token whose address+rete is in `GESTITICOINGECKO` is never an impersonation
-(`MotivoImpersonazioneEsclusiCensiti` — by address, never by symbol; the name rule and GoPlus still apply).
-`Calcoli_RW_GoldenMasterTest` sets the alias state explicitly (before 2026-09-25 it didn't load them at
-all, so its result depended on test order) and checks it three ways: `rw.golden` with the option off,
-`rw_anniPassati.golden` with it on, and — with no baseline — that with the option off every year closed
-before the first `dal` is identical to the historical 12 entries (`AliasPrezziToken.Predefinite()`). That
-last test is the one that fails if an entry is added without `dal`. WPOL/WMATIC is left out on purpose (the POL ticker was not
-MATIC before 09/2024).
-**Past declarations must not move**: each entry added after the first 12 carries `dal` (ISO date), and an
-alias applies only to prices at instants strictly **after** 00:00 of that day — strictly, because
-`Calcoli_RW` prices the year-end of year N at `01/01/N+1 00:00`, which is also the start of N+1. So every
-pricing reader goes through `AliasPrezziToken.Alias(address, rete, istante)` /
-`StessoPrezzo(simbolo, istante)`, never through the two maps directly (they hold all entries, undated).
-A new entry added in year N gets `dal = N-01-01`. The option `AliasPrezzi_AncheAnniPassati`
-(*Opzioni di calcolo*, "Prezzi dagli exchange anche per gli anni già dichiarati") ignores every `dal`; it is
-initialised once, "SI" only on a new installation (`movimenti.crypto.db` absent or empty). Details in `nocommit/Documentazione/Analisi_Alias_Prezzi_Token_CCXT.md`.
-
-**Address tokens outside the CoinGecko list are priced by DefiLlama** (`PrezziDefiLlama`, 2026-10-09, user's rules):
-`CambioAddressEUR` no longer marks them KO before asking. A DefiLlama price is accepted if `confidence` > 0,9, otherwise
-only for listed tokens (as before, when confidence was ignored) — one rule, `PrezziDefiLlama.Ammesso`. **The only
-endpoint is `/batchHistorical`** (many tokens × their own instants per call, `searchWidth=1h` = one hour *per side*,
-URL refused above ~9 KB): `/chart` was dropped — pool/vault tokens have a point there only every 3-5 hours (the
-instant data is far denser), its 500-point cap is per *call*, and the old code slept 2 s per token. Prices are fetched
-in batches **before** valuation: EVM explorer and Moralis imports, Solana import, `PreScaricaPrezzi` (Ricalcola prezzi,
-Trasla orario) and `PreScaricaPrezziMonete` (W/RW, T/RT, Giacenze a data); `CambioAddressEUR` asks a single instant
-only if no batch did. Batches ask **only pairs with no local price and no KO** (`PreScaricaCoppie`): the cache returns
-the quote closest to the instant, so a new DefiLlama row could otherwise displace the one an already-filed year was
-declared with. That is the whole protection of past declarations (no `dal` guard, user's choice). ⚠️ The single path
-must skip DefiLlama for an instant a batch already asked (`GiaChiestoAllIstante`), or every unpriced token redoes its
-call: with `/chart` that took Giacenze a data from 26 s to 284 s. Import instants must match `TransazioneDefi`'s own
-round trip through text (`IstanteImport`). **DeFi imports pre-fetch the exchange prices too** (`PrezziImportDeFi`:
-one walk of the downloaded JSON gives the address pairs for DefiLlama and the symbol pairs — native coin when the tx
-moves value or the wallet pays the fee, tokens with an alias — for `Prezzi.PreScaricaPrezziSimboli`). That one drops
-pairs covered by personal prices or the old hourly `XXXEUR` archive (`CopertaDaPrezzoLocale`), which single-coin
-valuation reads before downloading and `FiltraRichiesteGiaCoperte` does not: without it the test wallet asked 218
-pairs instead of ~90. Measured on a real Cronos wallet (339 tx, 46 tokens, address prices removed from the cache):
-200-208 s before 2026-10-09, 52-79 s now, of which ~19 s explorer downloads and ~7 s the daily CoinGecko list. Measurements and decisions in `nocommit/Documentazione/Analisi_Prezzi_LP_DefiLlama.md`.
-
-**Option: DeFi tokens priced only by DefiLlama/CoinGecko** (`Prezzi.OPZIONE_DEFI_SOLO_DEFILLAMA_COINGECKO`, *Opzioni di
-calcolo*, off by default, 2026-10-10). `CambioAddressEUR` had two fallbacks to the exchanges **by symbol** for a token
-in the CoinGecko list (symbol in `SimboliPrioritari`, or price older than 365 days, which CoinGecko does not give),
-exposed to homonyms. With the option on both are skipped (`AddressAmmessoSugliExchange`): a priority symbol goes on to
-CoinGecko, an old price comes only from DefiLlama, which is asked first and has no time limit (missing only if DefiLlama has none). Three choices worth keeping: the exemption is "address in the alias list **at any
-date**" (`AliasPrezziToken.InElenco`, not `Alias(…, istante)`), so before its `dal` a listed token behaves as always;
-it is checked inside `CambioAddressEUR`, because `CambioXXXEUR` hands a valid address there before any alias; and a
-price blocked by the option writes **no** `PrezziKO` (it would outlive switching the option off). Native coins and
-invalid addresses never reach that code. It moves live RW year-end values, hence `RW_Label_SegnalaRicalcolo` on toggle.
-
-**Exchange API imports pre-fetch too** (2026-10-09), each with the **same price source as its consumer** (it picks the
-cascade's first exchange and, with a non-blank source, personal prices do not count as coverage, as in `CambioXXXEUR`).
-OKX: `Importazioni.Ex_OKX_PreScaricaPrezzi` reads the 19-field rows (`[5]` and fee `[11]`, source `okx`) inside
-`Ex_OKX_RaggruppaEConsolida`, so API, OKX CSV and scarti recovery all get it, but **not** `Ex_OKX_Raggruppa`, which the
-scarti analysis calls and must stay network-free. Binance prices inside `creaMovimento` while converting the JSON, so the
-conversion runs twice: first dry (`Prezzi.SenzaValorizzare`, a thread-local that makes `DammiPrezzoInfoTransazione`
-return `null`; it also covers the first conversion, which only computes the token list for the trades), then
-`PreScaricaPrezziSimboli(SimboliDaMovimenti(…), …, "Binance")`, then the real conversion. A new API importer that prices
-during conversion can reuse the same three steps.
-
-**The remote path reads on-chain DEX prices (Fase 1-bis, 2026-08-25) and is opt-in — see `ServizioPrezziClient.OPZIONE_ABILITATO_DEFAULT`.** The old CCXT-based shared cache was retired entirely (all seven configured exchanges were confirmed, from their own published API terms, to forbid redistributing market data to third parties even for non-commercial use — see `nocommit/Documentazione/Analisi_VPS_Prezzi_Sito.md`). The replacement reads prices directly from DEX pool state (`ServizioPrezzi/src/onchain/`), which is nobody's market data. It was briefly switched on by default on 2026-08-26, once the `/v1/monete` transparency endpoint (below) made the service's coverage independently checkable, then reverted to disabled-by-default the same day at the user's request pending further testing — do not flip `OPZIONE_ABILITATO_DEFAULT` back to `"SI"` without asking. It's still a checkbox in *Opzioni → Opzioni di Calcolo* (`Prezzi_Opzioni_CheckBox_ServizioOnchain`), persisted as `ServizioPrezziClient.OPZIONE_ABILITATO` in `personale.mv.db`. Tests override it with the `prezzi.servizio.abilitato` system property.
-
-`CambioXXXEUR` tries a remote pull-through cache (`ServizioPrezziClient.tentaRecupero`) before the
-local CCXT fetch, already converted to EUR server-side, then falls back to CCXT. The local CCXT path
-downloads a **whole calendar day** of quotes at once per `(coin, day)`, tracked by a persistent
-marker (`PrezziGiorniCCXT`) so re-imports and incremental recalcs over an already-marked range launch
-zero Node processes — forward-only, movements already imported keep their stored price. The remote
-service also exposes `GET /v1/monete` (coverage transparency, used as a fast local pre-check) and
-`GET /v1/prezzi?symbol=&da=&a=` (range variant, not yet consumed by the Java client). Full mechanics
-(source-name rewriting for storage efficiency, exact day-marker invariants, why the golden master
-can't exercise this path) in `nocommit/Documentazione/Analisi_VPS_Prezzi_Sito.md`.
+Several exchanges in parallel via OkHttp, cached in `connectionPrezzi`; CCXT goes through the Node layer. Rules to keep:
+- **Which leg prices a two-coin movement**: the FIAT leg if any, otherwise the **incoming** leg, the outgoing one only if the
+  incoming has no (or zero) price or is not quoted within `PRECISIONE_PREZZO_MS` (5 min) while the outgoing is
+  (`Prezzi.OrdineGambe`, shared by `DammiPrezzoInfoTransazione` and `MovimentiCrypto.DammiMonetaPrioritaria`). Every source
+  must store the **quote** time. CoinMarketCap homonyms are guarded (`SCOSTAMENTO_MAX_COINMARKETCAP`, `ScegliOmonimo`; the
+  coin name lives in the cache's exchange column only). **Stored values are not recomputed**: the rule applies to prices
+  computed from now on.
+- **`config/varie/AliasPrezziToken.json` changes fiscal numbers without a version bump**: edit it as a fiscal change. Each
+  entry after the first 12 carries `dal` (ISO date, strictly after) so past declarations do not move; always read aliases
+  through `AliasPrezziToken.Alias(address, rete, istante)` / `StessoPrezzo(simbolo, istante)`, never the two maps. A new entry
+  added in year N gets `dal = N-01-01`. `Calcoli_RW_GoldenMasterTest` is the gate.
+- Address tokens outside the CoinGecko list go to DefiLlama (`PrezziDefiLlama`, only `/batchHistorical`), fetched in batches
+  **before** valuation and only for pairs with no local price and no KO (this is the whole protection of past declarations).
+  Imports (EVM, Solana, OKX, Binance) pre-fetch with the **same source as their consumer**.
+- Option `OPZIONE_DEFI_SOLO_DEFILLAMA_COINGECKO` (off by default) skips the exchange-by-symbol fallbacks; no `PrezziKO` is
+  written for a price it blocks.
+- The remote on-chain price service is **opt-in**: do not flip `ServizioPrezziClient.OPZIONE_ABILITATO_DEFAULT` to `"SI"`
+  without asking. The local CCXT path downloads a whole day per `(coin, day)` tracked by `PrezziGiorniCCXT`.
+Full mechanics: `nocommit/Documentazione/Dettagli_Prezzi.md`, `Analisi_Prezzo_Gamba_Scambi.md`, `Analisi_Alias_Prezzi_Token_CCXT.md`,
+`Analisi_Prezzi_LP_DefiLlama.md`, `Analisi_VPS_Prezzi_Sito.md`, `Analisi_Prezzi_Scaricamento_Costi.md`.
 
 ### The `Scripts/` Node.js layer
 
-Part of the exchange and price logic lives in JavaScript, not Java, and runs **out of process on a real Node binary** — there is no embedded JS engine (no GraalVM/polyglot dependency in `pom.xml`, no `Context.eval` in the sources), despite the `graalvm.version` property and GraalVM repository left in the pom.
-
-`CcxtInterop.java` bootstraps that runtime:
-- `ensureNodeInstalled()` downloads a standalone Node distribution (`NODE_VERSION`) from nodejs.org on first use, picking OS/arch automatically, and extracts it into `tools/node` under the working directory
-- `installCcxt()` runs `npm install ccxt@<CCXT_VERSION>` into that distribution
-- `getNodeExePath()` resolves the platform-specific `node` executable
-
-**CCXT is pinned (`CcxtInterop.CCXT_VERSION`) and self-correcting, the same principle as `NODE_VERSION`, since 2026-09-04.** Before that, `installCcxt()` ran a bare `npm install ccxt` exactly once — whatever "latest" happened to be on that installation's first API import — and never touched it again, because the only check was "does `node_modules/ccxt` exist". An install from months earlier stayed on that old version forever, silently. A user reported OKX API downloads failing on `Funding errore ... : exchange[metodo] is not a function` for `privateGetAssetBillsHistory` (bug **C14**, `nocommit/Documentazione/Analisi_Bug_Criticita.md`): their installed ccxt predated CCXT adding the `asset/bills-history` endpoint, so the implicit method plainly didn't exist — Trading (`privateGetAccountBillsArchive`, an older endpoint) kept working the whole time, which is what made it look OKX-specific rather than an ambient library problem. `installCcxt()` now reads `node_modules/ccxt/package.json`'s `"version"` and reinstalls whenever it doesn't match `CCXT_VERSION`, so bumping the constant is what future devs do when a script starts relying on an endpoint/method not yet in the pinned version — exactly like bumping `NODE_VERSION`. **This check is skipped when `NODE_ESTERNO != null`** (flatpak/MSIX): that ccxt copy sits in a read-only prefix installed by the packaging manifest, and `getNpmPath()` throws in that mode on purpose (see the flatpak section below) — `installCcxt()` returns immediately instead of ever reaching it.
-
-**npm's own version is not tracked separately — it ships inside the pinned Node distribution.** `getNpmPath()` only ever resolves `npm[.cmd]` from inside `getNodeDir()/node-<NODE_VERSION>-<platform>/`, never a system-wide npm, so its version already moves in lockstep with `NODE_VERSION` with nothing extra to pin. What *is* machine-dependent is npm's **config**: on a real user's Windows machine (2026-09-04) `npm install` printed `npm warn Unknown user config "allow-scripts"` — a key this app never sets, read from that machine's own `.npmrc` (some unrelated tool's leftover). Since our installs are meant to be internal and deterministic, `isolaConfigNpm()` points `npm_config_userconfig`/`npm_config_globalconfig` at a file that deliberately does not exist before every `npm install` in `installCcxt()`/`installModuleNode()` — npm treats a missing config file as "nothing extra to read" (documented behavior, not an error), so the install no longer depends on whatever a given machine's own npm config happens to contain.
-
-Callers (`CcxtInterop.fetchMovimento()`, and several methods in `Prezzi.java`) then build a path `getPathRisorse() + "Scripts/<name>.js"` and launch it as a child process, passing credentials/dates/tokens as command-line arguments and parsing JSON from stdout. Scripts cover Binance endpoints (`Binance_Trades.js`, `Binance_Conversioni.js`, `Binance_EarnFlessibili.js`, `Binance_SaldiGiornalieri.js`, …), generic movement fetching (`FetchMovimenti.js`) and historical prices (`Historical_Multi_Eur.js`).
-
-**`Historical_Multi_Eur.js` is the exception: for batched prices it runs as a long-lived process**
-(`--servizio`, managed by `ServizioNodePrezzi.java`, one batch per stdin line, closed after 10 minutes
-idle), with the old one-process-per-batch path kept as fallback. "Riscarica tutti i prezzi dalle fonti"
-uses it too, with the `tutti` flag (all exchanges in parallel, no cascade) and a ±60-minute window that
-matches what `GUI_ModificaPrezzo` then reads from the cache. So its module-level caches outlive a
-batch: anything added there must be reset per message or expire, or a transient failure becomes
-permanent for the session. It also hands its cached markets to ccxt (`consegnaMarkets`) and keeps them
-spot-only without `info` (`markets_v2_*.json`) — without the first, `fetchOHLCV` silently re-downloads
-every exchange's market list over the network. Details in
-`nocommit/Documentazione/Analisi_Prezzi_Scaricamento_Costi.md` §10.
-
-**A change to Binance import or CCXT price fetching may belong in `Scripts/*.js` rather than in Java** — check both sides. These scripts ship alongside the JAR, like `Immagini/`.
-
-Arguments are consumed **positionally** (`const [, , exchangeId, apiKey, secret, …] = process.argv`) by all ~17 scripts, so a new argument must be appended at the **end** — never inserted in the middle. That is why `fetchMovimento` grew its extra parameters (`passphrase`, then `hostname`) as trailing overloads.
-
-**The OKX API now covers the whole history** — Funding via `asset/bills-history`, Trading via
-`account/bills-archive` (~3 months) plus `OKX_Archivio.js` for the quarterly archives back to
-February 2021. The two `ImportConfig/OKX_*.json` CSV configs remain only for history older than
-that. **OKX has no single domain**: `OKX_Bills.js` probes regional hostnames
-(`my.okx.com`/`eea.okx.com`/`www.okx.com`/`app.okx.com`) and remembers the winner, but
-`OKX_Archivio.js` does not probe — the recognised hostname must be fed back into the caller's local
-variable, not merely persisted (bug C9). `billId` (row identity, dedup key) and `ordId` (which rows
-belong to the same order) are not interchangeable and decode differently between the two OKX
-accounts (Funding/Trading) and even between `type` codes on each. An incomplete OKX download
-**imports nothing at all** (bug C13) — `startDate` only advances on success, so a partial import
-would silently skip movements forever. The `after` parameter means a `billId` on Trading but a
-timestamp on Funding, and getting this wrong doesn't error, it silently truncates history (bug C8).
-
-**OKX Simple Earn interest can be reconstructed, not only downloaded** (`OKX_InteressiEarn`, 2026-10-07), but
-only with `OPZIONE_RICOSTRUZIONE` (*Exchange API → Particolarità OKX*), **off by default**: the program is fiscal,
-so by default it books only what the exchange API returns (user's choice). Off, nothing below runs except a
-notice when the returned history starts after the requested day (`TestoAvvisoStoricoCorto`).
-`finance/savings/lending-history` returns only the last month (720 hourly records) and the interest has no
-bill type, so a day that leaves the window before an import is lost, and the oldest day of a truncated window
-arrives half-full (dropped by `ScartaPrimoGiornoTroncato`, since its daily ID would block completing it). The
-per-period total is exact: current balance + redemptions − subscriptions, from the Funding bills 75/76 fetched
-over the whole history (`savings_flussi` of `OKX_Earn.js`, which reuses `OKX_Bills.fetchBills`), checked against
-OKX's `earnings` for the open period. The missing part is split over uncovered days by capital (an estimate),
-one REWARD per day keyed `EARN-<ccy>-<yyyymmdd>-RIC`, so a re-run adds nothing. Existing interest is recognised
-by the `EARN-` key, archive **and** current batch, never by causale. Days inside the window just downloaded get
-no share even without interest (OKX sends zero records, or none: BTC from 28/09/2026), but zero days of
-**past** windows leave no trace and can still receive a share. Days up to 2025
-(`PRIMO_GIORNO_SEMPRE_REGISTRATO`) are dropped **after** the split unless `OPZIONE_ANCHE_ANNI_PASSATI` (off by
-default, *Exchange API → Particolarità OKX*): from 2026 every download goes through the reconstruction, so the
-data are either absent or right, and they are always booked (the user's choice, 2026-10-07). On the user's archive the API flow counts (32 subscriptions, 27 redemptions, back to 2022) match the
-CSV-era Earn transfers plus the 2026 ones, so the old "Savings" product used the same type codes.
-
-**Movements skipped as unknown are recovered from the source documents** (`ScartiImport`, 2026-10-08). An API download
-starts at the last movement + 1 s, so a bill the maps did not know (OKX `type 328` before 2026-09-09) was never asked
-for again: a real user lacked 27 OKSOL staking rewards. The raw bills are still in the download's NDJSON
-(`DocumentiFonte`), so they are re-converted with today's maps. `Ex_OKX_ImportaDaAPI` records the skipped bills in
-`SCARTI_IMPORT` (`personale.mv.db`, key `Funding:<billId>`, taken **before** `[2]` becomes "Principale"), and
-`fetchMovimenti` keeps a document that added nothing but has skipped bills (before, it was deleted with them). Three rules
-the analysis depends on: presence is judged per **unit** (what the import would turn into one movement: the swap rows of a
-`Ex_OKX_Raggruppa` group together, every other row alone), never per bill, because a multi-fill order's `[24]` cites only
-some bill ids; a unit absent from the archive is **certain** only if registered, otherwise **uncertain** (it may be a
-movement the user deleted: on `test/2025`, 498 such units); a unit partly in the archive with a registered leg is **mixed**
-and only reported — "partly" meaning a registered bill really is missing: recovered units are marked `RECUPERATO`
-(until 2026-10-09 they stayed `ATTESA` and came back as mixed at the next map change, telling the user to fix correct
-movements), and a unit whose registered bills are all in the archive is imported, not mixed. The re-reading must repeat the import's own pre-processing of the rows: bill dedup and `AbbinaLiquidStakingOnChain` with the `staking_storico` of the document's `OKX_Earn` answers — without it a `type 330` looked like a recoverable swap with only its incoming leg (found on the reporting user's backup: 43 OKSOL from nothing). Any new step the import applies to the rows before `Ex_OKX_ImportaDaAPI` must be mirrored in `ScartiImport.LeggiRigheOKX` (and `VERSIONE_RILETTORE_OKX` bumped). The analysis never consolidates (that fetches prices): `Ex_OKX_Raggruppa` was split out of
-`Ex_OKX_RaggruppaEConsolida` for it, and only confirmed units go through `Ex_OKX_ImportaDaAPI`, with `[41]` = the original
-document. Recovery is **always confirmed** (`GUI_RecuperoScarti`; certain pre-ticked, uncertain not, unticked and mixed
-become `IGNORATO` and are never proposed again, "Chiedi più tardi" marks nothing). It runs after every API download
-(`GUI_ExchangeAPI`), at startup (`AvvisiAvvio`) and when the background config update brings new maps
-(`Principale_RecuperoScarti.ControllaQuandoLibero`, which waits for the main window to be active). Cost is nil when nothing
-changed: `SCARTI_ANALISI` stores per document the hash of the maps it was read with (`ScartiImport.ImprontaOKX`, content of
-`OKX_Tipi.json` + `OKX.json` + `VERSIONE_RILETTORE_OKX` — bump the latter when the re-reading logic changes). A document with
-candidates is not marked, so after a discarded save they come back. A confirmed unit the import does not write (ID collision, a category `Ex_OKX_Consolida` ignores) becomes `IGNORATO` (`NonRecuperati`), or it would come back forever; the import gets **copies** of the rows, since it rewrites `[2]`, which is part of the register key. OKX only for now (bills, Trading archive; not the Earn
-rows). Design in `nocommit/Documentazione/Analisi_Recupero_Movimenti_Sconosciuti.md`.
-
-**The OKX Card wallet is found on-chain, never asked to the user** (`OKX_WalletCarta`, 2026-10-07). The card
-spends from an "OKX Pay Wallet", an ERC-4337 smart-contract wallet on **X Layer** (chain id 196), funded by the
-Funding bill `type` 325 "Transfer from exchange to smart wallet", which carries no address or hash and is **not**
-in `asset/withdrawal-history` (checked). For each 325 bill the public node `rpc.xlayer.tech` (no key, `eth_getLogs`
-max 100 blocks, ~1 block/s) is searched from 2 min before to 15 min after for a transfer of the same coin and exact
-amount whose recipient answers `entryPoint()` with a known EntryPoint; several bills must agree, else nothing is
-chosen. The address is stored in the personal option `OKX_WalletCarta.OPZIONE_WALLET`, shown in *Exchange API →
-Particolarità OKX*, and since 2026-10-09 also registered in `WALLETS` as rete `XLAYER`, in OKX's wallet group if it has
-none (`OKX_WalletCarta.Registra`: the user's choice, the card is part of the OKX account). Registration happens when the
-address is first found, and once at startup for an address found earlier (`OPZIONE_REGISTRATO`), so a wallet removed by
-hand does not come back. ⚠️ The API download searches only the 325 bills it downloads: a 325 that arrives through the
-scarti recovery (the real case: the 04/10 bill predates the 325 mapping) never passes there, so `OKX_CartaAbbina.Abbina`
-also searches the wallet from the archive's unpaired 325 rows when the option is empty.
-
-**X Layer is imported from the public node, not from an explorer** (`Trans_XLayer`, 2026-10-09). No free explorer
-covers it, so the wallet's **state** (ERC-4337 nonce, balances of the coins in `tokenNodo` of the XLAYER entry of `Reti.json`, read by `Trans_XLayer.Monete()`, `scaledBalanceOf`
-of aTokens, OKB) is read with one `eth_call` to Multicall3 and bisected until a changed stretch is ≤ 100 blocks, where
-`eth_getLogs` runs: ~20 requests per movement whatever the time elapsed. Only the listed coins are seen and native OKB
-moves are only reported, so a generic X Layer wallet would be incomplete. `Mappa_ChainExplorer[0]` holds the node, not
-an explorer, and the DeFi dispatcher branches to it **before** every ApiKey check. Rows are built by the importer
-(`TransazioneDefi.RighePronte`), because `TransazioneDefi` sums tokens by address and in a card payment the Aave
-interest and the aToken spent would net into one movement. Classification, by the user's decisions (2026-10-09):
-Aave interest (`balanceIncrease` of the aToken `Mint`/`Burn`, **not** the `Transfer` from `0x0`) is a REWARD numbered
-before the movement of the same tx, so it sorts first and the LIFO consumes it; a card payment (`Claimed` event with
-the wallet as `from`, pulled by OKX's settlement contract **without** a UserOperation: the nonce does not move) is a
-CASHOUT at the settlement instant (cash principle) priced as USDG; everything else follows the shape of the tx. Top-ups
-and cashback arrive from the same OKX hot wallet, so `OKX_CartaAbbina` (run after every OKX import and recovery and
-after an X Layer update, whole archive, idempotent) pairs the 325 bill (OKX_Tipi 1.005 "Transfer to smart wallet") with
-the deposit of the same coin and amount (PTW/DTW), and marks as CASHBACK a deposit from an already-paired sender only
-once the OKX archive reaches past it. An OKX API download in *Exchange API* also updates the card wallet
-(`Trans_XLayer.AggiornaWalletCarta`, from the highest `[23]` of its rows, own "DeFi" source document, all or nothing),
-**after** the scarti recovery, because the wallet may have just been found from a recovered 325 (user's choice). aXlrUSDG is priced as USDG by an `alias` with `tipo: "ricevuta"`,
-`riferimento: false`: aliases only change the price, the movement keeps its own symbol and LIFO. Measurements, the real
-payment and the simulation are in `nocommit/Documentazione/Analisi_Carta_OKX_XLayer.md`.
-
-**Testing an unpublished `config/` change in the app needs `-Dconfig.nonAllineare=true`**: the startup alignment
-compares by git blob sha and overwrites any local edit with GitHub's copy seconds after launch.
-
-Full mechanics (quarter-list bounding by `startDate`, suspended-quarter recovery, `OKX_Tipi.json`
-data-driven type codes, CCXT rate-limit costs, bugs C8/C9/C12/C13/C14 in detail) in
-`nocommit/Documentazione/Analisi_Bug_Criticita.md`.
+Exchange and price logic partly lives in JavaScript run **out of process on a real Node binary** (no embedded JS engine,
+despite the leftover `graalvm.version` in the pom). `CcxtInterop` downloads Node (`NODE_VERSION`) into `tools/node` and
+installs ccxt. Traps:
+- **Both versions are pinned and self-correcting** (`CcxtInterop.CCXT_VERSION` is reinstalled whenever `node_modules/ccxt`
+  differs): bump the constant when a script starts relying on a newer endpoint (bug C14). Skipped when `NODE_ESTERNO != null`
+  (flatpak/MSIX). npm comes inside Node; `isolaConfigNpm()` keeps the machine's `.npmrc` out.
+- Script arguments are consumed **positionally**: a new argument goes at the **end**, never in the middle.
+- `Historical_Multi_Eur.js` also runs as a long-lived `--servizio` process (`ServizioNodePrezzi`): module-level caches must be
+  reset per message or expire.
+- A change to Binance import or CCXT price fetching may belong in `Scripts/*.js` rather than in Java: check both sides.
+- **OKX**: the API covers the whole history; `billId` and `ordId` are not interchangeable; an incomplete download imports
+  **nothing** (C13); `after` means a `billId` on Trading but a timestamp on Funding (C8); the recognised hostname must be
+  fed back into the caller (C9). Simple Earn reconstruction (`OKX_InteressiEarn`) is **off by default**, the program books only
+  what the API returns. Movements skipped as unknown are recovered from the NDJSON documents (`ScartiImport`): any new
+  pre-processing step of the import must be mirrored in `ScartiImport.LeggiRigheOKX` and `VERSIONE_RILETTORE_OKX` bumped. The
+  OKX Card wallet is found on-chain (`OKX_WalletCarta`), X Layer is imported from the public node (`Trans_XLayer`).
+- Testing an unpublished `config/` change needs `-Dconfig.nonAllineare=true` (startup alignment overwrites local edits).
+Full mechanics: `nocommit/Documentazione/Dettagli_Scripts_Node_OKX.md`, `Analisi_Bug_Criticita.md`, `Analisi_Carta_OKX_XLayer.md`,
+`Analisi_Recupero_Movimenti_Sconosciuti.md`.
 
 ### Source documents — field `[41]` and `DocumentiFonte`
 
-Every imported movement carries, in `[41]`, the numeric id of the file it came from. The copies live
-**gzipped** in `DocumentiFonte/` (`VarStatiche.getCartella_DocumentiFonte()`), the registry is the
-`DOCUMENTIFONTE` table in `personale.mv.db`, and the whole thing is driven by `DocumentiFonte.java`.
-`[41]` holds an **id only** — never a path: `Scrivi_Movimenti_Crypto` deletes `;` rather than escaping it.
-
-Four things not obvious that the design depends on: `[41]` is outside `Impronta()` and the golden
-master, which is what makes stamping it free; the dedup hash is of the *original* content, not the
-stored `.gz` (gzip embeds an mtime, so hashing the archive would break re-import dedup); `Annulla`
-may only run on a registration with `Nuovo == true`, since a re-import of an already-known file adds
-zero movements and reuses the existing id; and `DocumentoFonteCorrente` must not be reset in
-`AzzeraContatori()`, because several import branches call it twice.
-
-Deleting a document with movements attached deletes those movements too (single selection only,
-double confirmation), and since 2026-09-18 the deletion is **provisional**, exactly like deleting a
-movement on its own: `Principale_DocumentiFonte.EliminaDocumentoConMovimenti` removes the movements
-from the map and calls `DocumentiFonte.AccodaCancellazione(Id)` — the document disappears from
-`DocumentiFonte.Elenco()` (so from the panel) immediately, but the registry row and the `.gz` are
-untouched. `DocumentiFonte.SalvaBuffer(Map)` makes it real, called from `Importazioni.
-Scrivi_Movimenti_Crypto` right next to `MovimentiStorico.SalvaBuffer` — the same instant the movement
-deletion itself stops being undoable. `Leggi(int)` deliberately does **not** filter pending-deletion
-ids (`Annulla` reads it to resolve the file to delete); only `Elenco()` does. The "Annulla" button in
-"Transazioni Crypto" (discard unsaved changes) calls `DocumentiFonte.ScartaBuffer()` to drop the queue
-— its own liveness re-check inside `SalvaBuffer` would already stop a live document from being deleted,
-but without `ScartaBuffer` it would stay wrongly hidden from the panel until the next real save.
-**Generated movements inherit `[41]` from the movement they derive from** (deferred swap, transfer fee/reward,
-and since 2026-10-05 also the Dual same-coin legs and reward, the platform/Vault mirror and corrective reward, the
-WCRO withdrawal of the WCRO-CRO swap): a new classification that generates movements must copy it too, or the
-document filter shows the operation by halves. Older generated rows are filled at load
-(`DocumentiFonte.CompletaDocumentoGenerati`, ~2 ms on 20.000 movements, memory only, no *Salva*): from the original
-of the `[20]` group with the same instant in the ID, else the document common to all originals, else nothing. On
-archives imported before `[41]` existed most originals have no document either, so little gets filled.
-Credentials never enter the NDJSON documents written for API/DeFi downloads —
-`DocumentiFonte.UrlSenzaChiave` redacts keys from blockchain-explorer URLs.
-
-Full mechanics (hash/backup ordering guarantees, the repeated-pass removal sweep, the two GUI
-mount points sharing one operational class) in
-`nocommit/Documentazione/Analisi_DocumentiFonte_Movimenti.md`.
+Every imported movement carries in `[41]` the numeric id of its source file; copies live gzipped in `DocumentiFonte/`, the
+registry is `DOCUMENTIFONTE` in `personale.mv.db`, driven by `DocumentiFonte.java`. Traps:
+- `[41]` holds an **id only**, never a path (`;` is deleted, not escaped); it is outside `Impronta()` and the golden master.
+- The dedup hash is of the *original* content, not of the `.gz` (gzip embeds an mtime); `Annulla` only on a registration with
+  `Nuovo == true`; `DocumentoFonteCorrente` must not be reset in `AzzeraContatori()`.
+- Deleting a document with movements deletes them too, **provisionally** (`AccodaCancellazione` → `SalvaBuffer` from
+  `Scrivi_Movimenti_Crypto`; "Annulla" calls `ScartaBuffer`). `Leggi(int)` does not filter pending ids, `Elenco()` does.
+- **Generated movements inherit `[41]`** from the movement they derive from: a new classification that generates movements
+  must copy it. Credentials never enter the NDJSON documents (`DocumentiFonte.UrlSenzaChiave`).
+Full mechanics: `nocommit/Documentazione/Analisi_DocumentiFonte_Movimenti.md` and `Dettagli_ChiediIA_DocumentiFonte.md`.
 
 ### "Chiedi a IA" — asking an external chatbot about a movement
 
-A popup-menu entry on movements that hands a single movement over to an external chatbot in the user's browser. Three classes, no API key and no network call from the app itself:
-
-- `ChatbotIA.java` — the list of chatbots and the URL building. The list is **data, not code**: it lives in `ChatbotIA.json` in the working directory (`VarStatiche.getFile_ChatbotIA()`), written with defaults on first use. The prefill query parameter (`?q=…`) is undocumented by the providers and changes without notice, so a broken chatbot is fixed by editing the JSON, not by recompiling. A bot with an empty `paramQuery` is opened on its plain page with the question left in the clipboard, and `lunghezzaMax` is the URL length beyond which it falls back to the clipboard anyway.
-- `PromptIA.java` — builds the question text from the row in `MappaCryptoWallet`, under one of two privacy profiles: `COMPLETO` (everything, including transaction hash, wallet and counterparty addresses, amounts and countervalue — identifies the wallet) and `GENERICO` (only causale, coin symbols, chain and platform name, and only when the platform is not an address: no hashes, no addresses, no amounts, no dates). Optionally appends a request for an Italian fiscal framing, answered on a fixed last line (`CATEGORIA CONSIGLIATA: …`) drawn from general categories, **not** from the combo of `GUI_ClassificazioneMovimento`.
-- `GUI_ChiediIA.java` — hand-written `JDialog` (no `.form`, the content is dynamic). It always shows a preview of the text, which the user can edit, before anything leaves the machine; the first use shows a privacy warning. Choices are remembered as user preferences through `DatabaseH2.Pers_Opzioni_Scrivi/Leggi` (keys `IA_Chatbot`, `IA_Profilo`, `IA_Fiscale`, `IA_AvvisoPrivacy` in `personale.mv.db`).
-
-The menu entry is enabled only when the selected row really is a movement (`MappaCryptoWallet.get(ID) != null`), because the popup is shared with tables whose rows are not movements. `Funzioni_WalletDeFi.UrlExplorerTx(Rete, Hash)` returns the explorer URL for a transaction without opening it — extracted from `ApriExplorer()` so the prompt can include the link.
+Popup entry that hands one movement to a chatbot in the user's browser, no API key and no network call from the app:
+`ChatbotIA` (list in `ChatbotIA.json` in the working directory, **data not code**), `PromptIA` (two privacy profiles,
+`COMPLETO` and `GENERICO`), `GUI_ChiediIA` (always shows an editable preview before anything leaves the machine).
+Details: `nocommit/Documentazione/Dettagli_ChiediIA_DocumentiFonte.md`.
 
 ### Table utilities (`Tabelle.java`)
 Central class for all JTable rendering, filtering, and sorting:
@@ -1224,90 +491,29 @@ Resolved against `workingDirectory`:
 
 ## Internal technical documents — live under `nocommit/`, never committed
 
-All the working `.md` documents (bug analyses, performance analyses, the change log) live in **`nocommit/Documentazione/`**. `/nocommit/` is in `.gitignore`, so they are **ignored by git**, not merely untracked: many contain references to the user's own data, wallets and configuration and must never end up in a commit — but the folder is also the standing home for pure-engineering deep dives that this file points to, whether or not they touch user data.
-
-`nocommit/` also holds `GoldenMaster/` (the golden-master baseline, see below), `StrumentiTest/` (the manual/automated-GUI test tooling, see "Automated GUI tests" below) and `Prototipi/` (design prototypes). It was split out of `test/` on 2026-08-24 so that `test/` holds only the data archives used for manual runs (`test/2025/`, `test/Dichiarazione 2025/`, …); `/test/` stays in `.gitignore` too.
-
-| document | content |
-|---|---|
-| `nocommit/Documentazione/StoricoModifiche.md` | the change log, **current month only** (see below) |
-| `nocommit/Documentazione/StoricoModifiche_AAAA-MM.md` | closed months of the change log, one file per month |
-| `nocommit/Documentazione/Analisi_Bug_Criticita.md` | known bugs by ID (incl. all OKX C8/C9/C12/C13/C14 mechanics), referenced by the characterization tests |
-| `nocommit/Documentazione/Analisi_Campo5_Campo18_Categoria.md` | legal campo5/campo18/categoria combinations |
-| `nocommit/Documentazione/Analisi_Performance_Caricamento.md` | performance analysis of the update cycle, incl. the splash phase-weight design |
-| `nocommit/Documentazione/Analisi_DB_Prezzi_Manutenzione.md` | price-DB compaction design and the deferred delete-unreachable-rows work |
-| `nocommit/Documentazione/Analisi_Filtri_Movimenti.md` | the movements-table row-filter vs. load-filter design |
-| `nocommit/Documentazione/Analisi_Ricalcolo_Incrementale_Plusvalenze.md` | `AggiornaPlusvalenze()` incremental-recompute design |
-| `nocommit/Documentazione/Analisi_DocumentiFonte_Movimenti.md` | source-document (`[41]`) tracking and deletion cascade |
-| `nocommit/Documentazione/Analisi_QuadroRW_Codice14.md` | codice bene 14 legal analysis + liquidità/IVAFE-privilegiata implementation |
-| `nocommit/Documentazione/Analisi_QuadroRW_Periodi_IVAFE.md` | `GRUPPO_PERIODO_RW` periods, conto-corrente IVAFE, Crypto.com App FIAT exception |
-| `nocommit/Documentazione/Analisi_Import_Meccanismi.md` | wallet-speculare, causali chiuse, scambio differito, `[32]` flag, `AttesaConnessione` |
-| `nocommit/Documentazione/Analisi_Font_Tema_Icone.md` | bundled-font glyph fallback, dark-theme + icon recolouring mechanics |
-| `nocommit/Documentazione/Analisi_Normativa_Tab.md` | `Normativa/` archive scraping quirks and the "Normative"/"Dichiarazioni" tab implementation |
-| `nocommit/Documentazione/Analisi_VPS_Prezzi_Sito.md` | remote price service (on-chain DEX prices) design and client integration |
-| `nocommit/Documentazione/API_ServizioPrezzi.md` | practical reference for the price service's HTTP API |
-| `nocommit/Documentazione/Analisi_Prezzi_Scaricamento_Costi.md` | why a price download costs ~40 requests per (coin, day), what the 8-exchange fan-out actually delivers, and the constraints (day marker, `fonte` ambiguity) any change must respect |
-| `nocommit/Documentazione/Pubblicazione_Flatpak.md` / `Pubblicazione_AUR.md` | packaging recipes and sandbox/workdir details for those two distros |
-| `nocommit/Documentazione/Test_Grafici_Automatici.md` | how to run automated GUI tests on the virtual display |
-| `nocommit/Documentazione/Analisi_Prezzi_LP_DefiLlama.md` | automatic prices of pool/vault tokens from DefiLlama: archive measurements, endpoints, the user's rules (§8) |
-| `nocommit/Documentazione/Analisi_Carta_OKX_XLayer.md` | OKX Card wallet on X Layer: observed flow, sources tried, public-node limits, state-bisection scan, open questions |
-| `nocommit/Documentazione/Analisi_Configurazione_Esterna.md` | what is still hardcoded and could move to `config/` JSON files (chains, public nodes, per-year tax parameters, states, form layouts, runtime versions), in priority order |
-
-**Write new technical `.md` documents there, not in `Documentazione/`.** The top-level `Documentazione/` folder is **historical** since 2026-08-18: the `.odt`/`.pdf`/`.txt` manuals that used to be the source now live as Markdown under `docs/documentazione/` (below), and the old files are kept only as a record of what was published before — do not update them. What is still live there is the material that never became a manual: `Documentazione/IstruzioniVarie.txt` (referenced elsewhere in this file), `MappatureImport.txt`, the `.pptx` presentations, `FormuleUtili.xlsx` and `Schemi.odg`.
-
-Entries written **before 2026-08-24** still cite the old `test/Documentazione/…`, `test/GoldenMaster/…` and `test/StrumentiTest/…` paths — including in the changelog archives, per the note on historical entries below — because that is where those files lived at the time; do not rewrite them.
+All the working `.md` documents (bug analyses, performance analyses, the change log, and the `Dettagli_*.md` that hold the
+long mechanics once written here) live in **`nocommit/Documentazione/`**, which is in `.gitignore`: many contain the user's
+own data, wallets and configuration. Find them with `ls` (`Analisi_<tema>.md`, `Pubblicazione_*.md`, `Dettagli_<area>.md`) and
+`grep`; the ones to know by name are `StoricoModifiche.md` (change log, current month), `Analisi_Bug_Criticita.md` (bugs by ID,
+referenced by the tests) and `Analisi_Campo5_Campo18_Categoria.md`. `nocommit/` also holds `GoldenMaster/`, `StrumentiTest/`
+and `Prototipi/`. **Write new technical `.md` documents there**, not in the top-level `Documentazione/`, which is historical
+since 2026-08-18 (still live there: `IstruzioniVarie.txt`, `MappatureImport.txt`, the `.pptx`, `FormuleUtili.xlsx`,
+`Schemi.odg`). Change-log entries before 2026-08-24 cite the old `test/Documentazione/…` paths: historical, do not rewrite.
+Tables of the former document index and the full mechanics: `nocommit/Documentazione/Dettagli_Documentazione.md`.
 
 ## User documentation — Markdown under `docs/`, published by GitHub Pages
 
-The manuals the application opens are **pages, not files**: the source is the Markdown in
-`docs/documentazione/`, which GitHub Pages renders as `.html` with the same name, and
-`DocumentiAiuto` holds one constant per page (`disclaimer.html`, …) plus `NOVITA_VERSIONI`
-(`changelog.html`, the per-version change list, converted from `Documentazione/Readme.txt`).
-Four things the arrangement depends on:
-
-- **The Markdown is the only source.** The `.odt` originals in `Documentazione/` are not regenerated
-  from it and are not updated any more; editing them changes nothing that anyone reads.
-- **The PDFs published next to the pages are generated, not written.** Every version up to 1.0.61 opens
-  `…/documentazione/<nome>.pdf`, so those URLs must keep answering — and must not answer with stale
-  text. `docs/strumenti/genera-pdf.sh` rebuilds them from the same Markdown; re-run it after editing a
-  page. `DocumentiAiutoTest` fails if either half is missing. Since 2026-09-27 the generator is
-  `GeneraPdfDocumentazione` (in `src/main`, like `GeneraSplash`, but not called by the app): it draws the
-  manuals with **the same veste grafica as the W/RW prints** through `Stampe.AttivaVesteDocumento` (cover,
-  header with logo, margin band, watermark, numbered footer, embedded Noto Sans). It converts only the
-  Markdown subset the manuals use; a new construct in a page needs support there. Three OpenPDF traps it
-  already avoids: an image must be a **standalone element** with `setStrictImageSequence(true)` (inside a
-  paragraph a tall image overflows the page bottom, without strict sequence the following text jumps
-  ahead of it); glyphs Noto Sans lacks (→) fall back to the base-14 Symbol font; table columns are never
-  narrower than their longest word. The old LibreOffice pipeline (`md2html.py`) was removed.
-- **Headings carry explicit `{#ancora}` ids.** The in-page links are written against them instead of
-  against kramdown's generated slugs, which differ on accents and punctuation (`À`, `–`, `/`) and would
-  silently break. In the PDFs each id becomes a named destination (and H2/H3 also a bookmark), so the index
-  at the top of every manual stays clickable.
-- **Images live in `docs/documentazione/immagini/<pagina>/`**, numbered in reading order; they were
-  extracted from the `.odt` originals, so a screenshot that is redone must replace the numbered file.
-  Screenshots of the app are taken on an **anonymised copy** of the user's data (addresses, hashes, API keys
-  and amounts altered), never on the real archive; the tooling for the Quadro RW manual is
-  `nocommit/StrumentiTest/PreparaDocRW.java` + `ScattaDocRW.java`.
-
-**The same `changelog.md` is also inside the jar** (`/Novita/changelog.md`, a `<resource>` on `docs/documentazione` in
-the pom, 2026-10-06) and feeds the "Novità della versione" dialog (`GUI_NovitaVersione`, logic in `NovitaVersione`): one
-source for the web page and the dialog, no network needed. It opens by itself the first time a version different from
-the last one seen starts (`NovitaVersione.OPZIONE_ULTIMA_VERSIONE` in `personale.mv.db`, written before showing), never
-on a new installation (empty archive), never for an unknown version; and from the *Novità di questa versione* button of
-the Informazioni window. A released version (`1.0.65`) shows its own `## Versione` section, a test version (four numbers,
-`1.0.64.08`) the **topmost** section, i.e. the notes being written for the next release, with both numbers in the
-title. So the notes of a version must be written in that section before the version is published, and every test
-build after a pom bump shows them once. `NovitaVersione.Html` converts only the Markdown subset the page uses
-(headings, bold, italic, code, bullet lists with continuation lines, links made absolute, quotes); a new construct in the
-page needs support there, and `NovitaVersioneTest` checks every section for leftover syntax and the font's glyphs.
-Startup dialogs go in `Principale.AvvisiAvvio`, one after the other in a single `invokeLater`: a modal dialog pumps the
-event queue while open, so two separately queued ones would open on top of each other.
-
-The window title no longer says *Beta*: the program left the beta phase on 2026-08-18, so
-`VarStatiche.componiTitolo` takes only the version and the Store edition no longer differs from the
-complete one on this point (it was policy 10.1 that made the Store edition drop the word first).
-
-Note that older entries in the change log (now in `StoricoModifiche_2026-07.md` and later archives) still cite the previous paths (`Documentazione/Analisi_*.md`): they are a historical record of how things were at the time and are deliberately left unchanged.
+The manuals the application opens are pages whose **only source** is the Markdown in `docs/documentazione/` (the `.odt`
+in `Documentazione/` are not updated any more). `DocumentiAiuto` holds one constant per page plus `NOVITA_VERSIONI`.
+- The PDFs next to the pages are **generated** (`docs/strumenti/genera-pdf.sh` → `GeneraPdfDocumentazione`): re-run after
+  editing a page; `DocumentiAiutoTest` fails if either half is missing. It converts only the Markdown subset the manuals use.
+- Headings carry explicit `{#ancora}` ids; images live in `docs/documentazione/immagini/<pagina>/`; screenshots are taken on
+  an **anonymised copy** of the data, never on the real archive.
+- `changelog.md` is also inside the jar and feeds the "Novità della versione" dialog (`NovitaVersione`, `GUI_NovitaVersione`):
+  the notes of a version must be written in its `## Versione` section (a test build shows the **topmost** one) before
+  publishing. `NovitaVersione.Html` converts only a Markdown subset; `NovitaVersioneTest` checks it.
+- Startup dialogs go in `Principale.AvvisiAvvio`, one after the other in a single `invokeLater`.
+Full rules: `nocommit/Documentazione/Dettagli_Documentazione.md`.
 
 ## `Normativa/` — l'archivio dei documenti fiscali ufficiali
 

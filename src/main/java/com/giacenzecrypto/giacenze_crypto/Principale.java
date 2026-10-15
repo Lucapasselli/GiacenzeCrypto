@@ -14496,12 +14496,28 @@ if (result != null && !result.isAction("cancel")) {
                              
                             }
                             else if (result.isAction("LifoMancante")) {
-                                String t="Se manca parte della pila del LiFo significa che ci sono delle giacenze negative, generalmente mancano degli acquisti/earn.<br><br>"
-                                        + "Si verrà ora reindirizzati alla funzione <b>'Verifica Saldi Negativi'</b> per risolvere le problematiche.<br><br>";
-                                Messaggi.InfoMessage("Parte del LiFo Mancante", t, this);
-                                CDC.setSelectedIndex(1);
-                                AnalisiCrypto.setSelectedComponent(SaldiNegativi);
-                                SaldiNegativi.requestFocus();
+                                //Spiegazione delle cause e conteggio di quelle riconoscibili in Principale_LifoMancante:
+                                //qui resta solo la navigazione verso la scheda scelta
+                                Principale_LifoMancante.Scelta scelta = Principale_LifoMancante.Gestisci(this, NumErroriMovSconosciuti);
+                                if (scelta == Principale_LifoMancante.Scelta.MOSTRA_MOVIMENTI) {
+                                    //Stesso schema di 'PrezzoMancante': tutto il periodo e il solo criterio "LiFo mancante"
+                                    FiltriCorrenti = new Principale_FiltriMovimenti.FiltriMovimenti(
+                                            FiltriCorrenti.Wallet(), FiltriCorrenti.Token(), FiltriCorrenti.Documento(),
+                                            0, 0,
+                                            FiltriCorrenti.NascondiTrasferimentiInterni(), FiltriCorrenti.NascondiTokenScam(),
+                                            FiltriCorrenti.SoloSenzaPrezzo(), true);
+                                    FiltriMovimenti_AggiornaPulsante();
+                                    this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa();
+                                    CDC.setSelectedIndex(0);
+                                } else if (scelta == Principale_LifoMancante.Scelta.CLASSIFICA) {
+                                    CDC.setSelectedIndex(1);
+                                    AnalisiCrypto.setSelectedComponent(DepositiPrelievi);
+                                    DepositiPrelievi.requestFocus();
+                                } else if (scelta == Principale_LifoMancante.Scelta.SALDI_NEGATIVI) {
+                                    CDC.setSelectedIndex(1);
+                                    AnalisiCrypto.setSelectedComponent(SaldiNegativi);
+                                    SaldiNegativi.requestFocus();
+                                }
 
                             }
                             else if (result.isAction("GiacenzeNegative")) {

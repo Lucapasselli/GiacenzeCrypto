@@ -54,6 +54,26 @@ class ImportazioniSerializzaRigaTest {
     }
 
     @Test
+    void aCapoDentroUnCampo_nonSpezzaLaRiga() {
+        String[] v = rigaDiProva();
+        v[21] = "prima riga\nseconda\r\nterza\rquarta";
+        v[8] = "TOKEN\nSCAM";       //nome o simbolo letto dalla blockchain, testo non controllato
+        v[25] = "Nome\r\nesteso";
+
+        String Serializzata = Importazioni.SerializzaRiga(v);
+
+        //Il file si rilegge con readLine(): un a capo qui farebbe due movimenti di una riga sola
+        assertFalse(Serializzata.contains("\n"), "nessun \\n nella riga serializzata");
+        assertFalse(Serializzata.contains("\r"), "nessun \\r nella riga serializzata");
+        String[] riletta = Importazioni.DeserializzaRiga(Serializzata);
+        assertEquals("prima riga<br>seconda<br>terza<br>quarta", riletta[21], "nella nota l'a capo diventa <br>");
+        assertEquals("TOKEN SCAM", riletta[8], "negli altri campi l'a capo diventa uno spazio");
+        assertEquals("Nome esteso", riletta[25]);
+        assertEquals("campo22", riletta[22], "i campi dopo quello 'sporco' non devono sfasarsi");
+        assertEquals("campo45", riletta[45]);
+    }
+
+    @Test
     void rigaPiuCortaDelPrevisto_vienePortataA45SenzaNull() {
         String[] corta = new String[]{"id", "2024-03-15 10:30", "1 di 1", "Wallet Test"};
 

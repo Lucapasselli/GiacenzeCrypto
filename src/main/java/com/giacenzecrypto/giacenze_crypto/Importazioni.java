@@ -2477,17 +2477,27 @@ public static boolean Ex_Tatax_Importa(String fileTatax, boolean SovrascriEsiste
          * separati da {@code ;}, senza escaping — gli eventuali {@code ;} presenti nei valori vengono
          * <b>rimossi</b>, perché romperebbero il file.
          *
+         * <p>Lo stesso vale per i ritorni a capo ({@code \n}, {@code \r}): il file si rilegge con
+         * {@code readLine()}, quindi un a capo dentro un campo spezzerebbe il movimento in due righe, la
+         * prima completata in silenzio con campi vuoti e la seconda letta come un movimento a sé. Nella
+         * nota (campo 21) diventano {@code <br>}, come fanno le finestre delle note, negli altri campi uno
+         * spazio. Possono arrivare da testi che il programma non controlla, per esempio nome e simbolo di
+         * un token letti dalla blockchain.</p>
+         *
          * <p>Logica estratta da {@link #Scrivi_Movimenti_Crypto}, dove era in linea, per poterla
-         * riusare nello storico delle modifiche ({@link MovimentiStorico}). Il comportamento è
-         * identico a prima, compresa la perdita dei {@code ;}.</p>
+         * riusare nello storico delle modifiche ({@link MovimentiStorico}).</p>
          *
          * @param v riga di movimento, anche più corta di {@link #ColonneTabella}
          * @return la riga serializzata, senza il {@code ;} finale
          */
         public static String SerializzaRiga(String[] v) {
             StringBuilder riga = new StringBuilder();
-            for (String v1 : v) {
-                if (v1 == null) v1 = "";
+            for (int i = 0; i < v.length; i++) {
+                String v1 = v[i] == null ? "" : v[i];
+                if (v1.indexOf('\n') >= 0 || v1.indexOf('\r') >= 0) {
+                    String aCapo = i == 21 ? "<br>" : " ";
+                    v1 = v1.replace("\r\n", aCapo).replace("\r", aCapo).replace("\n", aCapo);
+                }
                 riga.append(v1.replace(";", "")).append(";");
             }
             //Tolgo l'ultimo ";" in quanto superfluo

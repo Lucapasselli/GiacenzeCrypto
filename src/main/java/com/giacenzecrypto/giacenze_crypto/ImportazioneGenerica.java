@@ -188,6 +188,9 @@ public class ImportazioneGenerica {
             return false;
         }
 
+        // Prelievi annullati (Bybit 'Withdrawal Canceled'): la coppia prelievo/annullamento non entra
+        righe = scartaAnnullamenti(righe, cfg);
+
         // Pre-consolidamento per (giorno, moneta) delle causali indicate (micro-interessi Bitget & c.)
         righe = consolidaCausaliPerGiorno(righe, cfg);
 
@@ -466,6 +469,82 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
     }
     return null; // assente o vuoto → l'utente dovrà scegliere
 }
+
+    /**
+     * Toglie dalle righe le coppie "movimento + suo annullamento" dichiarate in
+     * {@code cfg.causaliAnnullamento} (causale dell'annullamento → causale del movimento annullato,
+     * es. Bybit {@code Withdrawal Canceled} → {@code Withdrawal}).
+     *
+     * <p>Per ogni riga di annullamento si cerca, all'indietro, la riga più recente non ancora abbinata
+     * con la causale annullata, la stessa moneta e la quantità uguale e di segno opposto: trovata,
+     * nessuna delle due entra. Il prelievo annullato non è mai uscito dal wallet, e importarlo come
+     * prelievo più un deposito lascerebbe due movimenti da classificare che la classificazione non
+     * può abbinare (il trasferimento esclude le controparti sullo stesso wallet). Senza una coppia
+     * (il prelievo sta in un export precedente, o l'importo restituito è diverso) l'annullamento
+     * resta e segue {@code mappaCausali}. Lo stesso se il prelievo è già in archivio da un import
+     * precedente: il prelievo cade come doppione e l'annullamento entra, così la giacenza torna giusta.</p>
+     *
+     * <p>Le righe devono essere già ordinate per data, come le restituisce {@code leggiCSV}.</p>
+     */
+    static List<String[]> scartaAnnullamenti(List<String[]> righe, ConfigurazioneImport cfg) {
+        if (cfg.causaliAnnullamento.isEmpty()) return righe;
+
+        boolean[] tolta = new boolean[righe.size()];
+        for (int i = 0; i < righe.size(); i++) {
+            String[] annullo = righe.get(i);
+            String causaleAnnullata = cfg.causaliAnnullamento.get(cfg.getCausaleCSV(annullo));
+            if (causaleAnnullata == null) continue;
+            BigDecimal qtaAnnullo = numeroOppureNull(safe(annullo, cfg.colonnaQuantita));
+            if (qtaAnnullo == null || qtaAnnullo.signum() == 0) continue;
+            String moneta = cfg.normalizzaMoneta(safe(annullo, cfg.colonnaMoneta));
+
+            for (int j = i - 1; j >= 0; j--) {
+                if (tolta[j]) continue;
+                String[] r = righe.get(j);
+                if (!causaleAnnullata.equalsIgnoreCase(cfg.getCausaleCSV(r))) continue;
+                if (!moneta.equals(cfg.normalizzaMoneta(safe(r, cfg.colonnaMoneta)))) continue;
+                BigDecimal qta = numeroOppureNull(safe(r, cfg.colonnaQuantita));
+                if (qta == null || qta.add(qtaAnnullo).signum() != 0) continue;
+                //Prelievo gia' in archivio (file importato prima che la causale fosse conosciuta): toglierlo
+                //dal file non lo toglie dall'archivio, e scartare l'annullamento lascerebbe la giacenza piu'
+                //bassa del vero. Le due righe restano: il prelievo e' un doppione, l'annullamento entra.
+                if (giaInArchivio(r, moneta, qta, cfg)) break;
+                tolta[i] = true;
+                tolta[j] = true;
+                LoggerGC.logInfo("Import " + cfg.nomeExchange + ": " + cfg.getCausaleCSV(r) + " del "
+                        + safe(r, cfg.colonnaData) + " annullato il " + safe(annullo, cfg.colonnaData)
+                        + " (" + qtaAnnullo.abs().stripTrailingZeros().toPlainString() + " " + moneta
+                        + "): nessuno dei due importato");
+                break;
+            }
+        }
+
+        List<String[]> out = new ArrayList<>();
+        for (int i = 0; i < righe.size(); i++) {
+            if (!tolta[i]) out.add(righe.get(i));
+        }
+        return out;
+    }
+
+    /** Un movimento in uscita con stesso secondo (data dell'ID), exchange, moneta e quantita' e' gia' in archivio. */
+    private static boolean giaInArchivio(String[] riga, String moneta, BigDecimal qta, ConfigurazioneImport cfg) {
+        String data = cfg.normalizzaData(safe(riga, cfg.colonnaData));
+        if (data == null) return false;
+        String prefisso = data.replaceAll(" |-|:", "") + "_";
+        String exchange = cfg.nomeExchange != null ? cfg.nomeExchange : "Exchange Generico";
+        for (String[] v : Principale.MappaCryptoWallet.values()) {
+            if (!v[0].startsWith(prefisso) || !exchange.equalsIgnoreCase(v[3]) || !moneta.equals(v[8])) continue;
+            BigDecimal q = numeroOppureNull(v[10]);
+            if (q != null && q.abs().compareTo(qta.abs()) == 0) return true;
+        }
+        return false;
+    }
+
+    private static BigDecimal numeroOppureNull(String valore) {
+        String v = normalizzaNumero(valore);
+        if (v.isBlank() || !Funzioni.isNumeric(v, false)) return null;
+        return new BigDecimal(v);
+    }
 
     /**
      * Somma per {@code (giorno, moneta, causale)} le righe le cui causali CSV sono elencate in
@@ -2144,6 +2223,14 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         public Map<String, String> walletPerCausale = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         /**
+         * Causale CSV di un annullamento → causale CSV del movimento che annulla (Bybit Funding:
+         * {@code "Withdrawal Canceled": "Withdrawal"}). La coppia trovata nel file non entra, vedi
+         * {@link ImportazioneGenerica#scartaAnnullamenti}. L'annullamento va mappato anche in
+         * {@code mappaCausali}: vale quando la coppia non si trova.
+         */
+        public Map<String, String> causaliAnnullamento = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+        /**
          * Causale CSV → sotto-wallet ({@code [4]}) su cui emettere la <b>gamba speculare</b> del
          * movimento, cioè lo stesso importo a segno invertito.
          *
@@ -2576,6 +2663,12 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 JSONObject wc = root.getJSONObject("walletPerCausale");
                 for (String k : wc.keySet()) {
                     cfg.walletPerCausale.put(k, wc.getString(k));
+                }
+            }
+            if (root.has("causaliAnnullamento")) {
+                JSONObject ca = root.getJSONObject("causaliAnnullamento");
+                for (String k : ca.keySet()) {
+                    cfg.causaliAnnullamento.put(k, ca.getString(k));
                 }
             }
             if (root.has("walletSpecularePerCausale")) {

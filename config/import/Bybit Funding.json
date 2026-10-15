@@ -3,9 +3,10 @@
   "_commentoCausale": "La causale e' la colonna Description, non Type: Type e' generico ('Earn' copre interessi, sottoscrizioni, riscatti e rendimenti Launchpool), mentre Description distingue ('Easy Earn | Flexible Interest Distribution', 'Launchpool Yield', 'Transfer to Spot Account', ...).",
   "_commentoConti": "Stesso nomeExchange e nomeWallet di 'Bybit Spot.json': i giroconti verso/da Spot, Unified Trading Account e Derivatives sono interni al wallet e vengono ignorati, cosi' come sottoscrizioni e riscatti di Easy Earn e Launchpool (la moneta resta dell'utente). Niente avviso sui derivati per i giroconti col conto Derivati: sono trasferimenti interni, non redditi. L'avviso sta sulle causali dei proventi (PnL, funding fee), in 'Bybit Derivati.json' e 'Bybit UTA.json'.",
   "_commentoLaunchpad": "'Launchpad Subscription' / 'Launchpad Subscription Refund' ignorati: la differenza fra MNT impegnati e restituiti e' il prezzo del token Launchpad, che arriva nel conto Spot come 'airdropAssetIncrease' (vedi il commento in 'Bybit Spot.json').",
-  "_commentoConsolidamento": "Quasi ogni riga e' un movimento a se' (interessi giornalieri, rendimenti, depositi, prelievi: tutti in causaliChiuse). L'unico scambio e' 'BIT → MNT Auto-Conversion' (luglio 2023, migrazione del token BIT in MNT 1:1), con le due gambe su secondi consecutivi: da qui il raggruppamento per secondo con tolleranza di 1 s, limitata a quella causale tramite causaliDifferite.",
+  "_commentoConsolidamento": "Quasi ogni riga e' un movimento a se' (interessi giornalieri, rendimenti, depositi, prelievi: tutti in causaliChiuse). Gli unici scambi sono 'BIT → MNT Auto-Conversion' (luglio 2023, migrazione del token BIT in MNT 1:1) e, dal 2026, 'Convert', con le due gambe nello stesso secondo o su secondi consecutivi: da qui il raggruppamento per secondo con tolleranza di 1 s, limitata a queste causali tramite causaliDifferite.",
   "_commento2023": "Causali viste solo nell'export 2023. 'ByStarter Subscription Freeze'/'Refund': USDT bloccati e poi restituiti per intero, ignorati. 'Transfer from Earn Account': giroconto dal vecchio conto Earn, che Bybit non esporta, ignorato come gli altri giroconti interni. La conversione BIT → MNT e' importata come scambio (permuta): se la si vuole trattare come semplice cambio di nome del token va sistemata a mano.",
-  "versione": "1.002",
+  "_commento2026": "Causali viste dal 2026. 'Convert' (conversione dal menu Convert): due gambe sullo stesso secondo o su secondi consecutivi (EUR -> USDC e' a un secondo), per questo in causaliDifferite; con una gamba in euro diventa un acquisto (AC), fra due cripto uno scambio (SC), lo decide il programma dai tipi di moneta. 'Airdrop Bonus' (premi delle promozioni Bybit) e' AIRDROP, in causaliChiuse perche' due accrediti nello stesso secondo o vicini a una conversione non diventino uno scambio. 'Withdrawal Canceled' restituisce un prelievo annullato: con causaliAnnullamento il prelievo e il suo annullamento presenti nello stesso file non vengono importati (la moneta non e' mai uscita), se il prelievo non si trova, o e' gia' in archivio da un import precedente, l'annullamento entra come deposito da classificare. Le versioni dell'app senza causaliAnnullamento importano il prelievo e l'annullamento come due movimenti da classificare.",
+  "versione": "1.003",
   "centralizzato": true,
   "fontePrezzoPreferita": "bybit",
   "nomeExchange": "Bybit",
@@ -28,7 +29,8 @@
   "consolidaRigheStessaData": true,
   "tolleranzaSecondiConsolidamento": 1,
   "causaliDifferite": [
-    "BIT → MNT Auto-Conversion"
+    "BIT → MNT Auto-Conversion",
+    "Convert"
   ],
   "mappaCausali": {
     "Easy Earn | Flexible Interest Distribution":  "EARN",
@@ -51,13 +53,20 @@
     "ByStarter Subscription Freeze":               "IGNORA",
     "ByStarter Subscription Refund":               "IGNORA",
     "BIT → MNT Auto-Conversion":                   "SCAMBIO CRYPTO-CRYPTO",
+    "Convert":                                     "SCAMBIO CRYPTO-CRYPTO",
+    "Airdrop Bonus":                               "AIRDROP",
     "Deposit":                                     "TRASFERIMENTO-CRYPTO",
-    "Withdrawal":                                  "TRASFERIMENTO-CRYPTO"
+    "Withdrawal":                                  "TRASFERIMENTO-CRYPTO",
+    "Withdrawal Canceled":                         "TRASFERIMENTO-CRYPTO"
+  },
+  "causaliAnnullamento": {
+    "Withdrawal Canceled": "Withdrawal"
   },
   "causaliUscita": [],
   "causaliEntrata": [],
   "causaliChiuse": [
     "EARN",
+    "AIRDROP",
     "TRASFERIMENTO-CRYPTO"
   ],
   "rinominaMonete": {},

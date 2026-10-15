@@ -709,7 +709,8 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         String descrizione;
         String dettaglio;
         //String Note=jTextField1.getText();
-        String Note = TextArea_Note.getText().replace("\n", "<br>");
+        //Come nelle altre finestre delle note: il ";" separa i campi di movimenti.crypto.db e un a capo spezzerebbe la riga
+        String Note = TextArea_Note.getText().replace(";", " ").replace("\r", "").replace("\n", "<br>");
         
         //Se scelgo nessuna selezione riporto tutto allo stato originale
         if (sceltaS.equals(CB_NESSUNASELEZIONE)){
@@ -780,7 +781,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                 case CB_DC_ARENDITA -> {
                     descrizione = "TRASFERIMENTO DA PIATTAFORMA";
                     dettaglio = "DTW - Trasferimento da Vault/Piattaforma a Rendita";
-                    CreaMovimentiTrasferimentoDa(IDTrans, descrizione, dettaglio, false);
+                    CreaMovimentiTrasferimentoDa(IDTrans, descrizione, dettaglio, false, Note);
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     this.dispose();
                     return;
@@ -788,7 +789,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                 case CB_DC_COLLATERALE -> {
                     descrizione = "SBLOCCO COLLATERALE";
                     dettaglio = "DTW - Trasferimento da Collaterale";
-                    CreaMovimentiTrasferimentoDa(IDTrans, descrizione, dettaglio, true);
+                    CreaMovimentiTrasferimentoDa(IDTrans, descrizione, dettaglio, true, Note);
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     this.dispose();
                     return;
@@ -828,7 +829,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                 case CB_PC_DARENDITA -> {
                     descrizione = "TRASFERIMENTO A PIATTAFORMA";
                     dettaglio = "PTW - Trasferimento a Vault/Piattaforma a Rendita";
-                    CreaMovimentiTrasferimentoA(IDTrans, descrizione, dettaglio, false);
+                    CreaMovimentiTrasferimentoA(IDTrans, descrizione, dettaglio, false, Note);
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     this.dispose();
                     return;
@@ -846,7 +847,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                 case CB_PC_COLLATERALE -> {
                     descrizione = "BLOCCO COLLATERALE";
                     dettaglio = "PTW - Trasferimento a Collaterale";
-                    CreaMovimentiTrasferimentoA(IDTrans, descrizione, dettaglio, true);
+                    CreaMovimentiTrasferimentoA(IDTrans, descrizione, dettaglio, true, Note);
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     this.dispose();
                     return;
@@ -1676,7 +1677,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     
     // Funzione accorpata: gestisce sia il trasferimento A Piattaforma/DeFi sia A Collaterale (Collaterale=true).
     // Prima erano CreaMovimentiTrasferimentoAVault e CreaMovimentiTrasferimentoACollaterale.
-    private void CreaMovimentiTrasferimentoA(String ID,String Descrizione,String Dettaglio,boolean Collaterale){
+    private void CreaMovimentiTrasferimentoA(String ID,String Descrizione,String Dettaglio,boolean Collaterale,String Note){
             //controllo se ho movimenti simili e chiedo se voglio classificarli nella stessa maniera
             //poi creo movimento di deposito su Vault/Collaterale e movifico il movimento originale
 
@@ -1838,6 +1839,8 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
         }
         if (ModificaEffettuata) {
+            //La nota va sul solo movimento scelto, non sugli analoghi, sui rientri né sulle righe generate
+            Movimento[21] = Note;
             Messaggi.SuccessMessage("Modifiche effettuate con successo.", "Modifiche effettuate, ricordarsi di Salvare! <br>(sezione Transazioni Crypto)", this);
         }
     }
@@ -2059,7 +2062,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     
     // Funzione accorpata: gestisce sia il trasferimento DA Piattaforma/DeFi (Vault) sia DA Collaterale (Collaterale=true).
     // Prima erano CreaMovimentiTrasferimentoDaVault e CreaMovimentiTrasferimentoDaCollaterale.
-    private void CreaMovimentiTrasferimentoDa(String ID,String Descrizione,String Dettaglio,boolean Collaterale){
+    private void CreaMovimentiTrasferimentoDa(String ID,String Descrizione,String Dettaglio,boolean Collaterale,String Note){
                    //controllo se ho movimenti simili e chiedo se voglio classificarli nella stessa maniera
             //poi creo movimento di sblocco da Vault/Collaterale e movifico il movimento originale
 
@@ -2182,6 +2185,8 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 ModificaEffettuata=true;
             }
         if (ModificaEffettuata){
+                //La nota va sul solo movimento scelto, non sugli analoghi né sulle righe generate
+                Movimento[21] = Note;
                 Messaggi.SuccessMessage("Modifiche effettuate con successo.",
                         "Modifiche effettuate, ricordarsi di Salvare! <br>(sezione Transazioni Crypto)", this);
         }

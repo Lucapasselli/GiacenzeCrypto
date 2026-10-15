@@ -74,6 +74,15 @@ class DatiPredefinitiRWTest {
         assertEquals("bybiteu", Principale_GruppiWalletRW.exchangeIdDaSorgente("Bybit EU"));
         assertEquals("Wallet 109", Principale_GruppiWalletRW.gruppoPreconfigurato("bybit"));
         assertEquals("Wallet 116", Principale_GruppiWalletRW.gruppoPreconfigurato("bybiteu"));
+        //L'Austria (Bybit EU GmbH) sta solo sul gruppo di Bybit EU: su Bybit globale era un intermediario non suo
+        java.util.Map<String, java.util.List<String>> chiavi = new java.util.HashMap<>();
+        for (DatiPredefinitiRW.GruppoPeriodiPredef g : DatiPredefinitiRW.Carica().periodiDetenzioneGruppi()) {
+            for (DatiPredefinitiRW.PeriodoDetPredef pd : g.periodi) {
+                chiavi.computeIfAbsent(g.gruppo, k -> new java.util.ArrayList<>()).add(pd.chiave);
+            }
+        }
+        assertNull(chiavi.get("Wallet 109"), "Bybit globale senza periodi predefiniti");
+        assertEquals(java.util.List.of("bybiteu-mica"), chiavi.get("Wallet 116"));
     }
 
     @Test
@@ -145,5 +154,23 @@ class DatiPredefinitiRWTest {
         // e l'hash è stato riscritto a quello corrente
         assertEquals(DatiPredefinitiRW.Carica().hash(),
                 DatabaseH2.Pers_Opzioni_Leggi(Principale_GruppiWalletRW.OPZIONE_HASH_PREDEFINITI));
+    }
+
+    @Test
+    void reconcile_toglieDaBybitGlobaleIlPeriodoAustriacoDiSistema() {
+        // Installazione allineata al file precedente: il rigo FIAT di Bybit EU GmbH stava sul gruppo di
+        // Bybit globale. Togliendolo dal JSON il reconcile lo cancella, perche' e' di SISTEMA.
+        DatabaseH2.Pers_GruppoPeriodoRW_Scrivi("Wallet 109", "FIAT", 1, "2025-05-28", null,
+                null, null, null, null, "SOLO_RESIDUO", "SOLO_RESIDUO", null,
+                Principale_GruppiWalletRW.ORIGINE_SISTEMA, "bybit-mica",
+                "008", "636180i", "Bybit EU GmbH", "FMA", null, null);
+        DatabaseH2.Pers_Opzioni_Scrivi(Principale_GruppiWalletRW.OPZIONE_HASH_PREDEFINITI, "hash-vecchio");
+        Principale_GruppiWalletRW.Pers_RW_SeminaERiconcilia();
+
+        assertTrue(DatabaseH2.Pers_GruppoPeriodoRW_LeggiGruppo("Wallet 109").isEmpty());
+        List<String[]> eu = DatabaseH2.Pers_GruppoPeriodoRW_LeggiGruppo("Wallet 116");
+        assertEquals(1, eu.size());
+        assertEquals("008", eu.get(0)[15]);
+        assertEquals("bybiteu-mica", eu.get(0)[14]);
     }
 }

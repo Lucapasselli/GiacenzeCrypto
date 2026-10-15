@@ -1,6 +1,6 @@
 {
   "_commento": "Dati predefiniti del quadro W/RW per gruppo wallet: elenco exchange noti, gruppi wallet preconfigurati e i loro periodi di detenzione. I 'periodiFiscali' scritti sotto un exchange sono righi FIAT del suo 'gruppo': lo Stato estero, l'identificativo fiscale, le note e la fonte sono colonne del periodo di detenzione, non piu' di una tabella a parte (dal 2026-09-09 le tabelle EXCHANGE_ANAGRAFICA / EXCHANGE_PERIODO / GRUPPO_RIFERIMENTO_ESTERO non esistono piu'). Caricato all'avvio come le mappe causali (copia nel jar sotto /ImportMappe/, sync da repo in config/importmappe/, vedi DatiPredefinitiRW). Il reconcile all'avvio tocca SOLO le righe con Origine SISTEMA: le righe inserite o modificate a mano (Origine UTENTE, o NULL sui DB pre-esistenti) non vengono mai modificate ne' cancellate. La 'chiave' di ogni periodo e' la sua identita' stabile fra un aggiornamento e l'altro. L'identificativo ISEE non si mette qui: e' sempre inserito a mano e il reconcile non lo tocca. Il campo opzionale 'contoCorrente' (SI/NO) di un periodo FIAT indica che l'intermediario estero e' una banca e il conto valuta e' un vero conto corrente estero: codice individuazione bene 1, IVAFE in misura fissa 34,20 euro sul valore medio di giacenza (calcolo in Calcoli_RW_Fiat.applicaContoCorrente).",
-  "versione": "2026-10-15",
+  "versione": "2026-10-16",
   "exchange": [
     {
       "id": "binance",
@@ -146,20 +146,7 @@
       "id": "bybit",
       "nome": "Bybit",
       "gruppo": "Wallet 109",
-      "periodiFiscali": [
-        {
-          "chiave": "bybit-mica",
-          "progressivo": 1,
-          "dataInizio": "2025-05-28",
-          "dataFine": "",
-          "statoEstero": "008",
-          "identificativoFiscale": "636180i",
-          "note": "Bybit EU GmbH (Austria) - Firmenbuch FN 636180i (P.IVA AT non reperita); CASP FMA dal 28/05/2025. Entita' globale precedente : Bybit Fintech Limited (Isole Vergini Britanniche 249 / Dubai).",
-          "fonte": "FMA Austria + CoinDesk",
-          "calcoloIniziale": "SOLO_RESIDUO",
-          "calcoloFinale": "SOLO_RESIDUO"
-        }
-      ]
+      "periodiFiscali": []
     },
     {
       "id": "revolut",

@@ -53,6 +53,13 @@ public class Bybit_DepositiPrelievi {
     static final String EXCHANGE = "Bybit";
 
     /**
+     * Bybit EU (Bybit EU GmbH) è un'entità diversa, importata con le config "Bybit EU ..." sotto un altro
+     * {@code [3]}: il suo file dei depositi/prelievi ha lo stesso tracciato ma va abbinato solo ai suoi
+     * movimenti, altrimenti un prelievo di pari importo su Bybit globale potrebbe ricevere l'hash.
+     */
+    static final String EXCHANGE_EU = "Bybit EU";
+
+    /**
      * Causali grezze ({@code [7]}) dei depositi/prelievi on-chain nelle config Bybit Spot e Funding. Le
      * altre causali mappate TRASFERIMENTO-CRYPTO (Launchpad, trading bot) non sono on-chain e non
      * devono ricevere l'hash di un prelievo di pari importo.
@@ -99,10 +106,17 @@ public class Bybit_DepositiPrelievi {
      * @throws IOException se un file non è leggibile
      */
     public static Esito Arricchisci(File[] files) throws IOException {
+        return Arricchisci(files, EXCHANGE);
+    }
+
+    /**
+     * @param exchange il {@code [3]} dei movimenti da completare ({@link #EXCHANGE} o {@link #EXCHANGE_EU})
+     */
+    public static Esito Arricchisci(File[] files, String exchange) throws IOException {
         Esito totale = new Esito();
         Set<String> giaUsati = new HashSet<>();
         for (File f : files) {
-            totale.Somma(Arricchisci(leggiRighe(f), giaUsati));
+            totale.Somma(Arricchisci(leggiRighe(f), giaUsati, exchange));
         }
         return totale;
     }
@@ -113,6 +127,10 @@ public class Bybit_DepositiPrelievi {
      * @return i conteggi
      */
     static Esito Arricchisci(List<String[]> righe, Set<String> giaUsati) {
+        return Arricchisci(righe, giaUsati, EXCHANGE);
+    }
+
+    static Esito Arricchisci(List<String[]> righe, Set<String> giaUsati, String exchange) {
         Esito esito = new Esito();
         for (String[] c : righe) {
             if (c.length < 9) continue;
@@ -147,7 +165,7 @@ public class Bybit_DepositiPrelievi {
                 continue;
             }
 
-            List<String> candidati = Candidati(moneta, quantita, istante, deposito, giaUsati);
+            List<String> candidati = Candidati(moneta, quantita, istante, deposito, giaUsati, exchange);
             if (candidati.size() > 1) {
                 esito.ambigui++;
                 esito.dettagli.add(descrizione + ": più movimenti compatibili, lasciato com'è");
@@ -155,7 +173,7 @@ public class Bybit_DepositiPrelievi {
             }
             if (candidati.isEmpty()) {
                 esito.nonTrovati++;
-                esito.dettagli.add(descrizione + ": movimento non trovato (importare prima gli Asset Change Details di Spot e Funding)");
+                esito.dettagli.add(descrizione + ": movimento non trovato (importare prima gli Asset Change Details dei conti)");
                 continue;
             }
             String id = candidati.get(0);
@@ -180,11 +198,12 @@ public class Bybit_DepositiPrelievi {
      * @param istante data della riga, UTC, in millisecondi
      * @return gli ID, vuoto se nessuno
      */
-    static List<String> Candidati(String moneta, BigDecimal quantita, long istante, boolean deposito, Set<String> giaUsati) {
+    static List<String> Candidati(String moneta, BigDecimal quantita, long istante, boolean deposito, Set<String> giaUsati,
+            String exchange) {
         List<String> risultato = new ArrayList<>();
         for (String[] v : MappaCryptoWallet.values()) {
             if (v == null || v.length < Importazioni.ColonneTabella || giaUsati.contains(v[0])) continue;
-            if (!EXCHANGE.equalsIgnoreCase(v[3].trim())) continue;
+            if (!exchange.equalsIgnoreCase(v[3].trim())) continue;
             if ("AU".equalsIgnoreCase(v[22])) continue;
             String[] parti = v[0].split("_");
             if (parti.length < 5 || parti[0].length() < 14) continue;

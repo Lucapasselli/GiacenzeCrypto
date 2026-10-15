@@ -10,6 +10,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -24,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * <p>È un test di integrazione (chiama davvero CoinMarketCap e, tramite {@code CambioUSDEUR}, Banca
  * d'Italia): si auto-salta se la rete non risponde, stesso schema di {@code PrezziLottoCCXTTest}.
  */
+@Tag(GuardiaRete.TAG) // va in rete di proposito: vedi GuardiaRete
 class ConvertiStablecoinInEuroTest {
 
     @TempDir

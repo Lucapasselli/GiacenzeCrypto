@@ -85,6 +85,18 @@ class ImportazioneGenericaBybitTest {
         return new String[]{"1", time, coin, qty, type, "0", descr, "1.00"};
     }
 
+    private static ConfigurazioneImport fundingEU() throws Exception {
+        ConfigurazioneImport c = ConfigurazioneImport.carica("config/import/Bybit EU Funding.json");
+        c.colonnaValoreEuro = 7;
+        return c;
+    }
+
+    private static ConfigurazioneImport utaEU() throws Exception {
+        ConfigurazioneImport c = ConfigurazioneImport.carica("config/import/Bybit EU UTA.json");
+        c.colonnaValoreEuro = 15;
+        return c;
+    }
+
     private static ConfigurazioneImport derivati() throws Exception {
         ConfigurazioneImport c = ConfigurazioneImport.carica("config/import/Bybit Derivati.json");
         c.colonnaValoreEuro = 16;
@@ -276,12 +288,12 @@ class ImportazioneGenericaBybitTest {
 
     @Test
     void funding_convert_euroAcquisto_cripto_scambio() throws Exception {
-        //Righe della segnalazione #14: EUR -> USDC con le gambe a un secondo, ETH -> BTC nello stesso secondo.
+        //Forma della segnalazione #14, valori inventati: EUR -> USDC con le gambe a un secondo, ETH -> BTC nello stesso secondo.
         List<String[]> righe = new ArrayList<>();
-        righe.add(rigaFunding("2026-07-15 08:27:25", "EUR", "-10.000000000000000000", "Fiat", "Convert"));
-        righe.add(rigaFunding("2026-07-15 08:27:26", "USDC", "11.366300000000000000", "Fiat", "Convert"));
-        righe.add(rigaFunding("2026-07-25 09:12:21", "BTC", "0.000173594678265798", "Convert", "Convert"));
-        righe.add(rigaFunding("2026-07-25 09:12:21", "ETH", "-0.006102230000000000", "Convert", "Convert"));
+        righe.add(rigaFunding("2026-05-12 10:15:30", "EUR", "-20.000000000000000000", "Fiat", "Convert"));
+        righe.add(rigaFunding("2026-05-12 10:15:31", "USDC", "23.100000000000000000", "Fiat", "Convert"));
+        righe.add(rigaFunding("2026-05-18 14:40:05", "BTC", "0.000400000000000000", "Convert", "Convert"));
+        righe.add(rigaFunding("2026-05-18 14:40:05", "ETH", "-0.012000000000000000", "Convert", "Convert"));
 
         List<String[]> movs = importa(righe, funding());
         assertEquals(2, movs.size(), "due conversioni, ciascuna un solo movimento");
@@ -296,9 +308,9 @@ class ImportazioneGenericaBybitTest {
     @Test
     void funding_airdropBonus_airdropASe_ancheASecondiVicini() throws Exception {
         List<String[]> righe = new ArrayList<>();
-        righe.add(rigaFunding("2026-07-25 01:30:06", "ETH", "0.006102237400000000", "Airdrop", "Airdrop Bonus"));
-        righe.add(rigaFunding("2026-07-25 01:30:07", "BTC", "0.000177486300000000", "Airdrop", "Airdrop Bonus"));
-        righe.add(rigaFunding("2026-07-25 01:30:07", "BTC", "0.000100000000000000", "Airdrop", "Airdrop Bonus"));
+        righe.add(rigaFunding("2026-05-20 03:00:00", "ETH", "0.010000000000000000", "Airdrop", "Airdrop Bonus"));
+        righe.add(rigaFunding("2026-05-20 03:00:01", "BTC", "0.000300000000000000", "Airdrop", "Airdrop Bonus"));
+        righe.add(rigaFunding("2026-05-20 03:00:01", "BTC", "0.000100000000000000", "Airdrop", "Airdrop Bonus"));
 
         List<String[]> movs = importa(righe, funding());
         assertEquals(3, movs.size(), "nessuno scambio fra accrediti vicini");
@@ -312,9 +324,9 @@ class ImportazioneGenericaBybitTest {
     @Test
     void funding_prelievoAnnullato_nessunMovimento() throws Exception {
         List<String[]> righe = new ArrayList<>();
-        righe.add(rigaFunding("2026-08-29 23:10:00", "BTC", "-0.002145630000000000", "Withdraw", "Withdrawal"));
-        righe.add(rigaFunding("2026-08-29 23:12:00", "USDT", "-5", "Withdraw", "Withdrawal"));
-        righe.add(rigaFunding("2026-08-29 23:17:13", "BTC", "0.002145630000000000", "Withdraw", "Withdrawal Canceled"));
+        righe.add(rigaFunding("2026-06-10 18:00:00", "BTC", "-0.003500000000000000", "Withdraw", "Withdrawal"));
+        righe.add(rigaFunding("2026-06-10 18:02:00", "USDT", "-5", "Withdraw", "Withdrawal"));
+        righe.add(rigaFunding("2026-06-10 18:05:00", "BTC", "0.003500000000000000", "Withdraw", "Withdrawal Canceled"));
 
         List<String[]> movs = importa(righe, funding());
         assertEquals(1, movs.size(), "il prelievo annullato e il suo annullamento non entrano");
@@ -326,13 +338,13 @@ class ImportazioneGenericaBybitTest {
     void funding_prelievoAnnullatoGiaInArchivio_annullamentoEntra() throws Exception {
         //File importato prima che 'Withdrawal Canceled' fosse conosciuta: il prelievo e' gia' in archivio.
         ConfigurazioneImport f = funding();
-        String[] prelievo = rigaFunding("2026-08-29 23:10:00", "BTC", "-0.002145630000000000", "Withdraw", "Withdrawal");
+        String[] prelievo = rigaFunding("2026-06-10 18:00:00", "BTC", "-0.003500000000000000", "Withdraw", "Withdrawal");
         String[] archiviato = ImportazioneGenerica.costruisciMovimenti(prelievo, null, f).get(0);
         Principale.MappaCryptoWallet.put(archiviato[0], archiviato);
         try {
             List<String[]> righe = new ArrayList<>();
             righe.add(prelievo);
-            righe.add(rigaFunding("2026-08-29 23:17:13", "BTC", "0.002145630000000000", "Withdraw", "Withdrawal Canceled"));
+            righe.add(rigaFunding("2026-06-10 18:05:00", "BTC", "0.003500000000000000", "Withdraw", "Withdrawal Canceled"));
             List<String[]> movs = importa(righe, f);
             assertEquals(List.of("DC", "PC"), movs.stream().map(ImportazioneGenericaBybitTest::categoria).sorted().toList(),
                     "il prelievo cadra' come doppione, l'annullamento deve entrare");
@@ -345,11 +357,11 @@ class ImportazioneGenericaBybitTest {
     void funding_annullamentoSenzaPrelievo_entraComeDeposito() throws Exception {
         List<String[]> righe = new ArrayList<>();
         //Importo diverso: non e' il prelievo annullato. E un annullamento il cui prelievo e' in un altro export.
-        righe.add(rigaFunding("2026-08-29 23:10:00", "BTC", "-0.0021", "Withdraw", "Withdrawal"));
-        righe.add(rigaFunding("2026-08-29 23:17:13", "BTC", "0.00214563", "Withdraw", "Withdrawal Canceled"));
+        righe.add(rigaFunding("2026-06-10 18:00:00", "BTC", "-0.0034", "Withdraw", "Withdrawal"));
+        righe.add(rigaFunding("2026-06-10 18:05:00", "BTC", "0.0035", "Withdraw", "Withdrawal Canceled"));
         //L'annullamento abbina solo prelievi precedenti.
-        righe.add(rigaFunding("2026-08-30 10:00:00", "ETH", "0.5", "Withdraw", "Withdrawal Canceled"));
-        righe.add(rigaFunding("2026-08-30 11:00:00", "ETH", "-0.5", "Withdraw", "Withdrawal"));
+        righe.add(rigaFunding("2026-06-11 10:00:00", "ETH", "0.5", "Withdraw", "Withdrawal Canceled"));
+        righe.add(rigaFunding("2026-06-11 11:00:00", "ETH", "-0.5", "Withdraw", "Withdrawal"));
 
         List<String[]> movs = importa(righe, funding());
         assertEquals(List.of("DC", "DC", "PC", "PC"), movs.stream().map(ImportazioneGenericaBybitTest::categoria).sorted().toList());
@@ -450,5 +462,72 @@ class ImportazioneGenericaBybitTest {
         }
         assertEquals(Derivati.PNL, derivati().tipoDerivato("trade"));
         assertEquals("", spot().tipoDerivato("trade"), "il 'trade' dello Spot e' uno scambio a pronti");
+    }
+
+    // ---- Bybit EU (Bybit EU GmbH): stesso tracciato, exchange distinto ----
+
+    @Test
+    void bybitEU_exchangeDistinto_comeInRWPredefiniti() throws Exception {
+        ConfigurazioneImport f = fundingEU(), u = utaEU();
+        assertEquals("Bybit EU", f.nomeExchange);
+        assertEquals(f.nomeExchange, u.nomeExchange, "i giroconti Funding/UTA si ignorano solo se l'exchange coincide");
+        assertEquals(f.nomeWallet, u.nomeWallet);
+        assertNotEquals(funding().nomeExchange, f.nomeExchange, "Bybit EU e' un intermediario diverso da Bybit");
+        assertEquals(f.nomeExchange, DatiPredefinitiRW.Carica().exchangePerId("bybiteu").nome,
+                "deve coincidere col nome in RW_Predefiniti, o i movimenti non finiscono nel gruppo di Bybit EU");
+    }
+
+    @Test
+    void bybitEU_uta_righeTrattinoSonoEarnENonProduconoMovimenti() throws Exception {
+        //Nell'UTA di Bybit EU '--' e' una sottoscrizione o un riscatto Easy Earn fatto dall'UTA (una sola
+        //riga, nessuna controparte), non la conversione in MNT dell'UTA globale
+        List<String[]> righe = new ArrayList<>();
+        righe.add(rigaUta("USDC", "--", "0", "-40", "--", "2026-06-03 10:00:00"));
+        righe.add(rigaUta("BTC", "--", "0", "-0.0005", "--", "2026-06-04 10:00:00"));
+        righe.add(rigaUta("USDC", "--", "0", "5", "--", "2026-06-05 10:00:00"));
+        assertTrue(importa(righe, utaEU()).isEmpty());
+        assertEquals("SCAMBIO CRYPTO-CRYPTO", uta().mappaCausali.get("--|--"), "l'UTA globale resta com'era");
+    }
+
+    @Test
+    void bybitEU_uta_acquistoInEuro_lordoPiuCommissione() throws Exception {
+        List<String[]> righe = new ArrayList<>();
+        righe.add(rigaUta("USDC", "TRADE", "-0.25", "99.75", "--", "2026-06-03 09:00:00"));
+        righe.add(rigaUta("EUR", "TRADE", "0", "-87.5", "--", "2026-06-03 09:00:00"));
+        righe.add(rigaUta("EUR", "TRANSFER_IN", "0", "87.5", "--", "2026-06-03 08:59:30"));
+
+        List<String[]> movs = importa(righe, utaEU());
+        assertEquals(2, movs.size(), "il giroconto non produce movimenti: un acquisto + una COMMISSIONI");
+        String[] ac = movs.stream().filter(m -> categoria(m).equals("AC")).findFirst().orElseThrow();
+        String[] fee = movs.stream().filter(m -> categoria(m).equals("CM")).findFirst().orElseThrow();
+        assertEquals("EUR", ac[8]);
+        assertEquals("USDC", ac[11]);
+        assertEquals(0, new BigDecimal(ac[13]).compareTo(new BigDecimal("100")), "gamba in entrata al lordo");
+        assertEquals(0, new BigDecimal(fee[10]).compareTo(new BigDecimal("-0.25")));
+        assertEquals("Bybit EU", ac[3]);
+    }
+
+    @Test
+    void bybitEU_funding_depositoEuro_convert_prelievoAnnullato() throws Exception {
+        List<String[]> righe = new ArrayList<>();
+        righe.add(rigaFunding("2026-06-01 10:00:00", "EUR", "50", "Fiat", "Deposit"));
+        righe.add(rigaFunding("2026-06-02 09:00:00", "EUR", "-50", "Fiat", "Convert"));
+        righe.add(rigaFunding("2026-06-02 09:00:01", "USDC", "57", "Fiat", "Convert"));
+        righe.add(rigaFunding("2026-06-20 08:00:00", "BTC", "-0.001", "Withdraw", "Withdrawal"));
+        righe.add(rigaFunding("2026-06-20 12:00:00", "BTC", "0.001", "Withdraw", "Withdrawal Canceled"));
+        righe.add(rigaFunding("2026-06-20 12:05:00", "BTC", "-0.001", "Withdraw", "Withdrawal"));
+        righe.add(rigaFunding("2026-06-21 00:30:00", "USDC", "2.5E-3", "Earn", "Easy Earn | Flexible Interest Distribution"));
+        righe.add(rigaFunding("2026-06-15 10:00:00", "USDC", "5", "Earn", "Easy Earn | Flexible Redemption"));
+        righe.add(rigaFunding("2026-06-15 10:00:10", "USDC", "-5", "Transfer out", "Transfer to Unified Trading Account"));
+
+        List<String[]> movs = importa(righe, fundingEU());
+        assertEquals(4, movs.size(), "deposito, acquisto, un solo prelievo, interesse");
+        assertEquals(1, movs.stream().filter(m -> categoria(m).equals("DF")).count(), "il bonifico e' un deposito FIAT");
+        String[] ac = movs.stream().filter(m -> categoria(m).equals("AC")).findFirst().orElseThrow();
+        assertEquals("EUR", ac[8]);
+        assertEquals("USDC", ac[11]);
+        String[] pc = movs.stream().filter(m -> categoria(m).equals("PC")).findFirst().orElseThrow();
+        assertTrue(pc[0].startsWith("20260620140500"), "resta il prelievo dopo l'annullamento (ID in ora di Roma)");
+        assertEquals(1, movs.stream().filter(m -> categoria(m).equals("RW")).count());
     }
 }

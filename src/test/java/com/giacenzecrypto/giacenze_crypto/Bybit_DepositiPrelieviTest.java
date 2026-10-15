@@ -158,4 +158,19 @@ class Bybit_DepositiPrelieviTest {
         assertEquals("", altro[24]);
         assertEquals("", auto[24]);
     }
+
+    @Test
+    void ilFileDiBybitEUSiAbbinaSoloAiMovimentiDiBybitEU() {
+        //Stesso prelievo su Bybit globale e su Bybit EU: ogni file completa solo il movimento del suo exchange
+        String[] globale = movimento("20260610110000", "Withdrawal", "USDT", "-25.5");
+        String[] eu = movimento("20260610110001", "Withdrawal", "USDT", "-25.5");
+        eu[3] = Bybit_DepositiPrelievi.EXCHANGE_EU;
+        String[] r = riga("2026-06-10 09:00:00", "Withdraw", "USDT", "TRC20", "25.4", "HASH_EU", "Transferred successfully");
+
+        Bybit_DepositiPrelievi.Esito e = Bybit_DepositiPrelievi.Arricchisci(
+                new ArrayList<>(List.<String[]>of(r)), new HashSet<>(), Bybit_DepositiPrelievi.EXCHANGE_EU);
+        assertEquals(1, e.arricchiti);
+        assertEquals("HASH_EU", eu[24]);
+        assertEquals("", globale[24], "il file di Bybit EU non tocca Bybit globale");
+    }
 }

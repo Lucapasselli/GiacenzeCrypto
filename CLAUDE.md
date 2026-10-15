@@ -51,6 +51,10 @@ Tests live in `src/test/java/` (same package as production code, to reach packag
 was full. The extension (autodetected, `junit-platform.properties` + `META-INF/services/…Extension`) nulls closed connections
 before and after each class. A new test class that needs a DB must still open its own. Details: `nocommit/Documentazione/Dettagli_Test.md`.
 
+**Tests do not use the network unless the class says `@Tag(GuardiaRete.TAG)`** (`"rete"`): the autodetected `GuardiaRete` sets
+`Funzioni.ReteDisabilitataPerTest` and fails a test that still connects out or runs Node on `Scripts/` (suite 158 s → 63 s). Fix
+a failure with a controvalore or a cached price, tag only when the network is what is tested. Details: `nocommit/Documentazione/Dettagli_Test.md`.
+
 **Golden master** (`CalcoliPlusvalenzeNewGoldenMasterTest`) needs the private dataset `test/Dichiarazione 2025/` (`movimenti.crypto.db` + `personale.mv.db`), which is deliberately **not** in git. It self-skips via JUnit `Assumptions` when the dataset is missing — a "skipped" result on a fresh clone is expected, not a failure. On its first run with the dataset present it writes the baseline `nocommit/GoldenMaster/plusvalenze.golden` and aborts as skipped; run again to actually compare. It copies the personal DB into a `@TempDir`, so the real dataset is never opened or locked. When a diff is **expected** (new movements imported, or a bug fix that deliberately changes results), verify every difference is explainable, delete the baseline file, and re-run to regenerate it.
 
 ### CLI arguments accepted by `Giacenze_Crypto.main()`

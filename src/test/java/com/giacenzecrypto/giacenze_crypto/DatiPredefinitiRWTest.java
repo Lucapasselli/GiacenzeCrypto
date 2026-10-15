@@ -33,10 +33,10 @@ class DatiPredefinitiRWTest {
     }
 
     @Test
-    void carica_dalJar_haI15ExchangeENoteBinance() {
+    void carica_dalJar_haI16ExchangeENoteBinance() {
         DatiPredefinitiRW p = DatiPredefinitiRW.Carica();
         assertNotNull(p, "RW_Predefiniti.json deve essere leggibile (copia nel jar)");
-        assertEquals(15, p.exchange().size());
+        assertEquals(16, p.exchange().size());
         assertNotNull(p.exchangePerId("BINANCE"), "lookup case-insensitive");
         assertEquals("Wallet 101", p.exchangePerId("binance").gruppo);
         // hash stabile fra due letture
@@ -64,6 +64,16 @@ class DatiPredefinitiRWTest {
                 assertEquals(ex.id, Principale_GruppiWalletRW.exchangeIdDaSorgente(ns), ns);
             }
         }
+    }
+
+    @Test
+    void bybitEU_eUnExchangeDistintoDaBybit() {
+        //Bybit EU GmbH e' un intermediario diverso da Bybit globale: il confronto sul nome sorgente e'
+        //esatto, quindi "Bybit EU" (nomeExchange delle config 'Bybit EU ...') non deve finire nel gruppo di Bybit
+        assertEquals("bybit", Principale_GruppiWalletRW.exchangeIdDaSorgente("Bybit"));
+        assertEquals("bybiteu", Principale_GruppiWalletRW.exchangeIdDaSorgente("Bybit EU"));
+        assertEquals("Wallet 109", Principale_GruppiWalletRW.gruppoPreconfigurato("bybit"));
+        assertEquals("Wallet 116", Principale_GruppiWalletRW.gruppoPreconfigurato("bybiteu"));
     }
 
     @Test

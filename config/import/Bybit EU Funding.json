@@ -1,0 +1,58 @@
+{
+  "_commento": "Bybit EU (Bybit EU GmbH, Austria) - export 'Asset Change Details' del conto FUNDING (file 'AssetChangeDetails_fund_<UID>_<da>_<a>_N.csv'). Stesso tracciato del Funding di Bybit globale: la prima riga del file contiene UID/Company Name/Country, l'intestazione vera e' la seconda. Colonne: 0=Uid 1=Date & Time(UTC) 2=Coin 3=QTY (col segno; le quantita' piccole sono in notazione scientifica, es. 2.0000000000E-8) 4=Type 5=Account Balance 6=Description.",
+  "_commentoEntita": "Bybit EU e' un'entita' diversa da Bybit globale (altro intermediario, altro Stato estero nel quadro W/RW): per questo ha un nomeExchange suo, 'Bybit EU', e quindi un gruppo wallet suo in RW_Predefiniti.json. Le config 'Bybit Funding'/'Bybit UTA' restano per l'exchange globale. Il nomeExchange e' anche nella chiave di deduplica: non cambiarlo dopo il primo import.",
+  "_commentoCausale": "La causale e' la colonna Description, non Type: Type e' generico ('Earn' copre interessi, sottoscrizioni e riscatti; 'Fiat' copre depositi in euro e conversioni).",
+  "_commentoConti": "Stesso nomeExchange e nomeWallet di 'Bybit EU UTA.json': i giroconti verso/da Unified Trading Account sono interni al wallet e vengono ignorati, cosi' come sottoscrizioni e riscatti di Easy Earn (la moneta resta dell'utente e Bybit non esporta il saldo Earn: la giacenza del programma comprende quindi anche il capitale in Earn).",
+  "_commentoCausali": "'Deposit' con Type 'Fiat' e' il deposito di euro (bonifico), 'Deposit'/'Withdrawal' con una cripto sono depositi/prelievi on-chain: tutti trasferimenti, il programma distingue dalla moneta. 'Convert' (dal menu Convert, anche EUR -> USDC) ha le due gambe sullo stesso secondo o su secondi consecutivi, per questo in causaliDifferite con tolleranza 1 s: con una gamba in euro diventa un acquisto, fra due cripto uno scambio. 'Airdrop Bonus' (premi delle promozioni) e' AIRDROP, in causaliChiuse perche' due accrediti vicini a una conversione non diventino uno scambio. 'Withdrawal Canceled' con causaliAnnullamento: il prelievo e il suo annullamento presenti nello stesso file non vengono importati.",
+  "versione": "1.000",
+  "centralizzato": true,
+  "fontePrezzoPreferita": "bybit",
+  "nomeExchange": "Bybit EU",
+  "estrazione": "Funding - Asset Change Details (ATTENZIONE : in fase ALFA)",
+  "descrizione": "<html><div style='width:380px'>Bybit EU &ndash; export <b>Asset Change Details</b> del conto <b>Funding</b>: depositi in euro, conversioni, interessi Easy Earn, premi, depositi e prelievi. Va importato insieme a quello dell'<b>Unified Trading Account</b>, con la sua configurazione.</div></html>",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 2,
+  "rigaIntestazione": 2,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd HH:mm:ss",
+  "fuso": "UTC",
+  "colonne": {
+    "data": 1,
+    "causale": 6,
+    "moneta": 2,
+    "quantita": 3
+  },
+  "consolidaRigheStessaData": true,
+  "tolleranzaSecondiConsolidamento": 1,
+  "causaliDifferite": [
+    "Convert"
+  ],
+  "mappaCausali": {
+    "Easy Earn | Flexible Interest Distribution":  "EARN",
+    "Easy Earn | Flexible Subscription":           "IGNORA",
+    "Easy Earn | Flexible Redemption":             "IGNORA",
+    "Transfer to Unified Trading Account":         "IGNORA",
+    "Transfer from Unified Trading Account":       "IGNORA",
+    "Convert":                                     "SCAMBIO CRYPTO-CRYPTO",
+    "Airdrop Bonus":                               "AIRDROP",
+    "Deposit":                                     "TRASFERIMENTO-CRYPTO",
+    "Withdrawal":                                  "TRASFERIMENTO-CRYPTO",
+    "Withdrawal Canceled":                         "TRASFERIMENTO-CRYPTO"
+  },
+  "causaliAnnullamento": {
+    "Withdrawal Canceled": "Withdrawal"
+  },
+  "causaliUscita": [],
+  "causaliEntrata": [],
+  "causaliChiuse": [
+    "EARN",
+    "AIRDROP",
+    "TRASFERIMENTO-CRYPTO"
+  ],
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}

@@ -9,6 +9,7 @@ import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -30,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * invocazioni separate e ~650 ms dentro un lotto, e nel lotto interrogare tutti e otto gli exchange
  * non costa più che interrogarne uno.
  */
+@Tag(GuardiaRete.TAG) // va in rete di proposito: vedi GuardiaRete
 class PrezziLottoCCXTTest {
 
     @TempDir

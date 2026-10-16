@@ -31,6 +31,8 @@ In caso di problemi si può chiedere supporto sul
 
 **Nuove implementazioni**
 
+- **Importazione da Bitget (in prova)**: le righe "Automatic deposit" e "Automatic withdrawal" non vengono più scartate come causale sconosciuta ma importate come depositi e prelievi da classificare, così la giacenza torna con il saldo del file. L'impegno di BGB su LaunchX e il token ricevuto diventano un unico scambio, invece di un premio con il BGB che restava in giacenza. Chi aveva già importato file di Bitget deve eliminare quei movimenti e reimportarli.
+
 - **Importazione da Bybit EU (in prova)**: Bybit EU (Bybit EU GmbH, Austria) è un intermediario diverso da Bybit e ha ora importazioni sue, *Importazioni – Bybit EU*, per i file "Asset Change Details" dei conti Funding e Unified Trading Account e per il dettaglio depositi e prelievi. I movimenti finiscono in un gruppo wallet proprio (Wallet 116), con l'Austria come Stato estero nel quadro W/RW. Le sottoscrizioni e i riscatti di Easy Earn non vengono importati: la moneta in Earn resta nella giacenza di Bybit EU. Il gruppo wallet di Bybit (Wallet 109) non ha più il periodo con i dati di Bybit EU GmbH, che non è l'intermediario della piattaforma globale: Stato estero e identificativo di Bybit globale vanno inseriti a mano, se servono. Chi aveva importato file di Bybit EU con le configurazioni di Bybit deve eliminare quei movimenti e reimportarli con quelle di Bybit EU.
 
 ## Versione 1.0.65 {#versione-1065}

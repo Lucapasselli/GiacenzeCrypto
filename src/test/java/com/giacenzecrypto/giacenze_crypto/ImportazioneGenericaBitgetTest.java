@@ -19,9 +19,9 @@ import org.junit.jupiter.api.io.TempDir;
  * <ul>
  *   <li>'LaunchX expense' + 'LaunchX income' nello stesso secondo sono un solo scambio (il BGB e' il
  *       prezzo del token), non un premio con il BGB che resta in giacenza;</li>
- *   <li>'Automatic deposit'/'Automatic withdrawal' non vengono scartati come causale sconosciuta ma
- *       diventano depositi e prelievi da classificare, uno per riga anche quando USDT e BGB entrano
- *       nello stesso secondo.</li>
+ *   <li>'Automatic deposit'/'Automatic withdrawal' sono il giro fondi con un bot, che e' lo stesso
+ *       wallet: ignorati come 'Opening of trading bot position', non scartati come causale
+ *       sconosciuta.</li>
  * </ul>
  */
 class ImportazioneGenericaBitgetTest {
@@ -94,7 +94,7 @@ class ImportazioneGenericaBitgetTest {
     }
 
     @Test
-    void automatic_depositiEPrelieviDaClassificare() throws Exception {
+    void automatic_giroFondiColBot_ignorati() throws Exception {
         List<String[]> righe = new ArrayList<>();
         righe.add(riga("13", "2025-01-24 13:42:42", "USDT", "Automatic withdrawal", "-65"));
         righe.add(riga("12", "2025-01-24 12:56:47", "BGB", "Automatic deposit", "3.7101861"));
@@ -102,18 +102,7 @@ class ImportazioneGenericaBitgetTest {
 
         Importazioni.AzzeraContatori();
         List<String[]> movs = importa(righe, bitget());
-        assertEquals(0, Importazioni.TrasazioniSconosciute, "non piu' scartate come causale sconosciuta");
-        assertEquals(3, movs.size(), "un movimento per riga, anche per le due entrate dello stesso secondo");
-
-        String[] usdtIn = movs.stream().filter(m -> "USDT".equals(m[11])).findFirst().orElseThrow();
-        String[] bgbIn = movs.stream().filter(m -> "BGB".equals(m[11])).findFirst().orElseThrow();
-        String[] usdtOut = movs.stream().filter(m -> "USDT".equals(m[8])).findFirst().orElseThrow();
-        assertEquals("DC", categoria(usdtIn));
-        assertEquals("DC", categoria(bgbIn));
-        assertEquals("PC", categoria(usdtOut));
-        assertEquals(0, new BigDecimal(usdtOut[10]).compareTo(new BigDecimal("-65")));
-        for (String[] m : movs) {
-            assertEquals("", m[18], "campo18 vuoto: da classificare a mano");
-        }
+        assertEquals(0, Importazioni.TrasazioniSconosciute, "non scartate come causale sconosciuta");
+        assertTrue(movs.isEmpty(), "giro fondi col bot nello stesso wallet: nessun movimento");
     }
 }

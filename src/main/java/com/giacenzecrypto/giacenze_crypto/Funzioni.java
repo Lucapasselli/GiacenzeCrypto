@@ -2173,16 +2173,46 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
      * sostituita dalla data leggibile calcolata da {@link #getOradaID}) e per {@code RW_Tabella} (esclude la
      * colonna 6); per ogni altra tabella esporta tutte le colonne del model così come sono. L'HTML
      * eventualmente presente nelle celle/intestazioni viene ripulito tramite Jsoup prima della scrittura.
+     * Una cella {@code null} viene scritta vuota: capita quando il model ha più colonne delle righe che vi
+     * vengono aggiunte (i dettagli RW, 18 colonne, ricevono righe CRYPTO da 17 campi) e fino al 2026-10-16
+     * faceva fallire l'export lasciando in Temporanei un file da 0 byte, senza nessuna traccia nel log.
      * @param tabella la tabella da esportare
+     * @return {@code true} se il file è stato scritto e aperto, {@code false} se l'export non è riuscito
+     *         (l'errore è nel log e l'eventuale file incompleto viene cancellato)
      */
-    public static void Export_CreaExcelDaTabella(JTable tabella) {
+    public static boolean Export_CreaExcelDaTabella(JTable tabella) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        String DataOra = LocalDateTime.now().format(formatter);
+        File f = new File(VarStatiche.getCartella_Temporanei() + "Tabella_" + DataOra + ".xlsx");
+        //Si intercetta Exception e non solo IOException: chi chiama è uno SwingWorker, che un'eccezione a
+        //runtime la tratterrebbe nel suo Future senza scriverla da nessuna parte
         try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-            LocalDateTime now = LocalDateTime.now();
-            String DataOra = now.format(formatter);
+            Export_ScriviExcelDaTabella(tabella, f);
+        } catch (Exception ex) {
+            LoggerGC.ScriviErrore(ex);
+            if (f.exists() && !f.delete()) {
+                LoggerGC.ScriviErrore("Export Excel: impossibile cancellare il file incompleto " + f.getName());
+            }
+            return false;
+        }
+        try {
+            Desktop.getDesktop().open(f);
+            return true;
+        } catch (Exception ex) {
+            LoggerGC.ScriviErrore(ex);
+            return false;
+        }
+    }
 
-            File f = new File(VarStatiche.getCartella_Temporanei() + "Tabella_" + DataOra + ".xlsx");
-            FileOutputStream fos = new FileOutputStream(f);
+    /**
+     * Scrive il contenuto di una {@link JTable} nel file Excel indicato, con le regole descritte in
+     * {@link #Export_CreaExcelDaTabella}. Lo stream viene chiuso anche in caso di errore.
+     * @param tabella la tabella da esportare
+     * @param f il file .xlsx da scrivere
+     * @throws IOException se il file non può essere scritto
+     */
+    static void Export_ScriviExcelDaTabella(JTable tabella, File f) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(f)) {
             Workbook wb = new Workbook(fos, "excel1", "1.0");
             Worksheet ws = wb.newWorksheet("Riepilogo Tabella ");
 
@@ -2210,8 +2240,7 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
                             riga[k] = Funzioni.getOradaID(model.getValueAt(modelRow, 0).toString());
                             riga[k] = Jsoup.parse(riga[k]).text();
                         } else {
-                            riga[k] = model.getValueAt(modelRow, k).toString();
-                            riga[k] = Jsoup.parse(riga[k]).text();
+                            riga[k] = Export_TestoCella(model, modelRow, k);
                         }
                     }
                     ScriviRigaExcel(riga, ws, i + 1);
@@ -2239,8 +2268,7 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
                     p=0;
                     for (int k = 0; k < NumColonne; k++) {
                         if (k != 6) {
-                            riga[p] = model.getValueAt(modelRow, k).toString();
-                            riga[p] = Jsoup.parse(riga[p]).text();
+                            riga[p] = Export_TestoCella(model, modelRow, k);
                             p++;
                         }
                     }
@@ -2262,8 +2290,7 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
                     int modelRow = tabella.convertRowIndexToModel(i);
                     riga = new String[NumColonne];
                     for (int k = 0; k < NumColonne; k++) {
-                        riga[k] = model.getValueAt(modelRow, k).toString();
-                        riga[k] = Jsoup.parse(riga[k]).text();
+                        riga[k] = Export_TestoCella(model, modelRow, k);
                     }
                     ScriviRigaExcel(riga, ws, i + 1);
 
@@ -2273,15 +2300,36 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
             ws.close();
             wb.finish();
             wb.close();
-            fos.close();
-            Desktop desktop = Desktop.getDesktop();
-            desktop.open(f);
-
-        } catch (FileNotFoundException ex) {
-            LoggerGC.ScriviErrore(ex);
-        } catch (IOException ex) {
-            LoggerGC.ScriviErrore(ex);
         }
+    }
+
+    /**
+     * Testo di una cella del model per l'export in Excel: vuoto per una cella {@code null}, altrimenti
+     * il {@code toString()} ripulito dall'eventuale HTML.
+     */
+    private static String Export_TestoCella(TableModel model, int riga, int colonna) {
+        Object valore = model.getValueAt(riga, colonna);
+        if (valore == null) return "";
+        return Jsoup.parse(valore.toString()).text();
+    }
+
+    /**
+     * Avvisa l'utente che l'esportazione della tabella in Excel non è riuscita.
+     * @param owner finestra a cui agganciare il dialogo
+     */
+    public static void Export_AvvisaNonRiuscito(java.awt.Window owner) {
+        AppDialog.builder(owner)
+                .windowTitle("Esporta Tabella in Excel")
+                .bodyTitle("Esportazione non riuscita")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message("Non è stato possibile creare o aprire il file Excel della tabella.")
+                .details("Il dettaglio dell'errore è nel log.")
+                .action(AppDialog.DialogAction.builder("ok", "OK")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .showDialog();
     }
         
     

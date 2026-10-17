@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 public class Trans_Solana {
     
-    private static String HELIUS_API_KEY = DatabaseH2.Opzioni_Leggi("ApiKey_Helius"); // Inserisci la tua API key
+    private static String HELIUS_API_KEY; //letta a ogni importazione da getAllTransactions, non al caricamento della classe (servirebbe il DB)
     private static final String HELIUS_RPC_URL = "https://api.helius.xyz/v0/addresses/";
     private static final String HELIUS_RPC_URL2 = "https://mainnet.helius-rpc.com/";
     private static final OkHttpClient httpClient = new OkHttpClient();
@@ -258,6 +258,10 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
             }
             String AddressNoWallet = "";
 
+            //SOL entrati o usciti dai conti token del wallet stesso (affitto alla creazione, rimborso alla chiusura):
+            //restano del wallet, quindi non devono finire nella gamba SOL dello scambio
+            BigDecimal SolContiPropri = VariazioneSolContiTokenPropri(tx, walletAddress);
+
             JSONArray AccountChanges = tx.optJSONArray("accountData");
             BigDecimal NativeSOL = new BigDecimal(0);
             if (AccountChanges != null && AccountChanges.length() > 0) {
@@ -272,7 +276,7 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
                     if (account.equalsIgnoreCase(walletAddress) && nativeSolAmount.compareTo(BigDecimal.ZERO) != 0) {
                         //Se arrivo qua vuol dire che ho dei nativeSOL da gestire
                         //Il totale dei NativeSol Movimentati sarà quindi quello che vedo nel change meno le fee
-                        NativeSOL = nativeSolAmount.add(fee);
+                        NativeSOL = nativeSolAmount.add(fee).add(SolContiPropri);
                         if (NativeSOL.compareTo(BigDecimal.ZERO) != 0) {
                             numMovimenti++;
                             trans.InserisciMonete("SOL", "SOL", "SOL", AddressNoWallet, NativeSOL.toPlainString(), "Crypto");
@@ -308,7 +312,9 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
                                         } catch (IOException ex) {
                                             Logger.getLogger(Trans_Solana.class.getName()).log(Level.SEVERE, null, ex);
                                         }
-                                        if (!tokenSymbol.equalsIgnoreCase("SOL")) {
+                                        //Il wSOL non è un token a sé: quando paga il wallet i suoi lamport sono già in SolContiPropri,
+                                        //il controllo sul mint copre anche il caso in cui getAsset non restituisca il simbolo
+                                        if (!mint.equals(MINT_WSOL) && !tokenSymbol.equalsIgnoreCase("SOL")) {
                                             numMovimenti++;
                                             trans.InserisciMonete(tokenSymbol, tokenName, mint, AddressNoWallet, tokenAmount.toPlainString(), Tipologia);
                                         }
@@ -329,6 +335,137 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
         return MappaTransazioniDefi;
     }
 
+
+    static final String MINT_WSOL = "So11111111111111111111111111111111111111112";
+    private static final Set<String> PROGRAMMI_TOKEN = Set.of(
+            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",  //SPL Token
+            "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"); //Token-2022
+    private static final String PROGRAMMA_ATA = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
+
+    /**
+     * Variazione, in SOL, dei conti token di proprietà del wallet in una transazione firmata dal wallet stesso.
+     * <p>
+     * Ogni conto token Solana trattiene un deposito in SOL (l'"affitto", 0,00203928 per un conto SPL): lo paga chi crea
+     * il conto e lo restituisce la chiusura. Quando il conto è del wallet quel SOL resta del wallet, ma Helius lo riporta
+     * dentro {@code nativeBalanceChange} del wallet, e finiva nella gamba SOL dello scambio (5,5 SOL ceduti diventavano
+     * 5,50203928) o diventava da solo una gamba ceduta. Sommando alla variazione del wallet quella dei suoi conti token,
+     * apertura e chiusura si annullano e resta solo il SOL uscito davvero verso altri, compreso l'affitto pagato per il
+     * conto di un destinatario, che è perso.
+     * <p>
+     * Vale solo se il wallet paga la transazione: se il conto lo apre un altro (chi manda un token), l'affitto non è
+     * uscito dal wallet e contarlo lo farebbe comparire come SOL ricevuto. I lamport di un conto wSOL del wallet sono
+     * sommati allo stesso modo, ed è giusto, perché il wSOL è SOL.
+     * @param tx transazione nel formato "enhanced" di Helius
+     * @param walletAddress indirizzo del wallet
+     * @return variazione in SOL (positiva se i conti propri hanno ricevuto lamport), zero se il wallet non paga la transazione
+     */
+    static BigDecimal VariazioneSolContiTokenPropri(JSONObject tx, String walletAddress) {
+        if (!tx.optString("feePayer", "").equalsIgnoreCase(walletAddress)) return BigDecimal.ZERO;
+        Set<String> conti = ContiTokenDelWallet(tx, walletAddress);
+        JSONArray AccountChanges = tx.optJSONArray("accountData");
+        if (conti.isEmpty() || AccountChanges == null) return BigDecimal.ZERO;
+        BigDecimal lamport = BigDecimal.ZERO;
+        for (int j = 0; j < AccountChanges.length(); j++) {
+            JSONObject AccountChange = AccountChanges.getJSONObject(j);
+            if (conti.contains(AccountChange.optString("account", ""))) {
+                lamport = lamport.add(AccountChange.optBigDecimal("nativeBalanceChange", BigDecimal.ZERO));
+            }
+        }
+        return lamport.divide(new BigDecimal(1_000_000_000));
+    }
+
+    /**
+     * Conti token di cui il wallet è proprietario tra quelli toccati dalla transazione. Il proprietario di un conto token
+     * non è chi lo paga: si legge dai saldi token ({@code userAccount}) e, per i conti senza variazione di saldo (un conto
+     * aperto vuoto, o chiuso), dalle istruzioni del programma token e del programma ATA, interne comprese.
+     */
+    static Set<String> ContiTokenDelWallet(JSONObject tx, String walletAddress) {
+        Set<String> conti = new HashSet<>();
+        JSONArray AccountChanges = tx.optJSONArray("accountData");
+        if (AccountChanges != null) {
+            for (int j = 0; j < AccountChanges.length(); j++) {
+                JSONArray tokenBalanceChanges = AccountChanges.getJSONObject(j).optJSONArray("tokenBalanceChanges");
+                if (tokenBalanceChanges == null) continue;
+                for (int k = 0; k < tokenBalanceChanges.length(); k++) {
+                    JSONObject tokenBalanceChange = tokenBalanceChanges.getJSONObject(k);
+                    if (tokenBalanceChange.optString("userAccount", "").equalsIgnoreCase(walletAddress)) {
+                        conti.add(tokenBalanceChange.optString("tokenAccount", ""));
+                    }
+                }
+            }
+        }
+        byte[] walletBytes = DecodificaBase58(walletAddress);
+        JSONArray istruzioni = tx.optJSONArray("instructions");
+        if (istruzioni != null) {
+            for (int i = 0; i < istruzioni.length(); i++) {
+                JSONObject istruzione = istruzioni.getJSONObject(i);
+                AggiungiContoDaIstruzione(istruzione, walletAddress, walletBytes, conti);
+                JSONArray interne = istruzione.optJSONArray("innerInstructions");
+                if (interne == null) continue;
+                for (int k = 0; k < interne.length(); k++) {
+                    AggiungiContoDaIstruzione(interne.getJSONObject(k), walletAddress, walletBytes, conti);
+                }
+            }
+        }
+        conti.remove("");
+        conti.removeIf(c -> c.equalsIgnoreCase(walletAddress));
+        return conti;
+    }
+
+    private static void AggiungiContoDaIstruzione(JSONObject istruzione, String walletAddress, byte[] walletBytes, Set<String> conti) {
+        String programma = istruzione.optString("programId", "");
+        JSONArray account = istruzione.optJSONArray("accounts");
+        if (account == null) return;
+        if (programma.equals(PROGRAMMA_ATA)) {
+            //create e createIdempotent: [pagatore, conto, proprietario, mint, ...]
+            if (account.length() > 2 && account.optString(2).equalsIgnoreCase(walletAddress)) {
+                conti.add(account.optString(1));
+            }
+            return;
+        }
+        if (!PROGRAMMI_TOKEN.contains(programma) || account.length() == 0) return;
+        byte[] dati = DecodificaBase58(istruzione.optString("data", ""));
+        if (dati == null || dati.length == 0) return;
+        switch (dati[0]) {
+            //initializeAccount [conto, mint, proprietario, rent] e closeAccount [conto, destinazione, proprietario]
+            case 1, 9 -> {
+                if (account.length() > 2 && account.optString(2).equalsIgnoreCase(walletAddress)) {
+                    conti.add(account.optString(0));
+                }
+            }
+            //initializeAccount2 e 3: il proprietario è nei dati, dopo il primo byte
+            case 16, 18 -> {
+                if (walletBytes != null && dati.length >= 33
+                        && Arrays.equals(Arrays.copyOfRange(dati, 1, 33), walletBytes)) {
+                    conti.add(account.optString(0));
+                }
+            }
+            default -> { }
+        }
+    }
+
+    private static final String ALFABETO_BASE58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
+    /** @return i byte rappresentati dalla stringa base58, {@code null} se contiene caratteri non base58 */
+    static byte[] DecodificaBase58(String testo) {
+        if (testo == null) return null;
+        java.math.BigInteger valore = java.math.BigInteger.ZERO;
+        java.math.BigInteger base = java.math.BigInteger.valueOf(58);
+        int zeriIniziali = 0;
+        boolean inizio = true;
+        for (char c : testo.toCharArray()) {
+            int cifra = ALFABETO_BASE58.indexOf(c);
+            if (cifra < 0) return null;
+            if (inizio && cifra == 0) zeriIniziali++;
+            else inizio = false;
+            valore = valore.multiply(base).add(java.math.BigInteger.valueOf(cifra));
+        }
+        byte[] corpo = valore.signum() == 0 ? new byte[0] : valore.toByteArray();
+        if (corpo.length > 1 && corpo[0] == 0) corpo = Arrays.copyOfRange(corpo, 1, corpo.length);
+        byte[] risultato = new byte[zeriIniziali + corpo.length];
+        System.arraycopy(corpo, 0, risultato, zeriIniziali, corpo.length);
+        return risultato;
+    }
 
     private static Map<String, String> CostruisciMappaTokenAccountOwner(JSONArray transactions) {
         Map<String, String> mappa = new HashMap<>();

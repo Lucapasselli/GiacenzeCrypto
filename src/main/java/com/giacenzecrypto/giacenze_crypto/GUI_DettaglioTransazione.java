@@ -1082,21 +1082,27 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         progress.setLocationRelativeTo(this);
 
         // Esegui l'export in background
-        SwingWorker<Void, Void> worker = new SwingWorker<>() {
+        SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
             /** Esporta in background la tabella corrente in un file Excel. */
             @Override
-            protected Void doInBackground() throws Exception {
-                if (Principale.PopUp_Tabella != null) {
-                    Funzioni.Export_CreaExcelDaTabella(Principale.PopUp_Tabella);
-                }
-                return null;
+            protected Boolean doInBackground() throws Exception {
+                if (Principale.PopUp_Tabella == null) return true;
+                return Funzioni.Export_CreaExcelDaTabella(Principale.PopUp_Tabella);
             }
 
-            /** Chiude la finestra di progresso e ripristina il cursore al termine dell'export. */
+            /** Chiude la finestra di progresso, ripristina il cursore e avvisa se l'export non è riuscito. */
             @Override
             protected void done() {
                 progress.dispose();
                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                boolean riuscito;
+                try {
+                    riuscito = get();
+                } catch (Exception ex) {
+                    LoggerGC.ScriviErrore(ex);
+                    riuscito = false;
+                }
+                if (!riuscito) Funzioni.Export_AvvisaNonRiuscito(GUI_DettaglioTransazione.this);
             }
         };
 

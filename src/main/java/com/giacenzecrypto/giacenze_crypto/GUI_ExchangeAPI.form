@@ -234,12 +234,12 @@
               <Properties>
                 <Property name="horizontalAlignment" type="int" value="4"/>
                 <Property name="text" type="java.lang.String" value="Passphrase :"/>
-                <Property name="toolTipText" type="java.lang.String" value="Richiesta solo da alcuni exchange (es. OKX). Lasciare vuoto per gli altri."/>
+                <Property name="toolTipText" type="java.lang.String" value="Richiesta solo da alcuni exchange (OKX, e Bitget se la chiave e' stata creata con una passphrase). Lasciare vuoto per gli altri."/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="TextField_Passphrase">
               <Properties>
-                <Property name="toolTipText" type="java.lang.String" value="Richiesta solo da alcuni exchange (es. OKX). Lasciare vuoto per gli altri."/>
+                <Property name="toolTipText" type="java.lang.String" value="Richiesta solo da alcuni exchange (OKX, e Bitget se la chiave e' stata creata con una passphrase). Lasciare vuoto per gli altri."/>
               </Properties>
             </Component>
             <Component class="javax.swing.JLabel" name="Label_Exchange">
@@ -251,10 +251,11 @@
             <Component class="javax.swing.JComboBox" name="ComboBox_Exchange">
               <Properties>
                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                  <StringArray count="3">
+                  <StringArray count="4">
                     <StringItem index="0" value="--- nessuna selezione ---"/>
                     <StringItem index="1" value="Binance"/>
                     <StringItem index="2" value="OKX"/>
+                    <StringItem index="3" value="Bitget"/>
                   </StringArray>
                 </Property>
               </Properties>

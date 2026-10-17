@@ -209,7 +209,7 @@ class GiacenzeBlockchainTest {
         assertNull(GiacenzeBlockchain.WalletDaLeggere("Binance", "Tutti", null));
         assertNull(GiacenzeBlockchain.WalletDaLeggere("Gruppo : Wallet 01 ( Binance )", "Tutti", null));
         //SOL e BTC: nessun nodo con gli stati
-        assertNull(GiacenzeBlockchain.WalletDaLeggere("E2ebWw5CLJGbgDLvnEk19ES6QceouQLMbxHJRzieM6FL (SOL)", "Tutti", null));
+        assertNull(GiacenzeBlockchain.WalletDaLeggere("WaLLetDiProvaSo1ana111111111111111111111111 (SOL)", "Tutti", null));
     }
 
     static String[] Movimento(String ID, String Data, String Blocco, String MonU, String QtaU, String AddrU,

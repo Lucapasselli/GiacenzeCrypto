@@ -641,7 +641,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                             }
             //Mappa_Wallet.put(v[3], v[1]);
         }
-             //   Importazioni.GiacenzeCRO_Sistema("0x7bfa44a6dad637e8416eabe568c285cc94c7e7a7", c, progress);//da gestire il wallet
+             //   Importazioni.GiacenzeCRO_Sistema("<indirizzo wallet>", c, progress);//da gestire il wallet
                 progress.dispose();
                 //in teoria dovrei trovarli e gestirli in automatico
                 //in qualche variabile dovrei avere l'elenco dei wallet da cui estrarre solo quelli su rete CRO

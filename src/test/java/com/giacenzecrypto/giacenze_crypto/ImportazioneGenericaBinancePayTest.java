@@ -111,6 +111,34 @@ class ImportazioneGenericaBinancePayTest {
         assertEquals(0, movs.size());
     }
 
+    /**
+     * {@code Index-Auto-Investment - Redeem Positions} (v1.019): riscatto di un piano Auto-Invest
+     * Index-Linked. Le monete stavano nel conto Auto-Invest, non nello Spot, quindi sono il loro primo
+     * ingresso: un deposito da classificare per moneta, mai uno scambio fra le monete dello stesso secondo
+     * e mai un candidato scambio differito (non c'è un addebito vicino da abbinare).
+     */
+    @Test
+    void riscattoPianoIndexLinked_unDepositoDaClassificarePerMoneta() throws Exception {
+        ConfigurazioneImport c = cfg();
+        assertEquals("TRASFERIMENTO-CRYPTO", c.convertiCausale("Index-Auto-Investment - Redeem Positions"));
+        String op = "Index-Auto-Investment - Redeem Positions";
+        List<String[]> righe = new ArrayList<>(List.<String[]>of(
+                riga("2024-09-10 05:36:45", "Spot", op, "ETH", "0.02677297", ""),
+                riga("2024-09-10 05:36:45", "Spot", op, "BTC", "0.00114338", ""),
+                riga("2024-09-10 05:36:45", "Spot", op, "SOL", "0.48681743", "")));
+        List<String[]> differiti = new ArrayList<>();
+        List<String[]> movs = new ArrayList<>();
+        for (List<String[]> g : ImportazioneGenerica.raggruppaRighe(righe, c)) {
+            movs.addAll(ImportazioneGenerica.consolidaGruppo(g, c, differiti));
+        }
+        assertEquals(3, movs.size(), "TRASFERIMENTO-CRYPTO è chiusa: tre depositi, non uno scambio");
+        for (String[] m : movs) {
+            assertTrue(m[0].endsWith("_DC"), "deposito crypto: " + m[0]);
+            assertEquals("", m[18], "campo 18 vuoto: la classificazione la decide l'utente");
+        }
+        assertTrue(differiti.isEmpty(), "non deve finire fra gli scambi differiti");
+    }
+
     @Test
     void nftBurnAndWin_reward() throws Exception {
         List<String[]> movs = importa(List.<String[]>of(

@@ -313,6 +313,11 @@ Defines the canonical movement type map. Each raw label from an import (e.g. `ST
   re-import), `fusoDaIntestazione`, `colonneCalcolate`, `regoleRiga`, `coppia`/`importoQuote`, `tipoSeSola`,
   `noteAcquistoDaSaldo`, `walletSpecularePerCausale` (the causale must also be in `causaliChiuse`), `causaliAllertaDerivati` /
   `causaliDerivati`. A config using new code needs a `versioneMinimaApp`.
+- **Bitget via API** (`Bitget_API`, Tax API, key permission `taxr`, Java-only, no Node): each record becomes a row of
+  the CSV export and goes through `Bitget CSV.json` via `ImportazioneGenerica.importaRighe`. API type codes that differ
+  from the CSV labels go in the config's `causaliAPI`, never in code. The daily interest sum takes the date of the **last**
+  row of the day (`consolidaCausaliPerGiorno(..., true)`), the CSV keeps the first: that is what makes "last movement
+  + 1 s" restart safe. Bitget CSV exports use a fixed offset that differs per export, so CSV and API movements never dedupe.
 - `girocontoFiat` (`GirocontiFiat`): euro moved between two own wallets paired as PTW/DTW; declare the rule mirrored in both configs.
 - Binance Simple Earn, Dual Investment (`Binance_DualInvestment.Abbina`, same coin vs different coin, bug C18),
   Bybit deposits/withdrawals enrichment: see the details file.

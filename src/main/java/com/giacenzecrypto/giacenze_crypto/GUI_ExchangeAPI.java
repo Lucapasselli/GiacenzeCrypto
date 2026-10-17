@@ -165,14 +165,14 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
 
         Label_Passphrase.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_Passphrase.setText("Passphrase :");
-        Label_Passphrase.setToolTipText("Richiesta solo da alcuni exchange (es. OKX). Lasciare vuoto per gli altri.");
+        Label_Passphrase.setToolTipText("Richiesta solo da alcuni exchange (OKX, e Bitget se la chiave e' stata creata con una passphrase). Lasciare vuoto per gli altri.");
 
-        TextField_Passphrase.setToolTipText("Richiesta solo da alcuni exchange (es. OKX). Lasciare vuoto per gli altri.");
+        TextField_Passphrase.setToolTipText("Richiesta solo da alcuni exchange (OKX, e Bitget se la chiave e' stata creata con una passphrase). Lasciare vuoto per gli altri.");
 
         Label_Exchange.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_Exchange.setText("Exchange :");
 
-        ComboBox_Exchange.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance", "OKX" }));
+        ComboBox_Exchange.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance", "OKX", "Bitget" }));
         ComboBox_Exchange.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ComboBox_ExchangeActionPerformed(evt);
@@ -469,6 +469,10 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                 //OKX firma le richieste con tre credenziali: senza passphrase non si va da nessuna parte
                 Messaggi.WarningMessage("Passphrase mancante", "Attenzione! <br>OKX richiede anche la passphrase scelta al momento della creazione della chiave API", this);
         }
+        else if (Bitget_API.isBitget(Exchange)&&!Bitget_API.ChiaveValida(Key,Segreto,Passphrase)){
+                //Bitget si verifica online: la chiave serve solo se ha il permesso Tax, l'unico da cui si leggono i movimenti
+                Messaggi.WarningMessage("API non valide", "Attenzione! <br>Bitget non accetta la chiave, oppure la chiave non ha il permesso <b>Tax</b> in lettura, l'unico con cui si leggono i movimenti", this);
+        }
         else if (!isValidApi(Exchange,Key,Segreto)){
                 //non è un indirizzo di wallet valido
                 Messaggi.WarningMessage("API non valide", "Attenzione! <br>Le API specificate non sono valide", this);
@@ -493,6 +497,10 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         }
         else if (Exchange.trim().equalsIgnoreCase("Crypto.com Exchange")){
             //Per ora non faccio nessun controllo
+            return true;
+        }
+        else if (Bitget_API.isBitget(Exchange)){
+            //Verificata prima, con la passphrase (vedi Bottone_InserisciChiaveActionPerformed)
             return true;
         }
         else if (Exchange.trim().equalsIgnoreCase("OKX")){

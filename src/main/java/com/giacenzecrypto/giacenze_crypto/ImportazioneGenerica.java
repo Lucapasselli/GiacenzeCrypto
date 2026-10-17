@@ -188,11 +188,26 @@ public class ImportazioneGenerica {
             return false;
         }
 
+        return importaRighe(righe, cfg, sovrascriEsistenti, progressb, false);
+    }
+
+    /**
+     * Seconda meta' di {@link #importa}: dalle righe gia' lette e ordinate ({@link #ordinaRighe}) fino alla
+     * scrittura in archivio. Esiste a parte per chi le righe non le legge da un file ma le costruisce da una
+     * API nello stesso formato del CSV ({@link Bitget_API}): stesse causali, stesso consolidamento, stessa
+     * deduplica. I contatori di {@link Importazioni} vanno azzerati dal chiamante, prima di produrre le righe.
+     *
+     * @param consolidaAllUltimaRiga data della riga sintetica di {@link #consolidaCausaliPerGiorno}: quella
+     *        dell'ultima riga del giorno invece che della prima (vedi li')
+     */
+    static boolean importaRighe(List<String[]> righe, ConfigurazioneImport cfg, boolean sovrascriEsistenti,
+            Download progressb, boolean consolidaAllUltimaRiga) {
+
         // Prelievi annullati (Bybit 'Withdrawal Canceled'): la coppia prelievo/annullamento non entra
         righe = scartaAnnullamenti(righe, cfg);
 
         // Pre-consolidamento per (giorno, moneta) delle causali indicate (micro-interessi Bitget & c.)
-        righe = consolidaCausaliPerGiorno(righe, cfg);
+        righe = consolidaCausaliPerGiorno(righe, cfg, consolidaAllUltimaRiga);
 
         if (progressb != null) {
             progressb.SetMassimo(righe.size());
@@ -383,6 +398,16 @@ public class ImportazioneGenerica {
         }
 
         // FASE 3 – ordino per data
+        ordinaRighe(risultato, cfg);
+        return risultato;
+    }
+
+    /**
+     * Ordina le righe per data, a parita' per colonna di raggruppamento e poi per identificativo di riga.
+     * Il raggruppamento a valle e' su righe consecutive, quindi chi costruisce le righe da sé (l'import
+     * via API di {@link Bitget_API}) deve passare di qui come la lettura del CSV.
+     */
+    static void ordinaRighe(List<String[]> risultato, ConfigurazioneImport cfg) {
         //A parità di data si ordina anche per colonna di raggruppamento, quando ne è configurata una
         //diversa dall'identificativo: il raggruppamento a valle è su righe CONSECUTIVE, e negli export le
         //gambe di ordini diversi allo stesso secondo sono interlacciate (verificato sull'export OKX del
@@ -403,8 +428,6 @@ public class ImportazioneGenerica {
             //strade potrebbero scegliere gambe diverse e produrre due [24] diversi per lo stesso scambio.
             return safe(a, colonnaID).compareTo(safe(b, colonnaID));
         });
-
-        return risultato;
     }
 
     /**
@@ -558,6 +581,20 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
      * un giorno diverso. Accettabile per micro-interessi; irrilevante lontano dalla mezzanotte.</p>
      */
     static List<String[]> consolidaCausaliPerGiorno(List<String[]> righe, ConfigurazioneImport cfg) {
+        return consolidaCausaliPerGiorno(righe, cfg, false);
+    }
+
+    /**
+     * Come {@link #consolidaCausaliPerGiorno(List, ConfigurazioneImport)}; con {@code dataUltimaRiga} la
+     * riga sintetica prende la data dell'<b>ultima</b> riga del giorno invece che della prima.
+     *
+     * <p>Serve agli scaricamenti via API, che ripartono dall'ultimo movimento in archivio piu' un secondo: con
+     * la data della prima riga un giorno scaricato a meta' ripartirebbe dal primo accredito di quel giorno e
+     * conterebbe due volte quelli gia' sommati. Con la data dell'ultima, il giorno a meta' diventa due
+     * movimenti che insieme fanno la somma giusta. Il CSV resta sulla prima riga: cambiarla sposterebbe gli
+     * interessi gia' importati e un re-import li farebbe rientrare come doppioni.</p>
+     */
+    static List<String[]> consolidaCausaliPerGiorno(List<String[]> righe, ConfigurazioneImport cfg, boolean dataUltimaRiga) {
         if (cfg.causaliConsolidaPerGiorno.isEmpty()) return righe;
 
         List<String[]> out = new ArrayList<>();
@@ -588,6 +625,9 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 template.put(chiave, riga.clone());
             } else {
                 somma.put(chiave, acc.add(new BigDecimal(qtaStr)));
+                if (dataUltimaRiga && cfg.colonnaData >= 0) {
+                    template.get(chiave)[cfg.colonnaData] = safe(riga, cfg.colonnaData);
+                }
             }
         }
 
@@ -2165,6 +2205,14 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         public GirocontiFiat.Regola girocontoFiat = null;
 
         public Map<String, String> mappaCausali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        /**
+         * Codice del tipo restituito da un'API dell'exchange -> causale del CSV dello stesso exchange
+         * ({@code causaliAPI}). Lo legge solo chi costruisce le righe da un'API ({@link Bitget_API}), prima
+         * che entrino nella pipeline: cosi' API e CSV passano dalla stessa {@code mappaCausali} e dallo
+         * stesso consolidamento. Un codice assente resta com'e', e se non e' una causale nota la riga
+         * risulta sconosciuta come nel CSV.
+         */
+        public Map<String, String> causaliAPI = new java.util.LinkedHashMap<>();
         public Set<String> causaliUscita = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         public Set<String> causaliEntrata = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
@@ -2450,6 +2498,12 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 JSONArray arr = root.getJSONArray("causaliDifferite");
                 for (int i = 0; i < arr.length(); i++) {
                     cfg.causaliDifferite.add(arr.getString(i));
+                }
+            }
+            if (root.has("causaliAPI")) {
+                JSONObject o = root.getJSONObject("causaliAPI");
+                for (String k : o.keySet()) {
+                    cfg.causaliAPI.put(k, o.getString(k));
                 }
             }
             if (root.has("causaliAllertaDerivati")) {

@@ -1329,6 +1329,8 @@ public static Path getNodeExePath() {
         //essere partito nulla, né il download di Node né la chiamata all'exchange.
         final EsitoStorico esitoScelta = SceltaStoricoOKX(exchangeId, startDate, c);
         if (esitoScelta.scelta() == SceltaStorico.ANNULLA) return null;
+        //Bitget: movimenti gia' importati da CSV non si deduplicano con quelli dell'API (orari diversi)
+        if (Bitget_API.isBitget(exchangeId) && !Bitget_API.ConfermaConMovimentiNonDaAPI(c)) return null;
         final boolean conArchivio = (esitoScelta.scelta() == SceltaStorico.PROCEDI_CON_ARCHIVIO);
         //L'utente può aver spostato indietro la data nel dialogo: da qui in poi vale la sua.
         final long dataInizio = esitoScelta.startDate();
@@ -1352,10 +1354,13 @@ public static Path getNodeExePath() {
         @Override
         protected Void doInBackground() throws Exception {
         try {
+        //Bitget si interroga direttamente da Java (Bitget_API): Node e CCXT non servono
+        if (!Bitget_API.isBitget(exchangeId)) {
         System.out.println("Verifico Installazione di Node");
         ensureNodeInstalled();
         System.out.println("Verifico Installazione di CCXT");
         installCcxt();
+        }
         System.out.println("Eseguo la chiamata");
         
         Esiti[0]=fetchMovimenti(exchangeId, apiKey, secret,dataInizio,Tokens,passphrase,progress,c,conArchivio);
@@ -1698,6 +1703,12 @@ public static Path getNodeExePath() {
             //dai valori che restituisce, altrimenti si mostrerebbero i numeri di un'importazione precedente.
             //Il ramo CCXT di Binance non produce causali sconosciute: quello che non sa convertire non lo genera.
             return new Importazioni.Esito(exchangeId, risultato[0]+risultato[1], risultato[0], risultato[1], 0, "");
+        }
+
+        //BITGET
+        //API fiscale (permesso Tax): i record diventano righe dell'export CSV e passano dalla sua configurazione
+        if (Bitget_API.isBitget(exchangeId)) {
+            return Bitget_API.Importa(apiKey, secret, passphrase, startDate, progress, c);
         }
 
         //OKX

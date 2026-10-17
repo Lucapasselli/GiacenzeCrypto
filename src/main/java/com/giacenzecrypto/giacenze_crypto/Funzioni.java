@@ -3300,7 +3300,7 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
                 if (dot2 > dot1) {
                     String rete = secondaParte.substring(dot1 + 1, dot2);
                     //la rete la trovo tra il primo e il secondo punto se il prefisso è corretto
-                    //esempio di ID : 20251129003318_BC.SOL.5LPAkNQaz6pwpYFf5zfon9Lb7HYhEzwZJXpafH9U2Pjx.4NwvC7hq9wuB6N1wqjqwTZLDAp78XpT5dWgQpmVxZeH3X6k25c4iGZywgJJB3EXuLsXosREcrgsebzCQ7ynVk5T3_1_1_DC
+                    //esempio di ID : 20251129003318_BC.SOL.<indirizzo wallet>.<hash transazione>_1_1_DC
                     mov[34] = rete; // cache
                     return rete;
                 }

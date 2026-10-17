@@ -1,5 +1,5 @@
 {
-  "versione": "1.018",
+  "versione": "1.019",
   "centralizzato":true,
   "fontePrezzoPreferita": "binance",
   "nomeExchange": "Binance",
@@ -105,6 +105,7 @@
     "Transfer":                                       "TRASFERIMENTO-CRYPTO",
     "Fiat OCBS - Add Fiat and Fees":                  "TRASFERIMENTO-CRYPTO",
     "Gift Card Redemption":                           "TRASFERIMENTO-CRYPTO",
+    "Index-Auto-Investment - Redeem Positions":       "TRASFERIMENTO-CRYPTO",
     "Auto-Invest Transaction":                        "SCAMBIO DIFFERITO",
     "Auto-Invest - Deduct Asset":                     "SCAMBIO DIFFERITO",
     "Asset Recovery":                                 "SCAMBIO DIFFERITO",

@@ -140,6 +140,22 @@ Restano comunque disponibili le due configurazioni di importazione **OKX_Funding
 i file CSV esportati dal sito: in quel caso vanno esportati **entrambi** i conti, perché ciascun file
 contiene solo una parte dei movimenti.
 
+## Bitget {#bitget}
+
+Anche per Bitget la strada consigliata è lo **scaricamento dalle API**, in *Opzioni – ApiKey*. Sul sito di
+Bitget la chiave va creata con il solo permesso **Tax** in lettura, che basta a leggere tutto lo storico del
+conto spot, interessi di Earn compresi. La passphrase va inserita solo se la chiave ne ha una.
+
+Rispetto al file CSV l'API dà l'orario esatto di ogni movimento. L'export CSV di Bitget invece scrive gli
+orari con uno scostamento che cambia da un export all'altro (un'ora o due rispetto all'ora UTC con cui il
+programma li legge), e può fermarsi qualche ora prima della fine del periodo richiesto. Per questo i
+movimenti importati da CSV e quelli scaricati dalle API non si riconoscono fra loro: chi passa alle API deve
+prima eliminare i movimenti Bitget importati da CSV, altrimenti entrerebbero due volte.
+
+Le operazioni interne ai **trading bot** non sono disponibili, né nelle API né nel file CSV. I fondi mandati
+a un bot restano in giacenza nella moneta e per la quantità con cui ci sono entrati. Movimenti dei conti
+futures, margin e P2P vengono solo segnalati nel resoconto, non importati.
+
 ## CoinTracking.info {#cointrackinginfo}
 
 Uno dei modi per importare i dati di exchange o blockchain non supportati direttamente da Giacenze Crypto

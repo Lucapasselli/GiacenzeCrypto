@@ -152,9 +152,9 @@ programma li legge), e può fermarsi qualche ora prima della fine del periodo ri
 movimenti importati da CSV e quelli scaricati dalle API non si riconoscono fra loro: chi passa alle API deve
 prima eliminare i movimenti Bitget importati da CSV, altrimenti entrerebbero due volte.
 
-Le operazioni interne ai **trading bot** non sono disponibili, né nelle API né nel file CSV. I fondi mandati
-a un bot restano in giacenza nella moneta e per la quantità con cui ci sono entrati. Movimenti dei conti
-futures, margin e P2P vengono solo segnalati nel resoconto, non importati.
+I fondi mandati a un **trading bot** e quelli che ne rientrano diventano depositi e prelievi da
+classificare. Le operazioni interne ai bot non sono disponibili, né nelle API né nel file CSV, e non vengono
+importate. Movimenti dei conti futures, margin e P2P vengono solo segnalati nel resoconto, non importati.
 
 ## CoinTracking.info {#cointrackinginfo}
 

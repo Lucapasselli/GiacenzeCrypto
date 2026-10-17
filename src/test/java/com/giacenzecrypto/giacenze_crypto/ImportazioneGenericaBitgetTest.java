@@ -19,9 +19,9 @@ import org.junit.jupiter.api.io.TempDir;
  * <ul>
  *   <li>'LaunchX expense' + 'LaunchX income' nello stesso secondo sono un solo scambio (il BGB e' il
  *       prezzo del token), non un premio con il BGB che resta in giacenza;</li>
- *   <li>'Automatic deposit'/'Automatic withdrawal' sono il giro fondi con un bot, che e' lo stesso
- *       wallet: ignorati come 'Opening of trading bot position', non scartati come causale
- *       sconosciuta.</li>
+ *   <li>'Automatic deposit'/'Automatic withdrawal' (e 'Opening of trading bot position') sono il giro
+ *       fondi con un bot, i cui scambi non sono ne' nell'export ne' nell'API: depositi e prelievi da
+ *       classificare, uno per riga, anche quando USDT e BGB rientrano nello stesso secondo.</li>
  * </ul>
  */
 class ImportazioneGenericaBitgetTest {
@@ -94,15 +94,45 @@ class ImportazioneGenericaBitgetTest {
     }
 
     @Test
-    void automatic_giroFondiColBot_ignorati() throws Exception {
+    void automaticWithdrawal_prelievoDaClassificare() throws Exception {
         List<String[]> righe = new ArrayList<>();
-        righe.add(riga("13", "2025-01-24 13:42:42", "USDT", "Automatic withdrawal", "-65"));
-        righe.add(riga("12", "2025-01-24 12:56:47", "BGB", "Automatic deposit", "3.7101861"));
-        righe.add(riga("11", "2025-01-24 12:56:47", "USDT", "Automatic deposit", "38.3787648"));
+        righe.add(riga("13", "2025-03-10 10:00:00", "USDT", "Automatic withdrawal", "-50"));
 
         Importazioni.AzzeraContatori();
         List<String[]> movs = importa(righe, bitget());
         assertEquals(0, Importazioni.TrasazioniSconosciute, "non scartate come causale sconosciuta");
-        assertTrue(movs.isEmpty(), "giro fondi col bot nello stesso wallet: nessun movimento");
+        assertEquals(1, movs.size());
+        String[] m = movs.get(0);
+        assertEquals("PC", categoria(m));
+        assertEquals("Principale", m[4]);
+        assertEquals("USDT", m[8]);
+        assertEquals(0, new BigDecimal(m[10]).compareTo(new BigDecimal("-50")));
+    }
+
+    @Test
+    void automaticDeposit_usdtEBgbNelloStessoSecondo_dueDepositiDaClassificare() throws Exception {
+        List<String[]> righe = new ArrayList<>();
+        righe.add(riga("12", "2025-03-12 11:00:00", "BGB", "Automatic deposit", "4"));
+        righe.add(riga("11", "2025-03-12 11:00:00", "USDT", "Automatic deposit", "40"));
+
+        Importazioni.AzzeraContatori();
+        List<String[]> movs = importa(righe, bitget());
+        assertEquals(0, Importazioni.TrasazioniSconosciute);
+        assertEquals(2, movs.size(), "un deposito per moneta, nessuno scambio fra USDT e BGB");
+        for (String[] m : movs) {
+            assertEquals("DC", categoria(m), m[0]);
+            assertEquals("", m[8], "nessuna moneta ceduta: " + m[0]);
+        }
+    }
+
+    @Test
+    void openingOfTradingBotPosition_comeAutomaticWithdrawal() throws Exception {
+        List<String[]> righe = new ArrayList<>();
+        righe.add(riga("20", "2025-03-10 10:00:00", "USDT", "Opening of trading bot position", "-50"));
+
+        List<String[]> movs = importa(righe, bitget());
+        assertEquals(1, movs.size());
+        assertEquals("PC", categoria(movs.get(0)),
+                "l'API chiama 'Automatic withdrawal' le stesse righe: CSV e API devono dare la stessa forma");
     }
 }

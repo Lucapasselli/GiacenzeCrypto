@@ -186,6 +186,25 @@ public class LoghiImportTest {
         }
     }
 
+    @Test
+    public void ogniFornitoreDistribuitoHaIlSuoLogo() {
+        //Il logo si cerca con lo slug del nome intero mostrato nella prima combo: una nota aggiunta al
+        //"fornitore" di una configurazione ("KuCoin (utilizzabile dalla versione ...)") cambia il file cercato e
+        //la voce resta senza icona, senza nessun errore visibile
+        java.util.List<String> senzaLogo = new java.util.ArrayList<>();
+        for (java.util.Map.Entry<String, java.util.List<Importazioni_Gestione.VoceImport>> e
+                : Importazioni_Gestione.RaccogliEstrazioni().entrySet()) {
+            boolean distribuito = e.getValue().stream().anyMatch(v -> v.fileJson == null
+                    || v.fileJson.getAbsoluteFile().getParentFile().equals(
+                            new File(VarStatiche.getCartella_ConfigImport()).getAbsoluteFile()));
+            String nome = LoghiImport.Slug(e.getKey());
+            if (distribuito && !new File("config/loghi", nome + ".png").isFile()) {
+                senzaLogo.add(e.getKey() + " -> config/loghi/" + nome + ".png");
+            }
+        }
+        assertTrue(senzaLogo.isEmpty(), "fornitori della finestra di import senza logo: " + senzaLogo);
+    }
+
     //====================================================================================
     // Monogrammi (edizione Store)
     //====================================================================================

@@ -18,7 +18,7 @@ title: Esportazione e importazione da CSV
 Questa guida spiega passo passo come estrarre i file CSV dalle varie piattaforme, per poi importarli nel
 programma.
 
-> Per **Binance** e **OKX** esiste anche la strada dello scaricamento diretto **dalle API**
+> Per **Binance**, **OKX** e **Bitget** esiste anche la strada dello scaricamento diretto **dalle API**
 > (pulsante *Exchange API* della scheda dei movimenti), in genere più completa e più comoda del CSV: si veda
 > [Avvertenze e problemi noti](avvertenze-problemi-noti.html).
 
@@ -140,8 +140,8 @@ che ordine importarli sono descritti in
 
 ## OKX {#okx}
 
-Per OKX la strada consigliata è lo **scaricamento dalle API** (chiave, secret e passphrase in
-*Opzioni – ApiKey*), che recupera i conti Funding e Trading, i rendimenti di Simple Earn e, su richiesta,
+Per OKX la strada consigliata è lo **scaricamento dalle API** (chiave, secret e passphrase con il pulsante
+*Exchange API* della scheda dei movimenti), che recupera i conti Funding e Trading, i rendimenti di Simple Earn e, su richiesta,
 l'archivio storico trimestrale che risale fino al 2021.
 
 Restano comunque disponibili le due configurazioni di importazione **OKX_Funding** e **OKX_Trading** per
@@ -150,7 +150,8 @@ contiene solo una parte dei movimenti.
 
 ## Bitget {#bitget}
 
-Anche per Bitget la strada consigliata è lo **scaricamento dalle API**, in *Opzioni – ApiKey*. Sul sito di
+Anche per Bitget la strada consigliata è lo **scaricamento dalle API**, con il pulsante *Exchange API* della
+scheda dei movimenti. Sul sito di
 Bitget la chiave va creata con il solo permesso **Tax** in lettura, che basta a leggere tutto lo storico del
 conto spot, interessi di Earn compresi. La passphrase va inserita solo se la chiave ne ha una.
 

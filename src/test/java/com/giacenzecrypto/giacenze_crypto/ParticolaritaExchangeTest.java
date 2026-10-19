@@ -29,12 +29,11 @@ public class ParticolaritaExchangeTest {
     private static final File PAGINA = new File("docs/documentazione/particolarita-exchange.md");
 
     /**
-     * Fornitori la cui sezione non è ancora stata scritta: la pagina è partita da Binance e si completa un exchange
-     * alla volta. Quando una sezione viene scritta il suo slug va tolto da qui, e il test lo pretende.
+     * Fornitori la cui sezione non è ancora stata scritta. La pagina è partita da Binance ed è stata completata il
+     * 2026-10-19: un exchange nuovo può aspettare qui la sua sezione, che quando viene scritta pretende che lo slug
+     * venga tolto.
      */
-    private static final Set<String> DA_SCRIVERE = Set.of(
-            "bitget", "bybit", "bybit-eu", "coinbase", "coinbase-pro", "cointracking", "crypto-com",
-            "gate-io", "kucoin", "nexo", "nexo-pro", "okx", "tatax");
+    private static final Set<String> DA_SCRIVERE = Set.of();
 
     /** Stessa cartella di lavoro degli altri test che leggono {@code config/}: la radice del progetto */
     @BeforeEach
@@ -77,8 +76,10 @@ public class ParticolaritaExchangeTest {
                 continue;
             }
             for (Importazioni_Gestione.VoceImport voce : e.getValue()) {
-                //Una configurazione "testing" porta in coda all'estrazione un avviso che la guida non ripete
-                String estrazione = voce.estrazione.replace(" (In fase di test, utilizzo consapevole)", "");
+                //Una configurazione "testing" porta in coda all'estrazione un avviso, e una in prova la scritta
+                //"ALFA": la guida non li ripete voce per voce, li spiega una volta fra le regole generali
+                String estrazione = voce.estrazione.replace(" (In fase di test, utilizzo consapevole)", "")
+                        .replace(" (ATTENZIONE : in fase ALFA)", "");
                 if (Distribuita(voce) && !testo.contains(estrazione)) {
                     mancanti.add(e.getKey() + " - " + estrazione);
                 }

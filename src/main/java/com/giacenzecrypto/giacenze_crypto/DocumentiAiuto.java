@@ -72,8 +72,8 @@ public class DocumentiAiuto {
      * L'ancora della sezione di {@link #PARTICOLARITA_EXCHANGE} dedicata a un fornitore della finestra di
      * importazione: lo stesso slug dei loghi ({@code "Bybit EU"} diventa {@code bybit-eu}), così una sezione nuova
      * non richiede nessuna tabella di corrispondenza nel codice. Una nota fra parentesi in coda al nome non conta:
-     * le configurazioni pubblicate prima della versione che le legge si chiamano per esempio
-     * {@code "KuCoin (utilizzabile dalla versione …)"}, e la nota sparirà quando non servirà più.
+     * le configurazioni distribuite l'hanno portata fino all'ottobre 2026 ({@code "KuCoin (utilizzabile dalla
+     * versione …)"}), e una configurazione scritta dall'utente può ancora averne una.
      * @param Fornitore la voce della prima combo di {@code Importazioni_Gestione}
      * @return l'id da scrivere come {@code {#id}} sul titolo della sezione
      */

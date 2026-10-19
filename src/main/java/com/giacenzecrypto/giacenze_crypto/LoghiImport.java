@@ -418,6 +418,11 @@ public class LoghiImport {
     public interface VoceConTooltip {
         /** @return il testo del tooltip, {@code null} o vuoto per nessun tooltip */
         String tooltip();
+
+        /** @return {@code true} se la voce va scritta in corsivo (una configurazione scritta dall'utente) */
+        default boolean inCorsivo() {
+            return false;
+        }
     }
 
     public static class RenderComboConLogo extends javax.swing.DefaultListCellRenderer {
@@ -433,6 +438,10 @@ public class LoghiImport {
             if (valore instanceof VoceConTooltip v) {
                 String t = v.tooltip();
                 setToolTipText(t != null && !t.isBlank() ? t : null);
+                //super ha appena rimesso il carattere della lista: il corsivo va riapplicato a ogni riga
+                if (v.inCorsivo()) {
+                    setFont(getFont().deriveFont(getFont().getStyle() | java.awt.Font.ITALIC));
+                }
             } else {
                 setToolTipText(null);
             }

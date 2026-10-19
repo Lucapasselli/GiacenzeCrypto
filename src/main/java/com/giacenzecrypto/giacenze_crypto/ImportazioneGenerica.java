@@ -1975,6 +1975,10 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
          * altre righe con l'orario completo di {@link #formatoData}: per esempio lo storico Simple Earn di Binance, dove
          * le Real-time APR hanno solo la data e i Bonus anche l'ora. Senza (default {@code null}) quelle righe non si
          * leggono e vengono scartate. Si usa solo se la data non si legge con {@link #formatoData}.
+         * <p>L'ora è in <b>UTC</b>, qualunque sia il fuso del file: Binance mette nel nome dell'export il fuso scelto
+         * sul sito (es. {@code (UTC+2)}) e lo applica agli orari dei Bonus, ma il giorno delle Real-time è sempre il
+         * giorno UTC (stesse date negli export UTC0 e UTC+2). Letto nel fuso del file, il 1° gennaio cadrebbe il 31
+         * dicembre dell'anno prima in ora italiana.
          */
         public String oraSeSoloData = null;
         public String fuso = "UTC";
@@ -2089,6 +2093,14 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         //gruppo c'e' almeno una delle causali "con", altrimenti il tipo della regola.
         public List<RegolaSeSola> tipoSeSola = new ArrayList<>();
 
+        //--- Tipo di una causale quando la moneta della riga non e' FIAT -----------------------------
+        //Alcune causali hanno due nature a seconda della moneta: la carta Bybit scrive 'Purchase' sia
+        //per la spesa in euro (un prelievo fiat) sia per la cripto ceduta quando la spesa e' coperta da
+        //USDC, seguita da 'Coin Purchase' (gli euro ricevuti) e dal 'Purchase' in euro. Con una voce
+        //qui la riga con una moneta non FIAT (ListeSimboli.Fiat) prende questo tipo invece di quello
+        //della mappaCausali; le righe in moneta FIAT restano come sono.
+        public Map<String, String> tipoSeCrypto = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
         /** Regola "se nel gruppo non c'e' nessuna delle causali {@code con}, la causale {@code causale} ha tipo {@code tipo}". */
         public static final class RegolaSeSola {
             public final String causale;
@@ -2139,7 +2151,8 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         /**
          * Tipo interno del movimento per la riga: se una regola di {@code causalePerNota} corrisponde
          * (causale CSV giusta e colonna note contenente la sottostringa) restituisce il tipo della
-         * regola, altrimenti la normale {@link #convertiCausale(String)} della causale CSV.
+         * regola, poi la voce di {@code tipoSeCrypto} se la moneta della riga non e' FIAT, altrimenti
+         * la normale {@link #convertiCausale(String)} della causale CSV.
          */
         public String tipoMovimentoPerRiga(String[] riga) {
             String causaleCSV = getCausaleCSV(riga);
@@ -2152,6 +2165,13 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                             return r.tipo;
                         }
                     }
+                }
+            }
+            if (!tipoSeCrypto.isEmpty() && causaleCSV != null) {
+                String tipo = tipoSeCrypto.get(causaleCSV.trim());
+                if (tipo != null) {
+                    String moneta = normalizzaMoneta(safe(riga, colonnaMoneta));
+                    if (!moneta.isEmpty() && !ListeSimboli.Fiat().contains(moneta)) return tipo;
                 }
             }
             return convertiCausale(causaleCSV);
@@ -2605,6 +2625,11 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 }
             }
 
+            if (root.has("tipoSeCrypto")) {
+                JSONObject tc = root.getJSONObject("tipoSeCrypto");
+                for (String k : tc.keySet()) cfg.tipoSeCrypto.put(k.trim(), tc.getString(k));
+            }
+
             if (root.has("colonneControvalore")) {
                 JSONObject cv = root.getJSONObject("colonneControvalore");
                 if (cv.has("totale"))      cfg.colControvaloreTotale      = cv.getInt("totale");
@@ -2829,6 +2854,22 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
     }
 }
 
+/**
+ * Vero per una data letta con {@link #oraSeSoloData}: il solo giorno, senza ora, in una configurazione che lo prevede.
+ * Quelle righe sono giorni UTC, e il fuso del file non si applica.
+ */
+private boolean isSoloGiorno(String dataCSV) {
+    if (oraSeSoloData == null || oraSeSoloData.isBlank() || dataCSV == null) return false;
+    String s = dataCSV.trim();
+    if (s.contains(" ") || s.contains("T") || s.contains(":")) return false;
+    try {
+        LocalDateTime.parse(s, DateTimeFormatter.ofPattern(formatoData));
+        return false;
+    } catch (Exception ex) {
+        return true;
+    }
+}
+
 private LocalDateTime parseDataRaw(String dataCSV) {
     if (dataCSV == null) return null;
 
@@ -2888,7 +2929,7 @@ public long convertiDataInMillis(String dataCSV) {
         LocalDateTime ldt = parseDataRaw(dataCSV);
         if (ldt == null) return 0L;
 
-        ZoneId zonaOrigine = risolviFuso(ldt.toLocalDate());
+        ZoneId zonaOrigine = isSoloGiorno(dataCSV) ? ZoneOffset.UTC : risolviFuso(ldt.toLocalDate());
         ZonedDateTime zdt = ldt.atZone(zonaOrigine);
 
         return zdt.toInstant().toEpochMilli();
@@ -2908,7 +2949,7 @@ public String normalizzaData(String dataCSV) {
         LocalDateTime ldt = parseDataRaw(dataCSV);
         if (ldt == null) return null;
 
-        ZoneId zonaOrigine = risolviFuso(ldt.toLocalDate());
+        ZoneId zonaOrigine = isSoloGiorno(dataCSV) ? ZoneOffset.UTC : risolviFuso(ldt.toLocalDate());
         ZoneId zonaDestinazione = ZoneId.systemDefault();
 
         LocalDateTime convertita = ldt.atZone(zonaOrigine)

@@ -66,6 +66,24 @@ class ImportazioneGenericaBinanceSimpleEarnTest {
         assertEquals(0L, c.convertiDataInMillis("15/03/2026"), "un formato diverso resta illeggibile");
     }
 
+    /**
+     * L'export dal sito (Ordini, Esporta, Earn - Simple Earn, Flexible - Rewards) porta nel nome il fuso scelto, per
+     * esempio {@code (UTC+2)}: vale per gli orari dei Bonus, non per il giorno delle Real-time, che resta il giorno UTC
+     * (stesse date nell'export UTC0 dell'app). Letto nel fuso del file, il 1° gennaio finirebbe nell'anno prima.
+     */
+    @Test
+    void conIlFusoDelSito_ilSoloGiornoRestaUTC() throws Exception {
+        ConfigurazioneImport c = cfg();
+        c.fuso = "UTC+2";
+        assertEquals(Instant.parse("2026-01-01T00:00:00Z").toEpochMilli(), c.convertiDataInMillis("2026-01-01"));
+        assertEquals(Instant.parse("2026-06-24T03:40:54Z").toEpochMilli(), c.convertiDataInMillis("2026-06-24 05:40:54"),
+                "le righe con l'ora restano nel fuso del file");
+        String data = c.normalizzaData("2026-01-01");
+        assertEquals(Instant.parse("2026-01-01T00:00:00Z").toEpochMilli(),
+                java.time.LocalDateTime.parse(data, java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                        .atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli());
+    }
+
     @Test
     void senzaOraSeSoloData_laRigaConIlSoloGiornoNonSiLegge() throws Exception {
         ConfigurazioneImport c = cfg();

@@ -2,6 +2,7 @@
   "_commento": "OKX - export 'Trading History' del conto Trading unificato (file 'OKX Trading History_<periodo>~<hash>_N.csv'). Colonne: 0=id 1=Order id 2=Time 3=Trade Type 4=Symbol 5=Action 6=Amount 7=Trading Unit 8=Filled Price 9=PnL 10=Fee 11=Fee Unit 12=Position Change 13=Position Balance 14=Balance Change 15=Balance 16=Balance Unit. La prima riga del file contiene UID e tipo di account, l'intestazione vera e' la seconda.",
   "_commentoFuso": "Come per il Funding: il nome del file dice 'UTC0' ma gli orari sono nel fuso di visualizzazione dell'account (qui Europe/Rome), verificato confrontando le stesse operazioni scaricate via API. Se cambia il fuso impostato su OKX al momento dell'export, va cambiato anche qui. Dalla 1.003 (2026-10-07) vale solo per gli export che non dichiarano il fuso: quelli recenti hanno nella prima riga 'Time Zone:UTC+2' e fusoDaIntestazione fa usare quello, salvo che sia UTC+1 o UTC+2: quelli sono gli scostamenti di Europe/Rome, che resta perche' sa dell'ora legale.",
   "versione": "1.003",
+  "centralizzato": true,
   "fontePrezzoPreferita": "okx",
   "nomeExchange": "OKX",
   "estrazione": "Trading",

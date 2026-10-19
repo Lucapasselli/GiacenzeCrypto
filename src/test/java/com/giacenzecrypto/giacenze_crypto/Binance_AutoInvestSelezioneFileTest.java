@@ -27,8 +27,13 @@ public class Binance_AutoInvestSelezioneFileTest {
                 Scrivi(dir, "b.csv", "\n\nTime,Index Name,Rebalancing Coin,Rebalancing Amount,Total Rebalancing Fee\n")));
         assertEquals(TipoFile.REDEMPTION, Binance_AutoInvest.RiconosciFile(
                 Scrivi(dir, "c.csv", "Time,Index Name,Coin,Redemption Amount,Redemption Fee\n")));
-        assertEquals(TipoFile.SCONOSCIUTO, Binance_AutoInvest.RiconosciFile(
+        //Il CSV delle transazioni scelto qui per errore, nei due formati di intestazione di Binance
+        assertEquals(TipoFile.TRANSAZIONI, Binance_AutoInvest.RiconosciFile(
                 Scrivi(dir, "d.csv", "User_ID,UTC_Time,Account,Operation,Coin,Change,Remark\n")));
+        assertEquals(TipoFile.TRANSAZIONI, Binance_AutoInvest.RiconosciFile(
+                Scrivi(dir, "e.csv", "User ID,Time,Account,Operation,Coin,Change,Remark\n")));
+        assertEquals(TipoFile.SCONOSCIUTO, Binance_AutoInvest.RiconosciFile(
+                Scrivi(dir, "f.csv", "Date,Pair,Side,Price,Executed,Amount,Fee\n")));
         assertEquals(TipoFile.SCONOSCIUTO, Binance_AutoInvest.RiconosciFile(Scrivi(dir, "vuoto.csv", "")));
         assertEquals(TipoFile.SCONOSCIUTO, Binance_AutoInvest.RiconosciFile(new File(dir, "inesistente.csv")));
     }

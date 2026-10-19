@@ -39,7 +39,10 @@ import java.util.Set;
  * movimento più vicino nel tempo era a volte un giroconto fra conti di pari importo.
  * <ul>
  *   <li>deposito: quantità identica, accredito da poco prima a un'ora dopo la data del file (l'accredito
- *       arriva dopo le conferme della rete, fino a 27 minuti osservati);</li>
+ *       arriva dopo le conferme della rete, fino a 27 minuti osservati su Bybit). Solo se in quell'ora non
+ *       c'e' nessun candidato si cerca fino a 24 ore dopo: su Bybit EU sono stati osservati accrediti 62
+ *       minuti, 8 ore e 53 e 13 ore e 38 dopo, che con l'ora sola restavano senza hash. La ricerca a due
+ *       livelli non crea ambiguita' dove prima un candidato c'era;</li>
  *   <li>prelievo: entro due minuti; il file riporta l'importo netto, lo Spot il lordo (commissione di
  *       rete compresa), quindi il movimento può valere più della riga ma non meno.</li>
  * </ul>
@@ -68,6 +71,8 @@ public class Bybit_DepositiPrelievi {
 
     static final long DEPOSITO_PRIMA_MS = 2 * 60_000L;
     static final long DEPOSITO_DOPO_MS = 60 * 60_000L;
+    /** Ripiego quando entro {@link #DEPOSITO_DOPO_MS} non c'e' nessun candidato: Bybit EU accredita anche ore dopo. */
+    static final long DEPOSITO_DOPO_MAX_MS = 24 * 60 * 60_000L;
     static final long PRELIEVO_MS = 2 * 60_000L;
 
     static final String PREFISSO_NOTA = "Rete Bybit: ";
@@ -201,6 +206,9 @@ public class Bybit_DepositiPrelievi {
     static List<String> Candidati(String moneta, BigDecimal quantita, long istante, boolean deposito, Set<String> giaUsati,
             String exchange) {
         List<String> risultato = new ArrayList<>();
+        //Depositi accreditati oltre l'ora: si guardano solo se entro l'ora non c'e' nessuno, cosi' chi deposita la
+        //stessa quantita' ogni giorno non trova due candidati dove prima ne trovava uno
+        List<String> depositiTardivi = new ArrayList<>();
         for (String[] v : MappaCryptoWallet.values()) {
             if (v == null || v.length < Importazioni.ColonneTabella || giaUsati.contains(v[0])) continue;
             if (!exchange.equalsIgnoreCase(v[3].trim())) continue;
@@ -221,7 +229,11 @@ public class Bybit_DepositiPrelievi {
             long scarto = FunzioniDate.ConvertiDataIDinLong(parti[0].substring(0, 14)) - istante;
             if (deposito) {
                 if (qtaMov.compareTo(quantita) != 0) continue;
-                if (scarto < -DEPOSITO_PRIMA_MS || scarto > DEPOSITO_DOPO_MS) continue;
+                if (scarto < -DEPOSITO_PRIMA_MS || scarto > DEPOSITO_DOPO_MAX_MS) continue;
+                if (scarto > DEPOSITO_DOPO_MS) {
+                    depositiTardivi.add(v[0]);
+                    continue;
+                }
             } else {
                 //Lordo almeno pari al netto, e la commissione non più grande dell'importo netto
                 if (qtaMov.compareTo(quantita) < 0 || qtaMov.subtract(quantita).compareTo(quantita) >= 0) continue;
@@ -229,7 +241,7 @@ public class Bybit_DepositiPrelievi {
             }
             risultato.add(v[0]);
         }
-        return risultato;
+        return risultato.isEmpty() ? depositiTardivi : risultato;
     }
 
     /**

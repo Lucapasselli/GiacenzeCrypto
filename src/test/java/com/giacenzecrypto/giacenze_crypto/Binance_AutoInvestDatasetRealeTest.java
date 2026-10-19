@@ -203,4 +203,49 @@ class Binance_AutoInvestDatasetRealeTest {
         System.out.println("=== VERSO DAI PREZZI: " + (totali - diversi) + " righe su " + totali + " come la quadratura");
         assertTrue(diversi * 50 <= totali, "Verso dai prezzi sbagliato su più del 2% delle righe");
     }
+
+    /**
+     * I file di dettaglio rinominati dall'utente (niente {@code UTC2} nel nome) danno lo stesso risultato dei file
+     * col nome di Binance: il tipo viene dall'intestazione, il fuso si ricava dal contenuto.
+     */
+    @Test
+    void fileRinominati_stessoRisultato(@org.junit.jupiter.api.io.TempDir Path rinominati) throws Exception {
+        Path dati = CARTELLA.resolve("dati");
+        File csv = null;
+        List<File> dettaglio = new ArrayList<>();
+        List<File> copie = new ArrayList<>();
+        for (File f : dati.toFile().listFiles()) {
+            if (f.getName().startsWith("Binance_Transaction_History")) csv = f;
+            else if (f.getName().contains("Auto_Invest_History")) dettaglio.add(f);
+        }
+        assumeTrue(csv != null && !dettaglio.isEmpty(), "File del dataset mancanti");
+        for (int i = 0; i < dettaglio.size(); i++) {
+            Path copia = rinominati.resolve("dettaglio_" + i + ".csv");
+            Files.copy(dettaglio.get(i).toPath(), copia);
+            copie.add(copia.toFile());
+        }
+
+        Map<String, String> colNome = new TreeMap<>();
+        MappaCryptoWallet.clear();
+        assertTrue(ImportazioneGenerica.importa(csv.getAbsolutePath(), "config/import/Binance CSV.json", false, null,
+                null, "UTC+2"));
+        Binance_AutoInvest.Abbina(dettaglio.toArray(new File[0]));
+        MappaCryptoWallet.forEach((k, v) -> colNome.put(k, v[5] + "|" + v[18] + "|" + v[10] + "|" + v[13]));
+
+        Map<String, String> senzaNome = new TreeMap<>();
+        MappaCryptoWallet.clear();
+        assertTrue(ImportazioneGenerica.importa(csv.getAbsolutePath(), "config/import/Binance CSV.json", false, null,
+                null, "UTC+2"));
+        Binance_AutoInvest.Esito e = Binance_AutoInvest.Abbina(copie.toArray(new File[0]));
+        e.avvisi.forEach(a -> System.out.println("    AVVISO " + a));
+        MappaCryptoWallet.forEach((k, v) -> senzaNome.put(k, v[5] + "|" + v[18] + "|" + v[10] + "|" + v[13]));
+
+        //In caso di differenza le prime righe diverse, invece del confronto troncato delle due mappe intere
+        java.util.Set<String> chiavi = new java.util.TreeSet<>(colNome.keySet());
+        chiavi.addAll(senzaNome.keySet());
+        chiavi.stream().filter(k -> !java.util.Objects.equals(colNome.get(k), senzaNome.get(k))).limit(20)
+                .forEach(k -> System.out.println("    DIVERSO " + k + ": " + colNome.get(k) + " / " + senzaNome.get(k)));
+        assertTrue(e.avvisi.stream().anyMatch(a -> a.contains("spostati di -2 ore")), e.avvisi.toString());
+        assertEquals(colNome, senzaNome);
+    }
 }

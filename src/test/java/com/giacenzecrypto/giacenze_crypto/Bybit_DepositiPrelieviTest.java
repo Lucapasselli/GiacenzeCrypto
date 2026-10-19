@@ -100,9 +100,34 @@ class Bybit_DepositiPrelieviTest {
     }
 
     @Test
+    void unDepositoAccreditatoOreDopoSiAbbina() {
+        //Bybit EU: accredito 13 ore e 38 dopo la riga del file. Riga 20:10:00 UTC, accredito 09:48:00 UTC del
+        //giorno dopo = 11:48:00 Roma (ora legale)
+        String[] dep = movimento("20250605114800", "Deposit", "USDC", "321.5");
+        Bybit_DepositiPrelievi.Esito e = arricchisci(
+                riga("2025-06-04 20:10:00", "Deposit", "USDC", "Base Mainnet", "321.500000", "HASH8", "Completed"));
+        assertEquals(1, e.arricchiti);
+        assertEquals("HASH8", dep[24]);
+    }
+
+    @Test
+    void unDepositoEntroLOraVinceSuQuelloDelGiornoDopo() {
+        //Stessa quantita' ogni giorno: accredito 5 minuti dopo la riga e un altro 23 ore dopo
+        String[] vicino = movimento("20240115110500", "Deposit", "USDT", "100");
+        String[] giornoDopo = movimento("20240116100000", "Deposit", "USDT", "100");
+        Bybit_DepositiPrelievi.Esito e = arricchisci(
+                riga("2024-01-15 10:00:00", "Deposit", "USDT", "BSC", "100", "HASH9", "Completed"));
+        assertEquals(1, e.arricchiti);
+        assertEquals(0, e.ambigui);
+        assertEquals("HASH9", vicino[24]);
+        assertEquals("", giornoDopo[24]);
+    }
+
+    @Test
     void unDepositoConQuantitaDiversaOFuoriFinestraNonSiAbbina() {
         movimento("20240115110500", "Deposit", "USDT", "99.9");
-        movimento("20240115130000", "Deposit", "USDT", "100");
+        //Riga 10:00 UTC del 15, accredito 12:00 UTC del 16: oltre le 24 ore
+        movimento("20240116130000", "Deposit", "USDT", "100");
         Bybit_DepositiPrelievi.Esito e = arricchisci(
                 riga("2024-01-15 10:00:00", "Deposit", "USDT", "BSC", "100", "HASH5", "Completed"));
         assertEquals(0, e.arricchiti);

@@ -49,6 +49,7 @@ Ogni proprietà ha un valore predefinito. Se non la inserisci nel JSON, viene us
 "colonneControvalore": { ... },
 "mappaCausali": { ... },
 "causalePerNota": [ ... ],
+"tipoSeCrypto": { ... },
 "causaliChiuse": [ ... ],
 "causaliUscita": [ ... ],
 "causaliEntrata": [ ... ],
@@ -545,6 +546,31 @@ Caso reale (Coinbase): i premi arrivano tutti come causale `Receive` e si ricono
 ]
 ```
 
+### `tipoSeCrypto` {#tiposecrypto}
+
+**Tipo:** oggetto causale CSV → tipologia interna | **Default:** {} (nessuna voce)
+
+Dà a una causale un tipo diverso **quando la moneta della riga non è una valuta FIAT** (euro, dollaro e le
+altre valute riconosciute dal programma). Le righe della stessa causale in valuta FIAT restano col tipo
+della `mappaCausali`. Si valuta dopo `causalePerNota` e prima della `mappaCausali`. Disponibile dalla
+versione 1.0.65.07: le versioni precedenti ignorano la chiave e usano per tutte le righe il tipo della
+`mappaCausali`.
+
+Caso reale (carta Bybit): `Purchase` è la spesa in euro, ma anche la cripto ceduta quando la spesa è
+coperta da USDC. In quel caso il file scrive tre righe a un secondo l'una dall'altra: `Purchase` con gli
+USDC ceduti, `Coin Purchase` con gli euro ricevuti e `Purchase` con gli stessi euro spesi. Con la voce
+qui sotto le prime due diventano una vendita USDC → EUR e la terza un prelievo fiat, come le spese in euro.
+
+```json
+"tipoSeCrypto": { "Purchase": "SCAMBIO CRYPTO-CRYPTO" },
+"mappaCausali": {
+  "Purchase":      "TRASFERIMENTO-CRYPTO",
+  "Coin Purchase": "SCAMBIO CRYPTO-CRYPTO"
+},
+"causaliDifferite": ["Purchase", "Coin Purchase"],
+"tolleranzaSecondiConsolidamento": 1
+```
+
 ### `causaliChiuse` {#causalichiuse}
 
 **Tipo:** array di stringhe (tipologie interne)
@@ -934,6 +960,12 @@ Indica che questo file è gestito centralmente dal repository ufficiale. All'avv
 
 I file creati localmente dall'utente non devono avere centralizzato: true, altrimenti potrebbero essere cancellati involontariamente.
 
+Un file senza `centralizzato: true` è per il programma una **configurazione personalizzata**: nella finestra di
+importazione compare con il prefisso *Personalizzata:* davanti al nome dell'estrazione, in corsivo nell'elenco e dopo
+le voci ufficiali dello stesso exchange. Il suggerimento che compare passando il mouse sulla voce indica il nome del
+file e la cartella in cui si trova. Serve a riconoscerla anche quando dichiara lo stesso `nomeExchange` di un exchange
+già previsto dal programma, e finisce quindi sotto quell'exchange accanto alle voci ufficiali.
+
 ```json
 "centralizzato": true
 ```
@@ -1112,8 +1144,8 @@ Nella cartella di lavoro del programma si trovano due cartelle di configurazione
   dall'utente.
 
 Un file JSON messo in una di queste due cartelle compare nella finestra di importazione insieme agli
-import nativi, ordinato per fornitore ed estrazione (il vecchio prefisso `[JSON]` non c'è più: la
-distinzione è nei campi, non nell'etichetta).
+import nativi, ordinato per fornitore ed estrazione. Un file scritto dall'utente si riconosce dal prefisso
+*Personalizzata:* (vedi [`centralizzato`](#centralizzato)).
 
 I file creati personalmente vanno lasciati **senza** `centralizzato` (o con `"centralizzato": false`):
 non verranno mai eliminati automaticamente dall'aggiornamento dal repository remoto.

@@ -311,7 +311,7 @@ Defines the canonical movement type map. Each raw label from an import (e.g. `ST
   config's `nomeExchange` re-imports everything as duplicates and moves the movements to another group.
 - Config primitives with traps: `fusoPerPeriodo` (never add to a config already in use: moves the instant, duplicates on
   re-import), `fusoDaIntestazione`, `colonneCalcolate`, `regoleRiga`, `coppia`/`importoQuote`, `tipoSeSola`,
-  `noteAcquistoDaSaldo`, `walletSpecularePerCausale` (the causale must also be in `causaliChiuse`), `causaliAllertaDerivati` /
+  `noteAcquistoDaSaldo`, `tipoSeCrypto` (type by coin: FIAT keeps `mappaCausali`), `walletSpecularePerCausale` (the causale must also be in `causaliChiuse`), `causaliAllertaDerivati` /
   `causaliDerivati`. A config using new code needs a `versioneMinimaApp`.
 - **Bitget via API** (`Bitget_API`, Tax API, key permission `taxr`, Java-only, no Node): each record becomes a row of
   the CSV export and goes through `Bitget CSV.json` via `ImportazioneGenerica.importaRighe`. API type codes that differ

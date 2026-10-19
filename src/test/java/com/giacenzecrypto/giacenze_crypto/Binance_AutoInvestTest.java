@@ -396,6 +396,53 @@ class Binance_AutoInvestTest {
         assertEquals(2, Binance_AutoInvest.EstraiOffset("x_202610181852UTC+2.csv"));
         assertEquals(-3, Binance_AutoInvest.EstraiOffset("x_202610181852UTC-3_part2.csv"));
         assertEquals(0, Binance_AutoInvest.EstraiOffset("senza_fuso.csv"));
+        assertNull(Binance_AutoInvest.OffsetDalNome("senza_fuso.csv"));
+        assertEquals(0, Binance_AutoInvest.OffsetDalNome("x_202610181852UTC0_part1.csv"));
+    }
+
+    /**
+     * L'utente può rinominare i file di dettaglio: il tipo viene dall'intestazione e il fuso, che Binance scrive nel
+     * nome, si ricava dal contenuto. Due piani a un'ora di distanza con lo stesso importo (forma vista su un dataset reale, valori inventati):
+     * con gli orari del file spostati di due ore ogni esecuzione cadrebbe più vicina all'uscita dell'altra, e le
+     * uscite si abbinerebbero alle monete sbagliate.
+     */
+    @Test
+    void fileRinominati_fusoDalContenuto() throws Exception {
+        String intestazione = "Time,Holding Coin,Amount Per Period,Trading Fee,Units,From,Status";
+        String[] righe = {
+            "2023-09-18 01:00:00,IOTX,1.00000000 FDUSD,0.00200000 FDUSD,50.12345678 IOTX,Spot Wallet,Success",
+            "2023-09-18 02:00:00,ADA,1.00000000 FDUSD,0.00200000 FDUSD,200.87654321 ADA,Spot Wallet,Success"};
+        for (boolean conAltroFile : new boolean[]{false, true}) {
+            MappaCryptoWallet.clear();
+            String[] u1 = movimento("2023-09-18 01:01:10", "Auto-Invest Transaction", "FDUSD", "Crypto", "-1", "0.94");
+            String[] iotx = movimento("2023-09-18 01:11:20", "Auto-Invest Transaction", "IOTX", "Crypto", "50.12345678", "0.93");
+            String[] u2 = movimento("2023-09-18 02:01:10", "Auto-Invest Transaction", "FDUSD", "Crypto", "-1", "0.94");
+            String[] ada = movimento("2023-09-18 02:10:30", "Auto-Invest Transaction", "ADA", "Crypto", "200.87654321", "0.93");
+
+            File rinominato = file("acquisti.csv", intestazione, righe);
+            //Con un altro file col nome di Binance il fuso viene da quello, senza stime né avvisi
+            Binance_AutoInvest.Esito e = conAltroFile
+                    ? Binance_AutoInvest.Abbina(PREZZATORE, rinominato, riscatti())
+                    : Binance_AutoInvest.Abbina(PREZZATORE, rinominato);
+
+            assertEquals(2, e.esecuzioniCreate, e.dettagli.toString());
+            assertTrue(Arrays.asList(u1[20].split(",")).contains(iotx[0]), "l'uscita delle 01:01 ha pagato gli IOTX");
+            assertTrue(Arrays.asList(u2[20].split(",")).contains(ada[0]), "l'uscita delle 02:01 ha pagato gli ADA");
+            if (conAltroFile) {
+                assertTrue(e.avvisi.stream().noneMatch(a -> a.contains("fuso")), e.avvisi.toString());
+            } else {
+                assertTrue(e.avvisi.stream().anyMatch(a -> a.contains("spostati di -2 ore")), e.avvisi.toString());
+            }
+        }
+    }
+
+    /** Senza fuso nel nome e senza nulla nel CSV a cui appaiare i file, lo dice il resoconto. */
+    @Test
+    void fileRinominati_fusoNonRicavabile() throws Exception {
+        Binance_AutoInvest.Esito e = Binance_AutoInvest.Abbina(PREZZATORE, file("acquisti.csv",
+                "Time,Holding Coin,Amount Per Period,Trading Fee,Units,From,Status",
+                "2022-11-14 15:00:00,ETH,0.01000000 BUSD,--,0.00000750 ETH,Spot Wallet,Success"));
+        assertTrue(e.avvisi.stream().anyMatch(a -> a.contains("letti come UTC")), e.avvisi.toString());
     }
 
     @Test

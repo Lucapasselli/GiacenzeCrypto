@@ -251,7 +251,17 @@ public class Binance_AutoInvest {
     static Esito Abbina(Prezzatore prezzatore, File... files) throws IOException {
         Esito esito = new Esito();
         Dati dati = new Dati();
-        for (File f : files) LeggiFile(f, dati);
+        //Il fuso sta nel nome che Binance dà al file, e l'utente può averlo rinominato: un file senza fuso nel nome
+        //prende quello degli altri scelti insieme (stesso account, stesso export)
+        Integer fusoComune = null;
+        for (File f : files) {
+            fusoComune = OffsetDalNome(f.getName());
+            if (fusoComune != null) break;
+        }
+        for (File f : files) {
+            Integer fuso = OffsetDalNome(f.getName());
+            LeggiFile(f, dati, fuso != null ? fuso : fusoComune != null ? fusoComune : 0);
+        }
         esito.righeNonRiuscite = dati.righeNonRiuscite;
         esito.righeSottoscrizione = dati.acquisti.size();
         if (!dati.fileSottoscrizioni) {
@@ -261,6 +271,20 @@ public class Binance_AutoInvest {
         String exchange = "Binance";
         //1. Entrate: moneta e quantità esatte, la più vicina all'orario del file
         Candidati candidati = new Candidati();
+        if (fusoComune == null && files.length > 0) {
+            //Nessun nome dice il fuso: lo si ricava dal contenuto, prima di abbinare, e vale per tutti e tre i file
+            Long stima = StimaFusoDalContenuto(dati, candidati);
+            if (stima == null) {
+                esito.avvisi.add("Il nome dei file non dice il fuso orario (UTC...) e dal contenuto non si ricava:"
+                        + " gli orari dei file sono stati letti come UTC.");
+            } else if (stima != 0) {
+                for (Acquisto a : dati.acquisti) a.ts += stima;
+                for (Ribilanciamento r : dati.ribilanciamenti) r.ts += stima;
+                for (Riscatto r : dati.riscatti) r.ts += stima;
+                esito.avvisi.add("Il nome dei file non dice il fuso orario (UTC...): ricavato dal contenuto, gli orari"
+                        + " dei file sono stati spostati di " + (stima / 3600_000L) + " ore.");
+            }
+        }
         dati.acquisti.sort(Comparator.comparingLong(a -> a.ts));
         Set<String[]> usate = Collections.newSetFromMap(new IdentityHashMap<>());
         for (Acquisto a : dati.acquisti) {
@@ -523,7 +547,10 @@ public class Binance_AutoInvest {
 
     /** Il tipo di un file di dettaglio, riconosciuto dall'intestazione e non dal nome (Binance li numera a parti). */
     enum TipoFile {
-        SUBSCRIPTION("Subscription"), REBALANCING("Rebalancing"), REDEMPTION("Redemption"), SCONOSCIUTO("sconosciuto");
+        SUBSCRIPTION("Subscription"), REBALANCING("Rebalancing"), REDEMPTION("Redemption"),
+        /** Il CSV delle transazioni, scelto qui per errore: si importa dalla sua voce, e non viene letto. */
+        TRANSAZIONI("CSV delle transazioni Binance"),
+        SCONOSCIUTO("sconosciuto");
 
         /** Il nome con cui Binance chiama il file nella cronologia Auto-Invest */
         final String nome;
@@ -542,6 +569,7 @@ public class Binance_AutoInvest {
         if (i.contains("holding coin")) return TipoFile.SUBSCRIPTION;
         if (i.contains("rebalancing coin")) return TipoFile.REBALANCING;
         if (i.contains("redemption amount")) return TipoFile.REDEMPTION;
+        if (i.contains("operation") && i.contains("coin") && i.contains("change")) return TipoFile.TRANSAZIONI;
         return TipoFile.SCONOSCIUTO;
     }
 
@@ -583,7 +611,13 @@ public class Binance_AutoInvest {
     }
 
     static void LeggiFile(File file, Dati dati) throws IOException {
-        int offset = EstraiOffset(file.getName());
+        LeggiFile(file, dati, EstraiOffset(file.getName()));
+    }
+
+    /**
+     * @param offset il fuso degli orari del file, in ore: dal suo nome o, se è stato rinominato, da quello degli altri
+     */
+    static void LeggiFile(File file, Dati dati, int offset) throws IOException {
         List<String> righe = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
             String riga;
@@ -648,13 +682,56 @@ public class Binance_AutoInvest {
      * @return l'offset in ore, 0 se il nome non lo dice
      */
     static int EstraiOffset(String nomeFile) {
+        Integer offset = OffsetDalNome(nomeFile);
+        return offset == null ? 0 : offset;
+    }
+
+    /**
+     * @return l'offset in ore scritto nel nome del file, {@code null} se il nome non lo dice (file rinominato)
+     */
+    static Integer OffsetDalNome(String nomeFile) {
         Matcher m = OFFSET_PATTERN.matcher(nomeFile);
-        if (!m.find()) return 0;
+        if (!m.find()) return null;
         try {
             return Integer.parseInt(m.group(1).replace("+", ""));
         } catch (NumberFormatException ex) {
-            return 0;
+            return null;
         }
+    }
+
+    /** Distanza massima fra l'orario del file e un movimento del CSV, per ricavare il fuso che il nome non dice. */
+    static final long FINESTRA_STIMA_FUSO_MS = 20L * 3600_000L;
+
+    /**
+     * Il fuso dei file ricavato dal contenuto, quando nessun nome lo dice: per ogni acquisto l'entrata del CSV con
+     * moneta e quantità esatte più vicina, per ogni riscatto il riscatto del CSV, e la distanza tipica arrotondata
+     * alle ore ({@link #CorrezioneFuso}). Le quantità coincidono all'ottava cifra, quindi una coppia sbagliata è rara
+     * e la mediana la assorbe.
+     * @return la correzione da sommare agli orari dei file, {@code null} se nessun movimento si appaia
+     */
+    static Long StimaFusoDalContenuto(Dati dati, Candidati candidati) {
+        List<Long> distanze = new ArrayList<>();
+        for (Acquisto a : dati.acquisti) {
+            Long d = DistanzaPiuVicina(candidati.entrate, a.moneta, a.unita, a.ts);
+            if (d != null) distanze.add(d);
+        }
+        for (Riscatto r : dati.riscatti) {
+            Long d = DistanzaPiuVicina(candidati.riscatti, r.moneta, r.quantita, r.ts);
+            if (d != null) distanze.add(d);
+        }
+        return distanze.isEmpty() ? null : CorrezioneFuso(distanze);
+    }
+
+    private static Long DistanzaPiuVicina(List<String[]> movimenti, String moneta, BigDecimal quantita, long ts) {
+        Long migliore = null;
+        for (String[] v : movimenti) {
+            if (!moneta.equalsIgnoreCase(MonetaDi(v))) continue;
+            BigDecimal q = Quantita(v);
+            if (q == null || q.compareTo(quantita) != 0) continue;
+            long d = TsRiga(v) - ts;
+            if (Math.abs(d) <= FINESTRA_STIMA_FUSO_MS && (migliore == null || Math.abs(d) < Math.abs(migliore))) migliore = d;
+        }
+        return migliore;
     }
 
     // =============================================================================================

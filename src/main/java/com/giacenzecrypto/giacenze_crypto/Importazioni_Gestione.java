@@ -153,23 +153,57 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         final java.io.File fileJson;
         /** Testo del campo {@code descrizione} del JSON, mostrato come tooltip sulla voce; può essere vuoto */
         final String descrizione;
+        /**
+         * Configurazione JSON scritta dall'utente, cioè non marcata {@code "centralizzato": true}: il programma
+         * non la distribuisce né la aggiorna. Si vede a colpo d'occhio nella tendina (prefisso, corsivo, in coda
+         * alle voci ufficiali del fornitore), perché una configurazione personale con lo stesso
+         * {@code nomeExchange} di un exchange noto finisce sotto quel fornitore, accanto alle voci ufficiali.
+         */
+        final boolean personalizzata;
+
+        static final String PREFISSO_PERSONALIZZATA = "Personalizzata: ";
 
         VoceImport(String fornitore, String estrazione, String idNativo, java.io.File fileJson) {
             this(fornitore, estrazione, idNativo, fileJson, null);
         }
 
         VoceImport(String fornitore, String estrazione, String idNativo, java.io.File fileJson, String descrizione) {
+            this(fornitore, estrazione, idNativo, fileJson, descrizione, false);
+        }
+
+        VoceImport(String fornitore, String estrazione, String idNativo, java.io.File fileJson, String descrizione,
+                boolean personalizzata) {
             this.fornitore = fornitore;
             this.estrazione = estrazione;
             this.idNativo = idNativo;
             this.fileJson = fileJson;
             this.descrizione = descrizione == null ? "" : descrizione.trim();
+            this.personalizzata = personalizzata && fileJson != null;
         }
 
-        /** @return la descrizione da mostrare come tooltip, {@code null} se assente */
+        /**
+         * @return la descrizione da mostrare come tooltip, {@code null} se assente. Per una configurazione
+         *         personalizzata il tooltip c'è sempre: dice che è dell'utente e quale file è.
+         */
         @Override
         public String tooltip() {
-            return descrizione.isBlank() ? null : descrizione;
+            if (!personalizzata) {
+                return descrizione.isBlank() ? null : descrizione;
+            }
+            String testo = "<b>Configurazione personalizzata</b> (file " + SenzaHtml(fileJson.getName())
+                    + " nella cartella " + SenzaHtml(fileJson.getAbsoluteFile().getParentFile().getName())
+                    + "): scritta dall'utente, non distribuita né aggiornata dal programma.";
+            if (!descrizione.isBlank()) {
+                //La descrizione del JSON può essere già HTML (come nelle configurazioni ufficiali) o testo semplice
+                String d = descrizione.replaceAll("(?i)</?html>", "");
+                testo += "<br><br>" + (descrizione.regionMatches(true, 0, "<html>", 0, 6) ? d : SenzaHtml(d));
+            }
+            return "<html><div style='width:380px'>" + testo + "</div></html>";
+        }
+
+        @Override
+        public boolean inCorsivo() {
+            return personalizzata;
         }
 
         /** @return {@code true} se la voce è una configurazione JSON */
@@ -188,7 +222,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         /** Nella seconda combo si mostra solo l'estrazione: il fornitore è già nella prima. */
         @Override
         public String toString() {
-            return estrazione;
+            return personalizzata ? PREFISSO_PERSONALIZZATA + estrazione : estrazione;
         }
     }
 
@@ -206,6 +240,9 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         //Prima nel .form c'era una copia completa e disallineata dell'array Exchanges, mai usata.
         ComboBox_Exchanges.setModel(new DefaultComboBoxModel<>(new String[]{" - nessuno -"}));
         ComboBox_Exchanges.setRenderer(new LoghiImport.RenderComboConLogo());
+        //Le estrazioni non hanno logo (il renderer lo cerca solo per le voci di testo), ma da qui prendono il tooltip
+        //riga per riga e il corsivo delle configurazioni personalizzate
+        ComboBox_TipoEstrazione.setRenderer(new LoghiImport.RenderComboConLogo());
         //Si clicca per aprire la guida dell'exchange (cursore e colore qui e non nel .form, come i collegamenti
         //di Principale): il colore è quello dei link del tema, che il .form non conosce
         Label_Particolarita.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -347,6 +384,8 @@ static java.util.Map<String, java.util.List<VoceImport>> RaccogliEstrazioni() {
             String estrazione = nomeBase;
             String descrizione = null;
             boolean nonAncoraSupportata = false;
+            //Un file che non si riesce a leggere non è una configurazione distribuita: resta personalizzata
+            boolean personalizzata = true;
 
             try {
                 ImportazioneGenerica.ConfigurazioneImport cfg =
@@ -381,6 +420,7 @@ static java.util.Map<String, java.util.List<VoceImport>> RaccogliEstrazioni() {
                 }
 
                 descrizione = cfg.descrizione;
+                personalizzata = !cfg.centralizzato;
 
             } catch (Exception ex) {
                 LoggerGC.ScriviErrore(ex);
@@ -389,15 +429,18 @@ static java.util.Map<String, java.util.List<VoceImport>> RaccogliEstrazioni() {
             if (nonAncoraSupportata) {
                 continue;
             }
-            aggiungiEstrazione(estrazioniPerFornitore, new VoceImport(fornitore, estrazione, null, f, descrizione));
+            aggiungiEstrazione(estrazioniPerFornitore,
+                    new VoceImport(fornitore, estrazione, null, f, descrizione, personalizzata));
         }
     } catch (Exception ex) {
         LoggerGC.ScriviErrore(ex);
     }
 
-    //Dentro ogni fornitore le estrazioni restano in ordine alfabetico, come le voci della prima combo
+    //Dentro ogni fornitore le estrazioni restano in ordine alfabetico, come le voci della prima combo, con quelle
+    //personalizzate dopo le ufficiali
     for (java.util.List<VoceImport> elenco : estrazioniPerFornitore.values()) {
-        elenco.sort(java.util.Comparator.comparing(v -> v.estrazione, String.CASE_INSENSITIVE_ORDER));
+        elenco.sort(java.util.Comparator.<VoceImport, Boolean>comparing(v -> v.personalizzata)
+                .thenComparing(v -> v.estrazione, String.CASE_INSENSITIVE_ORDER));
     }
     return estrazioniPerFornitore;
 }
@@ -966,14 +1009,58 @@ private VoceImport voceSelezionata() {
      *         selezione, {@code ANNULLA} se rinuncia o chiude il dialogo
      */
     private SceltaAutoInvest ControllaSelezioneAutoInvest(File[] files) {
+        //Il tipo si riconosce dall'intestazione, non dal nome: l'utente può aver rinominato i file
         java.util.Set<Binance_AutoInvest.TipoFile> tipi = java.util.EnumSet.noneOf(Binance_AutoInvest.TipoFile.class);
         StringBuilder scelti = new StringBuilder();
+        StringBuilder nonLetti = new StringBuilder();
+        int riconosciuti = 0;
         for (File f : files) {
             Binance_AutoInvest.TipoFile tipo = Binance_AutoInvest.RiconosciFile(f);
             tipi.add(tipo);
             scelti.append("\n- ").append(SenzaHtml(f.getName())).append(" (")
                     .append(tipo == Binance_AutoInvest.TipoFile.SCONOSCIUTO ? "non riconosciuto" : tipo.nome)
                     .append(")");
+            if (tipo == Binance_AutoInvest.TipoFile.TRANSAZIONI) {
+                nonLetti.append("\n- ").append(SenzaHtml(f.getName())).append(": è il file delle transazioni"
+                        + " Binance, va importato con la voce CSV, prima di questa.");
+            } else if (tipo == Binance_AutoInvest.TipoFile.SCONOSCIUTO) {
+                nonLetti.append("\n- ").append(SenzaHtml(f.getName())).append(": la prima riga non è l'intestazione"
+                        + " di un file Subscription, Rebalancing o Redemption.");
+            } else {
+                riconosciuti++;
+            }
+        }
+        if (nonLetti.length() > 0) {
+            int n = files.length - riconosciuti;
+            AppDialog.Builder avviso = AppDialog.builder(this)
+                    .windowTitle("File Auto-Invest non riconosciuti")
+                    .bodyTitle(n == 1 ? "Un file scelto non è un file di dettaglio Auto-Invest"
+                            : n + " file scelti non sono file di dettaglio Auto-Invest")
+                    .showTitleInBody(true)
+                    .theme()
+                    .type(AppDialog.DialogType.WARNING)
+                    .message(riconosciuti == 0 ? "Nessuno dei file scelti può essere letto da questa voce."
+                            : "Questi file non verranno letti, gli altri sì.")
+                    .details("Il tipo di ogni file si riconosce dal contenuto, cioè dalla prima riga, non dal nome:"
+                            + " i file rinominati vanno bene. Un file aperto e risalvato con un foglio di calcolo può"
+                            + " non essere più riconosciuto, in quel caso va riscaricato da Binance.\n" + nonLetti
+                            + "\n\nFile scelti:" + scelti)
+                    .action(AppDialog.DialogAction.builder("annulla", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY)
+                            .build());
+            if (riconosciuti > 0) {
+                avviso.action(AppDialog.DialogAction.builder("prosegui", "Prosegui senza quei file")
+                        .role(AppDialog.ActionRole.NEUTRAL)
+                        .build());
+            }
+            AppDialog.DialogResult esito = avviso
+                    .action(AppDialog.DialogAction.builder("rifai", "Rifai la selezione")
+                            .role(AppDialog.ActionRole.PRIMARY)
+                            .build())
+                    .showDialog();
+            if (esito == null || !esito.isAction("prosegui")) {
+                return esito != null && esito.isAction("rifai") ? SceltaAutoInvest.RIFAI : SceltaAutoInvest.ANNULLA;
+            }
         }
         java.util.List<Binance_AutoInvest.TipoFile> mancanti = Binance_AutoInvest.MancantiPerRibilanciamenti(tipi);
         if (mancanti.isEmpty()) {

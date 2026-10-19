@@ -6,7 +6,8 @@
   "_commentoConsolidamento": "Quasi ogni riga e' un movimento a se' (interessi giornalieri, rendimenti, depositi, prelievi: tutti in causaliChiuse). Gli unici scambi sono 'BIT → MNT Auto-Conversion' (luglio 2023, migrazione del token BIT in MNT 1:1) e, dal 2026, 'Convert', con le due gambe nello stesso secondo o su secondi consecutivi: da qui il raggruppamento per secondo con tolleranza di 1 s, limitata a queste causali tramite causaliDifferite.",
   "_commento2023": "Causali viste solo nell'export 2023. 'ByStarter Subscription Freeze'/'Refund': USDT bloccati e poi restituiti per intero, ignorati. 'Transfer from Earn Account': giroconto dal vecchio conto Earn, che Bybit non esporta, ignorato come gli altri giroconti interni. La conversione BIT → MNT e' importata come scambio (permuta): se la si vuole trattare come semplice cambio di nome del token va sistemata a mano.",
   "_commento2026": "Causali viste dal 2026. 'Convert' (conversione dal menu Convert): due gambe sullo stesso secondo o su secondi consecutivi (EUR -> USDC e' a un secondo), per questo in causaliDifferite; con una gamba in euro diventa un acquisto (AC), fra due cripto uno scambio (SC), lo decide il programma dai tipi di moneta. 'Airdrop Bonus' (premi delle promozioni Bybit) e' AIRDROP, in causaliChiuse perche' due accrediti nello stesso secondo o vicini a una conversione non diventino uno scambio. 'Withdrawal Canceled' restituisce un prelievo annullato: con causaliAnnullamento il prelievo e il suo annullamento presenti nello stesso file non vengono importati (la moneta non e' mai uscita), se il prelievo non si trova, o e' gia' in archivio da un import precedente, l'annullamento entra come deposito da classificare. Le versioni dell'app senza causaliAnnullamento importano il prelievo e l'annullamento come due movimenti da classificare.",
-  "versione": "1.003",
+  "_commentoCarta": "Dalla 1.004 (2026-10-19) le righe della carta Bybit (Type 'Bybit Card') non sono piu' scartate come causali sconosciute: stesse regole di 'Bybit EU Funding.json', dove il tracciato e' stato verificato su un export reale (qui non ancora). 'Purchase' in euro e' la spesa, un prelievo fiat; una spesa coperta da una cripto sono tre righe a un secondo l'una dall'altra ('Purchase' con la cripto ceduta, 'Coin Purchase' con gli euro ricevuti, 'Purchase' con gli euro spesi): con tipoSeCrypto le prime due formano una vendita cripto -> EUR e la terza resta il prelievo fiat. 'tipoSeCrypto' esiste dalla 1.0.65.07, ma la config non dichiara 'versioneMinimaApp' di proposito: con quella le versioni precedenti nasconderebbero la voce. Le versioni precedenti ignorano tipoSeCrypto, e il 'Purchase' in cripto diventa un prelievo da classificare e il 'Coin Purchase' un deposito fiat: saldi giusti, la vendita va classificata a mano.",
+  "versione": "1.004",
   "centralizzato": true,
   "fontePrezzoPreferita": "bybit",
   "nomeExchange": "Bybit",
@@ -30,8 +31,13 @@
   "tolleranzaSecondiConsolidamento": 1,
   "causaliDifferite": [
     "BIT → MNT Auto-Conversion",
-    "Convert"
+    "Convert",
+    "Purchase",
+    "Coin Purchase"
   ],
+  "tipoSeCrypto": {
+    "Purchase":                                    "SCAMBIO CRYPTO-CRYPTO"
+  },
   "mappaCausali": {
     "Easy Earn | Flexible Interest Distribution":  "EARN",
     "Launchpool Yield":                            "EARN",
@@ -55,6 +61,8 @@
     "BIT → MNT Auto-Conversion":                   "SCAMBIO CRYPTO-CRYPTO",
     "Convert":                                     "SCAMBIO CRYPTO-CRYPTO",
     "Airdrop Bonus":                               "AIRDROP",
+    "Purchase":                                    "TRASFERIMENTO-CRYPTO",
+    "Coin Purchase":                               "SCAMBIO CRYPTO-CRYPTO",
     "Deposit":                                     "TRASFERIMENTO-CRYPTO",
     "Withdrawal":                                  "TRASFERIMENTO-CRYPTO",
     "Withdrawal Canceled":                         "TRASFERIMENTO-CRYPTO"

@@ -2,6 +2,7 @@
   "_commento": "OKX - export 'Funding History' del conto Funding (file 'OKX Funding History_<periodo>~<hash>_N.csv'). Colonne: 0=id 1=Time 2=Type 3=Amount(con segno) 4=Before Balance 5=After Balance 6=Symbol. La prima riga del file contiene UID e tipo di account, l'intestazione vera e' la seconda.",
   "_commentoFuso": "ATTENZIONE: il nome del file dice 'UTC0' ma gli orari NON sono in UTC. Verificato confrontando le stesse operazioni scaricate via API (bill 'Received' del 28/07/2026: ts API 10:02:03Z, CSV 12:02:03), gli orari sono nel fuso di visualizzazione dell'account, qui Europe/Rome. Se l'export viene fatto con un altro fuso impostato su OKX, cambiare questo campo, altrimenti gli stessi movimenti importati da CSV e da API finiscono su orari diversi. Verificato solo su righe estive (ora legale): Europe/Rome e' preferito a UTC+2 perche' gestisce da solo il cambio d'ora. Dalla 1.002 (2026-10-07) vale solo per gli export che non dichiarano il fuso: quelli recenti hanno nella prima riga 'Time Zone:UTC+8' (il fuso scelto su OKX al momento dell'export, non per forza quello italiano), e fusoDaIntestazione fa usare quello, salvo che sia UTC+1 o UTC+2: quelli sono gli scostamenti di Europe/Rome, che resta perche' sa dell'ora legale. Visto su un export reale in UTC+8 accanto a un Trading in UTC+2: con Europe/Rome fisso tutto il Funding finiva 6 ore piu' tardi.",
   "versione": "1.002",
+  "centralizzato": true,
   "fontePrezzoPreferita": "okx",
   "nomeExchange": "OKX",
   "estrazione": "Funding",

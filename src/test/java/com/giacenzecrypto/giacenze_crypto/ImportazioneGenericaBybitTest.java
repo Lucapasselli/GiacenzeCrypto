@@ -530,4 +530,58 @@ class ImportazioneGenericaBybitTest {
         assertTrue(pc[0].startsWith("20260620140500"), "resta il prelievo dopo l'annullamento (ID in ora di Roma)");
         assertEquals(1, movs.stream().filter(m -> categoria(m).equals("RW")).count());
     }
+
+    // ---- Carta Bybit nel conto Funding (Type 'Bybit Card'), forma dell'export reale, valori inventati ----
+
+    /** Spesa in euro, spesa coperta da USDC (tre righe a un secondo), spesa in euro subito dopo. */
+    private static List<String[]> righeCarta() {
+        List<String[]> righe = new ArrayList<>();
+        righe.add(rigaFunding("2025-06-02 10:00:00", "EUR", "200", "Fiat", "Deposit"));
+        righe.add(rigaFunding("2025-06-02 12:00:00", "EUR", "-40.5", "Bybit Card", "Purchase"));
+        righe.add(rigaFunding("2025-06-02 17:20:10", "USDC", "-70.25", "Bybit Card", "Purchase"));
+        righe.add(rigaFunding("2025-06-02 17:20:11", "EUR", "60", "Bybit Card", "Coin Purchase"));
+        righe.add(rigaFunding("2025-06-02 17:20:11", "EUR", "-60", "Bybit Card", "Purchase"));
+        righe.add(rigaFunding("2025-06-02 17:40:00", "EUR", "-10", "Bybit Card", "Purchase"));
+        return righe;
+    }
+
+    private static void verificaCarta(List<String[]> movs, String exchange) {
+        assertEquals(5, movs.size(), "deposito, tre prelievi fiat, una vendita: nessuna riga scartata");
+        String[] vc = movs.stream().filter(m -> categoria(m).equals("VC")).findFirst().orElseThrow();
+        assertEquals("USDC", vc[8]);
+        assertEquals(0, new BigDecimal(vc[10]).compareTo(new BigDecimal("-70.25")));
+        assertEquals("EUR", vc[11]);
+        assertEquals(0, new BigDecimal(vc[13]).compareTo(new BigDecimal("60")), "gli euro di 'Coin Purchase'");
+        assertEquals(exchange, vc[3]);
+        List<String[]> pf = movs.stream().filter(m -> categoria(m).equals("PF")).toList();
+        assertEquals(3, pf.size(), "anche il 'Purchase' in euro della spesa coperta da USDC e' un prelievo fiat");
+        BigDecimal eur = BigDecimal.ZERO;
+        for (String[] m : movs) {
+            if (m[8].equals("EUR")) eur = eur.add(new BigDecimal(m[10]));
+            if (m[11].equals("EUR")) eur = eur.add(new BigDecimal(m[13]));
+        }
+        assertEquals(0, eur.compareTo(new BigDecimal("149.5")), "saldo EUR: 200 - 40,5 + 60 - 60 - 10");
+    }
+
+    @Test
+    void bybitEU_funding_carta_spesaInEuroPrelievo_spesaInUsdcVendita() throws Exception {
+        verificaCarta(importa(righeCarta(), fundingEU()), "Bybit EU");
+    }
+
+    @Test
+    void funding_carta_stesseRegoleDiBybitEU() throws Exception {
+        verificaCarta(importa(righeCarta(), funding()), "Bybit");
+    }
+
+    @Test
+    void tipoSeCrypto_valeSoloPerLeMoneteNonFiat() throws Exception {
+        ConfigurazioneImport c = fundingEU();
+        assertEquals("SCAMBIO CRYPTO-CRYPTO", c.tipoMovimentoPerRiga(
+                rigaFunding("2025-06-02 17:20:10", "USDC", "-1", "Bybit Card", "Purchase")));
+        assertEquals("TRASFERIMENTO-CRYPTO", c.tipoMovimentoPerRiga(
+                rigaFunding("2025-06-02 17:20:11", "EUR", "-1", "Bybit Card", "Purchase")));
+        assertEquals("AIRDROP", c.tipoMovimentoPerRiga(
+                rigaFunding("2025-06-02 17:20:11", "USDC", "1", "Airdrop", "Airdrop Bonus")),
+                "una causale senza voce in tipoSeCrypto resta quella della mappaCausali");
+    }
 }

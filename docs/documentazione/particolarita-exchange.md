@@ -32,7 +32,8 @@ Exchange e piattaforme: [Binance](#binance) · [Bitget](#bitget) · [Bybit](#byb
   nuovi ma completano o sistemano quelli già importati dal file principale, che quindi deve essere già
   in archivio.
 - **Non rinominare i file scaricati** quando il nome contiene il fuso orario (Binance lo scrive nel
-  nome): il programma lo usa per collocare i movimenti all'ora giusta.
+  nome): il programma lo usa per collocare i movimenti all'ora giusta. Fanno eccezione i file di
+  dettaglio Auto-Invest di Binance (vedi [più sotto](#binance-auto-invest)).
 - **Non aprire e risalvare i file** con un foglio di calcolo (Excel, LibreOffice, Google Sheets) o un
   editor prima di importarli: il salvataggio può cambiare date, numeri, separatori o codifica, e il file
   non viene più letto correttamente. Se è successo, si riscarica una copia nuova dall'exchange.
@@ -136,13 +137,35 @@ Simple Earn Flessibile paga due tipi di ricompensa:
 Senza le Real-time APR le ricompense risultano più basse del vero, e dopo un prelievo totale da
 Binance compaiono **giacenze negative** pari alle ricompense mancanti.
 
-**Dove si scarica**: dall'app di Binance, *Assets – Earn – Flexible – Rewards*, icona di download. Il
-file si importa con la voce *Simple Earn Flessibile - Real-time APR*, in qualunque momento rispetto al
-file delle transazioni. Le righe Bonus Tiered APR dello stesso file vengono ignorate, perché sono già
+**Dove si scarica**: lo stesso file si ottiene in due modi.
+
+- **Dall'app di Binance**: *Assets – Earn – Flexible – Rewards*, icona di download.
+- **Dal sito**: nel *Download Center*
+  ([binance.com/en/my/download-center](https://www.binance.com/en/my/download-center)) si scelgono
+  *Data Type* **Earn - Simple Earn**, *Type* **Flexible - Rewards**, il periodo (*Time Range*) e il
+  formato **CSV**, poi **Generate**. Il periodo si sceglie liberamente: conviene prendere tutto quello
+  in cui si è usato Simple Earn Flessibile, oppure dividerlo in più export e importarli tutti. Come per
+  il file delle transazioni, Binance prepara il file e lo rende scaricabile più tardi dalla stessa
+  pagina, e limita il numero di export che si possono generare ogni mese.
+
+I due file sono identici: stesse colonne (*Time, Coin, Amount, Type*) e stesse righe. Cambia solo il
+fuso orario, che il sito lascia scegliere e scrive nel nome del file, per esempio `(UTC+2)`. Conviene
+scegliere **UTC+0**, come per il file delle transazioni. Dalla versione 1.0.66 va bene anche un altro
+fuso, purché il file non venga rinominato. Le versioni precedenti, con un fuso diverso da UTC, spostano
+le ricompense Real-time di qualche ora.
+
+> **Attenzione** — con un altro *Type* il Download Center dà un altro storico di Simple Earn, con cinque colonne
+> (data, prodotto, tipo, quantità, moneta) e i tipi *Subscribe*, *Redeem* e *Income*. Non contiene le
+> Real-time APR e, importato con questa voce, viene scartato riga per riga come causale sconosciuta.
+> Serve il tipo **Flexible - Rewards**.
+
+Il file si importa con la voce *Simple Earn Flessibile - Real-time APR*, in qualunque momento rispetto
+al file delle transazioni. Le righe Bonus Tiered APR dello stesso file vengono ignorate, perché sono già
 in archivio.
 
-Le Real-time APR nel file hanno solo il giorno, senza l'ora: il programma le registra all'inizio della
-giornata (00:00 UTC), così una ricompensa del 31 dicembre resta nell'anno giusto anche in ora italiana.
+Le Real-time APR nel file hanno solo il giorno, senza l'ora, e il giorno è sempre quello UTC, qualunque
+fuso si sia scelto per l'export. Il programma le registra all'inizio di quella giornata (00:00 UTC), così
+una ricompensa del 31 dicembre resta nell'anno giusto anche in ora italiana.
 
 > **NB** — lo storico scaricabile dall'app può non arrivare agli anni più vecchi. Se dopo l'import
 > restano giacenze negative su Binance, la parte mancante sono probabilmente ricompense di periodi che
@@ -197,6 +220,13 @@ Il risultato è un gran numero di movimenti da classificare.
 indice) e **Redemption** (i riscatti). Si importano con la voce *Dettaglio Auto-Invest*, **dopo** il
 file delle transazioni, scegliendoli **tutti insieme** nella finestra di selezione (anche se Binance li
 ha divisi in più parti). Chi non ha mai usato piani legati a un indice avrà solo il file Subscription.
+
+**I file si possono rinominare.** Il programma riconosce il tipo di ciascun file dal contenuto (la prima
+riga), non dal nome. Il fuso orario invece Binance lo scrive solo nel nome (per esempio `UTC2`): se un
+file l'ha perso lo prende dagli altri file scelti insieme, e se l'hanno perso tutti lo ricava dal
+confronto con i movimenti del file delle transazioni, e il resoconto lo dice. Un file scelto che non è
+un file di dettaglio Auto-Invest, per esempio il file delle transazioni, viene segnalato prima di
+iniziare, e si può rifare la selezione o proseguire senza quel file.
 
 **Perché tutti insieme.** Ogni file si può anche passare da solo, il programma ne riconosce il tipo
 dall'intestazione, ma il file Rebalancing da solo non basta. Non dice quali monete sono state vendute e
@@ -344,6 +374,9 @@ La guida di Bybit all'esportazione è
 - **Un prelievo annullato** ("Withdrawal Canceled") non viene importato insieme al prelievo che annulla,
   se i due stanno nello stesso file. Se il prelievo era già in archivio da un import precedente,
   l'annullamento entra come deposito da classificare.
+- **La carta Bybit** (righe "Bybit Card" del Funding): una spesa in euro diventa un prelievo fiat, una
+  spesa coperta da una cripto una vendita della cripto in euro seguita dal prelievo fiat, come per
+  [Bybit EU](#bybit-eu).
 - **I trading bot**: i fondi mandati al bot e quelli restituiti diventano prelievi e depositi da
   classificare. Le operazioni interne al bot non sono nel file.
 - **I derivati** (conto Derivati e perpetui dell'UTA): il risultato e il funding vengono sommati per
@@ -383,10 +416,16 @@ conti**, Funding e Unified Trading Account.
 - **Convert**: con una gamba in euro diventa un acquisto, fra due cripto uno scambio.
 - **Gli scambi spot**: la commissione diventa un movimento a parte.
 - **"Airdrop Bonus"** (i premi delle promozioni) diventa un airdrop.
+- **La carta Bybit**: una spesa in euro diventa un prelievo fiat. Una spesa coperta da una cripto (per
+  esempio USDC) diventa una vendita della cripto in euro, seguita dal prelievo fiat della spesa. Il file
+  della carta (`bybitCardTransactionHistory_…`) non va importato: riporta le stesse spese. Può capitare
+  che una spesa della carta sia più alta dell'addebito sul Funding (su un export verificato di importi
+  tondi, da 5 a 100 euro): la differenza non compare in nessun file e non viene importata.
 - **Un prelievo annullato** non viene importato insieme al prelievo che annulla, se i due stanno nello
   stesso file.
 - **Il dettaglio depositi e prelievi** funziona come per Bybit: non aggiunge movimenti, completa quelli
-  importati dal file del Funding e va letto dopo di esso.
+  importati dal file del Funding e va letto dopo di esso. I depositi vengono riconosciuti anche se Bybit
+  li accredita fino a 24 ore dopo l'orario indicato nel file.
 
 ## Coinbase {#coinbase}
 

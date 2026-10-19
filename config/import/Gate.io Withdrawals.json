@@ -7,7 +7,7 @@
   "_commentoVersione": "Usa versoForzato, aggiunto a ImportazioneGenerica solo dalla 1.0.64.01: 'versioneMinimaApp' impedisce che questo file venga proposto su un'installazione precedente (vedi Importazioni_Gestione.raccogliEstrazioni). Fino alla 1.001 'fornitore' dichiarava anche nel nome da quale versione era utilizzabile, per le installazioni che non conoscevano ancora 'versioneMinimaApp': la nota e' stata tolta perche' tutte la conoscono, e perche' cambiava anche il nome del logo cercato (config/loghi/<slug del fornitore>.png). 'fornitore' e' solo l'etichetta della finestra di import; il campo [3] dei movimenti resta 'nomeExchange' (Gate.io).",
   "versione": "1.002",
   "versioneMinimaApp": "1.0.64.01",
-  "centralizzato": false,
+  "centralizzato": true,
   "fornitore": "Gate.io",
   "nomeExchange": "Gate.io",
   "estrazione": "mywithdrawals",

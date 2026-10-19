@@ -8,7 +8,7 @@
   "_commentoVersione": "Usa 'coppia.importoQuote' e il gruppo wallet del Nexo Pro, entrambi aggiunti a ImportazioneGenerica/Principale_GruppiWalletRW dopo la 1.0.65: 'versioneMinimaApp' impedisce che questo file venga proposto su un'installazione precedente (vedi Importazioni_Gestione.raccogliEstrazioni). Fino alla 1.000 'fornitore' dichiarava anche nel nome da quale versione era utilizzabile, per le installazioni che non conoscevano ancora 'versioneMinimaApp': la nota e' stata tolta perche' tutte la conoscono, e perche' cambiava anche il nome del logo cercato (config/loghi/<slug del fornitore>.png).",
   "versione": "1.001",
   "versioneMinimaApp": "1.0.65.01",
-  "centralizzato": false,
+  "centralizzato": true,
   "fornitore": "Nexo Pro",
   "nomeExchange": "Nexo Pro",
   "estrazione": "Storico ordini (nexo_pro_trade)",

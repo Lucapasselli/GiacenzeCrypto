@@ -174,6 +174,25 @@ indice) e **Redemption** (i riscatti). Si importano con la voce *Dettaglio Auto-
 file delle transazioni, scegliendoli **tutti insieme** nella finestra di selezione (anche se Binance li
 ha divisi in più parti). Chi non ha mai usato piani legati a un indice avrà solo il file Subscription.
 
+**Perché tutti insieme.** Ogni file si può anche passare da solo, il programma ne riconosce il tipo
+dall'intestazione, ma il file Rebalancing da solo non basta. Non dice quali monete sono state vendute e
+quali comprate: il programma lo ricava dagli acquisti del file Subscription e dai riscatti del file
+Redemption, e li legge solo dai file scelti **nello stesso passaggio**. Se uno dei due manca il verso
+viene stimato dai prezzi di mercato, che è meno affidabile, e il resoconto lo segnala.
+
+- **Subscription** si può passare da solo: abbina le esecuzioni dei piani, ed è l'unico file che
+  serve a chi non ha mai usato piani legati a un indice.
+- **Redemption** da solo sistema i riscatti, ma non aiuta a ricostruire i ribilanciamenti.
+- **Rebalancing** va passato sempre insieme agli altri due. Se manca uno dei due, prima di iniziare il
+  programma lo segnala e permette di rifare la selezione, oppure di proseguire comunque.
+- Ripassare i tre file insieme in un secondo momento è sicuro: quello che è già a posto resta com'è e
+  si completa il resto.
+
+> **Attenzione** — un ribilanciamento già ricostruito non viene rifatto ai passaggi successivi. Se il
+> file Rebalancing è stato passato da solo e il verso è uscito sbagliato, ripassare i tre file insieme
+> non lo corregge: prima vanno eliminati i ribilanciamenti creati (cancellando uno scambio di un
+> ribilanciamento si toglie l'intero ribilanciamento), poi si ripassano i tre file.
+
 Il programma lavora sui movimenti già importati dal file delle transazioni, e aggiunge solo quello
 che il file non contiene:
 

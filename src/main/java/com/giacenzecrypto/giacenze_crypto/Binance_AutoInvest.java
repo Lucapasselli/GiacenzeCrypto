@@ -521,6 +521,67 @@ public class Binance_AutoInvest {
     // Lettura dei file
     // =============================================================================================
 
+    /** Il tipo di un file di dettaglio, riconosciuto dall'intestazione e non dal nome (Binance li numera a parti). */
+    enum TipoFile {
+        SUBSCRIPTION("Subscription"), REBALANCING("Rebalancing"), REDEMPTION("Redemption"), SCONOSCIUTO("sconosciuto");
+
+        /** Il nome con cui Binance chiama il file nella cronologia Auto-Invest */
+        final String nome;
+
+        TipoFile(String nome) {
+            this.nome = nome;
+        }
+    }
+
+    /**
+     * @param intestazione la prima riga del file
+     * @return il tipo di file che quell'intestazione descrive, {@link TipoFile#SCONOSCIUTO} se nessuno
+     */
+    static TipoFile TipoDaIntestazione(String intestazione) {
+        String i = intestazione == null ? "" : intestazione.toLowerCase();
+        if (i.contains("holding coin")) return TipoFile.SUBSCRIPTION;
+        if (i.contains("rebalancing coin")) return TipoFile.REBALANCING;
+        if (i.contains("redemption amount")) return TipoFile.REDEMPTION;
+        return TipoFile.SCONOSCIUTO;
+    }
+
+    /**
+     * Riconosce un file senza leggerlo tutto: serve alla finestra di importazione per controllare la scelta prima
+     * di abbinare.
+     * @param file un file scelto dall'utente
+     * @return il suo tipo, {@link TipoFile#SCONOSCIUTO} anche se il file non si legge
+     */
+    static TipoFile RiconosciFile(File file) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
+            String riga;
+            while ((riga = br.readLine()) != null) {
+                riga = riga.replace("\uFEFF", "").trim();
+                if (!riga.isEmpty()) return TipoDaIntestazione(riga);
+            }
+        } catch (IOException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return TipoFile.SCONOSCIUTO;
+    }
+
+    /**
+     * I file che mancano perché i ribilanciamenti scelti si possano ricostruire bene.
+     * <p>Il file Rebalancing non dice il verso: {@link #SegniRibilanciamenti} lo ricava dagli acquisti (Subscription)
+     * e dai riscatti (Redemption) <b>letti nello stesso passaggio</b>, e senza ripiega sui prezzi. Un ribilanciamento
+     * creato non viene più rifatto ({@link #RibilanciamentoGiaCreato} guarda solo l'orario), quindi un verso
+     * sbagliato resta anche ripassando poi tutti i file: per questo la finestra avvisa prima, e non dopo.
+     * <p>Subscription e Redemption da soli non hanno bisogno di nient'altro.
+     * @param tipi i tipi dei file scelti
+     * @return i tipi mancanti, nell'ordine Subscription, Redemption; vuoto se non c'è Rebalancing o non manca nulla
+     */
+    static List<TipoFile> MancantiPerRibilanciamenti(java.util.Collection<TipoFile> tipi) {
+        List<TipoFile> mancanti = new ArrayList<>();
+        if (!tipi.contains(TipoFile.REBALANCING)) return mancanti;
+        if (!tipi.contains(TipoFile.SUBSCRIPTION)) mancanti.add(TipoFile.SUBSCRIPTION);
+        if (!tipi.contains(TipoFile.REDEMPTION)) mancanti.add(TipoFile.REDEMPTION);
+        return mancanti;
+    }
+
     static void LeggiFile(File file, Dati dati) throws IOException {
         int offset = EstraiOffset(file.getName());
         List<String> righe = new ArrayList<>();
@@ -532,12 +593,12 @@ public class Binance_AutoInvest {
             }
         }
         if (righe.isEmpty()) return;
-        String intestazione = righe.get(0).toLowerCase();
+        TipoFile tipo = TipoDaIntestazione(righe.get(0));
         Set<String> viste = new HashSet<>();
         for (int i = 1; i < righe.size(); i++) {
             if (!viste.add(righe.get(i))) continue;
             String[] c = righe.get(i).split(",", -1);
-            if (intestazione.contains("holding coin")) {
+            if (tipo == TipoFile.SUBSCRIPTION) {
                 dati.fileSottoscrizioni = true;
                 if (c.length < 7) continue;
                 if (!c[6].trim().equalsIgnoreCase("Success")) {
@@ -557,7 +618,7 @@ public class Binance_AutoInvest {
                 a.commissione = c[3].trim();
                 a.origine = c[5].trim();
                 dati.acquisti.add(a);
-            } else if (intestazione.contains("rebalancing coin")) {
+            } else if (tipo == TipoFile.REBALANCING) {
                 dati.fileRibilanciamenti = true;
                 if (c.length < 5) continue;
                 Ribilanciamento r = new Ribilanciamento();
@@ -568,7 +629,7 @@ public class Binance_AutoInvest {
                 r.quantita = new BigDecimal(c[3].trim()).abs();
                 r.commissione = c[4].trim();
                 dati.ribilanciamenti.add(r);
-            } else if (intestazione.contains("redemption amount")) {
+            } else if (tipo == TipoFile.REDEMPTION) {
                 dati.fileRiscatti = true;
                 if (c.length < 4) continue;
                 Riscatto r = new Riscatto();

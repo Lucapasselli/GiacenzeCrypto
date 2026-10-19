@@ -477,8 +477,7 @@ private void aggiornaCollegamentoParticolarita() {
     Label_Particolarita.setVisible(fornitore != null);
     if (fornitore != null) {
         //Il nome di una configurazione dell'utente è testo libero: va reso innocuo per l'HTML della JLabel
-        String nome = DocumentiAiuto.NomeFornitore(fornitore)
-                .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        String nome = SenzaHtml(DocumentiAiuto.NomeFornitore(fornitore));
         Label_Particolarita.setText("<html><u>Particolarit&agrave; dell'import " + nome
                 + "</u>: cosa scaricare e in che ordine</html>");
     }
@@ -934,6 +933,89 @@ private VoceImport voceSelezionata() {
     }
 
     /**
+     * Fa scegliere i file Auto-Invest e, se c'è il Rebalancing senza Subscription o senza Redemption, avvisa
+     * <b>prima</b> di abbinare: il verso dei ribilanciamenti si ricava da quei due file letti nello stesso passaggio,
+     * e un ribilanciamento creato non viene più rifatto ({@link Binance_AutoInvest#MancantiPerRibilanciamenti}).
+     * L'utente può rifare la selezione, proseguire comunque o rinunciare.
+     * @return i file da abbinare, {@code null} se l'utente rinuncia
+     */
+    private File[] ScegliFileAutoInvest() {
+        while (true) {
+            File[] files = ScegliFileDaImportare(true);
+            if (files == null) {
+                return null;
+            }
+            switch (ControllaSelezioneAutoInvest(files)) {
+                case ABBINA:
+                    return files;
+                case RIFAI:
+                    continue;
+                default:
+                    return null;
+            }
+        }
+    }
+
+    /** Che cosa fare dei file Auto-Invest scelti, dopo il controllo di {@link #ControllaSelezioneAutoInvest}. */
+    private enum SceltaAutoInvest { ABBINA, RIFAI, ANNULLA }
+
+    /**
+     * Controlla i file Auto-Invest scelti e, se manca qualcosa ai ribilanciamenti, chiede che cosa fare.
+     * @param files i file scelti
+     * @return {@code ABBINA} se la scelta è completa o l'utente prosegue comunque, {@code RIFAI} per tornare alla
+     *         selezione, {@code ANNULLA} se rinuncia o chiude il dialogo
+     */
+    private SceltaAutoInvest ControllaSelezioneAutoInvest(File[] files) {
+        java.util.Set<Binance_AutoInvest.TipoFile> tipi = java.util.EnumSet.noneOf(Binance_AutoInvest.TipoFile.class);
+        StringBuilder scelti = new StringBuilder();
+        for (File f : files) {
+            Binance_AutoInvest.TipoFile tipo = Binance_AutoInvest.RiconosciFile(f);
+            tipi.add(tipo);
+            scelti.append("\n- ").append(SenzaHtml(f.getName())).append(" (")
+                    .append(tipo == Binance_AutoInvest.TipoFile.SCONOSCIUTO ? "non riconosciuto" : tipo.nome)
+                    .append(")");
+        }
+        java.util.List<Binance_AutoInvest.TipoFile> mancanti = Binance_AutoInvest.MancantiPerRibilanciamenti(tipi);
+        if (mancanti.isEmpty()) {
+            return SceltaAutoInvest.ABBINA;
+        }
+        String elencoMancanti = mancanti.size() == 2
+                ? "i file " + mancanti.get(0).nome + " e " + mancanti.get(1).nome
+                : "il file " + mancanti.get(0).nome;
+        AppDialog.DialogResult result = AppDialog.builder(this)
+                .windowTitle("File Auto-Invest incompleti")
+                .bodyTitle("Manca" + (mancanti.size() == 2 ? "no " : " ") + elencoMancanti)
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message("Il file Rebalancing va scelto insieme ai file Subscription e Redemption.")
+                .details("Il file Rebalancing non dice quali monete sono state vendute e quali comprate: il programma"
+                        + " lo ricava dagli acquisti del file Subscription e dai riscatti del file Redemption, solo se"
+                        + " sono scelti nello stesso passaggio. Senza, il verso viene stimato dai prezzi di mercato,"
+                        + " e un ribilanciamento ricostruito non viene rifatto ai passaggi successivi: per correggerlo"
+                        + " andrebbe prima cancellato.\n\nFile scelti:" + scelti)
+                .action(AppDialog.DialogAction.builder("annulla", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("prosegui", "Prosegui comunque")
+                        .role(AppDialog.ActionRole.NEUTRAL)
+                        .build())
+                .action(AppDialog.DialogAction.builder("rifai", "Rifai la selezione")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .showDialog();
+        if (result != null && result.isAction("prosegui")) {
+            return SceltaAutoInvest.ABBINA;
+        }
+        return result != null && result.isAction("rifai") ? SceltaAutoInvest.RIFAI : SceltaAutoInvest.ANNULLA;
+    }
+
+    /** Un nome di file dentro l'HTML di un dialogo: i caratteri che l'HTML interpreta diventano testo. */
+    private static String SenzaHtml(String testo) {
+        return testo.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    /**
      * Abbina i piani Auto-Invest ({@link Binance_AutoInvest}) in background: gli acquisti dei piani indice pagati in
      * stablecoin e i ribilanciamenti vanno prezzati, anche in rete. Alla fine il resoconto, come per il Dual Investment.
      */
@@ -1248,7 +1330,7 @@ if (voce.isJson()) {
             //Come il Dual Investment: completa i movimenti gia' importati dal CSV principale, con un resoconto suo.
             //I file Subscription, Rebalancing e Redemption vanno scelti insieme: il verso dei ribilanciamenti si
             //ricava da tutti e tre
-            File[] files = ScegliFileDaImportare(true);
+            File[] files = ScegliFileAutoInvest();
             if (files != null) {
                 AbbinaAutoInvest(files);
             }

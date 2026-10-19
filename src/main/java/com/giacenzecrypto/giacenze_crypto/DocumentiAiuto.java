@@ -34,13 +34,21 @@ public class DocumentiAiuto {
     public static final String EXPORT_IMPORT_CSV = "export-import-csv.html";
     public static final String CREAZIONE_JSON_IMPORTAZIONI = "creazione-json-importazioni-personalizzate.html";
 
+    /**
+     * Che cosa scaricare da ogni exchange, quali file accessori servono e in che ordine importarli. Una sezione per
+     * fornitore della finestra di importazione, con ancora {@link #AncoraFornitore(String)}: è la versione lunga del
+     * tooltip {@code descrizione} delle singole estrazioni, non un doppione.
+     */
+    public static final String PARTICOLARITA_EXCHANGE = "particolarita-exchange.html";
+
     /** Elenco delle novità di ogni versione: pagina sola, non ha una copia in PDF */
     public static final String NOVITA_VERSIONI = "changelog.html";
 
     /** Tutti i documenti, per le verifiche: un nome qui e nessun file pubblicato è un collegamento rotto */
     static final String[] TUTTI = {
         OPZIONI_CALCOLO_RW, DISCLAIMER, AVVERTENZE_PROBLEMI_NOTI, CALCOLO_PLUSVALENZE_OPZIONI,
-        CLASSIFICAZIONI_MOVIMENTI, EXPORT_IMPORT_CSV, CREAZIONE_JSON_IMPORTAZIONI, NOVITA_VERSIONI
+        CLASSIFICAZIONI_MOVIMENTI, EXPORT_IMPORT_CSV, CREAZIONE_JSON_IMPORTAZIONI, PARTICOLARITA_EXCHANGE,
+        NOVITA_VERSIONI
     };
 
     private DocumentiAiuto() {
@@ -52,10 +60,49 @@ public class DocumentiAiuto {
     }
 
     /**
+     * @param Ancora id di una sezione della pagina (il {@code {#id}} del Markdown), senza {@code #}
+     * @return l'indirizzo pubblico del documento, posizionato sulla sezione. Un'ancora che la pagina non ha non è un
+     *         errore: il browser apre la pagina dall'inizio.
+     */
+    static String Url(String Documento, String Ancora) {
+        return Ancora == null || Ancora.isBlank() ? Url(Documento) : Url(Documento) + "#" + Ancora;
+    }
+
+    /**
+     * L'ancora della sezione di {@link #PARTICOLARITA_EXCHANGE} dedicata a un fornitore della finestra di
+     * importazione: lo stesso slug dei loghi ({@code "Bybit EU"} diventa {@code bybit-eu}), così una sezione nuova
+     * non richiede nessuna tabella di corrispondenza nel codice. Una nota fra parentesi in coda al nome non conta:
+     * le configurazioni pubblicate prima della versione che le legge si chiamano per esempio
+     * {@code "KuCoin (utilizzabile dalla versione …)"}, e la nota sparirà quando non servirà più.
+     * @param Fornitore la voce della prima combo di {@code Importazioni_Gestione}
+     * @return l'id da scrivere come {@code {#id}} sul titolo della sezione
+     */
+    static String AncoraFornitore(String Fornitore) {
+        return LoghiImport.Slug(NomeFornitore(Fornitore));
+    }
+
+    /**
+     * @param Fornitore la voce della prima combo di {@code Importazioni_Gestione}
+     * @return il nome dell'exchange senza l'eventuale nota fra parentesi in coda, vedi {@link #AncoraFornitore}
+     */
+    static String NomeFornitore(String Fornitore) {
+        return Fornitore == null ? "" : Fornitore.replaceAll("\\s*\\([^()]*\\)\\s*$", "").trim();
+    }
+
+    /**
      * Apre il documento nel browser predefinito.
      * @param Documento una delle costanti di questa classe
      */
     public static void Apri(String Documento) {
         Funzioni.ApriWeb(Url(Documento));
+    }
+
+    /**
+     * Apre il documento nel browser predefinito, sulla sezione indicata.
+     * @param Documento una delle costanti di questa classe
+     * @param Ancora id della sezione, senza {@code #}
+     */
+    public static void Apri(String Documento, String Ancora) {
+        Funzioni.ApriWeb(Url(Documento, Ancora));
     }
 }

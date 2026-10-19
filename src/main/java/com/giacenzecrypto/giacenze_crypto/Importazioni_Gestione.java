@@ -206,6 +206,13 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         //Prima nel .form c'era una copia completa e disallineata dell'array Exchanges, mai usata.
         ComboBox_Exchanges.setModel(new DefaultComboBoxModel<>(new String[]{" - nessuno -"}));
         ComboBox_Exchanges.setRenderer(new LoghiImport.RenderComboConLogo());
+        //Si clicca per aprire la guida dell'exchange (cursore e colore qui e non nel .form, come i collegamenti
+        //di Principale): il colore è quello dei link del tema, che il .form non conosce
+        Label_Particolarita.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        java.awt.Color coloreLink = javax.swing.UIManager.getColor("Component.linkColor");
+        if (coloreLink != null) {
+            Label_Particolarita.setForeground(coloreLink);
+        }
         popolaComboTipoFile();
     }
 
@@ -286,40 +293,44 @@ private static java.util.List<java.io.File> elencoConfigurazioniImport() {
  * <p>Costruita una volta all'apertura della finestra e usata per riempire le due combo: la prima elenca
  * le chiavi, la seconda le estrazioni del fornitore scelto.
  */
-private final java.util.Map<String, java.util.List<VoceImport>> estrazioniPerFornitore =
+private java.util.Map<String, java.util.List<VoceImport>> estrazioniPerFornitore =
         new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 /**
  * Raccoglie gli import nativi e le configurazioni JSON e li raggruppa per fornitore.
  * <p>Il nome dell'estrazione è volutamente scritto senza il fornitore davanti: quello sta già nella
  * prima combo, ripeterlo allungherebbe le voci senza aggiungere informazione.
+ * <p>Statica perché la usa anche {@code ParticolaritaExchangeTest}, che verifica che ogni fornitore abbia la sua
+ * sezione nella guida {@link DocumentiAiuto#PARTICOLARITA_EXCHANGE}.
+ * @return le estrazioni per fornitore, in ordine alfabetico ignorando maiuscole e minuscole
  */
-private void raccogliEstrazioni() {
-    estrazioniPerFornitore.clear();
+static java.util.Map<String, java.util.List<VoceImport>> RaccogliEstrazioni() {
+    java.util.Map<String, java.util.List<VoceImport>> estrazioniPerFornitore =
+            new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-    aggiungiEstrazione(new VoceImport("Crypto.com",   "App CSV",          NAT_CDC_APP,        null));
-    aggiungiEstrazione(new VoceImport("Crypto.com",   "Exchange CSV",     NAT_CDC_EXCHANGE,   null));
-    aggiungiEstrazione(new VoceImport("Binance",      "Formato storico",  NAT_BINANCE_OLD,    null));
-    aggiungiEstrazione(new VoceImport("Binance",      "Financial Report", NAT_BINANCE_REPORT, null));
-    aggiungiEstrazione(new VoceImport("Binance",      "Dettaglio Dual Investment", NAT_BINANCE_DUAL_INVESTMENT, null));
-    aggiungiEstrazione(new VoceImport("Binance",      "Dettaglio Auto-Invest", NAT_BINANCE_AUTO_INVEST, null,
+    aggiungiEstrazione(estrazioniPerFornitore, new VoceImport("Crypto.com",   "App CSV",          NAT_CDC_APP,        null));
+    aggiungiEstrazione(estrazioniPerFornitore, new VoceImport("Crypto.com",   "Exchange CSV",     NAT_CDC_EXCHANGE,   null));
+    aggiungiEstrazione(estrazioniPerFornitore, new VoceImport("Binance",      "Formato storico",  NAT_BINANCE_OLD,    null));
+    aggiungiEstrazione(estrazioniPerFornitore, new VoceImport("Binance",      "Financial Report", NAT_BINANCE_REPORT, null));
+    aggiungiEstrazione(estrazioniPerFornitore, new VoceImport("Binance",      "Dettaglio Dual Investment", NAT_BINANCE_DUAL_INVESTMENT, null));
+    aggiungiEstrazione(estrazioniPerFornitore, new VoceImport("Binance",      "Dettaglio Auto-Invest", NAT_BINANCE_AUTO_INVEST, null,
             "<html><div style='width:380px'>Binance &ndash; export <b>Auto-Invest History</b>: scegliere insieme i file"
             + " Subscription, Rebalancing e Redemption (anche in pi&ugrave; parti). Non importa nuove righe: sistema i"
             + " movimenti Auto-Invest gi&agrave; importati dal CSV delle transazioni, che va quindi letto prima, e"
             + " ricostruisce acquisti, ribilanciamenti e riscatti dei piani indice sul sotto-wallet Auto-Invest.</div></html>"));
-    aggiungiEstrazione(new VoceImport("Bybit",        "Dettaglio depositi e prelievi", NAT_BYBIT_DEPOSITI_PRELIEVI, null,
+    aggiungiEstrazione(estrazioniPerFornitore, new VoceImport("Bybit",        "Dettaglio depositi e prelievi", NAT_BYBIT_DEPOSITI_PRELIEVI, null,
             "<html><div style='width:380px'>Bybit &ndash; export <b>Withdraw &amp; Deposit History</b>"
             + " (assetHistory_withdrawDepositHistory_...). Non aggiunge movimenti: completa i depositi e i"
             + " prelievi gi&agrave; importati dagli Asset Change Details di Spot e Funding con hash della"
             + " transazione, indirizzo e rete. Va quindi letto dopo di loro.</div></html>"));
-    aggiungiEstrazione(new VoceImport("Bybit EU",     "Dettaglio depositi e prelievi", NAT_BYBIT_EU_DEPOSITI_PRELIEVI, null,
+    aggiungiEstrazione(estrazioniPerFornitore, new VoceImport("Bybit EU",     "Dettaglio depositi e prelievi", NAT_BYBIT_EU_DEPOSITI_PRELIEVI, null,
             "<html><div style='width:380px'>Bybit EU &ndash; export <b>Withdraw &amp; Deposit History</b>"
             + " (assetHistory_withdrawDepositHistory_...). Non aggiunge movimenti: completa i depositi e i"
             + " prelievi gi&agrave; importati dagli Asset Change Details del Funding con hash della"
             + " transazione, indirizzo e rete. Va quindi letto dopo di loro.</div></html>"));
-    aggiungiEstrazione(new VoceImport("CoinTracking", "Formato storico",  NAT_COINTRACKING,   null));
-    aggiungiEstrazione(new VoceImport("Tatax",        "Formato storico",  NAT_TATAX_OLD,      null));
-    aggiungiEstrazione(new VoceImport("OKX",          "Formato storico",  NAT_OKX_OLD,        null));
+    aggiungiEstrazione(estrazioniPerFornitore, new VoceImport("CoinTracking", "Formato storico",  NAT_COINTRACKING,   null));
+    aggiungiEstrazione(estrazioniPerFornitore, new VoceImport("Tatax",        "Formato storico",  NAT_TATAX_OLD,      null));
+    aggiungiEstrazione(estrazioniPerFornitore, new VoceImport("OKX",          "Formato storico",  NAT_OKX_OLD,        null));
 
     try {
         for (java.io.File f : elencoConfigurazioniImport()) {
@@ -378,7 +389,7 @@ private void raccogliEstrazioni() {
             if (nonAncoraSupportata) {
                 continue;
             }
-            aggiungiEstrazione(new VoceImport(fornitore, estrazione, null, f, descrizione));
+            aggiungiEstrazione(estrazioniPerFornitore, new VoceImport(fornitore, estrazione, null, f, descrizione));
         }
     } catch (Exception ex) {
         LoggerGC.ScriviErrore(ex);
@@ -388,10 +399,12 @@ private void raccogliEstrazioni() {
     for (java.util.List<VoceImport> elenco : estrazioniPerFornitore.values()) {
         elenco.sort(java.util.Comparator.comparing(v -> v.estrazione, String.CASE_INSENSITIVE_ORDER));
     }
+    return estrazioniPerFornitore;
 }
 
 /** Registra una estrazione sotto il proprio fornitore. */
-private void aggiungiEstrazione(VoceImport voce) {
+private static void aggiungiEstrazione(java.util.Map<String, java.util.List<VoceImport>> estrazioniPerFornitore,
+        VoceImport voce) {
     estrazioniPerFornitore.computeIfAbsent(voce.fornitore, f -> new ArrayList<>()).add(voce);
 }
 
@@ -402,7 +415,7 @@ private void aggiungiEstrazione(VoceImport voce) {
  * su disco, quindi non può stare nel modello generato dal Designer.
  */
 private void popolaComboTipoFile() {
-    raccogliEstrazioni();
+    estrazioniPerFornitore = RaccogliEstrazioni();
 
     //setModel selezionerebbe la prima voce facendo scattare ComboBox_TipoFileItemStateChanged su una
     //finestra non ancora inizializzata: stacco il listener e allineo lo stato una volta sola alla fine
@@ -449,7 +462,39 @@ private void popolaComboTipoEstrazione() {
     ComboBox_TipoEstrazione.setEnabled(daScegliere);
     Label_TipoEstrazione.setEnabled(daScegliere);
 
+    aggiornaCollegamentoParticolarita();
     aggiornaStatoPerVoceSelezionata();
+}
+
+/**
+ * Riscrive il collegamento alla guida dell'exchange selezionato ({@link DocumentiAiuto#PARTICOLARITA_EXCHANGE}).
+ * <p>Segue il fornitore e non l'estrazione: la guida spiega insieme tutti i file di un exchange, accessori compresi,
+ * e l'ordine in cui caricarli. Un fornitore senza sezione nella pagina (una configurazione scritta dall'utente) apre
+ * la pagina dall'inizio.
+ */
+private void aggiornaCollegamentoParticolarita() {
+    String fornitore = fornitoreSelezionato();
+    Label_Particolarita.setVisible(fornitore != null);
+    if (fornitore != null) {
+        //Il nome di una configurazione dell'utente è testo libero: va reso innocuo per l'HTML della JLabel
+        String nome = DocumentiAiuto.NomeFornitore(fornitore)
+                .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        Label_Particolarita.setText("<html><u>Particolarit&agrave; dell'import " + nome
+                + "</u>: cosa scaricare e in che ordine</html>");
+    }
+}
+
+/** @return il fornitore selezionato nella prima combo, {@code null} se non ce n'è uno vero */
+private String fornitoreSelezionato() {
+    Object fornitore = ComboBox_TipoFile.getSelectedItem();
+    return fornitore == null || isVoceSpeciale(fornitore.toString()) ? null : fornitore.toString();
+}
+
+/** Apre la guida sulla sezione dell'exchange selezionato, o dall'inizio se non ce n'è uno. */
+private void apriParticolarita() {
+    String fornitore = fornitoreSelezionato();
+    DocumentiAiuto.Apri(DocumentiAiuto.PARTICOLARITA_EXCHANGE,
+            fornitore == null ? null : DocumentiAiuto.AncoraFornitore(fornitore));
 }
 
 /** @return l'estrazione selezionata, {@code null} se non ce n'è nessuna disponibile */
@@ -472,6 +517,7 @@ private VoceImport voceSelezionata() {
         ComboBox_TipoFile = new javax.swing.JComboBox<>();
         Label_TipoEstrazione = new javax.swing.JLabel();
         ComboBox_TipoEstrazione = new javax.swing.JComboBox<>();
+        Label_Particolarita = new javax.swing.JLabel();
         Bottone_SelezionaFile = new javax.swing.JButton();
         Label_NomeExchange = new javax.swing.JLabel();
         ScrollPane_Attenzione = new javax.swing.JScrollPane();
@@ -507,6 +553,13 @@ private VoceImport voceSelezionata() {
         ComboBox_TipoEstrazione.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 ComboBox_TipoEstrazioneItemStateChanged(evt);
+            }
+        });
+
+        Label_Particolarita.setFont(new java.awt.Font("Noto Sans", 0, 14)); // NOI18N
+        Label_Particolarita.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Label_ParticolaritaMouseClicked(evt);
             }
         });
 
@@ -601,7 +654,8 @@ private VoceImport voceSelezionata() {
                         .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(ComboBox_TipoFile, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(Label_TipoEstrazione, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(ComboBox_TipoEstrazione, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(ComboBox_TipoEstrazione, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Label_Particolarita, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 13, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(ScrollPane_Attenzione, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 403, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -621,6 +675,8 @@ private VoceImport voceSelezionata() {
                         .addComponent(Label_TipoEstrazione, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(ComboBox_TipoEstrazione, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Label_Particolarita, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(CheckBox_Sovrascrivi, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1526,6 +1582,9 @@ if (voce.isJson()) {
                 .action(AppDialog.DialogAction.builder("personalizzata", "IMPORTAZIONI PERSONALIZZATE")
                         .role(AppDialog.ActionRole.NEUTRAL)
                         .build())
+                .action(AppDialog.DialogAction.builder("particolarita", "PARTICOLARITÀ EXCHANGE")
+                        .role(AppDialog.ActionRole.NEUTRAL)
+                        .build())
                 .showDialog();
 
         if (result != null && result.getActionId() != null ){
@@ -1536,9 +1595,15 @@ if (voce.isJson()) {
                 {DocumentiAiuto.Apri(DocumentiAiuto.CREAZIONE_JSON_IMPORTAZIONI);}
             if (result.getActionId().equals("video"))
                 {Funzioni.ApriWeb("https://youtu.be/ZwYyV0-LbXk?si=Jb1jfk0ofNazshn3");}
+            if (result.getActionId().equals("particolarita"))
+                {apriParticolarita();}
         }
         
     }//GEN-LAST:event_Bottone_ManualeActionPerformed
+
+    private void Label_ParticolaritaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Label_ParticolaritaMouseClicked
+        apriParticolarita();
+    }//GEN-LAST:event_Label_ParticolaritaMouseClicked
 
     /**
      * @param args the command line arguments
@@ -1587,6 +1652,7 @@ if (voce.isJson()) {
     private javax.swing.JComboBox<String> ComboBox_TipoImport;
     private javax.swing.JLabel Label_NomeExchange;
     private javax.swing.JLabel Label_NomeWallet;
+    private javax.swing.JLabel Label_Particolarita;
     private javax.swing.JLabel Label_TipoEstrazione;
     private javax.swing.JLabel Label_TipoFile;
     private javax.swing.JLabel Label_TipoImport;

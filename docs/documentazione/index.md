@@ -15,6 +15,7 @@ scaricarla o stamparla.
 | **[Opzioni di calcolo del Quadro RW](opzioni-calcolo-rw.html)** — come vengono composti i righi del quadro W/RW, casi studio e gestione degli errori | | [PDF](opzioni-calcolo-rw.pdf) |
 | **[Classificazione dei movimenti](classificazioni-movimenti.html)** — come classificare depositi e prelievi, opzione per opzione | | [PDF](classificazioni-movimenti.pdf) |
 | **[Esportazione e importazione da CSV](export-import-csv.html)** — come estrarre i file dalle piattaforme e caricarli nel programma | | [PDF](export-import-csv.pdf) |
+| **[Particolarità degli import per exchange](particolarita-exchange.html)** — exchange per exchange, quali file scaricare, quali file accessori servono e in che ordine importarli | | [PDF](particolarita-exchange.pdf) |
 | **[Configurazione JSON per le importazioni personalizzate](creazione-json-importazioni-personalizzate.html)** — riferimento completo dei descrittori JSON | | [PDF](creazione-json-importazioni-personalizzate.pdf) |
 | **[Avvertenze e problemi noti](avvertenze-problemi-noti.html)** — limiti conosciuti e verifiche consigliate | | [PDF](avvertenze-problemi-noti.pdf) |
 | **[Disclaimer](disclaimer.html)** — termini d'uso del programma | | [PDF](disclaimer.pdf) |

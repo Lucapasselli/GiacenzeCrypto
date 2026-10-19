@@ -19,8 +19,12 @@ Questa guida spiega passo passo come estrarre i file CSV dalle varie piattaforme
 programma.
 
 > Per **Binance** e **OKX** esiste anche la strada dello scaricamento diretto **dalle API**
-> (*Opzioni – ApiKey*), in genere più completa e più comoda del CSV: si veda
+> (pulsante *Exchange API* della scheda dei movimenti), in genere più completa e più comoda del CSV: si veda
 > [Avvertenze e problemi noti](avvertenze-problemi-noti.html).
+
+> Quali file servono per ogni exchange, quali file accessori scaricare (per esempio per Simple Earn,
+> Dual Investment e Auto-Invest di Binance) e in che ordine importarli è spiegato in
+> [Particolarità degli import per exchange](particolarita-exchange.html).
 
 ## Crypto.com App {#cryptocom-app}
 
@@ -87,6 +91,10 @@ Da Crypto.com Exchange si possono scaricare due tipi di file: il **file delle tr
 
 Da Binance si possono scaricare due tipi di file: il **file delle transazioni** e il
 **report finanziario**.
+
+I file accessori di Binance (Simple Earn Flessibile, Dual Investment, Auto-Invest), quando servono e in
+che ordine importarli sono descritti in
+[Particolarità degli import per exchange](particolarita-exchange.html#binance).
 
 > **NB** — dalle prove fatte durante il 2025 il file delle transazioni risulta più accurato nei
 > movimenti.

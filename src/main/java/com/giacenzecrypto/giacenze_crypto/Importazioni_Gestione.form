@@ -43,6 +43,7 @@
                   <Component id="ComboBox_TipoFile" alignment="0" max="32767" attributes="0"/>
                   <Component id="Label_TipoEstrazione" alignment="0" max="32767" attributes="0"/>
                   <Component id="ComboBox_TipoEstrazione" alignment="0" max="32767" attributes="0"/>
+                  <Component id="Label_Particolarita" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace pref="13" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -66,6 +67,8 @@
                       <Component id="Label_TipoEstrazione" min="-2" pref="30" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="ComboBox_TipoEstrazione" min="-2" pref="40" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Label_Particolarita" min="-2" pref="30" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="CheckBox_Sovrascrivi" min="-2" pref="40" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -140,6 +143,16 @@
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;VoceImport&gt;"/>
       </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="Label_Particolarita">
+      <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Noto Sans" size="14" style="0"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Label_ParticolaritaMouseClicked"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="Bottone_SelezionaFile">
       <Properties>

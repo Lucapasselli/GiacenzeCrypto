@@ -1462,6 +1462,109 @@ public static Path getNodeExePath() {
         return Esito;
     }
 
+    /**
+     * Avvisa che uno degli script di scaricamento non ha restituito dati e che quindi non si importa nulla.
+     * @param exchangeId exchange interrogato
+     * @param script nome dello script fallito, per il log
+     */
+    private static void AvvisoScaricamentoIncompleto(String exchangeId, String script) {
+        System.err.println("Errore: lo script " + script + " non ha restituito dati, importazione da " + exchangeId + " annullata");
+        JOptionPane.showConfirmDialog(null, "Scaricamento da " + exchangeId + " non completato: una parte dei dati non e' arrivata"
+                + " (problema di connessione o risposta non valida).\nNon e' stato importato nulla, riprovare piu' tardi.",
+                "Attenzione", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+    }
+
+    /**
+     * Dopo un'importazione Binance via API: segnala cosa non è stato letto e confronta le giacenze dell'archivio con i
+     * saldi attuali di Binance ({@link GiacenzeExchange#SaldiBinance}). Le API non danno le operazioni dei bot di
+     * trading, di margin e futures e i pagamenti Pay oltre i 18 mesi: senza questo confronto la giacenza resterebbe
+     * sbagliata senza che nulla lo dica. Solo un avviso: non ferma né annulla nulla, e se i saldi non si leggono lo
+     * dice e basta. L'utente può chiedere di non rivederlo finché il contenuto resta uguale
+     * ({@link #OPZIONE_AVVISO_BINANCE_IGNORATO}): sul suo archivio completo restavano due differenze minime fisse.
+     * @param Avvisi le righe di {@link #AvvisiBinanceStaking}
+     */
+    private static void AvvisoDopoImportBinance(String exchangeId, List<String> Avvisi, Download progress) {
+        List<String> Differenze = List.of();
+        String SaldiNonLetti = null;
+        try {
+            progress.SetMessaggioAvanzamento("Confronto con i saldi di " + exchangeId + "...");
+            List<String> Problemi = new ArrayList<>();
+            Map<String, BigDecimal> Saldi = GiacenzeExchange.SaldiBinance(Problemi);
+            if (Saldi == null) SaldiNonLetti = String.join(", ", Problemi);
+            else Differenze = GiacenzeExchange.DifferenzeSaldi(
+                    GiacenzeExchange.GiacenzeArchivio(GiacenzeExchange.BINANCE, Principale.MappaCryptoWallet.values()), Saldi);
+        } catch (RuntimeException ex) {
+            LoggerGC.ScriviErrore(ex);
+            SaldiNonLetti = ex.getMessage();
+        }
+        for (String a : Avvisi) System.out.println("Binance, " + a);
+        for (String d : Differenze) System.out.println("Binance, giacenza diversa: " + d);
+        if (Avvisi.isEmpty() && Differenze.isEmpty() && SaldiNonLetti == null) return;
+        //In evidenza l'elenco, nei dettagli la spiegazione: tutto in grassetto non si leggeva
+        StringBuilder sb = new StringBuilder();
+        StringBuilder Dettagli = new StringBuilder();
+        if (!Differenze.isEmpty()) {
+            sb.append("Giacenze del programma diverse dai saldi attuali di ").append(exchangeId).append(":\n");
+            int n = 0;
+            for (String d : Differenze) {
+                if (++n > 15) {
+                    sb.append("... e altre ").append(Differenze.size() - 15).append(" monete (elenco completo nel log)\n");
+                    break;
+                }
+                sb.append(d).append('\n');
+            }
+            Dettagli.append("Le API di Binance non restituiscono le operazioni dei bot di trading, di margin e futures, né i")
+              .append(" pagamenti Binance Pay più vecchi di 18 mesi: queste si trovano solo nel file CSV della cronologia")
+              .append(" delle transazioni. Possono mancare anche movimenti precedenti al primo scaricamento.\n");
+        }
+        if (SaldiNonLetti != null) {
+            sb.append(sb.length() > 0 ? "\n" : "").append("Confronto con i saldi di ").append(exchangeId)
+              .append(" non disponibile: ").append(SaldiNonLetti).append('\n');
+        }
+        if (!Avvisi.isEmpty()) {
+            sb.append(sb.length() > 0 ? "\n" : "").append("Non importato:\n");
+            for (String a : Avvisi) sb.append(a).append('\n');
+            Dettagli.append(Dettagli.length() > 0 ? "\n" : "")
+              .append("Gli scaricamenti successivi partono dall'ultimo movimento importato: le operazioni non importate,")
+              .append(" se comprese nel periodo di questo scaricamento, non verranno riprese.\n");
+        }
+        //"Non mostrare piu'" vale per questo contenuto: se le differenze o gli avvisi cambiano anche di poco, ricompare
+        String Impronta = ImprontaAvviso(sb.toString());
+        if (Impronta.equals(DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_AVVISO_BINANCE_IGNORATO))) return;
+        try {
+            SwingUtilities.invokeAndWait(() -> {
+                AppDialog.Builder Dialogo = AppDialog.builder(null)
+                        .windowTitle("Binance")
+                        .bodyTitle("Controllo dopo l'importazione")
+                        .theme()
+                        .type(AppDialog.DialogType.WARNING)
+                        .message(sb.toString().trim())
+                        .primaryAction("ok", "Chiudi")
+                        .checkBoxField("Non mostrare più finché questo avviso resta uguale");
+                if (Dettagli.length() > 0) Dialogo.details(Dettagli.toString().trim());
+                AppDialog.DialogResult Risultato = Dialogo.showDialog();
+                if (Risultato.isChecked()) DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_AVVISO_BINANCE_IGNORATO, Impronta);
+            });
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (java.lang.reflect.InvocationTargetException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+    /** Opzione personale: impronta dell'ultimo avviso dopo l'import Binance che l'utente ha chiesto di non rivedere. */
+    static final String OPZIONE_AVVISO_BINANCE_IGNORATO = "Binance_AvvisoDopoImport_Ignorato";
+
+    /** SHA-256 del testo dell'avviso, in esadecimale: nelle opzioni si conserva l'impronta, non il testo. */
+    static String ImprontaAvviso(String Testo) {
+        try {
+            return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(Testo.getBytes(StandardCharsets.UTF_8)));
+        } catch (java.security.NoSuchAlgorithmException ex) {
+            return Integer.toHexString(Testo.hashCode());
+        }
+    }
+
     /** Id del documento NDJSON dello scaricamento in corso, a cui {@link #fetchMovimento} appende le risposte. */
     private static int IdDocumentoSessione = 0;
 
@@ -1576,7 +1679,7 @@ public static Path getNodeExePath() {
             
             //1 - RECUPERO TUTTI I MOVIMENTI TRANNE I TRADES
             progress.setTitle("Scaricamento dei dati di "+exchangeId+" tramite API");
-            String estrazioni[] = new String[]{"depositi", "prelievi", "Binance_MovimentiFiat","Binance_Conversioni","Binance_ConversioniSmall", "Binance_AssetDividend","Binance_EarnFlessibili","Binance_EarnLocked"};
+            String estrazioni[] = new String[]{"depositi", "prelievi", "Binance_MovimentiFiat","Binance_Conversioni","Binance_ConversioniSmall", "Binance_AssetDividend","Binance_EarnFlessibili","Binance_EarnLocked","Binance_Staking"};
             //String estrazioni[] = new String[]{"Binance_StakingSOL"};
             int chiamate=estrazioni.length+1;
             int j=0;
@@ -1590,12 +1693,19 @@ public static Path getNodeExePath() {
                 j++;
                 progress.SetMessaggioAvanzamento("Comunicazione con endpoint "+j+" di "+chiamate+" in corso...");
                 JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, "", script);
-                if (json != null) {
-                    Jsons.add(json);
+                //Ogni script deve rispondere: null e' un guasto (timeout di inattivita', Node o script mancante,
+                //JSON illeggibile) che ErroriNodeJS() non vede. Importare il resto lascerebbe un buco che lo
+                //scaricamento successivo, partendo dall'ultimo movimento, non colmerebbe piu'.
+                if (json == null) {
+                    //Con INTERROMPI premuto l'avviso giusto e' quello del giro successivo
+                    if (Principale.InterrompiCiclo) continue;
+                    AvvisoScaricamentoIncompleto(exchangeId, script);
+                    return null;
                 }
+                Jsons.add(json);
             }
 
-            
+
             //2 - RECUPERO I TOKEN COINVOLTI NELLE TRANSAZIONI PER CUI LA LORO SOMMA SIA DIVERSA DA ZERO
             //Adesso che ho scaricato tutti i movimenti recupero la lista dei movimenti nel formato standard di GiacenzeCrypto.
             //Conversione a secco, senza prezzi: qui servono solo le quantita' per scegliere i token dei trades, e i
@@ -1664,6 +1774,10 @@ public static Path getNodeExePath() {
             j++;
             progress.SetMessaggioAvanzamento("Comunicazione con endpoint "+j+" di "+chiamate+" in corso...");
             JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, tok, "Binance_Trades");
+            if (json == null && !Principale.InterrompiCiclo) {
+                AvvisoScaricamentoIncompleto(exchangeId, "Binance_Trades");
+                return null;
+            }
             lista.addAll(Prezzi.SenzaValorizzare(() -> getListaMovimento(json, exchangeId)));
             if (Principale.InterrompiCiclo||progress.ErroriNodeJS())
                 {
@@ -1699,6 +1813,9 @@ public static Path getNodeExePath() {
             {
                 Principale.TabellaCryptodaAggiornare=true;
             }
+            JsonObject Staking = null;
+            for (JsonObject Risposta : Jsons) if (Risposta.has("Binance_Staking") && Risposta.get("Binance_Staking").isJsonObject()) Staking = Risposta.getAsJsonObject("Binance_Staking");
+            AvvisoDopoImportBinance(exchangeId, AvvisiBinanceStaking(Staking), progress);
             //ScriviListaSuMappaCrypto non tocca i contatori statici di Importazioni: l'esito va costruito
             //dai valori che restituisce, altrimenti si mostrerebbero i numeri di un'importazione precedente.
             //Il ramo CCXT di Binance non produce causali sconosciute: quello che non sa convertire non lo genera.
@@ -3138,6 +3255,10 @@ public static Path getNodeExePath() {
             // Binance Earn Bloccato
             JsonArray rewards = json.has("Binance_Rewards") ? json.getAsJsonArray("Binance_Rewards") : new JsonArray();
             lista.addAll(convertBinanceRewards(rewards,Exchange));
+
+            // Staking SOL/ETH, RWUSD, Tax Payment di Binance Pay
+            if (json.has("Binance_Staking") && json.get("Binance_Staking").isJsonObject())
+                lista.addAll(convertBinanceStaking(json.getAsJsonObject("Binance_Staking"),Exchange));
             /*for (JsonElement s2 : earnLocked) {
                 System.out.println(s2.toString());
             }*/
@@ -3374,7 +3495,22 @@ public static Path getNodeExePath() {
 
 
 
-    
+
+    /**
+     * Stati dei depositi Binance (capital/deposit/hisrec) da non importare: 2 respinto, 7 deposito sbagliato.
+     * Gli altri restano: 1 riuscito, 0 in attesa, 6 accreditato ma non prelevabile, 8 in attesa di conferma.
+     * Quelli ancora in corso si importano perché quasi sempre vanno a buon fine, e lo scaricamento
+     * successivo, che parte dopo l'ultimo movimento, non li ritroverebbe più.
+     */
+    static final Set<String> STATI_FALLITI_DEPOSITI_BINANCE = Set.of("2", "7");
+
+    /**
+     * Stati dei prelievi Binance (capital/withdraw/history) da non importare: 1 annullato, 3 respinto,
+     * 5 fallito. Gli altri restano (0 email inviata, 2 in attesa di approvazione, 4 in lavorazione,
+     * 6 completato), per la stessa ragione dei depositi.
+     */
+    static final Set<String> STATI_FALLITI_PRELIEVI_BINANCE = Set.of("1", "3", "5");
+
 /**
  * Converte un array JSON di depositi (formato CCXT) nelle righe di movimento standard dell'applicazione,
  * ordinandoli per data di inserimento/completamento e determinando il tipo (Crypto/FIAT) in base alla
@@ -3412,6 +3548,8 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
         for (JsonElement el : objects) {
             if(Principale.InterrompiCiclo)return null;
             JSONObject obj = new JSONObject(el.toString());
+            //Un deposito respinto o sbagliato non e' mai entrato nel conto
+            if (STATI_FALLITI_DEPOSITI_BINANCE.contains(obj.optString("status", ""))) continue;
 
             String coin = obj.optString("coin", "");
             String amount = obj.optString("amount", "");
@@ -3773,6 +3911,8 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         for (JsonElement el : objects) {
             if(Principale.InterrompiCiclo)return null;
             JSONObject obj = new JSONObject(el.toString());
+            //Un prelievo annullato, respinto o fallito non e' mai uscito dal conto
+            if (STATI_FALLITI_PRELIEVI_BINANCE.contains(obj.optString("status", ""))) continue;
 
             String coin = obj.optString("coin", "");
             String amount = obj.optString("amount", "");
@@ -4334,6 +4474,166 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
    
    
    
+
+    /** Una riga da creare con {@link MovimentiCrypto#creaMovimento}: le monete, l'istante e come classificarla. */
+    private record VoceBinance(long Istante, Moneta Uscita, Moneta Entrata, String Causale, String TipoTr, String Prezzo) {}
+
+    /**
+     * Converte la risposta di {@code Scripts/Binance_Staking.js} nelle righe di movimento, con le stesse forme che
+     * l'import del CSV ({@code Binance CSV.json}) dà alle stesse operazioni:
+     * <ul>
+     * <li>staking SOL e ETH, sottoscrizione di RWUSD: uno scambio a due gambe (SOL→BNSOL, ETH→WBETH, USDC→RWUSD);</li>
+     * <li>riscatto di WBETH: uno scambio unico all'accredito dell'ETH, come la riga "WBETH2.0 - Redemption Unfreeze
+     * and Transfer" del CSV;</li>
+     * <li>riscatto di BNSOL e di RWUSD: due righe a una gamba, l'uscita alla richiesta e l'entrata all'accredito
+     * giorni dopo, come "Deduction"/"Distribute" del CSV, da abbinare poi come scambio differito;</li>
+     * <li>"Tax Payment" di Binance Pay (orderType TAX): uscita delle monete usate come cash out, al valore in euro
+     * del pagamento. Gli altri pagamenti Pay non si importano: li segnala {@link #AvvisiBinanceStaking}.</li>
+     * </ul>
+     * Si importano solo le operazioni riuscite. Un riscatto si importa se il suo accredito cade da {@code inizio} in
+     * poi: lo script li cerca da 30 giorni prima per riprendere quelli in corso all'ultimo scaricamento, e quelli
+     * accreditati prima sono già in archivio (reimportarli, con la sovrascrittura del ramo Binance, annullerebbe lo
+     * scambio differito fatto dall'utente).
+     * @param o l'oggetto {@code Binance_Staking}, oppure {@code null}
+     * @param Exchange nome dell'exchange di provenienza
+     * @return le righe convertite, mai {@code null}
+     */
+    public static List<String[]> convertBinanceStaking(JsonObject o, String Exchange) {
+        List<String[]> lista = new ArrayList<>();
+        if (o == null) return lista;
+        long Inizio = o.has("inizio") ? o.get("inizio").getAsLong() : 0L;
+        List<VoceBinance> Voci = new ArrayList<>();
+
+        for (String Chiave : new String[]{"solStaking", "ethStaking", "rwusdSottoscrizioni"}) {
+            String Causale = Chiave.startsWith("sol") ? "SOL Staking - Purchase (API)"
+                    : Chiave.startsWith("eth") ? "WBETH2.0 - Staking (API)" : "RWUSD - Subscription (API)";
+            String CampoArrivo = Chiave.startsWith("rwusd") ? "receive" : "distribute";
+            for (JsonObject r : RigheBinance(o, Chiave)) {
+                long t = LungoBinance(r, "time");
+                if (!RiuscitoBinance(r) || t < Inizio) continue;
+                Voci.add(new VoceBinance(t, MonetaBinance(r, "asset", "amount", true),
+                        MonetaBinance(r, CampoArrivo + "Asset", CampoArrivo + "Amount", false), Causale, null, null));
+            }
+        }
+        for (JsonObject r : RigheBinance(o, "ethRiscatti")) {
+            long Arrivo = LungoBinance(r, "arrivalTime");
+            if (!RiuscitoBinance(r) || Arrivo < Inizio) continue;
+            Voci.add(new VoceBinance(Arrivo, MonetaBinance(r, "asset", "amount", true),
+                    MonetaBinance(r, "distributeAsset", "distributeAmount", false),
+                    "WBETH2.0 - Redemption Unfreeze and Transfer (API)", null, null));
+        }
+        for (String Chiave : new String[]{"solRiscatti", "rwusdRiscatti"}) {
+            String Nome = Chiave.startsWith("sol") ? "SOL Staking Redemption" : "RWUSD - Redemption";
+            String CampoArrivo = Chiave.startsWith("rwusd") ? "receive" : "distribute";
+            for (JsonObject r : RigheBinance(o, Chiave)) {
+                long Arrivo = LungoBinance(r, "arrivalTime");
+                if (!RiuscitoBinance(r) || Arrivo < Inizio) continue;
+                Voci.add(new VoceBinance(LungoBinance(r, "time"), MonetaBinance(r, "asset", "amount", true), null,
+                        Nome + " - Deduction (API)", null, null));
+                Voci.add(new VoceBinance(Arrivo, null, MonetaBinance(r, CampoArrivo + "Asset", CampoArrivo + "Amount", false),
+                        Nome + " - Distribute (API)", null, null));
+            }
+        }
+        for (JsonObject r : RigheBinance(o, "pay")) {
+            if (!"TAX".equalsIgnoreCase(Testo(r, "orderType"))) continue;
+            long t = LungoBinance(r, "transactionTime");
+            if (t < Inizio || !r.has("fundsDetail") || !r.get("fundsDetail").isJsonArray()) continue;
+            JsonArray Fondi = r.getAsJsonArray("fundsDetail");
+            //Il valore in euro e' quello del pagamento, se le monete usate sono una sola
+            String Prezzo = Fondi.size() == 1 && "EUR".equalsIgnoreCase(Testo(r, "currency")) ? Testo(r, "amount") : null;
+            for (JsonElement f : Fondi) {
+                if (!f.isJsonObject()) continue;
+                Voci.add(new VoceBinance(t, MonetaBinance(f.getAsJsonObject(), "currency", "amount", true), null,
+                        "Tax Payment (API)", "CASHOUT O SIMILARE", Prezzo));
+            }
+        }
+
+        //Numerazione per istante come negli altri convertitori: ordinare prima la rende indipendente dall'ordine
+        //delle sezioni della risposta
+        Voci.sort(Comparator.comparingLong(VoceBinance::Istante));
+        String OldData = "";
+        int totMov = 0;
+        for (VoceBinance v : Voci) {
+            if (Principale.InterrompiCiclo) return lista;
+            String data = FunzioniDate.ConvertiDatadaLongAlSecondo(v.Istante());
+            totMov = data.equals(OldData) ? totMov + 1 : 1;
+            OldData = data;
+            String[] RT = MovimentiCrypto.creaMovimento(v.Uscita(), v.Entrata(), Exchange, "Principale",
+                    v.Istante(), v.Prezzo(), v.Prezzo() == null ? null : "Binance Pay", totMov, 1, null,
+                    null, "A", null, v.TipoTr(), null);
+            if (RT != null) {
+                RT[2] = "1 di " + totMov;
+                RT[7] = v.Causale();
+                RT[39] = "A"; //Fonte dati A = API Exchange
+                Importazioni.RiempiVuotiArray(RT);
+                lista.add(RT);
+            }
+        }
+        return lista;
+    }
+
+    /**
+     * Ciò che lo scaricamento di {@code Binance_Staking.js} non ha potuto importare, da mostrare all'utente: gli
+     * endpoint che Binance ha rifiutato e i pagamenti Binance Pay diversi dai Tax Payment.
+     * @param o l'oggetto {@code Binance_Staking}, oppure {@code null}
+     * @return righe di testo, vuota se non c'è nulla da segnalare
+     */
+    static List<String> AvvisiBinanceStaking(JsonObject o) {
+        List<String> Avvisi = new ArrayList<>();
+        if (o == null) return Avvisi;
+        if (o.has("nonDisponibili") && o.get("nonDisponibili").isJsonObject()) {
+            for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("nonDisponibili").entrySet()) {
+                Avvisi.add("non letto da Binance: " + e.getKey() + " (" + e.getValue().getAsString() + ")");
+            }
+        }
+        Map<String, Integer> PerTipo = new TreeMap<>();
+        for (JsonObject r : RigheBinance(o, "pay")) {
+            String Tipo = Testo(r, "orderType");
+            if (!"TAX".equalsIgnoreCase(Tipo)) PerTipo.merge(Tipo.isBlank() ? "?" : Tipo, 1, Integer::sum);
+        }
+        for (Map.Entry<String, Integer> e : PerTipo.entrySet()) {
+            Avvisi.add("Binance Pay, pagamenti di tipo " + e.getKey() + " non importati: " + e.getValue());
+        }
+        return Avvisi;
+    }
+
+    private static List<JsonObject> RigheBinance(JsonObject o, String Chiave) {
+        List<JsonObject> Righe = new ArrayList<>();
+        if (o == null || !o.has(Chiave) || !o.get(Chiave).isJsonArray()) return Righe;
+        for (JsonElement e : o.getAsJsonArray(Chiave)) if (e.isJsonObject()) Righe.add(e.getAsJsonObject());
+        return Righe;
+    }
+
+    private static String Testo(JsonObject r, String Campo) {
+        return r.has(Campo) && !r.get(Campo).isJsonNull() ? r.get(Campo).getAsString() : "";
+    }
+
+    private static long LungoBinance(JsonObject r, String Campo) {
+        try {
+            return Long.parseLong(Testo(r, Campo));
+        } catch (NumberFormatException ex) {
+            return 0L;
+        }
+    }
+
+    private static boolean RiuscitoBinance(JsonObject r) {
+        String Stato = Testo(r, "status");
+        return Stato.isBlank() || Stato.equalsIgnoreCase("SUCCESS");
+    }
+
+    /** La moneta di un campo di Binance, con la quantità resa negativa per l'uscita. */
+    private static Moneta MonetaBinance(JsonObject r, String CampoMoneta, String CampoQta, boolean Uscita) {
+        Moneta m = new Moneta();
+        m.Moneta = Testo(r, CampoMoneta);
+        m.Tipo = m.Moneta.equalsIgnoreCase("EUR") || m.Moneta.equalsIgnoreCase("USD") ? "FIAT" : "Crypto";
+        try {
+            BigDecimal q = new BigDecimal(Testo(r, CampoQta)).abs().stripTrailingZeros();
+            m.Qta = (Uscita ? q.negate() : q).toPlainString();
+        } catch (NumberFormatException ex) {
+            m.Qta = "";
+        }
+        return m;
+    }
 
     /**
      * Metodo attualmente privo di implementazione (corpo vuoto); non è l'entry point dell'applicazione (vedi {@link Giacenze_Crypto#main}).

@@ -318,7 +318,7 @@ async function trovaSerieConversione(ccxtLib, istanze, ordineEsplorazione, quote
     for (const exId of ordineEsplorazione) {
         const chiave = exId.toLowerCase();
         if (!ccxtLib[chiave]) continue;
-        const ex = (istanze && istanze[chiave]) || new ccxtLib[chiave]();
+        const ex = (istanze && istanze[chiave]) || new ccxtLib[chiave](opzioniIstanza(chiave));
         let markets;
         try {
             markets = await getMarketsSymbols(ex);
@@ -418,7 +418,7 @@ async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, sinc
             // stato nell'istanza e con un oggetto nuovo per richiesta ripartirebbe da zero ignorando
             // le chiamate precedenti. Senza `istanze` il comportamento e' identico a prima.
             const ex = (istanze && istanze[exchange_id.toLowerCase()])
-                    || new ccxtLib[exchange_id.toLowerCase()]();
+                    || new ccxtLib[exchange_id.toLowerCase()](opzioniIstanza(exchange_id.toLowerCase()));
 
             const pairInfo = await findBestPair(ex, baseSymbol);
             if (!pairInfo) return [exchange_id, [], null, [], false];
@@ -656,19 +656,35 @@ function creaIstanze(ccxtLib, exchangeIds) {
     for (const id of exchangeIds) {
         const chiave = id.toLowerCase();
         if (!ccxtLib[chiave]) continue;
-        // crypto.com dichiara a ccxt un rateLimit di 10 ms (praticamente nessun freno), ma dietro
-        // l'API c'e' Cloudflare: una raffica di richieste sullo stesso IP (misurato: oltre ~5/s
-        // sostenute) fa rispondere una pagina HTML di sfida ("Just a moment...") al posto del JSON,
-        // che ccxt non sa interpretare e rilancia come ExchangeError generico — non e' un timeout e
-        // non e' recuperabile con un retry immediato, il blocco resta attivo per la sessione. A 2
-        // richieste/s (rateLimit 500) il blocco non si e' MAI innescato su 800 richieste di prova,
-        // contro il 71% di fallimenti al rateLimit di default. Il rateLimit va passato nel
-        // COSTRUTTORE: e' li' che ccxt calcola tokenBucket.refillRate, riassegnare la proprieta'
-        // dopo la costruzione non lo aggiorna.
-        const opts = chiave === 'cryptocom' ? { rateLimit: 500 } : {};
-        istanze[chiave] = new ccxtLib[chiave](opts);
+        istanze[chiave] = new ccxtLib[chiave](opzioniIstanza(chiave));
     }
     return istanze;
+}
+
+/**
+ * Opzioni del costruttore ccxt per gli exchange il cui limite dichiarato a ccxt e' piu' largo di quello
+ * vero. Vanno passate nel COSTRUTTORE: e' li' che ccxt calcola tokenBucket.refillRate, riassegnare la
+ * proprieta' dopo la costruzione non lo aggiorna. Usata da ogni punto che crea un'istanza, anche quelle
+ * usa e getta del percorso a richiesta singola.
+ *
+ * - crypto.com dichiara un rateLimit di 10 ms (praticamente nessun freno), ma dietro l'API c'e'
+ *   Cloudflare: una raffica di richieste sullo stesso IP (misurato: oltre ~5/s sostenute) fa rispondere
+ *   una pagina HTML di sfida ("Just a moment...") al posto del JSON, che ccxt non sa interpretare e
+ *   rilancia come ExchangeError generico — non e' un timeout e non e' recuperabile con un retry
+ *   immediato, il blocco resta attivo per la sessione. A 2 richieste/s (rateLimit 500) il blocco non si
+ *   e' MAI innescato su 800 richieste di prova, contro il 71% di fallimenti al rateLimit di default.
+ * - Bitget dichiara 50 ms (20 richieste/s, mentre il commento di ccxt stesso parla di ~10/s), ma
+ *   l'endpoint delle candele storiche (v2/spot/market/history-candles) risponde 429 molto prima.
+ *   Misurato il 2026-10-17 con ccxt 4.5.77, istanza condivisa e 4 richieste in volo come nel lotto:
+ *   50 ms -> 32% di 429, 100 ms -> 21%, 200 ms -> 1,2%, 250 ms -> 0 su 250. Un 429 non ferma il
+ *   lotto, la cascata passa all'exchange successivo: il prezzo arriva da un'altra fonte, e per i token
+ *   listati solo su Bitget non arriva affatto. Nell'import dei CSV Bitget di un utente era il 13% delle
+ *   ore (380 su ~3000).
+ */
+function opzioniIstanza(chiave) {
+    if (chiave === 'cryptocom') return { rateLimit: 500 };
+    if (chiave === 'bitget') return { rateLimit: 250 };
+    return {};
 }
 
 /** Oltre questa eta' le istanze del servizio (e con loro i markets in memoria) si ricreano: e' la

@@ -167,4 +167,44 @@ class GiacenzeExchangeTest {
         assertNull(GiacenzeExchange.ExchangeDaLeggere("Binance", "Principale"));
         assertNull(GiacenzeExchange.ExchangeDaLeggere("Tutti", "Tutti"));
     }
+
+    private static String[] Mov(String exchange, String sottoWallet, String mOut, String qOut, String mIn, String qIn) {
+        String[] v = new String[46];
+        java.util.Arrays.fill(v, "");
+        v[3] = exchange;
+        v[4] = sottoWallet;
+        v[8] = mOut;
+        v[10] = qOut;
+        v[11] = mIn;
+        v[13] = qIn;
+        return v;
+    }
+
+    /** Dopo un import Binance via API: giacenza dell'archivio per moneta, tutti i sotto-wallet, solo l'exchange. */
+    @Test
+    void giacenzeArchivioSommaLeGambeDiTuttiISottoWalletDellExchange() {
+        List<String[]> m = List.of(
+                Mov("Binance", "Principale", "", "", "BTC", "0.5"),
+                Mov("Binance", "Principale", "BTC", "-0.2", "USDC", "20000"),
+                Mov("Binance", "Dual Savings", "", "", "BTC", "0.1"),
+                Mov("OKX", "Trading", "", "", "BTC", "9"));
+        Map<String, BigDecimal> g = GiacenzeExchange.GiacenzeArchivio("Binance", m);
+        assertEquals(0, new BigDecimal("0.4").compareTo(g.get("BTC")));
+        assertEquals(0, new BigDecimal("20000").compareTo(g.get("usdc")), "le monete si confrontano senza maiuscole");
+        assertEquals(2, g.size());
+    }
+
+    /**
+     * Si segnalano solo le differenze vere: la polvere (sotto 0,000001) e gli scarti entro l'1% (interessi maturati in
+     * Earn) no, una moneta che manca da una delle due parti si'.
+     */
+    @Test
+    void differenzeSaldiIgnoraPolvereEScartiPiccoli() {
+        Map<String, BigDecimal> archivio = Map.of("BTC", new BigDecimal("0.5"), "USDC", new BigDecimal("1000"),
+                "BNB", new BigDecimal("0.0000005"), "ETH", new BigDecimal("1"));
+        Map<String, BigDecimal> binance = Map.of("BTC", new BigDecimal("0.3"), "USDC", new BigDecimal("1005"),
+                "SOL", new BigDecimal("2"), "ETH", new BigDecimal("1"));
+        List<String> d = GiacenzeExchange.DifferenzeSaldi(archivio, binance);
+        assertEquals(List.of("BTC: programma 0.5, Binance 0.3", "SOL: programma 0, Binance 2"), d);
+    }
 }

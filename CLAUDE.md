@@ -321,6 +321,10 @@ Defines the canonical movement type map. Each raw label from an import (e.g. `ST
 - `girocontoFiat` (`GirocontiFiat`): euro moved between two own wallets paired as PTW/DTW; declare the rule mirrored in both configs.
 - Binance Simple Earn, Dual Investment (`Binance_DualInvestment.Abbina`, same coin vs different coin, bug C18),
   Bybit deposits/withdrawals enrichment: see the details file.
+- **Binance Auto-Invest** (`Binance_AutoInvest.Abbina`, Subscription + Rebalancing + Redemption files together): same
+  form as the Dual same-coin case on sub-wallet `Auto-Invest`. The Rebalancing file has **no direction**: the signs
+  come from the exact closing of each coin (subscriptions ± rebalancings − redemptions = 0), prices only as fallback.
+  Rebalancings are direct crypto-crypto swaps by the user's decision. Details and limits: `Analisi_Binance_AutoInvest.md`.
 - **Scambio differito**: never remove several movements with a loop over IDs collected beforehand, use `Funzioni.RimuoviMovimenti`;
   `GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito` returns `false` having touched nothing if it cannot make the
   IDs unique, and every caller must check it (bug C17). A re-import must recognise a movement that no longer has the file's form

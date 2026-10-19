@@ -10,6 +10,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -93,6 +94,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     static final String NAT_BINANCE_OLD    = "BINANCE_OLD";
     static final String NAT_BINANCE_REPORT = "BINANCE_REPORT";
     static final String NAT_BINANCE_DUAL_INVESTMENT = "BINANCE_DUAL_INVESTMENT";
+    static final String NAT_BINANCE_AUTO_INVEST = "BINANCE_AUTO_INVEST";
     static final String NAT_BYBIT_DEPOSITI_PRELIEVI = "BYBIT_DEPOSITI_PRELIEVI";
     static final String NAT_BYBIT_EU_DEPOSITI_PRELIEVI = "BYBIT_EU_DEPOSITI_PRELIEVI";
     static final String NAT_COINTRACKING   = "COINTRACKING";
@@ -300,6 +302,11 @@ private void raccogliEstrazioni() {
     aggiungiEstrazione(new VoceImport("Binance",      "Formato storico",  NAT_BINANCE_OLD,    null));
     aggiungiEstrazione(new VoceImport("Binance",      "Financial Report", NAT_BINANCE_REPORT, null));
     aggiungiEstrazione(new VoceImport("Binance",      "Dettaglio Dual Investment", NAT_BINANCE_DUAL_INVESTMENT, null));
+    aggiungiEstrazione(new VoceImport("Binance",      "Dettaglio Auto-Invest", NAT_BINANCE_AUTO_INVEST, null,
+            "<html><div style='width:380px'>Binance &ndash; export <b>Auto-Invest History</b>: scegliere insieme i file"
+            + " Subscription, Rebalancing e Redemption (anche in pi&ugrave; parti). Non importa nuove righe: sistema i"
+            + " movimenti Auto-Invest gi&agrave; importati dal CSV delle transazioni, che va quindi letto prima, e"
+            + " ricostruisce acquisti, ribilanciamenti e riscatti dei piani indice sul sotto-wallet Auto-Invest.</div></html>"));
     aggiungiEstrazione(new VoceImport("Bybit",        "Dettaglio depositi e prelievi", NAT_BYBIT_DEPOSITI_PRELIEVI, null,
             "<html><div style='width:380px'>Bybit &ndash; export <b>Withdraw &amp; Deposit History</b>"
             + " (assetHistory_withdrawDepositHistory_...). Non aggiunge movimenti: completa i depositi e i"
@@ -871,6 +878,69 @@ private VoceImport voceSelezionata() {
     }
 
     /**
+     * Abbina i piani Auto-Invest ({@link Binance_AutoInvest}) in background: gli acquisti dei piani indice pagati in
+     * stablecoin e i ribilanciamenti vanno prezzati, anche in rete. Alla fine il resoconto, come per il Dual Investment.
+     */
+    private void AbbinaAutoInvest(File[] files) {
+        java.awt.Window c = this;
+        Download progressb = new Download();
+        progressb.MostraProgressAttesa("Piani Auto-Invest", "Abbinamento in corso...");
+        Bottone_SelezionaFile.setEnabled(false);
+        Bottone_Annulla.setEnabled(false);
+        Thread thread = new Thread(() -> {
+            Binance_AutoInvest.Esito esito = null;
+            Exception errore = null;
+            //Con la linea assente i prezzi verrebbero scritti a zero: si aspetta e, se non torna, ci si ferma
+            AttesaConnessione.Apri(progressb);
+            try {
+                c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                //Niente derivati qui: senza azzerarle il resoconto ripeterebbe l'avviso di un import precedente
+                Importazioni.CausaliDerivatiSegnalate.clear();
+                esito = Binance_AutoInvest.Abbina(files);
+                if (esito.Creati() > 0 || esito.scambiDifferitiSostituiti > 0) {
+                    Principale.TabellaCryptodaAggiornare = true;
+                }
+            } catch (Exception ex) {
+                LoggerGC.ScriviErrore(ex);
+                errore = ex;
+            } finally {
+                AttesaConnessione.Chiudi();
+                c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                Bottone_SelezionaFile.setEnabled(true);
+                Bottone_Annulla.setEnabled(true);
+            }
+            final Binance_AutoInvest.Esito esitoF = esito;
+            final Exception erroreF = errore;
+            //La chiusura passa dall'EDT: se il lavoro finisce prima che la finestra modale compaia, questo gira
+            //dentro il suo ciclo di eventi e la chiude, invece di lasciarla aperta per sempre
+            SwingUtilities.invokeLater(() -> {
+                progressb.ChiudiFineLavoro();
+                if (erroreF != null) {
+                    Messaggi.WarningMessage("Piani Auto-Invest", "Errore durante la lettura dei file: " + erroreF.getMessage(), c);
+                    return;
+                }
+                Importazioni_Resoconto res = new Importazioni_Resoconto();
+                res.ImpostaValoriAutoInvest(esitoF);
+                res.setLocationRelativeTo(c);
+                res.setVisible(true);
+                //Uno scambio differito automatico rifatto cambia una permuta in un anno che può essere già dichiarato
+                if (!esitoF.riparazioni.isEmpty()) {
+                    Messaggi.InfoMessage("Scambi differiti rifatti", "Scambi differiti automatici che univano movimenti di "
+                            + "esecuzioni diverse, annullati e rifatti dal file: <b>" + esitoF.riparazioni.size() + "</b>.<br>"
+                            + "Possono cambiare le plusvalenze di quegli anni e i costi delle cessioni successive, anche in "
+                            + "anni già dichiarati:<br>" + String.join("<br>", esitoF.riparazioni) + "<br><br>"
+                            + "Premi <b>Salva</b> nella sezione 'Transazioni Crypto' per rendere permanenti le modifiche.", c);
+                }
+                dispose();
+            });
+        });
+        progressb.SetThread(thread);
+        thread.start();
+        progressb.setLocationRelativeTo(this);
+        progressb.setVisible(true);
+    }
+
+    /**
      * Somma gli esiti di piu' file importati di seguito per mostrarne un solo resoconto.
      * <p>Ogni import chiama {@link Importazioni#AzzeraContatori()}, che oltre ai contatori azzera anche le
      * causali derivati segnalate e i giroconti FIAT abbinati: qui si raccolgono file per file e si rimettono
@@ -1116,6 +1186,16 @@ if (voce.isJson()) {
                 dispose();
             }
             this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+
+        else if (voce.isNativo(NAT_BINANCE_AUTO_INVEST)) {
+            //Come il Dual Investment: completa i movimenti gia' importati dal CSV principale, con un resoconto suo.
+            //I file Subscription, Rebalancing e Redemption vanno scelti insieme: il verso dei ribilanciamenti si
+            //ricava da tutti e tre
+            File[] files = ScegliFileDaImportare(true);
+            if (files != null) {
+                AbbinaAutoInvest(files);
+            }
         }
 
         else if (voce.isNativo(NAT_BYBIT_DEPOSITI_PRELIEVI) || voce.isNativo(NAT_BYBIT_EU_DEPOSITI_PRELIEVI)) {

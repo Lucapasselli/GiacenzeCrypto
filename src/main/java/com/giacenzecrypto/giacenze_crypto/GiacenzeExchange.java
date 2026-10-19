@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 
@@ -485,6 +486,51 @@ final class GiacenzeExchange {
             IstanteLetturaBinance = System.currentTimeMillis();
         }
         return saldi;
+    }
+
+    /**
+     * La giacenza per moneta che l'archivio attribuisce a un exchange adesso: somma delle gambe {@code [8]/[10]} e
+     * {@code [11]/[13]} dei movimenti con {@code [3]} uguale all'exchange, tutti i sotto-wallet insieme (l'exchange
+     * non li conosce). Logica pura.
+     */
+    static Map<String, BigDecimal> GiacenzeArchivio(String Exchange, Collection<String[]> Movimenti) {
+        Map<String, BigDecimal> g = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        for (String[] v : Movimenti) {
+            if (v == null || v.length < 14 || v[3] == null || !v[3].trim().equalsIgnoreCase(Exchange)) continue;
+            for (int[] gamba : new int[][]{{8, 10}, {11, 13}}) {
+                String m = v[gamba[0]];
+                BigDecimal q = v[gamba[1]] == null ? null : Numero(v[gamba[1]].trim());
+                if (m == null || m.isBlank() || q == null) continue;
+                g.merge(m.trim(), q, BigDecimal::add);
+            }
+        }
+        return g;
+    }
+
+    /** Sotto questa quantità la differenza è polvere: arrotondamenti, residui di conversioni. */
+    static final BigDecimal DIFFERENZA_TRASCURABILE = new BigDecimal("0.000001");
+
+    /**
+     * Le monete per cui l'archivio e l'exchange non coincidono: differenza oltre {@link #DIFFERENZA_TRASCURABILE} e
+     * oltre l'1% della giacenza maggiore (gli interessi maturati dentro Earn, le commissioni arrotondate). Logica pura.
+     * @return righe "MONETA: programma X, Binance Y", in ordine di moneta
+     */
+    static List<String> DifferenzeSaldi(Map<String, BigDecimal> Archivio, Map<String, BigDecimal> Exchange) {
+        Set<String> Monete = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        Monete.addAll(Archivio.keySet());
+        Monete.addAll(Exchange.keySet());
+        List<String> Righe = new ArrayList<>();
+        for (String m : Monete) {
+            BigDecimal a = Archivio.getOrDefault(m, BigDecimal.ZERO);
+            BigDecimal e = Exchange.getOrDefault(m, BigDecimal.ZERO);
+            BigDecimal Diff = a.subtract(e).abs();
+            BigDecimal Soglia = a.abs().max(e.abs()).multiply(new BigDecimal("0.01")).max(DIFFERENZA_TRASCURABILE);
+            if (Diff.compareTo(Soglia) > 0) {
+                Righe.add(m + ": programma " + a.stripTrailingZeros().toPlainString()
+                        + ", Binance " + e.stripTrailingZeros().toPlainString());
+            }
+        }
+        return Righe;
     }
 
     /** Somma le sezioni della risposta di {@code Binance_Saldi.js}. Logica pura. */

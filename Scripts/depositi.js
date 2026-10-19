@@ -1,205 +1,55 @@
-// npm i ccxt@latest
-const ccxt = require('ccxt');
-
-// ======================= Costanti & Utils =======================
+// Scarica i depositi crypto di Binance (sapi capital/deposit/hisrec).
+// Output su stdout: { "deposits": [ ...righe grezze di Binance... ] }
+// Ritmo, ripetizioni e uscita con errore: vedi Binance_Comune.js.
+const { creaExchange, sincronizzaOrario, chiama, esciConErrore, logInfo } = require('./Binance_Comune.js');
 
 const EPOCH_ALL_HISTORY = new Date('2017-01-01T00:00:00Z').getTime();
+const FINESTRA_MS = 90 * 24 * 60 * 60 * 1000; // intervallo massimo accettato da Binance
+const LIMITE = 1000;                          // righe massime per pagina
 
-function logProg(msg) { console.error(`[PROG] ${msg}`); }
-
-// ======================= Rate Limiting =======================
-
-class BinanceRateLimiter {
-  constructor() {
-    this.requestCount = 0;
-    this.startTime = Date.now();
-    this.lastRequest = 0;
-  }
-
-  async waitForRateLimit() {
-    this.requestCount++;
-    const now = Date.now();
-    
-    const timeSinceLastRequest = now - this.lastRequest;
-    if (timeSinceLastRequest < 2000) {
-      const waitTime = 2000 - timeSinceLastRequest;
-      console.error(`[RATE] Pausa inter-request: ${waitTime}ms`);
-      await this.sleep(waitTime);
-    }
-    
-    if (this.requestCount % 40 === 0) {
-      console.error(`[RATE] 🛑 Pausa lunga dopo ${this.requestCount} richieste (60s)`);
-      await this.sleep(60000);
-      this.startTime = Date.now();
-      console.error(`[RATE] ✅ Ripartito dopo pausa lunga`);
-    }
-    
-    this.lastRequest = Date.now();
-  }
-
-  async sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  async handleRateLimit(error, attempt = 0) {
-    const is429 = error.message && (
-      error.message.includes('429') || 
-      error.message.includes('Too many requests') ||
-      error.message.includes('Request weight exceeds')
-    );
-    
-    if (is429) {
-      const waitTime = Math.min(30000 * (2 ** attempt), 300000);
-      console.error(`[RATE] ⚠️ Rate limit hit! Pausa: ${waitTime/1000}s (attempt ${attempt+1})`);
-      await this.sleep(waitTime);
-      return true;
-    }
-    return false;
-  }
-}
-
-// ======================= Fetch Deposits =======================
-
-async function fetchAllDepositsRaw(exchange, rateLimiter, globalStartTime, globalEndTime) {
+async function fetchAllDepositsRaw(exchange, globalStartTime, globalEndTime) {
   const out = [];
   const seenIds = new Set();
-  const limit = 1000;
-  const WINDOW_MS = 90 * 24 * 60 * 60 * 1000;
-  const MAX_PAGES_PER_WINDOW = 10;
   let currentStart = Math.max(globalStartTime, EPOCH_ALL_HISTORY);
   let windowIdx = 0;
-  const totalWindows = Math.ceil((globalEndTime - currentStart) / WINDOW_MS);
+  const totalWindows = Math.ceil((globalEndTime - currentStart) / FINESTRA_MS);
 
   while (currentStart < globalEndTime) {
     windowIdx++;
-    const currentEnd = Math.min(currentStart + WINDOW_MS, globalEndTime);
-    console.error(`[Node-LOG] Depositi finestra ${windowIdx}/${totalWindows} (${new Date(currentStart).toISOString()} -> ${new Date(currentEnd).toISOString()})`);
-    
-    let page = 0;
-    let hasMore = true;
-    while (hasMore && page < MAX_PAGES_PER_WINDOW) {
-      page++;
-      await rateLimiter.waitForRateLimit();
-      
-      let attempt = 0;
-      let pageData = [];
-      while (attempt < 5) {
-        try {
-          pageData = await exchange.request('capital/deposit/hisrec', 'sapi', 'GET', { 
-            limit, 
-            startTime: currentStart, 
-            endTime: currentEnd, 
-            recvWindow: 60000 
-          });
-          console.error(`[DEBUG] Finestra ${windowIdx}, pagina ${page}: Richiesti ${limit}, Ricevuti ${pageData.length}`);
-          break;
-        } catch (e) {
-          if (await rateLimiter.handleRateLimit(e, attempt)) {
-            attempt++;
-            continue;
-          }
-          console.error(`[Node-LOG] Deposits RAW errore (attempt ${attempt}): ${e.message}`);
-          hasMore = false;
-          break;
-        }
-      }
-      
-      if (!Array.isArray(pageData) || pageData.length === 0) {
-        console.error(`[DEBUG] Pagina vuota (0 ricevuti) -> fine finestra ${windowIdx}`);
-        hasMore = false;
-        break;
-      }
-
-      let newCount = 0;
-      let duplicates = 0;
+    const currentEnd = Math.min(currentStart + FINESTRA_MS, globalEndTime);
+    logInfo(`Depositi finestra ${windowIdx}/${totalWindows} (${new Date(currentStart).toISOString()} -> ${new Date(currentEnd).toISOString()})`);
+    // Le pagine si scorrono con offset: senza, la seconda richiesta restituirebbe di nuovo la prima.
+    for (let offset = 0; ; offset += LIMITE) {
+      const pageData = await chiama(exchange, 'capital/deposit/hisrec', {
+        limit: LIMITE,
+        offset,
+        startTime: currentStart,
+        endTime: currentEnd
+      });
+      if (!Array.isArray(pageData)) throw new Error('risposta inattesa da capital/deposit/hisrec');
       for (const d of pageData) {
         const id = d.id || d.txId || d.insertTime;
-        if (seenIds.has(id)) {
-          duplicates++;
-          continue;
-        }
+        if (seenIds.has(id)) continue;
         seenIds.add(id);
         out.push(d);
-        newCount++;
       }
-      logProg(`Depositi RAW - finestra ${windowIdx}, pagina ${page}: +${newCount} nuovi (duplicati skippati: ${duplicates}), tot=${out.length}`);
-      
-      if (pageData.length < limit) {
-        console.error(`[DEBUG] Ricevuti < limit (${pageData.length} < ${limit}) -> fine finestra ${windowIdx}`);
-        hasMore = false;
-      }
+      if (pageData.length < LIMITE) break;
     }
-    
     currentStart = currentEnd + 1;
   }
-  
   const filteredOut = out.filter(item => item.insertTime >= globalStartTime && item.insertTime <= globalEndTime);
-  console.error(`[Node-LOG] Depositi totali dopo filtro: ${filteredOut.length}`);
+  logInfo(`Depositi totali: ${filteredOut.length}`);
   return filteredOut;
 }
 
-
-
-function normalizeBinanceTime(value) {
-  if (!value) return null;
-
-  // Se è già un numero (epoch in ms)
-  if (!isNaN(value)) {
-    return Number(value);
-  }
-
-  // Se è una stringa (es: "2025-08-25 09:00:00")
-  if (typeof value === 'string') {
-    // ISO già con Z o offset (+hh:mm / -hhmm)
-    if (/T.*Z$/.test(value) || /[+-]\d\d:?(\d\d)?$/.test(value)) {
-      return new Date(value).getTime();
-    }
-    // "YYYY-MM-DD HH:mm:ss" (documentato come UTC)
-    const m = value.match(
-      /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})(?:\.\d+)?$/
-    );
-    if (m) {
-      const [, y, mo, d, h, mi, se] = m;
-      return Date.UTC(+y, +mo - 1, +d, +h, +mi, +se);
-    }
-    // fallback
-    return Date.parse(value);
-  }
-
-  return null;
-}
-
-
-
-// ======================= MAIN =======================
-
 async function main() {
   const [,, exchangeId, apiKey, secret, startDateArg = "1483228800000"] = process.argv;
-  //let startTime = new Date(startDateArg).getTime();
-  let startTime = Number(startDateArg);
+  const startTime = Math.max(Number(startDateArg), EPOCH_ALL_HISTORY);
   const endTime = Date.now();
-
-  if (startTime < EPOCH_ALL_HISTORY) {
-    startTime = EPOCH_ALL_HISTORY;
-  }
-
-  const ExchangeClass = ccxt[exchangeId];
-  const exchange = new ExchangeClass({ apiKey, secret, enableRateLimit: true, options: { recvWindow: 60000 }, timeout: 60000 });
-
-  const rateLimiter = exchangeId === 'binance' ? new BinanceRateLimiter() : null;
-
-  if (exchangeId === 'binance') {
-    try {
-      await exchange.loadTimeDifference();
-      exchange.options.adjustForTimeDifference = true;
-    } catch (e) {}
-  }
-
-  const deposits = exchangeId === 'binance' ? await fetchAllDepositsRaw(exchange, rateLimiter, startTime, endTime) : await exchange.fetchDeposits(undefined, startTime).catch(() => []);
-
+  const exchange = creaExchange(exchangeId, apiKey, secret);
+  await sincronizzaOrario(exchange);
+  const deposits = await fetchAllDepositsRaw(exchange, startTime, endTime);
   console.log(JSON.stringify({ deposits }));
 }
 
-main().catch(err => {
-  console.log(JSON.stringify({ deposits: [], error: err.message }));
-});
+main().catch(esciConErrore);

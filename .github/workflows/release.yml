@@ -39,11 +39,43 @@ on:
         type: boolean
         required: false
         default: false
+      # Le beta sono le versioni intermedie a quattro cifre (<ultima stabile>.NN): escono come
+      # prerelease nello stesso repository, il controllo aggiornamenti dell'app
+      # (Aggiornamenti.java) le propone solo a chi ha scelto il canale beta. Si costruiscono solo
+      # installer Windows e portable: AUR, flatpak, winget, .deb e DMG ricevono solo le stabili.
+      canale:
+        description: "stabile = release normale per tutti; beta = prerelease (solo installer e portable)"
+        type: choice
+        options: [stabile, beta]
+        required: true
+        default: stabile
 
 permissions:
   contents: write
 
 jobs:
+  # Una versione a quattro cifre pubblicata come stabile diventerebbe "Latest": l'app la
+  # proporrebbe a tutti come stabile e finirebbe su SourceForge, AUR, flatpak e winget. Il
+  # contrario (tre cifre come beta) romperebbe la regola per cui una beta precede la stabile che
+  # prepara. Si ferma tutto qui, prima di costruire qualunque pacchetto.
+  verifica-canale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Controlla che la versione sia coerente con il canale
+        run: |
+          VERSION=$(grep -m1 -oP '(?<=<version>)[^<]+' pom.xml)
+          SEGMENTI=$(echo "$VERSION" | awk -F. '{print NF}')
+          if [ "${{ inputs.canale }}" = "beta" ] && [ "$SEGMENTI" -le 3 ]; then
+            echo "::error::Canale beta con la versione $VERSION a tre cifre: una beta si numera <ultima stabile>.NN"
+            exit 1
+          fi
+          if [ "${{ inputs.canale }}" = "stabile" ] && [ "$SEGMENTI" -gt 3 ]; then
+            echo "::error::Canale stabile con la versione intermedia $VERSION: per pubblicarla scegliere il canale beta"
+            exit 1
+          fi
+
   # Verifica non appena parte il workflow, prima di costruire qualunque pacchetto, che "bozza"
   # non stia per collidere con una release gia' pubblicata sullo stesso tag. Il caso concreto
   # che l'ha fatta scoprire: si rilancia il workflow con "bozza" spuntata senza aver alzato la
@@ -80,7 +112,7 @@ jobs:
           fi
 
   build-windows:
-    needs: verifica-bozza
+    needs: [verifica-bozza, verifica-canale]
     if: ${{ !cancelled() && !failure() }}
     runs-on: windows-latest
     steps:
@@ -197,7 +229,7 @@ jobs:
           path: out/GiacenzeCrypto_${{ env.VERSIONE }}_Installer_Windows.exe
 
   build-linux:
-    needs: verifica-bozza
+    needs: [verifica-bozza, verifica-canale]
     if: ${{ !cancelled() && !failure() }}
     runs-on: ubuntu-latest
     steps:
@@ -252,6 +284,8 @@ jobs:
             --vendor Luca
 
       - name: Build Debian package (.deb) with jpackage
+        # Il .deb riceve solo le stabili, come AUR e flatpak
+        if: ${{ inputs.canale != 'beta' }}
         run: |
           WORKDIR="HOME/GiacenzeCrypto/"
           jpackage \
@@ -281,13 +315,16 @@ jobs:
           path: out/linux/${{ env.PROJECT_NAME }}
 
       - uses: actions/upload-artifact@v4
+        if: ${{ inputs.canale != 'beta' }}
         with:
           name: GiacenzeCrypto_${{ env.VERSIONE }}_Deb_Linux
           path: out/deb
 
   build-macos:
-    needs: verifica-bozza
-    if: ${{ !cancelled() && !failure() }}
+    needs: [verifica-bozza, verifica-canale]
+    # Niente DMG per le beta. Saltare questo job non salta create-release: il suo guard
+    # "!cancelled() && !failure()" tollera un job di needs saltato.
+    if: ${{ !cancelled() && !failure() && inputs.canale != 'beta' }}
     strategy:
       matrix:
         include:
@@ -427,6 +464,10 @@ jobs:
           cd artifacts
           for d in */; do
             d="${d%/}"
+            # upload/download-artifact non conservano i permessi: senza questo il lanciatore
+            # dell'app-image Linux (bin/Giacenze_Crypto) e jspawnhelper arrivano non eseguibili
+            if [ -d "$d/bin" ]; then chmod +x "$d"/bin/*; fi
+            find "$d" -name jspawnhelper -type f -exec chmod +x {} +
             files=$(find "$d" -mindepth 1 -maxdepth 1 -type f | wc -l)
             dirs=$(find "$d" -mindepth 1 -maxdepth 1 -type d | wc -l)
             if [ "$files" -eq 1 ] && [ "$dirs" -eq 0 ]; then
@@ -438,10 +479,12 @@ jobs:
           cd ..
           ls -la release_assets
 
-      # Il nome/tag della release deve restare esattamente "Giacenze_Crypto_<VERSIONE>":
-      # l'app (Funzioni.isAggiornamentoDisponibile / TransazioniCrypto_Bottone_AggiorbaVersione)
-      # controlla proprio https://sourceforge.net/.../files/Giacenze_Crypto_<VERSIONE>/,
-      # cartella che l'integrazione GitHub->SourceForge crea con lo stesso nome della release.
+      # Il nome/tag della release deve restare esattamente "Giacenze_Crypto_<VERSIONE>": l'app
+      # (Aggiornamenti.PREFISSO_TAG) ricava la versione dal tag letto dall'API GitHub, e le
+      # versioni fino alla 1.0.65 controllano https://sourceforge.net/.../files/Giacenze_Crypto_<VERSIONE>/,
+      # cartella che l'integrazione GitHub->SourceForge (webhook "release") crea con lo stesso nome.
+      # Le beta escono come prerelease e mai come "Latest". Il webhook probabilmente le copia
+      # comunque su SourceForge: in quel caso vanno cancellate a mano da li'.
       - name: Crea la Release GitHub
         uses: softprops/action-gh-release@v2
         with:
@@ -452,6 +495,8 @@ jobs:
           # quindi ne' l'integrazione GitHub->SourceForge ne' un eventuale controllo aggiornamenti
           # dell'app la vedono finche' non viene pubblicata a mano dall'interfaccia GitHub.
           draft: ${{ inputs.bozza }}
+          prerelease: ${{ inputs.canale == 'beta' }}
+          make_latest: ${{ inputs.canale != 'beta' }}
 
   # L'aggiornamento di AUR e' richiamato qui e non con "on: release", perche' una release
   # creata col GITHUB_TOKEN di default non innesca altri workflow. Resta comunque lanciabile
@@ -460,7 +505,7 @@ jobs:
     needs: create-release
     # In bozza la release non e' scaricabile pubblicamente: aur.yml fallirebbe al download
     # dell'asset, quindi il job va saltato invece che lasciato fallire.
-    if: ${{ inputs.pubblica_su_aur && !inputs.bozza }}
+    if: ${{ inputs.pubblica_su_aur && !inputs.bozza && inputs.canale != 'beta' }}
     uses: ./.github/workflows/aur.yml
     with:
       # Ripubblicare la stessa versione produce un asset con checksum diverso (il JAR non e'
@@ -474,7 +519,7 @@ jobs:
     needs: create-release
     # Stesso motivo di aggiorna-aur: in bozza il download dell'asset dalla release fallirebbe
     # comunque (e' voluto in flatpak.yml), meglio saltare il job che lasciarlo fallire.
-    if: ${{ inputs.pubblica_flatpak && !inputs.bozza }}
+    if: ${{ inputs.pubblica_flatpak && !inputs.bozza && inputs.canale != 'beta' }}
     uses: ./.github/workflows/flatpak.yml
     secrets: inherit
 
@@ -485,6 +530,6 @@ jobs:
     needs: create-release
     # In bozza l'asset non e' scaricabile pubblicamente: la validazione di winget-pkgs
     # fallirebbe con Error-Installer-Availability, quindi il job va saltato.
-    if: ${{ inputs.pubblica_winget && !inputs.bozza }}
+    if: ${{ inputs.pubblica_winget && !inputs.bozza && inputs.canale != 'beta' }}
     uses: ./.github/workflows/winget.yml
     secrets: inherit

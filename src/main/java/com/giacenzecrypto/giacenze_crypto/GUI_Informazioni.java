@@ -120,6 +120,14 @@ public class GUI_Informazioni extends JDialog {
         pulsanti.setLayout(new BoxLayout(pulsanti, BoxLayout.X_AXIS));
         pulsanti.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
         pulsanti.add(novita);
+        //Canale stabile o beta e controllo a richiesta. Non nell'edizione Store, che si aggiorna dallo Store
+        if (Aggiornamenti.Abilitati()) {
+            JButton aggiornamenti = new JButton("Aggiornamenti...");
+            aggiornamenti.setToolTipText("Controlla se c'è una versione più recente e sceglie il canale (stabile o beta)");
+            aggiornamenti.addActionListener(e -> GUI_Aggiornamento.Mostra(this));
+            pulsanti.add(Box.createHorizontalStrut(6));
+            pulsanti.add(aggiornamenti);
+        }
         pulsanti.add(Box.createHorizontalGlue());
         pulsanti.add(chiudi);
 
@@ -192,7 +200,12 @@ public class GUI_Informazioni extends JDialog {
              .append("file, e i backup le escludono se non lo si chiede esplicitamente.</p>");
         }
         h.append("<p>Le uniche chiamate di rete sono quelle che servono a importare i movimenti dagli ")
-         .append("explorer di blockchain e a recuperare le quotazioni storiche, elencate qui sotto.</p>");
+         .append("explorer di blockchain e a recuperare le quotazioni storiche, elencate qui sotto.");
+        //Lo Store non controlla gli aggiornamenti (Aggiornamenti.Abilitati), ma le configurazioni le allinea anche lui
+        h.append(Store ? " A queste si aggiunge GitHub, da cui si aggiornano i file di configurazione distribuiti.</p>"
+                : " A queste si aggiunge GitHub, da cui si aggiornano i file di configurazione distribuiti e si "
+                + "controlla se esiste una versione più recente (riceve solo il numero della versione in uso, il "
+                + "controllo si disattiva dal pulsante <i>Aggiornamenti...</i>, qui sotto).</p>");
 
         h.append("<h3>Fonti dei dati</h3>");
         h.append("<p>Oltre a CoinGecko e a Etherscan, le quotazioni e i movimenti in blockchain ")

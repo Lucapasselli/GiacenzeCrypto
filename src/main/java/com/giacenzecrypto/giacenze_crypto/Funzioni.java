@@ -83,7 +83,7 @@ public class Funzioni {
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
 
     /** Repository e ramo da cui si allineano le configurazioni distribuite (vedi {@link #AggiornamentoConfigDaRepositoryUnicaChiamata}). */
-    private static final String REPO_GITHUB = "Lucapasselli/GiacenzeCrypto";
+    static final String REPO_GITHUB = "Lucapasselli/GiacenzeCrypto";
     private static final String BRANCH_GITHUB = "master";
     /** Cartella radice delle configurazioni nel repository: è l'albero chiesto con la chiamata unica. */
     private static final String RADICE_CONFIG_REPO = "config";
@@ -2333,34 +2333,6 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
     }
         
     
-        /**
-         * Verifica su SourceForge se esiste una release successiva alla versione indicata, incrementando di 1
-         * il numero di patch (terzo segmento {@code X.Y.Z}) e controllando se la relativa pagina risponde 200 OK.
-         * @param versione versione corrente, formato {@code X.Y.Z}
-         * @return {@code true} se la pagina della versione successiva esiste, {@code false} altrimenti (inclusi gli errori di rete)
-         */
-        public static boolean isAggiornamentoDisponibile(String versione) {
-        try {
-            String split[]=versione.split("\\.");
-            versione=split[0]+"."+split[1]+"."+String.valueOf(Integer.parseInt(split[2])+1);
-            URL url = new URL("https://sourceforge.net/projects/giacenze-crypto-com/files/Giacenze_Crypto_"+versione+"/");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-            // Imposta il metodo e il timeout
-            connection.setRequestMethod("HEAD");
-            connection.setConnectTimeout(5000); // 5 secondi
-            connection.setReadTimeout(5000);
-
-            int responseCode = connection.getResponseCode();
-
-            // Restituisce true solo se la risposta è 200 OK
-            return responseCode == HttpURLConnection.HTTP_OK;
-
-        } catch (IOException e) {
-            // Qualsiasi eccezione indica che la pagina non è disponibile
-            return false;
-        }
-    }    
         
         
     /**

@@ -667,6 +667,8 @@ private static final long serialVersionUID = 3L;
      */
     private void AvvisiAvvio() {
         try {
+            //Prima delle novità: se l'aggiornamento automatico non è riuscito, l'utente lo deve sapere per primo
+            GUI_Aggiornamento.ControllaEsitoInstallazione(this);
             GUI_NovitaVersione.MostraSeNuovaVersione(this, MappaCryptoWallet.isEmpty());
             if (Principale_Opzioni_Pulizie.RicompenseEarnDoppie_Gestisci(this, true)) {
                 Funzioni_AggiornaTutto();
@@ -12447,7 +12449,19 @@ if (result.isAction("delete-all")) {
     }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZeroActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-        // TODO add your handling code here:
+        ChiudiProgramma(null);
+    }//GEN-LAST:event_formWindowClosing
+
+    /**
+     * Chiude il programma: chiede se salvare i movimenti, salva le preferenze della finestra, compatta i database ed
+     * esce. È anche la chiusura dell'aggiornamento automatico ({@link Aggiornamenti#ImpostaChiusura}).
+     *
+     * @param PrimaDiUscire eseguita dopo i salvataggi e prima della compattazione (l'aggiornamento ci fa il backup e
+     *        avvia lo script di installazione); se restituisce {@code false} il programma resta aperto. Può essere
+     *        {@code null}.
+     * @return {@code false} se la chiusura è stata annullata (altrimenti il programma termina)
+     */
+    private boolean ChiudiProgramma(java.util.function.BooleanSupplier PrimaDiUscire) {
         System.out.println("Chiusura");
         
         if(TransazioniCrypto_Bottone_Salva.isEnabled()){
@@ -12472,7 +12486,7 @@ if (result.isAction("delete-all")) {
                 //Per questo la finestra e' DO_NOTHING_ON_CLOSE e l'uscita e' il System.exit in fondo.
                 if (result.isAction("annulla") || result.isClosedByWindow()) {
                     System.out.println("Chiusura annullata");
-                    return;
+                    return false;
                 }
 
                 if (result.isAction("OK")) {
@@ -12511,6 +12525,11 @@ if (result.isAction("delete-all")) {
             System.out.println("formWindowClosing: salvataggio layout colonne depositi/prelievi fallito : " + eLayoutDepPrel.getMessage());
         }
 
+        if (PrimaDiUscire != null && !PrimaDiUscire.getAsBoolean()) {
+            System.out.println("Chiusura annullata prima dell'uscita");
+            return false;
+        }
+
         //Dopo le Opzioni_Scrivi: la compattazione chiude i database, e quelle ci scrivono ancora
         Principale_Opzioni_Pulizie.CompattaSeConviene(this);
 
@@ -12518,8 +12537,8 @@ if (result.isAction("delete-all")) {
         this.dispose();
         //Prima lo faceva EXIT_ON_CLOSE dopo questo metodo; ora la finestra e' DO_NOTHING_ON_CLOSE
         System.exit(0);
-
-    }//GEN-LAST:event_formWindowClosing
+        return true;
+    }
 
     private void GiacenzeaData_CheckBox_NascondiScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_CheckBox_NascondiScamActionPerformed
         // TODO add your handling code here:
@@ -14369,31 +14388,25 @@ if (result.isAction("delete-all")) {
         Messaggi.SuccessMessage("Nuovo tema impostato", "Riavviare l'applicativo per la corretta applicazione del nuovo Tema.", this);
     }//GEN-LAST:event_Opzioni_Varie_Checkbox_TemaScuroActionPerformed
     private void Funzioni_NuovaVersioneDisponibile(){
-        //L'edizione Store si aggiorna dallo Store, e basta. Questo controllo interroga SourceForge e il
-        //pulsante che accende ne apre la pagina di download: e' una via di distribuzione esterna, cioe'
-        //il territorio delle policy 10.8.3 e 10.2.2 del Microsoft Store. Si esce prima ancora di aprire
-        //la connessione, cosi' non si spende nemmeno la richiesta di rete; il pulsante resta nascosto,
-        //come lo ha lasciato il costruttore, ed e' solo questo thread che potrebbe mostrarlo.
-        if (VarStatiche.EdizioneStore()) {
+        //L'edizione Store si aggiorna dallo Store, e basta: interrogare GitHub e aprirne le pagine di download
+        //e' una via di distribuzione esterna, cioe' il territorio delle policy 10.8.3 e 10.2.2 del Microsoft
+        //Store. Il pulsante resta nascosto, come lo ha lasciato il costruttore.
+        if (!Aggiornamenti.Abilitati()) {
             return;
         }
-
-        //Questa funzione la faccio partire in un thread separato
-        Thread thread;
-        thread = new Thread() {
-            /** Verifica in background se è disponibile una nuova versione dell'applicativo. */
-            public void run() {
-                if(Funzioni.isAggiornamentoDisponibile(VarStatiche.Versione)){
-                    TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(true);
-                    System.out.println("Nuova versione disponibile");
-                }else{
-                    TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(false);
-                    System.out.println("Nessuna nuova versione disponibile");
-                }
-            }
-        };
+        //Il pulsante segue ogni esito, anche quelli dei controlli rifatti dalla finestra degli aggiornamenti
+        //(cambio di canale, "Ignora questa versione")
+        Aggiornamenti.ImpostaOsservatore(() -> SwingUtilities.invokeLater(() ->
+                TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(
+                        Aggiornamenti.DaSegnalare(Aggiornamenti.UltimoRisultato()))));
+        //L'installazione di un aggiornamento chiude il programma con la stessa procedura della X della finestra
+        Aggiornamenti.ImpostaChiusura(this::ChiudiProgramma);
+        if (!Aggiornamenti.ControllaAllAvvio()) {
+            return;
+        }
+        Thread thread = new Thread(Aggiornamenti::Controlla, "ControlloAggiornamenti");
+        thread.setDaemon(true);
         thread.start();
-
     }
 
     private void Funzioni_AggiornamentoImportConfig() {
@@ -16927,11 +16940,7 @@ if (result != null && !result.isAction("cancel")) {
     }//GEN-LAST:event_TransazioniCrypto_Bottone_ExchangeAPIActionPerformed
 
     private void TransazioniCrypto_Bottone_AggiorbaVersioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_AggiorbaVersioneActionPerformed
-        // TODO add your handling code here:
-        String split[]=VarStatiche.Versione.split("\\.");
-        String LinkNuovaVersione=split[0]+"."+split[1]+"."+String.valueOf(Integer.parseInt(split[2])+1);
-        LinkNuovaVersione="https://sourceforge.net/projects/giacenze-crypto-com/files/Giacenze_Crypto_"+LinkNuovaVersione+"/";
-        Funzioni.ApriWeb(LinkNuovaVersione);
+        GUI_Aggiornamento.Mostra(this);
     }//GEN-LAST:event_TransazioniCrypto_Bottone_AggiorbaVersioneActionPerformed
 
     private void TransazioniCrypto_Bottone_AzzeraFiltriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_AzzeraFiltriActionPerformed

@@ -34,6 +34,7 @@ public class Giacenze_Crypto {
     public static void main(String[] args) {
 
         System.out.println("user.dir : " + System.getProperty("user.dir"));
+        VarStatiche.ArgomentiAvvio = args.clone();
         VarStatiche.setPathRisorse(getJarPath() + "/");
 
         //Prima passata: solo gli argomenti che servono a localizzare il logo. Tutto il resto (--debug,

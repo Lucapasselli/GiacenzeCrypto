@@ -16,6 +16,11 @@ public class VarStatiche {
 
     //NOME DEL PROGRAMMA
     static String Versione = leggiVersione();
+    /**
+     * Gli argomenti con cui è stato avviato il programma, per riavviarlo identico dopo un aggiornamento della versione
+     * portable multipiattaforma (vedi {@link AggiornamentoInstallazione#ComandoRiavvio}).
+     */
+    static String[] ArgomentiAvvio = new String[0];
 
     /** Valore dell'edizione destinata al Microsoft Store. Vedi {@link #EdizioneStore()}. */
     static final String EDIZIONE_STORE = "store";

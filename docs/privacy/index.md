@@ -6,7 +6,7 @@ title: Informativa sulla privacy - Giacenze Crypto
 # Informativa sulla privacy
 
 **Applicazione:** Giacenze Crypto (applicazione desktop per Windows, Linux e macOS)
-**Ultimo aggiornamento:** 17 agosto 2026
+**Ultimo aggiornamento:** 20 ottobre 2026
 **Contatto:** giacenzecrypto@gmail.com
 
 *[English version below](#privacy-policy-english)*
@@ -51,7 +51,7 @@ che le hai chiesto. In particolare:
 | CoinGecko, CoinMarketCap, DefiLlama, Binance, Coinbase Exchange e altri listini pubblici | il simbolo o l'indirizzo del contratto di un token e un intervallo di date | recuperare le quotazioni storiche |
 | GoPlus Labs | l'indirizzo del contratto di un token | verificare se il token è segnalato come pericoloso |
 | Banca d'Italia | un intervallo di date | il cambio ufficiale EUR/USD usato nei calcoli |
-| GitHub | nessun dato tuo | controllare se esiste una versione più recente e aggiornare i file di configurazione distribuiti |
+| GitHub | nessun dato tuo (solo il numero della versione in uso) | controllare se esiste una versione più recente, scaricarla quando chiedi di aggiornare, e aggiornare i file di configurazione distribuiti |
 | Il tuo exchange (solo nelle edizioni che offrono questa funzione) | le richieste firmate con **le chiavi API che hai inserito tu** | scaricare i tuoi movimenti da quel conto |
 
 L'indirizzo pubblico di un wallet è, per sua natura, l'informazione che l'explorer deve ricevere per
@@ -61,7 +61,9 @@ sito dell'explorer. Nessuna di queste chiamate trasmette il tuo archivio dei mov
 Come per qualunque programma che si collega a Internet, ogni richiesta rende necessariamente visibile
 al destinatario il tuo indirizzo IP: è il funzionamento della rete, non una raccolta di dati da parte
 dell'applicazione. Se una funzione non ti serve, non usarla: nessuna di queste chiamate parte da sola
-oltre al controllo della versione e all'aggiornamento delle configurazioni.
+oltre al controllo della versione e all'aggiornamento delle configurazioni. Il controllo della versione si
+può disattivare dalla finestra *Informazioni* (clic sul titolo), pulsante *Aggiornamenti...*. Una nuova
+versione viene scaricata e installata solo dopo che hai confermato di volerla.
 
 L'applicazione **non contiene pubblicità, sistemi di analisi statistica, telemetria o profilazione**,
 e non invia segnalazioni di errore automatiche.
@@ -114,7 +116,7 @@ versioni precedenti restano consultabili nella cronologia del repository pubblic
 # Privacy Policy (English)
 
 **Application:** Giacenze Crypto (desktop application for Windows, Linux and macOS)
-**Last updated:** 17 August 2026
+**Last updated:** 20 October 2026
 **Contact:** giacenzecrypto@gmail.com
 
 ## Summary
@@ -152,7 +154,7 @@ to do:
 | CoinGecko, CoinMarketCap, DefiLlama, Binance, Coinbase Exchange and other public market data sources | a token symbol or contract address and a date range | to retrieve historical prices |
 | GoPlus Labs | a token contract address | to check whether the token is flagged as malicious |
 | Banca d'Italia (Bank of Italy) | a date range | the official EUR/USD rate used in the calculations |
-| GitHub | none of your data | to check for a newer version and to update the distributed configuration files |
+| GitHub | none of your data (only the version number in use) | to check for a newer version, to download it when you ask to update, and to update the distributed configuration files |
 | Your exchange (only in editions that offer this feature) | requests signed with **the API keys you entered yourself** | to download your own movements from that account |
 
 A wallet's public address is by nature the information an explorer must receive in order to return its
@@ -162,7 +164,9 @@ of these requests transmits your movement archive.
 As with any program that connects to the Internet, each request necessarily makes your IP address
 visible to the recipient: that is how the network works, not data collection by the application. If
 you do not need a feature, do not use it: none of these requests happens on its own, apart from the
-version check and the configuration update.
+version check and the configuration update. The version check can be turned off from the *Informazioni*
+window (click the title), *Aggiornamenti...* button. A new version is downloaded and installed only after
+you confirm you want it.
 
 The application contains **no advertising, analytics, telemetry or profiling**, and sends no automatic
 crash reports.

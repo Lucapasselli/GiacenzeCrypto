@@ -441,6 +441,19 @@ path only). Endpoints that carry a key or a signature stay in code for the same 
 
 A single workflow, `.github/workflows/release.yml`, triggered manually (`workflow_dispatch`), on Temurin JDK 24. It reads the version straight from `pom.xml`, builds the fat JAR with `maven-shade-plugin` (`-DskipTests`) and then packages it with `jpackage` in four jobs: `build-windows` (portable app-image, cross-platform portable JAR bundle, and an installer built with Inno Setup), `build-linux` (app-image + `.deb`), `build-macos` (app-image + `.dmg`, on an OS matrix) and `create-release`, which collects the artifacts and publishes the GitHub release via `softprops/action-gh-release`. Each job copies the runtime-side folders (`Scripts/`, `Immagini/`, `logo.png`) next to the JAR.
 
+### Automatic updates and the beta channel (`Aggiornamenti`, `AggiornamentoInstallazione`)
+
+The app checks GitHub Releases: stable = `releases/latest`, beta = the list including prereleases, highest version by
+`Funzioni.ConfrontaVersioni`. Betas are **prereleases in the same repo**, built by `release.yml` with `canale = beta`
+(installer + portables only; `verifica-canale` rejects a 3-digit beta or a 4-digit stable). Traps:
+- **Intermediate builds are numbered `<last stable>.NN`**, never `<next stable>.NN`, or the beta sorts after its stable.
+- The tag must stay `Giacenze_Crypto_<version>` (`PREFISSO_TAG`; clients up to 1.0.65 also HEAD SourceForge on it).
+- Self-install only for the Inno installer and the portables; `.deb`/AUR/flatpak/macOS/Store get a link. Portables are
+  updated by **copying over, never deleting** (the default workdir is the launch folder, so user data may live there).
+- Nothing is downloaded or installed without the user's consent; install closes through `Principale.ChiudiProgramma`
+  (same path as the window's X) after an automatic backup. Windows path not yet tested on a real machine.
+Details: `nocommit/Documentazione/Analisi_Aggiornamenti_Automatici.md`.
+
 ### Distro packages — AUR and flatpak, both built from the published release
 
 Two more workflows package what `release.yml` has already published, rather than rebuilding it:

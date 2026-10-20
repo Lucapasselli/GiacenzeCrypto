@@ -39,9 +39,11 @@ Se preferisci non usare nessuno dei pacchetti sopra, esiste anche un pacchetto `
 
 ## Come aggiornarlo
 
-Il programma stesso avvisa quando è disponibile una nuova versione, con un pulsante ben visibile che porta direttamente alla pagina di scaricamento — non serve controllare manualmente.
+Il programma stesso avvisa quando è disponibile una nuova versione, con un pulsante ben visibile, e chiede se si vuole aggiornare — non serve controllare manualmente. Dalla finestra *Informazioni* (clic sul titolo), pulsante *Aggiornamenti...*, si può controllare subito, scegliere il canale **stabile** o **beta** (che propone anche le versioni di prova intermedie, per esempio 1.0.65.01) e disattivare il controllo all'avvio.
 
-- **Installer Windows**: scarica ed esegui il nuovo installer come la prima volta; sostituisce automaticamente la versione precedente e i tuoi dati restano intatti.
+Con l'**installer Windows** e con le **versioni portatili** l'aggiornamento è automatico: il programma scarica la nuova versione, ne verifica l'integrità e, dopo un'ultima conferma, fa un backup dei dati, si chiude, si aggiorna e si riavvia da solo. Negli altri casi apre la pagina da cui scaricarla, e l'aggiornamento si fa a mano come indicato qui sotto.
+
+- **Installer Windows** (a mano): scarica ed esegui il nuovo installer come la prima volta; sostituisce automaticamente la versione precedente e i tuoi dati restano intatti.
 - **.deb**: installa il nuovo file allo stesso modo del precedente; anche qui i dati non vengono toccati.
 - **macOS**: scarica il nuovo `.dmg` e trascina di nuovo l'icona in Applicazioni, sovrascrivendo quella precedente. (Siccome l'app non è firmata può richiedere l'esecuzione di questo comando "xattr -cr /Applications/Giacenze_Crypto.app" affinchè l'app parta)
 - **Versioni portatili** (Windows/Linux): scarica la nuova cartella al posto della vecchia. Per sicurezza, prima di farlo conviene usare la funzione di **backup integrata nel programma** (menu Opzioni) per salvare una copia dei propri dati, così è sempre possibile ripristinarli dopo l'aggiornamento.

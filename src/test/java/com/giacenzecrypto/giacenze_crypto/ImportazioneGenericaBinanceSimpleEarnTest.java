@@ -112,4 +112,24 @@ class ImportazioneGenericaBinanceSimpleEarnTest {
         }
         assertEquals("0.02887891", movs.stream().filter(m -> m[11].equals("USDC")).findFirst().orElseThrow()[13]);
     }
+
+    /**
+     * I file fino al 2023 chiamano "Rewards" le ricompense Flexible, e "Airdrop Rewards" gli airdrop maturati in Earn:
+     * l'export normale le porta già come "Simple Earn Flexible Interest" e "Simple Earn Flexible Airdrop". Sono
+     * ignorate, non scartate come causali sconosciute.
+     */
+    @Test
+    void vecchieRewardsEAirdropRewards_sonoGiaNellExportNormale() throws Exception {
+        ConfigurazioneImport c = cfg();
+        assertEquals("IGNORA", c.convertiCausale("Rewards"));
+        assertEquals("IGNORA", c.convertiCausale("Airdrop Rewards"));
+
+        List<String[]> movs = importa(List.<String[]>of(
+                riga("2021-06-11 03:00:00", "BNB", "0.00001", "Rewards"),
+                riga("2023-06-14 04:00:00", "VTHO", "0.5", "Airdrop Rewards"),
+                riga("2026-03-15", "USDC", "0.02887891", "Real-time APR Rewards")));
+
+        assertEquals(1, movs.size());
+        assertEquals("USDC", movs.get(0)[11]);
+    }
 }

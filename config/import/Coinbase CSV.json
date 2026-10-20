@@ -2,7 +2,7 @@
   "_commento": "Coinbase (conto retail) - export 'Transactions' scaricato da coinbase.com (Impostazioni > Estratto conto / Reports). Le prime 3 righe del file NON sono dati: 1='Transactions', 2='User,<nome>,<uuid>', 3=intestazione vera. Da riga 4 in poi 13 colonne: 0=ID 1=Timestamp 2=Transaction Type 3=Asset 4=Quantity Transacted 5=Price Currency 6=Price at Transaction 7=Subtotal 8=Total (inclusive of fees and/or spread) 9=Fees and/or Spread 10=Notes 11=Sender Address 12=Recipient Address.",
   "_commentoData": "Il timestamp e' 'yyyy-MM-dd HH:mm:ss UTC' con il letterale ' UTC' in coda: parseDataRaw usa DateTimeFormatter e il suffisso NON rientra nella regex che toglie gli offset ' +00:00', quindi va messo nel pattern come letterale o ogni riga fallirebbe con 'DATA NON PARSABILE'. 'fuso':'UTC' converte poi al fuso di sistema.",
   "_commentoImporti": "Tutti gli importi in euro nel file hanno il prefisso '€' (e il meno PRIMA del simbolo: '-€1,48'). normalizzaNumero toglie i simboli di valuta € $ £ ¥ mantenendo il segno, quindi le colonne euro sono usabili direttamente. Il file usa il punto come separatore decimale e nessun separatore delle migliaia. NOTA: nella colonna 9 (Fees and/or Spread) le righe 'Convert' scrivono il numero SENZA '€' mentre tutte le altre causali lo scrivono con '€' - normalizzaNumero gestisce comunque entrambi i casi.",
-  "versione": "1.007",
+  "versione": "1.008",
   "centralizzato": true,
   "fontePrezzoPreferita": "coinbase",
   "nomeExchange": "Coinbase",
@@ -73,7 +73,10 @@
     "Exchange Deposit":          "TRASFERIMENTO-CRYPTO",
     "Exchange Withdrawal":       "TRASFERIMENTO-CRYPTO",
     "Retail Unstaking Transfer": "IGNORA",
-    "Retail Staking Transfer":   "IGNORA"
+    "Retail Staking Transfer":   "IGNORA",
+    "Withdrawal":                "PRELIEVO FIAT",
+    "Retail Eth2 Deprecation":   "SCAMBIO CRYPTO-CRYPTO",
+    "Asset Migration":           "SCAMBIO CRYPTO-CRYPTO"
   },
   "causaliUscita": [],
   "causaliEntrata": [],
@@ -82,12 +85,14 @@
     "ACQUISTO CRYPTO",
     "VENDITA CRYPTO",
     "DEPOSITO FIAT",
+    "PRELIEVO FIAT",
     "REWARD",
     "EARN",
     "AIRDROP",
     "STAKING REWARDS",
     "COMMISSIONI"
   ],
+  "_commentoMigrazioni": "Da v1.008. 'Withdrawal' e' il prelievo di EUR verso il conto bancario (speculare a 'Deposit', le uscite di cripto sono 'Send') -> PRELIEVO FIAT. 'Retail Eth2 Deprecation' (ETH2 -> ETH, gennaio 2025) e 'Asset Migration' (MATIC -> POL, ottobre 2025) sono coppie -/+ 1:1 sullo stesso identico secondo, raggruppate dal timestamp (idGruppo): diventano uno SCAMBIO CRYPTO-CRYPTO, che dal 2023 trasferisce il costo di carico alla nuova moneta senza plusvalenza. Restano NON mappate di proposito 'Advanced Trade Buy'/'Advanced Trade Sell' e 'Sell': la riga porta la sola gamba crypto e la contropartita (EUR o USDC) sta solo nel testo di Notes ('for X USDC on FFF-USDC'), mentre la colonna 5 vale sempre EUR - con il meccanismo di colonneControvalore gli scambi contro USDC avrebbero una gamba EUR sbagliata. Serve codice (segnalazione #19).",
   "_commentoRinomina": "ZETACHAIN e' il vecchio ticker Coinbase per ZETA (ZetaChain): nel file compaiono entrambi, e un Convert del 15/09/2025 li usa tutti e due a 22 secondi di distanza - senza unificarli lo stack LIFO si spezza in due monete diverse. CGLD e' il ticker Coinbase per CELO, gia' scritto 'CELO' nell'archivio esistente. RNDR->RENDER non e' incluso: nel file compare solo 'RNDR', nessun conflitto interno.",
   "rinominaMonete": {
     "ZETACHAIN": "ZETA",

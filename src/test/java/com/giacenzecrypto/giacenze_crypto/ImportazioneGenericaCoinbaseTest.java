@@ -324,4 +324,59 @@ class ImportazioneGenericaCoinbaseTest {
         // ceduta, plusvalenza 0.
         assertEquals("1.06", m[15]);
     }
+
+    // ---- causali aggiunte con la v1.008 (segnalazione #19), sulla config reale --------------------
+
+    /** Righe ordinate per data come dopo leggiCSV, raggruppate e consolidate con la config reale. */
+    private static List<String[]> importaConConfigReale(List<String[]> righe) throws Exception {
+        var c = ConfigurazioneImport.carica("config/import/Coinbase CSV.json");
+        List<String[]> ordinate = new ArrayList<>(righe);
+        ordinate.sort((a, b) -> a[1].compareTo(b[1]));
+        List<String[]> movs = new ArrayList<>();
+        for (List<String[]> g : ImportazioneGenerica.raggruppaRighe(ordinate, c)) {
+            List<String[]> m = ImportazioneGenerica.consolidaGruppo(g, c, new ArrayList<>());
+            if (m != null) movs.addAll(m);
+        }
+        return movs;
+    }
+
+    @Test
+    void withdrawal_prelievoFiatVersoLaBanca() throws Exception {
+        List<String[]> movs = importaConConfigReale(List.<String[]>of(
+                riga("000000000000000000000101", "2024-12-16 10:00:00 UTC", "Withdrawal", "EUR", "-100",
+                        "EUR", "€1.00", "€100.00", "€100.00", "€0.00", "Withdrawal to Banca (****0000)")));
+
+        assertEquals(1, movs.size());
+        String[] m = movs.get(0);
+        assertEquals("EUR", m[8], "gamba in uscita");
+        assertEquals("-100", m[10]);
+        assertEquals("", m[11], "nessuna gamba in entrata");
+        assertTrue(m[0].endsWith("_PF"), "prelievo FIAT, era: " + m[0]);
+    }
+
+    @Test
+    void eth2DeprecationEAssetMigration_unoScambioCryptoCryptoPerCoppia() throws Exception {
+        List<String[]> movs = importaConConfigReale(List.<String[]>of(
+                riga("000000000000000000000102", "2025-01-30 19:00:00 UTC", "Retail Eth2 Deprecation", "ETH",
+                        "0.5", "EUR", "€3000.00", "€1500.00", "€1500.00", "€0.00", ""),
+                riga("000000000000000000000103", "2025-01-30 19:00:00 UTC", "Retail Eth2 Deprecation", "ETH2",
+                        "-0.5", "EUR", "€3000.00", "-€1500.00", "-€1500.00", "€0.00", ""),
+                riga("000000000000000000000104", "2025-10-15 22:00:00 UTC", "Asset Migration", "POL",
+                        "100", "EUR", "€0.20", "€20.00", "€20.00", "€0.00", ""),
+                riga("000000000000000000000105", "2025-10-15 22:00:00 UTC", "Asset Migration", "MATIC",
+                        "-100", "EUR", "€0.20", "-€20.00", "-€20.00", "€0.00", "")));
+
+        assertEquals(2, movs.size(), "una conversione per coppia, non quattro gambe sciolte");
+        String[] eth = movs.get(0);
+        assertEquals("ETH2", eth[8]);
+        assertEquals("-0.5", eth[10]);
+        assertEquals("ETH", eth[11]);
+        assertEquals("0.5", eth[13]);
+        assertTrue(eth[0].endsWith("_SC"), "scambio crypto-crypto, era: " + eth[0]);
+        String[] pol = movs.get(1);
+        assertEquals("MATIC", pol[8]);
+        assertEquals("POL", pol[11]);
+        assertEquals("100", pol[13]);
+        assertTrue(pol[0].endsWith("_SC"), "scambio crypto-crypto, era: " + pol[0]);
+    }
 }

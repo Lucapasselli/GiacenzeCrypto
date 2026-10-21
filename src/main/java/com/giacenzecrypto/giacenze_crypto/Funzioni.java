@@ -3554,7 +3554,7 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
      * Controlla i file di una cartella di configurazione locale rispetto alla corrispondente cartella
      * del repository GitHub e aggiorna quelli obsoleti o mancanti.
      * <p>Il confronto avviene sullo sha blob git, quindi non scarica nulla se il contenuto coincide.
-     * Il download passa da {@code scaricaFileDaUrl}, che scrive i byte grezzi: va bene anche per i
+     * Il download passa da {@code scaricaBytesDaUrl}, che restituisce i byte grezzi: va bene anche per i
      * file binari (loghi PNG).
      * <p><b>Nota di retrocompatibilità:</b> la cartella {@code ImportConfig/} del repository non va
      * svuotata né rimossa. Le versioni installate prima dell'introduzione di {@code config/} continuano
@@ -3599,7 +3599,7 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
 
                 nomiRemoti.add(name);
                 if (allineaFileConfig(client, pathRepo, cartellaLocale, name,
-                        file.get("sha").getAsString(), file.get("download_url").getAsString())) {
+                        file.get("sha").getAsString(), file.get("download_url").getAsString(), ".json".equals(estensione))) {
                     fileAggiornati.add(name);
                 }
             }
@@ -3730,7 +3730,8 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
                 nomiRemoti.add(name);
                 try {
                     String downloadUrl = urlRawGitHub(c.sottoCartellaRepo, name);
-                    if (allineaFileConfig(client, pathRepo, c.cartellaLocale, name, e.getValue(), downloadUrl)) {
+                    if (allineaFileConfig(client, pathRepo, c.cartellaLocale, name, e.getValue(), downloadUrl,
+                            ".json".equals(c.estensione))) {
                         risultato.get(c.sottoCartellaRepo).add(name);
                     }
                 } catch (Exception ex) {
@@ -3835,7 +3836,7 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
             String pathRelativo = e.getKey();
             try {
                 if (allineaFileConfig(client, "Normativa", cartellaLocale, pathRelativo, e.getValue(),
-                        urlRawGitHubNormativa(pathRelativo))) {
+                        urlRawGitHubNormativa(pathRelativo), false)) {
                     aggiornati.add(pathRelativo);
                 }
             } catch (Exception ex) {
@@ -3902,10 +3903,13 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
 
     /**
      * Scarica il file di configurazione se manca in locale o se il suo sha blob differisce da quello remoto.
-     * @return {@code true} se il file è stato effettivamente scaricato
+     * @param trattieniSePiuNuova se il file remoto puo' essere scartato a favore della copia locale quando richiede
+     *        una versione piu' recente di questa (vedi {@link #TrattieniCopiaLocale}): {@code true} per i JSON di
+     *        {@code config/}, {@code false} per {@code Normativa/} e per i loghi
+     * @return {@code true} se il file è stato effettivamente scaricato e scritto
      */
     private static boolean allineaFileConfig(OkHttpClient client, String pathRepo, String cartellaLocale,
-            String name, String remoteSha, String downloadUrl) throws Exception {
+            String name, String remoteSha, String downloadUrl, boolean trattieniSePiuNuova) throws Exception {
         Path localPath = Paths.get(cartellaLocale, name);
 
         boolean daAggiornare;
@@ -3920,11 +3924,46 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
         }
 
         if (daAggiornare) {
+            byte[] remoto = scaricaBytesDaUrl(client, downloadUrl);
+            if (trattieniSePiuNuova && Files.exists(localPath) && TrattieniCopiaLocale(remoto, Files.readAllBytes(localPath))) {
+                LoggerGC.logInfo("AggiornamentoConfig [" + pathRepo + "]: " + name + " richiede almeno la versione "
+                        + MappeCausali.VersioneMinimaDichiarata(new String(remoto, java.nio.charset.StandardCharsets.UTF_8))
+                        + " (questa e' la " + VarStatiche.Versione + "): resta la copia locale");
+                return false;
+            }
             Files.createDirectories(localPath.getParent());
-            scaricaFileDaUrl(client, downloadUrl, localPath);
+            Files.write(localPath, remoto);
             System.out.println("AggiornamentoConfig [" + pathRepo + "]: aggiornato " + name);
         }
         return daAggiornare;
+    }
+
+    /**
+     * Se un file di configurazione scaricato va scartato per tenere la copia gia' su disco: quando dichiara una
+     * {@code versioneMinimaApp} che questa installazione non raggiunge, mentre la copia locale e' un JSON valido che
+     * questa versione sa leggere. Senza, la sincronizzazione sovrascriveva la copia funzionante con una che la
+     * versione installata nasconde ({@code config/import}, che non ha copia nel jar) o sostituisce con quella del
+     * jar ({@code config/varie}, {@code config/importmappe}): una versione minima aggiunta a una config in uso
+     * toglieva la voce a chi non aveva ancora aggiornato. Vale per le versioni successive alla 1.0.65.07, le precedenti
+     * sovrascrivono come prima.
+     * <p>Il file remoto si riscarica a ogni avvio finche' il programma non si aggiorna: sono pochi kB da
+     * {@code raw.githubusercontent.com}, che non consuma quota API.
+     *
+     * @param remoto contenuto del file scaricato
+     * @param locale contenuto della copia su disco
+     * @return {@code true} se va tenuta la copia locale
+     */
+    static boolean TrattieniCopiaLocale(byte[] remoto, byte[] locale) {
+        String testoRemoto = new String(remoto, java.nio.charset.StandardCharsets.UTF_8);
+        if (!MappeCausali.RichiedeVersionePiuNuova(testoRemoto)) return false;
+        String testoLocale = new String(locale, java.nio.charset.StandardCharsets.UTF_8);
+        try {
+            new JSONObject(testoLocale);
+        } catch (JSONException ex) {
+            //Una copia locale illeggibile non vale nulla: meglio il file nuovo (e, se non va, il ripiego sul jar)
+            return false;
+        }
+        return !MappeCausali.RichiedeVersionePiuNuova(testoLocale);
     }
 
     /**
@@ -3969,7 +4008,7 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
         return sb.toString();
     }
 
-    private static void scaricaFileDaUrl(OkHttpClient client, String url, Path destination) throws IOException {
+    private static byte[] scaricaBytesDaUrl(OkHttpClient client, String url) throws IOException {
         Request req = new Request.Builder()
                 .url(url)
                 .header("User-Agent", "GiacenzeCrypto")
@@ -3978,7 +4017,7 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
             if (!resp.isSuccessful()) {
                 throw new IOException("Download fallito per " + url + ", codice: " + resp.code());
             }
-            Files.write(destination, resp.body().bytes());
+            return resp.body().bytes();
         }
     }
 

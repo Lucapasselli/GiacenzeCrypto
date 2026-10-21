@@ -293,7 +293,32 @@ public class Importazioni {
                 CausaliDerivatiSegnalate.clear();
                 GirocontiFiat.AbbinatiImportazione=0;
                 ClassificazioniAnnullate=0;
+                ChiaviConfigSconosciute.clear();
             }
+
+    /**
+     * Chiavi della configurazione d'import usata che questa versione non legge (percorsi puntati, vedi
+     * {@code ImportazioneGenerica.ConfigurazioneImport.CHIAVI_NOTE}). Riempita da {@code ImportazioneGenerica.importaRighe},
+     * azzerata da {@link #AzzeraContatori()}, letta dal resoconto tramite {@link #TestoChiaviConfigSconosciute()}.
+     * Non passa da {@link #movimentiSconosciuti}: nessuna riga e' stata scartata, e' un avviso.
+     */
+    public static Set<String> ChiaviConfigSconosciute = new TreeSet<>();
+
+    /**
+     * Nota del resoconto sulle chiavi della configurazione che questa versione ha ignorato, o stringa vuota se non
+     * ce ne sono. Non dice se e' un errore di battitura o una funzione di una versione piu' recente: le config
+     * distribuite usano solo chiavi note alla versione che le pubblica, quelle dell'utente possono avere refusi.
+     */
+    public static String TestoChiaviConfigSconosciute() {
+        if (ChiaviConfigSconosciute.isEmpty()) return "";
+        return "<b><center>OPZIONI DELLA CONFIGURAZIONE NON RICONOSCIUTE</b><br><br>"
+                + "<center>La configurazione di importazione contiene opzioni che questa versione del programma ("
+                + EscapeHtml(VarStatiche.Versione) + ") non conosce e ha ignorato: <b>"
+                + EscapeHtml(String.join(", ", ChiaviConfigSconosciute)) + "</b>.<br>"
+                + "<center>Se la configurazione è fra quelle distribuite con il programma, la gestisce una versione più"
+                + " recente: alcuni movimenti potrebbero essere stati importati in modo diverso o risultare da classificare."
+                + " Se è una configurazione personale, controllare il nome delle opzioni.";
+    }
 
     /**
      * Nota del resoconto sui movimenti classificati che la sovrascrittura ha riportato da classificare, o stringa

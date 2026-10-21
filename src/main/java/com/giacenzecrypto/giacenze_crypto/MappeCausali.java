@@ -159,8 +159,10 @@ public class MappeCausali {
     static <T> T CaricaConRipiego(String nome, Cartella cartella, Analizzatore<T> analizzatore) {
         String suDisco = LeggiTesto(PercorsoSuDisco(nome, cartella));
         if (RichiedeVersionePiuNuova(suDisco)) {
-            //Il file aggiornato dal repository usa un formato piu' recente di questa versione: non lo si legge, vale la
-            //copia nel jar, che e' quella con cui questa versione e' stata provata
+            //Il file su disco usa un formato piu' recente di questa versione: non lo si legge, vale la copia nel jar,
+            //che e' quella con cui questa versione e' stata provata. Dopo la 1.0.65.07 la sincronizzazione non sovrascrive
+            //piu' una copia leggibile con un file di questo tipo (Funzioni.TrattieniCopiaLocale): qui si arriva solo
+            //con un file scaricato da una versione precedente, o senza nessuna copia compatibile su disco
             LoggerGC.logInfo("Config \"" + nome + "\" su disco richiede almeno la versione " + VersioneMinimaDichiarata(suDisco)
                     + " (questa e' la " + VarStatiche.Versione + "): uso la copia nel jar.");
             suDisco = null;
@@ -226,7 +228,9 @@ public class MappeCausali {
      * La {@code versioneMinimaApp} dichiarata al primo livello del file, o {@code ""}. Una chiave opzionale di ogni file di
      * {@code config/varie} e {@code config/importmappe} (tutti oggetti JSON), da scrivere quando si cambia il significato
      * di un file che le versioni gia' installate leggono: una chiave aggiunta, che quelle ignorerebbero applicando il file
-     * a meta'. Vale solo per le versioni che contengono questo controllo, cioe' dalla prossima in poi.
+     * a meta'. Vale solo per le versioni che contengono questo controllo, cioe' dalla prossima in poi. Lo usa anche la
+     * sincronizzazione ({@code Funzioni.TrattieniCopiaLocale}), che dopo la 1.0.65.07 tiene la copia locale invece di
+     * scaricare un file che questa versione non saprebbe leggere.
      */
     static String VersioneMinimaDichiarata(String contenuto) {
         if (contenuto == null || !contenuto.contains("versioneMinimaApp")) return "";

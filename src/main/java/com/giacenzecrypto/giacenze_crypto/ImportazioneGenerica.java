@@ -203,6 +203,9 @@ public class ImportazioneGenerica {
     static boolean importaRighe(List<String[]> righe, ConfigurazioneImport cfg, boolean sovrascriEsistenti,
             Download progressb, boolean consolidaAllUltimaRiga) {
 
+        // Chiavi della config che questa versione non conosce: un avviso nel resoconto, non un errore
+        Importazioni.ChiaviConfigSconosciute.addAll(cfg.chiaviSconosciute);
+
         // Prelievi annullati (Bybit 'Withdrawal Canceled'): la coppia prelievo/annullamento non entra
         righe = scartaAnnullamenti(righe, cfg);
 
@@ -2101,6 +2104,78 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         //della mappaCausali; le righe in moneta FIAT restano come sono.
         public Map<String, String> tipoSeCrypto = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
+        //--- Chiavi che questa versione non legge ----------------------------------------------------
+        //Percorsi puntati ("coppia.importoQuote") delle chiavi della config che non compaiono in CHIAVI_NOTE:
+        //un errore di battitura in una config dell'utente, o una funzione aggiunta al formato da una versione
+        //piu' recente di questa, che senza avviso verrebbe ignorata in silenzio. Riempita da carica(),
+        //portata nel resoconto da importaRighe (Importazioni.TestoChiaviConfigSconosciute).
+        public List<String> chiaviSconosciute = new ArrayList<>();
+
+        /**
+         * Le chiavi che {@link #carica} sa leggere, per ogni oggetto a chiavi fisse della config: {@code ""} e' la
+         * radice, {@code "x[]"} ogni elemento dell'array {@code x}. Gli oggetti a chiavi libere (mappaCausali,
+         * causaliAPI, rinominaMonete...) non ci sono, e il controllo non ci entra. Le chiavi che cominciano con
+         * {@code _} sono commenti e valgono ovunque. Una chiave nuova letta da {@link #carica} va aggiunta qui:
+         * {@code ChiaviConfigImportTest} lo verifica su tutte le config distribuite.
+         */
+        static final Map<String, Set<String>> CHIAVI_NOTE = Map.ofEntries(
+                Map.entry("", Set.of(
+                        "versione", "noteRevisione", "versioneMinimaApp", "centralizzato", "testing",
+                        "nomeExchange", "nomeWallet", "fornitore", "estrazione", "descrizione", "fontePrezzoPreferita",
+                        "separatore", "encoding", "righeIntestazione", "rigaIntestazione", "autoDetectColonne",
+                        "mappaAutoDetect", "formatoData", "oraSeSoloData", "fuso", "fusoDaIntestazione", "fusoPerPeriodo",
+                        "colonne", "colonneCalcolate", "colonneControvalore", "regoleRiga", "coppia", "campiExtra",
+                        "mappaCausali", "separatoreCausale", "causaliUppercase", "causaliChiuse", "causaliEntrata",
+                        "causaliUscita", "causaliScambiaGambe", "causaliDifferite", "causaliAPI", "causaliAnnullamento",
+                        "causaliAllertaDerivati", "causaliDerivati", "causaliConsolidaPerGiorno", "causalePerNota",
+                        "tipoSeSola", "tipoSeCrypto", "movimentoChiuso", "versoForzato", "separatoreValoreMoneta",
+                        "consolidaRigheStessaData", "tolleranzaSecondiConsolidamento", "minutiScambioDifferito",
+                        "raggruppamentoPerCausale", "girocontoFiat", "walletPerCausale", "walletSpecularePerCausale",
+                        "ricostruisciLordoSeFeeSuMonetaUscita", "ricostruisciLordoSeFeeSuMonetaEntrata",
+                        "gambaDoppiaConSegnoSuUscita", "rinominaMonete", "rimuoviCaseSensitive", "rimuoviDaNomeMoneta")),
+                Map.entry("colonne", Set.of(
+                        "data", "moneta", "quantita", "monetaUscita", "quantitaUscita", "segno", "causale", "causale2",
+                        "causale3", "valoreEuro", "prezzo", "monetaFee", "quantitaFee", "idTransazione", "idGruppo",
+                        "wallet", "note")),
+                Map.entry("colonneControvalore", Set.of(
+                        "totale", "commissione", "valuta", "causali", "causaliConMovimentoCommissione", "noteAcquistoDaSaldo")),
+                Map.entry("coppia", Set.of("colonna", "separatore", "base", "quote", "importoQuote")),
+                Map.entry("coppia.importoQuote", Set.of("colonna", "quantita", "prezzo")),
+                Map.entry("girocontoFiat", Set.of("controparte", "causali", "causaliControparte", "secondiTolleranza")),
+                Map.entry("fusoPerPeriodo[]", Set.of("da", "a", "fuso")),
+                Map.entry("colonneCalcolate[]", Set.of("operazione", "colonna", "a", "b")),
+                Map.entry("regoleRiga[]", Set.of("colonna", "uguale", "contiene", "vuota", "scarta", "imposta")),
+                Map.entry("regoleRiga[].imposta", Set.of("colonna", "valore")),
+                Map.entry("causalePerNota[]", Set.of("causale", "notaContiene", "tipo")),
+                Map.entry("tipoSeSola[]", Set.of("causale", "con", "tipo")));
+
+        /** @return i percorsi puntati delle chiavi di {@code root} che non sono in {@link #CHIAVI_NOTE}, in ordine di lettura */
+        static List<String> ChiaviSconosciute(JSONObject root) {
+            List<String> sconosciute = new ArrayList<>();
+            ControllaChiavi(root, "", sconosciute);
+            return sconosciute;
+        }
+
+        private static void ControllaChiavi(JSONObject oggetto, String percorso, List<String> sconosciute) {
+            Set<String> note = CHIAVI_NOTE.get(percorso);
+            for (String chiave : new TreeSet<>(oggetto.keySet())) {
+                if (chiave.startsWith("_")) continue;
+                String figlio = percorso.isEmpty() ? chiave : percorso + "." + chiave;
+                if (!note.contains(chiave)) {
+                    sconosciute.add(figlio);
+                    continue;
+                }
+                Object valore = oggetto.get(chiave);
+                if (valore instanceof JSONObject o && CHIAVI_NOTE.containsKey(figlio)) {
+                    ControllaChiavi(o, figlio, sconosciute);
+                } else if (valore instanceof JSONArray a && CHIAVI_NOTE.containsKey(figlio + "[]")) {
+                    for (int i = 0; i < a.length(); i++) {
+                        if (a.get(i) instanceof JSONObject o) ControllaChiavi(o, figlio + "[]", sconosciute);
+                    }
+                }
+            }
+        }
+
         /** Regola "se nel gruppo non c'e' nessuna delle causali {@code con}, la causale {@code causale} ha tipo {@code tipo}". */
         public static final class RegolaSeSola {
             public final String causale;
@@ -2764,6 +2839,11 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 for (String k : mad.keySet()) cfg.mappaAutoDetect.put(k, mad.getString(k));
             }
             cfg.ControllaRegoleRiga();
+            cfg.chiaviSconosciute = ChiaviSconosciute(root);
+            if (!cfg.chiaviSconosciute.isEmpty()) {
+                LoggerGC.logInfo("Configurazione di import \"" + percorso + "\": chiavi non riconosciute da questa versione ("
+                        + VarStatiche.Versione + "): " + String.join(", ", cfg.chiaviSconosciute));
+            }
 
             return cfg;
         }

@@ -100,10 +100,11 @@ public class Messaggi {
          * Avvisa l'utente di cosa farà "Ricalcola Prezzi" e delle conseguenze, e chiede conferma.
          * @param Movimenti quanti movimenti verranno ricalcolati
          * @param RecordKO  quanti record dei "prezzi irrecuperabili" (PrezziKO) verranno cancellati per poterli riprovare
+         * @param OreDaRiprovare quante ore (moneta, ora) senza nessun prezzo verranno richieste di nuovo agli exchange
          * @param w finestra parent del dialog
          * @return {@code true} se l'utente vuole procedere
          */
-        public static boolean ConfermaRicalcoloPrezzi(int Movimenti, int RecordKO, Window w) {
+        public static boolean ConfermaRicalcoloPrezzi(int Movimenti, int RecordKO, int OreDaRiprovare, Window w) {
          AppDialog.DialogResult result = AppDialog.builder(w)
                         .windowTitle("Ricalcola Prezzi")
                         .bodyTitle("Ricalcola Prezzi")
@@ -116,6 +117,11 @@ public class Messaggi {
                                 + (RecordKO == 0 ? "non risultano token già segnati come senza prezzo per questi movimenti."
                                 : "verranno cancellati " + RecordKO + " record dei token già segnati come senza prezzo (KO) "
                                   + "negli istanti di questi movimenti, così da poterli riprovare.")
+                                + (OreDaRiprovare == 0 ? ""
+                                : (OreDaRiprovare == 1
+                                  ? "<br>Verrà inoltre richiesta di nuovo agli exchange l'ora"
+                                  : "<br>Verranno inoltre richieste di nuovo agli exchange le " + OreDaRiprovare + " ore")
+                                  + " in cui non era stato trovato nessun prezzo.")
                                 + "<br><br>Conseguenze:<br>"
                                 + " - i prezzi attuali verranno sostituiti solo se ne viene trovato uno diverso; "
                                 + "compresi quelli inseriti o confermati a mano<br>"

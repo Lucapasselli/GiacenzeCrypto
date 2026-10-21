@@ -139,6 +139,11 @@ private static final long serialVersionUID = 8L;
         if (!notaClassificazioni.isEmpty()) {
             notaGiroconti = notaGiroconti.isEmpty() ? notaClassificazioni : notaGiroconti + "<br><br>" + notaClassificazioni;
         }
+        //E le opzioni della configurazione che questa versione non conosce (ImportazioneGenerica.CHIAVI_NOTE)
+        String notaChiavi = Importazioni.TestoChiaviConfigSconosciute();
+        if (!notaChiavi.isEmpty()) {
+            notaGiroconti = notaGiroconti.isEmpty() ? notaChiavi : notaGiroconti + "<br><br>" + notaChiavi;
+        }
         if (!movScon.trim().equalsIgnoreCase("")){
             this.Bottone_CopiaAppunti.setEnabled(true);
             this.jScrollPane1.setVisible(true);

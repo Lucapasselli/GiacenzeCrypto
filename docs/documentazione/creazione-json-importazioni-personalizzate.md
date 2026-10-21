@@ -178,6 +178,14 @@ indicata quando il file usa una funzione del formato aggiunta di recente (tra qu
 finestra di importazione, invece di proporla e poi leggerla male senza accorgersene. Se il vincolo non serve,
 lascia il campo vuoto.
 
+Dalla versione 1.0.66, se una configurazione distribuita con il programma passa a richiedere una versione più
+recente di quella installata, il programma continua a usare la copia che ha già, invece di sostituirla con quella
+nuova e smettere di proporla.
+
+Un'opzione che il programma non conosce, per un errore di battitura nel nome o perché aggiunta da una versione più
+recente, viene ignorata, e il resoconto dell'importazione la elenca fra le *opzioni della configurazione non
+riconosciute*. Le chiavi che cominciano con `_` sono commenti e non vengono mai segnalate.
+
 ```json
 "versioneMinimaApp": "1.0.64.06"
 ```

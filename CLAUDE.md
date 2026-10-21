@@ -312,7 +312,11 @@ Defines the canonical movement type map. Each raw label from an import (e.g. `ST
 - Config primitives with traps: `fusoPerPeriodo` (never add to a config already in use: moves the instant, duplicates on
   re-import), `fusoDaIntestazione`, `colonneCalcolate`, `regoleRiga`, `coppia`/`importoQuote`, `tipoSeSola`,
   `noteAcquistoDaSaldo`, `tipoSeCrypto` (type by coin: FIAT keeps `mappaCausali`), `walletSpecularePerCausale` (the causale must also be in `causaliChiuse`), `causaliAllertaDerivati` /
-  `causaliDerivati`. A config using new code needs a `versioneMinimaApp`.
+  `causaliDerivati`. A config using new code needs a `versioneMinimaApp`, **except a config already in use while
+  installations up to 1.0.65.07 are around**: they overwrite their copy and hide the entry (no jar copy for
+  `config/import`). Later versions keep the local copy when the downloaded file needs a newer version
+  (`Funzioni.TrattieniCopiaLocale`). A key read by `ConfigurazioneImport.carica` must be added to `CHIAVI_NOTE`
+  (unknown keys are listed in the import report; `ChiaviConfigImportTest`).
 - **Bitget via API** (`Bitget_API`, Tax API, key permission `taxr`, Java-only, no Node): each record becomes a row of
   the CSV export and goes through `Bitget CSV.json` via `ImportazioneGenerica.importaRighe`. API type codes that differ
   from the CSV labels go in the config's `causaliAPI`, never in code. The daily interest sum takes the date of the **last**

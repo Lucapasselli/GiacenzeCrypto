@@ -17,47 +17,34 @@ process.on('unhandledRejection', (reason) => {
     logError(`Unhandled rejection (ignorato, gestito da CCXT): ${reason}`);
 });
 
-// Trova il miglior simbolo disponibile per XXX/EUR
-async function findBestPair(ex, baseSymbol) {
-   // const markets = await ex.loadMarkets();
+// Tutte le coppie utilizzabili per XXX/EUR su questo exchange, in ordine di preferenza: EUR diretta,
+// poi USD, USDT e USDC (con il loro cambio verso EUR), poi le direzioni inverse. L'ordine e' quello
+// che `findBestPair` ha sempre seguito: la prima voce e' la coppia che sceglieva da sola.
+//
+// Perche' una lista e non piu' la sola prima coppia: una coppia presente nei markets non ha per forza
+// candele nel periodo chiesto. Su Binance DAR/EUR esiste ma ha le prime candele a meta' maggio 2022,
+// mentre DAR/USDT quota da novembre 2021: fermandosi alla coppia EUR, i movimenti DAR precedenti
+// restavano senza prezzo, e gli altri exchange (che oggi non elencano piu' DAR, rinominata D nel
+// 2025) non coprivano il buco. `eseguiRicerca` passa alla coppia successiva solo quando la
+// precedente non ha NESSUNA candela nella finestra, quindi una moneta che i dati li aveva continua
+// a ricevere esattamente la stessa coppia e lo stesso prezzo.
+async function trovaCoppieCandidate(ex, baseSymbol) {
     const markets = await getMarketsSymbols(ex);
-    
+    const candidate = [];
+
     // Se esiste direttamente la coppia con EUR
     if (`${baseSymbol}/EUR` in markets) {
-       // logInfo(`Trovato corrispondenza per EUR su ${ex.id}`);
-        return { pair: `${baseSymbol}/EUR`, invert: false, needsConversion: false };
+        candidate.push({ pair: `${baseSymbol}/EUR`, invert: false, needsConversion: false });
     }
 
-    // Se esiste con USD
-    if (`${baseSymbol}/USD` in markets) {
-       // logInfo(`Trovato corrispondenza per USD su ${ex.id}`);
-        if ("EUR/USD" in markets) {
-            return { pair: `${baseSymbol}/USD`, invert: false, needsConversion: true, conversionPair: "EUR/USD" };
-        }
-        if ("USD/EUR" in markets) {
-            return { pair: `${baseSymbol}/USD`, invert: false, needsConversion: true, conversionPair: "USD/EUR" };
-        }
-    }
-
-    // Se esiste con USDT
-    if (`${baseSymbol}/USDT` in markets) {
-       // logInfo(`Trovato corrispondenza per USDT su ${ex.id}`);
-        if ("EUR/USDT" in markets) {
-            return { pair: `${baseSymbol}/USDT`, invert: false, needsConversion: true, conversionPair: "EUR/USDT" };
-        }
-        if ("USDT/EUR" in markets) {
-            return { pair: `${baseSymbol}/USDT`, invert: false, needsConversion: true, conversionPair: "USDT/EUR" };
-        }
-    }
-
-    // Se esiste con USDC
-    if (`${baseSymbol}/USDC` in markets) {
-       // logInfo(`Trovato corrispondenza per USDC su ${ex.id}`);
-        if ("EUR/USDC" in markets) {
-            return { pair: `${baseSymbol}/USDC`, invert: false, needsConversion: true, conversionPair: "EUR/USDC" };
-        }
-        if ("USDC/EUR" in markets) {
-            return { pair: `${baseSymbol}/USDC`, invert: false, needsConversion: true, conversionPair: "USDC/EUR" };
+    // Con USD, USDT o USDC, purche' l'exchange abbia anche il cambio verso EUR
+    for (const quota of ['USD', 'USDT', 'USDC']) {
+        if (`${baseSymbol}/${quota}` in markets) {
+            if (`EUR/${quota}` in markets) {
+                candidate.push({ pair: `${baseSymbol}/${quota}`, invert: false, needsConversion: true, conversionPair: `EUR/${quota}` });
+            } else if (`${quota}/EUR` in markets) {
+                candidate.push({ pair: `${baseSymbol}/${quota}`, invert: false, needsConversion: true, conversionPair: `${quota}/EUR` });
+            }
         }
     }
 
@@ -67,18 +54,23 @@ async function findBestPair(ex, baseSymbol) {
     // controlli sopra guardano solo ${baseSymbol}/X, mai X/${baseSymbol} (bug osservato il
     // 2026-09-18 valorizzando USDT come giacenza in RT).
     if (`EUR/${baseSymbol}` in markets) {
-        return { pair: `EUR/${baseSymbol}`, invert: true, needsConversion: false };
+        candidate.push({ pair: `EUR/${baseSymbol}`, invert: true, needsConversion: false });
     }
     if (`USD/${baseSymbol}` in markets) {
         if ("EUR/USD" in markets) {
-            return { pair: `USD/${baseSymbol}`, invert: true, needsConversion: true, conversionPair: "EUR/USD" };
-        }
-        if ("USD/EUR" in markets) {
-            return { pair: `USD/${baseSymbol}`, invert: true, needsConversion: true, conversionPair: "USD/EUR" };
+            candidate.push({ pair: `USD/${baseSymbol}`, invert: true, needsConversion: true, conversionPair: "EUR/USD" });
+        } else if ("USD/EUR" in markets) {
+            candidate.push({ pair: `USD/${baseSymbol}`, invert: true, needsConversion: true, conversionPair: "USD/EUR" });
         }
     }
 
-    return null;
+    return candidate;
+}
+
+// Trova il miglior simbolo disponibile per XXX/EUR: la prima delle candidate, o null se non ce ne sono
+async function findBestPair(ex, baseSymbol) {
+    const candidate = await trovaCoppieCandidate(ex, baseSymbol);
+    return candidate.length ? candidate[0] : null;
 }
 
 
@@ -420,12 +412,20 @@ async function eseguiRicerca({ ccxtLib, exchangeIds, baseSymbol, timeframe, sinc
             const ex = (istanze && istanze[exchange_id.toLowerCase()])
                     || new ccxtLib[exchange_id.toLowerCase()](opzioniIstanza(exchange_id.toLowerCase()));
 
-            const pairInfo = await findBestPair(ex, baseSymbol);
-            if (!pairInfo) return [exchange_id, [], null, [], false];
+            const candidate = await trovaCoppieCandidate(ex, baseSymbol);
+            if (!candidate.length) return [exchange_id, [], null, [], false];
 
-            // OHLCV principale (es. BTC/USDT o BTC/EUR, oppure EUR/USDT o USD/USDT se pairInfo.invert)
+            // OHLCV principale (es. BTC/USDT o BTC/EUR, oppure EUR/USDT o USD/USDT se pairInfo.invert).
+            // Si passa alla coppia successiva solo se questa non ha nessuna candela nella finestra
+            // (vedi `trovaCoppieCandidate`): con dati anche parziali la coppia resta la prima, come prima.
             consegnaMarkets(ex);
-            const baseDataGrezza = await fetchHistorical(ex, pairInfo.pair, timeframe, since, until);
+            let pairInfo = candidate[0];
+            let baseDataGrezza = [];
+            for (const c of candidate) {
+                pairInfo = c;
+                baseDataGrezza = await fetchHistorical(ex, c.pair, timeframe, since, until);
+                if (baseDataGrezza.length) break;
+            }
             // pairInfo.invert: la coppia trovata ha baseSymbol in posizione di QUOTA (es. "EUR/USDT"
             // per baseSymbol="USDT"), quindi il prezzo grezzo è l'inverso di quello che serve — e
             // high/low si scambiano, essendo l'inversione decrescente sui valori positivi.

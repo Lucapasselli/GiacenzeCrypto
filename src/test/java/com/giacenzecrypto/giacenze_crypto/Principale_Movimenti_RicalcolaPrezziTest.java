@@ -19,6 +19,7 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * "Ricalcola Prezzi": quali movimenti della selezione sono ricalcolabili e, soprattutto, quali righe di
  * {@code PrezziKO} vengono cancellate — solo i token coinvolti agli istanti dei movimenti selezionati —
+ * e quali marcatori {@code PrezziOraCCXT} — solo le ore del movimento senza prezzi da exchange (bug A10) —
  * e rimesse identiche se l'utente annulla. La ricerca dei prezzi in rete non si esercita qui (serve Node).
  */
 class Principale_Movimenti_RicalcolaPrezziTest {
@@ -67,6 +68,8 @@ class Principale_Movimenti_RicalcolaPrezziTest {
         Principale.MappaCryptoWallet.clear();
         try (var st = DatabaseH2.connectionPrezzi.createStatement()) {
             st.execute("DELETE FROM PrezziKO");
+            st.execute("DELETE FROM PrezziOraCCXT");
+            st.execute("DELETE FROM PrezziNew");
         }
         Principale.MappaCryptoWallet.put(ID_A, riga(ID_A, "2024-01-01 12:00", "ABC", "XYZ"));
         String[] dichiarato = riga(ID_DICHIARATO, "2024-01-01 13:00", "ABC", "");
@@ -97,6 +100,85 @@ class Principale_Movimenti_RicalcolaPrezziTest {
             rs.next();
             return rs.getInt(1);
         }
+    }
+
+    /** Gli otto exchange marcati come interrogati per {@code simbolo} nell'ora {@code ora} (yyyyMMddHH). */
+    private static void marcaOra(String simbolo, long ora) {
+        for (String ex : Prezzi.EXCHANGE_CCXT) Prezzi.OraCCXT_Scrivi(simbolo, ora, ex);
+    }
+
+    private static void scriviPrezzo(String simbolo, long ts, String exchange) throws Exception {
+        try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(
+                "INSERT INTO PrezziNew (timestamp, exchange, symbol, rete, address, prezzo) VALUES (?, ?, ?, '', '', 1.5)")) {
+            ps.setLong(1, ts);
+            ps.setString(2, exchange);
+            ps.setString(3, simbolo);
+            ps.executeUpdate();
+        }
+    }
+
+    private static int contaOre() throws Exception {
+        try (var st = DatabaseH2.connectionPrezzi.createStatement();
+             ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM PrezziOraCCXT")) {
+            rs.next();
+            return rs.getInt(1);
+        }
+    }
+
+    @Test
+    void siRiapronoSoloLeOreDelMovimentoSenzaPrezziDaExchange() throws Exception {
+        //Movimento alle 12:00 (ora di Roma): servono l'ora 12 e, per la tolleranza di 5 minuti, l'ora 11
+        long t = istante(Principale.MappaCryptoWallet.get(ID_A));
+        marcaOra("ABC", 2024010112L);
+        marcaOra("ABC", 2024010111L);
+        marcaOra("ABC", 2024010115L);   //ora che il movimento non usa: NON coinvolta
+        marcaOra("XYZ", 2024010112L);
+        marcaOra("QQQ", 2024010112L);   //altro token: NON coinvolto
+        scriviPrezzo("XYZ", t + 10 * 60000L, "binance");          //l'ora di XYZ ha i dati: resta marcata
+        scriviPrezzo("ABC", t, "CoinMarketCap (Omonimo)");          //un ripiego non conta come risposta
+
+        var trovate = Principale_Movimenti_RicalcolaPrezzi.TrovaOreSenzaPrezzo(
+                Principale_Movimenti_RicalcolaPrezzi.MovimentiRicalcolabili(List.of(ID_A)));
+
+        assertEquals(16, trovate.size(), "ABC ore 11 e 12, otto exchange ciascuna");
+        assertTrue(trovate.stream().allMatch(r -> r.symbol().equals("ABC")));
+        assertTrue(trovate.stream().allMatch(r -> r.ora() == 2024010112L || r.ora() == 2024010111L));
+        assertEquals(40, contaOre(), "TrovaOreSenzaPrezzo non deve cancellare nulla");
+    }
+
+    @Test
+    void laCandelaDelleZeroDellOraDopoNonCopreLOraPrima() throws Exception {
+        //Movimento alle 12:00: l'ora 12 e' vuota, l'ora 13 comincia con una candela alle 13:00:00 esatte
+        //(una coppia nata a ora tonda, come DAR/EUR su Binance). L'ora 12 va riaperta.
+        long t = istante(Principale.MappaCryptoWallet.get(ID_A));
+        marcaOra("ABC", 2024010112L);
+        scriviPrezzo("ABC", t + 3600000L, "binance");
+
+        var trovate = Principale_Movimenti_RicalcolaPrezzi.TrovaOreSenzaPrezzo(
+                Principale_Movimenti_RicalcolaPrezzi.MovimentiRicalcolabili(List.of(ID_A)));
+
+        assertEquals(8, trovate.size());
+        assertTrue(trovate.stream().allMatch(r -> r.ora() == 2024010112L));
+        assertTrue(Principale_Movimenti_RicalcolaPrezzi.EsistePrezzoCCXTNellOra("ABC", t + 3600000L));
+        assertFalse(Principale_Movimenti_RicalcolaPrezzi.EsistePrezzoCCXTNellOra("ABC", t));
+    }
+
+    @Test
+    void eliminaERipristinaRimettonoGliStessiMarcatori() throws Exception {
+        marcaOra("ABC", 2024010112L);
+        marcaOra("QQQ", 2024010112L);
+        var coinvolte = Principale_Movimenti_RicalcolaPrezzi.TrovaOreSenzaPrezzo(
+                Principale_Movimenti_RicalcolaPrezzi.MovimentiRicalcolabili(List.of(ID_A)));
+
+        assertEquals(8, Principale_Movimenti_RicalcolaPrezzi.EliminaOre(coinvolte));
+        assertEquals(8, contaOre(), "restano solo i marcatori del token non coinvolto");
+        assertEquals(0, Prezzi.OraCCXT_Conta("ABC", 2024010112L));
+
+        Principale_Movimenti_RicalcolaPrezzi.RipristinaOre(coinvolte);
+        assertEquals(16, contaOre());
+        //Ripristinare due volte, o dopo che lo scaricamento ha già rimarcato l'ora, non deve fallire
+        Principale_Movimenti_RicalcolaPrezzi.RipristinaOre(coinvolte);
+        assertEquals(16, contaOre());
     }
 
     @Test

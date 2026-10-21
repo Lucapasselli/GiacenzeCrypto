@@ -33,13 +33,23 @@ import java.util.Set;
  * {@code Mappa_AddressRete_Nome}, quello dell'alias, quindi qui si prendono tutte le varianti — e
  * {@code ("", istante, rete, address)} da {@code CambioAddressEUR}. L'istante è quello che il ciclo passa
  * senza modificarlo: {@code ConvertiDatainLongMinuto(v[1])}. Non si toccano i {@code PrezziKO} di altri
- * istanti, né i marcatori orari degli exchange ({@code PrezziOraCCXT}): un'ora già interrogata con
- * successo da tutti gli exchange non viene richiesta di nuovo, ed è voluto.</p>
+ * istanti.</p>
+ *
+ * <p><b>Quali marcatori orari ({@code PrezziOraCCXT}) si cancellano.</b> Cancellare i soli KO non basta: le
+ * ore rimaste senza prezzo risultano già interrogate su tutti gli exchange (chi risponde "vuoto" viene
+ * marcato), quindi sia il pre-scarico ({@code OraCCXT_Conta}) sia {@code CambioXXXEUR} le saltano e lo
+ * script non viene nemmeno lanciato. Era il caso di DAR dopo la correzione dello script (bug A10): con il
+ * solo KO cancellato il prezzo restava {@code null}, con anche i marcatori dell'ora lo trovava. Si
+ * cancellano perciò i marcatori delle ore che servono al movimento ({@code Prezzi.OreDaCoprire}, ore di
+ * confine comprese), per le stesse varianti di simbolo dei KO, <b>solo se in quell'ora la cache non ha
+ * nessun prezzo di un exchange CCXT</b>. Un'ora che ha già i dati resta marcata e non si richiede, come
+ * prima. Si guarda solo agli exchange CCXT perché un prezzo di ripiego (CoinMarketCap, anche di un omonimo)
+ * non dice nulla su cosa hanno risposto gli exchange.</p>
  *
  * <p><b>Annullamento.</b> L'operazione non tocca nessun movimento finché non ha finito: i nuovi prezzi si
  * raccolgono e si applicano tutti insieme in coda. Se l'utente interrompe (pulsante "Interrompi" o chiusura
- * della finestra di avanzamento) i movimenti restano com'erano e le righe di {@code PrezziKO} cancellate
- * <b>vengono rimesse</b> — altrimenti un token davvero senza prezzo tornerebbe ad essere cercato a ogni
+ * della finestra di avanzamento) i movimenti restano com'erano e le righe di {@code PrezziKO} e di
+ * {@code PrezziOraCCXT} cancellate <b>vengono rimesse</b> — altrimenti un token davvero senza prezzo tornerebbe ad essere cercato a ogni
  * ricalcolo. Restano i prezzi eventualmente già scaricati nella cache: sono dati veri e non cambiano
  * nessun movimento.</p>
  *
@@ -209,6 +219,117 @@ public class Principale_Movimenti_RicalcolaPrezzi {
         }
     }
 
+    /** Una riga di {@code PrezziOraCCXT}: {@code ora} nel formato {@code yyyyMMddHH} (Europe/Rome). */
+    record RigaOra(String symbol, long ora, String exchange) {
+    }
+
+    /**
+     * Le righe di {@code PrezziOraCCXT} da cancellare per questi movimenti (vedi il javadoc della classe): le
+     * ore che servono a ogni movimento, per ogni variante di simbolo, in cui la cache non ha nessun prezzo
+     * di un exchange CCXT. L'ora corrente non è mai marcata e non si considera. Non cancella nulla.
+     * @param Movimenti movimenti da ricalcolare
+     * @return le righe trovate, senza doppioni
+     */
+    static List<RigaOra> TrovaOreSenzaPrezzo(List<String[]> Movimenti) {
+        Set<String> perSimbolo = new LinkedHashSet<>();
+        Set<String> perAddress = new LinkedHashSet<>();
+        for (String[] v : Movimenti) ChiaviKODelMovimento(v, perSimbolo, perAddress);
+
+        long adesso = System.currentTimeMillis();
+        Set<String> oreViste = new LinkedHashSet<>();
+        Map<String, RigaOra> trovate = new LinkedHashMap<>();
+        String sql = "SELECT symbol, ora, exchange FROM PrezziOraCCXT WHERE symbol = ? AND ora = ?";
+        try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(sql)) {
+            for (String chiave : perSimbolo) {
+                int sep = chiave.indexOf('|');
+                long istante = Long.parseLong(chiave.substring(0, sep));
+                String simbolo = chiave.substring(sep + 1);
+                for (long inizioOra : Prezzi.OreDaCoprire(istante)) {
+                    if (inizioOra + 3600000L > adesso) continue;
+                    long oraInt = FunzioniDate.OraIntYYYYMMDDHH(inizioOra);
+                    if (!oreViste.add(simbolo + "|" + oraInt)) continue;
+                    if (EsistePrezzoCCXTNellOra(simbolo, inizioOra)) continue;
+                    ps.setString(1, simbolo);
+                    ps.setLong(2, oraInt);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            RigaOra r = new RigaOra(rs.getString(1), rs.getLong(2), rs.getString(3));
+                            trovate.put(r.symbol() + "|" + r.ora() + "|" + r.exchange(), r);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return new ArrayList<>(trovate.values());
+    }
+
+    /**
+     * C'è in cache almeno un prezzo di un exchange CCXT dentro l'ora {@code [inizioOra, inizioOra + 1h)}.
+     *
+     * <p>Intervallo semiaperto di proposito, non {@link Prezzi#EsistePrezzoCCXTInCache} (che usa un
+     * {@code BETWEEN} chiuso): le coppie nascono a ore tonde, e la candela delle hh:00 dell'ora successiva
+     * faceva sembrare coperta l'ora prima. Caso reale: {@code DAR/EUR} su Binance quota dalle 10:00 UTC del
+     * 13/05/2022, l'ora 09 era rimasta vuota per il bug A10 e con il {@code BETWEEN} non veniva riaperta,
+     * benché {@code DAR/USDT} la coprisse.</p>
+     */
+    static boolean EsistePrezzoCCXTNellOra(String simbolo, long inizioOra) {
+        String sql = "SELECT 1 FROM PrezziNew WHERE symbol = ? AND timestamp >= ? AND timestamp < ? "
+                + "AND LOWER(exchange) IN (" + Prezzi.EXCHANGES_CCXT.replace(",", "','").replaceAll("^|$", "'") + ") "
+                + "LIMIT 1";
+        try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(sql)) {
+            ps.setString(1, simbolo.toUpperCase());
+            ps.setLong(2, inizioOra);
+            ps.setLong(3, inizioOra + 3600000L);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+            //Nel dubbio si riapre: costa al piu' una richiesta in piu'
+            return false;
+        }
+    }
+
+    /**
+     * Cancella da {@code PrezziOraCCXT} le righe indicate (chiave primaria completa).
+     * @return quante ne ha cancellate
+     */
+    static int EliminaOre(List<RigaOra> righe) {
+        int cancellate = 0;
+        String sql = "DELETE FROM PrezziOraCCXT WHERE symbol = ? AND ora = ? AND exchange = ?";
+        try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(sql)) {
+            for (RigaOra r : righe) {
+                ps.setString(1, r.symbol());
+                ps.setLong(2, r.ora());
+                ps.setString(3, r.exchange());
+                cancellate += ps.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return cancellate;
+    }
+
+    /**
+     * Rimette in {@code PrezziOraCCXT} le righe cancellate, dopo un'interruzione. {@code MERGE} perché nel
+     * frattempo lo scaricamento può aver già rimarcato la stessa ora.
+     */
+    static void RipristinaOre(List<RigaOra> righe) {
+        String sql = "MERGE INTO PrezziOraCCXT (symbol, ora, exchange) KEY (symbol, ora, exchange) VALUES (?, ?, ?)";
+        try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(sql)) {
+            for (RigaOra r : righe) {
+                ps.setString(1, r.symbol());
+                ps.setLong(2, r.ora());
+                ps.setString(3, r.exchange());
+                ps.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
     /**
      * Avvisa l'utente, chiede conferma e ricalcola i prezzi dei movimenti indicati.
      *
@@ -232,9 +353,14 @@ public class Principale_Movimenti_RicalcolaPrezzi {
         }
 
         List<RigaKO> koCoinvolti = TrovaKO(movimenti);
-        if (!Messaggi.ConfermaRicalcoloPrezzi(movimenti.size(), koCoinvolti.size(), owner)) return false;
+        List<RigaOra> oreSenzaPrezzo = TrovaOreSenzaPrezzo(movimenti);
+        int oreDaRiprovare = 0;
+        Set<String> ore = new LinkedHashSet<>();
+        for (RigaOra r : oreSenzaPrezzo) if (ore.add(r.symbol() + "|" + r.ora())) oreDaRiprovare++;
+        if (!Messaggi.ConfermaRicalcoloPrezzi(movimenti.size(), koCoinvolti.size(), oreDaRiprovare, owner)) return false;
 
         EliminaKO(koCoinvolti);
+        EliminaOre(oreSenzaPrezzo);
 
         Download progress = new Download();
         progress.setLocationRelativeTo(owner);
@@ -273,6 +399,7 @@ public class Principale_Movimenti_RicalcolaPrezzi {
 
                     if (Interrotto()) {
                         RipristinaKO(koCoinvolti);
+                        RipristinaOre(oreSenzaPrezzo);
                         //Chiusa con la X la finestra non c'è più e non può fare da genitore al messaggio
                         if (progress.isDisplayable()) {
                             Messaggi.InfoMessage("Ricalcola Prezzi", "Operazione annullata",
@@ -319,6 +446,7 @@ public class Principale_Movimenti_RicalcolaPrezzi {
                 } catch (RuntimeException ex) {
                     LoggerGC.ScriviErrore(ex);
                     RipristinaKO(koCoinvolti);
+                    RipristinaOre(oreSenzaPrezzo);
                     Messaggi.WarningMessage("Ricalcola Prezzi", "Ricalcolo non completato",
                             "Si è verificato un errore: nessun prezzo è stato modificato.", progress);
                 } finally {

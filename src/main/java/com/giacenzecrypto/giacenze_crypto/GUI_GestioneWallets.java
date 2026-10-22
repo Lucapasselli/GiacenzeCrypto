@@ -109,6 +109,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         Bottone_Aggiorna = new javax.swing.JButton();
         Bottone_AggiornaSelezionati = new javax.swing.JButton();
         Bottone_IndirizziBTC = new javax.swing.JButton();
+        Bottone_CercaToken = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
@@ -213,6 +214,15 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
             }
         });
 
+        Bottone_CercaToken.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_DeFi.png"))); // NOI18N
+        Bottone_CercaToken.setText("<html>Token da<br>cercare...</html>");
+        Bottone_CercaToken.setToolTipText("<html>Wallet letto dai nodi pubblici (BASE): cerca i movimenti di un token ricevuto senza fare nulla<br>e mai spostato, che lo scaricamento normale non vede, indicandone il contratto</html>");
+        Bottone_CercaToken.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_CercaTokenActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -238,6 +248,8 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_IndirizziBTC)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Bottone_CercaToken)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE))
                     .addComponent(ScrollPaneTabellaWallets))
                 .addContainerGap())
@@ -261,7 +273,8 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                             .addComponent(Bottone_InserisciWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(Bottone_IndirizziBTC, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(Bottone_IndirizziBTC, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Bottone_CercaToken, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -561,8 +574,9 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                     String mess="Vuoi che venga controllata la giacenza del token di riferimento delle chain "
                          + "e in caso di differenze creato un movimento di rettifica?<br><br>"
                             + "Valida solo per reti gestite da etherscan (No BSC,AVA,BASE,CRO,SOL)";
-                    //Nessuna rete da controllare (es. solo X Layer): la domanda non avrebbe effetto
-                    AppDialog.DialogResult result = Mappa_Wallet_Dati.isEmpty() ? null : AppDialog.builder(SwingUtilities.getWindowAncestor(c))
+                    //Nessuna rete da controllare (es. solo X Layer): la domanda non avrebbe effetto. Nemmeno nella
+                    //ricerca di token indicati dall'utente, che non tocca la moneta della rete
+                    AppDialog.DialogResult result = Mappa_Wallet_Dati.isEmpty() || NodoPubblicoDefi.RicercaTokenAttiva() ? null : AppDialog.builder(SwingUtilities.getWindowAncestor(c))
                     .windowTitle("Rettifiche movimenti")
                     .bodyTitle("Rettifiche movimenti")
                     .showTitleInBody(false)
@@ -781,6 +795,39 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         PopolaTabella();
     }//GEN-LAST:event_Bottone_IndirizziBTCActionPerformed
 
+    private void Bottone_CercaTokenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_CercaTokenActionPerformed
+        if (TabellaWallets.getSelectedRow() < 0) {
+            Messaggi.WarningMessage("Nessun Wallet selezionato",
+                    "Seleziona il wallet in cui cercare i token.", this);
+            return;
+        }
+        int riga = TabellaWallets.convertRowIndexToModel(TabellaWallets.getSelectedRow());
+        String Wallet = TabellaWallets.getModel().getValueAt(riga, 1).toString();
+        String Rete = TabellaWallets.getModel().getValueAt(riga, 2).toString();
+        Object Blocco = TabellaWallets.getModel().getValueAt(riga, 4);
+        if (!NodoPubblicoDefi.ReteSupportata(Rete)
+                || !NodoPubblicoDefi.PROVIDER.equals(Importazioni.DeFi_ProviderEffettivo(Rete))) {
+            Messaggi.WarningMessage("Ricerca non necessaria",
+                    "La ricerca serve solo per i wallet letti dai nodi pubblici (oggi BASE).<br>"
+                    + "Gli altri explorer restituiscono gia' tutti i token ricevuti.", this);
+            return;
+        }
+        long UltimoBlocco = 0;
+        try {
+            UltimoBlocco = Long.parseLong(Blocco == null ? "" : Blocco.toString().trim());
+        } catch (NumberFormatException ex) {
+            //nessun movimento importato: la ricerca e' tutta scaricamento normale (NodoPubblicoDefi.CercaToken)
+        }
+        List<String> Token = GUI_CercaTokenWallet.Mostra(Wallet, Rete, this);
+        if (Token.isEmpty()) return;
+        NodoPubblicoDefi.ImpostaRicercaToken(new NodoPubblicoDefi.RicercaToken(Rete, Wallet, Token, UltimoBlocco));
+        try {
+            AggiornaWallets(List.of(Wallet + ";" + UltimoBlocco + ";" + Rete));
+        } finally {
+            NodoPubblicoDefi.ImpostaRicercaToken(null);
+        }
+    }//GEN-LAST:event_Bottone_CercaTokenActionPerformed
+
     /** Un wallet BTC della lista che ha un nome al posto dell'indirizzo, vedi {@link WalletBtcMultiIndirizzo} */
     private static boolean isWalletBtcMultiIndirizzo(String Wallet, String Rete) {
         return Rete.equalsIgnoreCase(WalletBtcMultiIndirizzo.RETE) && !Trans_Bitcoin.isValidBitcoinAddress(Wallet);
@@ -884,6 +931,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Aggiorna;
     private javax.swing.JButton Bottone_AggiornaSelezionati;
+    private javax.swing.JButton Bottone_CercaToken;
     private javax.swing.JButton Bottone_IndirizziBTC;
     private javax.swing.JButton Bottone_InserisciWallet;
     private javax.swing.JButton Bottone_RimuoviWallet;

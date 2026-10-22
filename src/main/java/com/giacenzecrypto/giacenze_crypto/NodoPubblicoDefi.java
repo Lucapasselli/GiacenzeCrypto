@@ -60,7 +60,8 @@ import org.json.JSONObject;
  *   <li><b>i token seguiti</b>: l'elenco della rete, quelli gia' nell'archivio per quel wallet (non SCAM) e ogni
  *       token comparso nei log, che si ricerca poi da capo su tutto il tratto. <b>Resta fuori un token ricevuto
  *       senza fare nulla, fuori elenco e mai spostato</b>: e' il limite del metodo, accettato dall'utente il
- *       10/10/2026;</li>
+ *       10/10/2026. Lo recupera {@link #CercaToken} quando l'utente ne indica il contratto
+ *       ({@code GUI_CercaTokenWallet});</li>
  *   <li>un token il cui saldo cambia senza trasferimenti (interessi, ribasamento) esce dallo stato al primo cambio
  *       senza log, altrimenti la bisezione scenderebbe a ogni blocco.</li>
  * </ul>
@@ -170,17 +171,21 @@ public final class NodoPubblicoDefi {
         } catch (Exception ignore) {
             //blocco non numerico: tutta la storia, il caso piu' lungo ma mai sbagliato
         }
+        RicercaToken ric = Ricerca;
+        boolean perToken = ric != null && ric.rete().equalsIgnoreCase(Rete) && ric.wallet().equalsIgnoreCase(walletAddress);
         String Chiave = Importazioni.DocumentoFonteCorrente + "|" + Rete.toUpperCase() + "|"
-                + walletAddress.toLowerCase() + "|" + Da;
+                + walletAddress.toLowerCase() + "|" + (perToken ? "token " + ric.token() + " fino al " + ric.bloccoMassimo() : Da);
         synchronized (NodoPubblicoDefi.class) {
             if ("txlist".equalsIgnoreCase(Tipo) || Ultimo == null || !Chiave.equals(ChiaveUltima)) {
                 Ultimo = null;
                 ChiaveUltima = null;
                 if (progressb != null) progressb.setIndeterminate(true);
-                Esito e = Scansiona(Rete, walletAddress, Da, true,
-                        progressb == null ? null : progressb::FineThread,
-                        progressb == null ? null : progressb::SetMessaggioAvanzamento,
-                        Importazioni.DocumentoFonteCorrente);
+                BooleanSupplier interrotto = progressb == null ? null : progressb::FineThread;
+                Consumer<String> avanzamento = progressb == null ? null : progressb::SetMessaggioAvanzamento;
+                Esito e = perToken
+                        ? CercaToken(Rete, walletAddress, ric.token(), ric.bloccoMassimo(), interrotto, avanzamento,
+                                Importazioni.DocumentoFonteCorrente)
+                        : Scansiona(Rete, walletAddress, Da, true, interrotto, avanzamento, Importazioni.DocumentoFonteCorrente);
                 if (progressb != null) progressb.setIndeterminate(false);
                 for (String a : e.avvisi()) LoggerGC.ScriviErrore("Nodo pubblico " + Rete + " " + walletAddress + ": " + a);
                 if (!e.completo()) {
@@ -233,22 +238,222 @@ public final class NodoPubblicoDefi {
      * essere finto o cambiare da solo, e farebbe scendere la bisezione dove non succede nulla.
      */
     static Set<String> TokenDallArchivio(String wallet, String Rete) {
+        return TokenNellArchivio(wallet, Rete, false);
+    }
+
+    /** I token che l'archivio ha per un wallet su una rete; con {@code conScam} anche quelli segnati SCAM. */
+    static Set<String> TokenNellArchivio(String wallet, String Rete, boolean conScam) {
         Set<String> token = new LinkedHashSet<>();
         if (Principale.MappaCryptoWallet == null) return token;
         String w = wallet.toLowerCase();
         for (String[] v : Principale.MappaCryptoWallet.values()) {
             if (v.length < 35 || !v[3].toLowerCase().startsWith(w) || !Rete.equalsIgnoreCase(v[34])) continue;
-            AggiungiTokenArchivio(token, v[8], v[9], v[26]);
-            AggiungiTokenArchivio(token, v[11], v[12], v[28]);
+            AggiungiTokenArchivio(token, v[8], v[9], v[26], conScam);
+            AggiungiTokenArchivio(token, v[11], v[12], v[28], conScam);
         }
         return token;
     }
 
-    private static void AggiungiTokenArchivio(Set<String> token, String Simbolo, String Tipo, String Address) {
+    private static void AggiungiTokenArchivio(Set<String> token, String Simbolo, String Tipo, String Address, boolean conScam) {
         if (Address == null || Simbolo == null || Simbolo.isBlank()) return;
         String a = Address.trim().toLowerCase();
-        if (!a.matches("0x[0-9a-f]{40}") || Funzioni.isSCAM(Simbolo) || !"Crypto".equalsIgnoreCase(Tipo)) return;
+        if (!a.matches("0x[0-9a-f]{40}") || (!conScam && Funzioni.isSCAM(Simbolo)) || !"Crypto".equalsIgnoreCase(Tipo)) return;
         token.add(a);
+    }
+
+    /** Gli hash delle transazioni che l'archivio ha gia' per un wallet su una rete (campo 24, minuscolo). */
+    static Set<String> HashNellArchivio(String wallet, String Rete) {
+        Set<String> hash = new HashSet<>();
+        if (Principale.MappaCryptoWallet == null) return hash;
+        String w = wallet.toLowerCase();
+        for (String[] v : Principale.MappaCryptoWallet.values()) {
+            if (v.length < 35 || !v[3].toLowerCase().startsWith(w) || !Rete.equalsIgnoreCase(v[34])) continue;
+            if (v[24] != null && !v[24].isBlank()) hash.add(v[24].trim().toLowerCase());
+        }
+        return hash;
+    }
+
+    //=====================================================================================================
+    //=== RICERCA DI TOKEN INDICATI DALL'UTENTE
+    //=====================================================================================================
+
+    /**
+     * Ricerca dei movimenti di token indicati dall'utente ({@code GUI_CercaTokenWallet}): i token ricevuti senza fare
+     * nulla e mai spostati, che la scansione non vede. Si fa passando dallo scaricamento normale del wallet
+     * ({@code GUI_GestioneWallets.AggiornaWallets}), che la trova qui: vale solo per quel wallet e va tolta alla fine.
+     *
+     * @param bloccoMassimo l'ultimo blocco gia' importato del wallet ({@code 0} se mai scaricato): fin li' si cercano
+     *        solo i token, dopo si fa lo scaricamento normale seguendo anche loro ({@link #CercaToken})
+     */
+    record RicercaToken(String rete, String wallet, List<String> token, long bloccoMassimo) {}
+
+    private static volatile RicercaToken Ricerca;
+
+    /** Imposta la ricerca di token per il prossimo scaricamento, {@code null} per toglierla. */
+    static void ImpostaRicercaToken(RicercaToken r) {
+        Ricerca = r;
+    }
+
+    /** @return {@code true} mentre e' impostata una ricerca di token */
+    static boolean RicercaTokenAttiva() {
+        return Ricerca != null;
+    }
+
+    /**
+     * Cerca i movimenti dei token indicati, in due parti.
+     * <ol>
+     *   <li>Fino a {@code bloccoMassimo}, dal blocco 0, i soli token: escono solo righe di token che l'archivio non ha
+     *       (le transazioni e la moneta della rete di quei blocchi, se ci sono, sono gia' importate), e nessuna di una
+     *       transazione che l'archivio ha gia': questa strada non deduplica, rende univoco l'ID.</li>
+     *   <li>Dopo, lo scaricamento normale, che segue anche i token indicati e quelli trovati nella prima parte. Non
+     *       basta lasciarlo alla volta dopo: a un wallet fermo un token arrivato dopo l'ultimo blocco importato non
+     *       cambia ne' nonce ne' moneta ne' token seguiti, e non lo vedrebbe nessuna delle due. Fermarsi invece a
+     *       {@code bloccoMassimo} senza la seconda parte e scrivere oltre sposterebbe il punto di ripartenza, e quello
+     *       che il wallet ha fatto nel mezzo non verrebbe mai letto.</li>
+     * </ol>
+     * Se una delle due parti non e' completa non esce nulla, come per lo scaricamento normale.
+     */
+    static Esito CercaToken(String Rete, String wallet, List<String> token, long bloccoMassimo,
+            BooleanSupplier interrotto, Consumer<String> avanzamento, int idDocumento) {
+        Configurazione conf = ConfigurazioneRete(Rete);
+        if (conf == null) {
+            return new Esito(new JSONArray(), new JSONArray(), new JSONArray(), new JSONArray(), new JSONArray(),
+                    List.of("Rete " + Rete + " non gestita dai nodi pubblici."), false, 0, 0);
+        }
+        return CercaToken(conf, new NodiPubblici(conf), wallet, token, bloccoMassimo, interrotto, avanzamento, idDocumento,
+                TokenNellArchivio(wallet, Rete, true), TokenDallArchivio(wallet, Rete), HashNellArchivio(wallet, Rete));
+    }
+
+    /**
+     * @param archivio i token dell'archivio per il wallet, SCAM compresi: non si ricercano nella prima parte
+     * @param seguitiArchivio quelli senza gli SCAM, seguiti nella seconda come nello scaricamento normale
+     * @param hashArchivio le transazioni che l'archivio ha gia'
+     */
+    static Esito CercaToken(Configurazione conf, Nodo nodo, String wallet, List<String> token, long bloccoMassimo,
+            BooleanSupplier interrotto, Consumer<String> avanzamento, int idDocumento, Set<String> archivio,
+            Set<String> seguitiArchivio, Set<String> hashArchivio) {
+        Esito prima = new Esito(new JSONArray(), new JSONArray(), new JSONArray(), new JSONArray(), new JSONArray(),
+                List.of(), true, 0, 0);
+        if (bloccoMassimo > 0) {
+            Set<String> noti = new LinkedHashSet<>(conf.tokenNoti());
+            noti.addAll(archivio);
+            prima = SoloNuovi(new Scansione(conf, nodo, wallet, interrotto, avanzamento, idDocumento)
+                    .EseguiToken(bloccoMassimo, token, noti), noti, hashArchivio);
+            if (!prima.completo()) return prima;
+        }
+        Set<String> seguiti = new LinkedHashSet<>(conf.tokenNoti());
+        seguiti.addAll(seguitiArchivio);
+        seguiti.addAll(token);
+        for (JSONArray righe : List.of(prima.tokentx(), prima.tokennfttx())) {
+            for (int i = 0; i < righe.length(); i++) seguiti.add(righe.getJSONObject(i).optString("contractAddress").toLowerCase());
+        }
+        Esito dopo = new Scansione(conf, nodo, wallet, interrotto, avanzamento, idDocumento).Esegui(bloccoMassimo + 1, seguiti);
+        return Unisci(prima, dopo);
+    }
+
+    /** Le righe, gli avvisi e i conteggi di due scansioni; completo solo se lo sono entrambe. */
+    static Esito Unisci(Esito a, Esito b) {
+        List<String> avvisi = new ArrayList<>(a.avvisi());
+        avvisi.addAll(b.avvisi());
+        return new Esito(Accoda(a.txlist(), b.txlist()), Accoda(a.tokentx(), b.tokentx()),
+                Accoda(a.tokennfttx(), b.tokennfttx()), Accoda(a.token1155tx(), b.token1155tx()),
+                Accoda(a.txlistinternal(), b.txlistinternal()), avvisi, a.completo() && b.completo(),
+                a.letture() + b.letture(), a.blocchi() + b.blocchi());
+    }
+
+    private static JSONArray Accoda(JSONArray a, JSONArray b) {
+        JSONArray r = new JSONArray();
+        for (int i = 0; i < a.length(); i++) r.put(a.get(i));
+        for (int i = 0; i < b.length(); i++) r.put(b.get(i));
+        return r;
+    }
+
+    /** Le sole righe di token non {@code noti} e di transazioni non in {@code hashArchivio}; nessuna se incompleto. */
+    static Esito SoloNuovi(Esito e, Set<String> noti, Set<String> hashArchivio) {
+        if (!e.completo()) return e;
+        return new Esito(new JSONArray(), Nuove(e.tokentx(), noti, hashArchivio), Nuove(e.tokennfttx(), noti, hashArchivio),
+                Nuove(e.token1155tx(), noti, hashArchivio), new JSONArray(), e.avvisi(), true, e.letture(), e.blocchi());
+    }
+
+    private static JSONArray Nuove(JSONArray righe, Set<String> noti, Set<String> hashArchivio) {
+        JSONArray r = new JSONArray();
+        for (int i = 0; i < righe.length(); i++) {
+            JSONObject o = righe.getJSONObject(i);
+            if (noti.contains(o.optString("contractAddress").toLowerCase())) continue;
+            if (hashArchivio.contains(o.optString("hash").toLowerCase())) continue;
+            r.put(o);
+        }
+        return r;
+    }
+
+    /** Gli indirizzi di contratto scritti in un testo, minuscoli, senza ripetizioni, nell'ordine. */
+    static List<String> IndirizziDaTesto(String testo) {
+        Set<String> r = new LinkedHashSet<>();
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("0x[0-9a-fA-F]{40}(?![0-9a-fA-F])").matcher(testo == null ? "" : testo);
+        while (m.find()) r.add(m.group().toLowerCase());
+        return new ArrayList<>(r);
+    }
+
+    /** Le righe non vuote di un testo che non contengono un indirizzo di contratto. */
+    static List<String> RigheSenzaIndirizzo(String testo) {
+        List<String> r = new ArrayList<>();
+        for (String riga : (testo == null ? "" : testo).split("\\R")) {
+            if (!riga.isBlank() && IndirizziDaTesto(riga).isEmpty()) r.add(riga.trim());
+        }
+        return r;
+    }
+
+    /**
+     * Un token indicato dall'utente, letto sul nodo prima della ricerca.
+     *
+     * @param scarto perche' non si cerca, {@code null} se si cerca
+     */
+    record InfoToken(String indirizzo, String nome, String simbolo, String decimali, BigInteger saldo, String scarto) {}
+
+    /**
+     * Legge sul nodo nome, simbolo, decimali e saldo attuale dei token indicati, e scarta l'indirizzo del wallet,
+     * quelli che non sono un contratto e quelli che l'importazione segue gia' (i loro movimenti ci sono).
+     */
+    static List<InfoToken> LeggiToken(String Rete, String wallet, List<String> indirizzi) throws Exception {
+        Configurazione conf = ConfigurazioneRete(Rete);
+        if (conf == null) throw new Exception("Rete " + Rete + " non gestita dai nodi pubblici.");
+        return LeggiToken(conf, new NodiPubblici(conf), wallet, indirizzi, TokenNellArchivio(wallet, Rete, true));
+    }
+
+    static List<InfoToken> LeggiToken(Configurazione conf, Nodo nodo, String wallet, List<String> indirizzi,
+            Set<String> archivio) throws Exception {
+        Scansione s = new Scansione(conf, nodo, wallet, null, null, 0);
+        Map<String, String> scarti = new LinkedHashMap<>();
+        List<String> validi = new ArrayList<>();
+        for (String t : indirizzi) {
+            if (t.equalsIgnoreCase(wallet)) {
+                scarti.put(t, "e' l'indirizzo del wallet");
+            } else if (conf.tokenNoti().contains(t) || archivio.contains(t)) {
+                scarti.put(t, "token gia' seguito dall'importazione, i suoi movimenti ci sono gia'");
+            } else {
+                JsonArray p = new JsonArray();
+                p.add(t);
+                p.add("latest");
+                String codice = nodo.chiama(Uso.STATO, "eth_getCode", p).getAsString();
+                if (codice == null || codice.length() <= 2) scarti.put(t, "non e' un contratto su " + conf.rete());
+                else validi.add(t);
+            }
+        }
+        Map<String, BigInteger> saldi = Map.of();
+        if (!validi.isEmpty()) {
+            long ultimo = Long.decode(nodo.chiama(Uso.STATO, "eth_blockNumber", new JsonArray()).getAsString());
+            saldi = s.LeggiStato(ultimo, false, validi).token();
+        }
+        List<InfoToken> r = new ArrayList<>();
+        for (String t : indirizzi) {
+            if (scarti.containsKey(t)) {
+                r.add(new InfoToken(t, "", "", "", BigInteger.ZERO, scarti.get(t)));
+            } else {
+                String[] m = s.Metadati(t);
+                r.add(new InfoToken(t, m[0], m[1], m[2], saldi.getOrDefault(t, BigInteger.ZERO), null));
+            }
+        }
+        return r;
     }
 
     //=====================================================================================================
@@ -404,6 +609,8 @@ public final class NodoPubblicoDefi {
         final Set<Long> elaborati = new HashSet<>();
         final Map<String, String[]> metadati = new HashMap<>();
         int letture = 0;
+        /** Ricerca dei soli token ({@link #EseguiToken}): dei blocchi si leggono i log, non transazioni e moneta della rete. */
+        private boolean soloToken = false;
         private long inizio, fine;
         private int ultimaDecina = -1;
         private String fase = "";
@@ -464,19 +671,7 @@ public final class NodoPubblicoDefi {
                         + " blocchi), " + seguiti.size() + " token seguiti.");
                 fase = "Scansione degli stati";
                 if (!Bisezione(da, ultimo, true, seguiti)) return Fine(false);
-                int giro = 0;
-                while (!nuovi.isEmpty()) {
-                    if (++giro > MASSIMO_GIRI_TOKEN) {
-                        avvisi.add("Troppi token nuovi scoperti di seguito: la ricerca dei loro movimenti si e' fermata "
-                                + "al giro " + MASSIMO_GIRI_TOKEN + ".");
-                        break;
-                    }
-                    List<String> lotto = new ArrayList<>(nuovi);
-                    nuovi.clear();
-                    log(r + ": ricerca dei movimenti di " + lotto.size() + " token scoperti nei log (giro " + giro + ").");
-                    fase = "Token scoperti, giro " + giro;
-                    if (!Bisezione(da, ultimo, false, lotto)) return Fine(false);
-                }
+                if (!CercaScoperti(da, ultimo)) return Fine(false);
                 log(r + " " + w + ": scansione finita, " + letture + " letture dello stato, " + elaborati.size()
                         + " blocchi con movimenti, " + (txlist.length() + tokentx.length() + tokennfttx.length()
                         + token1155tx.length() + txlistinternal.length()) + " righe.");
@@ -489,6 +684,53 @@ public final class NodoPubblicoDefi {
                 avvisi.add("Nodi pubblici di " + r + ": " + ex.getMessage());
                 return Fine(false);
             }
+        }
+
+        /**
+         * Solo i token {@code daCercare}, dal blocco 0 a {@code bloccoMassimo}, senza nonce ne' moneta della rete
+         * ({@link #CercaToken}). I {@code noti} non si ricercano se compaiono nei log: i loro movimenti ci sono gia'.
+         */
+        Esito EseguiToken(long bloccoMassimo, List<String> daCercare, Set<String> noti) {
+            String r = conf.rete();
+            soloToken = true;
+            try {
+                long ultimo = Math.min(bloccoMassimo,
+                        Long.decode(nodo.chiama(Uso.STATO, "eth_blockNumber", new JsonArray()).getAsString()) - 3);
+                conosciuti.addAll(noti);
+                conosciuti.addAll(daCercare);
+                log(r + " " + w + ": ricerca di " + daCercare.size() + " token indicati fino al blocco " + ultimo + ".");
+                fase = "Token indicati";
+                if (!Bisezione(0, ultimo, false, daCercare)) return Fine(false);
+                if (!CercaScoperti(0, ultimo)) return Fine(false);
+                log(r + " " + w + ": ricerca finita, " + letture + " letture dello stato, " + elaborati.size()
+                        + " blocchi con movimenti.");
+                return Fine(true);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                return Fine(false);
+            } catch (Exception ex) {
+                LoggerGC.ScriviErrore(ex);
+                avvisi.add("Nodi pubblici di " + r + ": " + ex.getMessage());
+                return Fine(false);
+            }
+        }
+
+        /** Ricerca da capo su ({@code da}, {@code a}] dei token scoperti nei log. @return falso se interrotta o fermata */
+        private boolean CercaScoperti(long da, long a) throws Exception {
+            int giro = 0;
+            while (!nuovi.isEmpty()) {
+                if (++giro > MASSIMO_GIRI_TOKEN) {
+                    avvisi.add("Troppi token nuovi scoperti di seguito: la ricerca dei loro movimenti si e' fermata "
+                            + "al giro " + MASSIMO_GIRI_TOKEN + ".");
+                    break;
+                }
+                List<String> lotto = new ArrayList<>(nuovi);
+                nuovi.clear();
+                log(conf.rete() + ": ricerca dei movimenti di " + lotto.size() + " token scoperti nei log (giro " + giro + ").");
+                fase = "Token scoperti, giro " + giro;
+                if (!Bisezione(da, a, false, lotto)) return false;
+            }
+            return true;
         }
 
         /** Una bisezione completa su ({@code da}, {@code a}]. @return falso se interrotta o fermata */
@@ -607,7 +849,7 @@ public final class NodoPubblicoDefi {
                 String hash = Testo(tx, "hash").toLowerCase();
                 txBlocco.put(hash, tx);
                 String da = Testo(tx, "from").toLowerCase(), a = Testo(tx, "to").toLowerCase();
-                if (da.equals(w) || (a.equals(w) && Esadecimale(Testo(tx, "value")).signum() > 0)) rilevanti.add(tx);
+                if (!soloToken && (da.equals(w) || (a.equals(w) && Esadecimale(Testo(tx, "value")).signum() > 0))) rilevanti.add(tx);
             }
 
             //Log del wallet nel blocco: Transfer (ERC-20 ed ERC-721) da e verso, TransferSingle/Batch da e verso
@@ -699,15 +941,18 @@ public final class NodoPubblicoDefi {
                 RigheLog(l, hash, b, tsTesto, nettoToken);
             }
 
-            //Moneta della rete: quello che le transazioni non spiegano e' ETH interno
-            BigInteger delta;
-            if (base) {
-                delta = dopo.moneta().subtract(prima.moneta());
-            } else {
-                delta = SaldoMoneta(b).subtract(SaldoMoneta(b - 1));
+            //Moneta della rete: quello che le transazioni non spiegano e' ETH interno. Nella ricerca dei soli token il
+            //blocco sta prima dell'ultimo importato: se la moneta e' cambiata, e' gia' nell'archivio
+            if (!soloToken) {
+                BigInteger delta;
+                if (base) {
+                    delta = dopo.moneta().subtract(prima.moneta());
+                } else {
+                    delta = SaldoMoneta(b).subtract(SaldoMoneta(b - 1));
+                }
+                BigInteger residuo = delta.subtract(spiegato);
+                if (residuo.signum() != 0) Interne(b, tsTesto, residuo, candidati, txBlocco);
             }
-            BigInteger residuo = delta.subtract(spiegato);
-            if (residuo.signum() != 0) Interne(b, tsTesto, residuo, candidati, txBlocco);
 
             //Token: un saldo che cambia senza trasferimenti non si puo' seguire con la bisezione
             for (String t : token) {

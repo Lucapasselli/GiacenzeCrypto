@@ -33,6 +33,8 @@ class NodoPubblicoDefiTest {
     static final String WETH = "0x4200000000000000000000000000000000000006";
     static final String NUOVO = "0x00000000000000000000000000000000000000dd";
     static final String RIBASA = "0x00000000000000000000000000000000000000ee";
+    static final String AIR = "0x00000000000000000000000000000000000000a1";
+    static final String SIB = "0x00000000000000000000000000000000000000a2";
     static final BigInteger ETH = BigInteger.TEN.pow(18);
 
     static final NodoPubblicoDefi.Configurazione CONF = new NodoPubblicoDefi.Configurazione("BASE",
@@ -59,6 +61,8 @@ class NodoPubblicoDefiTest {
         /** Token il cui saldo cresce di 1 a ogni blocco a partire da un blocco, senza log. */
         final Map<String, Long> ribasanti = new HashMap<>();
         String codice = "0x";
+        /** Indirizzi che hanno codice (contratti); gli altri hanno {@link #codice} */
+        final Set<String> contratti = new HashSet<>();
         boolean guasto = false;
         int chiamate = 0;
 
@@ -115,7 +119,7 @@ class NodoPubblicoDefiTest {
             chiamate++;
             if (guasto) throw new Exception("nodo giu'");
             switch (metodo) {
-                case "eth_getCode": return new JsonPrimitive(codice);
+                case "eth_getCode": return new JsonPrimitive(contratti.contains(p.get(0).getAsString()) ? "0x6001" : codice);
                 case "eth_blockNumber": return new JsonPrimitive("0x" + Long.toHexString(testa + 3));
                 case "eth_getTransactionCount": return Hex(nonce(Blocco(p.get(1))));
                 case "eth_getBalance": return Hex(eth(Blocco(p.get(1))));
@@ -418,5 +422,121 @@ class NodoPubblicoDefiTest {
         assertEquals(2, l.size());
         assertEquals(BigInteger.TWO, l.get(1)[0]);
         assertEquals(BigInteger.valueOf(20), l.get(1)[1]);
+    }
+
+    @Test
+    void laRicercaDiUnTokenIndicatoScartaQuelloCheLArchivioHaEDopoLUltimoBloccoProsegueNormale() {
+        Catena c = new Catena(100_000);
+        //1) airdrop di AIR insieme a SIB (che si scopre nei log), e nello stesso blocco USDC gia' importati
+        Tx air = c.tx(30_000, "0xair", X, AIR);
+        air.logs.add(Log(AIR, NodoPubblicoDefi.TOPIC_TRANSFER, X, W, BigInteger.valueOf(100), "0xair"));
+        air.logs.add(Log(SIB, NodoPubblicoDefi.TOPIC_TRANSFER, X, W, BigInteger.valueOf(7), "0xair"));
+        c.saldo(AIR, 30_000, BigInteger.valueOf(100));
+        c.saldo(SIB, 30_000, BigInteger.valueOf(7));
+        Tx usdc = c.tx(30_000, "0xusdc", X, ROUTER);
+        usdc.logs.add(Log(USDC, NodoPubblicoDefi.TOPIC_TRANSFER, X, W, BigInteger.valueOf(5), "0xusdc"));
+        c.saldo(USDC, 30_000, BigInteger.valueOf(5));
+        //2) un altro arrivo di AIR, in una transazione che l'archivio ha gia'
+        Tx gia = c.tx(35_000, "0xgia", X, AIR);
+        gia.logs.add(Log(AIR, NodoPubblicoDefi.TOPIC_TRANSFER, X, W, BigInteger.ONE, "0xgia"));
+        c.saldo(AIR, 35_000, BigInteger.valueOf(101));
+        //3) dopo l'ultimo blocco importato (40.000): lo legge la seconda parte, lo scaricamento normale
+        Tx dopo = c.tx(60_000, "0xdopo", X, AIR);
+        dopo.logs.add(Log(AIR, NodoPubblicoDefi.TOPIC_TRANSFER, X, W, BigInteger.TWO, "0xdopo"));
+        c.saldo(AIR, 60_000, BigInteger.valueOf(103));
+
+        NodoPubblicoDefi.Esito e = NodoPubblicoDefi.CercaToken(CONF, c, W, List.of(AIR), 40_000, null, null, 0,
+                Set.of(), Set.of(), Set.of("0xgia"));
+
+        assertTrue(e.completo(), String.join("\n", e.avvisi()));
+        assertEquals(3, e.blocchi(), "i due arrivi di AIR fino al 40.000 (SIB sta in un blocco gia' letto) e quello dopo");
+        List<JSONObject> righe = Righe(e.tokentx(), "0xair");
+        assertEquals(2, righe.size(), "AIR e il token arrivato con lui");
+        assertTrue(righe.stream().anyMatch(r -> r.getString("contractAddress").equals(SIB)));
+        assertTrue(Righe(e.tokentx(), "0xusdc").isEmpty(), "un token gia' seguito ha gia' i suoi movimenti");
+        assertTrue(Righe(e.tokentx(), "0xgia").isEmpty(), "una transazione gia' nell'archivio non si ripete");
+        assertEquals(1, Righe(e.tokentx(), "0xdopo").size(), "dopo l'ultimo blocco importato una volta sola");
+        assertEquals(0, e.txlist().length());
+        assertEquals(0, e.txlistinternal().length());
+        assertTrue(e.avvisi().isEmpty(), e.avvisi().toString());
+    }
+
+    @Test
+    void iTokenIndicatiSiControllanoPrimaDellaRicerca() throws Exception {
+        String NOTO = "0x00000000000000000000000000000000000000a3";
+        Catena c = new Catena(10_000);
+        c.contratti.add(AIR);
+        c.contratti.add(NOTO);
+        c.saldo(AIR, 5_000, BigInteger.valueOf(3_000_000_000_000L));
+
+        List<NodoPubblicoDefi.InfoToken> r = NodoPubblicoDefi.LeggiToken(CONF, c, W, List.of(AIR, W, USDC, NOTO, X), Set.of(NOTO));
+
+        assertEquals(5, r.size());
+        assertNull(r.get(0).scarto());
+        assertEquals("Claim on: esempio.com", r.get(0).simbolo());
+        assertEquals("12", r.get(0).decimali());
+        assertEquals(BigInteger.valueOf(3_000_000_000_000L), r.get(0).saldo());
+        assertTrue(r.get(1).scarto().contains("wallet"));
+        assertTrue(r.get(2).scarto().contains("gia' seguito"), "token dell'elenco della rete");
+        assertTrue(r.get(3).scarto().contains("gia' seguito"), "token dell'archivio, SCAM compresi");
+        assertTrue(r.get(4).scarto().contains("non e' un contratto"));
+    }
+
+    @Test
+    void gliIndirizziSiLeggonoDalTesto() {
+        String a = "0x" + "Ab".repeat(20);
+        String testo = "  " + a + "  \nriga senza indirizzo\n\nanche " + a.toLowerCase() + " ripetuto\n0x" + "1".repeat(41);
+        assertEquals(List.of(a.toLowerCase()), NodoPubblicoDefi.IndirizziDaTesto(testo));
+        assertEquals(List.of("riga senza indirizzo", "0x" + "1".repeat(41)), NodoPubblicoDefi.RigheSenzaIndirizzo(testo));
+    }
+
+    @Test
+    void unTokenArrivatoDopoLUltimoBloccoAUnWalletFermoSiTrova() {
+        Catena c = new Catena(100_000);
+        Tx air = c.tx(60_000, "0xair60", X, AIR);
+        air.logs.add(Log(AIR, NodoPubblicoDefi.TOPIC_TRANSFER, X, W, BigInteger.valueOf(100), "0xair60"));
+        c.saldo(AIR, 60_000, BigInteger.valueOf(100));
+        Tx invio = c.tx(70_000, "0xinvio70", W, X);
+        invio.value = BigInteger.ONE;
+        Set<String> noti = new LinkedHashSet<>(CONF.tokenNoti());
+
+        //il buco: ne' la sola ricerca fino all'ultimo blocco ne' lo scaricamento normale vedono l'airdrop
+        assertEquals(0, new NodoPubblicoDefi.Scansione(CONF, c, W, null, null, 0).EseguiToken(40_000, List.of(AIR), noti).tokentx().length());
+        assertEquals(0, new NodoPubblicoDefi.Scansione(CONF, c, W, null, null, 0).Esegui(40_001, noti).tokentx().length());
+
+        NodoPubblicoDefi.Esito e = NodoPubblicoDefi.CercaToken(CONF, c, W, List.of(AIR), 40_000, null, null, 0,
+                Set.of(), Set.of(), Set.of());
+
+        assertTrue(e.completo(), String.join("\n", e.avvisi()));
+        assertEquals(1, Righe(e.tokentx(), "0xair60").size());
+        assertEquals(1, Righe(e.txlist(), "0xinvio70").size(), "la seconda parte legge anche nonce e moneta della rete");
+    }
+
+    @Test
+    void unWalletMaiScaricatoFaSoloLoScaricamentoNormaleSeguendoIlToken() {
+        Catena c = new Catena(100_000);
+        Tx air = c.tx(30_000, "0xair30", X, AIR);
+        air.logs.add(Log(AIR, NodoPubblicoDefi.TOPIC_TRANSFER, X, W, BigInteger.valueOf(100), "0xair30"));
+        c.saldo(AIR, 30_000, BigInteger.valueOf(100));
+
+        NodoPubblicoDefi.Esito e = NodoPubblicoDefi.CercaToken(CONF, c, W, List.of(AIR), 0, null, null, 0,
+                Set.of(), Set.of(), Set.of());
+
+        assertTrue(e.completo(), String.join("\n", e.avvisi()));
+        assertEquals(1, Righe(e.tokentx(), "0xair30").size());
+    }
+
+    @Test
+    void seUnaParteNonECompletaNonEsceNulla() {
+        Catena c = new Catena(100_000);
+        Tx air = c.tx(30_000, "0xair30", X, AIR);
+        air.logs.add(Log(AIR, NodoPubblicoDefi.TOPIC_TRANSFER, X, W, BigInteger.valueOf(100), "0xair30"));
+        c.saldo(AIR, 30_000, BigInteger.valueOf(100));
+        c.codice = "0xef0100" + "11".repeat(20); //la seconda parte rifiuta il wallet con codice
+
+        NodoPubblicoDefi.Esito e = NodoPubblicoDefi.CercaToken(CONF, c, W, List.of(AIR), 40_000, null, null, 0,
+                Set.of(), Set.of(), Set.of());
+
+        assertFalse(e.completo());
     }
 }

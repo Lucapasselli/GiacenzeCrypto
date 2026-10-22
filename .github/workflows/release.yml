@@ -504,18 +504,17 @@ jobs:
       # Il nome/tag della release deve restare esattamente "Giacenze_Crypto_<VERSIONE>": l'app
       # (Aggiornamenti.PREFISSO_TAG) ricava la versione dal tag letto dall'API GitHub, e le
       # versioni fino alla 1.0.65 controllano https://sourceforge.net/.../files/Giacenze_Crypto_<VERSIONE>/,
-      # cartella che l'integrazione GitHub->SourceForge (webhook "release") crea con lo stesso nome.
-      # Le beta escono come prerelease e mai come "Latest". Il webhook probabilmente le copia
-      # comunque su SourceForge: in quel caso vanno cancellate a mano da li'.
+      # cartella che il job copia-sourceforge (sourceforge.yml) crea con lo stesso nome.
+      # Le beta escono come prerelease e mai come "Latest", e non vanno su SourceForge.
       - name: Crea la Release GitHub
         uses: softprops/action-gh-release@v2
         with:
           tag_name: Giacenze_Crypto_${{ env.VERSIONE }}
           name: Giacenze_Crypto_${{ env.VERSIONE }}
           files: release_assets/*
-          # Una bozza non e' visibile al pubblico e non genera l'evento "release: published",
-          # quindi ne' l'integrazione GitHub->SourceForge ne' un eventuale controllo aggiornamenti
-          # dell'app la vedono finche' non viene pubblicata a mano dall'interfaccia GitHub.
+          # Una bozza non e' visibile al pubblico: ne' il controllo aggiornamenti dell'app ne'
+          # SourceForge la vedono. Pubblicata a mano da GitHub, va copiata su SourceForge
+          # lanciando sourceforge.yml (copia-sourceforge qui sotto salta le bozze).
           draft: ${{ inputs.bozza }}
           prerelease: ${{ inputs.canale == 'beta' }}
           make_latest: ${{ inputs.canale != 'beta' }}
@@ -554,4 +553,14 @@ jobs:
     # fallirebbe con Error-Installer-Availability, quindi il job va saltato.
     if: ${{ inputs.pubblica_winget && !inputs.bozza && inputs.canale != 'beta' }}
     uses: ./.github/workflows/winget.yml
+    secrets: inherit
+
+  # Copia la release su SourceForge, solo per le stabili: sostituisce il webhook
+  # GitHub->SourceForge, che copiava anche le beta. Aspetta aggiorna-flatpak per includere il
+  # .flatpak quando viene allegato; "!cancelled()" serve perche' altrimenti un aggiorna-flatpak
+  # saltato farebbe saltare anche questo job. sourceforge.yml rifiuta comunque beta e bozze.
+  copia-sourceforge:
+    needs: [create-release, aggiorna-flatpak]
+    if: ${{ !cancelled() && needs.create-release.result == 'success' && !inputs.bozza && inputs.canale != 'beta' }}
+    uses: ./.github/workflows/sourceforge.yml
     secrets: inherit

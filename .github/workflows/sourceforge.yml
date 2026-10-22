@@ -1,0 +1,150 @@
+name: SourceForge
+
+# Copia su SourceForge (progetto giacenze-crypto-com) i file di una release STABILE gia'
+# pubblicata su GitHub. Sostituisce il webhook GitHub->SourceForge, che scattava su ogni
+# evento "release" e non si puo' filtrare per tipo: copiava anche le beta (prerelease).
+#
+# La cartella si chiama esattamente "Giacenze_Crypto_<VERSIONE>", come quella creata dal
+# webhook: le versioni dell'app fino alla 1.0.65 cercano gli aggiornamenti con una HEAD su
+# https://sourceforge.net/projects/giacenze-crypto-com/files/Giacenze_Crypto_<X.Y.Z+1>/.
+# Dentro, gli stessi file della release GitHub piu' i due archivi del codice sorgente, con i
+# nomi che usava il webhook.
+#
+# I file si prendono dalla release pubblicata, non dagli artifact della build: cosi' funziona
+# anche lanciandolo a mano dopo aver pubblicato una bozza, e include il .flatpak che
+# flatpak.yml aggiunge dopo. Non cancella mai niente su SourceForge (rsync senza --delete).
+#
+# Secret: SF_SSH_KEY (chiave privata ed25519, la pubblica sta in SourceForge > Account
+# Settings > SSH Settings dell'utente lucapasselli). Facoltativo SF_API_KEY (Account >
+# Releases API Key): se c'e', imposta anche il download predefinito della pagina del progetto.
+
+on:
+  workflow_dispatch:
+    inputs:
+      versione:
+        description: "Versione da copiare (vuoto = quella di pom.xml)"
+        required: false
+        default: ''
+      solo_prova:
+        description: "Controlla e simula il caricamento (rsync --dry-run) senza scrivere su SourceForge"
+        type: boolean
+        required: false
+        default: false
+  workflow_call:
+    inputs:
+      versione:
+        type: string
+        required: false
+        default: ''
+      solo_prova:
+        type: boolean
+        required: false
+        default: false
+
+env:
+  PROGETTO_SF: giacenze-crypto-com
+  UTENTE_SF: lucapasselli
+  # Chiave host di frs.sourceforge.net, fissata invece di ssh-keyscan a ogni esecuzione.
+  # Impronta SHA256:209BDmH3jsRyO9UeGPPgLWPSegKmYCBIya0nR/AWWCY, verificata il 2026-10-23 con
+  # quella pubblicata in https://sourceforge.net/p/forge/documentation/SSH%20Key%20Fingerprints/
+  CHIAVE_HOST_SF: "frs.sourceforge.net ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOQD35Ujalhh+JJkPvMckDlhu4dS7WH6NsOJ15iGCJLC"
+
+jobs:
+  copia:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determina la versione
+        run: |
+          VERSIONE="${{ inputs.versione }}"
+          if [ -z "$VERSIONE" ]; then
+            # Il primo <version> del pom e' quello del progetto (non c'e' un <parent>)
+            VERSIONE=$(sed -n 's|^ *<version>\(.*\)</version>.*|\1|p' pom.xml | head -1 | tr -d '\r')
+          fi
+          if [ -z "$VERSIONE" ]; then
+            echo "Versione non determinabile" >&2
+            exit 1
+          fi
+          echo "Versione: $VERSIONE"
+          echo "VERSIONE=$VERSIONE" >> "$GITHUB_ENV"
+          echo "TAG=Giacenze_Crypto_$VERSIONE" >> "$GITHUB_ENV"
+
+      # Le beta non vanno su SourceForge. Il controllo sta qui e non solo nell'"if" di
+      # release.yml, perche' un lancio a mano di questo workflow quell'"if" non lo attraversa.
+      - name: Rifiuta beta e bozze
+        run: |
+          if ! [[ "$VERSIONE" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::$VERSIONE non e' una versione stabile (tre cifre): le beta non vanno su SourceForge"
+            exit 1
+          fi
+          STATO=$(gh release view "$TAG" --json isPrerelease,isDraft -q '"\(.isPrerelease) \(.isDraft)"')
+          if [ "$STATO" != "false false" ]; then
+            echo "::error::La release $TAG e' una prerelease o una bozza (isPrerelease isDraft = $STATO)"
+            exit 1
+          fi
+
+      - name: Scarica i file della release
+        run: |
+          mkdir -p "sf/$TAG"
+          gh release download "$TAG" --dir "sf/$TAG"
+          # Gli archivi del codice sorgente, con i nomi che usava il webhook
+          gh release download "$TAG" --archive=tar.gz --output "sf/$TAG/$TAG source code.tar.gz"
+          gh release download "$TAG" --archive=zip --output "sf/$TAG/$TAG source code.zip"
+          ls -la "sf/$TAG"
+
+      - name: Prepara SSH
+        env:
+          SF_SSH_KEY: ${{ secrets.SF_SSH_KEY }}
+        run: |
+          if [ -z "$SF_SSH_KEY" ]; then
+            echo "::error::Manca il secret SF_SSH_KEY"
+            exit 1
+          fi
+          install -dm700 ~/.ssh
+          install -m600 /dev/null ~/.ssh/sourceforge
+          printf '%s\n' "$SF_SSH_KEY" > ~/.ssh/sourceforge
+          printf '%s\n' "$CHIAVE_HOST_SF" > ~/.ssh/known_hosts_sf
+
+      - name: Copia su SourceForge
+        run: |
+          PROVA=""
+          if [ "${{ inputs.solo_prova }}" = "true" ]; then PROVA="--dry-run"; fi
+          # La barra finale fa creare a rsync la sola cartella della versione. Mai --delete.
+          rsync -av $PROVA \
+            -e "ssh -i $HOME/.ssh/sourceforge -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts_sf" \
+            "sf/$TAG/" "$UTENTE_SF@frs.sourceforge.net:/home/frs/project/$PROGETTO_SF/$TAG/"
+
+      # Il pulsante di download della pagina del progetto non segue i caricamenti da solo:
+      # si imposta con la Release API. Linux punta al .deb, macOS al DMG Apple Silicon.
+      - name: Imposta il download predefinito
+        if: ${{ !inputs.solo_prova }}
+        env:
+          SF_API_KEY: ${{ secrets.SF_API_KEY }}
+        run: |
+          if [ -z "$SF_API_KEY" ]; then
+            echo "::notice::SF_API_KEY non impostato: download predefinito di SourceForge non aggiornato"
+            exit 0
+          fi
+          imposta() {   # $1 = file, $2... = piattaforme
+            local file="$1"; shift
+            local dati=""
+            for p in "$@"; do dati="${dati}&default=$p"; done
+            for tentativo in 1 2 3 4 5; do
+              # Appena caricato, SourceForge puo' non conoscere ancora il file
+              risposta=$(curl -s -H "Accept: application/json" -X PUT -d "${dati#&}" \
+                --data-urlencode "api_key=$SF_API_KEY" \
+                "https://sourceforge.net/projects/$PROGETTO_SF/files/$TAG/$file")
+              if echo "$risposta" | grep -q '"result"'; then
+                echo "Predefinito per $*: $file"
+                return 0
+              fi
+              sleep 30
+            done
+            echo "::warning::Download predefinito non impostato per $file: $risposta"
+          }
+          imposta "GiacenzeCrypto_${VERSIONE}_Installer_Windows.exe" windows
+          imposta "GiacenzeCrypto_${VERSIONE}_DMG_MacOS_AppleSilicon.dmg" mac
+          imposta "GiacenzeCrypto_${VERSIONE}_Deb_Linux.deb" linux bsd solaris others

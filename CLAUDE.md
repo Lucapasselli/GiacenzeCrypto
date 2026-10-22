@@ -487,6 +487,12 @@ The app checks GitHub Releases: stable = `releases/latest`, beta = the list incl
   `nocommit/StrumentiTest/avvia-vm-windows.sh`); the Windows portable (robocopy) is not yet tested.
 Details: `nocommit/Documentazione/Analisi_Aggiornamenti_Automatici.md`.
 
+**SourceForge receives stable releases only** (`.github/workflows/sourceforge.yml`, job `copia-sourceforge` of
+`release.yml`, since 2026-10-23): rsync over SSH (secret `SF_SSH_KEY`, optional `SF_API_KEY` for the default
+download) of the published GitHub release into `Giacenze_Crypto_<version>/`, the folder that clients up to 1.0.65
+probe for updates. It replaces the GitHub→SourceForge webhook, which fired on prereleases too and cannot be
+filtered. The workflow itself refuses 4-digit versions, prereleases and drafts; after publishing a draft, run it by hand.
+
 ### Distro packages — AUR and flatpak, both built from the published release
 
 Two more workflows package what `release.yml` has already published, rather than rebuilding it:

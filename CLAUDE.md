@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest#nomeDelMetodo
 
-# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.65.01)
+# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.65.09)
 java -jar target/Giacenze_Crypto-<version>-jar-with-dependencies.jar --NoJarPath --workdir ./test/2025/
 ```
 
@@ -461,6 +461,12 @@ at runtime (`jdk.charsets`: without it OpenPDF text extraction fails with the ba
 only in the packages, never from Maven or NetBeans. Check a change on a runtime built from the list (`jlink` without
 `--strip-native-commands`, then `./mvnw test -Djvm=<runtime>/bin/java`; the tests alone also need `jdk.httpserver`).
 
+**The Windows runtime must be ≥ 25.0.5** (JDK bug JDK-8341382): with 24.x and 25.0.4.x the JVM dies in `awt.dll`
+whenever Windows changes display configuration (RDP reconnect, monitor plugged/unplugged, docking), silently losing
+unsaved movements. Verified on the Windows VM on 2026-10-22: 24.0.2 and 25.0.4.1 crash, 25.0.5 does not.
+`JAVA_VERSION: 25` floats to whatever `setup-java` has for Windows, which may lag Linux. Details:
+`nocommit/Documentazione/Analisi_Crash_AWT_Cambio_Schermo_Windows.md`.
+
 **No bitcoinj, no Bouncy Castle in the jar** (2026-10-22, 14 MB of 29): xpub/ypub/zpub addresses come from
 `IndirizziBitcoin` (BIP32 public derivation, RIPEMD-160, Base58Check, Bech32, JDK only, `IndirizziBitcoinTest`).
 `bcprov` stays as a test dependency for Keccak. OpenPDF needs it only to decrypt AES PDFs, which the app does not read:
@@ -477,7 +483,8 @@ The app checks GitHub Releases: stable = `releases/latest`, beta = the list incl
 - Self-install only for the Inno installer and the portables; `.deb`/AUR/flatpak/macOS/Store get a link. Portables are
   updated by **copying over, never deleting** (the default workdir is the launch folder, so user data may live there).
 - Nothing is downloaded or installed without the user's consent; install closes through `Principale.ChiudiProgramma`
-  (same path as the window's X) after an automatic backup. Windows path not yet tested on a real machine.
+  (same path as the window's X) after an automatic backup. Inno path tested on a Windows 11 VM (2026-10-22,
+  `nocommit/StrumentiTest/avvia-vm-windows.sh`); the Windows portable (robocopy) is not yet tested.
 Details: `nocommit/Documentazione/Analisi_Aggiornamenti_Automatici.md`.
 
 ### Distro packages — AUR and flatpak, both built from the published release

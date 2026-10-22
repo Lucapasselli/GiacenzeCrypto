@@ -11,17 +11,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import okhttp3.*;
 import org.json.*;
-import org.bitcoinj.core.Base58;
-import org.bitcoinj.core.LegacyAddress;
-import org.bitcoinj.core.NetworkParameters;
-import org.bitcoinj.core.Sha256Hash;
-import org.bitcoinj.core.SegwitAddress;
-import org.bitcoinj.core.Utils;
-import org.bitcoinj.crypto.DeterministicKey;
-import org.bitcoinj.crypto.HDKeyDerivation;
-import org.bitcoinj.params.MainNetParams;
-import org.bitcoinj.script.Script;
-import org.bitcoinj.script.ScriptBuilder;
 
 /**
  *
@@ -42,11 +31,6 @@ public class Trans_Bitcoin {
     static final int GAP_LIMIT = 20;
     //Il log verboso è ora governato da VarCondivise.LogJsonDefi (checkbox in Opzioni -> Varie).
 
-    // Version bytes delle chiavi estese Bitcoin mainnet
-    private static final byte[] XPUB_BYTES = {0x04, (byte) 0x88, (byte) 0xB2, (byte) 0x1E};
-    private static final byte[] YPUB_BYTES = {0x04, (byte) 0x9D, (byte) 0x7C, (byte) 0xB2};
-    private static final byte[] ZPUB_BYTES = {0x04, (byte) 0xB2, (byte) 0x47, (byte) 0x46};
-
     enum ExtKeyType {
         XPUB,  // P2PKH - indirizzi legacy (1xxx)
         YPUB,  // P2SH-P2WPKH - indirizzi SegWit compatibili (3xxx)
@@ -62,23 +46,6 @@ public class Trans_Bitcoin {
         return k.startsWith("xpub") || k.startsWith("ypub") || k.startsWith("zpub") || k.startsWith("tpub");
     }
 
-    /**
-     * Converte ypub/zpub/tpub a format xpub (stessi byte di dati, soli version bytes diversi)
-     * in modo che bitcoinj possa deserializzarla.
-     */
-    private static String reencodeAsXpub(String extKey) throws Exception {
-        // decodeChecked verifica il checksum e restituisce il payload senza checksum (78 bytes)
-        byte[] payload = Base58.decodeChecked(extKey);
-        // Sostituisci i primi 4 bytes con la versione xpub mainnet
-        System.arraycopy(XPUB_BYTES, 0, payload, 0, 4);
-        // Ricalcola e aggiungi il checksum (SHA256d dei 78 bytes)
-        byte[] hash = Sha256Hash.hashTwice(payload);
-        byte[] withChecksum = new byte[payload.length + 4];
-        System.arraycopy(payload, 0, withChecksum, 0, payload.length);
-        System.arraycopy(hash, 0, withChecksum, payload.length, 4);
-        return Base58.encode(withChecksum);
-    }
-
     private static ExtKeyType detectKeyType(String extKey) {
         String lower = extKey.trim().toLowerCase();
         if (lower.startsWith("ypub")) return ExtKeyType.YPUB;
@@ -89,21 +56,17 @@ public class Trans_Bitcoin {
     /**
      * Genera l'indirizzo Bitcoin dal chiave derivata, in base al tipo di chiave estesa.
      */
-    private static String addressFromKey(DeterministicKey key, ExtKeyType type) {
-        NetworkParameters params = MainNetParams.get();
+    private static String addressFromKey(IndirizziBitcoin.ChiaveEstesa key, ExtKeyType type) {
         switch (type) {
-            case YPUB: {
+            case YPUB:
                 // P2SH-P2WPKH (BIP49): P2WPKH output script wrapped in P2SH
-                Script p2wpkhScript = ScriptBuilder.createP2WPKHOutputScript(key);
-                byte[] scriptHash = Utils.sha256hash160(p2wpkhScript.getProgram());
-                return LegacyAddress.fromScriptHash(params, scriptHash).toString();
-            }
+                return key.Indirizzo(IndirizziBitcoin.Formato.P2SH_P2WPKH);
             case ZPUB:
                 // P2WPKH native SegWit (BIP84)
-                return SegwitAddress.fromKey(params, key).toString();
+                return key.Indirizzo(IndirizziBitcoin.Formato.P2WPKH);
             default:
                 // P2PKH legacy (BIP44)
-                return LegacyAddress.fromKey(params, key).toString();
+                return key.Indirizzo(IndirizziBitcoin.Formato.P2PKH);
         }
     }
 
@@ -114,10 +77,9 @@ public class Trans_Bitcoin {
      */
     public static Set<String> deriveUsedAddresses(String extKey, Download progressb) throws Exception {
         ExtKeyType keyType = detectKeyType(extKey);
-        String xpubStr = (keyType == ExtKeyType.XPUB) ? extKey : reencodeAsXpub(extKey);
-
-        NetworkParameters params = MainNetParams.get();
-        DeterministicKey masterKey = DeterministicKey.deserializeB58(xpubStr, params);
+        //xpub, ypub e zpub hanno la stessa chiave e lo stesso chain code: il prefisso decide solo il
+        //formato dell'indirizzo (una tpub di testnet viene rifiutata)
+        IndirizziBitcoin.ChiaveEstesa masterKey = IndirizziBitcoin.ChiaveEstesa.Leggi(extKey);
 
         Set<String> usedAddresses = new LinkedHashSet<>();
         String keyPrefix = extKey.substring(0, Math.min(12, extKey.length()));
@@ -125,7 +87,7 @@ public class Trans_Bitcoin {
         System.out.println("[BTC] Inizio derivazione indirizzi da chiave " + keyPrefix + "... (tipo: " + keyType + ", gap limit: " + GAP_LIMIT + ")");
 
         for (int chain = 0; chain <= 1; chain++) {
-            DeterministicKey chainKey = HDKeyDerivation.deriveChildKey(masterKey, chain);
+            IndirizziBitcoin.ChiaveEstesa chainKey = masterKey.Figlia(chain);
             int consecutiveUnused = 0;
             String chainLabel = (chain == 0) ? "esterna" : "cambio";
             System.out.println("[BTC] Scansione catena " + chainLabel + " (m/" + chain + "/n)...");
@@ -133,7 +95,7 @@ public class Trans_Bitcoin {
             for (int idx = 0; consecutiveUnused < GAP_LIMIT; idx++) {
                 if (progressb != null && progressb.FineThread()) break;
 
-                DeterministicKey childKey = HDKeyDerivation.deriveChildKey(chainKey, idx);
+                IndirizziBitcoin.ChiaveEstesa childKey = chainKey.Figlia(idx);
                 String address = addressFromKey(childKey, keyType);
 
                 String chainLabelShort = (chain == 0) ? "ext" : "chg";

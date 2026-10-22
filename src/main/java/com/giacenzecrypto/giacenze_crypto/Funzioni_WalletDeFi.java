@@ -6,7 +6,6 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import java.awt.Desktop;
 import java.util.regex.Pattern;
-import org.bitcoinj.core.Base58;
 
 /**
  *
@@ -147,7 +146,7 @@ public class Funzioni_WalletDeFi {
         
             private static boolean isValidSolanaAddress(String address) {
         try {
-            byte[] decoded = Base58.decode(address);
+            byte[] decoded = IndirizziBitcoin.DecodificaBase58(address);
             return decoded.length == 32; // Gli indirizzi Solana devono essere di 32 byte decodificati
         } catch (Exception e) {
             return false;

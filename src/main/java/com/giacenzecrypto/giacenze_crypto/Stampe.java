@@ -145,7 +145,11 @@ public class Stampe {
         if (f == null || !f.isFile() || f.length() == 0) {
             return false;
         }
-        try (com.lowagie.text.pdf.PdfReader r = new com.lowagie.text.pdf.PdfReader(f.getAbsolutePath())) {
+        //Dal byte[] e non dal percorso: col percorso OpenPDF mappa il file in memoria e su Java 9+ non
+        //riesce a rilasciare la mappa alla close(). Su Windows il PDF resta bloccato finché non passa il
+        //GC, e la rinomina della cartella della dichiarazione fallisce (vedi Principale_Normativa.EstraiPdf).
+        try (com.lowagie.text.pdf.PdfReader r = new com.lowagie.text.pdf.PdfReader(
+                java.nio.file.Files.readAllBytes(f.toPath()))) {
             return r.getNumberOfPages() > 0;
         } catch (IOException | RuntimeException e) {
             return false;

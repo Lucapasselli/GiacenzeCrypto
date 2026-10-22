@@ -277,6 +277,9 @@ Ogni stampa è una dichiarazione archiviata: `Dichiarazioni/<anno>_<RW|RT>_<data
 - Dopo ogni calcolo `RW_ControllaDefinitiva`/`RT_ControllaDefinitive` confronta con la definitiva e l'etichetta rossa dice l'effetto, mai cosa fare.
 - I documenti di origine copiati stanno **fuori** da `Totali`/`Righi`/`Opzioni`/`Errori`. La Continuità solo a richiesta.
 - Avviso E-Money (`Principale_EmoneyMancanti`, `EmoneyToken`, elenco in `config/varie/EmoneyToken.json`): solo sui pulsanti *Calcola*.
+- **Mai `new PdfReader(percorso)` su un file che poi si sposta o si cancella**: OpenPDF lo mappa in memoria, su Java 9+
+  non riesce a rilasciare la mappa e su Windows il file resta bloccato fino al GC (la rinomina di `.in_corso_*` falliva
+  sempre). Si passa il `byte[]` (`Stampe.PdfValido`, `Principale_Normativa.EstraiPdf`). Su Linux non si vede.
 Dettagli: `nocommit/Documentazione/Dettagli_Quadri_RW_RT.md`.
 
 ### Le note di compilazione dei quadri e i file di `config/`
@@ -447,7 +450,22 @@ path only). Endpoints that carry a key or a signature stay in code for the same 
 
 ## Packaging & distribution
 
-A single workflow, `.github/workflows/release.yml`, triggered manually (`workflow_dispatch`), on Temurin JDK 24. It reads the version straight from `pom.xml`, builds the fat JAR with `maven-shade-plugin` (`-DskipTests`) and then packages it with `jpackage` in four jobs: `build-windows` (portable app-image, cross-platform portable JAR bundle, and an installer built with Inno Setup), `build-linux` (app-image + `.deb`), `build-macos` (app-image + `.dmg`, on an OS matrix) and `create-release`, which collects the artifacts and publishes the GitHub release via `softprops/action-gh-release`. Each job copies the runtime-side folders (`Scripts/`, `Immagini/`, `logo.png`) next to the JAR.
+A single workflow, `.github/workflows/release.yml`, triggered manually (`workflow_dispatch`), on Temurin JDK 25 (LTS: a non-LTS version stops getting security fixes after six months, and its runtime is what every package ships). It reads the version straight from `pom.xml`, builds the fat JAR with `maven-shade-plugin` (`-DskipTests`) and then packages it with `jpackage` in four jobs: `build-windows` (portable app-image, cross-platform portable JAR bundle, and an installer built with Inno Setup), `build-linux` (app-image + `.deb`), `build-macos` (app-image + `.dmg`, on an OS matrix) and `create-release`, which collects the artifacts and publishes the GitHub release via `softprops/action-gh-release`. Each job copies the runtime-side folders (`Scripts/`, `Immagini/`, `logo.png`) next to the JAR.
+
+**The packaged runtime has an explicit module list, `packaging/runtime/moduli.txt`** (86 MB instead of the 127 MB
+of jpackage's default set). After building the jar every job runs `java packaging/runtime/ModuliRuntime.java <jar>`,
+which fails the build if jdeps finds a module missing from the list, then writes `MODULI_RUNTIME`/`OPZIONI_JLINK` to
+`$GITHUB_ENV` for `--add-modules`/`--jlink-options` (`--include-locales=it,en`). jdeps cannot see modules loaded only
+at runtime (`jdk.charsets`: without it OpenPDF text extraction fails with the bare message `MacRoman`;
+`jdk.localedata`: `Locale.ITALY` formats in English; `jdk.zipfs`): those are added by hand, and a missing one shows
+only in the packages, never from Maven or NetBeans. Check a change on a runtime built from the list (`jlink` without
+`--strip-native-commands`, then `./mvnw test -Djvm=<runtime>/bin/java`; the tests alone also need `jdk.httpserver`).
+
+**No bitcoinj, no Bouncy Castle in the jar** (2026-10-22, 14 MB of 29): xpub/ypub/zpub addresses come from
+`IndirizziBitcoin` (BIP32 public derivation, RIPEMD-160, Base58Check, Bech32, JDK only, `IndirizziBitcoinTest`).
+`bcprov` stays as a test dependency for Keccak. OpenPDF needs it only to decrypt AES PDFs, which the app does not read:
+`Principale_Normativa.Estrai` catches the resulting `LinkageError` so such a document just drops out of the search.
+The form templates in `Immagini/` must stay unencrypted: `Stampe.Aggiungi*` do not catch it.
 
 ### Automatic updates and the beta channel (`Aggiornamenti`, `AggiornamentoInstallazione`)
 

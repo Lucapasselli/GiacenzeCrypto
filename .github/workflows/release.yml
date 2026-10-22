@@ -2,7 +2,7 @@ name: Release
 
 env:
   PROJECT_NAME: Giacenze_Crypto
-  JAVA_VERSION: 24
+  JAVA_VERSION: 25
   JAVA_DISTRIBUTION: temurin
 
 on:
@@ -146,6 +146,10 @@ jobs:
       - name: Build JAR with Maven
         run: mvn clean package -DskipTests
 
+      - name: Moduli del runtime, controllati con jdeps (packaging/runtime/moduli.txt)
+        shell: bash
+        run: java packaging/runtime/ModuliRuntime.java "target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar" >> "$GITHUB_ENV"
+
       - name: Prepara cartella build con risorse
         shell: pwsh
         run: |
@@ -171,6 +175,8 @@ jobs:
           jpackage `
             --type app-image `
             --input build `
+            --add-modules $env:MODULI_RUNTIME `
+            --jlink-options $env:OPZIONI_JLINK `
             --dest out\portable `
             --name $env:PROJECT_NAME `
             --main-jar Giacenze_Crypto.jar `
@@ -192,6 +198,8 @@ jobs:
           jpackage `
             --type app-image `
             --input build `
+            --add-modules $env:MODULI_RUNTIME `
+            --jlink-options $env:OPZIONI_JLINK `
             --dest installer `
             --name $env:PROJECT_NAME `
             --main-jar Giacenze_Crypto.jar `
@@ -259,6 +267,10 @@ jobs:
       - name: Build JAR with Maven
         run: mvn clean package -DskipTests
 
+      - name: Moduli del runtime, controllati con jdeps (packaging/runtime/moduli.txt)
+        shell: bash
+        run: java packaging/runtime/ModuliRuntime.java "target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar" >> "$GITHUB_ENV"
+
       - name: Copy extra resources
         run: |
           mkdir -p build/Immagini
@@ -275,6 +287,8 @@ jobs:
           jpackage \
             --type app-image \
             --input build \
+            --add-modules "$MODULI_RUNTIME" \
+            --jlink-options "$OPZIONI_JLINK" \
             --dest out/linux \
             --name $PROJECT_NAME \
             --main-jar Giacenze_Crypto.jar \
@@ -291,6 +305,8 @@ jobs:
           jpackage \
             --type deb \
             --input build \
+            --add-modules "$MODULI_RUNTIME" \
+            --jlink-options "$OPZIONI_JLINK" \
             --dest out/deb \
             --name $PROJECT_NAME \
             --main-jar Giacenze_Crypto.jar \
@@ -372,6 +388,10 @@ jobs:
       - name: Build JAR with Maven
         run: mvn clean package -DskipTests
 
+      - name: Moduli del runtime, controllati con jdeps (packaging/runtime/moduli.txt)
+        shell: bash
+        run: java packaging/runtime/ModuliRuntime.java "target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar" >> "$GITHUB_ENV"
+
       - name: Prepare input directory for jpackage
         run: |
           mkdir -p build/Immagini
@@ -389,6 +409,8 @@ jobs:
           jpackage \
             --type app-image \
             --input build \
+            --add-modules "$MODULI_RUNTIME" \
+            --jlink-options "$OPZIONI_JLINK" \
             --dest out/appimage \
             --name ${{ env.PROJECT_NAME }} \
             --main-jar Giacenze_Crypto.jar \

@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.giacenzecrypto</groupId>
   <artifactId>Giacenze_Crypto</artifactId>
-  <version>1.0.64</version>
+  <version>1.0.65.08</version>
   <licenses>
     <license>
       <name>MIT License</name>
@@ -31,6 +31,20 @@
         <directory>config/importmappe</directory>
         <includes>
           <include>*.json</include>
+        </includes>
+      </resource>
+      <resource>
+        <targetPath>Varie</targetPath>
+        <directory>config/varie</directory>
+        <includes>
+          <include>*.json</include>
+        </includes>
+      </resource>
+      <resource>
+        <targetPath>Novita</targetPath>
+        <directory>docs/documentazione</directory>
+        <includes>
+          <include>changelog.md</include>
         </includes>
       </resource>
     </resources>
@@ -95,6 +109,12 @@
     </repository>
   </repositories>
   <dependencies>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk15to18</artifactId>
+      <version>1.73</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>

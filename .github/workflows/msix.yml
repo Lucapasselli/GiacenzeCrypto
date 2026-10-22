@@ -16,7 +16,7 @@ name: MSIX (Microsoft Store)
 
 env:
   PROJECT_NAME: Giacenze_Crypto
-  JAVA_VERSION: 24
+  JAVA_VERSION: 25
   JAVA_DISTRIBUTION: temurin
   # Deve restare allineata a "nodeVersion" di config/varie/Runtime.json (CcxtInterop.nodeVersion()): e' la
   # stessa distribuzione che l'applicazione scaricherebbe da se' negli altri pacchetti. Il pacchetto MSIX non
@@ -112,6 +112,10 @@ jobs:
         # quali ".edizione=store" viene letto come fase del ciclo di vita ("Unknown lifecycle phase").
         # -DskipTests sopravvive solo perche' non contiene punti.
         run: mvn clean package -DskipTests "-Dgiacenze.edizione=store"
+
+      - name: Moduli del runtime, controllati con jdeps (packaging/runtime/moduli.txt)
+        shell: bash
+        run: java packaging/runtime/ModuliRuntime.java "target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar" >> "$GITHUB_ENV"
 
       - name: Verifica che il jar sia davvero l'edizione Store
         shell: pwsh
@@ -229,6 +233,8 @@ jobs:
           jpackage `
             --type app-image `
             --input build `
+            --add-modules $env:MODULI_RUNTIME `
+            --jlink-options $env:OPZIONI_JLINK `
             --dest out `
             --name $env:PROJECT_NAME `
             --main-jar Giacenze_Crypto.jar `

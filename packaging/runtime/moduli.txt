@@ -1,0 +1,40 @@
+# Moduli Java inclusi nel runtime dei pacchetti costruiti con jpackage (release.yml e msix.yml).
+#
+# Senza un elenco jpackage include una sessantina di moduli "di default" (127 MB) e lascia fuori quelli
+# che non esportano API, come jdk.charsets: e' cosi' che la ricerca nella Normativa falliva con "MacRoman".
+# Con questo elenco il runtime pesa 86 MB.
+#
+# ModuliRuntime.java confronta l'elenco con jdeps sul jar appena costruito e ferma la build se manca un
+# modulo usato dal codice o da una libreria. jdeps pero' non vede i moduli caricati solo a runtime
+# (charset, file system, servizi): quelli sono la seconda parte dell'elenco e vanno aggiunti a mano.
+# Un modulo mancante si scopre solo nei pacchetti, non lanciando il programma da Maven o da NetBeans.
+#
+# Un modulo per riga, # per i commenti.
+
+# --- Rilevati da jdeps ---
+java.base
+java.desktop
+java.sql
+java.management
+java.naming
+java.prefs
+java.scripting
+java.compiler
+java.instrument
+java.logging
+java.xml
+jdk.net
+jdk.unsupported
+
+# --- Caricati solo a runtime, invisibili a jdeps ---
+# codifiche dei caratteri non standard (MacRoman e altre, usate da OpenPDF)
+jdk.charsets
+# dati di localizzazione: con le sole lingue di OPZIONI_JLINK (--include-locales) costa circa 1 MB
+jdk.localedata
+# file system dentro gli zip (FileSystems.newFileSystem)
+jdk.zipfs
+# accessibilita' di Swing (Java Access Bridge su Windows)
+jdk.accessibility
+jdk.unsupported.desktop
+# provider crittografico PKCS#11
+jdk.crypto.cryptoki

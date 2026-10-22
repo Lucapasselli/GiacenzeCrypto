@@ -417,7 +417,9 @@ public class Principale_Normativa {
             if (nome.endsWith(".md") || nome.endsWith(".txt")) {
                 return Files.readString(file.toPath(), StandardCharsets.UTF_8);
             }
-        } catch (Exception ex) {
+        } catch (Exception | LinkageError ex) {
+            //LinkageError: un PDF cifrato con AES, che OpenPDF decifra con bouncycastle, non incluso nel
+            //programma. Quel documento resta fuori dalla ricerca invece di fermarla.
             LoggerGC.ScriviErrore(ex);
         }
         return "";

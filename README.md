@@ -76,6 +76,7 @@ Distribuito con licenza **MIT**: vedere il file [`LICENSE`](LICENSE) e
   - Crypto.com (file di export dell'app e dell'exchange)
   - Binance (API REST con firma HMAC-SHA256, oppure i CSV esportati dal sito)
   - OKX (API: conti Funding e Trading, Simple Earn e archivio storico trimestrale fino al 2021; oppure i CSV)
+  - per le API basta una chiave **in sola lettura**, senza permessi di trading né di prelievo: il programma legge soltanto i movimenti
   - wallet DeFi/on-chain: Bitcoin (xpub/ypub/zpub via mempool.space), Solana (via Helius) e una ventina di chain EVM (Ethereum, BSC, Cronos, Arbitrum, Base, Optimism, Polygon, Avalanche, Gnosis, Linea, Blast, Unichain, World Chain, Taiko, Abstract, Katana, Sonic, Mantle, Berachain, Monad) via Etherscan multi-chain API o Blockscout
   - esportazioni di servizi di rendicontazione (CoinTracking, Tatax)
   - importazione generica da CSV, configurabile tramite descrittori JSON

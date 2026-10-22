@@ -197,7 +197,9 @@ public class GUI_Informazioni extends JDialog {
             h.append("<p>Le chiavi API degli exchange che vengono eventualmente inserite restano nel ")
              .append("database locale e viaggiano solo verso l'exchange a cui appartengono. Non sono ")
              .append("necessarie: servono unicamente a scaricare i propri movimenti senza passare da un ")
-             .append("file, e i backup le escludono se non lo si chiede esplicitamente.</p>");
+             .append("file, e i backup le escludono se non lo si chiede esplicitamente. Vanno create ")
+             .append("<b>in sola lettura</b>, senza permessi di trading né di prelievo: al programma ")
+             .append("basta leggere i movimenti.</p>");
         }
         h.append("<p>Le uniche chiamate di rete sono quelle che servono a importare i movimenti dagli ")
          .append("explorer di blockchain e a recuperare le quotazioni storiche, elencate qui sotto.");

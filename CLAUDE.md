@@ -422,6 +422,10 @@ Every Swing form has a paired `.form` XML file. **Always edit both** when adding
 
 Code added **after** `initComponents()` in constructors (table header setup, extra listeners, etc.) is safe and never overwritten.
 
+A field holding a credential (API key, secret, passphrase) is a `JPasswordField` with `CampiSegreti.AggiungiOcchio` after
+`initComponents()`; a table showing credentials masks them in the renderer only (`CampiSegreti.NascondiColonne`), never in
+the model. `CampiSegretiTest` fails on a `.form` component named `*ApiKey*`/`*ApiSecret*`/`*Passphrase*` left as `JTextField`.
+
 ## Adding a new EVM-compatible blockchain
 
 **Since 2026-10-13 a chain is a voce of `config/varie/Reti.json`** (`Reti`, in the reload registry): `id`, `nome` (the label

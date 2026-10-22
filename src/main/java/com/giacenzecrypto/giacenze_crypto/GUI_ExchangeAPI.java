@@ -58,6 +58,12 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Binance_Tabella);
         Tabelle.ColoraTabellaSemplice(TabellaWallets);
         Tabelle.ColoraTabellaSemplice(Binance_Tabella);
+        //Chiavi a pallini, in chiaro solo con l'occhio delle caselle o il pulsante Mostra chiavi.
+        //Dopo ColoraTabellaSemplice, di cui le colonne nascoste riusano il renderer.
+        CampiSegreti.AggiungiOcchio(TextField_ApiKey, TextField_ApiSecret, TextField_Passphrase);
+        CampiSegreti.NascondiColonne(TabellaWallets, Bottone_MostraChiavi::isSelected, 2, 3, 4);
+        Bottone_MostraChiavi.setIcon(Icone.Occhio);
+        Bottone_MostraChiavi.setSelectedIcon(Icone.OcchioBarrato);
         OKX_CheckBox_InteressiCalcolati.setSelected("SI".equalsIgnoreCase(
                 DatabaseH2.Pers_Opzioni_Leggi(OKX_InteressiEarn.OPZIONE_RICOSTRUZIONE)));
         OKX_CheckBox_InteressiAnniPassati.setSelected("SI".equalsIgnoreCase(
@@ -81,18 +87,20 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         Pannello_Chiavi = new javax.swing.JPanel();
         ScrollPaneTabellaWallets = new javax.swing.JScrollPane();
         TabellaWallets = new javax.swing.JTable();
-        TextField_ApiKey = new javax.swing.JTextField();
+        TextField_ApiKey = new javax.swing.JPasswordField();
         Label_IndirizzoWallet1 = new javax.swing.JLabel();
         Label_IndirizzoWallet = new javax.swing.JLabel();
-        TextField_ApiSecret = new javax.swing.JTextField();
+        TextField_ApiSecret = new javax.swing.JPasswordField();
         Label_Passphrase = new javax.swing.JLabel();
-        TextField_Passphrase = new javax.swing.JTextField();
+        TextField_Passphrase = new javax.swing.JPasswordField();
         Label_Exchange = new javax.swing.JLabel();
         ComboBox_Exchange = new javax.swing.JComboBox<>();
         Bottone_InserisciChiave = new javax.swing.JButton();
         Bottone_RimuoviChiave = new javax.swing.JButton();
         Bottone_AggiornaSelezionati = new javax.swing.JButton();
         Bottone_Aggiorna = new javax.swing.JButton();
+        Bottone_MostraChiavi = new javax.swing.JToggleButton();
+        Label_SolaLettura = new javax.swing.JLabel();
         Pannello_Binance = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextPane1 = new javax.swing.JTextPane();
@@ -157,11 +165,15 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         }
         TabellaWallets.getTableHeader().setPreferredSize(new Dimension(TabellaWallets.getColumnModel().getTotalColumnWidth(), 48));
 
+        TextField_ApiKey.setToolTipText("Usare una chiave in sola lettura, senza permessi di trading né di prelievo");
+
         Label_IndirizzoWallet1.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_IndirizzoWallet1.setText("Api Key :");
 
         Label_IndirizzoWallet.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_IndirizzoWallet.setText("Api Secret :");
+
+        TextField_ApiSecret.setToolTipText("Usare una chiave in sola lettura, senza permessi di trading né di prelievo");
 
         Label_Passphrase.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_Passphrase.setText("Passphrase :");
@@ -210,6 +222,16 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             }
         });
 
+        Bottone_MostraChiavi.setText("Mostra chiavi");
+        Bottone_MostraChiavi.setToolTipText("Mostra in chiaro le chiavi della tabella, premere di nuovo per nasconderle");
+        Bottone_MostraChiavi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_MostraChiaviActionPerformed(evt);
+            }
+        });
+
+        Label_SolaLettura.setText("<html><b>Usare solo chiavi API in sola lettura</b>, create sul sito dell'exchange senza permessi di trading né di prelievo: al programma basta leggere i movimenti.</html>");
+
         javax.swing.GroupLayout Pannello_ChiaviLayout = new javax.swing.GroupLayout(Pannello_Chiavi);
         Pannello_Chiavi.setLayout(Pannello_ChiaviLayout);
         Pannello_ChiaviLayout.setHorizontalGroup(
@@ -233,7 +255,8 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Bottone_RimuoviChiave, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
-                    .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Bottone_MostraChiavi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(10, 10, 10)
                 .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -242,6 +265,10 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                     .addContainerGap()
                     .addComponent(ScrollPaneTabellaWallets, javax.swing.GroupLayout.DEFAULT_SIZE, 1015, Short.MAX_VALUE)
                     .addContainerGap()))
+            .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Label_SolaLettura, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         Pannello_ChiaviLayout.setVerticalGroup(
             Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -270,13 +297,17 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                         .addGroup(javax.swing.GroupLayout.Alignment.LEADING, Pannello_ChiaviLayout.createSequentialGroup()
                             .addComponent(Bottone_RimuoviChiave, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(Bottone_MostraChiavi, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Label_SolaLettura, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(7, 7, 7))
             .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(ScrollPaneTabellaWallets, javax.swing.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE)
-                    .addGap(140, 140, 140)))
+                    .addGap(190, 190, 190)))
         );
 
         Bottone_Aggiorna.setText("<html>Scarica nuovi movimenti<br>da tutti i Wallet della lista</html>");
@@ -489,6 +520,11 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
 
         }
     }//GEN-LAST:event_Bottone_InserisciChiaveActionPerformed
+
+    private void Bottone_MostraChiaviActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_MostraChiaviActionPerformed
+        Bottone_MostraChiavi.setText(Bottone_MostraChiavi.isSelected() ? "Nascondi chiavi" : "Mostra chiavi");
+        TabellaWallets.repaint();
+    }//GEN-LAST:event_Bottone_MostraChiaviActionPerformed
 
     private static boolean isValidApi(String Exchange,String Key,String Secret){
         boolean valido=false;
@@ -1067,12 +1103,14 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     private javax.swing.JButton Bottone_Aggiorna;
     private javax.swing.JButton Bottone_AggiornaSelezionati;
     private javax.swing.JButton Bottone_InserisciChiave;
+    private javax.swing.JToggleButton Bottone_MostraChiavi;
     private javax.swing.JButton Bottone_RimuoviChiave;
     private javax.swing.JComboBox<String> ComboBox_Exchange;
     private javax.swing.JLabel Label_Exchange;
     private javax.swing.JLabel Label_IndirizzoWallet;
     private javax.swing.JLabel Label_IndirizzoWallet1;
     private javax.swing.JLabel Label_Passphrase;
+    private javax.swing.JLabel Label_SolaLettura;
     private javax.swing.JCheckBox OKX_CheckBox_InteressiAnniPassati;
     private javax.swing.JCheckBox OKX_CheckBox_InteressiCalcolati;
     private javax.swing.JLabel OKX_Label_WalletCarta;
@@ -1082,9 +1120,9 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     private javax.swing.JPanel Pannello_OKX;
     private javax.swing.JScrollPane ScrollPaneTabellaWallets;
     private javax.swing.JTable TabellaWallets;
-    private javax.swing.JTextField TextField_ApiKey;
-    private javax.swing.JTextField TextField_ApiSecret;
-    private javax.swing.JTextField TextField_Passphrase;
+    private javax.swing.JPasswordField TextField_ApiKey;
+    private javax.swing.JPasswordField TextField_ApiSecret;
+    private javax.swing.JPasswordField TextField_Passphrase;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;

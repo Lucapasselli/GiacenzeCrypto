@@ -16,12 +16,13 @@ avvertenze sul corretto utilizzo del programma.
   il formato del file, creando ulteriori problemi in importazione. Si raccomanda di controllare i saldi
   iniziali e finali e di sistemare le eventuali incongruenze.
 
-- **Binance.** Dove possibile conviene usare lo scaricamento diretto **dalle API** (*Opzioni – ApiKey*),
-  che recupera scambi, conversioni, depositi, prelievi ed Earn. Sui file **CSV** esportati dal sito
+- **Binance.** Dove possibile conviene usare lo scaricamento diretto **dalle API** (pulsante *Exchange API*
+  della scheda dei movimenti, con una chiave in **sola lettura**), che recupera scambi, conversioni, depositi, prelievi ed Earn. Sui file **CSV** esportati dal sito
   possono invece mancare, a seconda del periodo in cui sono stati generati, alcuni dati (scambi verso
   cripto non più supportate, alcuni Earn, ecc.): anche qui è opportuno verificare manualmente i saldi.
 
-- **OKX.** Anche in questo caso lo scaricamento **dalle API** è la strada consigliata: recupera i
+- **OKX.** Anche in questo caso lo scaricamento **dalle API** (con una chiave in **sola lettura**) è la
+  strada consigliata: recupera i
   movimenti del conto Funding e del conto Trading, i rendimenti di Simple Earn e — su richiesta —
   l'**archivio storico trimestrale**, che risale fino al 2021. L'esportazione CSV dal sito copre invece
   solo un periodo limitato, e richiede di esportare **sia** il trading **sia** il funding wallet.

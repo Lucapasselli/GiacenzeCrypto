@@ -66,7 +66,7 @@ a parte. Le voci della finestra di importazione sono queste.
 | **Dettaglio Auto-Invest** | Ricostruisce i piani Auto-Invest | Se si è usato Auto-Invest, dopo il CSV |
 
 In alternativa ai file, i movimenti si possono scaricare dalle API con il pulsante *Exchange API* della
-scheda dei movimenti (vedi [più sotto](#binance-api)).
+scheda dei movimenti, con una chiave in **sola lettura** (vedi [più sotto](#binance-api)).
 
 ### Il file delle transazioni {#binance-transazioni}
 
@@ -107,8 +107,8 @@ periodo si importa o l'uno o l'altro, mai entrambi.
 
 ### Lo scaricamento dalle API {#binance-api}
 
-Con una chiave API in **sola lettura** inserita con il pulsante *Exchange API* della scheda dei
-movimenti, il programma scarica i movimenti direttamente da Binance, senza file (il pulsante non c'è
+Con una chiave API in **sola lettura** (senza permessi di trading né di prelievo) inserita con il pulsante
+*Exchange API* della scheda dei movimenti, il programma scarica i movimenti direttamente da Binance, senza file (il pulsante non c'è
 nell'edizione distribuita dal Microsoft Store). A fine scaricamento confronta le giacenze dell'archivio
 con i saldi attuali dell'account e mostra le monete che non coincidono. Le API di Binance però non
 restituiscono:
@@ -678,8 +678,8 @@ tutti gli anni in cui lo si è usato.
 | **Formato storico** | I CSV di OKX letti dal vecchio importatore |
 
 La strada consigliata sono le **API**: con il pulsante *Exchange API* della scheda dei movimenti si
-inserisce una chiave in sola lettura, con secret e passphrase (il pulsante non c'è nell'edizione
-distribuita dal Microsoft Store).
+inserisce una chiave in **sola lettura** (senza permessi di trading né di prelievo), con secret e passphrase
+(il pulsante non c'è nell'edizione distribuita dal Microsoft Store).
 
 ### Lo scaricamento dalle API {#okx-api}
 

@@ -87,6 +87,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="Bottone_RimuoviChiave" pref="289" max="32767" attributes="0"/>
                           <Component id="Bottone_AggiornaSelezionati" max="32767" attributes="0"/>
+                          <Component id="Bottone_MostraChiavi" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                       <Component id="Bottone_Aggiorna" min="-2" pref="182" max="-2" attributes="0"/>
@@ -98,6 +99,11 @@
                           <Component id="ScrollPaneTabellaWallets" pref="1015" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Label_SolaLettura" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -134,16 +140,20 @@
                                   <Component id="Bottone_RimuoviChiave" min="-2" pref="40" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="Bottone_AggiornaSelezionati" min="-2" pref="41" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="Bottone_MostraChiavi" min="-2" pref="40" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Label_SolaLettura" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                   </Group>
                   <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Component id="ScrollPaneTabellaWallets" pref="417" max="32767" attributes="0"/>
-                          <EmptySpace min="-2" pref="140" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="190" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -214,7 +224,10 @@
                 </Component>
               </SubComponents>
             </Container>
-            <Component class="javax.swing.JTextField" name="TextField_ApiKey">
+            <Component class="javax.swing.JPasswordField" name="TextField_ApiKey">
+              <Properties>
+                <Property name="toolTipText" type="java.lang.String" value="Usare una chiave in sola lettura, senza permessi di trading n&#xe9; di prelievo"/>
+              </Properties>
             </Component>
             <Component class="javax.swing.JLabel" name="Label_IndirizzoWallet1">
               <Properties>
@@ -228,7 +241,10 @@
                 <Property name="text" type="java.lang.String" value="Api Secret :"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JTextField" name="TextField_ApiSecret">
+            <Component class="javax.swing.JPasswordField" name="TextField_ApiSecret">
+              <Properties>
+                <Property name="toolTipText" type="java.lang.String" value="Usare una chiave in sola lettura, senza permessi di trading n&#xe9; di prelievo"/>
+              </Properties>
             </Component>
             <Component class="javax.swing.JLabel" name="Label_Passphrase">
               <Properties>
@@ -237,7 +253,7 @@
                 <Property name="toolTipText" type="java.lang.String" value="Richiesta solo da alcuni exchange (OKX, e Bitget se la chiave e' stata creata con una passphrase). Lasciare vuoto per gli altri."/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JTextField" name="TextField_Passphrase">
+            <Component class="javax.swing.JPasswordField" name="TextField_Passphrase">
               <Properties>
                 <Property name="toolTipText" type="java.lang.String" value="Richiesta solo da alcuni exchange (OKX, e Bitget se la chiave e' stata creata con una passphrase). Lasciare vuoto per gli altri."/>
               </Properties>
@@ -311,6 +327,20 @@
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="Bottone_Aggiorna.setText(&quot;&lt;html&gt;Scarica nuovi movimenti&lt;br&gt;da tutti i Wallet della lista&lt;/html&gt;&quot;);"/>
               </AuxValues>
+            </Component>
+            <Component class="javax.swing.JToggleButton" name="Bottone_MostraChiavi">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Mostra chiavi"/>
+                <Property name="toolTipText" type="java.lang.String" value="Mostra in chiaro le chiavi della tabella, premere di nuovo per nasconderle"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_MostraChiaviActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="Label_SolaLettura">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Usare solo chiavi API in sola lettura&lt;/b&gt;, create sul sito dell&apos;exchange senza permessi di trading n&#xe9; di prelievo: al programma basta leggere i movimenti.&lt;/html&gt;"/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>

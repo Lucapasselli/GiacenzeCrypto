@@ -8170,7 +8170,7 @@
                         <Property name="text" type="java.lang.String" value="ApiKey Helius x Solana :"/>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JTextField" name="Opzioni_ApiKey_Helius_TextField">
+                    <Component class="javax.swing.JPasswordField" name="Opzioni_ApiKey_Helius_TextField">
                       <Events>
                         <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Helius_TextFieldMouseReleased"/>
                         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ApiKey_Helius_TextFieldKeyReleased"/>
@@ -8210,7 +8210,7 @@
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_ApiKey_Bottone_AnnullaActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JTextField" name="Opzioni_ApiKey_Etherscan_TextField">
+                    <Component class="javax.swing.JPasswordField" name="Opzioni_ApiKey_Etherscan_TextField">
                       <Events>
                         <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Etherscan_TextFieldMouseReleased"/>
                         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ApiKey_Etherscan_TextFieldKeyReleased"/>
@@ -8236,7 +8236,7 @@
                         <Property name="text" type="java.lang.String" value="ApiKey Coingecko :"/>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JTextField" name="Opzioni_ApiKey_Coingecko_TextField">
+                    <Component class="javax.swing.JPasswordField" name="Opzioni_ApiKey_Coingecko_TextField">
                       <Events>
                         <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Coingecko_TextFieldMouseReleased"/>
                         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ApiKey_Coingecko_TextFieldKeyReleased"/>
@@ -8252,7 +8252,7 @@
                         <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Coingecko_LabelSitoMouseExited"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JTextField" name="Opzioni_ApiKey_Moralis_TextField">
+                    <Component class="javax.swing.JPasswordField" name="Opzioni_ApiKey_Moralis_TextField">
                       <Events>
                         <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Moralis_TextFieldMouseReleased"/>
                         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ApiKey_Moralis_TextFieldKeyReleased"/>
@@ -8273,7 +8273,7 @@
                         <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Moralis_LabelSitoMouseExited"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JTextField" name="Opzioni_ApiKey_Cronos_TextField">
+                    <Component class="javax.swing.JPasswordField" name="Opzioni_ApiKey_Cronos_TextField">
                       <Events>
                         <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Cronos_TextFieldMouseReleased"/>
                         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ApiKey_Cronos_TextFieldKeyReleased"/>
@@ -8299,7 +8299,7 @@
                         <Property name="text" type="java.lang.String" value="ApiKey UniSat (BTC Runes/BRC-20) :"/>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JTextField" name="Opzioni_ApiKey_UniSat_TextField">
+                    <Component class="javax.swing.JPasswordField" name="Opzioni_ApiKey_UniSat_TextField">
                       <Events>
                         <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_UniSat_TextFieldMouseReleased"/>
                         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ApiKey_UniSat_TextFieldKeyReleased"/>
@@ -8325,7 +8325,7 @@
                         <Property name="text" type="java.lang.String" value="ApiKey Blockscout (opzionale) :"/>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JTextField" name="Opzioni_ProviderDefi_ApiKeyBlockscout_TextField">
+                    <Component class="javax.swing.JPasswordField" name="Opzioni_ProviderDefi_ApiKeyBlockscout_TextField">
                       <Events>
                         <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ProviderDefi_ApiKeyBlockscout_TextFieldMouseReleased"/>
                         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ProviderDefi_ApiKeyBlockscout_TextFieldKeyReleased"/>
@@ -8346,7 +8346,7 @@
                         <Property name="text" type="java.lang.String" value="ApiKey NodeReal (BSC) :"/>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JTextField" name="Opzioni_ProviderDefi_ApiKeyNodeReal_TextField">
+                    <Component class="javax.swing.JPasswordField" name="Opzioni_ProviderDefi_ApiKeyNodeReal_TextField">
                       <Events>
                         <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ProviderDefi_ApiKeyNodeReal_TextFieldMouseReleased"/>
                         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ProviderDefi_ApiKeyNodeReal_TextFieldKeyReleased"/>

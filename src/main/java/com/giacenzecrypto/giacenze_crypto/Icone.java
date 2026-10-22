@@ -43,6 +43,9 @@ public class Icone {
     public static Icon ImbutoX = new FlatSVGIcon("Images/ImbutoX.svg", 24, 24);
     public static Icon Annulla = new FlatSVGIcon("Images/Annulla.svg", 24, 24);
     public static Icon Salva = new FlatSVGIcon("Images/Salva.svg", 24, 24);
+    /** Mostra in chiaro le chiavi API (l'occhio barrato le nasconde di nuovo), vedi {@link CampiSegreti}. */
+    public static Icon Occhio = new FlatSVGIcon("Images/Occhio.svg", 24, 24);
+    public static Icon OcchioBarrato = new FlatSVGIcon("Images/OcchioBarrato.svg", 24, 24);
     public static Icon Stack = new FlatSVGIcon("Images/Stack.svg", 24, 24);
     public static Icon Euro = new FlatSVGIcon("Images/Euro.svg", 24, 24);
     public static Icon Attenzione = new FlatSVGIcon("Images/Attenzione.svg", 24, 24);

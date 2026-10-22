@@ -20,7 +20,9 @@ programma.
 
 > Per **Binance**, **OKX** e **Bitget** esiste anche la strada dello scaricamento diretto **dalle API**
 > (pulsante *Exchange API* della scheda dei movimenti), in genere più completa e più comoda del CSV: si veda
-> [Avvertenze e problemi noti](avvertenze-problemi-noti.html).
+> [Avvertenze e problemi noti](avvertenze-problemi-noti.html). La chiave API da creare sul sito dell'exchange
+> va sempre impostata in **sola lettura**, senza permessi di trading né di prelievo: al programma basta
+> leggere i movimenti.
 
 > Quali file servono per ogni exchange, quali file accessori scaricare (per esempio per Simple Earn,
 > Dual Investment e Auto-Invest di Binance) e in che ordine importarli è spiegato in
@@ -140,8 +142,8 @@ che ordine importarli sono descritti in
 
 ## OKX {#okx}
 
-Per OKX la strada consigliata è lo **scaricamento dalle API** (chiave, secret e passphrase con il pulsante
-*Exchange API* della scheda dei movimenti), che recupera i conti Funding e Trading, i rendimenti di Simple Earn e, su richiesta,
+Per OKX la strada consigliata è lo **scaricamento dalle API** (chiave in **sola lettura**, secret e passphrase
+con il pulsante *Exchange API* della scheda dei movimenti), che recupera i conti Funding e Trading, i rendimenti di Simple Earn e, su richiesta,
 l'archivio storico trimestrale che risale fino al 2021.
 
 Restano comunque disponibili le due configurazioni di importazione **OKX_Funding** e **OKX_Trading** per

@@ -412,6 +412,11 @@ private static final long serialVersionUID = 3L;
         //resta ferma per tutta la sua durata. Il peso della fase serve a farla ripartire nel punto giusto.
         SplashAvvio.fase(SplashAvvio.Fase.INTERFACCIA);
         initComponents();
+        //Le ApiKey delle Opzioni a pallini, in chiaro solo con l'occhio dentro la casella
+        CampiSegreti.AggiungiOcchio(Opzioni_ApiKey_Helius_TextField, Opzioni_ApiKey_Etherscan_TextField,
+                Opzioni_ApiKey_Coingecko_TextField, Opzioni_ApiKey_Moralis_TextField, Opzioni_ApiKey_Cronos_TextField,
+                Opzioni_ApiKey_UniSat_TextField, Opzioni_ProviderDefi_ApiKeyBlockscout_TextField,
+                Opzioni_ProviderDefi_ApiKeyNodeReal_TextField);
         //Il suggerimento del pulsante degli errori parla di errori da correggere, e non ha senso quando
         //il pulsante è spento perché non ce ne sono. Non basta contare sul fatto che sia disabilitato:
         //verificato su schermo virtuale, un JButton disabilitato mostra il suo tooltip esattamente come
@@ -1088,31 +1093,31 @@ private static final long serialVersionUID = 3L;
         jButton1 = new javax.swing.JButton();
         Opzioni_ApiKey = new javax.swing.JPanel();
         Opzioni_ApiKey_Helius_Label = new javax.swing.JLabel();
-        Opzioni_ApiKey_Helius_TextField = new javax.swing.JTextField();
+        Opzioni_ApiKey_Helius_TextField = new javax.swing.JPasswordField();
         Opzioni_ApiKey_Helius_LabelSito = new javax.swing.JLabel();
         Opzioni_ApiKey_Bottone_Salva = new javax.swing.JButton();
         Opzioni_ApiKey_Bottone_Annulla = new javax.swing.JButton();
-        Opzioni_ApiKey_Etherscan_TextField = new javax.swing.JTextField();
+        Opzioni_ApiKey_Etherscan_TextField = new javax.swing.JPasswordField();
         Opzioni_ApiKey_Etherscan_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Etherscan_LabelSito = new javax.swing.JLabel();
         Opzioni_ApiKey_Coingecko_Label = new javax.swing.JLabel();
-        Opzioni_ApiKey_Coingecko_TextField = new javax.swing.JTextField();
+        Opzioni_ApiKey_Coingecko_TextField = new javax.swing.JPasswordField();
         Opzioni_ApiKey_Coingecko_LabelSito = new javax.swing.JLabel();
-        Opzioni_ApiKey_Moralis_TextField = new javax.swing.JTextField();
+        Opzioni_ApiKey_Moralis_TextField = new javax.swing.JPasswordField();
         Opzioni_ApiKey_Moralis_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Moralis_LabelSito = new javax.swing.JLabel();
-        Opzioni_ApiKey_Cronos_TextField = new javax.swing.JTextField();
+        Opzioni_ApiKey_Cronos_TextField = new javax.swing.JPasswordField();
         Opzioni_ApiKey_Cronos_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Cronos_LabelSito = new javax.swing.JLabel();
         Opzioni_ApiKey_UniSat_Label = new javax.swing.JLabel();
-        Opzioni_ApiKey_UniSat_TextField = new javax.swing.JTextField();
+        Opzioni_ApiKey_UniSat_TextField = new javax.swing.JPasswordField();
         Opzioni_ApiKey_UniSat_LabelSito = new javax.swing.JLabel();
         Opzioni_ApiKey_MoralisNB_Label = new javax.swing.JLabel();
         Opzioni_ProviderDefi_ApiKeyBlockscout_Label = new javax.swing.JLabel();
-        Opzioni_ProviderDefi_ApiKeyBlockscout_TextField = new javax.swing.JTextField();
+        Opzioni_ProviderDefi_ApiKeyBlockscout_TextField = new javax.swing.JPasswordField();
         Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSito = new javax.swing.JLabel();
         Opzioni_ProviderDefi_ApiKeyNodeReal_Label = new javax.swing.JLabel();
-        Opzioni_ProviderDefi_ApiKeyNodeReal_TextField = new javax.swing.JTextField();
+        Opzioni_ProviderDefi_ApiKeyNodeReal_TextField = new javax.swing.JPasswordField();
         Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSito = new javax.swing.JLabel();
         Opzioni_ProviderDefi_Pannello = new javax.swing.JPanel();
         Opzioni_ProviderDefi_ScrollTabella = new javax.swing.JScrollPane();
@@ -21013,23 +21018,23 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JButton Opzioni_ApiKey_Bottone_Salva;
     private javax.swing.JLabel Opzioni_ApiKey_Coingecko_Label;
     private javax.swing.JLabel Opzioni_ApiKey_Coingecko_LabelSito;
-    private javax.swing.JTextField Opzioni_ApiKey_Coingecko_TextField;
+    private javax.swing.JPasswordField Opzioni_ApiKey_Coingecko_TextField;
     private javax.swing.JLabel Opzioni_ApiKey_Cronos_Label;
     private javax.swing.JLabel Opzioni_ApiKey_Cronos_LabelSito;
-    private javax.swing.JTextField Opzioni_ApiKey_Cronos_TextField;
+    private javax.swing.JPasswordField Opzioni_ApiKey_Cronos_TextField;
     private javax.swing.JLabel Opzioni_ApiKey_Etherscan_Label;
     private javax.swing.JLabel Opzioni_ApiKey_Etherscan_LabelSito;
-    private javax.swing.JTextField Opzioni_ApiKey_Etherscan_TextField;
+    private javax.swing.JPasswordField Opzioni_ApiKey_Etherscan_TextField;
     private javax.swing.JLabel Opzioni_ApiKey_Helius_Label;
     private javax.swing.JLabel Opzioni_ApiKey_Helius_LabelSito;
-    private javax.swing.JTextField Opzioni_ApiKey_Helius_TextField;
+    private javax.swing.JPasswordField Opzioni_ApiKey_Helius_TextField;
     private javax.swing.JLabel Opzioni_ApiKey_MoralisNB_Label;
     private javax.swing.JLabel Opzioni_ApiKey_Moralis_Label;
     private javax.swing.JLabel Opzioni_ApiKey_Moralis_LabelSito;
-    private javax.swing.JTextField Opzioni_ApiKey_Moralis_TextField;
+    private javax.swing.JPasswordField Opzioni_ApiKey_Moralis_TextField;
     private javax.swing.JLabel Opzioni_ApiKey_UniSat_Label;
     private javax.swing.JLabel Opzioni_ApiKey_UniSat_LabelSito;
-    private javax.swing.JTextField Opzioni_ApiKey_UniSat_TextField;
+    private javax.swing.JPasswordField Opzioni_ApiKey_UniSat_TextField;
     private javax.swing.JPanel Opzioni_Backup_Pannello;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
@@ -21072,10 +21077,10 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JPanel Opzioni_PrezziKO_Pannello;
     private javax.swing.JLabel Opzioni_ProviderDefi_ApiKeyBlockscout_Label;
     private javax.swing.JLabel Opzioni_ProviderDefi_ApiKeyBlockscout_LabelSito;
-    private javax.swing.JTextField Opzioni_ProviderDefi_ApiKeyBlockscout_TextField;
+    private javax.swing.JPasswordField Opzioni_ProviderDefi_ApiKeyBlockscout_TextField;
     private javax.swing.JLabel Opzioni_ProviderDefi_ApiKeyNodeReal_Label;
     private javax.swing.JLabel Opzioni_ProviderDefi_ApiKeyNodeReal_LabelSito;
-    private javax.swing.JTextField Opzioni_ProviderDefi_ApiKeyNodeReal_TextField;
+    private javax.swing.JPasswordField Opzioni_ProviderDefi_ApiKeyNodeReal_TextField;
     private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Annulla;
     private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Ripristina;
     private javax.swing.JButton Opzioni_ProviderDefi_Bottone_Salva;

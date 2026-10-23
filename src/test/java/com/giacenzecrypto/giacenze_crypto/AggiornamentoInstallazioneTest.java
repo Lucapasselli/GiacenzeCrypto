@@ -226,6 +226,25 @@ class AggiornamentoInstallazioneTest {
         assertTrue(Files.exists(riavviato), "il comando di riavvio va eseguito");
     }
 
+    /**
+     * Il lanciatore jpackage di Linux lascia {@code _JPACKAGE_LAUNCHER} nell'ambiente dello script: il lanciatore
+     * riavviato non deve trovarla, altrimenti ignora il suo .cfg ed esce subito (provato sul Portable Linux 08 -> 09).
+     */
+    @Test
+    @EnabledOnOs(OS.LINUX)
+    void scriptLinux_riavvioSenzaVariabileDelLanciatoreJpackage() throws Exception {
+        Path riavviato = tmp.resolve("riavviato");
+        String script = AggiornamentoInstallazione.ScriptLinux(999999999L, tmp.resolve("inesistente"),
+                tmp.resolve("radice"), List.of("/bin/sh", "-c", "echo \"[${_JPACKAGE_LAUNCHER-assente}]\" > \"$0\"",
+                        riavviato.toString()), tmp, tmp.resolve("log.txt"));
+        Path file = Files.writeString(tmp.resolve("aggiorna.sh"), script);
+        ProcessBuilder pb = new ProcessBuilder("/bin/sh", file.toString());
+        pb.environment().put("_JPACKAGE_LAUNCHER", "0");
+        assertTrue(pb.start().waitFor(20, TimeUnit.SECONDS));
+        for (int i = 0; i < 50 && !Files.exists(riavviato); i++) Thread.sleep(100);
+        assertEquals("[assente]", Files.readString(riavviato).strip());
+    }
+
     //=== ESITO ===
 
     @Test

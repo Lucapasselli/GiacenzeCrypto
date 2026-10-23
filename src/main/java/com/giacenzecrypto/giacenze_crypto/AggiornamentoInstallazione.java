@@ -444,6 +444,9 @@ public final class AggiornamentoInstallazione {
         s.append("if cp -R ").append(Sh(Sorgente + "/.")).append(' ').append(Sh(Radice + "/"))
                 .append("; then echo \"Copia completata\"; else echo \"Copia non riuscita\"; fi\n");
         s.append("cd ").append(Sh(CartellaLavoro.toString())).append(" || cd /\n");
+        //Il lanciatore jpackage imposta _JPACKAGE_LAUNCHER nel proprio processo e lo script la eredita: un lanciatore
+        //che la trova già presente non legge il suo .cfg e si comporta da "java" nudo (stampa l'uso ed esce)
+        s.append("unset _JPACKAGE_LAUNCHER\n");
         s.append("nohup");
         for (String a : Riavvio) s.append(' ').append(Sh(a));
         s.append(" >/dev/null 2>&1 &\n");

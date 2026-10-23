@@ -482,6 +482,9 @@ The app checks GitHub Releases: stable = `releases/latest`, beta = the list incl
 - The tag must stay `Giacenze_Crypto_<version>` (`PREFISSO_TAG`; clients up to 1.0.65 also HEAD SourceForge on it).
 - Self-install only for the Inno installer and the portables; `.deb`/AUR/flatpak/macOS/Store get a link. Portables are
   updated by **copying over, never deleting** (the default workdir is the launch folder, so user data may live there).
+- **A jpackage launcher started by the app must not inherit `_JPACKAGE_LAUNCHER`** (set by the Linux launcher with
+  `setenv`, invisible in `/proc/<pid>/environ`): it would skip its `.cfg` and exit printing java's usage. `ScriptLinux`
+  unsets it (bug M14, 2026-10-23). The script is written by the *old* version, so the fix only helps updates from 1.0.65.10 on.
 - Nothing is downloaded or installed without the user's consent; install closes through `Principale.ChiudiProgramma`
   (same path as the window's X) after an automatic backup. Inno path tested on a Windows 11 VM (2026-10-22,
   `nocommit/StrumentiTest/avvia-vm-windows.sh`); the Windows portable (robocopy) is not yet tested.

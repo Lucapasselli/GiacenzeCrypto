@@ -34,6 +34,11 @@ Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
+; Il runtime Java si sostituisce per intero: copiandoci sopra resterebbero i file del runtime precedente che il
+; nuovo non ha più (moduli tolti, cambio di versione del JDK). Non contiene mai dati dell'utente.
+[InstallDelete]
+Type: filesandordirs; Name: "{app}\runtime"
+
 [Files]
 Source: "{#SourcePath}Giacenze_Crypto\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourcePath}Giacenze_Crypto\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs

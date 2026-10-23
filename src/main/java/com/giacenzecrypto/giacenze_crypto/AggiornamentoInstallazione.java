@@ -388,13 +388,29 @@ public final class AggiornamentoInstallazione {
     }
 
     /**
+     * La cartella del runtime Java dentro un app-image jpackage, relativa alla radice. È l'unica che l'aggiornamento
+     * sostituisce per intero invece di copiarci sopra: non contiene mai dati dell'utente, e copiandoci sopra vi
+     * resterebbero i file del runtime precedente che il nuovo non ha più (moduli tolti, cambio di versione del JDK).
+     *
+     * @return {@code null} se l'installazione non porta un runtime proprio o lo gestisce l'installer
+     */
+    static String CartellaRuntime(Tipo Tipo) {
+        return switch (Tipo) {
+            case PORTABLE_LINUX -> "lib/runtime";
+            case PORTABLE_WINDOWS -> "runtime";
+            default -> null;
+        };
+    }
+
+    /**
      * Lo script PowerShell che, chiuso il programma, installa e riavvia.
      *
      * @param Pid il processo da attendere (il lanciatore jpackage ospita la JVM, quindi è lui)
      * @param Pacchetto l'installer da eseguire, oppure la radice estratta da copiare sopra
+     * @param Runtime la cartella del runtime da sostituire per intero ({@link #CartellaRuntime}), o {@code null}
      * @param Riavvio comando di riavvio
      */
-    static String ScriptWindows(Tipo Tipo, long Pid, Path Pacchetto, Path Radice, List<String> Riavvio,
+    static String ScriptWindows(Tipo Tipo, long Pid, Path Pacchetto, Path Radice, String Runtime, List<String> Riavvio,
             Path CartellaLavoro, Path Log) {
         StringBuilder s = new StringBuilder();
         s.append("$ErrorActionPreference = 'Continue'\r\n");
@@ -409,10 +425,40 @@ public final class AggiornamentoInstallazione {
                     .append(" -ArgumentList '/SILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-' -Wait -PassThru\r\n");
             s.append("\"Installer terminato con codice $($p.ExitCode)\"\r\n");
         } else {
+            String vecchio = null, parte = null;
+            if (Runtime != null) {
+                //Il runtime precedente si mette da parte e si cancella solo a copia riuscita
+                vecchio = Ps(Radice.resolve(Runtime).toString());
+                parte = Ps(Radice.resolve(Runtime) + ".vecchio");
+                String nuovo = Ps(Pacchetto.resolve(Runtime).toString());
+                s.append("if (Test-Path -LiteralPath ").append(parte).append(") { Remove-Item -LiteralPath ").append(parte)
+                        .append(" -Recurse -Force }\r\n");
+                s.append("if ((Test-Path -LiteralPath ").append(nuovo).append(") -and (Test-Path -LiteralPath ")
+                        .append(vecchio).append(")) {\r\n");
+                s.append("  try { Rename-Item -LiteralPath ").append(vecchio).append(" -NewName ")
+                        .append(Ps(Path.of(Runtime).getFileName() + ".vecchio"))
+                        .append(" -ErrorAction Stop; \"Runtime precedente messo da parte\" }\r\n");
+                s.append("  catch { \"Runtime precedente non spostato, si copia sopra: $_\" }\r\n");
+                s.append("}\r\n");
+            }
             //robocopy /E unisce senza cancellare nulla (niente /PURGE): i dati nella cartella restano
             s.append("robocopy ").append(Ps(Pacchetto.toString())).append(' ').append(Ps(Radice.toString()))
                     .append(" /E /R:5 /W:2 /NFL /NDL /NP\r\n");
-            s.append("\"robocopy terminato con codice $LASTEXITCODE\"\r\n");
+            s.append("$rc = $LASTEXITCODE\r\n");
+            s.append("\"robocopy terminato con codice $rc\"\r\n");
+            if (Runtime != null) {
+                //robocopy: da 8 in su almeno un file non è stato copiato
+                s.append("if ($rc -lt 8) {\r\n");
+                s.append("  if (Test-Path -LiteralPath ").append(parte).append(") { Remove-Item -LiteralPath ").append(parte)
+                        .append(" -Recurse -Force }\r\n");
+                s.append("} elseif (Test-Path -LiteralPath ").append(parte).append(") {\r\n");
+                s.append("  if (Test-Path -LiteralPath ").append(vecchio).append(") { Remove-Item -LiteralPath ").append(vecchio)
+                        .append(" -Recurse -Force }\r\n");
+                s.append("  Rename-Item -LiteralPath ").append(parte).append(" -NewName ")
+                        .append(Ps(Path.of(Runtime).getFileName().toString())).append("\r\n");
+                s.append("  \"Runtime precedente ripristinato\"\r\n");
+                s.append("}\r\n");
+            }
         }
         s.append("Start-Process -FilePath ").append(Ps(Riavvio.get(0)));
         if (Riavvio.size() > 1) {
@@ -429,20 +475,42 @@ public final class AggiornamentoInstallazione {
         return s.toString();
     }
 
-    /** Lo script {@code sh} per Linux: attende la chiusura, copia sopra senza cancellare, riavvia. */
-    static String ScriptLinux(long Pid, Path Sorgente, Path Radice, List<String> Riavvio, Path CartellaLavoro,
-            Path Log) {
+    /**
+     * Lo script {@code sh} per Linux: attende la chiusura, copia sopra senza cancellare, riavvia.
+     *
+     * @param Runtime la cartella del runtime da sostituire per intero ({@link #CartellaRuntime}), o {@code null}
+     */
+    static String ScriptLinux(long Pid, Path Sorgente, Path Radice, String Runtime, List<String> Riavvio,
+            Path CartellaLavoro, Path Log) {
         StringBuilder s = new StringBuilder();
         s.append("#!/bin/sh\n");
         s.append("exec >>").append(Sh(Log.toString())).append(" 2>&1\n");
         s.append("echo \"Aggiornamento: attesa della chiusura del processo ").append(Pid).append("\"\n");
         s.append("while kill -0 ").append(Pid).append(" 2>/dev/null; do sleep 1; done\n");
         s.append("sleep 1\n");
+        String vecchio = null, parte = null;
+        if (Runtime != null) {
+            //Il runtime precedente si mette da parte e si cancella solo a copia riuscita
+            vecchio = Sh(Radice.resolve(Runtime).toString());
+            parte = Sh(Radice.resolve(Runtime) + ".vecchio");
+            s.append("rm -rf ").append(parte).append('\n');
+            s.append("if [ -d ").append(Sh(Sorgente.resolve(Runtime).toString())).append(" ] && [ -d ").append(vecchio)
+                    .append(" ] && mv ").append(vecchio).append(' ').append(parte)
+                    .append("; then echo \"Runtime precedente messo da parte\"; fi\n");
+        }
         //cp -R senza -p: un file che esiste già conserva i suoi permessi (eseguibili compresi)
         //Anche se la copia non riesce si riavvia: la versione precedente ripartirà e al suo avvio segnalerà che
         //l'aggiornamento non è riuscito, invece di lasciare l'utente senza programma e senza spiegazioni
-        s.append("if cp -R ").append(Sh(Sorgente + "/.")).append(' ').append(Sh(Radice + "/"))
-                .append("; then echo \"Copia completata\"; else echo \"Copia non riuscita\"; fi\n");
+        s.append("if cp -R ").append(Sh(Sorgente + "/.")).append(' ').append(Sh(Radice + "/")).append("; then\n");
+        s.append("  echo \"Copia completata\"\n");
+        if (Runtime != null) s.append("  rm -rf ").append(parte).append('\n');
+        s.append("else\n");
+        s.append("  echo \"Copia non riuscita\"\n");
+        if (Runtime != null) {
+            s.append("  if [ -d ").append(parte).append(" ]; then rm -rf ").append(vecchio).append("; mv ").append(parte)
+                    .append(' ').append(vecchio).append(" && echo \"Runtime precedente ripristinato\"; fi\n");
+        }
+        s.append("fi\n");
         s.append("cd ").append(Sh(CartellaLavoro.toString())).append(" || cd /\n");
         //Il lanciatore jpackage imposta _JPACKAGE_LAUNCHER nel proprio processo e lo script la eredita: un lanciatore
         //che la trova già presente non legge il suo .cfg e si comporta da "java" nudo (stampa l'uso ed esce)
@@ -478,13 +546,15 @@ public final class AggiornamentoInstallazione {
                 || (Inst.Tipo() == Tipo.PORTABLE_JAR && System.getProperty("os.name", "").toLowerCase(Locale.ROOT).startsWith("windows"))) {
             Path script = Cartella.resolve("aggiorna.ps1");
             //BOM: senza, PowerShell 5 legge lo script come ANSI e rovina i percorsi con lettere accentate
-            Files.writeString(script, "﻿" + ScriptWindows(Inst.Tipo(), pid, Pacchetto, Inst.Radice(), riavvio, lavoro, log),
+            Files.writeString(script, "﻿" + ScriptWindows(Inst.Tipo(), pid, Pacchetto, Inst.Radice(),
+                    CartellaRuntime(Inst.Tipo()), riavvio, lavoro, log),
                     StandardCharsets.UTF_8);
             pb = new ProcessBuilder("powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
                     "-WindowStyle", "Hidden", "-File", script.toString());
         } else {
             Path script = Cartella.resolve("aggiorna.sh");
-            Files.writeString(script, ScriptLinux(pid, Pacchetto, Inst.Radice(), riavvio, lavoro, log), StandardCharsets.UTF_8);
+            Files.writeString(script, ScriptLinux(pid, Pacchetto, Inst.Radice(), CartellaRuntime(Inst.Tipo()), riavvio, lavoro,
+                    log), StandardCharsets.UTF_8);
             script.toFile().setExecutable(true, true);
             //setsid: lo script sopravvive anche alla chiusura del terminale da cui era partito il programma
             pb = Files.isExecutable(Path.of("/usr/bin/setsid"))

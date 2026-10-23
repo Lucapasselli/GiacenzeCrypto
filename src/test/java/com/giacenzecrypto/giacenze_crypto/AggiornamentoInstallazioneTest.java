@@ -167,23 +167,39 @@ class AggiornamentoInstallazioneTest {
     @Test
     void scriptWindows_installer_silenzioso_eApiciRaddoppiati() {
         String s = AggiornamentoInstallazione.ScriptWindows(AggiornamentoInstallazione.Tipo.INSTALLER_WINDOWS, 4242,
-                Path.of("C:/Users/Dell'Acqua/setup.exe"), Path.of("C:/P"), List.of("C:/P/Giacenze_Crypto.exe"),
+                Path.of("C:/Users/Dell'Acqua/setup.exe"), Path.of("C:/P"), null, List.of("C:/P/Giacenze_Crypto.exe"),
                 Path.of("C:/P"), Path.of("C:/P/log.txt"));
         assertTrue(s.contains("while (Get-Process -Id 4242"), "attesa senza limite di tempo");
         assertFalse(s.contains("-Timeout"));
         assertTrue(s.contains("'/SILENT'"));
         assertTrue(s.contains("Dell''Acqua"), "in PowerShell l'apice si raddoppia");
         assertFalse(s.contains("robocopy"));
+        assertFalse(s.contains("Rename-Item"), "il runtime dell'installer lo sostituisce Inno ([InstallDelete])");
     }
 
     @Test
     void scriptWindows_portable_robocopySenzaPurge() {
         String s = AggiornamentoInstallazione.ScriptWindows(AggiornamentoInstallazione.Tipo.PORTABLE_WINDOWS, 1,
-                Path.of("C:/T/estratto/GiacenzeCrypto"), Path.of("C:/P"), List.of("C:/P/Giacenze_Crypto.exe"),
-                Path.of("C:/P"), Path.of("C:/P/log.txt"));
+                Path.of("C:/T/estratto/GiacenzeCrypto"), Path.of("C:/P"),
+                AggiornamentoInstallazione.CartellaRuntime(AggiornamentoInstallazione.Tipo.PORTABLE_WINDOWS),
+                List.of("C:/P/Giacenze_Crypto.exe"), Path.of("C:/P"), Path.of("C:/P/log.txt"));
         assertTrue(s.contains("robocopy"));
         assertTrue(s.contains("/E"));
         assertFalse(s.contains("/PURGE") || s.contains("/MIR"), "i dati nella cartella non vanno cancellati");
+        //Il runtime si mette da parte prima di robocopy, si cancella a copia riuscita, si rimette se non riesce
+        int sposta = s.indexOf("Rename-Item -LiteralPath '" + Path.of("C:/P/runtime") + "' -NewName 'runtime.vecchio'");
+        int copia = s.indexOf("robocopy ");
+        int ripristina = s.indexOf("Rename-Item -LiteralPath '" + Path.of("C:/P/runtime.vecchio") + "' -NewName 'runtime'");
+        assertTrue(sposta >= 0 && sposta < copia && copia < ripristina, s);
+        assertTrue(s.contains("if ($rc -lt 8)"));
+    }
+
+    @Test
+    void cartellaRuntime_soloPerGliAppImagePortable() {
+        assertEquals("lib/runtime", AggiornamentoInstallazione.CartellaRuntime(AggiornamentoInstallazione.Tipo.PORTABLE_LINUX));
+        assertEquals("runtime", AggiornamentoInstallazione.CartellaRuntime(AggiornamentoInstallazione.Tipo.PORTABLE_WINDOWS));
+        assertNull(AggiornamentoInstallazione.CartellaRuntime(AggiornamentoInstallazione.Tipo.PORTABLE_JAR));
+        assertNull(AggiornamentoInstallazione.CartellaRuntime(AggiornamentoInstallazione.Tipo.INSTALLER_WINDOWS));
     }
 
     @Test
@@ -211,7 +227,7 @@ class AggiornamentoInstallazioneTest {
 
         Path riavviato = tmp.resolve("riavviato");
         Process attesa = new ProcessBuilder("sleep", "2").start();
-        String script = AggiornamentoInstallazione.ScriptLinux(attesa.pid(), nuovo, radice,
+        String script = AggiornamentoInstallazione.ScriptLinux(attesa.pid(), nuovo, radice, null,
                 List.of("/bin/sh", "-c", "echo ok > \"$0\"", riavviato.toString()), tmp, tmp.resolve("log.txt"));
         Path file = Files.writeString(tmp.resolve("aggiorna.sh"), script);
         Process p = new ProcessBuilder("/bin/sh", file.toString()).start();
@@ -235,7 +251,7 @@ class AggiornamentoInstallazioneTest {
     void scriptLinux_riavvioSenzaVariabileDelLanciatoreJpackage() throws Exception {
         Path riavviato = tmp.resolve("riavviato");
         String script = AggiornamentoInstallazione.ScriptLinux(999999999L, tmp.resolve("inesistente"),
-                tmp.resolve("radice"), List.of("/bin/sh", "-c", "echo \"[${_JPACKAGE_LAUNCHER-assente}]\" > \"$0\"",
+                tmp.resolve("radice"), null, List.of("/bin/sh", "-c", "echo \"[${_JPACKAGE_LAUNCHER-assente}]\" > \"$0\"",
                         riavviato.toString()), tmp, tmp.resolve("log.txt"));
         Path file = Files.writeString(tmp.resolve("aggiorna.sh"), script);
         ProcessBuilder pb = new ProcessBuilder("/bin/sh", file.toString());
@@ -243,6 +259,77 @@ class AggiornamentoInstallazioneTest {
         assertTrue(pb.start().waitFor(20, TimeUnit.SECONDS));
         for (int i = 0; i < 50 && !Files.exists(riavviato); i++) Thread.sleep(100);
         assertEquals("[assente]", Files.readString(riavviato).strip());
+    }
+
+    /** Struttura di un Portable Linux: lanciatore, runtime con un file comune e uno proprio, dati nella radice. */
+    private static Path PortableLinux(Path Radice, String Versione, String FileProprio) throws IOException {
+        Files.createDirectories(Radice.resolve("bin"));
+        Files.createDirectories(Radice.resolve("lib/runtime/lib"));
+        Files.createDirectories(Radice.resolve("lib/app"));
+        Files.writeString(Radice.resolve("bin/Giacenze_Crypto"), Versione);
+        Files.writeString(Radice.resolve("lib/runtime/release"), Versione);
+        Files.writeString(Radice.resolve("lib/runtime/lib/" + FileProprio), Versione);
+        Files.writeString(Radice.resolve("lib/app/Giacenze_Crypto.jar"), Versione);
+        return Radice;
+    }
+
+    /** Il runtime si sostituisce per intero: i file del runtime precedente che il nuovo non ha non devono restare. */
+    @Test
+    @EnabledOnOs(OS.LINUX)
+    void scriptLinux_runtimeSostituitoPerIntero() throws Exception {
+        Path radice = PortableLinux(tmp.resolve("installato con spazio"), "vecchio", "libsolovecchio.so");
+        Files.writeString(radice.resolve("movimenti.crypto.db"), "dati dell'utente");
+        Files.writeString(radice.resolve("lib/app/segnaposto.txt"), "dato in lib/app");
+        Path nuovo = PortableLinux(tmp.resolve("estratto"), "nuovo", "libsolonuovo.so");
+        Path riavviato = tmp.resolve("riavviato");
+        String script = AggiornamentoInstallazione.ScriptLinux(999999999L, nuovo, radice,
+                AggiornamentoInstallazione.CartellaRuntime(AggiornamentoInstallazione.Tipo.PORTABLE_LINUX),
+                List.of("/bin/sh", "-c", "echo ok > \"$0\"", riavviato.toString()), tmp, tmp.resolve("log.txt"));
+        Path file = Files.writeString(tmp.resolve("aggiorna.sh"), script);
+        assertTrue(new ProcessBuilder("/bin/sh", file.toString()).start().waitFor(20, TimeUnit.SECONDS));
+        for (int i = 0; i < 50 && !Files.exists(riavviato); i++) Thread.sleep(100);
+
+        assertEquals("nuovo", Files.readString(radice.resolve("lib/runtime/release")));
+        assertTrue(Files.exists(radice.resolve("lib/runtime/lib/libsolonuovo.so")));
+        assertFalse(Files.exists(radice.resolve("lib/runtime/lib/libsolovecchio.so")), "il runtime vecchio non deve restare");
+        assertFalse(Files.exists(radice.resolve("lib/runtime.vecchio")), "a copia riuscita la copia di riserva si cancella");
+        assertEquals("nuovo", Files.readString(radice.resolve("lib/app/Giacenze_Crypto.jar")));
+        assertEquals("dati dell'utente", Files.readString(radice.resolve("movimenti.crypto.db")));
+        assertEquals("dato in lib/app", Files.readString(radice.resolve("lib/app/segnaposto.txt")),
+                "fuori dal runtime si copia sopra senza cancellare");
+        assertTrue(Files.exists(riavviato));
+        assertTrue(Files.readString(tmp.resolve("log.txt")).contains("Runtime precedente messo da parte"));
+    }
+
+    /** Una copia non riuscita rimette al suo posto il runtime precedente, intero. */
+    @Test
+    @EnabledOnOs(OS.LINUX)
+    void scriptLinux_copiaNonRiuscita_runtimeRipristinato() throws Exception {
+        Path radice = PortableLinux(tmp.resolve("installato"), "vecchio", "libsolovecchio.so");
+        Path nuovo = PortableLinux(tmp.resolve("estratto"), "nuovo", "libsolonuovo.so");
+        //Un file illeggibile fa fallire cp dopo che il runtime è già stato spostato
+        Path illeggibile = Files.writeString(nuovo.resolve("lib/app/illeggibile.txt"), "x");
+        assertTrue(illeggibile.toFile().setReadable(false, false));
+        org.junit.jupiter.api.Assumptions.assumeFalse(Files.isReadable(illeggibile), "eseguito come root");
+        Path riavviato = tmp.resolve("riavviato");
+        String script = AggiornamentoInstallazione.ScriptLinux(999999999L, nuovo, radice,
+                AggiornamentoInstallazione.CartellaRuntime(AggiornamentoInstallazione.Tipo.PORTABLE_LINUX),
+                List.of("/bin/sh", "-c", "echo ok > \"$0\"", riavviato.toString()), tmp, tmp.resolve("log.txt"));
+        Path file = Files.writeString(tmp.resolve("aggiorna.sh"), script);
+        try {
+            assertTrue(new ProcessBuilder("/bin/sh", file.toString()).start().waitFor(20, TimeUnit.SECONDS));
+            for (int i = 0; i < 50 && !Files.exists(riavviato); i++) Thread.sleep(100);
+        } finally {
+            illeggibile.toFile().setReadable(true, false);
+        }
+        String log = Files.readString(tmp.resolve("log.txt"));
+        assertTrue(log.contains("Copia non riuscita"), log);
+        assertTrue(log.contains("Runtime precedente ripristinato"), log);
+        assertEquals("vecchio", Files.readString(radice.resolve("lib/runtime/release")));
+        assertTrue(Files.exists(radice.resolve("lib/runtime/lib/libsolovecchio.so")));
+        assertFalse(Files.exists(radice.resolve("lib/runtime/lib/libsolonuovo.so")));
+        assertFalse(Files.exists(radice.resolve("lib/runtime.vecchio")));
+        assertTrue(Files.exists(riavviato), "si riavvia comunque");
     }
 
     //=== ESITO ===
@@ -295,7 +382,7 @@ class AggiornamentoInstallazioneTest {
     void scriptLinux_copiaNonRiuscita_riavviaComunque() throws Exception {
         Path riavviato = tmp.resolve("riavviato");
         String script = AggiornamentoInstallazione.ScriptLinux(999999999L, tmp.resolve("inesistente"),
-                tmp.resolve("radice"), List.of("/bin/sh", "-c", "echo ok > \"$0\"", riavviato.toString()), tmp,
+                tmp.resolve("radice"), null, List.of("/bin/sh", "-c", "echo ok > \"$0\"", riavviato.toString()), tmp,
                 tmp.resolve("log.txt"));
         Path file = Files.writeString(tmp.resolve("aggiorna.sh"), script);
         assertTrue(new ProcessBuilder("/bin/sh", file.toString()).start().waitFor(20, TimeUnit.SECONDS));

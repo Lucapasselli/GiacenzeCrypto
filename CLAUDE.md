@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest
 ./mvnw test -Dtest=CalcoliPlusvalenzeNewStackLifoTest#nomeDelMetodo
 
-# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.65.09)
+# Run the built JAR directly (substitute the <version> from pom.xml, currently 1.0.65.10)
 java -jar target/Giacenze_Crypto-<version>-jar-with-dependencies.jar --NoJarPath --workdir ./test/2025/
 ```
 
@@ -482,6 +482,9 @@ The app checks GitHub Releases: stable = `releases/latest`, beta = the list incl
 - The tag must stay `Giacenze_Crypto_<version>` (`PREFISSO_TAG`; clients up to 1.0.65 also HEAD SourceForge on it).
 - Self-install only for the Inno installer and the portables; `.deb`/AUR/flatpak/macOS/Store get a link. Portables are
   updated by **copying over, never deleting** (the default workdir is the launch folder, so user data may live there).
+  The one exception is the Java runtime folder (`CartellaRuntime`: `lib/runtime`, `runtime`), replaced whole with a
+  `runtime.vecchio` fallback, and `[InstallDelete]` of `{app}\runtime` in `installer/InnoScript.iss`: copied over,
+  the files of the previous JDK would stay behind.
 - **A jpackage launcher started by the app must not inherit `_JPACKAGE_LAUNCHER`** (set by the Linux launcher with
   `setenv`, invisible in `/proc/<pid>/environ`): it would skip its `.cfg` and exit printing java's usage. `ScriptLinux`
   unsets it (bug M14, 2026-10-23). The script is written by the *old* version, so the fix only helps updates from 1.0.65.10 on.

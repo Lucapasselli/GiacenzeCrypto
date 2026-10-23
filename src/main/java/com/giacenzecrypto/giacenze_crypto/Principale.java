@@ -14842,6 +14842,9 @@ if (result != null && !result.isAction("cancel")) {
         if (rete.equalsIgnoreCase("SOL")) return new String[]{"HELIUS"};
         if (rete.equalsIgnoreCase("BTC")) return new String[]{"BITCOIN"};
         if (rete.equalsIgnoreCase(Trans_XLayer.RETE)) return new String[]{"NODO PUBBLICO"};
+        if (rete.equalsIgnoreCase(Trans_Algorand.RETE)) return new String[]{Trans_Algorand.PROVIDER};
+        if (rete.equalsIgnoreCase(Trans_XRPL.RETE)) return new String[]{Trans_XRPL.PROVIDER};
+        if (rete.equalsIgnoreCase(Trans_Tron.RETE)) return new String[]{Trans_Tron.PROVIDER};
         //BSC è l'unica chain senza nessun explorer Etherscan-compatibile gratuito: NodeReal (richiede
         //una ApiKey NodeReal gratuita) è proposto per primo perché è l'alternativa gratuita ed è anche
         //il default effettivo (DeFi_ProviderDefault), incondizionato dal 15/09/2026 — Moralis non ha

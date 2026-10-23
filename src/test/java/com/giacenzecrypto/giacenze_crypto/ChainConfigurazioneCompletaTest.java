@@ -108,7 +108,7 @@ public class ChainConfigurazioneCompletaTest {
         //Un indirizzo EVM valido qualunque: quello che si controlla è la rete, non l'indirizzo
         String indirizzo = "0x0000000000000000000000000000000000000001";
         for (String rete : RetiConExplorer()) {
-            if (rete.equals("SOL") || rete.equals("BTC")) continue; //non EVM, formato indirizzo proprio
+            if (rete.equals("SOL") || rete.equals("BTC") || Reti.IMPORT_NATIVI.contains(rete)) continue; //non EVM, formato indirizzo proprio
             assertTrue(Funzioni_WalletDeFi.isValidDefiWallet(indirizzo + " (" + rete + ")"),
                     "isValidDefiWallet rifiuta i wallet sulla rete " + rete + ": manca dalla stringa "
                     + "RetiSupportate e la chain non sarebbe inseribile");

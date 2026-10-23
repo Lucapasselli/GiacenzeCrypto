@@ -316,8 +316,11 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
             Messaggi.WarningMessage("Wallet gia' presente", "Attenzione! <br>L'indirizzo fa gia' parte del wallet \""
                     + DatabaseH2.Pers_WalletBtcIndirizzi_LeggiTutti().get(Wallet) + "\"", this);
         }
-        else if (!Funzioni_WalletDeFi.isValidAddress(Wallet,Rete)){
-                //non è un indirizzo di wallet valido
+        else if (!Funzioni_WalletDeFi.isValidAddress(Wallet,Rete)
+                || (Rete.equalsIgnoreCase(Trans_Algorand.RETE) && !Trans_Algorand.isIndirizzoConto(Wallet))
+                || (Rete.equalsIgnoreCase(Trans_XRPL.RETE) && !Trans_XRPL.isIndirizzoConto(Wallet))
+                || (Rete.equalsIgnoreCase(Trans_Tron.RETE) && !Trans_Tron.isIndirizzo(Wallet))){
+                //non è un indirizzo di wallet valido (su Algorand, XRP e Tron isValidAddress accetta anche un token)
             Messaggi.WarningMessage("Wallet non Valido", "Attenzione! <br>Il Wallet specificato non è valido", this);
         }
         else{
@@ -530,8 +533,9 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                         String ReteW=st[34];
                         //String ReteW=Funzioni.TrovaReteDaID(st[0]);
                         String Dati[]=new String[]{Wallet,ReteW};
-                        //X Layer non ha un explorer da cui leggere il saldo di OKB (vedi Trans_XLayer)
-                        if (!ReteW.equals("CRO") && !ReteW.equals(Trans_XLayer.RETE))Mappa_Wallet_Dati.put(WalletRete,Dati);
+                        //X Layer non ha un explorer da cui leggere il saldo di OKB (vedi Trans_XLayer); le reti con
+                        //importatore proprio confrontano da sole i saldi alla prima importazione (Reti.IMPORT_NATIVI)
+                        if (!ReteW.equals("CRO") && !ReteW.equals(Trans_XLayer.RETE) && !Reti.IMPORT_NATIVI.contains(ReteW))Mappa_Wallet_Dati.put(WalletRete,Dati);
                     }
 
                     //Ricariche e cashback della carta OKX, se fra i movimenti c'e' il suo wallet su X Layer

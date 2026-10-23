@@ -34,9 +34,21 @@ avvertenze sul corretto utilizzo del programma.
 
 ## Importazioni da blockchain (DeFi) {#importazioni-da-blockchain-defi}
 
-- Le reti supportate sono oggi: **Bitcoin**, **Solana** e le reti EVM **Ethereum, BSC, Cronos, Base,
+- Le reti supportate sono oggi: **Bitcoin**, **Solana**, **Algorand**, **XRP Ledger**, **Tron** e le reti EVM **Ethereum, BSC, Cronos, Base,
   Arbitrum, Polygon, Avalanche, Optimism, Gnosis, Linea, Blast, Unichain, World Chain, Taiko, Abstract,
   Katana, Sonic, Mantle, Berachain, Monad**.
+
+- Su **Algorand** le ricompense di governance arrivano come normali pagamenti e vanno classificate a mano.
+  Le quote delle pool (per esempio TMPOOL2 di Tinyman) di solito non hanno un prezzo di mercato: il valore
+  dello scambio con cui si entra o si esce da una pool viene dall'altra moneta.
+
+- Su **XRP Ledger** pochi token hanno un prezzo di mercato: quelli senza prezzo vanno valorizzati a mano.
+  L'XRP messo in escrow risulta prelevato alla creazione e depositato quando torna, ed entrambi i movimenti
+  vanno classificati.
+
+- Su **Tron** alcuni token trattengono una parte di ogni trasferimento senza dichiararlo: la giacenza calcolata
+  risulta più alta di quella reale e va rettificata. Il riconoscimento dei token truffa dipende da TronScan: se
+  non risponde, l'importazione prosegue senza.
 
 - Alcune movimentazioni gestite **all'interno** di piattaforme DeFi non vengono esposte dagli explorer
   e quindi non possono essere importate dal programma.

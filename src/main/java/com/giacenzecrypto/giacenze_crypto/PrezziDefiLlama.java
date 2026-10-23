@@ -40,7 +40,8 @@ import okhttp3.Response;
  * <ul>
  *   <li>un prezzo vale se l'affidabilita' ({@code confidence}) di DefiLlama supera
  *       {@link #SOGLIA_AFFIDABILITA}, altrimenti solo se il token e' nell'elenco CoinGecko
- *       ({@code GESTITICOINGECKO}), cioe' come fino a oggi, quando l'affidabilita' non era guardata;</li>
+ *       ({@code GESTITICOINGECKO}), cioe' come fino a oggi, quando l'affidabilita' non era guardata. Su
+ *       Algorand la soglia e' inclusa ({@link #SOGLIA_INCLUSA}, 2026-10-23);</li>
  *   <li>la quotazione deve stare entro {@link #FINESTRA_MS} da un istante chiesto, misurata sul
  *       timestamp che DefiLlama restituisce, che e' anche quello salvato in cache
  *       ({@link Prezzi#isPrezzoPreciso} misura la distanza dall'ora della quotazione). Il parametro
@@ -60,6 +61,13 @@ public class PrezziDefiLlama {
 
     /** Affidabilita' minima, esclusa, per prendere il prezzo di un token fuori dall'elenco CoinGecko. */
     static final double SOGLIA_AFFIDABILITA = 0.9;
+
+    /**
+     * Reti in cui la soglia e' <b>inclusa</b> (decisione dell'utente del 2026-10-23). Su Algorand l'elenco CoinGecko
+     * conosce l'id di 37 token in tutto, e DefiLlama da' 0,9 esatto anche a token veri e scambiati come TINY e TALGO:
+     * con la soglia esclusa restavano senza prezzo quasi tutti i token della rete.
+     */
+    static final Set<String> SOGLIA_INCLUSA = Set.of(Trans_Algorand.RETE);
 
     /** Distanza massima fra la quotazione e l'istante chiesto: la stessa della lettura in cache. */
     static final long FINESTRA_MS = 3600000L;
@@ -111,7 +119,14 @@ public class PrezziDefiLlama {
      * @param affidabilita la {@code confidence} restituita, {@code null} se assente
      */
     static boolean Ammesso(Double affidabilita, boolean inElencoCoinGecko) {
+        return Ammesso(affidabilita, inElencoCoinGecko, null);
+    }
+
+    /** Come {@link #Ammesso(Double, boolean)}, con la soglia inclusa per le reti di {@link #SOGLIA_INCLUSA}. */
+    static boolean Ammesso(Double affidabilita, boolean inElencoCoinGecko, String rete) {
         if (affidabilita != null && affidabilita > SOGLIA_AFFIDABILITA) return true;
+        if (affidabilita != null && affidabilita == SOGLIA_AFFIDABILITA && rete != null
+                && SOGLIA_INCLUSA.contains(rete.toUpperCase())) return true;
         return inElencoCoinGecko;
     }
 
@@ -288,7 +303,7 @@ public class PrezziDefiLlama {
                 if (affidabilita == null || affidabilita <= SOGLIA_AFFIDABILITA) {
                     if (inElencoToken == null) inElencoToken = inElenco.test(dest.get(0));
                 }
-                if (!Ammesso(affidabilita, inElencoToken != null && inElencoToken)) continue;
+                if (!Ammesso(affidabilita, inElencoToken != null && inElencoToken, dest.get(0)[1])) continue;
                 for (String[] d : dest) accettate.add(new Quotazione(d[0], d[1], ts, prezzo));
             }
         }

@@ -8,6 +8,10 @@
     "coinmarketcapDati": "https://api.coinmarketcap.com",
     "goplus": "https://api.gopluslabs.io",
     "binancePubblico": "https://api.binance.com",
-    "cronosExplorer": "https://cronos.org/explorer/api"
+    "cronosExplorer": "https://cronos.org/explorer/api",
+    "algorandIndexer": "https://mainnet-idx.4160.nodely.dev",
+    "xrplNodo": "https://s2.ripple.com:51234",
+    "tronGrid": "https://api.trongrid.io",
+    "tronScan": "https://apilist.tronscanapi.com/api"
   }
 }

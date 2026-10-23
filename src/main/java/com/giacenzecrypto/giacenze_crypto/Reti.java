@@ -31,6 +31,13 @@ final class Reti {
     static final String VOCE_VUOTA_WALLET = "--- nessuna selezione ---";
     static final String VOCE_VUOTA_IMPORT = "----------";
 
+    /**
+     * Reti importate da una classe propria. Nel file sono {@code "importNativo": true} invece di {@code "defi": true}:
+     * le versioni senza la classe ignorano la chiave e le vedono solo riconosciute, invece di mandarne i wallet a
+     * Etherscan. Cosi' la rete nuova non costa un {@code versioneMinimaApp} su tutto il file.
+     */
+    static final java.util.Set<String> IMPORT_NATIVI = java.util.Set.of(Trans_Algorand.RETE, Trans_XRPL.RETE, Trans_Tron.RETE);
+
     /** API degli explorer che non sono Etherscan V2: restano nel codice perche' ricevono la ApiKey. */
     private static final Map<String, String> API_NON_ETHERSCAN = Map.of(
             "CRO", "https://explorer-api.cronos.org/mainnet/api/v2",
@@ -160,7 +167,7 @@ final class Reti {
                 if (!id.matches("[A-Z0-9]{2,12}") || etichetta.isEmpty() || etichetta.contains("(") || perId.containsKey(id)) {
                     return Errore(nome, "rete non valida o doppia: " + id);
                 }
-                boolean defi = v.optBoolean("defi", false);
+                boolean defi = v.optBoolean("defi", false) || (v.optBoolean("importNativo", false) && IMPORT_NATIVI.contains(id));
                 long chainid = v.optLong("chainidEtherscan", 0);
                 String[] url = {v.optString("urlTransazione", ""), v.optString("urlTokenWallet", ""), v.optString("urlWallet", "")};
                 for (String u : url) {

@@ -153,6 +153,54 @@ public class PrezziImportDeFi {
         return r;
     }
 
+    /**
+     * Importazione Algorand ({@link Trans_Algorand}): gli asset per id, ALGO se l'operazione lo muove, paga la
+     * commissione o porta ricompense.
+     */
+    static Raccolta RaccogliAlgorand(List<Trans_Algorand.Operazione> operazioni) {
+        Raccolta r = new Raccolta();
+        for (Trans_Algorand.Operazione o : operazioni) {
+            long istante = IstanteImport(o.timestamp() * 1000);
+            boolean algo = o.commissione().signum() != 0 || o.ricompense().signum() != 0;
+            for (String chiave : o.variazioni().keySet()) {
+                if (chiave.equals(Trans_Algorand.MONETA)) algo = true;
+                else Token(r, chiave, Trans_Algorand.RETE, istante);
+            }
+            if (algo) r.simboli().add(new Prezzi.SimboloIstante(Trans_Algorand.MONETA, istante));
+        }
+        return r;
+    }
+
+    /** Importazione XRP Ledger ({@link Trans_XRPL}): i token per {@code VALUTA.emittente}, XRP se mossi o per la commissione. */
+    static Raccolta RaccogliXRPL(List<Trans_XRPL.Operazione> operazioni) {
+        Raccolta r = new Raccolta();
+        for (Trans_XRPL.Operazione o : operazioni) {
+            long istante = IstanteImport(o.timestamp() * 1000);
+            boolean xrp = o.commissione().signum() != 0;
+            for (String chiave : o.variazioni().keySet()) {
+                if (chiave.equals(Trans_XRPL.MONETA)) xrp = true;
+                else if (Trans_XRPL.isChiaveToken(chiave)) Token(r, chiave, Trans_XRPL.RETE, istante);
+            }
+            if (xrp) r.simboli().add(new Prezzi.SimboloIstante(Trans_XRPL.MONETA, istante));
+        }
+        return r;
+    }
+
+    /** Importazione Tron ({@link Trans_Tron}): i token per indirizzo (non le truffe), TRX se mossi o per commissioni e ricompense. */
+    static Raccolta RaccogliTron(List<Trans_Tron.Operazione> operazioni, java.util.Map<String, Trans_Tron.Token> token) {
+        Raccolta r = new Raccolta();
+        for (Trans_Tron.Operazione o : operazioni) {
+            long istante = IstanteImport(o.timestamp() * 1000);
+            boolean trx = o.commissione().signum() != 0 || o.ricompense().signum() != 0;
+            for (String chiave : o.variazioni().keySet()) {
+                if (chiave.equals(Trans_Tron.MONETA)) trx = true;
+                else if (token.get(chiave) == null || !token.get(chiave).truffa()) Token(r, chiave, Trans_Tron.RETE, istante);
+            }
+            if (trx) r.simboli().add(new Prezzi.SimboloIstante(Trans_Tron.MONETA, istante));
+        }
+        return r;
+    }
+
     /** Scarica a gruppi tutto cio' che la raccolta ha trovato. */
     static void PreScarica(Raccolta r, String origine, Download progress) {
         PrezziDefiLlama.PreScaricaCoppie(r.address(), origine, progress);

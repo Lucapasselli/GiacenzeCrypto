@@ -115,6 +115,9 @@ public class Funzioni_WalletDeFi {
             address=sWallet[0].trim();
             Rete=sWallet[1].replace(")", "").trim();
             //Reti con explorer integrato: "defi" in config/varie/Reti.json (maiuscole come prima)
+            if (Rete.equals(Trans_Algorand.RETE)) return Reti.isDefi(Rete) && Trans_Algorand.isIndirizzoConto(address);
+            if (Rete.equals(Trans_XRPL.RETE)) return Reti.isDefi(Rete) && Trans_XRPL.isIndirizzoConto(address);
+            if (Rete.equals(Trans_Tron.RETE)) return Reti.isDefi(Rete) && Trans_Tron.isIndirizzo(address);
             if (Rete.equals(Rete.toUpperCase()) && Reti.isDefi(Rete))return isValidAddress(address, Rete);
         }
         return false;
@@ -123,6 +126,9 @@ public class Funzioni_WalletDeFi {
         /**
          * Verifica se un indirizzo è sintatticamente valido per la rete indicata: formato Base58 a 32 byte per
          * Solana ({@link #isValidSolanaAddress}), formato specifico per Bitcoin ({@link Trans_Bitcoin#isValidBitcoinAddress}),
+ * per Algorand conto o id di asset ({@link Trans_Algorand#isIndirizzoConto}, {@link Trans_Algorand#isIdAsset}),
+ * per XRP Ledger conto o token ({@link Trans_XRPL#isIndirizzoConto}, {@link Trans_XRPL#isToken}),
+ * per Tron indirizzo o id TRC10 ({@link Trans_Tron#isIndirizzo}, {@link Trans_Tron#isIdTRC10}),
          * altrimenti formato esadecimale EVM standard ({@code 0x} seguito da 40 caratteri esadecimali).
          * @param address indirizzo da validare
          * @param Rete identificativo della blockchain/rete
@@ -137,6 +143,18 @@ public class Funzioni_WalletDeFi {
         }
         else if (Rete.equalsIgnoreCase("BTC")){
             return Trans_Bitcoin.isValidBitcoinAddress(address);
+        }
+        else if (Rete.equalsIgnoreCase(Trans_Algorand.RETE)){
+            //Su Algorand l'"indirizzo" di un token e' l'id dell'asset: vale per il percorso prezzi, non come wallet
+            return Trans_Algorand.isIndirizzoConto(address) || Trans_Algorand.isIdAsset(address);
+        }
+        else if (Rete.equalsIgnoreCase(Trans_XRPL.RETE)){
+            //Il token di XRP Ledger e' VALUTA.emittente, l'NFT il suo id
+            return Trans_XRPL.isIndirizzoConto(address) || Trans_XRPL.isToken(address) || Trans_XRPL.isIdNFT(address);
+        }
+        else if (Rete.equalsIgnoreCase(Trans_Tron.RETE)){
+            //Conti e contratti TRC20 hanno lo stesso formato, i TRC10 un id
+            return Trans_Tron.isIndirizzo(address) || Trans_Tron.isIdTRC10(address);
         }
         else{
             Pattern ETH_ADDRESS_PATTERN = Pattern.compile("^0x[a-fA-F0-9]{40}$");

@@ -6,7 +6,8 @@ import org.json.JSONObject;
 
 /**
  * Indirizzi base dei servizi pubblici interrogati <b>senza chiave</b> (DefiLlama, Banca d'Italia, mempool.space, candele
- * pubbliche di Coinbase e Binance, storico pubblico di CoinMarketCap, GoPlus, explorer di Cronos), da
+ * pubbliche di Coinbase e Binance, storico pubblico di CoinMarketCap, GoPlus, explorer di Cronos, indexer Algorand, nodo XRP Ledger,
+ * TronGrid e TronScan), da
  * {@code config/varie/IndirizziServizi.json}: se un servizio cambia dominio basta il file, non una versione.
  *
  * <p>Gli indirizzi a cui va una ApiKey o una firma dell'utente (Etherscan, Blockscout, Moralis, Helius, NodeReal,
@@ -28,6 +29,10 @@ final class IndirizziServizi {
     static final String GOPLUS = "goplus";
     static final String BINANCE_PUBBLICO = "binancePubblico";
     static final String CRONOS_EXPLORER = "cronosExplorer";
+    static final String ALGORAND_INDEXER = "algorandIndexer";
+    static final String XRPL_NODO = "xrplNodo";
+    static final String TRONGRID = "tronGrid";
+    static final String TRONSCAN = "tronScan";
 
     /** Solo https, solo host e percorso: niente parametri, niente credenziali nell'indirizzo, niente barra finale. */
     private static final String FORMATO = "https://[a-z0-9.-]+(:\\d{1,5})?(/[A-Za-z0-9._~-]+)*";

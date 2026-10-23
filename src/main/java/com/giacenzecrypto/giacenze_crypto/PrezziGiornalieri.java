@@ -380,7 +380,7 @@ final class PrezziGiornalieri {
                         if (Affidabilita == null || Affidabilita <= PrezziDefiLlama.SOGLIA_AFFIDABILITA) {
                             if (InElenco == null) InElenco = PrezziDefiLlama.InElencoCoinGecko(F.Address(), F.Rete());
                         }
-                        if (!PrezziDefiLlama.Ammesso(Affidabilita, InElenco != null && InElenco)) continue;
+                        if (!PrezziDefiLlama.Ammesso(Affidabilita, InElenco != null && InElenco, F.Rete())) continue;
                         JsonArray Serie = c.getAsJsonArray("prices");
                         if (Serie == null) continue;
                         for (JsonElement p : Serie) {

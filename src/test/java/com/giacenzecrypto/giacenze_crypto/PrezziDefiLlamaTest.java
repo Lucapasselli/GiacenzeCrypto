@@ -77,6 +77,18 @@ class PrezziDefiLlamaTest {
     }
 
     @Test
+    void suAlgorandLaSogliaEInclusa() {
+        assertTrue(PrezziDefiLlama.Ammesso(0.9, false, "ALGO"), "TINY e TALGO hanno 0,9 esatto");
+        assertFalse(PrezziDefiLlama.Ammesso(0.89, false, "ALGO"));
+        assertFalse(PrezziDefiLlama.Ammesso(0.9, false, "ARB"), "sulle altre reti resta esclusa");
+        assertFalse(PrezziDefiLlama.Ammesso(null, false, "ALGO"));
+        String k = "algorand:2200000000";
+        String json = "{\"coins\":{\"" + k + "\":{\"prices\":[{\"price\":0.05,\"timestamp\":" + FINE_2025 / 1000
+                + ",\"confidence\":0.9}]}}}";
+        assertEquals(1, PrezziDefiLlama.Interpreta(json, istanti(k, FINE_2025), dest(k, "2200000000", "ALGO"), t -> false).size());
+    }
+
+    @Test
     void senzaAffidabilitaValeSoloInElencoCoinGecko() {
         assertFalse(PrezziDefiLlama.Ammesso(null, false), "le memecoin del 2021 arrivano senza confidence");
         assertTrue(PrezziDefiLlama.Ammesso(null, true));

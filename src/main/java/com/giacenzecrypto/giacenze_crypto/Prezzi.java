@@ -1994,7 +1994,8 @@ public class Prezzi {
         /**
          * Scarica da coingecko l'elenco completo dei token gestiti (con relativi indirizzi di contratto per rete)
          * e li salva tramite {@link DatabaseH2#GestitiCoingecko_ScriviNuovaTabella}. Il download viene ripetuto
-         * solo se sono trascorse almeno 24 ore dall'ultimo aggiornamento registrato nell'opzione {@code Data_Lista_Coingecko}.
+         * solo se sono trascorse almeno 24 ore dall'ultimo aggiornamento registrato nell'opzione {@code Data_Lista_Coingecko},
+         * oppure se le reti di {@code Mappa_ChainExplorer} non sono piu' quelle dell'ultimo scarico ({@code Reti_Lista_Coingecko}).
          * @return {@code "ok"} se il recupero (o il riutilizzo della lista già presente) è andato a buon fine, altrimenti {@code null}
          */
         public static String RecuperaCoinsCoingecko() {
@@ -2008,7 +2009,12 @@ public class Prezzi {
         if (dataUltimoScaricoString != null) {
             dataUltimoScarico = Long.parseLong(dataUltimoScaricoString);
         }
-        if (adesso > (dataUltimoScarico + 86400000)) {
+        //Le chiavi "address_RETE" si fanno solo per le reti di Mappa_ChainExplorer: se e' arrivata una rete nuova la
+        //lista va rifatta subito, altrimenti per un giorno i suoi token risulterebbero fuori elenco e CambioAddressEUR
+        //li segnerebbe irrecuperabili per sempre
+        String retiAttuali = String.join(",", new java.util.TreeSet<>(Principale.Mappa_ChainExplorer.keySet()));
+        boolean retiCambiate = !retiAttuali.equals(DatabaseH2.Opzioni_Leggi("Reti_Lista_Coingecko"));
+        if (adesso > (dataUltimoScarico + 86400000) || retiCambiate) {
             try {
                 String apiUrl = "https://api.coingecko.com/api/v3/coins/list?include_platform=true";
                 URL url = new URI(apiUrl).toURL();
@@ -2064,6 +2070,7 @@ public class Prezzi {
                    gestiti.add(Gestito);
                     DatabaseH2.GestitiCoingecko_ScriviNuovaTabella(gestiti);
                     DatabaseH2.Opzioni_Scrivi("Data_Lista_Coingecko", String.valueOf(adesso));
+                    DatabaseH2.Opzioni_Scrivi("Reti_Lista_Coingecko", retiAttuali);
                 }else {
                     ok=null;
                         }

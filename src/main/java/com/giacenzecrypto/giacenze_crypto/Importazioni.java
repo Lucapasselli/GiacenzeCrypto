@@ -5659,7 +5659,8 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
  */
 public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Component ccc, Download progressb) {
         //sistemo le giacenze sulle rete ethereum compatibili
-        if (!Rete.equals("SOL")&&!Rete.equals("BSC")&&!Rete.equals("BASE")&&!Rete.equals("AVAX")&&!Rete.equals("CRO")&&!Rete.equals("BTC")){
+        if (!Rete.equals("SOL")&&!Rete.equals("BSC")&&!Rete.equals("BASE")&&!Rete.equals("AVAX")&&!Rete.equals("CRO")&&!Rete.equals("BTC")
+                &&!Reti.IMPORT_NATIVI.contains(Rete)){
         progressb.setDefaultCloseOperation(0);
         progressb.Titolo("Sistemazione Giacenze moneta di Scambio su Wallet " + Wallet);
         progressb.SetLabel("Sistemazione Giacenze");
@@ -6248,6 +6249,12 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
         if (Rete.equalsIgnoreCase("BTC")) return "BITCOIN";
         //Nessun explorer: nodo pubblico con la scansione per stati (Trans_XLayer)
         if (Rete.equalsIgnoreCase(Trans_XLayer.RETE)) return "NODO PUBBLICO";
+        //Indexer pubblico di Nodely, senza chiave (Trans_Algorand)
+        if (Rete.equalsIgnoreCase(Trans_Algorand.RETE)) return Trans_Algorand.PROVIDER;
+        //Nodo pubblico di Ripple con la storia completa, senza chiave (Trans_XRPL)
+        if (Rete.equalsIgnoreCase(Trans_XRPL.RETE)) return Trans_XRPL.PROVIDER;
+        //TronGrid e TronScan senza chiave (Trans_Tron)
+        if (Rete.equalsIgnoreCase(Trans_Tron.RETE)) return Trans_Tron.PROVIDER;
         return "ETHERSCAN";
     }
 
@@ -6507,6 +6514,75 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                     if (ccc != null && !esito.avvisi().isEmpty()) JOptionPane.showConfirmDialog(ccc,
                             "Wallet " + walletAddress + " su X Layer:\n" + String.join("\n", esito.avvisi()),
                             "X Layer", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                }
+            }
+            //Algorand prima dei controlli sulle ApiKey: indexer pubblico, senza chiavi (Trans_Algorand)
+            else if (Rete.equalsIgnoreCase(Trans_Algorand.RETE)) {
+                progressb.setIndeterminate(true);
+                progressb.SetLabel("Scaricamento di " + walletAddress + " (" + Rete + ") in corso...");
+                Trans_Algorand.Esito esito = Trans_Algorand.Scarica(walletAddress, Long.parseLong(Blocco),
+                        progressb::FineThread, DocumentoFonteCorrente, progressb::SetMessaggioAvanzamento);
+                progressb.setIndeterminate(false);
+                for (String avviso : esito.avvisi()) {
+                    LoggerGC.ScriviErrore("Algorand " + walletAddress + ": " + avviso);
+                }
+                if (!esito.completo()) {
+                    //Come X Layer: meglio niente che una parte, la prossima importazione riparte dall'ultimo round scritto
+                    if (ccc != null && !progressb.FineThread()) JOptionPane.showConfirmDialog(ccc,
+                            "Scaricamento del wallet " + walletAddress + " su Algorand non completato, nessun movimento importato.\n"
+                            + String.join("\n", esito.avvisi()), "Algorand", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                } else {
+                    MappaTransazioniDefi.putAll(Trans_Algorand.ComeTransazioniDefi(walletAddress, esito));
+                    //Gli avvisi di un'importazione completa sono saldi che non tornano (Trans_Algorand.VerificaSaldi)
+                    if (ccc != null && !esito.avvisi().isEmpty()) JOptionPane.showConfirmDialog(ccc,
+                            "Wallet " + walletAddress + " su Algorand: la somma dei movimenti scaricati non coincide con il saldo"
+                            + " sulla blockchain.\n" + String.join("\n", esito.avvisi())
+                            + "\nI movimenti vengono importati comunque, le differenze vanno controllate a mano.",
+                            "Algorand", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                }
+            }
+            //Tron: TronGrid e TronScan, senza chiavi (Trans_Tron)
+            else if (Rete.equalsIgnoreCase(Trans_Tron.RETE)) {
+                progressb.setIndeterminate(true);
+                progressb.SetLabel("Scaricamento di " + walletAddress + " (" + Rete + ") in corso...");
+                Trans_Tron.Esito esito = Trans_Tron.Scarica(walletAddress, Long.parseLong(Blocco),
+                        progressb::FineThread, DocumentoFonteCorrente, progressb::SetMessaggioAvanzamento);
+                progressb.setIndeterminate(false);
+                for (String avviso : esito.avvisi()) {
+                    LoggerGC.ScriviErrore("Tron " + walletAddress + ": " + avviso);
+                }
+                if (!esito.completo()) {
+                    if (ccc != null && !progressb.FineThread()) JOptionPane.showConfirmDialog(ccc,
+                            "Scaricamento del wallet " + walletAddress + " su Tron non completato, nessun movimento importato.\n"
+                            + String.join("\n", esito.avvisi()), "Tron", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                } else {
+                    MappaTransazioniDefi.putAll(Trans_Tron.ComeTransazioniDefi(walletAddress, esito));
+                    if (ccc != null && !esito.avvisi().isEmpty()) JOptionPane.showConfirmDialog(ccc,
+                            "Wallet " + walletAddress + " su Tron:\n" + String.join("\n", esito.avvisi())
+                            + "\nI movimenti vengono importati comunque.",
+                            "Tron", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                }
+            }
+            //XRP Ledger: nodo pubblico con la storia completa, senza chiavi (Trans_XRPL)
+            else if (Rete.equalsIgnoreCase(Trans_XRPL.RETE)) {
+                progressb.setIndeterminate(true);
+                progressb.SetLabel("Scaricamento di " + walletAddress + " (" + Rete + ") in corso...");
+                Trans_XRPL.Esito esito = Trans_XRPL.Scarica(walletAddress, Long.parseLong(Blocco),
+                        progressb::FineThread, DocumentoFonteCorrente, progressb::SetMessaggioAvanzamento);
+                progressb.setIndeterminate(false);
+                for (String avviso : esito.avvisi()) {
+                    LoggerGC.ScriviErrore("XRP Ledger " + walletAddress + ": " + avviso);
+                }
+                if (!esito.completo()) {
+                    if (ccc != null && !progressb.FineThread()) JOptionPane.showConfirmDialog(ccc,
+                            "Scaricamento del wallet " + walletAddress + " su XRP Ledger non completato, nessun movimento importato.\n"
+                            + String.join("\n", esito.avvisi()), "XRP Ledger", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                } else {
+                    MappaTransazioniDefi.putAll(Trans_XRPL.ComeTransazioniDefi(walletAddress, esito));
+                    if (ccc != null && !esito.avvisi().isEmpty()) JOptionPane.showConfirmDialog(ccc,
+                            "Wallet " + walletAddress + " su XRP Ledger:\n" + String.join("\n", esito.avvisi())
+                            + "\nI movimenti vengono importati comunque.",
+                            "XRP Ledger", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
                 }
             }
             else if (Rete.equalsIgnoreCase("SOL")) {

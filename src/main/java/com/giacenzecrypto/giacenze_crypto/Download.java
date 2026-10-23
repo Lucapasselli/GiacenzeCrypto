@@ -151,10 +151,20 @@ private Timer timer = new Timer(1000, new ActionListener() {
      * Attiva o disattiva la modalità indeterministica della progress bar.
      * Quando indeterministica, la barra mostra uno spinner animato invece di un valore.
      *
+     * <p>Eseguito sempre sul thread grafico. Lo chiamano anche i thread di lavoro (le importazioni DeFi), e
+     * {@code JProgressBar.setIndeterminate} prepara o butta via lo stato dell'animazione nel thread che lo chiama:
+     * {@code false} azzera {@code componentInnards} mentre il thread grafico può essere dentro {@code getBox()}
+     * a disegnare la barra animata, e l'EDT finiva con una {@code NullPointerException} ("Cannot read field
+     * width because this.componentInnards is null"). Riprodotto: 29 eccezioni su 1.500 cambi, nessuna così.
+     *
      * @param b {@code true} per attivare lo spinner, {@code false} per tornare alla
      *          modalità deterministica
      */
     public void setIndeterminate(boolean b) {
+        if (!javax.swing.SwingUtilities.isEventDispatchThread()) {
+            javax.swing.SwingUtilities.invokeLater(() -> setIndeterminate(b));
+            return;
+        }
         ProgressBarDownload.setIndeterminate(b);
         ProgressBarDownload.setString("");
     }

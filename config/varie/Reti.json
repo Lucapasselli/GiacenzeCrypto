@@ -5,7 +5,8 @@
     "chainidEtherscan: l'indirizzo delle API (Etherscan V2) lo costruisce il programma da questo numero, mai da un indirizzo scritto qui, perche' a quelle API va la ApiKey dell'utente. Le reti con API diverse (CRO, SOL, BTC, XLAYER) restano nel codice.",
     "urlTransazione/urlTokenWallet/urlWallet: pagine aperte nel browser, segnaposto {hash} {wallet} {token}.",
     "nodiStorico: nodi pubblici con lo stato storico per la colonna Qta Blockchain. Un nodo nuovo va verificato PRIMA a due altezze contro gli altri nodi della rete: alcuni rispondono 0x0 invece di un errore per lo stato che non hanno, e uno sbagliato fa sembrare giuste giacenze sbagliate. senzaStorico: solo la giacenza di oggi.",
-    "nodoPubblico (BASE): nodi e token usati per IMPORTARE i movimenti (NodoPubblicoDefi), stessa verifica a due altezze. tokenNodo (XLAYER): monete lette nello stato del wallet della carta OKX, simbolo e decimali letti sul nodo, l'ordine conta."
+    "nodoPubblico (BASE): nodi e token usati per IMPORTARE i movimenti (NodoPubblicoDefi), stessa verifica a due altezze. tokenNodo (XLAYER): monete lette nello stato del wallet della carta OKX, simbolo e decimali letti sul nodo, l'ordine conta.",
+    "importNativo: rete importata da una classe propria (ALGO: Trans_Algorand, XRP: Trans_XRPL, TRX: Trans_Tron), al posto di defi. Le versioni che hanno quella classe la trattano come defi, le precedenti la ignorano e la vedono solo riconosciuta, quindi niente versioneMinimaApp sul file intero."
   ],
   "reti": [
     {
@@ -480,6 +481,17 @@
       ]
     },
     {
+      "id": "ALGO",
+      "nome": "Algorand",
+      "importNativo": true,
+      "simbolo": "ALGO",
+      "coingecko": "algorand",
+      "defillama": "algorand",
+      "urlTransazione": "https://allo.info/tx/{hash}",
+      "urlTokenWallet": "https://allo.info/account/{wallet}",
+      "urlWallet": "https://allo.info/account/{wallet}"
+    },
+    {
       "id": "ADA",
       "nome": "Cardano"
     },
@@ -517,7 +529,14 @@
     },
     {
       "id": "TRX",
-      "nome": "Tron"
+      "nome": "Tron",
+      "importNativo": true,
+      "simbolo": "TRX",
+      "coingecko": "tron",
+      "defillama": "tron",
+      "urlTransazione": "https://tronscan.org/#/transaction/{hash}",
+      "urlTokenWallet": "https://tronscan.org/#/address/{wallet}/transfers",
+      "urlWallet": "https://tronscan.org/#/address/{wallet}"
     },
     {
       "id": "XLM",
@@ -525,7 +544,14 @@
     },
     {
       "id": "XRP",
-      "nome": "Ripple"
+      "nome": "Ripple",
+      "importNativo": true,
+      "simbolo": "XRP",
+      "coingecko": "xrp",
+      "defillama": "ripple",
+      "urlTransazione": "https://livenet.xrpl.org/transactions/{hash}",
+      "urlTokenWallet": "https://livenet.xrpl.org/accounts/{wallet}",
+      "urlWallet": "https://livenet.xrpl.org/accounts/{wallet}"
     },
     {
       "id": "ZEC",

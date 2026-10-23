@@ -16,7 +16,6 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.html.simpleparser.HTMLWorker;
-import com.lowagie.text.html.simpleparser.StyleSheet;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.ColumnText;
 import com.lowagie.text.pdf.PdfContentByte;
@@ -172,10 +171,7 @@ public class Stampe {
         
     } 
     
-    /** @param Titolo titolo da impostare nei metadati del documento PDF */
-    public void AggiungiTitolo(String Titolo){
-        doc.addTitle(Titolo);
-     }
+    
 
     /**
      * Aggiunge al PDF una pagina del quadro W/RW (dichiarazione patrimoniale), sovrapponendo all'immagine del
@@ -261,30 +257,7 @@ public class Stampe {
     
         
     
-    /**
-     * Importa la prima pagina di un PDF esterno come template e la inserisce come contenuto nel documento
-     * corrente tramite {@link PdfContentByte#addTemplate}.
-     * @param FontePDF percorso del PDF sorgente da cui importare la prima pagina
-     */
-    public void InserisciPDF(String FontePDF) {
-        try {
-            PdfReader reader = new PdfReader(FontePDF);
-           // Document document = new Document();
-            PdfWriter writer = PdfWriter.getInstance(doc, new FileOutputStream("output.pdf"));
-
-          //  doc.open();
-
-            PdfContentByte cb = writer.getDirectContent();
-            PdfImportedPage page = writer.getImportedPage(reader, 1);
-
-// Inserisce la pagina come contenuto
-            cb.addTemplate(page, 0, 0);
-
-           // doc.close();
-        } catch (IOException ex) {
-            System.getLogger(Stampe.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-        }
-    }
+    
     
     public void AggiungiQuadroRW(String Immagine,
                 String NumeroQuadro,
@@ -458,21 +431,6 @@ public class Stampe {
                     //setPara(writer.getDirectContent(), new Phrase("1",font), 140+doc.leftMargin(), psosizioneVeriticale+630-i*100);
                  }
              }
-         /*  
-
-             
-             //Solo Monitoraggio
-             if (Giorni.isBlank()||Giorni.contains("(")){
-                setPara(writer.getDirectContent(), new Phrase("X",font), 495+doc.leftMargin(), psosizioneVeriticale+85);
-             }else{
-             //Adesso calcolo l'IC per poterla mettere nei campi appositi
-             String IC = new BigDecimal(ValoreFinale)
-                         .multiply(new BigDecimal(Giorni))
-                         .multiply(new BigDecimal(0.002))
-                         .divide(new BigDecimal(365), 0, RoundingMode.HALF_UP).toPlainString() + ",00";
-                 setPara(writer.getDirectContent(), new Phrase(IC, font), 380 + doc.leftMargin(), psosizioneVeriticale + 8);
-                 setPara(writer.getDirectContent(), new Phrase(IC, font), 460 + doc.leftMargin(), psosizioneVeriticale + 8);
-             }*/
 
           } catch (BadElementException | IOException ex) {
               Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
@@ -684,37 +642,7 @@ public class Stampe {
     
     
     
-         /**
-          * Aggiunge al PDF una pagina del rigo RW8 (crypto-attività), sovrapponendo il valore indicato
-          * all'immagine del modulo fornita.
-          * @param Immagine percorso dell'immagine del modulo su cui sovrapporre i dati
-          * @param Valore valore da riportare nel rigo
-          */
-         public void AggiungiRW8(String Immagine,String Valore) {
-          try {
-              
-
-// String Errore="Attenzione per questo wallet ci sono degli errori da correggere!";
-              com.lowagie.text.Image image01 = com.lowagie.text.Image.getInstance(Immagine);
-             // image01.s
-             float LarghezzaPagina=doc.getPageSize().getWidth()-doc.rightMargin()-doc.leftMargin();
-             float LarghezzaImmagine=image01.getWidth();
-             float PercentualeScala=LarghezzaPagina/LarghezzaImmagine*100;
-             image01.scalePercent(PercentualeScala);
-             //doc.bottom()
-             doc.add(image01);
-             float psosizioneVeriticale=writer.getVerticalPosition(false);        
-             Font font = new Font(Font.HELVETICA, 8, Font.NORMAL); 
-             //Codice Possesso
-             setPara(writer.getDirectContent(), new Phrase(Valore,font), 110+doc.leftMargin(), psosizioneVeriticale+8);
-             //Codice Individuazione Bene
-             setPara(writer.getDirectContent(), new Phrase(Valore,font), 390+doc.leftMargin(), psosizioneVeriticale+8);
-             
-
-          } catch (BadElementException | IOException ex) {
-              Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
-          }
-    }
+         
     
     /**
      * Disegna una frase allineata a sinistra a coordinate assolute nella pagina PDF corrente.
@@ -1717,7 +1645,6 @@ public class Stampe {
               //allineato, e chi non attiva la veste non vede alcuna differenza.
               //Le due grafie con e senza spazio dopo la virgola sono entrambe presenti in Principale.
               if (cornice!=null) html=html.replaceAll("face=\"Courier New,\\s*Courier,\\s*mono\"", "face=\"Noto Sans\"");
-              StyleSheet style=new StyleSheet();
               ArrayList<Element> htmlContetList = HTMLWorker.parseToList(new StringReader(html), null);
               Paragraph paragraph = new Paragraph();
               for (Element element : htmlContetList) {

@@ -22,12 +22,7 @@ final class RwDialoghi {
     private RwDialoghi() {
     }
 
-    /** Nuovo {@link JDateChooser} in formato {@code yyyy-MM-dd}, già adattato al tema. */
-    static JDateChooser nuovoDateChooser() {
-        JDateChooser c = new JDateChooser();
-        configura(c);
-        return c;
-    }
+    
 
     /**
      * Applica a un {@link JDateChooser} già costruito (es. da {@code initComponents()} del GUI

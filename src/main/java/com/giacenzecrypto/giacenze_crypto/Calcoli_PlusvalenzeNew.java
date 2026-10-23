@@ -1349,17 +1349,6 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
 
    
 
-  /* public static String RitornaTipoCrypto(String Token,String Data,String Tipologia) {
-       String Tipo=Tipologia;
-       String DataEmoney=CDC_Grafica.Mappa_EMoney.get(Token);
-       if(Tipologia.equalsIgnoreCase("Crypto")&&DataEmoney!=null){
-           long dataemoney=OperazioniSuDate.ConvertiDatainLong(DataEmoney);
-           long datascambio=OperazioniSuDate.ConvertiDatainLong(Data);
-           if (datascambio>=dataemoney) Tipo="EMoney";
-       }
-       return Tipo;
-   }*/
-
     /**
      * Se l'opzione {@code PlusXWallet} è attiva, individua il movimento "controparte" di un
      * trasferimento tra wallet ({@code v}, di tipo DTW o PTW, importato o manuale) quando questo
@@ -1469,24 +1458,8 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
           
           
           
-          /**
-           * Sostituisce interamente lo stack dei lotti entrati nel LIFO da questa transazione.
-           *
-           * @param PMStack nuovo stack da usare come {@code StackEntrato}
-           */
-          public void sostituisci_CryptoStackEntrato(ArrayDeque<String[]> PMStack)
-          {
-            StackEntrato=PMStack;
-          }
-          /**
-           * Aggiunge un singolo lotto (in coda) allo stack dei lotti entrati per questa transazione.
-           *
-           * @param Dettaglio riga del lotto (moneta, quantità, costo, ID transazione origine)
-           */
-          public void aggiungi_Entrato_Dettagli(String Dettaglio[])
-          {
-            StackEntrato.add(Dettaglio);
-          }
+          
+          
 
           /**
            * @return lo stack dei lotti inseriti nel LIFO da questa transazione

@@ -615,7 +615,7 @@ public class CcxtInterop {
 
     /**
      * Limite di **inattività** (non di durata totale) per {@link #fetchMovimento}: gli script che vi
-     * passano (Binance_Trades, OKX_Bills, OKX_Earn, FetchMovimenti, ...) possono legittimamente durare
+     * passano (Binance_Trades, OKX_Bills, OKX_Earn, ...) possono legittimamente durare
      * ore su un account con molto storico, ma restano quasi sempre entro pochi secondi/decine di secondi
      * senza scrivere nulla — ogni retry, backoff o pagina e' preceduto da una riga di log (verificato su
      * {@code Binance_Trades.js}: ogni tentativo fallito logga prima di riprovare, il rate-limit backoff
@@ -723,73 +723,7 @@ public class CcxtInterop {
         }
     }
 
- /**
-  * Come {@link #installCcxt}, ma generico per un qualsiasi modulo npm indicato per nome.
-  * @param Modulo nome del pacchetto npm da installare
-  * @throws IOException in caso di errore di avvio/lettura del processo npm
-  * @throws InterruptedException se il thread viene interrotto durante l'attesa del processo
-  * @throws RuntimeException se {@code npm install} termina con un codice di uscita diverso da zero
-  */
- public static void installModuleNode(String Modulo) throws IOException, InterruptedException {
-    //Per il momento mi servono installati ccxt,express e cors    
-        
-        Path nodePath = getNodeExePath();
-        System.out.println("nodePath="+nodePath);
-        
-    Path nodeModulesDir = getNodeDir().resolve("node_modules");
-    //Path nodeModulesDir = nodeBaseDir.resolve("node_modules").toAbsolutePath();
-    Path ModuloDir = nodeModulesDir.resolve(Modulo);
-
-    if (Files.exists(ModuloDir) && Files.isDirectory(ModuloDir)) {
-        System.out.println("express già installato in: " + ModuloDir);
-        return;
-    }    
-    
-    Path npmPath = getNpmPath();
-    System.out.println("npmPath="+npmPath);
-    
-
-    System.out.println("Installo "+Modulo+"...");
-    ProcessBuilder builder = new ProcessBuilder(npmPath.toString(), "install", Modulo);
-    System.out.println(VarStatiche.getWorkingDirectory() + "tools/node");
-    builder.directory(getNodeDir().toFile());
-    //builder.directory(nodeModulesDir.toFile());
-    //builder.directory(new File(Statiche.getWorkingDirectory() + "tools/node"));  // directory di lavoro
-    System.out.println("Comando: " + String.join(" ", builder.command()));
-    System.out.println("Working directory: " + builder.directory().getAbsolutePath());
-    Map<String, String> env = builder.environment();
-
-    // Inserisci la directory che contiene node.exe nel PATH
-    String currentPath = env.get("PATH");
-    env.put("PATH", nodePath.getParent().toAbsolutePath().toString() + File.pathSeparator + currentPath);
-    isolaConfigNpm(env);
-
-    Process process = builder.start();
-    AtomicBoolean scadutoPerTimeout = avviaWatchdogTimeout(process, TIMEOUT_NPM_INSTALL_MINUTI);
-    try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-         BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-        String line;
-        // stderr in un thread a parte: leggerlo dopo stdout bloccherebbe npm se riempie il buffer dell'altro flusso
-        Thread lettoreErr = new Thread(() -> {
-            try {
-                String riga;
-                while ((riga = errReader.readLine()) != null) scriviRigaStderrNpm(riga);
-            } catch (IOException ex) {
-                // il processo e' terminato o e' stato interrotto dal watchdog: nulla da leggere
-            }
-        }, "npm-stderr");
-        lettoreErr.start();
-        while ((line = reader.readLine()) != null) System.out.println("[npm] " + line);
-        lettoreErr.join();
-    }
-
-    int exitCode = process.waitFor();
-    if (scadutoPerTimeout.get())
-        throw new RuntimeException("npm install " + Modulo + " interrotto: nessuna risposta entro "
-                + TIMEOUT_NPM_INSTALL_MINUTI + " minuti (probabile problema di connessione)");
-    if (exitCode != 0) throw new RuntimeException("npm install "+Modulo+" fallito");
-    System.out.println(Modulo+" installato con successo");
-}
+ 
     
     
     /**
@@ -1412,7 +1346,7 @@ public static Path getNodeExePath() {
      * recupera anche i trade spot per quei token, importando tutto nel database tramite
      * {@link Importazioni#ScriviListaSuMappaCrypto}. L'elaborazione può essere interrotta anticipatamente
      * impostando {@link Principale#InterrompiCiclo} o in presenza di errori Node.js segnalati da {@code progress}.
-     * @param exchangeId identificativo CCXT dell'exchange (attualmente gestito solo {@code "Binance"}, con un ramo di test per {@code "Binancet"})
+     * @param exchangeId identificativo CCXT dell'exchange (attualmente gestito solo {@code "Binance"})
      * @param apiKey API key dell'account
      * @param secret API secret dell'account
      * @param startDate data di inizio da cui recuperare i movimenti, millisecondi epoch
@@ -1572,59 +1506,6 @@ public static Path getNodeExePath() {
     private static Importazioni.Esito fetchMovimentiInterno(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String passphrase,Download progress,Component c,boolean conArchivio) {
        // Map<String, JsonObject> Mappa_Json = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         List<JsonObject> Jsons = new ArrayList<>();
-        
-        //BINACE TEST
-        if (exchangeId.equalsIgnoreCase("Binancet")) {
-            long inizioanno=Long.parseLong("1609465487000");
-            //1 - RECUPERO TUTTI I MOVIMENTI TRANNE I TRADES
-           // String estrazioni[] = new String[]{"depositi", "prelievi", "Binance_Conversioni", "Binance_EarnFlessibili", "Binance_EarnLocked"};
-            String estrazioni[] = new String[]{"check_node_path"};
-            for (String script : estrazioni) {
-                JsonObject json = fetchMovimento(exchangeId, apiKey, secret, inizioanno, "", script);
-                if (json != null) {
-                    Jsons.add(json);
-                }
-            }
-
-            
-            //2 - RECUPERO I TOKEN COINVOLTI NELLE TRANSAZIONI
-            //Adesso che ho scaricato tutti i movimenti recupero la lista dei movimenti nel formato standard di GiacenzeCrypto
-            List<String[]> lista = getListaMovimenti(Jsons, exchangeId);
-
-            //Adesso devo recuperare tutti i token movimentati per poter poi creare un array di token da passare per il recupero dei trades
-            for (String[] riga : lista) {
-                //Se il token non è presente nella lista lo aggiungo
-                if (!riga[8].isBlank() && !Tokens.contains(riga[8])) {
-                    Tokens = Tokens + "," + riga[8];
-                }
-                if (!riga[11].isBlank() && !Tokens.contains(riga[11])) {
-                    Tokens = Tokens + "," + riga[11];
-                }
-            }
-            
-            DatabaseH2.Pers_ExchangeTokens_LeggiTokensExchange("Binance");
-            
-            //Recupero la lista dei token con le varie somme e prendo solo quelli che hanno una somma diversa da zero
-            //solo su quelli vado a cercare i trades, infatti i token che vanno a zero molto probabilmente non sono stati scambiati oltre le varie conversions
-            
-
-            //3 - RECUPERO I TRADES DEI TOKEN COINVOLTI + QUELLI RICHIESTI IN ORIGINE
-            //Importazioni.inserisciListaMovimentisuMappaCryptoWallet(
-            //Recuperato la lista di token da richiedere procedo con il recupero dei trades
-           // JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, Tokens, "Binance_Trades");
-           // lista.addAll(getListaMovimento(json, exchangeId));
-
-            //4 - IMPORTO TUTTO NEL DATABASE
-            //Recuperati tutti i movimenti posso procedere all'aggiunta al database vera e propria
-            if(!Principale.InterrompiCiclo)
-                Importazioni.ScriviListaSuMappaCrypto(lista,true);
-            //Solo se non ho premutol il tasto annulla, in quel caso non faccio nulla
-            else{
-                JOptionPane.showConfirmDialog(c, "Elaborazione interrotta dall'utente!",
-                                "Attenzione", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
-            }
-
-        }
         
         //BINACE
         if (exchangeId.equalsIgnoreCase("Binance")) {
@@ -3226,17 +3107,6 @@ public static Path getNodeExePath() {
 
             
             
-            // Savings / Earn
-            JsonArray savings = json.has("savings") ? json.getAsJsonArray("savings") : new JsonArray();
-           /* for (JsonElement s : savings) {
-                System.out.println(s.toString());
-            }*/
-
-            // Staking
-            JsonArray staking = json.has("staking") ? json.getAsJsonArray("staking") : new JsonArray();
-          /*  for (JsonElement s2 : staking) {
-                System.out.println(s2.toString());
-            }*/
             
             // Binance Earn Flessibile
             JsonArray earnFlexible = json.has("Binance_earnFlexible") ? json.getAsJsonArray("Binance_earnFlexible") : new JsonArray();
@@ -3569,8 +3439,6 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
                 OldData=data;
             }
             
-            String dataForId = data.replaceAll(" |-|:", "");
-            String dataa = data.trim().substring(0, data.length()-3);
 
 
             
@@ -3689,8 +3557,6 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 OldData=data;
             }
             
-            String dataForId = data.replaceAll(" |-|:", "");
-            String dataa = data.trim().substring(0, data.length()-3);
 
             if (status.trim().equalsIgnoreCase("Successful")) {
                 Moneta Mon = new Moneta();
@@ -3807,8 +3673,6 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 OldData=data;
             }
             
-            String dataForId = data.replaceAll(" |-|:", "");
-            String dataa = data.trim().substring(0, data.length()-3);
 
             if (status.trim().equalsIgnoreCase("Completed")) {
                 String[] RT;
@@ -3934,8 +3798,6 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 OldData=data;
             }
             
-            String dataForId = data.replaceAll(" |-|:", "");
-            String dataa = data.trim().substring(0, data.length()-3);
 
 
             
@@ -4067,8 +3929,6 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 OldData=data;
             }
             
-            String dataForId = data.replaceAll(" |-|:", "");
-            String dataa = data.trim().substring(0, data.length()-3);
 
 
             String[] RT = MovimentiCrypto.creaMovimento(mu, me, Exchange, "Principale",
@@ -4167,8 +4027,6 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 OldData=data;
             }
             
-            String dataForId = data.replaceAll(" |-|:", "");
-            String dataa = data.trim().substring(0, data.length()-3);
 
 
             String[] RT = MovimentiCrypto.creaMovimento(mu, me, Exchange, "Principale",
@@ -4265,8 +4123,6 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 OldData=data;
             }
             
-            String dataForId = data.replaceAll(" |-|:", "");
-            String dataa = data.trim().substring(0, data.length()-3);
 
 
             String[] RT = MovimentiCrypto.creaMovimento(mu, me, Exchange, "Principale",
@@ -4338,8 +4194,6 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 OldData=data;
             }
             
-            String dataForId = data.replaceAll(" |-|:", "");
-            String dataa = data.trim().substring(0, data.length()-3);
 
 
             
@@ -4431,8 +4285,6 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 OldData=data;
             }
             
-            String dataForId = data.replaceAll(" |-|:", "");
-            String dataa = data.trim().substring(0, data.length()-3);
 
 
             
@@ -4635,12 +4487,6 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         return m;
     }
 
-    /**
-     * Metodo attualmente privo di implementazione (corpo vuoto); non è l'entry point dell'applicazione (vedi {@link Giacenze_Crypto#main}).
-     * @param args argomenti a riga di comando (non utilizzati)
-     */
-    public static void main(String[] args) {
-
-    }
+    
 }
 

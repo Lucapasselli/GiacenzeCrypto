@@ -4,20 +4,13 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
-import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumnModel;
 
 /**
  *
@@ -107,31 +100,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         
     }
     
-    private void avviaCaricamento(Prezzi.InfoPrezzo IPr,String[] Ritorno,Download dow) {
 
-    SwingWorker<Void, Void> worker = new SwingWorker<>() {
-        @Override
-        protected Void doInBackground() throws Exception {
-            // QUI fai i calcoli pesanti
-            CaricaTabellaPrezzoAttualedaID(IPr);
-            CaricaTabellaPrezzi();
-            if (dow!=null)dow.ChiudiFinestra();
-            return null;
-        }
-
-        @Override
-        protected void done() {
-            // Aggiorna la UI quando i calcoli sono finiti
-           // aggiornaUIConRisultati();
-           //Ritorno=Ritorno;
-        System.out.println(Ritorno[0]);
-        if (dow!=null)dow.ChiudiFinestra();
-        //this.requestFocus();
-        }
-    };
-
-    worker.execute();
-}
     
     private void CaricaTabellaPrezzoAttualedaID(Prezzi.InfoPrezzo IPr){
         DefaultTableModel ModTabPrezzoAttuale = (DefaultTableModel) Tabella_PrezzoAttuale.getModel();
@@ -194,23 +163,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
     }
     
     
-    private void AggiungiATabellaseNuova(Set<String> righeAggiunte,String riga[],DefaultTableModel ModTabPrezzoAttuale){
-     // Costruisci una stringa che rappresenta la riga
-     System.out.println("righeaggiunte"+righeAggiunte.size());
-    StringBuilder sb = new StringBuilder();
-    for (Object cella : riga) {
-        sb.append(String.valueOf(cella)).append("||"); // separatore
-    }
-    String chiaveRiga = sb.toString();
 
-    // Controlla se esiste già
-    if (!righeAggiunte.contains(chiaveRiga)) {
-        ModTabPrezzoAttuale.addRow(riga);
-        righeAggiunte.add(chiaveRiga);
-    } else {
-        System.out.println("Riga duplicata ignorata: " + chiaveRiga);
-    }
-    }
     
     private void CaricaTabellaPrezzoAttualedaID(String ID){
         DefaultTableModel ModTabPrezzoAttuale = (DefaultTableModel) Tabella_PrezzoAttuale.getModel();
@@ -278,69 +231,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
     
     
 
-/**
- * Versione precedente (superata) dell'evidenziazione delle righe corrispondenti tra due tabelle:
- * confronta le prime 6 colonne di ciascuna riga di {@code table1} e {@code table2} nella stessa
- * posizione (per indice di riga, non per contenuto) e colora di giallo le righe di {@code table2}
- * i cui valori coincidono. Non più utilizzata, mantenuta come riferimento storico.
- * @param table1 tabella di riferimento con cui confrontare i valori
- * @param table2 tabella su cui viene applicato il renderer di evidenziazione
- */
-public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2) {
-    int colonneDaControllare = Math.min(6, table1.getColumnCount());
-    int righeDaControllare = Math.min(table1.getRowCount(), table2.getRowCount());
 
-    // Memorizza i valori di tutte le righe di table1 da confrontare
-    Object[][] valoriTable1 = new Object[righeDaControllare][colonneDaControllare];
-    for (int row = 0; row < righeDaControllare; row++) {
-        for (int col = 0; col < colonneDaControllare; col++) {
-            valoriTable1[row][col] = table1.getValueAt(row, col);
-        }
-    }
-
-    DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                                                      boolean isSelected, boolean hasFocus,
-                                                      int row, int column) {
-
-            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-            System.out.println("RENDER CHIAMATO"); // <-- Deve apparire SEMPRE
-
-            boolean match = true;
-            // Solo se la riga è presente anche in table1
-            if (row < righeDaControllare) {
-                for (int col = 0; col < colonneDaControllare; col++) {
-                    Object val1 = valoriTable1[row][col];
-                    Object val2 = table2.getValueAt(row, col);
-
-                    if (val1 == null && val2 == null) continue;
-                    if (val1 == null || val2 == null || !val1.equals(val2)) {
-                        match = false;
-                        break;
-                    }
-                }
-            } else {
-                match = false;
-            }
-
-            if (match) c.setBackground(Color.YELLOW);
-            else if (isSelected) c.setBackground(Tabelle.SfondoSelezione(row));
-            else c.setBackground(Color.WHITE);
-
-            return c;
-        }
-    };
-
-    // Imposta il renderer direttamente sulle colonne
-    TableColumnModel tcm = table2.getColumnModel();
-    for (int i = 0; i < tcm.getColumnCount(); i++) {
-        tcm.getColumn(i).setCellRenderer(renderer);
-    }
-
-    table2.repaint();
-}
 
 
 
@@ -504,16 +395,6 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
                         
                         rigo[4] = FunzioniDate.ConvertiDatadaLongAlSecondo(IPl.timestamp);
                         //Questa parte si occupa di calcolare la differenza tra il timestamp del movimento e quello del prezzo
-                       /* long DiffOrario=Math.abs(data-IPl.timestamp)/1000;
-                        String unitaTempo;
-                        if (DiffOrario >= 60) {
-                            DiffOrario = DiffOrario / 60;  // converto in minuti
-                            unitaTempo = " min";
-                        } else {
-                            unitaTempo = " sec";
-                        }
-                        
-                        rigo[5] = String.valueOf(DiffOrario)+unitaTempo;*/
                         rigo[5] = IPl.RitornaStringDiffData(data);
                         rigo[6] = IPl.prezzoUnitario.toPlainString();
                         rigo[8] = IPl.prezzoQta.setScale(2, RoundingMode.HALF_UP).toPlainString();
@@ -671,63 +552,6 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
             }
      }
    
- /*     private void listaPrezziVecchiDBPers(Moneta M,String PrezzoRif,long data,String NomeOriginale,DefaultTableModel ModTabPrezzi){
-         String DataOra = FunzioniDate.ConvertiDatadaLongallOra(data);
-            String PrezzoUnitario = DatabaseH2.XXXEUR_Leggi(DataOra + " " + M.Moneta);
-            Prezzi.InfoPrezzo IP = new Prezzi.InfoPrezzo();
-            //System.out.println(PrezzoUnitario);
-            if (PrezzoUnitario != null) {
-                IP.Fonte = "Personalizzato (Old)";
-                IP.timestamp = FunzioniDate.ConvertiDatainLongMinuto(DataOra + ":00");
-                IP.prezzoUnitario = new BigDecimal(PrezzoUnitario);
-                IP.Qta = new BigDecimal(M.Qta);
-                IP.Moneta = M.Moneta;
-                String rigo[] = new String[9];
-                rigo[0] = M.Moneta;
-                rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
-                rigo[2] = M.Qta;
-                rigo[3] = IP.Fonte;
-                rigo[4] = DataOra + ":XX:XX";
-                rigo[5] = "1 ora";
-
-                rigo[6] = IP.prezzoUnitario.toPlainString();
-                if (IP.prezzoQta==null)IP.prezzoQta=IP.prezzoUnitario.multiply(IP.Qta).abs();
-                rigo[8] = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).toPlainString();
-                rigo[7] = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).subtract(new BigDecimal(PrezzoRif)).toPlainString();
-                ModTabPrezzi.addRow(rigo);
-            }
-            
-
-            //Adesso cerco i prezzi nel vecchio database coingecko
-            if (Funzioni_WalletDeFi.isValidAddress(M.MonetaAddress, M.Rete)) {
-                PrezzoUnitario = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + M.MonetaAddress + "_" + M.Rete);
-                IP = new Prezzi.InfoPrezzo();
-                //System.out.println(PrezzoUnitario);
-                if (PrezzoUnitario != null) {
-                    IP.Fonte = "Personalizzato (Old)";
-                    IP.timestamp = FunzioniDate.ConvertiDatainLongMinuto(DataOra + ":00");
-                    IP.prezzoUnitario = new BigDecimal(PrezzoUnitario);
-                    IP.Qta = new BigDecimal(M.Qta);
-                    IP.Moneta = M.Moneta;
-                    String rigo[] = new String[9];
-                    rigo[0] = NomeOriginale;
-                    rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
-                    rigo[2] = M.Qta;
-                    rigo[3] = IP.Fonte;
-                    rigo[4] = DataOra + ":XX:XX";
-                    rigo[5] = "1 ora";
-
-                    rigo[6] = IP.prezzoUnitario.toPlainString();
-                    if (IP.prezzoQta == null) {
-                        IP.prezzoQta = IP.prezzoUnitario.multiply(IP.Qta).abs();
-                    }
-                    rigo[8] = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).toPlainString();
-                    rigo[7] = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).subtract(new BigDecimal(PrezzoRif)).toPlainString();
-                    ModTabPrezzi.addRow(rigo);
-                }
-            }
-     }*/
-    
     private void scaricaPrezziDaID(String id) {
         String[] Movimento = Principale.MappaCryptoWallet.get(id);
         if (Movimento == null) return;
@@ -800,14 +624,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
         }
     }
 
-    /**
-     * Imposta l'ID del movimento associato al dialogo e lo mostra nell'etichetta dedicata.
-     * @param ID identificativo univoco del movimento
-     */
-    public void GUI_SetID(String ID){
-        this.ID=ID;
-        jLabel1.setText(ID);
-    }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -1095,30 +912,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
         }
     }//GEN-LAST:event_Bottone_PersonalizzatoActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new GUI_ModificaPrezzo().setVisible(true));
-    }
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Annulla;

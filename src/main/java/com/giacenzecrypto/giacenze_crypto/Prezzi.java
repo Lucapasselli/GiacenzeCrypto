@@ -4,7 +4,6 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -34,11 +33,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -238,39 +234,7 @@ public class Prezzi {
     
     
     
-      /**
-       * Carica in {@link #MappaConversioneSwapTransIDCoins} le conversioni salvate nel file
-       * {@code conversioneTransIDCoins.db} (creato vuoto se non esiste), riga per riga in formato CSV a 5 campi.
-       */
-      public static void GeneraMappaConversioneSwapTransIDCoins(){
-         try {
-             File file=new File ("conversioneTransIDCoins.db");
-             if (!file.exists()) file.createNewFile();
-             String riga;
-             try (FileReader fire = new FileReader("conversioneTransIDCoins.db");
-                     BufferedReader bure = new BufferedReader(fire);)
-             {
-                 while((riga=bure.readLine())!=null)
-                 {
-                     String rigaSplittata[]=riga.split(",");
-                     if (rigaSplittata.length==5)
-                     {
-                         MappaConversioneSwapTransIDCoins.put(rigaSplittata[0], rigaSplittata[1]+","+rigaSplittata[2]+","+rigaSplittata[3]+","+rigaSplittata[4]);
-                     }
-                 }
-            //     bure.close();
-            //     fire.close();        
-             } catch (FileNotFoundException ex) {
-                 LoggerGC.ScriviErrore(ex);
-             } catch (IOException ex) {
-                 LoggerGC.ScriviErrore(ex);
-             }
-             
-         } catch (IOException ex) {        
-            LoggerGC.ScriviErrore(ex);
-        }
-
-    }   
+         
     
     
     
@@ -314,363 +278,11 @@ public class Prezzi {
     
     
     
-/*     public static String DammiIDCoingeckodaAddress(String Address,String rete)   
-        {
-        if (MappaConversioneAddressCoin.isEmpty())
-            {
-                GeneraMappaConversioneAddressCoin();
-                //qui andro' anche a popolare la mappa con la conversione della rete per coingecko
-                MappaConversioneSimboloReteCoingecko.put("BSC", "binance-smart-chain");
-            }
-        if (MappaConversioneAddressCoin.get(Address+"_"+rete)!=null)
-        {
-            return MappaConversioneAddressCoin.get(Address+"_"+rete).split(",")[1];
-        }
-        else
-            {
-        try {
-            TimeUnit.SECONDS.sleep(5);//il timeout serve per evitare di fare troppe richieste all'API
-            String url = "https://api.coingecko.com/api/v3/coins/"+MappaConversioneSimboloReteCoingecko.get(rete)+ "/contract/" + Address;
-            System.out.println(url);
-            URL obj = new URI(url).toURL();
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-            con.setRequestMethod("GET");
-            
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-            if (VarCondivise.LogJsonPrezzi) {
-                System.out.println(response.toString());
-            }
-            Gson gson = new Gson();
-            JsonObject coinInfo = gson.fromJson(response.toString(), JsonObject.class);
-            
-           String Simbolo=coinInfo.get("symbol").toString().replace("\"", "");
-           String ID=coinInfo.get("id").toString().replace("\"", "");
-           MappaConversioneAddressCoin.put(Address.toUpperCase()+"_"+rete.toUpperCase(),Simbolo+","+ID);
-           ScriviFileConversioneAddressCoin(Address.toUpperCase()+"_"+rete.toUpperCase()+","+Simbolo+","+ID);
-        //   System.out.println(ID);
-            return ID;
-        } catch (Exception ex) {
-          //  Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-          //  System.out.println(ex.getMessage());
-/////////////////Se su coingecko non trovo nulla allora lancio la funzione che cerca il codice del token dal'html di bscscan
-          //se anche li non trovo nulla allora ci rinuncio
- /*         if (rete.equalsIgnoreCase("BSC")){
-              String Simbolo=RitornaNomeTokendadaBSCSCAN(Address);
-              if (Simbolo!=null)
-                  {
-              MappaConversioneAddressCoin.put(Address.toUpperCase()+"_"+rete.toUpperCase(),Simbolo.toUpperCase()+",");
-              }
-              return Simbolo;
-          }
-          }
-          MappaConversioneAddressCoin.put(Address.toUpperCase()+"_"+rete.toUpperCase(),"nulladifatto,nulladifatto");
-          ScriviFileConversioneAddressCoin(Address.toUpperCase()+"_"+rete.toUpperCase()+",nulladifatto,nulladifatto");
-     //     System.out.println("nulladifatto "+ex.getMessage());
-          return null;
-        }
-       // return null;
-//       return Simbolo;
-        }}*/
-     
  
      
-   /*public static boolean RitornaTransazioniBSC_2di3(String walletAddress,String apiKey)
-         {    
-               try {
-
-            URL url=new URI("https://api.bscscan.com/api?module=account&action=txlistinternal&address=" + walletAddress + "&startblock=0&sort=asc" +"&apikey=" + apiKey).toURL();
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            JSONObject jsonObject = new JSONObject(response.toString());
-            
-            JSONArray transactions = jsonObject.getJSONArray("result");
-            for (int i = 0; i < transactions.length(); i++) {
-                String qta;
-                String AddressNoWallet;
-                JSONObject transaction = transactions.getJSONObject(i);
-                String hash = transaction.getString("hash");
-                String from = transaction.getString("from");
-                String to = transaction.getString("to");
-                String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
-                TransazioneDefi trans;
-                if (MappaTransazioniDefi.get(hash)==null){
-                    trans=new TransazioneDefi();
-                    MappaTransazioniDefi.put(hash, trans);
-                }else 
-                    {
-                    trans=MappaTransazioniDefi.get(hash);
-                    }
-
-                    if (from.equalsIgnoreCase(walletAddress)){
-                        AddressNoWallet=to;
-                        qta="-"+value;
-                    }else{
-                        AddressNoWallet=from;
-                        qta=value;                      
-                    }
-                trans.Blocco=transaction.getString("blockNumber");
-                trans.Wallet=walletAddress;
-                trans.DataOra=ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);//Da modificare con data e ora reale
-                trans.HashTransazione=hash;
-                trans.Rete="BSC";
-                trans.MonetaCommissioni="BNB";  
-                if (trans.QtaCommissioni!=null && new BigDecimal(trans.QtaCommissioni).abs().compareTo(new BigDecimal(qta).abs())==1)
-                    {
-                        // se il valore della commissione è maggiore del bnb di ritorno allora lo sottraggo dalle commissioni
-                        //anzichè metterlo come importo dei trasferimenti
-                     //   System.out.println("AAAA - "+trans.HashTransazione+ " - "+ qta);
-                        trans.QtaCommissioni=new BigDecimal(trans.QtaCommissioni).subtract(new BigDecimal(qta)).toPlainString();
-                    }
-                else {
-                    trans.InserisciMonete("BNB", "BNB", "BNB", AddressNoWallet, qta);
-                 //   System.out.println(trans.HashTransazione+ " - "+ qta);
-                }
-
-                
-              //  System.out.println(value+" - "+hash);
-
-                
-            }
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-            return false;
-        } catch (IOException | URISyntaxException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-            return false;
-        }
-               
-        return RitornaTransazioniBSC_3di3(walletAddress,apiKey);
-         }     */
      
-     
- /*   public static boolean RitornaTransazioniBSC_3di3(String walletAddress,String apiKey)
-         {    
-               try {
-      
-            URL url=new URI("https://api.bscscan.com/api?module=account&action=tokentx&address=" + walletAddress + "&startblock=0&sort=asc" +"&apikey="+apiKey).toURL();
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            JSONObject jsonObject = new JSONObject(response.toString());
-            
-            JSONArray transactions = jsonObject.getJSONArray("result");
-            for (int i = 0; i < transactions.length(); i++) {
-                String AddressNoWallet;
-                String qta;
-                JSONObject transaction = transactions.getJSONObject(i);
-            //    System.out.println(transaction.toString());
-                String tokenSymbol=transaction.getString("tokenSymbol");
-                String tokenName=transaction.getString("tokenName");
-                String tokenAddress=transaction.getString("contractAddress");
-                String tokenDecimal=transaction.getString("tokenDecimal");
-                String hash = transaction.getString("hash");
-                String from = transaction.getString("from");
-                String to = transaction.getString("to");
-                String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-"+tokenDecimal)).stripTrailingZeros().toPlainString();
-                TransazioneDefi trans;
-                if (MappaTransazioniDefi.get(hash)==null){
-                    trans=new TransazioneDefi();
-                    MappaTransazioniDefi.put(hash, trans);
-                }else 
-                    {
-                   //     System.out.println("arghhhhh "+hash);
-                    trans=MappaTransazioniDefi.get(hash);
-                    }
-
-                    if (from.equalsIgnoreCase(walletAddress)){
-                        AddressNoWallet=to;
-                        qta="-"+value;
-                    }else {
-                        AddressNoWallet=from;
-                        qta=value;
-                    }
-                trans.Blocco=transaction.getString("blockNumber");
-                trans.Wallet=walletAddress;
-                trans.DataOra=ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);//Da modificare con data e ora reale
-                trans.HashTransazione=hash;
-                trans.Rete="BSC";
-                trans.MonetaCommissioni="BNB";
-               // trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
-                BigDecimal gasUsed=new BigDecimal (transaction.getString("gasUsed"));
-                BigDecimal gasPrice=new BigDecimal (transaction.getString("gasPrice"));
-                String qtaCommissione=gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
-                trans.QtaCommissioni="-"+qtaCommissione;
-                trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta);
-                
-            }
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-            return false;
-        } catch (IOException | URISyntaxException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-            return false;
-        }
-               return true;
-         }    */
-
 
      
-     
-  /*   public static void RecuperaDettagliTransazioneBSC(String transactionHash){
-           String coinE=null;
-           String qtaE=null;
-           String coinU=null;
-           String qtaU=null;
-            if (MappaConversioneSwapTransIDCoins.isEmpty())
-            {
-                GeneraMappaConversioneSwapTransIDCoins();
-            }
-              String Moneta;
-            if(MappaConversioneSwapTransIDCoins.get(transactionHash+"_BSC")!=null)
-            {
-                String splittata[]=MappaConversioneSwapTransIDCoins.get(transactionHash+"_BSC").split(",");
-                coinU=splittata[0];
-                qtaU=splittata[1];
-                coinE=splittata[2];
-                qtaE=splittata[3];  
-            }
-            else{
-        try {
-            TimeUnit.SECONDS.sleep(5);
-            
-            String url = "https://bscscan.com/tx/" + transactionHash;
-            URL obj = new URI(url).toURL();
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-           // con.setRequestMethod("GET");
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-            con.disconnect();
-            Moneta=response.toString();
-            Moneta=Moneta.substring(Moneta.indexOf("Tokens Transferred:")).trim();
-            Moneta=Moneta.substring(0,Moneta.indexOf("</a></div></li></ul></div></div>")).replaceAll("\\<.*?\\>", " ");
-           // System.out.println(Moneta);
-
-            String splittata[]=Moneta.split(" For ");
-            if (splittata.length>=3)
-                {
-                    int i=0;
-                for (String split:splittata)
-                {
-                    if (i==1){
-                        String temp=split.trim().split("From")[0].trim();
-                        String divisioneparentesi[]=temp.split("\\(");     
-                        if (divisioneparentesi.length==3){
-                            qtaU=temp.substring(0, temp.indexOf("(")).replaceAll(",","").trim();
-                            coinU=temp.split("\\(")[2].replaceAll("\\)", "");
-                        }else if (divisioneparentesi.length==2){
-                            qtaU=temp.substring(0, temp.indexOf(" ")).replaceAll(",","").trim();
-                            coinU=temp.split("\\(")[1].replaceAll("\\)", "");                            
-                        }
-                        if (coinU.equalsIgnoreCase("WBNB"))coinU="BNB";
-                      // System.out.println("qta="+qta+" - coin="+coin); 
-                    }
-                    if (i==splittata.length-1)
-                        {
-                        String temp=split.trim().split("From")[0].trim();
-                        String divisioneparentesi[]=temp.split("\\(");       
-                        if (divisioneparentesi.length==3){
-                            qtaE=temp.substring(0, temp.indexOf("(")).replaceAll(",", "").trim();
-                            coinE=temp.split("\\(")[2].replaceAll("\\)", "");
-                        }else if (divisioneparentesi.length==2){
-                            qtaE=temp.substring(0, temp.indexOf(" ")).replaceAll(",","").trim();
-                            coinE=temp.split("\\(")[1].replaceAll("\\)", "");                            
-                        }
-                        if (coinE.equalsIgnoreCase("WBNB"))coinE="BNB";
-                    //    System.out.println("qta="+qtaE+" - coin="+coinE); 
-                    //    System.out.println(""); 
-                        }
-                   // System.out.println(split.trim());
-                    i++;
-                }
-            }
-           
-           String riga=transactionHash+"_BSC,"+coinU+","+qtaU+","+coinE+","+qtaE;
-           ScriviFileConversioneSwapTransIDCoins(riga);
-           MappaConversioneSwapTransIDCoins.put(transactionHash+"_BSC", coinU+","+qtaU+","+coinE+","+qtaE);
-           
-           
-        } catch (URISyntaxException | IOException ex) {
-            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-        }
-            }
-       // return null;
-        System.out.println(transactionHash);
-        System.out.println("qta="+qtaU+" - coin="+coinU);
-        System.out.println("qta="+qtaE+" - coin="+coinE); 
-        System.out.println("");
-      
-      }*/
-     
- /*     public static String RitornaNomeTokendadaBSCSCAN(String Address)
-          {
-              String Moneta;
-        try {
-            String url = "https://bscscan.com/token/" + Address;
-            URL obj = new URI(url).toURL();
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-           // con.setRequestMethod("GET");
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-            con.disconnect();
-            Moneta=response.toString();
-            Moneta=Moneta.substring(Moneta.indexOf("<title>")+8, Moneta.indexOf("</title>")).trim();
-            if (!Moneta.contains(")")) { // se non contiene la parentesi significa che non ho trovato la moneta
-                Moneta=null;
-            }
-            else
-                {
-            Moneta=Moneta.substring(Moneta.indexOf("(")+1, Moneta.indexOf(")")).trim();
-            }
-         //  System.out.println(Moneta);
-           return Moneta;
-           
-           
-           
-        } catch (URISyntaxException | IOException ex) {
-            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-      }*/
      
         
     /**
@@ -691,16 +303,13 @@ public class Prezzi {
         //come prima cosa devo controllare che la data analizzata sia nel range delle date di cui ho il cambio usd/eur
         Object dateDisponibili[] = MappaConversioneUSDEUR.keySet().toArray();
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-        String PrimaData;//è la prima data disponibile nel file delle conversioni
         String UltimaData;//e' l'ultima data disponibile nel file delle conversioni
         String DatadiOggi = f.format(System.currentTimeMillis());                   
                     
         // se il file ha dei dati recupero prima e ultima data      
-            PrimaData = (String) dateDisponibili[0];
             UltimaData = (String) dateDisponibili[dateDisponibili.length - 1];
             long DataOggiLong = FunzioniDate.ConvertiDatainLong(DatadiOggi);
             long DataUltimaLong = FunzioniDate.ConvertiDatainLong(UltimaData);
-            long diffDate = DataOggiLong - DataUltimaLong;//86400000 di differenza significa 1 giorno
             //a questo punto siccome non posso ottenere i dati della giornata odierna
             //se sto cercando di ottenere quelli e l'ultimo dato che ho è inferiore a 10gg prendo quello come dato valido per la giornata
             //metto 10gg invece che 1 perchè potrebbero esserci delle feste e banchitalia non restituisce valori in quel caso
@@ -935,151 +544,6 @@ public class Prezzi {
     }
     
     
-    
-  /*  public static String ConvertiXXXEUR(String Crypto, String Qta, long Datalong) {
-
-        String risultato;// = null;
-        boolean mettereND = false;
-
-        Crypto = CDC_Grafica.Mappa_MoneteStessoPrezzo.getOrDefault(Crypto, Crypto);
-        long Anno2017 = Long.parseLong("1483225200000");
-        long DataInizioBinance = Long.parseLong("1502942400000");
-
-        long adesso = System.currentTimeMillis();
-        if (Datalong > adesso) {
-            return null;//se la data è maggiore di quella attuale allora ritrono subito null perchè non ho i prezzi
-        }
-        if (Datalong < Anno2017) {
-            return null;//se la data è inferioe al 2017 non recupero nessun prezzo
-        }
-        String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
-        String DataGiorno = OperazioniSuDate.ConvertiDatadaLong(Datalong);       
-        //System.out.println("RecuperoCoinCap");
-
-        risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
-        //se il risultato è null significa che non ho il prezzo specifico dell'ora
-        if (risultato == null) {
-            //a questo punto provo a recuperarlo da binance
-            RecuperaCoppieBinance();//il test sulla data lo fà già il programma
-            if (DatabaseH2.CoppieBinance_Leggi(Crypto + "USDT") != null && Datalong >= DataInizioBinance) {
-                //scarico i prezzi da binance
-                RecuperaTassidiCambioXXXUSDT_Binance(Crypto, DataGiorno, DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
-                risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
-            }
-        }
-        
-        if (risultato == null) {
-            //se non trovo un prezzo recupero le coppie gestite da binance e coincap
-            RecuperaCoppieCoinbase();
-            //System.out.println("RecuperoCoinCap");
-            if (DatabaseH2.GestitiCoinbase_Leggi(Crypto) != null) {
-                //Se gestito da CoinCap scarico i prezzi da CoinCap
-                RecuperaTassidiCambiodaSimbolo_Coinbase(Crypto, DataGiorno);
-                risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
-            }
-            //solo se arrivo fino a qua metto gli ND sulle ore che non sono riuscito a recuperare e per 10gg
-            //che sono i giorni minimi per cui recupero i prezzi (Quelli di coinbase)
-            //Questo perchè questo è l'ultimo provider da cui posso recuperare i dati quindi tutti i buchi di prezzo sono 
-            //sicuro che non potrò farci nulla
-            //mettereND = true;
-            //in sostanza va messo sempre sull'ultimo provider
-
-        }
-        //se ancora non ho il prezzo recupero il prezzo dall'altro provider ovvero CryptoCompare
-        
-        if (risultato == null) {
-            //se non trovo un prezzo recupero le coppie gestite da binance e coincap
-            //Guardo le coins supportate da Coincap perchè Cryptocompare supporta troppe crypto e la maggior parte non hai dati storici
-            //Decido quindi di usare la base di Coincap che terrò aggiornata manualmente
-            RecuperaCoinsCoinCap();           
-            if (DatabaseH2.GestitiCoinCap_Leggi(Crypto) != null) {
-                //Se gestito da CoinCap scarico i prezzi da CoinCap
-                RecuperaTassidiCambiodaSimbolo_CryptoCompare(Crypto, DataGiorno);
-                risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
-            }
-            //solo se arrivo fino a qua metto gli ND sulle ore che non sono riuscito a recuperare e per 30gg
-            //che sono i giorni per cui di solito recupero i prezzi
-            //Questo perchè questo è l'ultimo providfer da cui posso recuperare i dati quindi tutti i buchi di prezzo sono 
-            //sicuro che non potrò farci nulla
-            //mettereND = true;
-            //in sostanza va messo sempre sull'ultimo provider
-
-        }
-        
-        //se ancora non ho il prezzo recupero il prezzo dall'altro provider ovvero CoinCap
-        //Metto in pausa coincap momentaneamente perchè richiede APIKEY da Aprile
-        
-        if (risultato == null) {
-            //se non trovo un prezzo recupero le coppie gestite da binance e coincap
-            RecuperaCoinsCoinCap();
-            //System.out.println("RecuperoCoinCap");
-            if (DatabaseH2.GestitiCoinCap_Leggi(Crypto) != null) {
-                //Se gestito da CoinCap scarico i prezzi da CoinCap
-                RecuperaTassidiCambiodaSimbolo_CoinCap(Crypto, DataGiorno);
-                risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
-            }
-            //solo se arrivo fino a qua metto gli ND sulle ore che non sono riuscito a recuperare e per 30gg
-            //che sono i giorni per cui di solito recupero i prezzi
-            //Questo perchè questo è l'ultimo providfer da cui posso recuperare i dati quindi tutti i buchi di prezzo sono 
-            //sicuro che non potrò farci nulla
-            mettereND = true;
-            //in sostanza va messo sempre sull'ultimo provider
-
-        }
-        
-        
-        
-        //Se il risultato è ancora null provo a recuperare il prezzo della giornata invece che quello orario
-        if (risultato == null || risultato.equalsIgnoreCase("ND")) {
-            //se non trovo un prezzo recupero le coppie gestite da binance e coincap
-            risultato = DatabaseH2.XXXEUR_Leggi(DataGiorno + " " + Crypto);
-        }
-
-        if (mettereND) {
-            //Adesso conto 30 gg dalla data in cui è partita la richiesta e per tutte le ore in cui non ho trovato prezzi metto degli ND
-            //Questo serve per eveitare di fare altre richieste di prezzi che non posso recuperare
-            //Gli ND poi vengono tolti al riavvio del programma
-            long timestampIniziale = OperazioniSuDate.ConvertiDatainLong(DataGiorno);
-            long timestampFinale = timestampIniziale + Long.parseLong("864000000");
-            if (adesso < timestampFinale) {
-                timestampFinale = adesso;
-            }
-            while (timestampIniziale < timestampFinale) {
-                Date date = new java.util.Date(timestampIniziale);
-                SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
-                sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
-                String DataconOra = sdf.format(date);
-                //Metto ND su tutte le ore senza valore
-                if (DatabaseH2.XXXEUR_Leggi(DataconOra + " " + Crypto) == null) {
-                    DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + Crypto, "ND",false);
-                }
-
-                //Se le crypto senza prezzo sono le stable a questo punto prendo il prezzo del dollaro del giorno e le valorizzo così
-                if (Crypto.equalsIgnoreCase("USDC")
-                        || Crypto.equalsIgnoreCase("BUSD")
-                        || Crypto.equalsIgnoreCase("DAI")) {
-                    String Prezzo = ConvertiUSDTEUR("1", OperazioniSuDate.ConvertiDatainLongMinuto(DataconOra + ":01"));
-                    if (Prezzo != null) {
-                        DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + Crypto, Prezzo,false);
-                    }
-                }
-                timestampIniziale = timestampIniziale + 3600000;//aggiungo 1 ora
-            }
-        }
-
-        if (risultato != null) {
-            //infatti se ritorna zero vuol dire che per quella data binance o cryptohistory non forniscono nessun prezzo
-            if (risultato.equalsIgnoreCase("ND") || risultato.equalsIgnoreCase("null")) {
-                risultato = null;
-            } else {
-                //questa è la mappa che al termine della conversione devo scrivere nel file;
-                //MappaConversioneXXXEUR.put(DataOra + " " + Crypto, risultato);
-                risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(30, RoundingMode.HALF_UP).stripTrailingZeros().toString();
-            }
-        }
-        //  System.out.println(risultato);
-        return risultato;
-    }*/
     
       /**
        * Recupera il prezzo in EUR di una moneta <b>per simbolo</b>. Se l'indirizzo di contratto è valido
@@ -1335,328 +799,12 @@ public class Prezzi {
       
       
       
-          /**
-           * Scarica da Binance le quotazioni orarie EUR/USDT nell'intervallo indicato (candlestick a 1h,
-           * suddividendo la richiesta in blocchi da 40 giorni per rispettare il limite di 1000 candele per
-           * chiamata) e le salva in {@link DatabaseH2#OLD_XXXEUR_Scrivi} sia a livello giornaliero che orario.
-           * Evita richieste duplicate verso la stessa URL tramite {@link Principale#Mappa_RichiesteAPIGiaEffettuate}.
-           * @param DataIniziale data di inizio dell'intervallo, formato {@code yyyy-MM-dd}
-           * @param DataFinale data di fine dell'intervallo, formato {@code yyyy-MM-dd}
-           * @return {@code "ok"} se almeno un blocco è stato recuperato con successo, altrimenti {@code null}
-           */
-          public static String ZZZ_RecuperaTassidiCambioUSDTEUR_Binance(String DataIniziale, String DataFinale) {
-                      
-        String ok = null;
-        String CoppiaCrypto="EURUSDT";
-        long dataIni = FunzioniDate.ConvertiDatainLong(DataIniziale) ;
-        long dataFin = FunzioniDate.ConvertiDatainLong(DataFinale) + 86400000;
-        
-        //come prima cosa invididuo i vari intervalli di date da interrogare per riempire tutto l'intervallo
-        long difData=dataFin-dataIni;
-        ArrayList<Long> ArraydataIni = new ArrayList<>();
-        ArrayList<Long> ArraydataFin = new ArrayList<>();
-        //dataFin=dataIni+7776000 ;//questa fa si che mi dia i prezzi orari
-        //binance ha la seguente peculiarità:
-        //riesco ad avere i prezzi orari fino a 1000 righe quindi fino a circa 40gg
-        //per cui per ogni richiesta devo gestire la cosa
-        //quindi, se ho meno di 40gg porto il range a 40gg e prendo il primo valore di ogni giorno per quanto riaguarda il giornaliero
-        //e tutti gli altri valori per gli orari.
-        //se ho più di 40 giorni devo dividere le richieste in multipli di 40 giorni fino ad arrivare alla data iniziale che desidero.
-        //i multipli devono partire dalla data finale e andare indietro.
-        //3456000 secondi equivalgono a 40gg (40giorni per la precisione).
-        //inoltre tra una richiesta e l'altra devo aspettare almeno 2 secondi per evitare problemidi blocco ip da parte di coingecko
-      // System.out.println(dataIni+" - "+dataFin);
-        while (difData>0){
-            ArraydataIni.add(dataIni);
-            ArraydataFin.add(dataIni+Long.parseLong("3456000000"));
-            dataIni=dataIni+Long.parseLong("3456000000");
-            difData=dataFin-dataIni;    
-           // i++;
-        }
-        
-        
-        
-        
-
-        for (int i = 0; i < ArraydataIni.size(); i++) {
-
-            try {
-                String apiUrl = IndirizziServizi.Url(IndirizziServizi.BINANCE_PUBBLICO) + "/api/v3/klines?symbol=EURUSDT&interval=1h&startTime=" + ArraydataIni.get(i) + "&endTime=" + ArraydataFin.get(i) + "&limit=1000";
-                URL url = new URI(apiUrl).toURL();
-                //System.out.println(url);
-                            //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
-            if (Principale.Mappa_RichiesteAPIGiaEffettuate.get(url.toString())!=null){
-                return null;
-            }
-            Principale.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
-                URLConnection connection = url.openConnection();
-                //System.out.println(url);
-                System.out.println("Recupero prezzi "+CoppiaCrypto+" da Binance da data "+DataIniziale);
-                try (BufferedReader in = new BufferedReader(
-                        new InputStreamReader(connection.getInputStream()))) {
-                    StringBuilder response = new StringBuilder();
-                    String line;
-
-                    while ((line = in.readLine()) != null) {
-                        response.append(line);
-
-                    }
-                    if (VarCondivise.LogJsonPrezzi) {
-                        System.out.println(response.toString());
-                    }
-
-                    Gson gson = new Gson();
-                    JsonArray pricesArray = gson.fromJson(response.toString(), JsonArray.class);
-                    if (pricesArray != null) {
-                        for (JsonElement element : pricesArray) {
-                            JsonArray priceArray = element.getAsJsonArray();
-                            //System.out.println(priceArray);
-
-                            if (priceArray.size() == 12) {
-                                long timestamp = priceArray.get(0).getAsLong();
-                                String price = priceArray.get(4).getAsString();
-                                Date date = new java.util.Date(timestamp);
-                                SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
-                                sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
-                                String DataconOra = sdf.format(date);
-                                //  System.out.println("DataAttuale : "+DataAttualeLong);
-                                //  System.out.println("timestamp : "+timestamp);
-                                //  System.out.println(CercaPrezziDataAttuale);
-                                //Questo if server per evitare di cercare i dati della data odierna se non sono proprio strettamente necessari
-                                //perchè i dati della data odierna non vengono salvati nel file di conversione dei valori di usdt
-                                //e questo genererebbe una richiesta inutile su coingecko
-                                String Prezzo;
-                                    Prezzo = new BigDecimal(1).divide(new BigDecimal(price), 30, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
-                                
-                                String Data=DataconOra.split(" ")[0];
-                                if (DatabaseH2.XXXEUR_Leggi(Data + " USDT")==null||DatabaseH2.XXXEUR_Leggi(Data + " USDT").equals("ND")) 
-                                    DatabaseH2.OLD_XXXEUR_Scrivi(Data + " USDT", Prezzo,false);
-                                if (DatabaseH2.XXXEUR_Leggi(DataconOra + " USDT")==null||DatabaseH2.XXXEUR_Leggi(DataconOra + " USDT").equals("ND")) 
-                                    DatabaseH2.OLD_XXXEUR_Scrivi(DataconOra + " USDT", Prezzo,false);
-
-                                
-                                ok = "ok";
-                                //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
-                                //In questo modo metto nella mappa l'ultimo valore della giornata per ogni data + il valore per ogni ora
-                                //System.out.println(MappaConversioneUSDTEUR.get(DataconOra) + " - " + DataconOra);
-                                //ora devo gestire l'inserimento nella mappa
-                            }
-
-                        }
-                    } else {
-                        ok = null;
-                    }
-                } catch (IOException ex) {
-                    ok = null;
-                }
-                TimeUnit.SECONDS.sleep(1);
-            } catch (MalformedURLException ex) {
-                LoggerGC.ScriviErrore(ex);
-                ok = null;
-            } catch (IOException ex) {
-                LoggerGC.ScriviErrore(ex);
-                ok = null;
-            } catch (InterruptedException ex) {
-                ok = null;
-                LoggerGC.ScriviErrore(ex);
-            } catch (URISyntaxException ex) {
-                LoggerGC.ScriviErrore(ex);
-            }
-        }
-        return ok;
-    }   
+             
 
       
-          /**
-           * Converte un importo in USDT nel corrispondente valore in EUR alla data indicata, cercando il
-           * tasso orario prima in cache, poi da Binance ({@link #ZZZ_RecuperaTassidiCambioUSDTEUR_Binance}),
-           * poi da Coinbase ({@link #ZZZ_RecuperaTassidiCambiodaSimbolo_Coinbase}), poi a livello giornaliero,
-           * e infine ripiegando sul cambio USD/EUR ({@link #CambioUSDEUR}) se non trova nessuna quotazione USDT.
-           * Ritorna {@code null} per date future o precedenti al 2017.
-           * @param Qta importo in USDT da convertire, come stringa decimale
-           * @param Datalong data/ora della conversione in millisecondi epoch
-           * @return l'importo convertito in EUR come stringa decimale, oppure {@code null} se non recuperabile
-           */
-          public static String ZZZ_ConvertiUSDTEUR(String Qta, long Datalong) {
-        //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
-        /*      if (MappaConversioneUSDTEUR.isEmpty())
-            {
-                GeneraMappaCambioUSDTEUR();
-            }*/
-        boolean mettereND=false;
-        String risultato;// = null;
-        //come prima cosa devo decidere il formato data
-        long adesso = System.currentTimeMillis();
-        if (Datalong > adesso) {
-            return null;//se la data è maggiore di quella attuale non recupero nessun prezzo
-        }
-        if (Datalong < 1483225200) {
-            return null;//se la data è inferioe al 2017 non recupero nessun prezzo
-        }
-        String DataOra = FunzioniDate.ConvertiDatadaLongallOra(Datalong);
-        String DataGiorno = FunzioniDate.ConvertiDatadaLong(Datalong);
-
-        //cerco il valore di USDT da Binance
-        risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
-        if (risultato == null) {
-            //RecuperaCoppieBinance();
-            ZZZ_RecuperaTassidiCambioUSDTEUR_Binance(DataGiorno, DataGiorno);
-            risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
-        }
-        
-        //se ancora non ho il prezzo recupero il prezzo dall'altro provider ovvero Coinbase
-        if (risultato == null) {
-                ZZZ_RecuperaTassidiCambiodaSimbolo_Coinbase("USDT", DataGiorno);
-                risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
-        }
-        
-        //Qui c'era CryptoCompare. Il suo livello gratuito è stato chiuso il 21/05/2026 (CryptoCompare è
-        //passata a CoinDesk Data e l'endpoint risponde 401 "API key required"), e il fetcher è stato
-        //rimosso: la chiamata era già commentata da tempo, quindi il blocco rileggeva soltanto lo stesso
-        //valore letto poco sopra. Le quotazioni già salvate in PrezziNew con exchange = 'CryptoCompare'
-        //restano valide e continuano a essere lette dalla normale ricerca dei prezzi.
-        //Cerco su Coingecko
-        //Escludo momentaneamente coingecko visto che ho tanti altri provider a cui chiedere in modo da diminuirne le richieste
-      /*  if (risultato == null) {
-            RecuperaTassidiCambioUSDT_Coingecko(DataGiorno, DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
-            risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
-        }*/
-        //se arrivo qua cerco il prezzo del giorno invece che quello orario
-        if (risultato == null) {
-            risultato = DatabaseH2.XXXEUR_Leggi(DataGiorno + " " + "USDT");
-        } 
-        
-        if (mettereND) {
-            //Adesso metto ad ND tutte le ore per cui non sono riuscito a recuperare il prezzo di USDT per evitare mille richieste prima di arrivare al prezzo
-            long timestampIniziale = FunzioniDate.ConvertiDatainLong(DataGiorno);
-            System.out.println(timestampIniziale);
-            long timestampFinale = timestampIniziale + Long.parseLong("2592000000");
-            if (adesso < timestampFinale) {
-                timestampFinale = adesso;
-            }
-            while (timestampIniziale < timestampFinale) {
-                Date date = new java.util.Date(timestampIniziale);
-                SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
-                sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
-                String DataconOra = sdf.format(date);
-                //Metto ND su tutte le ore senza valore
-                if (DatabaseH2.XXXEUR_Leggi(DataconOra + " USDT") == null) {
-                    DatabaseH2.OLD_XXXEUR_Scrivi(DataconOra + " USDT", "ND",false);
-                }
-
-                timestampIniziale = timestampIniziale + 3600000;//aggiungo 1 ora
-            }
-        }    
-        
-        //se il risultato è ancora recupero il prezzo dai dollari reali
-        if (risultato == null || risultato.equalsIgnoreCase("ND")||risultato.equalsIgnoreCase("null")) {
-            //questo risultato è già ponderato in base al valore
-            risultato = CambioUSDEUR(Qta, DataGiorno);
-        } //altrimenti calcolo il risultato in base alle qta
-        else {
-
-            risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
-        }
-        return risultato;
-    }
           
-             /**
-              * Scarica da Coinbase le quotazioni orarie in USD di una crypto a partire dalla data indicata
-              * (candlestick a 1h, finestra massima di 10 giorni per rispettare il limite di 300 risultati per
-              * chiamata), le inverte in ordine cronologico (Coinbase le restituisce dal più recente) e le salva
-              * nel database interno. Evita richieste duplicate verso la stessa URL tramite
-              * {@link Principale#Mappa_RichiesteAPIGiaEffettuate}.
-              * @param Crypto simbolo della crypto da quotare contro USD
-              * @param DataIniziale data di inizio dell'intervallo, formato {@code yyyy-MM-dd}
-              * @return {@code "ok"} se il recupero è andato a buon fine, altrimenti {@code null}
-              */
-             public static String ZZZ_RecuperaTassidiCambiodaSimbolo_Coinbase(String Crypto, String DataIniziale) {
-        String ok = null;
-        //Aggiungo 10 giorni alla data iniziale per trovare la data di fine
-        //non posso superarare infatti i 300 risultati in una singola query
-        //il limite sarebbe quindi di 12,5 gg. mi fermo a 10 per sicurezza.
-        long dataFin = FunzioniDate.ConvertiDatainLong(DataIniziale) + Long.parseLong("864000000");
-        long timestampIniziale = FunzioniDate.ConvertiDatainLong(DataIniziale);
-
-            String apiUrl = IndirizziServizi.Url(IndirizziServizi.COINBASE) + "/products/" + Crypto + "-USD/candles?granularity=3600&start=" + timestampIniziale + "&end=" + dataFin;
-            //System.out.println(apiUrl);
-            
-            try {
-                URL url = new URI(apiUrl).toURL();
-                //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
-                if (Principale.Mappa_RichiesteAPIGiaEffettuate.get(url.toString()) != null) {
-                    return null;
-                }
-                Principale.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
-                URLConnection connection = url.openConnection();
-                // System.out.println(url);
-                System.out.println("Recupero prezzi " + Crypto + " da Coinbase da data " + DataIniziale);
-                try (BufferedReader in = new BufferedReader(
-                        new InputStreamReader(connection.getInputStream()))) {
-                    StringBuilder response = new StringBuilder();
-                    String line;
-
-                    while ((line = in.readLine()) != null) {
-                        response.append(line);
-
-                    }
-                    if (VarCondivise.LogJsonPrezzi) {
-                        System.out.println(response.toString());
-                    }
-                    Gson gson = new Gson();
-                    JsonArray pricesArray = gson.fromJson(response.toString(), JsonArray.class);
-                     // Creazione di un nuovo JSONArray per contenere gli elementi in ordine inverso
-                     //Lo faccio perchè Coinbase restituisce i prezzi in ordine cronologico inverso (dal più recente)
-                     //ho bisogno che invece il dato sia in ordine cronologico per via che poi salvo il primo prezzo disponibile della giornata
-                    JsonArray inverso = new JsonArray();
-                    for (int i = pricesArray.size() - 1; i >= 0; i--) {
-                        inverso.add(pricesArray.get(i));
-                    }
-                    if (!inverso.isEmpty()) {
-                        for (JsonElement element : inverso) {
-                            JsonArray dettagliArray=element.getAsJsonArray();
-                            long Unixtime = dettagliArray.get(0).getAsLong()*1000;
-                            String Data = FunzioniDate.ConvertiDatadaLong(Unixtime);
-                            String DataOra = FunzioniDate.ConvertiDatadaLongallOra(Unixtime);
-                            String prezzoUSD = dettagliArray.get(3).getAsString();
-                            String PrezzoEuro = CambioUSDEUR(prezzoUSD, Data);
-                            //System.out.println(DataOra);
-                            //Controllo ora se non ha il prezzo e in quel caso lo scrivo
-                            if (DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto) == null||DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto).equals("ND")) 
-                            {
-                                DatabaseH2.OLD_XXXEUR_Scrivi(DataOra + " " + Crypto, PrezzoEuro,false);
-                            }
-                            if (DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto) == null||DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto).equals("ND")) 
-                            {
-                                DatabaseH2.OLD_XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro,false);
-                            }
-                        
-                        }
-
-                    } else {
-                        ok = null;
-                    }
-
-                } catch (IOException ex) {
-                    ok = null;
-                }
-                TimeUnit.SECONDS.sleep(1);
-
-            } catch (MalformedURLException ex) {
-                LoggerGC.ScriviErrore(ex);
-                ok = null;
-            } catch (IOException ex) {
-                LoggerGC.ScriviErrore(ex);
-                ok = null;
-            } catch (InterruptedException ex) {
-                ok = null;
-                LoggerGC.ScriviErrore(ex);
-            } catch (URISyntaxException ex) {
-                LoggerGC.ScriviErrore(ex);
-            }
-        
-        return ok;
-    }     
+          
+                  
           
     /**
      * Scarica e memorizza la mappa symbol→id di CoinMarketCap nel database (cache 24h), con tutte le monete di
@@ -2322,13 +1470,7 @@ public class Prezzi {
     
     
 
-    /**
-     * Metodo attualmente privo di implementazione (corpo vuoto).
-     */
-    public static void RitornaPrezzoDaInfoPrezzo()
-    {
-
-    }
+    
 
 
 
@@ -2799,74 +1941,7 @@ public class Prezzi {
     }
 
     
-    /**
-     * Scarica da Coinbase l'elenco dei simboli con coppia in USD e li salva tramite {@link DatabaseH2#GestitiCoinbase_ScriviNuovaTabella}.
-     * Il download viene ripetuto solo se sono trascorse almeno 24 ore dall'ultimo aggiornamento registrato
-     * nell'opzione {@code Data_Lista_Coinbase}, altrimenti resta valida la lista già presente nel database.
-     * @return {@code "ok"} se il recupero (o il riutilizzo della lista già presente) è andato a buon fine, altrimenti {@code null}
-     */
-    public static String RecuperaCoppieCoinbase() {
-        String ok = "ok";
-        //come prima cosa recupero l'ora atuale
-        //poi la verifico con quella dell'ultimo scarico da binance e se sono passate almeno 24h allora richiedo la nuova lista
-        //altrimenti tengo buona quella presente nel database
-        long adesso = System.currentTimeMillis();
-        String dataUltimoScaricoString = DatabaseH2.Opzioni_Leggi("Data_Lista_Coinbase");
-        long dataUltimoScarico = 0;
-        if (dataUltimoScaricoString != null) {
-            dataUltimoScarico = Long.parseLong(dataUltimoScaricoString);
-        }
-        if (adesso > (dataUltimoScarico + 86400000)) {
-            try {
-                String apiUrl = IndirizziServizi.Url(IndirizziServizi.COINBASE) + "/products";
-                URL url = new URI(apiUrl).toURL();
-                URLConnection connection = url.openConnection();
-                System.out.println("Recupero coppie gestite da Coinbase");
-                //System.out.println(url);
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = in.readLine()) != null) {
-                    response.append(line);
-                    //System.out.println(line);
-                }
-
-                if (VarCondivise.LogJsonPrezzi) {
-                    System.out.println(response.toString());
-                }
-
-                Gson gson = new Gson();
-                JsonArray pricesArray = gson.fromJson(response.toString(), JsonArray.class);
-               // System.out.println(pricesArray.size());
-                //JsonArray pricesArray = jsonObject.getAsJsonArray();//.getAsJsonArray("symbols");
-                List<String> simboli = new ArrayList<>();
-                if (pricesArray != null) {
-                    for (JsonElement element : pricesArray) {
-                        
-                        JsonObject Coppie = element.getAsJsonObject();
-                        //String id = Coppie.get("id").getAsString();
-                        String base_currency = Coppie.get("base_currency").getAsString();
-                        String quote_currency = Coppie.get("quote_currency").getAsString();
-                        //System.out.println(quote_currency);
-                        if (quote_currency.equals("USD")) {
-                            simboli.add(base_currency);
-                        }
-                    }
-                    DatabaseH2.GestitiCoinbase_ScriviNuovaTabella(simboli);
-                    DatabaseH2.Opzioni_Scrivi("Data_Lista_Coinbase", String.valueOf(adesso));
-                } else {
-                    ok = null;
-                }
-
-                TimeUnit.SECONDS.sleep(1);
-            } catch (JsonSyntaxException | IOException | InterruptedException ex) {
-                ok = null;
-            } catch (URISyntaxException ex) {
-                LoggerGC.ScriviErrore(ex);
-            }
-        }
-        return ok;
-    }
+    
     
     
     
@@ -2887,7 +1962,6 @@ public class Prezzi {
                 GeneraMappaCambioUSDEUR();
             }
         Object dateDisponibili[] = MappaConversioneUSDEUR.keySet().toArray();
-        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
         String PrimaData="0000-00-00";//è la prima data disponibile nel file delle conversioni
         String UltimaData="0000-00-00";//e' l'ultima data disponibile nel file delle conversioni                                 
         if (dateDisponibili.length > 0) {// se il file ha dei dati recupero prima e ultima data      
@@ -2906,7 +1980,6 @@ public class Prezzi {
         }
         if (adesso > (dataUltimoScarico + 86400000)) {
             String DataIniziale=UltimaData;
-            String DataFinale=FunzioniDate.ConvertiDatadaLong(adesso);
             if (!PrimaData.equals("2015-01-02"))DataIniziale="2015-01-02";
             ok=RecuperaTassidiCambio(DataIniziale,FunzioniDate.ConvertiDatadaLong(adesso));
             if (ok!=null){
@@ -3656,227 +2729,10 @@ public static long GUI_ModificaPrezzoConAttesa(Moneta M,String[] Ritorno,Compone
                 return timestampDaCancellare[0];
 }
 
-/**
- * Variante "test" di {@link #GUI_ModificaPrezzoConAttesa}: apre direttamente {@link GUI_ModificaPrezzo} in un
- * thread separato usando {@code VecchioPrezzo} come prezzo, senza ricalcolarlo tramite le API prezzi e senza
- * mostrare la finestra di attesa.
- * @param M moneta di cui modificare il prezzo
- * @param Ritorno array di output in cui la finestra scrive l'eventuale nuovo prezzo
- * @param c componente rispetto a cui centrare le finestre
- * @param dataL data/ora della transazione in millisecondi epoch
- * @param VecchioPrezzo prezzo da mostrare, come stringa decimale
- * @return sempre 0
- */
-public static long GUI_ModificaPrezzoConAttesaTest(Moneta M,String[] Ritorno,Component c,long dataL,String VecchioPrezzo){
-                //In ritorno a questa funzione ricevo il timestamp del prezzo originale del token
-                //Questo mi servirà per cancellare l'eventuale prezzo personalizzato.
-
-                Prezzi.InfoPrezzo IPr;
-                IPr = new Prezzi.InfoPrezzo(null, "", 0, new BigDecimal(VecchioPrezzo), null, M.Moneta);
-                Download progress = new Download();
-                //progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
-                progress.setLocationRelativeTo(c);
-                Prezzi.InfoPrezzo IPt=IPr;//creo una nuova variabile da passare al thread perchè questa deve essere final
-                Thread thread;
-                thread = new Thread() {
-                    /** Apre {@link GUI_ModificaPrezzo} in background con il prezzo già determinato. */
-                    public void run() {
-                        GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(M, null,IPt,dataL,M.Rete,Ritorno,progress);                   
-                        t.setLocationRelativeTo(c);
-                        t.setVisible(true);
-                       // progress.ChiudiFinestra();
-                    }
-                };
-                thread.start();
-                progress.setVisible(true);
-                return 0;
-}
 
 
-/**
- * Lancia lo script Node {@code Binance_SaldiGiornalieri.js} (tramite CCXT, installato/verificato tramite
- * {@link CcxtInterop}) per recuperare le giacenze giornaliere di un account exchange, passando le credenziali
- * API come argomenti a riga di comando. Ne legge l'output JSON su stdout e ne verifica la validità come array;
- * si limita a loggare errori a video se node, lo script o l'esecuzione stessa falliscono.
- * @param Exchange nome dell'exchange (es. {@code "binance"})
- * @param APIKey API key dell'account
- * @param APISecret API secret dell'account
- * @param Giorno giorno di riferimento, formato {@code yyyy-MM-dd}
- */
-public static void RecuperaGiacenzeDaCCXT(String Exchange,String APIKey,String APISecret,String Giorno) {
-
-    
-    /*
-    ESEMPIO DI UTILIZZO
-    for (String splittata[] : DatabaseH2.Pers_ExchangeApi_LeggiTabella().values()) {
-            Prezzi.RecuperaGiacenzeDaCCXT("binance", splittata[2], splittata[3], "2026-01-11");
-            break;
-        }
-    
-    */
-        
-         try {
-            
-             TimeUnit.SECONDS.sleep(1);
-             
-             Path nodePath = CcxtInterop.getNodeExePath();
-             Path scriptPath = Paths.get(VarStatiche.getPathRisorse()
-                     + "Scripts/"
-                             + "Binance_SaldiGiornalieri"
-                             + ".js");
-             
-             CcxtInterop.ensureNodeInstalled();
-             CcxtInterop.installCcxt();
-             if (!Files.exists(nodePath)) {
-                 System.err.println("Errore: node non trovato a " + nodePath.toAbsolutePath());
-                 return;
-             }
-             if (!Files.exists(scriptPath)) {
-                 System.err.println("Errore: script JS non trovato a " + scriptPath.toAbsolutePath());
-                 return;
-             }
-             
-             System.out.println("Scarico Giacenze da "+Exchange+" in data "+Giorno);
-             // Parametri CLI da passare allo script
-             List<String> command = new ArrayList<>();
-             command.add(nodePath.toString());
-             command.add(scriptPath.toAbsolutePath().toString());
-             command.add(Exchange);
-             command.add(APIKey);
-             command.add(APISecret);
-             command.add(Giorno);
-             
-             
-             ProcessBuilder pb = new ProcessBuilder(command);
-             
-             pb.directory(scriptPath.getParent().toFile());
-             Path nodeModulesPath = CcxtInterop.getNodeDir().resolve("node_modules").toAbsolutePath();
-             Map<String, String> env = pb.environment();
-             // Aggiungi node_modules a NODE_PATH (se esiste già, concatena)
-             String existingNodePath = env.get("NODE_PATH");
-             String newNodePath = nodeModulesPath.toString();
-             if (existingNodePath != null && !existingNodePath.isEmpty()) {
-                 newNodePath += File.pathSeparator + existingNodePath;
-             }
-             env.put("NODE_PATH", newNodePath);
-             pb.redirectErrorStream(true); // unisce stdout + stderr
-             
-             try {
-                 pb.redirectErrorStream(false);
-                 Process process = pb.start();
-                 AtomicBoolean scadutoPerTimeout = CcxtInterop.avviaWatchdogTimeout(process, CcxtInterop.TIMEOUT_SCRIPT_PREZZI_MINUTI);
-
-                 // Legge l'output dello script (JSON stampato da console.log)
-                 StringBuilder output = new StringBuilder();
-                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                         BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-                     String line;
-                     while ((line = reader.readLine()) != null) {
-                         output.append(line).append("\n");
-                     }
-                     while ((line = errReader.readLine()) != null) System.out.println("[NODE] " + line);
-                 }
-
-                 // Attende che il processo finisca
-                 int exitCode = process.waitFor();
-                 //System.out.println("Exit code: " + exitCode);
-                 if (scadutoPerTimeout.get()) {
-                     System.err.println("Script Node interrotto: nessuna risposta entro "
-                             + CcxtInterop.TIMEOUT_SCRIPT_PREZZI_MINUTI + " minuti (probabile problema di connessione)");
-                     return;
-                 }
-                 if (exitCode != 0) {
-                     System.err.println("Script Node fallito. Exit code: " + exitCode);
-                     System.err.println(output);
-                     return;
-                 }
-                 
-                 // Parse JSON con Gson in modo sicuro (manteniamo precisione per i long)
-                 // Gson gson = new Gson();
-                 if (VarCondivise.LogJsonPrezzi) {
-                     System.out.println("---"+output.toString()+"---");
-                 }
-                 JsonElement rootEl = JsonParser.parseString(output.toString());
-                 if (!rootEl.isJsonArray()) {
-                     System.err.println("Output non è un array JSON valido.");
-                     return;
-                 }
-               /*  JsonArray rootArr = rootEl.getAsJsonArray();
-                 
-                 String mergeSql = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo,rete,address) KEY (timestamp, exchange, symbol,rete,address) VALUES (?, ?, ?, ?, ?, ?)";
-                 try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(mergeSql)) {
-                     
-                     for (JsonElement el : rootArr) {
-                         if (!el.isJsonObject()) continue;
-                         JsonObject obj = el.getAsJsonObject();
-                         
-                         if (!obj.has("timestamp")) continue;
-                         long ts = obj.get("timestamp").getAsLong();
-                         
-                         JsonObject pricesObj = obj.has("prices") && obj.get("prices").isJsonObject()
-                                 ? obj.getAsJsonObject("prices")
-                                 : null;
-                         if (pricesObj == null) continue;
-                         
-                         for (Map.Entry<String, JsonElement> entry : pricesObj.entrySet()) {
-                             String exchang = entry.getKey();
-                             JsonElement valEl = entry.getValue();
-                             if (valEl == null || valEl.isJsonNull()) continue;
-                             
-                             double value;
-                             try {
-                                 value = valEl.getAsDouble();
-                             } catch (Exception ex) {
-                                 // valore non numerico: skip
-                                 continue;
-                             }
-                             
-                             ps.setLong(1, ts);
-                             ps.setString(2, exchang);
-                             ps.setString(3, Symbol);
-                             ps.setDouble(4, value);
-                             ps.setString(5, "");//Rete
-                             ps.setString(6, "");//Address
-                             ps.addBatch();
-                         }
-                     }
-                     ps.executeBatch();
-                 } catch (SQLException ex) {
-                     //Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-                     LoggerGC.ScriviErrore(ex);
-                 }*/
-                 
-                 //Se arrivo qua lo script è andato a buon fine quindi aggiungo il range richiesto alla lista di quelli già utilizzati pr la moneta
-                 //in modo da non richiederlo più volte nell'arco della sessione nel caso in cui non trovi il prezzo
-                // managerRichieste.addRange(Symbol, Since, Until);
-                 
-                 // Query di test: mostra i primi 50 record
-                 /*    System.out.println("=== Sample from H2 (timestamp | exchange | symbol | prezzo) ===");
-                 try (Statement st = DatabaseH2.connectionPrezzi.createStatement();
-                 ResultSet rs = st.executeQuery(
-                 "SELECT timestamp, exchange, symbol, prezzo FROM PrezziNew ORDER BY timestamp LIMIT 50")) {
-                 
-                 while (rs.next()) {
-                 long ts = rs.getLong("timestamp");
-                 String ex = rs.getString("exchange");
-                 String sym = rs.getString("symbol");
-                 double v = rs.getDouble("prezzo");
-                 System.out.printf("%d | %s | %s = %.6f%n", ts, ex, sym, v);
-                 }
-                 }*/
-                 //}
-                 
-             } catch (IOException | InterruptedException e) {
-                 LoggerGC.ScriviErrore(e);
-             }
-             
-             
-         } catch (IOException | InterruptedException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
 
 
-}
 
 
 /**
@@ -4323,168 +3179,9 @@ public static void RecuperaPrezziDaCCXT(String Symbol, long timestamp) {
 // SUPERATO dal 2026-09-17, senza chiamanti: lo scaricamento va per ORA e in lotto, vedi
 // RecuperaPrezziDaCCXTLotto e il blocco in CambioXXXEUR. Scaricare l'intera giornata costava ~40
 // richieste per (moneta, giorno) contro le ~1 di un'ora che serve davvero.
-static boolean RecuperaPrezziDaCCXTGiornata(String Symbol, long inizioGiorno, long fineGiorno) {
-    return RecuperaPrezziDaCCXTRange(Symbol, inizioGiorno, fineGiorno,
-            inizioGiorno, fineGiorno, "GG_" + Symbol.toUpperCase());
-}
 
-/**
- * Corpo condiviso dello scaricamento prezzi via {@code Historical_Multi_Eur.js}: interroga i 7
- * exchange nell'intervallo {@code [Since, Until]} (millisecondi epoch, {@code Until} viene limitato
- * ad "adesso") e salva i punti in {@code PrezziNew} tramite {@link #ScriviPuntiPrezzoInCache}.
- * <p>{@code chiaveSessione} è la chiave con cui {@link #managerRichieste} registra ed interroga le
- * richieste già fatte in questa sessione: {@code Symbol} per le finestre brevi, {@code "GG_"+Symbol}
- * per le giornate intere, così le due non si deduplicano a vicenda (una finestra ±8h non deve far
- * credere che l'intera giornata sia stata scaricata).
- * @return {@code true} se lo script è uscito 0 con output JSON valido, oppure se la richiesta era
- *         già coperta in sessione; {@code false} altrimenti
- */
-static boolean RecuperaPrezziDaCCXTRange(String Symbol, long Since, long Until,
-        long SinceVerifica, long UntilVerifica, String chiaveSessione) {
 
-    try {
-        Symbol = Symbol.toUpperCase();
 
-        long Adesso = System.currentTimeMillis();
-        if (Until > Adesso) Until = Adesso;
-        if (Since > Adesso) return false;
-        if (UntilVerifica > Adesso) UntilVerifica = Adesso;
-        if (SinceVerifica > Adesso) SinceVerifica = Adesso - 300000;
-
-        //se questa stessa richiesta (o una che la copre) è già stata fatta in sessione, non la ripeto
-        if (managerRichieste.isAlreadyRequested(chiaveSessione, SinceVerifica, UntilVerifica)) return true;
-        //Tolto il `sleep(1)` che stava qui: proteggeva una raffica di processi Node avviati uno per
-        //quotazione, ma la cadenza verso ogni exchange la governa gia' il limitatore interno di ccxt,
-        //e un secondo fisso per movimento era puro tempo morto (il percorso a lotti non l'ha mai avuto).
-
-        //Lista degli exchange a cui richiedere il prezzo della cripto
-        String exchanges = EXCHANGES_CCXT;
-
-        Path nodePath = CcxtInterop.getNodeExePath();
-        Path scriptPath = Paths.get(VarStatiche.getPathRisorse()
-                + "Scripts/"
-                + "Historical_Multi_Eur"
-                + ".js");
-
-        CcxtInterop.ensureNodeInstalled();
-        CcxtInterop.installCcxt();
-        if (!Files.exists(nodePath)) {
-            System.err.println("Errore: node non trovato a " + nodePath.toAbsolutePath());
-            return false;
-        }
-        if (!Files.exists(scriptPath)) {
-            System.err.println("Errore: script JS non trovato a " + scriptPath.toAbsolutePath());
-            return false;
-        }
-
-        System.out.println("Scarico Prezzi di " + Symbol + " da "
-                + FunzioniDate.ConvertiDatadaLongAlSecondo(Since) + " a "
-                + FunzioniDate.ConvertiDatadaLongAlSecondo(Until));
-        // Parametri CLI da passare allo script
-        List<String> command = new ArrayList<>();
-        command.add(nodePath.toString());
-        command.add(scriptPath.toAbsolutePath().toString());
-        command.add("--since");
-        command.add(String.valueOf(Since));
-        command.add("--until");
-        command.add(String.valueOf(Until));
-        command.add("--exchanges");
-        command.add(exchanges);
-        command.add("--symbol");
-        command.add(Symbol);
-        command.add("--timeframe");
-        command.add("1m");
-
-        ProcessBuilder pb = new ProcessBuilder(command);
-
-        pb.directory(scriptPath.getParent().toFile());
-        Path nodeModulesPath = CcxtInterop.getNodeDir().resolve("node_modules").toAbsolutePath();
-        Map<String, String> env = pb.environment();
-        // Aggiungi node_modules a NODE_PATH (se esiste già, concatena)
-        String existingNodePath = env.get("NODE_PATH");
-        String newNodePath = nodeModulesPath.toString();
-        if (existingNodePath != null && !existingNodePath.isEmpty()) {
-            newNodePath += File.pathSeparator + existingNodePath;
-        }
-        env.put("NODE_PATH", newNodePath);
-        pb.redirectErrorStream(true); // unisce stdout + stderr
-
-        try {
-            pb.redirectErrorStream(false);
-
-            // Leggi l'output dello script (JSON stampato da console.log)
-            StringBuilder output = new StringBuilder();
-            int exitCode = -1;
-            boolean timeoutScaduto = false;
-            //Un solo retry: assorbe i crash transitori del processo Node (es. il bug undici
-            //"assert(!this.paused)" osservato su alcune connessioni exchange), senza insistere su un
-            //problema di connessione vero, che e' gia' gestito a parte dal watchdog di timeout sotto.
-            final int TENTATIVI_MAX = 2;
-            for (int tentativo = 1; tentativo <= TENTATIVI_MAX; tentativo++) {
-                output.setLength(0);
-                Process process = pb.start();
-                AtomicBoolean scadutoPerTimeout = CcxtInterop.avviaWatchdogTimeout(process, CcxtInterop.TIMEOUT_SCRIPT_PREZZI_MINUTI);
-
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                        BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        output.append(line).append("\n");
-                    }
-                    while ((line = errReader.readLine()) != null) System.out.println("[NODE] " + line);
-                }
-
-                // Attendi che il processo finisca
-                exitCode = process.waitFor();
-                timeoutScaduto = scadutoPerTimeout.get();
-                if (timeoutScaduto || exitCode == 0) break;
-
-                System.err.println("Script Node fallito (tentativo " + tentativo + "/" + TENTATIVI_MAX
-                        + "). Exit code: " + exitCode);
-                if (tentativo < TENTATIVI_MAX) {
-                    System.err.println(output);
-                    System.err.println("Riprovo...");
-                }
-            }
-
-            if (timeoutScaduto) {
-                System.err.println("Script Node interrotto: nessuna risposta entro "
-                        + CcxtInterop.TIMEOUT_SCRIPT_PREZZI_MINUTI + " minuti (probabile problema di connessione)");
-                return false;
-            }
-            if (exitCode != 0) {
-                System.err.println("Script Node fallito. Exit code: " + exitCode);
-                System.err.println(output);
-                return false;
-            }
-
-            if (VarCondivise.LogJsonPrezzi) {
-                System.out.println(output.toString());
-            }
-            JsonElement rootEl = JsonParser.parseString(output.toString());
-            if (!rootEl.isJsonArray()) {
-                System.err.println("Output non è un array JSON valido.");
-                return false;
-            }
-            JsonArray rootArr = rootEl.getAsJsonArray();
-
-            ScriviPuntiPrezzoInCache(Symbol, rootArr);
-
-            //Script andato a buon fine: registro il range come già richiesto in questa sessione.
-            //Non dopo un Interrompi: ScriviPuntiPrezzoInCache puo' aver saltato le conversioni.
-            if (!Interruzione.Richiesta()) managerRichieste.addRange(chiaveSessione, Since, Until);
-            return true;
-
-        } catch (IOException | InterruptedException e) {
-            LoggerGC.ScriviErrore(e);
-            return false;
-        }
-
-    } catch (IOException | InterruptedException ex) {
-        LoggerGC.ScriviErrore(ex);
-        return false;
-    }
-}
 
 
      
@@ -5417,24 +4114,6 @@ public static class InfoPrezzo {
     public Moneta OggettoMoneta;//Usato solo per salvasi i dati  dei valori delle monete di fine e inizio anno in RW (per la modifica prezzi)
 
 
-   /* public InfoPrezzo(String Info40,BigDecimal Qta) {
-        if (!Info40.isBlank()){
-            String iPr[]=Info40.split("\\|",-1);
-            if (iPr.length==4){
-                this.prezzoUnitario = new BigDecimal(iPr[3]);
-                this.exchange = iPr[4];
-                this.timestamp = Long.parseLong(iPr[1]);
-                this.prezzoQta = this.prezzoUnitario.multiply(Qta);
-                this.Qta = Qta;
-                this.Moneta = iPr[0];
-            }
-        }
-        
-    }*/
-    /** Marca la fonte di questo prezzo come {@code "Personalizzato"} (prezzo inserito manualmente dall'utente). */
-    public void SetFontePersonalizzata(){
-        Fonte="Personalizzato";
-    }
     
     public InfoPrezzo(String Info40) {
         if (!Info40.isBlank()){
@@ -5636,12 +4315,10 @@ public static class RangeRequestManager {
         List<TimeRange> ranges = richiestePerMoneta.computeIfAbsent(coin, k -> new ArrayList<>());
 
         List<TimeRange> merged = new ArrayList<>();
-        boolean added = false;
 
         for (TimeRange existing : ranges) {
             if (existing.overlaps(newRange)) {
                 newRange.merge(existing);
-                added = true;
             } else {
                 merged.add(existing);
             }
@@ -5653,32 +4330,12 @@ public static class RangeRequestManager {
         richiestePerMoneta.put(coin, merged);
     }
 
-    /** Restituisce tutti i range registrati per una moneta */
-    public synchronized List<TimeRange> getRanges(String coin) {
-        return richiestePerMoneta.getOrDefault(coin, Collections.emptyList());
-    }
+    
 
-    /** Stampa di debug */
-    public synchronized void printState() {
-        for (var entry : richiestePerMoneta.entrySet()) {
-            System.out.println(entry.getKey() + " → " + entry.getValue());  //NON-A-VIDEO: va sulla console, non nell'interfaccia
-        }
-    }
+    
 
     // Esempio d’uso
  
-    /*    RangeRequestManager manager = new RangeRequestManager();
-
-        manager.addRange("BTC", 1000, 2000);
-        manager.addRange("BTC", 1500, 2500); // unisce con quello precedente
-        manager.addRange("ETH", 500, 1000);
-
-        System.out.println(manager.isAlreadyRequested("BTC", 1800, 1900)); // true
-        System.out.println(manager.isAlreadyRequested("BTC", 2600, 2700)); // false
-
-        manager.addRange("BTC", 2600, 2700); // nuovo range
-        manager.printState();
-*/
 }
 
 

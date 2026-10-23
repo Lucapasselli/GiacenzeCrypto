@@ -129,10 +129,7 @@ public class Principale_GruppiWalletRW {
     /** Provenienza di una riga : creata o modificata a mano (o {@code null} sui DB pre-esistenti). */
     public static final String ORIGINE_UTENTE = "UTENTE";
 
-    /** {@code true} se {@code v} è {@code null}/vuoto o vale esplicitamente {@link #ORIGINE_UTENTE}. */
-    public static boolean origineUtente(String v) {
-        return v == null || v.isBlank() || ORIGINE_UTENTE.equals(v.trim());
-    }
+    
 
     private static final java.util.regex.Pattern NUM_GRUPPO =
             java.util.regex.Pattern.compile("(?i)wallet\\s+(\\d+)");
@@ -226,11 +223,7 @@ public class Principale_GruppiWalletRW {
         return p == null ? "" : trim(p[COL_IDENT_FISCALE]);
     }
 
-    /** Alias ISEE (modulo FC.1 della DSU) del gruppo a una certa data ({@code null} = oggi). */
-    public static String identificativoIseeEffettivo(String gruppo, LocalDate data) {
-        String[] p = periodoFiatAllaData(gruppo, data);
-        return p == null ? "" : trim(p[COL_IDENT_ISEE]);
-    }
+    
 
     /**
      * Il periodo <b>FIAT</b> del gruppo che copre {@code data} ({@code null} = oggi), secondo le

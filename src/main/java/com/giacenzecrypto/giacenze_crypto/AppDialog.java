@@ -72,10 +72,7 @@ public class AppDialog extends JDialog {
         return actionId;
     }
 
-    /** @return il motivo di chiusura del dialog (azione cliccata o finestra chiusa) */
-    public CloseReason getCloseReason() {
-        return closeReason;
-    }
+    
 
     /** @return il valore inserito nel campo di input del dialog, oppure {@code null} se non presente */
     public String getInputValue() {
@@ -95,10 +92,7 @@ public class AppDialog extends JDialog {
         return closeReason == CloseReason.WINDOW_CLOSE;
     }
 
-    /** @return {@code true} se il dialog ha restituito un valore di input */
-    public boolean hasInputValue() {
-        return inputValue != null;
-    }
+    
 
     /** @return {@code true} se la casella di {@link Builder#checkBoxField} era spuntata alla chiusura del dialog */
     public boolean isChecked() {
@@ -197,11 +191,7 @@ public class AppDialog extends JDialog {
                 return this;
             }
 
-            /** @param handler gestore da eseguire al click sull'azione @return questo builder, per il chaining */
-            public Builder onClick(Consumer<AppDialog> handler) {
-                this.handler = handler;
-                return this;
-            }
+            
 
             /** @return la {@link DialogAction} costruita con i parametri impostati su questo builder */
             public DialogAction build() {
@@ -550,17 +540,9 @@ public class AppDialog extends JDialog {
             return this;
         }
 
-        /** Nasconde il titolo dal corpo del dialog. @return questo builder, per il chaining */
-        public Builder hideBodyTitle() {
-            this.showTitleInBody = false;
-            return this;
-        }
+        
 
-        /** Mostra il titolo nel corpo del dialog. @return questo builder, per il chaining */
-        public Builder showBodyTitle() {
-            this.showTitleInBody = true;
-            return this;
-        }
+        
 
         /** @param message messaggio principale del dialog (usato {@code ""} se {@code null}) @return questo builder, per il chaining */
         public Builder message(String message) {
@@ -648,19 +630,9 @@ public class AppDialog extends JDialog {
                     .build());
         }
 
-        /** Aggiunge un'azione con ruolo {@link ActionRole#DANGER}. @param id identificativo @param text testo del pulsante @return questo builder, per il chaining */
-        public Builder dangerAction(String id, String text) {
-            return action(DialogAction.builder(id, text)
-                    .role(ActionRole.DANGER)
-                    .build());
-        }
+        
 
-        /** Aggiunge un'azione con ruolo {@link ActionRole#NEUTRAL}. @param id identificativo @param text testo del pulsante @return questo builder, per il chaining */
-        public Builder neutralAction(String id, String text) {
-            return action(DialogAction.builder(id, text)
-                    .role(ActionRole.NEUTRAL)
-                    .build());
-        }
+        
 
         /**
          * Costruisce il dialog con i parametri impostati su questo builder, aggiungendo un'azione "OK" di

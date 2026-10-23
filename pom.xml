@@ -9,7 +9,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <graalvm.version>24.2.2</graalvm.version>
         <exec.mainClass>com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto</exec.mainClass>
         <!-- Edizione con cui costruire il jar, scritta in version.properties dal resource filtering e
              letta da VarStatiche.EdizioneStore(). "completa" è tutto il programma; "store" toglie lo
@@ -208,17 +207,4 @@
             </plugin>
         </plugins>
     </build>
-    <repositories>
-
-    <repository>
-        <id>graalvm-repo</id>
-        <url>https://packages.graalvm.org/maven/</url>
-    </repository>
-
-        <repository>
-            <id>unknown-jars-temp-repo</id>
-            <name>A temporary repository created by NetBeans for libraries and jars it could not identify. Please replace the dependencies in this repository with correct ones and delete this repository.</name>
-            <url>file:${project.basedir}/lib</url>
-        </repository>
-    </repositories>
 </project>

@@ -95,12 +95,10 @@ public class Principale_TraslaOrario {
         //capofila di una selezione (possono però muoversi come membri posseduti del gruppo di un altro
         //movimento, vedi TraslaGruppo): vengono esclusi qui, non bloccano il resto
         List<String> Traslabili = new ArrayList<>();
-        int Esclusi = 0;
         for (String ID : IDs) {
             String Movimento[] = MappaCryptoWallet.get(ID);
             if (Movimento == null) continue;
             if (NonTraslabile(Movimento)) {
-                Esclusi++;
                 continue;
             }
             Traslabili.add(ID);

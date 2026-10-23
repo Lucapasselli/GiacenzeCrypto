@@ -9,7 +9,6 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -18,7 +17,6 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -272,19 +270,6 @@ public class Tabelle {
                     return label;
                     }
                 }
-                
-             /*   if (col==9&& table.getModel().getValueAt(modelRow, 32).toString().toUpperCase().contains("NO")) {
-                  //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
-                    JLabel label = new JLabel();
-                    label.setOpaque(true);
-                    label.setBackground(c.getBackground());
-                    label.setForeground(c.getForeground());
-                    label.setText(value.toString());
-                    Icon icon = Icone.getAlert(18);
-                    label.setIcon(icon);
-                    label.setIconTextGap(6); // spazio tra icona e testo
-                    return label;
-                } */
                 
 
                 return c;
@@ -695,15 +680,12 @@ public class Tabelle {
 
 
                     Color bg; 
-        Color fore;
         if (Principale.tema.equalsIgnoreCase("Scuro")){
             bg= (row % 2 == 0  ? grigio : grigioScuro);
-            fore=Color.lightGray;
         }
             else 
         {
             bg= (row % 2 == 0  ? grigioChiaro : bianco);
-            fore=Color.BLACK;
         }
  
             if (isSelected) {
@@ -1115,7 +1097,6 @@ public static JTable ColoraTabellaLiFoTransazione(final JTable table) {
                     Color RossopiuLeggero = Color.decode("#ffe5e5");
                     Color RossoLeggero = Color.decode("#ffcccc");
                     Color verde1 = Color.decode("#e6f4ea");
-                    Color verde2 = Color.decode("#ccf2d5");
                     Color bgEntrata;
                     bgUscita= (row % 2 == 0  ? RossoLeggero : RossopiuLeggero);
                     bgEntrata= (row % 2 == 0  ? verde1 : verde1);
@@ -1187,22 +1168,7 @@ public static JTable ColoraTabellaLiFoTransazione(final JTable table) {
 }
 
 
-/**
- * Ridimensiona un'icona alle dimensioni indicate, ridisegnandola su un'immagine bufferizzata e scalandola.
- * @param icon icona da ridimensionare
- * @param width larghezza desiderata in pixel
- * @param height altezza desiderata in pixel
- * @return la nuova icona ridimensionata
- */
-public static Icon resizeIcon(Icon icon, int width, int height) {
-    BufferedImage img = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
-    Graphics2D g2d = img.createGraphics();
-    icon.paintIcon(null, g2d, 0, 0);
-    g2d.dispose();
 
-    Image scaled = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-    return new ImageIcon(scaled);
-}
 
 
 /**
@@ -1610,21 +1576,6 @@ public static int[] Funzioni_getRigheSelezionate(JTable table) {
 }
        
        
-/*public static List<String> Tabelle_getUniqueValuesForColumnOLD(JTable table, int col) {
-    List<String> values = new ArrayList<>();
-    TableModel model = table.getModel();
-    int rowCount = model.getRowCount();
-
-    for (int row = 0; row < rowCount; row++) {
-        Object value = model.getValueAt(row, col);
-        String text = value != null ? value.toString() : "";
-        if (!values.contains(text)) {
-            values.add(text);
-        }
-    }
-    return values;
-}*/
-
     
  
     
@@ -2229,20 +2180,7 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
         modello.setRowCount(0);
     }
     
-            /**
-             * Come {@link #Funzioni_PulisciTabella}, ma rimuovendo le righe una alla volta (più lento, mantenuto
-             * per compatibilità con codice che si affida agli eventi di rimozione riga per riga).
-             * @param modello il modello da svuotare
-             */
-            public static void Funzioni_PulisciTabellaLento(DefaultTableModel modello) {
-        int z = modello.getRowCount();
-        // System.out.println(modelProblemi.getRowCount());
-        while (z != 0) {
-            modello.removeRow(0);
-            z = modello.getRowCount();
-        }
-       // modello.setRowCount(0);
-    }
+            
      
     /**
      * Adatta l'altezza di <b>ogni</b> riga al contenuto : per ogni riga prende l'altezza preferita

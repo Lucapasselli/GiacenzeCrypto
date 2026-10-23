@@ -12,7 +12,6 @@ import com.lowagie.text.Font;
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JDateChooserCellEditor;
 import com.toedter.calendar.JTextFieldDateEditor;
-import static com.giacenzecrypto.giacenze_crypto.Tabelle.tableFilters;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.io.BufferedReader;
@@ -43,7 +42,6 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ItemEvent;
-import java.awt.image.BufferedImage;
 import java.text.DateFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -61,21 +59,15 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
-import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JWindow;
 import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
-import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.TableCellRenderer;
@@ -660,10 +652,6 @@ private static final long serialVersionUID = 3L;
          
     }
     
-     /*   public static void main(String[] args) {
-        
-    }*/
-
     /**
      * Gli avvisi da dare all'avvio, ad archivio caricato: le novità della versione al primo avvio dopo un aggiornamento,
      * poi i bonus Binance Earn importati due volte (se ci sono e l'utente non ha chiesto di non vederlo più). Un avviso
@@ -9530,11 +9518,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     }
     
-        private void SituazioneImport_Caricatabella1()
-            {
-        //Percorso sincrono: calcola e applica. Il percorso asincrono chiama le due metà separatamente.
-        SituazioneImport_Applica(SituazioneImport_Calcola(MappaCryptoWallet.values()));
-    }
+
 
     /**
      * Riepiloga per wallet il primo movimento, l'ultimo e quanti ne sono stati importati.
@@ -10929,59 +10913,6 @@ GiacenzeaData_CompilaTabellaToken(true);
         }
     }//GEN-LAST:event_GestioneTokenScam_Bottone_EliminaMovimentiActionPerformed
 
- /*   private void BinanceApi()
-         {   
-                    BufferedReader reader = null;
-        HttpURLConnection connection = null;
-        try {
-            // TODO add your handling code here:
-            String timestamp = Long.toString(System.currentTimeMillis());
-            String data = "recvWindow=60000&timestamp="+timestamp;
-            String signature = generateSignature(data, "");
-            String richiesta="https://api.binance.com/sapi/v1/asset/assetDividend?"+data+ "&signature=" + signature;
-         //   System.out.println(richiesta);
-            URL apiUrl = new URL(richiesta);
-            connection = (HttpURLConnection) apiUrl.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("X-MBX-APIKEY", "");
-                        int responseCode = connection.getResponseCode();
-         //   System.out.println("Response Code: " + responseCode);
-            
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String line;
-                StringBuilder response = new StringBuilder();
-
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-
-            //    System.out.println(response.toString());
-            } else {
-            //    System.out.println("Request failed. Response Code: " + responseCode);
-            }
-        } catch (MalformedURLException ex) {
-            LoggerGC.ScriviErrore(ex);
-        } catch (ProtocolException ex) {
-            LoggerGC.ScriviErrore(ex);
-        } catch (IOException ex) {
-            LoggerGC.ScriviErrore(ex);
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException ex) {
-                    LoggerGC.ScriviErrore(ex);
-                }
-            }
-            if (connection != null) {
-                connection.disconnect();
-            }
-            //System.out.println(signature);
-         //   System.out.println(timestamp);
-        }
- }*/
-    
     private void GiacenzeaData_Bottone_CambiaNomeTokenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_CambiaNomeTokenActionPerformed
         // TODO add your handling code here:
             
@@ -11299,7 +11230,6 @@ GiacenzeaData_CompilaTabellaToken(true);
     private void Opzioni_Emoney_Bottone_RimuoviActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_Bottone_RimuoviActionPerformed
         // TODO add your handling code here:
         if (Opzioni_Emoney_Tabella.getSelectedRow() >= 0) {
-            int rigaSelezionata = Opzioni_Emoney_Tabella.getSelectedRow();
             int righe[]=Opzioni_Emoney_Tabella.getSelectedRows();
             for(int riga:righe){
                 String moneta = Opzioni_Emoney_Tabella.getModel().getValueAt(riga, 0).toString();
@@ -11309,13 +11239,6 @@ GiacenzeaData_CompilaTabellaToken(true);
             }
             Opzioni_Emoney_CaricaTabellaEmoney();
             Funzioni_AggiornaTutto();
-         /*   String moneta = Opzioni_Emoney_Tabella.getModel().getValueAt(rigaSelezionata, 0).toString();
-            if (Messaggi.Personalizzati_SINO_RimuoviEmoneyToken(moneta, this)) {
-                DatabaseH2.Pers_Emoney_Cancella(moneta);
-                Opzioni_Emoney_CaricaTabellaEmoney();
-
-                Funzioni_AggiornaTutto();
-            }*/
         }
     }//GEN-LAST:event_Opzioni_Emoney_Bottone_RimuoviActionPerformed
 
@@ -13359,8 +13282,6 @@ if (result.isAction("delete-all")) {
                 String PagaBollo=RW_Tabella.getModel().getValueAt(i, 7).toString();
                 boolean errori=false;
                 if(RW_Tabella.getModel().getValueAt(i, 4).toString().toUpperCase().contains("ERROR"))errori=true;
-                String Errore="";
-                if (errori)Errore=" - Attenzione! Ci sono degli errori da correggere!";
                 if (ValIniziale.equals("0")&&ValFinale.equals("0")){
                  } else {
                     //Metto in stampa solo se almeno uno tra valore iniziale e finale è diverso da Zero
@@ -16903,45 +16824,6 @@ if (result != null && !result.isAction("cancel")) {
         gui.setTitle("Gestione API Exchange");
         gui.setVisible(true);
 
-        /*     // TODO add your handling code here:
-        CcxtInterop a = new CcxtInterop();
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        Download progress = new Download();
-        progress.setIndeterminate(true);
-        progress.SetLabel("Scaricamento da API in corso...");
-        //progress.RipristinaStdout();
-        //progress.MostraProgressAttesa("Export in Excel", "Esportazione in corso...");
-        progress.setLocationRelativeTo(this);
-
-        // Esegui l'export in background
-        SwingWorker<Void, Void> worker = new SwingWorker<>() {
-            @Override
-            protected Void doInBackground() throws Exception {
-                try {
-                    a.ensureNodeInstalled();
-                    a.installCcxt();
-                    System.out.println("Eseguo la chiamata");
-                    String chiavi[]=DatabaseH2.Pers_ExchangeApi_Leggi("Binance");
-
-                    a.fetchMovimenti(chiavi[1].toLowerCase(), chiavi[2], chiavi[3],"2025-08-20","ETH,USDC");
-                } catch (IOException ex) {
-                    LoggerGC.ScriviErrore(ex);
-                } catch (InterruptedException ex) {
-                    LoggerGC.ScriviErrore(ex);
-                }
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                progress.dispose();
-                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        };
-
-        worker.execute();
-        progress.setVisible(true);// Questo blocca finché done() non chiama dispose()
-        */
     }//GEN-LAST:event_TransazioniCrypto_Bottone_ExchangeAPIActionPerformed
 
     private void TransazioniCrypto_Bottone_AggiorbaVersioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_AggiorbaVersioneActionPerformed
@@ -18561,12 +18443,8 @@ try {
      * Mostra o nasconde (larghezza zero) la colonna "Qta Blockchain" della tabella principale di "Giacenze a data".
      * Si mostra solo quando la tabella e' di un singolo wallet DeFi di una rete leggibile (vedi
      * {@link GiacenzeBlockchain#WalletDaLeggere}).
+     * @param Fonte da dove viene la giacenza confrontata: "Blockchain", o il nome dell'exchange
      */
-    private void GiacenzeaData_MostraColonnaBlockchain(boolean Mostra) {
-        GiacenzeaData_MostraColonnaBlockchain(Mostra, "Blockchain");
-    }
-
-    /** @param Fonte da dove viene la giacenza confrontata: "Blockchain", o il nome dell'exchange */
     private void GiacenzeaData_MostraColonnaBlockchain(boolean Mostra, String Fonte) {
         javax.swing.table.TableColumn Colonna = GiacenzeaData_Tabella.getColumnModel()
                 .getColumn(GiacenzeaData_Tabella.convertColumnIndexToView(12));
@@ -20218,27 +20096,6 @@ try {
             //Solo in caso di defi
             String Rete = Funzioni.TrovaReteDaIMovimento(v);
             
-      /*      String AddressU = v[26];
-            String AddressE = v[28];
-            //if (!Funzioni.noData(Rete)) {
-                if (!Funzioni.noData(AddressU)) {
-                    //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
-                    if (Rete==null)Rete="";
-                    String valore = Mappa_NomiTokenPersonalizzati.get(AddressU + "_" + Rete);
-                    if (valore != null) {
-                        v[8] = valore;
-                    }
-                }
-                if (!Funzioni.noData(AddressE)) {
-                    //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
-                    if (Rete==null)Rete="";
-                    String valore = Mappa_NomiTokenPersonalizzati.get(AddressE + "_" + Rete);
-                    if (valore != null) {
-                    v[11] = valore;
-                }
-
-            }*/
-
             String addressU = v[26];
             String addressE = v[28];           
 
@@ -20509,32 +20366,7 @@ try {
         SwingUtilities.invokeLater(scrivi);
     }
     
-/**
- * Ricostruisce e riapplica alla tabella un {@link TableRowSorter} che combina (in AND) tutti i
- * filtri per colonna attualmente salvati per quella tabella in {@code tableFilters}. Utile dopo un
- * ricaricamento del modello, che invalida il sorter precedente.
- * @param table tabella su cui ricostruire il sorter con i filtri salvati
- */
-public static void ripristinaFiltri(JTable table) {
-    // Crea un nuovo sorter per la tabella
-    DefaultTableModel model = (DefaultTableModel) table.getModel();
-    TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
 
-    // Recupera i filtri salvati per questa tabella
-    Map<Integer, RowFilter<DefaultTableModel, Integer>> colFilters = tableFilters.get(table);
-
-    if (colFilters != null && !colFilters.isEmpty()) {
-        // Combina tutti i filtri in un unico RowFilter
-        List<RowFilter<DefaultTableModel, Integer>> filters = new ArrayList<>(colFilters.values());
-        RowFilter<DefaultTableModel, Integer> combined = RowFilter.andFilter(filters);
-        sorter.setRowFilter(combined);
-    } else {
-        sorter.setRowFilter(null); // Nessun filtro se la mappa è vuota
-    }
-
-    // Applica il sorter ricostruito alla tabella
-    table.setRowSorter(sorter);
-}
 
 
     
@@ -20623,30 +20455,7 @@ public static void ripristinaFiltri(JTable table) {
     
 
     
-    /**
-     * Calcola la differenza in giorni interi (arrotondati) tra due date in formato {@code yyyy-MM-dd}
-     * (l'orario viene fissato a mezzanotte per entrambe).
-     * @param Data1 prima data (minuendo)
-     * @param Data2 seconda data (sottraendo)
-     * @return {@code Data1 - Data2} espresso in giorni; {@code 0} se una delle date non è parsabile
-     */
-    public static long Funzioni_Date_DifferenzaDate(String Data1, String Data2) {
-        long differenza=0;
-        try {
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-            Date d = f.parse(Data1+" 00:00");
-            long m1 = d.getTime();
-            d = f.parse(Data2+" 00:00");
-            long m2 = d.getTime();
-            double diffe=(double)(m1-m2)/1000/3600/24;//Ritorno la differenza in giorni che poi mi servirà per il calcolo della giacenza media
-            differenza=Math.round(diffe);//Ritorno la differenza in giorni che poi mi servirà per il calcolo della giacenza media
-            //System.out.println (Data1+" - "+Data2+" - "+differenza+" - "+a);
-            //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
-        } catch (ParseException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-        return differenza;
-    }
+    
     
     /**
      * Calcola la differenza in secondi (arrotondati) tra due date in formato {@code yyyy-MM-dd}
@@ -20730,42 +20539,7 @@ public static void ripristinaFiltri(JTable table) {
     } 
     
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Principale.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Principale.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Principale.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Principale.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-        //</editor-fold>
-//SwingUtilities.invokeLater(CDC_Grafica::new);
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            
-            public void run() {
-                new Principale().setVisible(true);
-            }
-        });
-    }
+    
     
     
     public class JDateChooserRenderer extends JDateChooser implements TableCellRenderer{

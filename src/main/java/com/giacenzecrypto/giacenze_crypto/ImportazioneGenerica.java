@@ -476,25 +476,7 @@ public class ImportazioneGenerica {
         return campi.toArray(new String[0]);
     }
 
-    /**
- * Legge solo il campo "nomeExchange" dal JSON di configurazione.
- * Restituisce null se il campo è assente o vuoto.
- */
-public static String leggiNomeExchangeDaJson(String percorsoJson) {
-    try (BufferedReader br = new BufferedReader(new FileReader(percorsoJson))) {
-        StringBuilder sb = new StringBuilder();
-        String riga;
-        while ((riga = br.readLine()) != null) sb.append(riga);
-        JSONObject root = new JSONObject(sb.toString());
-        if (root.has("nomeExchange")) {
-            String nome = root.getString("nomeExchange").trim();
-            if (!nome.isBlank()) return nome;
-        }
-    } catch (Exception ex) {
-        LoggerGC.ScriviErrore(ex);
-    }
-    return null; // assente o vuoto → l'utente dovrà scegliere
-}
+    
 
     /**
      * Toglie dalle righe le coppie "movimento + suo annullamento" dichiarate in
@@ -792,7 +774,6 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         String dataDiGruppo = null;
         String dataRawDiGruppo = null;
         String walletPrincipale = null;
-        String walletID = null;
         String noteDiGruppo = "";
         boolean haMovimentiDefi = false;
 
@@ -830,9 +811,6 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                 if (overrideWallet != null && !overrideWallet.isBlank()) {
                     walletPrincipale = overrideWallet;
                 }
-
-                String exchange = cfg.nomeExchange != null ? cfg.nomeExchange : "Exchange Generico";
-                walletID = exchange + "." + safe(riga, cfg.colonnaIDTransazione);
 
                 if (cfg.colonnaNote >= 0) noteDiGruppo = safe(riga, cfg.colonnaNote);
             }

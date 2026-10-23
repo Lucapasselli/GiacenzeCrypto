@@ -5,7 +5,6 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 import java.math.BigDecimal;
-import java.util.Set;
 
 
 /**
@@ -88,10 +87,7 @@ public class Moneta {
 public String GetNome(){
     return Moneta;
 }
-/** @return la rete/blockchain della moneta */
-public String GetRete(){
-    return Rete;
-}
+
 
 /** @return il nome completo della moneta (usato per i token DeFi) */
 public String GetNomeEsteso(){
@@ -167,14 +163,8 @@ public void SetAddress(String Address){
     MonetaAddress=Address;
 }
 
-/** @return l'indirizzo di contratto della moneta */
-public String GetAddress(){
-    return MonetaAddress;
-}
-/** @return la tipologia della moneta ({@code NFT}, {@code FIAT} o {@code Crypto}) */
-public String GetTipologia(){
-    return Tipo;
-}
+
+
 
 /**
  * Deduce e imposta automaticamente la tipologia della moneta: {@code FIAT} se il simbolo è tra

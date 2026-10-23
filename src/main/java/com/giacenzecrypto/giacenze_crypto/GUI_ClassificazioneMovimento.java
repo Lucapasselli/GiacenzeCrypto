@@ -378,13 +378,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
     public boolean getModificaEffettuata(){
         return ModificaEffettuata;
     }
-    /**
-     * Imposta il flag che segnala se il dialogo ha effettuato una modifica.
-     * @param b nuovo valore del flag
-     */
-    public void setModificaEffettuata(boolean b){
-        ModificaEffettuata=b;
-    }
+    
 
     /**
      * Alias del gruppo wallet a cui appartiene il wallet indicato; se il gruppo non ha un alias mostra il nome
@@ -1480,25 +1474,6 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         String MovimentoPrelievo[]=MappaCryptoWallet.get(IDPrelievo);
         String MovimentoDeposito[]=MappaCryptoWallet.get(IDDeposito);
         
-   /*     long dataPrelievo=Long.parseLong(IDPrelievo.split("_")[0]);
-        long dataDeposito=Long.parseLong(IDDeposito.split("_")[0]);
-        //affinchè i movimenti di deposito e prelievo risultino in ordine se trovo che un movimento di prelievo è successivo ad uno di posito vado a cambiargli 
-        //l'id della transazione, salvo poi il vecchio id nel movimento in modo da poterlo ripristinare in caso io cancelli l'associazione in futuro
-        if (dataPrelievo>dataDeposito){
-    ///////////DA FARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-            
-            MovimentoPrelievo[31]=IDPrelievo;
-            dataPrelievo=dataDeposito-1;
-            String Prel[]=IDPrelievo.split("_");
-            String NuovoIDPrelievo=String.valueOf(dataPrelievo)+"_"+Prel[1]+"_"+Prel[2]+"_"+Prel[3]+"_"+Prel[4];
-            MovimentoPrelievo[0]=NuovoIDPrelievo;
-            MappaCryptoWallet.put(NuovoIDPrelievo, MovimentoPrelievo);
-            //finito la creazione del nuovo movimento cancello il vecchio
-            MappaCryptoWallet.remove(IDPrelievo);
-            //l'idprelievo adesso diventa quello nuovo
-            IDPrelievo=NuovoIDPrelievo;
-            
-        }*/
         BigDecimal QtaPrelievoValoreAssoluto=new BigDecimal(MovimentoPrelievo[10]).stripTrailingZeros().abs();
         BigDecimal QtaDepositoValoreAssoluto=new BigDecimal(MovimentoDeposito[13]).stripTrailingZeros().abs();
         //Vado avanti solo se la qta prelevata è maggiore o uguale di quelòla ricevuta
@@ -1521,29 +1496,6 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     String IDCommissione = IDPrelivoSpezzato[0] + "_" + IDPrelivoSpezzato[1] + "_" + numTransazione + "_1_CM";
                     String QtaCommissione = new BigDecimal(MovimentoPrelievo[10]).abs().subtract(new BigDecimal(MovimentoDeposito[13]).abs()).toPlainString();
                     String ValoreCommissione = new BigDecimal(MovimentoPrelievo[15]).abs().divide(new BigDecimal(MovimentoPrelievo[10]).abs(), VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(QtaCommissione)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
-
-                    // [VECCHIO] Creazione manuale del movimento commissione - sostituita con MovimentiCrypto.creaMovimento
-//                    String MovimentoCommissione[]=new String[Importazioni.ColonneTabella];
-//                    MovimentoCommissione[0] = IDCommissione;
-//                    MovimentoCommissione[1] = MovimentoPrelievo[1];
-//                    MovimentoCommissione[2] = "1 di 1";
-//                    MovimentoCommissione[3] = MovimentoPrelievo[3];
-//                    MovimentoCommissione[4] = MovimentoPrelievo[4];
-//                    MovimentoCommissione[5] = "COMMISSIONE";
-//                    MovimentoCommissione[6] = MovimentoPrelievo[6];
-//                    MovimentoCommissione[8] = MovimentoPrelievo[8];
-//                    MovimentoCommissione[9] = MovimentoPrelievo[9];
-//                    MovimentoCommissione[10] = "-" + QtaCommissione;
-//                    MovimentoCommissione[15] = ValoreCommissione;
-//                    MovimentoCommissione[20] = IDPrelievo + "," + IDDeposito;
-//                    MovimentoCommissione[22] = "AU"; //AU -> Significa che è un movimento di commissione automaticamente generato da una condizione successiva
-//                    //quindi se decadono le condizioni che lo hanno generato va eliminato
-//                    //ad esempio se uno dei movimenti padri cambiano tipo o vengono eliminati va eliminato anche il suddetto movimento
-//                    MovimentoCommissione[25] = MovimentoPrelievo[25];
-//                    MovimentoCommissione[26] = MovimentoPrelievo[26];
-//                    MovimentoCommissione[32] = MovimentoPrelievo[32];
-//
-//                    Importazioni.RiempiVuotiArray(MovimentoCommissione);
 
                     // ── Moneta in uscita (commissione trattenuta; qta negativa) ──
                     Moneta MonetaCommissioneOUT = new Moneta();
@@ -1598,30 +1550,6 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     String IDReward=IDPrelivoSpezzato[0]+"_"+IDPrelivoSpezzato[1]+"_"+numTransazione+"_1_RW";
                     String QtaReward=new BigDecimal(MovimentoDeposito[13]).abs().subtract(new BigDecimal(MovimentoPrelievo[10]).abs()).toPlainString();
                     String ValoreReward=new BigDecimal(MovimentoPrelievo[15]).abs().divide(new BigDecimal(MovimentoPrelievo[10]).abs(), VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(QtaReward)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
-
-                    // [VECCHIO] Creazione manuale del movimento reward - sostituita con MovimentiCrypto.creaMovimento
-//                    String MovimentoReward[] = new String[Importazioni.ColonneTabella];
-//                    MovimentoReward[0] = IDReward;
-//                    MovimentoReward[1] = MovimentoPrelievo[1];
-//                    MovimentoReward[2] = "1 di 1";
-//                    MovimentoReward[3] = MovimentoPrelievo[3];
-//                    MovimentoReward[4] = MovimentoPrelievo[4];
-//                    MovimentoReward[5] = "REWARD";
-//                    MovimentoReward[6] = MovimentoDeposito[6];
-//                    MovimentoReward[11] = MovimentoPrelievo[8];
-//                    MovimentoReward[12] = MovimentoPrelievo[9];
-//                    MovimentoReward[13] = QtaReward;
-//                    MovimentoReward[15] = ValoreReward;
-//                    MovimentoReward[20] = IDPrelievo + "," + IDDeposito;
-//                    MovimentoReward[22] = "Rettifica su Trasferimento";
-//                    MovimentoReward[22] = "AU"; //AU -> Significa che è un movimento di commissione automaticamente generato da una condizione successiva
-//                    //quindi se decadono le condizioni che lo hanno generato va eliminato
-//                    //ad esempio se uno dei movimenti padri cambiano tipo o vengono eliminati va eliminato anche il suddetto movimento
-//                    MovimentoReward[27] = MovimentoPrelievo[25];
-//                    MovimentoReward[28] = MovimentoPrelievo[26];
-//                    MovimentoReward[32] = MovimentoPrelievo[32];
-//
-//                    Importazioni.RiempiVuotiArray(MovimentoReward);
 
                     // ── Moneta in ingresso (reward ricevuto; qta positiva) ──
                     Moneta MonetaRewardIN = new Moneta();
@@ -1974,35 +1902,6 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         String Movimento[]=MappaCryptoWallet.get(ID);
         //fase 1: creo il nuovo movimento
         String IDSpezzato[]=Movimento[0].split("_");
-        String MonetaDettaglio=Movimento[8];
-        if (!Movimento[25].isBlank()){
-            MonetaDettaglio=Movimento[25];
-        }
-        // [VECCHIO] Creazione manuale del movimento - sostituita con MovimentiCrypto.creaMovimento
-//        String MT[]=new String[Importazioni.ColonneTabella];
-//        String IDNuovoMov=IDSpezzato[0]+"_"+IDSpezzato[1]+"_"+IDSpezzato[2]+"A_"+IDSpezzato[3]+"_DC";
-//        MT[0]=IDNuovoMov;
-//        MT[1]=Movimento[1];
-//        MT[2]="1 di 1";
-//        MT[3]=Movimento[3];
-//        MT[4]="Piattaforma/DeFi";
-//        MT[5]="TRASFERIMENTO A PIATTAFORMA";
-//        MT[6]="-> "+MonetaDettaglio;
-//        MT[11]=Movimento[8];
-//        MT[12]=Movimento[9];
-//        MT[13]=new BigDecimal(Movimento[10]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
-//        MT[15]=Movimento[15];
-//        MT[18]="DTW - Trasferimento Interno";
-//        MT[20]=ID;
-//        MT[22]="AU";
-//        if (Movimento.length>29){
-//            MT[23]=Movimento[23];
-//            MT[24]=Movimento[24];
-//            MT[27]=Movimento[25];
-//            MT[28]=Movimento[26];
-//            MT[29]=Movimento[29];
-//        }
-//        Importazioni.RiempiVuotiArray(MT);
 
         String IDNuovoMov=IDSpezzato[0]+"_"+IDSpezzato[1]+"_"+IDSpezzato[2]+"A_"+IDSpezzato[3]+"_DC";
 
@@ -2261,34 +2160,6 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         
         //fase 1: creo il nuovo movimento
         String IDSpezzato[]=Movimento[0].split("_");
-        String MonetaDettaglio=Movimento[11];
-        if (!Movimento[27].isBlank()){
-            MonetaDettaglio=Movimento[27];
-        }
-        // [VECCHIO] Creazione manuale del movimento - sostituita con MovimentiCrypto.creaMovimento
-//        String MT[]=new String[Importazioni.ColonneTabella];
-//        String IDNuovoMov=IDSpezzato[0]+"_"+IDSpezzato[1]+"_0"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_PC";
-//        MT[0]=IDNuovoMov;
-//        MT[1]=Movimento[1];
-//        MT[2]="1 di 1";
-//        MT[3]=Movimento[3];
-//        MT[4]="Piattaforma/DeFi";
-//        MT[5]="TRASFERIMENTO DA PIATTAFORMA";
-//        MT[6]=MonetaDettaglio+" ->";
-//        MT[8]=Movimento[11];
-//        MT[9]=Movimento[12];
-//        MT[10]=new BigDecimal(Movimento[13]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
-//        MT[15]=Movimento[15];
-//        MT[18]="PTW - Trasferimento Interno";
-//        MT[22]="AU";
-//        if (Movimento.length>29){
-//            MT[23]=Movimento[23];
-//            MT[24]=Movimento[24];
-//            MT[25]=Movimento[27];
-//            MT[26]=Movimento[28];
-//            MT[29]=Movimento[29];
-//        }
-//        Importazioni.RiempiVuotiArray(MT);
 
         String IDNuovoMov=IDSpezzato[0]+"_"+IDSpezzato[1]+"_0"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_PC";
 
@@ -2367,29 +2238,6 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         // Qta e valore del reward: precalcolati per poterli fornire a creaMovimento e reimporli identici
         String QtaResiduaVaultStr=QtaResiduaVault.multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
         String ValoreReward=new BigDecimal(QtaResiduaVaultStr).divide(new BigDecimal(Movimento[13]), VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(Movimento[15])).setScale(2, RoundingMode.HALF_UP).toPlainString();
-
-        // [VECCHIO] Creazione manuale del movimento reward - sostituita con MovimentiCrypto.creaMovimento
-//        String MT2[]=new String[Importazioni.ColonneTabella];
-//        MT2[0]=IDMovCorrettivo;
-//        MT2[1]=Movimento[1];
-//        MT2[2]="1 di 1";
-//        MT2[3]=Movimento[3];
-//        MT2[4]="Piattaforma/DeFi";
-//        MT2[5]="REWARD";
-//        MT2[6]="-> "+MonetaDettaglio;
-//        MT2[11]=Movimento[11];
-//        MT2[12]=Movimento[12];
-//        MT2[13]=QtaResiduaVault.multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
-//        MT2[15]=new BigDecimal(MT2[13]).divide(new BigDecimal(Movimento[13]), VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(Movimento[15])).setScale(2, RoundingMode.HALF_UP).toPlainString();
-//        MT2[18]="DAI - Reward";
-//        MT2[20]=ID+","+IDNuovoMov;
-//        MT2[22]="AU";
-//        if (Movimento.length>29){
-//            MT2[27]=Movimento[27];
-//            MT2[28]=Movimento[28];
-//            MT2[29]=Movimento[29];
-//        }
-//        Importazioni.RiempiVuotiArray(MT2);
 
         // ── Moneta in ingresso (reward, qta positiva) ──
         Moneta MonetaINReward = new Moneta();
@@ -2577,9 +2425,6 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             //2026-09-29. Prima sceglieva la gamba "piu' affidabile", spesso quella ceduta, che negli scambi a
             //termine valutata alla data del deposito si allontana molto dal valore di cio' che si riceve.
             long DatalongDeposito=FunzioniDate.ConvertiDatainLongMinuto(MovimentoDeposito[1]);
-            long DatalongPrelievo=FunzioniDate.ConvertiDatainLongMinuto(MovimentoPrelievo[1]);
-            long DiffDate=DatalongDeposito-DatalongPrelievo;
-            //System.out.println(DiffDate);
             //Moneta Uscita
             Moneta M1 = new Moneta();
             M1.InserisciValori(MovimentoPrelievo[8], MovimentoPrelievo[10], MovimentoPrelievo[26], MovimentoPrelievo[9]);
@@ -3201,41 +3046,7 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
             
         }
     }
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(GUI_ClassificazioneMovimento.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(GUI_ClassificazioneMovimento.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(GUI_ClassificazioneMovimento.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(GUI_ClassificazioneMovimento.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new GUI_ClassificazioneMovimento(IDTrans).setVisible(true);
-            }
-        });
-    }
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Annulla;

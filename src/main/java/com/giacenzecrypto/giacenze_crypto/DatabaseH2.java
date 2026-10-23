@@ -2019,25 +2019,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         //Con questa query ritorno sia il vecchio che il nuovo nome
     }
         
-        /**
-         * Rimuove la rinomina registrata per un token, ripristinandone il nome originale.
-         *
-         * @param address_chain chiave "{@code Address}_{@code Rete}" del token
-         */
-        public static void RinominaToken_CancellaRiga(String address_chain) {
-               //completamente da gestire
-        try {
-            String checkIfExistsSQL = "DELETE FROM RINOMINATOKEN WHERE address_chain = ?";
-            try (PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL)) {
-                checkStatement.setString(1, address_chain);
-                checkStatement.executeUpdate();
-            }
-
-        } catch (SQLException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-        //Con questa query ritorno sia il vecchio che il nuovo nome
-    }
+        
     
 
     /**
@@ -2122,44 +2104,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         return Risultato;
     }
 
-    /**
-     * Salva (upsert via {@code MERGE INTO}) il prezzo di un token identificato da ora+address+chain.
-     * Nonostante il prefisso "OLD" è la versione attualmente in uso: l'omonima
-     * {@code PrezzoAddressChain_Scrivi_OLD}, basata su concatenazione di stringhe e senza chiamanti
-     * vivi, è stata rimossa il 2026-08-05 con la voce B1.
-     *
-     * @param ora_address_chain chiave "{@code ora}_{@code Address}_{@code Rete}" (normalizzata a maiuscolo salvo per la rete Solana, case-sensitive)
-     * @param prezzo prezzo da salvare
-     * @param personalizzato se {@code true} scrive su {@code connectionPersonale}, altrimenti su {@code connection}
-     */
-    public static void OLD_PrezzoAddressChain_Scrivi(String ora_address_chain, String prezzo, boolean personalizzato) {
-    try {
-        // Seleziona la connessione corretta
-        Connection connessione = personalizzato ? connectionPersonale : connection;
-
-        // Suddivide e normalizza la chiave
-        //Se rete solana l'address è case sensitive per cui non posso gestirlo metterlo maiuscolo
-        String[] OAC = ora_address_chain.split("_");
-        if (OAC.length >= 3 && !OAC[2].equalsIgnoreCase("SOL")) {
-            ora_address_chain = ora_address_chain.toUpperCase();
-        }
-
-        String sql = """
-            MERGE INTO Prezzo_ora_Address_Chain (ora_address_chain, prezzo)
-            KEY (ora_address_chain)
-            VALUES (?, ?)
-        """;
-
-        try (PreparedStatement ps = connessione.prepareStatement(sql)) {
-            ps.setString(1, ora_address_chain);
-            ps.setString(2, prezzo);
-            ps.executeUpdate();
-        }
-
-    } catch (SQLException ex) {
-        LoggerGC.ScriviErrore(ex);
-    }
-}
+    
 
 
 
@@ -2274,53 +2219,9 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         }
     }
 
-    /**
-     *Questa funzione ritorna null se la coppia su binance non esiste altrimenti ritorna il nome della coppia
-     * 
-     * @param Coppia
-     * @return
-     */
-    public static String CoppieBinance_Leggi(String Coppia) {
-        String Risultato = null;
-        try {
-            String checkIfExistsSQL = "SELECT Coppia FROM GESTITIBINANCE WHERE Coppia = ?";
-            try (PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL)) {
-                checkStatement.setString(1, Coppia);
-                try (ResultSet resultSet = checkStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        Risultato = resultSet.getString("Coppia");
-                    }
-                }
-            }
-        } catch (SQLException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-        return Risultato;
-    }
     
-        /**
-     *Questa funzione ritorna null se il simbolo su coinbase non esiste altrimenti ritorna il simbolo
-     * 
-     * @param Simbolo
-     * @return
-     */
-    public static String GestitiCoinbase_Leggi(String Simbolo) {
-        String Risultato = null;
-        try {
-            String checkIfExistsSQL = "SELECT Simbolo FROM GESTITICOINBASE WHERE Simbolo = ?";
-            try (PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL)) {
-                checkStatement.setString(1, Simbolo);
-                try (ResultSet resultSet = checkStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        Risultato = resultSet.getString("Simbolo");
-                    }
-                }
-            }
-        } catch (SQLException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-        return Risultato;
-    }
+    
+        
         
     /**
      *
@@ -2347,87 +2248,15 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         return Risultato;
     }
             
-        /**
-         * 
-           * @param Gestito
-           * @return 
-         */
-        public static String[] GestitiCoingecko_LeggiInteraRiga(String Gestito) {
-        
-        String Risultato[]=new String[3];
-        String base[]=Gestito.split("_");
-        if (base.length<2)return null;
-        //System.out.println(Gestito);
-        String Rete=Gestito.split("_")[1];
-        if (!Rete.equals("SOL"))Gestito=Gestito.toUpperCase();
-        try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT Address_Chain,Simbolo,Nome FROM GESTITICOINGECKO WHERE Address_Chain = ?";
-            try (PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL)) {
-                checkStatement.setString(1, Gestito);
-                try (ResultSet resultSet = checkStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        Risultato[0] = resultSet.getString("Address_Chain");
-                        Risultato[1] = resultSet.getString("Simbolo");
-                        Risultato[2] = resultSet.getString("Nome");
-                    }
-                }
-            }
-
-        } catch (SQLException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-        return Risultato;
-    } 
+         
                         
       
   
         
         
-        /**
-         * Ricrea da zero la tabella {@code GESTITIBINANCE} (drop + create) e la ripopola con l'elenco
-         * di coppie di trading gestite da Binance, tipicamente scaricato via API.
-         *
-         * @param Coppie elenco delle coppie di trading da salvare
-         */
-        public static void CoppieBinance_ScriviNuovaTabella(List<String> Coppie) {
-        try {
-            // Connessione al database
-            EseguiDDL(connection, "DROP TABLE IF EXISTS GESTITIBINANCE");
-            EseguiDDL(connection, "CREATE TABLE IF NOT EXISTS GESTITIBINANCE  (Coppia VARCHAR(255) PRIMARY KEY)");
-            String insertSQL = "INSERT INTO GESTITIBINANCE (Coppia) VALUES (?)";
-            try (PreparedStatement insertStatement = connection.prepareStatement(insertSQL)) {
-                for (String coppia:Coppie){
-                    insertStatement.setString(1, coppia);
-                    insertStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-    } 
+         
         
-    /**
-     * Ricrea da zero la tabella {@code GESTITICOINBASE} (drop + create) e la ripopola con l'elenco
-     * di simboli gestiti da Coinbase, tipicamente scaricato via API.
-     *
-     * @param Simboli elenco dei simboli da salvare
-     */
-    public static void GestitiCoinbase_ScriviNuovaTabella(List<String> Simboli) {
-        try {
-            EseguiDDL(connection, "DROP TABLE IF EXISTS GESTITICOINBASE");
-            EseguiDDL(connection, "CREATE TABLE IF NOT EXISTS GESTITICOINBASE  (Simbolo VARCHAR(255) PRIMARY KEY)");
-            String insertSQL = "INSERT INTO GESTITICOINBASE (Simbolo) VALUES (?)";
-            try (PreparedStatement insertStatement = connection.prepareStatement(insertSQL)) {
-                for (String Simbolo : Simboli) {
-                    insertStatement.setString(1, Simbolo);
-                    insertStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-    } 
+     
         
         
         /**

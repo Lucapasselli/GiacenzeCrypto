@@ -682,19 +682,6 @@ private static final long serialVersionUID = 9L;
                 setFIAT.add("EUR");
           for (String[] v : MappaCryptoWallet.values()) {
               //PARTE 1: Recupero Wallet e dettagli del wallet
-    /*          String WalletTemp=v[3];
-              String WalletDettaglioTemp=v[4];
-              if(Wallets_e_Dettagli.get(v[3])==null)
-                  {
-                      List<String> Lista=new ArrayList();
-                      Lista.add(WalletDettaglioTemp);
-                      Wallets_e_Dettagli.put(WalletTemp, Lista);
-                  }
-              else{
-                  List<String> Lista;
-                  Lista=Wallets_e_Dettagli.get(WalletTemp);
-                  if (!Lista.contains(WalletDettaglioTemp))Lista.add(WalletDettaglioTemp);
-              }*/
               //Parte 2 recupero della lista delle crypto, lista nft etc...
               String TipoUscita=v[9];
               String MonetaUscita=v[8];
@@ -749,27 +736,6 @@ private static final long serialVersionUID = 9L;
         if (apriMenu)combobox.setPopupVisible(true);
     }
         
-   /* private void FiltraItemsComboBoxWallet(JComboBox combobox,String filter,JComboBox comboboxTipo,boolean apriMenu) {
-        String Tipo=comboboxTipo.getSelectedItem().toString();
-        List<String> Lista=new ArrayList<>();
-        if (Tipo.equalsIgnoreCase("Crypto")) {
-            Lista=Lista_Cryptovalute;
-        } else if (Tipo.equalsIgnoreCase("NFT")) {
-            Lista=Lista_NFT;
-        } else if (Tipo.equalsIgnoreCase("FIAT")) {
-            Lista=Lista_FIAT;
-        }
-        combobox.setPopupVisible(false);
-        combobox.removeAllItems();
-        combobox.addItem(filter);
-        for (String item : Lista) {
-            if (item.toLowerCase().contains(filter.toLowerCase())) {
-                if(!filter.equals(item))combobox.addItem(item);
-            }
-        }       
-        if (apriMenu)combobox.setPopupVisible(true);
-    }*/
-    
     private void MonetaUscitaQuantita_TextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MonetaUscitaQuantita_TextFieldActionPerformed
         // TODO add your handling code here:
         EvidenziaProblemi();
@@ -1166,34 +1132,6 @@ private static final long serialVersionUID = 9L;
             thread.start();
             progress.setVisible(true);
            // progress.ChiudiFinestra();
-           /* progress.setVisible(true);
-
-SwingWorker<Void, Void> worker = new SwingWorker<>() {
-    String rete;
-
-    @Override
-    protected Void doInBackground() throws Exception {
-        if (ModificaMovimento) rete = Funzioni.TrovaReteDaID(MovimentoRiportato[0]);
-        return null;
-    }
-
-    @Override
-    protected void done() {
-        progress.ChiudiFinestra();
-
-        GUI_ModificaPrezzo dialog =
-            new GUI_ModificaPrezzo(MU, ME, IPr, DataLong, rete, Ritorno, null);
-
-        dialog.setLocationRelativeTo(c);
-
-        // MODAL: qui si ferma finché non chiudi la finestra
-        dialog.setVisible(true);
-
-        System.out.println("Ritorno = " + Ritorno[0]);
-    }
-};
-
-worker.execute();*/
 
             
             
@@ -1609,14 +1547,6 @@ worker.execute();*/
             // ── CASO A2: ID diverso → rimozione del vecchio + creazione di uno nuovo ───────────────
             // Wallet, monete o tipi sono cambiati: l'ID ricalcolato differisce dall'originale.
             else{
-                // [VECCHIO] Controllo bloccante su ID duplicato - rimosso: ora si genera
-                // automaticamente un ID univoco tramite getIDUnivoco (vedi più sotto nel blocco "si")
-//                if (MappaCryptoWallet.get(ID) != null) {
-//                    Messaggi.WarningMessage("Movimento con Stesso ID", "Attenzione!<br>"
-//                            + "Esiste un movimento con lo stesso ID Transsazione<br>"
-//                            + "Provare a modificare l'ora della transazione anche di un solo secondo per risolvere il problema", this);
-//                    return false;
-//                }//altrimenti chiedo se voglio ricreare il movimento con un nuovo ID
 
                 // Blocco: i movimenti automatici (AU) non possono essere strutturalmente modificati;
                 // per questi è consentito variare solo prezzo e note (gestito nel Caso A1 in-place)
@@ -1688,54 +1618,6 @@ worker.execute();*/
                             if (splitID[4].equalsIgnoreCase("TI")) {
                                 TipoTransazione = "TRASFERIMENTO INTERNO";
                             }
-                            // [VECCHIO] Creo il nuovo - sostituito con MovimentiCrypto.creaMovimento
-//                            String RT[];
-//                            RT = new String[Importazioni.ColonneTabella];
-//                            RT[0] = ID;
-//                            RT[1] = Data;
-//                            RT[2] = MovimentoRiportato[2];
-//                            RT[3] = Wallet;
-//                            RT[4] = WalletDettaglio;
-//                            RT[5] = TipoTransazione;
-//                            String NomeUscita;
-//                            String NomeEntrata;
-//
-//                            //Questa parte serve per mettere il nome della moneta al posto del symbol qualora vi fosse
-//                            if (MovimentoRiportato[25]!=null&&!MovimentoRiportato[25].isBlank()&&!MonetaU.isBlank()&&MonetaU.trim().equals(MovimentoRiportato[8].trim()))
-//                                NomeUscita=MovimentoRiportato[25];
-//                            else NomeUscita=MonetaU;
-//                            if (MovimentoRiportato[27]!=null&&!MovimentoRiportato[27].isBlank()&&!MonetaE.isBlank()&&MonetaE.trim().equals(MovimentoRiportato[11].trim()))
-//                                NomeEntrata=MovimentoRiportato[27];
-//                            else NomeEntrata=MonetaE;
-//
-//                            RT[6] = (NomeUscita + " -> " + NomeEntrata).trim();
-//                            RT[8] = MonetaU;
-//                            RT[9] = MonetaUTipo;
-//                            RT[10] = MonetaUQta;
-//                            RT[11] = MonetaE;
-//                            RT[12] = MonetaETipo;
-//                            RT[13] = MonetaEQta;
-//                            RT[14] = MovimentoRiportato[14];
-//                            RT[15] = ValoreTransazione;
-//                            RT[21] = Note;
-//                            RT[22] = "M";
-//                            RT[23] = MovimentoRiportato[23];
-//                            RT[24] = MovimentoRiportato[24];
-//                            RT[25] = MovimentoRiportato[25];
-//                            RT[26] = MonetaUAddress;
-//                            RT[27] = MovimentoRiportato[27];
-//                            RT[28] = MonetaEAddress;
-//                            RT[29] = MovimentoRiportato[29];
-//                            RT[30] = MovimentoRiportato[30];
-//                            RT[31] = MovimentoRiportato[31];
-//                            if (MovimentoValorizzato) {
-//                                RT[32] = "SI";
-//                            }
-//                            RT[40] = Riga40;
-//                            Importazioni.RiempiVuotiArray(RT);
-//                            MappaCryptoWallet.put(RT[0], RT);
-//                            IDNuovo=RT[0];
-//                            return true;
 
                             // ── Garanzia univocità ID ─────────────────────────────────────────────────
                             // Dopo la rimozione del vecchio, l'ID calcolato potrebbe essere ancora occupato
@@ -1841,35 +1723,6 @@ worker.execute();*/
         // ════════════════════════════════════════════════════════════════════════════════════════
         } else {
             // Nessun vecchio movimento da gestire: costruisco il nuovo ex-novo
-
-                            // [VECCHIO] Creazione manuale del movimento - sostituita con MovimentiCrypto.creaMovimento
-//                            String RT[];
-//                            RT = new String[Importazioni.ColonneTabella];
-//                            RT[0] = ID;
-//                            RT[1] = Data;
-//                            RT[2] = "1 di 1";
-//                            RT[3] = Wallet;
-//                            RT[4] = WalletDettaglio;
-//                            RT[5] = TipoTransazione;
-//                            RT[6] = (MonetaU + " -> " + MonetaE).trim();
-//                            RT[8] = MonetaU;
-//                            RT[9] = MonetaUTipo;
-//                            RT[10] = MonetaUQta;
-//                            RT[11] = MonetaE;
-//                            RT[12] = MonetaETipo;
-//                            RT[13] = MonetaEQta;
-//                            RT[15] = ValoreTransazione;
-//                            RT[21] = Note;
-//                            RT[22] = "M";
-//                            RT[26] = MonetaUAddress;
-//                            RT[28] = MonetaEAddress;
-//                            if (MovimentoValorizzato) {
-//                                RT[32] = "SI";
-//                            }
-//                            RT[40] = Riga40;
-//                            Importazioni.RiempiVuotiArray(RT);
-//                            MappaCryptoWallet.put(RT[0], RT);
-//                            IDNuovo=RT[0];
 
                             // ── Costruzione oggetti Moneta per creaMovimento ──────────────────────────────────
                             // Non c'è un vecchio movimento da cui ereditare NomeEsteso: i nuovi movimenti manuali
@@ -2104,41 +1957,7 @@ worker.execute();*/
         return ID;
       // else return IDScritto;
     }
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(GUI_ModificaMovimento.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(GUI_ModificaMovimento.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(GUI_ModificaMovimento.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(GUI_ModificaMovimento.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new GUI_ModificaMovimento().setVisible(true);
-            }
-        });
-    }
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Annulla;

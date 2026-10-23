@@ -21,7 +21,6 @@ import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -49,7 +48,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -57,7 +55,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -296,23 +293,6 @@ public class Funzioni {
         //
         
         
-      /*  //Questa funzione è utile solo per i prezzi, torno ALL come nome Gruppo wallet nel caso in cui non trovo
-        //il gruppo del wallet riferito al nome del wallet
-        if (Wallet==null||Wallet.isBlank()||Wallet.toLowerCase().equals("tutti"))return "TUTTI";
-        String Gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(Wallet,false);
-        if (Gruppo==null){
-            //Se non trovo il gruppo verifico di non averlo già compreso nel nome
-            //in sostanza è stato passato il nome del gruppo invece che il nome del wallet
-            //il nome del gruppo è codì di solito Gruppo : Wallet 01 (Binance group)
-            if (Wallet.toLowerCase().contains("gruppo :")){
-                int start = Wallet.indexOf(':') + 1;
-                int end = Wallet.indexOf('(');
-                Gruppo = Wallet.substring(start, end).trim();
-                return Gruppo;
-            }
-        }else return Gruppo;
-        return "TUTTI";*/
-    
     }    
         
         
@@ -336,39 +316,9 @@ public class Funzioni {
         }
     }
     
-        /**
-         * Incrementa di 1 secondo un timestamp nel formato {@code yyyyMMddHHmmss} (usato come prefisso degli ID movimento).
-         * @param input timestamp da incrementare, formato {@code yyyyMMddHHmmss}
-         * @return il timestamp incrementato nello stesso formato, oppure {@code "nonOK"} se {@code input} non è parsabile
-         */
-        public static String DataIDaggiungiUnSecondo(String input) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-
-        try {
-            LocalDateTime dateTime = LocalDateTime.parse(input, formatter);
-            LocalDateTime incrementata = dateTime.plusSeconds(1);
-            return incrementata.format(formatter);
-        } catch (DateTimeParseException e) {
-            return "nonOK";
-        }
-    }
         
-        /**
-         * Decrementa di 1 secondo un timestamp nel formato {@code yyyyMMddHHmmss} (usato come prefisso degli ID movimento).
-         * @param input timestamp da decrementare, formato {@code yyyyMMddHHmmss}
-         * @return il timestamp decrementato nello stesso formato, oppure {@code "nonOK"} se {@code input} non è parsabile
-         */
-        public static String DataIDtogliUnSecondo(String input) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-
-        try {
-            LocalDateTime dateTime = LocalDateTime.parse(input, formatter);
-            LocalDateTime incrementata = dateTime.minusSeconds(1);
-            return incrementata.format(formatter);
-        } catch (DateTimeParseException e) {
-            return "nonOK";
-        }
-    }
+        
+        
     
         /**
          * Formatta un {@link BigDecimal} secondo le convenzioni italiane (punto come separatore delle migliaia,
@@ -803,25 +753,7 @@ public class Funzioni {
 
         
         
-/**
- * Estrae la sottostringa compresa tra la prima occorrenza di {@code simboloIniziale} e la successiva
- * occorrenza di {@code simboloFinale}.
- * @param parola stringa da cui estrarre
- * @param simboloIniziale simbolo/sottostringa di apertura
- * @param simboloFinale simbolo/sottostringa di chiusura
- * @return la sottostringa (trimmata) tra i due simboli, oppure {@code ""} se uno dei due non è presente o sono in ordine invertito
- */
-public static String getParolaTra2Simboli(String parola, String simboloIniziale, String simboloFinale) {
 
-    int posIni = parola.indexOf(simboloIniziale);
-    int posFin = parola.indexOf(simboloFinale);
-
-    if (posIni == -1 || posFin == -1) return "";       // uno dei due simboli non esiste
-    if (posFin <= posIni) return "";                  // simboli invertiti o malformati
-
-    int start = posIni + simboloIniziale.length();
-    return parola.substring(start, posFin).trim();
-}
         
 
 
@@ -1048,129 +980,7 @@ public static boolean GUIModificaPrezzo(Component c, String ID) {
     }
 }
 
-        /**
-         * Versione legacy di {@link #GUIModificaPrezzo}, basata su {@link JOptionPane} invece che su {@code AppDialog}.
-         * Segue lo stesso flusso: scelta valuta (EURO/DOLLARI), presentazione del prezzo automatico suggerito,
-         * inserimento e validazione del nuovo prezzo, conferma esplicita se il valore finale è {@code "0.00"}.
-         * @param c componente parent dei dialog
-         * @param ID identificativo del movimento da modificare
-         * @return {@code true} se il prezzo viene modificato, {@code false} se l'operazione viene annullata o il valore inserito non è valido
-         */
-        public static boolean ZZZ_GUIModificaPrezzo (Component c,String ID){
-            
-            //PARTE 1 -> Se conosco la data del movimento chiedo se voglio inserire il prezzo in dollari o in Euro
-            //PARTE 2 -> Se specificato moneta e qta chiedo se voglio inserire il prezzo unitario o quello riferito al numero di token
-            //PARTE 3 -> Chiedo di inserire l'importo e poi controllo che questo sia un numero 
-            String trans[]=Principale.MappaCryptoWallet.get(ID);
-            String Prezzo=trans[15];
-            long DataPrezzo=FunzioniDate.ConvertiDatainLongMinuto(trans[1]);
-            
-            
-            
-            //PARTE 1
-            int scelta=0;
-            String MonRiferimento="EURO";
-            String Testo;
-            if (DataPrezzo!=0){
-                Testo = "<html>Indica se vuoi imputare il prezzo in Euro o Dollari.<br><br>"
-                            + "(Se scegli dollari il prezzo verrà poi convertito in Euro seguendo il tasso di cambio della giornata di bancha d'Italia)<br><br>"
-                            + "</html>";
-                    Object[] Bottoni = {"Annulla", "EURO", "DOLLARI"};
-                    scelta = JOptionPane.showOptionDialog(c, Testo,
-                            "Moneta di riferimento",
-                            JOptionPane.YES_NO_CANCEL_OPTION,
-                            JOptionPane.PLAIN_MESSAGE,
-                            null,
-                            Bottoni,
-                            null);
-                    //Adesso genero il movimento a seconda della scelta
-                    //0 o 1 significa che non bisogna fare nulla
-                    if (scelta != 0 && scelta != -1) {
-
-                        switch (scelta) {
-                            case 1 -> {
-                                //EURO                           
-                            }
-                            case 2 -> {
-                                //DOLLARO 
-                                MonRiferimento="DOLLARI";
-                                //Adesso trasformo il prezzo in dollari per presentarlo corretto nelle prossime schermate
-                                if (Prezzo!=null){
-                                    String Giorno=FunzioniDate.ConvertiDatadaLong(DataPrezzo);
-                                    String Val1Dollaro=Prezzi.CambioUSDEUR("1", Giorno);
-                                    Prezzo=new BigDecimal(Prezzo).divide(new BigDecimal (Val1Dollaro), 2, RoundingMode.HALF_UP).toPlainString();
-                                }
-                            }
-                            default -> {
-                            }
-                        }
-                    }
-                    else{
-                        return false;
-                    }
-            }
-            
-                    
-            //PARTE 2    
-            c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-              String PrezzoAuto=Prezzi.DammiPrezzoDaTransazione(trans, 2);
-              if (PrezzoAuto==null)PrezzoAuto="0.00";
-              c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                Testo = "<html>Indicare il prezzo in <b>"+MonRiferimento+"</b> relativo alla transazione del <br><b>"
-                        + trans[1]+"</b> relativo a questa movimentazione : (<b>"+trans[6]+"</b>)<br><br>"+
-                        "Il prezzo recuperato in automatico dal programma è pari a <b>€"+PrezzoAuto+"</b><br>"+
-                        "NB. Il prezzo recuperato in automatico potrebbe non essere uguale a quello del CSV memorizzato sul programma"
-                            + "<br><br>"
-                            + "</html>";
-            
-            
-            String Prezz = JOptionPane.showInputDialog(c, Testo, Prezzo);
-                if (Prezz != null) {
-                    Prezz = Prezz.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
-                    if (Principale.Funzioni_isNumeric(Prezz, false)) {
-                        //Se dollari devo fare la conversione in euro
-                        if (!MonRiferimento.equals("EURO")){
-                            //devo fare la conversione da dollari a euro
-                            String Giorno=FunzioniDate.ConvertiDatadaLong(DataPrezzo);
-                            Prezz=Prezzi.CambioUSDEUR(Prezz, Giorno);                           
-                            //devo fare la conversione in dollari
-                        }
-                        Prezz=new BigDecimal(Prezz).setScale(2, RoundingMode.HALF_UP).toPlainString();
-                        if (Prezz.equals("0.00")) {
-                String Messaggio = "<html>Attenzione, il prezzo del movimento è valorizzato a '0.00'.<br>"
-                        + "Si conferma questo valore? Il movimento verrà considerato come valorizzato a zero</html>";
-                int risposta = JOptionPane.showOptionDialog(c, Messaggio, "Conferma Prezzo", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-                //Si=0
-                //No=1
-                switch (risposta) {
-                    case 0 -> {
-                        trans[15]=Prezz;
-                        trans[32]="SI";
-                        return true;
-                    }
-                    case 1 -> {
-                        JOptionPane.showConfirmDialog(c, "Operazione Annullata",
-                                "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                    }
-                    case -1 -> {
-                        JOptionPane.showConfirmDialog(c, "Operazione Annullata",
-                                "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                    }
-
-                }
-            } else {
-                trans[15]=Prezz;
-                trans[32]="SI";
-                return true;
-            }
-
-                    }else {
-                        JOptionPane.showConfirmDialog(c, "Attenzione, " + Prezz + " non è un numero valido!",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                    }
-                }
-                return false;
-        }
+        
         
         
         
@@ -1364,125 +1174,7 @@ public static String GUIModificaPrezzo(Component c, Moneta MU, Moneta ME, String
     }
 }
         
-                /**
-                 * Versione legacy di {@link #GUIModificaPrezzo(Component, Moneta, Moneta, String, long, String)},
-                 * basata su {@link JOptionPane} invece che su {@code AppDialog}, per lo scambio tra due monete
-                 * (usata ad esempio dal quadro RW). Stesso flusso: scelta valuta, prezzo automatico calcolato da
-                 * {@link Prezzi#DammiPrezzoInfoTransazione}, inserimento e validazione del nuovo prezzo.
-                 * @param c componente parent dei dialog
-                 * @param MU moneta in uscita dello scambio
-                 * @param ME moneta in entrata dello scambio
-                 * @param Prezzo prezzo attuale mostrato come default nel campo di input
-                 * @param DataPrezzo data/ora della transazione in millisecondi epoch
-                 * @param Rete identificativo della blockchain/rete
-                 * @return il nuovo prezzo in euro come stringa, oppure {@code null} se l'operazione viene annullata o il valore inserito non è valido
-                 */
-                public static String ZZZ_GUIModificaPrezzo (Component c,Moneta MU,Moneta ME,String Prezzo,long DataPrezzo,String Rete){
-            
-            //PARTE 1 -> Se conosco la data del movimento chiedo se voglio inserire il prezzo in dollari o in Euro
-            //PARTE 2 -> Se specificato moneta e qta chiedo se voglio inserire il prezzo unitario o quello riferito al numero di token
-            //PARTE 3 -> Chiedo di inserire l'importo e poi controllo che questo sia un numero 
-           // String trans[]=CDC_Grafica.MappaCryptoWallet.get(ID);
-           // String Prezzo=trans[15];
-            //long DataPrezzo=OperazioniSuDate.ConvertiDatainLongMinuto(trans[1]);
-            String DataString=FunzioniDate.ConvertiDatadaLongAlSecondo(DataPrezzo);
-            
-            
-            //PARTE 1
-            int scelta=0;
-            String MonRiferimento="EURO";
-            String Testo;
-            if (DataPrezzo!=0){
-                Testo = "<html>Indica se vuoi imputare il prezzo in Euro o Dollari.<br><br>"
-                            + "(Se scegli dollari il prezzo verrà poi convertito in Euro seguendo il tasso di cambio della giornata di bancha d'Italia)<br><br>"
-                            + "</html>";
-                    Object[] Bottoni = {"Annulla", "EURO", "DOLLARI"};
-                    scelta = JOptionPane.showOptionDialog(c, Testo,
-                            "Moneta di riferimento",
-                            JOptionPane.YES_NO_CANCEL_OPTION,
-                            JOptionPane.PLAIN_MESSAGE,
-                            null,
-                            Bottoni,
-                            null);
-                    //Adesso genero il movimento a seconda della scelta
-                    //0 o 1 significa che non bisogna fare nulla
-                    if (scelta != 0 && scelta != -1) {
-
-                        switch (scelta) {
-                            case 1 -> {
-                                //EURO                           
-                            }
-                            case 2 -> {
-                                //DOLLARO 
-                                MonRiferimento="DOLLARI";
-                                //Adesso trasformo il prezzo in dollari per presentarlo corretto nelle prossime schermate
-                                if (Prezzo!=null){
-                                    String Giorno=FunzioniDate.ConvertiDatadaLong(DataPrezzo);
-                                    String Val1Dollaro=Prezzi.CambioUSDEUR("1", Giorno);
-                                    Prezzo=new BigDecimal(Prezzo).divide(new BigDecimal (Val1Dollaro), 2, RoundingMode.HALF_UP).toPlainString();
-                                }
-                            }
-                            default -> {
-                            }
-                        }
-                    }
-                    else{
-                        return null;
-                    }
-            }
-            
-                  
-            //PARTE 2    
-            c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            Prezzi.InfoPrezzo IPT=Prezzi.DammiPrezzoInfoTransazione(MU, ME, DataPrezzo, Rete, "");
-            if (ME==null) 
-            {
-                ME=new Moneta();
-                ME.Moneta="";
-            }
-            if (MU==null) 
-            {
-                MU=new Moneta();
-                MU.Moneta="";
-            }
-            BigDecimal BGPrezzoTot=new BigDecimal("0.00");
-            if (IPT!=null) BGPrezzoTot=IPT.prezzoQta;
-            String PrezzoAuto=("0.00");
-            if (BGPrezzoTot!=null)PrezzoAuto=BGPrezzoTot.toPlainString();
-              if (PrezzoAuto==null)PrezzoAuto="0.00";
-              c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                Testo = "<html>Indicare il prezzo in <b>"+MonRiferimento+"</b> relativo alla transazione del <br><b>"
-                        + DataString+"</b> contenente movimentazioni delle seguenti crypto : (<b>"+MU.Moneta+" "+ME.Moneta+"</b>)<br><br>"+
-                        "Il prezzo recuperato in automatico dal programma è pari a <b>€"+PrezzoAuto+"</b><br>"+
-                        "NB. Il prezzo recuperato in automatico potrebbe non essere uguale a quello del CSV memorizzato sul programma"
-                            + "<br><br>"
-                            + "</html>";
-            
-            
-        String Prezz = JOptionPane.showInputDialog(c, Testo, Prezzo);
-        if (Prezz != null) {
-            Prezz = Prezz.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
-            if (Principale.Funzioni_isNumeric(Prezz, false)) {
-                //Se dollari devo fare la conversione in euro
-                if (!MonRiferimento.equals("EURO")) {
-                    //devo fare la conversione da dollari a euro
-                    String Giorno = FunzioniDate.ConvertiDatadaLong(DataPrezzo);
-                    Prezz = Prezzi.CambioUSDEUR(Prezz, Giorno);
-                    //devo fare la conversione in dollari
-                }
-                Prezz = new BigDecimal(Prezz).setScale(2, RoundingMode.HALF_UP).toPlainString();
-                //System.out.println("Fine operazione");
-                return Prezz;
-                //return true;
-
-            } else {
-                JOptionPane.showConfirmDialog(c, "Attenzione, " + Prezz + " non è un numero valido!",
-                        "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-            }
-        }
-        
-        return null;
-    }
+                
         
         
         
@@ -1854,147 +1546,7 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
     }
 }    
         
-        /**
-         * Versione legacy di {@link #GUIDammiPrezzo}, basata su {@link JOptionPane} invece che su {@code AppDialog}.
-         * Stesso flusso: scelta valuta (se {@code DataPrezzo != 0}), scelta prezzo unitario/totale (se moneta e
-         * quantità sono note e diverse da 1), inserimento e validazione dell'importo, con restituzione sempre in euro.
-         * @param c componente parent dei dialog
-         * @param NomeMon nome della moneta/token, può essere {@code null}
-         * @param DataPrezzo data del prezzo in millisecondi epoch; se 0 non viene chiesta la valuta di riferimento
-         * @param Qta quantità del token, può essere {@code null}
-         * @param Prezzo prezzo iniziale da proporre nel campo input; se {@code null} viene usato {@code "0"}
-         * @return il prezzo finale in euro come stringa, oppure {@code null} se l'operazione viene annullata
-         */
-        public static String ZZZGUIDammiPrezzo (Component c,String NomeMon,long DataPrezzo,String Qta,String Prezzo){
-            
-            //PARTE 1 -> Se conosco la data del movimento chiedo se voglio inserire il prezzo in dollari o in Euro
-            //PARTE 2 -> Se specificato moneta e qta chiedo se voglio inserire il prezzo unitario o quello riferito al numero di token
-            //PARTE 3 -> Chiedo di inserire l'importo e poi controllo che questo sia un numero 
-            if (Prezzo==null)Prezzo="0";
-           // String PRZ="0";
-            
-            
-            
-            //PARTE 1
-            int scelta=0;
-            String MonRiferimento="EURO";
-            String Testo;
-            if (DataPrezzo!=0){
-                Testo = "<html>Indica se vuoi imputare il prezzo in Euro o Dollari.<br><br>"
-                            + "(Se scegli dollari il prezzo verrà poi convertito in Euro seguendo il tasso di cambio della giornata di bancha d'Italia)<br><br>"
-                            + "</html>";
-                    Object[] Bottoni = {"Annulla", "EURO", "DOLLARI"};
-                    scelta = JOptionPane.showOptionDialog(c, Testo,
-                            "Moneta di riferimento",
-                            JOptionPane.YES_NO_CANCEL_OPTION,
-                            JOptionPane.PLAIN_MESSAGE,
-                            null,
-                            Bottoni,
-                            null);
-                    //Adesso genero il movimento a seconda della scelta
-                    //0 o 1 significa che non bisogna fare nulla
-                    if (scelta != 0 && scelta != -1) {
-
-                        switch (scelta) {
-                            case 1 -> {
-                                //EURO                           
-                            }
-                            case 2 -> {
-                                //DOLLARO 
-                                MonRiferimento="DOLLARI";
-                                //Adesso trasformo il prezzo in dollari per presentarlo corretto nelle prossime schermate
-                              //  if (Prezzo!=null){
-                                    String Giorno=FunzioniDate.ConvertiDatadaLong(DataPrezzo);
-                                    String Val1Dollaro=Prezzi.CambioUSDEUR("1", Giorno);
-                                    Prezzo=new BigDecimal(Prezzo).divide(new BigDecimal (Val1Dollaro), 2, RoundingMode.HALF_UP).toPlainString();
-                              //  }
-                            }
-                            default -> {
-                            }
-                        }
-                    }
-                    else{
-                        return null;
-                    }
-            }
-            
-                    
-            //PARTE 2
-            boolean PrezzoUnitario=false;
-            if (NomeMon!=null&&Qta!=null&&!Qta.equals("1")){
-            Testo = "<html>Per il token "+NomeMon+" vuoi indicare il prezzo unitario o quello riferito al totale dei "+Qta+" pezzi?<br><br>"
-                            + "(Se scegli di indicare il prezzo unitario il prezzo totale verrà poi calcolato dal programma)<br><br>"
-                            + "</html>";
-                    Object[] Bottoni2 = {"Annulla", "TOTALE", "UNITARIO"};
-                    scelta = JOptionPane.showOptionDialog(c, Testo,
-                            "Prezzo unitario o Totale",
-                            JOptionPane.YES_NO_CANCEL_OPTION,
-                            JOptionPane.PLAIN_MESSAGE,
-                            null,
-                            Bottoni2,
-                            null);
-                    //Adesso genero il movimento a seconda della scelta
-                    //0 o 1 significa che non bisogna fare nulla
-                    if (scelta != 0 && scelta != -1) {
-
-                        switch (scelta) {
-                            case 1 -> {
-                                //TOTALE                           
-                            }
-                            case 2 -> {
-                                //UNITARIO
-                                PrezzoUnitario=true;
-                            }
-                            default -> {
-                            }
-                        }
-                    }
-                    else{
-                        return null;
-                    }
-            }
-            
-            //PARTE 3
-            if (NomeMon!=null&&Qta!=null){
-                if (PrezzoUnitario)
-                    Testo = "<html>indicare il prezzo <b>unitario</b> in "+MonRiferimento+" relativo al token "+NomeMon+"<br><br>"
-                            + "(Il prezzo totale verrà poi calcolato dal programma)<br><br>"
-                            + "</html>";
-                else 
-                    Testo = "<html>indicare il prezzo in "+MonRiferimento+" relativo a "+Qta+" "+NomeMon+"<br><br>"
-                            + "<br><br>"
-                            + "</html>";
-            }
-            else   
-                Testo = "<html>indicare il prezzo in "+MonRiferimento+"<br><br>"
-                            + "<br><br>"
-                            + "</html>";
-            
-            
-            String Prezz = JOptionPane.showInputDialog(c, Testo, Prezzo);
-                if (Prezz != null) {
-                    Prezz = Prezz.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
-                    if (Principale.Funzioni_isNumeric(Prezz, false)) {
-                        //Se dollari devo fare la conversione in euro
-                        if (!MonRiferimento.equals("EURO")){
-                            //devo fare la conversione da dollari a euro
-                            String Giorno=FunzioniDate.ConvertiDatadaLong(DataPrezzo);
-                            Prezz=Prezzi.CambioUSDEUR(Prezz, Giorno);
-                            //devo fare la conversione in dollari
-                        }
-                        //Se prezzo unitario poi devo moltiplicarlo per la quantità
-                        if (PrezzoUnitario){
-                            Prezz=new BigDecimal(Prezz).multiply(new BigDecimal(Qta)).setScale(2, RoundingMode.HALF_UP).toPlainString();
-                        }                       
-                        return Prezz;
-                    }else {
-                        JOptionPane.showConfirmDialog(c, "Attenzione, " + Prezz + " non è un numero valido!",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                    }
-                }
-                
-                return null;
-        }
+        
          
         
         /**
@@ -2558,31 +2110,7 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
     }
     
     
-        /**
-         * Ricava il nome della rete DeFi di un movimento dal formato del nome wallet (es. {@code indirizzo (RETE)})
-         * combinato con il prefisso {@code BC.} dell'ID, verificando che l'indirizzo sia valido su quella rete
-         * tramite {@link Funzioni_WalletDeFi#isValidAddress}.
-         * @param ID identificativo del movimento
-         * @param k parametro non utilizzato nel corpo del metodo
-         * @return il nome della rete DeFi individuata, oppure {@code ""} se il movimento non esiste o non è un wallet DeFi riconoscibile
-         */
-        public static String Deprecato_RitornaReteDefi(String ID,int k) {
-        String Transazione[]=MappaCryptoWallet.get(ID);
-        if (Transazione==null)return "";
-        String Wallet=Transazione[3].trim();
-        String appoggio[]=Wallet.split(" ");
-        String Rete="";
-        String ReteAppoggio;
-        // Se soddisfa le seguenti condizioni significa che ho trovato un wallet in defi e posso tornare il nome della Rete DEFI
-        // Quindi restituisco il nome della rete oltre le condizioni principali solo se hop la transaction hash
-        if (appoggio.length==2&&appoggio[1].contains("(")&&appoggio[1].contains(")")&&ID.split("_")[1].startsWith("BC.")){
-            ReteAppoggio=ID.split("_")[1].split("\\.")[1];
-            if (Funzioni_WalletDeFi.isValidAddress(appoggio[0],ReteAppoggio)){
-                Rete=ReteAppoggio;
-            }
-        }
-        return Rete;
-    }
+        
     
     
         //Questa funzione è da lanciare al termine di un importazione dati DeFi e se imposto un token come scam
@@ -2599,129 +2127,7 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
     
     //Da Lanciare a fine importazione wallets e dopo aver identificato un token come scam
 
-    /**
-     *Questa funzione non serve più e la rinomino
-     */
     
-    public static void Deprecato_ConvertiInvioSuStessoWallet(){
-        Map<String,String> Mappa_CommissioniDaCancellare=new TreeMap<>();
-        Map<String,String> Mappa_CommissioniPerHash=new TreeMap<>();
-        Map<String,String> Mappa_MovimentiDaEliminare=new TreeMap<>();
-        Map<String,String[]> Mappa_MovimentiDaCreare=new TreeMap<>();
-        Map<String, String> Mappa_NomiTokenPersonalizzati = DatabaseH2.RinominaToken_LeggiTabella();
-        for (String[] v : MappaCryptoWallet.values()) {
-            
-            
-            
-            //PASSO 1 - RINOMINO I TOKEN CHE DEVONO ESSERE RINOMINATI
-            String Rete = Funzioni.TrovaReteDaIMovimento(v);
-            String AddressU = v[26];
-            String AddressE = v[28];
-            //if (!Funzioni.noData(Rete)) {
-                if (!Funzioni.noData(AddressU)) {
-                    //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
-                    if (Rete==null)Rete="";
-                    String valore = Mappa_NomiTokenPersonalizzati.get(AddressU + "_" + Rete);
-                    if (valore != null) {
-                        v[8] = valore;
-                    }
-                }
-                if (!Funzioni.noData(AddressE)) {
-                    //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
-                    if (Rete==null)Rete="";
-                    String valore = Mappa_NomiTokenPersonalizzati.get(AddressE + "_" + Rete);
-                    if (valore != null) {
-                        v[11] = valore;
-                    }
-
-                }
-                      
-            
-            //PASSO 1A - SALVO UNA MAPPA tutti i movimenti con commissione con qta zero
-            //questi infatti sono movimenti che non servono a nulla e gli eliminerò
-            //QUESTA FUNZIONE NON SERVE PIU', VIENE SISTEMATO TUTTO IN FASE DI IMPORTAZIONE DATI
-            String TipoMovimento=v[0].split("_")[4].trim();
-          /*   if ( (TipoMovimento.equalsIgnoreCase("CM")&&v[10].equalsIgnoreCase("-0"))
-                     ||
-                  (TipoMovimento.equalsIgnoreCase("PC")&&v[10].equalsIgnoreCase("-0"))){
-                 //salvo nella mappa delle commissioni tutti gli id e come indice uso l'hash
-                Mappa_MovimentiDaEliminare.put(v[0],"");
-                
-                //per i movimenti di prelievo mi salvo anchel'hash perchè dovrò andare a cancellare le commissioni
-                if ( TipoMovimento.equalsIgnoreCase("PC")&&v[24]!=null&&!v[24].isBlank()){
-                    //Salvo tutti gli hash delle commissioni che devo cancellare
-                    Mappa_CommissioniDaCancellare.put(v[24], "");  
-                    //System.out.println(v[24]);
-            }
-            }   */
-             
-            //PASSO 1B - Se ho un prelievo dove l'address controparte è uguale al mio wallet
-            //vuol dire che mi sono autoinviato dei fondi, in quel caso il movimento va convertito in scambio
-            if (TipoMovimento.equalsIgnoreCase("PC")&&v[3].split("\\(")[0].trim().equalsIgnoreCase(v[30])){
-                String clone[]=v.clone();
-                String partiID[]=clone[0].split("_");
-                clone[0]=partiID[0]+"_"+partiID[1]+"_"+partiID[2]+"_"+partiID[3]+"_SC";
-                clone[5]="SCAMBIO CRYPTO";
-                clone[6]= clone[8]+" -> "+clone[8];
-                clone[11]=clone[8];
-                clone[12]=clone[9];
-                clone[13]=clone[10].replace("-", "");
-                clone[27]=clone[25];
-                clone[28]=clone[26];
-                //il movimento errato lo metto qua sotto in questa mappa perchè venga elimnato a fine ciclo
-                Mappa_MovimentiDaEliminare.put(v[0],"");
-                Mappa_MovimentiDaCreare.put(clone[0], clone);
-            }
-            
-            
-                
-            //PASSO 2 - SALVO UNA MAPPA HASHCommissione_ID
-            //QUESTA FUNZIONE NON SERVE PIU', VIENE SISTEMATO TUTTO IN FASE DI IMPORTAZIONE DATI
-         /*    if ( TipoMovimento.equalsIgnoreCase("CM")){
-                 //salvo nella mappa delle commissioni tutti gli id e come indice uso l'hash
-                Mappa_CommissioniPerHash.put(v[24],v[0]);
-            }*/
-             
-             
-             
-             
-             
-             //PASSAO 3 - SALVO UNA MAPPA CON LA LISTA DELLE COMMISSIONI DA ELIMINARE per HASH
-             //QUESTA FUNZIONE NON SERVE PIU', VIENE SISTEMATO TUTTO IN FASE DI IMPORTAZIONE DATI
-        /*    if ( TipoMovimento.equalsIgnoreCase("PC")&&Funzioni.isSCAM(v[8])&&v[24]!=null&&!v[24].isBlank()){
-               //Salvo tutti gli hash delle commissioni che devo cancellare
-               Mappa_CommissioniDaCancellare.put(v[24], "");  
-               //System.out.println(v[24]);
-            }*/
-            
-            
-        }
-        
-        //Adesso cancello le commissioni imputate erroneamente  
-        //QUESTA FUNZIONE NON SERVE PIU', VIENE SISTEMATO TUTTO IN FASE DI IMPORTAZIONE DATI
-      /*  for (String hash : Mappa_CommissioniDaCancellare.keySet()) {
-            //String TipoMovimento=v[0].split("_")[4].trim();
-            String ID=Mappa_CommissioniPerHash.get(hash);
-            if ( ID!=null){
-                MappaCryptoWallet.remove(ID);
-            }
-        }*/
-        
-        //Adesso cancello i movimenti da eliminare     
-        for (String ID : Mappa_MovimentiDaEliminare.keySet()) {
-
-                MappaCryptoWallet.remove(ID);
-            
-        }
-        
-        //Adesso creo i movimenti da creare
-        for (String ID : Mappa_MovimentiDaCreare.keySet()) {
-
-                MappaCryptoWallet.put(ID, Mappa_MovimentiDaCreare.get(ID));
-            
-        }
-        
-    }
     
     
     
@@ -3229,69 +2635,7 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
            // return "";
         }
        
-    /**
-     * Versione ottimizzata di {@link #TrovaReteDaIMovimento} che evita lo split via regex, usando ricerche di
-     * indice dirette ({@code indexOf}) sulla parte dell'ID successiva al primo underscore. Stessa logica:
-     * usa la cache nel campo 34 se presente, altrimenti riconosce il formato automatico {@code BC.<rete>....}
-     * (salvando il risultato in cache) o il formato manuale {@code ...(<rete>)} (solo se supportata).
-     * @param mov riga di movimento grezza
-     * @return il codice della rete individuata, oppure {@code null} se non determinabile
-     */
-    public static String TrovaReteDaIMovimentoNEW(String[] mov) {
-
-        // Cache: se già calcolata, ritorna subito
-        String reteCached = mov[34];
-        if (reteCached != null && !reteCached.isBlank()) {
-            return reteCached;
-        }
-
-        String id = mov[0];
-       /* if (id == null) {
-            return null;
-        }*/
-
-        // Split manuale (molto più veloce di split regex)
-        int underscoreIdx = id.indexOf('_');
-       /* if (underscoreIdx < 0 || underscoreIdx == id.length() - 1) {
-            return null;
-        }*/
-
-        //Leggo la parte dopo il primo underscore che è quella che mi interessa per
-        //trovare se è un dato derivante da blockchain quindi inizia per BC o simile
-        String secondaParte = id.substring(underscoreIdx + 1);
-
-        // ---- CASO 1: ID automatici BC ----
-        int dot1 = secondaParte.indexOf('.');
-        if (dot1 > 0) {
-
-            String prefisso = secondaParte.substring(0, dot1);
-            //Controllo se l'ID ha i prefissi corretti e in quel caso ritorno la rete
-            if (PREFISSI_VALIDI_TrovaReteDaIMovimento.contains(prefisso)) {
-
-                int dot2 = secondaParte.indexOf('.', dot1 + 1);
-                if (dot2 > dot1) {
-                    String rete = secondaParte.substring(dot1 + 1, dot2);
-                    //la rete la trovo tra il primo e il secondo punto se il prefisso è corretto
-                    //esempio di ID : 20251129003318_BC.SOL.<indirizzo wallet>.<hash transazione>_1_1_DC
-                    mov[34] = rete; // cache
-                    return rete;
-                }
-            }
-        }
-
-        // ---- CASO 2: movimenti manuali con (RETE) ----
-        int open = secondaParte.indexOf('(');
-        int close = secondaParte.indexOf(')', open + 1);
-
-        if (open >= 0 && close > open) {
-            String rete = secondaParte.substring(open + 1, close).trim();
-            if (MappaRetiSupportate.containsKey(rete)) {
-                return rete;
-            }
-        }
-
-        return null;
-    }
+    
 
         
      
@@ -3504,28 +2848,7 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
         }
     }
 
-    /**
-     * Verifica la validità di una API key CoinMarketCap effettuando una richiesta minimale (mappa delle crypto attive, limite 1).
-     * @param ApiKey API key da validare
-     * @return {@code true} se la risposta ha {@code error_code} pari a {@code "0"}, {@code false} altrimenti (inclusi chiave assente/vuota, errori di rete o parsing)
-     */
-    public static boolean isApiKeyValidaCoinMarketCap(String ApiKey) {
-        if (ApiKey == null || ApiKey.isBlank()) return false;
-        OkHttpClient client = HTTP_CLIENT;
-        Request request = new Request.Builder()
-                .url("https://pro-api.coinmarketcap.com/v1/cryptocurrency/map?listing_status=active&limit=1")
-                .header("X-CMC_PRO_API_KEY", ApiKey)
-                .header("Accept", "application/json")
-                .build();
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) return false;
-            com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(response.body().string()).getAsJsonObject();
-            if (!json.has("status")) return false;
-            return "0".equals(json.getAsJsonObject("status").get("error_code").getAsString());
-        } catch (Exception e) {
-            return false;
-        }
-    }
+    
 
     /**
      * Verifica la validità di una API key coingecko effettuando una richiesta all'endpoint {@code /ping}.

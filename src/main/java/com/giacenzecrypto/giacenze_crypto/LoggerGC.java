@@ -201,14 +201,7 @@ public class LoggerGC {
         logger.info(message);
     }
 
-    /**
-     * Registra un messaggio di errore con la relativa eccezione.
-     * @param message messaggio descrittivo dell'errore
-     * @param t eccezione associata
-     */
-    public static void logError(String message, Throwable t) {
-        logger.log(Level.SEVERE, message, t);
-    }
+    
 
     /**
      * Ricava nome classe e metodo a un dato livello dello stack trace del thread corrente, utile per

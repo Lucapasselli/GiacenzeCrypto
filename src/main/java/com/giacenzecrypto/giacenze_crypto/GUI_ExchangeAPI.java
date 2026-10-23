@@ -459,28 +459,6 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-  /*  public static boolean isValidAddress(String address,String Rete) {
-        if (Rete.equalsIgnoreCase("SOL")){
-           // String BASE58_REGEX = "^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$";
-           // return address != null && address.length() == 44 && Pattern.matches(BASE58_REGEX, address);
-            return isValidSolanaAddress(address);
-        }
-        else{
-            Pattern ETH_ADDRESS_PATTERN = Pattern.compile("^0x[a-fA-F0-9]{40}$");
-            return address != null && ETH_ADDRESS_PATTERN.matcher(address).matches();
-        }
-    }
-    
-    private static boolean isValidSolanaAddress(String address) {
-        try {
-            byte[] decoded = Base58.decode(address);
-            return decoded.length == 32; // Gli indirizzi Solana devono essere di 32 byte decodificati
-        } catch (Exception e) {
-            return false;
-        }
-    }
-    */
-    
     private void Bottone_InserisciChiaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_InserisciChiaveActionPerformed
         // TODO add your handling code here:
         Map<String, String[]> MappaWallets=DatabaseH2.Pers_ExchangeApi_LeggiTabella();
@@ -1003,34 +981,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     }
     
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-   /*     try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(GestioneWallets.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }*/
-        //</editor-fold>
-        
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> {
-            new GUI_GestioneWallets().setVisible(true);
-        });
-    }
+    
 
     
     /**
@@ -1078,22 +1029,6 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
        
     }
     
-    
-  /*  static void ScriviFileWallets() {
-   try { 
-       FileWriter w=new FileWriter("Wallets.db");
-       BufferedWriter b=new BufferedWriter (w);
-       for (String k:MappaWallets.values()){
-           b.write(k+"\n");
-       }
-       b.close();
-       w.close();
-
-    }catch (IOException ex) {
-                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
-               }
-   
-   }*/
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

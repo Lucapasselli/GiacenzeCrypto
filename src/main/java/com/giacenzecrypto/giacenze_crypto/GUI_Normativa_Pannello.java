@@ -1,6 +1,5 @@
 package com.giacenzecrypto.giacenze_crypto;
 
-import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
 import java.awt.Color;
 import java.awt.Component;
@@ -12,7 +11,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.RowFilter;
@@ -44,8 +42,6 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
     /** Testo estratto dei documenti, popolato in background da {@link Principale_Normativa#PrecaricaTesti}. */
     private final ConcurrentHashMap<String, String> TestiCache = new ConcurrentHashMap<>();
 
-    /** {@code true} mentre un thread di indicizzazione è in corso, per non farne partire due insieme. */
-    private volatile boolean Indicizzazione = false;
 
     private TableRowSorter<DefaultTableModel> Sorter;
 
@@ -134,7 +130,6 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
             AggiornaLabelStato();
             return;
         }
-        Indicizzazione = true;
         List<DocumentoNormativa> catalogoCorrente = Catalogo;
         AtomicInteger fatti = new AtomicInteger(0);
         Thread t = new Thread(() -> {
@@ -150,7 +145,6 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
                             AggiornaFiltro();
                         }
                     } else {
-                        Indicizzazione = false;
                         AggiornaFiltro();
                     }
                 });

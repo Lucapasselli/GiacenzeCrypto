@@ -252,10 +252,7 @@ public void AzzeraTestoRicerca(){
 }
 
 
-    /** @return la lista di tutte le checkbox correntemente mostrate nel popup */
-    public List<JCheckBox> getCheckBoxes() {
-    return checkBoxes;
-}
+    
 
     /** @return i testi delle opzioni attualmente selezionate */
     public List<String> getSelectedOptions() {

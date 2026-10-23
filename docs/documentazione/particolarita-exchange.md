@@ -450,12 +450,19 @@ ricompense. Per scaricarlo:
 - **Acquisti pagati con carta, Apple/Google Pay o bonifico**: il denaro non passa dal saldo Coinbase,
   quindi il programma non registra nessuna uscita di euro. L'acquisto viene caricato al costo pieno
   effettivamente sostenuto, come già avviene per l'app di Crypto.com. Chi ha il conto in dollari o
-  sterline deve segnalarlo, perché il riconoscimento si basa sulla nota "using EUR Wallet".
+  sterline deve segnalarlo, perché il riconoscimento si basa sulla nota "using EUR Wallet" (o "using
+  Portafoglio Euro" con la lingua italiana).
+- **Ordini Advanced Trade e vendite** (*Advanced Trade Buy*, *Advanced Trade Sell*, *Sell*): il file
+  riporta solo la cripto comprata o venduta, l'euro o l'USDC dell'altra parte stanno nella nota della
+  riga e il programma li legge da lì. Contro euro diventano acquisti e vendite, contro USDC scambi fra
+  cripto, con la commissione come movimento a parte nella moneta in cui è stata pagata.
 - **Conversioni** (*Convert*): le due gambe, che a volte arrivano a un paio di secondi di distanza,
   vengono riunite in un unico scambio.
 - **Ricompense**: le ricezioni con nota "from Coinbase Earn", "from Coinbase Referral" o di un airdrop
   diventano ricompense. Le altre ricezioni restano trasferimenti.
-- **Staking**: gli spostamenti verso e dallo staking di Coinbase non vengono importati.
+- **Staking**: gli spostamenti verso e dallo staking di Coinbase non producono movimenti, salvo il
+  passaggio di ETH in staking a ETH2, che è uno scambio fra le due monete (poi riconvertite in ETH
+  dalla *Retail Eth2 Deprecation* del gennaio 2025).
 - **Ticker rinominati**: ZETACHAIN diventa ZETA e CGLD diventa CELO, così la stessa moneta non si
   spezza in due.
 - **Trasferimenti verso e da Coinbase Pro**: quelli in euro vengono abbinati da soli a fine importazione

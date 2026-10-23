@@ -840,7 +840,9 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             // Se la causale è in movimentoChiuso => tratto come movimento singolo
             /*if (cfg.causaliChiuse.contains(causaleCSV) ||
                 (tipoMovimento != null && cfg.causaliChiuse.contains(tipoMovimento))) {*/
-            if (cfg.causaliChiuse.contains(tipoMovimento)) {
+            //Una riga con la contropartita nella nota ha le sue due gambe: accumulata qui ne perderebbe una
+            //(l'accumulo legge solo moneta/quantita'), e piu' esecuzioni dello stesso ordine cadono allo stesso secondo.
+            if (cfg.causaliChiuse.contains(tipoMovimento) || cfg.contropartitaDaNota.containsKey(causaleCSV.trim())) {
                 List<String[]> movs = costruisciMovimenti(riga, tipoMovimento, cfg);
                 if (movs != null) {
                     risultato.addAll(movs);
@@ -1113,6 +1115,58 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         BigDecimal qtaLorda = qtaNetta.add(qtaFeeAssoluta);
         m.InserisciValori(nome, qtaLorda.stripTrailingZeros().toPlainString(), "", "");
         m.AssegnaTipoAuto();
+    }
+
+    /** La gamba letta dalla nota: moneta, quantita' scambiata (positiva, senza commissione) e commissione (>= 0). */
+    record ContropartitaNota(String moneta, BigDecimal quantita, BigDecimal commissione) {}
+
+    /**
+     * Nota degli scambi Coinbase: "Bought|Sold Q BASE for Y VALUTA", seguita da " on BASE-VALUTA at P VALUTA/BASE"
+     * negli ordini Advanced Trade e da nient'altro nei 'Sell' semplici. Y e' quanto si e' pagato (acquisto) o
+     * incassato (vendita) della valuta, commissione compresa.
+     */
+    private static final Pattern NOTA_CONTROPARTITA = Pattern.compile(
+            "^(Bought|Sold)\\s+(\\S+)\\s+(\\S+)\\s+for\\s+(\\S+)\\s+(\\S+)(?:\\s+on\\s+\\S+\\s+at\\s+(\\S+)(?:\\s.*)?)?$");
+
+    /**
+     * La contropartita di una riga {@code contropartitaDaNota}, o {@code null} se la nota non la dice in modo
+     * coerente con la riga: verbo e segno della quantita', quantita' e moneta della nota uguali a quelle delle
+     * colonne, monete diverse. Su {@code null} la riga va scartata, mai indovinata.
+     *
+     * <p>Il controvalore lordo e' {@code Q x P}; senza il prezzo (i 'Sell' semplici) e' il controvalore in euro
+     * della riga, e quindi vale solo se la valuta e' EUR. La commissione e' la differenza fra Y e il lordo: in un
+     * acquisto si paga piu' del lordo, in una vendita si incassa meno. La gamba scambiata e' il lordo (Y meno la
+     * commissione, o piu' in una vendita), cosi' gamba piu' movimento COMMISSIONI muovono esattamente Y, e la
+     * commissione resta fuori dal costo e dal corrispettivo come per il 'Buy'. Un Y dalla parte sbagliata del
+     * lordo (mai visto sull'export reale) da' commissione zero e gamba uguale a Y.</p>
+     */
+    static ContropartitaNota contropartitaDaNota(String[] riga, ConfigurazioneImport cfg) {
+        Matcher m = NOTA_CONTROPARTITA.matcher(safe(riga, cfg.colonnaNote));
+        if (!m.matches()) return null;
+        boolean acquisto = m.group(1).equals("Bought");
+        BigDecimal qtaNota = numeroOppureNull(m.group(2));
+        BigDecimal y = numeroOppureNull(m.group(4));
+        BigDecimal qtaRiga = numeroOppureNull(safe(riga, cfg.colonnaQuantita));
+        if (qtaNota == null || y == null || y.signum() <= 0 || qtaRiga == null) return null;
+        if (qtaRiga.signum() != (acquisto ? 1 : -1) || qtaRiga.abs().compareTo(qtaNota) != 0) return null;
+
+        String base = cfg.normalizzaMoneta(m.group(3));
+        String valuta = cfg.normalizzaMoneta(m.group(5));
+        if (!base.equals(cfg.normalizzaMoneta(safe(riga, cfg.colonnaMoneta))) || valuta.equals(base)) return null;
+
+        BigDecimal lordo;
+        if (m.group(6) != null) {
+            BigDecimal prezzo = numeroOppureNull(m.group(6));
+            if (prezzo == null || prezzo.signum() <= 0) return null;
+            lordo = qtaNota.multiply(prezzo);
+        } else {
+            BigDecimal euro = numeroOppureNull(safe(riga, cfg.colonnaValoreEuro));
+            if (!valuta.equals("EUR") || euro == null) return null;
+            lordo = euro.abs();
+        }
+        BigDecimal commissione = (acquisto ? y.subtract(lordo) : lordo.subtract(y)).max(BigDecimal.ZERO);
+        BigDecimal gamba = acquisto ? y.subtract(commissione) : y.add(commissione);
+        return new ContropartitaNota(valuta, gamba, commissione);
     }
 
     /**
@@ -1433,6 +1487,23 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             }
         }
 
+        // Contropartita dalla nota (vedi contropartitaDaNota): la gamba che manca alla riga, al netto della
+        // commissione, che esce piu' sotto come movimento COMMISSIONI nella stessa moneta.
+        ContropartitaNota contropartita = null;
+        if (cfg.contropartitaDaNota.containsKey(causaleCSV.trim())) {
+            contropartita = contropartitaDaNota(riga, cfg);
+            if (contropartita == null) {
+                scarta("NOTA SENZA CONTROPARTITA: " + causaleCSV, Arrays.toString(riga));
+                return null;
+            }
+            boolean acquisto = mIN != null;
+            BigDecimal q = acquisto ? contropartita.quantita().negate() : contropartita.quantita();
+            Moneta m = new Moneta();
+            m.InserisciValori(contropartita.moneta(), q.stripTrailingZeros().toPlainString(), "", "");
+            m.AssegnaTipoAuto();
+            if (acquisto) mOUT = m; else mIN = m;
+        }
+
         // Controvalore "al netto della sola commissione" (Coinbase Buy): il Total del CSV comprende
         // commissione + spread; il costo di carico e' Total - commissione (lo spread resta). Per le
         // causali in causaliControvaloreConCommissione la riga porta la sola gamba crypto in entrata:
@@ -1644,6 +1715,28 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
             String[] rtComm = MovimentiCrypto.creaMovimento(
                     mComm, null, exchange, wallet, dataLong,
                     null, "CSV", 1, 1, null, nota, "A",
+                    idTrans, "COMMISSIONI", exchange
+            );
+            if (rtComm != null) {
+                if (rtComm.length > 7) rtComm[7] = causaleCSV;
+                if (rtComm.length > 39) rtComm[39] = "D";
+                Derivati.Marca(rtComm, tipoDerivatoFee);
+                risultato.add(rtComm);
+            }
+        }
+
+        // Movimento COMMISSIONI della contropartita letta dalla nota, nella sua moneta (EUR o USDC): il
+        // controvalore e' la commissione gia' convertita in euro dall'exchange, quando la config la indica.
+        if (contropartita != null && contropartita.commissione().signum() > 0) {
+            Moneta mComm = new Moneta();
+            mComm.InserisciValori(contropartita.moneta(),
+                    contropartita.commissione().negate().stripTrailingZeros().toPlainString(), "", "");
+            mComm.AssegnaTipoAuto();
+            String prezzoComm = normalizzaNumero(safe(riga, cfg.colonnaCommissioneEuroContropartita));
+
+            String[] rtComm = MovimentiCrypto.creaMovimento(
+                    mComm, null, exchange, wallet, dataLong,
+                    prezzoComm.isBlank() ? null : prezzoComm, "CSV", 1, 1, null, nota, "A",
                     idTrans, "COMMISSIONI", exchange
             );
             if (rtComm != null) {
@@ -2082,6 +2175,18 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
         //senza movimentare euro). Lista vuota = disattivato: ogni Buy sintetizza la gamba FIAT come prima.
         public List<String> noteAcquistoDaSaldo = new ArrayList<>();
 
+        //--- Contropartita scritta solo nel testo della nota (chiave contropartitaDaNota) ------------
+        //Coinbase 'Advanced Trade Buy/Sell' e 'Sell': la riga porta la sola gamba crypto, l'altra moneta
+        //(EUR o USDC) e il suo importo stanno solo nella nota ("Bought 0.5 FORTH for 3.015 EUR on
+        //FORTH-EUR at 6 EUR/FORTH", "Sold 50 USDC for 46.5 EUR"). Causale CSV -> tipo interno: il tipo
+        //vive qui e non in mappaCausali, cosi' le versioni che non leggono la chiave continuano a scartare
+        //quelle righe come causali sconosciute invece di importarle a gamba singola (vedi
+        //ImportazioneGenerica.contropartitaDaNota). La riga e' sempre trattata come movimento chiuso.
+        public Map<String, String> contropartitaDaNota = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        //Colonna con la commissione gia' convertita in euro: diventa il controvalore del movimento COMMISSIONI
+        //(per le coppie in USDC la commissione e' in USDC). -1 = prezzo cercato come per ogni commissione.
+        public int colonnaCommissioneEuroContropartita = -1;
+
         //--- Classificazione in base al testo libero della colonna note ------------------------------
         //Alcuni export mettono la natura del movimento solo nelle note: Coinbase scrive un premio
         //"Coinbase Earn" come 'Receive' con nota "Received X TOK from Coinbase Earn", indistinguibile
@@ -2124,7 +2229,8 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                         "nomeExchange", "nomeWallet", "fornitore", "estrazione", "descrizione", "fontePrezzoPreferita",
                         "separatore", "encoding", "righeIntestazione", "rigaIntestazione", "autoDetectColonne",
                         "mappaAutoDetect", "formatoData", "oraSeSoloData", "fuso", "fusoDaIntestazione", "fusoPerPeriodo",
-                        "colonne", "colonneCalcolate", "colonneControvalore", "regoleRiga", "coppia", "campiExtra",
+                        "colonne", "colonneCalcolate", "colonneControvalore", "contropartitaDaNota", "regoleRiga",
+                        "coppia", "campiExtra",
                         "mappaCausali", "separatoreCausale", "causaliUppercase", "causaliChiuse", "causaliEntrata",
                         "causaliUscita", "causaliScambiaGambe", "causaliDifferite", "causaliAPI", "causaliAnnullamento",
                         "causaliAllertaDerivati", "causaliDerivati", "causaliConsolidaPerGiorno", "causalePerNota",
@@ -2139,6 +2245,7 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                         "wallet", "note")),
                 Map.entry("colonneControvalore", Set.of(
                         "totale", "commissione", "valuta", "causali", "causaliConMovimentoCommissione", "noteAcquistoDaSaldo")),
+                Map.entry("contropartitaDaNota", Set.of("causali", "commissioneEuro")),
                 Map.entry("coppia", Set.of("colonna", "separatore", "base", "quote", "importoQuote")),
                 Map.entry("coppia.importoQuote", Set.of("colonna", "quantita", "prezzo")),
                 Map.entry("girocontoFiat", Set.of("controparte", "causali", "causaliControparte", "secondiTolleranza")),
@@ -2231,6 +2338,8 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
          */
         public String tipoMovimentoPerRiga(String[] riga) {
             String causaleCSV = getCausaleCSV(riga);
+            String tipoContropartita = causaleCSV == null ? null : contropartitaDaNota.get(causaleCSV.trim());
+            if (tipoContropartita != null) return tipoContropartita;
             if (!causalePerNota.isEmpty() && colonnaNote >= 0) {
                 String nota = safe(riga, colonnaNote).toLowerCase();
                 if (!nota.isEmpty()) {
@@ -2722,6 +2831,15 @@ public static String leggiNomeExchangeDaJson(String percorsoJson) {
                     JSONArray a = cv.getJSONArray("noteAcquistoDaSaldo");
                     for (int i = 0; i < a.length(); i++) cfg.noteAcquistoDaSaldo.add(a.getString(i));
                 }
+            }
+
+            if (root.has("contropartitaDaNota")) {
+                JSONObject cn = root.getJSONObject("contropartitaDaNota");
+                if (cn.has("causali")) {
+                    JSONObject c = cn.getJSONObject("causali");
+                    for (String k : c.keySet()) cfg.contropartitaDaNota.put(k.trim(), c.getString(k));
+                }
+                if (cn.has("commissioneEuro")) cfg.colonnaCommissioneEuroContropartita = cn.getInt("commissioneEuro");
             }
 
             if (root.has("mappaCausali")) {

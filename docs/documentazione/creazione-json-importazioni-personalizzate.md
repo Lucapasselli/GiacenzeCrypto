@@ -521,7 +521,7 @@ Per ignorare righe senza contarle come scarti, mappa su "IGNORA" (vale anche "NO
 | `COMMISSIONI` | Commissione pagata come movimento a sé. |
 | `IGNORA` | Riga da saltare senza segnalarla come scartata. |
 
-Una causale non presente in `mappaCausali` (e non coperta da `causalePerNota`) fa scartare la riga, che
+Una causale non presente in `mappaCausali` (e non coperta da `causalePerNota` o da `contropartitaDaNota`) fa scartare la riga, che
 compare fra i movimenti sconosciuti del resoconto con il testo `CAUSALE SCONOSCIUTA`. Per altri esempi apri
 le configurazioni ufficiali nella cartella `config/import/`.
 
@@ -796,6 +796,44 @@ solo il controvalore, senza movimento commissione aggiuntivo.
   "causali": ["Buy", "Convert"],
   "causaliConMovimentoCommissione": ["Buy"],
   "noteAcquistoDaSaldo": ["EUR Wallet"]
+}
+```
+
+### `contropartitaDaNota` {#contropartitadanota}
+
+**Tipo:** oggetto | **Default:** assente | **Disponibile dalla versione 1.0.66**
+
+Per le righe che portano **una sola moneta** mentre l'altra moneta dello scambio e il suo importo stanno
+solo nel testo della colonna `note`. È il caso degli ordini *Advanced Trade* e delle vendite semplici di
+Coinbase, con note come `Bought 0.5 FORTH for 3.015 EUR on FORTH-EUR at 6 EUR/FORTH` oppure
+`Sold 50 USDC for 46.5 EUR`. Il programma legge dalla nota la seconda moneta (EUR, USDC...) e
+l'importo, separa la commissione e la emette come **movimento `COMMISSIONI`** nella stessa moneta,
+come per gli acquisti di `colonneControvalore`. La commissione è la differenza fra l'importo della nota
+e quantità × prezzo (il numero dopo `at`), o fra l'importo della nota e la colonna `valoreEuro` quando
+la nota non ha il prezzo, cosa possibile solo se la seconda moneta è l'euro.
+
+| Campo | Descrizione |
+|---|---|
+| `causali` | Oggetto causale CSV → tipo di movimento, come in `mappaCausali`. Le causali elencate qui **non** vanno messe anche in `mappaCausali`. Il tipo è solo un'etichetta: acquisto, vendita o scambio crypto-crypto li decidono le due monete. |
+| `commissioneEuro` | Indice colonna con la commissione già convertita in euro: diventa il valore del movimento commissione. Facoltativo. |
+
+La nota deve tornare con la riga: verbo (`Bought` con quantità positiva, `Sold` con quantità negativa),
+quantità e moneta uguali a quelle delle colonne. Una nota che non torna, o che non ha questa forma, fa
+scartare la riga con il motivo `NOTA SENZA CONTROPARTITA`: il programma non prova a indovinare.
+
+Le righe di queste causali sono sempre trattate come movimenti a sé, anche quando più righe cadono nello
+stesso secondo (un ordine eseguito in più parti). Le versioni del programma precedenti alla 1.0.66
+ignorano la chiave e scartano queste righe come causali sconosciute, che è il motivo per cui il tipo sta
+qui e non in `mappaCausali`.
+
+```json
+"contropartitaDaNota": {
+  "causali": {
+    "Advanced Trade Buy":  "ACQUISTO CRYPTO",
+    "Advanced Trade Sell": "VENDITA CRYPTO",
+    "Sell":                "VENDITA CRYPTO"
+  },
+  "commissioneEuro": 9
 }
 ```
 

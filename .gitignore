@@ -43,3 +43,5 @@ buildNumber.properties
 # desktop (CcxtInterop.java/Prezzi.java), oltre che da ServizioPrezzi/.
 /Sito/
 /ServizioPrezzi/
+# Istruzioni per Claude Code: citano cartelle e documenti volutamente fuori dal repository (nocommit/, test/)
+/CLAUDE.md

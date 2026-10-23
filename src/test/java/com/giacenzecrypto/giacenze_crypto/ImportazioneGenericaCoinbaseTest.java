@@ -379,4 +379,163 @@ class ImportazioneGenericaCoinbaseTest {
         assertEquals("100", pol[13]);
         assertTrue(pol[0].endsWith("_SC"), "scambio crypto-crypto, era: " + pol[0]);
     }
+
+    // ---- contropartita letta dalla nota: Advanced Trade Buy/Sell e Sell (v1.009) -------------------
+
+    @Test
+    void configReale_contropartitaDaNotaFuoriDaMappaCausali() throws Exception {
+        var c = ConfigurazioneImport.carica("config/import/Coinbase CSV.json");
+        assertEquals("ACQUISTO CRYPTO", c.contropartitaDaNota.get("Advanced Trade Buy"));
+        assertEquals("VENDITA CRYPTO", c.contropartitaDaNota.get("Advanced Trade Sell"));
+        assertEquals("VENDITA CRYPTO", c.contropartitaDaNota.get("Sell"));
+        assertEquals(9, c.colonnaCommissioneEuroContropartita);
+        //Nella mappaCausali una versione che non legge la chiave importerebbe la sola gamba crypto
+        assertNull(c.mappaCausali.get("Advanced Trade Buy"));
+        assertNull(c.mappaCausali.get("Advanced Trade Sell"));
+        assertNull(c.mappaCausali.get("Sell"));
+        assertTrue(c.chiaviSconosciute.isEmpty(), "chiavi non lette: " + c.chiaviSconosciute);
+    }
+
+    @Test
+    void advancedTradeBuyInEuro_acquistoAlLordoPiuCommissioneInEuro() throws Exception {
+        String note = "Bought 0.00025 BTC for 9.054 EUR on BTC-EUR at 36000 EUR/BTC";
+        List<String[]> movs = importaConConfigReale(List.<String[]>of(
+                riga("000000000000000000000201", "2022-03-14 10:20:30 UTC", "Advanced Trade Buy", "BTC", "0.00025",
+                        "EUR", "€36000.00", "€9.00000", "€9.05400", "€0.054", note)));
+
+        assertEquals(2, movs.size(), "acquisto + COMMISSIONI");
+        String[] acq = movs.get(0);
+        assertTrue(acq[0].endsWith("_AC"), "acquisto crypto, era: " + acq[0]);
+        assertEquals("EUR", acq[8]);
+        assertEquals(0, new BigDecimal("-9").compareTo(new BigDecimal(acq[10])), "lordo = 0,00025 x 36000");
+        assertEquals("BTC", acq[11]);
+        assertEquals("0.00025", acq[13]);
+        assertEquals("9.00", acq[15], "controvalore dal Subtotal");
+        assertEquals("Advanced Trade Buy", acq[7]);
+
+        String[] comm = movs.get(1);
+        assertTrue(comm[5].toUpperCase().contains("COMMISSION"));
+        assertEquals("EUR", comm[8]);
+        assertEquals(0, new BigDecimal("-0.054").compareTo(new BigDecimal(comm[10])), "Y - lordo");
+        assertEquals(CommissioniCollegate.Chiave(acq), CommissioniCollegate.Chiave(comm));
+    }
+
+    @Test
+    void advancedTradeSellInUsdc_scambioCryptoCryptoConCommissioneInUsdc() throws Exception {
+        String note = "Sold 2.5 FORTH for 12.922 USDC on FORTH-USDC at 5.2 USDC/FORTH";
+        List<String[]> movs = importaConConfigReale(List.<String[]>of(
+                riga("000000000000000000000202", "2024-04-10 07:05:00 UTC", "Advanced Trade Sell", "FORTH", "-2.5",
+                        "EUR", "€4.80", "-€12.00000", "-€11.92800", "€0.072", note)));
+
+        assertEquals(2, movs.size(), "scambio + COMMISSIONI");
+        String[] sc = movs.get(0);
+        assertTrue(sc[0].endsWith("_SC"), "contro USDC e' uno scambio crypto-crypto, era: " + sc[0]);
+        assertEquals("FORTH", sc[8]);
+        assertEquals("-2.5", sc[10]);
+        assertEquals("USDC", sc[11], "la moneta viene dalla nota, non dalla colonna 5 (sempre EUR)");
+        assertEquals(0, new BigDecimal("13").compareTo(new BigDecimal(sc[13])), "lordo = 2,5 x 5,2");
+        assertEquals("12.00", sc[15]);
+
+        String[] comm = movs.get(1);
+        assertEquals("USDC", comm[8], "la commissione e' pagata nella valuta della coppia");
+        assertEquals(0, new BigDecimal("-0.078").compareTo(new BigDecimal(comm[10])), "lordo - Y");
+        assertEquals("0.07", comm[15], "controvalore dalla commissione in euro della colonna 9");
+    }
+
+    @Test
+    void advancedTradeTreEsecuzioniStessoSecondo_treAcquistiETreCommissioni() throws Exception {
+        //Esecuzioni dello stesso ordine allo stesso secondo: raggruppate dal timestamp, ognuna deve tenere la sua
+        //contropartita (l'accumulo dei gruppi leggerebbe la sola gamba crypto).
+        List<String[]> movs = importaConConfigReale(List.<String[]>of(
+                riga("000000000000000000000203", "2023-05-11 09:15:42 UTC", "Advanced Trade Buy", "DOT",
+                        "0.0012", "EUR", "€4.50", "€0.00540", "€0.00546", "€0.0000648",
+                        "Bought 0.0012 DOT for 0.0054648 EUR on DOT-EUR at 4.5 EUR/DOT"),
+                riga("000000000000000000000204", "2023-05-11 09:15:42 UTC", "Advanced Trade Buy", "DOT",
+                        "0.8", "EUR", "€4.50", "€3.60000", "€3.64320", "€0.0432",
+                        "Bought 0.8 DOT for 3.6432 EUR on DOT-EUR at 4.5 EUR/DOT"),
+                riga("000000000000000000000205", "2023-05-11 09:15:42 UTC", "Advanced Trade Buy", "DOT",
+                        "0.003", "EUR", "€4.50", "€0.01350", "€0.01366", "€0.000162",
+                        "Bought 0.003 DOT for 0.013662 EUR on DOT-EUR at 4.5 EUR/DOT")));
+
+        assertEquals(6, movs.size(), "tre acquisti e tre commissioni");
+        BigDecimal dot = BigDecimal.ZERO, eur = BigDecimal.ZERO;
+        for (String[] m : movs) {
+            if ("DOT".equals(m[11])) dot = dot.add(new BigDecimal(m[13]));
+            if ("EUR".equals(m[8])) eur = eur.add(new BigDecimal(m[10]));
+        }
+        assertEquals(0, new BigDecimal("0.8042").compareTo(dot));
+        assertEquals(0, new BigDecimal("-3.6623268").compareTo(eur), "euro usciti = somma degli importi delle note");
+    }
+
+    @Test
+    void sellSemplice_senzaPrezzo_lordoDalSubtotal() throws Exception {
+        List<String[]> movs = importaConConfigReale(List.<String[]>of(
+                riga("000000000000000000000206", "2024-10-21 16:40:00 UTC", "Sell", "EOS", "-0.0525",
+                        "EUR", "€0.40", "€0.02", "€0.01", "€0.01", "Sold 0.0525 EOS for 0.01 EUR"),
+                riga("000000000000000000000207", "2024-11-25 11:30:00 UTC", "Sell", "USDC", "-50",
+                        "EUR", "€0.93", "€46.50", "€46.50", "€0.00", "Sold 50 USDC for 46.5 EUR")));
+
+        assertEquals(3, movs.size(), "vendita EOS + sua commissione, vendita USDC senza commissione");
+        String[] eos = movs.get(0);
+        assertTrue(eos[0].endsWith("_VC"), "vendita crypto, era: " + eos[0]);
+        assertEquals("EOS", eos[8]);
+        assertEquals("EUR", eos[11]);
+        assertEquals(0, new BigDecimal("0.02").compareTo(new BigDecimal(eos[13])), "lordo = |Subtotal|");
+        assertEquals(0, new BigDecimal("-0.01").compareTo(new BigDecimal(movs.get(1)[10])));
+        String[] usdc = movs.get(2);
+        assertEquals("USDC", usdc[8]);
+        assertEquals(0, new BigDecimal("46.5").compareTo(new BigDecimal(usdc[13])));
+    }
+
+    @Test
+    void notaIncoerente_rigaScartataNonIndovinata() throws Exception {
+        List<String[]> movs = importaConConfigReale(List.<String[]>of(
+                //quantita' della nota diversa da quella della colonna
+                riga("000000000000000000000208", "2022-03-01 12:00:00 UTC", "Advanced Trade Buy", "FORTH", "0.5",
+                        "EUR", "€6.00", "€3.00000", "€3.01500", "€0.015",
+                        "Bought 0.4 FORTH for 3.015 EUR on FORTH-EUR at 6 EUR/FORTH"),
+                //verbo opposto al segno
+                riga("000000000000000000000209", "2022-03-02 12:00:00 UTC", "Advanced Trade Sell", "FORTH", "-1.5",
+                        "EUR", "€6.60", "-€9.90000", "-€9.85050", "€0.0495",
+                        "Bought 1.5 FORTH for 9.8505 EUR on FORTH-EUR at 6.6 EUR/FORTH"),
+                //'Sell' senza prezzo contro una valuta diversa dall'euro: il Subtotal non e' nella sua moneta
+                riga("000000000000000000000210", "2024-11-09 10:00:00 UTC", "Sell", "XLM", "-10",
+                        "EUR", "€0.40", "€4.00", "€4.00", "€0.00", "Sold 10 XLM for 4.3 USDC")));
+        assertTrue(movs.isEmpty(), "nessun movimento a gamba singola: " + movs.size());
+    }
+
+    @Test
+    void stakingTransfer_stessaMonetaNessunMovimento_ethInEth2Scambio() throws Exception {
+        List<String[]> movs = importaConConfigReale(List.<String[]>of(
+                riga("000000000000000000000211", "2023-06-14 12:00:00 UTC", "Retail Staking Transfer", "ATOM",
+                        "-3.5", "EUR", "€9.00", "-€31.50000", "-€31.50000", "€0.00", ""),
+                riga("000000000000000000000212", "2023-06-14 12:00:00 UTC", "Retail Staking Transfer", "ATOM",
+                        "3.5", "EUR", "€9.00", "€31.50000", "€31.50000", "€0.00", ""),
+                riga("000000000000000000000213", "2024-05-20 15:30:00 UTC", "Retail Staking Transfer", "ETH",
+                        "-0.25", "EUR", "€2000.00", "-€500.00000", "-€500.00000", "€0.00", ""),
+                riga("000000000000000000000214", "2024-05-20 15:30:00 UTC", "Retail Staking Transfer", "ETH2",
+                        "0.25", "EUR", "€2000.00", "€500.00000", "€500.00000", "€0.00", ""),
+                riga("000000000000000000000215", "2025-09-02 08:00:00 UTC", "Retail Unstaking Transfer", "XTZ",
+                        "-15", "EUR", "€0.80", "-€12.00000", "-€12.00000", "€0.00", ""),
+                riga("000000000000000000000216", "2025-09-02 08:00:00 UTC", "Retail Unstaking Transfer", "XTZ",
+                        "15", "EUR", "€0.80", "€12.00000", "€12.00000", "€0.00", "")));
+
+        assertEquals(1, movs.size(), "le coppie della stessa moneta si annullano, resta ETH -> ETH2");
+        String[] m = movs.get(0);
+        assertEquals("ETH", m[8]);
+        assertEquals("-0.25", m[10]);
+        assertEquals("ETH2", m[11]);
+        assertEquals("0.25", m[13]);
+        assertTrue(m[0].endsWith("_SC"), "scambio crypto-crypto, era: " + m[0]);
+    }
+
+    @Test
+    void buyUsingPortafoglioEuro_pagatoDalSaldo() throws Exception {
+        List<String[]> movs = importaConConfigReale(List.<String[]>of(
+                riga("000000000000000000000217", "2021-11-15 10:00:00 UTC", "Buy", "BTC", "0.0002",
+                        "EUR", "€45000.00", "€9.00", "€10.00", "€1.00",
+                        "Bought 0.0002 BTC for 10 EUR using Portafoglio Euro")));
+        assertEquals(2, movs.size(), "scambio EUR -> BTC + COMMISSIONI, non un deposito BTC a se'");
+        assertEquals("EUR", movs.get(0)[8]);
+    }
 }

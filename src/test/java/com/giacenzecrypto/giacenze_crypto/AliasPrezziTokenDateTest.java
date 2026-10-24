@@ -76,6 +76,18 @@ class AliasPrezziTokenDateTest {
     }
 
     @Test
+    void maticEdEth2HannoUnaDataNelPassato() {
+        //Eccezione voluta alla regola dal = 01/01 dell'anno di aggiunta: dopo quelle date nessuna fonte li quota
+        assertEquals("MATIC", AliasPrezziToken.StessoPrezzo("MATIC", FunzioniDate.ConvertiDatainLongMinuto("2024-09-03 23:59")),
+                "prima della migrazione MATIC si prezza come MATIC");
+        assertEquals("POL", AliasPrezziToken.StessoPrezzo("MATIC", FunzioniDate.ConvertiDatainLongMinuto("2024-09-04 00:01")));
+        assertEquals("POL", AliasPrezziToken.StessoPrezzo("MATIC", FunzioniDate.ConvertiDatainLongMinuto("2025-01-01 00:00")),
+                "il valore di fine 2024 del quadro RW");
+        assertEquals("ETH", AliasPrezziToken.StessoPrezzo("ETH2", FunzioniDate.ConvertiDatainLongMinuto("2025-01-01 00:00")));
+        assertEquals("ETH2", AliasPrezziToken.StessoPrezzo("ETH2", FunzioniDate.ConvertiDatainLongMinuto("2020-11-30 23:59")));
+    }
+
+    @Test
     void ogniVoceNuovaHaUnaData() throws Exception {
         //Una voce nuova senza `dal` cambierebbe i valori di anni gia' dichiarati: e' esattamente l'errore da evitare
         JSONObject json = new JSONObject(Files.readString(Path.of("config/varie/" + AliasPrezziToken.NOME + ".json")));

@@ -132,6 +132,10 @@ public class GUI_StoricoMovimento extends javax.swing.JDialog {
                 "Traslazione dell'orario";
             case Principale_Movimenti_SeparaUnisci.OP_UNIONE ->
                 "Unione con altri movimenti (riga di partenza)";
+            case Principale_TipologiaReward.OP_REWARD_IN_DEPOSITO ->
+                "Provento riportato a deposito da classificare";
+            case Principale_TipologiaReward.OP_TIPOLOGIA_REWARD ->
+                "Cambio della tipologia di provento";
             case MovimentiStorico.OP_IN_PLACE ->
                 "Modifica dei dati (ID invariato)";
             case MovimentiStorico.OP_SOVRASCRITTURA ->

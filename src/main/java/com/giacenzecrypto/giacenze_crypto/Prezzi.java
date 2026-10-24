@@ -626,8 +626,6 @@ public class Prezzi {
 
 
         //2 - INTERROGO I DATI MEMORIZZATI NEL DATABASE INTERNO
-        //Con la data: una voce stessoPrezzo aggiunta dopo un anno gia' dichiarato non vale per quell'anno
-        Crypto = AliasPrezziToken.StessoPrezzo(Crypto, Datalong);
         long Anno2017 = Long.parseLong("1483225200000");
 
         long adesso = System.currentTimeMillis();
@@ -639,8 +637,18 @@ public class Prezzi {
         }
         String DataOra = FunzioniDate.ConvertiDatadaLongallOra(Datalong);
         
-        //Come prima cosa cerco nei nuovi personalizzati        
-        risultato=DammiPrezzoDaDatabasePersonale(Crypto,Datalong,Fonte,Rete,Address,60,qta);        
+        //Come prima cosa cerco nei nuovi personalizzati, col simbolo del movimento e solo dopo con quello di
+        //stessoPrezzo: il prezzo inserito a mano si salva col simbolo grezzo (MATIC, ETH2), e sostituirlo prima
+        //della lettura lo nascondeva in silenzio. E' il difetto gia' corretto per gli alias per address
+        //(PrezzoPersonalizzatoTokenConAlias). Il secondo tentativo tiene valido un personalizzato messo sulla
+        //moneta di prezzo (uno su ETH vale anche per WETH), come accadeva prima.
+        String SimboloMovimento = Crypto;
+        //Con la data: una voce stessoPrezzo aggiunta dopo un anno gia' dichiarato non vale per quell'anno
+        Crypto = AliasPrezziToken.StessoPrezzo(Crypto, Datalong);
+        boolean ConAlias = !Crypto.equalsIgnoreCase(SimboloMovimento);
+        risultato=DammiPrezzoDaDatabasePersonale(SimboloMovimento,Datalong,Fonte,Rete,Address,60,qta);
+        if (risultato!=null && ConAlias) risultato.Moneta=Crypto.toUpperCase();
+        if (risultato==null && ConAlias) risultato=DammiPrezzoDaDatabasePersonale(Crypto,Datalong,Fonte,Rete,Address,60,qta);
         if (risultato!=null){
            //System.out.println("RisultatoDBPersonalizzati:"+risultato);
             return risultato;
@@ -652,10 +660,14 @@ public class Prezzi {
         //Vedo se ho i prezzi all'ora (ormai tenuti solo per valorizzare anche il pregresso allo stesso modo)
         if (includiVecchi){
         risultato=new InfoPrezzo();
-        String PrezzoUnitario = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
+        //Anche il personalizzato vecchio (fino a novembre 2025, mai migrato) e' salvato col simbolo del movimento:
+        //va letto prima dell'alias, come quello nuovo qui sopra. Il resto dell'archivio orario resta col simbolo di prezzo.
+        String ChiaveOld = DataOra + " " + Crypto;
+        if (ConAlias && DatabaseH2.XXXEUR_LeggiPers(DataOra + " " + SimboloMovimento) != null) ChiaveOld = DataOra + " " + SimboloMovimento;
+        String PrezzoUnitario = DatabaseH2.XXXEUR_Leggi(ChiaveOld);
         if (PrezzoUnitario != null){
             risultato.Fonte="DB Interno (Old)";
-            if (DatabaseH2.XXXEUR_LeggiPers(DataOra + " " + Crypto)!=null)risultato.Fonte="Personalizzato (Old)";
+            if (DatabaseH2.XXXEUR_LeggiPers(ChiaveOld)!=null)risultato.Fonte="Personalizzato (Old)";
             risultato.timestamp=FunzioniDate.ConvertiDatainLongMinuto(DataOra+":00");
             risultato.prezzoUnitario=new BigDecimal(PrezzoUnitario);
             risultato.Qta=new BigDecimal(Qta);

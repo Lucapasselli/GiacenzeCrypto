@@ -6,6 +6,7 @@
     "riferimento: true = il token di riferimento per quella moneta su quella rete (il canonico, oppure il bridged dove un canonico non c'e'). Solo queste voci alimentano il controllo anti-impersonazione dei depositi/prelievi.",
     "stessoPrezzo: simbolo -> simbolo per le monete senza address valido (es. WETH da exchange quotato come ETH).",
     "dal: data (aaaa-mm-gg) da cui la voce vale; prima di quella data il token si prezza come se la voce non ci fosse. Serve a non cambiare i valori di anni gia' dichiarati: una voce aggiunta nell'anno N nasce con dal = N-01-01. Le voci senza dal valgono sempre. L'opzione 'anche per gli anni passati' fa ignorare tutte le date. In stessoPrezzo una voce con data si scrive {\"prezzoDa\": ..., \"dal\": ...}.",
+    "Eccezione voluta: MATIC (dal 2024-09-04, migrazione a POL) e ETH2 (dal 2020-12-01, nascita della Beacon Chain) hanno dal nel passato perche' dopo quelle date nessuna fonte li quota piu' per simbolo: la voce riempie solo prezzi che mancavano, e un prezzo personalizzato salvato col simbolo del movimento viene letto prima dell'alias.",
     "ATTENZIONE: questo file cambia i prezzi (anche quelli di fine anno del quadro RW) senza un cambio di versione: ogni modifica e' una modifica fiscale."
   ],
   "alias": [
@@ -1277,6 +1278,14 @@
     "RWUSD": {
       "prezzoDa": "USDC",
       "dal": "2026-01-01"
+    },
+    "MATIC": {
+      "prezzoDa": "POL",
+      "dal": "2024-09-04"
+    },
+    "ETH2": {
+      "prezzoDa": "ETH",
+      "dal": "2020-12-01"
     }
   }
 }

@@ -516,7 +516,7 @@ public class Funzioni {
                    PopUp_abilitaMenuDaTesto(pop,"Classifica Movimento"); 
                 }else PopUp_disabilitaMenuDatesto(pop,"Classifica Movimento");
                 
-                if(ID.split("_")[4].equals("RW")||Principale.MappaCryptoWallet.get(ID)[18].contains("DAI -"))
+                if(Principale_TipologiaReward.isReward(Principale.MappaCryptoWallet.get(ID)))
                     PopUp_abilitaMenuDaTesto(pop,"Cambia Tipologia Reward");
                 else PopUp_disabilitaMenuDatesto(pop,"Cambia Tipologia Reward");
 

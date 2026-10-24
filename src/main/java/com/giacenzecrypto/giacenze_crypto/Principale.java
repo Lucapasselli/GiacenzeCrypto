@@ -15425,58 +15425,52 @@ if (result != null && !result.isAction("cancel")) {
 
     private void MenuItem_ModificaRewardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaRewardActionPerformed
         // TODO add your handling code here:
-        AppDialog.DialogResult result = AppDialog.builder(this)
+        AppDialog.Builder Dialogo = AppDialog.builder(this)
                 .windowTitle("Classificazione del movimento")
                 .bodyTitle("Classificare il deposito")
                 .showTitleInBody(true)
                 .theme()
                 .type(AppDialog.DialogType.INFO)
-                .details("Decidere il tipo di provento a cui appartiene il movimento di deposito.")
+                .details("Decidere il tipo di provento a cui appartiene il movimento di deposito, oppure riportarlo a "
+                        + "deposito da classificare se non è un provento (per esempio la moneta ricevuta in uno scambio "
+                        + "differito che l'exchange registra come airdrop).")
                 .action(AppDialog.DialogAction.builder("cancel", "Annulla")
                         .role(AppDialog.ActionRole.SECONDARY)
                         .build())
-                .action(AppDialog.DialogAction.builder("reward", "REWARD")
+                .action(AppDialog.DialogAction.builder("deposito", "DEPOSITO DA CLASSIFICARE")
                         .role(AppDialog.ActionRole.NEUTRAL)
-                        .build())
-                .action(AppDialog.DialogAction.builder("staking-reward", "STAKING REWARD")
-                        .role(AppDialog.ActionRole.NEUTRAL)
-                        .build())
-                .action(AppDialog.DialogAction.builder("earn", "EARN")
-                        .role(AppDialog.ActionRole.NEUTRAL)
-                        .build())
-                .action(AppDialog.DialogAction.builder("cashback", "CASHBACK")
-                        .role(AppDialog.ActionRole.NEUTRAL)
-                        .build())
-                .action(AppDialog.DialogAction.builder("airdrop", "AIRDROP")
-                        .role(AppDialog.ActionRole.NEUTRAL)
-                        .build())
-                .showDialog();
+                        .build());
+        for (String Tipologia : Principale_TipologiaReward.TIPOLOGIE) {
+            Dialogo.action(AppDialog.DialogAction.builder(Tipologia, Tipologia)
+                    .role(AppDialog.ActionRole.NEUTRAL)
+                    .build());
+        }
+        AppDialog.DialogResult result = Dialogo.showDialog();
 
         if (result == null || result.getActionId() == null || result.getActionId().equals("cancel")) {
             return;
         }
 
-        switch (result.getActionId()) {
-            case "reward" ->
-                MappaCryptoWallet.get(PopUp_IDTrans)[5] = "REWARD";
-            case "staking-reward" ->
-                MappaCryptoWallet.get(PopUp_IDTrans)[5] = "STAKING REWARD";
-            case "earn" ->
-                MappaCryptoWallet.get(PopUp_IDTrans)[5] = "EARN";
-            case "cashback" ->
-                MappaCryptoWallet.get(PopUp_IDTrans)[5] = "CASHBACK";
-            case "airdrop" ->
-                MappaCryptoWallet.get(PopUp_IDTrans)[5] = "AIRDROP";
-            default -> {
-                return;
-            }
-        }
-
-        Funzioni_AggiornaTutto();
-
-        if (PopUp_Tabella.getName() != null
-                && PopUp_Tabella.getName().equalsIgnoreCase("DepositiPrelievi")) {
+        //Tutta la selezione, come "Classifica Movimento": la logica sta in Principale_TipologiaReward, che salta
+        //(e restituisce col motivo) i movimenti a cui la scelta non si applica
+        List<String> IDs = PopUp_IDTransSelezionati.isEmpty() ? List.of(PopUp_IDTrans) : PopUp_IDTransSelezionati;
+        boolean Deposito = result.getActionId().equals("deposito");
+        Map<String, String> Scartati = Deposito
+                ? Principale_TipologiaReward.ConvertiInDepositi(IDs)
+                : Principale_TipologiaReward.CambiaTipologia(IDs, result.getActionId());
+        //Prima il ricalcolo, poi l'avviso: la chiusura di un dialogo ridà il fuoco alla finestra principale
+        if (Scartati.size() < IDs.size()) {
+            Funzioni_AggiornaTutto();
             DepositiPrelievi_Caricatabella();
+        }
+        if (!Scartati.isEmpty()) {
+            StringBuilder Dettaglio = new StringBuilder();
+            for (Map.Entry<String, String> e : Scartati.entrySet()) {
+                Dettaglio.append(e.getKey()).append(": ").append(e.getValue()).append("\n");
+            }
+            Messaggi.WarningMessage(Deposito ? "Deposito da classificare" : "Tipologia del provento",
+                    Scartati.size() == IDs.size() ? "Nessun movimento è stato modificato." : "Alcuni movimenti non sono stati modificati.",
+                    Dettaglio.toString().trim(), this);
         }
     }//GEN-LAST:event_MenuItem_ModificaRewardActionPerformed
 

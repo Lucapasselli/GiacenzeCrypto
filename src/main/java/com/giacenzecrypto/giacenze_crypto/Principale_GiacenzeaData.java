@@ -1170,8 +1170,10 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
             BigDecimal Prezzo = PrezzoUnitarioDaCache(Moneta, AddressUsato, ReteUsata, ts, Q == null ? BigDecimal.ONE : Q, 5, true);
             if (Prezzo == null && AddressUsato.isBlank()) {
                 //L'archivio orario dei prezzi storici, che copre i movimenti anteriori alle cache al minuto
-                String Orario = DatabaseH2.XXXEUR_Leggi(FunzioniDate.ConvertiDatadaLongallOra(ts) + " "
-                        + AliasPrezziToken.StessoPrezzo(Moneta, ts));
+                //Il personalizzato vecchio col simbolo del movimento prima dell'alias, come in Prezzi.CambioXXXEUR
+                String Ora = FunzioniDate.ConvertiDatadaLongallOra(ts) + " ";
+                String Orario = DatabaseH2.XXXEUR_LeggiPers(Ora + Moneta);
+                if (Orario == null) Orario = DatabaseH2.XXXEUR_Leggi(Ora + AliasPrezziToken.StessoPrezzo(Moneta, ts));
                 if (Orario != null && Funzioni.isNumeric(Orario, false)) {
                     Prezzo = new BigDecimal(Orario);
                 }
@@ -2047,7 +2049,13 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
         String simbolo = Address.isBlank()
                 ? AliasPrezziToken.StessoPrezzo(Moneta, ts)
                 : "";//con un address valido il simbolo non va passato, come fa CambioAddressEUR
-        Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoDaDatabasePersonale(simbolo, ts, "", Rete, Address, 60, qta);
+        //Il personalizzato prima col simbolo del movimento, poi con quello di stessoPrezzo: stesso ordine di
+        //Prezzi.CambioXXXEUR, il prezzo messo a mano si salva col simbolo grezzo (MATIC, ETH2)
+        Prezzi.InfoPrezzo IP = null;
+        if (Address.isBlank() && !simbolo.equalsIgnoreCase(Moneta)) {
+            IP = Prezzi.DammiPrezzoDaDatabasePersonale(Moneta, ts, "", Rete, Address, 60, qta);
+        }
+        if (IP == null) IP = Prezzi.DammiPrezzoDaDatabasePersonale(simbolo, ts, "", Rete, Address, 60, qta);
         if (IP == null && (!UsaCopertura || CacheCopreIstante(ts, MinutiEsatti))) {
             IP = Prezzi.DammiPrezzoDaDatabase(simbolo, ts, "", Rete, Address, MinutiEsatti, qta);
         }

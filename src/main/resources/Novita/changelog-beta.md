@@ -5,6 +5,18 @@ programma all'avvio di una beta, ed è la descrizione della beta su GitHub. L'el
 in preparazione è nella sezione "in lavorazione" di docs/documentazione/changelog.md, dove ogni voce di questo file
 compare con lo stesso titolo. Questo file non è una pagina del sito.
 
+## Versione 1.0.65.13
+
+**Nuove implementazioni**
+
+- **Una ricompensa riportata a deposito da classificare**: *Cambia Tipologia Reward* ha la scelta *Deposito da classificare*, per una moneta che l'exchange registra come ricompensa ma non lo è, per esempio il BTTC ricevuto su Binance nella ridenominazione di BTT del gennaio 2022. Il movimento diventa un deposito da classificare con lo stesso valore, e si può abbinare come scambio differito al prelievo della vecchia moneta.
+
+**Correzione di bug**
+
+- **Cambia Tipologia Reward su più movimenti**: con più movimenti selezionati la tipologia veniva assegnata solo al primo. Ora vale per tutte le ricompense selezionate, e il rimborso di una ricompensa non perde più "RIMBORSO" nella descrizione.
+
+- **Prezzi di MATIC ed ETH2**: dopo la migrazione a POL nessun exchange quota più MATIC, ed ETH2 di Coinbase non ha mai avuto quotazioni in euro o dollari, quindi il loro valore al 31/12 (per esempio a fine 2024) restava senza prezzo. Ora MATIC prende il prezzo di POL dal 4 settembre 2024 ed ETH2 quello di ETH. Un prezzo inserito a mano resta valido e ha la precedenza.
+
 ## Versione 1.0.65.12
 
 **Nuove implementazioni**

@@ -88,6 +88,12 @@ distribuzioni, le spese con la carta Binance e i pagamenti Binance Pay. Alcune c
 - **La carta Binance**: una spesa in euro diventa un prelievo fiat, una spesa pagata in cripto un
   prelievo da classificare, il cashback una ricompensa.
 - **Binance Pay**: pagamenti e invii diventano depositi e prelievi da classificare.
+- **Ridenominazioni e migrazioni di token** (MC in BEAMX, MATIC in POL) hanno l'uscita e l'entrata a
+  ore di distanza: diventano un prelievo e un deposito da abbinare come scambio differito. Nella
+  ridenominazione di BTT in BTTC del gennaio 2022 Binance registra il BTTC ricevuto come airdrop, e il
+  programma lo importa come ricompensa: dal menu del movimento *Cambia Tipologia Reward – Deposito da
+  classificare* lo riporta a deposito, poi il prelievo di BTT si classifica come scambio differito con
+  quel deposito.
 - **Dual Investment e Auto-Invest** compaiono nel file solo in parte, senza i dati che servono ad
   abbinarne i movimenti: per questi servono i file di dettaglio descritti più sotto.
 - **I bonus di Simple Earn negli export dal 2026** sono scritti due volte, sul conto Spot e sul conto

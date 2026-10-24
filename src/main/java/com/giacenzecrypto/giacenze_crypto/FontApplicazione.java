@@ -4,6 +4,8 @@ import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.io.InputStream;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Font dell'interfaccia, incluso nel jar e registrato all'avvio.
@@ -109,5 +111,33 @@ public final class FontApplicazione {
     /** Il font dell'interfaccia nello stile e nel corpo richiesti. */
     public static Font Font(int stile, int corpo) {
         return new Font(FAMIGLIA, stile, corpo);
+    }
+
+    private static final Map<String, Font> CON_RIPIEGO = new ConcurrentHashMap<>();
+
+    /**
+     * Il font con cui disegnare {@code testo}: {@code f} stesso, oppure lo stesso font con il ripiego sui font di sistema
+     * quando il testo ha caratteri che {@code f} non disegna (i simboli dei token truffa scritti in lisu, cherokee,
+     * sillabico canadese...). Il ripiego è il font composito di Swing ({@code StyleContext.getFont}): Noto Sans per i
+     * caratteri che ha, gli altri dai font di sistema, quindi metriche e aspetto del resto non cambiano.
+     * <p>
+     * <b>Non con le emoji fuori dal piano di base</b>: dove il sistema le ha solo a colori (Noto Color Emoji su Linux)
+     * Java non le disegna e il composito le lascerebbe vuote, peggio del quadratino di Noto Sans. Un testo con una
+     * di quelle resta col font di partenza. Dove il sistema non ha i caratteri resta il quadratino di prima.
+     */
+    public static Font PerTesto(Font f, String testo) {
+        if (f == null || testo == null || testo.isEmpty() || f.canDisplayUpTo(testo) == -1) return f;
+        boolean serve = false;
+        for (int i = 0; i < testo.length(); ) {
+            int c = testo.codePointAt(i);
+            i += Character.charCount(c);
+            if (c >= 0x1F000 && c <= 0x1FAFF) return f;
+            if (!f.canDisplay(c) && Character.getType(c) != Character.FORMAT && !Character.isWhitespace(c)) serve = true;
+        }
+        if (!serve) return f;
+        String famiglia = f.getFamily(Locale.ROOT);
+        return CON_RIPIEGO.computeIfAbsent(famiglia + "|" + f.getStyle() + "|" + f.getSize2D(),
+                k -> javax.swing.text.StyleContext.getDefaultStyleContext().getFont(famiglia, f.getStyle(), f.getSize())
+                        .deriveFont(f.getSize2D()));
     }
 }

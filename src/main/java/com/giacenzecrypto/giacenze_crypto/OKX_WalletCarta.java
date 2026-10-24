@@ -212,6 +212,14 @@ final class OKX_WalletCarta {
      * la scansione per stati del wallet della carta ({@link Trans_XLayer}) fa decine di richieste di fila.
      */
     static Rpc RpcXLayer() {
+        return RpcNodo(RPC_XLAYER);
+    }
+
+    /**
+     * Come {@link #RpcXLayer()}, per un nodo JSON-RPC qualsiasi (lo usa anche {@link Trans_EtherFi} sui nodi di
+     * Optimism). La distanza minima fra due richieste vale per tutto il programma, qualunque sia il nodo.
+     */
+    static Rpc RpcNodo(String url) {
         OkHttpClient client = new OkHttpClient.Builder()
                 .connectTimeout(20, TimeUnit.SECONDS).readTimeout(60, TimeUnit.SECONDS).build();
         MediaType json = MediaType.parse("application/json");
@@ -224,7 +232,7 @@ final class OKX_WalletCarta {
             Exception ultimo = null;
             for (int tentativo = 0; tentativo < TENTATIVI_LIMITE; tentativo++) {
                 Attendi();
-                Request r = new Request.Builder().url(RPC_XLAYER).post(RequestBody.create(richiesta.toString(), json)).build();
+                Request r = new Request.Builder().url(url).post(RequestBody.create(richiesta.toString(), json)).build();
                 try (Response risposta = client.newCall(r).execute()) {
                     String corpo = risposta.body() != null ? risposta.body().string() : "";
                     if (risposta.code() == 429 || (risposta.isSuccessful() && corpo.contains("rate limit"))) {
@@ -238,7 +246,7 @@ final class OKX_WalletCarta {
                     return j.get("result");
                 }
             }
-            throw ultimo != null ? ultimo : new Exception("Nodo di X Layer: troppi tentativi");
+            throw ultimo != null ? ultimo : new Exception("Nodo " + url + ": troppi tentativi");
         };
     }
 

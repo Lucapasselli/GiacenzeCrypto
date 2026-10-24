@@ -31,6 +31,16 @@ public class TransazioneDefi {
   public String MonetaCommissioni;
   public String QtaCommissioni;
   public String TimeStamp;
+  /**
+   * Per {@link TokenTruffa}: la lettura EVM generica ({@link Importazioni#DeFi_RitornaTransazioni}) ha la lista delle
+   * transazioni del wallet, quindi sa se questa l'ha firmata il wallet ({@link #FirmataDalWallet}). Gli importatori con
+   * una strada propria (ether.fi, Solana, TRX...) lasciano {@code false} e le regole non si applicano.
+   */
+  public boolean FirmaVerificabile;
+  /** La transazione compare nella lista del wallet con {@code from} uguale al wallet. */
+  public boolean FirmataDalWallet;
+  /** La lettura copre tutta la storia del wallet (non i nodi pubblici, che leggono da adesso in poi). */
+  public boolean StoriaCompleta;
   private final Map<String, ValoriToken> MappaToken;
   private final Map<String, ValoriToken> MappaTokenUscita;
   private final Map<String, ValoriToken> MappaTokenEntrata;

@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Window;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -31,15 +32,29 @@ public class GUI_NovitaVersione extends JDialog {
      * @param Proprietario finestra su cui centrarsi, eventualmente {@code null}
      */
     public static void Mostra(Window Proprietario) {
+        Mostra(Proprietario, VarStatiche.Versione, true);
+    }
+
+    /**
+     * Apre la finestra sulle novità uscite dopo {@code UltimaVista} ({@link NovitaVersione#SezioniDaMostrare}): le beta
+     * dal file delle beta, le versioni rilasciate dal changelog. Per una beta c'è anche il pulsante con tutte le novità
+     * della versione in preparazione.
+     * @param ApriPaginaSeVuota senza note da mostrare apre la pagina online (dal pulsante, non all'avvio)
+     */
+    private static void Mostra(Window Proprietario, String UltimaVista, boolean ApriPaginaSeVuota) {
         String VersioneProgramma = VarStatiche.Versione;
-        NovitaVersione.Sezione s = NovitaVersione.SezionePer(VersioneProgramma,
-                NovitaVersione.Sezioni(NovitaVersione.Leggi()));
-        if (s == null) {
-            DocumentiAiuto.Apri(DocumentiAiuto.NOVITA_VERSIONI);
+        List<NovitaVersione.Sezione> Principali = NovitaVersione.Sezioni(NovitaVersione.Leggi());
+        List<NovitaVersione.Sezione> Sezioni = NovitaVersione.SezioniDaMostrare(VersioneProgramma, UltimaVista,
+                Principali, NovitaVersione.Sezioni(NovitaVersione.LeggiBeta()));
+        if (Sezioni.isEmpty()) {
+            if (ApriPaginaSeVuota) DocumentiAiuto.Apri(DocumentiAiuto.NOVITA_VERSIONI);
             return;
         }
-        GUI_NovitaVersione d = new GUI_NovitaVersione(Proprietario, NovitaVersione.Titolo(VersioneProgramma, s),
-                NovitaVersione.Html(s.Markdown()));
+        //Il pulsante serve solo se la finestra mostra le note della beta e non già quelle in preparazione
+        NovitaVersione.Sezione InPreparazione = NovitaVersione.isVersioneDiProva(VersioneProgramma) && !Principali.isEmpty()
+                && !Sezioni.contains(Principali.get(0)) ? Principali.get(0) : null;
+        GUI_NovitaVersione d = new GUI_NovitaVersione(Proprietario, NovitaVersione.Titolo(VersioneProgramma, Sezioni),
+                NovitaVersione.Html(Sezioni), InPreparazione);
         d.setLocationRelativeTo(Proprietario);
         d.setVisible(true);
     }
@@ -57,13 +72,10 @@ public class GUI_NovitaVersione extends JDialog {
         if (!NovitaVersione.isVersioneValida(VersioneProgramma) || VersioneProgramma.equals(UltimaVista)) return;
         //Si scrive prima di mostrare: se la finestra fallisse, non si riproporrebbe a ogni avvio
         DatabaseH2.Pers_Opzioni_Scrivi(NovitaVersione.OPZIONE_ULTIMA_VERSIONE, VersioneProgramma);
-        if (Mostrare && NovitaVersione.SezionePer(VersioneProgramma,
-                NovitaVersione.Sezioni(NovitaVersione.Leggi())) != null) {
-            Mostra(Proprietario);
-        }
+        if (Mostrare) Mostra(Proprietario, UltimaVista, false);
     }
 
-    private GUI_NovitaVersione(Window Proprietario, String Titolo, String Html) {
+    private GUI_NovitaVersione(Window Proprietario, String Titolo, String Html, NovitaVersione.Sezione InPreparazione) {
         super(Proprietario, "Novità della versione", ModalityType.APPLICATION_MODAL);
         //Lo stesso corpo della finestra Informazioni: quello dell'interfaccia
         int Corpo = GUI_Informazioni.Corpo();
@@ -105,6 +117,19 @@ public class GUI_NovitaVersione extends JDialog {
         pulsanti.setLayout(new BoxLayout(pulsanti, BoxLayout.X_AXIS));
         pulsanti.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
         pulsanti.add(tutte);
+        if (InPreparazione != null) {
+            JButton preparazione = new JButton("Tutte le novità della " + InPreparazione.Versione());
+            preparazione.setToolTipText("Le novità raccolte finora per la versione " + InPreparazione.Versione()
+                    + ", di cui questa è una versione di prova");
+            preparazione.addActionListener(e -> {
+                GUI_NovitaVersione p = new GUI_NovitaVersione(this, "Novità della versione " + InPreparazione.Versione()
+                        + " (in preparazione)", NovitaVersione.Html(InPreparazione.Markdown()), null);
+                p.setLocationRelativeTo(this);
+                p.setVisible(true);
+            });
+            pulsanti.add(Box.createHorizontalStrut(8));
+            pulsanti.add(preparazione);
+        }
         pulsanti.add(Box.createHorizontalGlue());
         pulsanti.add(chiudi);
 

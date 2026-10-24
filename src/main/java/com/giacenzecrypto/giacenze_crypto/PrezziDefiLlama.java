@@ -41,7 +41,7 @@ import okhttp3.Response;
  *   <li>un prezzo vale se l'affidabilita' ({@code confidence}) di DefiLlama supera
  *       {@link #SOGLIA_AFFIDABILITA}, altrimenti solo se il token e' nell'elenco CoinGecko
  *       ({@code GESTITICOINGECKO}), cioe' come fino a oggi, quando l'affidabilita' non era guardata. Su
- *       Algorand la soglia e' inclusa ({@link #SOGLIA_INCLUSA}, 2026-10-23);</li>
+ *       Algorand (2026-10-23) e Optimism (2026-10-24) la soglia e' inclusa ({@link #SOGLIA_INCLUSA});</li>
  *   <li>la quotazione deve stare entro {@link #FINESTRA_MS} da un istante chiesto, misurata sul
  *       timestamp che DefiLlama restituisce, che e' anche quello salvato in cache
  *       ({@link Prezzi#isPrezzoPreciso} misura la distanza dall'ora della quotazione). Il parametro
@@ -65,9 +65,10 @@ public class PrezziDefiLlama {
     /**
      * Reti in cui la soglia e' <b>inclusa</b> (decisione dell'utente del 2026-10-23). Su Algorand l'elenco CoinGecko
      * conosce l'id di 37 token in tutto, e DefiLlama da' 0,9 esatto anche a token veri e scambiati come TINY e TALGO:
-     * con la soglia esclusa restavano senza prezzo quasi tutti i token della rete.
+     * con la soglia esclusa restavano senza prezzo quasi tutti i token della rete. Optimism dal 2026-10-24 (decisione
+     * dell'utente): liquidRWA dei conti ether.fi Cash ({@link Trans_EtherFi}) ha 0,9 esatto e non e' su CoinGecko.
      */
-    static final Set<String> SOGLIA_INCLUSA = Set.of(Trans_Algorand.RETE);
+    static final Set<String> SOGLIA_INCLUSA = Set.of(Trans_Algorand.RETE, Trans_EtherFi.RETE);
 
     /** Distanza massima fra la quotazione e l'istante chiesto: la stessa della lettura in cache. */
     static final long FINESTRA_MS = 3600000L;

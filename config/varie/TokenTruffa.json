@@ -1,0 +1,18 @@
+{
+  "descrizione": "Token truffa marcati SCAM all'importazione dei wallet EVM (TokenTruffa.java). Si marca solo cio' che e' certo: transazione non firmata dal wallet, nessun prezzo di mercato, quantita' diversa da zero, e una di tre prove. R0: esce dal wallet un token che li' non e' mai entrato (solo con la storia completa del wallet). R1: il simbolo, tolti i caratteri invisibili e sostituite le lettere che si somigliano (tabella Unicode dei confondibili piu' 'confondibiliAggiuntivi'), diventa uno dei 'tickerImitati', e contiene lettere di un altro alfabeto o caratteri invisibili. R2: simbolo o nome contengono uno dei 'marcatoriLink'. Non si marca mai un token gia' rinominato dall'utente, nell'elenco CoinGecko, con un alias di prezzo, E-Money, gia' prezzato in archivio o fra i 'simboliLegittimi'.",
+  "tickerImitati": [
+    "ETH", "WETH", "BTC", "WBTC", "CBBTC", "USDC", "USDC.E", "USDBC", "USDT", "USDT0", "DAI", "USDS", "USDE", "SUSDE",
+    "FDUSD", "PYUSD", "USD0", "EURC", "EURE", "ARB", "OP", "BNB", "WBNB", "POL", "MATIC", "SOL", "AVAX", "WAVAX",
+    "LINK", "UNI", "AAVE", "CRO", "WCRO", "TRX", "XRP", "TON", "STETH", "WSTETH", "CBETH", "WEETH", "EETH", "ETHFI",
+    "PEPE", "SHIB", "DOGE"
+  ],
+  "simboliLegittimi": [
+    "USD₮", "USD₮0", "XAU₮", "EUR₮", "CNH₮", "MXN₮"
+  ],
+  "confondibiliAggiuntivi": {
+    "Ꮳ": "C"
+  },
+  "marcatoriLink": [
+    "http://", "https://", "www.", "t.me/", "t.ly/", "bit.ly/"
+  ]
+}

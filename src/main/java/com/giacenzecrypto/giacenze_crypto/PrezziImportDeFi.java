@@ -201,6 +201,20 @@ public class PrezziImportDeFi {
         return r;
     }
 
+    /** Importazione ether.fi Cash ({@link Trans_EtherFi}): i token per indirizzo, gli NFT no. */
+    static Raccolta RaccogliEtherFi(List<Trans_EtherFi.Transazione> transazioni) {
+        Raccolta r = new Raccolta();
+        for (Trans_EtherFi.Transazione t : transazioni) {
+            long istante = IstanteImport(t.timestamp() * 1000);
+            for (Trans_EtherFi.Movimento m : t.movimenti()) {
+                if (m.nft()) continue;
+                if (m.uscita() != null) Token(r, m.uscita().indirizzo(), Trans_EtherFi.RETE, istante);
+                if (m.entrata() != null) Token(r, m.entrata().indirizzo(), Trans_EtherFi.RETE, istante);
+            }
+        }
+        return r;
+    }
+
     /** Scarica a gruppi tutto cio' che la raccolta ha trovato. */
     static void PreScarica(Raccolta r, String origine, Download progress) {
         PrezziDefiLlama.PreScaricaCoppie(r.address(), origine, progress);

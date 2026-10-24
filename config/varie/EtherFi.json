@@ -1,0 +1,24 @@
+{
+  "descrizione": "Conti ether.fi Cash su Optimism (Trans_EtherFi): nodi da cui leggere i log e contratti del protocollo. Il saldo di un conto non sta nel wallet (EtherFiSafe) ma nel LendGateway come collaterale, e le operazioni le manda un relayer di ether.fi: i movimenti si ricostruiscono dagli eventi che hanno il Safe come argomento indicizzato. I nodi si provano in ordine; Tenderly risponde a eth_getLogs su tutta la catena (oltre 20.000 risultati con un errore esplicito, mai con toBlock 'latest', che tronca in silenzio), gli altri a tratti di 10.000 blocchi. Un modulo nuovo di ether.fi si aggiunge qui, senza una nuova versione del programma.",
+  "rete": "OP",
+  "nodi": [
+    "https://optimism.gateway.tenderly.co",
+    "https://mainnet.optimism.io",
+    "https://optimism.drpc.org"
+  ],
+  "bloccoInizio": 149345599,
+  "dataProvider": "0xdc515cb479a64552c5a11a57109c314e40a1a778",
+  "lendGateway": "0x01f8cdfb1694ea8fe4ed6c38a0fd78d1188e03f4",
+  "bloccoLendGateway": 155083900,
+  "spoke": "0xdffcc3536d932eb51df51a7f5fa407c4270d5308",
+  "topUpDest": "0x3a6a724595184dda4be69db1ce726f2ac3d66b87",
+  "cashEventEmitter": "0x380b2e96799405be6e3d965f4044099891881acb",
+  "moduliScambio": {
+    "0x1052fdce6cbe3d2ad265050e1426d41e23fc54dc": "Midas",
+    "0x48651bf1ed1ee15c7493a79188e3326602b321c4": "EtherFi Liquid",
+    "0xac6bca0bb66d4587171cfc77b19e5e68f74de55e": "Swap"
+  },
+  "simboli": {
+    "0x01bff41798a0bcf287b996046ca68b395dbc1071": "USDT0"
+  }
+}

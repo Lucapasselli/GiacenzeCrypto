@@ -58,7 +58,60 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         this.setIconImage(icon.getImage());
         initComponents();
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(TabellaWallets);
+        AggiungiVoceEtherFi();
         MostraLoghiRete();
+    }
+
+    /**
+     * Aggiunge "ether.fi Cash (OP)" all'elenco delle reti, subito dopo Optimism (in fondo se Optimism non c'è). Il wallet si
+     * salva comunque su OP: la voce serve a chi non sa che un conto ether.fi sta su Optimism, e fa verificare l'indirizzo
+     * prima di inserirlo ({@link #InserisciEtherFi}).
+     */
+    private void AggiungiVoceEtherFi() {
+        Reti.Rete op = Reti.Get(Trans_EtherFi.RETE);
+        int dopo = ComboBox_Rete.getItemCount();
+        for (int i = 0; op != null && i < ComboBox_Rete.getItemCount(); i++) {
+            if (op.etichetta().equals(ComboBox_Rete.getItemAt(i))) dopo = i + 1;
+        }
+        ComboBox_Rete.insertItemAt(Trans_EtherFi.ETICHETTA_WALLET, dopo);
+    }
+
+    /**
+     * Inserisce un conto ether.fi Cash scelto dall'elenco: prima verifica, fuori dal thread grafico, che l'indirizzo sia
+     * davvero un Safe ether.fi. Se non lo è non si inserisce nulla. Se i nodi non rispondono si inserisce su Optimism e
+     * il riconoscimento si rifà al primo "Aggiorna". Un wallet OP già in elenco viene solo riconosciuto.
+     */
+    private void InserisciEtherFi(String Wallet, boolean giaPresente) {
+        Bottone_InserisciWallet.setEnabled(false);
+        setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+        Thread verifica = new Thread(() -> {
+            Trans_EtherFi.Strada strada = Trans_EtherFi.Strada(Wallet);
+            SwingUtilities.invokeLater(() -> {
+                setCursor(java.awt.Cursor.getDefaultCursor());
+                Bottone_InserisciWallet.setEnabled(true);
+                if (strada == Trans_EtherFi.Strada.GENERICA) {
+                    Messaggi.WarningMessage("Non è un conto ether.fi Cash", "L'indirizzo " + Wallet
+                            + " non risulta un conto ether.fi Cash su Optimism.<br>Controllare di aver copiato l'indirizzo"
+                            + " del conto ether.fi, quello su cui si ricevono le ricariche.", this);
+                    return;
+                }
+                if (!giaPresente) {
+                    DatabaseH2.Pers_Wallets_Scrivi(Wallet, Trans_EtherFi.RETE);
+                    System.out.println("Scrivo il Wallet nel Database : " + Wallet + "_" + Trans_EtherFi.RETE + " (ether.fi Cash)");
+                }
+                PopolaTabella();
+                if (strada == Trans_EtherFi.Strada.NON_VERIFICABILE) {
+                    Messaggi.WarningMessage("ether.fi Cash", "Non è stato possibile verificare ora che l'indirizzo sia un conto"
+                            + " ether.fi Cash (nodi di Optimism non raggiungibili).<br>Il wallet è stato inserito su Optimism"
+                            + " e verrà riconosciuto al primo \"Aggiorna\".", this);
+                } else {
+                    Messaggi.InfoMessage("ether.fi Cash", Trans_EtherFi.TestoRiconosciuto(Wallet)
+                            .replace("\n\n", "<br><br>").replace("\n", " "), this);
+                }
+            });
+        }, "Riconoscimento ether.fi");
+        verifica.setDaemon(true);
+        verifica.start();
     }
 
     /**
@@ -323,6 +376,10 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                 //non è un indirizzo di wallet valido (su Algorand, XRP e Tron isValidAddress accetta anche un token)
             Messaggi.WarningMessage("Wallet non Valido", "Attenzione! <br>Il Wallet specificato non è valido", this);
         }
+        else if (Trans_EtherFi.ETICHETTA_WALLET.equals(ComboBox_Rete.getSelectedItem())) {
+            //Conto ether.fi scelto dall'elenco: si verifica prima di inserirlo
+            InserisciEtherFi(Wallet, MappaWallets.get(Wallet+"_"+Rete)!=null);
+        }
         else{
             //Se arrivo qui i dati sono corretti adesso devo
             //1 - Controllare se non esiste già un wallet della stessa rete con lo stesso indirizzo
@@ -336,6 +393,19 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                 System.out.println("Scrivo il Wallet nel Database : "+Wallet+"_"+Rete);
                // ScriviFileWallets();
                 PopolaTabella();
+                //Un conto ether.fi Cash si riconosce subito per dirlo all'utente, fuori dal thread grafico (i nodi possono
+                //rispondere lenti); se non rispondono lo si rifà a "Aggiorna"
+                if (Rete.equalsIgnoreCase(Trans_EtherFi.RETE)) {
+                    final String WalletEtherFi = Wallet;
+                    Thread riconoscimento = new Thread(() -> {
+                        if (Trans_EtherFi.Strada(WalletEtherFi) == Trans_EtherFi.Strada.ETHERFI_NUOVO) {
+                            SwingUtilities.invokeLater(() -> Messaggi.InfoMessage("ether.fi Cash",
+                                    Trans_EtherFi.TestoRiconosciuto(WalletEtherFi).replace("\n\n", "<br><br>").replace("\n", " "), this));
+                        }
+                    }, "Riconoscimento ether.fi");
+                    riconoscimento.setDaemon(true);
+                    riconoscimento.start();
+                }
             }
         }
     }//GEN-LAST:event_Bottone_InserisciWalletActionPerformed
@@ -407,6 +477,8 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
         Map<String, String> MappaWallets=DatabaseH2.Pers_Wallets_LeggiTabella();
+        //Token truffa marcati SCAM in questa importazione (TokenTruffa), per il messaggio finale
+        List<TokenTruffa.Marcatura> TokenMarcati = new ArrayList<>();
 //progress.RipristinaStdout();
 
 
@@ -476,6 +548,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                     //fondo senza essere interrotta, così un'interruzione non lascia nessuna
                     //traccia parziale della sessione, esattamente come già avviene per la prima fase.
                     List<String[]> RigheDaScrivere = new ArrayList<>();
+                    List<TokenTruffa.Riga> RighePerTruffe = new ArrayList<>();
                     int NumTrans = 0, TotTrans = MappaTransazioniDefi.size();
                     if (TotTrans > 0) System.out.println("Classificazione e prezzi di " + TotTrans + " transazioni...");
                     outer:
@@ -492,6 +565,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                                 break outer;
                             }
                             RigheDaScrivere.add(st);
+                            RighePerTruffe.add(new TokenTruffa.Riga(st, v.FirmaVerificabile, v.FirmataDalWallet, v.StoriaCompleta));
                         }
                     }
 
@@ -508,6 +582,8 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                         }
                         Importazioni.TransazioniAggiunte = 0;
                     } else {
+                    //Token truffa certi marcati SCAM prima della scrittura: i nomi delle righe sono già aggiornati
+                    TokenMarcati.addAll(TokenTruffa.MarcaAllImportazione(RighePerTruffe, MappaCryptoWallet.values()));
                     for (String[] st : RigheDaScrivere) {
                         Principale.Funzione_AggiornaMappaWallets(st);//questo aggiorna la tabella wallet
                         //deve essere aggiornata perchè serve per sistemare poi le giacenze dei cronos
@@ -535,11 +611,15 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                         String Dati[]=new String[]{Wallet,ReteW};
                         //X Layer non ha un explorer da cui leggere il saldo di OKB (vedi Trans_XLayer); le reti con
                         //importatore proprio confrontano da sole i saldi alla prima importazione (Reti.IMPORT_NATIVI)
-                        if (!ReteW.equals("CRO") && !ReteW.equals(Trans_XLayer.RETE) && !Reti.IMPORT_NATIVI.contains(ReteW))Mappa_Wallet_Dati.put(WalletRete,Dati);
+                        //Neanche i conti ether.fi Cash: il saldo non sta nel wallet ma nel collaterale (Trans_EtherFi.VerificaSaldi)
+                        if (!ReteW.equals("CRO") && !ReteW.equals(Trans_XLayer.RETE) && !Reti.IMPORT_NATIVI.contains(ReteW)
+                                && !(ReteW.equals(Trans_EtherFi.RETE) && Trans_EtherFi.isRegistrato(Wallet)))Mappa_Wallet_Dati.put(WalletRete,Dati);
                     }
 
                     //Ricariche e cashback della carta OKX, se fra i movimenti c'e' il suo wallet su X Layer
                     if (i > 0) OKX_CartaAbbina.Abbina();
+                    //Ricariche dei conti ether.fi Cash, col prelievo d'origine (anche da un wallet appena aggiornato)
+                    if (i > 0) Trans_EtherFi.Abbina();
 
                     //Adesso per ogni wallet coinvolto controllo le giacenze di fine importazione e sistemo in caso di discrepanze
                     //Salto la cronoschain perchè quella viene gestita a parte
@@ -605,7 +685,8 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         Importazioni.ConvertiScambiLPinDepositiPrelievi();
         CorreggiGiacenzeCronos();
          Messaggi.SuccessMessage("Importazione Terminata",
-                 "Importazione Terminata <br>Sono stati inseriti " + Importazioni.TransazioniAggiunte + " nuovi movimenti", this);
+                 "Importazione Terminata <br>Sono stati inseriti " + Importazioni.TransazioniAggiunte + " nuovi movimenti"
+                 + TokenTruffa.Resoconto(TokenMarcati), this);
         PopolaTabella();
         c.setCursor(Cursor.getDefaultCursor());
 

@@ -61,6 +61,23 @@ import org.jsoup.nodes.TextNode;
  * @author luca.passelli
  */
 public class Tabelle {
+
+    /**
+     * Cella di tabella che passa al font con ripiego sui font di sistema quando il testo ha caratteri che il font
+     * dell'interfaccia non disegna ({@link FontApplicazione#PerTesto}). Si aggancia a {@code setValue}, che
+     * {@link DefaultTableCellRenderer} chiama dopo aver impostato il font della tabella: un {@code deriveFont} fatto dopo
+     * dal renderer (il grassetto) conserva il ripiego. Resta un {@link DefaultTableCellRenderer}, per chi lo converte.
+     */
+    public static class CellaConRipiegoFont extends DefaultTableCellRenderer {
+        @Override
+        protected void setValue(Object value) {
+            super.setValue(value);
+            java.awt.Font f = getFont();
+            java.awt.Font r = FontApplicazione.PerTesto(f, getText());
+            if (r != f) setFont(r);
+        }
+    }
+
     //static Color verdeScuro=new Color (23, 114, 69);
     //static Color verdeScuro=new Color (43, 130, 81);
     static Color verdeScuro=new Color (145, 255, 143);
@@ -127,7 +144,7 @@ public class Tabelle {
 
      
 
-        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer()  {
+        DefaultTableCellRenderer renderer = new CellaConRipiegoFont()  {
             @Override
             
             public Component getTableCellRendererComponent(JTable table,
@@ -339,7 +356,7 @@ public class Tabelle {
          */
         public static JTable ColoraRigheTabella0GiacenzeaData(final JTable table) {
 
-        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+        DefaultTableCellRenderer renderer = new CellaConRipiegoFont() {
             @Override
             
             public Component getTableCellRendererComponent(JTable table,
@@ -452,7 +469,7 @@ public class Tabelle {
 
         public static JTable ColoraRigheTabella1GiacenzeaData(final JTable table) {
 
-        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+        DefaultTableCellRenderer renderer = new CellaConRipiegoFont() {
             @Override
             
             public Component getTableCellRendererComponent(JTable table,
@@ -669,7 +686,7 @@ public class Tabelle {
 
      
 
-        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+        table.setDefaultRenderer(Object.class, new CellaConRipiegoFont() {
             @Override
             
             public Component getTableCellRendererComponent(JTable table,
@@ -750,7 +767,7 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
 
     // Renderer generico per alternare i colori delle righe
 
-    DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+    DefaultTableCellRenderer renderer = new CellaConRipiegoFont() {
         @Override
         public Component getTableCellRendererComponent(JTable table,
                                                        Object value,
@@ -929,7 +946,7 @@ public static void GUI_ModificaPrezzo_ColoraTabelle(
 
    // boolean giallo[]=new boolean[2];
    // giallo[0]=false;
-    DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+    DefaultTableCellRenderer renderer = new CellaConRipiegoFont() {
         @Override
         public Component getTableCellRendererComponent(JTable table,
                                                        Object value,
@@ -1025,7 +1042,7 @@ public static void GUI_ModificaPrezzo_ColoraTabellaGialla(JTable table1,int riga
     // -------------------------
     // RENDERER TABLE1
     // -------------------------
-    DefaultTableCellRenderer renderer1 = new DefaultTableCellRenderer() {
+    DefaultTableCellRenderer renderer1 = new CellaConRipiegoFont() {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus,
@@ -1081,7 +1098,7 @@ public static JTable ColoraTabellaLiFoTransazione(final JTable table) {
   //  final Color bianco = Color.WHITE;                   // Colore bianco
 
     // Renderer generico per alternare i colori delle righe
-    DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+    DefaultTableCellRenderer renderer = new CellaConRipiegoFont() {
         @Override
         public Component getTableCellRendererComponent(JTable table,
                                                        Object value,
@@ -1185,7 +1202,7 @@ public static JTable ColoraTabellaSempliceVerdeRosso(final JTable table,int[] Co
   //  final Color bianco = Color.WHITE;                   // Colore bianco
 
     // Renderer generico per alternare i colori delle righe
-    DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+    DefaultTableCellRenderer renderer = new CellaConRipiegoFont() {
         @Override
         public Component getTableCellRendererComponent(JTable table,
                                                        Object value,
@@ -1263,7 +1280,7 @@ public static JTable ColoraTabellaRTDettaglio(final JTable table) {
   //  final Color bianco = Color.WHITE;                   // Colore bianco
 
     // Renderer generico per alternare i colori delle righe
-    DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+    DefaultTableCellRenderer renderer = new CellaConRipiegoFont() {
         @Override
         public Component getTableCellRendererComponent(JTable table,
                                                        Object value,
@@ -1324,7 +1341,7 @@ public static JTable ColoraTabellaRTPrincipale(final JTable table) {
   //  final Color bianco = Color.WHITE;                   // Colore bianco
 
     // Renderer generico per alternare i colori delle righe
-    DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+    DefaultTableCellRenderer renderer = new CellaConRipiegoFont() {
         @Override
         public Component getTableCellRendererComponent(JTable table,
                                                        Object value,
@@ -1386,7 +1403,7 @@ public static JTable ColoraTabellaRTPrincipale(final JTable table) {
  * @return la stessa tabella passata, con il renderer applicato
  */
 public static JTable ColoraTabellaPlusvalenzeMensili(final JTable table, int primaColonnaNumerica, String etichettaTotale) {
-    DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+    DefaultTableCellRenderer renderer = new CellaConRipiegoFont() {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
                                                        boolean hasFocus, int row, int col) {
@@ -1494,7 +1511,7 @@ public static int[] Funzioni_getRigheSelezionate(JTable table) {
 
      
 
-        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+        table.setDefaultRenderer(Object.class, new CellaConRipiegoFont() {
             @Override
             
             public Component getTableCellRendererComponent(JTable table,

@@ -16,9 +16,15 @@ import java.util.regex.Pattern;
  * le note si scrivono una volta. Il Markdown usato in quella pagina è poco (titoli, grassetti, corsivi, codice, elenchi,
  * collegamenti, citazioni): {@link #Html} converte solo quello, nell'HTML che {@code JEditorPane} sa disegnare.</p>
  *
- * <p><b>Quale sezione.</b> Una versione rilasciata ({@code 1.0.65}) mostra la sezione con il suo numero. Una versione di
- * prova ({@code 1.0.64.08}, quattro numeri) è la preparazione del prossimo rilascio, e mostra la sezione più in alto
- * della pagina, cioè le note che si stanno scrivendo.</p>
+ * <p><b>Due file.</b> {@code changelog.md} raccoglie le novità di ogni versione rilasciata, e nella sezione più in alto
+ * quelle della versione in preparazione, cumulative. {@code changelog-beta.md} ({@value #RISORSA_BETA}, solo nel jar, non
+ * pubblicato come pagina) ha una sezione per ogni beta con quello che è cambiato rispetto alla beta precedente: le stesse
+ * note fanno da descrizione della prerelease su GitHub ({@code release.yml}).</p>
+ *
+ * <p><b>Quali sezioni.</b> {@link #SezioniDaMostrare}: una versione rilasciata ({@code 1.0.65}) mostra le sezioni del
+ * changelog, una beta ({@code 1.0.65.12}, quattro numeri) quelle del file delle beta. All'avvio dopo un aggiornamento
+ * tutte quelle uscite dopo l'ultima versione vista, così chi salta una beta non perde le sue novità. Una beta senza note
+ * proprie (una build locale) mostra la sezione più in alto del changelog, come prima che esistesse il file delle beta.</p>
  *
  * <p><b>Quando.</b> {@link #DaMostrare}: la prima volta che parte una versione diversa dall'ultima vista, salvo su
  * un'installazione nuova (archivio vuoto), dove le novità rispetto a una versione mai usata non dicono nulla.</p>
@@ -30,6 +36,12 @@ public final class NovitaVersione {
 
     /** Posizione di {@code changelog.md} nel jar (vedi il {@code <resource>} del pom). */
     static final String RISORSA = "/Novita/changelog.md";
+
+    /** Le note delle singole beta, in {@code src/main/resources/Novita/}: nel jar ma non sul sito. */
+    static final String RISORSA_BETA = "/Novita/changelog-beta.md";
+
+    /** Al massimo tante sezioni in una volta, le più recenti: chi torna dopo molte versioni ha la pagina online. */
+    static final int SEZIONI_MASSIME = 10;
 
     /** Opzione in {@code personale.mv.db}: l'ultima versione per cui le novità sono state mostrate (o saltate). */
     public static final String OPZIONE_ULTIMA_VERSIONE = "Novita_UltimaVersioneVista";
@@ -43,7 +55,16 @@ public final class NovitaVersione {
 
     /** @return il Markdown della pagina incluso nel jar, o {@code null} se manca */
     static String Leggi() {
-        try (InputStream in = NovitaVersione.class.getResourceAsStream(RISORSA)) {
+        return Leggi(RISORSA);
+    }
+
+    /** @return il Markdown delle note delle beta incluso nel jar, o {@code null} se manca */
+    static String LeggiBeta() {
+        return Leggi(RISORSA_BETA);
+    }
+
+    private static String Leggi(String Risorsa) {
+        try (InputStream in = NovitaVersione.class.getResourceAsStream(Risorsa)) {
             return in == null ? null : new String(in.readAllBytes(), StandardCharsets.UTF_8);
         } catch (Exception ex) {
             LoggerGC.ScriviErrore(ex);
@@ -92,6 +113,54 @@ public final class NovitaVersione {
         if (VersioneProgramma == null || Sezioni.isEmpty()) return null;
         for (Sezione s : Sezioni) if (s.Versione().equals(VersioneProgramma)) return s;
         return isVersioneDiProva(VersioneProgramma) ? Sezioni.get(0) : null;
+    }
+
+    /**
+     * Le sezioni da mostrare per la versione del programma, dalla più recente: quella della versione e quelle uscite dopo
+     * {@code UltimaVista} e non dopo la versione del programma (al massimo {@value #SEZIONI_MASSIME}). Una beta le
+     * prende da {@code Beta}, una versione rilasciata da {@code Principali}. Una beta senza note proprie ripiega sulla
+     * sezione più in alto di {@code Principali}, le note in preparazione.
+     * @param UltimaVista l'ultima versione per cui le novità sono state mostrate; vuota, o uguale alla versione del
+     *                    programma, per la sola sezione della versione
+     */
+    static List<Sezione> SezioniDaMostrare(String VersioneProgramma, String UltimaVista, List<Sezione> Principali,
+            List<Sezione> Beta) {
+        List<Sezione> Ris = new ArrayList<>();
+        if (!isVersioneValida(VersioneProgramma)) return Ris;
+        boolean Prova = isVersioneDiProva(VersioneProgramma);
+        boolean Intervallo = isVersioneValida(UltimaVista) && Funzioni.ConfrontaVersioni(UltimaVista, VersioneProgramma) < 0;
+        for (Sezione s : Prova ? Beta : Principali) {
+            int RispettoProgramma = Funzioni.ConfrontaVersioni(s.Versione(), VersioneProgramma);
+            if (RispettoProgramma == 0 || (RispettoProgramma < 0 && Intervallo
+                    && Funzioni.ConfrontaVersioni(s.Versione(), UltimaVista) > 0)) Ris.add(s);
+        }
+        Ris.sort((a, b) -> Funzioni.ConfrontaVersioni(b.Versione(), a.Versione()));
+        if (Ris.size() > SEZIONI_MASSIME) Ris = new ArrayList<>(Ris.subList(0, SEZIONI_MASSIME));
+        if (Ris.isEmpty() && Prova && !Principali.isEmpty()) Ris.add(Principali.get(0));
+        return Ris;
+    }
+
+    /** Il titolo del dialogo per le sezioni di {@link #SezioniDaMostrare}. */
+    static String Titolo(String VersioneProgramma, List<Sezione> Sezioni) {
+        if (Sezioni == null || Sezioni.isEmpty()) return "Novità della versione";
+        if (Sezioni.size() == 1) {
+            Sezione s = Sezioni.get(0);
+            if (s.Versione().equals(VersioneProgramma) && isVersioneDiProva(VersioneProgramma)) {
+                return "Novità della versione di prova " + VersioneProgramma;
+            }
+            return Titolo(VersioneProgramma, s);
+        }
+        String Piu = Sezioni.get(0).Versione(), Meno = Sezioni.get(Sezioni.size() - 1).Versione();
+        return (isVersioneDiProva(VersioneProgramma) ? "Novità delle versioni di prova dalla " : "Novità delle versioni dalla ")
+                + Meno + " alla " + Piu;
+    }
+
+    /** L'HTML delle sezioni: una sola com'è, più sezioni ciascuna col suo titolo "Versione x". */
+    static String Html(List<Sezione> Sezioni) {
+        if (Sezioni.size() == 1) return Html(Sezioni.get(0).Markdown());
+        StringBuilder md = new StringBuilder();
+        for (Sezione s : Sezioni) md.append("## Versione ").append(s.Versione()).append("\n\n").append(s.Markdown()).append("\n\n");
+        return Html(md.toString());
     }
 
     /** Il titolo del dialogo, che per una versione di prova dice anche il numero della prova. */

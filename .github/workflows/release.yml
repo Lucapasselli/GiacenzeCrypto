@@ -501,6 +501,15 @@ jobs:
           cd ..
           ls -la release_assets
 
+      # Una beta ha come descrizione la sua sezione di src/main/resources/Novita/changelog-beta.md, le stesse note
+      # che il programma mostra all'avvio (NovitaVersione). Una beta senza sezione esce senza descrizione, come prima.
+      - name: Note della beta
+        if: ${{ inputs.canale == 'beta' }}
+        run: |
+          awk -v t="## Versione $VERSIONE" '/^## /{dentro=($0==t || index($0, t" ")==1); next} dentro' \
+            src/main/resources/Novita/changelog-beta.md > note-beta.md
+          if [ -s note-beta.md ]; then cat note-beta.md; else echo "::warning::Nessuna nota per la beta $VERSIONE in changelog-beta.md"; fi
+
       # Il nome/tag della release deve restare esattamente "Giacenze_Crypto_<VERSIONE>": l'app
       # (Aggiornamenti.PREFISSO_TAG) ricava la versione dal tag letto dall'API GitHub, e le
       # versioni fino alla 1.0.65 controllano https://sourceforge.net/.../files/Giacenze_Crypto_<VERSIONE>/,
@@ -518,6 +527,7 @@ jobs:
           draft: ${{ inputs.bozza }}
           prerelease: ${{ inputs.canale == 'beta' }}
           make_latest: ${{ inputs.canale != 'beta' }}
+          body_path: ${{ inputs.canale == 'beta' && 'note-beta.md' || '' }}
 
   # L'aggiornamento di AUR e' richiamato qui e non con "on: release", perche' una release
   # creata col GITHUB_TOKEN di default non innesca altri workflow. Resta comunque lanciabile

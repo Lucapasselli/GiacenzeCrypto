@@ -1596,6 +1596,8 @@ public class Importazioni {
                 ritorno[1]++;
             }
         }
+        //Ricariche dei conti ether.fi Cash: il prelievo d'origine (da un exchange, da un wallet) puo' arrivare dopo
+        if (ritorno[0] > 0) Trans_EtherFi.Abbina();
         return ritorno;
     }
 
@@ -6492,8 +6494,60 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
             progressb.Titolo(avaTot+" di "+Portafogli.size()+" Importazione di " + walletAddress + "da explorer");
             //In caso di SOL devo passargli l'ultimo blocco disponibile, non il blocco+1
             if (!Rete.equalsIgnoreCase("SOL")) Blocco = String.valueOf(Integer.parseInt(Blocco) + 1);            
+            //ether.fi Cash su Optimism: dai log dei contratti del protocollo, mai dall'explorer, anche quando i nodi non
+            //rispondono (Trans_EtherFi): la strada generica scriverebbe righe sbagliate e sposterebbe avanti l'ultimo blocco
+            Trans_EtherFi.Strada stradaEtherFi = Rete.equalsIgnoreCase(Trans_EtherFi.RETE) ? Trans_EtherFi.Strada(walletAddress) : null;
+            if (stradaEtherFi == Trans_EtherFi.Strada.NON_VERIFICABILE) {
+                LoggerGC.ScriviErrore("ether.fi " + walletAddress + ": riconoscimento non riuscito, wallet saltato");
+                if (ccc != null) JOptionPane.showConfirmDialog(ccc,
+                        "Non è stato possibile verificare se il wallet " + walletAddress + " su Optimism è un conto ether.fi Cash "
+                        + "(nodi di Optimism non raggiungibili). Per non importare movimenti sbagliati non si importa nulla.\n"
+                        + "Riprovare più tardi.", "ether.fi", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+            }
+            else if (stradaEtherFi == Trans_EtherFi.Strada.ETHERFI || stradaEtherFi == Trans_EtherFi.Strada.ETHERFI_NUOVO) {
+                boolean nuovoEtherFi = stradaEtherFi == Trans_EtherFi.Strada.ETHERFI_NUOVO;
+                if (Trans_EtherFi.isPrimaImportazione(walletAddress)) {
+                    //Movimenti scritti prima dalla strada generica: per questo tipo di conto sono quelli sbagliati
+                    List<String> precedenti = Trans_EtherFi.MovimentiPrecedenti(MappaCryptoWallet, walletAddress);
+                    if (ccc != null && !precedenti.isEmpty()) {
+                        int scelta = JOptionPane.showConfirmDialog(ccc, (nuovoEtherFi ? Trans_EtherFi.TestoRiconosciuto(walletAddress) + "\n\n" : "")
+                                + "In archivio ci sono " + precedenti.size() + " movimenti di questo wallet importati prima con la lettura "
+                                + "generica, che per un conto ether.fi è incompleta (ricariche e scambi mancanti, spese con la carta "
+                                + "assenti). Toglierli e reimportare tutto dagli eventi ether.fi?\n"
+                                + "Rispondendo No restano, e si importa solo ciò che è successo dopo l'ultimo di loro.",
+                                "ether.fi", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null);
+                        if (scelta == JOptionPane.YES_OPTION) Funzioni.RimuoviMovimenti(precedenti);
+                    } else if (ccc != null && nuovoEtherFi) {
+                        JOptionPane.showConfirmDialog(ccc, Trans_EtherFi.TestoRiconosciuto(walletAddress), "ether.fi",
+                                JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    }
+                }
+                progressb.setIndeterminate(true);
+                progressb.SetLabel("Scaricamento di " + walletAddress + " (ether.fi Cash) in corso...");
+                //Il blocco di partenza dall'archivio, non dalla tabella dei wallet: dopo la rimozione qui sopra e' cambiato
+                long daBlocco = Trans_EtherFi.UltimoBloccoImportato(MappaCryptoWallet, walletAddress) + 1;
+                Trans_EtherFi.Esito esito = Trans_EtherFi.Scarica(walletAddress, daBlocco, progressb::FineThread,
+                        DocumentoFonteCorrente, progressb::SetMessaggioAvanzamento);
+                progressb.setIndeterminate(false);
+                for (String avviso : esito.avvisi()) {
+                    LoggerGC.ScriviErrore("ether.fi " + walletAddress + ": " + avviso);
+                }
+                if (!esito.completo()) {
+                    //Come gli altri importatori nativi: meglio niente che una parte
+                    if (ccc != null && !progressb.FineThread()) JOptionPane.showConfirmDialog(ccc,
+                            "Scaricamento del conto ether.fi " + walletAddress + " non completato, nessun movimento importato.\n"
+                            + String.join("\n", esito.avvisi()), "ether.fi", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                } else {
+                    MappaTransazioniDefi.putAll(Trans_EtherFi.ComeTransazioniDefi(walletAddress, esito.transazioni()));
+                    Trans_EtherFi.SegnaImportato(walletAddress);
+                    if (ccc != null && !esito.avvisi().isEmpty()) JOptionPane.showConfirmDialog(ccc,
+                            "Conto ether.fi " + walletAddress + ":\n" + String.join("\n", esito.avvisi())
+                            + "\nI movimenti vengono importati comunque.",
+                            "ether.fi", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                }
+            }
             //X Layer prima dei controlli sulle ApiKey: si legge dal nodo pubblico, senza chiavi (Trans_XLayer)
-            if (Rete.equalsIgnoreCase(Trans_XLayer.RETE)) {
+            else if (Rete.equalsIgnoreCase(Trans_XLayer.RETE)) {
                 progressb.setIndeterminate(true);
                 progressb.SetLabel("Scansione di " + walletAddress + " (" + Rete + ") in corso...");
                 Trans_XLayer.Esito esito = Trans_XLayer.Scarica(walletAddress, Long.parseLong(Blocco),
@@ -6913,6 +6967,7 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                     if (from.equalsIgnoreCase(walletAddress)) {
                         //le commissioni le ho solo quando è il mio wallet che chiama la transazione
                         trans.QtaCommissioni = "-" + qtaCommissione;
+                        trans.FirmataDalWallet = true;
                     }
 
                     //System.out.println(from + " - "+hash+" - B1 - "+trans.QtaCommissioni );
@@ -7204,6 +7259,19 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                     //System.out.println(from + " - "+hash+" - B4 - "+trans.QtaCommissioni );
                     ava++;
                     progressb.SetAvanzamento(ava);
+                }
+
+                //Per TokenTruffa: qui la firma del wallet si conosce (lista delle transazioni, PARTE B1). La storia è
+                //completa se non si legge dai nodi pubblici, nemmeno in passato: su una rete che li ha (BASE) l'archivio
+                //può partire da quando il wallet è stato aggiunto anche se oggi si legge da un explorer
+                boolean storiaCompleta = !Provider.equals(NodoPubblicoDefi.PROVIDER)
+                        && (Reti.Get(Rete) == null || Reti.Get(Rete).nodoPubblico() == null);
+                for (Map.Entry<String, TransazioneDefi> e : MappaTransazioniDefi.entrySet()) {
+                    TransazioneDefi t = e.getValue();
+                    if (e.getKey().startsWith(walletAddress + ".") && Rete.equalsIgnoreCase(t.Rete)) {
+                        t.FirmaVerificabile = true;
+                        t.StoriaCompleta = storiaCompleta;
+                    }
                 }
 
             }

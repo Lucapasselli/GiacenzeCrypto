@@ -529,6 +529,28 @@ jobs:
           make_latest: ${{ inputs.canale != 'beta' }}
           body_path: ${{ inputs.canale == 'beta' && 'note-beta.md' || '' }}
 
+      # Delle beta restano pubblicate solo le ultime BETA_DA_TENERE (per versione, non per data): le
+      # altre si cancellano come release, ma il tag git resta (niente --cleanup-tag), quindi il commit
+      # di ogni beta si ritrova sempre. Il controllo aggiornamenti propone solo la versione piu' alta,
+      # e le note di ogni beta stanno anche in changelog-beta.md dentro il jar. Saltato in bozza:
+      # la nuova beta non e' ancora visibile e le vecchie resterebbero le sole scaricabili.
+      # Un errore qui non deve far sembrare fallita una beta gia' pubblicata.
+      - name: Tieni solo le ultime beta
+        if: ${{ inputs.canale == 'beta' && !inputs.bozza }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BETA_DA_TENERE: 3
+        run: |
+          gh release list --repo "$GITHUB_REPOSITORY" --limit 200 --exclude-drafts \
+              --json tagName,isPrerelease --jq '.[] | select(.isPrerelease) | .tagName' \
+            | { grep -E '^Giacenze_Crypto_[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' || true; } \
+            | sort -Vr | tail -n +$((BETA_DA_TENERE + 1)) \
+            | while read -r tag; do
+                echo "Cancello la release beta $tag (il tag git resta)"
+                gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --yes
+              done
+
   # L'aggiornamento di AUR e' richiamato qui e non con "on: release", perche' una release
   # creata col GITHUB_TOKEN di default non innesca altri workflow. Resta comunque lanciabile
   # da solo (workflow_dispatch di aur.yml) senza ricostruire e ripubblicare gli asset.

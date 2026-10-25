@@ -2199,11 +2199,13 @@ public class ImportazioneGenerica {
          * radice, {@code "x[]"} ogni elemento dell'array {@code x}. Gli oggetti a chiavi libere (mappaCausali,
          * causaliAPI, rinominaMonete...) non ci sono, e il controllo non ci entra. Le chiavi che cominciano con
          * {@code _} sono commenti e valgono ovunque. Una chiave nuova letta da {@link #carica} va aggiunta qui:
-         * {@code ChiaviConfigImportTest} lo verifica su tutte le config distribuite.
+         * {@code ChiaviConfigImportTest} lo verifica su tutte le config distribuite. Va aggiunta anche allo schema
+         * pubblicato {@code docs/schema/configurazione-import.schema.json}, con la sua descrizione: lo verifica
+         * {@code SchemaConfigImportTest}. {@code $schema} e' l'indirizzo di quello schema, che gli editor leggono.
          */
         static final Map<String, Set<String>> CHIAVI_NOTE = Map.ofEntries(
                 Map.entry("", Set.of(
-                        "versione", "noteRevisione", "versioneMinimaApp", "centralizzato", "testing",
+                        "$schema", "versione", "noteRevisione", "versioneMinimaApp", "centralizzato", "testing",
                         "nomeExchange", "nomeWallet", "fornitore", "estrazione", "descrizione", "fontePrezzoPreferita",
                         "separatore", "encoding", "righeIntestazione", "rigaIntestazione", "autoDetectColonne",
                         "mappaAutoDetect", "formatoData", "oraSeSoloData", "fuso", "fusoDaIntestazione", "fusoPerPeriodo",

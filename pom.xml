@@ -103,6 +103,13 @@
             <version>5.10.2</version>
             <scope>test</scope>
         </dependency>
+        <!-- Solo per i test: valida le configurazioni di import contro docs/schema/configurazione-import.schema.json -->
+        <dependency>
+            <groupId>com.github.erosb</groupId>
+            <artifactId>everit-json-schema</artifactId>
+            <version>1.14.4</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <resources>

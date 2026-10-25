@@ -8,6 +8,8 @@
 # Dal 2026-09-27 i PDF sono prodotti dal programma stesso (GeneraPdfDocumentazione), con la stessa
 # veste grafica delle stampe dei quadri W/RW: copertina, testata col logo, fascia nel margine,
 # piè di pagina numerato, Noto Sans incorporato. Serve solo il JDK; LibreOffice non serve più.
+# Dal 2026-10-25 rigenera anche docs/llms-full.txt (DocumentazionePerIA): tutti i manuali in un solo file
+# di testo per le IA, nell'ordine di docs/llms.txt.
 # Da eseguire dalla radice del repository:
 #   sh docs/strumenti/genera-pdf.sh
 set -e
@@ -19,3 +21,4 @@ CP_FILE="$RADICE/target/classpath-documentazione.txt"
 java -Djava.awt.headless=true -cp "target/classes:$(cat "$CP_FILE")" \
     com.giacenzecrypto.giacenze_crypto.GeneraPdfDocumentazione docs/documentazione
 echo "PDF rigenerati in $RADICE/docs/documentazione"
+java -cp "target/classes:$(cat "$CP_FILE")" com.giacenzecrypto.giacenze_crypto.DocumentazionePerIA docs

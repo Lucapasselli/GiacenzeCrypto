@@ -1,0 +1,27 @@
+# Giacenze Crypto
+
+> Programma desktop libero (licenza MIT, Java) per la dichiarazione dei redditi italiana delle cripto-attività: importa i movimenti da exchange, wallet e blockchain, calcola plusvalenze e minusvalenze con il metodo LIFO (quadro T/RT) e le giacenze per il monitoraggio e l'IVAFE (quadro W/RW).
+
+I manuali sono in italiano e sono la fonte autorevole sul funzionamento del programma. Il programma non dà consulenza fiscale: i manuali descrivono cosa calcola e con quali opzioni, le scelte restano dell'utente. Sito: https://giacenzecrypto.it/ . Codice: https://github.com/Lucapasselli/GiacenzeCrypto .
+
+Tutti i manuali qui sotto, in un solo file di testo: https://lucapasselli.github.io/GiacenzeCrypto/llms-full.txt
+
+## Manuali
+
+- [Calcolo delle plusvalenze e opzioni](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/calcolo-plusvalenze-opzioni.html): normativa di riferimento, metodo LIFO con esempi, opzioni di calcolo, funzione RT & Analisi P&L
+- [Opzioni di calcolo del Quadro RW](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/opzioni-calcolo-rw.html): come vengono composti i righi del quadro W/RW, casi studio e gestione degli errori
+- [Classificazione dei movimenti](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/classificazioni-movimenti.html): come classificare depositi e prelievi, opzione per opzione
+- [Esportazione e importazione da CSV](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/export-import-csv.html): come estrarre i file dalle piattaforme e caricarli nel programma
+- [Particolarità degli import per exchange](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html): exchange per exchange, quali file scaricare, quali file accessori servono e in che ordine importarli
+- [Configurazione JSON per le importazioni personalizzate](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/creazione-json-importazioni-personalizzate.html): riferimento completo dei file JSON che insegnano al programma a leggere un CSV qualunque, con esempi verificati e istruzioni per farli scrivere a un'IA
+- [Avvertenze e problemi noti](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/avvertenze-problemi-noti.html): limiti conosciuti e verifiche consigliate
+- [Disclaimer](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/disclaimer.html): termini d'uso del programma
+
+## Configurazioni di importazione
+
+- [Schema JSON delle configurazioni](https://lucapasselli.github.io/GiacenzeCrypto/schema/configurazione-import.schema.json): chiavi, tipi e valori ammessi, con una descrizione per ciascuna. Da usare per scrivere o controllare una configurazione
+- [Configurazioni ufficiali](https://github.com/Lucapasselli/GiacenzeCrypto/tree/master/config/import): le configurazioni distribuite con il programma, da cui partire per un formato simile
+
+## Optional
+
+- [Novità delle versioni](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/changelog.html): le modifiche di ogni versione

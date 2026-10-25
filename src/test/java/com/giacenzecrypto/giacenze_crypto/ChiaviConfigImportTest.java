@@ -75,7 +75,7 @@ class ChiaviConfigImportTest {
 
         note.removeAll(lette);
         //Metadati delle config, che carica() non ha bisogno di leggere
-        assertEquals(Set.of("versione", "noteRevisione"), note, "in CHIAVI_NOTE ma non lette da carica()");
+        assertEquals(Set.of("$schema", "versione", "noteRevisione"), note, "in CHIAVI_NOTE ma non lette da carica()");
     }
 
     @Test

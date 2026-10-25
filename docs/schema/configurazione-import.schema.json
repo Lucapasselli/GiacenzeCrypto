@@ -1,0 +1,500 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://lucapasselli.github.io/GiacenzeCrypto/schema/configurazione-import.schema.json",
+  "title": "Configurazione di importazione CSV di Giacenze Crypto",
+  "description": "Descrive un file JSON che insegna a Giacenze Crypto a leggere un export CSV. Manuale completo, con esempi: https://lucapasselli.github.io/GiacenzeCrypto/documentazione/creazione-json-importazioni-personalizzate.html . Le chiavi che cominciano con _ sono commenti e sono ammesse in ogni oggetto. Gli indici di colonna contano da 0, -1 vuol dire colonna assente. Lo schema e' piu' severo del programma su un punto: i tipi interni (valori di mappaCausali e simili) devono essere uno di quelli elencati, perche' il programma tratta un valore sconosciuto come un movimento generico senza segnalarlo.",
+  "type": "object",
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Indirizzo di questo schema, per gli editor che controllano il file mentre lo scrivi. Il programma lo ignora. Le versioni che non lo conoscono lo elencano fra le opzioni non riconosciute del resoconto, senza altri effetti."
+    },
+
+    "nomeExchange": {
+      "type": "string",
+      "description": "Nome dell'exchange. Finisce nel campo Exchange di ogni movimento e decide il gruppo wallet e il riconoscimento dei duplicati: non cambiarlo dopo aver importato. Vuoto = il programma lo chiede all'importazione. #nomeexchange"
+    },
+    "nomeWallet": {
+      "type": "string",
+      "default": "Principale",
+      "description": "Nome del wallet di destinazione. Nessun effetto fiscale. #nomewallet"
+    },
+    "fornitore": {
+      "type": "string",
+      "description": "Voce della prima tendina della finestra di importazione, solo se non si ricava da nomeExchange. #fornitore-e-estrazione"
+    },
+    "estrazione": {
+      "type": "string",
+      "description": "Voce della seconda tendina (quale export del fornitore), senza ripetere il fornitore. #fornitore-e-estrazione"
+    },
+    "descrizione": {
+      "type": "string",
+      "description": "Testo mostrato come suggerimento sulla voce della finestra di importazione. Non cambia l'importazione. #descrizione"
+    },
+    "fontePrezzoPreferita": {
+      "type": "string",
+      "description": "Id CCXT minuscolo dell'exchange i cui prezzi preferire quando il CSV non ha prezzo ne' controvalore (binance, okx, cryptocom, bybit, coinbase, bitstamp, kucoin). #fonteprezzopreferita"
+    },
+    "versione": {
+      "type": "string",
+      "description": "Revisione del file (es. \"1.002\"). Il programma non la usa. #versione"
+    },
+    "noteRevisione": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "Appunti liberi di chi mantiene il file, causale CSV -> nota. Il programma non li usa."
+    },
+    "versioneMinimaApp": {
+      "type": "string",
+      "pattern": "^$|^[0-9]+(\\.[0-9]+){2,3}$",
+      "description": "Versione minima del programma che sa leggere il file (es. \"1.0.65.02\"). Va messa quando usi una chiave recente: le versioni precedenti non propongono la configurazione invece di leggerla male. #versioneminimaapp"
+    },
+    "testing": {
+      "type": "boolean",
+      "default": false,
+      "description": "true = l'importazione avvisa che la configurazione e' in prova. #testing"
+    },
+    "centralizzato": {
+      "type": "boolean",
+      "default": false,
+      "description": "Solo per le configurazioni distribuite con il programma. Un file tuo con true puo' essere cancellato dall'aggiornamento automatico: lascialo assente. #centralizzato"
+    },
+
+    "separatore": {
+      "type": "string",
+      "minLength": 1,
+      "default": ",",
+      "description": "Separatore delle colonne: \",\" \";\" \"\\t\" o \"|\". #separatore"
+    },
+    "encoding": {
+      "type": "string",
+      "default": "UTF-8",
+      "description": "Codifica del file: UTF-8, ISO-8859-1, Windows-1252. #encoding"
+    },
+    "righeIntestazione": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 1,
+      "description": "Quante righe iniziali saltare prima dei dati (0 = file senza intestazione). #righeintestazione"
+    },
+    "rigaIntestazione": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 1,
+      "description": "Riga (contando da 1) con i nomi delle colonne, usata solo con autoDetectColonne. #rigaintestazione"
+    },
+    "autoDetectColonne": {
+      "type": "boolean",
+      "default": false,
+      "description": "true = gli indici delle colonne si ricavano dai nomi dell'intestazione tramite mappaAutoDetect. #autodetectcolonne"
+    },
+    "mappaAutoDetect": {
+      "type": "object",
+      "description": "Nome della colonna nell'intestazione -> campo logico. Campi riconosciuti: data, causale, moneta, quantita, segno, valoreEuro, monetaFee, quantitaFee, idTransazione, idGruppo, wallet. Gli altri vanno messi a mano in colonne. #mappaautodetect",
+      "additionalProperties": {
+        "enum": ["data", "causale", "moneta", "quantita", "segno", "valoreEuro", "monetaFee", "quantitaFee", "idTransazione", "idGruppo", "wallet"]
+      }
+    },
+    "formatoData": {
+      "type": "string",
+      "default": "yyyy-MM-dd HH:mm:ss",
+      "description": "Formato della data con i simboli di Java DateTimeFormatter (yyyy MM dd HH mm ss, testo fisso fra apici: \"yyyy-MM-dd'T'HH:mm:ss'Z'\", parti facoltative fra quadre: \"[.SSS]\"). Deve contenere l'ora: per un file con il solo giorno vedi oraSeSoloData. #formatodata"
+    },
+    "oraSeSoloData": {
+      "type": "string",
+      "pattern": "^[0-2][0-9]:[0-5][0-9]:[0-5][0-9]$",
+      "description": "Ora (UTC) da aggiungere alle righe che hanno il solo giorno. formatoData deve restare con l'ora (es. \"yyyy-MM-dd HH:mm:ss\"). Dalla 1.0.64.09. #orasesolodata"
+    },
+    "fuso": {
+      "type": "string",
+      "default": "UTC",
+      "description": "Fuso orario delle date del file: \"UTC\", \"UTC+2\", \"Europe/Rome\". Con un ? finale (\"UTC?\") vince il fuso scritto nel nome del file, se c'e'. Vuoto = il programma lo chiede. #fuso"
+    },
+    "fusoDaIntestazione": {
+      "type": "string",
+      "description": "Etichetta con cui una riga di intestazione dichiara il fuso del file (es. \"Time Zone:\" negli export OKX). Se la trova vince su fuso. Dalla 1.0.64.10. #fusodaintestazione"
+    },
+    "fusoPerPeriodo": {
+      "type": "array",
+      "description": "Fuso diverso per intervalli di date, per i file che cambiano fuso nel tempo. Vince su tutto il resto per le righe che ci cadono. Periodi non sovrapposti. Dalla 1.0.65.02. Da non aggiungere a una configurazione gia' usata: sposta l'istante dei movimenti e un nuovo import li duplica. #fusoperperiodo",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "patternProperties": { "^_": {} },
+        "required": ["da", "a", "fuso"],
+        "properties": {
+          "da": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", "description": "Primo giorno compreso, AAAA-MM-GG." },
+          "a": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", "description": "Ultimo giorno compreso, AAAA-MM-GG." },
+          "fuso": { "type": "string", "minLength": 1, "description": "Fuso di quelle righe, nella forma di fuso." }
+        }
+      }
+    },
+
+    "colonne": {
+      "type": "object",
+      "description": "Campo logico -> indice di colonna del CSV, contando da 0. -1 = assente. #3-colonne-del-csv",
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "data": { "$ref": "#/definitions/indice", "default": 0, "description": "Data e ora del movimento. Obbligatoria nei fatti." },
+        "causale": { "$ref": "#/definitions/indice", "default": 3, "description": "Tipo di operazione scritto nel CSV (Deposit, Trade...), la chiave di mappaCausali." },
+        "causale2": { "$ref": "#/definitions/indice", "description": "Seconda colonna della causale composita (vedi separatoreCausale). #causale-composita" },
+        "causale3": { "$ref": "#/definitions/indice", "description": "Terza colonna della causale composita. #causale-composita" },
+        "moneta": { "$ref": "#/definitions/indice", "default": 1, "description": "Simbolo della moneta (lato entrata se la riga porta anche monetaUscita)." },
+        "quantita": { "$ref": "#/definitions/indice", "default": 2, "description": "Quantita': negativa = uscita, positiva = entrata, salvo causaliUscita/causaliEntrata/versoForzato." },
+        "monetaUscita": { "$ref": "#/definitions/indice", "description": "Moneta in uscita, per i CSV con tutto lo scambio su una riga. #entrata-e-uscita-sulla-stessa-riga" },
+        "quantitaUscita": { "$ref": "#/definitions/indice", "description": "Quantita' in uscita, per i CSV con tutto lo scambio su una riga." },
+        "segno": { "$ref": "#/definitions/indice", "description": "Colonna che contiene solo + o -." },
+        "valoreEuro": { "$ref": "#/definitions/indice", "description": "Controvalore in euro gia' calcolato nel CSV." },
+        "prezzo": { "$ref": "#/definitions/indice", "description": "Prezzo unitario in euro." },
+        "monetaFee": { "$ref": "#/definitions/indice", "description": "Moneta della commissione." },
+        "quantitaFee": { "$ref": "#/definitions/indice", "description": "Quantita' della commissione." },
+        "idTransazione": { "$ref": "#/definitions/indice", "description": "Identificativo della riga: raggruppa le righe dello stesso movimento. #idtransazione-nella-sezione-colonne" },
+        "idGruppo": { "$ref": "#/definitions/indice", "description": "Colonna su cui raggruppare quando non coincide con idTransazione (es. Order id di OKX). #idgruppo-nella-sezione-colonne" },
+        "wallet": { "$ref": "#/definitions/indice", "description": "Nome del wallet, se cambia riga per riga." },
+        "note": { "$ref": "#/definitions/indice", "description": "Testo libero da riportare nelle note del movimento. Serve anche a causalePerNota, contropartitaDaNota e noteAcquistoDaSaldo." }
+      }
+    },
+    "separatoreValoreMoneta": {
+      "type": "string",
+      "description": "Per le celle con importo e simbolo insieme (\"407.57 AME\"): carattere che li divide. Si indica lo stesso indice per quantita e moneta. #importo-e-moneta-nella-stessa-cella"
+    },
+    "coppia": {
+      "type": "object",
+      "description": "Per gli export con la sola coppia di trading in una cella (\"KCS-ETH\"): la divide in due colonne virtuali base e quote, da usare poi in colonne. #coppia",
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "required": ["colonna", "base", "quote"],
+      "properties": {
+        "colonna": { "type": "integer", "minimum": 0, "description": "Colonna che contiene la coppia." },
+        "separatore": { "type": "string", "minLength": 1, "default": "-", "description": "Carattere fra base e quota." },
+        "base": { "type": "integer", "minimum": 0, "description": "Indice della colonna virtuale con la prima moneta: un numero oltre l'ultima colonna vera." },
+        "quote": { "type": "integer", "minimum": 0, "description": "Indice della colonna virtuale con la seconda moneta, stessa regola." },
+        "importoQuote": {
+          "type": "object",
+          "description": "Colonna virtuale con quantita' x prezzo, per gli export che non riportano l'importo della seconda moneta. Dalla 1.0.65.01. #importoquote",
+          "additionalProperties": false,
+          "patternProperties": { "^_": {} },
+          "required": ["colonna", "quantita", "prezzo"],
+          "properties": {
+            "colonna": { "type": "integer", "minimum": 0, "description": "Indice della colonna virtuale da creare." },
+            "quantita": { "type": "integer", "minimum": 0, "description": "Colonna della quantita'." },
+            "prezzo": { "type": "integer", "minimum": 0, "description": "Colonna del prezzo nella seconda moneta." }
+          }
+        }
+      }
+    },
+    "colonneCalcolate": {
+      "type": "array",
+      "description": "Colonne virtuali calcolate da due colonne della riga, applicate in ordine dopo coppia. Cella vuota se un operando manca o non e' un numero. Dalla 1.0.65.02. #colonnecalcolate",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "patternProperties": { "^_": {} },
+        "required": ["colonna", "operazione", "a", "b"],
+        "properties": {
+          "colonna": { "type": "integer", "minimum": 0, "description": "Indice della colonna virtuale da creare." },
+          "operazione": { "enum": ["prodotto", "quoziente", "somma", "differenza"] },
+          "a": { "type": "integer", "minimum": 0, "description": "Primo operando." },
+          "b": { "type": "integer", "minimum": 0, "description": "Secondo operando (divisore, sottraendo)." }
+        }
+      }
+    },
+    "regoleRiga": {
+      "type": "array",
+      "description": "Regole semplici applicate a ogni riga dopo le colonne calcolate: una condizione (uguale, contiene o vuota) e un'azione (imposta un valore fisso in una colonna, oppure scarta la riga). Non puo' scrivere la colonna della data. Dalla 1.0.65.02. #regoleriga",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "patternProperties": { "^_": {} },
+        "required": ["colonna"],
+        "properties": {
+          "colonna": { "type": "integer", "minimum": 0, "description": "Colonna da controllare." },
+          "uguale": { "type": "string", "description": "La cella e' uguale a questo testo (senza distinzione di maiuscole)." },
+          "contiene": { "type": "string", "minLength": 1, "description": "La cella contiene questo testo (senza distinzione di maiuscole)." },
+          "vuota": { "type": "boolean", "description": "true = la cella e' vuota, false = non e' vuota." },
+          "scarta": { "type": "boolean", "description": "true = la riga finisce fra gli scarti del resoconto." },
+          "imposta": {
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": { "^_": {} },
+            "required": ["colonna", "valore"],
+            "properties": {
+              "colonna": { "type": "integer", "minimum": 0, "description": "Colonna da scrivere." },
+              "valore": { "type": "string", "description": "Valore fisso da scrivere." }
+            }
+          }
+        },
+        "allOf": [
+          { "oneOf": [ { "required": ["uguale"] }, { "required": ["contiene"] }, { "required": ["vuota"] } ] },
+          { "oneOf": [
+              { "required": ["imposta"], "not": { "required": ["scarta"], "properties": { "scarta": { "const": true } } } },
+              { "required": ["scarta"], "properties": { "scarta": { "const": true } }, "not": { "required": ["imposta"] } }
+          ] }
+        ]
+      }
+    },
+    "campiExtra": {
+      "type": "object",
+      "description": "Funzione avanzata: indice del campo del movimento -> colonna del CSV da copiarci. #campiextra",
+      "propertyNames": { "pattern": "^[0-9]+$" },
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+
+    "separatoreCausale": {
+      "type": "string",
+      "default": ".",
+      "description": "Carattere che unisce causale, causale2 e causale3 nella chiave di mappaCausali (\"Trade.Buy\"). #causale-composita"
+    },
+    "causaliUppercase": {
+      "type": "boolean",
+      "default": false,
+      "description": "true = le parti della causale composita vanno in maiuscolo prima di unirle. #causale-composita"
+    },
+    "mappaCausali": {
+      "type": "object",
+      "description": "Causale del CSV (confronto senza distinzione di maiuscole) -> tipo interno. Una causale che non compare qui (ne' in causalePerNota o contropartitaDaNota) fa scartare la riga come CAUSALE SCONOSCIUTA. #mappacausali",
+      "additionalProperties": { "$ref": "#/definitions/tipoInterno" }
+    },
+    "causalePerNota": {
+      "type": "array",
+      "description": "Riclassifica una riga in base al testo della colonna note. Vince la prima regola che combacia. Richiede colonne.note. #causalepernota",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "patternProperties": { "^_": {} },
+        "required": ["notaContiene", "tipo"],
+        "properties": {
+          "causale": { "type": "string", "description": "Causale CSV a cui si limita la regola. Assente = qualunque causale." },
+          "notaContiene": { "type": "string", "description": "Testo cercato nella nota, senza distinzione di maiuscole." },
+          "tipo": { "$ref": "#/definitions/tipoInterno" }
+        }
+      }
+    },
+    "tipoSeCrypto": {
+      "type": "object",
+      "description": "Causale CSV -> tipo interno da usare quando la moneta della riga NON e' una valuta FIAT. Le righe in FIAT tengono il tipo di mappaCausali. Dalla 1.0.65.07. #tiposecrypto",
+      "additionalProperties": { "$ref": "#/definitions/tipoInterno" }
+    },
+    "tipoSeSola": {
+      "type": "array",
+      "description": "Tipo di ripiego per una causale che resta da sola nel suo gruppo di righe: se nel gruppo non c'e' nessuna delle causali con, la riga prende tipo invece di quello di mappaCausali. Dalla 1.0.64.07. #tiposesola",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "patternProperties": { "^_": {} },
+        "required": ["causale", "con", "tipo"],
+        "properties": {
+          "causale": { "type": "string", "description": "Causale CSV della riga." },
+          "con": { "type": "array", "items": { "type": "string" }, "description": "Causali CSV che, se presenti nel gruppo, fanno tenere il tipo normale." },
+          "tipo": { "$ref": "#/definitions/tipoInterno" }
+        }
+      }
+    },
+    "contropartitaDaNota": {
+      "type": "object",
+      "description": "Per le righe con una sola moneta, quando l'altra moneta e il suo importo stanno solo nella nota (\"Bought 0.5 FORTH for 3.015 EUR ...\"). Dalla 1.0.66 (beta 1.0.65.11). #contropartitadanota",
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "causali": {
+          "type": "object",
+          "description": "Causale CSV -> tipo interno. Queste causali non vanno ripetute in mappaCausali.",
+          "additionalProperties": { "$ref": "#/definitions/tipoInterno" }
+        },
+        "commissioneEuro": { "type": "integer", "minimum": 0, "description": "Colonna con la commissione gia' in euro. Facoltativa." }
+      }
+    },
+    "causaliChiuse": {
+      "type": "array",
+      "description": "TIPI INTERNI (non causali del CSV) le cui righe restano movimenti a se' anche quando condividono id o istante con altre righe. Tipicamente TRASFERIMENTO-CRYPTO, le ricompense, COMMISSIONI, SCAMBIO DIFFERITO, TRASFERIMENTO-CRYPTO-INTERNO. #causalichiuse",
+      "items": { "$ref": "#/definitions/tipoInterno" }
+    },
+    "movimentoChiuso": {
+      "type": "array",
+      "description": "Vecchio nome di causaliChiuse, ancora accettato. Nei file nuovi usa causaliChiuse.",
+      "items": { "$ref": "#/definitions/tipoInterno" }
+    },
+
+    "causaliUscita": {
+      "$ref": "#/definitions/elencoCausali",
+      "description": "Causali CSV la cui quantita' diventa negativa (uscita). Per i file con quantita' sempre positive. #causaliuscita"
+    },
+    "causaliEntrata": {
+      "$ref": "#/definitions/elencoCausali",
+      "description": "Causali CSV la cui quantita' diventa positiva (entrata). #causalientrata"
+    },
+    "versoForzato": {
+      "enum": ["", "ENTRATA", "USCITA"],
+      "description": "Verso di tutte le righe del file, per gli export di soli depositi o soli prelievi. #versoforzato"
+    },
+    "causaliScambiaGambe": {
+      "$ref": "#/definitions/elencoCausali",
+      "description": "Causali CSV per cui le colonne di entrata e di uscita si scambiano di ruolo (es. Sell con le stesse colonne di Buy). #causaliscambiagambe"
+    },
+    "gambaDoppiaConSegnoSuUscita": {
+      "type": "boolean",
+      "default": false,
+      "description": "Per gli export (Nexo) in cui ogni riga ha due colonne moneta ma e' uno scambio solo quando le monete sono diverse. #gambadoppiaconsegnosuuscita"
+    },
+
+    "consolidaRigheStessaData": {
+      "type": "boolean",
+      "default": false,
+      "description": "true = le righe con lo stesso id o lo stesso istante (entro la tolleranza) diventano un solo movimento, per esempio le due gambe di uno scambio. #consolidarighestessadata"
+    },
+    "tolleranzaSecondiConsolidamento": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 2,
+      "description": "Secondi di distanza ammessi fra righe da unire. #tolleranzasecondiconsolidamento"
+    },
+    "causaliDifferite": {
+      "$ref": "#/definitions/elencoCausali",
+      "description": "Se presente, la tolleranza vale solo per i gruppi con almeno una di queste causali CSV; per gli altri serve lo stesso istante esatto. #causalidifferite"
+    },
+    "raggruppamentoPerCausale": {
+      "type": "object",
+      "description": "Causale CSV -> colonna su cui raggruppare le sue righe, quando le gambe condividono una colonna diversa dall'id. #raggruppamentopercausale",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "causaliConsolidaPerGiorno": {
+      "$ref": "#/definitions/elencoCausali",
+      "description": "Causali CSV sommate in un solo movimento per giorno, moneta e causale (micro-interessi). #causaliconsolidapergiorno"
+    },
+    "causaliAnnullamento": {
+      "type": "object",
+      "description": "Causale CSV dell'annullamento -> causale CSV annullata (es. \"Withdrawal Canceled\": \"Withdrawal\"). La coppia trovata non viene importata. #causaliannullamento",
+      "additionalProperties": { "type": "string" }
+    },
+    "minutiScambioDifferito": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 15,
+      "description": "Distanza massima in minuti fra le due meta' di uno SCAMBIO DIFFERITO. #scambio-differito"
+    },
+
+    "ricostruisciLordoSeFeeSuMonetaUscita": {
+      "type": "boolean",
+      "default": false,
+      "description": "true quando la quantita' in uscita comprende gia' la commissione nella stessa moneta. #ricostruiscilordosefeesumonetauscita"
+    },
+    "ricostruisciLordoSeFeeSuMonetaEntrata": {
+      "type": "boolean",
+      "default": false,
+      "description": "true quando la quantita' in entrata e' al netto della commissione nella stessa moneta. #ricostruiscilordosefeesumonetaentrata"
+    },
+    "colonneControvalore": {
+      "type": "object",
+      "description": "Per gli export il cui totale comprende commissione e spread (Coinbase): il costo diventa totale - commissione. #colonnecontrovalore",
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "totale": { "$ref": "#/definitions/indice", "description": "Colonna del totale comprensivo di commissione e spread." },
+        "commissione": { "$ref": "#/definitions/indice", "description": "Colonna della commissione." },
+        "valuta": { "$ref": "#/definitions/indice", "description": "Colonna della valuta di totale e commissione." },
+        "causali": { "$ref": "#/definitions/elencoCausali", "description": "Causali CSV a cui si applica." },
+        "causaliConMovimentoCommissione": { "$ref": "#/definitions/elencoCausali", "description": "Sottoinsieme di causali con la sola gamba crypto in entrata: si crea anche la gamba FIAT in uscita e il movimento COMMISSIONI." },
+        "noteAcquistoDaSaldo": { "type": "array", "items": { "type": "string" }, "description": "Testi della nota che indicano un acquisto pagato dal saldo dell'exchange (Coinbase: \"EUR Wallet\")." }
+      }
+    },
+
+    "rimuoviDaNomeMoneta": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Testi da togliere dal simbolo della moneta. \"X?\" toglie X e quel che segue, \"?X\" toglie X e quel che precede, \"X\" solo X. #rimuovidanomemoneta"
+    },
+    "rimuoviCaseSensitive": {
+      "type": "boolean",
+      "default": false,
+      "description": "true = rimuoviDaNomeMoneta distingue maiuscole e minuscole. #rimuovicasesensitive"
+    },
+    "rinominaMonete": {
+      "type": "object",
+      "description": "Simbolo nel CSV -> simbolo da usare, applicato dopo rimuoviDaNomeMoneta. #rinominamonete",
+      "additionalProperties": { "type": "string" }
+    },
+
+    "walletPerCausale": {
+      "type": "object",
+      "description": "Causale CSV -> wallet diverso da nomeWallet. #walletpercausale",
+      "additionalProperties": { "type": "string" }
+    },
+    "walletSpecularePerCausale": {
+      "type": "object",
+      "description": "Causale CSV -> wallet su cui creare anche la gamba uguale e contraria. La causale va mappata su TRASFERIMENTO-CRYPTO-INTERNO, che va anche in causaliChiuse. #walletspecularepercausale",
+      "additionalProperties": { "type": "string" }
+    },
+    "girocontoFiat": {
+      "type": "object",
+      "description": "Euro spostati fra due tuoi wallet: le coppie prelievo/deposito diventano un trasferimento. Va dichiarato in entrambe le configurazioni. #girocontofiat",
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "controparte": { "type": "string", "description": "nomeExchange dell'altro wallet." },
+        "causali": { "$ref": "#/definitions/elencoCausali", "description": "Causali CSV dei giroconti su questo wallet." },
+        "causaliControparte": { "$ref": "#/definitions/elencoCausali", "description": "Causali CSV dei giroconti sul wallet controparte." },
+        "secondiTolleranza": { "type": "integer", "minimum": 0, "default": 60, "description": "Distanza massima in secondi fra le due gambe." }
+      }
+    },
+
+    "causaliDerivati": {
+      "type": "object",
+      "description": "Causale CSV -> marcatore del derivato (PNL, FUNDING, BONUS, RIMBORSO_COMMISSIONI, CONSEGNA, DUAL, COMMISSIONE). Solo identificazione e avviso, il calcolo non cambia. #causaliderivati",
+      "additionalProperties": { "type": "string" }
+    },
+    "causaliAllertaDerivati": {
+      "$ref": "#/definitions/elencoCausali",
+      "description": "Causali CSV che fanno comparire l'avviso sui derivati senza marcare i movimenti. #causaliallertaderivati"
+    },
+    "causaliAPI": {
+      "type": "object",
+      "description": "Solo per le configurazioni lette anche dall'import via API (Bitget): codice di tipo dell'API -> causale del CSV. Non serve per un import da file. Dalla 1.0.65.05.",
+      "additionalProperties": { "type": "string" }
+    }
+  },
+
+  "definitions": {
+    "indice": {
+      "type": "integer",
+      "minimum": -1
+    },
+    "elencoCausali": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "tipoInterno": {
+      "description": "Tipo interno del movimento, in maiuscolo come scritto qui. TRASFERIMENTO-CRYPTO, SCAMBIO CRYPTO-CRYPTO, ACQUISTO CRYPTO, VENDITA CRYPTO, DEPOSITO FIAT, PRELIEVO FIAT, DUST-CONVERSION e SPESA lasciano decidere al programma dalle monete e dal verso. TRASFERIMENTO-CRYPTO-INTERNO sposta fra comparti dello stesso exchange senza plusvalenze. REWARD, ALTRE-REWARD, EARN, STAKING REWARDS, CASHBACK, AIRDROP sono ricompense (una ricompensa in uscita diventa un rimborso). COMMISSIONI e' una commissione (in entrata diventa un cashback). IGNORA salta la riga senza segnalarla. SCAMBIO DIFFERITO e' meta' di uno scambio in due righe separate. #mappacausali",
+      "enum": [
+        "TRASFERIMENTO-CRYPTO",
+        "SCAMBIO CRYPTO-CRYPTO",
+        "DUST-CONVERSION",
+        "ACQUISTO CRYPTO",
+        "VENDITA CRYPTO",
+        "DEPOSITO FIAT",
+        "PRELIEVO FIAT",
+        "SPESA",
+        "TRASFERIMENTO-CRYPTO-INTERNO",
+        "TRASFERIMENTO INTERNO",
+        "TRANSAZIONE TECNICA INTERNA",
+        "REWARD",
+        "ALTRE-REWARD",
+        "EARN",
+        "STAKING REWARDS",
+        "STAKING REWARD",
+        "CASHBACK",
+        "AIRDROP",
+        "COMMISSIONI",
+        "COMMISSIONE",
+        "CASHOUT O SIMILARE",
+        "RETTIFICA GIACENZA",
+        "DEPOSITO A COSTO 0",
+        "SCAMBIO DIFFERITO",
+        "IGNORA",
+        "NON CONSIDERARE"
+      ]
+    }
+  }
+}

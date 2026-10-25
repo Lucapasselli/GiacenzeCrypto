@@ -15,10 +15,80 @@ Questa guida spiega come creare un file JSON per importare qualunque file CSV ne
 
 Ogni proprietà ha un valore predefinito. Se non la inserisci nel JSON, viene usato il default indicato.
 
+Le stesse regole sono pubblicate anche come **schema JSON**, un file che i programmi sanno leggere:
+[configurazione-import.schema.json](https://lucapasselli.github.io/GiacenzeCrypto/schema/configurazione-import.schema.json).
+Serve a un editor per segnalare gli errori mentre scrivi e a un'IA per non inventare chiavi o valori (vedi la
+sezione seguente).
+
+## Scrivere la configurazione con un'IA {#con-una-ia}
+
+Un assistente come ChatGPT, Claude o Gemini può scrivere la configurazione al posto tuo, ma senza le
+informazioni giuste tende a inventare chiavi che il programma non conosce, a sbagliare gli indici delle
+colonne o a scegliere tipi di movimento inesistenti. Il risultato si importa senza errori evidenti e classifica
+male i movimenti. Per ridurre il rischio dagli queste quattro cose.
+
+1. **Lo schema JSON**, allegato come file oppure con il suo indirizzo, se l'assistente può leggere le pagine web:
+   `https://lucapasselli.github.io/GiacenzeCrypto/schema/configurazione-import.schema.json`.
+2. **Questo manuale**. In un solo file di testo, insieme agli altri manuali, si trova a
+   `https://lucapasselli.github.io/GiacenzeCrypto/llms-full.txt`.
+3. **La configurazione ufficiale più simile** al tuo file, presa dalla cartella `config/import/` del programma
+   oppure da [GitHub](https://github.com/Lucapasselli/GiacenzeCrypto/tree/master/config/import). Partire da un file
+   che funziona è molto più sicuro che partire da zero.
+4. **L'intestazione e 20-30 righe del tuo CSV**, scelte in modo che compaiano tutte le causali presenti nel file.
+   Prima di incollarle sostituisci i dati che non vuoi condividere (identificativo utente, indirizzi dei wallet,
+   hash delle transazioni) con valori inventati, lasciando intatti date, monete, quantità e causali.
+
+Un testo da cui partire:
+
+```text
+Devo scrivere una configurazione JSON per importare un file CSV nel programma Giacenze Crypto.
+Ti allego lo schema JSON della configurazione, il manuale, una configurazione ufficiale simile
+e l'inizio del mio CSV.
+Regole:
+- Usa solo le chiavi e i valori ammessi dallo schema, niente chiavi inventate.
+- Gli indici delle colonne contano da 0.
+- Ogni causale presente nel CSV deve comparire in mappaCausali, con un tipo interno dello schema
+  scritto esattamente come lì (in maiuscolo).
+- causaliChiuse contiene tipi interni, non causali del CSV.
+- Se il file ha la sola data senza ora usa oraSeSoloData.
+- Se usi chiavi indicate come "Dalla versione X" imposta versioneMinimaApp.
+- Non mettere "centralizzato": true.
+Alla fine spiegami, causale per causale, che tipo hai scelto e perché, così posso controllarlo.
+```
+
+Chiedere la spiegazione causale per causale è la parte più utile, perché la scelta del tipo interno decide
+come il movimento viene trattato nel calcolo.
+
+**Prima di usare il file**:
+
+- Se lo apri con un editor che legge gli schemi JSON (per esempio Visual Studio Code), aggiungi come prima riga
+  `"$schema": "https://lucapasselli.github.io/GiacenzeCrypto/schema/configurazione-import.schema.json",` e
+  l'editor sottolinea chiavi sconosciute, valori non ammessi e numeri scritti come testo. Il programma ignora
+  questa chiave. Le versioni fino alla 1.0.65.13 la elencano fra le opzioni non riconosciute del resoconto,
+  senza altri effetti.
+- Fai un backup, importa il CSV e leggi il resoconto dell'importazione. Le righe scartate (`CAUSALE
+  SCONOSCIUTA`, `DATA NON PARSABILE`, `RIGA TROPPO CORTA`...) e le *opzioni della configurazione non
+  riconosciute* indicano cosa correggere. Puoi incollare il resoconto all'assistente e chiedergli di sistemare
+  la configurazione.
+- Controlla nella tabella dei movimenti qualche riga per ogni causale: verso, monete, quantità e tipo.
+
+Gli errori più frequenti delle configurazioni scritte da un'IA, tutti segnalati dallo schema tranne gli ultimi due:
+
+- Un tipo interno inventato (`DEPOSITO CRYPTO`) o in minuscolo (`reward`). Il programma non lo rifiuta: tratta
+  la riga come un movimento generico e ne decide la natura solo dalle monete, quindi una ricompensa diventa un
+  deposito da classificare.
+- Causali del CSV scritte in `causaliChiuse`, che invece vuole i tipi interni.
+- Un indice di colonna scritto fra virgolette (`"3"`) o una chiave che non esiste (`"importo"` dentro `colonne`).
+- Un `formatoData` senza l'ora per un file che ha solo la data, che fa scartare tutte le righe. Vedi
+  [`oraSeSoloData`](#orasesolodata).
+- Indici contati da 1 invece che da 0, che lo schema non può vedere: la data finisce nella colonna sbagliata.
+- Quantità sempre positive senza `causaliUscita`, così i prelievi diventano depositi.
+
 ## Struttura generale {#struttura-generale}
 
 ```json
 {
+"$schema": "https://lucapasselli.github.io/GiacenzeCrypto/schema/configurazione-import.schema.json",
 "nomeExchange": "...",
 "fontePrezzoPreferita": "",
 "fornitore": "...",
@@ -37,7 +107,12 @@ Ogni proprietà ha un valore predefinito. Se non la inserisci nel JSON, viene us
 "autoDetectColonne": false,
 "mappaAutoDetect": { ... },
 "formatoData": "yyyy-MM-dd HH:mm:ss",
+"oraSeSoloData": "12:00:00",
 "fuso": "UTC",
+"fusoDaIntestazione": "",
+"fusoPerPeriodo": [ ... ],
+"colonneCalcolate": [ ... ],
+"regoleRiga": [ ... ],
 "consolidaRigheStessaData": false,
 "tolleranzaSecondiConsolidamento": 2,
 "causaliDifferite": [],
@@ -47,9 +122,11 @@ Ogni proprietà ha un valore predefinito. Se non la inserisci nel JSON, viene us
 "colonne": { ... },
 "raggruppamentoPerCausale": { ... },
 "colonneControvalore": { ... },
+"contropartitaDaNota": { ... },
 "mappaCausali": { ... },
 "causalePerNota": [ ... ],
 "tipoSeCrypto": { ... },
+"tipoSeSola": [ ... ],
 "causaliChiuse": [ ... ],
 "causaliUscita": [ ... ],
 "causaliEntrata": [ ... ],
@@ -68,10 +145,14 @@ Ogni proprietà ha un valore predefinito. Se non la inserisci nel JSON, viene us
 "causaliAllertaDerivati": [ ... ],
 "campiExtra": { ... },
 "centralizzato": false,
+"noteRevisione": { ... },
+"causaliAPI": { ... },
 "separatoreCausale": ".",
 "causaliUppercase": false
 }
 ```
+
+Le chiavi che cominciano con `_` sono commenti, ammessi in qualunque punto del file (`"_nota": "..."`).
 
 ## 1. Intestazione {#1-intestazione}
 
@@ -273,6 +354,34 @@ Formato della data/ora nel CSV, con i token Java di DateTimeFormatter.
 "formatoData": "MM/dd/yy HH:mm"
 ```
 
+Il testo fisso va fra apici singoli e le parti che a volte mancano fra parentesi quadre:
+
+```json
+"formatoData": "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+"formatoData": "yyyy-MM-dd HH:mm:ss[.SSS]"
+```
+
+Il formato deve comprendere l'ora. Con `"yyyy-MM-dd"` una data come `2025-01-10` non viene letta e la riga
+viene scartata con il motivo `DATA NON PARSABILE`. Per un file con il solo giorno usa un formato con l'ora e
+[`oraSeSoloData`](#orasesolodata).
+
+### `oraSeSoloData` {#orasesolodata}
+
+**Tipo:** stringa `HH:mm:ss` | **Default:** assente | **Disponibile dalla versione 1.0.64.09**
+
+Ora da aggiungere alle date che nel file hanno solo il giorno. Funziona sia per un file che ha sempre la sola
+data sia per un file che mescola righe con e senza ora (lo storico Simple Earn di Binance). L'ora è sempre in
+**UTC**, qualunque sia il `fuso` del file: `"12:00:00"` tiene il movimento nello stesso giorno anche in ora
+italiana, con o senza ora legale.
+
+```json
+"formatoData": "yyyy-MM-dd HH:mm:ss",
+"oraSeSoloData": "12:00:00"
+```
+
+Le righe dello stesso giorno ricevono la stessa ora: se non sono parti dello stesso movimento lascia
+`consolidaRigheStessaData` a false, altrimenti verrebbero unite.
+
 ### `fuso` {#fuso}
 
 **Tipo:** stringa | **Default:** "UTC"
@@ -284,6 +393,40 @@ Fuso orario delle date nel CSV. Vengono convertite nel fuso locale dell'app.
 "fuso": "Europe/Rome"
 "fuso": "UTC+2"
 ```
+
+Con un punto interrogativo finale (`"UTC?"`) vince il fuso scritto nel **nome del file**, se c'è (Binance mette
+nel nome dell'export il fuso scelto sul sito, per esempio `(UTC+2)`). Lasciato vuoto (`""`), il programma usa
+il fuso del nome del file e, se nemmeno lì c'è, lo chiede al momento dell'importazione.
+
+### `fusoDaIntestazione` {#fusodaintestazione}
+
+**Tipo:** stringa | **Default:** assente | **Disponibile dalla versione 1.0.64.10**
+
+Etichetta con cui il file dichiara il proprio fuso in una delle righe di intestazione, per esempio
+`Time Zone: UTC+8` negli export di OKX, dove il fuso è quello scelto dall'utente. Se la trova, il fuso del file
+vince su `fuso`. Se il file non la contiene (export vecchi) resta `fuso`.
+
+```json
+"fusoDaIntestazione": "Time Zone:"
+```
+
+### `fusoPerPeriodo` {#fusoperperiodo}
+
+**Tipo:** array di `{ da, a, fuso }` | **Default:** [] | **Disponibile dalla versione 1.0.65.02**
+
+Per i file che hanno cambiato fuso nel tempo (il file dei depositi e prelievi di Nexo Pro è in UTC nel 2023 e in
+ora locale nel 2025). Ogni voce dà il fuso delle righe con la data compresa fra `da` e `a` (estremi compresi,
+formato `AAAA-MM-GG`), e vince su tutto il resto. I periodi non possono sovrapporsi.
+
+```json
+"fusoPerPeriodo": [
+  { "da": "2023-01-01", "a": "2023-12-31", "fuso": "UTC" },
+  { "da": "2024-01-01", "a": "2025-12-31", "fuso": "Europe/Rome" }
+]
+```
+
+⚠️ Non aggiungerlo a una configurazione con cui hai già importato: sposta l'orario dei movimenti di quel
+periodo, e un nuovo import non li riconosce più come già presenti.
 
 ## 3. Colonne del CSV {#3-colonne-del-csv}
 
@@ -381,6 +524,68 @@ Una riga la cui cella non contiene il separatore viene scartata e segnalata come
 L'esempio è quello di KuCoin: la coppia sta nella colonna 3, le colonne virtuali 16 e 17 vengono dopo
 l'ultima colonna vera, e le vendite (`SELL`) hanno i ruoli di entrata e uscita invertiti rispetto agli
 acquisti (vedi `causaliScambiaGambe`).
+
+#### `importoQuote` {#importoquote}
+
+**Tipo:** oggetto `{ colonna, quantita, prezzo }` dentro `coppia` | **Disponibile dalla versione 1.0.65.01**
+
+Per gli export che riportano quantità e prezzo ma non l'importo della seconda moneta (Nexo Pro). Il programma
+crea un'altra colonna virtuale, alla posizione `colonna`, con il prodotto esatto della colonna `quantita` per la
+colonna `prezzo`. La cella resta vuota se uno dei due manca o non è un numero (un ordine annullato).
+
+```json
+"coppia": { "colonna": 2, "separatore": "/", "base": 14, "quote": 15,
+            "importoQuote": { "colonna": 16, "quantita": 9, "prezzo": 6 } },
+"colonne": { "moneta": 14, "quantita": 9, "monetaUscita": 15, "quantitaUscita": 16 }
+```
+
+### Trasformare le righe prima di leggerle {#trasformare-le-righe}
+
+Due strumenti semplici per i file che non hanno già tutto quello che serve in una colonna. Si applicano a ogni
+riga subito dopo la lettura, in quest'ordine: `coppia`, `colonneCalcolate`, `regoleRiga`. Ognuno può quindi
+usare le colonne prodotte da quelli prima.
+
+#### `colonneCalcolate` {#colonnecalcolate}
+
+**Tipo:** array di `{ colonna, operazione, a, b }` | **Default:** [] | **Disponibile dalla versione 1.0.65.02**
+
+Crea una colonna virtuale alla posizione `colonna` con il risultato di un'operazione fra le colonne `a` e `b`:
+`prodotto`, `quoziente` (a diviso b), `somma`, `differenza` (a meno b). Le voci si applicano in ordine, quindi
+una può usare il risultato di quelle prima. La cella resta vuota se un operando manca o non è un numero, o se il
+divisore è zero. Scegli per `colonna` un numero oltre l'ultima colonna vera del CSV.
+
+```json
+"colonneCalcolate": [
+  { "colonna": 12, "operazione": "prodotto", "a": 5, "b": 6 }
+],
+"colonne": { "valoreEuro": 12 }
+```
+
+#### `regoleRiga` {#regoleriga}
+
+**Tipo:** array di regole | **Default:** [] | **Disponibile dalla versione 1.0.65.02**
+
+Ogni regola ha **una** condizione su una colonna e **una** azione. Le regole si valutano tutte, in ordine, e
+ognuna vede le modifiche di quelle prima. Una regola che scarta la riga ferma le successive.
+
+| Campo | Descrizione |
+|---|---|
+| `colonna` | Colonna da controllare. |
+| `uguale` | Condizione: la cella è uguale a questo testo, senza distinzione fra maiuscole e minuscole. |
+| `contiene` | Condizione: la cella contiene questo testo, senza distinzione fra maiuscole e minuscole. |
+| `vuota` | Condizione: `true` se la cella è vuota, `false` se non lo è. |
+| `imposta` | Azione: `{ "colonna": n, "valore": "testo" }` scrive un valore fisso nella colonna `n`. Non può scrivere la colonna della data. |
+| `scarta` | Azione: `true` scarta la riga, che compare nel resoconto con il motivo `REGOLA DI RIGA`. |
+
+```json
+"regoleRiga": [
+  { "colonna": 3, "uguale": "Transfer", "imposta": { "colonna": 3, "valore": "Deposit" } },
+  { "colonna": 4, "vuota": true, "scarta": true }
+]
+```
+
+Non è un linguaggio di regole: niente condizioni combinate e niente valori presi da altre colonne. Se servono,
+è un caso da segnalare.
 
 ### Causale composita {#causale-composita}
 
@@ -517,9 +722,22 @@ Per ignorare righe senza contarle come scarti, mappa su "IGNORA" (vale anche "NO
 | `TRASFERIMENTO-CRYPTO` | Deposito o prelievo di crypto. Il verso lo decide il segno della quantità, per questo **non esistono** tipologie separate per deposito e prelievo. |
 | `TRASFERIMENTO-CRYPTO-INTERNO` | Spostamento fra comparti dello stesso exchange. Non genera plusvalenze. |
 | `SCAMBIO DIFFERITO` | Metà di uno scambio che compare come due righe indipendenti (vedi sezione 6). |
-| `REWARD`, `ALTRE-REWARD`, `EARN`, `STAKING REWARDS`, `CASHBACK`, `AIRDROP` | Ricompense di vario tipo. |
-| `COMMISSIONI` | Commissione pagata come movimento a sé. |
-| `IGNORA` | Riga da saltare senza segnalarla come scartata. |
+| `REWARD`, `ALTRE-REWARD`, `EARN`, `STAKING REWARDS`, `CASHBACK`, `AIRDROP` | Ricompense di vario tipo. Una ricompensa con quantità negativa diventa il rimborso di quella ricompensa. |
+| `COMMISSIONI` | Commissione pagata come movimento a sé. Con quantità positiva diventa un cashback. |
+| `SPESA` | Come `TRASFERIMENTO-CRYPTO`: la natura la decidono le monete e il verso. La usano le configurazioni CoinTracking. |
+| `CASHOUT O SIMILARE` | Prelievo già classificato come cashout o similare (vedi il manuale *Classificazione dei movimenti*). |
+| `RETTIFICA GIACENZA` | Prelievo già classificato come rettifica di giacenza. |
+| `DEPOSITO A COSTO 0` | Deposito già classificato come deposito a costo zero. |
+| `IGNORA` | Riga da saltare senza segnalarla come scartata. Vale anche `NON CONSIDERARE`. |
+
+Sono ammessi anche alcuni sinonimi, con lo stesso effetto: `STAKING REWARD` (come `STAKING REWARDS`),
+`COMMISSIONE` (come `COMMISSIONI`), `TRASFERIMENTO INTERNO` e `TRANSAZIONE TECNICA INTERNA` (come
+`TRASFERIMENTO-CRYPTO-INTERNO`). L'elenco completo è nello schema JSON.
+
+⚠️ **Scrivi il tipo esattamente come in tabella, in maiuscolo.** Il programma non rifiuta un tipo che non
+conosce: un valore come `reward` o `DEPOSITO CRYPTO` produce un movimento generico, la cui natura viene decisa
+solo dalle monete e dal verso, quindi una ricompensa diventa un deposito da classificare a mano. Lo schema JSON
+invece lo segnala.
 
 Una causale non presente in `mappaCausali` (e non coperta da `causalePerNota` o da `contropartitaDaNota`) fa scartare la riga, che
 compare fra i movimenti sconosciuti del resoconto con il testo `CAUSALE SCONOSCIUTA`. Per altri esempi apri
@@ -577,6 +795,24 @@ qui sotto le prime due diventano una vendita USDC → EUR e la terza un prelievo
 },
 "causaliDifferite": ["Purchase", "Coin Purchase"],
 "tolleranzaSecondiConsolidamento": 1
+```
+
+### `tipoSeSola` {#tiposesola}
+
+**Tipo:** array di regole `{ causale, con, tipo }` | **Default:** [] | **Disponibile dalla versione 1.0.64.07**
+
+Tipo di ripiego per una causale che di solito arriva insieme a un'altra ma a volte arriva da sola. Se nel gruppo
+di righe della causale `causale` c'è almeno una delle causali elencate in `con`, la riga prende il tipo della
+`mappaCausali`. Altrimenti prende `tipo`.
+
+Caso reale (Bybit): il token ricevuto da un Launchpad (`airdropAssetIncrease`) arriva un secondo dopo il BIT
+impegnato (`commitmentForLaunchpad`), e insieme formano uno scambio. Ma lo stesso token può arrivare anche da
+solo, e allora è un airdrop.
+
+```json
+"tipoSeSola": [
+  { "causale": "airdropAssetIncrease", "con": ["commitmentForLaunchpad"], "tipo": "AIRDROP" }
+]
 ```
 
 ### `causaliChiuse` {#causalichiuse}
@@ -1016,13 +1252,37 @@ già previsto dal programma, e finisce quindi sotto quell'exchange accanto alle 
 "centralizzato": true
 ```
 
+### `noteRevisione`, `causaliAPI` e `$schema` {#altre-chiavi}
+
+Tre chiavi che non cambiano la lettura del CSV:
+
+- `noteRevisione` (oggetto causale → testo): appunti di chi mantiene il file, per esempio le causali da
+  ricontrollare. Il programma non li usa.
+- `causaliAPI` (oggetto codice → causale, **dalla versione 1.0.65.05**): serve solo alle configurazioni lette
+  anche dall'importazione via API di Bitget, per tradurre i codici di tipo dell'API nelle causali del CSV. In una
+  configurazione per un file non serve.
+- `$schema` (testo): l'indirizzo dello schema JSON, per gli editor che controllano il file mentre lo scrivi (vedi
+  [Scrivere la configurazione con un'IA](#con-una-ia)). Il programma la ignora. Le versioni che non la conoscono
+  la elencano fra le opzioni non riconosciute del resoconto, senza altri effetti.
+
 ## Esempi completi {#esempi-completi}
 
-Esempio 1: Binance Spot - righe separate per ogni lato dello scambio CSV "Date(UTC)","OrderNo","Pair","Type","Filled","Total","Fee","Fee Coin"
+Gli esempi seguenti sono verificati da un test automatico del programma: ogni CSV viene letto con la sua
+configurazione e deve produrre i movimenti indicati sotto il JSON, senza righe scartate.
+
+### Esempio 1: Una riga per ogni moneta, con il segno - es. Binance {#esempio-1-una-riga-per-ogni-moneta}
+
+Ogni riga muove una sola moneta e il segno della quantità dice il verso. Le righe di uno stesso scambio hanno lo
+stesso istante e vengono unite.
+
+CSV:
 
 ```text
-"2025-03-10 14:22:01","123456","BTCUSDT","BUY","0.01 BTC","620.50 USDT","0.00001","BTC"
-"2025-03-10 14:22:01","123456","BTCUSDT","SELL","620.50 USDT","","0.62","USDT"
+"User_ID","UTC_Time","Account","Operation","Coin","Change","Remark"
+"10000001","2025-03-10 14:22:01","Spot","Transaction Buy","BTC","0.01",""
+"10000001","2025-03-10 14:22:01","Spot","Transaction Spend","USDT","-620.50",""
+"10000001","2025-03-10 14:22:01","Spot","Transaction Fee","BTC","-0.00001",""
+"10000001","2025-03-12 09:05:44","Spot","Deposit","ETH","0.5",""
 ```
 
 JSON:
@@ -1031,14 +1291,19 @@ JSON:
 {
 "nomeExchange": "Binance", "nomeWallet": "Principale",
 "separatore": ",", "formatoData": "yyyy-MM-dd HH:mm:ss", "fuso": "UTC",
-"consolidaRigheStessaData": true, "tolleranzaSecondiConsolidamento": 2,
-"colonne": {
-"data": 0, "idTransazione": 1, "causale": 3,
-"moneta": 2, "quantita": 4, "quantitaFee": 6, "monetaFee": 7
+"colonne": { "data": 1, "causale": 3, "moneta": 4, "quantita": 5 },
+"consolidaRigheStessaData": true, "tolleranzaSecondiConsolidamento": 1,
+"mappaCausali": {
+"Transaction Buy": "SCAMBIO CRYPTO-CRYPTO",
+"Transaction Spend": "SCAMBIO CRYPTO-CRYPTO",
+"Transaction Fee": "COMMISSIONI",
+"Deposit": "TRASFERIMENTO-CRYPTO"
 },
-"mappaCausali": { "BUY": "SCAMBIO CRYPTO-CRYPTO", "SELL": "SCAMBIO CRYPTO-CRYPTO" }
+"causaliChiuse": ["TRASFERIMENTO-CRYPTO", "COMMISSIONI"]
 }
 ```
+
+Risultato: uno scambio USDT → BTC, una commissione in BTC e un deposito di ETH.
 
 ### Esempio 2: Riga singola per movimento - es. Tatax {#esempio-2-riga-singola-per-movimento---es-tatax}
 
@@ -1071,6 +1336,9 @@ JSON:
 }
 ```
 
+Risultato: un deposito di BTC, una ricompensa di staking in BTC (il nome `BTC.STAKING@CRYPTO.COM` viene ripulito)
+e un prelievo di ETH.
+
 ### Esempio 3: Scambio su riga singola - es. CoinTracking {#esempio-3-scambio-su-riga-singola---es-cointracking}
 
 CSV:
@@ -1101,23 +1369,29 @@ JSON:
 }
 ```
 
+Risultato: uno scambio USDC → CRO con la sua commissione in USDC, un deposito di CRO e un prelievo di USDC. La
+quantità della colonna `quantitaUscita` conta sempre come uscita, con o senza il segno meno.
+
 ### Esempio 4: Causale composita su più colonne {#esempio-4-causale-composita-su-più-colonne}
 
 CSV:
 
 ```text
 "Date","Category","SubType","Amount","Currency"
-"2025-01-10","Trade","Buy","0.005","BTC"
-"2025-01-10","Trade","Sell","200","USDT"
-"2025-01-11","Earn","Staking","0.0001","ETH"
+"2025-01-10 08:30:00","Trade","Buy","0.005","BTC"
+"2025-01-10 08:30:00","Trade","Sell","200","USDT"
+"2025-01-11 00:00:00","Earn","Staking","0.0001","ETH"
 ```
+
+Le quantità sono tutte positive: il verso lo dà la causale, quindi la vendita va in `causaliUscita`, che
+confronta la causale composita (`Trade.Sell`).
 
 JSON:
 
 ```json
 {
 "nomeExchange": "Exchange XYZ", "separatore": ",",
-"formatoData": "yyyy-MM-dd", "fuso": "UTC",
+"formatoData": "yyyy-MM-dd HH:mm:ss", "fuso": "UTC",
 "consolidaRigheStessaData": true,
 "colonne": { "data": 0, "moneta": 4, "quantita": 3, "causale": 1, "causale2": 2 },
 "separatoreCausale": ".", "causaliUppercase": false,
@@ -1127,15 +1401,51 @@ JSON:
 "Earn.Staking": "STAKING REWARDS"
 },
 "causaliChiuse": ["STAKING REWARDS"],
-"causaliEntrata": [], "causaliUscita": []
+"causaliUscita": ["Trade.Sell"]
 }
 ```
+
+Risultato: uno scambio USDT → BTC e una ricompensa di staking in ETH.
+
+### Esempio 5: Solo la data, senza l'ora {#esempio-5-solo-la-data}
+
+CSV, separato da punto e virgola e con la virgola decimale tipica degli export in italiano:
+
+```text
+Data;Operazione;Moneta;Importo
+15/01/2025;Interessi;USDC;0,52
+16/01/2025;Interessi;USDC;0,51
+20/01/2025;Prelievo;USDC;-100
+```
+
+JSON:
+
+```json
+{
+"nomeExchange": "Exchange XYZ", "nomeWallet": "Rendita",
+"separatore": ";", "formatoData": "dd/MM/yyyy HH:mm:ss", "oraSeSoloData": "12:00:00",
+"colonne": { "data": 0, "causale": 1, "moneta": 2, "quantita": 3 },
+"mappaCausali": {
+"Interessi": "EARN",
+"Prelievo": "TRASFERIMENTO-CRYPTO"
+},
+"causaliChiuse": ["EARN", "TRASFERIMENTO-CRYPTO"]
+}
+```
+
+Il formato della data comprende l'ora anche se il file non ce l'ha: è `oraSeSoloData` ad aggiungerla, alle 12
+UTC, così il giorno resta lo stesso anche in ora italiana. Con `"formatoData": "dd/MM/yyyy"` tutte le righe
+verrebbero scartate.
+
+Risultato: due ricompense e un prelievo di USDC.
 
 ## Checklist rapida {#checklist-rapida}
 
 - Apri il CSV e conta le colonne partendo da 0.
 
 - Identifica data, causale, moneta e quantità; compila la sezione colonne.
+
+- Se la data non ha l'ora, usa un `formatoData` con l'ora e `oraSeSoloData`.
 
 - Elenca tutte le causali presenti nel CSV e compila mappaCausali.
 

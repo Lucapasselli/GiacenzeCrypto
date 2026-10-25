@@ -2840,13 +2840,13 @@ come il movimento viene trattato nel calcolo.
   l'editor sottolinea chiavi sconosciute, valori non ammessi e numeri scritti come testo. Il programma ignora
   questa chiave. Le versioni fino alla 1.0.65.13 la elencano fra le opzioni non riconosciute del resoconto,
   senza altri effetti.
-- Fai un backup, importa il CSV e leggi il resoconto dell'importazione. Le righe scartate (`CAUSALE
-  SCONOSCIUTA`, `DATA NON PARSABILE`, `RIGA TROPPO CORTA`...) e le *opzioni della configurazione non
-  riconosciute* indicano cosa correggere. Puoi incollare il resoconto all'assistente e chiedergli di sistemare
-  la configurazione.
-- Controlla nella tabella dei movimenti qualche riga per ogni causale: verso, monete, quantità e tipo.
+- Prova la configurazione prima di importare: vedi [Provare una configurazione](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/creazione-json-importazioni-personalizzate.html#provare-una-configurazione).
+  Il resoconto della prova si può incollare all'assistente, che vede cosa è uscito e cosa correggere.
+- Dopo l'importazione controlla nella tabella dei movimenti qualche riga per ogni causale: verso, monete,
+  quantità e tipo.
 
-Gli errori più frequenti delle configurazioni scritte da un'IA, tutti segnalati dallo schema tranne gli ultimi due:
+Gli errori più frequenti delle configurazioni scritte da un'IA, tutti segnalati dallo schema tranne gli ultimi due
+(che la prova della configurazione fa vedere nei movimenti):
 
 - Un tipo interno inventato (`DEPOSITO CRYPTO`) o in minuscolo (`reward`). Il programma non lo rifiuta: tratta
   la riga come un movimento generico e ne decide la natura solo dalle monete, quindi una ricompensa diventa un
@@ -2857,6 +2857,32 @@ Gli errori più frequenti delle configurazioni scritte da un'IA, tutti segnalati
   [`oraSeSoloData`](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/creazione-json-importazioni-personalizzate.html#orasesolodata).
 - Indici contati da 1 invece che da 0, che lo schema non può vedere: la data finisce nella colonna sbagliata.
 - Quantità sempre positive senza `causaliUscita`, così i prelievi diventano depositi.
+
+## Provare una configurazione
+
+**Disponibile dalla versione 1.0.66**
+
+Nella finestra *Importazioni* il pulsante **Prova configurazione** legge un CSV con una configurazione e mostra
+cosa produrrebbe, **senza importare nulla**. Si può provare la configurazione selezionata nelle tendine oppure un
+file JSON qualunque, anche fuori dalle cartelle del programma, per esempio appena scritto con un'IA.
+
+La finestra della prova ha quattro schede:
+
+- **Movimenti**: quelli che l'importazione creerebbe, con la causale del CSV da cui nasce ciascuno.
+- **Riepilogo per causale**: per ogni causale, o gruppo di causali che il programma unisce in un solo movimento,
+  il tipo interno usato e quali movimenti ne escono. È il punto più rapido per vedere una ricompensa finita fra i
+  depositi o uno scambio spezzato in due movimenti.
+- **Saldi per moneta**: entrate, uscite e saldo di ogni moneta, da confrontare con quello che mostra l'exchange.
+- **Righe scartate**: le righe che non producono movimenti, con il motivo.
+
+In alto la prova segnala anche le opzioni non riconosciute e i valori che non sono tipi interni. Dopo aver
+corretto il JSON, **Ripeti la prova** rilegge configurazione e CSV. **Copia resoconto** copia tutto in testo
+semplice, pronto da incollare in un chatbot. Il resoconto contiene le righe scartate così come sono nel CSV:
+controlla che non ci siano dati che non vuoi condividere.
+
+La prova non cerca i prezzi (i controvalori sono solo quelli scritti nel CSV) e non fa quello che l'importazione
+fa sull'archivio dopo aver scritto i movimenti: l'abbinamento degli `SCAMBIO DIFFERITO`, i giroconti di
+`girocontoFiat` e il controllo dei movimenti già presenti.
 
 ## Struttura generale
 
@@ -3511,7 +3537,8 @@ Sono ammessi anche alcuni sinonimi, con lo stesso effetto: `STAKING REWARD` (com
 ⚠️ **Scrivi il tipo esattamente come in tabella, in maiuscolo.** Il programma non rifiuta un tipo che non
 conosce: un valore come `reward` o `DEPOSITO CRYPTO` produce un movimento generico, la cui natura viene decisa
 solo dalle monete e dal verso, quindi una ricompensa diventa un deposito da classificare a mano. Lo schema JSON
-invece lo segnala.
+lo segnala, e dalla versione 1.0.66 lo segnalano anche la prova della configurazione e il resoconto
+dell'importazione, fra i *tipi di movimento non riconosciuti*.
 
 Una causale non presente in `mappaCausali` (e non coperta da `causalePerNota` o da `contropartitaDaNota`) fa scartare la riga, che
 compare fra i movimenti sconosciuti del resoconto con il testo `CAUSALE SCONOSCIUTA`. Per altri esempi apri

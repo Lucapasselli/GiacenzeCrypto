@@ -572,6 +572,7 @@ private VoceImport voceSelezionata() {
         ComboBox_TipoImport = new javax.swing.JComboBox<>();
         Label_TipoImport = new javax.swing.JLabel();
         Bottone_Manuale = new javax.swing.JButton();
+        Bottone_ProvaConfigurazione = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
@@ -675,6 +676,15 @@ private VoceImport voceSelezionata() {
             }
         });
 
+        Bottone_ProvaConfigurazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
+        Bottone_ProvaConfigurazione.setText("<html><center><b>Prova<br>configurazione</b></center></html>");
+        Bottone_ProvaConfigurazione.setToolTipText("<html>Prova una configurazione JSON su un file CSV senza importare nulla:<br>mostra i movimenti che produrrebbe e le righe che scarterebbe.</html>");
+        Bottone_ProvaConfigurazione.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_ProvaConfigurazioneActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -701,7 +711,10 @@ private VoceImport voceSelezionata() {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 13, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(ScrollPane_Attenzione, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 403, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Bottone_Manuale, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(Bottone_ProvaConfigurazione, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Bottone_Manuale, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -739,7 +752,8 @@ private VoceImport voceSelezionata() {
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(Bottone_Manuale, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(Bottone_SelezionaFile, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(Bottone_SelezionaFile, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Bottone_ProvaConfigurazione, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -848,6 +862,48 @@ private VoceImport voceSelezionata() {
         // TODO add your handling code here:
         this.dispose();
     }//GEN-LAST:event_Bottone_AnnullaActionPerformed
+
+    private void Bottone_ProvaConfigurazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ProvaConfigurazioneActionPerformed
+        //Prova di una configurazione JSON su un CSV, senza scrivere nulla (ProvaConfigurazioneImport)
+        File json = ScegliConfigurazioneDaProvare();
+        if (json == null) {
+            return;
+        }
+        File[] csv = ScegliFileDaImportare(false);
+        if (csv == null) {
+            return;
+        }
+        GUI_ProvaConfigurazione.Avvia(this, json, csv[0]);
+    }//GEN-LAST:event_Bottone_ProvaConfigurazioneActionPerformed
+
+    /**
+     * La configurazione da provare: quella selezionata nelle tendine, se e' un JSON e l'utente la conferma, altrimenti
+     * un file scelto a mano (anche fuori dalle cartelle del programma, per esempio appena scritto con un'IA).
+     * @return il file, oppure {@code null} se l'utente ha annullato
+     */
+    private File ScegliConfigurazioneDaProvare() {
+        VoceImport voce = voceSelezionata();
+        if (voce != null && voce.isJson() && voce.fileJson.exists()) {
+            Object[] opzioni = {"Usa la configurazione selezionata", "Scegli un altro file JSON...", "Annulla"};
+            int scelta = JOptionPane.showOptionDialog(this,
+                    "Provare la configurazione selezionata (" + voce.fileJson.getName() + ")\n"
+                    + "oppure un altro file JSON?",
+                    "Prova della configurazione", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
+                    null, opzioni, opzioni[0]);
+            if (scelta == 0) return voce.fileJson;
+            if (scelta != 1) return null;
+        }
+        String cartella = DatabaseH2.Pers_Opzioni_Leggi("Directory_ProvaConfigurazione");
+        JFileChooser fc = new JFileChooser(cartella != null && !cartella.isBlank() ? cartella
+                : VarStatiche.getCartella_ConfigImport());
+        fc.setDialogTitle("Configurazione JSON da provare");
+        fc.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Configurazioni JSON", "json"));
+        if (fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION || fc.getSelectedFile() == null) {
+            return null;
+        }
+        DatabaseH2.Pers_Opzioni_Scrivi("Directory_ProvaConfigurazione", fc.getSelectedFile().getParent());
+        return fc.getSelectedFile();
+    }
    
     
     
@@ -931,6 +987,7 @@ private VoceImport voceSelezionata() {
         Download progressb = new Download();
         Bottone_SelezionaFile.setEnabled(false);
         Bottone_Annulla.setEnabled(false);
+        Bottone_ProvaConfigurazione.setEnabled(false);
         Thread thread = new Thread() {
             /** Esegue in background l'importazione dei file scelti. */
             @Override
@@ -964,6 +1021,7 @@ private VoceImport voceSelezionata() {
                     c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     Bottone_SelezionaFile.setEnabled(true);
                     Bottone_Annulla.setEnabled(true);
+                    Bottone_ProvaConfigurazione.setEnabled(true);
                     progressb.dispose();
                 }
             }
@@ -1112,6 +1170,7 @@ private VoceImport voceSelezionata() {
         progressb.MostraProgressAttesa("Piani Auto-Invest", "Abbinamento in corso...");
         Bottone_SelezionaFile.setEnabled(false);
         Bottone_Annulla.setEnabled(false);
+        Bottone_ProvaConfigurazione.setEnabled(false);
         Thread thread = new Thread(() -> {
             Binance_AutoInvest.Esito esito = null;
             Exception errore = null;
@@ -1133,6 +1192,7 @@ private VoceImport voceSelezionata() {
                 c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 Bottone_SelezionaFile.setEnabled(true);
                 Bottone_Annulla.setEnabled(true);
+                Bottone_ProvaConfigurazione.setEnabled(true);
             }
             final Binance_AutoInvest.Esito esitoF = esito;
             final Exception erroreF = errore;
@@ -1779,6 +1839,7 @@ if (voce.isJson()) {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Annulla;
     private javax.swing.JButton Bottone_Manuale;
+    private javax.swing.JButton Bottone_ProvaConfigurazione;
     private javax.swing.JButton Bottone_SelezionaFile;
     private javax.swing.JCheckBox CheckBox_Sovrascrivi;
     private javax.swing.JComboBox<String> ComboBox_Exchanges;

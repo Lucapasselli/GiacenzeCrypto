@@ -293,6 +293,7 @@ public class Importazioni {
                 GirocontiFiat.AbbinatiImportazione=0;
                 ClassificazioniAnnullate=0;
                 ChiaviConfigSconosciute.clear();
+                TipiConfigSconosciuti.clear();
             }
 
     /**
@@ -317,6 +318,27 @@ public class Importazioni {
                 + "<center>Se la configurazione è fra quelle distribuite con il programma, la gestisce una versione più"
                 + " recente: alcuni movimenti potrebbero essere stati importati in modo diverso o risultare da classificare."
                 + " Se è una configurazione personale, controllare il nome delle opzioni.";
+    }
+
+    /**
+     * Valori della configurazione d'import usata che dovrebbero essere tipi interni e non lo sono (vedi
+     * {@code ImportazioneGenerica.ConfigurazioneImport.TipiSconosciuti}): riempita da {@code ImportazioneGenerica.importaRighe},
+     * azzerata da {@link #AzzeraContatori()}, letta dal resoconto tramite {@link #TestoTipiConfigSconosciuti()}.
+     */
+    public static Set<String> TipiConfigSconosciuti = new TreeSet<>();
+
+    /**
+     * Nota del resoconto sui tipi interni sconosciuti della configurazione, o stringa vuota se non ce ne sono. Un avviso:
+     * quelle righe sono state importate come movimenti generici, classificati solo dalle monete.
+     */
+    public static String TestoTipiConfigSconosciuti() {
+        if (TipiConfigSconosciuti.isEmpty()) return "";
+        return "<b><center>TIPI DI MOVIMENTO NON RICONOSCIUTI</b><br><br>"
+                + "<center>La configurazione di importazione usa valori che non sono tipi di movimento del programma: <b>"
+                + EscapeHtml(String.join(", ", TipiConfigSconosciuti)) + "</b>.<br>"
+                + "<center>Le righe con questi valori sono state importate come movimenti generici, classificati solo dalle"
+                + " monete e dal verso: una ricompensa, per esempio, risulta un deposito da classificare. I tipi ammessi sono"
+                + " elencati nel manuale delle configurazioni JSON, scritti in maiuscolo.";
     }
 
     /**

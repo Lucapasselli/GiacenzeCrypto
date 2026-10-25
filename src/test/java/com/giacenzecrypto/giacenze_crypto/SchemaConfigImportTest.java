@@ -125,6 +125,9 @@ class SchemaConfigImportTest {
         JSONArray elenco = schemaGrezzo().getJSONObject("definitions").getJSONObject("tipoInterno").getJSONArray("enum");
         Set<String> ammessi = new TreeSet<>();
         for (int i = 0; i < elenco.length(); i++) ammessi.add(elenco.getString(i));
+        //Lo schema e l'avviso del resoconto (TipiSconosciuti) devono dire la stessa cosa
+        assertEquals(new TreeSet<>(ImportazioneGenerica.ConfigurazioneImport.TIPI_INTERNI), ammessi,
+                "tipoInterno dello schema e ConfigurazioneImport.TIPI_INTERNI");
         Set<String> attesi = new TreeSet<>(MovimentiCrypto.TipologieMovimento.keySet());
         //Trattati a parte da ImportazioneGenerica
         attesi.addAll(Set.of("IGNORA", "NON CONSIDERARE", "SCAMBIO DIFFERITO"));

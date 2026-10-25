@@ -1736,6 +1736,7 @@ public class Prezzi {
      * @return il prezzo, se preciso e diverso da zero, altrimenti {@code null}
      */
     static InfoPrezzo CercaPrezzoPreciso(Moneta m, long Data, String Rete, String fonte) {
+        if (SENZA_VALORIZZARE.get()) return null;   //conversione a secco: niente prezzi, niente rete
         if (m == null || isGambaFiat(m) || m.Moneta == null || m.Qta == null || DatabaseH2.connectionPrezzi == null) return null;
         try {
             Moneta c = m.ClonaMoneta();
@@ -3474,7 +3475,7 @@ public static int PreScaricaPrezziMonete(java.util.Collection<Moneta> monete, lo
 /** Un prezzo da exchange che servira': simbolo (quello che la valorizzazione cerchera') a un istante. */
 record SimboloIstante(String simbolo, long istante) {}
 
-/** Acceso solo dentro {@link #SenzaValorizzare}: {@link #DammiPrezzoInfoTransazione} risponde {@code null} senza cercare. */
+/** Acceso solo dentro {@link #SenzaValorizzare}: {@link #DammiPrezzoInfoTransazione} e {@link #CercaPrezzoPreciso} rispondono {@code null} senza cercare. */
 private static final ThreadLocal<Boolean> SENZA_VALORIZZARE = ThreadLocal.withInitial(() -> false);
 
 /**

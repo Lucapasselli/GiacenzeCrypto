@@ -144,6 +144,11 @@ private static final long serialVersionUID = 8L;
         if (!notaChiavi.isEmpty()) {
             notaGiroconti = notaGiroconti.isEmpty() ? notaChiavi : notaGiroconti + "<br><br>" + notaChiavi;
         }
+        //E i valori della configurazione che dovrebbero essere tipi interni e non lo sono (TipiSconosciuti)
+        String notaTipi = Importazioni.TestoTipiConfigSconosciuti();
+        if (!notaTipi.isEmpty()) {
+            notaGiroconti = notaGiroconti.isEmpty() ? notaTipi : notaGiroconti + "<br><br>" + notaTipi;
+        }
         if (!movScon.trim().equalsIgnoreCase("")){
             this.Bottone_CopiaAppunti.setEnabled(true);
             this.jScrollPane1.setVisible(true);

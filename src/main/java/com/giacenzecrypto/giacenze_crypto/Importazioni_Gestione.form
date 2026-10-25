@@ -48,7 +48,11 @@
               <EmptySpace pref="13" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="ScrollPane_Attenzione" alignment="1" min="-2" pref="403" max="-2" attributes="0"/>
-                  <Component id="Bottone_Manuale" alignment="1" min="-2" pref="240" max="-2" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="Bottone_ProvaConfigurazione" min="-2" pref="155" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Manuale" min="-2" pref="240" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -93,6 +97,7 @@
                       <Component id="Bottone_Manuale" alignment="3" min="-2" pref="60" max="-2" attributes="0"/>
                   </Group>
                   <Component id="Bottone_SelezionaFile" alignment="0" min="-2" pref="60" max="-2" attributes="0"/>
+                  <Component id="Bottone_ProvaConfigurazione" alignment="0" min="-2" pref="60" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -284,6 +289,18 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_ManualeActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_ProvaConfigurazione">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Tabella.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;center&gt;&lt;b&gt;Prova&lt;br&gt;configurazione&lt;/b&gt;&lt;/center&gt;&lt;/html&gt;"/>
+        <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Prova una configurazione JSON su un file CSV senza importare nulla:&lt;br&gt;mostra i movimenti che produrrebbe e le righe che scarterebbe.&lt;/html&gt;"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_ProvaConfigurazioneActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

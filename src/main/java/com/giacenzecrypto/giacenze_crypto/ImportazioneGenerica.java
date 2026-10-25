@@ -205,6 +205,7 @@ public class ImportazioneGenerica {
 
         // Chiavi della config che questa versione non conosce: un avviso nel resoconto, non un errore
         Importazioni.ChiaviConfigSconosciute.addAll(cfg.chiaviSconosciute);
+        Importazioni.TipiConfigSconosciuti.addAll(cfg.tipiSconosciuti);
 
         // Prelievi annullati (Bybit 'Withdrawal Canceled'): la coppia prelievo/annullamento non entra
         righe = scartaAnnullamenti(righe, cfg);
@@ -2194,6 +2195,10 @@ public class ImportazioneGenerica {
         //portata nel resoconto da importaRighe (Importazioni.TestoChiaviConfigSconosciute).
         public List<String> chiaviSconosciute = new ArrayList<>();
 
+        //--- Valori che dovrebbero essere tipi interni e non lo sono (vedi TipiSconosciuti) ------------
+        //Riempita da carica(), portata nel resoconto da importaRighe (Importazioni.TestoTipiConfigSconosciuti).
+        public List<String> tipiSconosciuti = new ArrayList<>();
+
         /**
          * Le chiavi che {@link #carica} sa leggere, per ogni oggetto a chiavi fisse della config: {@code ""} e' la
          * radice, {@code "x[]"} ogni elemento dell'array {@code x}. Gli oggetti a chiavi libere (mappaCausali,
@@ -2235,6 +2240,78 @@ public class ImportazioneGenerica {
                 Map.entry("regoleRiga[].imposta", Set.of("colonna", "valore")),
                 Map.entry("causalePerNota[]", Set.of("causale", "notaContiene", "tipo")),
                 Map.entry("tipoSeSola[]", Set.of("causale", "con", "tipo")));
+
+        /**
+         * I tipi interni che una configurazione puo' scrivere come valore di {@code mappaCausali} e delle chiavi simili:
+         * le chiavi di {@link MovimentiCrypto#TipologieMovimento}, quelli che lasciano decidere al programma dalle monete
+         * ({@code TRASFERIMENTO-CRYPTO}, {@code SCAMBIO CRYPTO-CRYPTO}...) e quelli trattati a parte qui
+         * ({@code IGNORA}, {@code NON CONSIDERARE}, {@code SCAMBIO DIFFERITO}). Il programma accetta qualunque testo e
+         * tratta quelli fuori elenco come movimenti generici: {@link #TipiSconosciuti} li segnala nel resoconto. Lo
+         * schema pubblicato ha lo stesso elenco ({@code SchemaConfigImportTest}).
+         */
+        static final Set<String> TIPI_INTERNI = Set.of(
+                "TRASFERIMENTO-CRYPTO", "SCAMBIO CRYPTO-CRYPTO", "DUST-CONVERSION", "ACQUISTO CRYPTO", "VENDITA CRYPTO",
+                "DEPOSITO FIAT", "PRELIEVO FIAT", "SPESA",
+                "TRASFERIMENTO-CRYPTO-INTERNO", "TRASFERIMENTO INTERNO", "TRANSAZIONE TECNICA INTERNA",
+                "REWARD", "ALTRE-REWARD", "EARN", "STAKING REWARDS", "STAKING REWARD", "CASHBACK", "AIRDROP",
+                "COMMISSIONI", "COMMISSIONE", "CASHOUT O SIMILARE", "RETTIFICA GIACENZA", "DEPOSITO A COSTO 0",
+                "SCAMBIO DIFFERITO", "IGNORA", "NON CONSIDERARE");
+
+        /** I tipi che il codice confronta senza distinzione di maiuscole: scritti in minuscolo funzionano lo stesso */
+        private static final Set<String> TIPI_SENZA_MAIUSCOLE = Set.of("IGNORA", "NON CONSIDERARE", "SCAMBIO DIFFERITO");
+
+        /** @return vero se {@code tipo} e' un tipo interno che il programma tratta come tale */
+        static boolean TipoInternoNoto(String tipo) {
+            if (tipo == null) return false;
+            String t = tipo.trim();
+            return TIPI_INTERNI.contains(t) || TIPI_SENZA_MAIUSCOLE.contains(t.toUpperCase());
+        }
+
+        /**
+         * I valori della configurazione che dovrebbero essere tipi interni e non lo sono, nella forma
+         * {@code "mappaCausali: Interest -> reward"}. Un tipo sconosciuto non da' errore: la riga diventa un movimento
+         * generico, classificato solo dalle monete (una ricompensa scritta {@code reward} diventa un deposito). Un
+         * valore di {@code causaliChiuse} fuori elenco e' quasi sempre una causale del CSV messa al posto del tipo.
+         */
+        static List<String> TipiSconosciuti(JSONObject root) {
+            List<String> sconosciuti = new ArrayList<>();
+            for (String chiave : List.of("mappaCausali", "tipoSeCrypto")) {
+                JSONObject o = root.optJSONObject(chiave);
+                if (o == null) continue;
+                for (String k : new TreeSet<>(o.keySet())) {
+                    if (k.startsWith("_")) continue;
+                    String v = o.optString(k, null);
+                    if (!TipoInternoNoto(v)) sconosciuti.add(chiave + ": " + k + " -> " + v);
+                }
+            }
+            JSONObject cn = root.optJSONObject("contropartitaDaNota");
+            JSONObject causaliCn = cn == null ? null : cn.optJSONObject("causali");
+            if (causaliCn != null) {
+                for (String k : new TreeSet<>(causaliCn.keySet())) {
+                    String v = causaliCn.optString(k, null);
+                    if (!k.startsWith("_") && !TipoInternoNoto(v)) sconosciuti.add("contropartitaDaNota.causali: " + k + " -> " + v);
+                }
+            }
+            for (String chiave : List.of("causalePerNota", "tipoSeSola")) {
+                JSONArray a = root.optJSONArray(chiave);
+                if (a == null) continue;
+                for (int i = 0; i < a.length(); i++) {
+                    JSONObject o = a.optJSONObject(i);
+                    if (o != null && !TipoInternoNoto(o.optString("tipo", null))) {
+                        sconosciuti.add(chiave + ": " + o.optString("tipo", ""));
+                    }
+                }
+            }
+            for (String chiave : List.of("causaliChiuse", "movimentoChiuso")) {
+                JSONArray a = root.optJSONArray(chiave);
+                if (a == null) continue;
+                for (int i = 0; i < a.length(); i++) {
+                    String v = a.optString(i, null);
+                    if (!TipoInternoNoto(v)) sconosciuti.add(chiave + ": " + v);
+                }
+            }
+            return sconosciuti;
+        }
 
         /** @return i percorsi puntati delle chiavi di {@code root} che non sono in {@link #CHIAVI_NOTE}, in ordine di lettura */
         static List<String> ChiaviSconosciute(JSONObject root) {
@@ -2941,6 +3018,11 @@ public class ImportazioneGenerica {
             if (!cfg.chiaviSconosciute.isEmpty()) {
                 LoggerGC.logInfo("Configurazione di import \"" + percorso + "\": chiavi non riconosciute da questa versione ("
                         + VarStatiche.Versione + "): " + String.join(", ", cfg.chiaviSconosciute));
+            }
+            cfg.tipiSconosciuti = TipiSconosciuti(root);
+            if (!cfg.tipiSconosciuti.isEmpty()) {
+                LoggerGC.logInfo("Configurazione di import \"" + percorso + "\": tipi interni non riconosciuti: "
+                        + String.join(", ", cfg.tipiSconosciuti));
             }
 
             return cfg;

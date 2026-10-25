@@ -103,6 +103,34 @@ class AliasPrezziTokenPrezzoPersonalizzatoTest {
     }
 
     @Test
+    void ilPrezzoPersonalizzatoVecchioPerAddressVinceSullAlias() throws Exception {
+        //I personalizzati per address inseriti fino a novembre 2025 stanno nell'archivio orario Prezzo_ora_Address_Chain.
+        //WETH su Arbitrum ha un alias con dal 2026-01-01 che dal 2026-10-25 non conta piu': a fine 2024 l'alias vale,
+        //e il prezzo messo a mano per la dichiarazione 2024 deve restare quello
+        String wethArb = "0x82af49447d8a07e3bd95bd0d56f35241523fbab1";
+        assertEquals("ETH", AliasPrezziToken.Alias(wethArb, "ARB", FINE_2024), "premessa: l'alias vale a fine 2024");
+        String chiave = (FunzioniDate.ConvertiDatadaLongallOra(FINE_2024) + "_" + wethArb + "_ARB").toUpperCase();
+        try (java.sql.PreparedStatement ps = DatabaseH2.connectionPersonale.prepareStatement(
+                "INSERT INTO Prezzo_ora_Address_Chain (ora_address_chain, prezzo) VALUES (?, ?)")) {
+            ps.setString(1, chiave);
+            ps.setString(2, "3100");
+            ps.executeUpdate();
+        }
+        Moneta weth = new Moneta();
+        weth.Moneta = "WETH";
+        weth.Tipo = "Crypto";
+        weth.Qta = "2";
+        weth.MonetaAddress = wethArb;
+        weth.Rete = "ARB";
+        Prezzi.InfoPrezzo ip = Prezzi.DammiPrezzoInfoTransazione(weth, null, FINE_2024, "ARB", "");
+
+        assertNotNull(ip, "il prezzo personalizzato dell'archivio orario per address deve essere ritrovato");
+        assertEquals(0, new BigDecimal("3100").compareTo(ip.prezzoUnitario));
+        assertEquals(0, new BigDecimal("6200").compareTo(ip.prezzoQta));
+        assertEquals("Personalizzato (Old)", ip.Fonte);
+    }
+
+    @Test
     void ilPrezzoPersonalizzatoDellaMonetaDiPrezzoValeAncheperLAlias() {
         //Nessun personalizzato su "ETH2": vale quello messo su "ETH", come prima della correzione
         Prezzi.InfoPrezzo ip = Prezzi.DammiPrezzoInfoTransazione(MonetaSenzaAddress("ETH2", "0.1"), null, FINE_2024, "", "");

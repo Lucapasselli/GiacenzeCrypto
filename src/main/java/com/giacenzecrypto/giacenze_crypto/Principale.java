@@ -1004,7 +1004,6 @@ private static final long serialVersionUID = 3L;
         Opzioni_GruppoWallet_CheckBox_PlusManuali = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale = new javax.swing.JCheckBox();
         Prezzi_Opzioni_CheckBox_ServizioOnchain = new javax.swing.JCheckBox();
-        Prezzi_Opzioni_CheckBox_AliasAnniPassati = new javax.swing.JCheckBox();
         Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti = new javax.swing.JCheckBox();
         Opzioni_RW_Pannello = new javax.swing.JPanel();
@@ -5215,13 +5214,6 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        Prezzi_Opzioni_CheckBox_AliasAnniPassati.setText("<html><b>Prezzi dagli exchange anche per gli anni già dichiarati : </b>Per alcune monete molto diffuse (es. WETH, USDC, WBTC) usa il prezzo degli exchange, più preciso, anche per gli anni precedenti al loro inserimento nell'elenco<br>(Attivo di default solo sulle nuove installazioni. Se hai già presentato dichiarazioni con questo programma lascialo spento, altrimenti i valori di quegli anni possono cambiare)</html>");
-        Prezzi_Opzioni_CheckBox_AliasAnniPassati.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Prezzi_Opzioni_CheckBox_AliasAnniPassatiActionPerformed(evt);
-            }
-        });
-
         Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama.setText("<html><b>Prezzi dei token DeFi solo da DefiLlama e coingecko : </b>Un token cercato per address (contratto) non prende più il prezzo dagli exchange per simbolo, che può appartenere a un'altra moneta con lo stesso nome. Restano esclusi i token che l'elenco degli alias dichiara uguali a una moneta degli exchange (es. WETH, USDC)<br>(Non attivo di default. Con l'opzione attiva i token più vecchi di un anno che DefiLlama non quota restano senza prezzo, e i valori di fine anno già calcolati nel quadro RW possono cambiare)</html>");
         Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -5262,7 +5254,6 @@ private static final long serialVersionUID = 3L;
                                     .addComponent(Opzioni_GruppoWallet_CheckBox_PlusManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Prezzi_Opzioni_CheckBox_ServizioOnchain, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(Prezzi_Opzioni_CheckBox_AliasAnniPassati, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
@@ -5281,8 +5272,6 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Prezzi_Opzioni_CheckBox_ServizioOnchain, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Prezzi_Opzioni_CheckBox_AliasAnniPassati, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -7004,10 +6993,6 @@ private void SettaIcone(){
         //Servizio prezzi on-chain: disattivo salvo esplicito "SI" (vedi ServizioPrezziClient.OPZIONE_ABILITATO_DEFAULT)
         Prezzi_Opzioni_CheckBox_ServizioOnchain.setSelected(
                 "SI".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(ServizioPrezziClient.OPZIONE_ABILITATO, ServizioPrezziClient.OPZIONE_ABILITATO_DEFAULT)));
-
-        //Alias prezzi anche per gli anni gia' dichiarati: al primo avvio di questa versione si accende solo se
-        //l'installazione e' nuova (nessun archivio movimenti), vedi AliasPrezziToken.InizializzaOpzione
-        Prezzi_Opzioni_CheckBox_AliasAnniPassati.setSelected(AliasPrezziToken.InizializzaOpzione());
 
         //Token DeFi senza ripiego sugli exchange: spenta salvo esplicito "SI" (Prezzi.OPZIONE_DEFI_SOLO_DEFILLAMA_COINGECKO)
         Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama.setSelected(Prezzi.DefiSoloDefiLlamaCoingecko());
@@ -13217,8 +13202,6 @@ if (result.isAction("delete-all")) {
             emoney.add(e.getKey() + " dal " + e.getValue());
         }
         o.put("Token E-Money", emoney.isEmpty() ? "nessuno" : String.join(", ", emoney));
-        o.put("Prezzi dagli exchange anche per gli anni già dichiarati",
-                "SI".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(AliasPrezziToken.OPZIONE_ANCHE_ANNI_PASSATI, "NO")) ? "Sì" : "No");
         o.put("Token DeFi prezzati solo da DefiLlama e CoinGecko",
                 "SI".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(Prezzi.OPZIONE_DEFI_SOLO_DEFILLAMA_COINGECKO, "NO")) ? "Sì" : "No");
     }
@@ -15576,18 +15559,6 @@ if (result != null && !result.isAction("cancel")) {
         DatabaseH2.Pers_Opzioni_Scrivi(ServizioPrezziClient.OPZIONE_ABILITATO,
                 Prezzi_Opzioni_CheckBox_ServizioOnchain.isSelected() ? "SI" : "NO");
     }//GEN-LAST:event_Prezzi_Opzioni_CheckBox_ServizioOnchainActionPerformed
-
-    private void Prezzi_Opzioni_CheckBox_AliasAnniPassatiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Prezzi_Opzioni_CheckBox_AliasAnniPassatiActionPerformed
-        boolean attiva = Prezzi_Opzioni_CheckBox_AliasAnniPassati.isSelected();
-        //Accenderla cambia i valori degli anni gia' dichiarati: si chiede conferma, spegnerla no
-        if (attiva && !Messaggi.Personalizzati_SINO_AliasAnniPassati(this)) {
-            Prezzi_Opzioni_CheckBox_AliasAnniPassati.setSelected(false);
-            return;
-        }
-        AliasPrezziToken.ImpostaAncheAnniPassati(attiva);
-        //Il quadro RW valorizza dal vivo: quello a video e' stato calcolato con l'altra regola
-        if (RW_Tabella.getRowCount() > 0) RW_Label_SegnalaRicalcolo.setVisible(true);
-    }//GEN-LAST:event_Prezzi_Opzioni_CheckBox_AliasAnniPassatiActionPerformed
 
     private void Prezzi_Opzioni_CheckBox_DefiSoloDefiLlamaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Prezzi_Opzioni_CheckBox_DefiSoloDefiLlamaActionPerformed
         DatabaseH2.Pers_Opzioni_Scrivi(Prezzi.OPZIONE_DEFI_SOLO_DEFILLAMA_COINGECKO, Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama.isSelected() ? "SI" : "NO");
@@ -20882,7 +20853,6 @@ try {
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_NonConsiderareMovimentiNC;
     private javax.swing.JPopupMenu PopupMenu;
-    private javax.swing.JCheckBox Prezzi_Opzioni_CheckBox_AliasAnniPassati;
     private javax.swing.JCheckBox Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama;
     private javax.swing.JCheckBox Prezzi_Opzioni_CheckBox_ServizioOnchain;
     private javax.swing.JPanel RT;

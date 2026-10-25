@@ -5,27 +5,22 @@ import java.nio.file.Path;
 import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Le date {@code dal} degli alias e l'opzione "anche per gli anni già dichiarati".
- * <p>Esistono per una sola ragione: chi ha già presentato una dichiarazione con il programma non deve
- * vedersi cambiare il quadro RW di quegli anni perché è stato aggiornato l'elenco. Questi test fissano
- * che, con l'opzione spenta, prima del {@code dal} tutto funzioni esattamente come senza la voce.
+ * Le date {@code dal} degli alias.
+ * <p>Dalla 1.0.65.14 le voci valgono per tutti gli anni: il {@code dal} conta solo con {@code "dalVincolante": true},
+ * cioe' quando prima di quella data il sostituto non ha prezzi (MATIC → POL prima della migrazione). Le altre date
+ * restano nel file per le versioni dalla 1.0.65 alla 1.0.65.13, che le leggono tutte.
  */
 class AliasPrezziTokenDateTest {
 
-    /** 31/12/2025 23:59 e 01/01/2026 00:01 a Roma: i due istanti a cavallo del {@code dal} delle voci nuove. */
+    /** 31/12/2025 23:59 a Roma: prima del {@code dal} 2026-01-01 delle voci aggiunte nel 2026. */
     private static final long FINE_2025 = FunzioniDate.ConvertiDatainLongMinuto("2025-12-31 23:59");
-    private static final long INIZIO_2026 = FunzioniDate.ConvertiDatainLongMinuto("2026-01-01 00:01");
-    /** L'istante con cui Calcoli_RW valorizza la fine del 2025 (e l'inizio del 2026). */
-    private static final long FINE_ANNO_RW_2025 = FunzioniDate.ConvertiDatainLongMinuto("2026-01-01 00:00");
 
-    /** WETH su Arbitrum: voce nuova, {@code dal} 2026-01-01. */
+    /** WETH su Arbitrum: voce nuova, {@code dal} 2026-01-01 non vincolante. */
     private static final String WETH_ARB = "0x82af49447d8a07e3bd95bd0d56f35241523fbab1";
     /** WETH su Base: una delle 12 voci di prima, senza data. */
     private static final String WETH_BASE = "0x4200000000000000000000000000000000000006";
@@ -35,49 +30,27 @@ class AliasPrezziTokenDateTest {
         AliasPrezziToken.Carica();
     }
 
-    @AfterEach
-    void spegneOpzione() {
-        AliasPrezziToken.AncheAnniPassati = false;
-    }
-
     @Test
-    void unaVoceNuovaNonValePrimaDelSuoDal() {
-        assertNull(AliasPrezziToken.Alias(WETH_ARB, "ARB", FINE_2025),
-                "il 31/12/2025 il WETH su Arbitrum si prezza per address, come prima dell'elenco");
-        assertEquals("ETH", AliasPrezziToken.Alias(WETH_ARB, "ARB", INIZIO_2026));
-    }
-
-    @Test
-    void ilValoreDiFineAnno2025DelQuadroRwRestaQuelloDiPrima() {
-        //Calcoli_RW prezza "31/12/2025 23:59" all'istante 01/01/2026 00:00: e' proprio il bordo del dal,
-        //e deve restare dalla parte dell'anno gia' dichiarato
-        assertNull(AliasPrezziToken.Alias(WETH_ARB, "ARB", FINE_ANNO_RW_2025));
-        assertEquals("WBNB", AliasPrezziToken.StessoPrezzo("WBNB", FINE_ANNO_RW_2025));
+    void unDalNonVincolanteNonConta() {
+        assertEquals("ETH", AliasPrezziToken.Alias(WETH_ARB, "ARB", FINE_2025),
+                "il dal 2026-01-01 serve solo alle versioni fino alla 1.0.65.13");
+        assertEquals("BNB", AliasPrezziToken.StessoPrezzo("WBNB", FINE_2025));
+        assertEquals("ETH", AliasPrezziToken.Alias(WETH_ARB, "ARB", FunzioniDate.ConvertiDatainLongMinuto("2022-06-01 12:00")));
     }
 
     @Test
     void leVociDiPrimaValgonoSempre() {
         assertEquals("ETH", AliasPrezziToken.Alias(WETH_BASE, "BASE", FunzioniDate.ConvertiDatainLongMinuto("2022-06-01 12:00")));
+        assertEquals("ETH", AliasPrezziToken.StessoPrezzo("WETH", FINE_2025));
+        assertEquals("PEPE", AliasPrezziToken.StessoPrezzo("PEPE", FINE_2025));
     }
 
     @Test
-    void conLOpzioneAccesaLeDateSiIgnorano() {
-        AliasPrezziToken.AncheAnniPassati = true;
-        assertEquals("ETH", AliasPrezziToken.Alias(WETH_ARB, "ARB", FINE_2025));
-        assertEquals("BNB", AliasPrezziToken.StessoPrezzo("WBNB", FINE_2025));
-    }
-
-    @Test
-    void stessoPrezzoRispettaLaData() {
-        assertEquals("WBNB", AliasPrezziToken.StessoPrezzo("WBNB", FINE_2025), "voce nuova: prima del dal il simbolo resta com'e'");
-        assertEquals("BNB", AliasPrezziToken.StessoPrezzo("WBNB", INIZIO_2026));
-        assertEquals("ETH", AliasPrezziToken.StessoPrezzo("WETH", FINE_2025), "voce di prima: vale sempre");
-        assertEquals("PEPE", AliasPrezziToken.StessoPrezzo("PEPE", INIZIO_2026));
-    }
-
-    @Test
-    void maticEdEth2HannoUnaDataNelPassato() {
-        //Eccezione voluta alla regola dal = 01/01 dell'anno di aggiunta: dopo quelle date nessuna fonte li quota
+    void maticEdEth2HannoUnDalVincolante() {
+        //Fine 2022 e fine 2023 del quadro RW: POL non ha quotazioni prima di settembre 2024, MATIC si'
+        //(segnalazione del 25/10/2026: con l'opzione "anni passati", poi tolta, quei due anni restavano senza prezzo)
+        assertEquals("MATIC", AliasPrezziToken.StessoPrezzo("MATIC", FunzioniDate.ConvertiDatainLongMinuto("2023-01-01 00:00")));
+        assertEquals("MATIC", AliasPrezziToken.StessoPrezzo("MATIC", FunzioniDate.ConvertiDatainLongMinuto("2024-01-01 00:00")));
         assertEquals("MATIC", AliasPrezziToken.StessoPrezzo("MATIC", FunzioniDate.ConvertiDatainLongMinuto("2024-09-03 23:59")),
                 "prima della migrazione MATIC si prezza come MATIC");
         assertEquals("POL", AliasPrezziToken.StessoPrezzo("MATIC", FunzioniDate.ConvertiDatainLongMinuto("2024-09-04 00:01")));
@@ -88,8 +61,16 @@ class AliasPrezziTokenDateTest {
     }
 
     @Test
+    void soloMaticEdEth2SonoVincolati() {
+        //Un vincolo nuovo e' una decisione fiscale: aggiungerlo deve far fallire questo test e farlo guardare
+        assertEquals(java.util.Set.of("MATIC", "ETH2"), AliasPrezziToken.DalStessoPrezzo.keySet());
+        assertTrue(AliasPrezziToken.DalAlias.isEmpty());
+    }
+
+    @Test
     void ogniVoceNuovaHaUnaData() throws Exception {
-        //Una voce nuova senza `dal` cambierebbe i valori di anni gia' dichiarati: e' esattamente l'errore da evitare
+        //Per le versioni dalla 1.0.65 alla 1.0.65.13, che leggono ogni `dal`: senza, una voce nuova cambierebbe
+        //per loro i valori di anni gia' dichiarati e nasconderebbe i prezzi personalizzati per simbolo
         JSONObject json = new JSONObject(Files.readString(Path.of("config/varie/" + AliasPrezziToken.NOME + ".json")));
         Map<String, String> vecchie = AliasPrezziToken.Predefinite().alias();
         JSONArray voci = json.getJSONArray("alias");
@@ -111,23 +92,16 @@ class AliasPrezziTokenDateTest {
         String contenuto = """
             {"alias":[
               {"rete":"ETH","address":"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2","prezzoDa":"ETH","dal":"31/12/2026"},
-              {"rete":"BASE","address":"0x4200000000000000000000000000000000000006","prezzoDa":"ETH"}
+              {"rete":"BASE","address":"0x4200000000000000000000000000000000000006","prezzoDa":"ETH","dal":"2026-01-01","dalVincolante":true}
             ],
-             "stessoPrezzo":{"WETH":"ETH","WBNB":{"prezzoDa":"BNB","dal":"2026-01-01"},"WXYZ":{"prezzoDa":"XYZ","dal":"boh"}}}""";
+             "stessoPrezzo":{"WETH":"ETH","WBNB":{"prezzoDa":"BNB","dal":"2026-01-01"},"WXYZ":{"prezzoDa":"XYZ","dal":"boh"},
+                             "MATIC":{"prezzoDa":"POL","dal":"2024-09-04","dalVincolante":true}}}""";
         AliasPrezziToken.Tabelle t = AliasPrezziToken.Interpreta(contenuto, "prova");
         assertEquals(1, t.alias().size());
         assertEquals("BNB", t.stessoPrezzo().get("WBNB"));
-        assertTrue(t.dalStessoPrezzo().containsKey("WBNB"));
+        assertFalse(t.dalStessoPrezzo().containsKey("WBNB"), "dal senza dalVincolante: la voce vale sempre");
+        assertTrue(t.dalStessoPrezzo().containsKey("MATIC"));
+        assertTrue(t.dalAlias().containsKey("0x4200000000000000000000000000000000000006_BASE"));
         assertFalse(t.stessoPrezzo().containsKey("WXYZ"));
-    }
-
-    @Test
-    void installazioneNuovaSeNonCiSonoMovimenti(@TempDir Path dir) throws Exception {
-        Path movimenti = dir.resolve("movimenti.crypto.db");
-        assertTrue(AliasPrezziToken.ValoreInizialeOpzione(movimenti), "file assente: installazione nuova");
-        Files.writeString(movimenti, "");
-        assertTrue(AliasPrezziToken.ValoreInizialeOpzione(movimenti), "file vuoto: nessun archivio");
-        Files.writeString(movimenti, "20250101000000_x_1_1_DC;...\n");
-        assertFalse(AliasPrezziToken.ValoreInizialeOpzione(movimenti), "con dei movimenti e' un aggiornamento");
     }
 }

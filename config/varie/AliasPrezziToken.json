@@ -5,8 +5,9 @@
     "alias: chiave address+rete; prezzoDa e' il simbolo cercato sugli exchange; simboloToken e' il simbolo on-chain del token; tipo 'canonico' = emesso dall'emittente ufficiale su quella rete, 'bridged' = versione ponte, 'ricevuta' = token di ricevuta di un protocollo (es. aToken di Aave) rimborsabile 1:1 nella moneta di prezzo, mai riferimento.",
     "riferimento: true = il token di riferimento per quella moneta su quella rete (il canonico, oppure il bridged dove un canonico non c'e'). Solo queste voci alimentano il controllo anti-impersonazione dei depositi/prelievi.",
     "stessoPrezzo: simbolo -> simbolo per le monete senza address valido (es. WETH da exchange quotato come ETH).",
-    "dal: data (aaaa-mm-gg) da cui la voce vale; prima di quella data il token si prezza come se la voce non ci fosse. Serve a non cambiare i valori di anni gia' dichiarati: una voce aggiunta nell'anno N nasce con dal = N-01-01. Le voci senza dal valgono sempre. L'opzione 'anche per gli anni passati' fa ignorare tutte le date. In stessoPrezzo una voce con data si scrive {\"prezzoDa\": ..., \"dal\": ...}.",
-    "Eccezione voluta: MATIC (dal 2024-09-04, migrazione a POL) e ETH2 (dal 2020-12-01, nascita della Beacon Chain) hanno dal nel passato perche' dopo quelle date nessuna fonte li quota piu' per simbolo: la voce riempie solo prezzi che mancavano, e un prezzo personalizzato salvato col simbolo del movimento viene letto prima dell'alias.",
+    "Dalla 1.0.65.14 ogni voce vale per tutti gli anni: un prezzo inserito a mano col simbolo o l'address del movimento si legge prima del sostituto, quindi non viene mai nascosto. Fa eccezione solo una voce con dalVincolante: true, che vale strettamente dopo il suo dal (aaaa-mm-gg) e prima di quella data lascia il token prezzato col suo simbolo o address.",
+    "dal: le versioni dalla 1.0.65 alla 1.0.65.13 leggono il dal di ogni voce (prima di quella data la voce non vale, salvo l'opzione 'anche per gli anni passati', poi tolta) e ignorano dalVincolante. Per loro una voce aggiunta nell'anno N continua a nascere con dal = N-01-01. In stessoPrezzo una voce con data si scrive {\"prezzoDa\": ..., \"dal\": ...}.",
+    "dalVincolante: MATIC (dal 2024-09-04, migrazione a POL) e ETH2 (dal 2020-12-01, nascita della Beacon Chain). Prima di quelle date il sostituto non esisteva o non era quotato (POL non ha prezzi prima di settembre 2024), dopo nessuna fonte quota piu' il simbolo originale. Un prezzo personalizzato salvato col simbolo del movimento resta valido anche dopo.",
     "ATTENZIONE: questo file cambia i prezzi (anche quelli di fine anno del quadro RW) senza un cambio di versione: ogni modifica e' una modifica fiscale."
   ],
   "alias": [
@@ -1281,11 +1282,13 @@
     },
     "MATIC": {
       "prezzoDa": "POL",
-      "dal": "2024-09-04"
+      "dal": "2024-09-04",
+      "dalVincolante": true
     },
     "ETH2": {
       "prezzoDa": "ETH",
-      "dal": "2020-12-01"
+      "dal": "2020-12-01",
+      "dalVincolante": true
     }
   }
 }

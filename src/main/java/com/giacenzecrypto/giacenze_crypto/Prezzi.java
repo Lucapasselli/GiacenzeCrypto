@@ -1569,6 +1569,9 @@ public class Prezzi {
      * non si trova piu', e un prezzo di fine anno scelto dall'utente sparirebbe in silenzio dal quadro RW.
      * Qui si legge soltanto il personalizzato: la cache dei prezzi per address si salta apposta, perche'
      * conterrebbe le quotazioni orarie di DefiLlama che l'alias esiste per evitare.
+     * <p>Anche il personalizzato vecchio, quello dell'archivio orario per address ({@code Prezzo_ora_Address_Chain} di
+     * {@code personale.mv.db}, inserito fino a novembre 2025 e mai migrato), come fa {@link #CambioAddressEUR} senza alias.
+     * Fino al 2026-10-25 lo proteggeva solo il {@code dal} delle voci nuove, che non conta piu' (vedi {@link AliasPrezziToken}).
      * @param m la moneta gia' rinominata dall'alias
      * @param AddressOriginale l'address prima dell'alias, {@code null} se la moneta non aveva alias
      * @return il prezzo personalizzato, oppure {@code null} se non c'e' (o la moneta non aveva alias)
@@ -1576,6 +1579,18 @@ public class Prezzi {
     static InfoPrezzo PrezzoPersonalizzatoTokenConAlias(Moneta m, String AddressOriginale, String Rete, long Data, String fonte) {
         if (AddressOriginale == null || m.Qta == null || m.Qta.isBlank()) return null;
         InfoPrezzo IP = DammiPrezzoDaDatabasePersonale("", Data, fonte, Rete, AddressOriginale, 60, new BigDecimal(m.Qta));
+        if (IP == null && Rete != null && !Rete.isBlank()) {
+            String DataOra = FunzioniDate.ConvertiDatadaLongallOra(Data);
+            String Vecchio = DatabaseH2.PrezzoAddressChainPers_Leggi(DataOra + "_" + AddressOriginale + "_" + Rete);
+            if (Vecchio != null && Funzioni.isNumeric(Vecchio, false)) {
+                IP = new InfoPrezzo();
+                IP.Fonte = "Personalizzato (Old)";
+                //Archivio orario: la quotazione e' all'inizio dell'ora, come in CambioAddressEUR
+                IP.timestamp = FunzioniDate.ConvertiDatainLongMinuto(DataOra + ":00");
+                IP.prezzoUnitario = new BigDecimal(Vecchio);
+                IP.Qta = new BigDecimal(m.Qta);
+            }
+        }
         if (IP != null) IP.Moneta = m.Moneta;
         return IP;
     }

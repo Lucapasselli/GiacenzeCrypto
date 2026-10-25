@@ -1,7 +1,5 @@
 package com.giacenzecrypto.giacenze_crypto;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Map;
@@ -25,14 +23,17 @@ import org.json.JSONObject;
  * {@link Principale#Mappa_AddressRete_Nome} (voci {@code alias}) e {@link Principale#Mappa_MoneteStessoPrezzo}
  * (voce {@code stessoPrezzo}, per simbolo, per le monete senza address valido). Le voci con
  * {@code riferimento} alimentano anche il controllo anti-impersonazione ({@link #MotivoImpersonazione}).
- * <p><b>Le dichiarazioni già fatte non devono cambiare.</b> Una voce può avere una data {@code dal}: fino a
- * quella data l'alias non vale e il token si prezza come prima (per address). Le voci aggiunte nell'anno N
- * nascono con {@code dal = 01/01/N}, così un aggiornamento del file non tocca mai un anno che qualcuno
- * può aver già dichiarato. L'opzione {@link #OPZIONE_ANCHE_ANNI_PASSATI} ("usa l'elenco completo anche per
- * gli anni passati") fa ignorare tutte le date: accesa di default solo su un'installazione nuova, dove non
- * c'è nessuna dichiarazione da proteggere ({@link #ValoreInizialeOpzione}). Per questo chi legge un alias
- * per decidere un prezzo deve passare da {@link #Alias} e {@link #StessoPrezzo}, con l'istante del prezzo,
- * e non dalle due mappe, che contengono tutte le voci senza data.
+ * <p><b>Le voci valgono per ogni anno, salvo i vincoli.</b> Una voce con {@code dal} e
+ * {@code "dalVincolante": true} vale solo strettamente dopo quella data: e' la data reale da cui il sostituto
+ * ha senso (MATIC diventa POL con la migrazione del 04/09/2024: prima POL non ha quotazioni). Per questo chi
+ * legge un alias per decidere un prezzo deve passare da {@link #Alias} e {@link #StessoPrezzo}, con l'istante
+ * del prezzo, e non dalle due mappe, che contengono tutte le voci senza data.
+ * <p>Dalla 1.0.65 alla 1.0.65.13 il {@code dal} di <b>ogni</b> voce proteggeva gli anni gia' dichiarati, con
+ * un'opzione per scavalcarlo: serviva perche' un sostituto poteva nascondere il prezzo inserito a mano.
+ * Ora il prezzo personalizzato si legge col simbolo del movimento prima di applicare il sostituto
+ * ({@link Prezzi#PrezzoPersonalizzatoTokenConAlias}, {@link Prezzi#CambioXXXEUR}), e opzione e date sono
+ * state tolte (25/10/2026). Le voci nuove portano ancora il loro {@code dal}, che queste versioni ignorano
+ * senza {@code dalVincolante}: lo leggono le versioni fino alla 1.0.65.13, che scaricano lo stesso file.
  * <p>Analisi completa in {@code nocommit/Documentazione/Analisi_Alias_Prezzi_Token_CCXT.md}.
  */
 public class AliasPrezziToken {
@@ -47,15 +48,10 @@ public class AliasPrezziToken {
      */
     static Map<String, String[]> Riferimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-    /** Da quando vale ciascun alias ({@code address_RETE} → epoch ms); una voce assente vale sempre. */
+    /** Da quando vale ciascun alias con {@code dal} vincolante ({@code address_RETE} → epoch ms); una voce assente vale sempre. */
     static Map<String, Long> DalAlias = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    /** Da quando vale ciascuna voce di {@code stessoPrezzo}; una voce assente vale sempre. */
+    /** Da quando vale ciascuna voce di {@code stessoPrezzo} con {@code dal} vincolante; una voce assente vale sempre. */
     static Map<String, Long> DalStessoPrezzo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-
-    /** Chiave in {@code personale.mv.db}: "SI" = ignora le date {@code dal}, usa l'elenco completo per ogni anno. */
-    public static final String OPZIONE_ANCHE_ANNI_PASSATI = "AliasPrezzi_AncheAnniPassati";
-    /** Valore corrente dell'opzione, letto all'avvio e aggiornato dalla casella in Opzioni. */
-    static volatile boolean AncheAnniPassati = false;
 
     /** Le date {@code dal} sono giorni di calendario italiani, come tutte le date del programma. */
     private static final ZoneId FUSO = ZoneId.of("Europe/Rome");
@@ -111,18 +107,6 @@ public class AliasPrezziToken {
     }
 
     /**
-     * Il primo istante in cui una voce datata comincia a valere, oppure {@code null} se nessuna voce ha una
-     * data. Ogni anno d'imposta il cui fine anno (valorizzato all'01/01 successivo alle 00:00) non lo supera
-     * deve dare, con l'opzione spenta, gli stessi valori dell'elenco storico.
-     */
-    static Long PrimoDal() {
-        Long primo = null;
-        for (Long d : DalAlias.values()) if (primo == null || d < primo) primo = d;
-        for (Long d : DalStessoPrezzo.values()) if (primo == null || d < primo) primo = d;
-        return primo;
-    }
-
-    /**
      * Il token e' nell'elenco degli alias, a qualunque data? Per l'opzione che tiene i token DeFi lontani dagli
      * exchange ({@link Prezzi#OPZIONE_DEFI_SOLO_DEFILLAMA_COINGECKO}): un token in elenco e' dichiarato uguale
      * alla moneta degli exchange, quindi resta escluso dall'opzione anche prima del suo {@code dal}, dove si
@@ -135,7 +119,7 @@ public class AliasPrezziToken {
     /**
      * Il simbolo con cui prezzare un token con address alla data indicata, oppure {@code null} se il token
      * non ha alias <b>a quella data</b> (non in elenco, oppure {@code istante} precedente al suo {@code dal}
-     * con l'opzione spenta): in quel caso il prezzo si cerca per address, come prima dell'alias.
+     * vincolante): in quel caso il prezzo si cerca per address, come prima dell'alias.
      */
     static String Alias(String address, String rete, long istante) {
         String chiave = address + "_" + rete;
@@ -158,54 +142,22 @@ public class AliasPrezziToken {
     /**
      * Strettamente <b>dopo</b> l'inizio del giorno {@code dal}, non da quell'istante compreso: il quadro RW
      * valorizza la fine dell'anno N all'istante {@code 01/01/N+1 00:00} (Calcoli_RW, {@code fine}), che è
-     * anche l'istante del valore iniziale dell'anno N+1. Con {@code dal = 2026-01-01} il valore finale 2025
-     * resta quindi quello di prima, e l'iniziale 2026 coincide con lui invece di differire di qualche
-     * centesimo.
+     * anche l'istante del valore iniziale dell'anno N+1, e i due devono coincidere.
      */
     private static boolean ValeAllaData(Long dal, long istante) {
-        return dal == null || AncheAnniPassati || istante > dal;
+        return dal == null || istante > dal;
     }
 
     /**
-     * Valore iniziale dell'opzione {@link #OPZIONE_ANCHE_ANNI_PASSATI}, da usare solo quando nel database
-     * personale non c'è ancora: accesa se l'installazione è nuova, cioè non esiste ancora un archivio di
-     * movimenti (file assente o vuoto). Chi aggiorna ha dei movimenti e la trova spenta: i valori degli anni
-     * già dichiarati restano quelli di prima.
+     * {@code "2026-01-01"} → inizio di quel giorno a Roma, in epoch ms, se la voce ha {@code "dalVincolante": true};
+     * {@code null} se il campo manca o non e' un vincolo. La data si interpreta comunque: illeggibile, la voce si
+     * salta come nelle versioni che la usano tutte.
      */
-    static boolean ValoreInizialeOpzione(Path fileMovimenti) {
-        try {
-            return !Files.exists(fileMovimenti) || Files.size(fileMovimenti) == 0;
-        } catch (java.io.IOException ex) {
-            return false;
-        }
-    }
-
-    /**
-     * Legge l'opzione dal database personale; se manca (primo avvio di una versione che la conosce) la
-     * scrive col valore di {@link #ValoreInizialeOpzione}. Da chiamare all'avvio, dopo l'apertura dei database.
-     */
-    public static boolean InizializzaOpzione() {
-        String v = DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_ANCHE_ANNI_PASSATI);
-        if (v == null) {
-            v = ValoreInizialeOpzione(Path.of(VarStatiche.getFile_CryptoWallet())) ? "SI" : "NO";
-            DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_ANCHE_ANNI_PASSATI, v);
-            System.out.println("AliasPrezziToken: opzione " + OPZIONE_ANCHE_ANNI_PASSATI + " inizializzata a " + v);
-        }
-        AncheAnniPassati = "SI".equalsIgnoreCase(v);
-        return AncheAnniPassati;
-    }
-
-    /** Cambia l'opzione da interfaccia e la salva. */
-    public static void ImpostaAncheAnniPassati(boolean attiva) {
-        AncheAnniPassati = attiva;
-        DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_ANCHE_ANNI_PASSATI, attiva ? "SI" : "NO");
-    }
-
-    /** {@code "2026-01-01"} → inizio di quel giorno a Roma, in epoch ms; {@code null} se il campo manca. */
     private static Long Dal(JSONObject v) {
         String dal = v.optString("dal", "").trim();
         if (dal.isEmpty()) return null;
-        return LocalDate.parse(dal).atStartOfDay(FUSO).toInstant().toEpochMilli();
+        long ms = LocalDate.parse(dal).atStartOfDay(FUSO).toInstant().toEpochMilli();
+        return v.optBoolean("dalVincolante", false) ? ms : null;
     }
 
     /**

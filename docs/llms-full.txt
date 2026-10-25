@@ -1440,10 +1440,9 @@ viene valorizzato alle 00:00 del 1° gennaio successivo. Alcune regole particola
 - gli **e-money token** denominati in euro (per esempio EURe) valgono 1:1 con l’euro dalla data indicata in
   **Opzioni** – **E-Money Token (EMT)**.
 - alcuni token equivalenti a una moneta principale (per esempio WETH su una rete secondaria rispetto a ETH)
-  vengono prezzati come la moneta principale sugli exchange, a partire dalla data in cui il programma ha
-  introdotto l’equivalenza. Per non cambiare le dichiarazioni già presentate l’equivalenza non si applica
-  agli anni precedenti, salvo attivare in **Opzioni** – **Opzioni di Calcolo** la casella *Prezzi dagli
-  exchange anche per gli anni già dichiarati*.
+  vengono prezzati come la moneta principale sugli exchange, in tutti gli anni. Fanno eccezione le monete
+  rinominate: MATIC prende il prezzo di POL solo dal 4 settembre 2024, data della migrazione, e prima
+  resta prezzato come MATIC. Un prezzo inserito a mano ha sempre la precedenza sull’equivalenza.
 - un valore mancante o sbagliato si corregge dal dettaglio con **Modifica Valore Iniziale** o **Modifica
   Valore Finale** (vedi [Gestione degli errori](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/opzioni-calcolo-rw.html#gestione-degli-errori)).
 

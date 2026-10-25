@@ -202,9 +202,14 @@ class Trans_XLayerTest {
         assertEquals("USDG", t.alias().get(USDG + "_XLAYER"));
         assertFalse(t.riferimenti().containsKey(AUSDG + "_XLAYER"), "un aToken non e' mai il riferimento di USDG");
         assertTrue(t.riferimenti().containsKey(USDG + "_XLAYER"));
-        assertNotNull(t.dalAlias().get(AUSDG + "_XLAYER"), "voce nuova: dal obbligatorio, gli anni dichiarati non cambiano");
-        assertEquals(t.dalAlias().get("0x79a02482a880bce3f13e09da970dc34db4cd24d1_WORLD"), t.dalAlias().get(AUSDG + "_XLAYER"),
-                "dal 2026-01-01 come le altre voci aggiunte nel 2026");
+        //Il dal non e' vincolante: lo leggono solo le versioni fino alla 1.0.65.13, per le quali la voce resta dal 2026
+        assertNull(t.dalAlias().get(AUSDG + "_XLAYER"));
+        org.json.JSONArray voci = new org.json.JSONObject(contenuto).getJSONArray("alias");
+        String dal = null;
+        for (int i = 0; i < voci.length(); i++) {
+            if (voci.getJSONObject(i).getString("address").equalsIgnoreCase(AUSDG)) dal = voci.getJSONObject(i).optString("dal", null);
+        }
+        assertEquals("2026-01-01", dal, "dal 2026-01-01 come le altre voci aggiunte nel 2026");
     }
 
     // ------------------------------------------------------------------

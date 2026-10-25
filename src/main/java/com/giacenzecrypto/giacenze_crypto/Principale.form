@@ -6627,7 +6627,6 @@
                                                   <Component id="Opzioni_GruppoWallet_CheckBox_PlusManuali" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
                                                   <Component id="Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
                                                   <Component id="Prezzi_Opzioni_CheckBox_ServizioOnchain" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
-                                                  <Component id="Prezzi_Opzioni_CheckBox_AliasAnniPassati" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
                                                   <Component id="Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
                                                   <Component id="Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
                                               </Group>
@@ -6653,8 +6652,6 @@
                               <Component id="Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale" min="-2" pref="54" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Prezzi_Opzioni_CheckBox_ServizioOnchain" min="-2" pref="54" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Prezzi_Opzioni_CheckBox_AliasAnniPassati" min="-2" pref="69" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama" min="-2" pref="69" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -6779,14 +6776,6 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Prezzi_Opzioni_CheckBox_ServizioOnchainActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JCheckBox" name="Prezzi_Opzioni_CheckBox_AliasAnniPassati">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Prezzi dagli exchange anche per gli anni gi&#xe0; dichiarati : &lt;/b&gt;Per alcune monete molto diffuse (es. WETH, USDC, WBTC) usa il prezzo degli exchange, pi&#xf9; preciso, anche per gli anni precedenti al loro inserimento nell&apos;elenco&lt;br&gt;(Attivo di default solo sulle nuove installazioni. Se hai gi&#xe0; presentato dichiarazioni con questo programma lascialo spento, altrimenti i valori di quegli anni possono cambiare)&lt;/html&gt;"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Prezzi_Opzioni_CheckBox_AliasAnniPassatiActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama">

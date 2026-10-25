@@ -474,9 +474,21 @@ public final class Dichiarazioni {
         if (!A.Errori.equals(B.Errori)) {
             diff.add(new String[]{"Errori", A.Errori.isBlank() ? "nessuno" : A.Errori, B.Errori.isBlank() ? "nessuno" : B.Errori});
         }
-        ConfrontaMappe("Opzione: ", A.Opzioni, B.Opzioni, diff);
+        Map<String, String> oa = new LinkedHashMap<>(A.Opzioni);
+        Map<String, String> ob = new LinkedHashMap<>(B.Opzioni);
+        OPZIONI_TOLTE.forEach(k -> { oa.remove(k); ob.remove(k); });
+        ConfrontaMappe("Opzione: ", oa, ob, diff);
         return diff;
     }
+
+    /**
+     * Opzioni che il programma non ha più: restano scritte nei manifest delle dichiarazioni già archiviate, ma una
+     * bozza nuova non le ha, e senza questo elenco ogni definitiva risulterebbe diversa dal ricalcolo. Un effetto
+     * sui valori, se c'è, compare comunque fra le differenze dei totali e dei righi.
+     */
+    static final java.util.Set<String> OPZIONI_TOLTE = java.util.Set.of(
+            //tolta il 2026-10-25: gli alias dei prezzi valgono per tutti gli anni (AliasPrezziToken)
+            "Prezzi dagli exchange anche per gli anni già dichiarati");
 
     /** Campi che identificano un rigo invece di essere suoi valori. */
     private static final List<String> CAMPI_CHIAVE = List.of("Rigo", "Natura", "Periodo", "Tipologia");

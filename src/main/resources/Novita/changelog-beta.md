@@ -5,6 +5,22 @@ programma all'avvio di una beta, ed è la descrizione della beta su GitHub. L'el
 in preparazione è nella sezione "in lavorazione" di docs/documentazione/changelog.md, dove ogni voce di questo file
 compare con lo stesso titolo. Questo file non è una pagina del sito.
 
+## Versione 1.0.65.14
+
+**Nuove implementazioni**
+
+- **Prova di una configurazione di importazione**: nella finestra *Importazioni* il pulsante *Prova configurazione* legge un file CSV con una configurazione JSON e mostra cosa produrrebbe senza importare nulla: i movimenti, cosa esce da ogni causale, il saldo di ogni moneta e le righe scartate con il motivo. Il resoconto si copia in testo semplice per incollarlo in un chatbot.
+
+- **Configurazioni della community**: il pulsante *Configurazioni della community...* della finestra *Importazioni* apre il catalogo delle configurazioni condivise dagli utenti, e quelle scaricate compaiono nelle tendine con il prefisso *Community:*. Dopo una prova senza problemi si può proporre la propria, che diventa scaricabile solo dopo il controllo dell'autore del programma.
+
+- **Configurazioni di importazione scritte con un'IA**: il manuale *Configurazione JSON per le importazioni personalizzate* spiega cosa dare a un assistente come ChatGPT o Claude per fargli scrivere una configurazione corretta. Le regole sono pubblicate anche come schema JSON per gli editor, e il manuale documenta ora tutte le opzioni.
+
+- **Tipi di movimento non riconosciuti nelle configurazioni**: se una configurazione di importazione assegna a una causale un tipo che il programma non conosce, per esempio `reward` in minuscolo, il resoconto dell'importazione lo segnala. Prima quelle righe venivano importate in silenzio come movimenti generici.
+
+**Correzione di bug**
+
+- **Equivalenze dei prezzi valide per tutti gli anni**: le monete prezzate come un'altra sugli exchange (WETH come ETH, USDC.e come USDC) usano l'equivalenza in tutti gli anni, e la casella *Prezzi dagli exchange anche per gli anni già dichiarati* non c'è più: un prezzo inserito a mano ha sempre la precedenza. Con la casella attiva, com'era sulle installazioni nuove, MATIC restava senza prezzo a fine 2022 e fine 2023: ora prima del 4 settembre 2024 MATIC si prezza come MATIC. Per chi aveva la casella spenta i valori degli anni passati nel quadro W/RW, ricalcolati, possono cambiare: di solito di pochi centesimi, ma una moneta che prima restava senza prezzo ora prende il suo valore intero.
+
 ## Versione 1.0.65.13
 
 **Nuove implementazioni**

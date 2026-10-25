@@ -169,6 +169,17 @@ class DichiarazioniTest {
     }
 
     @Test
+    void unOpzioneToltaNonEUnaDifferenza() {
+        //Le definitive archiviate dalla 1.0.65 hanno ancora l'opzione degli alias per gli anni passati, le bozze no
+        String m = Dichiarazioni.METODO_RW_SOLO_VALORI_INIZIO_FINE;
+        Dichiarazioni.Dichiarazione a = rw("2025", m, "01 (Binance)", "10", "20", "02 (Kraken)", "5", "5");
+        Dichiarazioni.Dichiarazione b = rw("2025", m, "01 (Binance)", "10", "20", "02 (Kraken)", "5", "5");
+        a.Opzioni.put("Prezzi dagli exchange anche per gli anni già dichiarati", "No");
+        assertTrue(Dichiarazioni.Confronta(a, b).isEmpty());
+        assertTrue(Dichiarazioni.Confronta(b, a).isEmpty());
+    }
+
+    @Test
     void gliAllegatiSiAggiungonoEToglono() throws IOException {
         Dichiarazioni.Dichiarazione d = registra(Dichiarazioni.Famiglia.RT, "2025", "1");
         File ricevuta = new File(radice.getParentFile(), "ricevuta_" + System.nanoTime() + ".pdf");

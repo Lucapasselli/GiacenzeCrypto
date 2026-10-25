@@ -73,16 +73,11 @@ import static org.junit.jupiter.api.Assertions.*;
  * rilanciare per rigenerarla.</p>
  *
  * <p>ALIAS DEI PREZZI ({@link AliasPrezziToken}). Il quadro RW valorizza dal vivo, quindi dipende
- * dall'elenco {@code config/varie/AliasPrezziToken.json} e dall'opzione "anche per gli anni già
- * dichiarati". Tre verifiche, tutte con lo stato impostato esplicitamente (prima del 2026-09-26 il test
- * non caricava gli alias e girava con la mappa lasciata dai test precedenti):
- * <ul>
- *   <li>{@code rw.golden}: opzione <b>spenta</b>, cioè quello che vede chi aggiorna il programma;</li>
- *   <li>{@code rw_anniPassati.golden}: opzione <b>accesa</b> (installazione nuova), baseline a sé;</li>
- *   <li>senza baseline: con l'opzione spenta, ogni anno chiuso prima del primo {@code dal} del file deve
- *       dare esattamente il risultato delle sole voci storiche ({@link AliasPrezziToken#Predefinite()}).
- *       È la garanzia per chi ha già presentato le dichiarazioni, e non dipende da un file salvato.</li>
- * </ul></p>
+ * dall'elenco {@code config/varie/AliasPrezziToken.json}, caricato esplicitamente (prima del 2026-09-26 il test
+ * non caricava gli alias e girava con la mappa lasciata dai test precedenti). Fino al 2026-10-25 c'erano due
+ * baseline, con l'opzione "anche per gli anni già dichiarati" spenta e accesa, e una verifica che gli anni
+ * prima del primo {@code dal} restassero quelli delle sole voci storiche: tolta l'opzione, le voci valgono per
+ * tutti gli anni salvo i {@code dal} vincolanti, e resta la sola {@code rw.golden}.</p>
  */
 class Calcoli_RW_GoldenMasterTest {
 
@@ -93,7 +88,6 @@ class Calcoli_RW_GoldenMasterTest {
     private static final Path FILE_CAMBIO = DATASET.resolve("cambioUSDEUR.db");
 
     private static final Path FILE_BASELINE = Path.of("nocommit", "GoldenMaster", "rw.golden");
-    private static final Path FILE_BASELINE_ANNI_PASSATI = Path.of("nocommit", "GoldenMaster", "rw_anniPassati.golden");
 
     /**
      * Ultimo anno d'imposta verificato. L'anno iniziale è dedotto dal primo
@@ -201,7 +195,6 @@ class Calcoli_RW_GoldenMasterTest {
             try { DatabaseH2.connectionPersonale.close(); } catch (Exception ignored) {}
             try { DatabaseH2.connectionPrezzi.close(); } catch (Exception ignored) {}
         }
-        AliasPrezziToken.AncheAnniPassati = false;
         AliasPrezziToken.Carica();
         Principale.MappaCryptoWallet.clear();
         Principale.Mappa_EMoney.clear();
@@ -233,70 +226,15 @@ class Calcoli_RW_GoldenMasterTest {
 
     // ----------------------------------------------------------------- test
 
-    /** Opzione "anche per gli anni già dichiarati" spenta: il caso di chi aggiorna il programma. */
     @Test
     void ricalcoloRW_corrispondeAllaBaseline() throws IOException {
-        confrontaConBaseline(FILE_BASELINE, false);
+        confrontaConBaseline(FILE_BASELINE);
     }
 
-    /** Opzione accesa: il caso di un'installazione nuova, con la sua baseline. */
-    @Test
-    void ricalcoloRW_anniPassati_corrispondeAllaBaseline() throws IOException {
-        confrontaConBaseline(FILE_BASELINE_ANNI_PASSATI, true);
-    }
-
-    /**
-     * La garanzia per chi ha già presentato le dichiarazioni: con l'opzione spenta, un anno il cui fine
-     * anno (valorizzato all'01/01 successivo alle 00:00) non supera il primo {@code dal} del file deve dare
-     * esattamente lo stesso quadro RW delle sole voci storiche, cioè del programma prima dell'elenco.
-     * Nessuna baseline: se fallisce, una voce nuova sta cambiando un anno già chiudibile (tipicamente una
-     * voce aggiunta senza {@code dal}, o con un {@code dal} troppo vecchio). Una sola combinazione di opzioni
-     * RW: gli alias entrano solo nella valorizzazione, che è la stessa per tutte.
-     */
-    @Test
-    void conOpzioneSpenta_gliAnniGiaChiusiSonoQuelliDelleSoleVociStoriche() throws IOException {
-        AliasPrezziToken.Carica();
-        Long primoDal = AliasPrezziToken.PrimoDal();
-        Assumptions.assumeTrue(primoDal != null, "nessuna voce datata nel file: niente da verificare");
-        List<Integer> anni = new ArrayList<>();
-        for (int anno = annoMinimo; anno <= ANNO_MASSIMO; anno++) {
-            if (FunzioniDate.ConvertiDatainLongMinuto((anno + 1) + "-01-01 00:00") <= primoDal) anni.add(anno);
-        }
-        Assumptions.assumeFalse(anni.isEmpty(), "nessun anno chiuso prima del primo dal");
-
-        caricaMovimentiReali();
-        impostaCombinazione(COMBINAZIONI[0]); // DEFAULT
-        try {
-            AliasPrezziToken.AncheAnniPassati = false;
-            AliasPrezziToken.Applica(AliasPrezziToken.Predefinite());
-            List<String> storico = new ArrayList<>();
-            for (int anno : anni) storico.addAll(snapshotAnno(anno));
-
-            AliasPrezziToken.Carica();
-            List<String> conFile = new ArrayList<>();
-            for (int anno : anni) conFile.addAll(snapshotAnno(anno));
-
-            List<String> differenze = confronta(storico, conFile);
-            assertTrue(differenze.isEmpty(), () ->
-                    "Con l'opzione spenta il quadro RW degli anni " + anni + " cambia rispetto alle sole voci "
-                    + "storiche in " + differenze.size() + " punti: una voce del file vale per un anno "
-                    + "gia' chiudibile.\n\n"
-                    + String.join("\n", differenze.subList(0, Math.min(30, differenze.size()))));
-        } finally {
-            AliasPrezziToken.Carica();
-        }
-    }
-
-    private static void confrontaConBaseline(Path fileBaseline, boolean anniPassati) throws IOException {
+    private static void confrontaConBaseline(Path fileBaseline) throws IOException {
         long t0 = System.currentTimeMillis();
-        List<String> attuale;
-        try {
-            AliasPrezziToken.Carica();
-            AliasPrezziToken.AncheAnniPassati = anniPassati;
-            attuale = generaSnapshotCompleto();
-        } finally {
-            AliasPrezziToken.AncheAnniPassati = false;
-        }
+        AliasPrezziToken.Carica();
+        List<String> attuale = generaSnapshotCompleto();
         System.out.println("[RW-GM] " + fileBaseline.getFileName() + ": snapshot di " + COMBINAZIONI.length
                 + " combinazioni x " + (ANNO_MASSIMO - annoMinimo + 1) + " anni in "
                 + (System.currentTimeMillis() - t0) + " ms, " + attuale.size() + " righe");
@@ -352,8 +290,8 @@ class Calcoli_RW_GoldenMasterTest {
         righe.add("# movimenti: " + Principale.MappaCryptoWallet.size());
         righe.add("# anni verificati: " + annoMinimo + ".." + ANNO_MASSIMO);
         righe.add("# alias prezzi: " + Principale.Mappa_AddressRete_Nome.size() + " voci, stessoPrezzo "
-                + Principale.Mappa_MoneteStessoPrezzo.size() + ", anche anni passati: "
-                + (AliasPrezziToken.AncheAnniPassati ? "SI" : "NO"));
+                + Principale.Mappa_MoneteStessoPrezzo.size() + ", dal vincolanti " + AliasPrezziToken.DalStessoPrezzo.size()
+                + "+" + AliasPrezziToken.DalAlias.size());
         righe.add("# combinazioni opzioni RW: " + COMBINAZIONI.length + " (chiavi: " + String.join(",", RW_OPZIONI) + ")");
         righe.add("# formato righe RW: [RW] <gruppo> #<i> | " + intestazioneXlista());
 

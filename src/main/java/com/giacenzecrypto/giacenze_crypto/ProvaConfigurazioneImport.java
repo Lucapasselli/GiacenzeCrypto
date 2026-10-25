@@ -67,6 +67,8 @@ public class ProvaConfigurazioneImport {
     public static final class Esito {
         public File fileConfigurazione;
         public File fileCSV;
+        /** SHA-256 della configurazione cosi' come e' stata provata: chi la condivide controlla che non sia cambiata */
+        public String impronta = "";
         /** Errore che ha impedito la prova (configurazione illeggibile, CSV mancante), altrimenti {@code null} */
         public String errore;
         public String nomeExchange = "";
@@ -186,7 +188,9 @@ public class ProvaConfigurazioneImport {
         e.fileCSV = csv;
         //Prima la sintassi, con i numeri di riga: carica() legge il file in una riga sola e li perde
         try {
-            new JSONObject(Files.readString(json.toPath(), StandardCharsets.UTF_8));
+            byte[] dati = Files.readAllBytes(json.toPath());
+            e.impronta = CommunityConfigurazioni.Sha256(dati);
+            new JSONObject(new String(dati, StandardCharsets.UTF_8));
         } catch (Exception ex) {
             e.errore = "Il file JSON non e' scritto correttamente: " + ex.getMessage();
             return e;

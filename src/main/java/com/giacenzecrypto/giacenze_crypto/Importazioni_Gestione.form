@@ -48,6 +48,7 @@
               <EmptySpace pref="13" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="ScrollPane_Attenzione" alignment="1" min="-2" pref="403" max="-2" attributes="0"/>
+                  <Component id="Bottone_Community" alignment="1" min="-2" pref="403" max="-2" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="Bottone_ProvaConfigurazione" min="-2" pref="155" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -88,7 +89,11 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="Text_NomeWallet" min="-2" pref="40" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="ScrollPane_Attenzione" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Component id="ScrollPane_Attenzione" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Community" min="-2" pref="40" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -301,6 +306,18 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_ProvaConfigurazioneActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Community">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_FrecciaSotto.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Configurazioni della community..."/>
+        <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Configurazioni di importazione scritte da altri utenti e controllate dall&apos;autore del programma:&lt;br&gt;si scaricano da qui e compaiono nelle tendine con il prefisso Community.&lt;/html&gt;"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_CommunityActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

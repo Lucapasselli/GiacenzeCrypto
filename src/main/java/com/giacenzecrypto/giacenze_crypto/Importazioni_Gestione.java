@@ -160,8 +160,15 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
          * {@code nomeExchange} di un exchange noto finisce sotto quel fornitore, accanto alle voci ufficiali.
          */
         final boolean personalizzata;
+        /**
+         * Configurazione scaricata dal catalogo della community ({@code config/community/}, vedi
+         * {@link CommunityConfigurazioni}): scritta da un altro utente. Come le personalizzate si vede a colpo d'occhio,
+         * e la sua descrizione e' sempre trattata come testo semplice.
+         */
+        final boolean community;
 
         static final String PREFISSO_PERSONALIZZATA = "Personalizzata: ";
+        static final String PREFISSO_COMMUNITY = "Community: ";
 
         VoceImport(String fornitore, String estrazione, String idNativo, java.io.File fileJson) {
             this(fornitore, estrazione, idNativo, fileJson, null);
@@ -173,12 +180,18 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
         VoceImport(String fornitore, String estrazione, String idNativo, java.io.File fileJson, String descrizione,
                 boolean personalizzata) {
+            this(fornitore, estrazione, idNativo, fileJson, descrizione, personalizzata, false);
+        }
+
+        VoceImport(String fornitore, String estrazione, String idNativo, java.io.File fileJson, String descrizione,
+                boolean personalizzata, boolean community) {
+            this.community = community && fileJson != null;
             this.fornitore = fornitore;
             this.estrazione = estrazione;
             this.idNativo = idNativo;
             this.fileJson = fileJson;
             this.descrizione = descrizione == null ? "" : descrizione.trim();
-            this.personalizzata = personalizzata && fileJson != null;
+            this.personalizzata = personalizzata && fileJson != null && !this.community;
         }
 
         /**
@@ -187,6 +200,14 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
          */
         @Override
         public String tooltip() {
+            if (community) {
+                //Testo di un altro utente: mai interpretato come HTML, anche se server e controlli locali rifiutano gia' il "<"
+                String testo = "<b>Configurazione della community</b> (file " + SenzaHtml(fileJson.getName())
+                        + "): scritta da un altro utente e controllata dall'autore del programma. Provala sul tuo file"
+                        + " con \"Prova configurazione\" prima di importare.";
+                if (!descrizione.isBlank()) testo += "<br><br>" + SenzaHtml(descrizione);
+                return "<html><div style='width:380px'>" + testo + "</div></html>";
+            }
             if (!personalizzata) {
                 return descrizione.isBlank() ? null : descrizione;
             }
@@ -203,7 +224,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
         @Override
         public boolean inCorsivo() {
-            return personalizzata;
+            return personalizzata || community;
         }
 
         /** @return {@code true} se la voce è una configurazione JSON */
@@ -222,7 +243,8 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         /** Nella seconda combo si mostra solo l'estrazione: il fornitore è già nella prima. */
         @Override
         public String toString() {
-            return personalizzata ? PREFISSO_PERSONALIZZATA + estrazione : estrazione;
+            return community ? PREFISSO_COMMUNITY + estrazione
+                    : personalizzata ? PREFISSO_PERSONALIZZATA + estrazione : estrazione;
         }
     }
 
@@ -325,6 +347,15 @@ private static java.util.List<java.io.File> elencoConfigurazioniImport() {
     return new java.util.ArrayList<>(perNome.values());
 }
 
+/** @return le configurazioni scaricate dal catalogo della community ({@code config/community/community-*.json}) */
+private static java.util.List<java.io.File> elencoConfigurazioniCommunity() {
+    java.io.File[] f = new java.io.File(VarStatiche.getCartella_ConfigCommunity())
+            .listFiles((dir, name) -> name.startsWith(CommunityConfigurazioni.PREFISSO_FILE) && name.toLowerCase().endsWith(".json"));
+    java.util.List<java.io.File> elenco = f == null ? new ArrayList<>() : new ArrayList<>(java.util.Arrays.asList(f));
+    elenco.sort(java.util.Comparator.comparing(java.io.File::getName));
+    return elenco;
+}
+
 /**
  * Tutte le estrazioni disponibili, native e da configurazione JSON, raggruppate per fornitore.
  * <p>Costruita una volta all'apertura della finestra e usata per riempire le due combo: la prima elenca
@@ -370,7 +401,12 @@ static java.util.Map<String, java.util.List<VoceImport>> RaccogliEstrazioni() {
     aggiungiEstrazione(estrazioniPerFornitore, new VoceImport("OKX",          "Formato storico",  NAT_OKX_OLD,        null));
 
     try {
-        for (java.io.File f : elencoConfigurazioniImport()) {
+        //Le configurazioni della community (config/community/) dopo le altre: stessa lettura, voce marcata a parte
+        java.util.List<java.io.File> daLeggere = new ArrayList<>(elencoConfigurazioniImport());
+        java.util.Set<java.io.File> dallaCommunity = new java.util.HashSet<>(elencoConfigurazioniCommunity());
+        daLeggere.addAll(dallaCommunity);
+        for (java.io.File f : daLeggere) {
+            boolean community = dallaCommunity.contains(f);
             // Il nome base è sempre il nome del file senza estensione
             String nomeBase = f.getName().replaceAll("(?i)\\.json$", "");
 
@@ -380,7 +416,7 @@ static java.util.Map<String, java.util.List<VoceImport>> RaccogliEstrazioni() {
             String daNomeFile = FornitoreDaNomeFile(nomeBase);
             //Senza nessun indizio la configurazione resta utilizzabile: diventa un fornitore a sé con
             //una sola estrazione, che è come si comportano le configurazioni scritte dall'utente
-            String fornitore = daNomeFile != null ? daNomeFile : nomeBase;
+            String fornitore = daNomeFile != null ? daNomeFile : community ? "Community" : nomeBase;
             String estrazione = nomeBase;
             String descrizione = null;
             boolean nonAncoraSupportata = false;
@@ -430,7 +466,7 @@ static java.util.Map<String, java.util.List<VoceImport>> RaccogliEstrazioni() {
                 continue;
             }
             aggiungiEstrazione(estrazioniPerFornitore,
-                    new VoceImport(fornitore, estrazione, null, f, descrizione, personalizzata));
+                    new VoceImport(fornitore, estrazione, null, f, descrizione, personalizzata && !community, community));
         }
     } catch (Exception ex) {
         LoggerGC.ScriviErrore(ex);
@@ -439,7 +475,7 @@ static java.util.Map<String, java.util.List<VoceImport>> RaccogliEstrazioni() {
     //Dentro ogni fornitore le estrazioni restano in ordine alfabetico, come le voci della prima combo, con quelle
     //personalizzate dopo le ufficiali
     for (java.util.List<VoceImport> elenco : estrazioniPerFornitore.values()) {
-        elenco.sort(java.util.Comparator.<VoceImport, Boolean>comparing(v -> v.personalizzata)
+        elenco.sort(java.util.Comparator.<VoceImport, Integer>comparing(v -> v.community ? 2 : v.personalizzata ? 1 : 0)
                 .thenComparing(v -> v.estrazione, String.CASE_INSENSITIVE_ORDER));
     }
     return estrazioniPerFornitore;
@@ -573,6 +609,7 @@ private VoceImport voceSelezionata() {
         Label_TipoImport = new javax.swing.JLabel();
         Bottone_Manuale = new javax.swing.JButton();
         Bottone_ProvaConfigurazione = new javax.swing.JButton();
+        Bottone_Community = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
@@ -685,6 +722,15 @@ private VoceImport voceSelezionata() {
             }
         });
 
+        Bottone_Community.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_FrecciaSotto.png"))); // NOI18N
+        Bottone_Community.setText("Configurazioni della community...");
+        Bottone_Community.setToolTipText("<html>Configurazioni di importazione scritte da altri utenti e controllate dall'autore del programma:<br>si scaricano da qui e compaiono nelle tendine con il prefisso Community.</html>");
+        Bottone_Community.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_CommunityActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -711,6 +757,7 @@ private VoceImport voceSelezionata() {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 13, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(ScrollPane_Attenzione, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 403, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Bottone_Community, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 403, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(Bottone_ProvaConfigurazione, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -746,7 +793,10 @@ private VoceImport voceSelezionata() {
                         .addComponent(Label_NomeWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Text_NomeWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(ScrollPane_Attenzione))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(ScrollPane_Attenzione)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Bottone_Community, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -876,6 +926,13 @@ private VoceImport voceSelezionata() {
         GUI_ProvaConfigurazione.Avvia(this, json, csv[0]);
     }//GEN-LAST:event_Bottone_ProvaConfigurazioneActionPerformed
 
+    private void Bottone_CommunityActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_CommunityActionPerformed
+        //Catalogo delle configurazioni condivise: se ne sono state scaricate o eliminate, le tendine vanno ricaricate
+        if (GUI_ConfigurazioniCommunity.Mostra(this)) {
+            popolaComboTipoFile();
+        }
+    }//GEN-LAST:event_Bottone_CommunityActionPerformed
+
     /**
      * La configurazione da provare: quella selezionata nelle tendine, se e' un JSON e l'utente la conferma, altrimenti
      * un file scelto a mano (anche fuori dalle cartelle del programma, per esempio appena scritto con un'IA).
@@ -988,6 +1045,7 @@ private VoceImport voceSelezionata() {
         Bottone_SelezionaFile.setEnabled(false);
         Bottone_Annulla.setEnabled(false);
         Bottone_ProvaConfigurazione.setEnabled(false);
+        Bottone_Community.setEnabled(false);
         Thread thread = new Thread() {
             /** Esegue in background l'importazione dei file scelti. */
             @Override
@@ -1022,6 +1080,7 @@ private VoceImport voceSelezionata() {
                     Bottone_SelezionaFile.setEnabled(true);
                     Bottone_Annulla.setEnabled(true);
                     Bottone_ProvaConfigurazione.setEnabled(true);
+                    Bottone_Community.setEnabled(true);
                     progressb.dispose();
                 }
             }
@@ -1171,6 +1230,7 @@ private VoceImport voceSelezionata() {
         Bottone_SelezionaFile.setEnabled(false);
         Bottone_Annulla.setEnabled(false);
         Bottone_ProvaConfigurazione.setEnabled(false);
+        Bottone_Community.setEnabled(false);
         Thread thread = new Thread(() -> {
             Binance_AutoInvest.Esito esito = null;
             Exception errore = null;
@@ -1193,6 +1253,7 @@ private VoceImport voceSelezionata() {
                 Bottone_SelezionaFile.setEnabled(true);
                 Bottone_Annulla.setEnabled(true);
                 Bottone_ProvaConfigurazione.setEnabled(true);
+                Bottone_Community.setEnabled(true);
             }
             final Binance_AutoInvest.Esito esitoF = esito;
             final Exception erroreF = errore;
@@ -1840,6 +1901,7 @@ if (voce.isJson()) {
     private javax.swing.JButton Bottone_Annulla;
     private javax.swing.JButton Bottone_Manuale;
     private javax.swing.JButton Bottone_ProvaConfigurazione;
+    private javax.swing.JButton Bottone_Community;
     private javax.swing.JButton Bottone_SelezionaFile;
     private javax.swing.JCheckBox CheckBox_Sovrascrivi;
     private javax.swing.JComboBox<String> ComboBox_Exchanges;

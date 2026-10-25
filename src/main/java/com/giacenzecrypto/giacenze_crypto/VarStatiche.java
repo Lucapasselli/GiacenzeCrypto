@@ -253,6 +253,14 @@ public class VarStatiche {
         return getWorkingDirectory() + "config/import/";
     }
 
+    /**
+     * @return il percorso della cartella {@code config/community/}: le configurazioni di import scaricate dal catalogo
+     *         della community ({@link CommunityConfigurazioni}). L'allineamento all'avvio non la tocca.
+     */
+    public static String getCartella_ConfigCommunity() {
+        return getWorkingDirectory() + "config/community/";
+    }
+
     /** @return il percorso della cartella {@code config/importmappe/}, sole mappe delle causali */
     public static String getCartella_ConfigImportMappe() {
         return getWorkingDirectory() + "config/importmappe/";

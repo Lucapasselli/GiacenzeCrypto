@@ -524,7 +524,8 @@ private static final long serialVersionUID = 8L;
                 .theme()
                 .type(AppDialog.DialogType.INFO)
                 .message("Verranno inviati all'autore: le righe dei movimenti sconosciuti mostrate qui sopra, "
-                        + "il tipo di importazione (<b>" + escapeHtml(tipo) + "</b>) e la versione del programma. "
+                        + "il tipo di importazione (<b>" + escapeHtml(tipo) + "</b>), il nome del file, il numero di righe "
+                        + "importate e scartate e la versione del programma, del sistema operativo e di Java. "
                         + "Nessun altro dato.")
                 .details("Il servizio conserva la segnalazione al massimo 30 giorni, solo per la diagnosi.")
                 .action(AppDialog.DialogAction.builder("cancel", "Annulla")

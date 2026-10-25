@@ -44,6 +44,7 @@ public class GUI_ProvaConfigurazione extends JDialog {
     private final DefaultTableModel ModelloScarti = Modello("Motivo", "Riga del CSV");
     private final JButton Ripeti = new JButton("Ripeti la prova");
     private final JButton Copia = new JButton("Copia resoconto");
+    private final JButton Condividi = new JButton("Condividi con la community...");
 
     /**
      * Esegue la prova in background (cursore d'attesa sul proprietario) e ne mostra l'esito.
@@ -103,11 +104,15 @@ public class GUI_ProvaConfigurazione extends JDialog {
                     + "dati che non vuoi condividere, come identificativi o indirizzi.",
                     "Copia resoconto", JOptionPane.INFORMATION_MESSAGE);
         });
+        Condividi.setToolTipText("<html>Propone la configurazione al catalogo della community, dopo una prova senza problemi.<br>"
+                + "Diventa scaricabile dagli altri utenti solo dopo il controllo dell'autore del programma.</html>");
+        Condividi.addActionListener(e -> GUI_CondividiConfigurazione.Mostra(this, this.Json, this.Esito));
         JButton Chiudi = new JButton("Chiudi");
         Chiudi.addActionListener(e -> dispose());
         JPanel Pulsanti = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         Pulsanti.add(Ripeti);
         Pulsanti.add(Copia);
+        Pulsanti.add(Condividi);
         Pulsanti.add(Chiudi);
 
         JPanel Contenuto = new JPanel(new BorderLayout());
@@ -198,6 +203,8 @@ public class GUI_ProvaConfigurazione extends JDialog {
         Schede.setTitleAt(2, "Saldi per moneta (" + E.saldi.size() + ")");
         Schede.setTitleAt(3, "Righe scartate (" + E.scarti.size() + ")");
         if (!E.scarti.isEmpty() && E.movimenti.isEmpty()) Schede.setSelectedIndex(3);
+        //Si condivide solo una configurazione provata senza problemi
+        Condividi.setEnabled(CommunityConfigurazioni.ProvaSenzaProblemi(E));
     }
 
     /** Rilegge configurazione e CSV e aggiorna la finestra */

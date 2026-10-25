@@ -110,6 +110,36 @@ La prova non cerca i prezzi (i controvalori sono solo quelli scritti nel CSV) e 
 fa sull'archivio dopo aver scritto i movimenti: l'abbinamento degli `SCAMBIO DIFFERITO`, i giroconti di
 `girocontoFiat` e il controllo dei movimenti già presenti.
 
+## Condividere e scaricare configurazioni {#community}
+
+**Disponibile dalla versione 1.0.66**
+
+Una configurazione che funziona può servire ad altri utenti con lo stesso exchange. Il programma ha un
+catalogo di configurazioni condivise dalla community.
+
+**Scaricare.** Nella finestra *Importazioni* il pulsante **Configurazioni della community...** apre il
+catalogo. **Scarica** salva le configurazioni scelte nella cartella `config/community/` della cartella di
+lavoro, e da quel momento compaiono nelle tendine con il prefisso *Community:*. Prima di salvare un file il
+programma ne verifica l'impronta e ripete tutti i controlli di sicurezza. Le configurazioni della community
+sono controllate dall'autore del programma prima della pubblicazione, ma nessuno può provarle su ogni file
+reale: **prima di importare, prova la configurazione sul tuo CSV** e controlla i movimenti.
+
+**Condividere.** Nella finestra della prova il pulsante **Condividi con la community...** si attiva solo dopo
+una prova senza righe scartate, senza opzioni o tipi sconosciuti e con almeno un movimento. La finestra di
+invio mostra il file così com'è e chiede il consenso alla pubblicazione con licenza MIT. Insieme al file
+parte l'esito della prova, cioè quanti movimenti escono da ogni causale, **ma nessuna riga del tuo CSV**.
+La configurazione diventa scaricabile solo dopo il controllo dell'autore del programma. Dalla finestra del
+catalogo, **Le mie proposte...** permette di ritirare una configurazione inviata. Cosa viene conservato è
+descritto nell'[informativa sulla privacy](https://lucapasselli.github.io/GiacenzeCrypto/privacy/).
+
+Una configurazione condivisa deve rispettare alcune regole in più di una personale:
+
+- Niente `centralizzato`.
+- `separatore` solo `,` `;` tabulazione o `|`.
+- Nessun carattere `<` nei testi, salvo i commenti.
+- Nessun dato personale riconoscibile: indirizzi di wallet, hash di transazione, email, IBAN.
+- Al massimo 64 KB.
+
 ## Struttura generale {#struttura-generale}
 
 ```json

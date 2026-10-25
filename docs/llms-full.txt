@@ -2046,7 +2046,7 @@ sezione dell'exchange selezionato.
 
 Exchange e piattaforme: [Binance](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#binance) · [Bitget](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#bitget) · [Bybit](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#bybit) ·
 [Bybit EU](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#bybit-eu) · [Coinbase](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#coinbase) · [Coinbase Pro](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#coinbase-pro) ·
-[CoinTracking](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#cointracking) · [Crypto.com](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#crypto-com) · [Gate.io](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#gate-io) · [KuCoin](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#kucoin) ·
+[CoinTracking](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#cointracking) · [Crypto.com](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#crypto-com) · [Exodus](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#exodus) · [Gate.io](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#gate-io) · [KuCoin](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#kucoin) ·
 [Nexo](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#nexo) · [Nexo Pro](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#nexo-pro) · [OKX](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#okx) · [Tatax](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#tatax)
 
 > **NB** — come si scarica un file passo per passo, con le immagini delle schermate degli exchange, è
@@ -2604,6 +2604,27 @@ Il file delle transazioni si scarica dal sito crypto.com/exchange, con la lingua
 sull'inglese: *Dashboard*, poi *Orders* nella barra a sinistra, scheda *Transactions*, periodo (al
 massimo **180 giorni** per volta), *Export* e *Export to CSV*. Quando il file è pronto si scarica dalla
 stessa maschera. Per coprire tutta la storia del conto servono quindi più file.
+
+## Exodus
+
+| Voce nella finestra | Che cosa importa |
+|---|---|
+| **Transazioni** (in prova) | L'export CSV delle transazioni del wallet Exodus |
+
+Exodus è un wallet non custodial. Il file riporta su una sola riga quello che entra e quello che esce,
+con la commissione di rete in una colonna a parte.
+
+- **Depositi e prelievi** diventano trasferimenti cripto da classificare. Nei prelievi l'importo del file
+  è quello arrivato a destinazione e la commissione di rete è in più: il programma registra il prelievo
+  e la commissione come due movimenti.
+- **Le ricompense di partecipazione di Algorand**, pagate fino al 2022, nel file compaiono come
+  depositi: Exodus le riscuoteva con un invio di 0 ALGO al wallet stesso. Il programma le riconosce e le
+  registra come premi, con la commissione di 0,001 ALGO come movimento a parte.
+- **Gli scambi fatti dentro Exodus** diventano scambi fra cripto, ma non sono ancora stati verificati su
+  un file reale: dopo l'importazione conviene controllarli.
+- **Una sola fonte per ogni indirizzo.** Molte reti del wallet (Bitcoin, Solana, Algorand, le reti EVM e
+  altre) si possono importare anche da *Gestione Wallet*, leggendo la blockchain. Per lo stesso indirizzo
+  e lo stesso periodo va usata una sola delle due strade, altrimenti i movimenti risultano doppi.
 
 ## Gate.io
 

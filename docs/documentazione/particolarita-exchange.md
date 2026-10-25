@@ -15,7 +15,7 @@ sezione dell'exchange selezionato.
 
 Exchange e piattaforme: [Binance](#binance) · [Bitget](#bitget) · [Bybit](#bybit) ·
 [Bybit EU](#bybit-eu) · [Coinbase](#coinbase) · [Coinbase Pro](#coinbase-pro) ·
-[CoinTracking](#cointracking) · [Crypto.com](#crypto-com) · [Gate.io](#gate-io) · [KuCoin](#kucoin) ·
+[CoinTracking](#cointracking) · [Crypto.com](#crypto-com) · [Exodus](#exodus) · [Gate.io](#gate-io) · [KuCoin](#kucoin) ·
 [Nexo](#nexo) · [Nexo Pro](#nexo-pro) · [OKX](#okx) · [Tatax](#tatax)
 
 > **NB** — come si scarica un file passo per passo, con le immagini delle schermate degli exchange, è
@@ -573,6 +573,27 @@ Il file delle transazioni si scarica dal sito crypto.com/exchange, con la lingua
 sull'inglese: *Dashboard*, poi *Orders* nella barra a sinistra, scheda *Transactions*, periodo (al
 massimo **180 giorni** per volta), *Export* e *Export to CSV*. Quando il file è pronto si scarica dalla
 stessa maschera. Per coprire tutta la storia del conto servono quindi più file.
+
+## Exodus {#exodus}
+
+| Voce nella finestra | Che cosa importa |
+|---|---|
+| **Transazioni** (in prova) | L'export CSV delle transazioni del wallet Exodus |
+
+Exodus è un wallet non custodial. Il file riporta su una sola riga quello che entra e quello che esce,
+con la commissione di rete in una colonna a parte.
+
+- **Depositi e prelievi** diventano trasferimenti cripto da classificare. Nei prelievi l'importo del file
+  è quello arrivato a destinazione e la commissione di rete è in più: il programma registra il prelievo
+  e la commissione come due movimenti.
+- **Le ricompense di partecipazione di Algorand**, pagate fino al 2022, nel file compaiono come
+  depositi: Exodus le riscuoteva con un invio di 0 ALGO al wallet stesso. Il programma le riconosce e le
+  registra come premi, con la commissione di 0,001 ALGO come movimento a parte.
+- **Gli scambi fatti dentro Exodus** diventano scambi fra cripto, ma non sono ancora stati verificati su
+  un file reale: dopo l'importazione conviene controllarli.
+- **Una sola fonte per ogni indirizzo.** Molte reti del wallet (Bitcoin, Solana, Algorand, le reti EVM e
+  altre) si possono importare anche da *Gestione Wallet*, leggendo la blockchain. Per lo stesso indirizzo
+  e lo stesso periodo va usata una sola delle due strade, altrimenti i movimenti risultano doppi.
 
 ## Gate.io {#gate-io}
 

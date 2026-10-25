@@ -576,8 +576,9 @@ class Principale_GruppiWalletRWTest {
     void exchangeIdDaSorgente_coerenteConINomiExchangeDeiConfigImport() throws Exception {
         // "nomeExchange" dei config diventa il campo [3] del movimento: se un config introduce una
         // grafia nuova che smette di matchare, questo test lo segnala. Grafie tenute apposta come
-        // wallet a sé (non associate a un gruppo preconfigurato):
-        java.util.Set<String> separatiDiProposito = java.util.Set.of("coinbase pro", "gdax");
+        // wallet a sé (non associate a un gruppo preconfigurato). Exodus è un wallet non custodial, senza
+        // un intermediario da dichiarare: non è un exchange di RW_Predefiniti.json.
+        java.util.Set<String> separatiDiProposito = java.util.Set.of("coinbase pro", "gdax", "exodus");
 
         java.nio.file.Path dir = java.nio.file.Path.of("config", "import");
         org.junit.jupiter.api.Assumptions.assumeTrue(java.nio.file.Files.isDirectory(dir),

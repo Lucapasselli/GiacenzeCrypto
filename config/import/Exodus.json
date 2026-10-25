@@ -1,0 +1,60 @@
+{
+  "_commento": "Exodus (wallet non custodial) - export CSV delle transazioni. UTF-8, separatore virgola, 18 colonne: 0=DATE 1=TYPE 2=FROMPORTFOLIO 3=TOPORTFOLIO 4=OUTAMOUNT 5=OUTCURRENCY 6=FEEAMOUNT 7=FEECURRENCY 8=FROMADDRESS 9=TOADDRESS 10=OUTTXID 11=OUTTXURL 12=INAMOUNT 13=INCURRENCY 14=INTXID 15=INTXURL 16=ORDERID 17=PERSONALNOTE. Scritta su poche righe a campione (2026-10-25): 'testing' finche' non e' provata su un export completo.",
+  "_commentoGambe": "Entrata e uscita stanno sulla stessa riga: INAMOUNT/INCURRENCY (12/13) sono la gamba in entrata, OUTAMOUNT/OUTCURRENCY (4/5) quella in uscita, gia' negativa nel file. Un deposito ha solo la prima, un prelievo solo la seconda. Ogni riga e' un movimento a se' ('consolidaRigheStessaData':false): consolidare unirebbe in un finto scambio due depositi caduti nello stesso secondo.",
+  "_commentoFee": "FEEAMOUNT e' negativa e il motore ne prende il valore assoluto. Verificato on-chain sulle righe a campione: in un prelievo OUTAMOUNT e' quanto arrivato al destinatario e la fee e' in piu' (gli input della transazione sono la somma delle due), e nella reward ALGO INAMOUNT e' esattamente il 'sender-rewards' dell'indexer, con la fee a parte. Quindi entrambi i 'ricostruisciLordo' a false: la fee esce come movimento COMMISSIONI in aggiunta all'importo, anche sulla riga di sola entrata della reward.",
+  "_commentoRewardALGO": "Fino al 2022 Algorand accreditava le ricompense di partecipazione a ogni transazione del conto, e Exodus le riscuote con un invio a se stesso di 0 ALGO: nel file e' un 'deposit' con il solo INAMOUNT, FROMPORTFOLIO valorizzato e TOPORTFOLIO vuoto (un deposito vero ha TOPORTFOLIO, il portafoglio di arrivo). Il nome del portafoglio e' scelto dall'utente, quindi si guarda solo se la cella e' vuota. 'regoleRiga' non ha condizioni combinate: la colonna virtuale 18 viene accesa dalla moneta ALGO, spenta se c'e' un portafoglio di arrivo o un importo in uscita, e se resta accesa la causale diventa 'algo reward'. Limitato ad ALGO di proposito: la stessa forma su un'altra rete resta un deposito da classificare. REWARD come in Trans_Algorand.",
+  "_commentoExchange": "'exchange' (scambio fatto dentro Exodus, con ORDERID) NON e' stata vista nelle righe a campione: mappata a SCAMBIO CRYPTO-CRYPTO per la forma del file (due gambe sulla stessa riga), da verificare su un export reale. Le altre causali eventuali (trasferimenti fra portafogli, staking di altre reti) finiscono fra le causali sconosciute del resoconto.",
+  "_commentoID": "Il TxID sta in INTXID (14) per depositi, reward e scambi e in OUTTXID (10) per i prelievi: una configurazione non sa unire due colonne, quindi si usa la 14 e i prelievi restano senza TxID. Il controllo dei duplicati dei CSV generici non dipende dal TxID.",
+  "_commentoVersione": "'regoleRiga' richiede la 1.0.65.02.",
+  "versione": "1.000",
+  "versioneMinimaApp": "1.0.65.02",
+  "centralizzato": true,
+  "testing": true,
+  "descrizione": "<html><div style='width:380px'>Exodus &ndash; export CSV delle transazioni del wallet. Depositi e prelievi come trasferimenti cripto, la commissione di rete come movimento a parte. Le ricompense di partecipazione di Algorand (invio a se stessi di 0 ALGO) diventano ricompense. Gli scambi fatti dentro Exodus non sono ancora stati verificati su un file reale.</div></html>",
+  "fornitore": "Exodus",
+  "nomeExchange": "Exodus",
+  "estrazione": "Transazioni",
+  "nomeWallet": "Principale",
+  "separatore": ",",
+  "encoding": "UTF-8",
+  "righeIntestazione": 1,
+  "rigaIntestazione": 1,
+  "autoDetectColonne": false,
+  "formatoData": "yyyy-MM-dd'T'HH:mm:ss[.SSS]'Z'",
+  "fuso": "UTC",
+  "consolidaRigheStessaData": false,
+  "regoleRiga": [
+    { "colonna": 13, "uguale": "ALGO", "imposta": { "colonna": 18, "valore": "reward" } },
+    { "colonna": 3, "vuota": false, "imposta": { "colonna": 18, "valore": "" } },
+    { "colonna": 4, "vuota": false, "imposta": { "colonna": 18, "valore": "" } },
+    { "colonna": 18, "uguale": "reward", "imposta": { "colonna": 1, "valore": "algo reward" } }
+  ],
+  "colonne": {
+    "data": 0,
+    "causale": 1,
+    "moneta": 13,
+    "quantita": 12,
+    "monetaUscita": 5,
+    "quantitaUscita": 4,
+    "monetaFee": 7,
+    "quantitaFee": 6,
+    "idTransazione": 14,
+    "note": 17
+  },
+  "mappaCausali": {
+    "deposit": "TRASFERIMENTO-CRYPTO",
+    "withdrawal": "TRASFERIMENTO-CRYPTO",
+    "algo reward": "REWARD",
+    "exchange": "SCAMBIO CRYPTO-CRYPTO"
+  },
+  "causaliChiuse": [
+    "TRASFERIMENTO-CRYPTO",
+    "REWARD"
+  ],
+  "ricostruisciLordoSeFeeSuMonetaUscita": false,
+  "ricostruisciLordoSeFeeSuMonetaEntrata": false,
+  "rinominaMonete": {},
+  "rimuoviDaNomeMoneta": [],
+  "campiExtra": {},
+  "walletPerCausale": {}
+}
